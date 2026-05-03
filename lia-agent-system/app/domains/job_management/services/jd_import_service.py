@@ -191,15 +191,213 @@ class JDImportService:
             metadata_raw=jd_data.get("metadata", {}),
         )
         
+        quality_score = self._compute_quality_score(jd_data)
+        imported_jd.is_used_for_learning = quality_score >= 0.65
+
+        # ── FairnessGuard — fail-closed: blocked JDs never feed the learning loop ──
+        # Hard block (is_blocked=True): is_used_for_learning=False + raises ValueError
+        #   → import_batch_jds catches it → item counted as failed in batch.errors
+        # Soft warnings: is_used_for_learning=False + continues (item saved, not learned from)
+        # Guard exception: fail-open for guard regression (log warning, keep existing flag)
+        if imported_jd.is_used_for_learning:
+            _fg_text = " ".join(filter(None, [
+                jd_data.get("title", ""),
+                jd_data.get("description", ""),
+                jd_data.get("responsibilities_text", ""),
+                " ".join(jd_data.get("required_skills") or jd_data.get("skills") or []),
+            ])).strip()
+            if _fg_text:
+                try:
+                    from app.shared.compliance.fairness_guard import FairnessGuard
+                    _fg_result = FairnessGuard().check(_fg_text)
+                    if _fg_result.is_blocked:
+                        imported_jd.is_used_for_learning = False
+                        logger.warning(
+                            "[JDImport] FairnessGuard HARD BLOCK: JD '%s' excluded from learning "
+                            "(category=%s, terms=%s) company_id=%s",
+                            jd_data.get("title", "?"), _fg_result.category,
+                            _fg_result.blocked_terms, company_id,
+                        )
+                        raise ValueError(
+                            f"fairness_blocked category={_fg_result.category} "
+                            f"terms={','.join(_fg_result.blocked_terms or [])}"
+                        )
+                    elif _fg_result.soft_warnings:
+                        imported_jd.is_used_for_learning = False
+                        logger.warning(
+                            "[JDImport] FairnessGuard soft warnings: JD '%s' excluded from "
+                            "learning (warnings=%s) company_id=%s",
+                            jd_data.get("title", "?"), _fg_result.soft_warnings, company_id,
+                        )
+                except ValueError:
+                    raise
+                except Exception as _fg_exc:  # noqa: BLE001 — guard regression must not break import
+                    logger.warning(
+                        "[JDImport] FairnessGuard check failed — fail-open (guard regression): %s",
+                        _fg_exc,
+                    )
+
         if parse_immediately:
             parsed = self.parse_jd(imported_jd)
             self._apply_parsed_data(imported_jd, parsed)
-        
+
         db.add(imported_jd)
         await db.commit()
         await db.refresh(imported_jd)
-        
+
+        # ── Phase 4H — create JobVacancy mirror for the rail filter ──
+        # User-facing rail "ATS" reads from job_vacancies WHERE source='ats_import'.
+        # Without this mirror, imported JDs only live in imported_job_descriptions
+        # and never surface as cards in the Vagas page.
+        # Fail-open: any error logs warning + continues (imported_jd already persisted).
+        try:
+            await self._mirror_to_job_vacancy(db, company_id, imported_jd, source)
+        except Exception as exc:
+            logger.warning(
+                "[JDImport] _mirror_to_job_vacancy failed (fail-open) for jd=%s: %s",
+                imported_jd.id, exc,
+            )
+
         return imported_jd
+
+    @staticmethod
+    def _map_source_to_vacancy(import_source: str) -> str:
+        """Map ImportSource enum value to JobVacancy.source canonical value.
+
+        Live ATS sync (Gupy, Greenhouse, Lever) -> 'ats_external'.
+        One-time imports (spreadsheet, manual upload, API) -> 'ats_import'.
+        Anything else (defensive) -> 'ats_import'.
+        """
+        live_sync = {"ats_gupy", "ats_pandape", "ats_greenhouse", "ats_lever", "ats_other"}
+        return "ats_external" if import_source in live_sync else "ats_import"
+
+    @staticmethod
+    def _map_source_to_system_slug(import_source: str) -> str:
+        """Map ImportSource enum value to source_system slug (Task #435).
+
+        Used by analytics.py:_classify_job_lifecycle_stage to land the
+        vacancy in the 'ats_importada' lifecycle stage on the Recrutar page.
+
+        ATS-specific imports map to their canonical slug (gupy, pandape,
+        greenhouse). Generic imports (spreadsheet, manual_upload, api_import,
+        hris_*) fall through to 'ats_other' (catch-all).
+        """
+        slug_map = {
+            "ats_gupy": "gupy",
+            "ats_pandape": "pandape",
+            "ats_greenhouse": "greenhouse",
+            # ats_lever, ats_other -> 'ats_other'
+        }
+        return slug_map.get(import_source, "ats_other")
+
+    async def _mirror_to_job_vacancy(
+        self,
+        db: AsyncSession,
+        company_id: UUID,
+        imported_jd: ImportedJobDescription,
+        import_source: str,
+    ) -> None:
+        """Create JobVacancy row mirroring an ImportedJobDescription.
+
+        Phase 4H: ATS-imported vagas must appear in job_vacancies so the
+        Vagas page rail can filter by source='ats_import'. Idempotent:
+        skips if JobVacancy with same (company_id, external_id, source) exists.
+
+        FAIL-CLOSED on missing company_id (multi-tenancy enforcement).
+        Caller wraps in try/except for fail-open behavior.
+        """
+        if not company_id:
+            raise ValueError(
+                "company_id required for JobVacancy mirror (multi-tenancy enforcement)"
+            )
+
+        from lia_models.job_vacancy import JobVacancy
+        from sqlalchemy import text as sa_text
+
+        vacancy_source = self._map_source_to_vacancy(import_source)
+
+        # Idempotency: skip if external_id already mirrored for this source.
+        # Uses raw SQL with `additional_data->>'external_id'` since the column
+        # is JSON (not JSONB) — `.astext` only works on JSONB.
+        if imported_jd.external_id:
+            existing_check = await db.execute(
+                sa_text(
+                    "SELECT 1 FROM job_vacancies "
+                    "WHERE company_id = :cid "
+                    "AND source = :src "
+                    "AND additional_data->>'external_id' = :ext_id "
+                    "LIMIT 1"
+                ),
+                {
+                    "cid": str(company_id),
+                    "src": vacancy_source,
+                    "ext_id": imported_jd.external_id,
+                },
+            )
+            if existing_check.scalar_one_or_none() is not None:
+                logger.info(
+                    "[JDImport] JobVacancy mirror exists (external_id=%s) — skip",
+                    imported_jd.external_id,
+                )
+                return
+
+        salary_range = None
+        if imported_jd.salary_min is not None or imported_jd.salary_max is not None:
+            salary_range = {
+                "min": float(imported_jd.salary_min) if imported_jd.salary_min else None,
+                "max": float(imported_jd.salary_max) if imported_jd.salary_max else None,
+                "currency": imported_jd.salary_currency or "BRL",
+            }
+
+        # Phase 4J — populate fields for analytics.py lifecycle classifier:
+        # _classify_job_lifecycle_stage returns 'ats_importada' when:
+        #   _job_is_imported_from_ats(job) AND status=='Rascunho'
+        # Triggers via source_system slug OR additional_data["imported_from_ats"].
+        # We set BOTH for defense-in-depth.
+        source_system_slug = self._map_source_to_system_slug(import_source)
+
+        vacancy = JobVacancy(
+            company_id=str(company_id),
+            title=imported_jd.job_title_original or "Vaga importada",
+            department=imported_jd.department,
+            location=imported_jd.location,
+            work_model=imported_jd.work_model,
+            employment_type=imported_jd.employment_type,
+            seniority_level=imported_jd.seniority,
+            description=imported_jd.description_raw,
+            salary_range=salary_range,
+            benefits=imported_jd.benefits or [],
+            manager=imported_jd.hiring_manager,
+            manager_email=imported_jd.hiring_manager_email,
+            recruiter=imported_jd.recruiter,
+            # Status MUST be 'Rascunho' for classifier to assign 'ats_importada'.
+            # imported_jd.job_status from external ATS may be 'Active'/'Open'/etc;
+            # we override to start fresh in our lifecycle (recruiter then advances).
+            status="Rascunho",
+            stage="Planejamento",
+            source=vacancy_source,                # Phase 4H: 'ats_import' | 'ats_external'
+            source_system=source_system_slug,     # Phase 4J: Task #435 lifecycle slug
+            wizard_stage=None,                    # only wizard-source vagas have this
+            additional_data={
+                "external_id": imported_jd.external_id,
+                "import_source": import_source,
+                "imported_jd_id": str(imported_jd.id),
+                "import_batch_id": str(imported_jd.import_batch_id) if imported_jd.import_batch_id else None,
+                # Phase 4J — flag for _job_is_imported_from_ats heuristic.
+                # Defense-in-depth: even if source_system column read fails,
+                # this flag guarantees classifier returns 'ats_importada'.
+                "imported_from_ats": True,
+                # Original status from ATS preserved for debugging / future restore
+                "original_external_status": imported_jd.job_status,
+            },
+        )
+        db.add(vacancy)
+        await db.commit()
+        await db.refresh(vacancy)
+        logger.info(
+            "[JDImport] JobVacancy mirror created id=%s source=%s jd=%s",
+            vacancy.id, vacancy_source, imported_jd.id,
+        )
 
     async def import_batch_jds(
         self,
@@ -258,6 +456,20 @@ class JDImportService:
         await self._update_skill_catalog(db, company_id, batch.id)
         
         return batch
+
+
+    def _compute_quality_score(self, jd_data: dict) -> float:
+        """Score 0-1. Only jobs with score >= 0.65 feed the salary benchmark.
+
+        Weights: title (0.25) + salary_min (0.30) + department (0.15) + seniority (0.15) + skills (0.15)
+        """
+        score = 0.0
+        if jd_data.get("title"):        score += 0.25
+        if jd_data.get("salary_min"):   score += 0.30
+        if jd_data.get("department"):   score += 0.15
+        if jd_data.get("seniority"):    score += 0.15
+        if jd_data.get("skills") or jd_data.get("required_skills"):  score += 0.15
+        return round(score, 2)
 
     def parse_jd(self, jd: ImportedJobDescription) -> ParsedJD:
         """
@@ -481,7 +693,8 @@ class JDImportService:
             and_(
                 ImportedJobDescription.company_id == company_id,
                 ImportedJobDescription.import_batch_id == batch_id,
-                ImportedJobDescription.processing_status == ProcessingStatus.PARSED.value
+                ImportedJobDescription.processing_status == ProcessingStatus.PARSED.value,
+                ImportedJobDescription.is_used_for_learning.is_(True),  # FairnessGuard gate
             )
         )
         result = await db.execute(stmt)
@@ -590,3 +803,12 @@ jd_import_service = JDImportService()
 
 def get_jd_import_service() -> "JDImportService":
     return jd_import_service
+
+
+def _strip_meta(p: dict) -> dict:
+    return {k: v for k, v in p.items() if not k.startswith("_")}
+
+
+async def import_job_description(**params):
+    """Wrapper para o chat. Delega para JDImportService.import_jd."""
+    return await jd_import_service.import_jd(**_strip_meta(params))

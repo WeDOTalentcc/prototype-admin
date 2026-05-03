@@ -59,6 +59,15 @@ class CommunicationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
     def available_tools(self) -> list[str]:
         return list(self._all_tool_names)
 
+
+    def _get_tool_contracts(self) -> list:
+        """Ativa GovernanceToolNode para este agente."""
+        try:
+            from app.domains.communication.agents.communication_tool_registry import get_communication_tools
+            return get_communication_tools()
+        except ImportError:
+            return []
+
     def _get_tools(self) -> list:
         """Todos os tools do domínio Communication (LangGraph usa set completo)."""
         from lia_agents_core.react_loop import tool_definition_to_langchain_tool

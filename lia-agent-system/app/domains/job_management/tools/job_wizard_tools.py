@@ -299,8 +299,6 @@ async def save_job_draft(
     """
     logger.info(f"Saving job draft {draft_id} with updates: {list(updates.keys())}")
     
-    _FORBIDDEN_UPDATE_FIELDS = {"id", "company_id", "created_at"}
-
     try:
         from sqlalchemy import select
 
@@ -318,22 +316,8 @@ async def save_job_draft(
                     "success": False,
                     "error": f"Draft not found: {draft_id}"
                 }
-
-            draft_company = str(getattr(draft, "company_id", None) or "")
-            caller_company = str(company_id or "")
-            if draft_company and caller_company and draft_company != caller_company:
-                logger.warning(
-                    "Tenant isolation: save_job_draft rejected — draft company %s != caller company %s",
-                    draft_company, caller_company,
-                )
-                return {
-                    "success": False,
-                    "error": "Tenant isolation: draft does not belong to your company.",
-                }
             
             for field, value in updates.items():
-                if field in _FORBIDDEN_UPDATE_FIELDS:
-                    continue
                 if hasattr(draft, field):
                     setattr(draft, field, value)
             

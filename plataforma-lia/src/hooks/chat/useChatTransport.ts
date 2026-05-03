@@ -92,6 +92,7 @@ export function useChatTransport(
   const mountedRef = useRef(true)
   const wsFailedPermanentlyRef = useRef(false)
   const sseAbortRef = useRef<AbortController | null>(null)
+  const heartbeatIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const sseFailureCountRef = useRef(0)
   const lastEventIdRef = useRef<string>("")
   const onEventRef = useRef(onEvent)
@@ -112,6 +113,10 @@ export function useChatTransport(
       reconnectTimerRef.current = null
     }
     reconnectCountRef.current = 0
+    if (heartbeatIntervalRef.current) {
+      clearInterval(heartbeatIntervalRef.current)
+      heartbeatIntervalRef.current = null
+    }
     if (wsRef.current) {
       wsRef.current.onclose = null
       wsRef.current.close(1000, "Client disconnect")
@@ -188,6 +193,12 @@ export function useChatTransport(
         setReconnectAttempt(0)
         setError(null)
         setTransportMode("ws")
+        // UC-P1-29: proactive heartbeat
+        heartbeatIntervalRef.current = setInterval(() => {
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ type: "ping" }))
+          }
+        }, 25000) // 25s under 30s proxy idle timeout
       }
 
       ws.onmessage = (evt: MessageEvent) => {

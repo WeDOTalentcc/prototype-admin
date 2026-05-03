@@ -65,7 +65,7 @@ class GoogleCalendarClient:
                 and getattr(self._creds, "refresh_token", None)
             ):
                 try:
-                    from google.auth.transport.requests import Request  # type: ignore
+                    from google.auth.transport.requests import Request  # type: ignore[union-attr]
                     self._creds.refresh(Request())
                     logger.info("Google Calendar OAuth token refreshed successfully")
                 except Exception as exc:
@@ -81,9 +81,9 @@ class GoogleCalendarClient:
             )
 
         try:
-            from google.oauth2 import service_account  # type: ignore
-            from google.oauth2.credentials import Credentials  # type: ignore
-            from googleapiclient.discovery import build  # type: ignore
+            from google.oauth2 import service_account  # type: ignore[union-attr]
+            from google.oauth2.credentials import Credentials  # type: ignore[union-attr]
+            from googleapiclient.discovery import build  # type: ignore[union-attr]
 
             creds_data = json.loads(self._credentials_json)
 

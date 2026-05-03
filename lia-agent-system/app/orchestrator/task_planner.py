@@ -21,6 +21,19 @@ from app.agents.base_agent import AgentType
 logger = logging.getLogger(__name__)
 
 
+
+# UC-P3-14: TaskPlanner is gated by LIA_V2_USE_PLAN_SERVICE feature flag.
+# Promotion to production without flag: 2026-07-01
+# To promote: set LIA_V2_USE_PLAN_SERVICE=true in production env
+# and remove this gate once stable for 2 weeks.
+# See: app/orchestrator/main_orchestrator._is_plan_service_enabled()
+#
+# Usage pattern:
+#   from app.orchestrator.main_orchestrator import _is_plan_service_enabled
+#   if _is_plan_service_enabled():
+#       plan = task_planner.plan(request)
+#   else:
+#       # use legacy planner
 class TaskPlanner:
     """Plans multi-step workflows by decomposing into atomic tasks."""
     

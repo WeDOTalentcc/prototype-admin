@@ -9,6 +9,7 @@ import logging
 from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolOutput
 from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
@@ -424,6 +425,7 @@ def get_company_settings_tools() -> list[ToolDefinition]:
                 },
                 "required": ["company_id"],
             },
+            output_schema=ToolOutput,
             function=_wrap_get_company_profile,
         ),
         ToolDefinition(
@@ -439,6 +441,7 @@ def get_company_settings_tools() -> list[ToolDefinition]:
                 },
                 "required": ["company_id", "section", "field", "value"],
             },
+            output_schema=ToolOutput,
             function=_wrap_save_company_field,
         ),
         ToolDefinition(
@@ -453,6 +456,7 @@ def get_company_settings_tools() -> list[ToolDefinition]:
                 },
                 "required": ["company_id", "section", "data"],
             },
+            output_schema=ToolOutput,
             function=_wrap_save_company_section,
         ),
         ToolDefinition(
@@ -467,6 +471,7 @@ def get_company_settings_tools() -> list[ToolDefinition]:
                 },
                 "required": ["company_id", "website_url"],
             },
+            output_schema=ToolOutput,
             function=_wrap_analyze_company_website,
         ),
         ToolDefinition(
@@ -481,6 +486,7 @@ def get_company_settings_tools() -> list[ToolDefinition]:
                 },
                 "required": ["company_id", "document_text"],
             },
+            output_schema=ToolOutput,
             function=_wrap_process_uploaded_document,
         ),
         ToolDefinition(
@@ -507,6 +513,7 @@ def get_company_settings_tools() -> list[ToolDefinition]:
                 },
                 "required": ["company_id", "plan_data"],
             },
+            output_schema=ToolOutput,
             function=_wrap_import_workforce_plan,
         ),
         ToolDefinition(
@@ -519,6 +526,7 @@ def get_company_settings_tools() -> list[ToolDefinition]:
                 },
                 "required": ["company_id"],
             },
+            output_schema=ToolOutput,
             function=_wrap_get_company_completion,
         ),
     ]

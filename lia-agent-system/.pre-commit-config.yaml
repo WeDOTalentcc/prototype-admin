@@ -49,3 +49,11 @@ repos:
         files: ^app/api/.*\.py$
         pass_filenames: false
         always_run: false
+
+      - id: tenant-db-required
+        name: "G-TENANTDB: Depends(get_tenant_db) required in app/domains/"
+        language: python
+        entry: python3 scripts/check_tenant_db.py
+        files: ^app/domains/.*\.py$
+        pass_filenames: false
+        always_run: false

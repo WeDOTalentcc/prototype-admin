@@ -412,3 +412,56 @@ async def _run_retention_cleanup_async() -> dict:
     logger.info("Retention cleanup complete: %s", result_dict)
     return result_dict
 
+
+
+@celery_app.task(name="agent_working_memory.cleanup", bind=True, max_retries=3)
+def cleanup_expired_working_memory(self) -> dict:
+    """
+    Delete AgentWorkingMemory rows where expires_at < now().
+
+    UC-P2-02: TTL enforcement for agent working memory.
+    Without this job the table grows unbounded; Celery Beat schedules it
+    daily at 03h UTC (beat_schedule key: agent-working-memory-cleanup-daily).
+
+    Returns:
+        Dict with { deleted, ran_at }.
+    """
+    import asyncio
+    from datetime import datetime, timezone
+
+    span = _celery_span("celery.task_start", "agent_working_memory.cleanup")
+
+    async def _run() -> dict:
+        from lia_config.database import AsyncSessionLocal
+        from lia_agents_core.working_memory import AgentWorkingMemory
+        from sqlalchemy import delete, and_
+
+        now = datetime.now(timezone.utc)
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(
+                delete(AgentWorkingMemory).where(
+                    and_(
+                        AgentWorkingMemory.expires_at.isnot(None),
+                        AgentWorkingMemory.expires_at < now,
+                    )
+                )
+            )
+            deleted = result.rowcount
+            await db.commit()
+        logger.info("[agent_working_memory.cleanup] Deleted %d expired rows", deleted)
+        return {"deleted": deleted, "ran_at": now.isoformat()}
+
+    try:
+        result = asyncio.run(_run())
+        _finish_celery_success(span, "agent_working_memory.cleanup")
+        return result
+    except Exception as exc:
+        _finish_celery_failure(span, "agent_working_memory.cleanup", exc)
+        logger.error("agent_working_memory.cleanup falhou: %s", exc)
+        _emit_celery_retry(
+            "agent_working_memory.cleanup", exc,
+            self.request.retries, self.max_retries, 3600
+        )
+        if self.request.retries >= self.max_retries:
+            _emit_dlq_push("agent_working_memory.cleanup", exc)
+        raise self.retry(exc=exc, countdown=3600)

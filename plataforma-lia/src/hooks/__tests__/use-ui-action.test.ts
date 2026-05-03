@@ -44,21 +44,17 @@ describe("useUIAction — handler unificado de ações globais", () => {
     expect(pushMock).toHaveBeenCalledWith("/configuracoes/ai-credits");
   });
 
-  it("'navigate_to' com query monta URL com search params canônicos", () => {
-    // Task #894 — antes do fix, o test passava `?tab=hiring-policy`, mas
-    // o consumidor (`SettingsPageEnhanced`) não lia esse parâmetro e o
-    // usuário caía na tab default. O contrato canônico é `?section=<id>`,
-    // que a página agora parsea via `resolveSettingsTarget`.
+  it("'navigate_to' com query monta URL com search params", () => {
     const { result } = renderHook(() => useUIAction());
 
     act(() => {
       result.current.dispatch("navigate_to", {
         page: "/configuracoes",
-        query: { section: "pipeline" },
+        query: { tab: "hiring-policy" },
       });
     });
 
-    expect(pushMock).toHaveBeenCalledWith("/configuracoes?section=pipeline");
+    expect(pushMock).toHaveBeenCalledWith("/configuracoes?tab=hiring-policy");
   });
 
   it("dispatch retorna true para 'open_offer_review' (placeholder até PR-B)", () => {

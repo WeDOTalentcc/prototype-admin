@@ -12,7 +12,6 @@
  */
 import { useCallback } from "react"
 import { useOfferDraftStore } from "@/stores/offer-draft-store"
-import { offersApi } from "@/services/lia-api/offers-api"
 
 export interface OfferReviewTrigger {
   candidateId: string
@@ -21,34 +20,26 @@ export interface OfferReviewTrigger {
 }
 
 export function useOfferReviewFlow() {
-  const { setDraft, setOpen, loadDraft, clearDraft } = useOfferDraftStore()
+  const { startDraft, loadDraft, clearDraft } = useOfferDraftStore()
 
   /**
    * Open the offer review modal for a candidate+job pair.
-   * Calls offersApi.createDraft when no draftId is provided.
-   * Calls setDraft and setOpen(true) to surface the modal.
+   * If draftId is provided (from create_offer_draft tool), loads existing draft.
+   * Otherwise creates new (or retrieves idempotent draft).
    */
-  const start = useCallback(async (trigger: OfferReviewTrigger) => {
+  const openOfferReview = useCallback(async (trigger: OfferReviewTrigger) => {
     if (trigger.draftId) {
       await loadDraft(trigger.draftId)
-      setOpen(true)
     } else {
-      const draft = await offersApi.createDraft({
-        candidate_id: trigger.candidateId,
-        job_id: trigger.jobId,
-      })
-      setDraft(draft)
-      setOpen(true)
+      await startDraft(trigger.candidateId, trigger.jobId)
     }
-  }, [loadDraft, setDraft, setOpen])
-
-  // Alias for backward compat
-  const openOfferReview = start
+    // Modal is controlled by useOfferDraftStore.draft !== null
+    // Components watching the store will open the modal
+  }, [loadDraft, startDraft])
 
   const closeOfferReview = useCallback(() => {
-    setOpen(false)
     clearDraft()
-  }, [setOpen, clearDraft])
+  }, [clearDraft])
 
-  return { start, openOfferReview, closeOfferReview }
+  return { openOfferReview, closeOfferReview }
 }

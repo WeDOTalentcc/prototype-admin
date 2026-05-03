@@ -18,6 +18,8 @@ import { useTranslations } from 'next-intl'
 import { sortJobsByColumn } from "./jobs/utils/jobsPageUtils"
 
 const JobsModalsSection = dynamic(() => import("@/components/pages/jobs/JobsModalsSection").then(m => ({ default: m.JobsModalsSection })), { ssr: false, loading: () => null })
+// Phase 4H — Bulk import from ATS
+const BulkImportModal = dynamic(() => import("@/components/jobs/BulkImportModal").then(m => ({ default: m.BulkImportModal })), { ssr: false })
 
 interface JobsPageProps {
   onNavigate?: (page: string) => void
@@ -30,6 +32,8 @@ interface JobsPageProps {
 
 export function JobsPage(props: JobsPageProps) {
   const state = useJobsPageCore(props)
+  // Phase 4H — Bulk import modal state
+  const [showBulkImportModal, setShowBulkImportModal] = React.useState(false)
   const t = useTranslations('jobs')
 
   const { statusOrder, groupedJobs } = useMemo(() => {
@@ -192,6 +196,7 @@ export function JobsPage(props: JobsPageProps) {
         )}
         <JobsListContent
           {...(state as unknown as React.ComponentProps<typeof JobsListContent>)}
+          setShowBulkImportModal={setShowBulkImportModal}
           toggleJobFilter={state.toggleJobFilter as (category: string, key: string, value: unknown) => void}
           activePreviewTab={state.activePreviewTab as "screening" | "pipeline"}
           statusOrder={statusOrder}
@@ -300,6 +305,15 @@ export function JobsPage(props: JobsPageProps) {
           }}
         />
       </div>
+      {/* Phase 4H — Bulk import modal */}
+      <BulkImportModal
+        isOpen={showBulkImportModal}
+        onClose={() => setShowBulkImportModal(false)}
+        onSuccess={() => {
+          setShowBulkImportModal(false)
+          state.loadBackendJobs?.()
+        }}
+      />
     </div>
     </ErrorBoundarySection>
   )

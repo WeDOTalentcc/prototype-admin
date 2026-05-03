@@ -12,6 +12,7 @@ import re
 from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolOutput
 from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
@@ -1102,9 +1103,13 @@ def get_policy_tools() -> list[ToolDefinition]:
                 },
                 "required": ["company_id"],
             },
+            output_schema=ToolOutput,
             function=_wrap_get_current_policy,
         ),
         ToolDefinition(
+            side_effects=["write"],
+            affects_candidate_decision=True,
+            lgpd_legal_basis="LEGITIMATE_INTEREST",
             name="save_policy_field",
             description="Salva um campo especifico de politica no banco de dados. Use apos validar compliance.",
             parameters={
@@ -1117,6 +1122,7 @@ def get_policy_tools() -> list[ToolDefinition]:
                 },
                 "required": ["company_id", "block", "field", "value"],
             },
+            output_schema=ToolOutput,
             function=_wrap_save_policy_field,
         ),
         ToolDefinition(
@@ -1129,9 +1135,12 @@ def get_policy_tools() -> list[ToolDefinition]:
                 },
                 "required": ["company_id"],
             },
+            output_schema=ToolOutput,
             function=_wrap_get_policy_summary,
         ),
         ToolDefinition(
+            affects_candidate_decision=True,
+            lgpd_legal_basis="LEGITIMATE_INTEREST",
             name="validate_policy_compliance",
             description="Verifica se uma politica proposta viola criterios eticos ou legais usando FairnessGuard. Detecta vies explicito (bloqueio) e implicito (alerta). DEVE ser chamada antes de salvar qualquer criterio de triagem ou filtro.",
             parameters={
@@ -1143,6 +1152,7 @@ def get_policy_tools() -> list[ToolDefinition]:
                 },
                 "required": ["policy_text"],
             },
+            output_schema=ToolOutput,
             function=_wrap_validate_policy_compliance,
         ),
         ToolDefinition(
@@ -1155,6 +1165,7 @@ def get_policy_tools() -> list[ToolDefinition]:
                 },
                 "required": ["company_id"],
             },
+            output_schema=ToolOutput,
             function=_wrap_get_company_context,
         ),
         ToolDefinition(
@@ -1167,6 +1178,7 @@ def get_policy_tools() -> list[ToolDefinition]:
                 },
                 "required": ["industry"],
             },
+            output_schema=ToolOutput,
             function=_wrap_get_industry_benchmarks,
         ),
         ToolDefinition(
@@ -1181,6 +1193,8 @@ def get_policy_tools() -> list[ToolDefinition]:
                 },
                 "required": ["block", "field", "value"],
             },
+            affects_candidate_decision=True, lgpd_legal_basis="LEGITIMATE_INTEREST",
+            output_schema=ToolOutput,
             function=_wrap_explain_policy_impact,
         ),
         ToolDefinition(
@@ -1193,6 +1207,7 @@ def get_policy_tools() -> list[ToolDefinition]:
                 },
                 "required": ["company_id"],
             },
+            output_schema=ToolOutput,
             function=_wrap_get_setup_progress,
         ),
         ToolDefinition(
@@ -1205,6 +1220,7 @@ def get_policy_tools() -> list[ToolDefinition]:
                 },
                 "required": [],
             },
+            output_schema=ToolOutput,
             function=_wrap_get_platform_benchmarks,
         ),
         ToolDefinition(
@@ -1217,6 +1233,8 @@ def get_policy_tools() -> list[ToolDefinition]:
                 },
                 "required": ["company_id"],
             },
+            affects_candidate_decision=True, lgpd_legal_basis="LEGITIMATE_INTEREST",
+            output_schema=ToolOutput,
             function=_wrap_detect_policy_impact_anomalies,
         ),
         ToolDefinition(
@@ -1230,9 +1248,13 @@ def get_policy_tools() -> list[ToolDefinition]:
                 },
                 "required": ["company_id"],
             },
+            output_schema=ToolOutput,
             function=_wrap_get_policy_effectiveness_report,
         ),
         ToolDefinition(
+            side_effects=["write"],
+            affects_candidate_decision=True,
+            lgpd_legal_basis="LEGITIMATE_INTEREST",
             name="save_policy_block",
             description="Salva um bloco inteiro de politica de uma vez (todos os campos do bloco). Mais eficiente que save_policy_field para multiplos campos.",
             parameters={
@@ -1244,9 +1266,14 @@ def get_policy_tools() -> list[ToolDefinition]:
                 },
                 "required": ["company_id", "block", "data"],
             },
+            output_schema=ToolOutput,
             function=_wrap_save_policy_block,
         ),
         ToolDefinition(
+            side_effects=["write"],
+            requires_human_review=True,
+            affects_candidate_decision=True,
+            lgpd_legal_basis="LEGITIMATE_INTEREST",
             name="apply_industry_defaults",
             description="Aplica configuracoes padrao do setor em TODOS os blocos de uma vez. Ideal para 'configure tudo no padrao do mercado'.",
             parameters={
@@ -1257,6 +1284,7 @@ def get_policy_tools() -> list[ToolDefinition]:
                 },
                 "required": ["company_id", "industry"],
             },
+            output_schema=ToolOutput,
             function=_wrap_apply_industry_defaults,
         ),
     ]

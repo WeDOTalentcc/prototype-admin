@@ -263,6 +263,9 @@ export interface Job {
   updatedAt?: string
   funnelData?: Record<string, number>
   eligibilityQuestions?: EligibilityQuestion[]
+  // Phase 4H — source + wizard_stage
+  source?: 'wizard' | 'ats_import' | 'ats_external' | 'manual'
+  wizardStage?: string  // intake|jd_enrichment|bigfive|salary|competency|wsi_questions|eligibility|review|published|calibration|handoff
   confidentialityConfig?: ConfidentialityConfig
   enrichedJd?: {
     description?: string

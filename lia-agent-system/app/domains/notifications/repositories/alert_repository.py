@@ -115,7 +115,7 @@ class AlertRepository:
         if existing:
             for key, value in data.items():
                 setattr(existing, key, value)
-            existing.updated_at = datetime.utcnow()  # type: ignore
+            existing.updated_at = datetime.utcnow()  # type: ignore[union-attr]
         else:
             existing = AlertPreference(
                 company_id=company_id,

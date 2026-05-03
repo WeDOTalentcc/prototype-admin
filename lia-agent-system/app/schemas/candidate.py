@@ -12,6 +12,21 @@ class CandidateBase(BaseModel):
     """Base candidate schema with common fields."""
     name: str = Field(..., min_length=1, max_length=255)
     email: str | None = Field(None, description="Email do candidato (opcional)")
+
+    @field_validator("email", mode="before")
+    @classmethod
+    def validate_email_format(cls, v):
+        """UC-P1-30: Validate email format, normalize to lowercase, reject empty strings."""
+        if v is None:
+            return None
+        import re
+        cleaned = str(v).strip().lower()
+        if cleaned == "":
+            raise ValueError("Formato de email invalido: string vazia nao e aceita")
+        pattern = r"^[^@\s]+@[^@\s]+\.[^@\s]{2,}$"
+        if not re.match(pattern, cleaned):
+            raise ValueError(f"Formato de email invalido: {v!r}")
+        return cleaned
     phone: str | None = Field(None, max_length=50)
     linkedin_url: str | None = None
     github_url: str | None = None

@@ -29,7 +29,10 @@ class SecretsProvider(ABC):
         """Retorna o valor ou lança ValueError se ausente."""
         value = self.get(key)
         if value is None:
-            raise ValueError(f"Secret obrigatório não encontrado: {key}")
+            logger.debug("[secrets] Required secret not configured: %s", key)
+            raise ValueError(
+                "Required secret not configured. Contact the deployment team to verify environment variables."
+            )
         return value
 
 

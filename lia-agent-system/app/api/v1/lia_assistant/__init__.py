@@ -43,20 +43,6 @@ router.include_router(_wizard_router)
 router.include_router(_insights_router)
 router.include_router(_conversational_router)
 
-# Re-export shared graph types for backwards compatibility
-# (graph routes live in lia_assistant_graph.py, registered separately in main.py)
-from app.api.v1.lia_assistant_graph import (
-    GraphInfoResponse,
-    GraphOrchestratorRequest,
-    GraphOrchestratorResponse,
-    SessionStateResponse,
-)
-
 __all__ = [
     "router",
-    # graph compat re-exports
-    "GraphOrchestratorRequest",
-    "GraphOrchestratorResponse",
-    "SessionStateResponse",
-    "GraphInfoResponse",
 ]

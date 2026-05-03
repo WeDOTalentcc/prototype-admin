@@ -15,6 +15,7 @@ import logging
 from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolOutput
 
 from app.shared.tool_handler import tool_handler
 
@@ -270,6 +271,7 @@ def get_analytics_tools() -> list[ToolDefinition]:
                 "para um cargo. Parâmetros: job_title (str, obrigatório), company_id (str, obrigatório), "
                 "location (str, opcional)."
             ),
+            output_schema=ToolOutput,
             function=_wrap_get_job_insights,
         ),
         ToolDefinition(
@@ -278,6 +280,7 @@ def get_analytics_tools() -> list[ToolDefinition]:
                 "Prever probabilidade de contratação e tempo de fechamento de uma vaga usando IA. "
                 "Parâmetros: job_id (str, obrigatório), company_id (str, obrigatório)."
             ),
+            output_schema=ToolOutput,
             function=_wrap_predict_hiring_metrics,
         ),
         ToolDefinition(
@@ -287,6 +290,7 @@ def get_analytics_tools() -> list[ToolDefinition]:
                 "Parâmetros: job_id (str, obrigatório), company_id (str, obrigatório), "
                 "include_predictions (bool, padrão True)."
             ),
+            output_schema=ToolOutput,
             function=_wrap_generate_job_report,
         ),
         ToolDefinition(
@@ -295,6 +299,7 @@ def get_analytics_tools() -> list[ToolDefinition]:
                 "Gerar parecer automático e comparação entre candidatos. "
                 "Parâmetros: candidate_ids (list[int], obrigatório), job_id (str, opcional)."
             ),
+            output_schema=ToolOutput,
             function=_wrap_generate_candidate_report,
         ),
         ToolDefinition(
@@ -304,6 +309,7 @@ def get_analytics_tools() -> list[ToolDefinition]:
                 "distribuições, top skills e alertas. "
                 "Parâmetros: company_id (str, obrigatório), days (int, padrão 30)."
             ),
+            output_schema=ToolOutput,
             function=_wrap_get_search_analytics,
         ),
         ToolDefinition(
@@ -313,6 +319,7 @@ def get_analytics_tools() -> list[ToolDefinition]:
                 "Parâmetros: company_id (str, obrigatório), agent_type (str, opcional — "
                 "ex: sourcing, screening, scheduling)."
             ),
+            output_schema=ToolOutput,
             function=_wrap_get_agent_performance,
         ),
     ]

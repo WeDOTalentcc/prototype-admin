@@ -32,11 +32,14 @@ from app.domains.job_creation.schemas import (
 logger = logging.getLogger(__name__)
 
 # F3: Trait ranking formula weights
+# Sprint B Phase 2: extended to 4-layer hybrid formula
 TRAIT_FORMULA_WEIGHTS = {
     "llm": 0.40,
     "prior": 0.35,
     "seniority_boost": 0.25,
 }
+TRAIT_FORMULA_WEIGHTS_4L = {"llm": 0.40, "onet": 0.20, "culture": 0.15, "dept": 0.25}
+TRAIT_FORMULA_WEIGHTS_3L = {"llm": 0.40, "onet": 0.35, "culture": 0.25}
 
 # O*NET prior profiles by role archetype (simplified)
 ONET_PRIOR_PROFILES = {
@@ -56,6 +59,53 @@ SENIORITY_TRAIT_BOOSTS = {
     "lead": {"extraversion": 0.2, "stability": 0.15},
     "diretor": {"extraversion": 0.2, "openness": 0.15, "stability": 0.1},
 }
+
+
+def _classify_questions_with_taxonomy(questions: list, llm=None) -> list:
+    """Sprint B Phase 3: classifica cada pergunta gerada em skill_probed.
+
+    Modifies questions in-place adding skill_probed + skill_parent + classification_source.
+    Fail-soft: erro na classificacao mantem skill_probed=None.
+    """
+    if not questions:
+        return questions
+    try:
+        from app.domains.job_creation.services.wsi_skill_classifier import (
+            WsiSkillClassifier,
+        )
+        from app.domains.job_creation.services.wsi_skill_taxonomy import parent_of
+        clf = WsiSkillClassifier(llm=llm)
+        for q in questions:
+            try:
+                text = q.get("question", "") if isinstance(q, dict) else getattr(q, "question", "")
+                result = clf.classify(text)
+                skill_id = result["skill_id"]
+                parent_id = parent_of(skill_id)
+                if isinstance(q, dict):
+                    q["skill_probed"] = skill_id
+                    q["skill_parent"] = parent_id
+                    q["skill_classification_source"] = result["source"]
+                else:
+                    q.skill_probed = skill_id
+                    q.skill_parent = parent_id
+                    q.skill_classification_source = result["source"]
+            except Exception:
+                pass  # fail-soft per-question
+    except Exception:
+        pass  # fail-soft module-level
+    return questions
+
+
+def _get_blend_score(blend, trait: str) -> float:
+    """Extract blend score for trait from BigFiveBlend.
+
+    Stability semantics: alto = bom em ambas BigFiveBlend e CompanyCultureProfile.
+    Sem inversao - simplificado apos P0.5 fix (Sprint B Phase 2).
+    """
+    if blend is None:
+        return 0.5
+    val = getattr(blend, f"{trait}_score", None)
+    return val if val is not None else 0.5
 
 
 def _build_bigfive_prompt(enriched: EnrichedJobDescription) -> str:
@@ -258,10 +308,16 @@ class WSIQuestionGenerator:
         bigfive: BigFiveExtraction,
         seniority: str,
         role_archetype: str = "default",
+        dept_blend=None,  # Optional[BigFiveBlend] Sprint B Phase 2 Layer 4
     ) -> List[Dict[str, Any]]:
-        """F3 — Deterministic trait ranking.
+        """F3 — Deterministic trait ranking (hybrid formula Sprint B Phase 2).
 
-        Formula: score = 0.40 * LLM + 0.35 * Prior + 0.25 * SeniorityBoost
+        4-layer (dept_blend.method == dept_blend, >=10 samples, toggle ON):
+          score = 0.40*LLM + 0.20*O*NET + 0.15*CompanyCulture + 0.25*DeptHistory
+        3-layer (dept_blend.method == company_culture):
+          score = 0.40*LLM + 0.35*O*NET + 0.25*CompanyCulture
+        2-layer fallback (dept_blend is None or method == llm_only):
+          score = 0.40*LLM + 0.35*O*NET + 0.25*SeniorityBoost  (original)
         """
         llm_scores = {
             "openness": bigfive.openness,
@@ -271,33 +327,59 @@ class WSIQuestionGenerator:
             "stability": bigfive.stability,
         }
 
-        prior = ONET_PRIOR_PROFILES.get(role_archetype, ONET_PRIOR_PROFILES["default"])
+        onet_prior = ONET_PRIOR_PROFILES.get(role_archetype, ONET_PRIOR_PROFILES["default"])
         boosts = SENIORITY_TRAIT_BOOSTS.get(seniority, {})
+        blend_method = "llm_only"
+        if dept_blend is not None and hasattr(dept_blend, "method"):
+            blend_method = dept_blend.method
 
         rankings = []
         for trait in llm_scores:
-            score = (
-                TRAIT_FORMULA_WEIGHTS["llm"] * llm_scores[trait]
-                + TRAIT_FORMULA_WEIGHTS["prior"] * prior.get(trait, 0.5)
-                + TRAIT_FORMULA_WEIGHTS["seniority_boost"] * boosts.get(trait, 0.0)
-            )
+            llm_val = llm_scores[trait]
+            onet_val = onet_prior.get(trait, 0.5)
+            boost_val = boosts.get(trait, 0.0)
+
+            if blend_method == "dept_blend" and dept_blend is not None:
+                blend_prior = _get_blend_score(dept_blend, trait)
+                score = (
+                    TRAIT_FORMULA_WEIGHTS_4L["llm"] * llm_val
+                    + TRAIT_FORMULA_WEIGHTS_4L["onet"] * onet_val
+                    + (TRAIT_FORMULA_WEIGHTS_4L["culture"] + TRAIT_FORMULA_WEIGHTS_4L["dept"]) * blend_prior
+                )
+            elif blend_method == "company_culture" and dept_blend is not None:
+                culture_prior = _get_blend_score(dept_blend, trait)
+                score = (
+                    TRAIT_FORMULA_WEIGHTS_3L["llm"] * llm_val
+                    + TRAIT_FORMULA_WEIGHTS_3L["onet"] * onet_val
+                    + TRAIT_FORMULA_WEIGHTS_3L["culture"] * culture_prior
+                )
+            else:
+                score = (
+                    TRAIT_FORMULA_WEIGHTS["llm"] * llm_val
+                    + TRAIT_FORMULA_WEIGHTS["prior"] * onet_val
+                    + TRAIT_FORMULA_WEIGHTS["seniority_boost"] * boost_val
+                )
+
             rankings.append({
                 "trait": trait,
                 "score": round(score, 4),
-                "llm_score": llm_scores[trait],
-                "prior_score": prior.get(trait, 0.5),
-                "boost": boosts.get(trait, 0.0),
+                "llm_score": llm_val,
+                "prior_score": onet_val,
+                "boost": boost_val,
+                "blend_method": blend_method,
             })
 
-        # Sort by score descending, assign ranks and weights
         rankings.sort(key=lambda x: x["score"], reverse=True)
         total_score = sum(r["score"] for r in rankings) or 1.0
         for i, r in enumerate(rankings):
             r["rank"] = i + 1
             r["weight"] = round(r["score"] / total_score, 4)
 
-        logger.info("[WSI:F3] Trait ranking: %s",
-                    " > ".join(f"{r['trait']}({r['score']:.3f})" for r in rankings))
+        logger.info(
+            "[WSI:F3] Trait ranking (method=%s): %s",
+            blend_method,
+            " > ".join(f"{r['trait']}({r['score']:.3f})" for r in rankings),
+        )
         return rankings
 
     # -------------------------------------------------------------------

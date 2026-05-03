@@ -9,7 +9,9 @@ Uso:
 
 Exit code 0 se OK, 1 se violacoes encontradas.
 """
+
 from __future__ import annotations
+
 import ast
 import sys
 from pathlib import Path
@@ -51,9 +53,20 @@ BLOCKED_NAMES = {
     "ChatGoogleGenerativeAI": "Use LLMService (provider=gemini) — respeita Choose Your AI",
 }
 
-# Tambem bloqueamos genai.Client(...) — tratamento especial (Attribute)
+# Tambem bloqueamos chamadas via Attribute do SDK do Gemini (genai.*) fora da
+# allowlist. Cobertura ampliada em R-001 (Sprint 1 Quick Wins) para fechar harness
+# gap detectado: o bypass de skills_ontology_engine usava genai.configure(...) +
+# genai.embed_content(...), que nao eram detectados pelo sensor (so genai.Client).
+# Hashimoto: nunca mais bypass via API funcional do google.generativeai.
 BLOCKED_ATTRIBUTES = {
     ("genai", "Client"): "Use get_gemini_client_for_tenant() from app.shared.tenant_llm_context",
+    (
+        "genai",
+        "configure",
+    ): "Provider gerencia auth tenant-aware — use EmbeddingProviderFactory ou get_provider_for_tenant",
+    ("genai", "embed_content"): "Use EmbeddingProviderFactory.get_default().embed_batch() ou .embed_text()",
+    ("genai", "GenerativeModel"): "Use get_provider_for_tenant() ou LLMService.get_audited_model() (Choose Your AI)",
+    ("genai", "embedding_model"): "Use EmbeddingProviderFactory (allowlisted) em vez do SDK direto",
 }
 
 
@@ -95,9 +108,7 @@ def check_file(path: Path) -> list[tuple[int, str, str]]:
             if isinstance(func.value, ast.Name):
                 key = (func.value.id, func.attr)
                 if key in BLOCKED_ATTRIBUTES:
-                    violations.append(
-                        (node.lineno, f"{func.value.id}.{func.attr}", BLOCKED_ATTRIBUTES[key])
-                    )
+                    violations.append((node.lineno, f"{func.value.id}.{func.attr}", BLOCKED_ATTRIBUTES[key]))
 
     return violations
 
@@ -110,14 +121,11 @@ def main() -> int:
         targets.extend(LIBS.rglob("*.py"))
 
     # Skip caches
-    targets = [
-        p for p in targets
-        if "__pycache__" not in p.parts and ".venv" not in p.parts and "tests" not in p.parts
-    ]
+    targets = [p for p in targets if "__pycache__" not in p.parts and ".venv" not in p.parts and "tests" not in p.parts]
 
     found: list[tuple[Path, int, str, str]] = []
     for path in targets:
-        for (line, name, msg) in check_file(path):
+        for line, name, msg in check_file(path):
             found.append((path, line, name, msg))
 
     if not found:
@@ -131,7 +139,10 @@ def main() -> int:
         print(f"  {rel}:{line}  {name}()  -> {msg}")
     print("")
     print(f"Total: {len(found)} violacoes.")
-    print("Ou migre para a camada Choose Your AI, ou adicione o arquivo a ALLOWLIST em scripts/check_llm_factory_enforcement.py com justificativa.")
+    print(
+        "Ou migre para a camada Choose Your AI, ou adicione o arquivo a ALLOWLIST em "
+        "scripts/check_llm_factory_enforcement.py com justificativa."
+    )
     return 1
 
 

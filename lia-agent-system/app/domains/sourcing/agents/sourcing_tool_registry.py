@@ -10,71 +10,13 @@ import uuid
 from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolOutput
 from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
 from app.shared.tool_handler import tool_handler
 
 logger = logging.getLogger(__name__)
-
-
-_CANDIDATE_ACCESS_DENIED: dict[str, Any] = {
-    "success": False,
-    "data": {},
-    "message": "Tenant isolation: candidate not accessible for this company.",
-}
-
-_SHORTLIST_ACCESS_DENIED: dict[str, Any] = {
-    "success": False,
-    "data": {},
-    "message": "Tenant isolation: shortlist does not belong to this company.",
-}
-
-_VACANCY_ACCESS_DENIED: dict[str, Any] = {
-    "success": False,
-    "data": {},
-    "message": "Tenant isolation: vacancy does not belong to this company.",
-}
-
-_COMPANY_SCOPE_SUBQUERY = """
-    AND id IN (
-        SELECT vc.candidate_id FROM vacancy_candidates vc
-        JOIN job_vacancies jv ON jv.id = vc.vacancy_id
-        WHERE jv.company_id = :company_id
-    )
-"""
-
-
-async def _candidate_accessible(session: Any, candidate_id: str, company_id: str) -> bool:
-    """Return True if the candidate has any vacancy association under this company."""
-    result = await session.execute(
-        text("""
-            SELECT 1 FROM vacancy_candidates vc
-            JOIN job_vacancies jv ON jv.id = vc.vacancy_id
-            WHERE vc.candidate_id = :cid AND jv.company_id = :coid
-            LIMIT 1
-        """),
-        {"cid": candidate_id, "coid": company_id},
-    )
-    return result.first() is not None
-
-
-async def _shortlist_owned(session: Any, shortlist_id: str, company_id: str) -> bool:
-    """Return True if the shortlist belongs to this company."""
-    result = await session.execute(
-        text("SELECT 1 FROM candidate_lists WHERE id = :lid AND company_id = :coid LIMIT 1"),
-        {"lid": shortlist_id, "coid": company_id},
-    )
-    return result.first() is not None
-
-
-async def _vacancy_owned(session: Any, vacancy_id: str, company_id: str) -> bool:
-    """Return True if the vacancy belongs to this company."""
-    result = await session.execute(
-        text("SELECT 1 FROM job_vacancies WHERE id = :vid AND company_id = :coid LIMIT 1"),
-        {"vid": vacancy_id, "coid": company_id},
-    )
-    return result.first() is not None
 
 
 @tool_handler("sourcing", require_company=False)
@@ -141,25 +83,21 @@ async def _wrap_suggest_skills(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("sourcing", require_company=True)
+@tool_handler("sourcing", require_company=False)
 async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
     """Execute talent search based on defined criteria."""
     skills = kwargs.get("skills", [])
     location = kwargs.get("location", "")
     seniority = kwargs.get("experience_level", "") or kwargs.get("seniority_level", "")
     role = kwargs.get("role", "")
-    company_id = kwargs.get("company_id", "")
     page = kwargs.get("page", 1)
     limit = kwargs.get("limit", 20)
     if limit > 50:
         limit = 50
     offset = (max(1, page) - 1) * limit
 
-    conditions = [
-        "is_active = true",
-        "id IN (SELECT vc.candidate_id FROM vacancy_candidates vc JOIN job_vacancies jv ON jv.id = vc.vacancy_id WHERE jv.company_id = :company_id)",
-    ]
-    params: dict[str, Any] = {"lim": limit, "off": offset, "company_id": company_id}
+    conditions = ["is_active = true"]
+    params: dict[str, Any] = {"lim": limit, "off": offset}
 
     if role:
         conditions.append("current_title ILIKE :role_pattern")
@@ -264,22 +202,18 @@ async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("sourcing", require_company=True)
+@tool_handler("sourcing", require_company=False)
 async def _wrap_filter_results(**kwargs: Any) -> dict[str, Any]:
     """Apply filters to search results."""
     filters = kwargs.get("filters", {})
-    company_id = kwargs.get("company_id", "")
     page = kwargs.get("page", 1)
     limit = kwargs.get("limit", 20)
     if limit > 50:
         limit = 50
     offset = (max(1, page) - 1) * limit
 
-    conditions = [
-        "is_active = true",
-        "id IN (SELECT vc.candidate_id FROM vacancy_candidates vc JOIN job_vacancies jv ON jv.id = vc.vacancy_id WHERE jv.company_id = :company_id)",
-    ]
-    params: dict[str, Any] = {"lim": limit, "off": offset, "company_id": company_id}
+    conditions = ["is_active = true"]
+    params: dict[str, Any] = {"lim": limit, "off": offset}
 
     if filters.get("min_experience"):
         conditions.append("years_of_experience >= :min_exp")
@@ -361,18 +295,14 @@ async def _wrap_filter_results(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("sourcing", require_company=True)
+@tool_handler("sourcing", require_company=False)
 async def _wrap_analyze_profile(**kwargs: Any) -> dict[str, Any]:
     """Perform AI analysis of a candidate profile."""
     candidate_id = kwargs.get("candidate_id", "")
-    company_id = kwargs.get("company_id", "")
     if not candidate_id:
         return {"success": False, "data": {}, "message": "Parametro 'candidate_id' e obrigatorio."}
 
     async with AsyncSessionLocal() as session:
-        if not await _candidate_accessible(session, candidate_id, company_id):
-            return dict(_CANDIDATE_ACCESS_DENIED)
-
         result = await session.execute(
             text("""
                 SELECT id, name, current_title, current_company, seniority_level,
@@ -438,17 +368,15 @@ async def _wrap_analyze_profile(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("sourcing", require_company=True)
+@tool_handler("sourcing", require_company=False)
 async def _wrap_compare_candidates(**kwargs: Any) -> dict[str, Any]:
     """Compare multiple candidate profiles."""
     candidate_ids = kwargs.get("candidate_ids", [])
-    company_id = kwargs.get("company_id", "")
     if not candidate_ids or not isinstance(candidate_ids, list):
         return {"success": False, "data": {}, "message": "Parametro 'candidate_ids' (lista) e obrigatorio."}
 
     placeholders = ", ".join([f":id_{i}" for i in range(len(candidate_ids))])
     params = {f"id_{i}": cid for i, cid in enumerate(candidate_ids)}
-    params["company_id"] = company_id
 
     async with AsyncSessionLocal() as session:
         result = await session.execute(
@@ -459,11 +387,6 @@ async def _wrap_compare_candidates(**kwargs: Any) -> dict[str, Any]:
                        lia_score, certifications
                 FROM candidates
                 WHERE id IN ({placeholders})
-                  AND id IN (
-                      SELECT vc.candidate_id FROM vacancy_candidates vc
-                      JOIN job_vacancies jv ON jv.id = vc.vacancy_id
-                      WHERE jv.company_id = :company_id
-                  )
             """),
             params,
         )
@@ -504,21 +427,15 @@ async def _wrap_compare_candidates(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("sourcing", require_company=True)
+@tool_handler("sourcing", require_company=False)
 async def _wrap_score_candidate(**kwargs: Any) -> dict[str, Any]:
     """Apply WSI scoring to a candidate."""
     candidate_id = kwargs.get("candidate_id", "")
     vacancy_id = kwargs.get("vacancy_id", "")
-    company_id = kwargs.get("company_id", "")
     if not candidate_id or not vacancy_id:
         return {"success": False, "data": {}, "message": "Parametros 'candidate_id' e 'vacancy_id' sao obrigatorios."}
 
     async with AsyncSessionLocal() as session:
-        if not await _candidate_accessible(session, candidate_id, company_id):
-            return dict(_CANDIDATE_ACCESS_DENIED)
-        if not await _vacancy_owned(session, vacancy_id, company_id):
-            return dict(_VACANCY_ACCESS_DENIED)
-
         c_result = await session.execute(
             text("""
                 SELECT id, name, technical_skills, soft_skills, years_of_experience,
@@ -532,9 +449,9 @@ async def _wrap_score_candidate(**kwargs: Any) -> dict[str, Any]:
         v_result = await session.execute(
             text("""
                 SELECT id, title, requirements, seniority_level, location, work_model
-                FROM job_vacancies WHERE id = :vid AND company_id = :coid
+                FROM job_vacancies WHERE id = :vid
             """),
-            {"vid": vacancy_id, "coid": company_id},
+            {"vid": vacancy_id},
         )
         vacancy = v_result.mappings().first()
 
@@ -582,12 +499,11 @@ async def _wrap_score_candidate(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("sourcing", require_company=True)
+@tool_handler("sourcing", require_company=False)
 async def _wrap_add_to_shortlist(**kwargs: Any) -> dict[str, Any]:
     """Add a candidate to the shortlist."""
     candidate_id = kwargs.get("candidate_id", "")
     shortlist_id = kwargs.get("shortlist_id", "")
-    company_id = kwargs.get("company_id", "")
     added_by = kwargs.get("added_by", "lia-agent")
     notes = kwargs.get("notes", "")
 
@@ -595,12 +511,6 @@ async def _wrap_add_to_shortlist(**kwargs: Any) -> dict[str, Any]:
         return {"success": False, "data": {}, "message": "Parametro 'candidate_id' e obrigatorio."}
 
     async with AsyncSessionLocal() as session:
-        if not await _candidate_accessible(session, candidate_id, company_id):
-            return dict(_CANDIDATE_ACCESS_DENIED)
-
-        if shortlist_id and not await _shortlist_owned(session, shortlist_id, company_id):
-            return dict(_SHORTLIST_ACCESS_DENIED)
-
         c_result = await session.execute(
             text("SELECT id, name FROM candidates WHERE id = :cid"),
             {"cid": candidate_id},
@@ -655,20 +565,16 @@ async def _wrap_add_to_shortlist(**kwargs: Any) -> dict[str, Any]:
             }
 
 
-@tool_handler("sourcing", require_company=True)
+@tool_handler("sourcing", require_company=False)
 async def _wrap_remove_from_shortlist(**kwargs: Any) -> dict[str, Any]:
     """Remove a candidate from the shortlist."""
     candidate_id = kwargs.get("candidate_id", "")
     shortlist_id = kwargs.get("shortlist_id", "")
-    company_id = kwargs.get("company_id", "")
 
     if not candidate_id or not shortlist_id:
         return {"success": False, "data": {}, "message": "Parametros 'candidate_id' e 'shortlist_id' sao obrigatorios."}
 
     async with AsyncSessionLocal() as session:
-        if not await _shortlist_owned(session, shortlist_id, company_id):
-            return dict(_SHORTLIST_ACCESS_DENIED)
-
         result = await session.execute(
             text("""
                 DELETE FROM candidate_list_members
@@ -697,22 +603,16 @@ async def _wrap_remove_from_shortlist(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("sourcing", require_company=True)
+@tool_handler("sourcing", require_company=False)
 async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
     """Rank candidates in the shortlist."""
     shortlist_id = kwargs.get("shortlist_id", "")
     vacancy_id = kwargs.get("vacancy_id", "")
-    company_id = kwargs.get("company_id", "")
 
     if not shortlist_id and not vacancy_id:
         return {"success": False, "data": {}, "message": "Informe 'shortlist_id' ou 'vacancy_id' para gerar o ranking."}
 
     async with AsyncSessionLocal() as session:
-        if vacancy_id and not await _vacancy_owned(session, vacancy_id, company_id):
-            return dict(_VACANCY_ACCESS_DENIED)
-        if shortlist_id and not await _shortlist_owned(session, shortlist_id, company_id):
-            return dict(_SHORTLIST_ACCESS_DENIED)
-
         if vacancy_id:
             result = await session.execute(
                 text("""
@@ -778,21 +678,17 @@ async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("sourcing", require_company=True)
+@tool_handler("sourcing", require_company=False)
 async def _wrap_send_outreach(**kwargs: Any) -> dict[str, Any]:
     """Send recruitment outreach message to a candidate."""
     candidate_id = kwargs.get("candidate_id", "")
     channel = kwargs.get("channel", "email")
     message_template = kwargs.get("message_template", "")
-    company_id = kwargs.get("company_id", "")
 
     if not candidate_id:
         return {"success": False, "data": {}, "message": "Parametro 'candidate_id' e obrigatorio."}
 
     async with AsyncSessionLocal() as session:
-        if not await _candidate_accessible(session, candidate_id, company_id):
-            return dict(_CANDIDATE_ACCESS_DENIED)
-
         c_result = await session.execute(
             text("SELECT id, name, email, phone FROM candidates WHERE id = :cid"),
             {"cid": candidate_id},
@@ -836,21 +732,17 @@ async def _wrap_send_outreach(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("sourcing", require_company=True)
+@tool_handler("sourcing", require_company=False)
 async def _wrap_generate_message(**kwargs: Any) -> dict[str, Any]:
     """Generate a personalized outreach message."""
     candidate_id = kwargs.get("candidate_id", "")
     tone = kwargs.get("tone", "professional")
     role = kwargs.get("role", "")
-    company_id = kwargs.get("company_id", "")
 
     if not candidate_id:
         return {"success": False, "data": {}, "message": "Parametro 'candidate_id' e obrigatorio."}
 
     async with AsyncSessionLocal() as session:
-        if not await _candidate_accessible(session, candidate_id, company_id):
-            return dict(_CANDIDATE_ACCESS_DENIED)
-
         result = await session.execute(
             text("""
                 SELECT id, name, current_title, current_company, technical_skills
@@ -912,18 +804,14 @@ async def _wrap_generate_message(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("sourcing", require_company=True)
+@tool_handler("sourcing", require_company=False)
 async def _wrap_track_response(**kwargs: Any) -> dict[str, Any]:
     """Track candidate response to outreach."""
     candidate_id = kwargs.get("candidate_id", "")
-    company_id = kwargs.get("company_id", "")
     if not candidate_id:
         return {"success": False, "data": {}, "message": "Parametro 'candidate_id' e obrigatorio."}
 
     async with AsyncSessionLocal() as session:
-        if not await _candidate_accessible(session, candidate_id, company_id):
-            return dict(_CANDIDATE_ACCESS_DENIED)
-
         result = await session.execute(
             text("""
                 SELECT id, channel, status, sent_at, delivered_at, read_at, subject,
@@ -972,18 +860,14 @@ async def _wrap_track_response(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("sourcing", require_company=True)
+@tool_handler("sourcing", require_company=False)
 async def _wrap_view_candidate(**kwargs: Any) -> dict[str, Any]:
     """View detailed candidate profile."""
     candidate_id = kwargs.get("candidate_id", "")
-    company_id = kwargs.get("company_id", "")
     if not candidate_id:
         return {"success": False, "data": {}, "message": "Parametro 'candidate_id' e obrigatorio."}
 
     async with AsyncSessionLocal() as session:
-        if not await _candidate_accessible(session, candidate_id, company_id):
-            return dict(_CANDIDATE_ACCESS_DENIED)
-
         result = await session.execute(
             text("""
                 SELECT id, name, email, phone, linkedin_url, github_url, portfolio_url,
@@ -1076,6 +960,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["role"],
         },
+        output_schema=ToolOutput,
         function=_wrap_set_search_criteria,
     ),
     ToolDefinition(
@@ -1089,6 +974,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["role"],
         },
+        output_schema=ToolOutput,
         function=_wrap_suggest_skills,
     ),
     ToolDefinition(
@@ -1106,6 +992,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": [],
         },
+        output_schema=ToolOutput,
         function=_wrap_search_candidates,
     ),
     ToolDefinition(
@@ -1120,6 +1007,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["filters"],
         },
+        output_schema=ToolOutput,
         function=_wrap_filter_results,
     ),
     ToolDefinition(
@@ -1132,6 +1020,9 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_id"],
         },
+        touches_pii=True,
+        pii_output_fields=["name", "email", "phone", "linkedin_url"],
+        output_schema=ToolOutput,
         function=_wrap_view_candidate,
     ),
     ToolDefinition(
@@ -1144,6 +1035,11 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_id"],
         },
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
+        touches_pii=True,
+        pii_output_fields=["name"],
+        output_schema=ToolOutput,
         function=_wrap_analyze_profile,
     ),
     ToolDefinition(
@@ -1156,6 +1052,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_ids"],
         },
+        output_schema=ToolOutput,
         function=_wrap_compare_candidates,
     ),
     ToolDefinition(
@@ -1169,6 +1066,9 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_id", "vacancy_id"],
         },
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
+        output_schema=ToolOutput,
         function=_wrap_score_candidate,
     ),
     ToolDefinition(
@@ -1184,6 +1084,10 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_id", "shortlist_id"],
         },
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
+        side_effects=["write"],
+        output_schema=ToolOutput,
         function=_wrap_add_to_shortlist,
     ),
     ToolDefinition(
@@ -1197,6 +1101,10 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_id", "shortlist_id"],
         },
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
+        side_effects=["write"],
+        output_schema=ToolOutput,
         function=_wrap_remove_from_shortlist,
     ),
     ToolDefinition(
@@ -1210,6 +1118,9 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": [],
         },
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
+        output_schema=ToolOutput,
         function=_wrap_rank_candidates,
     ),
     ToolDefinition(
@@ -1224,6 +1135,8 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_id", "channel", "message_template"],
         },
+        side_effects=["send"],
+        output_schema=ToolOutput,
         function=_wrap_send_outreach,
     ),
     ToolDefinition(
@@ -1238,6 +1151,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_generate_message,
     ),
     ToolDefinition(
@@ -1250,22 +1164,17 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_track_response,
     ),
 ]
 
 
-@tool_handler("sourcing", require_company=True)
+@tool_handler("sourcing", require_company=False)
 async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     report_type = kwargs.get("report_type", "summary")
     period = kwargs.get("period", "month")
     company_id = kwargs.get("company_id", "")
-    if not company_id:
-        return {
-            "success": False,
-            "data": {},
-            "message": "Tenant isolation: authenticated context required to generate reports.",
-        }
     period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
     summary: dict[str, Any] = {}
@@ -1276,7 +1185,7 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
                     COUNT(*) FILTER (WHERE status = 'shortlisted') AS shortlisted,
                     COUNT(*) FILTER (WHERE status = 'contacted') AS contacted
                 FROM applications
-                WHERE company_id = :cid
+                WHERE (:cid = '' OR company_id = :cid)
                   AND created_at > NOW() - MAKE_INTERVAL(days => :days)
             """), {"cid": company_id, "days": period_days})
             data = row.mappings().first() or {}
@@ -1313,6 +1222,7 @@ TOOL_DEFINITIONS.append(
             },
             "required": [],
         },
+        output_schema=ToolOutput,
         function=_wrap_generate_report,
     )
 )
@@ -1350,7 +1260,7 @@ async def _wrap_enrich_candidate_profile(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("sourcing", require_company=True)
+@tool_handler("sourcing", require_company=False)
 async def _wrap_enrich_candidate_contact(**kwargs: Any) -> dict[str, Any]:
     """Enrich a candidate's contact info (email/phone) via Apify ($0.01/candidate)."""
     from uuid import UUID as _UUID
@@ -1366,20 +1276,9 @@ async def _wrap_enrich_candidate_contact(**kwargs: Any) -> dict[str, Any]:
     if not candidate_id:
         return {"success": False, "data": {}, "message": "Parametro 'candidate_id' e obrigatorio."}
 
-    if not company_id:
-        return {"success": False, "data": {}, "message": "Tenant isolation: authenticated context required."}
-
     try:
         svc = get_contact_enrichment_service()
         async with AsyncSessionLocal() as session:
-            if not await _candidate_accessible(session, candidate_id, company_id):
-                logger.warning(
-                    "Tenant isolation: enrich_candidate_contact rejected — candidate %s not accessible to company %s",
-                    candidate_id[:8],
-                    company_id[:8],
-                )
-                return {"success": False, "data": {}, "message": "Candidato não acessível para esta empresa."}
-
             result = await svc.enrich_candidate_contact(
                 db=session,
                 candidate_id=_UUID(candidate_id),
@@ -1432,6 +1331,10 @@ TOOL_DEFINITIONS.append(
             },
             "required": ["candidate_id"],
         },
+        touches_pii=True,
+        pii_output_fields=["email", "phone", "linkedin_url"],
+        side_effects=["write"],
+        output_schema=ToolOutput,
         function=_wrap_enrich_candidate_contact,
     )
 )
@@ -1454,12 +1357,16 @@ TOOL_DEFINITIONS.append(
             },
             "required": [],
         },
+        touches_pii=True,
+        pii_output_fields=["name", "email", "phone"],
+        side_effects=["write"],
+        output_schema=ToolOutput,
         function=_wrap_enrich_candidate_profile,
     )
 )
 
 
-@tool_handler("sourcing", require_company=True)
+@tool_handler("sourcing", require_company=False)
 async def _wrap_rag_search(**kwargs) -> dict:
     """Busca semantica hibrida de candidatos (BM25 + pgvector)."""
     query = kwargs.get("query", "")
@@ -1470,15 +1377,12 @@ async def _wrap_rag_search(**kwargs) -> dict:
     if not query:
         return {"success": False, "data": {}, "message": "Parametro query obrigatorio."}
 
-    if not company_id:
-        return {"success": False, "data": {}, "message": "Tenant isolation: authenticated context required."}
-
     try:
         from app.domains.ai.services.rag_pipeline_service import rag_pipeline_service
         async with AsyncSessionLocal() as session:
             result = await rag_pipeline_service.search(
                 query=query,
-                company_id=company_id,
+                company_id=company_id or "global",
                 db=session,
                 limit=min(limit, 50),
                 alpha=alpha,
@@ -1522,6 +1426,7 @@ TOOL_DEFINITIONS.append(
             },
             "required": ["query"],
         },
+        output_schema=ToolOutput,
         function=_wrap_rag_search,
     )
 )

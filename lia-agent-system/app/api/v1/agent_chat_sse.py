@@ -40,6 +40,7 @@ from app.shared.chat_event_serializer import (
     serialize_token_done,
 )
 from app.shared.prompt_injection import PromptInjectionGuard
+from app.shared.pii_masking import mask_pii
 from app.domains.credits.services.token_budget_service import (
     check_budget,
     get_plan_for_company,
@@ -49,6 +50,43 @@ from app.domains.credits.services.token_budget_service import (
 logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["chat-sse"])
+# ---------------------------------------------------------------------------
+# STREAMING BEHAVIOR (UC-P3-06)
+# ---------------------------------------------------------------------------
+# Transport: Server-Sent Events (SSE) via HTTP POST — fallback for environments
+# where WebSocket is unavailable (corporate proxies, load-balancers).
+#
+# Token delivery: token-by-token (one SSE event per token chunk).
+# Each token is emitted immediately via the streaming_callback injected into
+# the agent context. The agent runs in a background asyncio Task while tokens
+# flow through an asyncio.Queue into the event_generator coroutine.
+#
+# Event types emitted (data.type field in each SSE data payload):
+#   "thinking"    — agent is processing; optionally includes a thought/step field
+#   "token"       — single text token chunk (content field)
+#   "token_done"  — stream complete; includes tokens_sent count
+#   "message"     — full assembled response (content, actions, navigation, etc.)
+#   "panel_update"— side-panel update (panel_type, panel_data, panel_title, action)
+#   "error"       — error occurred (reason, error_code fields)
+#   keepalive     — empty comment line ": keepalive\n\n" sent every 30s of silence
+#
+# Event IDs: "<session_id[:8]>-<seq>" — sequential, used for Last-Event-ID reconnection.
+# Reconnection: client sends Last-Event-ID header; server-side event replay is NOT
+# yet implemented (full replay planned for a subsequent phase). On reconnect, the
+# client re-sends the original message.
+#
+# Frontend expectations:
+#   1. Open EventSource / fetch with ReadableStream on POST /api/v1/chat/{session_id}/stream
+#   2. Listen for "token" events to render streaming text incrementally
+#   3. Wait for "message" event to get final assembled response + actions
+#   4. Handle "error" events and display user-facing message
+#   5. Set Authorization: Bearer <token> header (required — 401 if missing)
+#
+# Configurable via environment:
+#   LLM_TIMEOUT_SECONDS — agent processing timeout in seconds (default varies)
+#   LIA_WS_TOKEN_STREAMING — enables token streaming in WS transport (sibling flag)
+# ---------------------------------------------------------------------------
+
 
 _AGENT_TIMEOUT = settings.LLM_TIMEOUT_SECONDS
 _injection_guard = PromptInjectionGuard()
@@ -306,7 +344,8 @@ async def sse_chat_stream(
             event_type = event.get("type", "")
             if event_type == "token" and event.get("content"):
                 token_count += 1
-                await sse_queue.put(serialize_token(event["content"]))
+                _safe_token = mask_pii(event["content"]) if isinstance(event["content"], str) else event["content"]
+                await sse_queue.put(serialize_token(_safe_token))
             elif event_type == "token_done":
                 await sse_queue.put(serialize_token_done(event.get("tokens_sent", token_count)))
             else:
@@ -376,7 +415,7 @@ async def sse_chat_stream(
                             except Exception:
                                 pass
 
-                        clean_message = _strip_react_json(output.message or "")
+                        clean_message = mask_pii(_strip_react_json(output.message or ""))
 
                         panel_meta = (output.metadata or {}).get("panel_update")
                         if panel_meta and isinstance(panel_meta, dict):

@@ -1,8 +1,28 @@
 """
-PII Masking for log outputs.
+PII Masking for log outputs -- UC-P3-12 (app/shared/pii_masking.py).
 
-Redacts personally identifiable information (CPF, email, phone, names)
-from log messages to comply with LGPD and prevent data leaks.
+PURPOSE (when to use THIS filter vs ats_pii_filter):
+  Use pii_masking when you need to:
+  - Sanitize log messages / exception text before they reach log sinks (LGPD accountability)
+  - Strip PII from arbitrary strings before sending them to the LLM (strip_pii_for_llm_prompt)
+  - Install a global Python logging filter that auto-redacts all log records
+
+  Use ats_pii_filter (app/domains/ats_integration/services/ats_clients/ats_pii_filter.py) when:
+  - Filtering outbound API payloads sent to external ATS systems (Gupy, Pandape)
+  - Checking per-candidate consent before sharing fields
+  - Sanitizing inbound text fields received from ATS webhooks
+
+FIELDS COVERED:
+  - Direct identifiers: CPF, email, phone (BR), RG, CNPJ
+  - Quasi-identifiers (LLM prompt layer): graduation year, explicit age, address references
+  - Optional NER layer via Presidio (opt-in: LLM_PROMPT_PRESIDIO_ENABLED=true)
+
+OPERATION MODE:
+  - Inline (synchronous): all functions operate on strings in-place
+  - Via Python logging middleware: PIIMaskingFilter / install_global_pii_masking()
+    intercepts log records across the process without changing call-sites
+
+LGPD Art. 12 (anonimizacao/minimizacao) + EU AI Act Art. 13 (transparencia).
 
 Usage:
     logger = get_masked_logger(__name__)

@@ -110,6 +110,15 @@ class AutonomousReActAgent(LangGraphReActBase, EnhancedAgentMixin):
     def available_tools(self) -> list[str]:
         return list(self._all_tool_names)
 
+
+    def _get_tool_contracts(self) -> list:
+        """Ativa GovernanceToolNode para este agente."""
+        try:
+            from app.domains.autonomous.agents.autonomous_tool_registry import get_autonomous_tools
+            return get_autonomous_tools()
+        except ImportError:
+            return []
+
     def _get_tools(self) -> list:
         """Retorna o pool completo de tools cross-domain + enhanced tools.
 

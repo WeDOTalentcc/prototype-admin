@@ -16,6 +16,8 @@ import { TableFiltersPanel } from"@/components/pages/jobs/TableFiltersPanel"
 import { JobPreviewPanel } from"@/components/pages/jobs/JobPreviewPanel"
 import { JobsCompactTableView } from"@/components/pages/jobs/JobsCompactTableView"
 import { JobsKanbanView } from"@/components/pages/jobs/JobsKanbanView"
+// Phase 4H — ATS empty state
+import { AtsImportSuggestionCard } from "@/components/jobs/AtsImportSuggestionCard"
 import { ColumnConfigPanel } from"@/components/pages/jobs/ColumnConfigPanel"
 import { toast } from"sonner"
 import type { Job } from"@/components/jobs"
@@ -92,6 +94,9 @@ interface JobsListContentProps {
   handleJobsColumnDragEnd: () => void; startJobsColumnResize: (column: string, e: React.MouseEvent) => void
   toggleUrgentJob: (id: number) => void; togglePinJob: (id: number) => void; toggleFavoriteJob: (id: number) => void
   jobsError?: string | null; loadBackendJobs?: () => Promise<void>
+  // Phase 4H — ATS rail filter
+  activeFilter?: string
+  setShowBulkImportModal?: (open: boolean) => void
 }
 
 export function JobsListContent(props: JobsListContentProps) {
@@ -120,6 +125,7 @@ export function JobsListContent(props: JobsListContentProps) {
     handleJobsColumnDrop, handleJobsColumnDragEnd, startJobsColumnResize,
     toggleUrgentJob, togglePinJob, toggleFavoriteJob, setShowColumnConfig,
     jobsError, loadBackendJobs,
+    activeFilter, setShowBulkImportModal,
   } = props
 
   const t = useTranslations('jobs')
@@ -295,9 +301,16 @@ export function JobsListContent(props: JobsListContentProps) {
                     </div>
                   </div>
                 ) : filteredJobs.length === 0 ? (
-                  <EmptyState icon={<Briefcase />} title={t('emptyTitle')}
-                    description={t('emptyDescription')}
-                    action={{ label: t('emptyAction'), onClick: () => openJobCreationChat() }} className="h-64" />
+                  // Phase 4H — ATS empty state takes priority over generic
+                  activeFilter === 'ats' ? (
+                    <AtsImportSuggestionCard
+                      onImport={() => setShowBulkImportModal?.(true)}
+                    />
+                  ) : (
+                    <EmptyState icon={<Briefcase />} title={t('emptyTitle')}
+                      description={t('emptyDescription')}
+                      action={{ label: t('emptyAction'), onClick: () => openJobCreationChat() }} className="h-64" />
+                  )
                 ) : (
                   <JobsCompactTableView
                     isLoading={isLoadingJobs} filteredJobs={filteredJobs}

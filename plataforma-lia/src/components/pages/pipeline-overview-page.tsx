@@ -73,6 +73,15 @@ const CandidatePreview = dynamic(
   () => import("@/components/candidate-preview").then(m => ({ default: m.CandidatePreview })),
   { ssr: false }
 )
+// Phase 4J — ATS bulk import triggered from empty ats_importada stage
+const BulkImportModal = dynamic(
+  () => import("@/components/jobs/BulkImportModal").then(m => ({ default: m.BulkImportModal })),
+  { ssr: false }
+)
+const AtsImportSuggestionCard = dynamic(
+  () => import("@/components/jobs/AtsImportSuggestionCard").then(m => ({ default: m.AtsImportSuggestionCard })),
+  { ssr: false }
+)
 
 interface CandidateItem {
   vc_id: string
@@ -307,6 +316,8 @@ export function PipelineOverviewPage() {
   const [totalVacancies, setTotalVacancies] = useState(0)
   const [lifecycleLoading, setLifecycleLoading] = useState(false)
   const [lifecycleError, setLifecycleError] = useState<string | null>(null)
+  // Phase 4J — controls the BulkImportModal (triggered from ats_importada empty state)
+  const [showBulkImportModal, setShowBulkImportModal] = useState(false)
 
   const fetchPipelineOverview = useCallback(async () => {
     setLoading(true)
@@ -466,7 +477,7 @@ export function PipelineOverviewPage() {
           <div className="px-4 pt-3 pb-0 flex-shrink-0 border-b border-lia-border-subtle">
             <div className="flex items-center justify-between mb-2">
               <h1 className="text-lg font-semibold text-lia-text-primary">
-                {tOverview("title")}
+                Visão Global
               </h1>
               <Button
                 variant="outline"
@@ -725,10 +736,16 @@ export function PipelineOverviewPage() {
 
                   <div className="flex-1 overflow-y-auto px-6 py-3">
                     {(selectedLifecycleStageData?.vacancies?.length ?? 0) === 0 ? (
-                      <div className="flex flex-col items-center justify-center h-32 gap-2 text-lia-text-disabled">
-                        <Briefcase className="w-8 h-8 opacity-30" />
-                        <p className="text-sm">{tOverview("empty.noVacancies")}</p>
-                      </div>
+                      selectedLifecycleStage === "ats_importada" ? (
+                        <AtsImportSuggestionCard
+                          onImport={() => setShowBulkImportModal(true)}
+                        />
+                      ) : (
+                        <div className="flex flex-col items-center justify-center h-32 gap-2 text-lia-text-disabled">
+                          <Briefcase className="w-8 h-8 opacity-30" />
+                          <p className="text-sm">{tOverview("empty.noVacancies")}</p>
+                        </div>
+                      )
                     ) : (
                       <div className="space-y-2">
                         {selectedLifecycleStageData!.vacancies.map((vacancy) => (
@@ -815,6 +832,15 @@ export function PipelineOverviewPage() {
           />
         )}
       </div>
+      {/* Phase 4J — Bulk import modal triggered from ats_importada empty state */}
+      <BulkImportModal
+        isOpen={showBulkImportModal}
+        onClose={() => setShowBulkImportModal(false)}
+        onSuccess={() => {
+          setShowBulkImportModal(false)
+          fetchLifecycleOverview()
+        }}
+      />
     </TooltipProvider>
   )
 }

@@ -35,6 +35,7 @@ from app.schemas.screening import (
     WSIScreeningPipelineRequest,
     WSIScreeningPipelineResponse,
 )
+from app.domains.voice.schemas.wsi_types import ScreeningPolicyConfig, ScreeningPolicyResult
 from app.shared.policy_middleware import get_policy_for_company
 
 logger = logging.getLogger(__name__)
@@ -530,7 +531,7 @@ class WSIScreeningPipeline:
         company_id: str,
         questions: list[UnifiedScreeningQuestion],
         db=None,
-    ) -> dict[str, Any]:
+    ) -> ScreeningPolicyResult:
         """
         Apply company screening_rules to screening results.
         
@@ -590,7 +591,7 @@ class WSIScreeningPipeline:
         self,
         company_id: str,
         db=None,
-    ) -> dict[str, Any]:
+    ) -> ScreeningPolicyConfig:
         """Get effective screening configuration for a company."""
         try:
             if db:

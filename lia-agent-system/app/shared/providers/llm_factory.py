@@ -16,6 +16,19 @@ from app.shared.providers.llm_provider import LLMProviderABC
 
 logger = logging.getLogger(__name__)
 
+# UC-P1-06: LangSmith @traceable — graceful if package not installed
+try:
+    from langsmith import traceable as _ls_traceable
+    _LANGSMITH_AVAILABLE = True
+except ImportError:
+    _LANGSMITH_AVAILABLE = False
+
+    def _ls_traceable(**kwargs):
+        """No-op decorator when langsmith is not installed."""
+        def decorator(fn):
+            return fn
+        return decorator
+
 FALLBACK_ORDER: list[str] = ["gemini", "claude", "openai"]
 
 
@@ -157,6 +170,7 @@ class ProviderContainer:
         """Release cached instances (for testing / hot-reload)."""
         self._instances.clear()
 
+    @_ls_traceable(name="llm.generate", run_type="llm", tags=["lia"])
     async def _try_generate(
         self, provider: LLMProviderABC, prompt: str, system: str | None, **kwargs
     ):
@@ -165,8 +179,8 @@ class ProviderContainer:
         return await provider.generate(prompt, **kwargs)
 
     async def generate_with_fallback(
-        self, prompt: str, system: str | None = None, **kwargs
-    ) -> str:
+        self, prompt: str, system: str | None = None, request_id: str | None = None, **kwargs
+    ) -> str:  # UC-P2-28: request_id propagated to enrich_llm_span
         """Try providers in tenant fallback order with per-provider credential fallback.
         For each provider: tenant key → system key → next provider.
 
@@ -179,6 +193,10 @@ class ProviderContainer:
         company_id = kwargs.pop("company_id", None) or self._tenant_id
         user_id = kwargs.pop("user_id", None)
         expected_output_tokens = kwargs.pop("expected_output_tokens", None)
+        # DEBT-002 (Sprint 2): track start of every LLM call inside the factory.
+        # domain/operation are optional caller hints; fall back to agent_type.
+        domain = kwargs.pop("domain", agent_type or "unknown")
+        operation = kwargs.pop("operation", "generate_with_fallback")
 
         try:
             if plan_code is None and company_id is not None:
@@ -199,9 +217,21 @@ class ProviderContainer:
             expected_output_tokens=expected_output_tokens,
         )
 
+        # DEBT-002 (Sprint 2): canonical tracking inside the factory so ALL callers
+        # get observability automatically — no per-caller wiring needed.
+        from app.domains.credits.services.token_budget_service import track_llm_usage_start
+        track_llm_usage_start(
+            str(company_id) if company_id else None,
+            model=self._primary,
+            domain=str(domain),
+            operation=str(operation),
+        )
+
         from app.shared.resilience.circuit_breaker import CircuitBreakerError
+        from app.shared.tracing import enrich_llm_span, get_tracer
 
         errors: list[str] = []
+        _span = get_tracer().create_span("llm.generate_with_fallback")
         for provider_name in self._fallback_order:
             try:
                 provider = self.get(provider_name)
@@ -212,6 +242,17 @@ class ProviderContainer:
                         self._tenant_id,
                         provider_name,
                     )
+                # UC-P1-07: enrich span with LLM context
+                _tokens = getattr(result, "usage", {}).get("total_tokens") if hasattr(result, "usage") else None
+                enrich_llm_span(
+                    _span,
+                    tenant_id=str(company_id) if company_id else None,
+                    user_id=str(user_id) if user_id else None,
+                    model=provider_name,
+                    tokens_used=_tokens,
+                    provider=provider_name,
+                    domain=str(domain),
+                )
                 return result.text
             except CircuitBreakerError as e:
                 errors.append(

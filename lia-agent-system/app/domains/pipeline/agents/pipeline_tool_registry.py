@@ -12,6 +12,7 @@ from datetime import datetime
 from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolOutput
 from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
@@ -1075,6 +1076,9 @@ ALL_TOOLS: list[ToolDefinition] = [
             },
             "required": ["candidate_id"],
         },
+        touches_pii=True,
+        pii_output_fields=["name", "email", "phone", "linkedin_url"],
+        output_schema=ToolOutput,
         function=_wrap_get_candidate_profile,
     ),
     ToolDefinition(
@@ -1088,6 +1092,9 @@ ALL_TOOLS: list[ToolDefinition] = [
             },
             "required": ["candidate_id"],
         },
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
+        output_schema=ToolOutput,
         function=_wrap_get_candidate_wsi_scores,
     ),
     ToolDefinition(
@@ -1101,6 +1108,7 @@ ALL_TOOLS: list[ToolDefinition] = [
             },
             "required": ["candidate_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_get_candidate_screening_results,
     ),
     ToolDefinition(
@@ -1113,6 +1121,9 @@ ALL_TOOLS: list[ToolDefinition] = [
             },
             "required": ["candidate_id"],
         },
+        touches_pii=True,
+        pii_output_fields=["salary_expectation_clt", "salary_expectation_pj"],
+        output_schema=ToolOutput,
         function=_wrap_get_candidate_salary_info,
     ),
     ToolDefinition(
@@ -1127,6 +1138,7 @@ ALL_TOOLS: list[ToolDefinition] = [
             },
             "required": ["candidate_id", "field_name", "field_value"],
         },
+        output_schema=ToolOutput,
         function=_wrap_update_candidate_field,
     ),
     ToolDefinition(
@@ -1141,6 +1153,7 @@ ALL_TOOLS: list[ToolDefinition] = [
             },
             "required": ["candidate_id", "data_type"],
         },
+        output_schema=ToolOutput,
         function=_wrap_request_data_collection,
     ),
     ToolDefinition(
@@ -1154,6 +1167,7 @@ ALL_TOOLS: list[ToolDefinition] = [
             },
             "required": ["to_stage"],
         },
+        output_schema=ToolOutput,
         function=_wrap_get_stage_sub_statuses,
     ),
     ToolDefinition(
@@ -1167,6 +1181,9 @@ ALL_TOOLS: list[ToolDefinition] = [
             },
             "required": ["action_behavior"],
         },
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
+        output_schema=ToolOutput,
         function=_wrap_suggest_sub_status,
     ),
     ToolDefinition(
@@ -1180,6 +1197,7 @@ ALL_TOOLS: list[ToolDefinition] = [
             },
             "required": ["text"],
         },
+        output_schema=ToolOutput,
         function=_wrap_extract_preferences,
     ),
     ToolDefinition(
@@ -1194,6 +1212,9 @@ ALL_TOOLS: list[ToolDefinition] = [
             },
             "required": ["from_stage", "to_stage"],
         },
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
+        output_schema=ToolOutput,
         function=_wrap_validate_transition,
     ),
     ToolDefinition(
@@ -1206,6 +1227,7 @@ ALL_TOOLS: list[ToolDefinition] = [
             },
             "required": ["job_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_get_job_context,
     ),
     ToolDefinition(
@@ -1220,6 +1242,7 @@ ALL_TOOLS: list[ToolDefinition] = [
             },
             "required": ["task_type", "description"],
         },
+        output_schema=ToolOutput,
         function=_wrap_schedule_secondary_task,
     ),
     ToolDefinition(
@@ -1234,6 +1257,7 @@ ALL_TOOLS: list[ToolDefinition] = [
                 "template_type": {"type": "string", "description": "Tipo de template a usar"},
             },
         },
+        output_schema=ToolOutput,
         function=_wrap_personalize_communication,
     ),
     ToolDefinition(
@@ -1247,6 +1271,11 @@ ALL_TOOLS: list[ToolDefinition] = [
             },
             "required": ["rejection_reason"],
         },
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
+        touches_pii=True,
+        pii_output_fields=["candidate_name"],
+        output_schema=ToolOutput,
         function=_wrap_check_rejection_fairness,
     ),
     ToolDefinition(
@@ -1259,6 +1288,7 @@ ALL_TOOLS: list[ToolDefinition] = [
             },
             "required": ["candidate_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_check_candidate_availability,
     ),
     ToolDefinition(
@@ -1272,6 +1302,7 @@ ALL_TOOLS: list[ToolDefinition] = [
             },
             "required": ["recruiter_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_get_recruiter_preferences,
     ),
     ToolDefinition(
@@ -1287,6 +1318,7 @@ ALL_TOOLS: list[ToolDefinition] = [
             },
             "required": ["recruiter_id", "preference_key", "preference_value"],
         },
+        output_schema=ToolOutput,
         function=_wrap_save_recruiter_preference,
     ),
     ToolDefinition(
@@ -1299,6 +1331,7 @@ ALL_TOOLS: list[ToolDefinition] = [
             },
             "required": ["candidate_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_get_interview_details,
     ),
     ToolDefinition(
@@ -1313,6 +1346,9 @@ ALL_TOOLS: list[ToolDefinition] = [
             },
             "required": ["interview_id"],
         },
+        side_effects=["write", "send"],
+        requires_human_review=True,
+        output_schema=ToolOutput,
         function=_wrap_cancel_interview,
     ),
     ToolDefinition(
@@ -1328,6 +1364,7 @@ ALL_TOOLS: list[ToolDefinition] = [
             },
             "required": ["interview_id", "new_start_time"],
         },
+        output_schema=ToolOutput,
         function=_wrap_reschedule_interview,
     ),
 ]
@@ -1337,15 +1374,17 @@ _TOOL_MAP: dict[str, ToolDefinition] = {t.name: t for t in ALL_TOOLS}
 # Tools que requerem confirmação ou validação adicional antes de executar.
 # Carregados dinamicamente do banco (GuardrailRepository) em runtime.
 # Esta lista serve como fallback estático caso o banco esteja indisponível.
-GUARDRAIL_TOOLS: list[str] = [
-    "update_candidate_field",   # Alteração de dados cadastrais
-    "move_candidate",           # Mudança de etapa no pipeline
-    "batch_move",               # Mover múltiplos candidatos de uma vez
-    "reject_candidate",         # Rejeição definitiva
-    "finalize_hiring",          # Contratação (irreversível)
-    "delete_job",               # Deletar vaga
-    "send_bulk_email",          # Email em massa para candidatos
-]
+from app.shared.compliance.safety_category import SafetyCategory
+
+GUARDRAIL_TOOLS: dict[str, SafetyCategory] = {
+    "update_candidate_field": SafetyCategory.DESTRUCTIVE_WRITE,   # Alteração de dados cadastrais
+    "move_candidate": SafetyCategory.PIPELINE_MOVE,               # Mudança de etapa no pipeline
+    "batch_move": SafetyCategory.BULK_ACTION,                     # Mover múltiplos candidatos de uma vez
+    "reject_candidate": SafetyCategory.PIPELINE_MOVE,             # Rejeição definitiva
+    "finalize_hiring": SafetyCategory.OFFER,                      # Contratação (irreversível)
+    "delete_job": SafetyCategory.DESTRUCTIVE_WRITE,               # Deletar vaga
+    "send_bulk_email": SafetyCategory.OUTREACH,                   # Email em massa para candidatos
+}
 
 
 def get_pipeline_transition_tools(

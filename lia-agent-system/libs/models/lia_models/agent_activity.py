@@ -47,6 +47,7 @@ class AgentActivity(Base):
     
     related_job_id = Column(String(255), nullable=True, index=True)
     related_candidate_id = Column(String(255), nullable=True, index=True)
+    company_id = Column(String(255), nullable=True, index=True)
     
     activity_metadata = Column(JSON, default=dict)
     result_data = Column(JSON, nullable=True)

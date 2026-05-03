@@ -93,6 +93,7 @@ class TechnicalTest(Base):
     
     is_global = Column(Boolean, default=True, index=True)
     is_active = Column(Boolean, default=True, index=True)
+    company_id = Column(String(255), nullable=True, index=True)
     
     created_by = Column(String(255), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, index=True)

@@ -1,3 +1,17 @@
+'''
+Pipeline Stage Management Tool (recruiter_assistant domain).
+
+UC-P2-10 note: This module provides the create_pipeline_stage ToolDefinition
+used by recruiter_assistant, orchestrator, and job_planner agents.
+
+The canonical pipeline tools module (app.domains.pipeline.tools.pipeline_tools)
+provides langchain @tool functions for candidate-movement operations
+(move_candidate_to_stage, reject_candidate, extend_offer, etc.).
+
+Both modules are needed and serve distinct responsibilities:
+  - recruiter_assistant: DB-backed stage creation (ToolDefinition + tool_registry)
+  - pipeline.tools: Candidate movement operations (langchain @tool)
+'''
 import logging
 import re
 from datetime import datetime

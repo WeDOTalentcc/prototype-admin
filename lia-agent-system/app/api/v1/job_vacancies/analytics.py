@@ -8,8 +8,19 @@ archetypes (already in crud.py), job report.
 """
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 
-from ._shared import *
-from ._shared import _is_job_at_risk, _calculate_days_between
+from ._shared import (  # noqa: F401
+    _calculate_days_between,
+    _is_job_at_risk,
+    get_current_user_or_demo,
+    get_user_company_id,
+    User,
+    get_db,
+    Depends,
+    HTTPException,
+    JobVacancy,
+    BaseModel,
+    logger,
+)
 from app.domains.job_vacancies_analytics.dependencies import get_job_vacancies_analytics_repo
 from app.domains.job_vacancies_analytics.repositories.job_vacancies_analytics_repository import (
     JobVacanciesAnalyticsRepository,

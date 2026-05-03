@@ -280,9 +280,19 @@ async def create_audit_log(
             retention_years = 7
             retention_until = datetime.utcnow() + timedelta(days=7 * 365)
 
+        # R-011: company_id do ContextVar (JWT-validated, nunca do payload)
+        from app.middleware.auth_enforcement import _current_company_id
+        _cid_str = _current_company_id.get("")
+        try:
+            from uuid import UUID as _UUID
+            _company_id: _UUID | None = _UUID(_cid_str) if _cid_str else None
+        except ValueError:
+            _company_id = None
+
         log = await repo.create_log({
             "user_id": data.user_id,
             "user_email": data.user_email,
+            "company_id": _company_id,
             "client_id": data.client_id,
             "client_name": data.client_name,
             "action": data.action,

@@ -51,6 +51,11 @@ COMPLEX_ACTIONS: dict[str, tuple[str, str, str]] = {
         "Você está navegando há algum tempo aqui. Prefere usar a plataforma completa?",
         "/",
     ),
+    "click_dashboard_drilldown": (
+        "Ver análise completa",
+        "Para análises detalhadas e dashboards interativos, acesse a plataforma completa.",
+        "/",
+    ),
 }
 
 

@@ -10,6 +10,7 @@ import uuid
 from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolOutput
 from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
@@ -803,6 +804,13 @@ async def _wrap_check_pool_health(**kwargs: Any) -> dict[str, Any]:
 
 TOOL_DEFINITIONS: list[ToolDefinition] = [
     ToolDefinition(
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
+        touches_pii=True,
+        pii_output_fields=["name",
+        "email",
+        "linkedin_url",
+        "phone"],
         name="search_candidates",
         description="Busca candidatos por skills, experiencia, localizacao e outros criterios. Retorna lista de candidatos encontrados.",
         parameters={
@@ -813,6 +821,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["query"],
         },
+        output_schema=ToolOutput,
         function=_wrap_search_candidates,
     ),
     ToolDefinition(
@@ -826,7 +835,9 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": [],
         },
-        function=_wrap_list_candidates,
+        touches_pii=True, pii_output_fields=["name", "email", "linkedin_url"],
+            output_schema=ToolOutput,
+            function=_wrap_list_candidates,
     ),
     ToolDefinition(
         name="view_candidate_profile",
@@ -838,7 +849,9 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_id"],
         },
-        function=_wrap_view_candidate_profile,
+        touches_pii=True, pii_output_fields=["name", "email", "phone", "linkedin_url"],
+            output_schema=ToolOutput,
+            function=_wrap_view_candidate_profile,
     ),
     ToolDefinition(
         name="compare_candidates",
@@ -850,7 +863,9 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_ids"],
         },
-        function=_wrap_compare_candidates,
+        affects_candidate_decision=True, lgpd_legal_basis="LEGITIMATE_INTEREST",
+            output_schema=ToolOutput,
+            function=_wrap_compare_candidates,
     ),
     ToolDefinition(
         name="rank_candidates",
@@ -863,7 +878,9 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["vacancy_id"],
         },
-        function=_wrap_rank_candidates,
+        affects_candidate_decision=True, lgpd_legal_basis="LEGITIMATE_INTEREST",
+            output_schema=ToolOutput,
+            function=_wrap_rank_candidates,
     ),
     ToolDefinition(
         name="analyze_skills",
@@ -876,6 +893,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_analyze_skills,
     ),
     ToolDefinition(
@@ -888,7 +906,9 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_ids"],
         },
-        function=_wrap_recommend_actions,
+        affects_candidate_decision=True, lgpd_legal_basis="LEGITIMATE_INTEREST",
+            output_schema=ToolOutput,
+            function=_wrap_recommend_actions,
     ),
     ToolDefinition(
         name="create_shortlist",
@@ -901,7 +921,9 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_ids", "vacancy_id"],
         },
-        function=_wrap_create_shortlist,
+        affects_candidate_decision=True, lgpd_legal_basis="LEGITIMATE_INTEREST", side_effects=["write"],
+            output_schema=ToolOutput,
+            function=_wrap_create_shortlist,
     ),
     ToolDefinition(
         name="export_report",
@@ -914,9 +936,13 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["report_type"],
         },
-        function=_wrap_export_report,
+        side_effects=["write"], touches_pii=True, pii_output_fields=["name", "email", "phone"],
+            output_schema=ToolOutput,
+            function=_wrap_export_report,
     ),
     ToolDefinition(
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
         name="check_search_fairness",
         description="Valida criterios de busca contra vies discriminatorio usando FairnessGuard. Detecta vies explicito (bloqueia) e implicito (alerta). Use antes de executar buscas com criterios fornecidos pelo recrutador.",
         parameters={
@@ -927,6 +953,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["search_criteria"],
         },
+        output_schema=ToolOutput,
         function=_wrap_check_search_fairness,
     ),
     ToolDefinition(
@@ -940,6 +967,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": [],
         },
+        output_schema=ToolOutput,
         function=_wrap_get_talent_pool_benchmarks,
     ),
     ToolDefinition(
@@ -953,6 +981,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": [],
         },
+        output_schema=ToolOutput,
         function=_wrap_check_pool_health,
     ),
 ]
@@ -1022,6 +1051,7 @@ TOOL_DEFINITIONS.append(
             },
             "required": ["report_type"],
         },
+        output_schema=ToolOutput,
         function=_wrap_generate_report,
     )
 )
@@ -1034,10 +1064,12 @@ STAGE_TOOLS: dict[str, list[str]] = {
     "action_planning": ["recommend_actions", "create_shortlist", "export_report", "generate_report", "view_candidate_profile", "check_search_fairness", "check_pool_health"],
 }
 
-GUARDRAIL_TOOLS: list[str] = [
-    "create_shortlist",   # cria shortlist — ação que afeta o funil
-    "export_report",      # exporta dados de candidatos — sensível LGPD
-]
+from app.shared.compliance.safety_category import SafetyCategory
+
+GUARDRAIL_TOOLS: dict[str, SafetyCategory] = {
+    "create_shortlist": SafetyCategory.PIPELINE_MOVE,   # cria shortlist — ação que afeta o funil
+    "export_report": SafetyCategory.PII_EXPORT,         # exporta dados de candidatos — sensível LGPD
+}
 
 
 def get_talent_tools(stage: str = "") -> list[ToolDefinition]:

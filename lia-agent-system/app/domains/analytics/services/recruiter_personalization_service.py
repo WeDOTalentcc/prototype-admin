@@ -205,11 +205,11 @@ class RecruiterPersonalizationService:
             settings_result = await db.execute(settings_query)
             context.settings = settings_result.scalar_one_or_none()
             
-            if context.settings and not context.settings.enable_personalization:  # type: ignore
+            if context.settings and not context.settings.enable_personalization:  # type: ignore[union-attr]
                 context.personalization_level = "disabled"
                 return context
             
-            total_jobs = profile.total_jobs_created  # type: ignore
+            total_jobs = profile.total_jobs_created  # type: ignore[union-attr]
             if total_jobs is None or total_jobs < MIN_JOBS_FOR_PERSONALIZATION:
                 context.is_new_user = True
                 context.personalization_level = "minimal"
@@ -223,7 +223,7 @@ class RecruiterPersonalizationService:
             )
             prefs_result = await db.execute(prefs_query)
             for pref in prefs_result.scalars():
-                context.field_preferences[str(pref.field_name)] = pref  # type: ignore
+                context.field_preferences[str(pref.field_name)] = pref  # type: ignore[union-attr]
             
             context.flow_config = self._build_flow_config(profile)
             context.thresholds = self._build_thresholds(profile, context.field_preferences)
@@ -238,10 +238,10 @@ class RecruiterPersonalizationService:
     def _build_flow_config(self, profile: RecruiterProfile) -> WizardFlowConfig:
         """Build flow configuration from profile."""
         return WizardFlowConfig(
-            show_detailed_explanations=bool(profile.prefers_detailed_explanations),  # type: ignore
-            skip_optional_confirmations=bool(profile.prefers_quick_flow),  # type: ignore
-            auto_expand_sections=not bool(profile.prefers_quick_flow),  # type: ignore
-            suggest_jd_import=bool(profile.uses_jd_import),  # type: ignore
+            show_detailed_explanations=bool(profile.prefers_detailed_explanations),  # type: ignore[union-attr]
+            skip_optional_confirmations=bool(profile.prefers_quick_flow),  # type: ignore[union-attr]
+            auto_expand_sections=not bool(profile.prefers_quick_flow),  # type: ignore[union-attr]
+            suggest_jd_import=bool(profile.uses_jd_import),  # type: ignore[union-attr]
             highlight_often_corrected=True,
             pre_select_preferences=True,
         )
@@ -254,14 +254,14 @@ class RecruiterPersonalizationService:
         """Build personalized thresholds from profile and field preferences."""
         base = ConfidenceThresholds()
         
-        if profile.prefers_quick_flow:  # type: ignore
+        if profile.prefers_quick_flow:  # type: ignore[union-attr]
             base = ConfidenceThresholds(
                 silent_apply=0.80,
                 apply_notify=0.65,
                 ask_user=0.45
             )
         
-        custom = profile.custom_confidence_thresholds  # type: ignore
+        custom = profile.custom_confidence_thresholds  # type: ignore[union-attr]
         if custom:
             if "silent_apply" in custom:
                 base.silent_apply = custom["silent_apply"]
@@ -272,10 +272,10 @@ class RecruiterPersonalizationService:
         
         field_overrides = {}
         for field_name, pref in field_preferences.items():
-            if pref.personal_confidence_threshold:  # type: ignore
-                field_overrides[field_name] = float(pref.personal_confidence_threshold)  # type: ignore
-            elif pref.times_seen and pref.times_corrected:  # type: ignore
-                correction_rate = pref.times_corrected / pref.times_seen  # type: ignore
+            if pref.personal_confidence_threshold:  # type: ignore[union-attr]
+                field_overrides[field_name] = float(pref.personal_confidence_threshold)  # type: ignore[union-attr]
+            elif pref.times_seen and pref.times_corrected:  # type: ignore[union-attr]
+                correction_rate = pref.times_corrected / pref.times_seen  # type: ignore[union-attr]
                 if correction_rate > 0.5:
                     field_overrides[field_name] = 0.90
                 elif correction_rate < 0.2:
@@ -291,15 +291,15 @@ class RecruiterPersonalizationService:
         """Build personalized defaults from profile."""
         defaults = PersonalizedDefaults()
         
-        preferred_seniorities = profile.preferred_seniorities  # type: ignore
+        preferred_seniorities = profile.preferred_seniorities  # type: ignore[union-attr]
         if preferred_seniorities and len(preferred_seniorities) == 1:
             defaults.seniority = preferred_seniorities[0]
         
-        preferred_departments = profile.preferred_departments  # type: ignore
+        preferred_departments = profile.preferred_departments  # type: ignore[union-attr]
         if preferred_departments and len(preferred_departments) == 1:
             defaults.department = preferred_departments[0]
         
-        salary_percentile = profile.typical_salary_percentile  # type: ignore
+        salary_percentile = profile.typical_salary_percentile  # type: ignore[union-attr]
         if salary_percentile:
             if salary_percentile > 70:
                 defaults.salary_adjustment = 1.1
@@ -382,11 +382,11 @@ class RecruiterPersonalizationService:
             )
             db.add(pref)
         
-        pref.times_seen = (pref.times_seen or 0) + 1  # type: ignore
+        pref.times_seen = (pref.times_seen or 0) + 1  # type: ignore[union-attr]
         if accepted:
-            pref.times_accepted = (pref.times_accepted or 0) + 1  # type: ignore
+            pref.times_accepted = (pref.times_accepted or 0) + 1  # type: ignore[union-attr]
         else:
-            pref.times_corrected = (pref.times_corrected or 0) + 1  # type: ignore
+            pref.times_corrected = (pref.times_corrected or 0) + 1  # type: ignore[union-attr]
             
             if suggested_value is not None and final_value is not None:
                 if field_name in ["salary_range", "salary_min", "salary_max"]:
@@ -402,17 +402,17 @@ class RecruiterPersonalizationService:
                             magnitude = abs(final_mid - sugg_mid) / sugg_mid
                             direction = "increase" if final_mid > sugg_mid else "decrease"
                             
-                            pref.typical_correction_direction = direction  # type: ignore
+                            pref.typical_correction_direction = direction  # type: ignore[union-attr]
                             
-                            existing_mag = pref.avg_correction_magnitude or 0  # type: ignore
-                            times = pref.times_corrected or 1  # type: ignore
-                            pref.avg_correction_magnitude = (  # type: ignore
+                            existing_mag = pref.avg_correction_magnitude or 0  # type: ignore[union-attr]
+                            times = pref.times_corrected or 1  # type: ignore[union-attr]
+                            pref.avg_correction_magnitude = (  # type: ignore[union-attr]
                                 (existing_mag * (times - 1) + magnitude) / times
                             )
                     except (ValueError, TypeError):
                         pass
         
-        pref.last_interaction_at = datetime.utcnow()  # type: ignore
+        pref.last_interaction_at = datetime.utcnow()  # type: ignore[union-attr]
         await db.flush()
     
     async def recalculate_profile(
@@ -563,16 +563,16 @@ class RecruiterPersonalizationService:
             db.add(settings)
         
         if enable_personalization is not None:
-            settings.enable_personalization = enable_personalization  # type: ignore
+            settings.enable_personalization = enable_personalization  # type: ignore[union-attr]
         if enable_learning is not None:
-            settings.enable_learning = enable_learning  # type: ignore
+            settings.enable_learning = enable_learning  # type: ignore[union-attr]
         if learn_from_corrections is not None:
-            settings.learn_from_corrections = learn_from_corrections  # type: ignore
+            settings.learn_from_corrections = learn_from_corrections  # type: ignore[union-attr]
         if show_personalization_indicators is not None:
-            settings.show_personalization_indicators = show_personalization_indicators  # type: ignore
+            settings.show_personalization_indicators = show_personalization_indicators  # type: ignore[union-attr]
         if consent_version is not None:
-            settings.consent_version = consent_version  # type: ignore
-            settings.consent_given_at = datetime.utcnow()  # type: ignore
+            settings.consent_version = consent_version  # type: ignore[union-attr]
+            settings.consent_given_at = datetime.utcnow()  # type: ignore[union-attr]
         
         await db.flush()
         return settings
@@ -597,19 +597,19 @@ class RecruiterPersonalizationService:
                 "jobs_needed": MIN_JOBS_FOR_PERSONALIZATION,
             }
         
-        total_jobs = profile.total_jobs_created or 0  # type: ignore
+        total_jobs = profile.total_jobs_created or 0  # type: ignore[union-attr]
         
         return {
             "personalization_available": total_jobs >= MIN_JOBS_FOR_PERSONALIZATION,
             "personalization_level": "full" if total_jobs >= 30 else ("partial" if total_jobs >= MIN_JOBS_FOR_PERSONALIZATION else "minimal"),
             "jobs_created": total_jobs,
             "jobs_needed": max(0, MIN_JOBS_FOR_PERSONALIZATION - total_jobs),
-            "profile_last_calculated": profile.profile_calculated_at,  # type: ignore
-            "preferred_seniorities": profile.preferred_seniorities,  # type: ignore
-            "preferred_departments": profile.preferred_departments,  # type: ignore
-            "fields_often_corrected": list(profile.fields_often_corrected.keys()) if profile.fields_often_corrected else [],  # type: ignore
-            "uses_jd_import": profile.uses_jd_import,  # type: ignore
-            "prefers_quick_flow": profile.prefers_quick_flow,  # type: ignore
+            "profile_last_calculated": profile.profile_calculated_at,  # type: ignore[union-attr]
+            "preferred_seniorities": profile.preferred_seniorities,  # type: ignore[union-attr]
+            "preferred_departments": profile.preferred_departments,  # type: ignore[union-attr]
+            "fields_often_corrected": list(profile.fields_often_corrected.keys()) if profile.fields_often_corrected else [],  # type: ignore[union-attr]
+            "uses_jd_import": profile.uses_jd_import,  # type: ignore[union-attr]
+            "prefers_quick_flow": profile.prefers_quick_flow,  # type: ignore[union-attr]
         }
 
 

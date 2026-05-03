@@ -115,3 +115,8 @@ class GeneratedQuestion(BaseModel):
     bloom_level: Optional[int] = None
     dreyfus_level: Optional[int] = None
     weight: float = 1.0
+
+    # Sprint B Phase 3 — WSI Skill Probed (taxonomia hierarquica)
+    skill_probed: Optional[str] = None
+    skill_parent: Optional[str] = None
+    skill_classification_source: Optional[str] = None  # "llm" | "heuristic" | "default"

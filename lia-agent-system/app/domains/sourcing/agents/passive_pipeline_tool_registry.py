@@ -13,6 +13,7 @@ from datetime import datetime, timedelta
 from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolOutput
 
 from app.shared.tool_handler import tool_handler
 
@@ -193,6 +194,7 @@ _PASSIVE_TOOL_DEFINITIONS.append(
             },
             "required": [],
         },
+        output_schema=ToolOutput,
         function=_wrap_passive_search_archived,
     )
 )
@@ -318,6 +320,7 @@ _PASSIVE_TOOL_DEFINITIONS.append(
             },
             "required": ["candidate_id", "vacancy_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_passive_calculate_fit_score,
     )
 )
@@ -389,6 +392,7 @@ _PASSIVE_TOOL_DEFINITIONS.append(
             },
             "required": ["candidate_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_passive_check_lgpd_ttl,
     )
 )

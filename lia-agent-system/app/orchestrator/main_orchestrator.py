@@ -78,6 +78,26 @@ def get_perf_summary() -> dict[str, Any]:
 # Response schema unificado
 # ---------------------------------------------------------------------------
 
+
+
+# ---------------------------------------------------------------------------
+# UC-P3-14: LIA_V2_USE_PLAN_SERVICE feature flag
+# ---------------------------------------------------------------------------
+def _is_plan_service_enabled() -> bool:
+    """Check if the new PlanService orchestration path is enabled.
+
+    # UC-P3-14: task_planner active via LIA_V2_USE_PLAN_SERVICE flag.
+    # Promotion to production without flag: 2026-07-01
+    # To promote: set LIA_V2_USE_PLAN_SERVICE=true in production env
+    # and remove this gate once stable for 2 weeks.
+
+    Default: False (backward-compatible). Set LIA_V2_USE_PLAN_SERVICE=true
+    to enable PlanService-based orchestration (Sprint III-B rollout).
+    """
+    import os as _os
+    raw = _os.environ.get("LIA_V2_USE_PLAN_SERVICE", "false").lower()
+    return raw in ("1", "true", "yes")
+
 class ChatResponse(BaseModel):
     success: bool
     content: str

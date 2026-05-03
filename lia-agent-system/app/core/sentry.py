@@ -94,12 +94,12 @@ def init_sentry(dsn: str | None = None) -> bool:
             return False
 
         import os
-        _traces_rate = float(os.getenv('SENTRY_TRACES_SAMPLE_RATE', '0.1'))
-        try:
-            from lia_config.config import settings as _settings
-            _traces_rate = getattr(_settings, 'SENTRY_TRACES_SAMPLE_RATE', _traces_rate)
-        except Exception:
-            pass
+        # UC-P1-05: env-aware sample rate (30% prod / 100% staging/test)
+        _env = os.getenv('APP_ENV', os.getenv('ENVIRONMENT', 'development'))
+        _default_rate = '1.0' if _env in ('staging', 'test') else '0.3'
+        _traces_rate = float(os.getenv('SENTRY_TRACES_SAMPLE_RATE', _default_rate))
+        # lia_config is NOT consulted for traces_sample_rate — env var is the source of truth
+        # (UC-P1-05: env-aware rate must not be overridden by lia_config default)
 
         sentry_sdk.init(
             dsn=_dsn,
@@ -108,6 +108,7 @@ def init_sentry(dsn: str | None = None) -> bool:
                 FastApiIntegration(transaction_style="endpoint"),
             ],
             traces_sample_rate=_traces_rate,
+            profiles_sample_rate=float(os.getenv("SENTRY_PROFILES_SAMPLE_RATE", "0.1")),
             before_send=_before_send,
             send_default_pii=False,
             environment=os.getenv('APP_ENV', 'development'),

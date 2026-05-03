@@ -13,6 +13,7 @@ from typing import Any
 import httpx
 
 from app.shared.resilience.circuit_breaker import circuit_breaker
+from lia_config.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -35,7 +36,7 @@ class StackOverflowService:
     def __init__(self) -> None:
         self.base_url = SO_API_BASE
         self.api_key = SO_API_KEY
-        self.timeout = httpx.Timeout(30.0, connect=10.0)
+        self.timeout = httpx.Timeout(settings.HTTP_TIMEOUT_STACKOVERFLOW_SECONDS, connect=settings.HTTP_TIMEOUT_STACKOVERFLOW_CONNECT_SECONDS)  # UC-P2-12
 
     def _get_common_params(self) -> dict[str, str]:
         params: dict[str, str] = {"site": "stackoverflow"}

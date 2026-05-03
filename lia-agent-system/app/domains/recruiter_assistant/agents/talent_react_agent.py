@@ -63,6 +63,15 @@ class TalentReActAgent(LangGraphReActBase, EnhancedAgentMixin):
     def available_tools(self) -> list[str]:
         return list(self._all_tool_names)
 
+
+    def _get_tool_contracts(self) -> list:
+        """Ativa GovernanceToolNode para este agente."""
+        try:
+            from app.domains.recruiter_assistant.agents.talent_tool_registry import get_talent_tools
+            return get_talent_tools()
+        except ImportError:
+            return []
+
     def _get_tools(self) -> list:
         """Todos os tools do domínio Talent (LangGraph usa set completo)."""
         from lia_agents_core.react_loop import tool_definition_to_langchain_tool

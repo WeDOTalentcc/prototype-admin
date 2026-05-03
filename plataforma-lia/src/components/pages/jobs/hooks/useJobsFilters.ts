@@ -94,6 +94,8 @@ function buildNavigationFilters(backendJobs: Job[]) {
     { id: 'todas', label: 'Todas', description: 'Todas as vagas do sistema', count: backendJobs.length },
     { id: 'ativas', label: 'Ativas', description: 'Vagas abertas e em andamento', count: backendJobs.filter(j => j.status === 'Ativa').length },
     { id: 'urgentes', label: 'Urgentes', description: 'Vagas com alta prioridade de preenchimento', count: backendJobs.filter(j => j.urgencyLevel >= 4).length, highlight: true },
+    // Phase 4H — ATS filter (vagas importadas do ATS)
+    { id: 'ats', label: 'ATS', description: 'Vagas importadas do ATS (Gupy, Greenhouse, planilha, etc)', count: backendJobs.filter(j => j.source === 'ats_import' || j.source === 'ats_external').length },
     { id: 'paralisadas', label: 'Paralisadas', description: 'Vagas temporariamente suspensas', count: backendJobs.filter(j => j.status === 'Paralisada').length },
     { id: 'concluidas', label: 'Concluídas', description: 'Vagas com contratação finalizada', count: backendJobs.filter(j => j.status === 'Concluída').length },
     { id: 'canceladas', label: 'Canceladas', description: 'Vagas canceladas ou arquivadas', count: backendJobs.filter(j => j.status === 'Cancelada').length },
@@ -200,6 +202,7 @@ export function useJobsFilters({ backendJobs }: UseJobsFiltersOptions): UseJobsF
       let matchesActiveFilter = true
       if (activeFilter === 'ativas') matchesActiveFilter = job.status === 'Ativa'
       else if (activeFilter === 'urgentes') matchesActiveFilter = job.urgencyLevel >= 4
+      else if (activeFilter === 'ats') matchesActiveFilter = job.source === 'ats_import' || job.source === 'ats_external'
       else if (activeFilter === 'paralisadas') matchesActiveFilter = job.status === 'Paralisada'
       else if (activeFilter === 'concluidas') matchesActiveFilter = job.status === 'Concluída'
       else if (activeFilter === 'canceladas') matchesActiveFilter = job.status === 'Cancelada'

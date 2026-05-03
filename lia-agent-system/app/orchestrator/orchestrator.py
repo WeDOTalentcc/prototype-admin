@@ -9,6 +9,15 @@ DO NOT use this class in new code.
 """
 import warnings as _lia_warnings
 
+# UC-P1-23: Module-level deprecation — fires on import, not just on instantiation.
+_lia_warnings.warn(
+    "app.orchestrator.orchestrator (Orchestrator v1) is deprecated. "
+    "Use app.orchestrator.main_orchestrator.MainOrchestrator via "
+    "get_main_orchestrator() instead. Will be removed Q3 2026. [LIA-D06]",
+    DeprecationWarning,
+    stacklevel=2,
+)
+
 import logging
 import os
 from typing import Any

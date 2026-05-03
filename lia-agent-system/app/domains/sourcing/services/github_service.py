@@ -11,6 +11,7 @@ from typing import Any
 import httpx
 
 from app.shared.resilience.circuit_breaker import circuit_breaker
+from lia_config.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +51,7 @@ class GithubService:
 
     def __init__(self) -> None:
         self.base_url = GITHUB_API_BASE
-        self.timeout = httpx.Timeout(30.0, connect=10.0)
+        self.timeout = httpx.Timeout(settings.HTTP_TIMEOUT_GITHUB_SECONDS, connect=settings.HTTP_TIMEOUT_GITHUB_CONNECT_SECONDS)  # UC-P2-12
 
     @circuit_breaker("github_api", failure_threshold=3, recovery_timeout=30.0, fallback=_github_search_fallback)
     async def search_developers(

@@ -14,20 +14,20 @@ Hierarchy:
   AppSettings       → ENV, logging, CORS, feature flags
   Settings          → inherits all + validators
 """
-from typing import List, Optional
+
 from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
-
 
 # ---------------------------------------------------------------------------
 # 1. Database
 # ---------------------------------------------------------------------------
 
+
 class DatabaseSettings(BaseSettings):
     DATABASE_URL: str = "postgresql+asyncpg://lia_user:lia_password@localhost:5432/lia_db"
     DATABASE_POOL_SIZE: int = 20
     DATABASE_MAX_OVERFLOW: int = 10
-    ELASTICSEARCH_URL: Optional[str] = None
+    ELASTICSEARCH_URL: str | None = None
     # Search backend selector: "postgres" (padrão) | "elasticsearch" (alto volume)
     SEARCH_BACKEND: str = "postgres"
 
@@ -36,28 +36,32 @@ class DatabaseSettings(BaseSettings):
 # 2. Cache (Redis)
 # ---------------------------------------------------------------------------
 
+
 class CacheSettings(BaseSettings):
     REDIS_URL: str = "redis://localhost:6379/0"
-    ROUTER_CACHE_TTL: int = 3600          # Tier 1 cache TTL (segundos)
-    SEMANTIC_CACHE_TTL: int = 86400       # Semantic cache TTL (segundos)
-    ROUTER_CACHE_MAX_SIZE: int = 1000     # Max entries in-process LRU cache
+    ROUTER_CACHE_TTL: int = 3600  # Tier 1 cache TTL (segundos)
+    SEMANTIC_CACHE_TTL: int = 86400  # Semantic cache TTL (segundos)
+    ROUTER_CACHE_MAX_SIZE: int = 1000  # Max entries in-process LRU cache
     # Z5-03: threshold semântico configurável (Tier 3 — VectorSemanticCache)
-    ROUTER_VECTOR_SIMILARITY_THRESHOLD: float = 0.85  # Cosine similarity floor para cache hit (reduzido de 0.92 para capturar queries semanticamente similares)
+    ROUTER_VECTOR_SIMILARITY_THRESHOLD: float = (
+        0.85  # Cosine similarity floor para cache hit (reduzido de 0.92 para capturar queries semanticamente similares)
+    )
     ROUTER_VECTOR_NEAR_MISS_LOG_MARGIN: float = 0.05  # Loga near-misses dentro de threshold-margin
-    ROUTER_VECTOR_CACHE_ENABLED: bool = True           # A/B flag: False desabilita Tier 3 completamente
+    ROUTER_VECTOR_CACHE_ENABLED: bool = True  # A/B flag: False desabilita Tier 3 completamente
 
 
 # ---------------------------------------------------------------------------
 # 3. Messaging (RabbitMQ / Celery)
 # ---------------------------------------------------------------------------
 
+
 class MessagingSettings(BaseSettings):
     RABBITMQ_URL: str = "amqp://guest:guest@localhost:5672/"
     RABBITMQ_EXCHANGE: str = "rh_platform"
     RABBITMQ_PREFETCH: int = 1
     # Celery uses REDIS_URL as broker by default; these allow override
-    CELERY_BROKER_URL: Optional[str] = None   # Falls back to REDIS_URL if not set
-    CELERY_RESULT_BACKEND: Optional[str] = None  # Falls back to REDIS_URL if not set
+    CELERY_BROKER_URL: str | None = None  # Falls back to REDIS_URL if not set
+    CELERY_RESULT_BACKEND: str | None = None  # Falls back to REDIS_URL if not set
     # Broker abstraction layer — see app/shared/messaging/broker_interface.py
     # Valores: "redis" (padrão), "rabbitmq" (on-prem), "pubsub" (stub GCP)
     # Para migração GCP: setar BROKER_BACKEND=pubsub e implementar PubSubBroker real
@@ -68,30 +72,31 @@ class MessagingSettings(BaseSettings):
 # 4. LLM / AI Settings
 # ---------------------------------------------------------------------------
 
+
 class LLMSettings(BaseSettings):
     # API Keys
-    ANTHROPIC_API_KEY: Optional[str] = None
-    OPENAI_API_KEY: Optional[str] = None
-    GOOGLE_APPLICATION_CREDENTIALS: Optional[str] = None
-    GOOGLE_CLOUD_PROJECT: Optional[str] = None
+    ANTHROPIC_API_KEY: str | None = None
+    OPENAI_API_KEY: str | None = None
+    GOOGLE_APPLICATION_CREDENTIALS: str | None = None
+    GOOGLE_CLOUD_PROJECT: str | None = None
     GOOGLE_CLOUD_REGION: str = "us-east1"
 
     # Replit AI Integrations
-    AI_INTEGRATIONS_GEMINI_API_KEY: Optional[str] = None
-    AI_INTEGRATIONS_GEMINI_BASE_URL: Optional[str] = None
-    AI_INTEGRATIONS_ANTHROPIC_API_KEY: Optional[str] = None
-    AI_INTEGRATIONS_ANTHROPIC_BASE_URL: Optional[str] = None
-    AI_INTEGRATIONS_OPENAI_API_KEY: Optional[str] = None
-    AI_INTEGRATIONS_OPENAI_BASE_URL: Optional[str] = None
+    AI_INTEGRATIONS_GEMINI_API_KEY: str | None = None
+    AI_INTEGRATIONS_GEMINI_BASE_URL: str | None = None
+    AI_INTEGRATIONS_ANTHROPIC_API_KEY: str | None = None
+    AI_INTEGRATIONS_ANTHROPIC_BASE_URL: str | None = None
+    AI_INTEGRATIONS_OPENAI_API_KEY: str | None = None
+    AI_INTEGRATIONS_OPENAI_BASE_URL: str | None = None
 
     # Model Names
     LLM_PRIMARY_MODEL: str = "claude-sonnet-4-6"
-    LLM_FAST_MODEL: str = "gemini-2.5-flash"              # Tier rápido — Gemini Flash (padrão)
+    LLM_FAST_MODEL: str = "gemini-2.5-flash"  # Tier rápido — Gemini Flash (padrão)
     LLM_POWERFUL_MODEL: str = "claude-opus-4-6"
     LLM_GEMINI_MODEL: str = "gemini-2.5-flash"
-    LLM_ROUTER_MODEL: str = "gemini-2.5-flash"            # Roteamento barato (Tier 3) — Gemini Flash
-    LLM_AGENT_MODEL: str = "claude-sonnet-4-6"            # Execução de agentes (Claude mantido para profundidade)
-    LLM_DEFAULT_PROVIDER: str = "gemini"                  # Provider padrão — Gemini 2.5 Flash
+    LLM_ROUTER_MODEL: str = "gemini-2.5-flash"  # Roteamento barato (Tier 3) — Gemini Flash
+    LLM_AGENT_MODEL: str = "claude-sonnet-4-6"  # Execução de agentes (Claude mantido para profundidade)
+    LLM_DEFAULT_PROVIDER: str = "gemini"  # Provider padrão — Gemini 2.5 Flash
 
     # Generation parameters
     LLM_DEFAULT_TEMPERATURE: float = 0.7
@@ -99,6 +104,19 @@ class LLMSettings(BaseSettings):
     LLM_ROUTER_TEMPERATURE: float = 0.1
     LLM_MAX_TOKENS: int = 4096
     LLM_TIMEOUT_SECONDS: float = 120.0
+
+    # HTTP client timeouts — sourcing services (UC-P2-12)
+    # All values are env-configurable via pydantic-settings (HTTP_TIMEOUT_* env vars)
+    HTTP_TIMEOUT_APIFY_SECONDS: float = 180.0
+    HTTP_TIMEOUT_APIFY_CONNECT_SECONDS: float = 30.0
+    HTTP_TIMEOUT_GITHUB_SECONDS: float = 30.0
+    HTTP_TIMEOUT_GITHUB_CONNECT_SECONDS: float = 10.0
+    HTTP_TIMEOUT_STACKOVERFLOW_SECONDS: float = 30.0
+    HTTP_TIMEOUT_STACKOVERFLOW_CONNECT_SECONDS: float = 10.0
+    HTTP_TIMEOUT_DEFAULT_SECONDS: float = 30.0
+    HTTP_TIMEOUT_PEARCH_SECONDS: float = 120.0
+    HTTP_TIMEOUT_PEARCH_CONNECT_SECONDS: float = 10.0
+    HTTP_TIMEOUT_PEARCH_HEALTH_SECONDS: float = 10.0
 
     # Cascade thresholds (Haiku → Sonnet → Opus)
     LLM_CASCADE_FAST_THRESHOLD: float = 0.80
@@ -115,7 +133,7 @@ class LLMSettings(BaseSettings):
 
     # LangSmith
     LANGCHAIN_TRACING_V2: bool = False
-    LANGCHAIN_API_KEY: Optional[str] = None
+    LANGCHAIN_API_KEY: str | None = None
     LANGCHAIN_PROJECT: str = "lia-agent-system"
 
     # Z6-02: OpenTelemetry / OTLP
@@ -128,13 +146,14 @@ class LLMSettings(BaseSettings):
 # 5. Audit Storage (Phase 1)
 # ---------------------------------------------------------------------------
 
+
 class AuditSettings(BaseSettings):
-    AUDIT_STORAGE_TYPE: str = "file"         # "file" (dev) | "s3" (prod)
-    AUDIT_STORAGE_BUCKET: str = ""           # S3 bucket — obrigatório quando type=s3
-    AUDIT_STORAGE_PREFIX: str = "audit"      # Prefixo de path no S3
-    AUDIT_LOCAL_DIR: str = "./audit_logs"    # Diretório local (dev)
-    S3_ACCESS_KEY: Optional[str] = None
-    S3_SECRET_KEY: Optional[str] = None
+    AUDIT_STORAGE_TYPE: str = "file"  # "file" (dev) | "s3" (prod)
+    AUDIT_STORAGE_BUCKET: str = ""  # S3 bucket — obrigatório quando type=s3
+    AUDIT_STORAGE_PREFIX: str = "audit"  # Prefixo de path no S3
+    AUDIT_LOCAL_DIR: str = "./audit_logs"  # Diretório local (dev)
+    S3_ACCESS_KEY: str | None = None
+    S3_SECRET_KEY: str | None = None
     S3_REGION: str = "us-east-1"
 
 
@@ -142,48 +161,56 @@ class AuditSettings(BaseSettings):
 # 6. Auth (JWT, WorkOS, Azure)
 # ---------------------------------------------------------------------------
 
+
 class AuthSettings(BaseSettings):
     SECRET_KEY: str = "change-this-in-production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
+    # R-007 (Sprint 1 Quick Wins): aud + iss validation no JWT.
+    # Default None preserva backward compat (tokens legacy passam). Quando setados,
+    # decode_token enforce aud/iss strictly e create_access_token inclui as claims.
+    # Migration plan: setar em prod e invalidar tokens legacy via key rotation gradual.
+    JWT_AUDIENCE: str | None = None
+    JWT_ISSUER: str | None = None
 
     # WorkOS
     # Rails JWT shared secret (same as Rails secret_key_base)
-    RAILS_JWT_SECRET_KEY: Optional[str] = None
-    WORKOS_CLIENT_ID: Optional[str] = None
-    WORKOS_API_KEY: Optional[str] = None
-    WORKOS_WEBHOOK_SECRET: Optional[str] = None
+    RAILS_JWT_SECRET_KEY: str | None = None
+    WORKOS_CLIENT_ID: str | None = None
+    WORKOS_API_KEY: str | None = None
+    WORKOS_WEBHOOK_SECRET: str | None = None
 
     # Azure AD / Microsoft Graph (client credentials — service-to-service)
-    AZURE_TENANT_ID: Optional[str] = None
-    AZURE_CLIENT_ID: Optional[str] = None
-    AZURE_CLIENT_SECRET: Optional[str] = None
+    AZURE_TENANT_ID: str | None = None
+    AZURE_CLIENT_ID: str | None = None
+    AZURE_CLIENT_SECRET: str | None = None
 
     # Microsoft Calendar OAuth 2.0 delegated flow (user-level calendar access per company)
     # If absent, falls back to client-credentials app-level access.
-    MICROSOFT_CALENDAR_OAUTH_REDIRECT_URI: Optional[str] = None
+    MICROSOFT_CALENDAR_OAUTH_REDIRECT_URI: str | None = None
     MICROSOFT_CALENDAR_DEFAULT_TIMEZONE: str = "America/Sao_Paulo"
 
     # Microsoft Teams
-    MICROSOFT_APP_ID: Optional[str] = None
-    MICROSOFT_APP_PASSWORD: Optional[str] = None
-    TEAMS_WEBHOOK_URL: Optional[str] = None
-    TEAMS_WEBHOOK_SECRET: Optional[str] = None
+    MICROSOFT_APP_ID: str | None = None
+    MICROSOFT_APP_PASSWORD: str | None = None
+    TEAMS_WEBHOOK_URL: str | None = None
+    TEAMS_WEBHOOK_SECRET: str | None = None
     # Home tenant of the Bot App Registration (used for outbound token acquisition)
     # Separate from AZURE_TENANT_ID which is used for Graph API
-    TEAMS_APP_TENANT_ID: Optional[str] = None
+    TEAMS_APP_TENANT_ID: str | None = None
 
     # Secrets provider (Phase 5)
-    SECRETS_PROVIDER: str = "env"            # "env" (dev) | "doppler" (prod)
-    DOPPLER_TOKEN: Optional[str] = None
+    SECRETS_PROVIDER: str = "env"  # "env" (dev) | "doppler" (prod)
+    DOPPLER_TOKEN: str | None = None
 
     # Admin API key (for internal endpoints)
-    ADMIN_API_KEY: Optional[str] = None
+    ADMIN_API_KEY: str | None = None
 
 
 # ---------------------------------------------------------------------------
 # 7. App / Feature Flags
 # ---------------------------------------------------------------------------
+
 
 class AppSettings(BaseSettings):
     APP_NAME: str = "lia-agent-system"
@@ -195,9 +222,9 @@ class AppSettings(BaseSettings):
     API_HOST: str = "0.0.0.0"
     API_PORT: int = 8000
     APP_BASE_URL: str = ""
-    CORS_ORIGINS: List[str] = ["http://localhost:5000", "http://localhost:3000", "http://127.0.0.1:5000"]
+    CORS_ORIGINS: list[str] = ["http://localhost:5000", "http://localhost:3000", "http://127.0.0.1:5000"]
 
-    SENTRY_DSN: Optional[str] = None
+    SENTRY_DSN: str | None = None
     SENTRY_TRACES_SAMPLE_RATE: float = 0.1
 
     _DEPRECATED_DEFAULT_COMPANY_UUID: str = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
@@ -271,9 +298,10 @@ class AppSettings(BaseSettings):
 # Remaining settings (integrations, not yet categorized)
 # ---------------------------------------------------------------------------
 
+
 class IntegrationSettings(BaseSettings):
     # Pearch AI
-    PEARCH_API_KEY: Optional[str] = None
+    PEARCH_API_KEY: str | None = None
     PEARCH_API_URL: str = "https://api.pearch.ai"
     # Task #961 — timeouts canônicos (config-driven) para o pipeline de busca.
     # Política httpx.Timeout explícita evita stalls indefinidos quando o
@@ -293,54 +321,55 @@ class IntegrationSettings(BaseSettings):
     SEARCH_CANDIDATES_DEADLINE_SECONDS: float = 18.0
 
     # Twilio / WhatsApp
-    TWILIO_ACCOUNT_SID: Optional[str] = None
-    TWILIO_AUTH_TOKEN: Optional[str] = None
-    TWILIO_WHATSAPP_NUMBER: Optional[str] = None
-    TWILIO_VOICE_NUMBER: Optional[str] = None
-    TWILIO_WEBHOOK_BASE_URL: Optional[str] = None
+    TWILIO_ACCOUNT_SID: str | None = None
+    TWILIO_AUTH_TOKEN: str | None = None
+    TWILIO_WHATSAPP_NUMBER: str | None = None
+    TWILIO_VOICE_NUMBER: str | None = None
+    TWILIO_WEBHOOK_BASE_URL: str | None = None
 
     # Google Calendar
-    GOOGLE_CALENDAR_CLIENT_ID: Optional[str] = None
-    GOOGLE_CALENDAR_CLIENT_SECRET: Optional[str] = None
-    GOOGLE_CALENDAR_SERVICE_ACCOUNT_JSON: Optional[str] = None
+    GOOGLE_CALENDAR_CLIENT_ID: str | None = None
+    GOOGLE_CALENDAR_CLIENT_SECRET: str | None = None
+    GOOGLE_CALENDAR_SERVICE_ACCOUNT_JSON: str | None = None
     GOOGLE_CALENDAR_DEFAULT_TIMEZONE: str = "America/Sao_Paulo"
-    GOOGLE_CALENDAR_OAUTH_REDIRECT_URI: Optional[str] = None
+    GOOGLE_CALENDAR_OAUTH_REDIRECT_URI: str | None = None
 
     # Email (Mailgun primary, Resend fallback)
-    MAILGUN_API_KEY: Optional[str] = None     # Required for email sending
-    MAILGUN_DOMAIN: Optional[str] = None      # Required for email sending (ex: mg.wedotalent.com)
+    MAILGUN_API_KEY: str | None = None  # Required for email sending
+    MAILGUN_DOMAIN: str | None = None  # Required for email sending (ex: mg.wedotalent.com)
     MAILGUN_API_BASE: str = "https://api.mailgun.net/v3"
-    RESEND_API_KEY: Optional[str] = None      # Fallback when Mailgun is unavailable
+    RESEND_API_KEY: str | None = None  # Fallback when Mailgun is unavailable
     EMAIL_FROM_ADDRESS: str = "noreply@wedotalent.com"
     EMAIL_FROM_NAME: str = "WeDOTalent"
 
     # HubSpot CRM
-    HUBSPOT_API_KEY: Optional[str] = None
-    HUBSPOT_PORTAL_ID: Optional[str] = None
+    HUBSPOT_API_KEY: str | None = None
+    HUBSPOT_PORTAL_ID: str | None = None
 
     # Stripe Billing
-    STRIPE_SECRET_KEY: Optional[str] = None
-    STRIPE_WEBHOOK_SECRET: Optional[str] = None
-    STRIPE_PUBLISHABLE_KEY: Optional[str] = None
+    STRIPE_SECRET_KEY: str | None = None
+    STRIPE_WEBHOOK_SECRET: str | None = None
+    STRIPE_PUBLISHABLE_KEY: str | None = None
 
     # Apify (web scraping)
-    APIFY_API_KEY: Optional[str] = None
+    APIFY_API_KEY: str | None = None
     APIFY_COST_PER_ENRICHMENT_USD: float = 0.01
     APIFY_ENRICHMENT_TIMEOUT_SECONDS: int = 30
     APIFY_MAX_CONCURRENT_ENRICHMENTS: int = 5
     APIFY_LEGACY_ACTOR: str = "anchor/linkedin-person-scraper"
 
     # Merge.dev (multi-ATS)
-    MERGE_API_KEY: Optional[str] = None
+    MERGE_API_KEY: str | None = None
 
     # Gupy / Pandapé ATS
-    GUPY_API_KEY: Optional[str] = None
-    PANDAPE_API_KEY: Optional[str] = None
+    GUPY_API_KEY: str | None = None
+    PANDAPE_API_KEY: str | None = None
 
 
 # ---------------------------------------------------------------------------
 # Final Settings — inherits all subclasses (backward compatible)
 # ---------------------------------------------------------------------------
+
 
 class Settings(
     DatabaseSettings,
@@ -359,11 +388,9 @@ class Settings(
     A herança múltipla garante retrocompatibilidade total com código existente.
     """
 
-    @model_validator(mode='after')
+    @model_validator(mode="after")
     def validate_secret_key(self):
-        if self.APP_ENV == "production" and (
-            not self.SECRET_KEY or self.SECRET_KEY == "change-this-in-production"
-        ):
+        if self.APP_ENV == "production" and (not self.SECRET_KEY or self.SECRET_KEY == "change-this-in-production"):
             raise ValueError(
                 "SECRET_KEY deve ser configurado via variável de ambiente em produção. "
                 "Defina SECRET_KEY=<valor seguro> no seu .env ou nas variáveis de ambiente."

@@ -57,6 +57,14 @@ class PipelineTransitionAgent(LangGraphReActBase, EnhancedAgentMixin):
     # LangGraph Phase 3 — overrides
     # ------------------------------------------------------------------
 
+    def _get_tool_contracts(self) -> list:
+        """Ativa GovernanceToolNode para PipelineTransitionAgent."""
+        try:
+            from app.domains.pipeline.agents.pipeline_tool_registry import get_pipeline_transition_tools
+            return get_pipeline_transition_tools()
+        except ImportError:
+            return []
+
     def _get_tools(self) -> list:
         """Todos os tools do domínio Pipeline Transition (LangGraph usa set completo)."""
         from lia_agents_core.react_loop import tool_definition_to_langchain_tool

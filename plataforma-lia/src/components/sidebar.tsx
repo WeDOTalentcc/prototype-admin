@@ -127,14 +127,13 @@ const BASE_MENU_SECTIONS: MenuSection[] = [
         subItems: [
           { icon: Briefcase, label: "Vagas", isCore: true },
           {
-            // navigateOnClick required: injectDynamic injects talent pool
-            // subItems below, so without it handleClick only expands. Here
-            // navigateOnClick = "call onNavigate (= setCurrentPage SPA) even
-            // with subItems"; it does NOT trigger a full-page URL nav.
+            // T002: removed `navigateOnClick: true` so this item routes through
+            // setCurrentPage("Funil de Talentos") (SPA switch) instead of a
+            // full-page nav to /funil-de-talentos. The /funil-de-talentos URL
+            // still 308-redirects to "/" for back-compat.
             icon: Users,
             label: "Funil de Talentos",
             isCore: true,
-            navigateOnClick: true,
             maxVisibleSubItems: 3,
             seeAllLabel: "Ver todos os bancos",
             seeAllTarget: "Funil de Talentos",

@@ -13,6 +13,12 @@ from typing import Any, Dict, Optional
 
 logger = logging.getLogger(__name__)
 
+# DESIGN DECISION UC-P2-33 2026-05-02: Heuristic confidence scoring accepted.
+# compute_confidence uses rule-based thresholds: deterministic, under 1ms, no LLM cost.
+# The CascadedRouter handles quality fallback via Tier 6 autonomous agent.
+# If LLM-as-judge needed: wrap BARSEvaluator in app/shared/evaluation/bars_evaluator.py.
+
+
 
 def compute_confidence(
     response: Optional[str],

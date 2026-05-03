@@ -1,12 +1,29 @@
 """
-ATS PII Filter — LGPD compliance para sync com ATS externos
+ATS PII Filter — LGPD compliance para sync com ATS externos — UC-P3-12.
 
-Dois filtros:
-- filter_outbound: remove campos sensíveis do payload antes de enviar ao ATS
-  quando o candidato não deu consentimento de compartilhamento de dados.
-- filter_sensitive_outbound: versão async que verifica consentimento granular
-  ats_sharing (D5) diretamente via GranularConsentService.
-- filter_inbound_text: aplica strip_pii em campos de texto livre recebidos do ATS.
+PURPOSE (when to use THIS filter vs pii_masking):
+  Use ats_pii_filter when you need to:
+  - Filter outbound API payloads sent to external ATS systems (Gupy, Pandapé)
+    based on candidate consent (ats_sharing flag, D5 granular consent)
+  - Sanitize text fields received in ATS webhooks / sync payloads
+  - Enforce LGPD Art. 6 (purpose + data minimization) at the ATS boundary
+
+  Use pii_masking (app/shared/pii_masking.py) when:
+  - Sanitizing Python log messages / exception text
+  - Stripping PII before sending arbitrary text to an LLM prompt
+  - Installing a global logging filter across the application
+
+FIELDS COVERED:
+  - Outbound (OUTBOUND_SENSITIVE_FIELDS registry in lgpd_field_registry.py):
+    social identifiers, race/religion/health fields, salary details, personal address
+  - Inbound (text fields per ATS via get_inbound_text_fields):
+    free-text notes that may contain CPF, email, phone from recruiter input
+
+OPERATION MODE:
+  - filter_outbound: synchronous dict → dict filter, checks has_consent flag
+  - filter_sensitive_outbound: async, queries GranularConsentService for ats_sharing purpose
+  - filter_inbound_text: synchronous, applies strip_pii_for_llm_prompt to text fields
+  All three are fail-safe (return original payload on error).
 
 LGPD Art. 6 (finalidade/necessidade) + Art. 46 (medidas de segurança).
 D5 — Consentimento granular: LGPD Art. 7 / EU AI Act Art. 13.

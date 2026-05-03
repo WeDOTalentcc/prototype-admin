@@ -39,11 +39,12 @@ class AgentWorkingMemory(Base):
     iteration_count = Column(Integer, default=0)
     last_intent = Column(String(100), nullable=True)
     last_confidence = Column(Float, nullable=True)
-    created_at = Column(DateTime, default=lambda: datetime.utcnow())
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    expires_at = Column(DateTime(timezone=True), nullable=True, index=True)
     updated_at = Column(
-        DateTime,
-        default=lambda: datetime.utcnow(),
-        onupdate=lambda: datetime.utcnow(),
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
     )
     company_id = Column(String(255), nullable=False)
     user_id = Column(String(255), nullable=False)
@@ -69,6 +70,7 @@ class WorkingMemorySchema(BaseModel):
     last_confidence: Optional[float] = None
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
+    expires_at: Optional[datetime] = None
     company_id: str = ""
     user_id: str = ""
 

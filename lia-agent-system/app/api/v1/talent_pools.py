@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
-from app.core.database import get_db, get_tenant_db
+from app.core.database import get_db
 from app.models.talent_pool import TalentPool, TalentPoolCandidate
 
 logger = logging.getLogger(__name__)
@@ -130,7 +130,7 @@ async def _refresh_counts(pool_id: UUID, db: AsyncSession) -> None:
 @router.get("")
 async def list_pools(
     status: str | None = Query(None),
-    db: AsyncSession = Depends(get_tenant_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
 ):
     """List talent pools for the current account."""
@@ -148,7 +148,7 @@ async def list_pools(
 @router.post("", status_code=201)
 async def create_pool(
     payload: dict[str, Any],
-    db: AsyncSession = Depends(get_tenant_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
 ):
     """Create a new talent pool."""
@@ -174,7 +174,7 @@ async def create_pool(
 @router.get("/{pool_id}")
 async def get_pool(
     pool_id: UUID,
-    db: AsyncSession = Depends(get_tenant_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
 ):
     """Get a single talent pool."""
@@ -187,7 +187,7 @@ async def get_pool(
 async def update_pool(
     pool_id: UUID,
     payload: dict[str, Any],
-    db: AsyncSession = Depends(get_tenant_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
 ):
     """Update a talent pool."""
@@ -207,7 +207,7 @@ async def update_pool(
 @router.delete("/{pool_id}")
 async def delete_pool(
     pool_id: UUID,
-    db: AsyncSession = Depends(get_tenant_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
 ):
     """Soft-delete (archive) a talent pool."""
@@ -226,7 +226,7 @@ async def delete_pool(
 async def list_candidates(
     pool_id: UUID,
     stage: str | None = Query(None),
-    db: AsyncSession = Depends(get_tenant_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
 ):
     """List candidates in a talent pool."""
@@ -248,7 +248,7 @@ async def list_candidates(
 async def add_candidates(
     pool_id: UUID,
     payload: AddCandidatesRequest,
-    db: AsyncSession = Depends(get_tenant_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
 ):
     """Add candidates to a talent pool."""
@@ -289,7 +289,7 @@ async def add_candidates(
 async def move_to_job(
     pool_id: UUID,
     payload: MoveToJobRequest,
-    db: AsyncSession = Depends(get_tenant_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
 ):
     """Move candidates from pool to a job vacancy."""
@@ -326,7 +326,7 @@ async def move_to_job(
 async def create_job_from_pool(
     pool_id: UUID,
     payload: CreateJobFromPoolRequest | None = None,
-    db: AsyncSession = Depends(get_tenant_db),
+    db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
 ):
     """Placeholder — job creation requires Rails integration."""

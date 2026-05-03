@@ -4,6 +4,7 @@ Audit Service for AI Governance.
 This service provides comprehensive audit logging for all AI decisions
 made by LIA agents, ensuring transparency, accountability, and LGPD compliance.
 """
+
 import logging
 import uuid
 from datetime import datetime, timedelta
@@ -73,7 +74,7 @@ PROTECTED_CRITERIA = [
 
 class AuditService:
     """Service for logging AI decisions with full explainability."""
-    
+
     RETENTION_PERIODS = {
         "score_candidate": 730,
         "approve_candidate": 730,
@@ -83,7 +84,7 @@ class AuditService:
         "schedule_interview": 365,
         "generate_feedback": 730,
     }
-    
+
     async def log_decision(
         self,
         company_id: str,
@@ -98,11 +99,11 @@ class AuditService:
         score: float | None = None,
         confidence: float | None = None,
         human_review_required: bool = False,
-        criteria_ignored: list[str] | None = None
+        criteria_ignored: list[str] | None = None,
     ) -> AuditLog:
         """
         Log an AI decision with full context for auditability.
-        
+
         Args:
             company_id: The company/tenant ID
             agent_name: Name of the agent making the decision (e.g., "triagem_curricular")
@@ -117,7 +118,7 @@ class AuditService:
             confidence: Optional confidence level (0-1)
             human_review_required: Whether this decision requires human review
             criteria_ignored: List of criteria explicitly ignored (for anti-bias)
-            
+
         Returns:
             Created AuditLog instance
         """
@@ -128,14 +129,14 @@ class AuditService:
             except ValueError:
                 logger.warning(f"Unknown decision_type '{decision_type}', defaulting to SCORE_CANDIDATE")
                 canonical_type = DecisionType.SCORE_CANDIDATE
-        
+
         final_ignored = set(PROTECTED_CRITERIA)
         if criteria_ignored:
             final_ignored.update(criteria_ignored)
-        
+
         retention_days = self.RETENTION_PERIODS.get(canonical_type.value, 730)
         retention_until = datetime.utcnow() + timedelta(days=retention_days)
-        
+
         async with AsyncSessionLocal() as session:
             await _bind_tenant(session, company_id)
             audit_log = AuditLog(
@@ -153,55 +154,47 @@ class AuditService:
                 score=score,
                 confidence=confidence,
                 human_review_required=human_review_required,
-                retention_until=retention_until
+                retention_until=retention_until,
             )
-            
+
             session.add(audit_log)
             await session.commit()
             await session.refresh(audit_log)
-            
+
             logger.info(
                 f"✅ Audit log created: {agent_name} - {decision_type} -> {decision} "
                 f"(candidate: {candidate_id}, job: {job_vacancy_id})"
             )
             return audit_log
-    
+
     async def get_candidate_decisions(
-        self,
-        company_id: str,
-        candidate_id: str,
-        job_vacancy_id: str | None = None,
-        limit: int = 50,
-        offset: int = 0
+        self, company_id: str, candidate_id: str, job_vacancy_id: str | None = None, limit: int = 50, offset: int = 0
     ) -> dict[str, Any]:
         """
         Get all decisions made about a candidate (for explainability).
-        
+
         Args:
             company_id: The company/tenant ID
             candidate_id: The candidate ID
             job_vacancy_id: Optional job vacancy ID to filter by
             limit: Maximum number of results
             offset: Pagination offset
-            
+
         Returns:
             Dictionary with audit logs and pagination info
         """
         from sqlalchemy import func
-        
+
         async with AsyncSessionLocal() as session:
-            where_conditions = [
-                AuditLog.company_id == company_id,
-                AuditLog.candidate_id == candidate_id
-            ]
-            
+            where_conditions = [AuditLog.company_id == company_id, AuditLog.candidate_id == candidate_id]
+
             if job_vacancy_id:
                 where_conditions.append(AuditLog.job_vacancy_id == job_vacancy_id)
-            
+
             count_query = select(func.count()).select_from(AuditLog).where(and_(*where_conditions))
             count_result = await session.execute(count_query)
             total = count_result.scalar() or 0
-            
+
             data_query = (
                 select(AuditLog)
                 .where(and_(*where_conditions))
@@ -209,64 +202,56 @@ class AuditService:
                 .limit(limit)
                 .offset(offset)
             )
-            
+
             result = await session.execute(data_query)
             audit_logs = result.scalars().all()
-            
+
             logger.info(f"📋 Retrieved {len(audit_logs)} audit logs for candidate {candidate_id}")
-            
+
             return {
                 "audit_logs": [log.to_dict() for log in audit_logs],
                 "total": total,
                 "limit": limit,
                 "offset": offset,
             }
-    
+
     async def get_decisions_by_agent(
         self,
         company_id: str,
         agent_name: str,
         start_date: datetime | None = None,
         end_date: datetime | None = None,
-        limit: int = 100
+        limit: int = 100,
     ) -> list[AuditLog]:
         """
         Get decisions made by a specific agent.
-        
+
         Args:
             company_id: The company/tenant ID
             agent_name: Name of the agent
             start_date: Optional start date filter
             end_date: Optional end date filter
             limit: Maximum number of results
-            
+
         Returns:
             List of AuditLog instances
         """
         async with AsyncSessionLocal() as session:
-            where_conditions = [
-                AuditLog.company_id == company_id,
-                AuditLog.agent_name == agent_name
-            ]
-            
+            where_conditions = [AuditLog.company_id == company_id, AuditLog.agent_name == agent_name]
+
             if start_date:
                 where_conditions.append(AuditLog.created_at >= start_date)
             if end_date:
                 where_conditions.append(AuditLog.created_at <= end_date)
-            
-            query = (
-                select(AuditLog)
-                .where(and_(*where_conditions))
-                .order_by(desc(AuditLog.created_at))
-                .limit(limit)
-            )
-            
+
+            query = select(AuditLog).where(and_(*where_conditions)).order_by(desc(AuditLog.created_at)).limit(limit)
+
             result = await session.execute(query)
             audit_logs = result.scalars().all()
-            
+
             logger.info(f"📋 Retrieved {len(audit_logs)} audit logs for agent {agent_name}")
             return list(audit_logs)
-    
+
     async def log_output(
         self,
         *,
@@ -307,7 +292,16 @@ class AuditService:
                 output_text=output_text[:8000] if output_text else None,
                 fairness_flags=fairness_flags or [],
                 reasoning=[],
-                criteria_used=[],
+                # R-003 (Sprint 1): payload estruturado para LGPD Art.20 explainability.
+                # Formato "key:value" preserva schema list[str] sem mudanca destrutiva.
+                criteria_used=[
+                    f"agent:{agent_used or 'unknown'}",
+                    f"action:{action_executed or 'lia_response'}",
+                    "decision_type:conversational_output",
+                    f"fairness_flags_count:{len(fairness_flags or [])}",
+                    f"has_candidate_context:{bool(candidate_id)}",
+                    f"has_job_context:{bool(job_vacancy_id)}",
+                ],
                 criteria_ignored=list(PROTECTED_CRITERIA),
                 human_review_required=False,
                 retention_until=retention_until,
@@ -315,10 +309,7 @@ class AuditService:
             session.add(audit_log)
             await session.commit()
 
-            logger.info(
-                "Output audit logged: agent=%s session=%s candidate=%s",
-                agent_used, session_id, candidate_id
-            )
+            logger.info("Output audit logged: agent=%s session=%s candidate=%s", agent_used, session_id, candidate_id)
 
     async def record_human_review(
         self,
@@ -328,12 +319,12 @@ class AuditService:
     ) -> AuditLog | None:
         """
         Record when a human reviews/overrides an AI decision.
-        
+
         Args:
             audit_log_id: ID of the audit log to update
             reviewed_by: User ID of the reviewer
             override: Optional new decision if human overrides AI
-            
+
         Returns:
             Updated AuditLog instance or None if not found
         """
@@ -341,15 +332,15 @@ class AuditService:
             query = select(AuditLog).where(AuditLog.id == audit_log_id)
             result = await session.execute(query)
             audit_log = result.scalar_one_or_none()
-            
+
             if audit_log:
                 audit_log.human_reviewed_by = reviewed_by
                 audit_log.human_reviewed_at = datetime.utcnow()
                 audit_log.human_override = override
-                
+
                 await session.commit()
                 await session.refresh(audit_log)
-                
+
                 logger.info(
                     f"✅ Human review recorded for audit log {audit_log_id} "
                     f"by {reviewed_by}" + (f" (override: {override})" if override else "")
@@ -358,19 +349,15 @@ class AuditService:
             else:
                 logger.warning(f"⚠️  Audit log not found: {audit_log_id}")
                 return None
-    
-    async def get_pending_reviews(
-        self,
-        company_id: str,
-        limit: int = 50
-    ) -> list[AuditLog]:
+
+    async def get_pending_reviews(self, company_id: str, limit: int = 50) -> list[AuditLog]:
         """
         Get decisions that require human review but haven't been reviewed yet.
-        
+
         Args:
             company_id: The company/tenant ID
             limit: Maximum number of results
-            
+
         Returns:
             List of AuditLog instances pending review
         """
@@ -381,50 +368,47 @@ class AuditService:
                     and_(
                         AuditLog.company_id == company_id,
                         AuditLog.human_review_required,
-                        AuditLog.human_reviewed_at.is_(None)
+                        AuditLog.human_reviewed_at.is_(None),
                     )
                 )
                 .order_by(desc(AuditLog.created_at))
                 .limit(limit)
             )
-            
+
             result = await session.execute(query)
             audit_logs = result.scalars().all()
-            
+
             logger.info(f"📋 Found {len(audit_logs)} pending reviews for company {company_id}")
             return list(audit_logs)
-    
+
     async def get_decision_statistics(
-        self,
-        company_id: str,
-        start_date: datetime | None = None,
-        end_date: datetime | None = None
+        self, company_id: str, start_date: datetime | None = None, end_date: datetime | None = None
     ) -> dict[str, Any]:
         """
         Get statistics about AI decisions for governance reporting.
-        
+
         Args:
             company_id: The company/tenant ID
             start_date: Optional start date filter
             end_date: Optional end date filter
-            
+
         Returns:
             Dictionary with decision statistics
         """
         from sqlalchemy import func
-        
+
         async with AsyncSessionLocal() as session:
             where_conditions = [AuditLog.company_id == company_id]
-            
+
             if start_date:
                 where_conditions.append(AuditLog.created_at >= start_date)
             if end_date:
                 where_conditions.append(AuditLog.created_at <= end_date)
-            
+
             total_query = select(func.count()).select_from(AuditLog).where(and_(*where_conditions))
             total_result = await session.execute(total_query)
             total_decisions = total_result.scalar() or 0
-            
+
             by_type_query = (
                 select(AuditLog.decision_type, func.count(AuditLog.id))
                 .where(and_(*where_conditions))
@@ -432,7 +416,7 @@ class AuditService:
             )
             by_type_result = await session.execute(by_type_query)
             by_type = dict(by_type_result.fetchall())
-            
+
             by_decision_query = (
                 select(AuditLog.decision, func.count(AuditLog.id))
                 .where(and_(*where_conditions))
@@ -440,33 +424,23 @@ class AuditService:
             )
             by_decision_result = await session.execute(by_decision_query)
             by_decision = dict(by_decision_result.fetchall())
-            
+
             reviewed_query = (
                 select(func.count())
                 .select_from(AuditLog)
-                .where(
-                    and_(
-                        *where_conditions,
-                        AuditLog.human_reviewed_at.isnot(None)
-                    )
-                )
+                .where(and_(*where_conditions, AuditLog.human_reviewed_at.isnot(None)))
             )
             reviewed_result = await session.execute(reviewed_query)
             human_reviewed = reviewed_result.scalar() or 0
-            
+
             overridden_query = (
                 select(func.count())
                 .select_from(AuditLog)
-                .where(
-                    and_(
-                        *where_conditions,
-                        AuditLog.human_override.isnot(None)
-                    )
-                )
+                .where(and_(*where_conditions, AuditLog.human_override.isnot(None)))
             )
             overridden_result = await session.execute(overridden_query)
             human_overridden = overridden_result.scalar() or 0
-            
+
             return {
                 "total_decisions": total_decisions,
                 "by_type": by_type,
@@ -475,7 +449,6 @@ class AuditService:
                 "human_overridden": human_overridden,
                 "override_rate": (human_overridden / human_reviewed * 100) if human_reviewed > 0 else 0,
             }
-
 
     # ------------------------------------------------------------------
     # Unified facade methods (P35-061 — Audit Consolidation)
@@ -508,7 +481,14 @@ class AuditService:
                     action=action_type,
                     decision="executed",
                     reasoning=[],
-                    criteria_used=[],
+                    # R-003 (Sprint 1): payload estruturado pre log_action.
+                    criteria_used=[
+                        f"actor:{actor or 'unknown'}",
+                        f"action_type:{action_type}",
+                        f"target_type:{target_type or 'unknown'}",
+                        f"has_target:{bool(target_id)}",
+                        f"has_trace:{bool(trace_id)}",
+                    ],
                     criteria_ignored=[],
                     candidate_id=target_id if target_type == "candidate" else None,
                     job_vacancy_id=target_id if target_type == "job" else None,
@@ -545,7 +525,14 @@ class AuditService:
                     action=check_type,
                     decision=result,
                     reasoning=[str(details)] if details else [],
-                    criteria_used=[],
+                    # R-003 (Sprint 1): payload estruturado para log_compliance_check.
+                    criteria_used=[
+                        f"check_type:{check_type}",
+                        f"result:{result}",
+                        f"has_details:{bool(details)}",
+                        f"has_candidate:{bool(candidate_id)}",
+                        f"has_trace:{bool(trace_id)}",
+                    ],
                     criteria_ignored=list(PROTECTED_CRITERIA),
                     candidate_id=candidate_id,
                     session_id=trace_id,
@@ -578,7 +565,14 @@ class AuditService:
                     action=error_type,
                     decision="error",
                     reasoning=[error_message],
-                    criteria_used=[],
+                    # R-003 (Sprint 1): payload estruturado para log_error.
+                    criteria_used=[
+                        f"error_type:{error_type}",
+                        f"agent:{agent}",
+                        f"has_metadata:{bool(metadata)}",
+                        f"has_trace:{bool(trace_id)}",
+                        f"message_truncated:{len(error_message) > 500 if error_message else False}",
+                    ],
                     criteria_ignored=[],
                     session_id=trace_id,
                     retention_until=datetime.utcnow() + timedelta(days=365),
@@ -605,11 +599,7 @@ class AuditService:
                 if company_id:
                     conditions.append(AuditLog.company_id == company_id)
 
-                result = await session.execute(
-                    select(AuditLog)
-                    .where(and_(*conditions))
-                    .order_by(AuditLog.created_at)
-                )
+                result = await session.execute(select(AuditLog).where(and_(*conditions)).order_by(AuditLog.created_at))
                 logs = result.scalars().all()
                 return [log.to_dict() for log in logs]
         except Exception as exc:
@@ -619,7 +609,7 @@ class AuditService:
 
 audit_service = AuditService()
 
+
 # FastAPI dependency injection factory
 def get_audit_service() -> "AuditService":
     return audit_service
-

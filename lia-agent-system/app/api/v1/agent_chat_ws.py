@@ -47,6 +47,7 @@ from app.shared.chat_event_serializer import (
     serialize_thinking,
 )
 from app.shared.prompt_injection import PromptInjectionGuard
+from app.shared.pii_masking import mask_pii
 from app.shared.robustness.security_patterns import check_input_security, get_block_response
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.compliance.c3b_layer import pre_compliance, post_compliance, ComplianceContext
@@ -865,6 +866,74 @@ async def agent_chat_ws(
                 active_domain = _subagent_for_sourcing(content)
                 logger.debug("[AgentChatWS][Z2] sourcing → %s", active_domain)
 
+            # ── Onda 37.B.0 + Sprint A.1 — Wizard canonical INITIAL path ─────────
+            # Restored Sprint A.1 canonical: WizardSessionService.process_message()
+            # is the entry point. Service handles:
+            #   • thread_id derivation (continuidade entre turnos)
+            #   • prior_state retrieval (Bug 6 fix — state loss between turns)
+            #   • _build_state (merge right_panel_form + metadata + prior)
+            #   • manager_preferences apply_to_state (centralizado, não duplicar)
+            #   • graph.stream_invoke (streaming token-by-token)
+            #   • record_job_completion on handoff (idempotente, centralizado)
+            # Falls through to _get_agent fallback only on hard exception.
+            if active_domain == "wizard":
+                _wizard_canonical_handled = False
+                try:
+                    from app.domains.job_creation.services.wizard_session_service import (
+                        WizardSessionService,
+                    )
+
+                    # Stream callback retransmite tokens LLM para o cliente WS
+                    async def _wiz_on_token(_chunk: str) -> None:
+                        try:
+                            await ws_mgr.send_to_session(session_id, {
+                                "type": "token",
+                                "session_id": session_id,
+                                "domain": "wizard",
+                                "delta": mask_pii(_chunk) if isinstance(_chunk, str) else _chunk,
+                            })
+                        except Exception:
+                            pass  # fail-silent — streaming não bloqueia
+
+                    _wiz_thread_id = WizardSessionService.derive_thread_id(msg, session_id)
+                    _wiz_message, _wiz_payload, _tokens_emitted = await WizardSessionService.process_message(
+                        thread_id=_wiz_thread_id,
+                        user_message=content,
+                        user_id=user_id,
+                        company_id=company_id,
+                        session_id=session_id,
+                        context=context,
+                        on_token=_wiz_on_token,
+                    )
+
+                    _wiz_clean = mask_pii(_strip_react_json(_wiz_message or ""))
+                    await ws_mgr.send_to_session(session_id, serialize_message(
+                        content=_wiz_clean,
+                        confidence=0.95,
+                        domain="wizard",
+                        source="wizard_session_canonical",
+                    ))
+                    conversation_history.append({"role": "user", "content": content})
+                    conversation_history.append({"role": "assistant", "content": _wiz_clean})
+
+                    # ws_stage_payload → panel update event
+                    if _wiz_payload:
+                        await ws_mgr.send_to_session(session_id, {
+                            "type": "wizard_stage",
+                            "session_id": session_id,
+                            "stage": _wiz_payload.get("stage", "wizard"),
+                            **_wiz_payload,
+                        })
+                    _wizard_canonical_handled = True
+                except Exception as _wiz_exc:
+                    logger.error(
+                        "[AgentChatWS] WizardSessionService canonical path crashed; "
+                        "falling back to legacy: %s",
+                        _wiz_exc, exc_info=True,
+                    )
+                if _wizard_canonical_handled:
+                    continue  # canonical handled — skip ReAct loop
+
             agent = _get_agent(active_domain)
             if agent is None:
                 await ws_mgr.send_to_session(session_id, serialize_error(
@@ -964,7 +1033,7 @@ async def agent_chat_ws(
                     except Exception as _inc_exc:
                         logger.warning("[AgentChatWS] increment_usage falhou: %s", _inc_exc)
 
-                clean_message = _strip_react_json(output.message or "")
+                clean_message = mask_pii(_strip_react_json(output.message or ""))
 
                 _c3b_ctx = ComplianceContext(
                     company_id=company_id or "",

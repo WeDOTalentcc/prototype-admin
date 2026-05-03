@@ -476,9 +476,9 @@ async def confirm_cv_and_create_candidate(
         return CVConfirmResponse(
             success=True,
             message="Candidate created successfully from CV",
-            candidate_id=candidate.id,  # type: ignore
-            candidate_name=str(candidate.name) if candidate.name else None,  # type: ignore
-            candidate_email=str(candidate.email) if candidate.email else None,  # type: ignore
+            candidate_id=candidate.id,  # type: ignore[union-attr]
+            candidate_name=str(candidate.name) if candidate.name else None,  # type: ignore[union-attr]
+            candidate_email=str(candidate.email) if candidate.email else None,  # type: ignore[union-attr]
             was_duplicate=duplicate_check.is_duplicate,
             merged_with_id=None
         )

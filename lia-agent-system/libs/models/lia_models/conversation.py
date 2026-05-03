@@ -36,6 +36,7 @@ class Conversation(Base):
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(String(255), nullable=False, index=True)
+    company_id = Column(String(255), nullable=True, index=True)
     user_role = Column(String(50), default="recruiter")
     
     session_id = Column(String(255), nullable=True, index=True)
@@ -73,6 +74,7 @@ class Conversation(Base):
         return {
             "id": str(self.id),
             "user_id": self.user_id,
+            "company_id": self.company_id,
             "context_type": self.context_type,
             "context_id": self.context_id,
             "title": self.title,

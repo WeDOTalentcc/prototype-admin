@@ -14,6 +14,7 @@ import logging
 from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolOutput
 
 from app.shared.tool_handler import tool_handler
 
@@ -260,6 +261,11 @@ _DIVERSITY_TOOL_DEFINITIONS.append(
             },
             "required": [],
         },
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
+        touches_pii=True,
+        pii_output_fields=["name", "email", "linkedin_url"],
+        output_schema=ToolOutput,
         function=_wrap_diversity_search_candidates,
     )
 )
@@ -385,6 +391,9 @@ _DIVERSITY_TOOL_DEFINITIONS.append(
             },
             "required": [],
         },
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
+        output_schema=ToolOutput,
         function=_wrap_diversity_get_pool_metrics,
     )
 )
@@ -460,6 +469,9 @@ _DIVERSITY_TOOL_DEFINITIONS.append(
             },
             "required": [],
         },
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
+        output_schema=ToolOutput,
         function=_wrap_diversity_check_goals,
     )
 )

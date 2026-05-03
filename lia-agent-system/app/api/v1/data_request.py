@@ -469,14 +469,14 @@ async def update_collection_settings(
         config = await data_request_service.update_config(db, company_id, updates)
         
         return CollectionSettingsResponse(
-            collection_mode=config.collection_mode or "portal_only",  # type: ignore
-            collection_messages=config.collection_messages or {},  # type: ignore
+            collection_mode=config.collection_mode or "portal_only",  # type: ignore[union-attr]
+            collection_messages=config.collection_messages or {},  # type: ignore[union-attr]
             lgpd=LGPDSettingsSchema(
-                require_consent=config.lgpd_require_consent if config.lgpd_require_consent is not None else True,  # type: ignore
-                consent_message=config.lgpd_consent_message,  # type: ignore
-                disclaimer_text=config.lgpd_disclaimer_text,  # type: ignore
-                data_retention_days=config.lgpd_data_retention_days or 365,  # type: ignore
-                allow_data_deletion=config.lgpd_allow_data_deletion if config.lgpd_allow_data_deletion is not None else True,  # type: ignore
+                require_consent=config.lgpd_require_consent if config.lgpd_require_consent is not None else True,  # type: ignore[union-attr]
+                consent_message=config.lgpd_consent_message,  # type: ignore[union-attr]
+                disclaimer_text=config.lgpd_disclaimer_text,  # type: ignore[union-attr]
+                data_retention_days=config.lgpd_data_retention_days or 365,  # type: ignore[union-attr]
+                allow_data_deletion=config.lgpd_allow_data_deletion if config.lgpd_allow_data_deletion is not None else True,  # type: ignore[union-attr]
             ),
         )
     except Exception as e:
@@ -496,14 +496,14 @@ async def get_collection_settings(
         config = await data_request_service.get_or_create_config(db, company_id)
         
         return CollectionSettingsResponse(
-            collection_mode=config.collection_mode or "portal_only",  # type: ignore
-            collection_messages=config.collection_messages or {},  # type: ignore
+            collection_mode=config.collection_mode or "portal_only",  # type: ignore[union-attr]
+            collection_messages=config.collection_messages or {},  # type: ignore[union-attr]
             lgpd=LGPDSettingsSchema(
-                require_consent=config.lgpd_require_consent if config.lgpd_require_consent is not None else True,  # type: ignore
-                consent_message=config.lgpd_consent_message,  # type: ignore
-                disclaimer_text=config.lgpd_disclaimer_text,  # type: ignore
-                data_retention_days=config.lgpd_data_retention_days or 365,  # type: ignore
-                allow_data_deletion=config.lgpd_allow_data_deletion if config.lgpd_allow_data_deletion is not None else True,  # type: ignore
+                require_consent=config.lgpd_require_consent if config.lgpd_require_consent is not None else True,  # type: ignore[union-attr]
+                consent_message=config.lgpd_consent_message,  # type: ignore[union-attr]
+                disclaimer_text=config.lgpd_disclaimer_text,  # type: ignore[union-attr]
+                data_retention_days=config.lgpd_data_retention_days or 365,  # type: ignore[union-attr]
+                allow_data_deletion=config.lgpd_allow_data_deletion if config.lgpd_allow_data_deletion is not None else True,  # type: ignore[union-attr]
             ),
         )
     except Exception as e:

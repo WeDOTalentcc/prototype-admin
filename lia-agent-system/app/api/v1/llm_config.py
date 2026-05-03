@@ -185,9 +185,16 @@ async def update_llm_config(
 
         # Audit log
         audit_repo = AuditLogRepository(db)
+        _company_uuid = None
+        try:
+            from uuid import UUID as _UUID
+            _company_uuid = _UUID(company_id) if company_id else None
+        except ValueError:
+            pass
         await audit_repo.create_log({
             "action": "llm_config_update",
             "action_category": "security",
+            "company_id": _company_uuid,
             "client_id": company_id,
             "user_id": str(current_user.id),
             "user_email": current_user.email,
@@ -217,6 +224,7 @@ async def update_llm_config(
             await audit_repo.create_log({
                 "user_id": str(current_user.id),
                 "user_email": getattr(current_user, "email", "unknown"),
+                "company_id": _company_uuid,
                 "client_id": company_id,
                 "client_name": getattr(current_user, "company_name", company_id),
                 "action": "llm_config.update",

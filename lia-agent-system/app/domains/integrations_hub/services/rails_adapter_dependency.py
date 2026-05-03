@@ -26,7 +26,8 @@ import os
 from collections.abc import AsyncGenerator
 
 from fastapi import Depends, Request
-from lia_config.database import get_db
+from app.core.database import get_tenant_db
+from lia_config.database import get_db  # noqa: F401  (kept for backward-compat re-exports)
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domains.integrations_hub.services.rails_adapter import RailsAdapter
@@ -38,7 +39,7 @@ _RAILS_API_TOKEN = os.environ.get("RAILS_API_TOKEN", "")
 
 async def get_rails_adapter(
     request: Request,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 ) -> AsyncGenerator[RailsAdapter, None]:
     """
     FastAPI dependency: yields a RailsAdapter with DB + Rails token.

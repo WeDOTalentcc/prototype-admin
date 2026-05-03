@@ -107,6 +107,31 @@ lia-contexts    = { workspace = true }
 lia-auth        = { workspace = true }
 lia-orchestrator = { workspace = true }
 
+# Per-module ignores: high-error-density domains that need time to fix.
+# These are isolated from strict mode so new code CAN be enforced.
+# Remove each override when that module is cleaned up.
+[[tool.mypy.overrides]]
+module = [
+    "app.domains.sourcing.*",
+    "app.domains.recruiter_assistant.*",
+    "app.domains.analytics.services.recruiter_personalization_service",
+    "app.domains.analytics.services.intelligence_layer_service",
+    "app.api.v1.data_request",
+]
+ignore_errors = true
+
+# Compliance + evaluation modules: enforce strictly (these are already clean).
+# Add disallow_any_generics + warn_return_any so new code meets the bar.
+[[tool.mypy.overrides]]
+module = [
+    "app.shared.compliance.*",
+    "app.domains.compliance.*",
+    "app.shared.evaluation.*",
+]
+disallow_any_generics = true
+warn_return_any = true
+disallow_untyped_defs = true
+
 # ---------------------------------------------------------------------------
 # Lint configuration — enforces architectural boundaries
 # ---------------------------------------------------------------------------

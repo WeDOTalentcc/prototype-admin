@@ -18,6 +18,7 @@ from datetime import datetime, timedelta
 from typing import Any
 
 import httpx
+from lia_config.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +60,7 @@ class ApifyMCPClient:
     def __init__(self, api_key: str | None = None, session_max_age_minutes: int = 30):
         self.api_key = api_key or APIFY_API_KEY
         self.mcp_url = APIFY_MCP_URL
-        self.timeout = httpx.Timeout(180.0, connect=30.0)
+        self.timeout = httpx.Timeout(settings.HTTP_TIMEOUT_APIFY_SECONDS, connect=settings.HTTP_TIMEOUT_APIFY_CONNECT_SECONDS)  # UC-P2-12
         self.session_max_age = session_max_age_minutes
         self._http_client: httpx.AsyncClient | None = None
         self._max_retries = 3

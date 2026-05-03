@@ -10,6 +10,22 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
 
+import json as _json
+import os
+
+# UC-P2-01: Redis persistence for action_history (TTL 24h, non-blocking)
+try:
+    import redis as _redis_module
+    _REDIS = _redis_module.from_url(
+        os.getenv("REDIS_URL", "redis://localhost:6379/0"),
+        decode_responses=True,
+    )
+    _REDIS.ping()
+except Exception:
+    _REDIS = None
+
+_ACTION_HISTORY_TTL = 86400  # 24 h (LGPD Art. 15 -- session data lifecycle)
+
 logger = logging.getLogger(__name__)
 
 _MAX_ACTION_HISTORY = 20
@@ -87,12 +103,36 @@ class MemoryResolver:
             "[MemoryResolver][%s] action recorded: %s.%s",
             self.session_id, domain, action,
         )
+        # UC-P2-01: persist to Redis (non-blocking, fail-open)
+        if _REDIS:
+            try:
+                key = f"lia:action_history:{self.session_id}"
+                _REDIS.rpush(key, _json.dumps(record.to_dict()))
+                _REDIS.expire(key, _ACTION_HISTORY_TTL)
+            except Exception as exc:  # noqa: BLE001
+                logger.debug(
+                    "[MemoryResolver][%s] Redis write failed (non-blocking): %s",
+                    self.session_id, exc,
+                )
         return record
 
-    def get_recent_actions(self, limit: int = 5) -> list[dict[str, Any]]:
-        """Return the N most recent actions as dicts."""
-        recent = self._action_history[-limit:]
-        return [a.to_dict() for a in recent]
+    def get_action_history(self, session_id: str | None = None) -> list[dict]:
+        """Return full action history, preferring Redis when available (UC-P2-01)."""
+        sid = session_id or self.session_id
+        if _REDIS:
+            try:
+                key = f"lia:action_history:{sid}"
+                raw = _REDIS.lrange(key, 0, -1)
+                if raw:
+                    return [_json.loads(r) for r in raw]
+            except Exception:  # noqa: BLE001
+                pass
+        return [a.to_dict() for a in self._action_history]
+
+    def get_recent_actions(self, limit: int = 5) -> list[dict]:
+        """Return the N most recent actions as dicts (Redis-backed when available)."""
+        history = self.get_action_history()
+        return history[-limit:]
 
     def get_actions_for_domain(self, domain: str, limit: int = 5) -> list[dict[str, Any]]:
         """Return recent actions filtered by domain."""

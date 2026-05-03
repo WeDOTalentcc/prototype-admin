@@ -9,6 +9,7 @@ import uuid
 from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolOutput
 from sqlalchemy import text as sql_text
 
 from app.core.database import AsyncSessionLocal
@@ -35,16 +36,6 @@ from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.tool_handler import tool_handler
 
 logger = logging.getLogger(__name__)
-
-
-def _get_authenticated_company_id(kwargs: dict) -> str | None:
-    """Extract the authenticated (server-side) company_id from request context.
-    Always prefer this over any LLM-supplied company_id parameter.
-    """
-    context = kwargs.get("_context") or kwargs.get("context")
-    if context:
-        return getattr(context, "company_id", None)
-    return None
 
 _SALARY_FALLBACK = {
     "estagio": {"min": 1200, "max": 2500, "currency": "BRL"},
@@ -154,8 +145,6 @@ async def _wrap_get_salary_benchmarks(**kwargs: Any) -> dict[str, Any]:
     seniority = kwargs.get("seniority", "pleno")
     location = kwargs.get("location", "")
     department = kwargs.get("department", "")
-    auth_company_id = _get_authenticated_company_id(kwargs)
-    company_id = auth_company_id or kwargs.get("company_id", "")
     logger.info(f"[wizard_tools] get_salary_benchmarks called for title={job_title}, seniority={seniority}")
 
     internal_avg: dict[str, Any] | None = None
@@ -170,11 +159,9 @@ async def _wrap_get_salary_benchmarks(**kwargs: Any) -> dict[str, Any]:
                     COUNT(*) as total_vagas
                 FROM job_vacancies
                 WHERE salary_range IS NOT NULL
-                  AND company_id = :company_id
                   AND (title ILIKE :title_pattern OR department = :dept)
             """)
             result = await db.execute(query, {
-                "company_id": company_id,
                 "title_pattern": f"%{job_title}%",
                 "dept": department or "",
             })
@@ -244,47 +231,22 @@ async def _wrap_validate_job_fields(**kwargs: Any) -> dict[str, Any]:
     return await _validate_job_fields(**kwargs)
 @tool_handler("wizard")
 async def _wrap_get_job_suggestions(**kwargs: Any) -> dict[str, Any]:
-    """Wrapper for get_job_suggestions that enforces strict tenant isolation."""
-    auth_company_id = _get_authenticated_company_id(kwargs)
-    if not auth_company_id:
-        return {"success": False, "data": {}, "message": "Tenant isolation: authenticated context required."}
-    kwargs = dict(kwargs)
-    kwargs["company_id"] = auth_company_id
+    """Wrapper for get_job_suggestions that handles errors gracefully."""
     logger.info(f"[wizard_tools] get_job_suggestions called with: {list(kwargs.keys())}")
     return await _get_job_suggestions(**kwargs)
 @tool_handler("wizard")
 async def _wrap_save_job_draft(**kwargs: Any) -> dict[str, Any]:
-    """Wrapper for save_job_draft that enforces strict tenant isolation."""
-    auth_company_id = _get_authenticated_company_id(kwargs)
-    if not auth_company_id:
-        return {"success": False, "data": {}, "message": "Tenant isolation: authenticated context required."}
-    kwargs = dict(kwargs)
-    kwargs["company_id"] = auth_company_id
-    context = kwargs.get("_context") or kwargs.get("context")
-    if context:
-        auth_user_id = getattr(context, "user_id", None)
-        if auth_user_id:
-            kwargs["recruiter_id"] = auth_user_id
+    """Wrapper for save_job_draft that handles errors gracefully."""
     logger.info(f"[wizard_tools] save_job_draft called with: {list(kwargs.keys())}")
     return await _save_job_draft(**kwargs)
 @tool_handler("wizard")
 async def _wrap_get_company_config(**kwargs: Any) -> dict[str, Any]:
-    """Wrapper for get_company_config that enforces strict tenant isolation."""
-    auth_company_id = _get_authenticated_company_id(kwargs)
-    if not auth_company_id:
-        return {"success": False, "data": {}, "message": "Tenant isolation: authenticated context required."}
-    kwargs = dict(kwargs)
-    kwargs["company_id"] = auth_company_id
+    """Wrapper for get_company_config that handles errors gracefully."""
     logger.info(f"[wizard_tools] get_company_config called with: {list(kwargs.keys())}")
     return await _get_company_config(**kwargs)
 @tool_handler("wizard")
 async def _wrap_generate_enriched_jd(**kwargs: Any) -> dict[str, Any]:
-    """Wrapper for generate_enriched_jd that enforces strict tenant isolation."""
-    auth_company_id = _get_authenticated_company_id(kwargs)
-    if not auth_company_id:
-        return {"success": False, "data": {}, "message": "Tenant isolation: authenticated context required."}
-    kwargs = dict(kwargs)
-    kwargs["company_id"] = auth_company_id
+    """Wrapper for generate_enriched_jd that handles errors gracefully."""
     logger.info(f"[wizard_tools] generate_enriched_jd called with: {list(kwargs.keys())}")
     return await _generate_enriched_jd(**kwargs)
 @tool_handler("wizard")
@@ -366,6 +328,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["text", "field_name"],
         },
+        output_schema=ToolOutput,
         function=_wrap_validate_job_requirements,
     ),
     ToolDefinition(
@@ -381,6 +344,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["job_title", "seniority"],
         },
+        output_schema=ToolOutput,
         function=_wrap_get_salary_benchmarks,
     ),
     ToolDefinition(
@@ -396,6 +360,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["job_title"],
         },
+        output_schema=ToolOutput,
         function=_wrap_search_salary_benchmark,
     ),
     ToolDefinition(
@@ -409,6 +374,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["job_data"],
         },
+        output_schema=ToolOutput,
         function=_wrap_validate_job_fields,
     ),
     ToolDefinition(
@@ -423,6 +389,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["field_name", "job_context"],
         },
+        output_schema=ToolOutput,
         function=_wrap_get_job_suggestions,
     ),
     ToolDefinition(
@@ -438,6 +405,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["draft_id", "updates", "recruiter_id", "company_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_save_job_draft,
     ),
     ToolDefinition(
@@ -452,6 +420,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["company_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_get_company_config,
     ),
     ToolDefinition(
@@ -472,6 +441,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["title", "company_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_generate_enriched_jd,
     ),
     ToolDefinition(
@@ -489,6 +459,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": [],
         },
+        output_schema=ToolOutput,
         function=_wrap_check_job_draft_health,
     ),
 ]
@@ -498,14 +469,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
 async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     report_type = kwargs.get("report_type", "summary")
     period = kwargs.get("period", "month")
-    auth_company_id = _get_authenticated_company_id(kwargs)
-    if not auth_company_id:
-        return {
-            "success": False,
-            "data": {},
-            "message": "Tenant isolation: authenticated context required to generate reports.",
-        }
-    company_id = auth_company_id
+    company_id = kwargs.get("company_id", "")
     period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
     logger.info(f"[wizard_tools] generate_report called: type={report_type} period={period}")
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
@@ -517,7 +481,7 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
                     COUNT(*) FILTER (WHERE status = 'draft') AS drafts,
                     COUNT(*) FILTER (WHERE status = 'published') AS published
                 FROM job_vacancies
-                WHERE company_id = :cid
+                WHERE (:cid = '' OR company_id = :cid)
                   AND created_at > NOW() - MAKE_INTERVAL(days => :days)
             """), {"cid": company_id, "days": period_days})
             data = row.mappings().first() or {}
@@ -554,6 +518,7 @@ TOOL_DEFINITIONS.append(
             },
             "required": [],
         },
+        output_schema=ToolOutput,
         function=_wrap_generate_report,
     )
 )

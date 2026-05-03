@@ -13,21 +13,25 @@
  */
 
 import { fireEvent, render, screen } from "@testing-library/react";
-import { NextIntlClientProvider } from "next-intl";
-import { beforeAll, describe, expect, it, vi } from "vitest";
 
-// Mock next/navigation: ChatWorkflowReels usa useRouter para cards com navigate_url.
-// Canonical fix (sensor computacional): valida que router.push é chamado
-// quando suggestion.navigate_url está definido — evita regressoes silenciosas.
+// Phase 4J post-cherry-pick fix: ChatWorkflowReels uses useRouter() (added by
+// later commit PR-Q1 direct nav). This test was authored before that change
+// and lacks Next.js router mock — without it, render() fails with
+// "invariant expected app router to be mounted".
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
     push: vi.fn(),
     replace: vi.fn(),
+    back: vi.fn(),
+    forward: vi.fn(),
+    refresh: vi.fn(),
     prefetch: vi.fn(),
   }),
   usePathname: () => "/",
   useSearchParams: () => new URLSearchParams(),
 }));
+import { NextIntlClientProvider } from "next-intl";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 
 // jsdom não implementa matchMedia — mock global p/ useDockMagnifier (prefers-reduced-motion).
 beforeAll(() => {
@@ -286,17 +290,13 @@ describe("SUGGESTION_HINTS — completude do mapa de 22 cards", () => {
       domain: "interview_scheduling",
       intent: "reschedule_interview",
     },
-    // send-offer: usa domínio "offer" dedicado (backend já tem offer_proposals table).
-    // intent_hint "send_offer" garante routing determinístico via PR-A guide.
-    { id: "send-offer", domain: "offer", intent: "send_offer" },
+    { id: "send-offer", domain: "offer", intent: "send_offer" }, // PR-B implemented
     {
       id: "compare-candidates",
       domain: "sourcing",
       intent: "compare_candidates",
     },
-    // register-hire: action dedicada "register_hire" (mais específica que move_candidate).
-    // PR-C implementará a tool; o hint já roteia para pipeline domain corretamente.
-    { id: "register-hire", domain: "pipeline", intent: "register_hire" },
+    { id: "register-hire", domain: "pipeline", intent: "register_hire" }, // PR-C implemented
     { id: "close-vacancy", domain: "job_management", intent: "close_job" },
     // Utilitárias (9)
     { id: "job-report", domain: "analytics", intent: "generate_job_report" },
@@ -355,44 +355,59 @@ describe("SUGGESTION_HINTS — completude do mapa de 22 cards", () => {
 
 // ─── Integração: click envia metadata via onSelect ───────────────────────
 
-describe("ChatWorkflowReels — onSelect recebe (command, metadata)", () => {
-  it("clique no card 'Criar nova vaga' chama onSelect com metadata correta", () => {
+describe("ChatWorkflowReels — click handler (PR-Q1 direct nav + MODAL_OVERRIDES)", () => {
+  /**
+   * Post PR-Q1: click handler has 3 paths (priority order):
+   *   1. NAVIGATION_OVERRIDES → router.push (direct nav)
+   *   2. MODAL_OVERRIDES → lia:open_modal CustomEvent
+   *   3. fallback → onSelect(command, metadata)
+   *
+   * "create-job" is in MODAL_OVERRIDES (modal_id: "create_job"), so clicking
+   * it dispatches the modal event instead of calling onSelect. The test
+   * below verifies this canonical path.
+   */
+  it("clique no card 'Criar nova vaga' dispara lia:open_modal (PR-Q1)", () => {
     const onSelect = vi.fn();
+    const dispatchSpy = vi.spyOn(window, "dispatchEvent");
     renderWithIntl(<ChatWorkflowReels onSelect={onSelect} />);
 
-    // Stage "Vaga" é o primeiro com sugestões → ativo por default.
-    // Card "Criar nova vaga" aparece no painel inferior.
     const card = screen.getByRole("button", { name: /Criar nova vaga/i });
     fireEvent.click(card);
 
-    expect(onSelect).toHaveBeenCalledTimes(1);
-    expect(onSelect).toHaveBeenCalledWith(
-      "Criar uma nova vaga",
-      expect.objectContaining({
-        source: "rail_a",
-        card_id: "create-job",
-        stage: "definir-vaga",
-        domain_hint: "job_management",
-        intent_hint: "create_job",
-      }),
+    // create-job tem modal_id="create_job" → dispatch lia:open_modal,
+    // NÃO chama onSelect (PR-Q1 direct dispatch).
+    expect(onSelect).not.toHaveBeenCalled();
+
+    // Eventos disparados: lia:rail-a-card-click (analytics) + lia:open_modal
+    const openModalCall = dispatchSpy.mock.calls.find(
+      (c) => (c[0] as CustomEvent).type === "lia:open_modal",
     );
+    expect(openModalCall).toBeDefined();
+    expect((openModalCall![0] as CustomEvent).detail).toMatchObject({
+      modal_id: "create_job",
+    });
+
+    dispatchSpy.mockRestore();
   });
 
-  it("modo compact também envia metadata", () => {
+  it("modo compact: clique em 'Criar nova vaga' dispara lia:open_modal", () => {
     const onSelect = vi.fn();
+    const dispatchSpy = vi.spyOn(window, "dispatchEvent");
     renderWithIntl(<ChatWorkflowReels onSelect={onSelect} compact />);
 
     const card = screen.getByRole("button", { name: /Criar nova vaga/i });
     fireEvent.click(card);
 
-    expect(onSelect).toHaveBeenCalledTimes(1);
-    expect(onSelect).toHaveBeenCalledWith(
-      "Criar uma nova vaga",
-      expect.objectContaining({
-        source: "rail_a",
-        card_id: "create-job",
-        stage: "definir-vaga",
-      }),
+    expect(onSelect).not.toHaveBeenCalled();
+
+    const openModalCall = dispatchSpy.mock.calls.find(
+      (c) => (c[0] as CustomEvent).type === "lia:open_modal",
     );
+    expect(openModalCall).toBeDefined();
+    expect((openModalCall![0] as CustomEvent).detail).toMatchObject({
+      modal_id: "create_job",
+    });
+
+    dispatchSpy.mockRestore();
   });
 });

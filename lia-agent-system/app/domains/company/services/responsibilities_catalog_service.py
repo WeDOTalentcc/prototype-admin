@@ -582,7 +582,7 @@ class ResponsibilitiesCatalogService:
             for resp in company_responsibilities:
                 if role:
                     normalized_role = self.normalize_role(role)
-                    roles_list = list(resp.roles_associated) if resp.roles_associated else []  # type: ignore
+                    roles_list = list(resp.roles_associated) if resp.roles_associated else []  # type: ignore[union-attr]
                     if roles_list:
                         role_matches = any(
                             self.normalize_role(str(r)) == normalized_role

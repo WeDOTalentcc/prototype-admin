@@ -1,10 +1,10 @@
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.core.database import get_db
+from app.core.database import get_tenant_db
 from app.domains.cv_screening.repositories.screening_repository import ScreeningRepository
 
 
-def get_screening_repo(db: AsyncSession = Depends(get_db)) -> ScreeningRepository:
+def get_screening_repo(db: AsyncSession = Depends(get_tenant_db)) -> ScreeningRepository:
     return ScreeningRepository(db)
 
 from app.domains.cv_screening.services.cv_parser import CVParserService, get_cv_parser_service

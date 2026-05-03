@@ -50,6 +50,16 @@ class PipelineReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         logger.info("[PipelineReActAgent] Initialized")
 
     @property
+
+    def _get_tool_contracts(self) -> list:
+        """Ativa GovernanceToolNode para cv_screening."""
+        try:
+            from app.domains.cv_screening.agents.pipeline_tool_registry import get_pipeline_tools
+            return get_pipeline_tools()
+        except ImportError:
+            return []
+
+
     def domain_name(self) -> str:
         return "pipeline"
 

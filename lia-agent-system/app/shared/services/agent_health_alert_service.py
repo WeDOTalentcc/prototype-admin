@@ -32,7 +32,7 @@ try:
     import redis.asyncio as aioredis
     _AIOREDIS_AVAILABLE = True
 except ImportError:
-    aioredis = None  # type: ignore
+    aioredis = None  # type: ignore[union-attr]
     _AIOREDIS_AVAILABLE = False
 
 FAILURE_THRESHOLD = 3          # falhas consecutivas → WARNING

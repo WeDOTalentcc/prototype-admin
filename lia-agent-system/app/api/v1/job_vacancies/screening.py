@@ -7,7 +7,16 @@ Screening configuration routes.
 """
 from fastapi import APIRouter, Depends, HTTPException, Path
 
-from ._shared import *
+from ._shared import (  # noqa: F401
+    VALID_SCREENING_STATUSES,
+    derive_screening_status,
+    get_current_user_or_demo,
+    User,
+    Depends,
+    HTTPException,
+    BaseModel,
+    logger,
+)
 from app.domains.job_management.repositories.job_vacancy_screening_repository import JobVacancyScreeningRepository
 from app.domains.job_management.dependencies import get_job_vacancy_screening_repo
 

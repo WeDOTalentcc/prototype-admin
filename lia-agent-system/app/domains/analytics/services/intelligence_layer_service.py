@@ -490,18 +490,18 @@ class IntelligenceLayerService:
         relevant_patterns = [
             p for p in patterns
             if p.field == field and (
-                p.seniority is None or  # type: ignore
-                (seniority and str(p.seniority).lower() == seniority.lower())  # type: ignore
+                p.seniority is None or  # type: ignore[union-attr]
+                (seniority and str(p.seniority).lower() == seniority.lower())  # type: ignore[union-attr]
             )
         ]
         
         for pattern in relevant_patterns:
-            if pattern.confidence < 0.6:  # type: ignore
+            if pattern.confidence < 0.6:  # type: ignore[union-attr]
                 continue
             
             if field in ["salary_range", "salary_min", "salary_max"]:
                 if isinstance(value, dict):
-                    adjustment = float(pattern.avg_adjustment)  # type: ignore
+                    adjustment = float(pattern.avg_adjustment)  # type: ignore[union-attr]
                     adjusted_value = {
                         "min": round(value.get("min", 0) * adjustment, 2),
                         "max": round(value.get("max", 0) * adjustment, 2)
@@ -509,14 +509,14 @@ class IntelligenceLayerService:
                     adjustments.append(
                         f"Ajustado por padrão de correção: {(adjustment - 1) * 100:.0f}%"
                     )
-                    confidence_boost = min(0.1, float(pattern.confidence) * 0.1)  # type: ignore
+                    confidence_boost = min(0.1, float(pattern.confidence) * 0.1)  # type: ignore[union-attr]
                 elif isinstance(value, (int, float)):
-                    adjustment = float(pattern.avg_adjustment)  # type: ignore
+                    adjustment = float(pattern.avg_adjustment)  # type: ignore[union-attr]
                     adjusted_value = round(value * adjustment, 2)
                     adjustments.append(
                         f"Ajustado por padrão de correção: {(adjustment - 1) * 100:.0f}%"
                     )
-                    confidence_boost = min(0.1, float(pattern.confidence) * 0.1)  # type: ignore
+                    confidence_boost = min(0.1, float(pattern.confidence) * 0.1)  # type: ignore[union-attr]
         
         return adjusted_value, adjustments, confidence_boost
     
@@ -549,21 +549,21 @@ class IntelligenceLayerService:
         insights = []
         
         if context.success_profile and field == "salary_range":
-            avg_salary = context.success_profile.avg_salary  # type: ignore
+            avg_salary = context.success_profile.avg_salary  # type: ignore[union-attr]
             if avg_salary:
                 insights.append(
                     f"Média salarial de contratações bem-sucedidas: R$ {avg_salary:,.0f}"
                 )
         
         if context.success_profile and field == "skills":
-            must_have = context.success_profile.must_have_skills  # type: ignore
+            must_have = context.success_profile.must_have_skills  # type: ignore[union-attr]
             if must_have:
                 insights.append(
                     f"Skills mais comuns em contratações: {', '.join(must_have[:5])}"
                 )
         
         for corr in context.correlations:
-            if corr.recommendation:  # type: ignore
+            if corr.recommendation:  # type: ignore[union-attr]
                 insights.append(str(corr.recommendation))
         
         thresholds = custom_thresholds or ConfidenceThresholds()
@@ -656,9 +656,9 @@ class IntelligenceLayerService:
         insight = result.scalar_one_or_none()
         
         if insight:
-            insight.was_applied = was_applied  # type: ignore
-            insight.was_accepted = was_accepted  # type: ignore
-            insight.final_value = final_value  # type: ignore
+            insight.was_applied = was_applied  # type: ignore[union-attr]
+            insight.was_accepted = was_accepted  # type: ignore[union-attr]
+            insight.final_value = final_value  # type: ignore[union-attr]
             await db.flush()
     
     async def refresh_patterns(
@@ -742,7 +742,7 @@ class IntelligenceLayerService:
             "patterns": {
                 "count": len(context.correction_patterns),
                 "fields_with_patterns": list(set(
-                    str(p.field) for p in context.correction_patterns  # type: ignore
+                    str(p.field) for p in context.correction_patterns  # type: ignore[union-attr]
                 )),
             },
             "predictions": {},
@@ -755,20 +755,20 @@ class IntelligenceLayerService:
         
         if context.success_profile:
             enhancements["success_profile"] = {
-                "avg_time_to_fill": context.success_profile.avg_time_to_fill,  # type: ignore
-                "avg_salary": context.success_profile.avg_salary,  # type: ignore
-                "satisfaction_avg": context.success_profile.satisfaction_avg,  # type: ignore
-                "must_have_skills": context.success_profile.must_have_skills,  # type: ignore
-                "sample_size": context.success_profile.sample_size,  # type: ignore
+                "avg_time_to_fill": context.success_profile.avg_time_to_fill,  # type: ignore[union-attr]
+                "avg_salary": context.success_profile.avg_salary,  # type: ignore[union-attr]
+                "satisfaction_avg": context.success_profile.satisfaction_avg,  # type: ignore[union-attr]
+                "must_have_skills": context.success_profile.must_have_skills,  # type: ignore[union-attr]
+                "sample_size": context.success_profile.sample_size,  # type: ignore[union-attr]
             }
         
         for corr in context.correlations:
-            if corr.recommendation:  # type: ignore
+            if corr.recommendation:  # type: ignore[union-attr]
                 enhancements["insights"].append({
                     "type": "correlation",
-                    "factor": str(corr.factor),  # type: ignore
-                    "outcome": str(corr.outcome_metric),  # type: ignore
-                    "recommendation": str(corr.recommendation),  # type: ignore
+                    "factor": str(corr.factor),  # type: ignore[union-attr]
+                    "outcome": str(corr.outcome_metric),  # type: ignore[union-attr]
+                    "recommendation": str(corr.recommendation),  # type: ignore[union-attr]
                 })
         
         return enhancements

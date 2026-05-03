@@ -12,23 +12,69 @@ The middleware:
 This replaces per-endpoint auth and eliminates the X-Company-ID header
 trust vulnerability (where a user could forge a different company_id).
 """
+
 import logging
 import os
 from contextvars import ContextVar
-
-# ContextVar for tenant isolation — read by get_db to inject RLS context
-_current_company_id: ContextVar[str] = ContextVar("_current_company_id", default="")
 
 from fastapi import Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
 
+# ContextVar for tenant isolation — read by get_db to inject RLS context.
+#
+# R-008 (Sprint 1 Quick Wins): hardening contra JWT forgery / cross-tenant.
+# Esta ContextVar SO PODE ser populada via _set_company_id_from_jwt()
+# (helper canonical abaixo) ou via _set_company_id_synthetic_dev_only()
+# em paths DEV_MODE explicitamente gateados. NUNCA setar a partir de
+# request.body, query params ou headers customizados (X-Company-ID e' usado
+# apenas para validar mismatch contra o JWT, nao para preencher o ContextVar).
+# Hashimoto: nunca mais cross-tenant via header forging.
+_current_company_id: ContextVar[str] = ContextVar("_current_company_id", default="")
+
+
+def _set_company_id_from_jwt(verified_payload: dict) -> str:
+    """R-008: helper canonical — UNICA forma valida de popular ContextVar a partir
+    de auth real. Recebe payload JA verificado (signature OK + exp OK) e extrai
+    apenas claims do JWT.
+
+    Args:
+        verified_payload: dict retornado por decode_token(...) ou validate_rails_token_from_env(...).
+            DEVE ser de um token cuja signature ja foi verificada — caller responsavel.
+
+    Returns:
+        company_id (str) extraido do payload (vazio se nao houver claim).
+    """
+    company_id = verified_payload.get("company_id") or ""
+    _current_company_id.set(str(company_id))
+    return str(company_id)
+
+
+def _set_company_id_synthetic_dev_only(synthetic_company_id: str = "demo_company") -> str:
+    """R-008: helper para path DEV_MODE — APENAS chamavel quando _DEV_MODE=True
+    (ja gateado pelo R-006: ENVIRONMENT in safe envs). Documenta intent
+    claramente e separa do path de auth real.
+    """
+    if not _DEV_MODE:
+        # Defesa em profundidade: se alguem chamar este helper fora de DEV_MODE,
+        # falha alta em vez de silently corromper ContextVar de prod.
+        raise RuntimeError(
+            "R-008: _set_company_id_synthetic_dev_only chamado mas _DEV_MODE=False. "
+            "Synthetic company_id NAO pode ser usado em production/staging."
+        )
+    _current_company_id.set(synthetic_company_id)
+    return synthetic_company_id
+
+
 # Eagerly import security guard at module scope (avoids per-request import overhead)
 try:
     from app.shared.robustness.security_patterns import (
         check_input_security as _check_input_security,
+    )
+    from app.shared.robustness.security_patterns import (
         get_block_response as _get_block_response,
     )
+
     _SECURITY_GUARD_AVAILABLE = True
 except ImportError:
     _check_input_security = None  # type: ignore[assignment]
@@ -82,11 +128,30 @@ PUBLIC_PATHS = {
 # Dev-mode flag: when True, unauthenticated requests get a synthetic dev-user context
 # instead of 401. This allows the Replit demo to work without full SSO/JWT setup.
 # SECURITY: Only explicit LIA_DEV_MODE activates dev mode — REPL_ID is NOT used.
-_DEV_MODE = os.environ.get("LIA_DEV_MODE", "").lower() in ("1", "true", "yes")
+#
+# R-006 (Sprint 1 Quick Wins): DEV_MODE gateado por ENV. Mesmo que LIA_DEV_MODE=true
+# esteja na env, ignoramos se ENVIRONMENT NAO for "test"|"development"|"local".
+# Hashimoto: nunca mais bypass de auth ativo em staging/production por config drift.
+_LIA_DEV_MODE_RAW = os.environ.get("LIA_DEV_MODE", "").lower() in ("1", "true", "yes")
+_ALLOWED_DEV_ENVIRONMENTS = ("test", "development", "local", "dev")
+_CURRENT_ENVIRONMENT = os.environ.get("ENVIRONMENT", "").lower()
+_DEV_MODE = _LIA_DEV_MODE_RAW and _CURRENT_ENVIRONMENT in _ALLOWED_DEV_ENVIRONMENTS
 _DEV_API_KEY = os.environ.get("LIA_DEV_API_KEY", "")
 
-if _DEV_MODE:
-    logger.warning("[AuthEnforcement] ⚠ DEV_MODE is ACTIVE — authentication is relaxed")
+if _LIA_DEV_MODE_RAW and not _DEV_MODE:
+    # LIA_DEV_MODE foi requisitado mas ENVIRONMENT bloqueia — log critico.
+    logger.error(
+        "[AuthEnforcement] ⛔ R-006: LIA_DEV_MODE=%s requisitado MAS ENVIRONMENT=%r "
+        "NAO esta em %s — DEV_MODE PERMANECE INATIVO. Config drift detectado.",
+        _LIA_DEV_MODE_RAW,
+        _CURRENT_ENVIRONMENT or "(unset)",
+        _ALLOWED_DEV_ENVIRONMENTS,
+    )
+elif _DEV_MODE:
+    logger.warning(
+        "[AuthEnforcement] ⚠ DEV_MODE is ACTIVE (ENVIRONMENT=%r) — authentication is relaxed",
+        _CURRENT_ENVIRONMENT,
+    )
 
 
 def _check_dev_api_key(request: Request, path: str) -> JSONResponse | None:
@@ -105,7 +170,8 @@ def _check_dev_api_key(request: Request, path: str) -> JSONResponse | None:
         logger.error(
             "[AuthEnforcement] DEV_MODE active but LIA_DEV_API_KEY not set — rejecting %s %s. "
             "Set LIA_DEV_API_KEY in env or disable LIA_DEV_MODE.",
-            request.method, path,
+            request.method,
+            path,
         )
         return JSONResponse(
             {"detail": "DEV_MODE misconfigured: LIA_DEV_API_KEY required"},
@@ -116,11 +182,13 @@ def _check_dev_api_key(request: Request, path: str) -> JSONResponse | None:
     if provided != _DEV_API_KEY:
         logger.warning(
             "[AuthEnforcement] DEV_MODE request rejected — invalid or missing X-Dev-Api-Key for %s %s",
-            request.method, path,
+            request.method,
+            path,
         )
         return JSONResponse({"detail": "Invalid or missing dev API key"}, status_code=401)
 
     return None
+
 
 PUBLIC_PREFIXES = (
     "/api/v1/teams/",
@@ -173,11 +241,7 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
         # or multipart data (e.g. file uploads) and minimize false positives.
         content_type = request.headers.get("content-type", "")
         is_json_body = "application/json" in content_type or content_type == ""
-        if (
-            request.method in ("POST", "PUT")
-            and path.startswith(self.AGENT_PATHS)
-            and is_json_body
-        ):
+        if request.method in ("POST", "PUT") and path.startswith(self.AGENT_PATHS) and is_json_body:
             body_bytes = b""
             if not _SECURITY_GUARD_AVAILABLE:
                 logger.error("[PromptInjectionGuard] Security guard unavailable — blocking agent route")
@@ -227,7 +291,7 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
                 request.state.token_payload = {"sub": "dev-user", "company_id": "demo_company", "role": "admin"}
                 request.state.user_id = "dev-user"
                 request.state.company_id = "demo_company"
-                _current_company_id.set("demo_company")
+                _set_company_id_synthetic_dev_only("demo_company")  # R-008
                 request.state.user_role = "admin"
                 logger.debug(f"[AuthEnforcement] DEV MODE: synthetic user for {request.method} {path}")
                 return await call_next(request)
@@ -241,6 +305,7 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
 
         try:
             from app.auth.security import decode_token
+
             try:
                 payload = decode_token(token)
             except Exception:
@@ -249,6 +314,7 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
             # Fallback: Rails JWT (token assinado pelo ats_api, secret compartilhado)
             if payload is None or not payload.get("sub"):
                 from app.auth.rails_jwt import fetch_rails_user_info, validate_rails_token_from_env
+
                 rails_payload = validate_rails_token_from_env(token)
                 if rails_payload:
                     rails_info = await fetch_rails_user_info(token, rails_payload.user_id)
@@ -268,7 +334,7 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
                 request.state.token_payload = {"sub": "dev-user", "company_id": "demo_company", "role": "admin"}
                 request.state.user_id = "dev-user"
                 request.state.company_id = "demo_company"
-                _current_company_id.set("demo_company")
+                _set_company_id_synthetic_dev_only("demo_company")  # R-008
                 request.state.user_role = "admin"
                 logger.debug(f"[AuthEnforcement] DEV MODE: synthetic user for invalid token on {path}")
                 return await call_next(request)
@@ -280,11 +346,13 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
             if not user_id:
                 return JSONResponse({"detail": "Invalid token: no subject"}, status_code=401)
 
-            # Inject into request.state for downstream use
+            # Inject into request.state for downstream use.
+            # R-008: ContextVar populado APENAS via helper canonical, com payload
+            # ja verificado pelo decode_token / validate_rails_token_from_env.
             request.state.token_payload = payload
             request.state.user_id = user_id
             request.state.company_id = payload.get("company_id", "")
-            _current_company_id.set(payload.get("company_id", ""))
+            _set_company_id_from_jwt(payload)  # R-008 — ContextVar so via helper
             request.state.user_role = payload.get("role", "")
 
             # If company_id from X-Company-ID header differs from JWT, reject
@@ -316,7 +384,7 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
                 request.state.token_payload = {"sub": "dev-user", "company_id": "demo_company", "role": "admin"}
                 request.state.user_id = "dev-user"
                 request.state.company_id = "demo_company"
-                _current_company_id.set("demo_company")
+                _set_company_id_synthetic_dev_only("demo_company")  # R-008
                 request.state.user_role = "admin"
                 logger.debug(f"[AuthEnforcement] DEV MODE: synthetic user after token error on {path}: {e}")
                 return await call_next(request)

@@ -621,6 +621,105 @@ async def run_conversation_ttl_cleanup(dry_run: bool = False) -> dict:
     return summary
 
 
+
+
+async def send_deletion_alerts(dry_run: bool = False) -> dict:
+    """UC-P3-17: Alert DPO team 90 days before scheduled candidate deletion.
+
+    Queries candidates whose scheduled_deletion_at falls within the window
+    [now + 89 days, now + 91 days] (i.e. exactly 90 days away +/- 1 day margin).
+    Groups results by company_id and emits a Sentry capture_message warning for
+    each company with pending deletions in that window.
+
+    Called daily by the Celery beat task "lgpd-deletion-alert-daily" at 01h UTC.
+
+    Args:
+        dry_run: If True, logs alerts without sending Sentry events.
+
+    Returns:
+        Summary dict with company_count and candidate_count.
+    """
+    from datetime import datetime, timedelta
+    summary: dict = {
+        "dry_run": dry_run,
+        "ran_at": datetime.utcnow().isoformat(),
+        "company_count": 0,
+        "candidate_count": 0,
+        "errors": [],
+    }
+
+    now = datetime.utcnow()
+    window_start = now + timedelta(days=89)
+    window_end = now + timedelta(days=91)
+
+    async with AsyncSessionLocal() as db:
+        try:
+            result = await db.execute(
+                select(
+                    Candidate.id,
+                    Candidate.company_id,
+                    Candidate.scheduled_deletion_at,
+                )
+                .where(
+                    and_(
+                        Candidate.scheduled_deletion_at.isnot(None),
+                        Candidate.scheduled_deletion_at >= window_start,
+                        Candidate.scheduled_deletion_at <= window_end,
+                    )
+                )
+            )
+            rows = result.all()
+        except Exception as exc:
+            logger.error("LGPD deletion alert query failed: %s", exc)
+            summary["errors"].append(str(exc))
+            return summary
+
+    # Group by company_id
+    by_company: dict[str, list[dict]] = {}
+    for row in rows:
+        cid = str(row.company_id)
+        by_company.setdefault(cid, []).append({
+            "candidate_id": str(row.id),
+            "scheduled_deletion_at": row.scheduled_deletion_at.isoformat(),
+        })
+
+    summary["company_count"] = len(by_company)
+    summary["candidate_count"] = len(rows)
+
+    for company_id, candidates in by_company.items():
+        msg = (
+            f"[LGPD-ALERT] {len(candidates)} candidate(s) scheduled for deletion "
+            f"in ~90 days for company={company_id}. "
+            f"Window: {window_start.date()} -- {window_end.date()}. "
+            "Action required: ensure consent refresh or confirm deletion intent."
+        )
+        logger.warning(msg)
+        if not dry_run:
+            try:
+                import sentry_sdk
+                sentry_sdk.capture_message(
+                    msg,
+                    level="warning",
+                    extras={
+                        "company_id": company_id,
+                        "candidate_count": len(candidates),
+                        "candidates": candidates[:20],  # cap to avoid large payloads
+                        "window_start": window_start.isoformat(),
+                        "window_end": window_end.isoformat(),
+                    },
+                )
+            except Exception as sentry_exc:
+                logger.debug("LGPD alert: Sentry capture failed (non-blocking): %s", sentry_exc)
+
+    mode = "DRY-RUN" if dry_run else "REAL"
+    logger.info(
+        "LGPD deletion alert [%s] complete -- %d company(ies), %d candidate(s)",
+        mode,
+        summary["company_count"],
+        summary["candidate_count"],
+    )
+    return summary
+
 async def get_pending_deletions_count(db: AsyncSession) -> dict:
     """Return how many records are pending deletion (useful for monitoring)."""
     now = datetime.utcnow()

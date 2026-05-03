@@ -2,6 +2,50 @@
 Shared imports, constants, helpers, and Pydantic schemas
 for the job_vacancies sub-package.
 """
+
+__all__ = [
+    # constants
+    "VALID_JOB_STATUSES",
+    "ALLOWED_STATUS_TRANSITIONS",
+    "SATURATION_EXCLUDED_STATUSES",
+    "ADHERENCE_THRESHOLD",
+    "VALID_SCREENING_STATUSES",
+    # helpers
+    "generate_lia_metrics",
+    "_calculate_days_between",
+    "_is_job_at_risk",
+    "derive_screening_status",
+    "generate_slug",
+    # schemas
+    "JobVacancyCreate",
+    "JobVacancyUpdate",
+    "JobVacancyResponse",
+    "FinalizeJobVacancyRequest",
+    "FinalizeJobVacancyResponse",
+    "BulkActionError",
+    "BulkActionResponse",
+    "BulkActionRequest",
+    "BulkAssignRecruiterRequest",
+    "BulkChangeStatusRequest",
+    # re-exported deps
+    "get_current_active_user",
+    "get_current_user",
+    "get_current_user_or_demo",
+    "get_user_company_id",
+    "User",
+    "get_db",
+    "AsyncSession",
+    "Depends",
+    "HTTPException",
+    "JobVacancy",
+    "JobVacancyState",
+    "teams_service",
+    "notification_service",
+    "BaseModel",
+    "Field",
+    "logger",
+]
+
 import logging
 from datetime import datetime
 from uuid import UUID
@@ -186,6 +230,9 @@ class JobVacancyCreate(BaseModel):
     masked_company_name: str | None = None
     exclude_from_sync: bool = False
     status: str = "Rascunho"
+    # Phase 4H — source + wizard_stage tracking
+    source: str = "wizard"  # 'wizard' | 'ats_import' | 'ats_external' | 'manual'
+    wizard_stage: str | None = None  # current LangGraph node when source='wizard'
     priority: str = "média"
     screening_questions: list[dict] | None = []
     interview_stages: list[dict] | None = []
@@ -230,6 +277,9 @@ class JobVacancyUpdate(BaseModel):
     exclude_from_sync: bool | None = None
     status: str | None = None
     stage: str | None = None
+    # Phase 4H — source + wizard_stage tracking (mostly read-only, but allow patch)
+    source: str | None = None
+    wizard_stage: str | None = None
     priority: str | None = None
     screening_questions: list[dict] | None = None
     interview_stages: list[dict] | None = None
@@ -274,6 +324,9 @@ class JobVacancyResponse(BaseModel):
     exclude_from_sync: bool = False
     created_by: str | None = None
     status: str = "Rascunho"
+    # Phase 4H — source + wizard_stage tracking
+    source: str = "wizard"
+    wizard_stage: str | None = None
     stage: str | None = None
     priority: str = "média"
     created_at: str | None = None

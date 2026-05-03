@@ -31,6 +31,9 @@ ALLOWED_PATHS = {
     "app/shared/llm_bootstrap.py",
     "app/api/v1/llm_config.py",
     "app/api/v1/chat.py",
+    # DEBT-014: tenant_llm_context IS the factory infrastructure — it creates
+    # AsyncAnthropic clients with tenant BYOK keys. Legitimate infrastructure layer.
+    "app/shared/tenant_llm_context.py",
 }
 
 

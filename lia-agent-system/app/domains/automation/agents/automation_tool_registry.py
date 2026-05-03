@@ -10,6 +10,7 @@ from typing import Any
 from uuid import uuid4
 
 from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolOutput
 
 from app.shared.tool_handler import tool_handler
 
@@ -325,31 +326,37 @@ def get_automation_tools() -> list[ToolDefinition]:
         ToolDefinition(
             name="decompose_task",
             description="Decompor uma tarefa complexa em subtarefas usando IA. Parâmetros: task_description (str, obrigatório), goal_id (str, opcional), company_id (str, opcional), persist (bool, padrão True).",
+            output_schema=ToolOutput,
             function=_wrap_decompose_task,
         ),
         ToolDefinition(
             name="prioritize_tasks",
             description="Calcular e atualizar prioridades de tarefas. Parâmetros: task_ids (list[str]) ou goal_id (str).",
+            output_schema=ToolOutput,
             function=_wrap_prioritize_tasks,
         ),
         ToolDefinition(
             name="get_execution_plan",
             description="Gerar plano de execução com níveis paralelos. Parâmetros: task_ids (list[str]) ou goal_id (str), name (str, opcional).",
+            output_schema=ToolOutput,
             function=_wrap_get_execution_plan,
         ),
         ToolDefinition(
             name="build_dag",
             description="Construir e validar DAG de dependências. Parâmetros: task_ids (list[str]).",
+            output_schema=ToolOutput,
             function=_wrap_build_dag,
         ),
         ToolDefinition(
             name="check_dependencies",
             description="Verificar status das dependências de uma tarefa. Parâmetros: task_id (str).",
+            output_schema=ToolOutput,
             function=_wrap_check_dependencies,
         ),
         ToolDefinition(
             name="get_next_tasks",
             description="Obter próximas tarefas prontas para execução. Parâmetros: goal_id (str, opcional), agent_type (str, opcional), limit (int, padrão 5).",
+            output_schema=ToolOutput,
             function=_wrap_get_next_tasks,
         ),
     ]

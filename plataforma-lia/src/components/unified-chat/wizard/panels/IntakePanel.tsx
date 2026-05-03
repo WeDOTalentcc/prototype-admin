@@ -1,7 +1,10 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { FileText, Tag, Edit2, Check } from "lucide-react"
+import { useAuthStore } from "@/stores/auth-store"
+import { useJdSimilar } from "@/hooks/jobs/use-jd-similar"
+import { JdSimilarCard } from "./JdSimilarCard"
 
 interface Props {
   data: Record<string, unknown>
@@ -18,6 +21,28 @@ export function IntakePanel({ data, onUpdate }: Props) {
   const source = (data.source as string) || "chat"
   const [isEditing, setIsEditing] = useState(false)
   const [editText, setEditText] = useState(rawInput)
+
+  // ── Sprint B Phase 1 ─ Sugestao de JDs similares no historico ──────────
+  const companyId = useAuthStore((s) => (s.user as { company_id?: string } | null)?.company_id || "")
+  const parsedTitle = (data.parsed_title as string) || ""
+  const parsedDepartment = (data.parsed_department as string) || ""
+  const { items: similarJds, loading: jdSimilarLoading, lookup: lookupSimilarJds } = useJdSimilar({ companyId })
+
+  useEffect(() => {
+    if (!companyId) return
+    const titleHint = parsedTitle || rawInput.split(/[\n.]/)[0]?.trim().slice(0, 80) || ""
+    if (!titleHint) return
+    const timer = setTimeout(() => { void lookupSimilarJds(titleHint, parsedDepartment || undefined) }, 600)
+    return () => clearTimeout(timer)
+  }, [companyId, parsedTitle, parsedDepartment, rawInput, lookupSimilarJds])
+
+  const handleReuseJd = (id: string) => {
+    onUpdate?.({ jd_similar_reuse_id: id, jd_similar_reuse_started_at: new Date().toISOString() })
+  }
+  const handleCreateFresh = () => {
+    onUpdate?.({ jd_similar_dismissed: true })
+  }
+
 
   const handleSaveEdit = () => {
     if (editText.trim() && editText !== rawInput) {
@@ -100,6 +125,16 @@ export function IntakePanel({ data, onUpdate }: Props) {
             ))}
           </div>
         </div>
+      )}
+
+      {/* JD similar history suggestions (Sprint B Phase 1) */}
+      {!data.jd_similar_dismissed && (similarJds.length > 0 || jdSimilarLoading) && (
+        <JdSimilarCard
+          items={similarJds}
+          loading={jdSimilarLoading}
+          onReuse={handleReuseJd}
+          onCreateFresh={handleCreateFresh}
+        />
       )}
 
       {/* Processing indicator */}

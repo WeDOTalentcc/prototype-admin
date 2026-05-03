@@ -14,6 +14,7 @@ import uuid
 from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolOutput
 
 from app.shared.tool_handler import tool_handler
 
@@ -140,6 +141,7 @@ _REFERRAL_TOOL_DEFINITIONS.append(
             },
             "required": ["company_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_referral_identify_connectors,
     )
 )
@@ -232,6 +234,7 @@ _REFERRAL_TOOL_DEFINITIONS.append(
             },
             "required": ["connector_name", "role"],
         },
+        output_schema=ToolOutput,
         function=_wrap_referral_prepare_request,
     )
 )
@@ -469,6 +472,7 @@ _REFERRAL_TOOL_DEFINITIONS.append(
             },
             "required": ["connector_email", "message"],
         },
+        output_schema=ToolOutput,
         function=_wrap_referral_send_request,
     )
 )
@@ -566,6 +570,7 @@ _REFERRAL_TOOL_DEFINITIONS.append(
             },
             "required": ["connector_email"],
         },
+        output_schema=ToolOutput,
         function=_wrap_referral_approve_request,
     )
 )

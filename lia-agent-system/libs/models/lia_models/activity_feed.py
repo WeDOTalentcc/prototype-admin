@@ -27,6 +27,7 @@ class ActivityFeed(Base):
     
     # Actor (who performed the action)
     actor_id = Column(String(255), nullable=True, index=True)  # User ID or "system" or "lia"
+    company_id = Column(String(255), nullable=True, index=True)
     actor_name = Column(String(255), nullable=True)  # "Ana Costa", "LIA", "Sistema"
     actor_type = Column(String(50), nullable=True)  # "recruiter", "system", "candidate", "ai"
     

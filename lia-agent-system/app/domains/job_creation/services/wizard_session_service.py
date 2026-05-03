@@ -274,6 +274,47 @@ class WizardSessionService:
             except Exception as _rl_exc:
                 logger.error("[WizardSession] record_job_completion FAILED — learning loop data loss (company_id=%s, email=%s): %s", company_id, result.get("manager_email", "?"), _rl_exc)
 
+        # ── Phase 4I — wizard_stage sync to job_vacancies.wizard_stage ──
+        # Only fires post-publish (state['job_id'] becomes truthy after publish_node
+        # creates the JobVacancy via Rails). Pre-publish stages are not tracked
+        # at this column — see Phase 4J for extended scope (create row earlier).
+        # FAIL-OPEN: any error logs warning and continues — UX never blocked
+        # by sync regression.
+        _jv_id = result.get("job_id")
+        _stage_for_db = result.get("current_stage")
+        if _jv_id and _stage_for_db and company_id:
+            try:
+                from sqlalchemy import text as sa_text
+                from app.core.database import AsyncSessionLocal
+                async with AsyncSessionLocal() as _ws_db:
+                    _ws_res = await _ws_db.execute(
+                        sa_text(
+                            "UPDATE job_vacancies SET wizard_stage = :s, updated_at = NOW() "
+                            "WHERE id = CAST(:jid AS uuid) AND company_id = :co"
+                        ),
+                        {
+                            "s": _stage_for_db,
+                            "jid": str(_jv_id),
+                            "co": str(company_id),
+                        },
+                    )
+                    await _ws_db.commit()
+                    if _ws_res.rowcount == 0:
+                        logger.debug(
+                            "[WizardSession] wizard_stage sync: no row for job_id=%s "
+                            "(Rails-only? not yet mirrored?)",
+                            _jv_id,
+                        )
+                    else:
+                        logger.debug(
+                            "[WizardSession] wizard_stage=%s synced for job_id=%s",
+                            _stage_for_db, _jv_id,
+                        )
+            except Exception as _ws_exc:
+                logger.warning(
+                    "[WizardSession] wizard_stage sync failed (fail-open): %s", _ws_exc,
+                )
+
 
         stage_payload = result.get("ws_stage_payload") or {}
         stage_data = stage_payload.get("data") or {}

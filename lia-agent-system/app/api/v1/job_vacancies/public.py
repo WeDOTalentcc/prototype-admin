@@ -9,7 +9,19 @@ import uuid as uuid_lib
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Path, UploadFile
 
-from ._shared import *
+from ._shared import (  # noqa: F401
+    SATURATION_EXCLUDED_STATUSES,
+    ADHERENCE_THRESHOLD,
+    generate_slug,
+    get_current_user_or_demo,
+    get_user_company_id,
+    User,
+    Depends,
+    HTTPException,
+    notification_service,
+    BaseModel,
+    logger,
+)
 from app.domains.job_management.dependencies import get_job_vacancy_public_repo
 from app.domains.cv_screening.services.cv_parser import CVParserService, get_cv_parser_service
 from app.domains.cv_screening.services.lia_score_service import get_lia_score_service, LIAScoreService

@@ -11,6 +11,7 @@ check_rejection_fairness is MANDATORY in this registry (compliance).
 from lia_agents_core.react_loop import ToolDefinition
 
 from app.domains.pipeline.agents.pipeline_tool_registry import _TOOL_MAP
+from app.shared.compliance.safety_category import SafetyCategory
 
 _ACTION_TOOL_NAMES: list[str] = [
     "update_candidate_field",
@@ -21,11 +22,11 @@ _ACTION_TOOL_NAMES: list[str] = [
     "reschedule_interview",
 ]
 
-GUARDRAIL_TOOLS: list[str] = [
-    "update_candidate_field",
-    "cancel_interview",
-    "reschedule_interview",
-]
+GUARDRAIL_TOOLS: dict[str, SafetyCategory] = {
+    "update_candidate_field": SafetyCategory.DESTRUCTIVE_WRITE,
+    "cancel_interview": SafetyCategory.DESTRUCTIVE_WRITE,
+    "reschedule_interview": SafetyCategory.DESTRUCTIVE_WRITE,
+}
 
 
 def get_pipeline_action_tools() -> list[ToolDefinition]:

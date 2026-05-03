@@ -11,12 +11,12 @@ from datetime import datetime
 from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolOutput
 from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
 
 from app.shared.tool_handler import tool_handler
-from app.shared.messaging.rails_event_publisher import publish_rails_event
 
 logger = logging.getLogger(__name__)
 
@@ -89,22 +89,6 @@ async def _wrap_move_candidate(**kwargs: Any) -> dict[str, Any]:
             {"target_stage": target_stage, "candidate_id": candidate_id},
         )
         await session.commit()
-        # UC-P0-21: publish pipeline.moved event to Rails (non-blocking fire-and-forget)
-        try:
-            await publish_rails_event(
-                event_type="pipeline.moved",
-                payload={
-                    "candidate_id": candidate_id,
-                    "job_id": kwargs.get("job_id"),
-                    "apply_id": kwargs.get("apply_id"),
-                    "from_stage": previous_stage,
-                    "to_stage": target_stage,
-                    "reason": reason,
-                },
-                company_id=kwargs.get("company_id", ""),
-            )
-        except Exception as _e:
-            logger.warning("[pipeline_tools] Failed to publish pipeline.moved event: %s", _e)
         return {
             "success": True,
             "data": {
@@ -270,22 +254,6 @@ async def _wrap_schedule_interview(**kwargs: Any) -> dict[str, Any]:
             },
         )
         await session.commit()
-        # UC-P0-21: publish interview.scheduled event to Rails (non-blocking fire-and-forget)
-        try:
-            await publish_rails_event(
-                event_type="interview.scheduled",
-                payload={
-                    "candidate_id": candidate_id,
-                    "job_id": kwargs.get("job_id"),
-                    "apply_id": kwargs.get("apply_id"),
-                    "scheduled_at": interview_datetime or None,
-                    "channel": kwargs.get("channel"),
-                    "interview_type": interview_type,
-                },
-                company_id=kwargs.get("company_id", ""),
-            )
-        except Exception as _e:
-            logger.warning("[pipeline_tools] Failed to publish interview.scheduled event: %s", _e)
         return {
             "success": True,
             "data": {
@@ -687,6 +655,9 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_id"],
         },
+        touches_pii=True,
+        pii_output_fields=["name", "email", "phone"],
+        output_schema=ToolOutput,
         function=_wrap_view_candidate_profile,
     ),
     ToolDefinition(
@@ -701,6 +672,10 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_id", "target_stage", "reason"],
         },
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
+        side_effects=["write"],
+        output_schema=ToolOutput,
         function=_wrap_move_candidate,
     ),
     ToolDefinition(
@@ -713,6 +688,9 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_id"],
         },
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
+        output_schema=ToolOutput,
         function=_wrap_analyze_cv,
     ),
     ToolDefinition(
@@ -726,6 +704,9 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_id", "vacancy_id"],
         },
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
+        output_schema=ToolOutput,
         function=_wrap_run_wsi_screening,
     ),
     ToolDefinition(
@@ -740,6 +721,8 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_id", "datetime", "type"],
         },
+        side_effects=["write", "send"],
+        output_schema=ToolOutput,
         function=_wrap_schedule_interview,
     ),
     ToolDefinition(
@@ -754,6 +737,8 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_id", "channel", "message"],
         },
+        side_effects=["send"],
+        output_schema=ToolOutput,
         function=_wrap_send_communication,
     ),
     ToolDefinition(
@@ -767,6 +752,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_id", "note_text"],
         },
+        output_schema=ToolOutput,
         function=_wrap_add_notes,
     ),
     ToolDefinition(
@@ -781,6 +767,10 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_ids", "target_stage", "reason"],
         },
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
+        side_effects=["write"],
+        output_schema=ToolOutput,
         function=_wrap_batch_move,
     ),
     ToolDefinition(
@@ -793,6 +783,10 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_id"],
         },
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
+        side_effects=["write"],
+        output_schema=ToolOutput,
         function=_wrap_add_to_shortlist,
     ),
     ToolDefinition(
@@ -805,6 +799,9 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_id"],
         },
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
+        output_schema=ToolOutput,
         function=_wrap_view_screening_results,
     ),
     ToolDefinition(
@@ -817,6 +814,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_view_interview_notes,
     ),
     ToolDefinition(
@@ -829,6 +827,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_generate_offer,
     ),
     ToolDefinition(
@@ -841,6 +840,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_finalize_hiring,
     ),
     ToolDefinition(
@@ -854,6 +854,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_id", "status"],
         },
+        output_schema=ToolOutput,
         function=_wrap_update_status,
     ),
 ]
@@ -916,6 +917,7 @@ TOOL_DEFINITIONS.append(
             },
             "required": [],
         },
+        output_schema=ToolOutput,
         function=_wrap_generate_report,
     )
 )

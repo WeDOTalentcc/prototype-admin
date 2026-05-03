@@ -199,6 +199,31 @@ class JobVacancy(Base):
 
     # Additional data
     additional_data = Column(JSON, default={})  # Flexible field for future expansion
+
+    # Phase 4H — Source tracking + Wizard stage persistence (migration 107)
+    # source: who created this vaga? Values:
+    #   'wizard'       — canonical JobCreationGraph flow (default)
+    #   'ats_import'   — POST /api/v1/jobs/bulk-import (manual upload, spreadsheet)
+    #   'ats_external' — future ATS sync (Gupy, Greenhouse, Lever, …)
+    #   'manual'       — direct REST POST /api/v1/jobs (no wizard)
+    source = Column(String(50), nullable=False, default="wizard",
+                    server_default="wizard", index=True)
+    # wizard_stage: persists current LangGraph node when source='wizard'.
+    # Synced by WizardSessionService.process_message after each node:
+    #   intake|jd_enrichment|bigfive|salary|competency|wsi_questions|
+    #   eligibility|review|published|calibration|handoff
+    # NULL for non-wizard sources.
+    wizard_stage = Column(String(50), nullable=True, index=True)
+
+    # Task #435 — source_system slug for lifecycle classification (Recrutar page).
+    # Column already exists in DB; adding here so SQLAlchemy ORM can read/write.
+    # Values: 'gupy' | 'pandape' | 'merge' | 'kenoby' | 'solides' | 'abler' |
+    #         'greenhouse' | 'ats_other' (catch-all for non-listed ATS)
+    # NULL for vacancies created via wizard/manual REST.
+    # Used by analytics.py:_classify_job_lifecycle_stage to assign
+    # 'ats_importada' stage in the Recrutar page rail.
+    source_system = Column(String(50), nullable=True, index=True)
+
     
     # Talent Funnel - Job Qualification Classification (WDT-009)
     qualification_level = Column(String(20), nullable=True, index=True)  # "alta", "media", "baixa"

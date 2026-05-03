@@ -10,6 +10,7 @@ import logging
 from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolOutput
 
 from app.shared.tool_handler import tool_handler
 
@@ -107,6 +108,7 @@ _SO_TOOL_DEFINITIONS.append(
             },
             "required": ["tag"],
         },
+        output_schema=ToolOutput,
         function=_wrap_so_search_experts,
     )
 )
@@ -156,6 +158,7 @@ _SO_TOOL_DEFINITIONS.append(
             },
             "required": ["user_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_so_get_user_tags,
     )
 )
@@ -204,6 +207,7 @@ _SO_TOOL_DEFINITIONS.append(
             },
             "required": ["user_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_so_get_user_answers,
     )
 )

@@ -10,10 +10,35 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from app.domains.job_management.services.wizard_orchestrator_service import (
-    wizard_orchestrator_service,
-)
-from app.orchestrator import Orchestrator
+# UC-P1-23: Use canonical MainOrchestrator - legacy Orchestrator is deprecated.
+from app.orchestrator.main_orchestrator import MainOrchestrator, get_main_orchestrator
+from app.orchestrator.orchestrator import Orchestrator as _LegacyOrchestrator
+from app.orchestrator.registry import get_orchestrator_instance, set_orchestrator_instance
+
+# Backward-compat alias so type hints in this file still read naturally
+Orchestrator = MainOrchestrator
+
+
+def get_orchestrator() -> MainOrchestrator:
+    instance = get_orchestrator_instance()
+    if instance is not None:
+        return get_main_orchestrator(instance)
+    return get_main_orchestrator()
+
+
+def initialize_orchestrator(llm_service, db_service=None) -> _LegacyOrchestrator:
+    """Backward-compat startup hook used by app.main lifespan.
+
+    Restored as part of import #963 hardening: the imported diff dropped this
+    function but app/main.py still calls it during startup. Without this shim
+    the lifespan handler raises AttributeError and the orchestrator endpoints
+    silently degrade. We construct the legacy Orchestrator (which the registry
+    is typed against) and register it so get_orchestrator_instance() returns it.
+    """
+    orch = _LegacyOrchestrator(llm_service, db_service)
+    set_orchestrator_instance(orch)
+    return orch
+
 from app.domains.ai.services.llm import LLMService, get_llm_service
 from app.shared.services.tool_executor_service import (
     ToolExecutionRequest,
@@ -69,52 +94,6 @@ class ExecuteToolResponse(BaseModel):
     affected_entities: list[str] = []
 
 
-class WizardIntentRequest(BaseModel):
-    """Request model for wizard intent detection."""
-    message: str
-    context: dict[str, Any] | None = None
-    conversation_id: str | None = None
-    user_id: str | None = None
-
-
-class WizardIntentResponse(BaseModel):
-    """Response model for wizard intent detection."""
-    intent: str
-    confidence: float
-    entities: dict[str, Any] = {}
-    suggested_tool_call: dict[str, Any] | None = None
-    conversational_response: str | None = None
-    injected_context: str | None = None
-    conversation_id: str | None = None
-
-
-# Global orchestrator instance (initialized on startup)
-# Also registered in app.orchestrator.registry for use outside the API layer
-from app.orchestrator.registry import get_orchestrator_instance, set_orchestrator_instance
-orchestrator: Orchestrator | None = None
-
-
-def get_orchestrator() -> Orchestrator:
-    """Dependency to get orchestrator instance."""
-    if orchestrator is None:
-        raise HTTPException(status_code=503, detail="Orchestrator not initialized")
-    return orchestrator
-
-
-def get_main_orchestrator():
-    """Dependency to get MainOrchestrator (consolidated entry-point)."""
-    from app.orchestrator.main_orchestrator import MainOrchestrator
-    if orchestrator is None:
-        raise HTTPException(status_code=503, detail="Orchestrator not initialized")
-    return MainOrchestrator(orchestrator)
-
-
-def initialize_orchestrator(llm_service: LLMService, db_service=None):
-    """Initialize global orchestrator instance."""
-    global orchestrator
-    orchestrator = Orchestrator(llm_service, db_service)
-    set_orchestrator_instance(orchestrator)  # register in shared registry
-    logger.info("✅ Orchestrator API initialized")
 
 
 @router.post("/process", response_model=OrchestratorResponse)
@@ -201,7 +180,7 @@ async def health_check(
 
     result = {
         "status": overall,
-        "orchestrator": "running" if orchestrator is not None else "not_initialized",
+        "orchestrator": "running" if get_orchestrator_instance() is not None else "not_initialized",
         "llm": llm_status,
         "model": llm_model,
     }
@@ -255,66 +234,6 @@ async def execute_tool(request: ExecuteToolRequest):
     except Exception as e:
         logger.error(f"❌ Tool execution error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/wizard/detect-intent", response_model=WizardIntentResponse)
-async def detect_wizard_intent(request: WizardIntentRequest):
-    """
-    Detect intent from wizard message and suggest tool calls.
-    
-    This endpoint:
-    1. Analyzes the user message for actionable intents
-    2. Maps detected intents to available tools
-    3. Returns suggested tool call with pre-filled parameters
-    4. If conversation_id provided, injects conversation context
-    
-    Request body:
-    - message: User message text
-    - context: Optional context with job_id, job_data, etc.
-    - conversation_id: Optional conversation ID for memory injection
-    - user_id: Optional user ID
-    """
-    try:
-        if request.conversation_id:
-            from app.core.database import get_db
-            async for db in get_db():
-                result = await wizard_orchestrator_service.process_wizard_message_with_memory(
-                    db=db,
-                    message=request.message,
-                    context=request.context,
-                    conversation_id=request.conversation_id,
-                    user_id=request.user_id,
-                    include_response=True
-                )
-                break
-        else:
-            result = wizard_orchestrator_service.process_wizard_message(
-                message=request.message,
-                context=request.context,
-                include_response=True
-            )
-        
-        return WizardIntentResponse(
-            intent=result.get("intent", "unknown"),
-            confidence=result.get("confidence", 0.0),
-            entities=result.get("entities", {}),
-            suggested_tool_call=result.get("suggested_tool_call"),
-            conversational_response=result.get("conversational_response"),
-            injected_context=result.get("injected_context"),
-            conversation_id=result.get("conversation_id")
-        )
-        
-    except Exception as e:
-        logger.error(f"❌ Intent detection error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/wizard/intents", response_model=None)
-async def get_available_intents():
-    """Get list of available wizard intents and their tool mappings."""
-    return {
-        "intents": wizard_orchestrator_service.get_available_intents()
-    }
 
 
 @router.get("/tools", response_model=None)

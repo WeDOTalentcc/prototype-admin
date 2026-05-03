@@ -97,11 +97,17 @@ class Candidate(EncryptedFieldMixin, Base):
     Represents a candidate in the recruitment system.
     Candidates can come from: ATS (via Merge.dev), manual entry, or Pearch AI global search.
 
-    PII encryption (post-migration 060, via EncryptedFieldMixin):
+    PII encryption (post-migration 060+111, via EncryptedFieldMixin):
       - Every write to ``email`` sets ``email_encrypted`` (Fernet bytes), ``email_hash``
         (SHA-256 hex), and NULLS the ``email`` plaintext column.
       - Every write to ``cpf`` sets ``cpf_encrypted`` (Fernet bytes) and NULLS ``cpf``.
-      - Pre-migration rows retain plaintext email/cpf until pii.backfill_encrypt_existing runs.
+      - Every write to ``name`` sets ``name_encrypted`` (Fernet bytes) and NULLS ``name``.
+        NOTE: name is used in ILIKE queries in _handler_hooks.py and sourcing_actions.py.
+        Those queries will only work on pre-migration rows (plaintext) during the transition.
+        Post-backfill, name search must use a separate search index (PG trigram / full-text).
+        Compliance requirement (LGPD) takes precedence over convenience.
+      - Every write to ``phone`` sets ``phone_encrypted`` (Fernet bytes) and NULLS ``phone``.
+      - Pre-migration rows retain plaintext until pii.backfill_encrypt_existing runs.
       - Lookups: OR(email_hash == hash, email == plaintext) during transition period.
     """
     __tablename__ = "candidates"
@@ -115,13 +121,24 @@ class Candidate(EncryptedFieldMixin, Base):
     _pii_encrypt_fields = [
         ("_email_raw", "_email_encrypted", "email_hash"),
         ("_cpf_raw",   "_cpf_encrypted",   None),
+        # UC-P1-15: name and phone encrypted at rest (migration 111)
+        ("_name_raw",  "_name_encrypted",  None),
+        ("_phone_raw", "_phone_encrypted", None),
     ]
 
     # Primary key
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
     # Basic Information
-    name = Column(String(255), nullable=False, index=True)
+    # UC-P1-15: name is PII — stored encrypted (migration 111).
+    # DB column "name" kept for schema compat. New writes always NULL here (encrypted in _name_encrypted).
+    # Pre-migration rows retain plaintext until pii.backfill_encrypt_existing completes.
+    # Access via hybrid_property "name" registered by EncryptedFieldMixin.
+    # WARNING: ILIKE searches on name (see _handler_hooks.py, sourcing_actions.py) will only
+    # match pre-migration rows. Post-backfill, use full-text / trigram search index.
+    _name_raw = Column("name", String(255), nullable=True, index=True)
+    # PII-encrypted name (added by migration 111)
+    _name_encrypted = Column("name_encrypted", LargeBinary, nullable=True)
     # Raw DB columns for PII fields — always NULL for new writes (post-migration 060).
     # Pre-migration rows retain plaintext here until pii.backfill_encrypt_existing completes.
     # Access via hybrid_property "email" (registered by EncryptedFieldMixin) which decrypts
@@ -131,7 +148,12 @@ class Candidate(EncryptedFieldMixin, Base):
     # PII-encrypted backing columns (added by migration 060)
     _email_encrypted = Column("email_encrypted", LargeBinary, nullable=True)
     email_hash = Column(String(64), nullable=True, index=True)
-    phone = Column(String(50), nullable=True)
+    # UC-P1-15: phone is PII — stored encrypted (migration 111).
+    # DB column "phone" kept for schema compat. New writes always NULL here.
+    # Access via hybrid_property "phone" registered by EncryptedFieldMixin.
+    _phone_raw = Column("phone", String(50), nullable=True)
+    # PII-encrypted phone (added by migration 111)
+    _phone_encrypted = Column("phone_encrypted", LargeBinary, nullable=True)
     mobile_phone = Column(String(50), nullable=True)
     secondary_phone = Column(String(50), nullable=True)
     linkedin_url = Column(String(500), nullable=True)

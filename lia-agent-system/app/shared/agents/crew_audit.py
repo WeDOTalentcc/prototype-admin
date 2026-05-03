@@ -7,7 +7,6 @@ providing full traceability of delegation chains.
 from __future__ import annotations
 
 import logging
-from datetime import datetime
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -149,7 +148,13 @@ class CrewAuditService:
                 action=action,
                 decision=decision,
                 reasoning=reasoning,
-                criteria_used=[],
+                criteria_used=[
+                    f"agent:{agent_name}",
+                    f"decision_type:{decision_type}",
+                    f"action:{action}",
+                    f"decision:{decision}",
+                    f"reasoning_count:{len(reasoning)}",
+                ],
                 criteria_ignored=[],
             )
         except Exception as exc:

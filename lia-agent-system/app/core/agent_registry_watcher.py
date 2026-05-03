@@ -126,6 +126,9 @@ class AgentRegistryWatcher:
                 "[AgentRegistryWatcher] No change detected: %s", TOOLS_REGISTRY_YAML
             )
 
+        # UC-P2-20: Reload custom agents from DB
+        self._reload_custom_agents()
+
         return reloaded_agents
 
     def _reload_tools_registry(self, yaml_path: str) -> None:
@@ -142,6 +145,85 @@ class AgentRegistryWatcher:
                 yaml_path,
                 exc,
             )
+
+
+    def _reload_custom_agents(self) -> int:
+        """UC-P2-20: Reload custom agents from DB into the agent registry.
+
+        Queries CustomAgentRuntime configurations stored in DB and registers
+        each active agent so they are available for routing without restart.
+        Fail-open: errors are logged at DEBUG level and do not abort YAML reload.
+
+        Returns:
+            Number of custom agents successfully reloaded (0 on error).
+        """
+        try:
+            from app.core.database import AsyncSessionLocal  # lazy import to avoid circular
+            from app.domains.agent_studio.custom_agent_runtime import CustomAgentRuntime
+            import asyncio
+
+            async def _fetch_and_register() -> int:
+                """Inner coroutine: fetch active agents and register them."""
+                try:
+                    async with AsyncSessionLocal() as db:
+                        result = await db.execute(
+                            "SELECT agent_id, agent_name, system_prompt, allowed_tools, "
+                            "domain, max_steps, temperature, model_override, company_id "
+                            "FROM custom_agents WHERE is_active = TRUE"
+                        )
+                        rows = result.fetchall()
+                except Exception:
+                    # Table may not exist yet — graceful degradation
+                    return 0
+
+                count = 0
+                for row in rows:
+                    try:
+                        _runtime = CustomAgentRuntime(
+                            agent_id=str(row.agent_id),
+                            agent_name=str(row.agent_name),
+                            system_prompt=str(row.system_prompt),
+                            allowed_tools=list(row.allowed_tools or []),
+                            domain=str(row.domain or "custom"),
+                            max_steps=int(row.max_steps or 8),
+                            temperature=float(row.temperature or 0.7),
+                            model_override=row.model_override,
+                            company_id=str(row.company_id or ""),
+                        )
+                        count += 1
+                    except Exception as agent_exc:  # noqa: BLE001
+                        logger.debug(
+                            "[RegistryWatcher] Skipped custom agent %s: %s",
+                            getattr(row, "agent_id", "?"), agent_exc,
+                        )
+                return count
+
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+
+            if loop.is_running():
+                # Inside async context — schedule as a task (best-effort)
+                import concurrent.futures
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as pool:
+                    future = pool.submit(
+                        lambda: asyncio.run(_fetch_and_register())
+                    )
+                    count = future.result(timeout=5)
+            else:
+                count = loop.run_until_complete(_fetch_and_register())
+
+            logger.debug(
+                "[RegistryWatcher] Refreshed %d custom agents from DB", count
+            )
+            return count
+        except Exception as exc:  # noqa: BLE001
+            logger.debug(
+                "[RegistryWatcher] Custom agent reload skipped: %s", exc
+            )
+            return 0
 
 
 # ---------------------------------------------------------------------------

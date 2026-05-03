@@ -521,7 +521,7 @@ Retorne APENAS o objeto JSON, sem texto adicional ou markdown."""
                     return DuplicateCheck(
                         is_duplicate=True,
                         match_type="email",
-                        existing_candidate_id=existing.id if existing.id else None,  # type: ignore
+                        existing_candidate_id=existing.id if existing.id else None,  # type: ignore[union-attr]
                         existing_candidate_name=str(candidate_name) if candidate_name else None,
                         similarity_score=1.0
                     )
@@ -548,7 +548,7 @@ Retorne APENAS o objeto JSON, sem texto adicional ou markdown."""
                             return DuplicateCheck(
                                 is_duplicate=True,
                                 match_type="name_phone",
-                                existing_candidate_id=candidate.id if candidate.id else None,  # type: ignore
+                                existing_candidate_id=candidate.id if candidate.id else None,  # type: ignore[union-attr]
                                 existing_candidate_name=str(cand_name) if cand_name else None,
                                 similarity_score=0.9
                             )
@@ -568,7 +568,7 @@ Retorne APENAS o objeto JSON, sem texto adicional ou markdown."""
                         return DuplicateCheck(
                             is_duplicate=True,
                             match_type="linkedin",
-                            existing_candidate_id=existing.id if existing.id else None,  # type: ignore
+                            existing_candidate_id=existing.id if existing.id else None,  # type: ignore[union-attr]
                             existing_candidate_name=str(exist_name) if exist_name else None,
                             similarity_score=0.95
                         )

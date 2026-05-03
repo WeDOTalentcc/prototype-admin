@@ -13,12 +13,12 @@ export function JobDataPanel({ job }: JobDataPanelProps) {
     : null
 
   return (
-    <div className="flex flex-col gap-4 p-4 bg-muted/30 rounded-xl h-full">
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+    <div className="flex flex-col gap-4 p-4 bg-muted/30 rounded-lg h-full">
+      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         Dados da Vaga
       </p>
 
-      <div className="flex flex-col gap-3 text-[12px]">
+      <div className="flex flex-col gap-3 text-sm">
         {job.title && (
           <Row label="Cargo" value={job.title} />
         )}
@@ -39,18 +39,18 @@ export function JobDataPanel({ job }: JobDataPanelProps) {
         )}
         {job.benefits && job.benefits.length > 0 && (
           <div>
-            <p className="text-[11px] text-muted-foreground mb-1">Benefícios</p>
+            <p className="text-xs text-muted-foreground mb-1">Benefícios</p>
             <ul className="flex flex-wrap gap-1">
               {job.benefits.slice(0, 8).map((b, i) => (
                 <li
                   key={i}
-                  className="text-[11px] bg-background border border-border rounded-md px-2 py-0.5"
+                  className="text-xs bg-background border border-border rounded px-2 py-0.5"
                 >
                   {typeof b === "string" ? b : b.name}
                 </li>
               ))}
               {job.benefits.length > 8 && (
-                <li className="text-[11px] text-muted-foreground px-1">
+                <li className="text-xs text-muted-foreground px-1">
                   +{job.benefits.length - 8} mais
                 </li>
               )}
@@ -65,7 +65,7 @@ export function JobDataPanel({ job }: JobDataPanelProps) {
 function Row({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
     <div>
-      <p className="text-[11px] text-muted-foreground">{label}</p>
+      <p className="text-xs text-muted-foreground">{label}</p>
       <p className={highlight ? "font-semibold text-foreground" : "text-foreground"}>
         {value}
       </p>

@@ -45,7 +45,7 @@ async def _get_redis():
         return await aioredis.from_url(settings.REDIS_URL, decode_responses=True)
     except Exception:
         try:
-            import aioredis  # type: ignore
+            import aioredis  # type: ignore[union-attr]
 
             from app.core.config import settings
             return await aioredis.from_url(settings.REDIS_URL, decode_responses=True)

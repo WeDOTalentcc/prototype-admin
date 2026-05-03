@@ -10,6 +10,7 @@ strings with a structured graph that enables:
 - Hybrid proximity scoring: graph propagation + embedding cosine similarity
   (embeddings loaded lazily via Gemini; falls back to graph-only if unavailable)
 """
+
 from __future__ import annotations
 
 import logging
@@ -293,9 +294,7 @@ class SkillsOntologyEngine:
         self._alias_map[canonical] = canonical
         return node
 
-    def add_adjacency(
-        self, skill_a: str, skill_b: str, weight: float = 0.5, relation: str = "related"
-    ) -> None:
+    def add_adjacency(self, skill_a: str, skill_b: str, weight: float = 0.5, relation: str = "related") -> None:
         a = self._resolve(skill_a)
         b = self._resolve(skill_b)
         if a and b and a != b:
@@ -361,19 +360,19 @@ class SkillsOntologyEngine:
             if weight >= min_weight and target not in seen:
                 seen.add(target)
                 node = self._nodes.get(target)
-                adjacencies.append({
-                    "skill": node.name if node else target,
-                    "weight": round(weight, 3),
-                    "relation": relation,
-                    "domain": node.domain if node else "",
-                    "specialization": node.specialization if node else "",
-                })
+                adjacencies.append(
+                    {
+                        "skill": node.name if node else target,
+                        "weight": round(weight, 3),
+                        "relation": relation,
+                        "domain": node.domain if node else "",
+                        "specialization": node.specialization if node else "",
+                    }
+                )
         adjacencies.sort(key=lambda x: x["weight"], reverse=True)
         return adjacencies
 
-    def infer_related_skills(
-        self, skills: list[str], depth: int = 2, limit: int = 15
-    ) -> list[dict[str, Any]]:
+    def infer_related_skills(self, skills: list[str], depth: int = 2, limit: int = 15) -> list[dict[str, Any]]:
         resolved = [self._resolve(s) for s in skills]
         resolved = [r for r in resolved if r]
         if not resolved:
@@ -403,12 +402,14 @@ class SkillsOntologyEngine:
         for skill_id, score in sorted(scored.items(), key=lambda x: x[1], reverse=True)[:limit]:
             node = self._nodes.get(skill_id)
             if node:
-                result.append({
-                    "skill": node.name,
-                    "relevance_score": round(score, 3),
-                    "domain": node.domain,
-                    "specialization": node.specialization,
-                })
+                result.append(
+                    {
+                        "skill": node.name,
+                        "relevance_score": round(score, 3),
+                        "domain": node.domain,
+                        "specialization": node.specialization,
+                    }
+                )
         return result
 
     def analyze_skill_gaps(
@@ -432,21 +433,23 @@ class SkillsOntologyEngine:
                     if target == m and weight >= 0.5:
                         c_node = self._nodes.get(c)
                         m_node = self._nodes.get(m)
-                        adjacency_matches.append({
-                            "missing_skill": m_node.name if m_node else m,
-                            "related_candidate_skill": c_node.name if c_node else c,
-                            "proximity": round(weight, 3),
-                            "relation": rel,
-                        })
+                        adjacency_matches.append(
+                            {
+                                "missing_skill": m_node.name if m_node else m,
+                                "related_candidate_skill": c_node.name if c_node else c,
+                                "proximity": round(weight, 3),
+                                "relation": rel,
+                            }
+                        )
 
         match_pct = round(len(matched) / len(r_resolved) * 100, 1) if r_resolved else 0.0
 
         adj_coverage = set()
         for am in adjacency_matches:
             adj_coverage.add(self._resolve(am["missing_skill"]))
-        effective_pct = round(
-            (len(matched) + len(adj_coverage) * 0.7) / len(r_resolved) * 100, 1
-        ) if r_resolved else 0.0
+        effective_pct = (
+            round((len(matched) + len(adj_coverage) * 0.7) / len(r_resolved) * 100, 1) if r_resolved else 0.0
+        )
 
         def _name(sid: str | None) -> str:
             if sid and sid in self._nodes:
@@ -461,11 +464,7 @@ class SkillsOntologyEngine:
             "extra_skills": sorted([_name(s) for s in extra]),
             "adjacency_matches": adjacency_matches,
             "development_suggestions": self._suggest_development(missing),
-            "gap_severity": (
-                "low" if match_pct >= 80
-                else "medium" if match_pct >= 50
-                else "high"
-            ),
+            "gap_severity": ("low" if match_pct >= 80 else "medium" if match_pct >= 50 else "high"),
         }
 
     def _suggest_development(self, missing_skills: set[str | None]) -> list[dict[str, Any]]:
@@ -476,12 +475,14 @@ class SkillsOntologyEngine:
             node = self._nodes.get(skill_id)
             if node:
                 related = self.get_adjacencies(skill_id, min_weight=0.6)[:3]
-                suggestions.append({
-                    "skill": node.name,
-                    "domain": node.domain,
-                    "specialization": node.specialization,
-                    "learning_path": [r["skill"] for r in related],
-                })
+                suggestions.append(
+                    {
+                        "skill": node.name,
+                        "domain": node.domain,
+                        "specialization": node.specialization,
+                        "learning_path": [r["skill"] for r in related],
+                    }
+                )
         return suggestions[:10]
 
     def map_skills_to_ontology(self, raw_skills: list[str]) -> dict[str, Any]:
@@ -491,12 +492,14 @@ class SkillsOntologyEngine:
             resolved = self._resolve(raw)
             if resolved and resolved in self._nodes:
                 node = self._nodes[resolved]
-                mapped.append({
-                    "original": raw,
-                    "canonical": node.name,
-                    "domain": node.domain,
-                    "specialization": node.specialization,
-                })
+                mapped.append(
+                    {
+                        "original": raw,
+                        "canonical": node.name,
+                        "domain": node.domain,
+                        "specialization": node.specialization,
+                    }
+                )
             else:
                 unmapped.append(raw)
 
@@ -519,35 +522,46 @@ class SkillsOntologyEngine:
 
     async def _load_embeddings(self) -> None:
         """
-        Lazily generate embeddings for all skills via Gemini embedding model.
-        Falls back gracefully if the API is unavailable — graph-only scoring
-        continues to work.
+        Lazily generate embeddings for all skills via the canonical embedding
+        provider (Choose Your AI / BYOK). Falls back gracefully if the provider
+        is unavailable — graph-only scoring continues to work.
+
+        R-001: NAO instanciar SDK do Gemini diretamente; consumir
+        EmbeddingProviderFactory (allowlisted) que respeita config do tenant.
         """
         if self._embeddings_loaded:
             return
         self._embeddings_loaded = True
         try:
-            import os
-            api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
-            if not api_key:
-                logger.info("No Gemini API key found; embedding proximity disabled (graph-only mode)")
+            from app.shared.providers.embedding_factory import EmbeddingProviderFactory
+
+            try:
+                provider = EmbeddingProviderFactory.get_default()
+            except Exception as exc:
+                logger.info(
+                    "Embedding provider unavailable (%s); embedding proximity disabled (graph-only mode)",
+                    exc,
+                )
                 return
-            import google.generativeai as genai
-            genai.configure(api_key=api_key)
+
             skill_names = [n.name for n in self._nodes.values()]
+            if not skill_names:
+                return
+
             batch_size = 100
             for i in range(0, len(skill_names), batch_size):
-                batch = skill_names[i:i + batch_size]
-                result = genai.embed_content(
-                    model="models/text-embedding-004",
-                    content=batch,
-                    task_type="SEMANTIC_SIMILARITY",
-                )
-                embeddings_list = result.get("embedding", [])
-                if isinstance(embeddings_list[0], float):
-                    embeddings_list = [embeddings_list]
-                for name, emb in zip(batch, embeddings_list):
-                    self._embeddings[name.lower().strip()] = emb
+                batch = skill_names[i : i + batch_size]
+                try:
+                    results = await provider.embed_batch(batch)
+                except Exception as exc:
+                    logger.warning(
+                        "Could not load skill embeddings batch %d (graph-only mode): %s",
+                        i // batch_size,
+                        exc,
+                    )
+                    return
+                for name, result in zip(batch, results):
+                    self._embeddings[name.lower().strip()] = result.vector
             logger.info(f"Loaded embeddings for {len(self._embeddings)} skills")
         except Exception as e:
             logger.warning(f"Could not load skill embeddings (graph-only mode): {e}")

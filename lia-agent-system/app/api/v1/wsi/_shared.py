@@ -1,6 +1,7 @@
 """
 WSI package — shared imports, constants, models, and utility functions.
 """
+
 import asyncio
 import json
 import logging
@@ -21,32 +22,57 @@ BLOOM_LEVELS = {
     3: {"name": "Apply", "name_pt": "Aplicar", "description": "Use information in new situations"},
     4: {"name": "Analyze", "name_pt": "Analisar", "description": "Draw connections among ideas"},
     5: {"name": "Evaluate", "name_pt": "Avaliar", "description": "Justify decisions or positions"},
-    6: {"name": "Create", "name_pt": "Criar", "description": "Produce new or original work"}
+    6: {"name": "Create", "name_pt": "Criar", "description": "Produce new or original work"},
 }
 
 DREYFUS_LEVELS = {
-    1: {"name": "Novice",            "name_pt": "Iniciante",     "description": "Follows rigid rules"},
-    2: {"name": "Advanced Beginner", "name_pt": "Básico",        "description": "Recognizes situational aspects"},
-    3: {"name": "Competent",         "name_pt": "Intermediário", "description": "Conscious planning, prioritization"},
-    4: {"name": "Proficient",        "name_pt": "Avançado",      "description": "Holistic view, fluid adaptation"},
-    5: {"name": "Expert",            "name_pt": "Especialista",  "description": "Deep intuition, transcends rules"}
+    1: {"name": "Novice", "name_pt": "Iniciante", "description": "Follows rigid rules"},
+    2: {"name": "Advanced Beginner", "name_pt": "Básico", "description": "Recognizes situational aspects"},
+    3: {"name": "Competent", "name_pt": "Intermediário", "description": "Conscious planning, prioritization"},
+    4: {"name": "Proficient", "name_pt": "Avançado", "description": "Holistic view, fluid adaptation"},
+    5: {"name": "Expert", "name_pt": "Especialista", "description": "Deep intuition, transcends rules"},
 }
 
 BIG_FIVE_TRAITS = {
-    "openness":          {"name": "Openness",          "name_pt": "Abertura a mudanças",       "high": "Curious, creative",         "low": "Conventional, routine-oriented"},
-    "conscientiousness": {"name": "Conscientiousness", "name_pt": "Organização e disciplina",  "high": "Organized, disciplined",    "low": "Flexible, spontaneous"},
-    "extraversion":      {"name": "Extraversion",      "name_pt": "Sociabilidade",             "high": "Outgoing, assertive",       "low": "Reserved, reflective"},
-    "agreeableness":     {"name": "Agreeableness",     "name_pt": "Cooperação",                "high": "Cooperative, empathetic",   "low": "Competitive, independent"},
-    "neuroticism":       {"name": "Neuroticism",        "name_pt": "Estabilidade emocional",   "high": "Sensitive, anxious",        "low": "Calm, resilient"},
+    "openness": {
+        "name": "Openness",
+        "name_pt": "Abertura a mudanças",
+        "high": "Curious, creative",
+        "low": "Conventional, routine-oriented",
+    },
+    "conscientiousness": {
+        "name": "Conscientiousness",
+        "name_pt": "Organização e disciplina",
+        "high": "Organized, disciplined",
+        "low": "Flexible, spontaneous",
+    },
+    "extraversion": {
+        "name": "Extraversion",
+        "name_pt": "Sociabilidade",
+        "high": "Outgoing, assertive",
+        "low": "Reserved, reflective",
+    },
+    "agreeableness": {
+        "name": "Agreeableness",
+        "name_pt": "Cooperação",
+        "high": "Cooperative, empathetic",
+        "low": "Competitive, independent",
+    },
+    "neuroticism": {
+        "name": "Neuroticism",
+        "name_pt": "Estabilidade emocional",
+        "high": "Sensitive, anxious",
+        "low": "Calm, resilient",
+    },
 }
 
 WSI_CLASSIFICATION_MAP = {
-    "excepcional":     {"label": "Excepcional",      "min_score": 4.5,  "color": "emerald-700"},
-    "excelente":       {"label": "Excelente",         "min_score": 4.0,  "color": "green-600"},
-    "alto":            {"label": "Alto",               "min_score": 3.5,  "color": "blue-600"},
-    "medio":           {"label": "Médio",              "min_score": 3.0,  "color": "amber-600"},
-    "abaixo_da_media": {"label": "Abaixo da média",   "min_score": 2.25, "color": "orange-600"},
-    "regular":         {"label": "Regular / Baixo",   "min_score": 0.0,  "color": "red-600"},
+    "excepcional": {"label": "Excepcional", "min_score": 4.5, "color": "emerald-700"},
+    "excelente": {"label": "Excelente", "min_score": 4.0, "color": "green-600"},
+    "alto": {"label": "Alto", "min_score": 3.5, "color": "blue-600"},
+    "medio": {"label": "Médio", "min_score": 3.0, "color": "amber-600"},
+    "abaixo_da_media": {"label": "Abaixo da média", "min_score": 2.25, "color": "orange-600"},
+    "regular": {"label": "Regular / Baixo", "min_score": 0.0, "color": "red-600"},
 }
 
 
@@ -68,6 +94,7 @@ def classify_wsi_score(score: float) -> str:
 # ---------------------------------------------------------------------------
 # Pydantic models
 # ---------------------------------------------------------------------------
+
 
 class WSIQuestionOutput(BaseModel):
     id: str
@@ -222,17 +249,30 @@ _JD_SENIORITY_KEYWORDS = {
     "vp": ["vp", "vice-presidente", "cxo", "cto", "cpo"],
 }
 _BIAS_TERMS = [
-    "boa aparência", "apresentação pessoal", "jovem", "recém-formado",
-    "native speaker", "universidades de primeira linha", "faculdade de ponta",
-    "perfil adequado", "escola particular", "bairros nobres", "morar próximo",
-    "boa família", "estado civil", "filho", "filha", "casado", "solteiro",
+    "boa aparência",
+    "apresentação pessoal",
+    "jovem",
+    "recém-formado",
+    "native speaker",
+    "universidades de primeira linha",
+    "faculdade de ponta",
+    "perfil adequado",
+    "escola particular",
+    "bairros nobres",
+    "morar próximo",
+    "boa família",
+    "estado civil",
+    "filho",
+    "filha",
+    "casado",
+    "solteiro",
 ]
 _JD_BANDS = [
-    (85, "excelente",     "Excelente"),
-    (70, "bom",           "Bom"),
-    (50, "adequado",      "Adequado"),
-    (30, "insuficiente",  "Insuficiente"),
-    (0,  "critico",       "Crítico"),
+    (85, "excelente", "Excelente"),
+    (70, "bom", "Bom"),
+    (50, "adequado", "Adequado"),
+    (30, "insuficiente", "Insuficiente"),
+    (0, "critico", "Crítico"),
 ]
 
 
@@ -247,14 +287,27 @@ def _jd_get_band(score: int):
 # LLM factory helpers (Task #93 migration)
 # ---------------------------------------------------------------------------
 
-async def get_anthropic_client():
+
+async def get_anthropic_client(
+    *,
+    company_id: str | None = None,
+    domain: str | None = "wsi",
+    operation: str | None = None,
+):
     """DEPRECATED: Returns a ProviderContainer via LLMProviderFactory (Task #93).
 
     Callers should migrate to using generate_with_llm() directly.
     Returns None only on critical init failure.
+
+    R-002 (Sprint 1 Quick Wins): emite track_llm_usage_start antes de retornar
+    o container — sensor de spend tenant-aware. Aceita company_id + domain +
+    operation opcionais para enriquecer o log.
     """
     try:
+        from app.domains.credits.services.token_budget_service import track_llm_usage_start
         from app.shared.providers.llm_factory import get_provider_for_tenant
+
+        track_llm_usage_start(company_id, model=None, domain=domain, operation=operation)
         return get_provider_for_tenant()
     except Exception as e:
         logger.error(f"Failed to get LLM provider: {e}")
@@ -283,6 +336,7 @@ def parse_json_response(content: str, fallback: dict) -> dict:
 
 class _FakeResponse:
     """Shim so callers can do response.content[0].text without refactoring."""
+
     def __init__(self, text: str):
         self.content = [type("Block", (), {"text": text})()]
 

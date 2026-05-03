@@ -300,3 +300,94 @@ Responda APENAS em JSON:
 
 
 intent_classifier_service = IntentClassifierService()
+
+
+# ---------------------------------------------------------------------------
+# UC-P3-10: Tier-filtered IntentClassifier factory
+# ---------------------------------------------------------------------------
+# Different subscription tiers expose different intent subsets to prevent
+# basic-tier tenants from accidentally triggering enterprise-only workflows.
+#
+# basic:        core job creation/editing intents only
+# professional: full set minus autonomous multi-step planning
+# enterprise:   all intents (default behavior, same as IntentClassifierService)
+
+_ENTERPRISE_ONLY_INTENTS: frozenset[IntentType] = frozenset([
+    # REUSE_VACANCY triggers deep vacancy search + fast-track planning;
+    # restrict to professional+ to avoid unintended autonomous workflows
+    # on basic plans that lack the downstream agents.
+    IntentType.REUSE_VACANCY,
+])
+
+_BASIC_ALLOWED_INTENTS: frozenset[IntentType] = frozenset([
+    IntentType.DATA_INPUT,
+    IntentType.QUESTION,
+    IntentType.CORRECTION,
+    IntentType.DEVIATION,
+])
+
+_PROFESSIONAL_ALLOWED_INTENTS: frozenset[IntentType] = frozenset(
+    [i for i in IntentType if i not in _ENTERPRISE_ONLY_INTENTS]
+)
+
+
+class TierFilteredIntentClassifierService(IntentClassifierService):
+    """IntentClassifierService with a subset of intents enabled based on plan tier.
+
+    When the classified intent is not in the allowed set for the tenant's tier,
+    falls back to DATA_INPUT with reduced confidence — safe default that routes
+    to the standard chat pipeline instead of an enterprise workflow.
+    """
+
+    def __init__(self, allowed_intents: frozenset[IntentType]) -> None:
+        super().__init__()
+        self._allowed_intents = allowed_intents
+
+    async def classify(
+        self,
+        user_input: str,
+        stage_context: str | None = None,
+        use_llm: bool = True,
+    ) -> ClassificationResult:
+        result = await super().classify(user_input, stage_context, use_llm)
+        if result.intent_type not in self._allowed_intents:
+            return ClassificationResult(
+                intent_type=IntentType.DATA_INPUT,
+                confidence=0.5,
+                extracted_entities=result.extracted_entities,
+                original_text=result.original_text,
+                reasoning=(
+                    f"Intent {result.intent_type.value} not available on current plan tier; "
+                    "downgraded to DATA_INPUT."
+                ),
+            )
+        return result
+
+
+def get_classifier_for_tier(tier: str) -> IntentClassifierService:
+    """Factory: return the appropriate IntentClassifierService for a subscription tier.
+
+    Args:
+        tier: "basic", "professional", or "enterprise" (case-insensitive).
+              Unknown tiers default to "basic" (fail-safe).
+
+    Returns:
+        IntentClassifierService (or TierFilteredIntentClassifierService subclass)
+        configured for the given tier.
+
+    Examples:
+        classifier = get_classifier_for_tier(company_plan)
+        result = await classifier.classify(user_message)
+
+    Tier capabilities:
+        basic:        DATA_INPUT, QUESTION, CORRECTION, DEVIATION
+        professional: above + REUSE_VACANCY minus autonomous planning intents
+        enterprise:   all intents (full IntentClassifierService)
+    """
+    normalized = (tier or "basic").lower().strip()
+    if normalized == "enterprise":
+        return intent_classifier_service  # singleton — full set
+    if normalized == "professional":
+        return TierFilteredIntentClassifierService(_PROFESSIONAL_ALLOWED_INTENTS)
+    # "basic" or unknown — most restrictive
+    return TierFilteredIntentClassifierService(_BASIC_ALLOWED_INTENTS)

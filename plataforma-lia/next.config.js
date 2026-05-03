@@ -38,6 +38,9 @@ const nextConfig = {
     '*.worf.replit.dev',
     '*.picard.replit.dev',
     '*.riker.replit.dev',
+    '*.janeway.replit.dev',
+    '*.kirk.replit.dev',
+    '*.spock.replit.dev',
     '*.replit.dev',
     '*.repl.co'
   ],

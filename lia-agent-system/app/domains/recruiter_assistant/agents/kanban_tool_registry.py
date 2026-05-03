@@ -10,6 +10,7 @@ import uuid
 from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolOutput
 from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
@@ -992,6 +993,11 @@ async def _wrap_view_candidate_full_profile(**kwargs: Any) -> dict[str, Any]:
 
 TOOL_DEFINITIONS: list[ToolDefinition] = [
     ToolDefinition(
+        touches_pii=True,
+        pii_output_fields=["name",
+        "email",
+        "phone",
+        "linkedin_url"],
         name="view_candidate_full_profile",
         description="Visualiza o perfil completo do candidato: dados pessoais, formacao academica, historico de trabalho, skills, scores LIA/WSI, pretensao salarial, idiomas e preferencias. Use para perguntas sobre um candidato especifico como 'formacao de Joao', 'experiencia de Maria', 'perfil completo de [nome]'.",
         parameters={
@@ -1001,6 +1007,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_view_candidate_full_profile,
     ),
     ToolDefinition(
@@ -1014,6 +1021,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["vacancy_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_get_pipeline_benchmarks,
     ),
     ToolDefinition(
@@ -1026,6 +1034,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": [],
         },
+        output_schema=ToolOutput,
         function=_wrap_get_pipeline_summary,
     ),
     ToolDefinition(
@@ -1039,9 +1048,14 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["stage"],
         },
+        output_schema=ToolOutput,
         function=_wrap_get_stage_metrics,
     ),
     ToolDefinition(
+        touches_pii=True,
+        pii_output_fields=["name",
+        "email",
+        "linkedin_url"],
         name="list_stage_candidates",
         description="Lista candidatos em uma etapa especifica do pipeline com informacoes resumidas.",
         parameters={
@@ -1053,6 +1067,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["stage"],
         },
+        output_schema=ToolOutput,
         function=_wrap_list_stage_candidates,
     ),
     ToolDefinition(
@@ -1066,6 +1081,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["stage"],
         },
+        output_schema=ToolOutput,
         function=_wrap_analyze_stage,
     ),
     ToolDefinition(
@@ -1078,6 +1094,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": [],
         },
+        output_schema=ToolOutput,
         function=_wrap_identify_bottlenecks,
     ),
     ToolDefinition(
@@ -1091,6 +1108,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": [],
         },
+        output_schema=ToolOutput,
         function=_wrap_get_candidate_aging,
     ),
     ToolDefinition(
@@ -1103,9 +1121,12 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["stages"],
         },
+        output_schema=ToolOutput,
         function=_wrap_compare_stages,
     ),
     ToolDefinition(
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
         name="suggest_movements",
         description="Gera sugestoes inteligentes de movimentacao de candidatos baseadas em dados e metricas.",
         parameters={
@@ -1116,9 +1137,13 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["stage"],
         },
+        output_schema=ToolOutput,
         function=_wrap_suggest_movements,
     ),
     ToolDefinition(
+        side_effects=["write"],
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
         name="batch_move_candidates",
         description="Move multiplos candidatos entre etapas do pipeline de uma vez. Requer confirmacao.",
         parameters={
@@ -1130,9 +1155,14 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_ids", "target_stage", "reason"],
         },
+        output_schema=ToolOutput,
         function=_wrap_batch_move_candidates,
     ),
     ToolDefinition(
+        side_effects=["send"],
+        touches_pii=True,
+        pii_output_fields=["email_address",
+        "phone"],
         name="send_batch_communication",
         description="Envia comunicacao em massa para multiplos candidatos via email, WhatsApp ou outro canal.",
         parameters={
@@ -1144,9 +1174,13 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_ids", "channel", "template"],
         },
+        output_schema=ToolOutput,
         function=_wrap_send_batch_communication,
     ),
     ToolDefinition(
+        side_effects=["write"],
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
         name="start_screening_batch",
         description="Inicia screening WSI para multiplos candidatos de uma vaga especifica.",
         parameters={
@@ -1157,6 +1191,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["candidate_ids", "vacancy_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_start_screening_batch,
     ),
     ToolDefinition(
@@ -1170,9 +1205,14 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["report_type"],
         },
+        output_schema=ToolOutput,
         function=_wrap_generate_pipeline_report,
     ),
     ToolDefinition(
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
+        touches_pii=True,
+        pii_output_fields=["candidate_name"],
         name="check_rejection_fairness",
         description="Valida justificativa de rejeicao de candidato contra vies discriminatorio. Bloqueia vies explicito e alerta sobre vies implicito.",
         parameters={
@@ -1183,9 +1223,15 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["rejection_reason"],
         },
+        output_schema=ToolOutput,
         function=_wrap_check_rejection_fairness,
     ),
     ToolDefinition(
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
+        touches_pii=True,
+        pii_output_fields=["name",
+        "email"],
         name="find_silver_medalists",
         description=(
             "Busca candidatos 'prata' — que chegaram à etapa de entrevista em processos anteriores "
@@ -1202,6 +1248,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": [],
         },
+        output_schema=ToolOutput,
         function=_wrap_find_silver_medalists,
     ),
     ToolDefinition(
@@ -1227,6 +1274,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["recruiter_id", "company_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_get_recruiter_backlog,
     ),
     ToolDefinition(
@@ -1253,6 +1301,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["recruiter_id", "company_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_get_recruiter_benchmark,
     ),
     ToolDefinition(
@@ -1278,9 +1327,15 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["vacancy_id", "company_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_get_journey_metrics,
     ),
     ToolDefinition(
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
+        touches_pii=True,
+        pii_output_fields=["name",
+        "email"],
         name="get_at_risk_candidates",
         description=(
             "Retorna candidatos em risco de desengajamento (ghosting) ordenados por EWS score. "
@@ -1304,6 +1359,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["company_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_get_at_risk_candidates,
     ),
     ToolDefinition(
@@ -1331,6 +1387,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["company_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_get_pipeline_prediction,
     ),
     ToolDefinition(
@@ -1348,6 +1405,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": [],
         },
+        output_schema=ToolOutput,
         function=_wrap_get_pipeline_velocity,
     ),
 ]
@@ -1360,7 +1418,13 @@ STAGE_TOOLS: dict[str, list[str]] = {
     "pipeline_actions": ["suggest_movements", "batch_move_candidates", "send_batch_communication", "start_screening_batch", "generate_pipeline_report", "view_candidate_full_profile", "check_rejection_fairness", "get_pipeline_benchmarks", "get_pipeline_velocity", "find_silver_medalists", "get_recruiter_backlog", "get_at_risk_candidates", "get_journey_metrics", "get_recruiter_benchmark", "get_pipeline_prediction"],
 }
 
-GUARDRAIL_TOOLS: list[str] = ["batch_move_candidates", "send_batch_communication", "start_screening_batch"]
+from app.shared.compliance.safety_category import SafetyCategory
+
+GUARDRAIL_TOOLS: dict[str, SafetyCategory] = {
+    "batch_move_candidates": SafetyCategory.BULK_ACTION,
+    "send_batch_communication": SafetyCategory.OUTREACH,
+    "start_screening_batch": SafetyCategory.BULK_ACTION,
+}
 
 
 def get_kanban_tools(stage: str = "") -> list[ToolDefinition]:

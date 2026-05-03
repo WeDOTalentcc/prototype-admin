@@ -9,17 +9,12 @@ import logging
 from typing import Any
 
 from fastapi import APIRouter, Depends
-from lia_agents_core.state_machine import (
-    JobWizardState,
-    WizardStage,
-    normalize_fields_for_frontend,
-)
+from lia_agents_core.state_machine import WizardStage
 from pydantic import BaseModel, Field
 
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
 from app.core.database import AsyncSessionLocal
-from app.domains.job_management.agents.job_wizard_graph import job_wizard_graph
 from app.domains.job_management.tools.job_wizard_tools import generate_enriched_jd  # noqa: F401
 from app.domains.job_management.services.job_vacancy_service import job_vacancy_service
 from app.shared.tenant_session import create_session_id
@@ -32,128 +27,6 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-def format_enrichment_as_conversational_message(enrichment_result: dict[str, Any], title: str) -> str:
-    """
-    Format enrichment suggestions as a rich conversational message for the chat.
-    
-    This follows the conversational philosophy where LIA presents suggestions
-    in the chat prompt, allowing natural discussion and feedback.
-    """
-    if not enrichment_result.get("success"):
-        return ""
-    
-    sections = enrichment_result.get("sections", [])
-    compensation = enrichment_result.get("compensation")
-    wsi_score = enrichment_result.get("wsiQualityScore", 0)
-    total_suggestions = enrichment_result.get("totalSuggestions", 0)
-    
-    if total_suggestions == 0:
-        return f"""✨ **Análise de Enriquecimento Concluída**
-
-Analisei os dados da vaga **{title}** contra benchmarks de mercado, histórico da empresa e catálogos de skills.
-
-A descrição está bem completa! O score de qualidade WSI é **{wsi_score}%**, o que significa que as perguntas de triagem terão boa qualidade.
-
-Quer que eu avance para definir a remuneração, ou prefere revisar algum ponto?"""
-    
-    # Build conversational message with suggestions
-    parts = []
-    parts.append(f"""✨ **Análise de Enriquecimento Concluída**
-
-Analisei os dados da vaga **{title}** contra 5 fontes de dados:
-• **Benchmark de Mercado** - práticas do setor para este cargo
-• **Histórico da Empresa** - padrões das suas vagas anteriores  
-• **Catálogo de Skills** - competências validadas para a função
-• **Configurações da Empresa** - políticas e preferências internas
-• **Integração ATS** - dados de recrutamentos passados
-
-📊 **Score de Qualidade WSI: {wsi_score}%** | {total_suggestions} sugestões para melhorar
-""")
-    
-    # Format each section with suggestions
-    section_icons = {
-        "responsibilities": "📋",
-        "technical_skills": "💻", 
-        "behavioral_competencies": "🧠",
-        "compensation": "💰"
-    }
-    
-    for section in sections:
-        section_name = section.get("sectionName", "")
-        section_title = section.get("sectionTitle", section_name)
-        suggestions = section.get("suggestions", [])
-        detected_items = section.get("detectedItems", [])
-        
-        if not suggestions:
-            continue
-            
-        icon = section_icons.get(section_name, "📌")
-        
-        parts.append(f"\n---\n{icon} **{section_title}**")
-        
-        if detected_items:
-            items_preview = ", ".join(detected_items[:3])
-            if len(detected_items) > 3:
-                items_preview += f" +{len(detected_items) - 3}"
-            parts.append(f"*Já detectados:* {items_preview}")
-        
-        parts.append("\n**Sugestões para adicionar:**")
-        
-        for i, suggestion in enumerate(suggestions[:5], 1):  # Limit to top 5 per section
-            value = suggestion.get("value", "")
-            source = suggestion.get("source", "")
-            justification = suggestion.get("justification", "")
-            impact = suggestion.get("impactLevel", "medium")
-            
-            source_labels = {
-                "market_benchmark": "Mercado",
-                "company_history": "Histórico",
-                "skills_catalog": "Catálogo",
-                "company_config": "Empresa",
-                "ats_integration": "ATS"
-            }
-            source_label = source_labels.get(source, source)
-            
-            impact_emoji = {"high": "🔥", "medium": "⭐", "low": "💡"}.get(impact, "💡")
-            
-            parts.append(f"{i}. **{value}** {impact_emoji}")
-            parts.append(f"   ↳ *{justification}* `[{source_label}]`")
-    
-    # Add compensation analysis if available
-    if compensation and compensation.get("marketRange"):
-        current_range = compensation.get("currentRange", {})
-        market_range = compensation.get("marketRange", {})
-        market_position = compensation.get("marketPosition", "competitive")
-        
-        position_text = {
-            "below": "⚠️ **Abaixo do mercado** - pode dificultar atrair talentos",
-            "competitive": "✅ **Competitivo** - alinhado com o mercado",
-            "above": "🎯 **Acima do mercado** - atrativo para top talentos"
-        }.get(market_position, "")
-        
-        parts.append("\n---\n💰 **Análise de Remuneração**")
-        if current_range.get("min") and current_range.get("max"):
-            parts.append(f"*Sua proposta:* R$ {current_range['min']:,.0f} - R$ {current_range['max']:,.0f}")
-        if market_range.get("min") and market_range.get("max"):
-            parts.append(f"*Benchmark de mercado:* R$ {market_range['min']:,.0f} - R$ {market_range['max']:,.0f}")
-        if position_text:
-            parts.append(position_text)
-    
-    # Add closing conversational prompt
-    parts.append("""
----
-
-💬 **O que você acha dessas sugestões?**
-
-Você pode responder naturalmente, por exemplo:
-• *"Aceito todas as sugestões"*
-• *"Adiciona apenas Python e Docker"*  
-• *"Não preciso de liderança, remove essa"*
-• *"Vamos avançar para remuneração"*
-
-Ou me diga se quer discutir alguma sugestão específica!""")
-    
-    return "\n".join(parts)
 
 FRONTEND_TO_BACKEND_STAGE: dict[str, str] = {
     "input-evaluation": WizardStage.TITLE_DEPARTMENT.value,
@@ -265,162 +138,14 @@ class SmartOrchestrateResponse(BaseModel):
     )
 
 
-def map_frontend_to_backend_stage(frontend_stage: str) -> str:
-    """Map frontend stage names to backend WizardStage values."""
-    return FRONTEND_TO_BACKEND_STAGE.get(
-        frontend_stage.lower(),
-        WizardStage.INITIAL.value
-    )
 
 
-def map_backend_to_frontend_stage(backend_stage: str) -> str:
-    """Map backend WizardStage values to frontend stage names."""
-    return BACKEND_TO_FRONTEND_STAGE.get(
-        backend_stage,
-        "input-evaluation"
-    )
 
 
-def build_messages_from_history(
-    conversation_history: list[dict[str, str]],
-    current_message: str
-) -> list[dict[str, str]]:
-    """Build messages list from conversation history plus current message."""
-    messages = []
-    for msg in conversation_history[-10:]:
-        role = msg.get("role", "user")
-        content = msg.get("content", "")
-        if content:
-            messages.append({"role": role, "content": content})
-    messages.append({"role": "user", "content": current_message})
-    return messages
 
 
-def calculate_overall_confidence(state: JobWizardState) -> float:
-    """Calculate overall confidence from state confidence scores."""
-    scores = state.get("confidence_scores", {})
-    if not scores:
-        return 0.5
-    return sum(scores.values()) / len(scores)
 
 
-async def finalize_job_vacancy_from_wizard(
-    job_draft: dict[str, Any],
-    session_id: str,
-    company_id: str,
-    user_id: str,
-) -> str | None:
-    """
-    Create job vacancy in database when wizard completes.
-    
-    Includes idempotency check to prevent duplicate job creation.
-    Handles FK constraint by validating conversation exists first.
-    
-    Returns:
-        job_vacancy_id if successful, None otherwise
-    """
-    try:
-        if not job_draft.get("title") and not job_draft.get("job_title"):
-            logger.warning("Cannot finalize job: no title provided")
-            return None
-        
-        async with AsyncSessionLocal() as db:
-            try:
-                from uuid import UUID
-
-                from sqlalchemy import select
-
-                from app.models.conversation import Conversation
-                from app.models.job_vacancy import JobVacancy
-                
-                conv_uuid = None
-                valid_conversation_id = None
-                
-                try:
-                    conv_uuid = UUID(session_id)
-                except (ValueError, TypeError):
-                    logger.warning(f"Session ID '{session_id}' is not a valid UUID, will create job without conversation link")
-                
-                from sqlalchemy import text
-                idempotency_result = await db.execute(
-                    text("SELECT id FROM job_vacancies WHERE additional_data->>'wizard_session_id' = :session_id LIMIT 1"),
-                    {"session_id": session_id}
-                )
-                existing_by_session = idempotency_result.scalar_one_or_none()
-                if existing_by_session:
-                    logger.info(f"⚠️ Job already exists for wizard session {session_id}: {existing_by_session}")
-                    return str(existing_by_session)
-                
-                if conv_uuid:
-                    existing_job = await db.execute(
-                        select(JobVacancy).where(JobVacancy.conversation_id == conv_uuid)
-                    )
-                    existing = existing_job.scalar_one_or_none()
-                    
-                    if existing:
-                        logger.info(f"⚠️ Job already exists for conversation {session_id}: {existing.id}")
-                        return str(existing.id)
-                    
-                    existing_conv = await db.execute(
-                        select(Conversation).where(Conversation.id == conv_uuid)
-                    )
-                    if existing_conv.scalar_one_or_none():
-                        valid_conversation_id = session_id
-                    else:
-                        logger.info(f"Conversation {session_id} not found in DB, creating job without FK link")
-                
-                job_vacancy = await job_vacancy_service.create_from_wizard_draft(
-                    draft=job_draft,
-                    conversation_id=valid_conversation_id or session_id,
-                    created_by=user_id,
-                    company_id=company_id,
-                    db=db,
-                    use_session_for_idempotency=(valid_conversation_id is None),
-                )
-
-                await db.commit()
-                await db.refresh(job_vacancy)
-                job_id = str(job_vacancy.id)
-                logger.info(f"✅ Job vacancy created from wizard: {job_id}")
-
-                # Persist WSI screening questions configured during the wizard.
-                # They live in job_draft["screening_questions"] (backend key) or
-                # "wsi_questions" (frontend alias mapped by normalize_fields_for_frontend).
-                screening_questions = (
-                    job_draft.get("screening_questions")
-                    or job_draft.get("wsi_questions")
-                    or []
-                )
-                if screening_questions:
-                    try:
-                        question_set_service = get_screening_question_set_service()
-                        await question_set_service.save_question_set(
-                            db=db,
-                            job_vacancy_id=job_id,
-                            questions=screening_questions,
-                            source="wizard",
-                            created_by=user_id,
-                            company_id=company_id,
-                        )
-                        await db.commit()
-                        logger.info(
-                            f"✅ Saved {len(screening_questions)} WSI questions for job {job_id}"
-                        )
-                    except Exception as q_error:
-                        logger.warning(
-                            f"⚠️ Failed to save WSI questions for job {job_id}: {q_error}"
-                        )
-
-                return job_id
-                
-            except Exception as db_error:
-                await db.rollback()
-                logger.error(f"❌ Database error creating job: {db_error}")
-                raise db_error
-                
-    except Exception as e:
-        logger.error(f"❌ Failed to finalize job vacancy: {e}", exc_info=True)
-        return None
 
 
 @router.post("/smart-orchestrate", response_model=SmartOrchestrateResponse)
@@ -604,141 +329,19 @@ async def react_orchestrate(
     request: SmartOrchestrateRequest,
     current_user: User = Depends(get_current_user_or_demo),
 ) -> SmartOrchestrateResponse:
+    """DEPRECATED — alias for /smart-orchestrate.
+
+    Phase 4D simplification: USE_REACT_AGENTS feature flag was never enabled
+    in any environment (.env files don't set it). Removed the legacy
+    WizardReActAgent branch entirely. /react-orchestrate now always delegates
+    to smart_orchestrate, which uses canonical WizardSessionService.
     """
-    Execute the WizardReActAgent for autonomous job creation.
-
-    This endpoint uses the ReAct loop (Reason-Act-Observe-Decide)
-    instead of the linear pipeline. The agent autonomously decides
-    which tools to call and when to respond.
-
-    Feature flag: USE_REACT_AGENTS (defaults to False).
-    """
-    import os
-    use_react = os.environ.get("USE_REACT_AGENTS", "false").lower() == "true"
-    if not use_react:
-        return await smart_orchestrate(request, current_user)
-
-    session_id = request.conversation_id or create_session_id(current_user.company_id)
-    company_id = request.company_id or get_user_company_id(current_user)
-    user_id = request.user_id or (
-        str(current_user.id) if current_user.id is not None else "anonymous"
+    logger.warning(
+        "[DEPRECATED] /api/v1/wizard/react-orchestrate called — alias to "
+        "canonical /smart-orchestrate. Migrate FE to /api/v1/wizard/message "
+        "(telemetry tag: phase4d.legacy_react_alias)."
     )
-
-    logger.info(
-        f"ReAct orchestrate: stage={request.current_stage}, "
-        f"message_len={len(request.message)}, session={session_id}"
-    )
-
-    try:
-        from lia_agents_core.agent_interface import AgentInput
-
-        from app.domains.job_management.agents.wizard_react_agent import (
-
-# RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
-# Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
-# See: app/domains/integrations_hub/services/rails_adapter.py
-            WizardReActAgent,
-        )
-
-        normalized_stage = FRONTEND_TO_BACKEND_STAGE.get(
-            request.current_stage.lower(),
-            request.current_stage,
-        )
-        frontend_stage = BACKEND_TO_FRONTEND_STAGE.get(
-            normalized_stage, request.current_stage
-        )
-
-        agent = WizardReActAgent()
-
-        agent_input = AgentInput(
-            message=request.message,
-            session_id=session_id,
-            company_id=company_id,
-            user_id=user_id,
-            conversation_history=[
-                {"role": m.get("role", "user"), "content": m.get("content", "")}
-                for m in request.conversation_history[-10:]
-            ],
-            context={
-                "current_stage": frontend_stage,
-                "collected_data": request.collected_data,
-            },
-            metadata={},
-        )
-
-        agent_output = await agent.process(agent_input)
-
-        detected_criteria = agent_output.state_updates or {}
-        next_stage = None
-        auto_transition = False
-        if agent_output.navigation:
-            raw_next = agent_output.navigation.target_stage
-            next_stage = BACKEND_TO_FRONTEND_STAGE.get(raw_next, raw_next)
-            auto_transition = agent_output.navigation.auto_navigate
-
-        job_vacancy_id = None
-        job_published = False
-        if next_stage == "complete":
-            merged_draft = {**request.collected_data, **detected_criteria}
-            job_vacancy_id = await finalize_job_vacancy_from_wizard(
-                job_draft=merged_draft,
-                session_id=session_id,
-                company_id=company_id,
-                user_id=user_id,
-            )
-            if job_vacancy_id:
-                job_published = True
-
-        return SmartOrchestrateResponse(
-            success=agent_output.error is None,
-            lia_message=agent_output.message,
-            detected_criteria=detected_criteria,
-            next_stage=next_stage,
-            auto_transition=auto_transition,
-            tool_results=agent_output.tool_results,
-            confidence=agent_output.confidence,
-            reasoning_steps=agent_output.reasoning_steps,
-            intent=agent_output.metadata.get("intent"),
-            error=agent_output.error,
-            awaiting_confirmation=False,
-            job_vacancy_id=job_vacancy_id,
-            job_published=job_published,
-            conversation_id=session_id,
-        )
-
-    except Exception as e:
-        logger.error(f"ReAct orchestrate error: {e}", exc_info=True)
-        return SmartOrchestrateResponse(
-            success=False,
-            lia_message=(
-                "Desculpe, ocorreu um erro ao processar sua mensagem. "
-                "Por favor, tente novamente."
-            ),
-            detected_criteria={},
-            next_stage=None,
-            auto_transition=False,
-            tool_results=[],
-            confidence=0.0,
-            reasoning_steps=[f"Error: {str(e)}"],
-            intent=None,
-            error=str(e),
-            awaiting_confirmation=False,
-            job_vacancy_id=None,
-            job_published=False,
-            conversation_id=session_id if 'session_id' in locals() else None,
-        )
-
-
-@router.get("/graph-structure", response_model=None)
-async def get_graph_structure(
-    current_user: User = Depends(get_current_user_or_demo),
-) -> dict[str, Any]:
-    """
-    Get the structure of the JobWizardGraph for visualization.
-    
-    Returns nodes, edges, and configuration of the graph.
-    """
-    return job_wizard_graph.get_graph_structure()
+    return await smart_orchestrate(request, current_user)
 
 
 @router.get("/stage-mapping", response_model=None)

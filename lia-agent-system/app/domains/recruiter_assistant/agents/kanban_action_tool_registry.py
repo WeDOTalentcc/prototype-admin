@@ -9,6 +9,7 @@ check_rejection_fairness is MANDATORY in this registry (compliance).
 from lia_agents_core.react_loop import ToolDefinition
 
 from app.domains.recruiter_assistant.agents.kanban_tool_registry import _TOOL_MAP
+from app.shared.compliance.safety_category import SafetyCategory
 
 _ACTION_TOOL_NAMES: list[str] = [
     "batch_move_candidates",
@@ -21,11 +22,11 @@ _ACTION_TOOL_NAMES: list[str] = [
     "get_recruiter_benchmark",
 ]
 
-GUARDRAIL_TOOLS: list[str] = [
-    "batch_move_candidates",
-    "send_batch_communication",
-    "start_screening_batch",
-]
+GUARDRAIL_TOOLS: dict[str, SafetyCategory] = {
+    "batch_move_candidates": SafetyCategory.BULK_ACTION,
+    "send_batch_communication": SafetyCategory.OUTREACH,
+    "start_screening_batch": SafetyCategory.BULK_ACTION,
+}
 
 
 def get_kanban_action_tools() -> list[ToolDefinition]:

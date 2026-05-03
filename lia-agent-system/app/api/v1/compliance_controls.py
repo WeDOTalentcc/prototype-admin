@@ -40,6 +40,7 @@ from app.schemas.compliance_controls import (
     SOXControlUpdate,
 )
 from app.shared.tenant_guard import get_verified_company_id
+from app.schemas.envelope import ResponseEnvelope, ok_envelope
 
 logger = logging.getLogger(__name__)
 
@@ -333,7 +334,7 @@ async def create_audit(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/audits/dashboard", response_model=ComplianceDashboardResponse, summary="Get compliance dashboard")
+@router.get("/audits/dashboard", response_model=ResponseEnvelope[ComplianceDashboardResponse], summary="Get compliance dashboard")
 async def get_compliance_dashboard(
     company_id: str = Depends(get_verified_company_id),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
@@ -385,7 +386,7 @@ async def get_compliance_dashboard(
         applicable_total = total_controls - sum(s.not_applicable for s in by_framework.values())
         overall_pct = round(total_implemented / applicable_total * 100, 1) if applicable_total > 0 else 0.0
 
-        return ComplianceDashboardResponse(
+        return ok_envelope(ComplianceDashboardResponse(
             by_framework={k: v.model_dump() for k, v in by_framework.items()},
             total_controls=total_controls,
             total_implemented=total_implemented,
@@ -394,7 +395,7 @@ async def get_compliance_dashboard(
             overdue_reviews=overdue_reviews,
             recent_audits=recent_audit_responses,
             sox_summary=sox_summary if sox_summary else None,
-        )
+        ))
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
     except Exception as e:

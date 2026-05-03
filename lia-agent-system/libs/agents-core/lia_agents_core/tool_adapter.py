@@ -37,6 +37,38 @@ from typing import Any, Callable, Dict, List, Literal, Optional
 from pydantic import BaseModel, Field, field_validator
 
 
+class ToolOutput(BaseModel):
+    """R-004 (Sprint 1): contrato canonical para output de tools.
+
+    Disambiguado em relacao a app/tools/executor.py::ToolResult (semantica
+    diferente: ToolResult = wrapper de execucao do executor, ToolOutput =
+    schema do retorno funcional do tool).
+
+    Uso (canonical em tool_registries):
+
+        ToolDefinition(
+            name="send_email",
+            description="...",
+            function=_wrap_send_email,
+            output_schema=ToolOutput,
+        )
+
+    Tools podem subclassar ToolOutput para enriquecer o contrato com campos
+    especificos do dominio (ex: SendEmailOutput(ToolOutput): message_id: str).
+
+    NOTA: classe restaurada em integration branch — foi perdida no cherry-pick
+    de ad21517c9 (ToolContract canonical) que reescreveu este arquivo. Lib
+    aceita esta classe como output_schema declarado em todas ToolDefinitions.
+    """
+
+    success: bool = Field(..., description="Tool executou com sucesso?")
+    message: str = Field(..., description="Mensagem human-readable do resultado")
+    data: dict[str, Any] | None = Field(
+        default=None,
+        description="Payload opcional com dados estruturados retornados pelo tool",
+    )
+
+
 class ToolContract(BaseModel):
     """
     Contrato enterprise canônico para tools LIA.
@@ -63,9 +95,9 @@ class ToolContract(BaseModel):
         default_factory=dict,
         description="JSON Schema descrevendo os parâmetros de entrada",
     )
-    output_schema: Dict[str, Any] = Field(
+    output_schema: Any = Field(
         default_factory=dict,
-        description="JSON Schema descrevendo o output esperado do tool",
+        description="JSON Schema (dict) ou classe Pydantic (BaseModel) do output do tool.",
     )
 
     # ── Efeitos colaterais ────────────────────────────────────────────────────

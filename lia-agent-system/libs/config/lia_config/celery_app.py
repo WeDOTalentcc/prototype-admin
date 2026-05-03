@@ -265,6 +265,13 @@ celery_app.conf.update(
             "schedule": crontab(hour=5, minute=0),  # 02h Brasília / UTC-3
             "options": {"expires": 7200},
         },
+        # UC-P3-17: LGPD deletion alert -- 90 days before scheduled deletion
+        # Runs daily at 01h UTC (22h Brasilia previous day) -- before cleanup at 05h UTC
+        "lgpd-deletion-alert-daily": {
+            "task": "lgpd.deletion_alert",
+            "schedule": crontab(hour=1, minute=0),  # 22h Brasilia / UTC-3
+            "options": {"expires": 7200},
+        },
         # TTL de conversa diário às 03h Brasília (UTC-3 → 06h UTC) — LGPD Art. 18
         "conversation-ttl-cleanup-daily": {
             "task": "conversation.ttl_cleanup",
@@ -343,6 +350,12 @@ celery_app.conf.update(
             "task": "memory.compress_old_episodes",
             "schedule": crontab(hour=3, minute=0),  # 00h Brasília / UTC-3
             "args": ["global"],
+            "options": {"expires": 7200},
+        },
+        # UC-P2-02 -- AgentWorkingMemory TTL cleanup: daily at 03h15 UTC
+        "agent-working-memory-cleanup-daily": {
+            "task": "agent_working_memory.cleanup",
+            "schedule": crontab(hour=3, minute=15),
             "options": {"expires": 7200},
         },
     },

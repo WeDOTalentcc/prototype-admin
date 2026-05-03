@@ -148,7 +148,7 @@ async def get_benefit_templates(
             by_category[template.category] += 1
 
         return BenefitTemplateListResponse(
-            items=templates,  # type: ignore
+            items=templates,  # type: ignore[arg-type]
             total=len(templates),
             by_category=by_category
         )

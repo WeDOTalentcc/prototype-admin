@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Optional
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+from app.auth.dependencies import get_current_user_or_demo
 
 from ._shared import (
     ActivityService,
@@ -32,6 +33,7 @@ from pydantic import BaseModel
 from app.domains.integrations_hub.services.rails_adapter import RailsAdapter, RAILS_ENABLED
 from app.domains.integrations_hub.services.rails_adapter_dependency import get_rails_adapter
 from app.shared.rails_migration.deprecation import enforce_candidates_deprecation
+from app.schemas.envelope import ResponseEnvelope, ok_envelope
 
 # MIGRATION_PLAN item 7.2 — Python CRUD deprecated in favor of Rails (ats-api-copia).
 #
@@ -229,7 +231,7 @@ async def list_candidates(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/{candidate_id}", response_model=None)
+@router.get("/{candidate_id}", response_model=ResponseEnvelope)
 async def get_candidate(
     candidate_id: str,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
@@ -243,7 +245,7 @@ async def get_candidate(
             rails_result = await rails_adapter.get_candidate_from_rails_only(candidate_id)
             if rails_result:
                 logger.debug("[get_candidate] Returning candidate %s from Rails", candidate_id)
-                return rails_result
+                return ok_envelope(rails_result, meta={"source": "rails"})
         except Exception as e:
             logger.warning("[get_candidate] Rails unavailable for %s, falling back to local DB: %s", candidate_id, e)
 
@@ -255,7 +257,7 @@ async def get_candidate(
         candidate = await candidate_repo.get_by_id_str(candidate_id)
         if not candidate:
             raise HTTPException(status_code=404, detail="Candidate not found")
-        return _serialize_candidate(candidate, full=True)
+        return ok_envelope(_serialize_candidate(candidate, full=True), meta={"source": "local"})
     except HTTPException:
         raise
     except Exception as e:
@@ -637,3 +639,45 @@ async def enrich_candidate(
     except Exception as e:
         logger.error(f"Error enriching candidate: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---------------------------------------------------------------------------
+# UC-P1-16: LGPD Art.20 — AI decision explanation endpoint
+# ---------------------------------------------------------------------------
+
+@router.get(
+    "/{candidate_id}/ai-explanation",
+    summary="LGPD Art.20 — Explain AI decision for a candidate",
+    tags=["candidates", "lgpd", "explainability"],
+)
+async def get_candidate_ai_explanation(
+    candidate_id: str,
+    job_vacancy_id: str = Query(..., description="Job vacancy ID for which to explain decisions"),
+    current_user=Depends(get_current_user_or_demo),
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+):
+    """LGPD Art.20 — Return a human-readable explanation of all AI decisions
+    made for a candidate on a specific job vacancy.
+
+    Delegates to ExplainabilityService which pulls AuditLog entries and
+    formats them with criteria_evaluated, criteria_ignored, transparency_note,
+    and optional improvement suggestions.
+
+    company_id is always extracted from the authenticated user's session (anti-IDOR).
+    """
+    from app.shared.services.explainability_service import ExplainabilityService
+
+    company_id = str(current_user.company_id)
+
+    svc = ExplainabilityService()
+    explanation = await svc.generate_candidate_explanation(
+        company_id=company_id,
+        candidate_id=candidate_id,
+        job_vacancy_id=job_vacancy_id,
+        include_suggestions=True,
+    )
+
+    if explanation.get("status") == "no_data":
+        raise HTTPException(status_code=404, detail=explanation.get("message", "No AI decisions found."))
+
+    return explanation

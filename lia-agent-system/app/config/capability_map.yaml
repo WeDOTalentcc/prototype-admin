@@ -119,3 +119,46 @@ capabilities:
     chat_executable: true
     entity_required: []
     navigate_fallback: /analytics
+
+
+  # ── UC-P1-28: Ghost cards Rail A — 7 missing capabilities ───────────────
+
+  criar_vaga:
+    chat_executable: true
+    entity_required: []
+    navigate_fallback: /jobs/new
+
+  listar_talent_pools:
+    chat_executable: true
+    entity_required: []
+    navigate_fallback: /talent-pools
+
+  criar_automacao:
+    chat_executable: false
+    entity_required: []
+    modal_id: automation_builder
+    navigate_fallback: /automacoes
+
+  consultar_consumo:
+    chat_executable: true
+    entity_required: []
+    navigate_fallback: /analytics?view=consumo
+
+  configurar_policy:
+    chat_executable: false
+    entity_required: []
+    modal_id: hiring_policy_config
+    navigate_fallback: /configuracoes/politicas
+
+  criar_template:
+    chat_executable: false
+    entity_required: []
+    modal_id: template_builder
+    navigate_fallback: /templates
+
+  criar_a_partir_de_template:
+    chat_executable: true
+    entity_required:
+      - type: template
+        param: template_id
+    navigate_fallback: /templates

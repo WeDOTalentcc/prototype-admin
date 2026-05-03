@@ -58,8 +58,12 @@ class SOXAuditLog(Base):
     
     user_id = Column(String(255), nullable=True, index=True)
     user_email = Column(String(255), nullable=True)
-    
-    client_id = Column(String(255), nullable=True, index=True, server_default="system")
+
+    # R-011: company_id para multi-tenancy RLS (nullable durante migração gradual)
+    # Será tornado NOT NULL após backfill completo (migration 080)
+    company_id = Column(UUID(as_uuid=True), nullable=True, index=True)
+
+    client_id = Column(String(255), nullable=True, index=True)
     client_name = Column(String(255), nullable=True)
     
     action = Column(String(255), nullable=False, index=True)
@@ -88,6 +92,7 @@ class SOXAuditLog(Base):
         Index('idx_sox_audit_action_category', 'action_category', 'timestamp'),
         Index('idx_sox_audit_user_timestamp', 'user_id', 'timestamp'),
         Index('idx_sox_audit_status_timestamp', 'status', 'timestamp'),
+        Index('idx_sox_audit_company_timestamp', 'company_id', 'timestamp'),
     )
     
     def __repr__(self):
@@ -100,6 +105,7 @@ class SOXAuditLog(Base):
             "timestamp": self.timestamp.isoformat() if self.timestamp else None,
             "user_id": self.user_id,
             "user_email": self.user_email,
+            "company_id": str(self.company_id) if self.company_id else None,
             "client_id": self.client_id,
             "client_name": self.client_name,
             "action": self.action,

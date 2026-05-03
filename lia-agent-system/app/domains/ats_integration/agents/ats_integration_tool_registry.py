@@ -9,6 +9,7 @@ import logging
 from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolOutput
 
 from app.shared.tool_handler import tool_handler
 
@@ -223,6 +224,7 @@ def get_ats_integration_tools() -> list[ToolDefinition]:
                 "ats_provider (str: gupy/pandape/merge), "
                 "trigger (str: STATUS_CHANGE/CANDIDATE_CREATED/CANDIDATE_UPDATED/etc)."
             ),
+            output_schema=ToolOutput,
             function=_wrap_sync_candidate_to_ats,
         ),
         ToolDefinition(
@@ -232,6 +234,7 @@ def get_ats_integration_tools() -> list[ToolDefinition]:
                 "Parâmetros: ats_candidate_id (str, obrigatório), company_id (str), "
                 "ats_provider (str: gupy/pandape/merge)."
             ),
+            output_schema=ToolOutput,
             function=_wrap_fetch_candidate_from_ats,
         ),
         ToolDefinition(
@@ -242,6 +245,7 @@ def get_ats_integration_tools() -> list[ToolDefinition]:
                 "Parâmetros: candidate_data (dict), company_id (str), "
                 "ats_provider (str: gupy/pandape/merge)."
             ),
+            output_schema=ToolOutput,
             function=_wrap_validate_ats_fields,
         ),
         ToolDefinition(
@@ -252,6 +256,7 @@ def get_ats_integration_tools() -> list[ToolDefinition]:
                 "ats_provider (str: gupy/pandape/merge), "
                 "trigger (str: BULK_SYNC/STATUS_CHANGE/etc)."
             ),
+            output_schema=ToolOutput,
             function=_wrap_bulk_sync_candidates,
         ),
         ToolDefinition(
@@ -262,6 +267,7 @@ def get_ats_integration_tools() -> list[ToolDefinition]:
                 "Parâmetros: candidate_id (int, obrigatório), company_id (str), "
                 "ats_provider (str, opcional — filtra por provedor)."
             ),
+            output_schema=ToolOutput,
             function=_wrap_get_sync_status,
         ),
     ]

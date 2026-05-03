@@ -17,7 +17,7 @@ from __future__ import annotations
 
 import logging
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
@@ -195,3 +195,73 @@ class TTFPredictor:
 
 # Singleton
 ttf_predictor = TTFPredictor()
+
+
+# ---------------------------------------------------------------------------
+# UC-P1-26: JobFeatures dataclass + async predict interface
+# ---------------------------------------------------------------------------
+
+@dataclass
+class JobFeatures:
+    """Structured feature set for UC-P1-26 TTF prediction.
+
+    Replaces the ad-hoc dict API when callers prefer typed inputs.
+    The existing dict-based ``TTFPredictor.predict()`` is preserved for
+    backwards compatibility; use ``TTFPredictor.predict_from_features()``
+    for the new async interface.
+    """
+    seniority_level: str            # junior/mid/senior/lead (English) or PT-BR
+    location: str = ""              # city or "remote"
+    tech_stack: list = field(default_factory=list)  # ["Python", "FastAPI", ...]
+    salary_range_min: float = 0.0
+    salary_range_max: float = 0.0
+    is_remote: bool = False
+    company_size: str = "medium"    # small/medium/large/enterprise
+    department: str = "tech"
+    num_requirements: int = 5
+
+    def to_dict(self) -> dict[str, Any]:
+        """Convert to dict for the legacy predict() interface."""
+        # Map English seniority names to PT-BR defaults used by heuristic
+        seniority_map = {
+            "junior": "júnior", "mid": "pleno", "senior": "sênior", "lead": "lead",
+        }
+        seniority = seniority_map.get(self.seniority_level.lower(), self.seniority_level)
+        work_model = "remoto" if self.is_remote else "presencial"
+        return {
+            "seniority_level": seniority,
+            "work_model": work_model,
+            "urgency_level": 3,
+            "salary_min": self.salary_range_min,
+            "num_candidates": 0,
+        }
+
+
+async def predict_from_features(
+    features: "JobFeatures",
+    predictor: TTFPredictor | None = None,
+) -> dict[str, Any]:
+    """UC-P1-26 async predict entry-point.
+
+    Returns::
+
+        {
+            "predicted_days": int,
+            "confidence": float,
+            "method": "ml_model" | "heuristic",
+            "range": {"min": int, "max": int},
+        }
+    """
+    p = predictor or ttf_predictor
+    result = p.predict(features.to_dict())
+
+    predicted = result.predicted_days
+    return {
+        "predicted_days": predicted,
+        "confidence": result.confidence,
+        "method": result.source,
+        "range": {
+            "min": int(predicted * 0.8),
+            "max": int(predicted * 1.5),
+        },
+    }

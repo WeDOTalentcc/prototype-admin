@@ -20,6 +20,16 @@ Sem migration — usa dados existentes:
 # RAILS-DEPRECATED: This service performs CRUD for Rails-owned entities.
 # Will be deleted after ats-api-rails handoff is complete.
 # Do NOT migrate to a domain -- route through integrations_hub/rails_adapter instead.
+
+import warnings
+warnings.warn(
+    "pipeline_prediction_service is deprecated and will be removed once Rails adapter routes are complete. "
+    "Migrate callers to rails_adapter equivalents. "
+    "See UC-P1-22 in the remediation plan (CROSS_CUTTING_AUDIT_AND_REMEDIATION_PLAN.md).",
+    DeprecationWarning,
+    stacklevel=2,
+)
+
 import asyncio
 import logging
 from typing import Any

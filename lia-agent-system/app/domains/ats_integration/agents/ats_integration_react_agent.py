@@ -59,6 +59,15 @@ class ATSIntegrationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
     def available_tools(self) -> list[str]:
         return list(self._all_tool_names)
 
+
+    def _get_tool_contracts(self) -> list:
+        """Ativa GovernanceToolNode para este agente."""
+        try:
+            from app.domains.ats_integration.agents.ats_integration_tool_registry import get_ats_integration_tools
+            return get_ats_integration_tools()
+        except ImportError:
+            return []
+
     def _get_tools(self) -> list:
         """Todos os tools do domínio ATS Integration (LangGraph usa set completo)."""
         from lia_agents_core.react_loop import tool_definition_to_langchain_tool

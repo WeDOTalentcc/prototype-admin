@@ -7,8 +7,9 @@ Responsabilidade única: transformação de formato + validação de segurança 
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
 from typing import Any, Literal
+
+from pydantic import BaseModel, field_validator, model_validator
 
 logger = logging.getLogger(__name__)
 
@@ -29,13 +30,14 @@ PAGE_TO_CONTEXT_TYPE: dict[str, str] = {
 }
 
 
-@dataclass
-class UniversalContext:
+class UniversalContext(BaseModel):
     """Contexto normalizado — único formato que o MainOrchestrator consome."""
 
-    message: str
-    user_id: str
-    company_id: str
+    model_config = {"arbitrary_types_allowed": True}
+
+    message: str = ""
+    user_id: str = ""
+    company_id: str = ""
     channel: ChannelType = "rest"
     conversation_id: str | None = None
 
@@ -55,18 +57,34 @@ class UniversalContext:
     tenant_context_snippet: str = ""
 
     # Dados ricos de contexto (repassados para o DomainWorkflow)
-    candidates: list[dict[str, Any]] = field(default_factory=list)
+    candidates: list[dict[str, Any]] = []
     selected_candidate_ids: list[str] | None = None
     job_context: dict[str, Any] | None = None
     search_context: dict[str, Any] | None = None
     target_job: dict[str, Any] | None = None
-    extra: dict[str, Any] = field(default_factory=dict)
-
-    # Tenant context — preenchido pelo MainOrchestrator apos lookup no DB
-    tenant_context_snippet: str = ""
+    extra: dict[str, Any] = {}
 
     # Flag: skip memory persistence (Passo 2 Path A — ChatRepository remains owner until M2)
     skip_memory_persist: bool = False
+
+    @field_validator("company_id")
+    @classmethod
+    def company_id_not_empty_in_production(cls, v: str) -> str:
+        if not v:
+            logger.debug(
+                "[UniversalContext] company_id is empty — tenant isolation not guaranteed"
+            )
+        return v
+
+    @field_validator("message")
+    @classmethod
+    def message_max_length(cls, v: str) -> str:
+        if len(v) > 10000:
+            logger.warning(
+                "[UniversalContext] message truncated from %d to 10000 chars", len(v)
+            )
+            return v[:10000]
+        return v
 
     def to_orchestrator_context(self) -> dict[str, Any]:
         """Converte para o formato que Orchestrator.process_request_with_memory() espera."""
@@ -211,6 +229,24 @@ class ContextAdapter:
         context_type = PAGE_TO_CONTEXT_TYPE.get(domain, "general")
         entity_id = context.get("entity_id") or context.get("sourcing_id") or context.get("job_id")
 
+        # PR-A: metadata estruturada vinda do Rail A (FE) — validada strict
+        # via Pydantic (RailASuggestionMetadata) para evitar prompt injection
+        # e drift de schema. Se inválida, é descartada com warning (fail-safe);
+        # routing cai no fallback CascadedRouter sem usar hint. Skill: harness-
+        # engineering [sensor no boundary]. Audit ref: FE-H03 (2026-04-26).
+        extra: dict[str, Any] = {"domain": domain, "ws_session_id": session_id}
+        raw_metadata = context.get("metadata")
+        if raw_metadata:
+            try:
+                from app.shared.websocket.ws_message_schemas import RailASuggestionMetadata
+                validated = RailASuggestionMetadata.model_validate(raw_metadata)
+                extra["metadata"] = validated.model_dump(exclude_none=False)
+            except Exception as _meta_exc:
+                logger.warning(
+                    "[ContextAdapter] Rail A metadata inválida descartada (session=%s): %s",
+                    session_id, _meta_exc,
+                )
+
         return UniversalContext(
             message=message_frame.get("content", ""),
             user_id=user_id,
@@ -223,7 +259,7 @@ class ContextAdapter:
             candidates=context.get("candidates", []),
             job_context=context.get("job_context"),
             search_context=context.get("search_context"),
-            extra={"domain": domain, "ws_session_id": session_id},
+            extra=extra,
         )
 
     # ------------------------------------------------------------------

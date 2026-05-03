@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user
 from app.core.database import get_db
 from app.domains.analytics.repositories.fairness_report_repository import FairnessReportRepository
+from app.schemas.envelope import ResponseEnvelope, ok_envelope
 
 router = APIRouter(prefix="/fairness", tags=["fairness-reports"])
 
@@ -48,7 +49,7 @@ class FairnessTrendResponse(BaseModel):
     trend: list[FairnessTrendPoint]
 
 
-@router.get("/reports/summary", response_model=FairnessSummaryResponse)
+@router.get("/reports/summary", response_model=ResponseEnvelope[FairnessSummaryResponse])
 # TODO(phase2): extract to repository — complex fairness aggregation
 async def get_fairness_summary(
     company_id: str | None = Query(None, description="Filter by company UUID"),
@@ -80,13 +81,13 @@ async def get_fairness_summary(
     ]
     by_category.sort(key=lambda x: x.total_blocks, reverse=True)
 
-    return FairnessSummaryResponse(
+    return ok_envelope(FairnessSummaryResponse(
         period_days=days,
         company_id=company_id,
         total_blocks=total_blocks,
         total_events=total_events,
         by_category=by_category,
-    )
+    ))
 
 
 @router.get("/reports/trend", response_model=FairnessTrendResponse)

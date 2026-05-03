@@ -4,6 +4,7 @@ Wraps CommunicationService, EmailService, TeamsService, WhatsAppService and
 CommunicationHistoryService into ToolDefinition format so the ReActLoop can
 autonomously decide which tools to call.
 """
+
 import logging
 from typing import Any
 
@@ -79,6 +80,7 @@ async def _wrap_send_email(**kwargs: Any) -> dict[str, Any]:
         try:
             async with AsyncSessionLocal() as _db:
                 from sqlalchemy import text as _txt
+
                 _row = await _db.execute(
                     _txt("SELECT phone FROM candidates WHERE id = :cid LIMIT 1"),
                     {"cid": str(candidate_id)},
@@ -96,6 +98,8 @@ async def _wrap_send_email(**kwargs: Any) -> dict[str, Any]:
             "candidate_id": candidate_id,
             "alternative_channel": alternative_channel,
         }
+
+
 @tool_handler("communication")
 async def _wrap_send_whatsapp(**kwargs: Any) -> dict[str, Any]:
     """Send a WhatsApp message to a candidate using WhatsAppService."""
@@ -132,10 +136,12 @@ async def _wrap_send_whatsapp(**kwargs: Any) -> dict[str, Any]:
         logger.error("[communication_tools] send_whatsapp failed: %s", exc, exc_info=True)
         return {
             "success": False,
-            "message": f"Falha ao enviar WhatsApp: servico indisponivel. Verifique configuracao Twilio.",
+            "message": "Falha ao enviar WhatsApp: servico indisponivel. Verifique configuracao Twilio.",
             "error_type": "integration_error",
             "candidate_phone": candidate_phone,
         }
+
+
 @tool_handler("communication")
 async def _wrap_get_communication_history(**kwargs: Any) -> dict[str, Any]:
     """Retrieve communication history for a candidate using CommunicationHistoryService."""
@@ -162,6 +168,8 @@ async def _wrap_get_communication_history(**kwargs: Any) -> dict[str, Any]:
         "total": result.get("total", 0),
         "communications": result.get("communications", []),
     }
+
+
 @tool_handler("communication")
 async def _wrap_schedule_message(**kwargs: Any) -> dict[str, Any]:
     """Schedule a future message for a candidate using CommunicationService.
@@ -211,10 +219,7 @@ async def _wrap_schedule_message(**kwargs: Any) -> dict[str, Any]:
 
         svc_teams = TeamsService()
         await svc_teams.send_message(
-            text=(
-                f"[Agendado para {scheduled_at_str}] "
-                f"Mensagem para candidato {candidate_id}: {message}"
-            )
+            text=(f"[Agendado para {scheduled_at_str}] " f"Mensagem para candidato {candidate_id}: {message}")
         )
         return {
             "success": True,
@@ -255,6 +260,8 @@ async def _wrap_schedule_message(**kwargs: Any) -> dict[str, Any]:
         "company_id": company_id,
         "details": result,
     }
+
+
 @tool_handler("communication")
 async def _wrap_check_rate_limit(**kwargs: Any) -> dict[str, Any]:
     """Check the current rate limit status for a candidate/channel combination."""
@@ -315,14 +322,25 @@ async def _wrap_check_rate_limit(**kwargs: Any) -> dict[str, Any]:
             "error_type": "integration_error",
             "candidate_id": candidate_id,
         }
+
+
 # ---------------------------------------------------------------------------
 # Public registry
 # ---------------------------------------------------------------------------
 
 
 def get_communication_tools() -> list[ToolDefinition]:
+    # R-004 (Sprint 1 Quick Wins): primeiro tool deste registry adota
+    # output_schema=ToolOutput como pattern canonical. Demais tools seguem
+    # como debito Sprint 2 (mesmo template, copy-paste).
+    from lia_agents_core.tool_adapter import ToolOutput
+
     return [
         ToolDefinition(
+            side_effects=["send"],
+            touches_pii=True,
+            pii_output_fields=["body",
+            "email_address"],
             name="send_email",
             description=(
                 "Enviar e-mail para um candidato. "
@@ -330,9 +348,15 @@ def get_communication_tools() -> list[ToolDefinition]:
                 "subject (str, obrigatório), body (str, obrigatório), "
                 "template_type (str, opcional — ex: screening_invitation, rejection_feedback)."
             ),
+            output_schema=ToolOutput,
             function=_wrap_send_email,
+            
         ),
         ToolDefinition(
+            side_effects=["send"],
+            touches_pii=True,
+            pii_output_fields=["message",
+            "candidate_phone"],
             name="send_whatsapp",
             description=(
                 "Enviar mensagem WhatsApp para um candidato via Twilio. "
@@ -340,18 +364,26 @@ def get_communication_tools() -> list[ToolDefinition]:
                 "message (str, obrigatório), company_id (str, obrigatório), "
                 "candidate_id (int, opcional)."
             ),
+            output_schema=ToolOutput,
             function=_wrap_send_whatsapp,
         ),
         ToolDefinition(
+            touches_pii=True,
+            pii_output_fields=["message_body",
+            "email_address",
+            "phone_number"],
             name="get_communication_history",
             description=(
                 "Recuperar histórico de comunicações de um candidato. "
                 "Parâmetros: candidate_id (int, obrigatório), company_id (str, obrigatório), "
                 "limit (int, padrão 10)."
             ),
+            output_schema=ToolOutput,
             function=_wrap_get_communication_history,
         ),
         ToolDefinition(
+            side_effects=["write",
+            "send"],
             name="schedule_message",
             description=(
                 "Agendar o envio de uma mensagem futura para um candidato. "
@@ -359,6 +391,7 @@ def get_communication_tools() -> list[ToolDefinition]:
                 "channel (str, obrigatório — email/whatsapp/teams), message (str, obrigatório), "
                 "scheduled_at (str ISO datetime, obrigatório — ex: 2026-03-10T14:00:00)."
             ),
+            output_schema=ToolOutput,
             function=_wrap_schedule_message,
         ),
         ToolDefinition(
@@ -369,6 +402,7 @@ def get_communication_tools() -> list[ToolDefinition]:
                 "Parâmetros: candidate_id (int, obrigatório), company_id (str, obrigatório), "
                 "channel (str, obrigatório — email/whatsapp/teams)."
             ),
+            output_schema=ToolOutput,
             function=_wrap_check_rate_limit,
         ),
     ]

@@ -70,28 +70,82 @@ def _get_api_client(state: dict) -> JobCreationAPIClient:
 # ---------------------------------------------------------------------------
 
 def intake_node(state: JobCreationState) -> JobCreationState:
-    """Pre-F1: Parse user input to extract job title, department, seniority, location."""
+    """Pre-F1: Parse user input via IntakeExtractor (LLM + regex fallback).
+
+    Phase 3 / F3-1 — replaces previous stub pass-through.
+    Extracts: parsed_title, parsed_seniority, parsed_department, parsed_location, parsed_model.
+    Fail-open: low confidence on extraction failure does NOT block the wizard.
+    """
     t0 = time.time()
     query = state.get("user_query", "") or state.get("raw_input", "")
     logger.info("[JobCreation:intake] query=%s", query[:80])
 
-    # LLM structured extraction will be implemented in B.1
-    # For now, pass through to jd_enrichment with raw input
+    # ── F3-1: IntakeExtractor (LLM + regex fallback) ──
+    parsed_title = state.get("parsed_title")
+    parsed_seniority = state.get("parsed_seniority")
+    parsed_department = state.get("parsed_department")
+    parsed_location = state.get("parsed_location")
+    parsed_model = state.get("parsed_model")
+    intake_confidence = 0.0
+    intake_source = "none"
+    try:
+        from app.domains.job_creation.services.intake_extractor import IntakeExtractor
+        extractor = IntakeExtractor()
+        extraction = extractor.extract(query)
+        # Fill ONLY fields that aren't already explicit in state
+        parsed_title = parsed_title or extraction.parsed_title
+        parsed_seniority = parsed_seniority or extraction.parsed_seniority
+        parsed_department = parsed_department or extraction.parsed_department
+        parsed_location = parsed_location or extraction.parsed_location
+        parsed_model = parsed_model or extraction.parsed_model
+        intake_confidence = extraction.confidence
+        intake_source = extraction.source
+        logger.info(
+            "[JobCreation:intake] F3-1 extraction: source=%s, conf=%.2f, "
+            "title=%s, seniority=%s, location=%s, model=%s",
+            intake_source, intake_confidence, parsed_title, parsed_seniority,
+            parsed_location, parsed_model,
+        )
+    except Exception as _ex_exc:
+        logger.warning(
+            "[JobCreation:intake] F3-1 extraction failed (fail-open): %s", _ex_exc,
+        )
+
     updates: Dict[str, Any] = {
         "current_stage": "intake",
         "raw_input": query,
-        "intake_confidence": 0.0,
+        "parsed_title": parsed_title,
+        "parsed_seniority": parsed_seniority,
+        "parsed_department": parsed_department,
+        "parsed_location": parsed_location,
+        "parsed_model": parsed_model,
+        "intake_confidence": intake_confidence,
         "stage_history": (state.get("stage_history") or []) + ["intake"],
         "completeness": calculate_completeness("intake"),
         "requires_approval": False,
         "ws_stage_payload": {
             "type": "wizard_stage",
             "stage": "intake",
-            "data": {"raw_input": query},
+            "data": {
+                "raw_input": query,
+                "parsed_title": parsed_title,
+                "parsed_seniority": parsed_seniority,
+                "parsed_department": parsed_department,
+                "parsed_location": parsed_location,
+                "parsed_model": parsed_model,
+                "intake_confidence": intake_confidence,
+                "intake_source": intake_source,
+            },
             "completeness": calculate_completeness("intake"),
             "requires_approval": False,
         },
     }
+
+    # NOTE on LL-2 manager preferences:
+    # ManagerPreferencesService.apply_to_state() is invoked by
+    # WizardSessionService.process_message() BEFORE this graph runs.
+    # See app/domains/job_creation/services/wizard_session_service.py:217+.
+    # Centralizing it there avoids double DB hits and keeps single source of truth.
 
     elapsed = (time.time() - t0) * 1000
     logger.info("[JobCreation:intake] %0.fms", elapsed)
@@ -102,12 +156,75 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
     """F1: Call JdEnrichmentService to enrich JD + calculate quality score.
 
     This is HITL point 1 — recruiter must approve the enriched JD.
+
+    Fairness 4 layers (canonical wiring — Phase 2A):
+      Layer 1 (input gate)  : FairnessGuard.check(raw_input) BEFORE LLM
+      Layer 2 (PII strip)   : strip_pii_for_llm_prompt(raw_input) BEFORE LLM
+      Layer 3 (output check): FairnessGuard.check(enriched_text) AFTER LLM
+      Layer 4 (question guard) lives in wsi_questions_node.
     """
     t0 = time.time()
     logger.info("[JobCreation:jd_enrichment] Starting F1")
 
-    raw_input = state.get("raw_input", "")
-    jd_raw = state.get("jd_raw") or raw_input
+    # ── Layer 1: input fairness gate (BEFORE LLM) ──
+    # Fail-closed: if input is discriminatory, block before spending LLM tokens.
+    raw_input = state.get("raw_input", "") or state.get("user_query", "")
+    try:
+        from app.shared.compliance.fairness_guard import FairnessGuard
+        _fg = FairnessGuard()
+        _fg_input = _fg.check(raw_input)
+        if _fg_input.is_blocked:
+            logger.warning(
+                "[JobCreation:jd_enrichment] FairnessGuard L1 BLOCK input: "
+                "category=%s, terms=%s",
+                _fg_input.category, _fg_input.blocked_terms,
+            )
+            return {
+                **state,
+                "current_stage": "jd_enrichment",
+                "fairness_blocked": True,
+                "fairness_block_reason": _fg_input.educational_message,
+                "stage_history": (state.get("stage_history") or []) + ["jd_enrichment_blocked"],
+                "ws_stage_payload": {
+                    "type": "wizard_stage",
+                    "stage": "jd_enrichment",
+                    "data": {
+                        "error": "fairness_blocked",
+                        "category": _fg_input.category,
+                        "message": _fg_input.educational_message,
+                    },
+                    "requires_approval": False,
+                },
+            }
+    except Exception as _fg_l1_exc:
+        # Fail-open for guard regression — não bloqueia UX por bug do guard
+        logger.warning(
+            "[JobCreation:jd_enrichment] FairnessGuard L1 check failed (fail-open): %s",
+            _fg_l1_exc,
+        )
+
+    # ── Layer 2: PII strip (BEFORE LLM) ──
+    # LGPD Art. 12 + EU AI Act Art. 13: minimização de dados pessoais.
+    # Phase 4I P0 fix — previously computed raw_input_safe was NOT being used
+    # in the LLM call (jd_raw fell back to the original raw_input with PII).
+    try:
+        from app.shared.pii_masking import strip_pii_for_llm_prompt
+        raw_input_safe = strip_pii_for_llm_prompt(raw_input)
+        if raw_input_safe != raw_input:
+            logger.info("[JobCreation:jd_enrichment] L2 PII stripped before LLM")
+    except Exception as _pii_exc:
+        logger.warning("[JobCreation:jd_enrichment] PII strip failed (fail-open): %s", _pii_exc)
+        raw_input_safe = raw_input
+
+    # Use the PII-stripped variant for the LLM call. State still keeps the
+    # original raw_input for non-LLM uses (logging, audit, replay).
+    jd_raw_safe = state.get("jd_raw") or raw_input_safe
+    # Defensive: if jd_raw came from state, also strip it (could be replay path)
+    if jd_raw_safe and jd_raw_safe == state.get("jd_raw"):
+        try:
+            jd_raw_safe = strip_pii_for_llm_prompt(jd_raw_safe)
+        except Exception:  # noqa: BLE001 — fail-open
+            pass
 
     # If already enriched and approved, skip re-enrichment (resume path)
     if state.get("jd_approved") is not None and state.get("jd_enriched"):
@@ -116,14 +233,50 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
         jd_quality_warnings = state.get("jd_quality_warnings", [])
     else:
         # Call JdEnrichmentService (F1.C LLM enrichment)
+        # IMPORTANT — pass jd_raw_safe (PII-stripped), NOT jd_raw original.
         service = _get_jd_service()
         enriched_obj, jd_quality_score, jd_quality_warnings = service.enrich(
-            jd_raw=jd_raw,
+            jd_raw=jd_raw_safe,
             title=state.get("parsed_title", ""),
             seniority=state.get("parsed_seniority", ""),
             department=state.get("parsed_department", ""),
         )
         jd_enriched_dict = enriched_obj.model_dump()
+
+        # ── Layer 3: output fairness check (AFTER LLM) ──
+        # Sweep enriched JD for bias the LLM may have introduced.
+        # Soft warning (does NOT block) — adds to fairness_corrections for HITL review.
+        try:
+            _enriched_text_parts = []
+            if jd_enriched_dict.get("titulo_padronizado"):
+                _enriched_text_parts.append(jd_enriched_dict["titulo_padronizado"])
+            if jd_enriched_dict.get("about_role"):
+                _enriched_text_parts.append(jd_enriched_dict["about_role"])
+            for s in (jd_enriched_dict.get("skills_obrigatorias") or []):
+                if isinstance(s, dict):
+                    _enriched_text_parts.append(s.get("contexto", ""))
+            _enriched_text = " ".join(filter(None, _enriched_text_parts))
+            if _enriched_text:
+                _fg_output = _fg.check(_enriched_text)
+                if _fg_output.is_blocked:
+                    logger.warning(
+                        "[JobCreation:jd_enrichment] FairnessGuard L3 WARN output: "
+                        "category=%s, terms=%s — LLM may have introduced bias",
+                        _fg_output.category, _fg_output.blocked_terms,
+                    )
+                    _existing_corrections = jd_enriched_dict.get("fairness_corrections") or []
+                    _existing_corrections.append({
+                        "category": _fg_output.category,
+                        "terms": _fg_output.blocked_terms,
+                        "source": "llm_output_l3",
+                        "educational_message": _fg_output.educational_message,
+                    })
+                    jd_enriched_dict["fairness_corrections"] = _existing_corrections
+        except Exception as _fg_l3_exc:
+            logger.warning(
+                "[JobCreation:jd_enrichment] FairnessGuard L3 check failed (fail-open): %s",
+                _fg_l3_exc,
+            )
 
     updates: Dict[str, Any] = {
         "current_stage": "jd_enrichment",
@@ -147,6 +300,34 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
             "requires_approval": True,
         },
     }
+
+    # ── Audit EU AI Act Art.13 — JD enrichment decision ──
+    try:
+        import asyncio as _asyncio
+        from app.shared.compliance.audit_service import AuditService
+        _audit = AuditService()
+        _company_id = str(state.get("workspace_id") or state.get("company_id") or "")
+        if _company_id:
+            _asyncio.run(_audit.log_decision(
+                company_id=_company_id,
+                agent_name="job_creation:jd_enrichment",
+                decision_type="generate_jd",
+                action="enrich_jd",
+                decision="enriched" if jd_enriched_dict else "fallback",
+                reasoning=[
+                    f"quality_score={jd_quality_score:.1f}",
+                    *(jd_quality_warnings or []),
+                ],
+                criteria_used=["title", "responsibilities", "skills_obrigatorias",
+                               "skills_desejaveis", "competencias_comportamentais"],
+                job_vacancy_id=state.get("job_id"),
+                confidence=getattr(enriched_obj, "confidence", None),
+                human_review_required=True,  # HITL 1
+            ))
+    except Exception as _audit_exc:
+        logger.warning(
+            "[JobCreation:jd_enrichment] audit log failed (fail-open): %s", _audit_exc,
+        )
 
     elapsed = (time.time() - t0) * 1000
     logger.info("[JobCreation:jd_enrichment] score=%.1f | %0.fms", jd_quality_score, elapsed)
@@ -206,9 +387,87 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
 
 
 def salary_node(state: JobCreationState) -> JobCreationState:
-    """Validate salary range vs market benchmark."""
+    """Validate salary range vs market benchmark.
+
+    Phase 2C-1: now actively fetches benchmark from internal + market sources
+    and combines via MarketBenchmarkService.combine_with_internal() (peso 70/30).
+    """
     t0 = time.time()
     logger.info("[JobCreation:salary] Starting salary validation")
+
+    # ── Fetch benchmark if not already in state ──
+    if not state.get("salary_benchmark"):
+        try:
+            import asyncio as _asyncio
+
+            async def _fetch_benchmark():
+                from app.core.database import AsyncSessionLocal
+                from app.domains.analytics.services.job_insights_service import JobInsightsService
+                from app.domains.analytics.services.market_benchmark_service import MarketBenchmarkService
+
+                role = state.get("parsed_title") or ""
+                seniority = state.get("seniority_resolved") or state.get("parsed_seniority") or ""
+                location = state.get("parsed_location") or None
+                work_model = state.get("parsed_model") or None
+                company_id = str(state.get("workspace_id") or state.get("company_id") or "")
+
+                internal = {}
+                market = {}
+
+                # Source 1: internal (requires DB)
+                if company_id and role:
+                    try:
+                        async with AsyncSessionLocal() as _db:
+                            insights = JobInsightsService()
+                            internal = await insights.get_salary_benchmark(
+                                db=_db, company_id=company_id, role=role,
+                                seniority=seniority, location=location,
+                                work_model=work_model,
+                            )
+                    except Exception as _int_exc:
+                        logger.warning(
+                            "[JobCreation:salary] internal benchmark failed: %s", _int_exc,
+                        )
+
+                # Source 2: market
+                try:
+                    market_svc = MarketBenchmarkService()
+                    market = await market_svc.search_salary_benchmark(
+                        role=role, seniority=seniority, location=location,
+                    )
+                except Exception as _mkt_exc:
+                    logger.warning(
+                        "[JobCreation:salary] market benchmark failed: %s", _mkt_exc,
+                    )
+
+                # Combine 70/30 if internal high-confidence
+                combined = {}
+                try:
+                    market_svc = MarketBenchmarkService()
+                    combined = market_svc.combine_with_internal(
+                        internal_data=internal if internal.get("sample_size", 0) > 0 else None,
+                        market_data=market,
+                    )
+                except Exception as _comb_exc:
+                    logger.warning(
+                        "[JobCreation:salary] combine failed (fail-open): %s", _comb_exc,
+                    )
+                    combined = market or internal or {}
+
+                return combined
+
+            _benchmark = _asyncio.run(_fetch_benchmark())
+            if _benchmark:
+                state = {**state, "salary_benchmark": _benchmark}
+                logger.info(
+                    "[JobCreation:salary] benchmark fetched: source=%s conf=%s",
+                    _benchmark.get("source"), _benchmark.get("confidence"),
+                )
+        except Exception as _bench_exc:
+            # Fail-open — não bloqueia o wizard se serviços falharem
+            logger.warning(
+                "[JobCreation:salary] benchmark fetch failed (fail-open): %s", _bench_exc,
+            )
 
     updates: Dict[str, Any] = {
         "current_stage": "salary",
@@ -349,9 +608,45 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
         else:
             questions_data = []
 
+    # ── Layer 4: question fairness guard (per-question scan) ──
+    # Removes biased questions and registers in wsi_dropped_questions for audit.
+    _wsi_dropped: list[dict[str, Any]] = list(state.get("wsi_dropped_questions") or [])
+    _wsi_kept: list[dict[str, Any]] = []
+    try:
+        from app.shared.compliance.fairness_guard import FairnessGuard
+        _fg_q = FairnessGuard()
+        for _q in questions_data:
+            _q_text = _q.get("question", "") if isinstance(_q, dict) else ""
+            if not _q_text:
+                _wsi_kept.append(_q)
+                continue
+            _check = _fg_q.check(_q_text)
+            if _check.is_blocked:
+                _wsi_dropped.append({
+                    "question": _q_text,
+                    "category": _check.category,
+                    "terms": _check.blocked_terms,
+                    "educational_message": _check.educational_message,
+                })
+                logger.warning(
+                    "[JobCreation:wsi_questions] FairnessGuard L4 dropped question: "
+                    "category=%s, terms=%s",
+                    _check.category, _check.blocked_terms,
+                )
+            else:
+                _wsi_kept.append(_q)
+        questions_data = _wsi_kept
+    except Exception as _fg_l4_exc:
+        logger.warning(
+            "[JobCreation:wsi_questions] FairnessGuard L4 check failed (fail-open): %s",
+            _fg_l4_exc,
+        )
+        # On failure, keep all questions (don't lose recruiter's work)
+
     updates: Dict[str, Any] = {
         "current_stage": "wsi_questions",
         "wsi_questions": questions_data,
+        "wsi_dropped_questions": _wsi_dropped,
         "stage_history": (state.get("stage_history") or []) + ["wsi_questions"],
         "completeness": calculate_completeness("wsi_questions"),
         "requires_approval": True,
@@ -367,6 +662,34 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
             "requires_approval": True,
         },
     }
+
+    # ── Audit EU AI Act Art.13 — WSI questions generation decision ──
+    try:
+        import asyncio as _asyncio
+        from app.shared.compliance.audit_service import AuditService
+        _audit = AuditService()
+        _company_id = str(state.get("workspace_id") or state.get("company_id") or "")
+        if _company_id:
+            _asyncio.run(_audit.log_decision(
+                company_id=_company_id,
+                agent_name="job_creation:wsi_questions",
+                decision_type="generate_wsi_questions",
+                action="generate_questions",
+                decision=f"generated_{len(questions_data)}_kept_{len(_wsi_dropped)}_dropped",
+                reasoning=[
+                    f"distribution={state.get('question_distribution')}",
+                    f"seniority={state.get('seniority_resolved')}",
+                    f"dropped_by_fairness={len(_wsi_dropped)}",
+                ],
+                criteria_used=["distribution", "trait_rankings", "competency_tree",
+                               "fairness_layer4"],
+                job_vacancy_id=state.get("job_id"),
+                human_review_required=True,  # HITL 2
+            ))
+    except Exception as _audit_exc:
+        logger.warning(
+            "[JobCreation:wsi_questions] audit log failed (fail-open): %s", _audit_exc,
+        )
 
     elapsed = (time.time() - t0) * 1000
     logger.info("[JobCreation:wsi_questions] %d questions | %0.fms", len(questions_data), elapsed)
@@ -557,8 +880,64 @@ def publish_node(state: JobCreationState) -> JobCreationState:
         },
     }
 
+    # ── Audit EU AI Act Art.13 — publish job decision ──
+    try:
+        import asyncio as _asyncio
+        from app.shared.compliance.audit_service import AuditService
+        _audit = AuditService()
+        _company_id = str(state.get("workspace_id") or state.get("company_id") or "")
+        if _company_id:
+            _asyncio.run(_audit.log_decision(
+                company_id=_company_id,
+                agent_name="job_creation:publish",
+                decision_type="move_stage",
+                action="publish_job",
+                decision="published" if job_id and not error else "failed",
+                reasoning=[
+                    f"platforms={state.get('publish_platforms', [])}",
+                    f"sourcing_mode={state.get('sourcing_mode')}",
+                    *([f"error={error}"] if error else []),
+                ],
+                criteria_used=["job_data", "screening_config", "publish_platforms"],
+                job_vacancy_id=job_id,
+                human_review_required=False,
+            ))
+    except Exception as _audit_exc:
+        logger.warning(
+            "[JobCreation:publish] audit log failed (fail-open): %s", _audit_exc,
+        )
+
     elapsed = (time.time() - t0) * 1000
     logger.info("[JobCreation:publish] job_id=%s share=%s | %0.fms", job_id, bool(share_link), elapsed)
+
+    # Sprint B Phase 1 - JD Similar History: fire-and-forget record after publish
+    if not error and job_id:
+        try:
+            from app.domains.job_creation.services.jd_similar_service import (
+                record_jd_fire_and_forget,
+            )
+            company_id = str(state.get("workspace_id") or state.get("company_id") or "")
+            jd_enriched_payload = state.get("jd_enriched") or {}
+            title = (
+                jd_enriched_payload.get("titulo_padronizado")
+                or state.get("parsed_title")
+                or ""
+            )
+            if company_id and title:
+                record_jd_fire_and_forget(
+                    company_id=company_id,
+                    job_id=str(job_id),
+                    title=title,
+                    jd_enriched=jd_enriched_payload,
+                    seniority_level=state.get("seniority_resolved"),
+                    department=state.get("parsed_department"),
+                )
+        except Exception as exc:  # pragma: no cover - never block publish
+            logger.warning(
+                "[JobCreation:publish] JdSimilar wire failed (non-blocking): %s",
+                str(exc)[:200],
+            )
+
     return {**state, **updates}
 
 
@@ -618,6 +997,48 @@ def calibration_node(state: JobCreationState) -> JobCreationState:
         },
     }
 
+    # ── LL-1 — Calibration delta loop (canonical wiring) ──
+    # For each candidate with a recruiter decision, record feedback.
+    # Service maintains a running score_delta per job_id used in future evaluations.
+    try:
+        from app.domains.cv_screening.services.rubric_evaluation_service import calibration_feedback as _cal_fb
+        _job_id = str(state.get("job_id") or "")
+        _recorded = 0
+        if _job_id:
+            for _cand in candidates:
+                if not isinstance(_cand, dict):
+                    continue
+                _decision = _cand.get("recruiter_decision")
+                if not _decision:
+                    continue
+                _original = _cand.get("original_score")
+                _adjusted = _cand.get("recruiter_adjusted_score")
+                _eval_id = str(_cand.get("evaluation_id") or _cand.get("id") or "")
+                _cand_id = str(_cand.get("id") or _cand.get("candidate_id") or "")
+                if _eval_id and _cand_id and _original is not None:
+                    _cal_fb.record_feedback(
+                        evaluation_id=_eval_id,
+                        candidate_id=_cand_id,
+                        job_id=_job_id,
+                        original_score=float(_original),
+                        recruiter_adjusted_score=(
+                            float(_adjusted) if _adjusted is not None else None
+                        ),
+                        recruiter_decision=str(_decision),
+                        feedback_notes=_cand.get("feedback_notes"),
+                    )
+                    _recorded += 1
+            if _recorded > 0:
+                logger.info(
+                    "[JobCreation:calibration] LL-1 recorded %d feedback entries for job_id=%s",
+                    _recorded, _job_id,
+                )
+    except Exception as _cal_exc:
+        logger.warning(
+            "[JobCreation:calibration] LL-1 calibration feedback failed (fail-open): %s",
+            _cal_exc,
+        )
+
     elapsed = (time.time() - t0) * 1000
     logger.info("[JobCreation:calibration] %d/%d approved | %0.fms", approved_count, threshold, elapsed)
     return {**state, **updates}
@@ -630,7 +1051,19 @@ def handoff_node(state: JobCreationState) -> JobCreationState:
 
     job_id = state.get("job_id")
     share_link = state.get("share_link")
-    handoff_url = f"/jobs/{job_id}" if job_id else None
+
+    # ── Phase 4G / A2: route whitelist enforcement (Bug P2 fix) ──
+    # Use safe_navigate_route to enforce VALID_ROUTES; falls back to None on error.
+    handoff_url = None
+    if job_id:
+        try:
+            from app.domains.job_creation.safe_navigation import safe_navigate_route
+            handoff_url = safe_navigate_route("/jobs/{job_id}", job_id=job_id)
+        except Exception as _nav_exc:
+            logger.warning(
+                "[JobCreation:handoff] safe_navigate_route failed (fallback): %s", _nav_exc,
+            )
+            handoff_url = f"/jobs/{job_id}"  # fail-open fallback
 
     updates: Dict[str, Any] = {
         "current_stage": "handoff",
@@ -650,6 +1083,12 @@ def handoff_node(state: JobCreationState) -> JobCreationState:
             "requires_approval": False,
         },
     }
+
+    # NOTE on LL-2 manager preferences learning loop:
+    # ManagerPreferencesService.record_job_completion() is invoked by
+    # WizardSessionService.process_message() AFTER graph completes
+    # (when current_stage == "handoff"). G8 idempotency_key (MD5) is
+    # generated there. See wizard_session_service.py:253+.
 
     elapsed = (time.time() - t0) * 1000
     logger.info("[JobCreation:handoff] url=%s | %0.fms", handoff_url, elapsed)

@@ -22,13 +22,13 @@ from datetime import date, datetime
 from statistics import mean, quantiles
 
 try:
-    import redis.asyncio as aioredis  # type: ignore
+    import redis.asyncio as aioredis  # type: ignore[union-attr]
     _REDIS_AVAILABLE = True
 except ImportError:
     _REDIS_AVAILABLE = False
 
 try:
-    import yaml  # type: ignore
+    import yaml  # type: ignore[union-attr]
     _YAML_AVAILABLE = True
 except ImportError:
     _YAML_AVAILABLE = False

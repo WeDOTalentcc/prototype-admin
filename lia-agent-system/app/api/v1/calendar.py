@@ -397,7 +397,7 @@ async def google_oauth_auth_url(request: Request, company_id: str = Query(..., d
             detail="Google Calendar OAuth not configured. Set GOOGLE_CALENDAR_CLIENT_ID and GOOGLE_CALENDAR_OAUTH_REDIRECT_URI.",
         )
     try:
-        from google_auth_oauthlib.flow import Flow  # type: ignore
+        from google_auth_oauthlib.flow import Flow  # type: ignore[union-attr]
         flow = Flow.from_client_config(
             {
                 "web": {
@@ -463,7 +463,7 @@ async def google_oauth_callback(
         import json
         import uuid
 
-        from google_auth_oauthlib.flow import Flow  # type: ignore
+        from google_auth_oauthlib.flow import Flow  # type: ignore[union-attr]
 
         from app.core.database import AsyncSessionLocal
         from app.models.company_calendar_credentials import CompanyCalendarCredentials

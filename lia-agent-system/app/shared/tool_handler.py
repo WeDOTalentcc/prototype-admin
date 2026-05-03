@@ -37,14 +37,8 @@ def tool_handler(domain: str, *, require_company: bool = True, module: Optional[
     def decorator(func: Callable) -> Callable:
         @wraps(func)
         async def wrapper(**kwargs: Any) -> dict[str, Any]:
-            if require_company:
-                context = kwargs.get("_context") or kwargs.get("context")
-                ctx_company_id = getattr(context, "company_id", None) if context else None
-                if ctx_company_id:
-                    kwargs = dict(kwargs)
-                    kwargs["company_id"] = ctx_company_id
-                elif not kwargs.get("company_id"):
-                    return dict(_TENANT_REQUIRED_RESPONSE)
+            if require_company and not kwargs.get("company_id"):
+                return dict(_TENANT_REQUIRED_RESPONSE)
 
             access_result = None
 

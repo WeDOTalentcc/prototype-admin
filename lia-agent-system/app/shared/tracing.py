@@ -253,6 +253,14 @@ def _try_init_otlp() -> bool:
 # Tenta inicializar OTLP na importação do módulo
 _otlp_active = _try_init_otlp()
 
+# UC-P1-04: warn at startup if OTLP endpoint is not configured
+if not _otlp_active and not os.environ.get('OTEL_EXPORTER_OTLP_ENDPOINT'):
+    logger.warning(
+        '[OTEL] OTEL_EXPORTER_OTLP_ENDPOINT not set — traces will NOT be exported. '
+        'Set this env var in production/staging for distributed tracing.'
+    )
+
+
 
 def _get_otel_tracer(name: str = "lia-agent-system"):
     """Retorna tracer OpenTelemetry real se SDK disponível, None caso contrário."""
@@ -479,3 +487,47 @@ def get_trace_stats() -> dict[str, Any]:
         "by_tier": by_tier,
         "by_service": by_service,
     }
+
+
+# ---------------------------------------------------------------------------
+# UC-P1-07: LLM span enrichment helper
+# ---------------------------------------------------------------------------
+
+def enrich_llm_span(
+    span,
+    *,
+    tenant_id: str | None = None,
+    user_id: str | None = None,
+    model: str | None = None,
+    tokens_used: int | None = None,
+    provider: str | None = None,
+    domain: str | None = None,
+    request_id: str | None = None,  # UC-P2-28
+) -> None:
+    """Enrich an OTEL/LightweightTracer span with LLM-specific attributes.
+
+    UC-P1-07: Every LLM call surface in generate_with_fallback must call
+    this so tenant_id, model, tokens_used, provider, and domain are visible
+    in distributed traces and Jaeger/Honeycomb dashboards.
+
+    Safe to call with span=None — never raises, never crashes the main flow.
+    """
+    if span is None:
+        return
+    try:
+        if tenant_id is not None:
+            span.set_attribute("tenant.id", str(tenant_id))
+        if user_id is not None:
+            span.set_attribute("user.id", str(user_id))
+        if model is not None:
+            span.set_attribute("llm.model", str(model))
+        if tokens_used is not None:
+            span.set_attribute("llm.tokens_used", int(tokens_used))
+        if provider is not None:
+            span.set_attribute("llm.provider", str(provider))
+        if domain is not None:
+            span.set_attribute("llm.domain", str(domain))
+        if request_id is not None:
+            span.set_attribute("http.request_id", str(request_id))  # UC-P2-28
+    except Exception:
+        pass  # Never let span enrichment crash the main flow

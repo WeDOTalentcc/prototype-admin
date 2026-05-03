@@ -24,6 +24,13 @@ except ImportError as _gov_dep_err:
     raise RuntimeError(f"GovernanceExecutor deps missing: {_gov_dep_err}") from _gov_dep_err
 
 
+try:
+    import sentry_sdk as _sentry_sdk
+    _SENTRY_AVAILABLE = True
+except ImportError:  # pragma: no cover
+    _sentry_sdk = None  # type: ignore[union-attr]
+    _SENTRY_AVAILABLE = False
+
 logger = logging.getLogger(__name__)
 
 
@@ -254,6 +261,18 @@ class ToolExecutor:
             
         except Exception as e:
             self.logger.error(f"Tool execution error for {tool_name}: {e}", exc_info=True)
+            if _SENTRY_AVAILABLE:
+                _sentry_sdk.add_breadcrumb(
+                    category="tool.error",
+                    message=f"Tool {tool_name!r} failed: {type(e).__name__}: {e}",
+                    level="error",
+                    data={
+                        "tool_name": tool_name,
+                        "agent_type": getattr(self, "_agent_type", agent_type or "unknown"),
+                        "error_type": type(e).__name__,
+                    },
+                )
+                _sentry_sdk.set_tag("tool.last_failed", tool_name)
             result = ToolResult(
                 success=False,
                 error=f"Tool execution failed: {str(e)}",

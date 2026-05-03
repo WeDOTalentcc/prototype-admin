@@ -10,6 +10,7 @@ import logging
 from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolOutput
 
 from app.shared.tool_handler import tool_handler
 
@@ -118,6 +119,7 @@ _GITHUB_TOOL_DEFINITIONS.append(
             },
             "required": [],
         },
+        output_schema=ToolOutput,
         function=_wrap_github_search_developers,
     )
 )
@@ -158,6 +160,7 @@ _GITHUB_TOOL_DEFINITIONS.append(
             },
             "required": ["login"],
         },
+        output_schema=ToolOutput,
         function=_wrap_github_get_profile,
     )
 )
@@ -206,6 +209,7 @@ _GITHUB_TOOL_DEFINITIONS.append(
             },
             "required": ["login"],
         },
+        output_schema=ToolOutput,
         function=_wrap_github_get_repos,
     )
 )
@@ -260,6 +264,7 @@ _GITHUB_TOOL_DEFINITIONS.append(
             },
             "required": ["login"],
         },
+        output_schema=ToolOutput,
         function=_wrap_github_get_contributions,
     )
 )

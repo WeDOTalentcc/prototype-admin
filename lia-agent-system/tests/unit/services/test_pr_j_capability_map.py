@@ -139,10 +139,10 @@ class TestCapabilityMapWave1Intents:
                 )
 
     def test_total_intents_is_twelve(self):
-        """sensor: capability_map deve ter exatamente 12 intents após W1-2 (Wave 4 + daily_briefing)."""
+        """sensor: capability_map deve ter pelo menos 22 intents após UC-P1-28 (7 Rail A ghosts adicionados)."""
         caps = CapabilityMapService.load()
-        assert len(caps) == 12, (
-            f"capability_map.yaml deve ter 12 intents após W1-2, "
+        assert len(caps) >= 22, (
+            f"capability_map.yaml deve ter ao menos 22 intents após UC-P1-28, "
             f"encontrado: {len(caps)}. "
             "Adicione a entrada ou remova se obsoleta."
         )

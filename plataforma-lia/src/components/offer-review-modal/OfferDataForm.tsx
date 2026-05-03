@@ -53,11 +53,9 @@ export function OfferDataForm({ draft, isSaving, salaryWarnings, onChange }: Off
     [onChange],
   )
 
-  const salaryOverBudget = salaryWarnings.some(w => w.level === "warning")
-
   return (
     <div className="flex flex-col gap-4 p-4 h-full overflow-y-auto">
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
         Carta-Oferta
       </p>
 
@@ -65,7 +63,7 @@ export function OfferDataForm({ draft, isSaving, salaryWarnings, onChange }: Off
       {salaryWarnings.map((w, i) => (
         <div
           key={i}
-          className={`text-[11px] px-3 py-2 rounded-md ${
+          className={`text-xs px-3 py-2 rounded-md ${
             w.level === "warning"
               ? "bg-yellow-50 text-yellow-800 border border-yellow-200"
               : "bg-blue-50 text-blue-800 border border-blue-200"
@@ -77,7 +75,7 @@ export function OfferDataForm({ draft, isSaving, salaryWarnings, onChange }: Off
 
       {/* Salary */}
       <div className="flex flex-col gap-1">
-        <Label htmlFor="offer-salary" className="text-[11px] text-muted-foreground">
+        <Label htmlFor="offer-salary" className="text-xs text-muted-foreground">
           Salário (R$) *
         </Label>
         <Input
@@ -90,13 +88,12 @@ export function OfferDataForm({ draft, isSaving, salaryWarnings, onChange }: Off
           disabled={isSaving}
           placeholder="Ex: 10000"
           className="h-9"
-          aria-invalid={salaryOverBudget}
         />
       </div>
 
       {/* Bonus */}
       <div className="flex flex-col gap-1">
-        <Label htmlFor="offer-bonus" className="text-[11px] text-muted-foreground">
+        <Label htmlFor="offer-bonus" className="text-xs text-muted-foreground">
           Bônus de admissão (R$)
         </Label>
         <Input
@@ -114,7 +111,7 @@ export function OfferDataForm({ draft, isSaving, salaryWarnings, onChange }: Off
 
       {/* Start date */}
       <div className="flex flex-col gap-1">
-        <Label htmlFor="offer-start" className="text-[11px] text-muted-foreground">
+        <Label htmlFor="offer-start" className="text-xs text-muted-foreground">
           Data de início
         </Label>
         <Input
@@ -129,7 +126,7 @@ export function OfferDataForm({ draft, isSaving, salaryWarnings, onChange }: Off
 
       {/* Validity */}
       <div className="flex flex-col gap-1">
-        <Label htmlFor="offer-validity" className="text-[11px] text-muted-foreground">
+        <Label htmlFor="offer-validity" className="text-xs text-muted-foreground">
           Validade (dias)
         </Label>
         <Input
@@ -146,7 +143,7 @@ export function OfferDataForm({ draft, isSaving, salaryWarnings, onChange }: Off
 
       {/* Notes */}
       <div className="flex flex-col gap-1">
-        <Label htmlFor="offer-notes" className="text-[11px] text-muted-foreground">
+        <Label htmlFor="offer-notes" className="text-xs text-muted-foreground">
           Notas internas (não enviadas ao candidato)
         </Label>
         <Textarea
@@ -155,12 +152,12 @@ export function OfferDataForm({ draft, isSaving, salaryWarnings, onChange }: Off
           onChange={handleNotes}
           disabled={isSaving}
           placeholder="Observações para você mesmo..."
-          className="resize-none h-20 text-[12px]"
+          className="resize-none h-20 text-sm"
         />
       </div>
 
       {isSaving && (
-        <p className="text-[11px] text-muted-foreground animate-pulse">Salvando...</p>
+        <p className="text-xs text-muted-foreground animate-pulse">Salvando...</p>
       )}
     </div>
   )

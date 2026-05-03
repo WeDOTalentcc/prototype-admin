@@ -63,6 +63,15 @@ class JobsManagementReActAgent(LangGraphReActBase, EnhancedAgentMixin):
     def available_tools(self) -> list[str]:
         return list(self._all_tool_names)
 
+
+    def _get_tool_contracts(self) -> list:
+        """Ativa GovernanceToolNode para este agente."""
+        try:
+            from app.domains.recruiter_assistant.agents.jobs_mgmt_tool_registry import get_jobs_mgmt_tools
+            return get_jobs_mgmt_tools()
+        except ImportError:
+            return []
+
     def _get_tools(self) -> list:
         """Todos os tools do domínio Jobs Management (LangGraph usa set completo)."""
         from lia_agents_core.react_loop import tool_definition_to_langchain_tool

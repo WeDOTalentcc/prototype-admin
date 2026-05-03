@@ -17,6 +17,7 @@ from datetime import datetime, timedelta
 from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolOutput
 
 from app.shared.tool_handler import tool_handler
 
@@ -180,6 +181,10 @@ async def _wrap_nurture_create_sequence(**kwargs: Any) -> dict[str, Any]:
     }
 _NURTURE_TOOL_DEFINITIONS.append(
     ToolDefinition(
+        side_effects=["write"],
+        touches_pii=True,
+        pii_output_fields=["candidate_email",
+        "candidate_phone"],
         name="nurture_create_sequence",
         description=(
             "Cria uma sequência de nurture multi-touch (até 5 touchpoints) para um candidato. "
@@ -216,6 +221,7 @@ _NURTURE_TOOL_DEFINITIONS.append(
             },
             "required": ["candidate_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_nurture_create_sequence,
     )
 )
@@ -332,6 +338,7 @@ _NURTURE_TOOL_DEFINITIONS.append(
             },
             "required": [],
         },
+        output_schema=ToolOutput,
         function=_wrap_nurture_get_sequence_status,
     )
 )
@@ -438,6 +445,8 @@ async def _wrap_nurture_approve_step(**kwargs: Any) -> dict[str, Any]:
     }
 _NURTURE_TOOL_DEFINITIONS.append(
     ToolDefinition(
+        side_effects=["write"],
+        requires_human_review=True,
         name="nurture_approve_step",
         description=(
             "Registra aprovação HITL de um step da sequência de nurture. "
@@ -454,6 +463,7 @@ _NURTURE_TOOL_DEFINITIONS.append(
             },
             "required": ["sequence_id", "step_number"],
         },
+        output_schema=ToolOutput,
         function=_wrap_nurture_approve_step,
     )
 )
@@ -622,6 +632,10 @@ async def _wrap_nurture_execute_step(**kwargs: Any) -> dict[str, Any]:
     }
 _NURTURE_TOOL_DEFINITIONS.append(
     ToolDefinition(
+        side_effects=["send"],
+        touches_pii=True,
+        pii_output_fields=["candidate_email",
+        "candidate_phone"],
         name="nurture_execute_step",
         description=(
             "Executa um step previamente aprovado da sequência de nurture. "
@@ -649,6 +663,7 @@ _NURTURE_TOOL_DEFINITIONS.append(
             },
             "required": ["sequence_id", "step_number"],
         },
+        output_schema=ToolOutput,
         function=_wrap_nurture_execute_step,
     )
 )
@@ -719,6 +734,7 @@ _NURTURE_TOOL_DEFINITIONS.append(
             },
             "required": ["sequence_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_nurture_expire_sequence,
     )
 )

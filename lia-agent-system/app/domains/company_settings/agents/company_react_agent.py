@@ -60,6 +60,15 @@ class CompanySettingsReActAgent(LangGraphReActBase, EnhancedAgentMixin):
     def available_tools(self) -> list[str]:
         return list(self._all_tool_names)
 
+
+    def _get_tool_contracts(self) -> list:
+        """Ativa GovernanceToolNode para este agente."""
+        try:
+            from app.domains.company_settings.agents.company_tool_registry import get_company_settings_tools
+            return get_company_settings_tools()
+        except ImportError:
+            return []
+
     def _get_tools(self) -> list:
         from lia_agents_core.react_loop import tool_definition_to_langchain_tool
         tool_defs = get_company_settings_tools() + self._get_all_enhanced_tools()

@@ -17,6 +17,17 @@ from typing import Any
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.voice.schemas.wsi_types import (
+    WsiCandidateRankRow,
+    WsiFeedbackRow,
+    WsiJobVacancyContextRow,
+    WsiQuestionTextRow,
+    WsiReportRow,
+    WsiResultRow,
+    WsiSessionRow,
+    WsiVacancyAveragesRow,
+)
+
 
 class WsiRepository:
     """Repository for WSI screening workflow data access."""
@@ -69,7 +80,7 @@ class WsiRepository:
             WHERE id = :session_id
         """), {"session_id": session_id})
 
-    async def get_session(self, session_id: str) -> Any:
+    async def get_session(self, session_id: str) -> WsiSessionRow | None:
         """Fetch core session row by ID. Returns a Row or None."""
         result = await self.db.execute(text("""
             SELECT id, candidate_id, job_vacancy_id, screening_type, mode,
@@ -258,7 +269,7 @@ class WsiRepository:
             "percentile": percentile,
         })
 
-    async def get_result_with_session(self, result_id: str) -> Any:
+    async def get_result_with_session(self, result_id: str) -> WsiResultRow | None:
         """Fetch result row joined with session for full detail view."""
         result = await self.db.execute(text("""
             SELECT r.id, r.session_id, r.candidate_id, r.job_vacancy_id,
@@ -301,7 +312,7 @@ class WsiRepository:
         """), {"job_vacancy_id": job_vacancy_id})
         return result.fetchall()
 
-    async def get_vacancy_averages(self, job_vacancy_id: str) -> Any:
+    async def get_vacancy_averages(self, job_vacancy_id: str) -> WsiVacancyAveragesRow | None:
         """Return average WSI scores across all completed sessions for a vacancy."""
         result = await self.db.execute(text("""
             SELECT ROUND(AVG(r.overall_wsi)::numeric, 2),
@@ -313,7 +324,7 @@ class WsiRepository:
         """), {"job_vacancy_id": job_vacancy_id})
         return result.fetchone()
 
-    async def get_candidate_rank_in_vacancy(self, candidate_id: str, job_vacancy_id: str) -> Any:
+    async def get_candidate_rank_in_vacancy(self, candidate_id: str, job_vacancy_id: str) -> WsiCandidateRankRow | None:
         """Return a single candidate's rank position within a vacancy."""
         result = await self.db.execute(text("""
             WITH ranked AS (
@@ -334,7 +345,7 @@ class WsiRepository:
     # wsi_reports
     # ------------------------------------------------------------------
 
-    async def get_report_for_result(self, result_id: str) -> Any:
+    async def get_report_for_result(self, result_id: str) -> WsiReportRow | None:
         """Fetch the structured report row for a WSI result."""
         result = await self.db.execute(text("""
             SELECT executive_summary, technical_analysis, behavioral_analysis,
@@ -347,7 +358,7 @@ class WsiRepository:
     # wsi_feedbacks
     # ------------------------------------------------------------------
 
-    async def get_feedback_for_result(self, result_id: str) -> Any:
+    async def get_feedback_for_result(self, result_id: str) -> WsiFeedbackRow | None:
         """Fetch the candidate feedback row for a WSI result."""
         result = await self.db.execute(text("""
             SELECT decision, main_message, technical_strengths, development_opportunities,
@@ -420,7 +431,7 @@ class WsiRepository:
     # Phase-2 additions
     # ------------------------------------------------------------------
 
-    async def get_question_text_and_competency(self, question_id: str) -> Any:
+    async def get_question_text_and_competency(self, question_id: str) -> WsiQuestionTextRow | None:
         """Fetch (question_text, competency) for a question — used in analyze-response."""
         result = await self.db.execute(text("""
             SELECT question_text, competency FROM wsi_questions WHERE id = :question_id
@@ -536,7 +547,7 @@ class WsiRepository:
             "sequence_order": sequence_order,
         })
 
-    async def get_job_vacancy_context(self, job_id: str, company_id: str) -> Any:
+    async def get_job_vacancy_context(self, job_id: str, company_id: str) -> WsiJobVacancyContextRow | None:
         """Fetch (title, description, seniority_level) for a job vacancy."""
         result = await self.db.execute(text("""
             SELECT title, description, seniority_level

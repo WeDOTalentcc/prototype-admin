@@ -19,14 +19,72 @@ Limites por request individual (Fase 3):
 Fluxo:
   1. check_budget(company_id, plan_code) → antes de chamar LLM
   2. check_request_budget(...) → verifica ceiling por request individual
-  3. increment_usage(company_id, tokens_used) → após chamada LLM
-  4. get_budget_status(company_id, plan_code) → para dashboard admin
+  3. track_llm_usage_start(...) → marca inicio da chamada (R-002, observabilidade)
+  4. increment_usage(company_id, tokens_used) → após chamada LLM
+  5. get_budget_status(company_id, plan_code) → para dashboard admin
 """
+
 import logging
 from datetime import UTC, datetime
 
-
 logger = logging.getLogger(__name__)
+
+
+def track_llm_usage_start(
+    company_id: str | None,
+    *,
+    model: str | None = None,
+    domain: str | None = None,
+    operation: str | None = None,
+) -> dict[str, str]:
+    """R-002: Marca o inicio de uma chamada LLM antes do .complete() / .invoke().
+
+    Helper canonical para todos os callers de get_provider_for_tenant().
+    Emite log estruturado (Grafana/Kibana picks up) e retorna metadata de
+    correlacao para uso opcional pelo caller (ex: increment_usage depois).
+
+    Sprint 1 Quick Wins (REMEDIATION_BRIEF Wave 0) — card R-002 / achado F-205.
+    Pattern de chamada (canonical):
+
+        from app.domains.credits.services.token_budget_service import track_llm_usage_start
+        track_llm_usage_start(company_id, model="claude-3-5-sonnet", domain="wsi.report")
+        container = get_provider_for_tenant()
+        result = await container.generate_with_fallback(...)
+
+    Args:
+        company_id: tenant id (obrigatorio em prod; aceita None apenas em
+            paths sintéticos como skills_ontology singleton).
+        model: nome do modelo invocado (informativo).
+        domain: dominio funcional (ex: "wsi.report", "candidate_search.archetype").
+        operation: descritor curto da operacao (ex: "embed_skills", "cbi_questions").
+
+    Returns:
+        Dict com {tenant_id, model, domain, operation, started_at} para
+        correlacao opcional pelo caller.
+
+    Notes:
+        - NAO bloqueia (sem raise). Budget enforcement vive em
+          check_request_budget_before_llm().
+        - Log payload otimizado para parsing por LLM-as-judge / observability.
+        - Hashimoto: nunca mais chamada LLM sem log de inicio (sensor de spend).
+    """
+    started_at = datetime.now(UTC).isoformat()
+    payload = {
+        "tenant_id": company_id or "unknown",
+        "model": model or "unknown",
+        "domain": domain or "unknown",
+        "operation": operation or "unknown",
+        "started_at": started_at,
+    }
+    logger.info(
+        "[TokenBudget][R-002] llm.call.start tenant_id=%s model=%s domain=%s operation=%s started_at=%s",
+        payload["tenant_id"],
+        payload["model"],
+        payload["domain"],
+        payload["operation"],
+        payload["started_at"],
+    )
+    return payload
 
 
 class RequestBudgetExceededError(Exception):
@@ -51,43 +109,44 @@ class RequestBudgetExceededError(Exception):
             f"(plan={plan_code}, agent_type={agent_type})"
         )
 
+
 # Limites diários por plan_code (tokens totais = input + output)
 PLAN_DAILY_LIMITS: dict[str, int] = {
-    "starter":    10_000,
-    "pro":       100_000,
-    "business":  500_000,
-    "enterprise": -1,   # -1 = ilimitado
+    "starter": 10_000,
+    "pro": 100_000,
+    "business": 500_000,
+    "enterprise": -1,  # -1 = ilimitado
     # aliases comuns de plan_code
-    "trial":     10_000,
-    "free":       5_000,
-    "basic":     10_000,
+    "trial": 10_000,
+    "free": 5_000,
+    "basic": 10_000,
     "standard": 100_000,
-    "premium":  500_000,
+    "premium": 500_000,
 }
 
 # Fallback quando plan_code não reconhecido
 DEFAULT_DAILY_LIMIT = 10_000
 
 PLAN_REQUEST_LIMITS: dict[str, int] = {
-    "starter":     2_000,
-    "pro":        10_000,
-    "business":   25_000,
+    "starter": 2_000,
+    "pro": 10_000,
+    "business": 25_000,
     "enterprise": 50_000,
-    "trial":       2_000,
-    "free":        2_000,
-    "basic":       2_000,
-    "standard":   10_000,
-    "premium":    25_000,
+    "trial": 2_000,
+    "free": 2_000,
+    "basic": 2_000,
+    "standard": 10_000,
+    "premium": 25_000,
 }
 
 DEFAULT_REQUEST_LIMIT = 2_000
 
 AGENT_TYPE_REQUEST_OVERRIDES: dict[str, float] = {
     "AutonomousReActAgent": 2.0,
-    "DeepAnalysisAgent":    2.0,
-    "RAGAgent":             1.5,
+    "DeepAnalysisAgent": 2.0,
+    "RAGAgent": 1.5,
     "ReportGeneratorAgent": 2.0,
-    "ScreeningAgent":       1.5,
+    "ScreeningAgent": 1.5,
 }
 
 # TTL da chave Redis: 25h para cobrir edge case de meia-noite
@@ -261,8 +320,8 @@ async def check_budget(
     if redis is None:
         # Redis indisponível → permitir com warning (graceful degradation)
         logger.warning(
-            "[TokenBudget] Redis indisponível — permitindo chamada sem verificação de budget "
-            "(company_id=%s)", company_id
+            "[TokenBudget] Redis indisponível — permitindo chamada sem verificação de budget " "(company_id=%s)",
+            company_id,
         )
         return True, 0, limit
 
@@ -274,7 +333,10 @@ async def check_budget(
         if not allowed:
             logger.warning(
                 "[TokenBudget] Budget esgotado: company_id=%s used=%d limit=%d plan=%s",
-                company_id, used_int, limit, plan_code,
+                company_id,
+                used_int,
+                limit,
+                plan_code,
             )
         return allowed, used_int, limit
     except Exception as exc:
@@ -316,8 +378,31 @@ async def increment_usage(
         await redis.expire(key, _REDIS_TTL, xx=False)
         logger.debug(
             "[TokenBudget] Incrementado: company_id=%s +%d tokens → total=%d",
-            company_id, tokens_used, new_total,
+            company_id,
+            tokens_used,
+            new_total,
         )
+        # UC-P1-08: 80% threshold alert
+        _ALERT_THRESHOLD = 0.80
+        try:
+            plan_code = await get_plan_for_company(company_id)
+            limit = get_plan_limit(plan_code)
+            if limit > 0 and new_total / limit >= _ALERT_THRESHOLD:
+                logger.warning(
+                    "[TOKEN-BUDGET] 80%% alert: company_id=%s used=%d limit=%d (%.1f%%)",
+                    company_id, new_total, limit, (new_total / limit) * 100,
+                )
+                try:
+                    import sentry_sdk
+                    sentry_sdk.capture_message(
+                        f"Token budget 80% alert: {company_id} ({new_total}/{limit})",
+                        level="warning",
+                        tags={"company_id": str(company_id), "alert_type": "token_budget_80pct"},
+                    )
+                except Exception:
+                    pass  # Sentry unavailable — log is enough
+        except Exception as _exc:
+            logger.debug("[TOKEN-BUDGET] Could not check threshold: %s", _exc)
         return new_total
     except Exception as exc:
         logger.warning("[TokenBudget] Erro ao incrementar uso (%s)", exc)
@@ -371,6 +456,7 @@ async def get_budget_status(
     reset_at = datetime(now.year, now.month, now.day, tzinfo=UTC)
     # avança 1 dia
     from datetime import timedelta
+
     reset_at = reset_at + timedelta(days=1)
 
     return {
@@ -427,18 +513,19 @@ async def get_plan_for_company(company_id: str) -> str | None:
     plan_code = None
     try:
         from lia_config.database import AsyncSessionLocal
-        from sqlalchemy import and_, select
-
         from lia_models.billing import Subscription
+        from sqlalchemy import and_, select
 
         async with AsyncSessionLocal() as db:
             result = await db.execute(
-                select(Subscription.plan_code).where(
+                select(Subscription.plan_code)
+                .where(
                     and_(
                         Subscription.company_id == company_id,
                         Subscription.status.in_(["active", "trialing"]),
                     )
-                ).limit(1)
+                )
+                .limit(1)
             )
             row = result.scalar_one_or_none()
             if row:

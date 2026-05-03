@@ -18,6 +18,8 @@ from app.api.v1 import llm_config as llm_config_router_mod
 
 from app.api.v1 import (
     ab_testing,
+    jd_similar,
+    learning_loops_config,
     activities,
     admin,
     admin_bias_audit,
@@ -73,6 +75,7 @@ from app.api.v1 import (
     company_culture_config,
     company_departments,
     compliance_controls,
+    compliance_report,
     compliance_status,
     consent_management,
     conversations,
@@ -128,7 +131,6 @@ from app.api.v1 import (
     lia_assistant,
     lia_assistant_fasttrack,
     lia_assistant_flags,
-    lia_assistant_graph,
     lia_assistant_learning,
     lia_assistant_vacancy,
     lia_assistant_wizard_stages,
@@ -278,6 +280,9 @@ def register_all_routes(app: FastAPI) -> None:
     # ── Internal LLM (used by Next.js frontend routes) ────────────────────────
     from app.api.v1 import internal_llm
     app.include_router(internal_llm.router, prefix="/api/v1")
+    app.include_router(jd_similar.router, prefix="/api/v1", tags=["jd-similar"])
+    app.include_router(learning_loops_config.router, prefix="/api/v1", tags=["learning-loops"])
+
 
     # ── Core / Navigation ─────────────────────────────────────────────────────
     app.include_router(navigation_intent_router, prefix="/api/v1")
@@ -463,7 +468,6 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(lia_assistant_wizard_stages.router, prefix="/api/v1", tags=["lia-wizard-stages"])
     app.include_router(lia_assistant_vacancy.router, prefix="/api/v1", tags=["lia-vacancy"])
     app.include_router(lia_assistant_fasttrack.router, prefix="/api/v1", tags=["lia-fasttrack"])
-    app.include_router(lia_assistant_graph.router, prefix="/api/v1/lia-assistant", tags=["lia-graph"])
 
     # ── Wizard ────────────────────────────────────────────────────────────────
     app.include_router(wizard_suggestions.router, prefix="/api/v1/wizard", tags=["wizard-suggestions"])
@@ -502,6 +506,7 @@ def register_all_routes(app: FastAPI) -> None:
     # ── Compliance / LGPD ─────────────────────────────────────────────────────
     app.include_router(lgpd_compliance.router, prefix="/api/v1", tags=["lgpd-compliance"])
     app.include_router(compliance_controls.router, prefix="/api/v1", tags=["compliance-controls"])
+    app.include_router(compliance_report.router, prefix="/api/v1", tags=["compliance-report"])
     app.include_router(compliance_status.router, prefix="/api/v1", tags=["compliance-status"])
     app.include_router(trust_center.router, prefix="/api/v1", tags=["trust-center"])
     app.include_router(audit_logs.router, prefix="/api/v1", tags=["audit-logs"])
@@ -618,5 +623,9 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(whatsapp_webhook_router, tags=["whatsapp"])
 
     # ── Public (no /api/v1 prefix) ────────────────────────────────────────────
+    # ── Offer Proposals (PR-B) ──────────────────────────────────────────────
+    from app.api.v1.offers import router as _offers_router
+    app.include_router(_offers_router, prefix="/api/v1", tags=["offers"])
+
     app.include_router(candidate_portal.router, tags=["candidate-portal"])
     app.include_router(public_shared_searches.router, prefix="/api", tags=["public-shared-searches"])

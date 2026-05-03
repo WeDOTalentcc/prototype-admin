@@ -86,6 +86,19 @@ class TransitionDispatchService:
                     "error": f"Unknown action_behavior: {action_behavior}",
                 }
 
+            # Sprint B Phase 1+2 - learning loops outcome hook (fail-soft)
+            if action_behavior == "conclusion_hired":
+                try:
+                    await self._hook_conclusion_hired(
+                        vacancy_candidate_id=vacancy_candidate_id,
+                        company_id=company_id,
+                    )
+                except Exception as _hook_exc:
+                    logger.warning(
+                        "[dispatch_for_transition] hook failed (non-blocking): %s",
+                        str(_hook_exc)[:200],
+                    )
+
             situation = ACTION_BEHAVIOR_SITUATION_MAP[action_behavior]
             if situation is None:
                 logger.info(
@@ -596,3 +609,192 @@ class TransitionDispatchService:
                 await self.db.rollback()
             except Exception:
                 pass
+
+    # -- Sprint B Phase 1+2 hooks (conclusion_hired learning loops) -------
+
+    async def _hook_conclusion_hired(
+        self,
+        vacancy_candidate_id: str,
+        company_id: str | None,
+    ) -> None:
+        """Sprint B: dispatch outcome events to learning-loop services.
+
+        Phase 1: JdSimilarService.mark_filled (was_filled=True + time_to_fill_days)
+        Phase 2: BigFive.record_hire - DEFERRED (requires candidate traits snapshot
+                 from WSI scoring; TODO Phase 2.5 - separate batch reconciliation).
+
+        ALWAYS fail-soft - dispatch never blocks if learning loops are unavailable.
+        Multi-tenancy: company_id required from caller (JWT context).
+        """
+        if not company_id or not vacancy_candidate_id:
+            return
+        try:
+            from datetime import datetime
+            from sqlalchemy import select as _select
+            from lia_models.vacancy_candidate import VacancyCandidate
+            from lia_models.job_vacancy import JobVacancy
+            from app.domains.job_creation.repositories.jd_similar_history_repository import (
+                JdSimilarHistoryRepository,
+            )
+            from app.domains.job_creation.services.jd_similar_service import (
+                JdSimilarService,
+            )
+            from app.shared.intelligence.embedding_service import EmbeddingService
+
+            # 1) Lookup vacancy_id from vacancy_candidate_id
+            vc_result = await self.db.execute(
+                _select(VacancyCandidate).where(
+                    VacancyCandidate.id == vacancy_candidate_id,
+                )
+            )
+            vc = vc_result.scalars().first()
+            if not vc:
+                logger.debug(
+                    "[ConclusionHired hook] vc not found id=%s",
+                    vacancy_candidate_id,
+                )
+                return
+            job_id = str(vc.vacancy_id)
+
+            # 2) Lookup JobVacancy para time_to_fill calculation
+            job_result = await self.db.execute(
+                _select(JobVacancy).where(JobVacancy.id == vc.vacancy_id)
+            )
+            job = job_result.scalars().first()
+            time_to_fill_days = 0
+            if job is not None and job.created_at is not None:
+                time_to_fill_days = max(0, (datetime.utcnow() - job.created_at).days)
+
+            # 3) Fire mark_filled (fail-soft if no record exists in jd_similar_history)
+            repo = JdSimilarHistoryRepository(self.db)
+            svc = JdSimilarService(repository=repo, embedding_service=EmbeddingService())
+            await svc.mark_filled(
+                company_id=company_id,
+                job_id=job_id,
+                time_to_fill_days=time_to_fill_days,
+                candidates_count=0,  # filled via batch reconciliation (Phase 1.5)
+            )
+            logger.info(
+                "[ConclusionHired hook] mark_filled job_id=%s ttf=%dd",
+                job_id, time_to_fill_days,
+            )
+            # Audit log: outcome event for learning loop
+            try:
+                from app.shared.compliance.audit_service import get_audit_service
+                import uuid as _uuid
+                await get_audit_service().log_action(
+                    trace_id=str(_uuid.uuid4()),
+                    company_id=company_id,
+                    action_type="jd_similar_mark_filled",
+                    actor="hook:conclusion_hired",
+                    target_id=job_id,
+                    target_type="job",
+                    metadata={
+                        "time_to_fill_days": time_to_fill_days,
+                        "vacancy_candidate_id": vacancy_candidate_id,
+                    },
+                )
+            except Exception as _audit_exc:
+                logger.warning(
+                    "[ConclusionHired] audit log failed: %s",
+                    str(_audit_exc)[:100],
+                )
+
+            # Sprint B Phase 3 - WSI Effectiveness outcome (per skill_probed)
+            try:
+                await self._record_wsi_outcomes_for_candidate(
+                    company_id=company_id,
+                    vacancy_candidate_id=vacancy_candidate_id,
+                    job_id=job_id,
+                    outcome="hired",
+                )
+            except Exception as _wsi_exc:
+                logger.warning(
+                    "[ConclusionHired] WSI outcome hook failed: %s",
+                    str(_wsi_exc)[:100],
+                )
+        except Exception as exc:
+            logger.warning(
+                "[ConclusionHired hook] failed (non-blocking): %s",
+                str(exc)[:200],
+            )
+
+    async def _record_wsi_outcomes_for_candidate(
+        self,
+        company_id: str,
+        vacancy_candidate_id: str,
+        job_id: str,
+        outcome: str,
+    ) -> None:
+        """Sprint B Phase 3 - registra outcome por skill_probed nas respostas WSI.
+
+        Lookup respostas WSI do candidato + para cada uma com skill_probed
+        populado, chama WsiEffectivenessService.record_question_outcome.
+
+        Multi-tenancy: company_id obrigatorio.
+        Fail-soft: erro nao bloqueia dispatch.
+        """
+        if not company_id or not vacancy_candidate_id:
+            return
+        try:
+            # Lookup WSI responses do candidato — depende do schema atual.
+            # Por ora, structure simplificada: se existe wsi_responses table
+            # com {vacancy_candidate_id, skill_probed, score}, iterar.
+            from sqlalchemy import select as _select
+            try:
+                from lia_models.wsi_response import WsiResponse  # type: ignore
+            except ImportError:
+                logger.debug(
+                    "[ConclusionHired] WsiResponse model not available - skip Phase 3 outcome",
+                )
+                return
+
+            stmt = _select(WsiResponse).where(
+                WsiResponse.vacancy_candidate_id == vacancy_candidate_id,
+            )
+            result = await self.db.execute(stmt)
+            responses = list(result.scalars().all())
+            if not responses:
+                logger.debug(
+                    "[ConclusionHired] no WSI responses for vc=%s",
+                    vacancy_candidate_id,
+                )
+                return
+
+            from app.domains.job_creation.services.wsi_effectiveness_service import (
+                WsiEffectivenessService,
+            )
+            svc = WsiEffectivenessService(self.db)
+
+            recorded_count = 0
+            for response in responses:
+                skill_probed = getattr(response, "skill_probed", None)
+                score = getattr(response, "score", None)
+                if not skill_probed or score is None:
+                    continue
+                try:
+                    await svc.record_question_outcome(
+                        company_id=company_id,
+                        skill_probed=skill_probed,
+                        outcome=outcome,
+                        score=float(score),
+                        department=getattr(response, "department", "") or "",
+                        seniority_level=getattr(response, "seniority_level", "") or "",
+                    )
+                    recorded_count += 1
+                except Exception as _per_resp_exc:
+                    logger.debug(
+                        "[ConclusionHired] WSI per-response failed: %s",
+                        str(_per_resp_exc)[:100],
+                    )
+
+            logger.info(
+                "[ConclusionHired] Phase3 outcomes recorded: %d/%d job_id=%s",
+                recorded_count, len(responses), job_id,
+            )
+        except Exception as exc:
+            logger.warning(
+                "[ConclusionHired] Phase3 lookup failed (fail-soft): %s",
+                str(exc)[:200],
+            )
+

@@ -8,9 +8,9 @@ from uuid import UUID
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.domains.candidates.services.candidate_enrichment_service import (
-    CandidateEnrichmentService,
-    candidate_enrichment_service,
+from app.domains.sourcing.ports.enrichment_port import (
+    IEnrichmentPort,
+    CandidateEnrichmentAdapter,
 )
 from app.shared.resilience.circuit_breaker import APIFY_CIRCUIT
 from lia_models.candidate import Candidate
@@ -28,8 +28,8 @@ BATCH_CONCURRENCY = APIFY_MAX_CONCURRENT
 
 
 class ContactEnrichmentService:
-    def __init__(self, enrichment_svc: CandidateEnrichmentService | None = None):
-        self._enrichment_svc = enrichment_svc or candidate_enrichment_service
+    def __init__(self, enrichment_svc: IEnrichmentPort | None = None):
+        self._enrichment_svc: IEnrichmentPort = enrichment_svc or CandidateEnrichmentAdapter()
 
     async def _track_apify_consumption(
         self,
@@ -234,7 +234,7 @@ class ContactEnrichmentService:
         import time as _time
         _start = _time.monotonic()
         try:
-            profile_data = await self._enrichment_svc._scrape_linkedin_profile(
+            profile_data = await self._enrichment_svc.scrape_profile(
                 linkedin_url, "dev_fusion/Linkedin-Profile-Scraper"
             )
             _elapsed_ms = int((_time.monotonic() - _start) * 1000)

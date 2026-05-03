@@ -484,6 +484,7 @@ async def get_job_vacancy(
 async def list_job_vacancies(
     status: str | None = None,
     visibility: str | None = None,
+    source: str | None = None,  # Phase 4H — filter by 'wizard' | 'ats_import' | 'ats_external' | 'manual'
     skip: int = 0,
     limit: int = 500,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
@@ -512,6 +513,9 @@ async def list_job_vacancies(
                 # but we must be consistent with our own security model.
                 filtered: list[dict] = []
                 for jv in rails_jobs:
+                                        # Phase 4H — source filter on Rails branch
+                    if source and (jv.get('source') or 'wizard') != source:
+                        continue
                     jv_visibility = (jv.get("visibility") or "public")
 
                     if jv_visibility in ("public", "internal"):
@@ -554,6 +558,9 @@ async def list_job_vacancies(
 
         job_vacancies = []
         for jv in all_vacancies:
+                        # Phase 4H — source filter (wizard|ats_import|ats_external|manual)
+            if source and (jv.source if hasattr(jv, 'source') else 'wizard') != source:
+                continue
             jv_visibility = jv.visibility or "public"
 
             if jv_visibility in ["public", "internal"]:
@@ -606,6 +613,9 @@ async def list_job_vacancies(
                     "created_by": jv.created_by,
                     "status": jv.status or "Rascunho",
                     "stage": jv.stage,
+                    # Phase 4H — source + wizard_stage
+                    "source": jv.source if hasattr(jv, "source") else "wizard",
+                    "wizard_stage": jv.wizard_stage if hasattr(jv, "wizard_stage") else None,
                     "priority": jv.priority or "média",
                     "created_at": jv.created_at.isoformat() if hasattr(jv.created_at, "isoformat") else None,
                     "updated_at": jv.updated_at.isoformat() if hasattr(jv.updated_at, "isoformat") else None,

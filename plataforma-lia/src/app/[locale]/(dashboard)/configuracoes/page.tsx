@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
-import SettingsPageEnhanced from "@/components/pages/settings-page-enhanced"
+import { SettingsRouteClient } from "./SettingsRouteClient"
 
 export const metadata: Metadata = {
   title: "Configurações | LIA — WeDo Talent",
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function ConfiguracoesPage() {
   return (
     <ErrorBoundarySection>
-      <SettingsPageEnhanced />
+      <SettingsRouteClient />
     </ErrorBoundarySection>
   )
 }

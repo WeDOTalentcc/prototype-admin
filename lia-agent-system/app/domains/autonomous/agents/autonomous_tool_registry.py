@@ -15,6 +15,7 @@ import logging
 from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolOutput
 from app.shared.tool_handler import tool_handler
 
 logger = logging.getLogger(__name__)
@@ -1187,6 +1188,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Parâmetros: company_id (str, opcional), status (str, padrão 'open'), "
             "limit (int, padrão 20, máx 50)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_list_jobs,
     ),
     ToolDefinition(
@@ -1195,6 +1197,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Obter detalhes completos de uma vaga: descrição, requisitos, salário, localização. "
             "Parâmetros: job_id (str, obrigatório)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_get_job_details,
     ),
     ToolDefinition(
@@ -1203,6 +1206,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Obter benchmark salarial, frequência de skills e tempo médio de fechamento para um cargo. "
             "Parâmetros: job_title (str, obrigatório), company_id (str, obrigatório), location (str, opcional)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_auto_get_job_insights,
     ),
     ToolDefinition(
@@ -1211,58 +1215,89 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Prever probabilidade de contratação e tempo de fechamento de uma vaga. "
             "Parâmetros: job_id (str, obrigatório), company_id (str, obrigatório)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_auto_hiring_metrics,
     ),
     # ── Sourcing (6 tools) ──────────────────────────────────────────────────
     ToolDefinition(
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
+        touches_pii=True,
+        pii_output_fields=["name",
+        "email",
+        "linkedin_url"],
         name="search_candidates",
         description=(
             "Buscar candidatos por role, skills, localização e seniority. "
             "Parâmetros: role (str), skills (list[str]), location (str), "
             "experience_level (str), page (int), limit (int, máx 50)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_auto_search_candidates,
     ),
     ToolDefinition(
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
+        touches_pii=True,
+        pii_output_fields=["name",
+        "email"],
         name="filter_candidates",
         description=(
             "Filtrar candidatos por múltiplos critérios avançados. "
             "Parâmetros: filters (dict com keys: min_experience, max_experience, "
             "location, skills, seniority_level, title, status), page, limit."
         ),
+        output_schema=ToolOutput,
         function=_wrap_auto_filter_candidates,
     ),
     ToolDefinition(
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
+        touches_pii=True,
+        pii_output_fields=["name",
+        "email",
+        "phone",
+        "linkedin_url"],
         name="analyze_candidate_profile",
         description=(
             "Analisar perfil detalhado de um candidato: pontos fortes, gaps, score. "
             "Parâmetros: candidate_id (str, obrigatório)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_auto_analyze_profile,
     ),
     ToolDefinition(
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
         name="compare_candidates",
         description=(
             "Comparar múltiplos candidatos e gerar ranking por score e experiência. "
             "Parâmetros: candidate_ids (list[str], obrigatório — 2 a 10 candidatos)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_auto_compare_candidates,
     ),
     ToolDefinition(
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
         name="score_candidate_for_job",
         description=(
             "Calcular WSI score de um candidato para uma vaga específica. "
             "Parâmetros: candidate_id (str, obrigatório), vacancy_id (str, obrigatório)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_auto_score_candidate,
     ),
     ToolDefinition(
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
         name="match_candidates_to_job",
         description=(
             "CROSS-DOMAIN: Encontrar os melhores candidatos do sourcing para uma vaga específica, "
             "calculando match score com base em skills e seniority. "
             "Parâmetros: job_id (str, obrigatório), limit (int, padrão 10, máx 30)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_match_candidates_to_job,
     ),
     # ── Pipeline / CV Screening (3 tools) ───────────────────────────────────
@@ -1272,14 +1307,20 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Obter status do pipeline de recrutamento com contagem de candidatos por etapa. "
             "Parâmetros: job_id (str, opcional), company_id (str, opcional)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_get_pipeline_status,
     ),
     ToolDefinition(
+        touches_pii=True,
+        pii_output_fields=["name",
+        "email",
+        "linkedin_url"],
         name="get_candidates_in_stage",
         description=(
             "Listar candidatos em uma etapa específica do pipeline. "
             "Parâmetros: stage (str, obrigatório), job_id (str, opcional), limit (int, padrão 20)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_get_candidates_in_stage,
     ),
     # ── Analytics (3 tools) ─────────────────────────────────────────────────
@@ -1290,6 +1331,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Parâmetros: report_type ('job' ou 'candidate'), job_id (str), "
             "candidate_ids (list[str]), company_id (str), include_predictions (bool)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_auto_generate_report,
     ),
     # ── Interview Scheduling (1 tool) ───────────────────────────────────────
@@ -1300,15 +1342,21 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Parâmetros: candidate_id (str, opcional), job_id (str, opcional), "
             "status (str, padrão 'scheduled'), limit (int, padrão 20)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_get_scheduled_interviews,
     ),
     # ── Communication (1 tool) ──────────────────────────────────────────────
     ToolDefinition(
+        touches_pii=True,
+        pii_output_fields=["message_body",
+        "email_address",
+        "phone_number"],
         name="get_communication_history",
         description=(
             "Obter histórico de comunicações com um candidato (emails, mensagens). "
             "Parâmetros: candidate_id (str, obrigatório), limit (int, padrão 20)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_get_communication_history,
     ),
     # ── Cross-domain / Shared (2 tools) ─────────────────────────────────────
@@ -1319,6 +1367,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Use antes de dar a resposta final em queries cross-domain complexas. "
             "Parâmetros: query (str), gathered_data (dict com dados por domínio)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_summarize_context,
     ),
     ToolDefinition(
@@ -1327,6 +1376,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Solicitar clarificação ao usuário quando a query é ambígua ou faltam informações. "
             "Parâmetros: question (str), options (list[str] com opções para o usuário)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_clarify_request,
     ),
     # ── Job Management (extended, 3 tools) ──────────────────────────────────
@@ -1337,6 +1387,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Parâmetros: job_title (str, obrigatório), location (str, opcional), "
             "seniority_level (str, opcional)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_get_salary_benchmark,
     ),
     ToolDefinition(
@@ -1345,6 +1396,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Validar requisitos de uma vaga quanto a completude e qualidade. "
             "Parâmetros: requirements (list[str]), title (str), seniority_level (str)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_validate_job_requirements,
     ),
     ToolDefinition(
@@ -1353,6 +1405,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Obter configurações da empresa: políticas de contratação, preferências e limites. "
             "Parâmetros: company_id (str, obrigatório)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_get_company_config,
     ),
     # ── CV Screening / Pipeline (extended, 5 tools) ──────────────────────────
@@ -1362,6 +1415,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Ver perfil completo de um candidato no contexto do pipeline. "
             "Parâmetros: candidate_id (str, obrigatório), job_id (str, opcional)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_view_candidate_profile,
     ),
     ToolDefinition(
@@ -1370,6 +1424,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Ver resultados de triagem WSI de um candidato: scores, critérios, recomendação. "
             "Parâmetros: candidate_id (str, obrigatório), job_id (str, opcional)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_view_screening_results,
     ),
     ToolDefinition(
@@ -1378,6 +1433,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Ver notas e feedback de entrevistas de um candidato. "
             "Parâmetros: candidate_id (str, obrigatório), job_id (str, opcional)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_view_interview_notes,
     ),
     ToolDefinition(
@@ -1386,6 +1442,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Executar triagem WSI automatizada para um candidato vs. uma vaga. "
             "Parâmetros: candidate_id (str, obrigatório), job_id (str, obrigatório)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_run_wsi_screening,
     ),
     ToolDefinition(
@@ -1395,6 +1452,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Parâmetros: candidate_id (str, obrigatório), job_id (str, obrigatório), "
             "notes (str, obrigatório)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_add_candidate_notes,
     ),
     # ── Sourcing (extended, 3 tools) ─────────────────────────────────────────
@@ -1404,6 +1462,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Sugerir skills relevantes para um cargo com base em dados históricos de candidatos. "
             "Parâmetros: role (str, obrigatório)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_suggest_skills,
     ),
     ToolDefinition(
@@ -1412,6 +1471,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Ranquear um conjunto de candidatos por score composto (LIA score + experiência). "
             "Parâmetros: candidate_ids (list[str], obrigatório), criteria (list[str], opcional)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_rank_candidates,
     ),
     ToolDefinition(
@@ -1421,6 +1481,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Parâmetros: candidate_id (str, obrigatório), shortlist_id (str, obrigatório), "
             "added_by (str), notes (str)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_add_to_shortlist,
     ),
     # ── Analytics (extended, 2 tools) ────────────────────────────────────────
@@ -1430,6 +1491,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Obter métricas de performance e custo dos agentes de IA. "
             "Parâmetros: company_id (str, obrigatório), agent_type (str, opcional)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_get_agent_performance,
     ),
     ToolDefinition(
@@ -1438,6 +1500,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Obter métricas de qualidade das buscas: distribuições, top skills, alertas. "
             "Parâmetros: company_id (str, obrigatório), days (int, padrão 30)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_get_search_analytics,
     ),
     # ── Candidate Info (3 tools) ─────────────────────────────────────────────
@@ -1447,6 +1510,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Obter informações básicas de um candidato por ID, com isolamento por tenant. "
             "Parâmetros: candidate_id (str, obrigatório), company_id (str, recomendado)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_get_candidate_by_id,
     ),
     ToolDefinition(
@@ -1455,6 +1519,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Buscar candidatos pelo nome (busca parcial). "
             "Parâmetros: name (str, obrigatório), company_id (str, recomendado), limit (int)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_search_candidates_by_name,
     ),
     ToolDefinition(
@@ -1463,6 +1528,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Obter resumo de candidaturas por etapa para uma vaga, com médias de score. "
             "Parâmetros: job_id (str, obrigatório), company_id (str, recomendado)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_get_job_applications_summary,
     ),
     # ── Cross-domain composites (3 tools) ────────────────────────────────────
@@ -1473,6 +1539,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "de contratação em uma única chamada. "
             "Parâmetros: job_id (str, obrigatório), company_id (str, recomendado)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_cross_domain_funnel_analysis,
     ),
     ToolDefinition(
@@ -1482,6 +1549,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "entrevistas e comunicações em uma única chamada. "
             "Parâmetros: candidate_id (str, obrigatório), company_id (str, recomendado)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_candidate_360_view,
     ),
     ToolDefinition(
@@ -1490,6 +1558,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "CROSS-DOMAIN: Listar vagas abertas com contagem de candidatos por etapa do pipeline. "
             "Parâmetros: company_id (str, recomendado), limit (int, padrão 10)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_list_jobs_with_candidates,
     ),
     ToolDefinition(
@@ -1498,6 +1567,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Listar shortlists de candidatos de uma empresa com contagem de candidatos por lista. "
             "Parâmetros: company_id (str, recomendado), job_id (str, opcional), limit (int)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_get_shortlists,
     ),
     ToolDefinition(
@@ -1507,6 +1577,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Parâmetros: candidate_id (str, obrigatório), job_id (str, obrigatório), "
             "scheduled_at (str ISO-8601), interview_type (str), interviewer_id (str)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_schedule_interview,
     ),
     ToolDefinition(
@@ -1515,6 +1586,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Obter histórico de alterações (audit trail) de uma vaga. "
             "Parâmetros: job_id (str, obrigatório), company_id (str, recomendado), limit (int)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_get_job_history,
     ),
     ToolDefinition(
@@ -1524,6 +1596,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "entrevistas agendadas — em uma única chamada. "
             "Parâmetros: company_id (str, obrigatório)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_get_tenant_hiring_overview,
     ),
     # -- RAG Search (semantic hybrid) -----------------------------------------
@@ -1535,6 +1608,7 @@ AUTONOMOUS_TOOL_POOL: list[ToolDefinition] = [
             "Parametros: query (str, obrigatorio), company_id (str, recomendado), "
             "limit (int, padrao 20, max 50), filters (dict, opcional)."
         ),
+        output_schema=ToolOutput,
         function=_wrap_rag_search,
     ),
 ]

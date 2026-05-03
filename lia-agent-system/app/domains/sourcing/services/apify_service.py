@@ -11,6 +11,7 @@ import logging
 import os
 
 import httpx
+from lia_config.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +37,7 @@ class ApifyService:
     def __init__(self):
         self.api_key = APIFY_API_KEY
         self.base_url = APIFY_BASE_URL
-        self.timeout = httpx.Timeout(120.0, connect=30.0)
+        self.timeout = httpx.Timeout(settings.HTTP_TIMEOUT_APIFY_SECONDS, connect=settings.HTTP_TIMEOUT_APIFY_CONNECT_SECONDS)  # UC-P2-12
     
     async def run_apify_actor(self, actor_id: str, input_data: dict) -> dict:
         """

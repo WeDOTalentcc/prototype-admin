@@ -95,7 +95,7 @@ class ABTestingService:
     def _compute_p_value(self, z: float) -> float:
         return 1.0 - 0.5 * (1.0 + math.erf(abs(z) / math.sqrt(2.0)))
 
-    N_MIN_PER_VARIANT = 30
+    N_MIN_PER_VARIANT = 100
 
     async def get_test_results(
         self,
@@ -190,7 +190,7 @@ class ABTestingService:
                     below_n_min = n_a < self.N_MIN_PER_VARIANT or n_b < self.N_MIN_PER_VARIANT
                     is_significant = (
                         not below_n_min
-                        and p_value < 0.05
+                        and p_value < 0.01
                         and abs(improvement_pct) > 5
                     )
 
@@ -331,6 +331,60 @@ class ABTestingService:
         except Exception as e:
             logger.error(f"Error creating test: {e}")
             return {"error": str(e), "test_name": test_name}
+
+
+    async def auto_promote_winner(self, test_name: str, db: AsyncSession) -> dict:
+        """
+        UC-P1-27: If test has a statistically significant winner (p<0.01, n>=100 per variant),
+        deactivate all non-winner variants in the DB.
+        Returns: {"promoted": bool, "winner": str | None, "reason": str}
+        """
+        from sqlalchemy import update as _update
+        results = await self.get_test_results(test_name, db)
+
+        if not results or not results.get("winner"):
+            return {"promoted": False, "winner": None, "reason": "no_winner_yet"}
+
+        winner_info = results["winner"]
+        p_value = winner_info.get("p_value", 1.0)
+        sig_results = results.get("statistical_significance") or {}
+        min_n = min(
+            (v.get("n_control", 0) for v in sig_results.values()),
+            default=0,
+        )
+        min_n = min(min_n, min(
+            (v.get("n_variant", 0) for v in sig_results.values()),
+            default=0,
+        ))
+
+        if p_value >= 0.01:
+            return {
+                "promoted": False,
+                "winner": winner_info["variant"],
+                "reason": f"p_value={p_value:.4f} >= 0.01",
+            }
+
+        if min_n < 100:
+            return {
+                "promoted": False,
+                "winner": winner_info["variant"],
+                "reason": f"n={min_n} < 100",
+            }
+
+        # Promote: deactivate losing variants
+        await db.execute(
+            _update(PromptVariant)
+            .where(PromptVariant.test_name == test_name)
+            .where(PromptVariant.variant_name != winner_info["variant"])
+            .values(is_active=False)
+        )
+        await db.commit()
+
+        logger.info(
+            "[AB-TEST] Auto-promoted winner: test=%s winner=%s p=%.4f n=%d",
+            test_name, winner_info["variant"], p_value, min_n,
+        )
+        return {"promoted": True, "winner": winner_info["variant"], "reason": "auto_promoted"}
 
 
 ab_testing_service = ABTestingService()

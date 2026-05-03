@@ -2,7 +2,6 @@
 Pearch AI integration service for candidate search (API v2).
 Based on https://apidocs.pearch.ai/reference/post_v2-search
 """
-import asyncio
 import logging
 import os
 from datetime import datetime
@@ -33,12 +32,13 @@ from lia_models.pearch import (
     SearchConfirmation,
     SearchType,
 )
-from app.shared.resilience.circuit_breaker import PEARCH_CIRCUIT, circuit_breaker
+from app.core.config import settings
+from app.shared.resilience.circuit_breaker import circuit_breaker
 
 logger = logging.getLogger(__name__)
 
 
-async def _pearch_search_fallback(self, request, timeout=120):
+async def _pearch_search_fallback(self, request, timeout=None):
     """Fallback quando circuit breaker do Pearch está aberto.
 
     D10: Em vez de retornar vazio, tenta busca interna via RAG Híbrido
@@ -124,8 +124,18 @@ class PearchService:
     
     BASE_URL = "https://api.pearch.ai/v2"
     
-    def __init__(self):
+    def __init__(self, timeout: float | None = None):
+        """
+        Args:
+            timeout: HTTP timeout in seconds. Defaults to settings.HTTP_TIMEOUT_PEARCH_SECONDS.
+        """
         self.api_key = os.getenv("PEARCH_API_KEY")
+        # UC-P2-12 fix: resolve None to settings default + store as instance attr
+        if timeout is None:
+            from app.core.config import settings as _s
+            timeout = _s.HTTP_TIMEOUT_PEARCH_SECONDS
+        self.timeout = timeout
+
         if not self.api_key:
             logger.warning("PEARCH_API_KEY not set - external candidate search will not work")
 
@@ -149,7 +159,7 @@ class PearchService:
                 "configured": False,
             }
         try:
-            async with httpx.AsyncClient(timeout=self._build_httpx_timeout()) as client:
+            async with httpx.AsyncClient(timeout=settings.HTTP_TIMEOUT_PEARCH_HEALTH_SECONDS) as client:  # UC-P2-12
                 response = await client.get(
                     f"{self.BASE_URL}/health",
                     headers=self._get_headers(),
@@ -173,23 +183,6 @@ class PearchService:
             "content-type": "application/json",
             "Authorization": f"Bearer {self.api_key}"
         }
-
-    @staticmethod
-    def _build_httpx_timeout() -> httpx.Timeout:
-        """
-        Política explícita de timeouts httpx para chamadas Pearch.
-
-        Task #961 — substitui o monólito ``timeout=N`` por uma política
-        granular (connect/read/write/pool) controlada via settings, evitando
-        stalls indefinidos em qualquer fase do ciclo HTTP.
-        """
-        from lia_config.config import settings as _settings
-        return httpx.Timeout(
-            connect=_settings.PEARCH_HTTP_CONNECT_TIMEOUT_SECONDS,
-            read=_settings.PEARCH_HTTP_READ_TIMEOUT_SECONDS,
-            write=_settings.PEARCH_HTTP_WRITE_TIMEOUT_SECONDS,
-            pool=_settings.PEARCH_HTTP_POOL_TIMEOUT_SECONDS,
-        )
     
     def estimate_credits(self, request: PearchSearchRequest) -> CreditEstimate:
         """
@@ -261,7 +254,7 @@ class PearchService:
     async def search_candidates(
         self,
         request: PearchSearchRequest,
-        timeout: int = 120,
+        timeout: float | None = None,  # UC-P2-12: defaults to HTTP_TIMEOUT_PEARCH_SECONDS
         company_id: str | None = None,
     ) -> PearchSearchResponse:
         """
@@ -343,7 +336,7 @@ class PearchService:
             payload["docid_blacklist"] = request.docid_blacklist
         
         try:
-            async with httpx.AsyncClient(timeout=self._build_httpx_timeout()) as client:
+            async with httpx.AsyncClient(timeout=timeout + 10) as client:
                 response = await client.post(
                     f"{self.BASE_URL}/search",
                     json=payload,
@@ -406,42 +399,16 @@ class PearchService:
                 error_message=f"HTTP {e.response.status_code}",
             )
             raise
-        except httpx.TimeoutException as e:
-            logger.error("[PearchService] httpx timeout calling Pearch: %s", e)
+        except httpx.TimeoutException:
+            logger.error(f"Pearch API timeout after {timeout}s")
             await self._track_pearch_consumption(
                 company_id=company_id,
                 operation="search",
                 credits_consumed=0,
                 success=False,
-                result_status="timed_out",
-                error_message=f"httpx.TimeoutException: {type(e).__name__}",
+                result_status="timeout",
+                error_message=f"Timeout after {timeout}s",
             )
-            await self._emit_timeout_audit(company_id, source="httpx", detail=type(e).__name__)
-            try:
-                await PEARCH_CIRCUIT.record_failure()
-            except Exception as _cb_err:
-                logger.warning("[PearchService] PEARCH_CIRCUIT.record_failure failed: %s", _cb_err)
-            raise
-        except asyncio.CancelledError:
-            # Task #961 — quando o caller cancela (deadline asyncio.wait_for
-            # ou cliente desconectou), contamos como falha externa para que
-            # o circuit breaker, audit e consumption reflitam o evento.
-            # Status normalizado para "timed_out" para consistência com
-            # observabilidade — cancelamento por deadline = stall externo.
-            logger.warning("[PearchService] search_candidates cancelled by caller (deadline/disconnect)")
-            await self._track_pearch_consumption(
-                company_id=company_id,
-                operation="search",
-                credits_consumed=0,
-                success=False,
-                result_status="timed_out",
-                error_message="asyncio.CancelledError: caller deadline exceeded",
-            )
-            await self._emit_timeout_audit(company_id, source="cancelled", detail="caller deadline")
-            try:
-                await PEARCH_CIRCUIT.record_failure()
-            except Exception as _cb_err:
-                logger.warning("[PearchService] PEARCH_CIRCUIT.record_failure failed: %s", _cb_err)
             raise
         except Exception as e:
             logger.error(f"Unexpected error calling Pearch API: {e}")
@@ -455,28 +422,6 @@ class PearchService:
             )
             raise
     
-    @staticmethod
-    async def _emit_timeout_audit(company_id: str | None, source: str, detail: str) -> None:
-        """
-        Task #961 — registra evento ``pearch.search.timeout`` no audit log
-        unificado para que governança/observabilidade vejam o stall externo.
-        Best-effort: nunca propaga exceção (audit não pode quebrar a busca).
-        """
-        try:
-            import uuid as _uuid
-            from app.shared.compliance.audit_service import AuditService
-            await AuditService().log_action(
-                trace_id=str(_uuid.uuid4()),
-                company_id=company_id or "unattributed",
-                action_type="pearch.search.timeout",
-                actor="system:pearch_service",
-                target_type="external_api",
-                target_id="pearch",
-                metadata={"source": source, "detail": detail},
-            )
-        except Exception as _e:
-            logger.debug("[PearchService] timeout audit emit failed: %s", _e)
-
     @staticmethod
     async def _track_pearch_consumption(
         company_id: str | None,
@@ -1276,35 +1221,11 @@ class PearchService:
             warning_message = f"Busca Pearch pode consumir até {estimate.total_estimated} créditos"
             
             pearch_start = datetime.now()
-            # Task #961 — deadline canônico vindo de settings. A política
-            # httpx.Timeout dentro de search_candidates já garante connect/
-            # read bounds; este wait_for é o cinto-de-segurança contra retry
-            # loops e cancelamentos pendurados, mantendo a rota previsível.
-            from lia_config.config import settings as _settings
-            _pearch_deadline = _settings.PEARCH_CALL_DEADLINE_SECONDS
             try:
-                # company_id é resolvido dentro de search_candidates via
-                # getattr(request, "company_id", None) — não exige passagem
-                # explícita aqui (HybridSearchRequest não expõe esse campo).
-                pearch_response = await asyncio.wait_for(
-                    self.search_candidates(pearch_request),
-                    timeout=_pearch_deadline,
-                )
+                pearch_response = await self.search_candidates(pearch_request)
                 pearch_candidates = pearch_response.get_candidates()
                 pearch_credits_remaining = pearch_response.credits_remaining
                 pearch_time = (datetime.now() - pearch_start).total_seconds()
-            except asyncio.TimeoutError:
-                logger.error(
-                    "[PearchService] hybrid_search Pearch deadline (%.1fs) exceeded; returning local-only results",
-                    _pearch_deadline,
-                )
-                # Cancellation handler dentro de search_candidates já registra
-                # consumption + circuit failure quando o asyncio cancela a
-                # corrotina. Não duplicamos aqui — apenas retornamos warning.
-                warning_message = (
-                    "Busca externa demorou demais e foi ignorada. "
-                    "Mostrando apenas resultados locais."
-                )
             except Exception as e:
                 logger.error(f"Pearch search failed: {e}")
                 warning_message = f"Busca externa falhou: {str(e)}"

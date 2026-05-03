@@ -94,7 +94,7 @@ async def generate_embedding(text: str) -> list[float] | None:
       3. Retorna None em caso de falha (permite degradação para BM25)
     """
     try:
-        from app.shared.services.embedding_cache_service import embedding_cache  # type: ignore
+        from app.shared.services.embedding_cache_service import embedding_cache  # type: ignore[union-attr]
 
         cached = await embedding_cache.get_embedding(text, "text-embedding-3-small")
         if cached is not None:
@@ -108,7 +108,7 @@ async def generate_embedding(text: str) -> list[float] | None:
 
         vector, _, embed_model = await EmbeddingProviderFactory.embed_with_fallback(text)
         try:
-            from app.shared.services.embedding_cache_service import embedding_cache  # type: ignore
+            from app.shared.services.embedding_cache_service import embedding_cache  # type: ignore[union-attr]
             await embedding_cache.cache_embedding(text, vector, embed_model)
         except Exception:
             pass
@@ -495,10 +495,8 @@ class RAGPipelineService:
         # FAR-5: Auditoria de disparate impact em tempo real nos resultados
         ranking_audit: dict[str, Any] = {}
         try:
-            # UC-P0-13: route through rails_adapter instead of deprecated service.
-            from app.domains.integrations_hub.services.rails_adapter import RailsAdapter as _RA
-            _bias_adapter = _RA()
-            ranking_audit = _bias_adapter.audit_ranking_results(
+            from app.shared.services.bias_audit_service import bias_audit_service
+            ranking_audit = bias_audit_service.audit_ranking_results(
                 results=merged,
                 dimension="gender",
                 top_n=10,

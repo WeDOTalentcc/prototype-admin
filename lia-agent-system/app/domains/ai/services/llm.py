@@ -97,7 +97,7 @@ class LLMService:
                     api_key=settings.AI_INTEGRATIONS_ANTHROPIC_API_KEY,
                     base_url=settings.AI_INTEGRATIONS_ANTHROPIC_BASE_URL,
                     temperature=settings.LLM_DEFAULT_TEMPERATURE,
-                    max_tokens=settings.LLM_MAX_TOKENS,  # type: ignore
+                    max_tokens=settings.LLM_MAX_TOKENS,  # type: ignore[union-attr]
                     timeout=settings.LLM_TIMEOUT_SECONDS,
                     stop=None,
                 )
@@ -109,7 +109,7 @@ class LLMService:
                     model_name=settings.LLM_PRIMARY_MODEL,
                     api_key=settings.ANTHROPIC_API_KEY,
                     temperature=settings.LLM_DEFAULT_TEMPERATURE,
-                    max_tokens=settings.LLM_MAX_TOKENS,  # type: ignore
+                    max_tokens=settings.LLM_MAX_TOKENS,  # type: ignore[union-attr]
                     timeout=settings.LLM_TIMEOUT_SECONDS,
                     stop=None,
                 )

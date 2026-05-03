@@ -9,6 +9,7 @@ import uuid
 from typing import Any
 
 from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolOutput
 from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
@@ -670,6 +671,8 @@ async def _wrap_get_pipeline_prediction_jobs_mgmt(**kwargs: Any) -> dict[str, An
     return result
 TOOL_DEFINITIONS: list[ToolDefinition] = [
     ToolDefinition(
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
         name="validate_job_action_fairness",
         description="Valida acoes de gestao de vagas contra vies discriminatorio usando FairnessGuard. Use ao fechar, pausar ou modificar vagas com justificativas do recrutador.",
         parameters={
@@ -680,6 +683,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["action_description"],
         },
+        output_schema=ToolOutput,
         function=_wrap_validate_job_action_fairness,
     ),
     ToolDefinition(
@@ -693,6 +697,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["company_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_get_recruitment_benchmarks,
     ),
     ToolDefinition(
@@ -706,6 +711,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": [],
         },
+        output_schema=ToolOutput,
         function=_wrap_list_jobs,
     ),
     ToolDefinition(
@@ -718,6 +724,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["job_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_view_job_details,
     ),
     ToolDefinition(
@@ -730,6 +737,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": [],
         },
+        output_schema=ToolOutput,
         function=_wrap_get_portfolio_metrics,
     ),
     ToolDefinition(
@@ -742,6 +750,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["job_ids"],
         },
+        output_schema=ToolOutput,
         function=_wrap_compare_jobs,
     ),
     ToolDefinition(
@@ -754,6 +763,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": [],
         },
+        output_schema=ToolOutput,
         function=_wrap_check_sla,
     ),
     ToolDefinition(
@@ -766,9 +776,11 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": [],
         },
+        output_schema=ToolOutput,
         function=_wrap_analyze_bottlenecks,
     ),
     ToolDefinition(
+        side_effects=["write"],
         name="pause_job",
         description="Pausa uma vaga ativa. Requer motivo e confirmacao do recrutador.",
         parameters={
@@ -779,9 +791,11 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["job_id", "reason"],
         },
+        output_schema=ToolOutput,
         function=_wrap_pause_job,
     ),
     ToolDefinition(
+        side_effects=["write"],
         name="reopen_job",
         description="Reabre uma vaga pausada ou fechada, reativando o pipeline de recrutamento.",
         parameters={
@@ -791,9 +805,12 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["job_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_reopen_job,
     ),
     ToolDefinition(
+        side_effects=["write"],
+        requires_human_review=True,
         name="close_job",
         description="Fecha uma vaga definitivamente. Requer motivo e confirmacao do recrutador.",
         parameters={
@@ -804,9 +821,11 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["job_id", "reason"],
         },
+        output_schema=ToolOutput,
         function=_wrap_close_job,
     ),
     ToolDefinition(
+        side_effects=["write"],
         name="update_priority",
         description="Atualiza o nivel de prioridade de uma vaga (alta, media, baixa).",
         parameters={
@@ -817,6 +836,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["job_id", "priority"],
         },
+        output_schema=ToolOutput,
         function=_wrap_update_priority,
     ),
     ToolDefinition(
@@ -830,9 +850,12 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["report_type"],
         },
+        output_schema=ToolOutput,
         function=_wrap_generate_report,
     ),
     ToolDefinition(
+        affects_candidate_decision=True,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
         name="get_pipeline_prediction",
         description=(
             "Retorna previsão de fechamento de vagas ativas: probabilidade (0–100%), "
@@ -856,6 +879,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             },
             "required": ["company_id"],
         },
+        output_schema=ToolOutput,
         function=_wrap_get_pipeline_prediction_jobs_mgmt,
     ),
 ]
