@@ -9,12 +9,34 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Any
 
-from sqlalchemy import and_, desc, select
+from sqlalchemy import and_, desc, select, text
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
 from app.models.audit_log import AuditLog, DecisionType
 
 logger = logging.getLogger(__name__)
+
+
+async def _bind_tenant(session: AsyncSession, company_id: str | None) -> None:
+    """Set Postgres GUC ``app.company_id`` so RLS policies on audit_logs allow INSERT.
+
+    Migration 068 enables FORCE ROW LEVEL SECURITY on audit_logs with a policy
+    ``WITH CHECK (company_id = app_current_company_id())`` where
+    ``app_current_company_id()`` reads ``current_setting('app.company_id', true)``.
+    Without this binding the INSERT is rejected with InsufficientPrivilegeError
+    even for the table owner. We use ``set_config(..., true)`` (transaction-local)
+    so it doesn't leak across sessions in the connection pool.
+    """
+    if not company_id:
+        return
+    try:
+        await session.execute(
+            text("SELECT set_config('app.company_id', :cid, true)"),
+            {"cid": str(company_id)},
+        )
+    except Exception as exc:
+        logger.warning("[AuditService] failed to set tenant context: %s", exc)
 
 DECISION_TYPE_MAPPING = {
     "cv_screening": DecisionType.SCORE_CANDIDATE,
@@ -115,6 +137,7 @@ class AuditService:
         retention_until = datetime.utcnow() + timedelta(days=retention_days)
         
         async with AsyncSessionLocal() as session:
+            await _bind_tenant(session, company_id)
             audit_log = AuditLog(
                 id=str(uuid.uuid4()),
                 company_id=company_id,
@@ -268,6 +291,7 @@ class AuditService:
         retention_until = datetime.utcnow() + timedelta(days=1825)  # 5 anos
 
         async with AsyncSessionLocal() as session:
+            await _bind_tenant(session, company_id)
             audit_log = AuditLog(
                 id=str(uuid.uuid4()),
                 company_id=company_id,
@@ -475,6 +499,7 @@ class AuditService:
         """
         try:
             async with AsyncSessionLocal() as session:
+                await _bind_tenant(session, company_id)
                 log = AuditLog(
                     id=str(uuid.uuid4()),
                     company_id=company_id,
@@ -511,6 +536,7 @@ class AuditService:
         """
         try:
             async with AsyncSessionLocal() as session:
+                await _bind_tenant(session, company_id)
                 log = AuditLog(
                     id=str(uuid.uuid4()),
                     company_id=company_id,
@@ -543,6 +569,7 @@ class AuditService:
         """Log an error with context for debugging."""
         try:
             async with AsyncSessionLocal() as session:
+                await _bind_tenant(session, company_id)
                 log = AuditLog(
                     id=str(uuid.uuid4()),
                     company_id=company_id,

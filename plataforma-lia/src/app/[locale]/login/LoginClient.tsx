@@ -206,7 +206,10 @@ export default function LoginPage() {
                     id="login-email"
                     type="email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value)
+                      if (error) setError("")
+                    }}
                     className="w-full pl-9 pr-3 py-2.5 text-sm border border-lia-border-subtle dark:border-lia-border-default rounded-xl bg-white dark:bg-lia-input-bg text-lia-text-primary dark:text-lia-input-text placeholder:text-lia-text-tertiary dark:placeholder:text-lia-input-placeholder focus:outline-none focus:ring-2 focus:ring-lia-text-primary/20 dark:focus:ring-lia-input-focus-ring focus:border-lia-border-strong dark:focus:border-lia-input-border-focus transition-colors"
                     placeholder={t("emailPlaceholder")}
                     required
@@ -252,7 +255,10 @@ export default function LoginPage() {
                     id="login-password"
                     type={showPassword ? "text" : "password"}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value)
+                      if (error) setError("")
+                    }}
                     className="w-full pl-9 pr-10 py-2.5 text-sm border border-lia-border-subtle dark:border-lia-border-default rounded-xl bg-white dark:bg-lia-input-bg text-lia-text-primary dark:text-lia-input-text placeholder:text-lia-text-tertiary dark:placeholder:text-lia-input-placeholder focus:outline-none focus:ring-2 focus:ring-lia-text-primary/20 dark:focus:ring-lia-input-focus-ring focus:border-lia-border-strong dark:focus:border-lia-input-border-focus transition-colors"
                     placeholder={t("passwordPlaceholder")}
                     required
