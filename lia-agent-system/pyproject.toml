@@ -5,9 +5,10 @@ description = "LIA Agent System — WeDOTalent backend"
 requires-python = ">=3.11"
 dependencies = [
     # FastAPI & Web
-    "fastapi==0.115.5",
+    "fastapi>=0.115.5",
+    "starlette>=0.42.0",
     "uvicorn[standard]==0.32.1",
-    "python-multipart==0.0.19",
+    "python-multipart==0.0.20",
     "websockets==13.1",
     # Database
     "sqlalchemy==2.0.36",
@@ -31,7 +32,7 @@ dependencies = [
     "pydantic-settings==2.6.1",
     # HTTP Clients
     "httpx==0.28.1",
-    "aiohttp==3.11.10",
+    "aiohttp==3.13.4",
     # Vector Search
     "pgvector==0.3.6",
     # Utilities
@@ -44,8 +45,8 @@ dependencies = [
     "botbuilder-core==4.17.0",
     "botbuilder-schema==4.17.0",
     "msrest==0.7.1",
-    "pyjwt[crypto]==2.10.1",
-    "cryptography==44.0.0",
+    "pyjwt[crypto]==2.12.1",
+    "cryptography==44.0.3",
     # Communication
     "twilio==9.4.0",
     "resend==2.19.0",
@@ -58,7 +59,7 @@ dependencies = [
     "openpyxl==3.1.5",
     # Web Scraping
     "beautifulsoup4==4.12.3",
-    "lxml==5.3.0",
+    "lxml==5.4.0",
     # Calendar
     "icalendar==6.0.1",
     "pytz==2024.2",
