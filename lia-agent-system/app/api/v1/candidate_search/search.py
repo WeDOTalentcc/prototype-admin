@@ -172,11 +172,13 @@ async def search_candidates(
                 "returning degraded response (query=%s)",
                 _route_deadline, request.query,
             )
-            # Contabiliza o cancelamento no circuit breaker do Pearch quando
-            # ele estava habilitado para esta busca: o stall externo é o
-            # culpado mais provável. Cancellation interna em search_candidates
-            # já cuida do consumption/audit; aqui garantimos circuit failure.
-            if request.search_pearch:
+            # Contabiliza o cancelamento no circuit breaker do Pearch SOMENTE
+            # quando Pearch foi efetivamente acionado nesta busca. Se o
+            # circuito já estava aberto e caímos no fallback Apify
+            # (`_skip_pearch=True`), Pearch não foi tocado — penalizá-lo
+            # geraria falso positivo (false-open) no breaker.
+            _pearch_was_attempted = request.search_pearch and not _skip_pearch
+            if _pearch_was_attempted:
                 try:
                     await PEARCH_CIRCUIT.record_failure()
                 except Exception as _cb_err:
