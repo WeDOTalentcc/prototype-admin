@@ -11,6 +11,8 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.dependencies import require_admin
+from app.auth.models import User
 from app.core.database import get_db
 from app.domains.admin.repositories.admin_template_repository import (
     AdminTemplateRepository,
@@ -93,6 +95,7 @@ async def list_system_templates(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
+    _admin: User = Depends(require_admin),
 ):
     """List all system templates (admin only)."""
     try:
@@ -112,6 +115,7 @@ async def list_system_templates(
 async def create_system_template(
     template_data: SystemTemplateCreate,
     db: AsyncSession = Depends(get_db),
+    _admin: User = Depends(require_admin),
 ):
     """Create a new system template (admin only)."""
     try:
@@ -144,7 +148,11 @@ async def create_system_template(
 
 
 @router.get("/{template_id}", response_model=SystemTemplateResponse)
-async def get_system_template(template_id: str, db: AsyncSession = Depends(get_db)):
+async def get_system_template(
+    template_id: str,
+    db: AsyncSession = Depends(get_db),
+    _admin: User = Depends(require_admin),
+):
     """Get a specific system template by ID (admin only)."""
     try:
         repo = AdminTemplateRepository(db)
@@ -166,6 +174,7 @@ async def update_system_template(
     template_id: str,
     template_data: SystemTemplateUpdate,
     db: AsyncSession = Depends(get_db),
+    _admin: User = Depends(require_admin),
 ):
     """Update an existing system template (admin only). Increments version."""
     try:
@@ -201,6 +210,7 @@ async def delete_system_template(
     template_id: str,
     hard_delete: bool = Query(False),
     db: AsyncSession = Depends(get_db),
+    _admin: User = Depends(require_admin),
 ):
     """Delete a system template (admin only). Soft delete by default."""
     try:
@@ -226,6 +236,7 @@ async def publish_template_to_companies(
     template_id: str,
     company_ids: list[str] | None = Query(None),
     db: AsyncSession = Depends(get_db),
+    _admin: User = Depends(require_admin),
 ):
     """Publish a system template to all or specific companies (admin only)."""
     try:

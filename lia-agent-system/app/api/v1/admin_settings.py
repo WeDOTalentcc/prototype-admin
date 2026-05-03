@@ -7,6 +7,8 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
+from app.auth.dependencies import require_admin
+from app.auth.models import User
 from app.models.admin_settings import (
     AVAILABLE_PERMISSIONS,
     NOTIFICATION_EVENT_TYPES,
@@ -28,6 +30,26 @@ def verify_ownership(resource, company_id: uuid.UUID, resource_name: str = "Reso
         raise HTTPException(status_code=404, detail=f"{resource_name} not found")
     if resource.company_id != company_id:
         raise HTTPException(status_code=403, detail="Access denied")
+
+
+def _check_admin_tenant_access(admin: User, company_id: str) -> None:
+    """Validate company_id format and audit cross-tenant admin access.
+
+    Admins may legitimately manage any tenant, but every cross-tenant
+    operation is logged so that lateral movement is detectable in audit trails.
+    Non-admin access is blocked upstream by require_admin.
+    """
+    try:
+        uuid.UUID(company_id)
+    except (ValueError, AttributeError):
+        raise HTTPException(status_code=400, detail="Invalid company_id format")
+
+    if admin.company_id and str(admin.company_id) != str(company_id):
+        logger.warning(
+            "[AUDIT:CROSS-TENANT] Admin accessing foreign tenant — "
+            "admin_id=%s admin_company=%s target_company=%s",
+            admin.id, admin.company_id, company_id,
+        )
 
 
 class RoleCreate(BaseModel):
@@ -93,8 +115,10 @@ async def list_roles(
     company_id: str = Query(..., description="Company ID"),
     include_inactive: bool = Query(False, description="Include inactive roles"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
+    admin: User = Depends(require_admin),
 ):
     """List all roles for a company."""
+    _check_admin_tenant_access(admin, company_id)
     try:
         roles = await repo.list_roles(
             company_id=uuid.UUID(company_id),
@@ -114,8 +138,10 @@ async def create_role(
     data: RoleCreate,
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
+    admin: User = Depends(require_admin),
 ):
     """Create a new role."""
+    _check_admin_tenant_access(admin, company_id)
     try:
         role = await repo.create_role(
             company_id=uuid.UUID(company_id),
@@ -139,8 +165,10 @@ async def update_role(
     data: RoleUpdate,
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
+    admin: User = Depends(require_admin),
 ):
     """Update a role."""
+    _check_admin_tenant_access(admin, company_id)
     try:
         role = await repo.get_role_by_id(uuid.UUID(role_id))
 
@@ -172,8 +200,10 @@ async def delete_role(
     role_id: str,
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
+    admin: User = Depends(require_admin),
 ):
     """Delete a role (soft delete by setting is_active=False)."""
+    _check_admin_tenant_access(admin, company_id)
     try:
         role = await repo.get_role_by_id(uuid.UUID(role_id))
 
@@ -198,8 +228,10 @@ async def delete_role(
 async def initialize_default_roles(
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
+    admin: User = Depends(require_admin),
 ):
     """Initialize default roles for a company."""
+    _check_admin_tenant_access(admin, company_id)
     try:
         created_roles = await repo.initialize_default_roles(uuid.UUID(company_id))
         return {
@@ -217,8 +249,10 @@ async def list_user_roles(
     company_id: str = Query(..., description="Company ID"),
     user_id: str | None = Query(None, description="Filter by user ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
+    admin: User = Depends(require_admin),
 ):
     """List user role assignments."""
+    _check_admin_tenant_access(admin, company_id)
     try:
         uid = uuid.UUID(user_id) if user_id else None
         assignments = await repo.list_user_roles(
@@ -239,8 +273,10 @@ async def assign_role_to_user(
     data: UserRoleAssign,
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
+    admin: User = Depends(require_admin),
 ):
     """Assign a role to a user."""
+    _check_admin_tenant_access(admin, company_id)
     try:
         company_uuid = uuid.UUID(company_id)
         user_uuid = uuid.UUID(data.user_id)
@@ -280,8 +316,10 @@ async def remove_role_assignment(
     assignment_id: str,
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
+    admin: User = Depends(require_admin),
 ):
     """Remove a role assignment."""
+    _check_admin_tenant_access(admin, company_id)
     try:
         assignment = await repo.get_user_role_by_id(uuid.UUID(assignment_id))
 
@@ -304,8 +342,10 @@ async def list_notification_policies(
     company_id: str = Query(..., description="Company ID"),
     event_type: str | None = Query(None, description="Filter by event type"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
+    admin: User = Depends(require_admin),
 ):
     """List notification policies."""
+    _check_admin_tenant_access(admin, company_id)
     try:
         policies = await repo.list_notification_policies(
             company_id=uuid.UUID(company_id),
@@ -326,8 +366,10 @@ async def create_notification_policy(
     data: NotificationPolicyCreate,
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
+    admin: User = Depends(require_admin),
 ):
     """Create a notification policy."""
+    _check_admin_tenant_access(admin, company_id)
     try:
         policy = await repo.create_notification_policy(
             company_id=uuid.UUID(company_id),
@@ -355,8 +397,10 @@ async def update_notification_policy(
     data: NotificationPolicyUpdate,
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
+    admin: User = Depends(require_admin),
 ):
     """Update a notification policy."""
+    _check_admin_tenant_access(admin, company_id)
     try:
         policy = await repo.get_notification_policy_by_id(uuid.UUID(policy_id))
 
@@ -389,8 +433,10 @@ async def delete_notification_policy(
     policy_id: str,
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
+    admin: User = Depends(require_admin),
 ):
     """Delete a notification policy."""
+    _check_admin_tenant_access(admin, company_id)
     try:
         policy = await repo.get_notification_policy_by_id(uuid.UUID(policy_id))
 
@@ -412,8 +458,10 @@ async def delete_notification_policy(
 async def get_security_settings(
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
+    admin: User = Depends(require_admin),
 ):
     """Get security settings for a company."""
+    _check_admin_tenant_access(admin, company_id)
     try:
         settings = await repo.get_or_create_security_settings(uuid.UUID(company_id))
         return {
@@ -430,8 +478,10 @@ async def update_security_settings(
     data: SecuritySettingUpdate,
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
+    admin: User = Depends(require_admin),
 ):
     """Update security settings."""
+    _check_admin_tenant_access(admin, company_id)
     try:
         settings = await repo.get_or_create_security_settings(uuid.UUID(company_id))
         settings = await repo.update_security_settings(
@@ -471,8 +521,10 @@ async def get_audit_logs(
     page: int = Query(1, ge=1),
     page_size: int = Query(50, ge=1, le=100),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
+    admin: User = Depends(require_admin),
 ):
     """Get audit logs with filtering and pagination."""
+    _check_admin_tenant_access(admin, company_id)
     try:
         from datetime import datetime
 
@@ -506,7 +558,7 @@ async def get_audit_logs(
 
 
 @router.get("/permissions-matrix", response_model=None)
-async def get_permissions_matrix():
+async def get_permissions_matrix(_admin: User = Depends(require_admin)):
     """Get the available permissions matrix."""
     return {
         "success": True,
@@ -518,7 +570,7 @@ async def get_permissions_matrix():
 
 
 @router.get("/notification-event-types", response_model=None)
-async def get_notification_event_types():
+async def get_notification_event_types(_admin: User = Depends(require_admin)):
     """Get available notification event types."""
     return {
         "success": True,

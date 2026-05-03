@@ -11,7 +11,8 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from app.core.auth import get_current_user
+from app.auth.dependencies import require_admin
+from app.auth.models import User
 from app.shared.services.prompt_version_registry import prompt_version_registry
 
 router = APIRouter(prefix="/admin/prompts", tags=["admin-prompts"])
@@ -58,7 +59,7 @@ def _to_response(entry: dict) -> PromptVersionResponse:
 
 @router.get("/versions", response_model=PromptVersionListResponse)
 async def list_all_versions(
-    current_user=Depends(get_current_user),
+    _admin: User = Depends(require_admin),
 ):
     """
     Lista todos os prompts registrados no PromptVersionRegistry.
@@ -75,7 +76,7 @@ async def list_all_versions(
 @router.get("/versions/{name}", response_model=PromptVersionListResponse)
 async def list_versions_by_name(
     name: str,
-    current_user=Depends(get_current_user),
+    _admin: User = Depends(require_admin),
 ):
     """
     Lista todas as versões registradas para um nome de prompt específico.

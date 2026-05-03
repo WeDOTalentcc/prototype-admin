@@ -5,6 +5,7 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from app.auth.dependencies import require_admin
 from app.domains.admin.dependencies import get_admin_repo
 from app.domains.admin.repositories.admin_repository import AdminRepository
 from app.models.alert import AlertSeverity, AlertType
@@ -220,7 +221,10 @@ DEFAULT_ALERT_RULES = [
 
 
 @router.post("/seed-data", response_model=None)
-async def seed_database(repo: AdminRepository = Depends(get_admin_repo)):
+async def seed_database(
+    repo: AdminRepository = Depends(get_admin_repo),
+    _admin=Depends(require_admin),
+):
     """
     Seed the database with default Task Templates and Alert Rules.
 
@@ -255,7 +259,10 @@ async def seed_database(repo: AdminRepository = Depends(get_admin_repo)):
 
 
 @router.post("/seed-data/task-templates", response_model=None)
-async def seed_task_templates_only(repo: AdminRepository = Depends(get_admin_repo)):
+async def seed_task_templates_only(
+    repo: AdminRepository = Depends(get_admin_repo),
+    _admin=Depends(require_admin),
+):
     """
     Seed only Task Templates.
 
@@ -280,7 +287,10 @@ async def seed_task_templates_only(repo: AdminRepository = Depends(get_admin_rep
 
 
 @router.post("/seed-data/alert-rules", response_model=None)
-async def seed_alert_rules_only(repo: AdminRepository = Depends(get_admin_repo)):
+async def seed_alert_rules_only(
+    repo: AdminRepository = Depends(get_admin_repo),
+    _admin=Depends(require_admin),
+):
     """
     Seed only Alert Rules.
 
@@ -305,7 +315,10 @@ async def seed_alert_rules_only(repo: AdminRepository = Depends(get_admin_repo))
 
 
 @router.post("/seed-data/demo", response_model=None)
-async def seed_demo_data_endpoint(repo: AdminRepository = Depends(get_admin_repo)):
+async def seed_demo_data_endpoint(
+    repo: AdminRepository = Depends(get_admin_repo),
+    _admin=Depends(require_admin),
+):
     """
     Seed demo data for vagas (jobs) and candidatos (candidates).
 
@@ -349,7 +362,10 @@ async def seed_demo_data_endpoint(repo: AdminRepository = Depends(get_admin_repo
 
 
 @router.delete("/seed-data/demo", response_model=None)
-async def clear_demo_data_endpoint(repo: AdminRepository = Depends(get_admin_repo)):
+async def clear_demo_data_endpoint(
+    repo: AdminRepository = Depends(get_admin_repo),
+    _admin=Depends(require_admin),
+):
     """
     Clear all demo data from the database.
 

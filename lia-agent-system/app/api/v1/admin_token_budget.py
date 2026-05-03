@@ -11,7 +11,8 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
-from app.core.auth import get_current_user
+from app.auth.dependencies import require_admin
+from app.auth.models import User
 from app.domains.credits.services.token_budget_service import (
     check_budget,
     get_budget_status,
@@ -19,6 +20,23 @@ from app.domains.credits.services.token_budget_service import (
 
 router = APIRouter(prefix="/admin/token-budget", tags=["admin-token-budget"])
 logger = logging.getLogger(__name__)
+
+
+def _check_admin_tenant_access(admin: User, company_id: str) -> None:
+    """Validate company_id format and audit cross-tenant admin token budget access."""
+    import uuid as _uuid
+    try:
+        _uuid.UUID(company_id)
+    except (ValueError, AttributeError):
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="Invalid company_id format")
+
+    if admin.company_id and str(admin.company_id) != str(company_id):
+        logger.warning(
+            "[AUDIT:CROSS-TENANT] Admin token budget access to foreign tenant — "
+            "admin_id=%s admin_company=%s target_company=%s",
+            admin.id, admin.company_id, company_id,
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -62,13 +80,14 @@ async def get_company_token_budget(
         default=None,
         description="Código do plano da assinatura ativa. Se omitido, usa fallback (starter/10k).",
     ),
-    current_user=Depends(get_current_user),
+    admin: User = Depends(require_admin),
 ):
     """
     Retorna status completo do budget de tokens LLM para a empresa.
 
     Usado no dashboard admin para monitorar consumo por tenant.
     """
+    _check_admin_tenant_access(admin, company_id)
     try:
         status = await get_budget_status(company_id, plan_code)
         return TokenBudgetStatusResponse(**status)
@@ -89,8 +108,9 @@ async def get_company_token_budget(
 async def check_company_budget(
     company_id: str,
     plan_code: str | None = Query(default=None),
-    current_user=Depends(get_current_user),
+    admin: User = Depends(require_admin),
 ):
+    _check_admin_tenant_access(admin, company_id)
     try:
         allowed, used_today, daily_limit = await check_budget(company_id, plan_code)
         return BudgetCheckResponse(

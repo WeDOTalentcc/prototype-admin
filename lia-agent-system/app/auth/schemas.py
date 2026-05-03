@@ -20,7 +20,6 @@ class UserCreate(BaseModel):
     email: EmailStr
     password: str = Field(..., min_length=8, description="Password must be at least 8 characters")
     name: str = Field(..., min_length=2, max_length=255)
-    role: UserRole = UserRole.viewer
 
 
 class UserLogin(BaseModel):

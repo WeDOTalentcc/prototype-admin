@@ -19,6 +19,9 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.dependencies import require_admin
+from app.auth.models import User
+
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
@@ -107,7 +110,10 @@ async def hubspot_webhook(request: Request):
 # ─── POST /automation/onboard-client ─────────────────────────────────────────
 
 @router.post("/automation/onboard-client", tags=["automation"])
-async def onboard_client_manual(data: OnboardClientRequest):
+async def onboard_client_manual(
+    data: OnboardClientRequest,
+    _admin: User = Depends(require_admin),
+):
     """
     Manually trigger the full client onboarding flow:
     1. Create ClientAccount
@@ -159,7 +165,7 @@ async def onboard_client_manual(data: OnboardClientRequest):
 # ─── GET /automation/onboarding-status ───────────────────────────────────────
 
 @router.get("/automation/onboarding-status", tags=["automation"])
-async def get_onboarding_status():
+async def get_onboarding_status(_admin: User = Depends(require_admin)):
     """
     Consolidated onboarding status for all clients.
     Shows setup progress across 5 sections per client.
@@ -185,7 +191,7 @@ async def get_onboarding_status():
 # ─── GET /admin/integrations/health ──────────────────────────────────────────
 
 @router.get("/admin/integrations/health", tags=["admin"])
-async def get_integrations_health():
+async def get_integrations_health(_admin: User = Depends(require_admin)):
     """
     Check health of all external integrations.
     Returns status for each configured service.
@@ -235,7 +241,7 @@ async def get_integrations_health():
 # ─── GET /admin/version ──────────────────────────────────────────────────────
 
 @router.get("/admin/version", tags=["admin"])
-async def get_system_version():
+async def get_system_version(_admin: User = Depends(require_admin)):
     """Return system version, commit, and environment info."""
     import subprocess
     

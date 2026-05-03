@@ -70,8 +70,8 @@ async def register(
         "email": user_data.email,
         "password_hash": get_password_hash(user_data.password),
         "name": user_data.name,
-        "role": UserRole(user_data.role.value),
-        "is_active": True,
+        "role": UserRole.viewer,
+        "is_active": False,
         "created_at": datetime.utcnow(),
         "updated_at": datetime.utcnow(),
     })
