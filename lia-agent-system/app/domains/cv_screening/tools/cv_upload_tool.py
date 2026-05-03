@@ -93,17 +93,32 @@ async def parse_and_create_candidate(
         from app.models.candidate import Candidate
 
         async with AsyncSessionLocal() as db:
-            # Duplicate check — skip creation if email already exists
+            # Duplicate check — scope to this company's candidate pool only.
+            # We never reveal whether an email exists in another company's records.
             if parsed.email:
-                dup = await db.execute(
-                    select(Candidate).where(
-                        func.lower(Candidate.email) == parsed.email.lower()
-                    )
+                from app.models.candidate import VacancyCandidate
+                from app.models.job_vacancy import JobVacancy
+                from sqlalchemy import and_
+
+                dup_query = select(Candidate).where(
+                    func.lower(Candidate.email) == parsed.email.lower()
                 )
+                if company_id:
+                    dup_query = dup_query.where(
+                        Candidate.id.in_(
+                            select(VacancyCandidate.candidate_id)
+                            .join(JobVacancy, JobVacancy.id == VacancyCandidate.vacancy_id)
+                            .where(JobVacancy.company_id == company_id)
+                        )
+                    )
+                else:
+                    dup_query = dup_query.where(False)
+
+                dup = await db.execute(dup_query)
                 existing = dup.scalar_one_or_none()
                 if existing:
                     cand_id = str(existing.id)
-                    logger.info(f"Duplicate candidate found by email: {cand_id}")
+                    logger.info(f"Duplicate candidate found by email within company scope: {cand_id}")
                     return {
                         "success": True,
                         "duplicate": True,
@@ -245,6 +260,32 @@ async def add_to_vacancy(
                     "message": f"Candidato não encontrado: {candidate_id}",
                     "error": "candidate_not_found",
                 }
+
+            # Tenant-isolation: reject if the candidate is already linked to
+            # a DIFFERENT company's vacancies. A newly-created candidate (with
+            # no existing vacancy links) is always allowed through.
+            if company_id:
+                cross_tenant_check = await db.execute(
+                    select(VacancyCandidate)
+                    .join(JobVacancy, JobVacancy.id == VacancyCandidate.vacancy_id)
+                    .where(
+                        and_(
+                            VacancyCandidate.candidate_id == UUID(candidate_id),
+                            JobVacancy.company_id != company_id,
+                        )
+                    )
+                    .limit(1)
+                )
+                if cross_tenant_check.scalar_one_or_none() is not None:
+                    logger.warning(
+                        "Tenant isolation: add_to_vacancy rejected — candidate %s belongs to another company",
+                        candidate_id[:8],
+                    )
+                    return {
+                        "success": False,
+                        "message": "Candidato não acessível para esta empresa.",
+                        "error": "candidate_not_accessible",
+                    }
 
             # Resolve vacancy
             job = None
