@@ -17,6 +17,9 @@ module V1
       end
 
       def create
+        return render json: { errors: [ "question_id is required" ] }, status: :unprocessable_entity if answer_params[:question_id].blank?
+        return render json: { errors: [ "Invalid question for this evaluation" ] }, status: :unprocessable_entity unless valid_evaluation_question?(answer_params[:question_id])
+
         source = answer_params[:source].presence || Answer::SOURCE_INTERNAL
         source = Answer::SOURCE_INTERNAL unless Answer::SOURCES.include?(source)
 
@@ -74,8 +77,6 @@ module V1
           :detail,
           :time_taken,
           :represent_field,
-          :analysis_data,
-          :final_skill_score,
           :reference_id,
           :reference_type,
           :audio_file,
@@ -85,6 +86,13 @@ module V1
           comments_response: {},
           choices: []
         )
+      end
+
+      def valid_evaluation_question?(question_id)
+        evaluation = @evaluation_candidate.evaluation
+        return false if evaluation.blank?
+
+        evaluation.questions.exists?(id: question_id)
       end
 
       def process_answer_scoring(answer)

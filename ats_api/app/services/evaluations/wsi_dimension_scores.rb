@@ -55,7 +55,7 @@ module Evaluations
     end
 
     def scored_answers
-      @evaluation_candidate.answers.includes(:question).where.not(final_skill_score: nil)
+      @evaluation_candidate.answers.includes(:question).where.not(final_skill_score: nil).joins(:question)
     end
 
     def compute_wsi_technical(answers)

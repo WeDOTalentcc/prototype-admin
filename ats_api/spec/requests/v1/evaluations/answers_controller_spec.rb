@@ -101,6 +101,41 @@ RSpec.describe V1::Evaluations::AnswersController, type: :request do
       expect(attrs['comments_response']['score'].to_f).to eq(4.0)
     end
 
+    it 'rejects create when question_id is missing' do
+      post base_path, params: { answer: { title: 'No question' } }.to_json, headers: { 'Content-Type' => 'application/json' }
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(JSON.parse(response.body)['errors']).to include("question_id is required")
+    end
+
+    it 'rejects create when question_id does not belong to the evaluation' do
+      other_evaluation = create(:evaluation, account: account, user: user, job: job)
+      foreign_question = create(:question, evaluation: other_evaluation)
+      post base_path, params: { answer: { title: 'X', question_id: foreign_question.id } }.to_json, headers: { 'Content-Type' => 'application/json' }
+      expect(response).to have_http_status(:unprocessable_entity)
+      expect(JSON.parse(response.body)['errors']).to include("Invalid question for this evaluation")
+    end
+
+    it 'ignores client-supplied final_skill_score and analysis_data' do
+      question = create(:question, evaluation: evaluation)
+      allow(Evaluations::ScoreCalculatorService).to receive(:call)
+      allow(Evaluations::EvaluationAggregateService).to receive(:call)
+
+      post base_path, params: {
+        answer: {
+          title: 'Forged',
+          question_id: question.id,
+          final_skill_score: 10,
+          analysis_data: { "forged" => true }
+        }
+      }.to_json, headers: { 'Content-Type' => 'application/json' }
+
+      expect(response).to have_http_status(:created)
+      id = JSON.parse(response.body)['data']['id']
+      answer = Answer.find(id)
+      expect(answer.final_skill_score).to be_nil
+      expect(answer.analysis_data).to be_nil
+    end
+
     it 'persists self_declaration_score and eligibility for WSI' do
       technical_q = create(:question, evaluation: evaluation, competence_type: "technical")
       elig_q = create(:question, evaluation: evaluation, competence_type: "eligibility")
