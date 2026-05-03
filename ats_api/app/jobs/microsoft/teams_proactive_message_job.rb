@@ -29,7 +29,7 @@ module Microsoft
 
         register_subscription(lia_user, recruiter, account, response[:chat_id])
 
-        Rails.logger.info "[TeamsProactiveMessage] ✅ Sent to #{recruiter.email} chat=#{response[:chat_id]}"
+        Rails.logger.info "[TeamsProactiveMessage] ✅ Sent to recruiter_id=#{recruiter.id} chat=#{response[:chat_id]}"
       end
     rescue MicrosoftService::Teams::Error => e
       Rails.logger.error "[TeamsProactiveMessage] Teams error for recruiter_id=#{recruiter_id}: #{e.code} - #{e.message}"

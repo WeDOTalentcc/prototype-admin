@@ -100,13 +100,13 @@ module MicrosoftService
 
     def process_recruiter(lia_user, recruiter, account, results)
       if already_has_chat?(lia_user, recruiter)
-        Rails.logger.info "[TeamsProactiveOutreach] Chat already exists for #{recruiter.email} — skipping"
+        Rails.logger.info "[TeamsProactiveOutreach] Chat already exists for recruiter_id=#{recruiter.id} — skipping"
         results[:skipped] += 1
         return
       end
 
       if @dry_run
-        Rails.logger.info "[TeamsProactiveOutreach] [DRY RUN] Would send to #{recruiter.email}"
+        Rails.logger.info "[TeamsProactiveOutreach] [DRY RUN] Would send to recruiter_id=#{recruiter.id}"
         results[:sent] += 1
         return
       end
@@ -119,9 +119,9 @@ module MicrosoftService
       )
       results[:sent] += 1
     rescue StandardError => e
-      Rails.logger.error "[TeamsProactiveOutreach] Failed to enqueue for #{recruiter.email}: #{e.message}"
+      Rails.logger.error "[TeamsProactiveOutreach] Failed to enqueue for recruiter_id=#{recruiter.id}: #{e.class}"
       results[:failed] += 1
-      results[:errors] << { email: recruiter.email, error: e.message }
+      results[:errors] << { recruiter_id: recruiter.id, error: e.class.to_s }
     end
 
     def already_has_chat?(lia_user, recruiter)

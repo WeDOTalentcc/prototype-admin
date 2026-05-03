@@ -68,7 +68,7 @@ module Candidates
       JSON.parse(json_text, symbolize_names: true)
     rescue JSON::ParserError => e
       log_json_parse_error(e, text_response)
-      raise "Falha ao parsear JSON do Gemini: #{e.message}"
+      raise "Falha ao parsear JSON do Gemini"
     end
 
     def parse_openai_success(response)
@@ -121,13 +121,13 @@ module Candidates
     end
 
     def error_response(error)
-      Rails.logger.error "[ResumeParserService] Error: #{error.message}"
-      { success: false, error: error.message }
+      Rails.logger.error "[ResumeParserService] Error: #{error.class}"
+      { success: false, error: "Falha ao processar currículo" }
     end
 
     def log_json_parse_error(error, text_response)
-      Rails.logger.error "[ResumeParserService] JSON parse error: #{error.message}"
-      Rails.logger.error "[ResumeParserService] Response text: #{text_response}"
+      Rails.logger.error "[ResumeParserService] JSON parse error (#{error.class})"
+      Rails.logger.error "[ResumeParserService] Response text length: #{text_response&.length || 0} chars"
     end
 
     def system_message

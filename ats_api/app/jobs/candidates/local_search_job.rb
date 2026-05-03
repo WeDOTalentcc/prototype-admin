@@ -542,7 +542,7 @@ module Candidates
 
       apply_filters!(params, filter) if filter.present?
 
-      Rails.logger.info "[LocalSearchJob] Searchkick params: search=#{search.inspect}, where=#{params[:where].inspect}"
+      Rails.logger.info "[LocalSearchJob] Searchkick params: search_present=#{search.present?}, filter_keys=#{params[:where]&.keys}"
 
       results = Candidate.search(search, **params)
 
@@ -649,7 +649,7 @@ module Candidates
 
       strategies.each do |strategy|
         Rails.logger.info "[LocalSearchJob] 🔄 Trying fallback: #{strategy[:description]}"
-        Rails.logger.info "[LocalSearchJob]    search='#{strategy[:search]}', where=#{strategy[:where]}"
+        Rails.logger.info "[LocalSearchJob]    strategy filter_keys=#{strategy[:where]&.keys}"
 
         results = fetch_page(strategy[:search], strategy[:where], filter, order, 1, account_id)
 
@@ -665,7 +665,7 @@ module Candidates
       llm_suggestion = ask_llm_for_alternative(original_search, where)
 
       if llm_suggestion
-        Rails.logger.info "[LocalSearchJob] 💡 LLM suggested: search='#{llm_suggestion[:search]}', where=#{llm_suggestion[:where]}"
+        Rails.logger.info "[LocalSearchJob] 💡 LLM suggested alternative: filter_keys=#{llm_suggestion[:where]&.keys}"
         results = fetch_page(llm_suggestion[:search], llm_suggestion[:where], filter, order, 1, account_id)
 
         if results[:total_count] > 0

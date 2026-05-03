@@ -140,11 +140,11 @@ module SourcedProfiles
 
       Rails.logger.info "✅ [ConvertToCandidateService] Candidate created successfully!"
       Rails.logger.info "   Candidate ID: #{candidate.id}"
-      Rails.logger.info "   📧 email (saved to DB): #{candidate.email.inspect}"
-      Rails.logger.info "   📱 mobile_phone (saved to DB): #{candidate.mobile_phone.inspect}"
-      Rails.logger.info "   🔗 linkedin (saved to DB): #{candidate.linkedin.inspect}"
-      Rails.logger.info "   📍 current_company (saved to DB): #{candidate.current_company.inspect}"
-      Rails.logger.info "   📍 role_name (saved to DB): #{candidate.role_name.inspect}"
+      Rails.logger.info "   email present: #{candidate.email.present?}"
+      Rails.logger.info "   mobile_phone present: #{candidate.mobile_phone.present?}"
+      Rails.logger.info "   linkedin present: #{candidate.linkedin.present?}"
+      Rails.logger.info "   current_company present: #{candidate.current_company.present?}"
+      Rails.logger.info "   role_name present: #{candidate.role_name.present?}"
       Rails.logger.info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
       sourced_profile.update!(candidate: candidate)

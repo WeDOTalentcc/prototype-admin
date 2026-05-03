@@ -57,7 +57,7 @@ module Microsoft
     end
 
     def refresh_user_token(user)
-      Rails.logger.info "🔄 [TokenRefreshJob] Refreshing token for user_id=#{user.id} email=#{user.email}"
+      Rails.logger.info "🔄 [TokenRefreshJob] Refreshing token for user_id=#{user.id}"
 
       MicrosoftService::Api.refresh_expires_at(user)
 

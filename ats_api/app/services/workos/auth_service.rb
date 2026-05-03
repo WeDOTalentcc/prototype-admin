@@ -46,7 +46,6 @@ module Workos
 
       Rails.logger.info("[Workos::AuthService] ✅ Token exchange successful")
       Rails.logger.info("   Profile ID: #{response.profile&.id}")
-      Rails.logger.info("   Profile email: #{response.profile&.email}")
       Rails.logger.info("   Organization ID: #{response.profile&.organization_id}")
 
       {

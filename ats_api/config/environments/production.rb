@@ -8,7 +8,7 @@ Rails.application.configure do
 
   config.active_storage.service = ENV.fetch("ACTIVE_STORAGE_SERVICE", "local").to_sym
 
-  config.log_level = :debug
+  config.log_level = :info
   config.log_formatter = ::Logger::Formatter.new
 
   if ENV["RAILS_LOG_TO_STDOUT"].present?

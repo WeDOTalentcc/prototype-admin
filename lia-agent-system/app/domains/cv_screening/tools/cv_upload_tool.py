@@ -158,7 +158,7 @@ async def parse_and_create_candidate(
 
             cand_id = str(new_candidate.id)
             cand_name = getattr(new_candidate, "name", parsed.full_name)
-            logger.info(f"✅ Candidate created: {cand_id} ({cand_name})")
+            logger.info(f"✅ Candidate created: {cand_id}")
 
             skills_preview = ", ".join(parsed.skills[:5]) if parsed.skills else "Não identificadas"
             vacancy_info = f" para a vaga **{vacancy_title}**" if vacancy_title else ""

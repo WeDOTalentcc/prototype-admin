@@ -64,9 +64,9 @@ module Pearch
       params_with_sourcing = params.merge(sourcing_id: sourcing.id)
 
       Rails.logger.info "[PearchSearchJob] Calling TalentSearchExecutorService with:"
-      Rails.logger.info "  user: #{user.email}"
-      Rails.logger.info "  query: #{query}"
-      Rails.logger.info "  params: #{params_with_sourcing.inspect}"
+      Rails.logger.info "  user_id: #{user.id}"
+      Rails.logger.info "  query length: #{query&.length || 0} chars"
+      Rails.logger.info "  sourcing_id: #{params_with_sourcing[:sourcing_id]}"
 
       service = TalentSearchExecutorService.new(
         user: user,

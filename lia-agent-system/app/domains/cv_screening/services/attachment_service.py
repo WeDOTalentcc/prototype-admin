@@ -81,7 +81,7 @@ class AttachmentService:
             await session.commit()
             await session.refresh(attachment)
             
-            logger.info(f"✅ Attachment created: {attachment.id} - {file_name} for candidate {candidate_name}")
+            logger.info(f"✅ Attachment created: {attachment.id}")
             return attachment
     
     async def list_attachments(

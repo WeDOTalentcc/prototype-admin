@@ -110,7 +110,7 @@ module V1
         )
 
         if token_resp.respond_to?(:code) && token_resp.code.to_i >= 400
-          Rails.logger.error("MS token exchange failed: status=#{token_resp.code} body=#{token_resp.body}")
+          Rails.logger.error("MS token exchange failed: status=#{token_resp.code}")
           return render html: close_popup_html(success: false, error: "Falha na troca de tokens de autorização")
         end
 
@@ -127,7 +127,6 @@ module V1
         end
 
         Rails.logger.info("MS Graph /me fetched: #{me.present?}")
-        Rails.logger.debug("MS Graph /me response: #{me}") if me
 
         if is_login
           handle_direct_login(token_resp, me)
@@ -153,17 +152,16 @@ module V1
         Rails.logger.info("Handle direct login: me=#{me.present?}")
 
         unless me && (me["mail"].present? || me["userPrincipalName"].present?)
-          Rails.logger.error("MS OAuth login: No email found in Microsoft profile: #{me}")
+          Rails.logger.error("MS OAuth login: No email found in Microsoft profile")
           return render html: close_popup_html(success: false, error: "Email não encontrado no perfil Microsoft")
         end
 
         email = (me["mail"] || me["userPrincipalName"]).downcase
-        Rails.logger.info("MS OAuth login: Looking for user with email=#{email}")
 
         user = User.find_by(email: email)
 
         unless user
-          Rails.logger.error("MS OAuth login: User not found for email=#{email}")
+          Rails.logger.error("MS OAuth login: User not found for provided email")
           return render html: close_popup_html(success: false, error: "Usuário não encontrado com este email")
         end
 
@@ -176,7 +174,7 @@ module V1
 
         session_token = jwt_encode(user_id: user.id)
 
-        Rails.logger.info("MS OAuth login successful: user_id=#{user.id} email=#{email}")
+        Rails.logger.info("MS OAuth login successful: user_id=#{user.id}")
 
         render html: close_popup_html(
           success: true,

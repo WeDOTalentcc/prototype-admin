@@ -262,7 +262,7 @@ module Candidates
     def log_candidate_processing(candidate, index, total, search_meta)
       Rails.logger.info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
       Rails.logger.info "🔄 [SearchProcessing] PROCESSING CANDIDATE #{index + 1}/#{total}"
-      Rails.logger.info "   Candidate ID: #{candidate.id} | Name: #{candidate.name} | Email: #{candidate.email}"
+      Rails.logger.info "   Candidate ID: #{candidate.id}"
       Rails.logger.info "   Search source: #{search_meta[:source]} | Score: #{search_meta[:score]}" if search_meta.present?
     end
 

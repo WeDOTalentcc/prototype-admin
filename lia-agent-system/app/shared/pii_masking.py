@@ -19,12 +19,18 @@ CPF_PATTERN = re.compile(r'\b\d{3}[.\-]?\d{3}[.\-]?\d{3}[.\-/]?\d{2}\b')
 EMAIL_PATTERN = re.compile(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b')
 PHONE_BR_PATTERN = re.compile(r'(?:\+55\s?)?(?:\(?\d{2}\)?\s?)?(?:9\s?)?\d{4}[\-\s]?\d{4}\b')
 NAME_IN_LOG_PATTERN = re.compile(r'(?:name|nome|candidato|recruiter|user)\s*[=:]\s*["\']([^"\']+)["\']', re.IGNORECASE)
+# Matches file names with common document extensions that may contain personal names
+FILE_NAME_PATTERN = re.compile(
+    r'\b[\w\s\-\.]{2,60}\.(?:pdf|doc|docx|txt|odt|rtf)\b',
+    re.IGNORECASE,
+)
 
 PII_PATTERNS: list[tuple[Pattern, str]] = [
     (CPF_PATTERN, "***CPF***"),
     (EMAIL_PATTERN, "***EMAIL***"),
     (PHONE_BR_PATTERN, "***PHONE***"),
     (NAME_IN_LOG_PATTERN, r"***NAME***"),
+    (FILE_NAME_PATTERN, "***FILENAME***"),
 ]
 
 

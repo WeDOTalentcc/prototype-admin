@@ -184,28 +184,22 @@ module Evaluations
       Rails.logger.info "=" * 100
       Rails.logger.info "🤖 [TEAMS NOTIFICATION] SENDER (LIA):"
       Rails.logger.info "   ID: #{lia_user.id}"
-      Rails.logger.info "   Email: #{lia_user.email}"
-      Rails.logger.info "   Name: #{lia_user.name}"
       Rails.logger.info "   lia_user flag: #{lia_user.lia_user}"
       Rails.logger.info "-" * 100
       Rails.logger.info "👤 [TEAMS NOTIFICATION] RECIPIENT (Job Owner/Recruiter):"
       Rails.logger.info "   ID: #{recruiter.id}"
-      Rails.logger.info "   Email: #{recruiter.email}"
-      Rails.logger.info "   Name: #{recruiter.name}"
       Rails.logger.info "   lia_user flag: #{recruiter.lia_user}"
       Rails.logger.info "-" * 100
       Rails.logger.info "📋 [TEAMS NOTIFICATION] Context:"
       Rails.logger.info "   Job ID: #{job.id}"
       Rails.logger.info "   Job Title: #{job.title}"
-      Rails.logger.info "   Candidate: #{evaluation_candidate.candidate.name}"
       Rails.logger.info "   Evaluation Candidate ID: #{evaluation_candidate.id}"
       Rails.logger.info "=" * 100
 
       # Evita enviar DM para você mesmo (caso LIA seja o owner da vaga)
       if lia_user.email == recruiter.email
         Rails.logger.error "❌ [TEAMS NOTIFICATION] SELF-DM DETECTED!"
-        Rails.logger.error "   Cannot send message from #{lia_user.email} to #{recruiter.email} (same email)"
-        Rails.logger.error "   This usually means the LIA user is also the job owner"
+        Rails.logger.error "   Cannot send message to self (same email) — LIA user is also the job owner"
         return
       end
 
@@ -235,7 +229,7 @@ module Evaluations
       )
 
       # Envia mensagem no Teams
-      Rails.logger.info "[PerCandidateNotificationJob] Sending Teams notification to #{recruiter.email}..."
+      Rails.logger.info "[PerCandidateNotificationJob] Sending Teams notification to recruiter_id=#{recruiter.id}..."
 
       response = MicrosoftService::Teams.send_message(
         user: lia_user,
@@ -244,8 +238,7 @@ module Evaluations
         to: recruiter.email
       )
 
-      Rails.logger.info "[PerCandidateNotificationJob] Teams notification SUCCESS: #{response.inspect}"
-      Rails.logger.info "[PerCandidateNotificationJob] Teams notification sent to #{recruiter.email}"
+      Rails.logger.info "[PerCandidateNotificationJob] Teams notification sent successfully to recruiter_id=#{recruiter.id}"
 
       register_teams_chat_subscription(lia_user, recruiter, response[:chat_id])
     rescue MicrosoftService::Teams::Error => e

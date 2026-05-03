@@ -151,7 +151,7 @@ module SearchArchetypes
       candidates.each_with_index do |candidate, index|
         Rails.logger.info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         Rails.logger.info "🔄 [SearchArchetypes::LocalSearchJob] PROCESSING #{index + 1}/#{total}"
-        Rails.logger.info "   Candidate: #{candidate.name} (ID: #{candidate.id})"
+        Rails.logger.info "   Candidate ID: #{candidate.id}"
 
         search_meta = search_meta_by_id[candidate.id] || {}
         Rails.logger.info "   Search source: #{search_meta[:source]} | Search score: #{search_meta[:score]}" if search_meta.present?

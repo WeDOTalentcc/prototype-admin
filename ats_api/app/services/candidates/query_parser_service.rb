@@ -9,7 +9,7 @@ module Candidates
     def call(text)
       return fallback_response(text) if Rails.env.test? || text.blank?
 
-      Rails.logger.info "🔍 [Candidates::QueryParser] Parsing: #{text}"
+      Rails.logger.info "🔍 [Candidates::QueryParser] Parsing search query (#{text&.length || 0} chars)"
 
       response = Llm::Gateway.chat(
         messages: [
@@ -26,7 +26,7 @@ module Candidates
       return fallback_response(text) if content.nil?
 
       parsed = parse_response(content)
-      Rails.logger.info "✅ [Candidates::QueryParser] Result: #{parsed.inspect}"
+      Rails.logger.info "✅ [Candidates::QueryParser] Query parsed successfully"
       parsed
     rescue => e
       Rails.logger.error "❌ [Candidates::QueryParser] Error: #{e.message}"

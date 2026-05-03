@@ -22,7 +22,7 @@ class SaveInterviewResultJob < ApplicationJob
     Rails.logger.info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     Rails.logger.info "✅ [SaveInterviewResultJob] Interview scored"
     Rails.logger.info "   Session: #{session.id} | Score: #{session.score}"
-    Rails.logger.info "   Candidate: #{session.candidate_context['name']}"
+    Rails.logger.info "   Candidate context present: #{session.candidate_context.present?}"
     Rails.logger.info "   Recommendation: #{session.recommendation}"
     Rails.logger.info "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
   rescue StandardError => e
