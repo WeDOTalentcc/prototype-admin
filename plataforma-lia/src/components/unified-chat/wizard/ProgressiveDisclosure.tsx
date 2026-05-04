@@ -93,8 +93,6 @@ export function ProgressiveDisclosure({ currentStage, interactionCount }: Props)
     setCurrentTip(null)
   }, [currentStage, interactionCount, dismissed])
 
-  if (!currentTip) return null
-
   const dismissTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Cleanup timer on unmount
@@ -103,6 +101,9 @@ export function ProgressiveDisclosure({ currentStage, interactionCount }: Props)
       if (dismissTimerRef.current) clearTimeout(dismissTimerRef.current)
     }
   }, [])
+
+  // Rules of Hooks: every hook above this line. See CLAUDE.md § Frontend / React rules-of-hooks.
+  if (!currentTip) return null
 
   const handleDismiss = () => {
     markTipSeen(currentTip.id)

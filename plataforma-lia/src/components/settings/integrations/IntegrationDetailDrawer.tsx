@@ -72,6 +72,56 @@ export function IntegrationDetailDrawer({
   llmConfig,
   onConfigSaved,
 }: IntegrationDetailDrawerProps) {
+  const handleSaveApiKey = useCallback(async (apiKey: string) => {
+    if (!integration) return { success: false, message:"Integração não selecionada" }
+    try {
+      const currentConfig = await apiFetch("/api/backend-proxy/llm-config").then(r => r.json())
+
+      const res = await apiFetch("/api/backend-proxy/llm-config", {
+        method:"PUT",
+        headers: {"Content-Type":"application/json" },
+        body: JSON.stringify({
+          primary_provider: currentConfig.primary_provider ||"gemini",
+          fallback_order: currentConfig.fallback_order || ["gemini","claude","openai"],
+          providers: {
+            [integration.id]: { provider: integration.id, api_key: apiKey, is_active: true },
+          },
+          routing: currentConfig.routing || { chat:"gemini", embedding:"gemini", screening:"gemini", voice:"gemini" },
+        }),
+      })
+
+      if (!res.ok) {
+        return { success: false, message:"Erro ao salvar configuração" }
+      }
+
+      onConfigSaved?.()
+      return { success: true, message: `${integration.name} configurado com sucesso` }
+    } catch {
+      return { success: false, message:"Erro de conexão" }
+    }
+  }, [integration, onConfigSaved])
+
+  const handleRemoveApiKey = useCallback(async () => {
+    if (!integration) return
+    const currentConfig = await apiFetch("/api/backend-proxy/llm-config").then(r => r.json())
+
+    await apiFetch("/api/backend-proxy/llm-config", {
+      method:"PUT",
+      headers: {"Content-Type":"application/json" },
+      body: JSON.stringify({
+        primary_provider: currentConfig.primary_provider ||"gemini",
+        fallback_order: currentConfig.fallback_order || ["gemini","claude","openai"],
+        providers: {
+          [integration.id]: { _remove: true },
+        },
+        routing: currentConfig.routing || {},
+      }),
+    })
+
+    onConfigSaved?.()
+  }, [integration, onConfigSaved])
+
+  // Rules of Hooks: every hook above this line. See CLAUDE.md § Frontend / React rules-of-hooks.
   if (!integration) return null
 
   const isComingSoon = integration.status ==="coming_soon"
@@ -108,53 +158,6 @@ export function IntegrationDetailDrawer({
   const savedKeyMasked = isAiProvider
     ? llmConfig?.providers?.[integration.id]?.api_key || undefined
     : undefined
-
-  const handleSaveApiKey = useCallback(async (apiKey: string) => {
-    try {
-      const currentConfig = await apiFetch("/api/backend-proxy/llm-config").then(r => r.json())
-
-      const res = await apiFetch("/api/backend-proxy/llm-config", {
-        method:"PUT",
-        headers: {"Content-Type":"application/json" },
-        body: JSON.stringify({
-          primary_provider: currentConfig.primary_provider ||"gemini",
-          fallback_order: currentConfig.fallback_order || ["gemini","claude","openai"],
-          providers: {
-            [integration!.id]: { provider: integration!.id, api_key: apiKey, is_active: true },
-          },
-          routing: currentConfig.routing || { chat:"gemini", embedding:"gemini", screening:"gemini", voice:"gemini" },
-        }),
-      })
-
-      if (!res.ok) {
-        return { success: false, message:"Erro ao salvar configuração" }
-      }
-
-      onConfigSaved?.()
-      return { success: true, message: `${integration!.name} configurado com sucesso` }
-    } catch {
-      return { success: false, message:"Erro de conexão" }
-    }
-  }, [integration, onConfigSaved])
-
-  const handleRemoveApiKey = useCallback(async () => {
-    const currentConfig = await apiFetch("/api/backend-proxy/llm-config").then(r => r.json())
-
-    await apiFetch("/api/backend-proxy/llm-config", {
-      method:"PUT",
-      headers: {"Content-Type":"application/json" },
-      body: JSON.stringify({
-        primary_provider: currentConfig.primary_provider ||"gemini",
-        fallback_order: currentConfig.fallback_order || ["gemini","claude","openai"],
-        providers: {
-          [integration!.id]: { _remove: true },
-        },
-        routing: currentConfig.routing || {},
-      }),
-    })
-
-    onConfigSaved?.()
-  }, [integration, onConfigSaved])
 
   return (
     <Sheet open={open} onOpenChange={(v) => !v && onClose()}>
