@@ -40,6 +40,21 @@ jobs:
       - name: TypeScript check
         run: npx tsc --noEmit
 
+      - name: ESLint (Rules of Hooks sensor)
+        # Sensor harness focado: bloqueia `react-hooks/rules-of-hooks` em main.
+        # Não quebra a build pela dívida ESLint legada (22 errors pré-existentes
+        # em 2026-05-04) — apenas pela classe de bug que crashou o Bulk Import.
+        # Quando a dívida for sanada, troque para `npx eslint src` direto.
+        # Ver CLAUDE.md § Frontend / React rules-of-hooks discipline.
+        run: |
+          set -o pipefail
+          npx eslint src --no-color 2>&1 | tee /tmp/eslint.out
+          if grep -E "rules-of-hooks" /tmp/eslint.out; then
+            echo "::error::react-hooks/rules-of-hooks violation detected — see CLAUDE.md"
+            exit 1
+          fi
+          echo "OK: no Rules of Hooks violations"
+
       - name: Unit & Component tests
         run: npx vitest run --reporter=verbose
 
