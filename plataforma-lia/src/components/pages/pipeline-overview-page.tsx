@@ -832,15 +832,19 @@ export function PipelineOverviewPage() {
           />
         )}
       </div>
-      {/* Phase 4J — Bulk import modal triggered from ats_importada empty state */}
-      <BulkImportModal
-        isOpen={showBulkImportModal}
-        onClose={() => setShowBulkImportModal(false)}
-        onSuccess={() => {
-          setShowBulkImportModal(false)
-          fetchLifecycleOverview()
-        }}
-      />
+      {/* Phase 4J — Bulk import modal triggered from ats_importada empty state.
+          Conditional mount: avoids running modal hooks while closed (defense-in-depth
+          for Rules of Hooks — see CLAUDE.md). */}
+      {showBulkImportModal && (
+        <BulkImportModal
+          isOpen={showBulkImportModal}
+          onClose={() => setShowBulkImportModal(false)}
+          onSuccess={() => {
+            setShowBulkImportModal(false)
+            fetchLifecycleOverview()
+          }}
+        />
+      )}
     </TooltipProvider>
   )
 }

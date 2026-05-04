@@ -248,8 +248,6 @@ export function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImportModalP
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  if (!isOpen) return null
-
   const reset = () => {
     setStep("input")
     setMode("file")
@@ -329,6 +327,10 @@ export function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImportModalP
     },
     [handleFileRead]
   )
+
+  // Rules of Hooks: this early return MUST stay below every hook call.
+  // See CLAUDE.md § Frontend / React rules-of-hooks discipline.
+  if (!isOpen) return null
 
   const handleParseJson = () => {
     setParseError(null)
