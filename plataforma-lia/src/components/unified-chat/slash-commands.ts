@@ -8,6 +8,9 @@ import {
   MessageSquare,
   Calendar,
   BookOpen,
+  TrendingUp,
+  Filter,
+  Clock,
 } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
 
@@ -37,6 +40,14 @@ export interface SlashCommand {
    * Text inserted into the input when picked from the dropdown.
    * When omitted the dropdown emits the canonical token (so the interceptor
    * fires on the next Enter).
+   *
+   * Conventions:
+   *   - For commands that submit immediately on the next Enter, prefill
+   *     ends with the canonical token (no trailing space) — e.g.
+   *     "/relatorio semanal".
+   *   - For commands that need user input (e.g. /buscar, /definir, /feedback,
+   *     /agendar), prefill ends with a space or `@` so the user knows to
+   *     keep typing.
    */
   dropdownPrefill?: string
   /**
@@ -59,6 +70,13 @@ export function normalizeCommand(input: string): string {
   return input.trim().toLowerCase().replace(/\s+/g, " ")
 }
 
+/**
+ * IDs of commands that resolve via `onExecuteCommand` (UI side-effect only,
+ * no backend message). Anything in this list is exempt from the
+ * "must have buildBareMessage or non-empty dropdownPrefill" invariant.
+ */
+export const EXECUTE_ONLY_COMMAND_IDS: readonly string[] = ["nova-conversa"]
+
 export const SLASH_COMMANDS: readonly SlashCommand[] = [
   {
     id: "criar-vaga",
@@ -76,7 +94,7 @@ export const SLASH_COMMANDS: readonly SlashCommand[] = [
     primary: "/buscar",
     aliases: ["/talent"],
     label: "Buscar candidatos",
-    subtitle: "Pesquisar candidatos por criterios",
+    subtitle: "Pesquisar candidatos por criterios — complete a frase",
     icon: Search,
     dropdownPrefill: "Buscar candidatos que ",
     buildBareMessage: () => "Buscar candidatos",
@@ -88,13 +106,17 @@ export const SLASH_COMMANDS: readonly SlashCommand[] = [
     primary: "/pipeline",
     aliases: [],
     label: "Ver pipeline",
-    subtitle: "Status do funil de candidatos",
+    subtitle: "Status do funil de vagas abertas (use @vaga para filtrar)",
     icon: BarChart2,
     dropdownPrefill: "Mostrar o status do funil de candidatos",
     buildBareMessage: () => "Mostrar funil de vagas abertas",
     buildMentionMessage: (mention) => `Pipeline da vaga: ${mention}`,
     showInDropdown: true,
   },
+  // ---------------------------------------------------------------------------
+  // /relatorio — generic entry preserved for backcompat (token + verb match).
+  // The four `relatorio-*` variants below are the discoverable surface.
+  // ---------------------------------------------------------------------------
   {
     id: "relatorio",
     primary: "/relatorio",
@@ -105,27 +127,79 @@ export const SLASH_COMMANDS: readonly SlashCommand[] = [
     dropdownPrefill: "Gerar um relatorio de recrutamento ",
     buildBareMessage: () => "Gerar relatorio semanal de recrutamento",
     buildMentionMessage: (mention) => `Relatorio da vaga: ${mention}`,
+    showInDropdown: false,
+  },
+  {
+    id: "relatorio-semanal",
+    primary: "/relatorio semanal",
+    aliases: [],
+    label: "Relatorio semanal",
+    subtitle: "Resumo da semana — vagas, candidatos, atividades",
+    icon: FileText,
+    dropdownPrefill: "/relatorio semanal",
+    buildBareMessage: () => "Gerar relatorio semanal de recrutamento",
     showInDropdown: true,
   },
+  {
+    id: "relatorio-funil",
+    primary: "/relatorio funil",
+    aliases: ["/relatorio pipeline"],
+    label: "Relatorio do funil",
+    subtitle: "Conversao por etapa do pipeline",
+    icon: TrendingUp,
+    dropdownPrefill: "/relatorio funil",
+    buildBareMessage: () =>
+      "Gerar relatorio do funil de candidatos com conversao por etapa",
+    showInDropdown: true,
+  },
+  {
+    id: "relatorio-fonte",
+    primary: "/relatorio fonte",
+    aliases: ["/relatorio sourcing"],
+    label: "Relatorio de fonte",
+    subtitle: "Performance por canal de origem (LinkedIn, indicacao, etc.)",
+    icon: Filter,
+    dropdownPrefill: "/relatorio fonte",
+    buildBareMessage: () =>
+      "Gerar relatorio de performance por canal de origem dos candidatos",
+    showInDropdown: true,
+  },
+  {
+    id: "relatorio-tempo",
+    primary: "/relatorio tempo",
+    aliases: ["/relatorio sla"],
+    label: "Relatorio de tempo",
+    subtitle: "Time-to-hire e SLA por etapa",
+    icon: Clock,
+    dropdownPrefill: "/relatorio tempo",
+    buildBareMessage: () =>
+      "Gerar relatorio de time-to-hire e SLA por etapa",
+    showInDropdown: true,
+  },
+  // ---------------------------------------------------------------------------
+  // /feedback e /agendar — agora visiveis com prefill que aciona @autocomplete.
+  // ---------------------------------------------------------------------------
   {
     id: "feedback",
     primary: "/feedback",
     aliases: [],
     label: "Enviar feedback",
-    subtitle: "Enviar feedback para um candidato",
+    subtitle: "Use com @candidato — enviar feedback estruturado",
     icon: MessageSquare,
+    dropdownPrefill: "/feedback @",
     buildMentionMessage: (mention) => `Enviar feedback para: ${mention}`,
-    showInDropdown: false,
+    showInDropdown: true,
   },
   {
     id: "agendar",
     primary: "/agendar",
     aliases: [],
     label: "Agendar entrevista",
-    subtitle: "Agendar entrevista com um candidato",
+    subtitle: "Use com @candidato — agendar entrevista",
     icon: Calendar,
+    dropdownPrefill: "/agendar @",
     buildMentionMessage: (mention) => `Agendar entrevista com: ${mention}`,
-    showInDropdown: false,
+    showInDropdown: true,
   },
   {
     id: "ajuda",
@@ -143,7 +217,7 @@ export const SLASH_COMMANDS: readonly SlashCommand[] = [
     primary: "/definir",
     aliases: ["/glossario", "/glossário"],
     label: "Definir termo",
-    subtitle: "Mostrar a definicao oficial de WSI, BARS, Bloom, etc.",
+    subtitle: "Definicao oficial — ex: /definir wsi, /definir bars",
     icon: BookOpen,
     dropdownPrefill: "/definir ",
     // Intercepted locally by UnifiedChat (calls /api/v1/glossary/terms/{term})
@@ -216,6 +290,10 @@ export function buildAjudaChatMessages(
 /**
  * Find a command by either its `primary` token or one of its `aliases`.
  * Returns `undefined` when nothing matches.
+ *
+ * Important: when multiple entries share a verb (e.g. `/relatorio` and
+ * `/relatorio semanal`), token lookup matches by full normalized string —
+ * so both `/relatorio` and `/relatorio semanal` resolve to the right entry.
  */
 export function findSlashCommandByToken(token: string): SlashCommand | undefined {
   const normalized = normalizeCommand(token)
@@ -230,6 +308,11 @@ export function findSlashCommandByToken(token: string): SlashCommand | undefined
  * Find a command by the leading verb of a `/<verb> @target` phrase, e.g.
  * `"buscar"` or `"job"`. Compares against the verb portion of `primary` and
  * each alias, ignoring the leading slash.
+ *
+ * When several entries share a verb (e.g. `/relatorio` vs `/relatorio
+ * semanal`), the first match wins — the catalog lists generic entries
+ * before variants on purpose so cross-mention forms (`/relatorio @vaga`)
+ * resolve to the variant with `buildMentionMessage`.
  */
 export function findSlashCommandByVerb(verb: string): SlashCommand | undefined {
   const v = verb.trim().toLowerCase()
