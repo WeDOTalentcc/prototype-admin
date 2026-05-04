@@ -207,6 +207,31 @@ export async function middleware(request: NextRequest) {
   const strippedPath = stripLocalePrefix(pathname)
 
   if (isPublicPath(strippedPath)) {
+    if (DEV_AUTO_LOGIN && strippedPath.startsWith('/login')) {
+      const token = await getDevToken()
+      if (token) {
+        const next = request.nextUrl.searchParams.get('next') || `/${extractLocaleFromPath(pathname)}`
+        const base = getBaseUrl(request)
+        const redirectUrl = new URL(next, base)
+        const response = NextResponse.redirect(redirectUrl)
+        response.cookies.set('lia_access_token', token, {
+          path: '/',
+          maxAge: 60 * 60 * 24 * 7,
+          secure: COOKIE_SECURE,
+          sameSite: COOKIE_SAMESITE,
+          httpOnly: true,
+        })
+        response.cookies.set('lia_auth_method', 'dev-auto-login', {
+          path: '/',
+          maxAge: 60 * 60 * 24 * 7,
+          secure: COOKIE_SECURE,
+          sameSite: COOKIE_SAMESITE,
+          httpOnly: false,
+        })
+        response.cookies.delete("lia_logged_out")
+        return response
+      }
+    }
     return intlMiddleware(request)
   }
 
