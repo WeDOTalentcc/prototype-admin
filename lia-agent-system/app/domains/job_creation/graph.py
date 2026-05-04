@@ -737,11 +737,12 @@ def review_node(state: JobCreationState) -> JobCreationState:
         try:
             api = _get_api_client(state)
             workspace_id = state.get("workspace_id", 0)
-            if workspace_id:
-                resp = api.get_company_defaults(workspace_id)
+            company_id = state.get("company_id", "")
+            _lookup_id = workspace_id or company_id
+            if _lookup_id:
+                resp = api.get_company_defaults(_lookup_id)
                 if resp.success and resp.data:
                     defaults = resp.data
-                    # Apply defaults that aren't already set
                     if not state.get("screening_mode") and defaults.get("default_screening_mode"):
                         defaults_applied.append("screening_mode")
                     if not state.get("publish_platforms") and defaults.get("default_platforms"):

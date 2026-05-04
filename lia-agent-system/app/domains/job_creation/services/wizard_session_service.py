@@ -18,7 +18,7 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 # Keys carried forward from context into wizard state
-_CONTEXT_CARRY_KEYS = ("right_panel_form", "attached_file_text")
+_CONTEXT_CARRY_KEYS = ("right_panel_form", "attached_file_text", "tenant_context_snippet")
 
 # Stage-aware default responses (avoids empty string responses)
 _STAGE_DEFAULTS: dict[str, str] = {
@@ -75,7 +75,8 @@ class WizardSessionService:
         Harness: computational sensor — reads LangGraph checkpoint directly.
         """
         try:
-            from app.domains.job_creation.graph import job_creation_graph as wiz_g
+            from app.domains.job_creation.graph import get_job_creation_graph
+            wiz_g = get_job_creation_graph()
             config = {"configurable": {"thread_id": thread_id}}
             snapshot = await asyncio.to_thread(wiz_g._graph.get_state, config)
             if snapshot is not None and snapshot.values:
@@ -113,12 +114,11 @@ class WizardSessionService:
         never trusted from prior_state (prevents tenant escalation via
         stale checkpoint data).
         """
-        # Always compute workspace_id from the authoritative company_id param.
-        safe_workspace_id = (
-            int(company_id)
-            if (company_id and str(company_id).isdigit())
-            else (prior_state.get("workspace_id") or 0)
-        )
+        _cid = str(company_id).strip() if company_id else ""
+        if _cid and _cid.isdigit():
+            safe_workspace_id = int(_cid)
+        else:
+            safe_workspace_id = prior_state.get("workspace_id") or 0
 
         ctx = context or {}
 
@@ -202,7 +202,8 @@ class WizardSessionService:
         Returns:
             ``(recruiter_message, ws_stage_payload, tokens_emitted)``
         """
-        from app.domains.job_creation.graph import job_creation_graph as wiz_g
+        from app.domains.job_creation.graph import get_job_creation_graph
+        wiz_g = get_job_creation_graph()
 
         prior_state = await cls._get_prior_state(thread_id)
         state = cls._build_state(

@@ -523,6 +523,62 @@ async def get_provider_for_tenant_from_db(
     return registry.get_container(tenant_id=tenant_id)
 
 
+def create_tracked_llm(
+    temperature: float = 0.3,
+    service_name: str = "",
+    operation: str = "",
+    max_output_tokens: int | None = None,
+    tenant_id: str | None = None,
+):
+    provider = os.environ.get("LLM_DEFAULT_PROVIDER", "gemini")
+
+    try:
+        from app.core.config import settings as _s
+        model_map = {
+            "gemini": getattr(_s, "GEMINI_MODEL", "gemini-2.0-flash"),
+            "claude": getattr(_s, "ANTHROPIC_MODEL", "claude-sonnet-4-20250514"),
+            "openai": getattr(_s, "OPENAI_MODEL", "gpt-4o"),
+        }
+        model_name = model_map.get(provider, model_map["gemini"])
+    except Exception:
+        model_name = "gemini-2.0-flash"
+
+    kwargs: dict = {"temperature": temperature, "streaming": True}
+    if max_output_tokens:
+        kwargs["max_output_tokens"] = max_output_tokens
+
+    metadata = {}
+    if service_name:
+        metadata["service_name"] = service_name
+    if operation:
+        metadata["operation"] = operation
+
+    try:
+        if provider == "gemini":
+            from langchain_google_genai import ChatGoogleGenerativeAI
+            api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY", "")
+            return ChatGoogleGenerativeAI(
+                model=model_name, google_api_key=api_key, **kwargs,
+            )
+        elif provider == "claude":
+            from langchain_anthropic import ChatAnthropic
+            api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+            return ChatAnthropic(model=model_name, api_key=api_key, **kwargs)
+        elif provider == "openai":
+            from langchain_openai import ChatOpenAI
+            api_key = os.environ.get("OPENAI_API_KEY", "")
+            return ChatOpenAI(model=model_name, api_key=api_key, **kwargs)
+        else:
+            from langchain_google_genai import ChatGoogleGenerativeAI
+            api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY", "")
+            return ChatGoogleGenerativeAI(
+                model=model_name, google_api_key=api_key, **kwargs,
+            )
+    except Exception as exc:
+        logger.error("[create_tracked_llm] Failed to create LLM (%s/%s): %s", provider, model_name, exc)
+        raise
+
+
 # ---------------------------------------------------------------------------
 # Voice Provider Registry — auto-selects voice strategy per tenant
 # ---------------------------------------------------------------------------

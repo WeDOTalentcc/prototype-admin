@@ -198,6 +198,15 @@ class TenantContextService:
         )
 
     @staticmethod
+    def build_authenticated_snippet(company_id: str) -> str:
+        return (
+            f"O usuário já está autenticado na plataforma (company_id={company_id}). "
+            "Você NÃO precisa perguntar o nome da empresa, CNPJ ou identificação — "
+            "essas informações já estão disponíveis no sistema. "
+            "Prossiga diretamente com o que o recrutador precisa."
+        )
+
+    @staticmethod
     def _detect_active_channels(company) -> list[str]:
         """Detect which communication channels are configured for the tenant."""
         channels = []

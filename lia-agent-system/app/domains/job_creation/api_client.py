@@ -181,7 +181,7 @@ class JobCreationAPIClient:
     # Company configuration
     # -------------------------------------------------------------------
 
-    def get_company_defaults(self, workspace_id: int) -> APIResponse:
+    def get_company_defaults(self, workspace_id: int | str) -> APIResponse:
         """Get company configuration defaults (recruitment policies, eligibility, etc.)."""
         return self._request("GET", f"/api/v1/workspaces/{workspace_id}/recruitment_config")
 

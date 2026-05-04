@@ -326,6 +326,96 @@ async def sse_chat_stream(
             from app.api.v1.agent_chat_ws import _subagent_for_sourcing
             resolved_domain = _subagent_for_sourcing(content)
 
+        # ── T002: Inject tenant_context_snippet (canonical: TenantContextService) ──
+        try:
+            from app.core.database import AsyncSessionLocal
+            from app.shared.services.tenant_context_service import TenantContextService
+            async with AsyncSessionLocal() as _tc_db:
+                _tenant_ctx = await TenantContextService().get_context(
+                    company_id=company_id, db=_tc_db,
+                )
+                _snippet = _tenant_ctx.to_prompt_snippet()
+                if company_id:
+                    _snippet += "\n" + TenantContextService.build_authenticated_snippet(company_id)
+                context["tenant_context_snippet"] = _snippet
+                logger.info(
+                    "[SSEChat] tenant_context injected company=%s name=%s",
+                    company_id, _tenant_ctx.company_name,
+                )
+        except Exception as _tc_exc:
+            if company_id:
+                from app.shared.services.tenant_context_service import TenantContextService
+                context["tenant_context_snippet"] = TenantContextService.build_authenticated_snippet(company_id)
+                logger.info("[SSEChat] tenant_context fallback: authenticated snippet for %s", company_id)
+            else:
+                logger.warning("[SSEChat] TenantContext injection skipped: %s", _tc_exc)
+
+        # ── T003: Wizard canonical path (parity with agent_chat_ws.py) ─────────
+        if resolved_domain == "wizard":
+            _wizard_handled = False
+            try:
+                from app.domains.job_creation.services.wizard_session_service import (
+                    WizardSessionService,
+                )
+
+                token_count = 0
+                sse_queue: asyncio.Queue[dict[str, Any] | None] = asyncio.Queue()
+
+                async def _wiz_on_token(_chunk: str) -> None:
+                    nonlocal token_count
+                    token_count += 1
+                    _safe = mask_pii(_chunk) if isinstance(_chunk, str) else _chunk
+                    await sse_queue.put(serialize_token(_safe))
+
+                _wiz_thread_id = WizardSessionService.derive_thread_id(
+                    context, session_id,
+                )
+                _wiz_msg, _wiz_payload, _wiz_tokens = await asyncio.wait_for(
+                    WizardSessionService.process_message(
+                        thread_id=_wiz_thread_id,
+                        user_message=content,
+                        user_id=user_id,
+                        company_id=company_id,
+                        session_id=session_id,
+                        context=context,
+                        on_token=_wiz_on_token,
+                    ),
+                    timeout=_AGENT_TIMEOUT,
+                )
+
+                _wiz_clean = mask_pii(_strip_react_json(_wiz_msg or ""))
+
+                if _wiz_payload and isinstance(_wiz_payload, dict):
+                    yield format_sse_event(
+                        serialize_panel_update(
+                            panel_type="wizard_stage",
+                            panel_data=_wiz_payload.get("data", _wiz_payload),
+                            panel_title=_wiz_payload.get("stage", "wizard"),
+                            action="open",
+                        ),
+                        next_id(),
+                    )
+
+                yield format_sse_event(
+                    serialize_message(
+                        content=_wiz_clean,
+                        confidence=0.95,
+                        domain="wizard",
+                        source="wizard_session_canonical",
+                        conversation_id=req.conversation_id,
+                    ),
+                    next_id(),
+                )
+                _wizard_handled = True
+            except Exception as _wiz_exc:
+                logger.error(
+                    "[SSEChat] WizardSessionService canonical path crashed; "
+                    "falling back to generic agent: %s",
+                    _wiz_exc, exc_info=True,
+                )
+            if _wizard_handled:
+                return
+
         from app.api.v1.agent_chat_ws import _get_agent, _build_agent_input
 
         agent = _get_agent(resolved_domain)
