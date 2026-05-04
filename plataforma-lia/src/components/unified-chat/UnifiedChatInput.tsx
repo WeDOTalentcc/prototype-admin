@@ -1,12 +1,16 @@
 "use client"
 
 import React, { useRef, useCallback, useEffect, useState } from "react"
-import { Send, Plus, Loader2, SlidersHorizontal, Paperclip, FileText, XCircle, AtSign, Briefcase, Users, Lightbulb } from "lucide-react"
+import { Send, Plus, Loader2, SlidersHorizontal, Paperclip, FileText, XCircle, AtSign, Lightbulb } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useTranslations } from 'next-intl'
 import { AudioRecordButton } from "@/components/ui/audio-record-button"
 import { ChatSuggestionsPanel } from "./ChatSuggestionsPanel"
 import { ContextConfigPanel } from "./ContextConfigPanel"
+import { useMentionAutocomplete } from "./useMentionAutocomplete"
+import { useSlashCommands } from "./useSlashCommands"
+import { MentionDropdown } from "./MentionDropdown"
+import { SlashCommandDropdown } from "./SlashCommandDropdown"
 import type { ChatMode } from "./unified-chat-types"
 
 interface Props {
@@ -23,6 +27,8 @@ interface Props {
   fileInputRef: React.RefObject<HTMLInputElement | null>
   onFileButtonClick: () => void
   onFileAttach: (e: React.ChangeEvent<HTMLInputElement>) => void
+  /** Triggered when a slash command is selected that executes a UI action (e.g. nova-conversa). */
+  onExecuteSlashCommand?: (commandId: string) => void
 }
 
 export function UnifiedChatInput({
@@ -39,13 +45,96 @@ export function UnifiedChatInput({
   fileInputRef,
   onFileButtonClick,
   onFileAttach,
+  onExecuteSlashCommand,
 }: Props) {
   const t = useTranslations('chat.input')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const [showPlusMenu, setShowPlusMenu] = useState(false)
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [showContextConfig, setShowContextConfig] = useState(false)
+  const [cursorPosition, setCursorPosition] = useState(0)
+  const [isDragOver, setIsDragOver] = useState(false)
   const isBusy = isStreaming || isCreating
+
+  // --- @mention autocomplete ---
+  const onInsertMention = useCallback((triggerStart: number, mentionToken: string) => {
+    setInputText(prev => {
+      const before = prev.slice(0, triggerStart)
+      const after = prev.slice(cursorPosition)
+      return before + mentionToken + " " + after
+    })
+    setTimeout(() => {
+      const el = textareaRef.current
+      if (el) {
+        const newPos = triggerStart + mentionToken.length + 1
+        el.selectionStart = newPos
+        el.selectionEnd = newPos
+        setCursorPosition(newPos)
+        el.focus()
+      }
+    }, 0)
+  }, [setInputText, cursorPosition])
+
+  const mention = useMentionAutocomplete({
+    inputText,
+    selectionStart: cursorPosition,
+    onInsertMention,
+  })
+
+  // --- /slash commands ---
+  const onExecuteCommand = useCallback((commandId: string) => {
+    setInputText("")
+    onExecuteSlashCommand?.(commandId)
+  }, [setInputText, onExecuteSlashCommand])
+
+  const onPrefillInput = useCallback((text: string) => {
+    setInputText(prev => {
+      const before = prev.slice(0, cursorPosition)
+      const lastSlash = before.lastIndexOf("/")
+      const isStartOfLine =
+        lastSlash === 0 || (lastSlash > 0 && before[lastSlash - 1] === "\n")
+      if (lastSlash < 0 || !isStartOfLine) return text
+      return prev.slice(0, lastSlash) + text + prev.slice(cursorPosition)
+    })
+    setTimeout(() => {
+      const el = textareaRef.current
+      if (el) {
+        el.focus()
+        const newPos = el.value.length
+        el.selectionStart = newPos
+        el.selectionEnd = newPos
+        setCursorPosition(newPos)
+      }
+    }, 0)
+  }, [setInputText, cursorPosition])
+
+  const slash = useSlashCommands({
+    inputText,
+    selectionStart: cursorPosition,
+    onExecuteCommand,
+    onPrefillInput,
+  })
+
+  // Stable destructured close handlers for mutex effects.
+  const { close: closeMention } = mention
+  const { close: closeSlash } = slash
+
+  // Mutex: when /slash or @mention opens, close manual popovers.
+  useEffect(() => {
+    if (mention.isOpen || slash.isOpen) {
+      setShowPlusMenu(false)
+      setShowSuggestions(false)
+      setShowContextConfig(false)
+    }
+  }, [mention.isOpen, slash.isOpen])
+
+  // Mutex: when manual popover opens, close the autocomplete dropdowns.
+  useEffect(() => {
+    if (showPlusMenu || showSuggestions || showContextConfig) {
+      closeMention()
+      closeSlash()
+    }
+  }, [showPlusMenu, showSuggestions, showContextConfig, closeMention, closeSlash])
 
   // Auto-resize textarea
   const adjustHeight = useCallback(() => {
@@ -61,22 +150,32 @@ export function UnifiedChatInput({
   }, [inputText, adjustHeight])
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Delegate to dropdowns when open (Arrow/Enter/Escape).
+    if (mention.isOpen && mention.handleKeyDown(e)) return
+    if (slash.isOpen && slash.handleKeyDown(e)) return
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
       if (!isDisabled && inputText.trim()) onSend()
     }
-  }, [isDisabled, inputText, onSend])
+  }, [mention, slash, isDisabled, inputText, onSend])
+
+  const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setInputText(e.target.value)
+    setCursorPosition(e.target.selectionStart ?? 0)
+  }, [setInputText])
+
+  const handleTextareaSelect = useCallback((e: React.SyntheticEvent<HTMLTextAreaElement>) => {
+    setCursorPosition((e.target as HTMLTextAreaElement).selectionStart ?? 0)
+  }, [])
 
   const canSend = !isDisabled && !isBusy && inputText.trim().length > 0
   const showContext = contextPage && contextPage !== "Conversar"
-  const [isDragOver, setIsDragOver] = useState(false)
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     setIsDragOver(false)
     const file = e.dataTransfer.files?.[0]
     if (file && file.size <= 10 * 1024 * 1024) {
-      // Simulate file input change
       const dt = new DataTransfer()
       dt.items.add(file)
       if (fileInputRef.current) {
@@ -140,7 +239,7 @@ export function UnifiedChatInput({
 
       {/* Input container — Notion-style with cyan focus ring */}
       <div className={cn(
-        "rounded-md border bg-lia-bg-primary transition-colors motion-reduce:transition-none",
+        "relative rounded-md border bg-lia-bg-primary transition-colors motion-reduce:transition-none",
         "focus-within:border-wedo-cyan focus-within:ring-1 focus-within:ring-wedo-cyan/30",
         "border-lia-border-subtle"
       )}>
@@ -157,7 +256,9 @@ export function UnifiedChatInput({
         <textarea data-testid="chat-input"
           ref={textareaRef}
           value={inputText}
-          onChange={(e) => setInputText(e.target.value)}
+          onChange={handleChange}
+          onSelect={handleTextareaSelect}
+          onClick={handleTextareaSelect}
           onKeyDown={handleKeyDown}
           placeholder={t('placeholder')}
           disabled={isBusy}
@@ -207,6 +308,10 @@ export function UnifiedChatInput({
                         setInputText(prev => prev + "@")
                         textareaRef.current?.focus()
                         setShowPlusMenu(false)
+                        setTimeout(() => {
+                          const el = textareaRef.current
+                          if (el) setCursorPosition(el.selectionStart ?? el.value.length)
+                        }, 0)
                       }}
                       className="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-lia-text-secondary hover:bg-lia-bg-secondary"
                     >
@@ -302,6 +407,24 @@ export function UnifiedChatInput({
             </button>
           </div>
         </div>
+
+        {/* @mention dropdown — anchored above input container */}
+        {mention.isOpen && (
+          <MentionDropdown
+            items={mention.items}
+            selectedIndex={mention.selectedIndex}
+            onSelect={mention.selectItem}
+          />
+        )}
+
+        {/* /slash command dropdown — anchored above input container */}
+        {slash.isOpen && (
+          <SlashCommandDropdown
+            items={slash.items}
+            selectedIndex={slash.selectedIndex}
+            onSelect={slash.selectItem}
+          />
+        )}
       </div>
     </div>
   )

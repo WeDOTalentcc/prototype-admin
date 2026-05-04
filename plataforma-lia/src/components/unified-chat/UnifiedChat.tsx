@@ -731,6 +731,7 @@ export function UnifiedChat({
           fileInputRef={fileInputRef}
           onFileButtonClick={handleFileButtonClick}
           onFileAttach={handleFileAttach}
+          onExecuteSlashCommand={handleNewChat}
         />
 
         {/* E.5: TaskContextBar — shown when wizard is active, below the input */}
