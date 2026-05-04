@@ -201,7 +201,6 @@ from app.api.v1.job_qualification import router as _t489_job_qualification_route
 from app.api.v1.job_templates import router as _t489_job_templates_router
 from app.api.v1.learning_outcomes import router as _t489_learning_outcomes_router
 from app.api.v1.learning_patterns import router as _t489_learning_patterns_router
-from app.api.v1.lia_assistant_graph import router as _t489_lia_assistant_graph_router
 from app.api.v1.lia_field_toggles import router as _t489_lia_field_toggles_router
 from app.api.v1.lia_profile_analysis import router as _t489_lia_profile_analysis_router
 from app.api.v1.microsoft_graph import router as _t489_microsoft_graph_router
@@ -320,7 +319,6 @@ _TASK_489_DUAL_ID_PARAMS = [
     pytest.param(_t489_job_templates_router, "job-templates", id="job-templates"),
     pytest.param(_t489_learning_outcomes_router, "learning-outcomes", id="learning-outcomes"),
     pytest.param(_t489_learning_patterns_router, "learning-patterns", id="learning-patterns"),
-    pytest.param(_t489_lia_assistant_graph_router, "lia-assistant-graph", id="lia-assistant-graph"),
     pytest.param(_t489_lia_field_toggles_router, "lia-field-toggles", id="lia-field-toggles"),
     pytest.param(_t489_lia_profile_analysis_router, "lia-profile-analysis", id="lia-profile-analysis"),
     pytest.param(_t489_microsoft_graph_router, "microsoft-graph", id="microsoft-graph"),
