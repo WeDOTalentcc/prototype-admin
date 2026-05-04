@@ -118,7 +118,7 @@ class WizardSessionService:
         if _cid and _cid.isdigit():
             safe_workspace_id = int(_cid)
         else:
-            safe_workspace_id = prior_state.get("workspace_id") or 0
+            safe_workspace_id = 0
 
         ctx = context or {}
 

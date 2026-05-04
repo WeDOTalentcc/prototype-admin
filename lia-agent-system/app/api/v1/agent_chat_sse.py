@@ -370,8 +370,8 @@ async def sse_chat_stream(
                 _wiz_thread_id = WizardSessionService.derive_thread_id(
                     context, session_id,
                 )
-                _wiz_msg, _wiz_payload, _wiz_tokens = await asyncio.wait_for(
-                    WizardSessionService.process_message(
+                async def _run_wizard():
+                    return await WizardSessionService.process_message(
                         thread_id=_wiz_thread_id,
                         user_message=content,
                         user_id=user_id,
@@ -379,9 +379,26 @@ async def sse_chat_stream(
                         session_id=session_id,
                         context=context,
                         on_token=_wiz_on_token,
-                    ),
-                    timeout=_AGENT_TIMEOUT,
+                    )
+
+                _wiz_task = asyncio.create_task(
+                    asyncio.wait_for(_run_wizard(), timeout=_AGENT_TIMEOUT)
                 )
+
+                while not _wiz_task.done():
+                    try:
+                        _tok = await asyncio.wait_for(sse_queue.get(), timeout=0.5)
+                        if _tok is not None:
+                            yield format_sse_event(_tok, next_id())
+                    except asyncio.TimeoutError:
+                        continue
+
+                _wiz_msg, _wiz_payload, _wiz_tokens = await _wiz_task
+
+                while not sse_queue.empty():
+                    _tok = sse_queue.get_nowait()
+                    if _tok is not None:
+                        yield format_sse_event(_tok, next_id())
 
                 _wiz_clean = mask_pii(_strip_react_json(_wiz_msg or ""))
 
