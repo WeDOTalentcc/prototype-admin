@@ -326,7 +326,7 @@ async def sse_chat_stream(
             from app.api.v1.agent_chat_ws import _subagent_for_sourcing
             resolved_domain = _subagent_for_sourcing(content)
 
-        # ── T002: Inject tenant_context_snippet (canonical: TenantContextService) ──
+        # Inject tenant context so agents know the authenticated company
         try:
             from app.core.database import AsyncSessionLocal
             from app.shared.services.tenant_context_service import TenantContextService
@@ -350,7 +350,7 @@ async def sse_chat_stream(
             else:
                 logger.warning("[SSEChat] TenantContext injection skipped: %s", _tc_exc)
 
-        # ── T003: Wizard canonical path (parity with agent_chat_ws.py) ─────────
+        # Wizard canonical path (mirrors agent_chat_ws.py)
         if resolved_domain == "wizard":
             _wizard_handled = False
             try:
