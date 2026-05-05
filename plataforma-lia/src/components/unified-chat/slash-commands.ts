@@ -212,16 +212,76 @@ export const SLASH_COMMANDS: readonly SlashCommand[] = [
     buildBareMessage: () => "/ajuda",
     showInDropdown: true,
   },
+  // ---------------------------------------------------------------------------
+  // /definir — generic entry (kept visible) plus 5 hardcoded shortcuts for the
+  // most common terms. The shortcuts ARE intercepted locally by
+  // `UnifiedChat.handleSend` via DEFINIR_REGEX (no backend round-trip), so
+  // their `buildBareMessage` returns the canonical token only as a contract
+  // fallback (visible-command invariant) — not as the actual dispatch path.
+  // ---------------------------------------------------------------------------
   {
     id: "definir",
     primary: "/definir",
     aliases: ["/glossario", "/glossário"],
     label: "Definir termo",
-    subtitle: "Definicao oficial — ex: /definir wsi, /definir bars",
+    subtitle: "Definicao oficial — complete com o termo",
     icon: BookOpen,
     dropdownPrefill: "/definir ",
-    // Intercepted locally by UnifiedChat (calls /api/v1/glossary/terms/{term})
-    // — does NOT round-trip the backend agent.
+    showInDropdown: true,
+  },
+  {
+    id: "definir-wsi",
+    primary: "/definir wsi",
+    aliases: [],
+    label: "Definir WSI",
+    subtitle: "Work Suitability Index — score candidato x vaga",
+    icon: BookOpen,
+    dropdownPrefill: "/definir wsi",
+    buildBareMessage: () => "/definir wsi",
+    showInDropdown: true,
+  },
+  {
+    id: "definir-bars",
+    primary: "/definir bars",
+    aliases: [],
+    label: "Definir BARS",
+    subtitle: "Behaviorally Anchored Rating Scales — escala de avaliacao",
+    icon: BookOpen,
+    dropdownPrefill: "/definir bars",
+    buildBareMessage: () => "/definir bars",
+    showInDropdown: true,
+  },
+  {
+    id: "definir-bloom",
+    primary: "/definir bloom",
+    aliases: [],
+    label: "Definir Bloom",
+    subtitle: "Taxonomia de Bloom — profundidade cognitiva (6 niveis)",
+    icon: BookOpen,
+    dropdownPrefill: "/definir bloom",
+    buildBareMessage: () => "/definir bloom",
+    showInDropdown: true,
+  },
+  {
+    id: "definir-bigfive",
+    primary: "/definir big five",
+    aliases: ["/definir bigfive", "/definir ocean"],
+    label: "Definir Big Five",
+    subtitle: "5 dimensoes de personalidade (OCEAN)",
+    icon: BookOpen,
+    dropdownPrefill: "/definir big five",
+    buildBareMessage: () => "/definir big five",
+    showInDropdown: true,
+  },
+  {
+    id: "definir-arquetipo",
+    primary: "/definir arquetipo",
+    aliases: ["/definir arquétipo", "/definir archetype"],
+    label: "Definir Arquetipo",
+    subtitle: "8 perfis canonicos (Catalisador, Executor, Estrategista, etc.)",
+    icon: BookOpen,
+    dropdownPrefill: "/definir arquetipo",
+    buildBareMessage: () => "/definir arquetipo",
     showInDropdown: true,
   },
   {
@@ -321,4 +381,54 @@ export function findSlashCommandByVerb(verb: string): SlashCommand | undefined {
     const tokens = [cmd.primary, ...cmd.aliases]
     return tokens.some((t) => t.replace(/^\//, "").split(/\s+/)[0] === v)
   })
+}
+
+/**
+ * Match bare `/buscar` (no args). Used by `UnifiedChat.handleSend` to render
+ * a local clarification card with the canonical search recipes, instead of
+ * shipping the generic "Buscar candidatos" payload to the backend agent.
+ */
+export const BUSCAR_BARE_REGEX = /^\/buscar\s*$/i
+
+/**
+ * Markdown card body shown when the user submits bare `/buscar`.
+ *
+ * Listing the canonical search recipes locally turns the dropdown discovery
+ * into a complete loop: the user picks `/buscar`, hits Enter, and gets a
+ * concrete menu of patterns to copy/paste — no agent round-trip, no LLM
+ * generation drift. Same pattern as `/ajuda`.
+ */
+export function buildBuscarHelpMarkdown(): string {
+  const recipes = [
+    "`/buscar candidatos com habilidade <skill>` — ex: `/buscar candidatos com habilidade Python`",
+    "`/buscar candidatos de nivel <senioridade>` — ex: `/buscar candidatos de nivel pleno`",
+    "`/buscar candidatos com status <status>` — ex: `/buscar candidatos com status aprovado`",
+    "`/buscar candidatos do departamento <dept>` — ex: `/buscar candidatos do departamento engenharia`",
+    "`/buscar @candidato` — buscar um candidato especifico",
+  ]
+  return [
+    "Que tipo de busca? Use um destes padroes:",
+    "",
+    ...recipes.map((r) => `- ${r}`),
+    "",
+    "_Ou descreva em linguagem natural — ex: \"candidatos seniores em SP que dominam React\"._",
+  ].join("\n")
+}
+
+/**
+ * Build the user-echo + LIA-help message pair for an in-chat bare `/buscar`
+ * resolution. Mirrors `buildAjudaChatMessages` so any chat surface emits the
+ * same bubbles.
+ */
+export function buildBuscarChatMessages(
+  rawInput: string,
+  responseMarkdown: string,
+  now: Date = new Date(),
+): AjudaChatMessages {
+  const ts = now.toISOString()
+  const ms = now.getTime()
+  return {
+    userMsg: { id: `user-${ms}`, sender: "user", content: rawInput, timestamp: ts },
+    helpMsg: { id: `lia-${ms}-buscar`, sender: "lia", content: responseMarkdown, timestamp: ts },
+  }
 }

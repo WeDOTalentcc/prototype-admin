@@ -19,7 +19,12 @@ import { UnifiedChatEmptyState } from "./UnifiedChatEmptyState";
 import { UnifiedChatHeader } from "./UnifiedChatHeader";
 import { UnifiedChatInput } from "./UnifiedChatInput";
 import { UnifiedMessageList } from "./UnifiedMessageList";
-import { buildAjudaChatMessages } from "./slash-commands";
+import {
+  BUSCAR_BARE_REGEX,
+  buildAjudaChatMessages,
+  buildBuscarChatMessages,
+  buildBuscarHelpMarkdown,
+} from "./slash-commands";
 import type { ChatMode } from "./unified-chat-types";
 import { useJdUploadProgress } from "./useJdUploadProgress";
 import {
@@ -323,6 +328,22 @@ export function UnifiedChat({
           ),
         );
       });
+      return;
+    }
+
+    // Bare `/buscar` (no args) renders a local clarification card with
+    // canonical search recipes — same UX pattern as `/ajuda` /
+    // `/definir`. Avoids shipping the generic "Buscar candidatos"
+    // payload to the backend agent and gives the user a copy/pasteable
+    // menu of patterns instead.
+    if (BUSCAR_BARE_REGEX.test(text)) {
+      const { userMsg, helpMsg } = buildBuscarChatMessages(
+        text,
+        buildBuscarHelpMarkdown(),
+      );
+      setChatMessages((prev) => [...prev, userMsg, helpMsg]);
+      setInputText("");
+      setAttachedFile(null);
       return;
     }
 

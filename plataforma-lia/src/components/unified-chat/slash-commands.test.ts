@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest"
 import {
   AJUDA_REGEX,
+  BUSCAR_BARE_REGEX,
   EXECUTE_ONLY_COMMAND_IDS,
   SLASH_COMMANDS,
   buildAjudaChatMessages,
   buildAjudaHelpMarkdown,
+  buildBuscarChatMessages,
+  buildBuscarHelpMarkdown,
   findSlashCommandByToken,
   findSlashCommandByVerb,
 } from "./slash-commands"
@@ -73,6 +76,11 @@ describe("SLASH_COMMANDS registry", () => {
       "agendar",
       "ajuda",
       "definir",
+      "definir-wsi",
+      "definir-bars",
+      "definir-bloom",
+      "definir-bigfive",
+      "definir-arquetipo",
       "nova-conversa",
     ])
   })
@@ -166,6 +174,62 @@ describe("SLASH_COMMANDS registry", () => {
     expect(userMsg.id).not.toBe(helpMsg.id)
   })
 
+  it("/definir variants are visible with token primaries that DEFINIR_REGEX recognises", () => {
+    const variants = ["definir-wsi", "definir-bars", "definir-bloom", "definir-bigfive", "definir-arquetipo"]
+    for (const id of variants) {
+      const cmd = SLASH_COMMANDS.find((c) => c.id === id)
+      expect(cmd, `${id} missing from catalog`).toBeDefined()
+      expect(cmd!.showInDropdown, `${id} must be visible`).toBe(true)
+      expect(cmd!.primary, `${id} primary must start with /definir `).toMatch(/^\/definir /i)
+      // dropdownPrefill must equal the primary so picking it from the dropdown
+      // submits cleanly through the local DEFINIR_REGEX interceptor.
+      expect(cmd!.dropdownPrefill).toBe(cmd!.primary)
+    }
+  })
+
+  it("/definir variants resolve via token lookup (case insensitive)", () => {
+    expect(findSlashCommandByToken("/definir wsi")?.id).toBe("definir-wsi")
+    expect(findSlashCommandByToken("/DEFINIR  WSI")?.id).toBe("definir-wsi")
+    expect(findSlashCommandByToken("/definir bigfive")?.id).toBe("definir-bigfive")
+    expect(findSlashCommandByToken("/definir ocean")?.id).toBe("definir-bigfive")
+    expect(findSlashCommandByToken("/definir arquétipo")?.id).toBe("definir-arquetipo")
+  })
+
+  it("BUSCAR_BARE_REGEX matches only bare /buscar (no args)", () => {
+    expect(BUSCAR_BARE_REGEX.test("/buscar")).toBe(true)
+    expect(BUSCAR_BARE_REGEX.test("/BUSCAR")).toBe(true)
+    expect(BUSCAR_BARE_REGEX.test("/buscar  ")).toBe(true)
+    expect(BUSCAR_BARE_REGEX.test("/buscar candidatos")).toBe(false)
+    expect(BUSCAR_BARE_REGEX.test("/buscar @Ana")).toBe(false)
+    expect(BUSCAR_BARE_REGEX.test("buscar")).toBe(false)
+  })
+
+  it("buildBuscarHelpMarkdown lists all canonical search recipes", () => {
+    const md = buildBuscarHelpMarkdown()
+    expect(md).toMatch(/Que tipo de busca/)
+    expect(md).toContain("/buscar candidatos com habilidade")
+    expect(md).toContain("/buscar candidatos de nivel")
+    expect(md).toContain("/buscar candidatos com status")
+    expect(md).toContain("/buscar candidatos do departamento")
+    expect(md).toContain("/buscar @candidato")
+    expect(md).toMatch(/linguagem natural/)
+  })
+
+  it("buildBuscarChatMessages mirrors the ajuda helper contract", () => {
+    const fixed = new Date("2026-05-04T20:00:00.000Z")
+    const { userMsg, helpMsg } = buildBuscarChatMessages(
+      "/buscar",
+      buildBuscarHelpMarkdown(),
+      fixed,
+    )
+    expect(userMsg.sender).toBe("user")
+    expect(userMsg.content).toBe("/buscar")
+    expect(userMsg.id).toMatch(/^user-\d+$/)
+    expect(helpMsg.sender).toBe("lia")
+    expect(helpMsg.id).toMatch(/^lia-\d+-buscar$/)
+    expect(helpMsg.content).toMatch(/Que tipo de busca/)
+  })
+
   it("mention-message builders preserve the legacy backend payloads", () => {
     expect(findSlashCommandByVerb("buscar")?.buildMentionMessage?.("Ana")).toBe(
       "Buscar candidato: Ana",
@@ -228,6 +292,13 @@ describe("SLASH_COMMANDS registry", () => {
       const primaries = SLASH_COMMANDS.map((c) => c.primary.toLowerCase())
       const unique = new Set(primaries)
       expect(unique.size).toBe(primaries.length)
+    })
+
+    it("EXECUTE_ONLY_COMMAND_IDS only references ids that exist", () => {
+      const ids = new Set(SLASH_COMMANDS.map((c) => c.id))
+      for (const id of EXECUTE_ONLY_COMMAND_IDS) {
+        expect(ids.has(id), `EXECUTE_ONLY_COMMAND_IDS lists "${id}" but no command with that id exists`).toBe(true)
+      }
     })
   })
 })
