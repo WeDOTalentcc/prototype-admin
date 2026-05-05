@@ -68,7 +68,7 @@ describe("UnifiedChatInput — /slash command dropdown", () => {
     // The dropdown header label is "Comandos" — rendered when items exist.
     expect(screen.getByText("Comandos")).toBeTruthy()
     // At least one canonical command should appear (e.g. "Criar vaga").
-    expect(screen.getByText("Criar vaga")).toBeTruthy()
+    expect(screen.getByText("/criar vaga")).toBeTruthy()
   })
 
   it("filters dropdown by query after the slash", () => {
@@ -80,8 +80,8 @@ describe("UnifiedChatInput — /slash command dropdown", () => {
     })
 
     // "/ajuda" should match; "Criar vaga" should not.
-    expect(screen.getByText("O que posso fazer?")).toBeTruthy()
-    expect(screen.queryByText("Criar vaga")).toBeNull()
+    expect(screen.getByText("/ajuda")).toBeTruthy()
+    expect(screen.queryByText("/criar vaga")).toBeNull()
   })
 
   it("closes dropdown on Escape and remounts cleanly", () => {
@@ -100,5 +100,50 @@ describe("UnifiedChatInput — /slash command dropdown", () => {
 
     // Boy Scout: ensure rerender doesn't violate rules-of-hooks
     expect(() => unmount()).not.toThrow()
+  })
+
+  it("Tab confirms the highlighted item (Claude Code parity)", () => {
+    render(<Harness />)
+    const ta = screen.getByTestId("chat-input") as HTMLTextAreaElement
+
+    act(() => {
+      fireEvent.change(ta, { target: { value: "/cri" } })
+    })
+    expect(screen.getByText("/criar vaga")).toBeTruthy()
+
+    // Tab should pick the highlighted entry — same as Enter.
+    act(() => {
+      fireEvent.keyDown(ta, { key: "Tab" })
+    })
+    expect(screen.queryByText("/criar vaga")).toBeNull()
+    // Prefill replaced the partial /cri with the canonical phrase.
+    expect((ta.value || "").length).toBeGreaterThan(0)
+  })
+
+  it("opens the dropdown when '/' is typed mid-sentence (after whitespace)", () => {
+    render(<Harness />)
+    const ta = screen.getByTestId("chat-input") as HTMLTextAreaElement
+
+    // Slash preceded by whitespace should still open the menu.
+    act(() => {
+      fireEvent.change(ta, {
+        target: { value: "oi tudo bem, /", selectionStart: 14 },
+      })
+    })
+    expect(screen.getByText("Comandos")).toBeTruthy()
+    expect(screen.getByText("/criar vaga")).toBeTruthy()
+  })
+
+  it("does NOT open the dropdown when '/' is glued to a non-space char (e.g. URL paths)", () => {
+    render(<Harness />)
+    const ta = screen.getByTestId("chat-input") as HTMLTextAreaElement
+
+    act(() => {
+      fireEvent.change(ta, {
+        target: { value: "url/path", selectionStart: 8 },
+      })
+    })
+    // Header would be present only if the trigger fired.
+    expect(screen.queryByText("Comandos")).toBeNull()
   })
 })

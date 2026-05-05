@@ -4,9 +4,10 @@ import { SLASH_COMMANDS } from "./slash-commands"
 
 const COMMANDS: DropdownItem[] = SLASH_COMMANDS.filter((cmd) => cmd.showInDropdown).map((cmd) => ({
   id: cmd.id,
-  label: cmd.label,
+  // Show the canonical token (e.g. /criar vaga) so the dropdown
+  // works as a Claude-Code-style command palette.
+  label: cmd.primary,
   subtitle: cmd.subtitle,
-  icon: cmd.icon,
 }))
 
 interface UseSlashCommandsOptions {
@@ -32,7 +33,7 @@ export function useSlashCommands(options: UseSlashCommandsOptions) {
 
   const dropdown = useInputDropdown({
     triggerChar: "/",
-    requireStartOfLine: true,
+    singleWordQuery: true,
     onSelect: handleSelect,
   })
 

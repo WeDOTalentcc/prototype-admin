@@ -91,9 +91,12 @@ export function UnifiedChatInput({
     setInputText(prev => {
       const before = prev.slice(0, cursorPosition)
       const lastSlash = before.lastIndexOf("/")
-      const isStartOfLine =
-        lastSlash === 0 || (lastSlash > 0 && before[lastSlash - 1] === "\n")
-      if (lastSlash < 0 || !isStartOfLine) return text
+      // Mirror the trigger rule in useInputDropdown.checkTrigger:
+      // the slash must sit at the start of the input or be preceded
+      // by whitespace. Lets the user fire `/cmd` mid-sentence.
+      const validAnchor =
+        lastSlash === 0 || (lastSlash > 0 && /\s/.test(before[lastSlash - 1] ?? ""))
+      if (lastSlash < 0 || !validAnchor) return text
       return prev.slice(0, lastSlash) + text + prev.slice(cursorPosition)
     })
     setTimeout(() => {

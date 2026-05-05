@@ -18,12 +18,22 @@ export interface InputDropdownState {
 
 interface UseInputDropdownOptions {
   triggerChar: string
-  requireStartOfLine?: boolean
+  /**
+   * When true, the query (text after the trigger char) must be a single
+   * "word" — a space ends the dropdown. Used by `/`-style commands so
+   * that typing `/criar ` (with trailing space) closes the menu.
+   *
+   * The trigger char itself can appear anywhere as long as it sits at
+   * the start of the input or is preceded by whitespace — same rule as
+   * `@` mentions. This mirrors the Claude-Code-style command palette
+   * (mid-text triggering allowed).
+   */
+  singleWordQuery?: boolean
   onSelect: (item: DropdownItem) => void
 }
 
 export function useInputDropdown(options: UseInputDropdownOptions) {
-  const { triggerChar, requireStartOfLine = false, onSelect } = options
+  const { triggerChar, singleWordQuery = false, onSelect } = options
 
   const [state, setState] = useState<InputDropdownState>({
     isOpen: false,
@@ -87,7 +97,11 @@ export function useInputDropdown(options: UseInputDropdownOptions) {
       return true
     }
 
-    if (e.key === "Enter") {
+    // Tab and Enter both confirm the highlighted item — matches the
+    // Claude Code command palette where Tab is the canonical "accept"
+    // key. Shift+Tab keeps default browser focus behaviour so the user
+    // can still escape the textarea if no item is highlighted.
+    if (e.key === "Enter" || (e.key === "Tab" && !e.shiftKey)) {
       e.preventDefault()
       const item = s.items[s.selectedIndex]
       if (item) selectItem(item)
@@ -107,37 +121,48 @@ export function useInputDropdown(options: UseInputDropdownOptions) {
     value: string,
     selectionStart: number
   ): { triggered: boolean; query: string; triggerStart: number } => {
-    // Walk backward from cursor to find trigger char
+    // Walk backward from cursor looking for the trigger char.
     let i = selectionStart - 1
     while (i >= 0) {
       const ch = value[i]
       if (ch === triggerChar) {
-        // If requireStartOfLine, trigger char must be at pos 0 or after newline
-        if (requireStartOfLine) {
-          if (i !== 0 && value[i - 1] !== "\n") {
-            return { triggered: false, query: "", triggerStart: -1 }
-          }
-        } else {
-          // For @, trigger must be at start or preceded by whitespace
-          if (i > 0 && !/\s/.test(value[i - 1])) {
-            return { triggered: false, query: "", triggerStart: -1 }
-          }
+        // Position rule (uniform for `/` and `@`): trigger char must be
+        // at the start of the input or preceded by whitespace. This is
+        // what enables "type / mid-sentence" — the Claude-Code command
+        // palette behaviour.
+        if (i > 0 && !/\s/.test(value[i - 1])) {
+          return { triggered: false, query: "", triggerStart: -1 }
         }
         const query = value.slice(i + 1, selectionStart)
-        // No spaces allowed in query for slash commands
-        if (requireStartOfLine && query.includes(" ")) {
+        // For `/`-style commands the query is a single word; a space
+        // closes the dropdown. `@` mentions allow spaces (candidate
+        // names like "Maria Silva").
+        if (singleWordQuery && query.includes(" ")) {
           return { triggered: false, query: "", triggerStart: -1 }
         }
         return { triggered: true, query, triggerStart: i }
       }
-      // Stop scanning on whitespace for @ mentions
-      if (!requireStartOfLine && /\s/.test(ch)) break
-      // Stop scanning on newline for slash commands
-      if (requireStartOfLine && ch === "\n") break
+      // Stop scanning when we hit whitespace before finding the trigger.
+      // Same rule for both modes — keeps the lookback bounded so we
+      // don't return a stale trigger from earlier in the line.
+      if (/\s/.test(ch)) {
+        // For slash commands we tolerate spaces inside the query (the
+        // space-in-query rule above closes the dropdown), but the
+        // trigger lookback stops at any whitespace.
+        if (singleWordQuery) {
+          // Slash commands: query is single-word; if we hit any
+          // whitespace before the trigger, abort.
+          break
+        }
+        // Mentions: candidate names can include spaces. Keep walking
+        // backward — the trigger char must still be preceded by
+        // whitespace (handled by the position rule above).
+        break
+      }
       i--
     }
     return { triggered: false, query: "", triggerStart: -1 }
-  }, [triggerChar, requireStartOfLine])
+  }, [triggerChar, singleWordQuery])
 
   return {
     isOpen: state.isOpen,

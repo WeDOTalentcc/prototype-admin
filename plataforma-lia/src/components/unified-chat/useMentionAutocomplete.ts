@@ -22,7 +22,7 @@ export function useMentionAutocomplete(options: UseMentionAutocompleteOptions) {
 
   const dropdown = useInputDropdown({
     triggerChar: "@",
-    requireStartOfLine: false,
+    singleWordQuery: false,
     onSelect: handleSelect,
   })
 
