@@ -13,11 +13,15 @@ export function useMentionAutocomplete(options: UseMentionAutocompleteOptions) {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const abortRef = useRef<AbortController | null>(null)
   const lastQueryRef = useRef("")
+  // Mirror dropdown.triggerStart through a ref so handleSelect (whose
+  // useCallback deps are intentionally narrow) reads the latest value
+  // instead of the stale render-0 value captured by the closure.
+  const triggerStartRef = useRef(-1)
 
   const handleSelect = useCallback((item: DropdownItem) => {
     const type = item.category === "Candidatos" ? "candidate" : "job"
     const mention = "@[" + item.label + "](" + type + ":" + item.id + ")"
-    onInsertMention(dropdown.triggerStart, mention)
+    onInsertMention(triggerStartRef.current, mention)
   }, [onInsertMention])
 
   const dropdown = useInputDropdown({
@@ -26,9 +30,20 @@ export function useMentionAutocomplete(options: UseMentionAutocompleteOptions) {
     onSelect: handleSelect,
   })
 
+  // Stable handles. Including the whole `dropdown` object in deps
+  // would loop infinitely (the hook returns a fresh object literal
+  // each render); destructure the useCallback-stabilized methods.
+  const { checkTrigger, open, close, setItems, isOpen } = dropdown
+  triggerStartRef.current = dropdown.triggerStart
+
+  // Suppress reopen after explicit dismissal (Escape) — same pattern
+  // as useSlashCommands.
+  const dismissedAtRef = useRef<number | null>(null)
+  const prevIsOpenRef = useRef(isOpen)
+
   const fetchResults = useCallback(async (query: string) => {
     if (query.length < 2) {
-      dropdown.setItems([])
+      setItems([])
       return
     }
 
@@ -77,23 +92,35 @@ export function useMentionAutocomplete(options: UseMentionAutocompleteOptions) {
         })
       }
 
-      dropdown.setItems(items)
+      setItems(items)
     } catch {
       // Silently ignore aborted/network errors
     }
-  }, [dropdown])
+  }, [setItems])
 
   // Watch input changes and trigger search
   useEffect(() => {
-    const { triggered, query, triggerStart } = dropdown.checkTrigger(inputText, selectionStart)
+    const { triggered, query, triggerStart } = checkTrigger(inputText, selectionStart)
+
+    if (prevIsOpenRef.current && !isOpen && triggered) {
+      dismissedAtRef.current = triggerStart
+    }
+    prevIsOpenRef.current = isOpen
 
     if (!triggered) {
-      if (dropdown.isOpen) dropdown.close()
+      dismissedAtRef.current = null
+      if (isOpen) close()
       return
     }
 
-    if (!dropdown.isOpen) {
-      dropdown.open([], triggerStart, query)
+    if (dismissedAtRef.current !== null && dismissedAtRef.current !== triggerStart) {
+      dismissedAtRef.current = null
+    }
+
+    if (dismissedAtRef.current === triggerStart) return
+
+    if (!isOpen) {
+      open([], triggerStart, query)
     }
 
     if (query === lastQueryRef.current) return
@@ -107,7 +134,7 @@ export function useMentionAutocomplete(options: UseMentionAutocompleteOptions) {
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current)
     }
-  }, [inputText, selectionStart, dropdown, fetchResults])
+  }, [inputText, selectionStart, checkTrigger, open, close, isOpen, fetchResults])
 
   // Cleanup on unmount
   useEffect(() => {

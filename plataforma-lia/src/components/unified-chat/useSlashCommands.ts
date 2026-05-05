@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import { useInputDropdown, type DropdownItem } from "./useInputDropdown"
 import { SLASH_COMMANDS } from "./slash-commands"
 
@@ -37,24 +37,52 @@ export function useSlashCommands(options: UseSlashCommandsOptions) {
     onSelect: handleSelect,
   })
 
+  // Destructure stable callbacks (memoized via useCallback inside
+  // useInputDropdown) plus the current isOpen flag. Depending on the
+  // whole `dropdown` object would loop infinitely because the hook
+  // returns a fresh object literal on every render.
+  const { checkTrigger, open, close, setItems, isOpen } = dropdown
+
+  // Once the user dismisses the dropdown (Escape) the trigger char is
+  // still in the input, so the effect would immediately reopen it.
+  // Track which triggerStart was dismissed and suppress reopen until
+  // that trigger session ends (cursor leaves, char deleted, etc.).
+  const dismissedAtRef = useRef<number | null>(null)
+  const prevIsOpenRef = useRef(isOpen)
+
   useEffect(() => {
-    const { triggered, query, triggerStart } = dropdown.checkTrigger(inputText, selectionStart)
+    const { triggered, query, triggerStart } = checkTrigger(inputText, selectionStart)
+
+    // Detect external dismissal: open last render, closed now, while
+    // the trigger is still present → user explicitly closed it.
+    if (prevIsOpenRef.current && !isOpen && triggered) {
+      dismissedAtRef.current = triggerStart
+    }
+    prevIsOpenRef.current = isOpen
 
     if (!triggered) {
-      if (dropdown.isOpen) dropdown.close()
+      dismissedAtRef.current = null
+      if (isOpen) close()
       return
     }
+
+    // Reset suppression when the trigger position moved.
+    if (dismissedAtRef.current !== null && dismissedAtRef.current !== triggerStart) {
+      dismissedAtRef.current = null
+    }
+
+    if (dismissedAtRef.current === triggerStart) return
 
     const filtered = COMMANDS.filter(cmd =>
       cmd.label.toLowerCase().includes(query.toLowerCase())
     )
 
-    if (!dropdown.isOpen) {
-      dropdown.open(filtered, triggerStart, query)
+    if (!isOpen) {
+      open(filtered, triggerStart, query)
     } else {
-      dropdown.setItems(filtered)
+      setItems(filtered)
     }
-  }, [inputText, selectionStart, dropdown])
+  }, [inputText, selectionStart, checkTrigger, open, close, setItems, isOpen])
 
   return {
     isOpen: dropdown.isOpen,
