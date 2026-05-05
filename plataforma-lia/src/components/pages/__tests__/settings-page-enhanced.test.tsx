@@ -68,7 +68,7 @@ beforeAll(() => {
 // next-intl: SettingsPageEnhanced e os hubs chamam useTranslations direto.
 // Sem este mock, qualquer render falha com "context from NextIntlClientProvider
 // was not found" (regressão Task #904, quando a Page passou a usar i18n direto).
-// Padrão alinhado com FunilDeTalentosClient.test e CandidatesTableArea.test.
+// Padrão alinhado com CandidatesTableArea.test.
 vi.mock("next-intl", () => ({
   useTranslations: () => (key: string, params?: Record<string, unknown>) =>
     params ? `${key}:${JSON.stringify(params)}` : key,

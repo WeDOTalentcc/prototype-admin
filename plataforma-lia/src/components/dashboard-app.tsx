@@ -29,11 +29,12 @@ import { GlobalSearchModal } from "@/components/global-search-modal"
 import { PipelineOverviewPage } from "@/components/pages/pipeline-overview-page"
 import { ModulesPage } from "@/components/pages/modules-page"
 
-// T002 (fork_spa_switch): "Funil de Talentos" was removed from this map on
-// purpose. It now lives ONLY as an SPA-switched component inside this shell
-// — handleNavigate("Funil de Talentos") just calls setCurrentPage and does
-// NOT router.push, so no URL change happens. The /funil-de-talentos route
-// still exists for back-compat but it 308-redirects to "/".
+// Mapping of sidebar labels to App Router URLs. handleNavigate(label) calls
+// router.push(PAGE_ROUTES[label]) when an entry exists, keeping URL and SPA
+// state in sync. "Funil de Talentos" is included so the sidebar click navigates
+// to /funil-de-talentos (which renders the canonical 719L CandidatesPage via
+// (dashboard)/funil-de-talentos/page.tsx). The renderCurrentPage() switch
+// keeps "Funil de Talentos" as a fallback case for the root SPA render path.
 const PAGE_ROUTES: Record<string, string> = {
   "Conversar": "/chat",
   "Vagas": "/jobs",
@@ -41,6 +42,7 @@ const PAGE_ROUTES: Record<string, string> = {
   "Decidir": "/tasks",
   "Configurações": "/configuracoes",
   "Estúdio de Agentes": "/agent-studio",
+  "Funil de Talentos": "/funil-de-talentos",
 }
 
 interface DashboardAppProps {

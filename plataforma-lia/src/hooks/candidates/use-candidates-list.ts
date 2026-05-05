@@ -25,7 +25,7 @@ export interface CandidatesListFilters {
 //   - `errorKind` é a fonte de verdade para roteamento de UX.
 //   - `error` passou a carregar a mensagem crua (err.message) em vez do texto
 //     pt-BR anterior. Consumidores que queiram copy localizado devem derivar
-//     a string de `errorKind` via i18n (ver FunilDeTalentosClient).
+//     a string de `errorKind` via i18n (ver candidates-page.tsx canônico).
 export type CandidatesErrorKind = "unauthorized" | "forbidden" | "server" | "network"
 
 export interface UseCandidatesListReturn {

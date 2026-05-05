@@ -4,7 +4,7 @@ import en from "../../messages/en.json"
 
 // Contrato i18n do estado de relogin do Funil (task #293).
 // Garante que o mapeamento errorKind → t(`auth.<kind>Message`) em
-// FunilDeTalentosClient nunca aponte para chave inexistente.
+// candidates-page.tsx (canônico 719L) nunca aponte para chave inexistente.
 const REQUIRED_KEYS = [
   "reloginTitle",
   "reloginCta",
