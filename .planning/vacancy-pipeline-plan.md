@@ -457,11 +457,11 @@ Phase F (harness sensors + governança)        [3h] ── CI green em tudo
 
 | Phase | Status | Commits | Notas |
 |---|---|---|---|
-| 0 | ⏳ pendente | — | Próximo |
-| A | ⏳ pendente | — | |
-| C | ⏳ pendente | — | |
-| D | ⏳ pendente | — | |
-| E | ⏳ pendente | — | |
-| F | ⏳ pendente | — | |
+| 0 | ✅ done | 1bd182c80 | ReadinessHubPage + ImportJobsDrawer deletados |
+| A | ✅ done | 6a19f9234 + 9274ccdf0 | Preview lateral + deep-link + actions wired (12 tests) |
+| C | ✅ done | d220e5958 | Whitelist drift + /unpublish + ATS list-jobs (16 tests) |
+| D | ✅ done | cee68ab29 | BulkImportModal ATS tab + onUnpublish wired |
+| E | ✅ done | 987a07a1b | 4 wizard tools + STAGE_TOOLS allowlist (10 tests) |
+| F | 🟢 in progress | — | CLAUDE.md atualizada; AST sensors em andamento |
 
 > Cada phase atualiza esta tabela ao concluir.

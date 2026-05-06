@@ -55,6 +55,22 @@ jobs:
           fi
           echo "OK: no Rules of Hooks violations"
 
+      - name: VacancyAction stage coverage sensor (Phase F)
+        # Compares JOB_LIFECYCLE_ORDER (backend) with getVacancyAction switch
+        # (frontend). Blocks if a stage is added in one place but not the other.
+        # See .planning/vacancy-pipeline-plan.md > Phase F.
+        run: npx tsx scripts/check-vacancy-action-coverage.ts
+
+      - name: Multi-tenancy gate sensor (Phase F, warn-only)
+        # Walks app/api/v1/*.py and warns on routes missing
+        # _require_company_id / get_user_company_id. Pre-existing
+        # offenders in recruitment_stages exist; cleaning is a separate
+        # PR. Pass --strict after cleanup to make this a CI gate.
+        run: |
+          cd ../lia-agent-system
+          python3 scripts/check_company_id_in_routes.py
+        continue-on-error: true
+
       - name: Unit & Component tests
         run: npx vitest run --reporter=verbose
 
