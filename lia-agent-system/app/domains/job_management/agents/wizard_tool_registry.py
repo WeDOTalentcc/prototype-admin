@@ -231,6 +231,49 @@ async def _wrap_dispatch_screening(**kwargs: Any) -> dict[str, Any]:
 
 
 @tool_handler("wizard")
+async def _wrap_request_approval(**kwargs: Any) -> dict[str, Any]:
+    """Phase I.8 — request approval of WSI screening questions.
+
+    Mirror of the UI's 'Solicitar aprovação' button (Phase I.1, commit
+    2bb6dad3c). Sets approval_status='pendente' + approval_requested_at via
+    JobReadinessService.approve_stage; the lifecycle classifier then moves
+    the vacancy from wsi_config to aguardando_aprovacao.
+
+    Stage allowlist: wsi_config (registered in STAGE_TOOLS below).
+    Multi-tenancy: company_id REQUIRED in args; vacancy resolved via
+    _load_vacancy_or_error (cross-tenant returns opaque 'not found').
+    """
+    vacancy_id = kwargs.get("vacancy_id")
+    company_id = kwargs.get("company_id")
+
+    job = await _load_vacancy_or_error(vacancy_id, company_id)
+    if isinstance(job, dict):
+        return job
+
+    try:
+        from app.domains.job_management.services.job_readiness_service import (
+            JobReadinessService,
+        )
+        async with AsyncSessionLocal() as db:
+            svc = JobReadinessService(db=db)
+            updated = await svc.approve_stage(job, actor=f"wizard:{company_id}")
+            await db.commit()
+            return {
+                "is_error": False,
+                "vacancy_id": str(vacancy_id),
+                "approval_status": getattr(updated, "approval_status", None),
+                "message": "Aprovação solicitada — vaga aguarda revisão",
+            }
+    except ValueError as ve:
+        # The service raises ValueError on stage / state mismatch
+        # (e.g., trying to approve a vaga that has no screening_questions yet).
+        return {"is_error": True, "error": str(ve), "stage_check": "blocked"}
+    except Exception as e:
+        logger.error(f"[wizard_tools] request_approval error: {e}", exc_info=True)
+        return {"is_error": True, "error": str(e)}
+
+
+@tool_handler("wizard")
 async def _wrap_publish_vacancy(**kwargs: Any) -> dict[str, Any]:
     """Phase E — publish (status -> Ativa) or unpublish (clear flags) a vacancy."""
     vacancy_id = kwargs.get("vacancy_id")
@@ -784,6 +827,22 @@ TOOL_DEFINITIONS.append(
 )
 TOOL_DEFINITIONS.append(
     ToolDefinition(
+        name="request_approval",
+        description="Solicita aprovação das perguntas de triagem WSI da vaga. Use APENAS quando a vaga já tem perguntas geradas (estágio wsi_config) e o recrutador quer avançar para o estágio aguardando_aprovacao. Backend chama job_readiness/approve-stage e seta approval_status=pendente.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "vacancy_id": {"type": "string", "description": "ID da vaga (UUID)"},
+                "company_id": {"type": "string", "description": "ID da empresa (do contexto do agente, NUNCA inventar)"},
+            },
+            "required": ["vacancy_id", "company_id"],
+        },
+        output_schema=ToolOutput,
+        function=_wrap_request_approval,
+    )
+)
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
         name="publish_vacancy",
         description="Publica (status=Ativa) ou despublica (limpa flags published_*) uma vaga. action='publish' (default) ou 'unpublish'.",
         parameters={
@@ -831,7 +890,7 @@ STAGE_TOOLS: dict[str, list[str]] = {
     # Stage names match _classify_job_lifecycle_stage in
     # app/api/v1/job_vacancies/analytics.py.
     "enriquecida": ["generate_screening_questions", "validate_job_requirements"],
-    "wsi_config": ["generate_screening_questions", "validate_job_requirements"],
+    "wsi_config": ["generate_screening_questions", "validate_job_requirements", "request_approval"],
     "aguardando_aprovacao": ["dispatch_screening"],
     "publicada": ["publish_vacancy", "change_vacancy_status"],
     "ao_vivo": ["change_vacancy_status", "publish_vacancy"],

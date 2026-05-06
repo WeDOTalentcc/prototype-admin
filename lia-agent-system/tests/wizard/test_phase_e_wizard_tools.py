@@ -29,6 +29,9 @@ PHASE_E_TOOLS = {
     "dispatch_screening",
     "publish_vacancy",
     "change_vacancy_status",
+    # Phase I.8 — added to close UI/chat asymmetry. The UI Phase I.1 added a
+    # request-approval VacancyAction; the wizard tool was missing until now.
+    "request_approval",
 }
 
 
@@ -110,7 +113,9 @@ def test_stage_tools_includes_phase_e():
     """The vacancy lifecycle stages must offer the right tools."""
     expected = {
         "enriquecida": {"generate_screening_questions"},
-        "wsi_config": {"generate_screening_questions"},
+        # Phase I.8 — wsi_config now also exposes request_approval to mirror
+        # the Phase I.1 UI button ('Solicitar aprovação').
+        "wsi_config": {"generate_screening_questions", "request_approval"},
         "aguardando_aprovacao": {"dispatch_screening"},
         "publicada": {"publish_vacancy"},
         "ao_vivo": {"change_vacancy_status"},
