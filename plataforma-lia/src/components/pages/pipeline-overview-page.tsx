@@ -207,7 +207,8 @@ function lifecycleStageLabel(
 // > Frontend / React rules-of-hooks discipline (vacancy preview canonical).
 export type VacancyActionKind =
   | "open-jd-config"           // ats_importada, rascunho → /jobs/{id}?tab=edit&section=descricao
-  | "open-questions-config"    // enriquecida, wsi_config → /jobs/{id}?tab=edit&section=perguntas
+  | "open-questions-config"    // enriquecida → /jobs/{id}?tab=edit&section=perguntas
+  | "request-approval"         // wsi_config → POST approve-stage (Phase I.1 BLOQUEANTE)
   | "dispatch-screening"       // aguardando_aprovacao → POST dispatch-screening (audience='new_only')
   | "open-publish-modal"       // publicada → <JobPublishModal> inline
   | "open-status-modal"        // ao_vivo → <JobStatusModal> inline
@@ -218,6 +219,7 @@ export type VacancyStatusModalMode = "pause" | "activate" | "cancel"
 export type VacancyAction =
   | { kind: "open-jd-config"; label: string }
   | { kind: "open-questions-config"; label: string }
+  | { kind: "request-approval"; label: string }
   | { kind: "dispatch-screening"; label: string }
   | { kind: "open-publish-modal"; label: string }
   | { kind: "open-status-modal"; label: string; mode: VacancyStatusModalMode }
@@ -242,7 +244,12 @@ function getVacancyAction(
     case "enriquecida":
       return { kind: "open-questions-config", label: t("vacancyCard.openEnrichment") }
     case "wsi_config":
-      return { kind: "open-questions-config", label: t("vacancyCard.openWsi") }
+      // Phase I.1 — BLOQUEANTE fix: wsi_config now triggers approval request
+      // (POST approve-stage). Was previously deep-link to perguntas which had
+      // no way to advance the vaga. The backend service marks
+      // approval_status='pendente' + approval_requested_at, classifier moves
+      // vaga to aguardando_aprovacao.
+      return { kind: "request-approval", label: t("vacancyCard.requestApproval") }
     case "aguardando_aprovacao":
       return { kind: "dispatch-screening", label: t("vacancyCard.openApproval") }
     case "publicada":
@@ -263,6 +270,7 @@ export function vacancyActionKindIsExhaustive(kind: VacancyActionKind): true {
   switch (kind) {
     case "open-jd-config":
     case "open-questions-config":
+    case "request-approval":
     case "dispatch-screening":
     case "open-publish-modal":
     case "open-status-modal":
@@ -503,6 +511,29 @@ export function PipelineOverviewPage() {
       case "open-questions-config":
         router.push(`/jobs/${vacancy.id}?tab=edit&section=perguntas`)
         return
+      case "request-approval": {
+        // Phase I.1 — BLOQUEANTE: trigger wsi_config -> aguardando_aprovacao
+        // transition. Backend sets approval_status='pendente' +
+        // approval_requested_at; classifier reclassifies the vaga.
+        try {
+          const res = await fetch(
+            `/api/backend-proxy/job-readiness/job/${vacancy.id}/approve-stage`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({}),
+            },
+          )
+          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          toast.success("Aprovação solicitada", { description: vacancy.title })
+          fetchLifecycleOverview()
+        } catch (err) {
+          toast.error("Falha ao solicitar aprovação", {
+            description: err instanceof Error ? err.message : "Erro desconhecido",
+          })
+        }
+        return
+      }
       case "dispatch-screening": {
         try {
           const res = await fetch(
