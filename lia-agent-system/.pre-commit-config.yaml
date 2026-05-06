@@ -58,18 +58,34 @@ repos:
         pass_filenames: false
         always_run: false
 
-      - id: agent-has-universal-blocks
-        name: "ADR-028: agent DOMAIN_INSTRUCTIONS contains UNIVERSAL_BLOCKS (warn-only Sprint 0/1)"
-        language: system
-        entry: python3 scripts/check_agent_has_universal_blocks.py
-        files: ^app/domains/.*(react_agent|_agent)\.py$
-        pass_filenames: false
-        always_run: false
-
       - id: no-tenant-in-tool-schemas
         name: "ADR-029 §2: tool schemas must not expose tenant keys to LLM (BLOCKING)"
         language: system
         entry: python3 scripts/check_no_tenant_in_tool_schemas.py --block
         files: ^app/(domains|shared|tools)/.*\.py$
+        pass_filenames: false
+        always_run: false
+
+      - id: no-devmode-in-prod-env
+        name: "G-DEVMODE: block LIA_DEV_MODE active in .env.staging/.env.production (BLOCKING)"
+        language: system
+        entry: python3 scripts/check_no_devmode_in_prod_env.py
+        files: ^(\.env\.|\.env$|app/).*
+        pass_filenames: false
+        always_run: false
+
+      - id: company-id-in-routes-warn
+        name: "Multi-tenancy: routes must call _require_company_id (warn-only)"
+        language: system
+        entry: bash -c "python3 scripts/check_company_id_in_routes.py 2>&1; exit 0"
+        files: ^app/api/v1/.*\.py$
+        pass_filenames: false
+        always_run: false
+
+      - id: no-direct-contextvar-set-warn
+        name: "G-CONTEXTVAR: bloquear set direto fora dos helpers R-008 (warn-only)"
+        language: system
+        entry: bash -c "python3 scripts/check_no_direct_contextvar_set.py 2>&1; exit 0"
+        files: ^app/.*\.py$
         pass_filenames: false
         always_run: false

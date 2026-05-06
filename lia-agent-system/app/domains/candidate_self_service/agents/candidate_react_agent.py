@@ -52,6 +52,22 @@ class CandidateSelfServiceAgent(LangGraphReActBase, EnhancedAgentMixin):
     def available_tools(self) -> list[str]:
         return list(self._all_tool_names)
 
+    def _get_tool_contracts(self) -> list:
+        """Ativa GovernanceToolNode para este agente.
+
+        ADR-029 §3 + Audit C 2026-05-06: candidate_self_service is the only
+        candidate-facing react_agent. Wiring GovernanceToolNode here closes
+        the 14/15 → 15/15 GovernanceToolNode coverage gap (PII masking +
+        audit trail + output schema validation pós-execução de tools).
+        """
+        try:
+            from app.domains.candidate_self_service.agents.candidate_tool_registry import (
+                get_candidate_tools as _gct,
+            )
+            return _gct()
+        except ImportError:
+            return []
+
     def _get_tools(self) -> list:
         from lia_agents_core.react_loop import tool_definition_to_langchain_tool
         tool_defs = get_candidate_tools() + self._get_all_enhanced_tools()
