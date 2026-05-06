@@ -316,6 +316,100 @@ async def get_field_mappings(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.get("/ats/connections/{connection_id}/jobs", response_model=dict)
+async def list_remote_jobs(
+    connection_id: str,
+    page: int = 1,
+    size: int = 50,
+    repo: ATSRepository = Depends(get_ats_repo),
+    current_user=Depends(get_current_user_or_demo),
+):
+    """Phase C.3 — list jobs available in the connected ATS for selective import.
+
+    Validates the connection belongs to the caller's company (404 on mismatch
+    to avoid ID enumeration). Dispatches to the provider client's list_jobs()
+    method (audit confirmed gupy + pandape have it; merge does not yet).
+    Result shape is normalized so the BulkImportModal ATS tab does not
+    need provider-specific code.
+
+    Multi-tenancy enforced by ``get_connection_by_id_and_company``. Audience
+    of the endpoint: BulkImportModal Phase D tab "ATS Conectado".
+    """
+    from app.domains.ats_integration.services.ats_clients.gupy import GupyClient
+    from app.domains.ats_integration.services.ats_clients.pandape import PandapeClient
+    from app.domains.ats_integration.services.ats_clients.base import ATSClientConfig
+
+    company_id = get_user_company_id(current_user)
+    if not company_id:
+        raise HTTPException(status_code=403, detail="company_id missing from token")
+
+    conn = await repo.get_connection_by_id_and_company(connection_id, str(company_id))
+    if not conn:
+        # 404 — not 403 — to prevent enumeration of foreign company IDs.
+        raise HTTPException(status_code=404, detail="ATS connection not found")
+
+    provider = (conn.provider or "").lower()
+
+    api_key = ""
+    if conn.api_key:
+        try:
+            api_key = decrypt_value(conn.api_key)
+        except Exception:
+            api_key = conn.api_key
+
+    cfg = ATSClientConfig(
+        api_key=api_key,
+        api_secret=getattr(conn, "api_secret", None),
+        base_url=getattr(conn, "base_url", None),
+        company_id=str(company_id),
+        webhook_url=getattr(conn, "webhook_url", None),
+    )
+
+    if provider == "gupy":
+        client = GupyClient(cfg)
+    elif provider == "pandape":
+        client = PandapeClient(cfg)
+    elif provider == "merge":
+        raise HTTPException(
+            status_code=501,
+            detail="list_jobs not implemented for merge yet (Phase D follow-up)",
+        )
+    else:
+        raise HTTPException(status_code=400, detail=f"Unknown provider: {provider}")
+
+    try:
+        raw = await client.list_jobs(page=page, size=size)
+    except Exception as e:
+        logger.error(f"list_jobs failed for {provider}: {e}", exc_info=True)
+        raise HTTPException(status_code=502, detail=f"Upstream ATS error: {e}")
+
+    # Normalize shape: each client returns either a flat list OR an envelope
+    # like {results, total}. BulkImportModal consumes the normalized output.
+    items_raw = raw if isinstance(raw, list) else (raw.get("results") or raw.get("jobs") or [])
+    items = []
+    for j in items_raw:
+        if not isinstance(j, dict):
+            continue
+        items.append({
+            "external_id": str(j.get("id") or j.get("external_id") or ""),
+            "title": j.get("title") or j.get("name") or "",
+            "department": j.get("department") or j.get("category"),
+            "location": j.get("location") or j.get("city"),
+            "status": j.get("status") or j.get("state"),
+            "posted_at": j.get("posted_at") or j.get("created_at") or j.get("publish_date"),
+        })
+
+    total = len(items) if isinstance(raw, list) else (raw.get("total") or len(items))
+    return {
+        "provider": provider,
+        "connection_id": str(connection_id),
+        "page": page,
+        "size": size,
+        "items": items,
+        "total": total,
+    }
+
+
 @router.post("/ats/connections/{connection_id}/sync", response_model=dict)
 async def trigger_ats_sync(
     connection_id: str,

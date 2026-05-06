@@ -302,6 +302,52 @@ async def _send_candidates_added_notification(
         logger.warning(f"Failed to send notification: {e}")
 
 
+@router.post("/job-vacancies/{job_id}/unpublish", response_model=JobPublishResponse)
+async def unpublish_job_vacancy(
+    job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
+    current_user: User = Depends(get_current_active_user),
+):
+    """Phase C.2 — clear published_* flags. Symmetric to /publish.
+
+    Idempotent: returns 200 with {changed: false} when the vacancy was
+    already unpublished. Multi-tenant: company_id from JWT, never payload.
+    Audit event emitted only when state actually changed.
+    """
+    company_id = get_user_company_id(current_user)
+
+    job = await repo.get_vacancy_by_id_and_company(job_id, company_id)
+    if not job:
+        # 404, not 403 — avoid leaking existence cross-tenant.
+        raise HTTPException(status_code=404, detail="Vaga não encontrada")
+
+    job, changed = await repo.unpublish_vacancy(job)
+
+    if changed:
+        from app.domains.job_management.services.job_audit_service import job_audit_service
+        changed_by = str(current_user.email) if hasattr(current_user, "email") else str(current_user.id)
+        try:
+            await job_audit_service.log_publication(
+                job_id=str(job_id),
+                platform="internal",
+                changed_by=changed_by,
+                company_id=company_id,
+                db=repo.db,
+                extra_data={"action": "unpublish"},
+            )
+        except Exception as e:
+            logger.warning(f"Audit log failed for job unpublish: {e}")
+
+    return JobPublishResponse(
+        success=True,
+        job_id=str(job_id),
+        status=job.status,
+        published=False,
+        message="Vaga despublicada" if changed else "Vaga já estava despublicada",
+        sourcing_result=None,
+    )
+
+
 @router.post("/jobs/{job_id}/publish", response_model=JobPublishResponseV2)
 async def publish_job_vacancy_v2(
     job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),

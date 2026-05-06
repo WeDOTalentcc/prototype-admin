@@ -42,6 +42,35 @@ class JobVacancyLifecycleRepository:
         await self.db.refresh(job)
         return job
 
+    async def unpublish_vacancy(self, job: JobVacancy) -> tuple[JobVacancy, bool]:
+        """Phase C.2 — clear published_* flags + last_published_at. Idempotent.
+
+        Returns (job, changed) where ``changed`` is False when the vacancy was
+        already unpublished (so the route can respond {changed: false} without
+        emitting an audit event).
+
+        Status itself is NOT changed here: the recruiter explicitly chooses
+        "Pausar" or "Concluir" via the JobStatusModal as a separate action.
+        Symmetric counterpart to publish_vacancy / publish_vacancy_v2.
+        """
+        before = (
+            bool(getattr(job, "published_linkedin", False)),
+            bool(getattr(job, "published_indeed", False)),
+            bool(getattr(job, "published_website", False)),
+            getattr(job, "last_published_at", None),
+        )
+        job.published_linkedin = False
+        job.published_indeed = False
+        job.published_website = False
+        job.last_published_at = None
+        job.updated_at = datetime.utcnow()
+        after = (False, False, False, None)
+        changed = before != after
+        if changed:
+            await self.db.flush()
+            await self.db.refresh(job)
+        return job, changed
+
     async def close_vacancy(self, vacancy: JobVacancy) -> JobVacancy:
         """Set vacancy status to Concluída and set closed_at."""
         vacancy.status = "Concluída"

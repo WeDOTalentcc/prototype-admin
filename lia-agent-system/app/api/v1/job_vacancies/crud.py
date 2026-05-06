@@ -15,6 +15,7 @@ DELETE (archive), PATCH status, duplicate, clone, find-by-identifier.
 """
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 
+from ._shared import VALID_JOB_STATUSES
 from ._shared import *
 from app.domains.job_management.repositories.job_vacancy_crud_repository import JobVacancyCRUDRepository
 from app.domains.job_management.dependencies import get_job_vacancy_crud_repo
@@ -899,11 +900,14 @@ async def update_job_vacancy_status(
 ):
     """Update job vacancy status."""
     try:
-        valid_statuses = ["Rascunho", "Ativa", "Pausada", "Concluída", "Arquivada"]
-        if status not in valid_statuses:
+        # Phase C.1 — consolidate with _shared.VALID_JOB_STATUSES (was drift).
+        # The bulk endpoint in lifecycle.py:942 already used the shared constant;
+        # this single-vacancy PATCH was rejecting "Cancelada" which IS valid
+        # there. Pinned by tests/api/test_job_vacancy_status_cancelada.py.
+        if status not in VALID_JOB_STATUSES:
             raise HTTPException(
                 status_code=400,
-                detail="Invalid status. Valid options: " + ", ".join(valid_statuses)
+                detail="Invalid status. Valid options: " + ", ".join(VALID_JOB_STATUSES),
             )
 
         user_company = get_user_company_id(current_user)
