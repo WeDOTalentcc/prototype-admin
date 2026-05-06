@@ -489,7 +489,19 @@ async def mark_pipeline_customized(
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):
-    """Mark a job's pipeline as customized (no longer inherits from company)."""
+    """Mark a job's pipeline as customized (no longer inherits from company).
+
+    Phase G.3 — multi-tenancy fix. The original implementation issued
+    UPDATE ... WHERE id = :job_id without scoping to company_id, which
+    is a classic IDOR risk: any authenticated user could mutate any
+    company's vacancy by guessing its UUID. Now scopes the WHERE clause
+    by both id AND company_id; cross-tenant attempts result in
+    rowcount=0 -> 404 (same response as not-found, no enumeration leak).
+    """
+    company_id = get_user_company_id(current_user)
+    if not company_id:
+        raise HTTPException(status_code=403, detail="company_id missing from token")
+
     try:
         from sqlalchemy import update as sa_update
 
@@ -497,7 +509,10 @@ async def mark_pipeline_customized(
 
         stmt = (
             sa_update(JobVacancy)
-            .where(JobVacancy.id == job_id)
+            .where(
+                JobVacancy.id == job_id,
+                JobVacancy.company_id == company_id,
+            )
             .values(
                 is_pipeline_customized=True,
                 updated_at=datetime.utcnow(),

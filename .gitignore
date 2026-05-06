@@ -109,3 +109,8 @@ dump.rdb
 .coverage
 .coverage
 =155
+
+# macOS resource forks (Phase G.2)
+._*
+**/._*
+.DS_Store

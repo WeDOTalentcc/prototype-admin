@@ -370,10 +370,8 @@ async def list_remote_jobs(
     elif provider == "pandape":
         client = PandapeClient(cfg)
     elif provider == "merge":
-        raise HTTPException(
-            status_code=501,
-            detail="list_jobs not implemented for merge yet (Phase D follow-up)",
-        )
+        from app.domains.ats_integration.services.ats_clients.merge import MergeClient
+        client = MergeClient(cfg)
     else:
         raise HTTPException(status_code=400, detail=f"Unknown provider: {provider}")
 

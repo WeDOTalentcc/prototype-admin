@@ -51,3 +51,8 @@ e2e/screenshots/
 e2e/reports/*.png
 e2e/reports/eval-summary.json
 e2e/reports/html/
+
+# macOS resource forks (Phase G.2)
+._*
+**/._*
+.DS_Store

@@ -348,6 +348,47 @@ class MergeClient(ATSClient):
             return None
     
     @circuit_breaker_decorator(MERGE_CIRCUIT)
+    async def list_jobs(
+        self,
+        page: int = 1,
+        size: int = 100,
+        status: str | None = None,
+    ) -> list[dict]:
+        """Phase G.1 — list jobs in the (page, size) signature the
+        BulkImportModal ATS tab expects.
+
+        Wraps the existing get_jobs() call, then unwraps each ATSJob into
+        a plain dict shaped for the /ats/connections/{id}/jobs endpoint
+        normalizer in app/api/v1/ats.py. Page is implemented via
+        offset (Merge supports cursor pagination internally; for the
+        UI's modest needs page * size offsetting is fine).
+
+        Returns plain dicts (not ATSJob) so the endpoint's normalizer
+        can read with .get() — Merge_id maps to id, name maps to title,
+        etc. (see _parse_job for the full mapping).
+        """
+        # Merge supports limit but not page directly. For simplicity we
+        # request page * size and slice client-side; Merge instances this
+        # endpoint hits typically have <500 jobs so this is acceptable.
+        effective_limit = min(page * size, 500)
+        jobs = await self.get_jobs(status=status, limit=effective_limit)
+        start = (page - 1) * size
+        end = start + size
+        sliced = jobs[start:end]
+        # Convert ATSJob -> plain dict shape the endpoint normalizer
+        # expects.
+        return [
+            {
+                "id": j.ats_id,
+                "title": j.title,
+                "department": j.department,
+                "location": j.location,
+                "status": j.status,
+                "posted_at": j.created_at.isoformat() if j.created_at else None,
+            }
+            for j in sliced
+        ]
+
     async def get_jobs(
         self,
         status: str | None = None,
