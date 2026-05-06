@@ -49,6 +49,18 @@ import { toast } from "sonner"
 import { VacancyPreview } from "@/components/vacancy-preview/vacancy-preview"
 import { JobPublishModal } from "@/components/modals/job-publish-modal"
 import { JobStatusModal } from "@/components/modals/job-status-modal"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Label } from "@/components/ui/label"
 
 const GeneralScoreModal = dynamic(
   () => import("@/components/modals/general-score-modal").then(m => ({ default: m.GeneralScoreModal })),
@@ -378,6 +390,15 @@ export function PipelineOverviewPage() {
   const [showPublishModal, setShowPublishModal] = useState(false)
   const [showStatusModal, setShowStatusModal] = useState(false)
   const [statusModalMode, setStatusModalMode] = useState<"pause" | "activate" | "cancel">("pause")
+  // Phase I.4 — dispatch screening confirmation dialog state.
+  // Replaces the prev-Phase-I bare POST with a confirmation flow that lets
+  // recruiter choose audience_policy. Default audience inferred from
+  // vacancy.imported_from_ats (ATS-imported vagas already have candidates,
+  // so 'imported_untriaged' is the right default; greenfield uses 'new_only').
+  const [showDispatchDialog, setShowDispatchDialog] = useState(false)
+  const [dispatchVacancyId, setDispatchVacancyId] = useState<string | null>(null)
+  const [dispatchAudience, setDispatchAudience] = useState<"new_only" | "imported_untriaged" | "manual_selection">("new_only")
+  const [isDispatching, setIsDispatching] = useState(false)
   const router = useRouter()
 
   const fetchPipelineOverview = useCallback(async () => {
@@ -535,23 +556,14 @@ export function PipelineOverviewPage() {
         return
       }
       case "dispatch-screening": {
-        try {
-          const res = await fetch(
-            `/api/backend-proxy/job-readiness/job/${vacancy.id}/dispatch-screening`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ audience_policy: "new_only" }),
-            },
-          )
-          if (!res.ok) throw new Error(`HTTP ${res.status}`)
-          toast.success("Triagem WSI ativada", { description: vacancy.title })
-          fetchLifecycleOverview()
-        } catch (err) {
-          toast.error("Falha ao ativar triagem", {
-            description: err instanceof Error ? err.message : "Erro desconhecido",
-          })
-        }
+        // Phase I.4 — open confirmation dialog instead of immediate POST.
+        // Default audience = imported_untriaged for ATS-imported vagas,
+        // new_only otherwise (canonical: imported vagas already have
+        // candidates from the ATS sync, so triggering on "new_only" would
+        // skip them; for greenfield vagas, "new_only" is the safer default).
+        setDispatchVacancyId(vacancy.id)
+        setDispatchAudience(vacancy.imported_from_ats ? "imported_untriaged" : "new_only")
+        setShowDispatchDialog(true)
         return
       }
       case "open-publish-modal":
@@ -570,6 +582,42 @@ export function PipelineOverviewPage() {
       }
     }
   }, [router, fetchLifecycleOverview])
+
+  // Phase I.4 — dispatch executor: called when user confirms the dialog.
+  // Cleanly handles loading state, error toast, refresh, and dialog close.
+  const handleConfirmDispatch = useCallback(async () => {
+    if (!dispatchVacancyId) return
+    setIsDispatching(true)
+    try {
+      const res = await fetch(
+        `/api/backend-proxy/job-readiness/job/${dispatchVacancyId}/dispatch-screening`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ audience_policy: dispatchAudience }),
+        },
+      )
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      toast.success("Triagem WSI ativada", {
+        description: `Audiência: ${
+          dispatchAudience === "new_only"
+            ? "novos candidatos"
+            : dispatchAudience === "imported_untriaged"
+            ? "candidatos importados não triados"
+            : "seleção manual"
+        }`,
+      })
+      fetchLifecycleOverview()
+      setShowDispatchDialog(false)
+      setDispatchVacancyId(null)
+    } catch (err) {
+      toast.error("Falha ao ativar triagem", {
+        description: err instanceof Error ? err.message : "Erro desconhecido",
+      })
+    } finally {
+      setIsDispatching(false)
+    }
+  }, [dispatchVacancyId, dispatchAudience, fetchLifecycleOverview])
 
   const handleOpenScoreModal = useCallback((candidate: CandidateItem, type: ModalType) => {
     setModalCandidate(candidate)
@@ -1103,6 +1151,69 @@ export function PipelineOverviewPage() {
       {/* Phase 4J — Bulk import modal triggered from ats_importada empty state.
           Conditional mount: avoids running modal hooks while closed (defense-in-depth
           for Rules of Hooks — see CLAUDE.md). */}
+      {/* Phase I.4 — dispatch screening confirmation dialog with audience picker. */}
+      <AlertDialog open={showDispatchDialog} onOpenChange={setShowDispatchDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Ativar triagem WSI</AlertDialogTitle>
+            <AlertDialogDescription>
+              Escolha qual grupo de candidatos receberá a triagem.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <RadioGroup
+            value={dispatchAudience}
+            onValueChange={(v) => setDispatchAudience(v as typeof dispatchAudience)}
+            className="space-y-3"
+          >
+            <div className="flex items-start gap-3">
+              <RadioGroupItem value="new_only" id="audience-new" className="mt-1" />
+              <div className="flex-1">
+                <Label htmlFor="audience-new" className="text-sm font-medium">
+                  Apenas novos candidatos
+                </Label>
+                <p className="text-xs text-lia-text-tertiary">
+                  Triagem só para candidatos que ainda não foram triados.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <RadioGroupItem value="imported_untriaged" id="audience-imported" className="mt-1" />
+              <div className="flex-1">
+                <Label htmlFor="audience-imported" className="text-sm font-medium">
+                  Candidatos importados não triados
+                </Label>
+                <p className="text-xs text-lia-text-tertiary">
+                  Inclui candidatos que vieram do ATS. Recomendado para vagas importadas.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <RadioGroupItem value="manual_selection" id="audience-manual" className="mt-1" />
+              <div className="flex-1">
+                <Label htmlFor="audience-manual" className="text-sm font-medium">
+                  Seleção manual
+                </Label>
+                <p className="text-xs text-lia-text-tertiary">
+                  Você seleciona individualmente os candidatos no kanban.
+                </p>
+              </div>
+            </div>
+          </RadioGroup>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDispatching}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault()
+                handleConfirmDispatch()
+              }}
+              disabled={isDispatching}
+            >
+              {isDispatching ? "Ativando..." : "Confirmar dispatch"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {showBulkImportModal && (
         <BulkImportModal
           isOpen={showBulkImportModal}
