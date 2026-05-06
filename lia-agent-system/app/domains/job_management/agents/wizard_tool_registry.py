@@ -91,6 +91,230 @@ async def _fetch_market_range(job_title: str, seniority: str, location: str | No
 _fairness_guard = FairnessGuard()
 
 
+# ── Phase E — vacancy stage-action helpers ──────────────────────────────
+async def _load_vacancy_or_error(
+    vacancy_id: str | None,
+    company_id: str | None,
+):
+    """Load a JobVacancy scoped to the agent's company.
+
+    Returns the vacancy on success, or a {error, ...} dict on failure
+    (cross-tenant / missing / no auth context). Tools call this first
+    and short-circuit when the dict is returned.
+
+    Multi-tenancy: company_id is the *agent context* value the wizard
+    passes per session — never from LLM-generated args. The repo method
+    enforces the WHERE company_id = :id clause on the SQL query.
+    """
+    if not vacancy_id:
+        return {"error": "vacancy_id required", "is_error": True}
+    if not company_id:
+        return {"error": "company_id missing from agent context", "is_error": True}
+
+    from sqlalchemy import select as sa_select
+    from lia_models.job_vacancy import JobVacancy
+
+    async with AsyncSessionLocal() as db:
+        try:
+            res = await db.execute(
+                sa_select(JobVacancy).where(
+                    JobVacancy.id == vacancy_id,
+                    JobVacancy.company_id == company_id,
+                )
+            )
+            job = res.scalar_one_or_none()
+        except Exception as e:
+            logger.error(f"[wizard_tools] vacancy load error: {e}", exc_info=True)
+            return {"error": f"db error: {e}", "is_error": True}
+
+    if not job:
+        # Return the same opaque error for missing vs cross-tenant to avoid
+        # leaking ID existence to the LLM.
+        return {"error": "vacancy not found", "is_error": True}
+
+    return job
+
+
+@tool_handler("wizard")
+async def _wrap_generate_screening_questions(**kwargs: Any) -> dict[str, Any]:
+    """Phase E — generate WSI screening questions (compact 5 / complete 15)."""
+    vacancy_id = kwargs.get("vacancy_id")
+    mode = (kwargs.get("mode") or "compact").lower()
+    company_id = kwargs.get("company_id")
+
+    if mode not in ("compact", "complete"):
+        return {"is_error": True, "error": f"mode must be 'compact' or 'complete' (got {mode!r})"}
+    max_q = 5 if mode == "compact" else 15
+
+    job = await _load_vacancy_or_error(vacancy_id, company_id)
+    if isinstance(job, dict):
+        return job
+
+    # Allowed stages — fail fast with a structured error if invoked out of stage.
+    # The wizard ReAct loop SHOULD only offer this tool in 'enriquecida', but a
+    # belt-and-suspenders check keeps the contract honest if the loop drifts.
+    if not getattr(job, "enriched_jd", None):
+        return {
+            "is_error": True,
+            "error": "vacancy has no enriched_jd yet — enrich the JD first",
+            "stage_check": "blocked_pre_enrichment",
+        }
+
+    try:
+        # Reuse the same generate_questions service the HTTP endpoint uses.
+        from app.api.v1.wsi.questions import GenerateQuestionsRequest, generate_questions
+        from app.shared.fastapi_dependencies import get_db
+        async with AsyncSessionLocal() as db:
+            req = GenerateQuestionsRequest(
+                skills=getattr(job, "required_skills", None) or [],
+                technical_skills=getattr(job, "technical_requirements", None) or [],
+                behavioral_competencies=getattr(job, "behavioral_competencies", None) or [],
+                seniority_level=getattr(job, "seniority_level", None) or "pleno",
+                job_title=job.title,
+                max_questions=max_q,
+                description=getattr(job, "description", None),
+                requirements=getattr(job, "technical_requirements", None) or [],
+            )
+            result = await generate_questions(req, db=db)
+            return {
+                "is_error": False,
+                "vacancy_id": str(vacancy_id),
+                "mode": mode,
+                "questions_count": len(getattr(result, "questions", []) or []),
+                "questions": [q.model_dump() if hasattr(q, "model_dump") else q
+                              for q in (getattr(result, "questions", []) or [])],
+            }
+    except Exception as e:
+        logger.error(f"[wizard_tools] generate_screening_questions error: {e}", exc_info=True)
+        return {"is_error": True, "error": str(e)}
+
+
+@tool_handler("wizard")
+async def _wrap_dispatch_screening(**kwargs: Any) -> dict[str, Any]:
+    """Phase E — dispatch WSI screening to candidates pending in a vacancy."""
+    vacancy_id = kwargs.get("vacancy_id")
+    company_id = kwargs.get("company_id")
+    audience_policy = (kwargs.get("audience_policy") or "new_only").lower()
+
+    job = await _load_vacancy_or_error(vacancy_id, company_id)
+    if isinstance(job, dict):
+        return job
+
+    try:
+        from app.domains.job_management.services.job_readiness_service import (
+            JobReadinessService, AUDIENCE_POLICIES,
+        )
+        if audience_policy not in AUDIENCE_POLICIES:
+            return {
+                "is_error": True,
+                "error": f"audience_policy must be one of {sorted(AUDIENCE_POLICIES)}",
+            }
+        async with AsyncSessionLocal() as db:
+            svc = JobReadinessService(db=db)
+            updated = await svc.dispatch_screening(
+                job, actor=f"wizard:{company_id}", audience_policy=audience_policy,
+            )
+            await db.commit()
+            return {
+                "is_error": False,
+                "vacancy_id": str(vacancy_id),
+                "status": updated.status,
+                "audience_policy": audience_policy,
+                "message": "Triagem WSI ativada",
+            }
+    except ValueError as ve:
+        # The service raises ValueError on stage / policy mismatch.
+        return {"is_error": True, "error": str(ve), "stage_check": "blocked"}
+    except Exception as e:
+        logger.error(f"[wizard_tools] dispatch_screening error: {e}", exc_info=True)
+        return {"is_error": True, "error": str(e)}
+
+
+@tool_handler("wizard")
+async def _wrap_publish_vacancy(**kwargs: Any) -> dict[str, Any]:
+    """Phase E — publish (status -> Ativa) or unpublish (clear flags) a vacancy."""
+    vacancy_id = kwargs.get("vacancy_id")
+    company_id = kwargs.get("company_id")
+    action = (kwargs.get("action") or "publish").lower()
+
+    if action not in ("publish", "unpublish"):
+        return {"is_error": True, "error": "action must be 'publish' or 'unpublish'"}
+
+    job = await _load_vacancy_or_error(vacancy_id, company_id)
+    if isinstance(job, dict):
+        return job
+
+    try:
+        from app.domains.job_management.repositories.job_vacancy_lifecycle_repository import (
+            JobVacancyLifecycleRepository,
+        )
+        async with AsyncSessionLocal() as db:
+            # Re-attach the loaded job to this session.
+            db.add(job)
+            repo = JobVacancyLifecycleRepository(db)
+            if action == "publish":
+                updated = await repo.publish_vacancy_v2(job)
+                await db.commit()
+                return {
+                    "is_error": False,
+                    "vacancy_id": str(vacancy_id),
+                    "status": updated.status,
+                    "message": "Vaga publicada",
+                }
+            else:
+                updated, changed = await repo.unpublish_vacancy(job)
+                await db.commit()
+                return {
+                    "is_error": False,
+                    "vacancy_id": str(vacancy_id),
+                    "status": updated.status,
+                    "changed": changed,
+                    "message": "Vaga despublicada" if changed else "Vaga já estava despublicada",
+                }
+    except Exception as e:
+        logger.error(f"[wizard_tools] publish_vacancy error: {e}", exc_info=True)
+        return {"is_error": True, "error": str(e)}
+
+
+@tool_handler("wizard")
+async def _wrap_change_vacancy_status(**kwargs: Any) -> dict[str, Any]:
+    """Phase E — change a vacancy's status (Pausada / Concluída / Cancelada / Arquivada / Ativa)."""
+    vacancy_id = kwargs.get("vacancy_id")
+    company_id = kwargs.get("company_id")
+    new_status = kwargs.get("status")
+
+    from app.api.v1.job_vacancies._shared import VALID_JOB_STATUSES
+    if new_status not in VALID_JOB_STATUSES:
+        return {
+            "is_error": True,
+            "error": f"status must be one of {VALID_JOB_STATUSES} (got {new_status!r})",
+        }
+
+    job = await _load_vacancy_or_error(vacancy_id, company_id)
+    if isinstance(job, dict):
+        return job
+
+    try:
+        from app.domains.job_management.repositories.job_vacancy_lifecycle_repository import (
+            JobVacancyLifecycleRepository,
+        )
+        async with AsyncSessionLocal() as db:
+            db.add(job)
+            repo = JobVacancyLifecycleRepository(db)
+            updated = await repo.update_vacancy_status(job, new_status)
+            await db.commit()
+            return {
+                "is_error": False,
+                "vacancy_id": str(vacancy_id),
+                "old_status": job.status,
+                "new_status": updated.status,
+                "message": f"Status alterado para {updated.status}",
+            }
+    except Exception as e:
+        logger.error(f"[wizard_tools] change_vacancy_status error: {e}", exc_info=True)
+        return {"is_error": True, "error": str(e)}
+
+
 @tool_handler("wizard")
 async def _wrap_validate_job_requirements(**kwargs: Any) -> dict[str, Any]:
     text = kwargs.get("text", "")
@@ -523,6 +747,77 @@ TOOL_DEFINITIONS.append(
     )
 )
 
+# ── Phase E — register 4 stage-action tools ──────────────────────────────
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
+        name="generate_screening_questions",
+        description="Gera perguntas de triagem WSI para uma vaga. Compacta (5) ou completa (15). Use APENAS quando a vaga já tem JD enriquecido. Retorna lista de questions.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "vacancy_id": {"type": "string", "description": "ID da vaga (UUID)"},
+                "mode": {"type": "string", "enum": ["compact", "complete"], "description": "compact = 5 perguntas; complete = 15 perguntas"},
+                "company_id": {"type": "string", "description": "ID da empresa (do contexto do agente, NUNCA inventar)"},
+            },
+            "required": ["vacancy_id", "mode", "company_id"],
+        },
+        output_schema=ToolOutput,
+        function=_wrap_generate_screening_questions,
+    )
+)
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
+        name="dispatch_screening",
+        description="Ativa o disparo de triagem WSI para os candidatos da vaga. Use quando a vaga está em 'aguardando_aprovacao' e o recrutador confirmou. audience_policy: 'new_only' (default, só não-triados) | 'imported_untriaged' | 'manual_selection'.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "vacancy_id": {"type": "string", "description": "ID da vaga"},
+                "audience_policy": {"type": "string", "enum": ["new_only", "imported_untriaged", "manual_selection"], "description": "Política de audiência"},
+                "company_id": {"type": "string", "description": "ID da empresa (do contexto)"},
+            },
+            "required": ["vacancy_id", "company_id"],
+        },
+        output_schema=ToolOutput,
+        function=_wrap_dispatch_screening,
+    )
+)
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
+        name="publish_vacancy",
+        description="Publica (status=Ativa) ou despublica (limpa flags published_*) uma vaga. action='publish' (default) ou 'unpublish'.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "vacancy_id": {"type": "string", "description": "ID da vaga"},
+                "action": {"type": "string", "enum": ["publish", "unpublish"], "description": "publish ou unpublish"},
+                "company_id": {"type": "string", "description": "ID da empresa (do contexto)"},
+            },
+            "required": ["vacancy_id", "company_id"],
+        },
+        output_schema=ToolOutput,
+        function=_wrap_publish_vacancy,
+    )
+)
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
+        name="change_vacancy_status",
+        description="Altera o status da vaga. Status válidos: Rascunho, Ativa, Pausada, Concluída, Cancelada, Arquivada. Cancelada é terminal — não admite saída.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "vacancy_id": {"type": "string", "description": "ID da vaga"},
+                "status": {"type": "string", "enum": ["Rascunho", "Ativa", "Pausada", "Concluída", "Cancelada", "Arquivada"], "description": "Novo status"},
+                "company_id": {"type": "string", "description": "ID da empresa (do contexto)"},
+            },
+            "required": ["vacancy_id", "status", "company_id"],
+        },
+        output_schema=ToolOutput,
+        function=_wrap_change_vacancy_status,
+    )
+)
+
+
 _TOOL_MAP: dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
 
 STAGE_TOOLS: dict[str, list[str]] = {
@@ -530,8 +825,16 @@ STAGE_TOOLS: dict[str, list[str]] = {
     "jd-enrichment": ["generate_enriched_jd", "get_job_suggestions", "get_company_config", "save_job_draft", "check_job_draft_health"],
     "salary": ["get_salary_benchmarks", "search_salary_benchmark", "validate_job_fields", "save_job_draft", "check_job_draft_health"],
     "competencies": ["validate_job_requirements", "get_job_suggestions", "validate_job_fields", "save_job_draft"],
-    "wsi-questions": ["validate_job_requirements", "validate_job_fields", "save_job_draft"],
-    "review-publish": ["validate_job_requirements", "save_job_draft", "validate_job_fields", "check_job_draft_health", "generate_report"],
+    "wsi-questions": ["validate_job_requirements", "validate_job_fields", "save_job_draft", "generate_screening_questions"],
+    "review-publish": ["validate_job_requirements", "save_job_draft", "validate_job_fields", "check_job_draft_health", "generate_report", "publish_vacancy", "change_vacancy_status"],
+    # Phase E — vacancy lifecycle stages (Recrutar > Vagas rail).
+    # Stage names match _classify_job_lifecycle_stage in
+    # app/api/v1/job_vacancies/analytics.py.
+    "enriquecida": ["generate_screening_questions", "validate_job_requirements"],
+    "wsi_config": ["generate_screening_questions", "validate_job_requirements"],
+    "aguardando_aprovacao": ["dispatch_screening"],
+    "publicada": ["publish_vacancy", "change_vacancy_status"],
+    "ao_vivo": ["change_vacancy_status", "publish_vacancy"],
 }
 
 
