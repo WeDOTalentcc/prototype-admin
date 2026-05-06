@@ -57,3 +57,11 @@ repos:
         files: ^app/domains/.*\.py$
         pass_filenames: false
         always_run: false
+
+      - id: agent-has-universal-blocks
+        name: "ADR-028: agent DOMAIN_INSTRUCTIONS contains UNIVERSAL_BLOCKS (warn-only Sprint 0/1)"
+        language: system
+        entry: python3 scripts/check_agent_has_universal_blocks.py
+        files: ^app/domains/.*(react_agent|_agent)\.py$
+        pass_filenames: false
+        always_run: false
