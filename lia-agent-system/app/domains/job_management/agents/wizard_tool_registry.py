@@ -744,7 +744,7 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
                     COUNT(*) FILTER (WHERE status = 'draft') AS drafts,
                     COUNT(*) FILTER (WHERE status = 'published') AS published
                 FROM job_vacancies
-                WHERE (:cid = '' OR company_id = :cid)
+                WHERE company_id = :cid
                   AND created_at > NOW() - MAKE_INTERVAL(days => :days)
             """), {"cid": company_id, "days": period_days})
             data = row.mappings().first() or {}

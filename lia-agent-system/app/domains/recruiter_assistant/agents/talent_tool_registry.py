@@ -664,7 +664,7 @@ async def _wrap_get_talent_pool_benchmarks(**kwargs: Any) -> dict[str, Any]:
                         AVG(CASE WHEN score IS NOT NULL THEN score ELSE 0 END) AS avg_score
                     FROM vacancy_candidates
                     WHERE (:vid = '' OR vacancy_id = :vid)
-                      AND (:cid = '' OR company_id = :cid)
+                      AND company_id = :cid
                 """),
                 {"vid": vacancy_id, "cid": company_id},
             )
@@ -678,7 +678,7 @@ async def _wrap_get_talent_pool_benchmarks(**kwargs: Any) -> dict[str, Any]:
                     SELECT stage, COUNT(*) AS cnt
                     FROM vacancy_candidates
                     WHERE (:vid = '' OR vacancy_id = :vid)
-                      AND (:cid = '' OR company_id = :cid)
+                      AND company_id = :cid
                     GROUP BY stage
                     ORDER BY cnt DESC
                 """),
@@ -735,7 +735,7 @@ async def _wrap_check_pool_health(**kwargs: Any) -> dict[str, Any]:
                         ) AS stagnant
                     FROM vacancy_candidates
                     WHERE (:vid = '' OR vacancy_id = :vid)
-                      AND (:cid = '' OR company_id = :cid)
+                      AND company_id = :cid
                 """),
                 {"vid": vacancy_id, "cid": company_id},
             )
@@ -1003,7 +1003,7 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
                         COUNT(*) FILTER (WHERE status = 'approved') AS approved,
                         COUNT(*) FILTER (WHERE status = 'rejected') AS rejected
                     FROM applications
-                    WHERE (:cid = '' OR company_id = :cid)
+                    WHERE company_id = :cid
                       AND created_at > NOW() - MAKE_INTERVAL(days => :days)
                 """),
                 {"cid": company_id, "days": period_days},

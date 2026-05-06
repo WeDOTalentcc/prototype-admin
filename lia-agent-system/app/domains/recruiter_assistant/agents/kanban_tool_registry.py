@@ -430,7 +430,7 @@ async def _wrap_get_pipeline_summary(**kwargs: Any) -> dict[str, Any]:
                     SELECT stage, COUNT(*) AS cnt
                     FROM vacancy_candidates
                     WHERE (:vid = '' OR vacancy_id::text = :vid)
-                      AND (:cid = '' OR company_id = :cid)
+                      AND company_id = :cid
                       AND status != 'rejected'
                     GROUP BY stage ORDER BY cnt DESC
                 """),
@@ -444,7 +444,7 @@ async def _wrap_get_pipeline_summary(**kwargs: Any) -> dict[str, Any]:
                 text("""
                     SELECT COUNT(*) AS cnt FROM vacancy_candidates
                     WHERE (:vid = '' OR vacancy_id::text = :vid)
-                      AND (:cid = '' OR company_id = :cid)
+                      AND company_id = :cid
                       AND stage ILIKE '%contrat%'
                 """),
                 {"vid": vacancy_id, "cid": company_id},
@@ -481,7 +481,7 @@ async def _wrap_get_stage_metrics(**kwargs: Any) -> dict[str, Any]:
                     FROM vacancy_candidates
                     WHERE stage ILIKE :stage_val
                       AND (:vid = '' OR vacancy_id::text = :vid)
-                      AND (:cid = '' OR company_id = :cid)
+                      AND company_id = :cid
                 """),
                 {"stage_val": f"%{stage}%", "vid": vacancy_id, "cid": company_id},
             )
@@ -551,7 +551,7 @@ async def _wrap_list_stage_candidates(**kwargs: Any) -> dict[str, Any]:
                 text("""SELECT COUNT(*) AS total FROM vacancy_candidates
                         WHERE stage ILIKE :stage_val
                           AND (:vid = '' OR vacancy_id::text = :vid)
-                          AND (:cid = '' OR company_id = :cid)"""),
+                          AND company_id = :cid"""),
                 {"stage_val": f"%{stage}%", "vid": vacancy_id, "cid": company_id},
             )
             total = int((count_row.mappings().first() or {}).get("total", len(candidates)))
@@ -626,7 +626,7 @@ async def _wrap_identify_bottlenecks(**kwargs: Any) -> dict[str, Any]:
                            COUNT(*) FILTER (WHERE updated_at < NOW() - INTERVAL '14 days') AS stagnant
                     FROM vacancy_candidates
                     WHERE (:vid = '' OR vacancy_id::text = :vid)
-                      AND (:cid = '' OR company_id = :cid)
+                      AND company_id = :cid
                       AND status != 'rejected'
                     GROUP BY stage
                     ORDER BY avg_days DESC
@@ -808,7 +808,7 @@ async def _wrap_batch_move_candidates(**kwargs: Any) -> dict[str, Any]:
                     SET stage = :stage, updated_at = NOW()
                     WHERE candidate_id = ANY(:ids::uuid[])
                       AND (:vid = '' OR vacancy_id::text = :vid)
-                      AND (:cid = '' OR company_id = :cid)
+                      AND company_id = :cid
                 """),
                 {"stage": target_stage, "ids": candidate_ids, "vid": vacancy_id, "cid": company_id},
             )

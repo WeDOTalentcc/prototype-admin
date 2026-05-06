@@ -89,3 +89,11 @@ repos:
         files: ^app/.*\.py$
         pass_filenames: false
         always_run: false
+
+      - id: no-cid-empty-escape
+        name: "Multi-tenancy: SQL escape  cid empty OR  forbidden (BLOCKING)"
+        language: system
+        entry: python3 scripts/check_no_cid_empty_escape.py
+        files: ^app/.*\.py$
+        pass_filenames: false
+        always_run: false

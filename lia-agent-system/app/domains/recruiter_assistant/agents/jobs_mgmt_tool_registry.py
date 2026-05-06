@@ -125,7 +125,7 @@ async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
                     FROM job_vacancies jv
                     WHERE (:status = 'all' OR status ILIKE :status_val)
                       AND (:dept = 'all' OR department ILIKE :dept_val)
-                      AND (:cid = '' OR company_id = :cid)
+                      AND company_id = :cid
                     ORDER BY
                         CASE priority WHEN 'alta' THEN 1 WHEN 'média' THEN 2 ELSE 3 END,
                         created_at DESC
@@ -152,7 +152,7 @@ async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
                     SELECT COUNT(*) AS total FROM job_vacancies
                     WHERE (:status = 'all' OR status ILIKE :status_val)
                       AND (:dept = 'all' OR department ILIKE :dept_val)
-                      AND (:cid = '' OR company_id = :cid)
+                      AND company_id = :cid
                 """),
                 {"status": status, "status_val": f"%{status}%",
                  "dept": department, "dept_val": f"%{department}%", "cid": company_id},
@@ -240,7 +240,7 @@ async def _wrap_get_portfolio_metrics(**kwargs: Any) -> dict[str, Any]:
                         AVG(EXTRACT(EPOCH FROM (updated_at - created_at)) / 86400)
                             FILTER (WHERE status ILIKE '%conclu%' OR status ILIKE '%closed%') AS avg_ttf
                     FROM job_vacancies
-                    WHERE (:cid = '' OR company_id = :cid)
+                    WHERE company_id = :cid
                       AND created_at > NOW() - MAKE_INTERVAL(days => :days)
                 """),
                 {"cid": company_id, "days": period_days},
@@ -330,7 +330,7 @@ async def _wrap_check_sla(**kwargs: Any) -> dict[str, Any]:
                     FROM job_vacancies
                     WHERE (status ILIKE '%ativa%' OR status ILIKE '%active%')
                       AND (:jid = '' OR id::text = :jid)
-                      AND (:cid = '' OR company_id = :cid)
+                      AND company_id = :cid
                 """),
                 {"jid": job_id, "cid": company_id},
             )
@@ -441,7 +441,7 @@ async def _wrap_pause_job(**kwargs: Any) -> dict[str, Any]:
         result = await session.execute(
             text("""
                 UPDATE job_vacancies SET status = 'Pausada', updated_at = NOW()
-                WHERE id = :jid AND (:cid = '' OR company_id = :cid)
+                WHERE id = :jid AND company_id = :cid
                 RETURNING status
             """),
             {"jid": job_id, "cid": company_id},
@@ -461,7 +461,7 @@ async def _wrap_reopen_job(**kwargs: Any) -> dict[str, Any]:
         result = await session.execute(
             text("""
                 UPDATE job_vacancies SET status = 'Ativa', updated_at = NOW()
-                WHERE id = :jid AND (:cid = '' OR company_id = :cid)
+                WHERE id = :jid AND company_id = :cid
                 RETURNING status
             """),
             {"jid": job_id, "cid": company_id},
@@ -482,7 +482,7 @@ async def _wrap_close_job(**kwargs: Any) -> dict[str, Any]:
         result = await session.execute(
             text("""
                 UPDATE job_vacancies SET status = 'Concluída', updated_at = NOW()
-                WHERE id = :jid AND (:cid = '' OR company_id = :cid)
+                WHERE id = :jid AND company_id = :cid
                 RETURNING status
             """),
             {"jid": job_id, "cid": company_id},
@@ -504,7 +504,7 @@ async def _wrap_update_priority(**kwargs: Any) -> dict[str, Any]:
     logger.info(f"[jobs_mgmt_tools] update_priority called: job={job_id} priority={priority_pt}")
     async with AsyncSessionLocal() as session:
         prev = await session.execute(
-            text("SELECT priority FROM job_vacancies WHERE id = :jid AND (:cid = '' OR company_id = :cid)"),
+            text("SELECT priority FROM job_vacancies WHERE id = :jid AND company_id = :cid"),
             {"jid": job_id, "cid": company_id},
         )
         prev_row = prev.mappings().first()
@@ -538,7 +538,7 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
                         AVG(EXTRACT(EPOCH FROM (updated_at - created_at)) / 86400)
                             FILTER (WHERE status ILIKE '%conclu%') AS avg_ttf
                     FROM job_vacancies
-                    WHERE (:cid = '' OR company_id = :cid)
+                    WHERE company_id = :cid
                       AND created_at > NOW() - MAKE_INTERVAL(days => :days)
                 """),
                 {"cid": company_id, "days": period_days},
