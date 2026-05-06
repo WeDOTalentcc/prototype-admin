@@ -23,19 +23,25 @@ import { Button } from "@/components/ui/button"
 import { Pause, CheckCircle, XCircle } from "lucide-react"
 import type { VacancyAction, VacancyStatusModalMode } from "@/components/pages/pipeline-overview-page"
 
-interface VacancyLite {
+/**
+ * Structural type — any object with these 3 fields works. Avoids name
+ * collision with the VacancyLite defined locally in vacancy-preview.tsx
+ * (same name, different fields). The generic parameter `V` lets callers
+ * pass their richer types and TypeScript flows them through onAction.
+ */
+type VacancyDecisionBarVacancy = {
   id: string
   title: string
   status: string
 }
 
-interface VacancyDecisionBarProps {
-  vacancy: VacancyLite
+interface VacancyDecisionBarProps<V extends VacancyDecisionBarVacancy = VacancyDecisionBarVacancy> {
+  vacancy: V
   action: VacancyAction
-  onAction: (action: VacancyAction, vacancy: VacancyLite) => void
+  onAction: (action: VacancyAction, vacancy: V) => void
 }
 
-export function VacancyDecisionBar({ vacancy, action, onAction }: VacancyDecisionBarProps) {
+export function VacancyDecisionBar<V extends VacancyDecisionBarVacancy>({ vacancy, action, onAction }: VacancyDecisionBarProps<V>) {
   // encerrada -> CTA disabled, render nothing.
   if (action.kind === "noop") {
     return null

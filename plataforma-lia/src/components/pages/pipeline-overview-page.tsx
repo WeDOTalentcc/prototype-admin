@@ -387,6 +387,21 @@ export function PipelineOverviewPage() {
   // Hooks live above any early return — Rules of Hooks discipline.
   const [previewVacancy, setPreviewVacancy] = useState<JobLifecycleVacancy | null>(null)
   const [showVacancyPreview, setShowVacancyPreview] = useState(false)
+  // Phase I.6 — lazy-fetch the rich vacancy detail at page level so we can
+  // pass enriched fields (has_wsi_questions, wsi_question_count,
+  // screening_status, candidates_count, etc.) into the inline modal mounts
+  // (JobPublishModal, JobStatusModal). Without this, the modals see only the
+  // light JobLifecycleVacancy shape and render their checklists/warnings
+  // with "data missing" placeholders. Cf. critical analysis Phase H.
+  const [previewVacancyDetail, setPreviewVacancyDetail] = useState<{
+    screening_questions?: unknown[]
+    screening_status?: string
+    screening_count?: number
+    interviews_scheduled?: number
+    tests_scheduled?: number
+    published_channels?: string[]
+    is_published?: boolean
+  } | null>(null)
   const [showPublishModal, setShowPublishModal] = useState(false)
   const [showStatusModal, setShowStatusModal] = useState(false)
   const [statusModalMode, setStatusModalMode] = useState<"pause" | "activate" | "cancel">("pause")
@@ -519,6 +534,38 @@ export function PipelineOverviewPage() {
     const i = visibleVacancies.findIndex(v => v.id === previewVacancy.id)
     return i >= 0 ? i : 0
   }, [previewVacancy, visibleVacancies])
+
+  // Phase I.6 — lazy-fetch enriched detail when preview opens or stage changes.
+  // Refetches on vacancy.status/approval_status to refresh modal data after a
+  // stage transition (e.g., after approve-stage moves to aguardando_aprovacao,
+  // refetch picks up updated screening_status).
+  useEffect(() => {
+    if (!previewVacancy?.id) {
+      setPreviewVacancyDetail(null)
+      return
+    }
+    let cancelled = false
+    fetch(`/api/backend-proxy/job-vacancies/${previewVacancy.id}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled || !data) return
+        setPreviewVacancyDetail({
+          screening_questions: data.screening_questions ?? [],
+          screening_status: data.screening_status ?? "not_configured",
+          screening_count: data.screening_count ?? 0,
+          interviews_scheduled: data.interviews_scheduled ?? 0,
+          tests_scheduled: data.tests_scheduled ?? 0,
+          published_channels: data.published_channels ?? [],
+          is_published: !!(data.published_linkedin || data.published_indeed || data.published_website),
+        })
+      })
+      .catch(() => {
+        if (!cancelled) setPreviewVacancyDetail(null)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [previewVacancy?.id, previewVacancy?.status, previewVacancy?.approval_status])
 
   // Phase A: stage-aware action dispatcher. Branches the discriminated
   // VacancyAction kind to: deep-link navigation OR direct API call OR inline
@@ -1070,8 +1117,13 @@ export function PipelineOverviewPage() {
             code: undefined,
             title: previewVacancy.title,
             status: previewVacancy.status,
-            is_published: previewVacancy.status === "Ativa",
-            published_channels: [],
+            // Phase I.6 — enriched from previewVacancyDetail when available;
+            // falls back to status inference for graceful degradation.
+            is_published: previewVacancyDetail?.is_published ?? (previewVacancy.status === "Ativa"),
+            published_channels: previewVacancyDetail?.published_channels ?? [],
+            has_wsi_questions: (previewVacancyDetail?.screening_questions?.length ?? 0) > 0,
+            wsi_question_count: previewVacancyDetail?.screening_questions?.length ?? 0,
+            screeningStatus: previewVacancyDetail?.screening_status ?? "not_configured",
           }]}
           onPublish={async (jobIds, channels, options) => {
             try {
@@ -1126,6 +1178,12 @@ export function PipelineOverviewPage() {
             title: previewVacancy.title,
             status: previewVacancy.status,
             candidates_count: previewVacancy.candidate_count ?? 0,
+            // Phase I.6 — enriched from previewVacancyDetail. These fields
+            // gate the JobStatusModal pause flow (it blocks pause when there
+            // are candidates in 'Proposta'/scheduled interviews/etc.).
+            screening_count: previewVacancyDetail?.screening_count ?? 0,
+            interviews_scheduled: previewVacancyDetail?.interviews_scheduled ?? 0,
+            tests_scheduled: previewVacancyDetail?.tests_scheduled ?? 0,
           }]}
           onStatusChange={async (jobIds, newStatus) => {
             try {
