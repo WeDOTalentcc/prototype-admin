@@ -1685,6 +1685,7 @@
       "openWsi": "Configurar WSI",
       "openApproval": "Revisar aprovação",
       "openPublish": "Publicar vaga",
+      "openStatus": "Alterar status",
       "openKanban": "Abrir kanban",
       "openClosed": "Ver encerramento"
     },

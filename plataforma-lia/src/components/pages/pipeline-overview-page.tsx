@@ -44,6 +44,11 @@ import { useSearchParams } from "next/navigation"
 import { PipelineRail, type PipelineRailNode } from "@/components/pages/pipeline-overview/pipeline-rail"
 import { JobCampaignBadge } from "@/components/jobs/JobCampaignBadge"
 import dynamic from "next/dynamic"
+import { useRouter } from "next/navigation"
+import { toast } from "sonner"
+import { VacancyPreview } from "@/components/vacancy-preview/vacancy-preview"
+import { JobPublishModal } from "@/components/modals/job-publish-modal"
+import { JobStatusModal } from "@/components/modals/job-status-modal"
 
 const GeneralScoreModal = dynamic(
   () => import("@/components/modals/general-score-modal").then(m => ({ default: m.GeneralScoreModal })),
@@ -194,38 +199,77 @@ function lifecycleStageLabel(
   }
 }
 
-interface VacancyCta {
-  label: string
-  href: string
+// ── Vacancy action contract — Phase A canonical pattern ──────────────────
+// Discriminated union exhaustive over the 8 lifecycle stages. New CTAs MUST
+// extend `VacancyActionKind` and add a branch in `getVacancyAction` — the
+// `assertNeverAction` call at the end of getVacancyAction enforces this at
+// compile-time. See .planning/vacancy-pipeline-plan.md and CLAUDE.md
+// > Frontend / React rules-of-hooks discipline (vacancy preview canonical).
+export type VacancyActionKind =
+  | "open-jd-config"           // ats_importada, rascunho → /jobs/{id}?tab=edit&section=descricao
+  | "open-questions-config"    // enriquecida, wsi_config → /jobs/{id}?tab=edit&section=perguntas
+  | "dispatch-screening"       // aguardando_aprovacao → POST dispatch-screening (audience='new_only')
+  | "open-publish-modal"       // publicada → <JobPublishModal> inline
+  | "open-status-modal"        // ao_vivo → <JobStatusModal> inline
+  | "noop"                     // encerrada → CTA disabled
+
+export type VacancyStatusModalMode = "pause" | "activate" | "cancel"
+
+export type VacancyAction =
+  | { kind: "open-jd-config"; label: string }
+  | { kind: "open-questions-config"; label: string }
+  | { kind: "dispatch-screening"; label: string }
+  | { kind: "open-publish-modal"; label: string }
+  | { kind: "open-status-modal"; label: string; mode: VacancyStatusModalMode }
+  | { kind: "noop"; label: string; disabled: true }
+
+function assertNeverAction(_kind: never): never {
+  throw new Error("Unhandled VacancyActionKind — did you add a stage without updating getVacancyAction?")
 }
 
-// Stage-aware "continuar" routing for vacancy cards.
-// Stages that still need work on the JD/wizard side land on the job detail
-// page, while published/live vacancies open the candidate kanban directly.
-function getVacancyCta(
+// Stage-aware action contract for the side-panel preview CTA.
+// Replaces the legacy getVacancyCta which navigated to /jobs/{id} (kanban) —
+// per Paulo (2026-05-06): pre-screening stages must land on Configurações tab
+// (deep-link), post-screening stages open inline modals.
+function getVacancyAction(
   stageKey: string,
-  vacancyId: string,
   t: (key: string) => string
-): VacancyCta {
-  const jobUrl = `/jobs/${vacancyId}`
-  const kanbanUrl = `/funil-de-talentos?tab=kanban&vacancy=${vacancyId}`
+): VacancyAction {
   switch (stageKey) {
     case "ats_importada":
     case "rascunho":
-      return { label: t("vacancyCard.openWizard"), href: jobUrl }
+      return { kind: "open-jd-config", label: t("vacancyCard.openWizard") }
     case "enriquecida":
-      return { label: t("vacancyCard.openEnrichment"), href: jobUrl }
+      return { kind: "open-questions-config", label: t("vacancyCard.openEnrichment") }
     case "wsi_config":
-      return { label: t("vacancyCard.openWsi"), href: jobUrl }
+      return { kind: "open-questions-config", label: t("vacancyCard.openWsi") }
     case "aguardando_aprovacao":
-      return { label: t("vacancyCard.openApproval"), href: jobUrl }
+      return { kind: "dispatch-screening", label: t("vacancyCard.openApproval") }
     case "publicada":
+      return { kind: "open-publish-modal", label: t("vacancyCard.openPublish") }
     case "ao_vivo":
-      return { label: t("vacancyCard.openKanban"), href: kanbanUrl }
+      return { kind: "open-status-modal", label: t("vacancyCard.openStatus"), mode: "pause" }
     case "encerrada":
-      return { label: t("vacancyCard.openClosed"), href: jobUrl }
+      return { kind: "noop", label: t("vacancyCard.openClosed"), disabled: true }
     default:
-      return { label: t("vacancyCard.openKanban"), href: kanbanUrl }
+      // Unknown stage — read-only fallback to surface the issue without crashing.
+      return { kind: "noop", label: t("vacancyCard.openClosed"), disabled: true }
+  }
+}
+
+// Compile-time exhaustive check helper (used by tests + linters).
+// Keep alongside getVacancyAction so contributors see it.
+export function vacancyActionKindIsExhaustive(kind: VacancyActionKind): true {
+  switch (kind) {
+    case "open-jd-config":
+    case "open-questions-config":
+    case "dispatch-screening":
+    case "open-publish-modal":
+    case "open-status-modal":
+    case "noop":
+      return true
+    default:
+      return assertNeverAction(kind)
   }
 }
 
@@ -318,6 +362,15 @@ export function PipelineOverviewPage() {
   const [lifecycleError, setLifecycleError] = useState<string | null>(null)
   // Phase 4J — controls the BulkImportModal (triggered from ats_importada empty state)
   const [showBulkImportModal, setShowBulkImportModal] = useState(false)
+
+  // Phase A — vacancy preview (mirror of candidate preview state).
+  // Hooks live above any early return — Rules of Hooks discipline.
+  const [previewVacancy, setPreviewVacancy] = useState<JobLifecycleVacancy | null>(null)
+  const [showVacancyPreview, setShowVacancyPreview] = useState(false)
+  const [showPublishModal, setShowPublishModal] = useState(false)
+  const [showStatusModal, setShowStatusModal] = useState(false)
+  const [statusModalMode, setStatusModalMode] = useState<"pause" | "activate" | "cancel">("pause")
+  const router = useRouter()
 
   const fetchPipelineOverview = useCallback(async () => {
     setLoading(true)
@@ -414,6 +467,78 @@ export function PipelineOverviewPage() {
     if (!previewCandidate) return 0
     return allCandidates.findIndex(c => c.vc_id === previewCandidate.vc_id)
   }, [previewCandidate, allCandidates])
+
+  // ── Phase A: vacancy preview handlers ───────────────────────────────
+  const visibleVacancies = useMemo(() => selectedLifecycleStageData?.vacancies ?? [], [selectedLifecycleStageData])
+
+  const handleOpenVacancyPreview = useCallback((vacancy: JobLifecycleVacancy) => {
+    setPreviewVacancy(vacancy)
+    setShowVacancyPreview(true)
+  }, [])
+
+  const handleCloseVacancyPreview = useCallback(() => {
+    setShowVacancyPreview(false)
+    setPreviewVacancy(null)
+  }, [])
+
+  const handleNavigateVacancyPreview = useCallback((index: number) => {
+    if (visibleVacancies[index]) setPreviewVacancy(visibleVacancies[index])
+  }, [visibleVacancies])
+
+  const previewVacancyIndex = useMemo(() => {
+    if (!previewVacancy) return 0
+    const i = visibleVacancies.findIndex(v => v.id === previewVacancy.id)
+    return i >= 0 ? i : 0
+  }, [previewVacancy, visibleVacancies])
+
+  // Phase A: stage-aware action dispatcher. Branches the discriminated
+  // VacancyAction kind to: deep-link navigation OR direct API call OR inline
+  // modal open. Default audience for dispatch-screening = "new_only" (most
+  // conservative). Wizard chat (Phase E) supports custom audiences.
+  const handleVacancyAction = useCallback(async (action: VacancyAction, vacancy: JobLifecycleVacancy) => {
+    switch (action.kind) {
+      case "open-jd-config":
+        router.push(`/jobs/${vacancy.id}?tab=edit&section=descricao`)
+        return
+      case "open-questions-config":
+        router.push(`/jobs/${vacancy.id}?tab=edit&section=perguntas`)
+        return
+      case "dispatch-screening": {
+        try {
+          const res = await fetch(
+            `/api/backend-proxy/job-readiness/job/${vacancy.id}/dispatch-screening`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ audience_policy: "new_only" }),
+            },
+          )
+          if (!res.ok) throw new Error(`HTTP ${res.status}`)
+          toast.success("Triagem WSI ativada", { description: vacancy.title })
+          fetchLifecycleOverview()
+        } catch (err) {
+          toast.error("Falha ao ativar triagem", {
+            description: err instanceof Error ? err.message : "Erro desconhecido",
+          })
+        }
+        return
+      }
+      case "open-publish-modal":
+        setShowPublishModal(true)
+        return
+      case "open-status-modal":
+        setStatusModalMode(action.mode)
+        setShowStatusModal(true)
+        return
+      case "noop":
+        return
+      default: {
+        // Exhaustive guard — TS will refuse to compile if a kind is missed.
+        const _never: never = action
+        return _never
+      }
+    }
+  }, [router, fetchLifecycleOverview])
 
   const handleOpenScoreModal = useCallback((candidate: CandidateItem, type: ModalType) => {
     setModalCandidate(candidate)
@@ -754,6 +879,7 @@ export function PipelineOverviewPage() {
                             vacancy={vacancy}
                             stageKey={selectedLifecycleStageData!.stage}
                             stageColor={selectedLifecycleStageData!.color || "#2D2D2D"}
+                            onOpenPreview={handleOpenVacancyPreview}
                           />
                         ))}
                       </div>
@@ -777,6 +903,29 @@ export function PipelineOverviewPage() {
                 currentIndex={previewIndex >= 0 ? previewIndex : 0}
                 onNavigateCandidate={handleNavigatePreview}
                 jobId={previewCandidate.vacancy_id}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Phase A — vacancy side panel (mode='vagas'). Mirrors candidate
+            preview layout. Conditional mount keeps modal hooks dormant
+            while closed (defense-in-depth Rules of Hooks). */}
+        {showVacancyPreview && previewVacancy && (
+          <div className="flex-shrink-0 w-[420px] relative pl-2">
+            <div className="bg-lia-bg-primary h-full overflow-hidden rounded-xl border border-lia-border-subtle shadow-sm">
+              <VacancyPreview
+                vacancy={previewVacancy}
+                isOpen={showVacancyPreview}
+                onClose={handleCloseVacancyPreview}
+                action={getVacancyAction(
+                  selectedLifecycleStageData?.stage ?? previewVacancy.status,
+                  tOverview,
+                )}
+                onAction={handleVacancyAction}
+                vacancies={visibleVacancies}
+                currentIndex={previewVacancyIndex}
+                onNavigate={handleNavigateVacancyPreview}
               />
             </div>
           </div>
@@ -832,6 +981,82 @@ export function PipelineOverviewPage() {
           />
         )}
       </div>
+      {/* Phase A — Job publish modal mounted inline (not /jobs/{id} navigation). */}
+      {showPublishModal && previewVacancy && (
+        <JobPublishModal
+          isOpen={showPublishModal}
+          onClose={() => setShowPublishModal(false)}
+          jobs={[{
+            id: previewVacancy.id,
+            code: undefined,
+            title: previewVacancy.title,
+            status: previewVacancy.status,
+            is_published: previewVacancy.status === "Ativa",
+            published_channels: [],
+          }]}
+          onPublish={async (jobIds, channels, options) => {
+            try {
+              await Promise.all(jobIds.map(id =>
+                fetch(`/api/backend-proxy/job-vacancies/${id}/publish`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ channels, ...options }),
+                })
+              ))
+              toast.success("Vaga publicada")
+              fetchLifecycleOverview()
+              setShowPublishModal(false)
+            } catch (err) {
+              toast.error("Falha ao publicar", {
+                description: err instanceof Error ? err.message : "Erro desconhecido",
+              })
+            }
+          }}
+          onUnpublish={async (jobIds) => {
+            // Phase C will add /unpublish endpoint. Until then the button is
+            // wired but shows an explanatory toast.
+            toast.info("Despublicar — em breve (Phase C)", {
+              description: `Vagas: ${jobIds.length}`,
+            })
+          }}
+        />
+      )}
+
+      {/* Phase A — Job status modal mounted inline. Default mode=pause; the
+          discriminated VacancyAction.mode controls which sub-flow opens. */}
+      {showStatusModal && previewVacancy && (
+        <JobStatusModal
+          isOpen={showStatusModal}
+          onClose={() => setShowStatusModal(false)}
+          mode={statusModalMode}
+          jobs={[{
+            id: previewVacancy.id,
+            code: undefined,
+            title: previewVacancy.title,
+            status: previewVacancy.status,
+            candidates_count: previewVacancy.candidate_count ?? 0,
+          }]}
+          onStatusChange={async (jobIds, newStatus) => {
+            try {
+              await Promise.all(jobIds.map(id =>
+                fetch(`/api/backend-proxy/job-vacancies/${id}/status`, {
+                  method: "PATCH",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ status: newStatus }),
+                })
+              ))
+              toast.success(`Status alterado para ${newStatus}`)
+              fetchLifecycleOverview()
+              setShowStatusModal(false)
+            } catch (err) {
+              toast.error("Falha ao alterar status", {
+                description: err instanceof Error ? err.message : "Erro desconhecido",
+              })
+            }
+          }}
+        />
+      )}
+
       {/* Phase 4J — Bulk import modal triggered from ats_importada empty state.
           Conditional mount: avoids running modal hooks while closed (defense-in-depth
           for Rules of Hooks — see CLAUDE.md). */}
@@ -1145,12 +1370,18 @@ interface PipelineVacancyCardProps {
   vacancy: JobLifecycleVacancy
   stageKey: string
   stageColor: string
+  /** Phase A: optional preview opener. When provided, card click opens the
+   * side panel instead of navigating to /jobs/{id}. */
+  onOpenPreview?: (vacancy: JobLifecycleVacancy) => void
 }
 
-function PipelineVacancyCard({ vacancy, stageKey, stageColor }: PipelineVacancyCardProps) {
+function PipelineVacancyCard({ vacancy, stageKey, stageColor, onOpenPreview }: PipelineVacancyCardProps) {
   const tCard = useTranslations("pipelineOverview")
   const timeInStage = getTimeInStage(vacancy.stage_entered_at)
-  const cta = getVacancyCta(stageKey, vacancy.id, tCard)
+  // Phase A: derive label from VacancyAction instead of legacy CTA href.
+  // Card click no longer navigates — opens the side preview (handled by parent).
+  const action = getVacancyAction(stageKey, tCard)
+  const cta = { label: action.label, href: `/jobs/${vacancy.id}` }
 
   const updatedLabel = vacancy.updated_at
     ? (() => {
@@ -1175,6 +1406,12 @@ function PipelineVacancyCard({ vacancy, stageKey, stageColor }: PipelineVacancyC
   ].filter(Boolean) as { key: string; label: string }[]
 
   const handleOpen = () => {
+    // Phase A: if parent supplied a preview opener, use it. Falls back to
+    // legacy window.open until pipeline-overview-page wires the handler.
+    if (onOpenPreview) {
+      onOpenPreview(vacancy)
+      return
+    }
     if (typeof window !== "undefined") {
       window.open(cta.href, "_blank")
     }
