@@ -40,6 +40,7 @@ import {
   FileText,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { AtsImportTab } from "@/components/jobs/bulk-import/AtsImportTab"
 
 interface BulkImportJob {
   title: string
@@ -85,7 +86,7 @@ interface BulkImportModalProps {
 }
 
 type Step = "input" | "preview" | "importing" | "polling" | "result"
-type InputMode = "file" | "json"
+type InputMode = "file" | "json" | "ats"
 
 // CSV header → JSON field mapping (case-insensitive, normalized)
 const HEADER_MAP: Record<string, keyof BulkImportJob> = {
@@ -484,9 +485,33 @@ export function BulkImportModal({ isOpen, onClose, onSuccess }: BulkImportModalP
                   <FileJson className="w-3.5 h-3.5" />
                   Colar JSON
                 </button>
+                <button
+                  onClick={() => setMode("ats")}
+                  className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    mode === "ats"
+                      ? "bg-wedo-cyan/10 text-wedo-cyan border border-wedo-cyan/30"
+                      : "bg-lia-bg-secondary text-lia-text-secondary border border-lia-border-subtle"
+                  }`}
+                >
+                  <FileText className="w-3.5 h-3.5" />
+                  ATS Conectado
+                </button>
               </div>
 
-              {mode === "file" ? (
+              {mode === "ats" ? (
+                <AtsImportTab
+                  onImportSuccess={(count) => {
+                    onSuccess({
+                      batch_id: `ats-${Date.now()}`,
+                      total: count,
+                      successful: count,
+                      failed: 0,
+                      status: "completed",
+                      items: [],
+                    })
+                  }}
+                />
+              ) : mode === "file" ? (
                 <>
                   <p className="text-sm text-lia-text-secondary mb-3">
                     Arraste um arquivo <strong>CSV</strong> ou <strong>JSON</strong> exportado do

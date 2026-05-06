@@ -1013,11 +1013,23 @@ export function PipelineOverviewPage() {
             }
           }}
           onUnpublish={async (jobIds) => {
-            // Phase C will add /unpublish endpoint. Until then the button is
-            // wired but shows an explanatory toast.
-            toast.info("Despublicar — em breve (Phase C)", {
-              description: `Vagas: ${jobIds.length}`,
-            })
+            // Phase D — calls the /unpublish endpoint added in Phase C.
+            try {
+              await Promise.all(jobIds.map(id =>
+                fetch(`/api/backend-proxy/job-vacancies/${id}/unpublish`, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({}),
+                })
+              ))
+              toast.success("Vaga despublicada")
+              fetchLifecycleOverview()
+              setShowPublishModal(false)
+            } catch (err) {
+              toast.error("Falha ao despublicar", {
+                description: err instanceof Error ? err.message : "Erro desconhecido",
+              })
+            }
           }}
         />
       )}
