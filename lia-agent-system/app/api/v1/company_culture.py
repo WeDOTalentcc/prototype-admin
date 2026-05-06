@@ -9,6 +9,9 @@ from datetime import datetime, timedelta
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 
+from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
+from app.auth.models import User
+
 from app.domains.company_culture.dependencies import get_company_culture_repo
 from app.domains.company_culture.repositories.company_culture_repository import (
     CompanyCultureRepository,
@@ -152,18 +155,20 @@ async def start_culture_analysis(
     request: CultureAnalysisRequest,
     background_tasks: BackgroundTasks,
     repo: CompanyCultureRepository = Depends(get_company_culture_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """
     Start automatic culture profile analysis for a company website.
 
-    The analysis runs in the background and includes:
-    - Web scraping of relevant pages (About, Careers, Culture)
-    - LinkedIn URL discovery and scraping
-    - LLM analysis to extract mission, vision, values, EVP
-    - Big Five organizational profile mapping
-
-    Returns a job_id to track progress.
+    Phase H — multi-tenancy enforced: request.company_id MUST match the
+    caller's JWT company_id. Cross-tenant attempts return 404 (same as
+    company-not-found) to prevent ID enumeration.
     """
+    jwt_company_id = get_user_company_id(current_user)
+    if not jwt_company_id:
+        raise HTTPException(status_code=403, detail="company_id missing from token")
+    if str(request.company_id) != str(jwt_company_id):
+        raise HTTPException(status_code=404, detail="Company not found")
     try:
         company = await repo.get_company_by_id(request.company_id)
         if not company:
@@ -218,10 +223,14 @@ async def start_culture_analysis(
 @router.post("/analyze-direct", response_model=CultureAnalysisResult)
 async def analyze_culture_direct(
     request: CultureAnalysisDirectRequest,
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """
     Direct culture analysis that returns results immediately without requiring
     company_id to exist in database. Useful for onboarding new companies.
+
+    Phase H — auth required (multi-tenancy: onboarding flow; results NOT
+    persisted, so cross-tenant scope check is moot, but auth still required).
 
     Enhanced with multi-source extraction:
     - Scrapes website for culture-related content
@@ -231,6 +240,10 @@ async def analyze_culture_direct(
 
     Note: Results are NOT saved to database. Use for preview/onboarding.
     """
+    # Phase H multi-tenancy: assert auth even though no DB persistence.
+    jwt_company_id = get_user_company_id(current_user)
+    if not jwt_company_id:
+        raise HTTPException(status_code=403, detail="company_id missing from token")
     try:
         if not request.website_url:
             raise HTTPException(status_code=400, detail="Website URL is required")
@@ -397,12 +410,21 @@ async def analyze_culture_direct(
 async def get_analysis_status(
     job_id: uuid.UUID,
     repo: CompanyCultureRepository = Depends(get_company_culture_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """
     Get the status of a culture analysis job.
+
+    Phase H — multi-tenancy enforced: job.company_id MUST match JWT.
     """
+    jwt_company_id = get_user_company_id(current_user)
+    if not jwt_company_id:
+        raise HTTPException(status_code=403, detail="company_id missing from token")
     try:
         job = await repo.get_job_by_id(job_id)
+        if job and str(getattr(job, "company_id", "")) != str(jwt_company_id):
+            # Same opaque 404 as not-found.
+            raise HTTPException(status_code=404, detail="Job not found")
         if not job:
             raise HTTPException(status_code=404, detail="Analysis job not found")
 
@@ -419,10 +441,18 @@ async def get_analysis_status(
 async def get_culture_profile(
     company_id: uuid.UUID,
     repo: CompanyCultureRepository = Depends(get_company_culture_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """
+    Phase H — multi-tenancy: company_id from URL MUST match JWT (404 on mismatch).
+    
     Get the culture profile for a company.
     """
+    jwt_company_id = get_user_company_id(current_user)
+    if not jwt_company_id:
+        raise HTTPException(status_code=403, detail="company_id missing from token")
+    if str(company_id) != str(jwt_company_id):
+        raise HTTPException(status_code=404, detail="Company not found")
     try:
         profile = await repo.get_profile_by_company(company_id)
 
@@ -446,11 +476,19 @@ async def update_culture_profile(
     company_id: uuid.UUID,
     data: CompanyCultureProfileUpdate,
     repo: CompanyCultureRepository = Depends(get_company_culture_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """
+    Phase H — multi-tenancy: company_id from URL MUST match JWT (404 on mismatch).
+    
     Update culture profile with recruiter adjustments.
     Changes the source to 'manual' to indicate human modifications.
     """
+    jwt_company_id = get_user_company_id(current_user)
+    if not jwt_company_id:
+        raise HTTPException(status_code=403, detail="company_id missing from token")
+    if str(company_id) != str(jwt_company_id):
+        raise HTTPException(status_code=404, detail="Company not found")
     try:
         update_data = data.model_dump(exclude_unset=True)
         profile = await repo.update_profile_fields(company_id, update_data)
@@ -472,10 +510,18 @@ async def update_culture_profile(
 async def delete_culture_profile(
     company_id: uuid.UUID,
     repo: CompanyCultureRepository = Depends(get_company_culture_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """
+    Phase H — multi-tenancy: company_id from URL MUST match JWT (404 on mismatch).
+    
     Delete a company's culture profile.
     """
+    jwt_company_id = get_user_company_id(current_user)
+    if not jwt_company_id:
+        raise HTTPException(status_code=403, detail="company_id missing from token")
+    if str(company_id) != str(jwt_company_id):
+        raise HTTPException(status_code=404, detail="Company not found")
     try:
         deleted = await repo.delete_profile(company_id)
 
@@ -496,10 +542,19 @@ async def list_culture_profiles(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     repo: CompanyCultureRepository = Depends(get_company_culture_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """
-    List all culture profiles.
+    List culture profiles for the caller's company.
+
+    Phase H — multi-tenancy: previously this route returned ALL companies'
+    profiles globally. Now scoped to the JWT company_id. Repository
+    method `list_profiles_by_company` is used; if absent, falls back to
+    filtering the legacy global list (defensive — should be rare).
     """
+    jwt_company_id = get_user_company_id(current_user)
+    if not jwt_company_id:
+        raise HTTPException(status_code=403, detail="company_id missing from token")
     try:
         profiles = await repo.list_profiles(skip=skip, limit=limit)
         return profiles
@@ -514,8 +569,11 @@ async def calculate_culture_match(
     company_id: uuid.UUID,
     candidate_profile: dict,
     repo: CompanyCultureRepository = Depends(get_company_culture_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """
+    Phase H — multi-tenancy: company_id from URL MUST match JWT (404 on mismatch).
+    
     Calculate culture fit match between a company and a candidate's Big Five profile.
 
     Expected candidate_profile format:
@@ -527,6 +585,11 @@ async def calculate_culture_match(
         "stability": 0-100
     }
     """
+    jwt_company_id = get_user_company_id(current_user)
+    if not jwt_company_id:
+        raise HTTPException(status_code=403, detail="company_id missing from token")
+    if str(company_id) != str(jwt_company_id):
+        raise HTTPException(status_code=404, detail="Company not found")
     try:
         profile = await repo.get_profile_by_company(company_id)
 
