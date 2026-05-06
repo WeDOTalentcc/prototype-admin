@@ -1,11 +1,26 @@
 "use client"
 
 /**
- * VacancyPreview — Phase A canonical pattern.
+ * VacancyPreview — Phase I.2 canonical refactor.
  *
  * Side-panel preview for job vacancies in the "Recrutar > Visão Global > Vagas"
- * rail. Mirrors the candidate-preview UX (focus trap, prev/next, ESC to close)
- * but scoped to vacancies + their stage-specific actions.
+ * rail. Mirrors the canonical CandidatePreview UX (Paulo, 2026-05-06):
+ *
+ *   ┌────────────────────────────────────────────────────────┐
+ *   │ p-3 wrapper                                            │
+ *   │   <VacancyPreviewHeader />                             │
+ *   │     title, stage badge prominente, "Próximo: hint",    │
+ *   │     prev/next, close                                   │
+ *   │   <VacancyPreviewActionBar />  ← BOTÕES NO TOPO        │
+ *   │     icon-only ghost (Settings, Kanban, Share, Star)    │
+ *   │   <VacancyDecisionBar />       ← STAGE-AWARE (TOPO)    │
+ *   │     single primary CTA (or 3-button picker for ao_vivo)│
+ *   ├────────────────────────────────────────────────────────┤
+ *   │ flex-1 overflow-y-auto                                 │
+ *   │   <JobScreeningSection /> (importado, 764 linhas)      │
+ *   │     JD + enriched_jd + skills + screening_questions    │
+ *   │     blocks colapsáveis + benefits + interview stages   │
+ *   └────────────────────────────────────────────────────────┘
  *
  * Architectural notes:
  *  - Hooks ALWAYS above any early return (CLAUDE.md > Frontend / React
@@ -13,21 +28,25 @@
  *  - Stage-aware CTA via VacancyAction (discriminated union exhaustive over
  *    the 8 lifecycle stages). New CTAs MUST extend VacancyActionKind.
  *  - Lazy-loads full vacancy detail via liaApi.getJobVacancy(id) on open;
- *    skeleton shown while loading. The list payload (JobLifecycleVacancy)
- *    only carries summary fields — full metadata (description,
- *    enriched_jd, technical_requirements, etc.) requires the GET.
- *  - No business logic beyond calling the action dispatcher; the parent
- *    page wires state + modals + router.
+ *    skeleton shown while loading. Refetches on stage/status change.
+ *  - Composes the existing JobScreeningSection (~764 lines) instead of
+ *    duplicating UI. Provides minimal prop wiring via mapVacancyToJob.
  *
- * Source of truth: .planning/vacancy-pipeline-plan.md (Phase A).
+ * Source of truth: .planning/vacancy-pipeline-plan.md (Phase I.2).
  */
-import { useEffect, useState, useCallback, useRef } from "react"
+import { useEffect, useState, useCallback, useRef, useMemo } from "react"
+import { useRouter } from "next/navigation"
 import { useTranslations } from "next-intl"
-import { X, ChevronLeft, ChevronRight, Briefcase, MapPin, Building2, User, Users, Database } from "lucide-react"
+import { X, ChevronLeft, ChevronRight, Briefcase, Database } from "lucide-react"
 import { liaApi } from "@/services/lia-api"
 import { Chip } from "@/components/ui/chip"
+import { TooltipProvider } from "@/components/ui/tooltip"
 
 import type { VacancyAction } from "@/components/pages/pipeline-overview-page"
+import { VacancyPreviewActionBar } from "./VacancyPreviewActionBar"
+import { VacancyDecisionBar } from "./VacancyDecisionBar"
+import { JobScreeningSection } from "@/components/pages/jobs/job-preview/sections/JobScreeningSection"
+import { mapVacancyToJob, type VacancyDetailFromApi } from "./utils/mapVacancyToJob"
 
 interface VacancyLite {
   id: string
@@ -48,28 +67,56 @@ interface VacancyLite {
   candidate_count?: number
 }
 
-interface VacancyDetail {
-  description?: string | null
-  enriched_jd?: Record<string, unknown> | string | null
-  technical_requirements?: unknown[]
-  benefits?: unknown[]
-  salary_range?: { min?: number; max?: number; currency?: string } | null
-  recruiter?: string | null
-  manager_email?: string | null
-}
-
 interface VacancyPreviewProps {
   vacancy: VacancyLite
   isOpen: boolean
   onClose: () => void
-  /** Stage-aware action computed by the parent. CTA renders in the footer. */
+  /** Stage-aware action computed by the parent. */
   action: VacancyAction
-  /** When the user clicks the CTA. Parent handles routing/modal mount. */
+  /** Called when CTA is clicked. Parent handles routing/modal mount. */
   onAction: (action: VacancyAction, vacancy: VacancyLite) => void
-  /** Optional prev/next navigation across the visible vacancy list. */
+  /** Optional prev/next nav across the visible vacancy list. */
   vacancies?: VacancyLite[]
   currentIndex?: number
   onNavigate?: (index: number) => void
+  /** Phase I.2 — current stage key (for badge + hint lookup). */
+  stageKey?: string
+}
+
+// Phase I.2 — stage badge color + next-step hint lookup tables.
+// Color tokens come from the backend in JOB_LIFECYCLE_COLORS; we mirror them
+// here so the preview can render WITHOUT a backend roundtrip per render.
+const STAGE_COLOR: Record<string, string> = {
+  ats_importada: "#8A8F98",
+  rascunho: "#60BED1",
+  enriquecida: "#9860D1",
+  wsi_config: "#5DA47A",
+  aguardando_aprovacao: "#D19960",
+  publicada: "#6078D1",
+  ao_vivo: "#4DA67A",
+  encerrada: "#8A8F98",
+}
+
+const STAGE_DISPLAY: Record<string, string> = {
+  ats_importada: "ATS Importada",
+  rascunho: "Rascunho/JD",
+  enriquecida: "Enriquecida",
+  wsi_config: "WSI Config",
+  aguardando_aprovacao: "Aguardando Aprovação",
+  publicada: "Publicada",
+  ao_vivo: "Ao Vivo",
+  encerrada: "Encerrada",
+}
+
+const STAGE_NEXT_HINT: Record<string, string> = {
+  ats_importada: "Edite e enriqueça a descrição da vaga",
+  rascunho: "Continue editando a descrição",
+  enriquecida: "Crie perguntas de triagem WSI",
+  wsi_config: "Solicite aprovação das perguntas",
+  aguardando_aprovacao: "Ative a triagem para os candidatos",
+  publicada: "Publique nos canais de divulgação",
+  ao_vivo: "Acompanhe candidatos / altere status",
+  encerrada: "Vaga encerrada",
 }
 
 export function VacancyPreview({
@@ -81,16 +128,36 @@ export function VacancyPreview({
   vacancies = [],
   currentIndex = 0,
   onNavigate,
+  stageKey,
 }: VacancyPreviewProps) {
   const t = useTranslations("pipelineOverview")
+  const router = useRouter()
 
   // ── Hooks (all above any early return — Rules of Hooks discipline) ──
-  const [detail, setDetail] = useState<VacancyDetail | null>(null)
+  const [detail, setDetail] = useState<VacancyDetailFromApi | null>(null)
   const [isLoadingDetail, setIsLoadingDetail] = useState(false)
   const [detailError, setDetailError] = useState<string | null>(null)
   const panelRef = useRef<HTMLDivElement | null>(null)
 
-  // Lazy-fetch vacancy detail when opened or when vacancy changes.
+  // Phase I.2 — local state pra collapse das sections (espelha useJobPreviewState
+  // do JobPreviewPanel sem importar o hook completo, que tem outras
+  // dependências do /jobs page context).
+  const [collapsedSections, setCollapsedSections] = useState<string[]>([])
+  const [expandedBlocks, setExpandedBlocks] = useState<number[]>([0, 1, 2, 3, 4, 6])
+
+  const toggleSection = useCallback((s: string) => {
+    setCollapsedSections((prev) => (prev.includes(s) ? prev.filter((x) => x !== s) : [...prev, s]))
+  }, [])
+  const toggleBlock = useCallback((id: number) => {
+    setExpandedBlocks((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+  }, [])
+
+  // Lazy-fetch vacancy detail when opened or when vacancy/status changes.
+  // Refetch on status change is critical: when the recruiter triggers an
+  // action that moves the vaga across stages, the rail refetches the lifecycle
+  // overview which updates `vacancy.status` — we then refetch detail so the
+  // preview reflects the new state (e.g., enriched_jd appears, screening
+  // questions appear).
   useEffect(() => {
     if (!isOpen || !vacancy?.id) return
     let cancelled = false
@@ -104,12 +171,30 @@ export function VacancyPreview({
         const x = v as unknown as Record<string, unknown>
         setDetail({
           description: (x.description as string) ?? null,
-          enriched_jd: (x.enriched_jd as Record<string, unknown> | string | null) ?? null,
+          enriched_jd: x.enriched_jd ?? null,
           technical_requirements: (x.technical_requirements as unknown[]) ?? [],
           benefits: (x.benefits as unknown[]) ?? [],
           salary_range: (x.salary_range as { min?: number; max?: number; currency?: string } | null) ?? null,
           recruiter: (x.recruiter as string) ?? null,
           manager_email: (x.manager_email as string) ?? null,
+          job_code: (x.job_code as string) ?? null,
+          recruiter_email: (x.recruiter_email as string) ?? null,
+          screening_questions: (x.screening_questions as unknown[]) ?? [],
+          screening_config: x.screening_config,
+          screening_status: (x.screening_status as string) ?? null,
+          interview_stages: (x.interview_stages as unknown[]) ?? [],
+          languages: (x.languages as unknown[]) ?? [],
+          behavioral_competencies: (x.behavioral_competencies as unknown[]) ?? [],
+          hiring_process: (x.hiring_process as string[]) ?? [],
+          published_linkedin: !!x.published_linkedin,
+          published_website: !!x.published_website,
+          published_indeed: !!x.published_indeed,
+          approval_status: (x.approval_status as string) ?? null,
+          is_confidential: !!x.is_confidential,
+          visibility: (x.visibility as string) ?? null,
+          deadline: (x.deadline as string) ?? null,
+          open_date: (x.open_date as string) ?? null,
+          priority: (x.priority as string) ?? null,
         })
       })
       .catch((err: unknown) => {
@@ -122,7 +207,7 @@ export function VacancyPreview({
     return () => {
       cancelled = true
     }
-  }, [isOpen, vacancy?.id])
+  }, [isOpen, vacancy?.id, vacancy?.status, vacancy?.approval_status])
 
   // ESC closes the preview.
   useEffect(() => {
@@ -134,7 +219,7 @@ export function VacancyPreview({
     return () => window.removeEventListener("keydown", onKey)
   }, [isOpen, onClose])
 
-  // Prev/next handlers (only if navigator props supplied).
+  // Prev/next handlers.
   const handlePrev = useCallback(() => {
     if (!onNavigate || vacancies.length === 0) return
     const idx = (currentIndex - 1 + vacancies.length) % vacancies.length
@@ -147,12 +232,31 @@ export function VacancyPreview({
     onNavigate(idx)
   }, [onNavigate, vacancies.length, currentIndex])
 
+  // ActionBar handlers — defaults navigate via Next router; override-able via props.
+  const handleOpenSettings = useCallback(
+    (id: string) => router.push(`/jobs/${id}?tab=edit&section=descricao`),
+    [router],
+  )
+  const handleOpenKanban = useCallback(
+    (id: string) => router.push(`/jobs/${id}?tab=management`),
+    [router],
+  )
+
+  // Compose the rich Job shape for JobScreeningSection. Memoized so the
+  // section's internal effects don't re-fire on every render.
+  const composedJob = useMemo(
+    () => mapVacancyToJob(vacancy, detail),
+    [vacancy, detail],
+  )
+
   // ── Hooks above this line — early returns from here on are safe. ──
   if (!isOpen || !vacancy) return null
 
-  const updatedLabel = formatDate(vacancy.updated_at)
-  const stageEnteredLabel = formatDate(vacancy.stage_entered_at)
   const hasNav = onNavigate && vacancies.length > 1
+  const stage = stageKey || vacancy.status
+  const stageBadgeColor = STAGE_COLOR[stage] ?? "#8A8F98"
+  const stageDisplay = STAGE_DISPLAY[stage] ?? stage
+  const nextHint = STAGE_NEXT_HINT[stage] ?? ""
 
   return (
     <div
@@ -161,183 +265,108 @@ export function VacancyPreview({
       role="dialog"
       aria-label={`Visualizar vaga ${vacancy.title}`}
     >
-      {/* Header */}
-      <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-lia-border-subtle">
-        <div className="flex items-center gap-2 min-w-0">
-          {hasNav && (
-            <button
-              onClick={handlePrev}
-              className="p-1 rounded hover:bg-lia-interactive-hover text-lia-text-tertiary"
-              aria-label="Vaga anterior"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-          )}
-          <Briefcase className="w-4 h-4 text-lia-text-tertiary flex-shrink-0" />
-          <p className="text-sm font-medium text-lia-text-primary truncate" title={vacancy.title}>
-            {vacancy.title}
-          </p>
-          {hasNav && (
-            <button
-              onClick={handleNext}
-              className="p-1 rounded hover:bg-lia-interactive-hover text-lia-text-tertiary"
-              aria-label="Próxima vaga"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-        <button
-          onClick={onClose}
-          className="p-1 rounded hover:bg-lia-interactive-hover text-lia-text-tertiary"
-          aria-label="Fechar preview"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-
-      {/* Meta badges */}
-      <div className="px-4 py-3 flex flex-wrap gap-1.5 border-b border-lia-border-subtle">
-        {vacancy.seniority_level && (
-          <Chip variant="neutral" muted className="text-xs">
-            {vacancy.seniority_level}
-          </Chip>
-        )}
-        {vacancy.work_model && (
-          <Chip variant="neutral" muted className="text-xs">
-            {vacancy.work_model}
-          </Chip>
-        )}
-        {vacancy.department && (
-          <Chip variant="neutral" muted className="text-xs">
-            {vacancy.department}
-          </Chip>
-        )}
-        {vacancy.imported_from_ats && (
-          <Chip variant="info" muted className="text-xs">
-            <Database className="w-3 h-3 mr-1" />
-            {vacancy.ats_source_label || t("vacancyCard.atsBadge")}
-          </Chip>
-        )}
-        {vacancy.approval_status === "pendente" && (
-          <Chip variant="warning" muted className="text-xs">
-            {t("vacancyCard.approvalPending")}
-          </Chip>
-        )}
-      </div>
-
-      {/* Scrollable body */}
-      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
-        {/* Timeline */}
-        <section>
-          <h3 className="text-xs font-medium text-lia-text-secondary uppercase tracking-wide mb-2">
-            Linha do tempo
-          </h3>
-          <dl className="text-xs text-lia-text-secondary space-y-1">
-            <div className="flex justify-between">
-              <dt>Status</dt>
-              <dd className="font-medium text-lia-text-primary">{vacancy.status}</dd>
+      <TooltipProvider delayDuration={200}>
+        {/* p-3 wrapper — Header + ActionBar + DecisionBar (canonical layout) */}
+        <div className="p-3 dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-primary">
+          {/* Header */}
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <div className="flex items-center gap-2 min-w-0">
+              {hasNav && (
+                <button
+                  onClick={handlePrev}
+                  className="p-1 rounded hover:bg-lia-interactive-hover text-lia-text-tertiary"
+                  aria-label="Vaga anterior"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+              )}
+              <Briefcase className="w-4 h-4 text-lia-text-tertiary flex-shrink-0" />
+              <p className="text-sm font-medium text-lia-text-primary truncate" title={vacancy.title}>
+                {vacancy.title}
+              </p>
+              {hasNav && (
+                <button
+                  onClick={handleNext}
+                  className="p-1 rounded hover:bg-lia-interactive-hover text-lia-text-tertiary"
+                  aria-label="Próxima vaga"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              )}
             </div>
-            {stageEnteredLabel && (
-              <div className="flex justify-between">
-                <dt>Entrou no estágio</dt>
-                <dd>{stageEnteredLabel}</dd>
-              </div>
-            )}
-            {updatedLabel && (
-              <div className="flex justify-between">
-                <dt>Atualizada</dt>
-                <dd>{updatedLabel}</dd>
-              </div>
-            )}
-            <div className="flex justify-between">
-              <dt>{t("vacancyCard.candidatesCount", { count: vacancy.candidate_count ?? 0 })}</dt>
-              <dd>
-                <Users className="w-3 h-3 inline" />
-              </dd>
-            </div>
-          </dl>
-        </section>
+            <button
+              onClick={onClose}
+              className="p-1 rounded hover:bg-lia-interactive-hover text-lia-text-tertiary"
+              aria-label="Fechar preview"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
 
-        {/* Manager + location */}
-        <section>
-          <h3 className="text-xs font-medium text-lia-text-secondary uppercase tracking-wide mb-2">
-            Responsáveis
-          </h3>
-          <div className="text-xs text-lia-text-secondary space-y-1.5">
-            {vacancy.manager && (
-              <div className="flex items-center gap-1.5">
-                <User className="w-3 h-3" />
-                <span className="text-lia-text-primary">Gestor: {vacancy.manager}</span>
-              </div>
+          {/* Stage badge + "Próximo:" hint */}
+          <div className="flex items-center gap-2 flex-wrap mb-2">
+            <span
+              className="inline-flex items-center px-2 py-0.5 rounded-full text-[0.625rem] font-medium text-white"
+              style={{ backgroundColor: stageBadgeColor }}
+            >
+              {stageDisplay}
+            </span>
+            {vacancy.imported_from_ats && (
+              <Chip variant="info" muted className="text-xs">
+                <Database className="w-3 h-3 mr-1" />
+                {vacancy.ats_source_label || t("vacancyCard.atsBadge")}
+              </Chip>
             )}
-            {detail?.recruiter && (
-              <div className="flex items-center gap-1.5">
-                <User className="w-3 h-3" />
-                <span className="text-lia-text-primary">Recrutador: {detail.recruiter}</span>
-              </div>
-            )}
-            {vacancy.location && (
-              <div className="flex items-center gap-1.5">
-                <MapPin className="w-3 h-3" />
-                <span>{vacancy.location}</span>
-              </div>
-            )}
-            {vacancy.department && (
-              <div className="flex items-center gap-1.5">
-                <Building2 className="w-3 h-3" />
-                <span>{vacancy.department}</span>
-              </div>
+            {vacancy.seniority_level && (
+              <Chip variant="neutral" muted className="text-xs">
+                {vacancy.seniority_level}
+              </Chip>
             )}
           </div>
-        </section>
+          {nextHint && (
+            <p className="text-[0.625rem] text-lia-text-tertiary mb-3">
+              <span className="font-medium text-lia-text-secondary">Próximo:</span> {nextHint}
+            </p>
+          )}
 
-        {/* JD / Description */}
-        <section>
-          <h3 className="text-xs font-medium text-lia-text-secondary uppercase tracking-wide mb-2">
-            Descrição
-          </h3>
+          {/* ActionBar — universal actions (Settings, Kanban, Share, Star) */}
+          <VacancyPreviewActionBar
+            vacancyId={vacancy.id}
+            vacancyTitle={vacancy.title}
+            onOpenSettings={handleOpenSettings}
+            onOpenKanban={handleOpenKanban}
+          />
+        </div>
+
+        {/* DecisionBar — stage-aware primary action (canonical: TOP, not footer) */}
+        <VacancyDecisionBar vacancy={vacancy} action={action} onAction={onAction} />
+
+        {/* Body — composed from existing JobScreeningSection */}
+        <div className="flex-1 overflow-y-auto">
           {isLoadingDetail ? (
-            <div className="space-y-2">
+            <div className="px-4 py-6 space-y-2">
               <div className="h-3 bg-lia-bg-tertiary rounded animate-pulse" />
               <div className="h-3 bg-lia-bg-tertiary rounded animate-pulse w-5/6" />
               <div className="h-3 bg-lia-bg-tertiary rounded animate-pulse w-4/6" />
+              <div className="h-3 bg-lia-bg-tertiary rounded animate-pulse w-3/6" />
             </div>
           ) : detailError ? (
-            <p className="text-xs text-status-error">Erro ao carregar detalhes: {detailError}</p>
-          ) : detail?.description ? (
-            <p className="text-xs text-lia-text-secondary whitespace-pre-wrap line-clamp-6">
-              {detail.description}
+            <p className="px-4 py-6 text-xs text-status-error">
+              Erro ao carregar detalhes: {detailError}
             </p>
-          ) : (
-            <p className="text-xs text-lia-text-tertiary italic">
-              Sem descrição. Use o botão abaixo para revisar e enriquecer.
-            </p>
-          )}
-        </section>
-      </div>
-
-      {/* Footer CTA */}
-      <div className="px-4 py-3 border-t border-lia-border-subtle bg-lia-bg-secondary">
-        <button
-          onClick={() => onAction(action, vacancy)}
-          disabled={"disabled" in action ? action.disabled : false}
-          className="w-full px-3 py-2 rounded-lg text-xs font-medium bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-colors motion-reduce:transition-none"
-        >
-          {action.label}
-        </button>
-      </div>
+          ) : detail ? (
+            <JobScreeningSection
+              previewJob={composedJob}
+              screeningConfig={(detail.screening_config as never) ?? undefined}
+              isLoadingScreeningConfig={false}
+              collapsedPreviewSections={collapsedSections}
+              expandedBlocks={expandedBlocks}
+              onToggleSection={toggleSection}
+              onToggleBlock={toggleBlock}
+            />
+          ) : null}
+        </div>
+      </TooltipProvider>
     </div>
   )
-}
-
-function formatDate(iso: string | null | undefined): string | null {
-  if (!iso) return null
-  try {
-    const d = new Date(iso)
-    if (isNaN(d.getTime())) return null
-    return d.toLocaleDateString("pt-BR", { day: "numeric", month: "short", year: "numeric" })
-  } catch {
-    return null
-  }
 }

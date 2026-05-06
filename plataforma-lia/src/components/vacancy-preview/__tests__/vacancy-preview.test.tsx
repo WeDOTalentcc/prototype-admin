@@ -31,6 +31,24 @@ vi.mock("@/services/lia-api", () => ({
   },
 }))
 
+// Phase I.2 — VacancyPreview now uses next/navigation useRouter for deep-link
+// navigation (Settings, Kanban). Tests mock the router stub to avoid the
+// "invariant expected app router to be mounted" Next-side error.
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), prefetch: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+  usePathname: () => "/",
+}))
+
+// JobScreeningSection has heavy deps (icons, hooks, internal state). For the
+// smoke tests we stub it to a passthrough — the canonical regression net for
+// the section is the JobsPage tests + Phase I.7 Playwright happy-path.
+vi.mock("@/components/pages/jobs/job-preview/sections/JobScreeningSection", () => ({
+  JobScreeningSection: ({ previewJob }: { previewJob: { title?: string } }) => (
+    <div data-testid="mock-screening-section">{previewJob?.title ?? ""}</div>
+  ),
+}))
+
 // Minimal i18n messages so useTranslations works in tests.
 const messages = {
   pipelineOverview: {
@@ -151,7 +169,9 @@ describe("VacancyPreview — stage-aware CTA labels", () => {
     { kind: "open-questions-config" as const, label: "Continuar enriquecimento" },
     { kind: "dispatch-screening" as const, label: "Revisar aprovação" },
     { kind: "open-publish-modal" as const, label: "Publicar vaga" },
-    { kind: "noop" as const, label: "Ver encerramento", disabled: true as const },
+    // Phase I.2 — kind="noop" (encerrada) now renders NOTHING per canonical
+    // (DecisionBar returns null for noop, mirroring PipelineDecisionBar
+    // collapse-when-no-action). Verified separately in test below.
   ]
 
   for (const c of cases) {
@@ -196,7 +216,10 @@ describe("VacancyPreview — stage-aware CTA labels", () => {
     expect(onAction.mock.calls[0][1]).toMatchObject({ id: "v-1" })
   })
 
-  it("noop kind renders disabled CTA", () => {
+  it("noop kind (encerrada) renders no DecisionBar button", () => {
+    // Phase I.2 — VacancyDecisionBar returns null when action.kind === "noop"
+    // because read-only stages should not display a clickable CTA. Mirrors the
+    // PipelineDecisionBar pattern (no decision = no bar).
     render(
       wrap(
         <VacancyPreview
@@ -208,8 +231,8 @@ describe("VacancyPreview — stage-aware CTA labels", () => {
         />,
       ),
     )
-    const btn = screen.getByRole("button", { name: "Ver encerramento" })
-    expect(btn).toBeDisabled()
+    // Negative assertion: no DecisionBar button should be visible for noop.
+    expect(screen.queryByRole("button", { name: "Ver encerramento" })).not.toBeInTheDocument()
   })
 })
 
