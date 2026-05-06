@@ -196,7 +196,6 @@ _NURTURE_TOOL_DEFINITIONS.append(
             "properties": {
                 "candidate_id": {"type": "string", "description": "ID do candidato"},
                 "vacancy_id": {"type": "string", "description": "ID da vaga (opcional)"},
-                "company_id": {"type": "string", "description": "ID da empresa"},
                 "steps": {
                     "type": "array",
                     "description": (

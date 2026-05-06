@@ -692,10 +692,9 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
         parameters={
             "type": "object",
             "properties": {
-                "company_id": {"type": "string", "description": "ID da empresa"},
                 "period_days": {"type": "integer", "description": "Periodo em dias para analise (padrao: 90)"},
             },
-            "required": ["company_id"],
+            "required": [],
         },
         output_schema=ToolOutput,
         function=_wrap_get_recruitment_benchmarks,
@@ -872,12 +871,8 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
                     "type": "string",
                     "description": "ID da vaga (opcional — sem este campo retorna visão geral da empresa).",
                 },
-                "company_id": {
-                    "type": "string",
-                    "description": "ID da empresa (multi-tenant, obrigatório).",
-                },
             },
-            "required": ["company_id"],
+            "required": [],
         },
         output_schema=ToolOutput,
         function=_wrap_get_pipeline_prediction_jobs_mgmt,

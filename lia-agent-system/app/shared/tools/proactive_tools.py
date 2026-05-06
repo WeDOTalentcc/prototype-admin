@@ -394,13 +394,12 @@ def get_proactive_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": company_id_param,
                     "threshold_days": {
                         "type": "integer",
                         "description": "Number of days to consider as stagnation threshold (default: 7)",
                     },
                 },
-                "required": ["company_id"],
+                "required": [],
             },
             function=check_stagnant_candidates,
         ),
@@ -413,13 +412,12 @@ def get_proactive_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": company_id_param,
                     "threshold_hours": {
                         "type": "integer",
                         "description": "Number of hours to consider as pending threshold (default: 72)",
                     },
                 },
-                "required": ["company_id"],
+                "required": [],
             },
             function=check_pending_offers,
         ),
@@ -432,13 +430,12 @@ def get_proactive_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": company_id_param,
                     "user_id": {
                         "type": "string",
                         "description": "The recruiter user ID to filter tasks",
                     },
                 },
-                "required": ["company_id", "user_id"],
+                "required": ["user_id"],
             },
             function=check_overdue_tasks,
         ),
@@ -451,9 +448,8 @@ def get_proactive_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": company_id_param,
                 },
-                "required": ["company_id"],
+                "required": [],
             },
             function=check_pipeline_risks,
         ),

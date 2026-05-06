@@ -1163,7 +1163,6 @@ ALL_TOOLS: list[ToolDefinition] = [
             "type": "object",
             "properties": {
                 "to_stage": {"type": "string", "description": "Slug da etapa destino"},
-                "company_id": {"type": "string", "description": "ID da empresa"},
             },
             "required": ["to_stage"],
         },

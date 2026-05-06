@@ -421,9 +421,8 @@ def get_company_settings_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": {"type": "string", "description": "ID da empresa"},
                 },
-                "required": ["company_id"],
+                "required": [],
             },
             output_schema=ToolOutput,
             function=_wrap_get_company_profile,
@@ -434,12 +433,11 @@ def get_company_settings_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": {"type": "string", "description": "ID da empresa"},
                     "section": {"type": "string", "description": "Secao (profile ou culture)"},
                     "field": {"type": "string", "description": "Nome do campo"},
                     "value": {"description": "Valor a salvar"},
                 },
-                "required": ["company_id", "section", "field", "value"],
+                "required": ["section", "field", "value"],
             },
             output_schema=ToolOutput,
             function=_wrap_save_company_field,
@@ -450,11 +448,10 @@ def get_company_settings_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": {"type": "string", "description": "ID da empresa"},
                     "section": {"type": "string", "description": "Secao (profile ou culture)"},
                     "data": {"type": "object", "description": "Dicionario com campos e valores"},
                 },
-                "required": ["company_id", "section", "data"],
+                "required": ["section", "data"],
             },
             output_schema=ToolOutput,
             function=_wrap_save_company_section,
@@ -465,11 +462,10 @@ def get_company_settings_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": {"type": "string", "description": "ID da empresa"},
                     "website_url": {"type": "string", "description": "URL do website"},
                     "linkedin_url": {"type": "string", "description": "URL do LinkedIn (opcional)"},
                 },
-                "required": ["company_id", "website_url"],
+                "required": ["website_url"],
             },
             output_schema=ToolOutput,
             function=_wrap_analyze_company_website,
@@ -480,11 +476,10 @@ def get_company_settings_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": {"type": "string", "description": "ID da empresa"},
                     "document_text": {"type": "string", "description": "Texto extraido do documento"},
                     "document_type": {"type": "string", "description": "Tipo do documento (handbook, org_chart, compensation, tech_doc, general)"},
                 },
-                "required": ["company_id", "document_text"],
+                "required": ["document_text"],
             },
             output_schema=ToolOutput,
             function=_wrap_process_uploaded_document,
@@ -495,7 +490,6 @@ def get_company_settings_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": {"type": "string", "description": "ID da empresa"},
                     "plan_data": {
                         "type": "array",
                         "description": "Lista de contratacoes planejadas",
@@ -511,7 +505,7 @@ def get_company_settings_tools() -> list[ToolDefinition]:
                         },
                     },
                 },
-                "required": ["company_id", "plan_data"],
+                "required": ["plan_data"],
             },
             output_schema=ToolOutput,
             function=_wrap_import_workforce_plan,
@@ -522,9 +516,8 @@ def get_company_settings_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": {"type": "string", "description": "ID da empresa"},
                 },
-                "required": ["company_id"],
+                "required": [],
             },
             output_schema=ToolOutput,
             function=_wrap_get_company_completion,

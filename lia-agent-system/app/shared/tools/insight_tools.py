@@ -379,10 +379,9 @@ def get_insight_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": company_id_param,
                     "job_id": job_id_param,
                 },
-                "required": ["company_id"],
+                "required": [],
             },
             function=get_pipeline_health,
         ),
@@ -395,10 +394,9 @@ def get_insight_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": company_id_param,
                     "job_id": job_id_param,
                 },
-                "required": ["company_id"],
+                "required": [],
             },
             function=get_conversion_rates,
         ),
@@ -411,10 +409,9 @@ def get_insight_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": company_id_param,
                     "job_id": job_id_param,
                 },
-                "required": ["company_id"],
+                "required": [],
             },
             function=get_time_to_fill,
         ),
@@ -427,10 +424,9 @@ def get_insight_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": company_id_param,
                     "job_id": job_id_param,
                 },
-                "required": ["company_id"],
+                "required": [],
             },
             function=get_candidate_quality_distribution,
         ),

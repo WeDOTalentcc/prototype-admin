@@ -1099,9 +1099,8 @@ def get_policy_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": {"type": "string", "description": "ID da empresa"},
                 },
-                "required": ["company_id"],
+                "required": [],
             },
             output_schema=ToolOutput,
             function=_wrap_get_current_policy,
@@ -1115,12 +1114,11 @@ def get_policy_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": {"type": "string", "description": "ID da empresa"},
                     "block": {"type": "string", "description": "Nome do bloco (pipeline_rules, scheduling_rules, communication_rules, screening_rules, automation_rules)"},
                     "field": {"type": "string", "description": "Nome do campo dentro do bloco"},
                     "value": {"description": "Valor a ser salvo (tipo varia por campo)"},
                 },
-                "required": ["company_id", "block", "field", "value"],
+                "required": ["block", "field", "value"],
             },
             output_schema=ToolOutput,
             function=_wrap_save_policy_field,
@@ -1131,9 +1129,8 @@ def get_policy_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": {"type": "string", "description": "ID da empresa"},
                 },
-                "required": ["company_id"],
+                "required": [],
             },
             output_schema=ToolOutput,
             function=_wrap_get_policy_summary,
@@ -1161,9 +1158,8 @@ def get_policy_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": {"type": "string", "description": "ID da empresa"},
                 },
-                "required": ["company_id"],
+                "required": [],
             },
             output_schema=ToolOutput,
             function=_wrap_get_company_context,
@@ -1203,9 +1199,8 @@ def get_policy_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": {"type": "string", "description": "ID da empresa"},
                 },
-                "required": ["company_id"],
+                "required": [],
             },
             output_schema=ToolOutput,
             function=_wrap_get_setup_progress,
@@ -1229,9 +1224,8 @@ def get_policy_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": {"type": "string", "description": "ID da empresa"},
                 },
-                "required": ["company_id"],
+                "required": [],
             },
             affects_candidate_decision=True, lgpd_legal_basis="LEGITIMATE_INTEREST",
             output_schema=ToolOutput,
@@ -1243,10 +1237,9 @@ def get_policy_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": {"type": "string", "description": "ID da empresa"},
                     "period_days": {"type": "integer", "description": "Periodo em dias para analise (padrao: 30)"},
                 },
-                "required": ["company_id"],
+                "required": [],
             },
             output_schema=ToolOutput,
             function=_wrap_get_policy_effectiveness_report,
@@ -1260,11 +1253,10 @@ def get_policy_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": {"type": "string", "description": "ID da empresa"},
                     "block": {"type": "string", "description": "Nome do bloco (pipeline_rules, scheduling_rules, communication_rules, screening_rules, automation_rules)"},
                     "data": {"type": "object", "description": "Dicionario com todos os campos e valores do bloco"},
                 },
-                "required": ["company_id", "block", "data"],
+                "required": ["block", "data"],
             },
             output_schema=ToolOutput,
             function=_wrap_save_policy_block,
@@ -1279,10 +1271,9 @@ def get_policy_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": {"type": "string", "description": "ID da empresa"},
                     "industry": {"type": "string", "description": "Setor da empresa (technology, finance, retail, healthcare, legal, education, manufacturing, services)"},
                 },
-                "required": ["company_id", "industry"],
+                "required": ["industry"],
             },
             output_schema=ToolOutput,
             function=_wrap_apply_industry_defaults,

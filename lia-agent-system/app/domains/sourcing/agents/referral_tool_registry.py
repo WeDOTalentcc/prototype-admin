@@ -126,7 +126,6 @@ _REFERRAL_TOOL_DEFINITIONS.append(
         parameters={
             "type": "object",
             "properties": {
-                "company_id": {"type": "string", "description": "ID da empresa"},
                 "role": {"type": "string", "description": "Cargo buscado (para encontrar colaboradores afins)"},
                 "skills": {
                     "type": "array",
@@ -139,7 +138,7 @@ _REFERRAL_TOOL_DEFINITIONS.append(
                     "default": 15,
                 },
             },
-            "required": ["company_id"],
+            "required": [],
         },
         output_schema=ToolOutput,
         function=_wrap_referral_identify_connectors,
@@ -463,7 +462,6 @@ _REFERRAL_TOOL_DEFINITIONS.append(
                     "default": "email",
                 },
                 "vacancy_id": {"type": "string", "description": "ID da vaga"},
-                "company_id": {"type": "string", "description": "ID da empresa"},
                 "hitl_approved": {
                     "type": "boolean",
                     "description": "HITL aprovado (true obrigatório para envio)",
@@ -554,10 +552,6 @@ _REFERRAL_TOOL_DEFINITIONS.append(
                     "description": "Canal de envio (email, whatsapp, linkedin)",
                     "enum": ["email", "whatsapp", "linkedin"],
                     "default": "email",
-                },
-                "company_id": {
-                    "type": "string",
-                    "description": "ID da empresa (opcional)",
                 },
                 "approved_by": {
                     "type": "string",

@@ -1017,7 +1017,6 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             "type": "object",
             "properties": {
                 "vacancy_id": {"type": "string", "description": "ID da vaga para benchmarks especificos"},
-                "company_id": {"type": "string", "description": "ID da empresa para comparar com media geral"},
             },
             "required": ["vacancy_id"],
         },
@@ -1243,7 +1242,6 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             "type": "object",
             "properties": {
                 "vacancy_id": {"type": "string", "description": "ID da vaga alvo (opcional — retorna medalists compatíveis com esta vaga)"},
-                "company_id": {"type": "string", "description": "ID da empresa"},
                 "limit": {"type": "integer", "description": "Numero maximo de candidatos a retornar (padrao: 20)"},
             },
             "required": [],
@@ -1267,12 +1265,8 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
                     "type": "string",
                     "description": "ID do recrutador (user_id). Use o contexto da sessão atual.",
                 },
-                "company_id": {
-                    "type": "string",
-                    "description": "ID da empresa (multi-tenant).",
-                },
             },
-            "required": ["recruiter_id", "company_id"],
+            "required": ["recruiter_id"],
         },
         output_schema=ToolOutput,
         function=_wrap_get_recruiter_backlog,
@@ -1294,12 +1288,8 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
                     "type": "string",
                     "description": "ID do recrutador. Use o contexto da sessão atual.",
                 },
-                "company_id": {
-                    "type": "string",
-                    "description": "ID da empresa (multi-tenant).",
-                },
             },
-            "required": ["recruiter_id", "company_id"],
+            "required": ["recruiter_id"],
         },
         output_schema=ToolOutput,
         function=_wrap_get_recruiter_benchmark,
@@ -1320,12 +1310,8 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
                     "type": "string",
                     "description": "ID da vaga a analisar.",
                 },
-                "company_id": {
-                    "type": "string",
-                    "description": "ID da empresa (multi-tenant).",
-                },
             },
-            "required": ["vacancy_id", "company_id"],
+            "required": ["vacancy_id"],
         },
         output_schema=ToolOutput,
         function=_wrap_get_journey_metrics,
@@ -1347,17 +1333,13 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
         parameters={
             "type": "object",
             "properties": {
-                "company_id": {
-                    "type": "string",
-                    "description": "ID da empresa (multi-tenant).",
-                },
                 "min_risk_level": {
                     "type": "string",
                     "description": "Nível mínimo de risco a retornar: medium (padrão), high ou critical.",
                     "enum": ["medium", "high", "critical"],
                 },
             },
-            "required": ["company_id"],
+            "required": [],
         },
         output_schema=ToolOutput,
         function=_wrap_get_at_risk_candidates,
@@ -1380,12 +1362,8 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
                     "type": "string",
                     "description": "ID da vaga (opcional — sem este campo retorna visão geral da empresa).",
                 },
-                "company_id": {
-                    "type": "string",
-                    "description": "ID da empresa (multi-tenant, obrigatório).",
-                },
             },
-            "required": ["company_id"],
+            "required": [],
         },
         output_schema=ToolOutput,
         function=_wrap_get_pipeline_prediction,
@@ -1401,7 +1379,6 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
             "type": "object",
             "properties": {
                 "vacancy_id": {"type": "string", "description": "ID da vaga (opcional — sem este campo retorna dados da empresa)"},
-                "company_id": {"type": "string", "description": "ID da empresa (opcional)"},
             },
             "required": [],
         },

@@ -962,7 +962,6 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
         parameters={
             "type": "object",
             "properties": {
-                "company_id": {"type": "string", "description": "ID da empresa"},
                 "vacancy_id": {"type": "string", "description": "ID da vaga para filtrar pool"},
             },
             "required": [],
@@ -976,7 +975,6 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
         parameters={
             "type": "object",
             "properties": {
-                "company_id": {"type": "string", "description": "ID da empresa"},
                 "vacancy_id": {"type": "string", "description": "ID da vaga para avaliar pool especifico"},
             },
             "required": [],
@@ -1047,7 +1045,6 @@ TOOL_DEFINITIONS.append(
             "properties": {
                 "report_type": {"type": "string", "description": "Tipo: summary, detailed, sla"},
                 "period": {"type": "string", "description": "Periodo: week, month, quarter"},
-                "company_id": {"type": "string", "description": "ID da empresa (multi-tenant)"},
             },
             "required": ["report_type"],
         },

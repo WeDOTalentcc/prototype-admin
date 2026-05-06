@@ -913,7 +913,6 @@ TOOL_DEFINITIONS.append(
             "properties": {
                 "report_type": {"type": "string", "description": "Tipo de relatorio: summary, funnel, detailed"},
                 "period": {"type": "string", "description": "Periodo: week, month, quarter"},
-                "company_id": {"type": "string", "description": "ID da empresa (opcional)"},
             },
             "required": [],
         },

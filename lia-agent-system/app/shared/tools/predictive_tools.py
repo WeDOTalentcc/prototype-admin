@@ -755,10 +755,9 @@ def get_predictive_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": company_id_param,
                     "job_id": job_id_param,
                 },
-                "required": ["company_id"],
+                "required": [],
             },
             function=predict_dropout_risk,
         ),
@@ -771,10 +770,9 @@ def get_predictive_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": company_id_param,
                     "job_id": job_id_param,
                 },
-                "required": ["company_id"],
+                "required": [],
             },
             function=predict_time_to_fill,
         ),
@@ -787,10 +785,9 @@ def get_predictive_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": company_id_param,
                     "job_id": job_id_param,
                 },
-                "required": ["company_id"],
+                "required": [],
             },
             function=get_pipeline_forecast,
         ),
@@ -804,10 +801,9 @@ def get_predictive_tools() -> list[ToolDefinition]:
             parameters={
                 "type": "object",
                 "properties": {
-                    "company_id": company_id_param,
                     "job_id": job_id_param,
                 },
-                "required": ["company_id"],
+                "required": [],
             },
             function=get_strategic_recommendations,
         ),

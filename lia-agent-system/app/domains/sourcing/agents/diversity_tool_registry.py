@@ -387,7 +387,6 @@ _DIVERSITY_TOOL_DEFINITIONS.append(
             "type": "object",
             "properties": {
                 "vacancy_id": {"type": "string", "description": "ID da vaga (opcional)"},
-                "company_id": {"type": "string", "description": "ID da empresa (opcional)"},
             },
             "required": [],
         },

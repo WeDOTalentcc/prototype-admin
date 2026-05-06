@@ -65,3 +65,11 @@ repos:
         files: ^app/domains/.*(react_agent|_agent)\.py$
         pass_filenames: false
         always_run: false
+
+      - id: no-tenant-in-tool-schemas
+        name: "ADR-029 §2: tool schemas must not expose tenant keys to LLM (BLOCKING)"
+        language: system
+        entry: python3 scripts/check_no_tenant_in_tool_schemas.py --block
+        files: ^app/(domains|shared|tools)/.*\.py$
+        pass_filenames: false
+        always_run: false
