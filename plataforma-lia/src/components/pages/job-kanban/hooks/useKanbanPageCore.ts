@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect, useMemo, useCallback } from "react"
+import { useSearchParams } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import { useAuthStore } from "@/stores/auth-store"
 import { useKanbanStore } from "@/stores/kanban-store"
@@ -101,6 +102,24 @@ export function useKanbanPageCore({ job, onBack }: { job?: Record<string, unknow
   const setViewMode = useKanbanStore((s) => s.setViewMode)
   const activeTab = useKanbanStore((s) => s.activeTab)
   const setActiveTab = useKanbanStore((s) => s.setActiveTab)
+
+  // Phase A.4 — deep-link support: when the page mounts with ?tab=edit
+  // (e.g. opened via vacancy preview "Continuar JD" / "Configurar WSI"),
+  // hydrate the Zustand store. Only runs once on mount per job; subsequent
+  // user-driven tab changes go through setActiveTab as usual.
+  // See .planning/vacancy-pipeline-plan.md > Phase A.4.
+  const _searchParams = useSearchParams()
+  useEffect(() => {
+    const requested = _searchParams?.get("tab")
+    if (requested === "edit" || requested === "management") {
+      if (requested !== activeTab) {
+        setActiveTab(requested)
+      }
+    }
+    // We intentionally only sync when job changes — eslint-disable-next-line
+    // is unnecessary because `_searchParams` and `activeTab` are stable across
+    // renders for the same URL/store state, but we list them all.
+  }, [job?.id, _searchParams, activeTab, setActiveTab])
   const selectedCandidate = useKanbanStore((s) => s.selectedCandidate)
   const setSelectedCandidate = useKanbanStore((s) => s.setSelectedCandidate)
   const [selectedTriagemCandidate, setSelectedTriagemCandidate] = useState<Record<string, unknown> | null>(null)

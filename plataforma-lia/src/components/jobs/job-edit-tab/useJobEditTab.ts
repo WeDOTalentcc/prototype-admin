@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
+import { useSearchParams } from "next/navigation"
 import { toast } from "sonner"
 import { getCompanyPipelineStages, LIA_ASSISTED_STAGES, LIA_ASSISTED_STAGE_NAMES } from "@/lib/recruitment-stages"
 import { useCompanyPipeline } from "@/hooks/company/use-company-pipeline"
@@ -24,7 +25,18 @@ export function useJobEditTab({
   | "onJobUpdate"
   | "isCreationMode"
 >) {
-  const [activeSection, setActiveSection] = useState("info-geral")
+  // Phase A.4 — deep-link support: ?section=<id> from URL hydrates the
+  // initial activeSection on mount. See .planning/vacancy-pipeline-plan.md.
+  const _searchParams = useSearchParams()
+  const _ALLOWED_SECTIONS = new Set([
+    "info-geral", "pessoas", "processo", "remuneracao",
+    "configuracoes", "descricao", "perguntas",
+  ])
+  const _initialSection = (() => {
+    const requested = _searchParams?.get("section")
+    return requested && _ALLOWED_SECTIONS.has(requested) ? requested : "info-geral"
+  })()
+  const [activeSection, setActiveSection] = useState(_initialSection)
   const [editingSection, setEditingSection] = useState<string | null>(
     isCreationMode ? "info-geral" : null
   )
