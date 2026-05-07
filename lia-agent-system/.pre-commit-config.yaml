@@ -209,3 +209,19 @@ repos:
         files: ^app/.*\.py$
         pass_filenames: false
         always_run: false
+
+      - id: adr-001-no-sql-inline-services-warn
+        name: "ADR-001: no raw SQL inline in services (warn-only Caminho C)"
+        language: system
+        entry: bash -c "python3 scripts/check_no_sql_inline_in_services.py 2>&1 | head -10; exit 0"
+        files: ^app/domains/.*/services/.*\.py$
+        pass_filenames: false
+        always_run: false
+
+      - id: adr-001-no-select-in-services-warn
+        name: "ADR-001: no select(Model) in services (warn-only Caminho C)"
+        language: system
+        entry: bash -c "python3 scripts/check_no_select_in_services.py 2>&1 | head -10; exit 0"
+        files: ^app/domains/.*/services/.*\.py$
+        pass_filenames: false
+        always_run: false
