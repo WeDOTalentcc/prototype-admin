@@ -29,11 +29,6 @@ class AgentStudioDomain(ComplianceDomainPrompt):
         from app.domains.agent_studio.actions import AGENT_STUDIO_ACTIONS
         return AGENT_STUDIO_ACTIONS
 
-    def get_system_prompt(self):
-        from app.prompts import PromptLoader
-        domain_specific = PromptLoader.get_domain_prompt("agent_calibration")
-        return super().get_system_prompt(base_prompt=domain_specific)
-
     async def process_intent(self, query, context):
         q = query.lower()
 

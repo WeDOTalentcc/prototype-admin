@@ -16,7 +16,7 @@ from app.shared.tool_handler import tool_handler
 logger = logging.getLogger(__name__)
 
 
-@tool_handler("talent_intelligence", require_company=False, module="talent_intelligence_pro")
+@tool_handler("talent_intelligence", require_company=False, module="talent_intelligence_pro")  # kept: pure ontology lookup, no tenant data
 async def infer_related_skills(
     skills: list[str] | None = None,
     depth: int = 2,
@@ -67,7 +67,7 @@ async def infer_related_skills(
     }
 
 
-@tool_handler("talent_intelligence", require_company=False, module="talent_intelligence_pro")
+@tool_handler("talent_intelligence", require_company=False, module="talent_intelligence_pro")  # kept: pure ontology lookup, no tenant data
 async def get_skill_adjacencies(
     skill: str = "",
     min_weight: float = 0.0,

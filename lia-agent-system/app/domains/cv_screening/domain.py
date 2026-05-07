@@ -38,14 +38,6 @@ class CVScreeningDomain(ComplianceDomainPrompt):
         from app.domains.cv_screening.actions import CV_SCREENING_ACTIONS
         return CV_SCREENING_ACTIONS
 
-    def get_system_prompt(self, base_prompt: str = "") -> str:
-        try:
-            from app.prompts import PromptLoader
-            domain_prompt = PromptLoader.get_domain_prompt(self.domain_id)
-        except Exception:
-            domain_prompt = base_prompt or ""
-        return super().get_system_prompt(base_prompt=domain_prompt)
-
     async def process_intent(self, query: str, context: DomainContext) -> IntentResult:
         # LIA-I07: Check if query is an info request (e.g., "como funciona X?")
         if _matcher.is_info_query(query):

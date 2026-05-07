@@ -48,11 +48,6 @@ class InterviewSchedulingDomain(ComplianceDomainPrompt):
         from app.domains.interview_scheduling.actions import INTERVIEW_SCHEDULING_ACTIONS
         return INTERVIEW_SCHEDULING_ACTIONS
 
-    def get_system_prompt(self) -> str:
-        from app.prompts import PromptLoader
-        domain_specific = PromptLoader.get_domain_prompt(self.domain_id)
-        return super().get_system_prompt(base_prompt=domain_specific)
-
     async def process_intent(self, query: str, context: DomainContext) -> IntentResult:
         # LIA-I07: Check if query is an info request (e.g., "como funciona X?")
         if _matcher.is_info_query(query):

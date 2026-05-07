@@ -95,21 +95,6 @@ class OfferDomain(ComplianceDomainPrompt):
             ),
         ]
 
-    def get_system_prompt(self) -> str:
-        prompt_path = Path(__file__).parent.parent.parent / "prompts" / "domains" / "offer.yaml"
-        try:
-            with open(prompt_path) as f:
-                config = _yaml_imp.safe_load(f)
-                domain_specific = config.get("system_prompt", "")
-        except FileNotFoundError:
-            logger.warning("Offer prompt YAML not found at %s", prompt_path)
-            domain_specific = (
-                "Especialista em gerir cartas-oferta. "
-                "Cria, edita e envia propostas salariais estruturadas para candidatos aprovados. "
-                "Sempre confirme antes de enviar."
-            )
-        return super().get_system_prompt(base_prompt=domain_specific)
-
     async def process_intent(self, query: str, context: DomainContext) -> IntentResult:
         try:
             match = _matcher.match(query, default_action="create_offer_draft")

@@ -113,14 +113,6 @@ class HiringPolicyDomain(ComplianceDomainPrompt):
     def get_allowed_actions(self) -> list[DomainAction]:
         return HIRING_POLICY_ACTIONS
 
-    def get_system_prompt(self) -> str:
-        domain_specific = (
-            "Especialista em configuração de políticas de contratação. "
-            "Ajude o recrutador a definir regras de pipeline, agendamento, comunicação, triagem e automação "
-            "de forma consultiva, explicando trade-offs e validando compliance."
-        )
-        return super().get_system_prompt(base_prompt=domain_specific)
-
     async def process_intent(self, query: str, context: DomainContext) -> IntentResult:
         # LIA-I07: Check if query is an info request (e.g., "como funciona X?")
         if _matcher.is_info_query(query):

@@ -232,7 +232,7 @@ async def _wrap_get_policy_summary(**kwargs: Any) -> dict[str, Any]:
         }
 
 
-@tool_handler("hiring_policy", require_company=False)
+@tool_handler("hiring_policy", require_company=False)  # kept: pure text/policy validation, no tenant data
 async def _wrap_validate_policy_compliance(**kwargs: Any) -> dict[str, Any]:
     policy_text = kwargs.get("policy_text", "")
     field_name = kwargs.get("field_name", "")
@@ -475,7 +475,7 @@ INDUSTRY_BENCHMARKS = {
 }
 
 
-@tool_handler("hiring_policy", require_company=False)
+@tool_handler("hiring_policy", require_company=False)  # kept: static INDUSTRY_BENCHMARKS dict lookup, no tenant data
 async def _wrap_get_industry_benchmarks(**kwargs: Any) -> dict[str, Any]:
     industry = kwargs.get("industry", "technology")
 
@@ -494,7 +494,7 @@ async def _wrap_get_industry_benchmarks(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("hiring_policy", require_company=False)
+@tool_handler("hiring_policy", require_company=False)  # kept: cross-tenant platform aggregation (by design)
 async def _wrap_get_platform_benchmarks(**kwargs: Any) -> dict[str, Any]:
     industry = kwargs.get("industry", "")
     async with AsyncSessionLocal() as session:
@@ -569,7 +569,7 @@ async def _wrap_get_platform_benchmarks(**kwargs: Any) -> dict[str, Any]:
         }
 
 
-@tool_handler("hiring_policy", require_company=False)
+@tool_handler("hiring_policy", require_company=False)  # kept: pure dict lookup of impact templates, no tenant data
 async def _wrap_explain_policy_impact(**kwargs: Any) -> dict[str, Any]:
     block = kwargs.get("block", "")
     field = kwargs.get("field", "")

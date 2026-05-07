@@ -86,14 +86,6 @@ class CompanySettingsDomain(ComplianceDomainPrompt):
     def get_allowed_actions(self) -> list[DomainAction]:
         return COMPANY_SETTINGS_ACTIONS
 
-    def get_system_prompt(self) -> str:
-        domain_specific = (
-            "Especialista em configuracao de perfil de empresa. "
-            "Ajude o recrutador a preencher dados institucionais, cultura, tech stack, "
-            "beneficios e planejamento de contratacoes via conversa natural."
-        )
-        return super().get_system_prompt(base_prompt=domain_specific)
-
     async def process_intent(self, query: str, context: DomainContext) -> IntentResult:
         try:
             match = _matcher.match(query, default_action="configure_profile")

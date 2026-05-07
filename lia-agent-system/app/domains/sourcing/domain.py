@@ -47,11 +47,6 @@ class SourcingDomain(ComplianceDomainPrompt):
         from app.domains.sourcing.actions import SOURCING_ACTIONS
         return SOURCING_ACTIONS
 
-    def get_system_prompt(self) -> str:
-        from app.prompts import PromptLoader
-        domain_specific = PromptLoader.get_domain_prompt(self.domain_id)
-        return super().get_system_prompt(base_prompt=domain_specific)
-
     async def process_intent(self, query: str, context: DomainContext) -> IntentResult:
         # LIA-I07: Check if query is an info request (e.g., "como funciona X?")
         if _matcher.is_info_query(query):

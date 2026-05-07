@@ -35,11 +35,6 @@ class TalentPoolDomain(ComplianceDomainPrompt):
         from app.domains.talent_pool.actions import TALENT_POOL_ACTIONS
         return TALENT_POOL_ACTIONS
 
-    def get_system_prompt(self):
-        from app.prompts import PromptLoader
-        domain_specific = PromptLoader.get_domain_prompt(self.domain_id)
-        return super().get_system_prompt(base_prompt=domain_specific)
-
     async def process_intent(self, query, context):
         # LIA-I07: Check if query is an info request (e.g., "como funciona X?")
         if _matcher.is_info_query(query):
