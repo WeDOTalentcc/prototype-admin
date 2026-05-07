@@ -35,10 +35,15 @@ _CONFIRMATION_WORDS = {
 
 
 from app.shared.agents.agent_registry import register_agent
+from app.shared.prompts.prompt_composer import PromptComposer
 
 @register_agent("wizard")
 class WizardReActAgent(LangGraphReActBase, EnhancedAgentMixin):
-    DOMAIN_INSTRUCTIONS = WIZARD_DOMAIN_SPECIFIC + "\n\n" + WIZARD_REASONING_PROMPT.format(memory_summary="", stage_context="")
+    DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
+        agent_type="wizard",
+        domain_specific=WIZARD_DOMAIN_SPECIFIC,
+        reasoning_pattern=WIZARD_REASONING_PROMPT.format(memory_summary="", stage_context=""),
+    ).text
 
     """Autonomous agent for the job creation wizard via LangGraph nativo."""
 

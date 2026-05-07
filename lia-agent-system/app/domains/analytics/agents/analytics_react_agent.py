@@ -27,10 +27,14 @@ logger = logging.getLogger(__name__)
 
 
 from app.shared.agents.agent_registry import register_agent
+from app.shared.prompts.prompt_composer import PromptComposer
 
 @register_agent("analytics")
 class AnalyticsReActAgent(LangGraphReActBase, EnhancedAgentMixin):
-    DOMAIN_INSTRUCTIONS = ANALYTICS_DOMAIN_SPECIFIC
+    DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
+        agent_type="analytics",
+        domain_specific=ANALYTICS_DOMAIN_SPECIFIC,
+    ).text
 
     """ReAct agent for analytics: KPI analysis, reports, predictions and agent monitoring."""
 

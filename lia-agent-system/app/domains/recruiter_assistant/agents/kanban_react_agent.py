@@ -36,10 +36,16 @@ _CONFIRMATION_WORDS = {
 
 
 from app.shared.agents.agent_registry import register_agent
+from app.shared.prompts.prompt_composer import PromptComposer
 
 @register_agent("kanban")
 class KanbanReActAgent(LangGraphReActBase, EnhancedAgentMixin):
-    DOMAIN_INSTRUCTIONS = KANBAN_DOMAIN_SPECIFIC + "\n\n" + KANBAN_FEW_SHOT_EXAMPLES + "\n\n" + KANBAN_REASONING_PROMPT.format(memory_summary="", stage_context="")
+    DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
+        agent_type="kanban",
+        domain_specific=KANBAN_DOMAIN_SPECIFIC,
+        few_shot_examples=KANBAN_FEW_SHOT_EXAMPLES,
+        reasoning_pattern=KANBAN_REASONING_PROMPT.format(memory_summary="", stage_context=""),
+    ).text
 
     """Autonomous agent for strategic pipeline analysis via LangGraph nativo."""
 

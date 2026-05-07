@@ -36,10 +36,16 @@ _CONFIRMATION_WORDS = {
 
 
 from app.shared.agents.agent_registry import register_agent
+from app.shared.prompts.prompt_composer import PromptComposer
 
 @register_agent("policy")
 class PolicyReActAgent(LangGraphReActBase, EnhancedAgentMixin):
-    DOMAIN_INSTRUCTIONS = POLICY_DOMAIN_SPECIFIC + "\n\n" + POLICY_FEW_SHOT_EXAMPLES + "\n\n" + POLICY_REASONING_PROMPT.format(memory_summary="", stage_context="")
+    DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
+        agent_type="hiring_policy",
+        domain_specific=POLICY_DOMAIN_SPECIFIC,
+        few_shot_examples=POLICY_FEW_SHOT_EXAMPLES,
+        reasoning_pattern=POLICY_REASONING_PROMPT.format(memory_summary="", stage_context=""),
+    ).text
 
     """Autonomous agent for hiring policy configuration via LangGraph nativo."""
     # ── HITL integration for policy updates ──

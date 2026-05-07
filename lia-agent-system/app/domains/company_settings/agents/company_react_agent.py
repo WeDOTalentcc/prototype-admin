@@ -30,15 +30,17 @@ from app.shared.compliance.fairness_guard import FairnessGuard
 logger = logging.getLogger(__name__)
 
 from app.shared.agents.agent_registry import register_agent
+from app.shared.prompts.prompt_composer import PromptComposer
 
 
 @register_agent("company_settings")
 class CompanySettingsReActAgent(LangGraphReActBase, EnhancedAgentMixin):
-    DOMAIN_INSTRUCTIONS = (
-        COMPANY_DOMAIN_SPECIFIC + "\n\n" +
-        COMPANY_FEW_SHOT_EXAMPLES + "\n\n" +
-        COMPANY_REASONING_PROMPT.format(memory_summary="", stage_context="")
-    )
+    DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
+        agent_type="company_settings",
+        domain_specific=COMPANY_DOMAIN_SPECIFIC,
+        few_shot_examples=COMPANY_FEW_SHOT_EXAMPLES,
+        reasoning_pattern=COMPANY_REASONING_PROMPT.format(memory_summary="", stage_context=""),
+    ).text
 
     def __init__(self) -> None:
         super().__init__()

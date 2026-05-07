@@ -156,11 +156,7 @@ class PromptComposer:
         tenant_context_snippet: str = "",
         memory_summary: str = "",
     ) -> PromptComposition:
-        """Sprint 2 Phase 1: canonical composer for candidate_self_service.
-
-        Encapsulates the candidate agent's prompt assembly. Other agents
-        get their own factory in Phase 2+ migrations.
-        """
+        """Sprint 2 Phase 1: canonical composer for candidate_self_service."""
         from app.domains.candidate_self_service.agents.candidate_system_prompt import (
             CSS_DOMAIN_SPECIFIC,
             CSS_FEW_SHOT_EXAMPLES,
@@ -170,6 +166,46 @@ class PromptComposer:
             agent_type="candidate_self_service",
             domain_specific=CSS_DOMAIN_SPECIFIC,
             few_shot_examples=CSS_FEW_SHOT_EXAMPLES,
+            tenant_context_snippet=tenant_context_snippet,
+            memory_summary=memory_summary,
+        )
+
+    @staticmethod
+    def for_domain(
+        agent_type: str,
+        *,
+        domain_specific: str = "",
+        few_shot_examples: str = "",
+        reasoning_pattern: str = "",
+        tenant_context_snippet: str = "",
+        memory_summary: str = "",
+    ) -> PromptComposition:
+        """Sprint 2 Phase 2: generic factory for any domain agent.
+
+        Caller pre-formats `reasoning_pattern` (e.g. by calling
+        `.format(memory_summary='', stage_context='')` on the
+        `*_REASONING_PROMPT` template). This preserves the legacy
+        empty-placeholder behavior (see Audit G defect note —
+        future Phase 3 fixes by binding placeholders at runtime).
+
+        Args:
+            agent_type: identifier for sensor/audit metadata.
+            domain_specific: the agent's `*_DOMAIN_SPECIFIC` constant.
+            few_shot_examples: the agent's `*_FEW_SHOT_EXAMPLES` constant
+                (empty if none).
+            reasoning_pattern: pre-formatted REASONING_PROMPT (empty if
+                none).
+            tenant_context_snippet: runtime tenant info.
+            memory_summary: runtime conversation memory.
+
+        Returns:
+            PromptComposition with canonical block ordering applied.
+        """
+        return PromptComposer.compose(
+            agent_type=agent_type,
+            domain_specific=domain_specific,
+            few_shot_examples=few_shot_examples,
+            reasoning_pattern=reasoning_pattern,
             tenant_context_snippet=tenant_context_snippet,
             memory_summary=memory_summary,
         )

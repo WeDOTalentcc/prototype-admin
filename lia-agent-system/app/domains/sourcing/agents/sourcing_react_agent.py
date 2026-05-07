@@ -79,10 +79,16 @@ def _aggregate_all_tool_names() -> list[str]:
 
 
 from app.shared.agents.agent_registry import register_agent
+from app.shared.prompts.prompt_composer import PromptComposer
 
 @register_agent("sourcing")
 class SourcingReActAgent(LangGraphReActBase, EnhancedAgentMixin):
-    DOMAIN_INSTRUCTIONS = SOURCING_DOMAIN_SPECIFIC + "\n\n" + SOURCING_FEW_SHOT_EXAMPLES + "\n\n" + SOURCING_REASONING_PROMPT.format(memory_summary="", stage_context="")
+    DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
+        agent_type="sourcing",
+        domain_specific=SOURCING_DOMAIN_SPECIFIC,
+        few_shot_examples=SOURCING_FEW_SHOT_EXAMPLES,
+        reasoning_pattern=SOURCING_REASONING_PROMPT.format(memory_summary="", stage_context=""),
+    ).text
 
     """Autonomous agent for talent sourcing and candidate screening via LangGraph nativo."""
 

@@ -24,6 +24,7 @@ from typing import Any
 # Sprint 1B `tool_handler` decorator's ContextVar resolution path.
 # The local alias name is kept for backward compat in this file's call sites.
 from app.middleware.auth_enforcement import _current_company_id as _CURRENT_COMPANY_ID  # noqa: E402, F401
+from app.shared.prompts.prompt_composer import PromptComposer
 
 from lia_agents_core.agent_interface import AgentInput, AgentOutput, AgentAction
 from lia_agents_core.enhanced_agent_mixin import EnhancedAgentMixin
@@ -72,7 +73,9 @@ class AutonomousReActAgent(LangGraphReActBase, EnhancedAgentMixin):
     e de EnhancedAgentMixin (memória de longa duração + FairnessGuard + learning).
     """
 
-    DOMAIN_INSTRUCTIONS = (
+    DOMAIN_INSTRUCTIONS = PromptComposer.compose(
+        agent_type="autonomous",
+        domain_specific=(
         "Você foi acionada porque a solicitação cruza múltiplos domínios de recrutamento "
         "(vagas, sourcing, pipeline, analytics, agendamento) e nenhum agente especializado "
         "pôde resolver sozinho.\n\n"
@@ -90,7 +93,8 @@ class AutonomousReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         "- Seja objetivo e direto\n"
         "- Inclua dados concretos retornados pelas tools (nomes, scores, contagens)\n"
         "- Para comparações, use ranking com justificativa clara"
-    )
+    ),
+    ).text
 
     def __init__(self) -> None:
         super().__init__()

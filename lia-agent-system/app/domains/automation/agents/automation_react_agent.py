@@ -23,12 +23,16 @@ from app.domains.automation.agents.automation_tool_registry import (
     get_automation_tools,
 )
 from app.shared.services.confidence_policy_service import confidence_policy_service
+from app.shared.prompts.prompt_composer import PromptComposer
 
 logger = logging.getLogger(__name__)
 
 
 class AutomationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
-    DOMAIN_INSTRUCTIONS = AUTOMATION_DOMAIN_SPECIFIC
+    DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
+        agent_type="automation",
+        domain_specific=AUTOMATION_DOMAIN_SPECIFIC,
+    ).text
 
     """ReAct agent for task decomposition, DAG planning and execution orchestration."""
 

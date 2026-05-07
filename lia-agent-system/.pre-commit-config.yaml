@@ -226,10 +226,10 @@ repos:
         pass_filenames: false
         always_run: false
 
-      - id: prompt-composer-uniformity-warn
-        name: "ADR-028: react_agents use PromptComposer (warn-only Sprint 2 rollout)"
+      - id: prompt-composer-uniformity
+        name: "ADR-028: react_agents use PromptComposer (BLOCKING — 14/14 adopted Sprint 2 P2)"
         language: system
-        entry: bash -c "python3 scripts/check_prompt_composer_uniformity.py 2>&1 | head -5; exit 0"
+        entry: python3 scripts/check_prompt_composer_uniformity.py --block
         files: ^app/domains/.*react_agent\.py$
         pass_filenames: false
         always_run: false

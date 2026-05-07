@@ -29,10 +29,14 @@ logger = logging.getLogger(__name__)
 
 
 from app.shared.agents.agent_registry import register_agent
+from app.shared.prompts.prompt_composer import PromptComposer
 
 @register_agent("communication", aliases=['comms'])
 class CommunicationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
-    DOMAIN_INSTRUCTIONS = COMMUNICATION_DOMAIN_SPECIFIC
+    DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
+        agent_type="communication",
+        domain_specific=COMMUNICATION_DOMAIN_SPECIFIC,
+    ).text
 
     """ReAct agent for multi-channel candidate communications with LGPD compliance."""
 

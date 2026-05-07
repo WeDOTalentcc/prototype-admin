@@ -36,10 +36,16 @@ _CONFIRMATION_WORDS = {
 
 
 from app.shared.agents.agent_registry import register_agent
+from app.shared.prompts.prompt_composer import PromptComposer
 
 @register_agent("jobs_management", aliases=['jobs_mgmt'])
 class JobsManagementReActAgent(LangGraphReActBase, EnhancedAgentMixin):
-    DOMAIN_INSTRUCTIONS = JOBS_MGMT_DOMAIN_SPECIFIC + "\n\n" + JOBS_MGMT_FEW_SHOT_EXAMPLES + "\n\n" + JOBS_MGMT_REASONING_PROMPT.format(memory_summary="", stage_context="")
+    DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
+        agent_type="jobs_mgmt",
+        domain_specific=JOBS_MGMT_DOMAIN_SPECIFIC,
+        few_shot_examples=JOBS_MGMT_FEW_SHOT_EXAMPLES,
+        reasoning_pattern=JOBS_MGMT_REASONING_PROMPT.format(memory_summary="", stage_context=""),
+    ).text
 
     """Autonomous agent for job portfolio management via LangGraph nativo."""
 

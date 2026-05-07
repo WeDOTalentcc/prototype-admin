@@ -36,10 +36,16 @@ _CONFIRMATION_WORDS = {
 
 
 from app.shared.agents.agent_registry import register_agent
+from app.shared.prompts.prompt_composer import PromptComposer
 
 @register_agent("talent")
 class TalentReActAgent(LangGraphReActBase, EnhancedAgentMixin):
-    DOMAIN_INSTRUCTIONS = TALENT_DOMAIN_SPECIFIC + "\n\n" + TALENT_FEW_SHOT_EXAMPLES + "\n\n" + TALENT_REASONING_PROMPT.format(memory_summary="", stage_context="")
+    DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
+        agent_type="talent",
+        domain_specific=TALENT_DOMAIN_SPECIFIC,
+        few_shot_examples=TALENT_FEW_SHOT_EXAMPLES,
+        reasoning_pattern=TALENT_REASONING_PROMPT.format(memory_summary="", stage_context=""),
+    ).text
 
     """Autonomous agent for the talent funnel domain via LangGraph nativo."""
 

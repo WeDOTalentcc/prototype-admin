@@ -35,10 +35,15 @@ _CONFIRMATION_WORDS = {
 
 
 from app.shared.agents.agent_registry import register_agent
+from app.shared.prompts.prompt_composer import PromptComposer
 
 @register_agent("pipeline", aliases=['cv_screening'])
 class PipelineReActAgent(LangGraphReActBase, EnhancedAgentMixin):
-    DOMAIN_INSTRUCTIONS = PIPELINE_DOMAIN_SPECIFIC + "\n\n" + PIPELINE_REASONING_PROMPT.format(memory_summary="", stage_context="")
+    DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
+        agent_type="cv_screening_pipeline",
+        domain_specific=PIPELINE_DOMAIN_SPECIFIC,
+        reasoning_pattern=PIPELINE_REASONING_PROMPT.format(memory_summary="", stage_context=""),
+    ).text
 
     """Autonomous agent for the candidate recruitment pipeline via LangGraph nativo."""
 

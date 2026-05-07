@@ -29,10 +29,14 @@ logger = logging.getLogger(__name__)
 
 
 from app.shared.agents.agent_registry import register_agent
+from app.shared.prompts.prompt_composer import PromptComposer
 
 @register_agent("ats_integration", aliases=['ats'])
 class ATSIntegrationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
-    DOMAIN_INSTRUCTIONS = ATS_INTEGRATION_DOMAIN_SPECIFIC
+    DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
+        agent_type="ats_integration",
+        domain_specific=ATS_INTEGRATION_DOMAIN_SPECIFIC,
+    ).text
 
     """ReAct agent for bidirectional ATS synchronization via LangGraph nativo.
 
