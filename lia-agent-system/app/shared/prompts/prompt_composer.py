@@ -171,6 +171,69 @@ class PromptComposer:
         )
 
     @staticmethod
+    def for_domain_runtime(
+        agent_type: str,
+        *,
+        domain_specific: str = "",
+        few_shot_examples: str = "",
+        reasoning_template: str = "",
+        memory_summary: str = "",
+        stage_context: str = "",
+        tenant_context_snippet: str = "",
+        memory_summary_fallback: str = "Nenhuma memoria de trabalho disponivel (primeira interacao).",
+    ) -> PromptComposition:
+        """Sprint 2 Phase 4: compose with REASONING_PROMPT template formatted at runtime.
+
+        Fixes the empty-placeholder defect (Audit G): legacy class-attr
+        DOMAIN_INSTRUCTIONS used `REASONING_PROMPT.format(memory_summary="",
+        stage_context="")` at class-load time, baking empty values forever.
+
+        This method takes the UNFORMATTED template and runtime values,
+        applying `.format()` only when invoked. Agents that override
+        `_get_runtime_domain_instructions(input)` should call this.
+
+        Args:
+            agent_type: identifier for sensor/audit metadata.
+            domain_specific: the agent's `*_DOMAIN_SPECIFIC` constant.
+            few_shot_examples: the agent's `*_FEW_SHOT_EXAMPLES` constant.
+            reasoning_template: UNFORMATTED `*_REASONING_PROMPT` template
+                (with literal `{memory_summary}` and `{stage_context}`
+                placeholders).
+            memory_summary: runtime memory string (e.g. from
+                input.context.get("memory_summary", "")).
+            stage_context: runtime stage string.
+            memory_summary_fallback: text used when memory_summary is empty
+                (matches legacy `get_<domain>_system_prompt` pattern).
+            tenant_context_snippet: runtime tenant info.
+
+        Returns:
+            PromptComposition with runtime-formatted reasoning block.
+        """
+        formatted_reasoning = ""
+        if reasoning_template:
+            try:
+                formatted_reasoning = reasoning_template.format(
+                    memory_summary=memory_summary or memory_summary_fallback,
+                    stage_context=stage_context or "",
+                )
+            except (KeyError, IndexError) as exc:
+                # Template has unexpected placeholders — log + pass through
+                import logging
+                logging.getLogger(__name__).warning(
+                    "[PromptComposer] reasoning_template format failed for %s: %s",
+                    agent_type, exc,
+                )
+                formatted_reasoning = reasoning_template
+
+        return PromptComposer.compose(
+            agent_type=agent_type,
+            domain_specific=domain_specific,
+            few_shot_examples=few_shot_examples,
+            reasoning_pattern=formatted_reasoning,
+            tenant_context_snippet=tenant_context_snippet,
+        )
+
+    @staticmethod
     def for_domain(
         agent_type: str,
         *,

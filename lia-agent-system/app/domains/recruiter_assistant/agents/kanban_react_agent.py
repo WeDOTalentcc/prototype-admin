@@ -40,6 +40,11 @@ from app.shared.prompts.prompt_composer import PromptComposer
 
 @register_agent("kanban")
 class KanbanReActAgent(LangGraphReActBase, EnhancedAgentMixin):
+    """Autonomous agent for strategic pipeline analysis via LangGraph nativo."""
+
+    # Static class-attr (legacy backward compat — empty placeholders).
+    # Runtime substitution via _get_runtime_domain_instructions below
+    # (Sprint 2 Phase 4 — fixes Audit G empty-placeholder defect).
     DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
         agent_type="kanban",
         domain_specific=KANBAN_DOMAIN_SPECIFIC,
@@ -47,7 +52,29 @@ class KanbanReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         reasoning_pattern=KANBAN_REASONING_PROMPT.format(memory_summary="", stage_context=""),
     ).text
 
-    """Autonomous agent for strategic pipeline analysis via LangGraph nativo."""
+    def _get_runtime_domain_instructions(self, input: AgentInput) -> str:
+        """Sprint 2 Phase 4: substitute {memory_summary} + {stage_context}
+        from input.context at runtime (vs empty class-attr default).
+
+        Falls back to legacy DOMAIN_INSTRUCTIONS if PromptComposer fails.
+        """
+        try:
+            ctx = input.context or {}
+            return PromptComposer.for_domain_runtime(
+                agent_type="kanban",
+                domain_specific=KANBAN_DOMAIN_SPECIFIC,
+                few_shot_examples=KANBAN_FEW_SHOT_EXAMPLES,
+                reasoning_template=KANBAN_REASONING_PROMPT,
+                memory_summary=ctx.get("memory_summary", ""),
+                stage_context=ctx.get("stage_context", ""),
+            ).text
+        except Exception as exc:
+            logger.warning(
+                "[KanbanReActAgent] runtime prompt composition failed: %s — "
+                "falling back to static DOMAIN_INSTRUCTIONS",
+                exc,
+            )
+            return self.DOMAIN_INSTRUCTIONS
 
     def __init__(self) -> None:
         super().__init__()

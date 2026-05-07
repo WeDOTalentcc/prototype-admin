@@ -45,6 +45,29 @@ class WizardReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         reasoning_pattern=WIZARD_REASONING_PROMPT.format(memory_summary="", stage_context=""),
     ).text
 
+    def _get_runtime_domain_instructions(self, input: AgentInput) -> str:
+        """Sprint 2 Phase 4: substitute {memory_summary} + {stage_context}
+        from input.context at runtime (vs empty class-attr default).
+
+        Falls back to legacy DOMAIN_INSTRUCTIONS if PromptComposer fails.
+        """
+        try:
+            ctx = input.context or {}
+            return PromptComposer.for_domain_runtime(
+                agent_type="wizard",
+                domain_specific=WIZARD_DOMAIN_SPECIFIC,
+                reasoning_template=WIZARD_REASONING_PROMPT,
+                memory_summary=ctx.get("memory_summary", ""),
+                stage_context=ctx.get("stage_context", ""),
+            ).text
+        except Exception as exc:
+            logger.warning(
+                "[wizard] runtime prompt composition failed: %s — "
+                "falling back to static DOMAIN_INSTRUCTIONS",
+                exc,
+            )
+            return self.DOMAIN_INSTRUCTIONS
+
     """Autonomous agent for the job creation wizard via LangGraph nativo."""
 
     def __init__(self) -> None:

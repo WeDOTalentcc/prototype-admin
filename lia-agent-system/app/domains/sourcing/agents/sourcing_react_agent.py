@@ -90,6 +90,30 @@ class SourcingReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         reasoning_pattern=SOURCING_REASONING_PROMPT.format(memory_summary="", stage_context=""),
     ).text
 
+    def _get_runtime_domain_instructions(self, input: AgentInput) -> str:
+        """Sprint 2 Phase 4: substitute {memory_summary} + {stage_context}
+        from input.context at runtime (vs empty class-attr default).
+
+        Falls back to legacy DOMAIN_INSTRUCTIONS if PromptComposer fails.
+        """
+        try:
+            ctx = input.context or {}
+            return PromptComposer.for_domain_runtime(
+                agent_type="sourcing",
+                domain_specific=SOURCING_DOMAIN_SPECIFIC,
+            few_shot_examples=SOURCING_FEW_SHOT_EXAMPLES,
+                reasoning_template=SOURCING_REASONING_PROMPT,
+                memory_summary=ctx.get("memory_summary", ""),
+                stage_context=ctx.get("stage_context", ""),
+            ).text
+        except Exception as exc:
+            logger.warning(
+                "[sourcing] runtime prompt composition failed: %s — "
+                "falling back to static DOMAIN_INSTRUCTIONS",
+                exc,
+            )
+            return self.DOMAIN_INSTRUCTIONS
+
     """Autonomous agent for talent sourcing and candidate screening via LangGraph nativo."""
 
     def __init__(self) -> None:

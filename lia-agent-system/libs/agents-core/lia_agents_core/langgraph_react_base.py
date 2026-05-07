@@ -450,10 +450,42 @@ class LangGraphReActBase(LangGraphBase):
     # Class attribute: subclasses set this to their domain-specific instructions
     DOMAIN_INSTRUCTIONS: str = ""
 
+    def _get_runtime_domain_instructions(self, input: AgentInput) -> str:
+        """Hook for subclasses to compose DOMAIN_INSTRUCTIONS with runtime context.
+
+        Sprint 2 Phase 4 (ADR-028 — runtime substitution):
+        ====================================================================
+        Default implementation: returns the static class-attr
+        DOMAIN_INSTRUCTIONS (legacy / Phase 2 behavior).
+
+        Subclasses with REASONING_PROMPT placeholders (memory_summary,
+        stage_context) should OVERRIDE this method to call
+        `PromptComposer.for_domain_runtime(...)` with `input.context`
+        values, fixing the empty-placeholder defect (Audit G):
+
+            def _get_runtime_domain_instructions(self, input):
+                ctx = input.context or {}
+                return PromptComposer.for_domain_runtime(
+                    agent_type=self.domain_name,
+                    domain_specific=KANBAN_DOMAIN_SPECIFIC,
+                    few_shot_examples=KANBAN_FEW_SHOT_EXAMPLES,
+                    reasoning_template=KANBAN_REASONING_PROMPT,  # unformatted
+                    memory_summary=ctx.get("memory_summary", ""),
+                    stage_context=ctx.get("stage_context", ""),
+                ).text
+
+        Agents WITHOUT reasoning placeholders (Tipo A: analytics,
+        ats_integration, automation, communication, candidate) don't need
+        to override — class-attr DOMAIN_INSTRUCTIONS is correct as-is.
+        """
+        return self.DOMAIN_INSTRUCTIONS
+
     def _get_system_prompt(self, input: AgentInput) -> str:
         """Compose system prompt via SystemPromptBuilder + domain-specific instructions.
 
-        Subclasses set DOMAIN_INSTRUCTIONS class attribute instead of overriding this method.
+        Subclasses set DOMAIN_INSTRUCTIONS class attribute (static) and
+        optionally override `_get_runtime_domain_instructions(input)` for
+        runtime placeholder substitution (Sprint 2 Phase 4).
         """
         from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
 
@@ -471,8 +503,12 @@ class LangGraphReActBase(LangGraphBase):
             entities=ctx.get("extracted_params", {}),
         )
 
-        if self.DOMAIN_INSTRUCTIONS:
-            return f"{base}\n\n---\n\n{self.DOMAIN_INSTRUCTIONS}"
+        # Sprint 2 Phase 4: prefer runtime-substituted instructions over
+        # static class-attr (so {memory_summary} / {stage_context}
+        # placeholders are filled from input.context per request).
+        runtime_domain = self._get_runtime_domain_instructions(input)
+        if runtime_domain:
+            return f"{base}\n\n---\n\n{runtime_domain}"
         return base
     def _extract_text_content(self, content: Any) -> str:
         """Extrai texto de content que pode ser string, lista de blocos ou dict."""

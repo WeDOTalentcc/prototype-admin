@@ -45,6 +45,29 @@ class PipelineReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         reasoning_pattern=PIPELINE_REASONING_PROMPT.format(memory_summary="", stage_context=""),
     ).text
 
+    def _get_runtime_domain_instructions(self, input: AgentInput) -> str:
+        """Sprint 2 Phase 4: substitute {memory_summary} + {stage_context}
+        from input.context at runtime (vs empty class-attr default).
+
+        Falls back to legacy DOMAIN_INSTRUCTIONS if PromptComposer fails.
+        """
+        try:
+            ctx = input.context or {}
+            return PromptComposer.for_domain_runtime(
+                agent_type="cv_screening_pipeline",
+                domain_specific=PIPELINE_DOMAIN_SPECIFIC,
+                reasoning_template=PIPELINE_REASONING_PROMPT,
+                memory_summary=ctx.get("memory_summary", ""),
+                stage_context=ctx.get("stage_context", ""),
+            ).text
+        except Exception as exc:
+            logger.warning(
+                "[cv_screening_pipeline] runtime prompt composition failed: %s — "
+                "falling back to static DOMAIN_INSTRUCTIONS",
+                exc,
+            )
+            return self.DOMAIN_INSTRUCTIONS
+
     """Autonomous agent for the candidate recruitment pipeline via LangGraph nativo."""
 
     def __init__(self) -> None:

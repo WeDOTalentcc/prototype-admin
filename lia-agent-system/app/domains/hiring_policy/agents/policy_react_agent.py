@@ -47,6 +47,30 @@ class PolicyReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         reasoning_pattern=POLICY_REASONING_PROMPT.format(memory_summary="", stage_context=""),
     ).text
 
+    def _get_runtime_domain_instructions(self, input: AgentInput) -> str:
+        """Sprint 2 Phase 4: substitute {memory_summary} + {stage_context}
+        from input.context at runtime (vs empty class-attr default).
+
+        Falls back to legacy DOMAIN_INSTRUCTIONS if PromptComposer fails.
+        """
+        try:
+            ctx = input.context or {}
+            return PromptComposer.for_domain_runtime(
+                agent_type="hiring_policy",
+                domain_specific=POLICY_DOMAIN_SPECIFIC,
+            few_shot_examples=POLICY_FEW_SHOT_EXAMPLES,
+                reasoning_template=POLICY_REASONING_PROMPT,
+                memory_summary=ctx.get("memory_summary", ""),
+                stage_context=ctx.get("stage_context", ""),
+            ).text
+        except Exception as exc:
+            logger.warning(
+                "[hiring_policy] runtime prompt composition failed: %s — "
+                "falling back to static DOMAIN_INSTRUCTIONS",
+                exc,
+            )
+            return self.DOMAIN_INSTRUCTIONS
+
     """Autonomous agent for hiring policy configuration via LangGraph nativo."""
     # ── HITL integration for policy updates ──
     # Sprint-I spec: when output.state_updates are present, request HITL approval.
