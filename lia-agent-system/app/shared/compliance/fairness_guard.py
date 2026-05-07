@@ -541,8 +541,63 @@ class LearningBatchValidationResult:
 
 
 class FairnessGuard:
-    def __init__(self):
+    def __init__(self, *, strict: bool | None = None):
+        """Initialize FairnessGuard.
+
+        ADR-031 v2 P0 LGPD fail-fast contract:
+        ====================================================================
+        FairnessGuard depends on `protected_attributes.yaml` being loaded.
+        If the YAML loader returned empty (path bug, missing file, or YAML
+        parse error), the guard would silently degrade to fail-OPEN —
+        every fairness check would pass through. This is the LGPD compliance
+        gap that lived in production from Mar 2026 until commit ca6f004cf
+        fixed the loader path.
+
+        After Sprint 4B.1, FairnessGuard checks `is_registry_loaded()` at
+        init and fails fast in production environments. Tests can opt out
+        via `strict=False` when intentionally exercising fallback paths.
+
+        Args:
+            strict: If True, raise RuntimeError when registry is empty.
+                    Default: True in `production`/`staging`, False otherwise.
+                    Pass explicit value to override.
+        """
         _ensure_compiled()
+
+        # Lazy import to avoid circular at module load
+        try:
+            from app.shared.compliance.protected_attributes import is_registry_loaded
+            registry_ok = is_registry_loaded()
+        except Exception as exc:
+            logger.error(
+                "[FairnessGuard] is_registry_loaded() raised: %s — "
+                "treating as not-loaded (fail-closed when strict).",
+                exc,
+            )
+            registry_ok = False
+
+        if strict is None:
+            import os
+            strict = os.environ.get("LIA_ENV", "").lower() in ("production", "staging")
+
+        if not registry_ok:
+            msg = (
+                "FairnessGuard initialization: protected_attributes registry is "
+                "EMPTY (YAML missing, path wrong, or parse error). LGPD "
+                "compliance would silently degrade to fail-OPEN. Verify "
+                "app/config/protected_attributes.yaml exists and the loader "
+                "in app/shared/compliance/protected_attributes.py resolves "
+                "to it. See ADR-031 v2."
+            )
+            if strict:
+                logger.error("[FairnessGuard] FAIL-FAST: %s", msg)
+                raise RuntimeError(msg)
+            else:
+                logger.warning(
+                    "[FairnessGuard] DEGRADED MODE (strict=False): %s "
+                    "Set LIA_ENV=production or pass strict=True to fail-fast.",
+                    msg,
+                )
 
     def check(self, query: str) -> FairnessCheckResult:
         if not query or not query.strip():
