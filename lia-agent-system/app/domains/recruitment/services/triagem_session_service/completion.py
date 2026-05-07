@@ -1,10 +1,3 @@
-# ADR-001-EXEMPT (Sprint 6 follow-up): 4 INSERT statements into
-# wsi_sessions/wsi_questions/wsi_response_analyses/wsi_results.
-# WsiRepository (app/domains/voice/repositories/wsi_repository.py) already
-# has upsert_session/insert_question/insert_response_analysis/upsert_result
-# methods, but param signatures don't match exactly (e.g. completed_at
-# parameter missing from upsert_session). Refactor requires extending
-# WsiRepository methods + careful test pass; tracked separately.
 """
 Post-completion actions: feedback generation, notifications, WSI persistence.
 """
@@ -416,25 +409,20 @@ async def _persist_wsi_results(
     _mode_map = {"compact": "compact", "compact_plus": "compact_plus", "full": "compact_plus"}
     mode = _mode_map.get(raw_mode, "compact")
 
+    from app.domains.voice.repositories.wsi_repository import WsiRepository
+    wsi_repo = WsiRepository(db)
     try:
-        await db.execute(text(
-            "INSERT INTO wsi_sessions "
-            "    (id, candidate_id, job_vacancy_id, screening_type, mode, status, "
-            "     question_set_version, question_set_id, completed_at) "
-            "VALUES "
-            "    (:id, :candidate_id, :job_vacancy_id, :screening_type, :mode, :status, "
-            "     :question_set_version, :question_set_id, :completed_at)"
-        ), {
-            "id": wsi_session_id,
-            "candidate_id": session.candidate_id,
-            "job_vacancy_id": session.job_id,
-            "screening_type": "chat",
-            "mode": mode,
-            "status": "completed",
-            "question_set_version": int(qs_version) if qs_version else None,
-            "question_set_id": qs_id,
-            "completed_at": session.completed_at or datetime.utcnow(),
-        })
+        await wsi_repo.insert_session_with_completed_at(
+            session_id=wsi_session_id,
+            candidate_id=session.candidate_id,
+            job_vacancy_id=session.job_id,
+            screening_type="chat",
+            mode=mode,
+            status="completed",
+            question_set_version=int(qs_version) if qs_version else None,
+            question_set_id=qs_id,
+            completed_at=session.completed_at or datetime.utcnow(),
+        )
     except Exception as exc:
         logger.error(f"[Triagem] wsi_sessions insert failed — aborting WSI persistence: {exc}")
         return None
@@ -459,23 +447,16 @@ async def _persist_wsi_results(
             q_type = "contextual"
 
         try:
-            await db.execute(text(
-                "INSERT INTO wsi_questions "
-                "    (id, session_id, competency, framework, question_type, question_text, "
-                "     weight, sequence_order) "
-                "VALUES "
-                "    (:id, :session_id, :competency, :framework, :question_type, :question_text, "
-                "     :weight, :sequence_order)"
-            ), {
-                "id": question_id,
-                "session_id": wsi_session_id,
-                "competency": competency,
-                "framework": framework,
-                "question_type": q_type,
-                "question_text": question_text[:2000],
-                "weight": 1.0,
-                "sequence_order": seq,
-            })
+            await wsi_repo.insert_question_full(
+                question_id=question_id,
+                session_id=wsi_session_id,
+                competency=competency,
+                framework=framework,
+                question_type=q_type,
+                question_text=question_text[:2000],
+                weight=1.0,
+                sequence_order=seq,
+            )
         except Exception as exc:
             logger.warning(f"[Triagem] wsi_questions insert failed (seq={seq}): {exc}")
             if block_type == "technical":
@@ -486,31 +467,22 @@ async def _persist_wsi_results(
 
         analysis_id = str(uuid.uuid4())
         try:
-            await db.execute(text(
-                "INSERT INTO wsi_response_analyses "
-                "    (id, session_id, question_id, competency, response_text, "
-                "     autodeclaration_score, context_score, bloom_level, dreyfus_level, "
-                "     evidences, red_flags, consistency_penalty, final_score, justification) "
-                "VALUES "
-                "    (:id, :session_id, :question_id, :competency, :response_text, "
-                "     :autodeclaration_score, :context_score, :bloom_level, :dreyfus_level, "
-                "     :evidences::jsonb, :red_flags::jsonb, :consistency_penalty, :final_score, :justification)"
-            ), {
-                "id": analysis_id,
-                "session_id": wsi_session_id,
-                "question_id": question_id,
-                "competency": competency,
-                "response_text": response_text,
-                "autodeclaration_score": score_1_5,
-                "context_score": score_1_5,
-                "bloom_level": max(1, min(5, rs.get("bloom_level", 2))),
-                "dreyfus_level": max(1, min(5, rs.get("dreyfus_level", 2))),
-                "evidences": json.dumps(rs.get("evidences", [])),
-                "red_flags": json.dumps(rs.get("red_flags", [])),
-                "consistency_penalty": 0.0,
-                "final_score": score_1_5,
-                "justification": rs.get("justification", "Score calculado a partir da resposta no chat web"),
-            })
+            await wsi_repo.insert_response_analysis_full(
+                analysis_id=analysis_id,
+                session_id=wsi_session_id,
+                question_id=question_id,
+                competency=competency,
+                response_text=response_text,
+                autodeclaration_score=score_1_5,
+                context_score=score_1_5,
+                bloom_level=max(1, min(5, rs.get("bloom_level", 2))),
+                dreyfus_level=max(1, min(5, rs.get("dreyfus_level", 2))),
+                evidences_json=json.dumps(rs.get("evidences", [])),
+                red_flags_json=json.dumps(rs.get("red_flags", [])),
+                consistency_penalty=0.0,
+                final_score=score_1_5,
+                justification=rs.get("justification", "Score calculado a partir da resposta no chat web"),
+            )
         except Exception as exc:
             logger.warning(f"[Triagem] wsi_response_analyses insert failed (seq={seq}): {exc}")
 
@@ -536,24 +508,17 @@ async def _persist_wsi_results(
 
     try:
         result_id = str(uuid.uuid4())
-        await db.execute(text(
-            "INSERT INTO wsi_results "
-            "    (id, session_id, candidate_id, job_vacancy_id, "
-            "     technical_wsi, behavioral_wsi, overall_wsi, classification, percentile) "
-            "VALUES "
-            "    (:id, :session_id, :candidate_id, :job_vacancy_id, "
-            "     :technical_wsi, :behavioral_wsi, :overall_wsi, :classification, :percentile)"
-        ), {
-            "id": result_id,
-            "session_id": wsi_session_id,
-            "candidate_id": session.candidate_id,
-            "job_vacancy_id": session.job_id,
-            "technical_wsi": tech_wsi,
-            "behavioral_wsi": beh_wsi,
-            "overall_wsi": overall_wsi,
-            "classification": wsi_classification,
-            "percentile": None,
-        })
+        await wsi_repo.insert_result_full(
+            result_id=result_id,
+            session_id=wsi_session_id,
+            candidate_id=session.candidate_id,
+            job_vacancy_id=session.job_id,
+            technical_wsi=tech_wsi,
+            behavioral_wsi=beh_wsi,
+            overall_wsi=overall_wsi,
+            classification=wsi_classification,
+            percentile=None,
+        )
     except Exception as exc:
         logger.error(f"[Triagem] wsi_results insert failed: {exc}")
         return None

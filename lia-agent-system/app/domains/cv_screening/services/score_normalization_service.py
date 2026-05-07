@@ -1,13 +1,19 @@
-# ADR-001-EXEMPT (Sprint 6 follow-up): 3 SELECTs on screening_question_sets
-# for cross-version score normalization. Belongs in a new
-# ScreeningQuestionSetRepository (does not exist yet — covers ~15 queries
-# across this file + screening_question_set_service.py). Tracked separately.
+"""Score Normalization service — cross-version difficulty adjustment.
+
+Sprint 6 ADR-001 cleanup: SQL extracted to ScreeningQuestionSetRepository
+(2 queries on screening_question_sets) + WsiRepository (1 query on
+wsi_sessions). Service is now pure normalization logic.
+"""
 import logging
 from dataclasses import dataclass
 from typing import Any
 
-from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domains.cv_screening.repositories.screening_question_set_repository import (
+    ScreeningQuestionSetRepository,
+)
+from app.domains.voice.repositories.wsi_repository import WsiRepository
 
 logger = logging.getLogger(__name__)
 
@@ -104,17 +110,12 @@ class ScoreNormalizationService:
         return round(max(0.7, min(1.3, factor)), 4)
 
     async def _load_version_coefficients(
-        self, db: AsyncSession, job_vacancy_id: str
+        self, db: AsyncSession, job_vacancy_id: str,
     ) -> dict[int | None, float | None]:
         try:
-            result = await db.execute(text("""
-                SELECT version, difficulty_coefficient
-                FROM screening_question_sets
-                WHERE job_vacancy_id = :job_vacancy_id
-                ORDER BY version
-            """), {"job_vacancy_id": job_vacancy_id})
-            rows = result.fetchall()
-            return {row[0]: row[1] for row in rows}
+            return await ScreeningQuestionSetRepository(db).get_version_coefficients(
+                job_vacancy_id,
+            )
         except Exception as e:
             self.logger.warning(f"Failed to load version coefficients: {e}")
             return {}
@@ -125,21 +126,13 @@ class ScoreNormalizationService:
         job_vacancy_id: str,
     ) -> dict[str, Any]:
         try:
-            versions_result = await db.execute(text("""
-                SELECT version, difficulty_coefficient, questions_count, source, is_active
-                FROM screening_question_sets
-                WHERE job_vacancy_id = :job_vacancy_id
-                ORDER BY version DESC
-            """), {"job_vacancy_id": job_vacancy_id})
-            versions = versions_result.fetchall()
+            qs_repo = ScreeningQuestionSetRepository(db)
+            wsi_repo = WsiRepository(db)
 
-            sessions_result = await db.execute(text("""
-                SELECT question_set_version, COUNT(*) as count
-                FROM wsi_sessions
-                WHERE job_vacancy_id = :job_vacancy_id AND status = 'completed'
-                GROUP BY question_set_version
-            """), {"job_vacancy_id": job_vacancy_id})
-            session_counts = {row[0]: row[1] for row in sessions_result.fetchall()}
+            versions = await qs_repo.get_versions_with_metadata(job_vacancy_id)
+            session_counts = await wsi_repo.get_completed_sessions_count_by_version(
+                job_vacancy_id,
+            )
 
             version_details = []
             for v in versions:

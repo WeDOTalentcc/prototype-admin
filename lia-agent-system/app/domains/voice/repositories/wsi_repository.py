@@ -644,3 +644,237 @@ class WsiRepository:
         )
         row = result.fetchone()
         return row[0] if row and row[0] is not None else None
+
+    # ------------------------------------------------------------------
+    # Cross-version analytics (Sprint 6 ADR-001 — used by
+    # cv_screening/services/screening_question_set_service.py and
+    # cv_screening/services/score_normalization_service.py)
+    # ------------------------------------------------------------------
+
+    async def count_completed_sessions(self, job_vacancy_id: str) -> int:
+        """Total completed wsi_sessions for a job."""
+        result = await self.db.execute(
+            text(
+                "SELECT COUNT(*) FROM wsi_sessions "
+                "WHERE job_vacancy_id = :job_vacancy_id AND status = 'completed'"
+            ),
+            {"job_vacancy_id": job_vacancy_id},
+        )
+        row = result.fetchone()
+        return int(row[0]) if row else 0
+
+    async def count_completed_sessions_at_version(
+        self, job_vacancy_id: str, version: int,
+    ) -> int:
+        """Completed sessions for a job at a specific question_set_version."""
+        result = await self.db.execute(
+            text(
+                "SELECT COUNT(*) FROM wsi_sessions "
+                "WHERE job_vacancy_id = :job_vacancy_id "
+                "  AND status = 'completed' "
+                "  AND question_set_version = :version"
+            ),
+            {"job_vacancy_id": job_vacancy_id, "version": version},
+        )
+        row = result.fetchone()
+        return int(row[0]) if row else 0
+
+    async def get_older_versions_session_counts(
+        self, job_vacancy_id: str, current_version: int,
+    ) -> list[tuple[int, int]]:
+        """List of (version, count) for completed sessions on versions < current."""
+        result = await self.db.execute(
+            text(
+                "SELECT question_set_version, COUNT(*) "
+                "FROM wsi_sessions "
+                "WHERE job_vacancy_id = :job_vacancy_id "
+                "  AND status = 'completed' "
+                "  AND question_set_version IS NOT NULL "
+                "  AND question_set_version < :current_version "
+                "GROUP BY question_set_version "
+                "ORDER BY question_set_version DESC"
+            ),
+            {"job_vacancy_id": job_vacancy_id, "current_version": current_version},
+        )
+        return [(int(row[0]), int(row[1])) for row in result.fetchall()]
+
+    async def get_completed_sessions_count_by_version(
+        self, job_vacancy_id: str,
+    ) -> dict[int | None, int]:
+        """{version → count} of completed sessions for a job (all versions)."""
+        result = await self.db.execute(
+            text(
+                "SELECT question_set_version, COUNT(*) "
+                "FROM wsi_sessions "
+                "WHERE job_vacancy_id = :job_vacancy_id AND status = 'completed' "
+                "GROUP BY question_set_version"
+            ),
+            {"job_vacancy_id": job_vacancy_id},
+        )
+        return {row[0]: int(row[1]) for row in result.fetchall()}
+
+    # ------------------------------------------------------------------
+    # Triagem completion persistence (Sprint 6 ADR-001 — used by
+    # recruitment/services/triagem_session_service/completion.py)
+    # ------------------------------------------------------------------
+
+    async def insert_session_with_completed_at(
+        self,
+        *,
+        session_id: str,
+        candidate_id: str,
+        job_vacancy_id: str,
+        screening_type: str,
+        mode: str,
+        status: str,
+        question_set_version: int | None,
+        question_set_id: str | None,
+        completed_at,
+    ) -> None:
+        """Insert wsi_sessions row including `completed_at` (triagem chat path).
+
+        Distinct from `upsert_session` because this caller already has a
+        `completed_at` timestamp and inserts a session in a single shot
+        (not the multi-step lifecycle from voice/twilio).
+        """
+        await self.db.execute(
+            text(
+                "INSERT INTO wsi_sessions "
+                "    (id, candidate_id, job_vacancy_id, screening_type, mode, status, "
+                "     question_set_version, question_set_id, completed_at) "
+                "VALUES "
+                "    (:id, :candidate_id, :job_vacancy_id, :screening_type, :mode, :status, "
+                "     :question_set_version, :question_set_id, :completed_at)"
+            ),
+            {
+                "id": session_id,
+                "candidate_id": candidate_id,
+                "job_vacancy_id": job_vacancy_id,
+                "screening_type": screening_type,
+                "mode": mode,
+                "status": status,
+                "question_set_version": question_set_version,
+                "question_set_id": question_set_id,
+                "completed_at": completed_at,
+            },
+        )
+
+    async def insert_question_full(
+        self,
+        *,
+        question_id: str,
+        session_id: str,
+        competency: str,
+        framework: str,
+        question_type: str,
+        question_text: str,
+        weight: float,
+        sequence_order: int,
+    ) -> None:
+        """Insert wsi_questions row (triagem chat path — `weight` + `sequence_order`)."""
+        await self.db.execute(
+            text(
+                "INSERT INTO wsi_questions "
+                "    (id, session_id, competency, framework, question_type, question_text, "
+                "     weight, sequence_order) "
+                "VALUES "
+                "    (:id, :session_id, :competency, :framework, :question_type, :question_text, "
+                "     :weight, :sequence_order)"
+            ),
+            {
+                "id": question_id,
+                "session_id": session_id,
+                "competency": competency,
+                "framework": framework,
+                "question_type": question_type,
+                "question_text": question_text,
+                "weight": weight,
+                "sequence_order": sequence_order,
+            },
+        )
+
+    async def insert_response_analysis_full(
+        self,
+        *,
+        analysis_id: str,
+        session_id: str,
+        question_id: str,
+        competency: str,
+        response_text: str,
+        autodeclaration_score: float,
+        context_score: float,
+        bloom_level: int,
+        dreyfus_level: int,
+        evidences_json: str,
+        red_flags_json: str,
+        consistency_penalty: float,
+        final_score: float,
+        justification: str,
+    ) -> None:
+        """Insert wsi_response_analyses row with full analysis fields."""
+        await self.db.execute(
+            text(
+                "INSERT INTO wsi_response_analyses "
+                "    (id, session_id, question_id, competency, response_text, "
+                "     autodeclaration_score, context_score, bloom_level, dreyfus_level, "
+                "     evidences, red_flags, consistency_penalty, final_score, justification) "
+                "VALUES "
+                "    (:id, :session_id, :question_id, :competency, :response_text, "
+                "     :autodeclaration_score, :context_score, :bloom_level, :dreyfus_level, "
+                "     :evidences::jsonb, :red_flags::jsonb, :consistency_penalty, "
+                "     :final_score, :justification)"
+            ),
+            {
+                "id": analysis_id,
+                "session_id": session_id,
+                "question_id": question_id,
+                "competency": competency,
+                "response_text": response_text,
+                "autodeclaration_score": autodeclaration_score,
+                "context_score": context_score,
+                "bloom_level": bloom_level,
+                "dreyfus_level": dreyfus_level,
+                "evidences": evidences_json,
+                "red_flags": red_flags_json,
+                "consistency_penalty": consistency_penalty,
+                "final_score": final_score,
+                "justification": justification,
+            },
+        )
+
+    async def insert_result_full(
+        self,
+        *,
+        result_id: str,
+        session_id: str,
+        candidate_id: str,
+        job_vacancy_id: str,
+        technical_wsi: float,
+        behavioral_wsi: float,
+        overall_wsi: float,
+        classification: str,
+        percentile: float | None,
+    ) -> None:
+        """Insert wsi_results row with all 5 score dimensions."""
+        await self.db.execute(
+            text(
+                "INSERT INTO wsi_results "
+                "    (id, session_id, candidate_id, job_vacancy_id, "
+                "     technical_wsi, behavioral_wsi, overall_wsi, classification, percentile) "
+                "VALUES "
+                "    (:id, :session_id, :candidate_id, :job_vacancy_id, "
+                "     :technical_wsi, :behavioral_wsi, :overall_wsi, :classification, :percentile)"
+            ),
+            {
+                "id": result_id,
+                "session_id": session_id,
+                "candidate_id": candidate_id,
+                "job_vacancy_id": job_vacancy_id,
+                "technical_wsi": technical_wsi,
+                "behavioral_wsi": behavioral_wsi,
+                "overall_wsi": overall_wsi,
+                "classification": classification,
+                "percentile": percentile,
+            },
+        )
+

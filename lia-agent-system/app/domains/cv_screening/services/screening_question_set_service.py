@@ -1,19 +1,22 @@
-# ADR-001-EXEMPT (Sprint 6 follow-up): 12 raw SQL queries managing the
-# screening_question_sets versioning lifecycle (create/get/activate/list/
-# count/cleanup). Requires creating ScreeningQuestionSetRepository as a
-# focused sprint task with companion unit tests; consolidates with the 3
-# queries in score_normalization_service.py for ~15 methods total.
+"""Screening Question Set service — versioning, hashing, difficulty calc.
+
+Sprint 6 ADR-001 cleanup: all SQL extracted to ScreeningQuestionSetRepository
+(cv_screening/repositories/) and WsiRepository (voice/repositories/).
+This service now contains ONLY business logic.
+"""
 import hashlib
 import json
 import logging
-import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lia_models.screening_question_set import ScreeningQuestionSet
+from app.domains.cv_screening.repositories.screening_question_set_repository import (
+    ScreeningQuestionSetRepository,
+)
+from app.domains.voice.repositories.wsi_repository import WsiRepository
 from app.shared.policy_middleware import get_policy_for_company, resolve_policy_value
 
 logger = logging.getLogger(__name__)
@@ -76,101 +79,58 @@ class ScreeningQuestionSetService:
         metadata: dict | None = None,
         company_id: str | None = None,
     ) -> ScreeningQuestionSet:
+        repo = ScreeningQuestionSetRepository(db)
         questions_hash = self._calculate_questions_hash(questions)
 
-        result = await db.execute(text("""
-            SELECT id, job_vacancy_id, version, questions_hash, questions_snapshot,
-                   questions_count, block_distribution, metadata, source, created_by,
-                   is_active, difficulty_coefficient, created_at, updated_at
-            FROM screening_question_sets
-            WHERE job_vacancy_id = :job_vacancy_id AND is_active = TRUE
-            LIMIT 1
-        """), {"job_vacancy_id": job_vacancy_id})
-        existing_row = result.fetchone()
+        existing = await repo.get_active(job_vacancy_id)
 
-        if company_id and not existing_row:
+        if company_id and existing is None:
             questions = await self.inject_policy_defaults(db, company_id, questions)
             questions_hash = self._calculate_questions_hash(questions)
 
-        if existing_row and existing_row[3] == questions_hash:
-            logger.info(f"Question set hash unchanged for job {job_vacancy_id}, returning existing version {existing_row[2]}")
-            qs = ScreeningQuestionSet()
-            qs.id = existing_row[0]
-            qs.job_vacancy_id = existing_row[1]
-            qs.version = existing_row[2]
-            qs.questions_hash = existing_row[3]
-            qs.questions_snapshot = existing_row[4]
-            qs.questions_count = existing_row[5]
-            qs.block_distribution = existing_row[6]
-            qs.extra_metadata = existing_row[7]
-            qs.source = existing_row[8]
-            qs.created_by = existing_row[9]
-            qs.is_active = existing_row[10]
-            qs.difficulty_coefficient = existing_row[11]
-            qs.created_at = existing_row[12]
-            qs.updated_at = existing_row[13]
-            return qs
+        if existing is not None and existing.questions_hash == questions_hash:
+            logger.info(
+                f"Question set hash unchanged for job {job_vacancy_id}, "
+                f"returning existing version {existing.version}"
+            )
+            return existing
 
-        version_result = await db.execute(text("""
-            SELECT MAX(version) FROM screening_question_sets
-            WHERE job_vacancy_id = :job_vacancy_id
-        """), {"job_vacancy_id": job_vacancy_id})
-        max_version_row = version_result.fetchone()
-        next_version = (max_version_row[0] or 0) + 1
-
-        await db.execute(text("""
-            UPDATE screening_question_sets
-            SET is_active = FALSE, updated_at = CURRENT_TIMESTAMP
-            WHERE job_vacancy_id = :job_vacancy_id AND is_active = TRUE
-        """), {"job_vacancy_id": job_vacancy_id})
+        next_version = (await repo.get_max_version(job_vacancy_id)) + 1
+        await repo.deactivate_active(job_vacancy_id)
 
         difficulty_coefficient = self._calculate_difficulty_coefficient(questions)
-        new_id = str(uuid.uuid4())
         now = datetime.utcnow()
-
-        await db.execute(text("""
-            INSERT INTO screening_question_sets (
-                id, job_vacancy_id, version, questions_hash, questions_snapshot,
-                questions_count, block_distribution, metadata, source, created_by,
-                is_active, difficulty_coefficient, created_at, updated_at
-            )
-            VALUES (
-                :id, :job_vacancy_id, :version, :questions_hash, :questions_snapshot::jsonb,
-                :questions_count, :block_distribution::jsonb, :metadata::jsonb, :source, :created_by,
-                TRUE, :difficulty_coefficient, :created_at, :updated_at
-            )
-        """), {
-            "id": new_id,
-            "job_vacancy_id": job_vacancy_id,
-            "version": next_version,
-            "questions_hash": questions_hash,
-            "questions_snapshot": json.dumps(questions),
-            "questions_count": len(questions),
-            "block_distribution": json.dumps(block_distribution) if block_distribution else None,
-            "metadata": json.dumps(metadata) if metadata else None,
-            "source": source,
-            "created_by": created_by,
-            "difficulty_coefficient": difficulty_coefficient,
-            "created_at": now,
-            "updated_at": now,
-        })
+        new_id = await repo.insert_set(
+            job_vacancy_id=job_vacancy_id,
+            version=next_version,
+            questions_hash=questions_hash,
+            questions=questions,
+            questions_count=len(questions),
+            block_distribution=block_distribution,
+            metadata=metadata,
+            source=source,
+            created_by=created_by,
+            difficulty_coefficient=difficulty_coefficient,
+            now=now,
+        )
 
         try:
-            await db.execute(text("""
-                UPDATE job_vacancies
-                SET screening_questions = :screening_questions::jsonb
-                WHERE id = :job_vacancy_id
-            """), {
-                "job_vacancy_id": job_vacancy_id,
-                "screening_questions": json.dumps(questions),
-            })
+            await repo.update_job_vacancy_screening_cache(job_vacancy_id, questions)
         except Exception as e:
-            logger.warning(f"Failed to update JobVacancy screening_questions cache for {job_vacancy_id}: {e}")
+            logger.warning(
+                f"Failed to update JobVacancy screening_questions cache "
+                f"for {job_vacancy_id}: {e}"
+            )
 
         await db.commit()
 
-        logger.info(f"Saved question set v{next_version} for job {job_vacancy_id} (source={source}, count={len(questions)})")
+        logger.info(
+            f"Saved question set v{next_version} for job {job_vacancy_id} "
+            f"(source={source}, count={len(questions)})"
+        )
 
+        # Build a fresh ORM instance to return (avoid extra SELECT after commit)
+        import uuid
         qs = ScreeningQuestionSet()
         qs.id = uuid.UUID(new_id)
         qs.job_vacancy_id = job_vacancy_id
@@ -189,111 +149,32 @@ class ScreeningQuestionSetService:
         return qs
 
     async def get_active_version(
-        self, db: AsyncSession, job_vacancy_id: str
+        self, db: AsyncSession, job_vacancy_id: str,
     ) -> ScreeningQuestionSet | None:
-        result = await db.execute(text("""
-            SELECT id, job_vacancy_id, version, questions_hash, questions_snapshot,
-                   questions_count, block_distribution, metadata, source, created_by,
-                   is_active, difficulty_coefficient, created_at, updated_at
-            FROM screening_question_sets
-            WHERE job_vacancy_id = :job_vacancy_id AND is_active = TRUE
-            LIMIT 1
-        """), {"job_vacancy_id": job_vacancy_id})
-        row = result.fetchone()
-
-        if not row:
-            return None
-
-        qs = ScreeningQuestionSet()
-        qs.id = row[0]
-        qs.job_vacancy_id = row[1]
-        qs.version = row[2]
-        qs.questions_hash = row[3]
-        qs.questions_snapshot = row[4]
-        qs.questions_count = row[5]
-        qs.block_distribution = row[6]
-        qs.extra_metadata = row[7]
-        qs.source = row[8]
-        qs.created_by = row[9]
-        qs.is_active = row[10]
-        qs.difficulty_coefficient = row[11]
-        qs.created_at = row[12]
-        qs.updated_at = row[13]
-        return qs
+        return await ScreeningQuestionSetRepository(db).get_active(job_vacancy_id)
 
     async def get_by_version(
-        self, db: AsyncSession, job_vacancy_id: str, version: int
+        self, db: AsyncSession, job_vacancy_id: str, version: int,
     ) -> ScreeningQuestionSet | None:
-        result = await db.execute(text("""
-            SELECT id, job_vacancy_id, version, questions_hash, questions_snapshot,
-                   questions_count, block_distribution, metadata, source, created_by,
-                   is_active, difficulty_coefficient, created_at, updated_at
-            FROM screening_question_sets
-            WHERE job_vacancy_id = :job_vacancy_id AND version = :version
-            LIMIT 1
-        """), {"job_vacancy_id": job_vacancy_id, "version": version})
-        row = result.fetchone()
-
-        if not row:
-            return None
-
-        qs = ScreeningQuestionSet()
-        qs.id = row[0]
-        qs.job_vacancy_id = row[1]
-        qs.version = row[2]
-        qs.questions_hash = row[3]
-        qs.questions_snapshot = row[4]
-        qs.questions_count = row[5]
-        qs.block_distribution = row[6]
-        qs.extra_metadata = row[7]
-        qs.source = row[8]
-        qs.created_by = row[9]
-        qs.is_active = row[10]
-        qs.difficulty_coefficient = row[11]
-        qs.created_at = row[12]
-        qs.updated_at = row[13]
-        return qs
+        return await ScreeningQuestionSetRepository(db).get_by_version(
+            job_vacancy_id, version,
+        )
 
     async def list_versions(
-        self, db: AsyncSession, job_vacancy_id: str
+        self, db: AsyncSession, job_vacancy_id: str,
     ) -> list[dict[str, Any]]:
-        result = await db.execute(text("""
-            SELECT id, version, source, questions_count, is_active, created_by, created_at
-            FROM screening_question_sets
-            WHERE job_vacancy_id = :job_vacancy_id
-            ORDER BY version DESC
-        """), {"job_vacancy_id": job_vacancy_id})
-        rows = result.fetchall()
-
-        return [
-            {
-                "id": str(row[0]),
-                "version": row[1],
-                "source": row[2],
-                "questions_count": row[3],
-                "is_active": row[4],
-                "created_by": row[5],
-                "created_at": row[6].isoformat() if row[6] else None,
-            }
-            for row in rows
-        ]
+        return await ScreeningQuestionSetRepository(db).list_versions_summary(
+            job_vacancy_id,
+        )
 
     async def check_version_consistency(
-        self, db: AsyncSession, job_vacancy_id: str
+        self, db: AsyncSession, job_vacancy_id: str,
     ) -> dict[str, Any]:
-        active_result = await db.execute(text("""
-            SELECT version FROM screening_question_sets
-            WHERE job_vacancy_id = :job_vacancy_id AND is_active = TRUE
-            LIMIT 1
-        """), {"job_vacancy_id": job_vacancy_id})
-        active_row = active_result.fetchone()
-        current_version = active_row[0] if active_row else None
+        qs_repo = ScreeningQuestionSetRepository(db)
+        wsi_repo = WsiRepository(db)
 
-        total_result = await db.execute(text("""
-            SELECT COUNT(*) FROM wsi_sessions
-            WHERE job_vacancy_id = :job_vacancy_id AND status = 'completed'
-        """), {"job_vacancy_id": job_vacancy_id})
-        total_screened = total_result.fetchone()[0]
+        current_version = await qs_repo.get_active_version_number(job_vacancy_id)
+        total_screened = await wsi_repo.count_completed_sessions(job_vacancy_id)
 
         if current_version is None:
             return {
@@ -305,29 +186,15 @@ class ScreeningQuestionSetService:
                 "has_inconsistency": False,
             }
 
-        current_count_result = await db.execute(text("""
-            SELECT COUNT(*) FROM wsi_sessions
-            WHERE job_vacancy_id = :job_vacancy_id
-              AND status = 'completed'
-              AND question_set_version = :current_version
-        """), {"job_vacancy_id": job_vacancy_id, "current_version": current_version})
-        screened_with_current = current_count_result.fetchone()[0]
-
-        older_result = await db.execute(text("""
-            SELECT question_set_version, COUNT(*) as session_count
-            FROM wsi_sessions
-            WHERE job_vacancy_id = :job_vacancy_id
-              AND status = 'completed'
-              AND question_set_version IS NOT NULL
-              AND question_set_version < :current_version
-            GROUP BY question_set_version
-            ORDER BY question_set_version DESC
-        """), {"job_vacancy_id": job_vacancy_id, "current_version": current_version})
-        older_rows = older_result.fetchall()
+        screened_with_current = await wsi_repo.count_completed_sessions_at_version(
+            job_vacancy_id, current_version,
+        )
+        older_pairs = await wsi_repo.get_older_versions_session_counts(
+            job_vacancy_id, current_version,
+        )
 
         older_versions_used = [
-            {"version": row[0], "count": row[1]}
-            for row in older_rows
+            {"version": v, "count": c} for v, c in older_pairs
         ]
         screened_with_older = sum(item["count"] for item in older_versions_used)
 
