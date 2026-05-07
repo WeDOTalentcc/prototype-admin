@@ -115,6 +115,29 @@ def test_golden_path_b_wizard_runtime():
 
 
 # ──────────────────────────────────────────────────────────────────────
+# Path A — SystemPromptBuilder.build (legacy composer)
+# ──────────────────────────────────────────────────────────────────────
+
+
+@pytest.mark.parametrize("agent_type", [
+    "candidate_self_service",  # YAML-miss → persona-only fallthrough
+    "kanban",                  # YAML-miss → persona-only fallthrough
+    "wizard",                  # YAML-miss → persona-only fallthrough
+    "sourcing",                # YAML-match → differentiated
+    "recruiter_assistant",     # YAML-match → differentiated
+])
+def test_golden_path_a_spb(agent_type: str):
+    """Pin: SystemPromptBuilder.build(agent_type=X) bytes baseline.
+
+    Captures BEFORE state for Phase 3.2 SPB convergence (refactor must
+    not drift bytes — these snapshots are the contract).
+    """
+    from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
+    output = SystemPromptBuilder.build(agent_type=agent_type)
+    _assert_snapshot(f"path_a__spb__{agent_type}", output)
+
+
+# ──────────────────────────────────────────────────────────────────────
 # Path C — Agent._get_system_prompt full assembly (production runtime)
 # ──────────────────────────────────────────────────────────────────────
 
@@ -139,6 +162,73 @@ def test_golden_path_c_candidate_self_service():
     inp = _make_input()
     prompt = agent._get_system_prompt(inp)
     _assert_snapshot("path_c__candidate_self_service__full", prompt)
+
+
+# ──────────────────────────────────────────────────────────────────────
+# Phase 3.3 — Compliance blocks reactivated (Audit M dead-code closure)
+# ──────────────────────────────────────────────────────────────────────
+
+
+@pytest.mark.parametrize("agent_type,expected_variant", [
+    ("kanban", "decision"),
+    ("sourcing", "decision"),
+    ("communication", "communication"),
+    ("wizard", "operational"),
+    ("analytics", "operational"),
+])
+def test_compliance_variant_classification(agent_type: str, expected_variant: str):
+    """Pin classification map (mirrors ComplianceDomainPrompt._DECISION_DOMAINS)."""
+    from app.shared.prompts.prompt_composer import PromptComposer
+    assert PromptComposer._classify_agent_variant(agent_type) == expected_variant
+
+
+def test_compliance_blocks_decision_has_full_set():
+    """Decision agents get LGPD + fairness + bias + audit + universal guardrails."""
+    from app.shared.prompts.prompt_composer import PromptComposer
+    block = PromptComposer.compliance_blocks_for("kanban")
+    assert "COMPLIANCE LGPD" in block, "LGPD block missing"
+    assert "NÃO DISCRIMINAÇÃO" in block, "Fairness block missing"
+    assert "VIÉS IMPLÍCITO" in block, "Bias block missing"
+    assert "AUDIT TRAIL" in block, "Audit block missing"
+    assert "IDENTIDADE" in block, "Identity guardrail missing"
+    assert "NUNCA INVENTAR" in block, "Hallucination guardrail missing"
+
+
+def test_compliance_blocks_operational_minimal():
+    """Operational agents (wizard, analytics): LGPD only + universal guardrails."""
+    from app.shared.prompts.prompt_composer import PromptComposer
+    block = PromptComposer.compliance_blocks_for("wizard")
+    assert "COMPLIANCE LGPD" in block
+    # Operational does NOT get bias/audit blocks
+    assert "VIÉS IMPLÍCITO" not in block
+    assert "AUDIT TRAIL" not in block
+    # Universal guardrails still present
+    assert "IDENTIDADE" in block
+
+
+def test_kanban_runtime_includes_compliance_in_prompt():
+    """Phase 3.3 contract: kanban prompt now CONTAINS compliance blocks
+    (was dead code per Audit M before this fix)."""
+    from app.domains.recruiter_assistant.agents.kanban_system_prompt import (
+        KANBAN_DOMAIN_SPECIFIC,
+        KANBAN_FEW_SHOT_EXAMPLES,
+        KANBAN_REASONING_PROMPT,
+    )
+    from app.shared.prompts.prompt_composer import PromptComposer
+    comp = PromptComposer.for_domain_runtime(
+        agent_type="kanban",
+        domain_specific=KANBAN_DOMAIN_SPECIFIC,
+        few_shot_examples=KANBAN_FEW_SHOT_EXAMPLES,
+        reasoning_template=KANBAN_REASONING_PROMPT,
+        memory_summary="m",
+        stage_context="s",
+    )
+    assert "COMPLIANCE LGPD" in comp.text, (
+        "Kanban prompt missing LGPD compliance — Phase 3.3 closure failed"
+    )
+    assert "NÃO DISCRIMINAÇÃO" in comp.text, (
+        "Kanban prompt missing fairness — Phase 3.3 closure failed"
+    )
 
 
 # ──────────────────────────────────────────────────────────────────────

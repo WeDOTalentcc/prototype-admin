@@ -23,8 +23,11 @@ Block ordering convention (canonical):
 """
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass, field
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 _BLOCK_SEPARATOR = "\n\n"
@@ -166,9 +169,128 @@ class PromptComposer:
             agent_type="candidate_self_service",
             domain_specific=CSS_DOMAIN_SPECIFIC,
             few_shot_examples=CSS_FEW_SHOT_EXAMPLES,
+            compliance_block=PromptComposer.compliance_blocks_for("candidate_self_service"),
             tenant_context_snippet=tenant_context_snippet,
             memory_summary=memory_summary,
         )
+
+    # ── Sprint 2 Phase 3.3 — Compliance YAML loaders ──────────────────────
+    # Audit M 2026-05-07: ComplianceDomainPrompt's `get_system_prompt()`
+    # was dead code (zero callers in react_agent path). LGPD/fairness/bias/
+    # audit YAML content NEVER reached the LLM. This block reactivates that
+    # content via PromptComposer's `compliance_block` slot.
+
+    _COMPLIANCE_YAML_CACHE: dict | None = None
+    _GUARDRAILS_YAML_CACHE: dict | None = None
+
+    # Variant classification (mirrors ComplianceDomainPrompt._DECISION_DOMAINS,
+    # ._COMMUNICATION_DOMAINS — kept in sync).
+    _DECISION_DOMAINS = frozenset({
+        "pipeline", "pipeline_transition", "cv_screening", "sourcing",
+        "autonomous", "talent_pool", "recruiter_assistant", "kanban",
+        "talent", "jobs_mgmt",
+    })
+    _COMMUNICATION_DOMAINS = frozenset({
+        "communication", "onboarding",
+    })
+
+    @staticmethod
+    def _load_compliance_yaml() -> dict:
+        """Load compliance_block.yaml (cached after first load)."""
+        if PromptComposer._COMPLIANCE_YAML_CACHE is None:
+            import os
+            try:
+                import yaml
+                here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                path = os.path.join(here, "..", "prompts", "shared", "compliance_block.yaml")
+                with open(os.path.normpath(path)) as f:
+                    PromptComposer._COMPLIANCE_YAML_CACHE = yaml.safe_load(f) or {}
+            except Exception as exc:
+                logger.warning("[PromptComposer] compliance_block.yaml load failed: %s", exc)
+                PromptComposer._COMPLIANCE_YAML_CACHE = {}
+        return PromptComposer._COMPLIANCE_YAML_CACHE
+
+    @staticmethod
+    def _load_guardrails_yaml() -> dict:
+        if PromptComposer._GUARDRAILS_YAML_CACHE is None:
+            import os
+            try:
+                import yaml
+                here = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+                path = os.path.join(here, "..", "prompts", "shared", "guardrails_block.yaml")
+                with open(os.path.normpath(path)) as f:
+                    PromptComposer._GUARDRAILS_YAML_CACHE = yaml.safe_load(f) or {}
+            except Exception as exc:
+                logger.warning("[PromptComposer] guardrails_block.yaml load failed: %s", exc)
+                PromptComposer._GUARDRAILS_YAML_CACHE = {}
+        return PromptComposer._GUARDRAILS_YAML_CACHE
+
+    @staticmethod
+    def _classify_agent_variant(agent_type: str) -> str:
+        """Return 'decision', 'communication', or 'operational' for agent_type.
+
+        Mirrors ComplianceDomainPrompt classification — kept in sync.
+        """
+        if agent_type in PromptComposer._DECISION_DOMAINS:
+            return "decision"
+        if agent_type in PromptComposer._COMMUNICATION_DOMAINS:
+            return "communication"
+        return "operational"
+
+    @staticmethod
+    def compliance_blocks_for(agent_type: str) -> str:
+        """Sprint 2 Phase 3.3: assemble compliance + guardrails for an agent_type.
+
+        Reactivates the LGPD/fairness/bias/audit YAML content that was
+        baked into `ComplianceDomainPrompt.get_system_prompt()` (dead
+        code per Audit M 2026-05-07) so it reaches the LLM via
+        `PromptComposer.compose(compliance_block=...)`.
+
+        Variant selection (mirror of CDP):
+        - "decision" agents (pipeline, cv_screening, sourcing, autonomous,
+          talent_pool, recruiter_assistant, kanban, talent, jobs_mgmt):
+          full compliance (lgpd + fairness + bias + audit + defensive)
+        - "communication" agents (communication, onboarding):
+          lgpd + fairness only
+        - "operational" agents (wizard, automation, analytics,
+          ats_integration, scheduling): lgpd only
+
+        Universal guardrails (identity/hallucination/prompt_security/
+        multi_tenancy/negation) appended for ALL agents.
+
+        Returns empty string on YAML load failure (graceful degradation —
+        agent still functions, sensor `check_protected_attributes_yaml`
+        flags missing YAML at startup).
+        """
+        compliance = PromptComposer._load_compliance_yaml()
+        guardrails = PromptComposer._load_guardrails_yaml()
+        variant = PromptComposer._classify_agent_variant(agent_type)
+        v_blocks = compliance.get(variant, {})
+
+        parts: list[str] = []
+        # Compliance variant blocks
+        for key in ("lgpd", "fairness", "bias", "audit"):
+            block = v_blocks.get(key, "")
+            if block and block.strip():
+                parts.append(block.strip())
+        defensive = compliance.get("defensive", "")
+        if defensive and defensive.strip():
+            parts.append(defensive.strip())
+
+        # Universal guardrails (all agents)
+        universal = guardrails.get("universal", {})
+        for key in ("identity", "hallucination", "prompt_security",
+                    "multi_tenancy", "negation"):
+            block = universal.get(key, "")
+            if block and block.strip():
+                parts.append(block.strip())
+
+        # Autonomy variant
+        autonomy_variant = guardrails.get("autonomy", {}).get(variant, "")
+        if autonomy_variant and autonomy_variant.strip():
+            parts.append(autonomy_variant.strip())
+
+        return "\n\n".join(parts)
 
     @staticmethod
     def for_domain_runtime(
@@ -230,6 +352,7 @@ class PromptComposer:
             domain_specific=domain_specific,
             few_shot_examples=few_shot_examples,
             reasoning_pattern=formatted_reasoning,
+            compliance_block=PromptComposer.compliance_blocks_for(agent_type),
             tenant_context_snippet=tenant_context_snippet,
         )
 
