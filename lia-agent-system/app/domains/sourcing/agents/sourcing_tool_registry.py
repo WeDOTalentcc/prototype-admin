@@ -19,7 +19,7 @@ from app.shared.tool_handler import tool_handler
 logger = logging.getLogger(__name__)
 
 
-@tool_handler("sourcing", require_company=False)
+@tool_handler("sourcing")
 async def _wrap_set_search_criteria(**kwargs: Any) -> dict[str, Any]:
     """Define search parameters for talent sourcing."""
     role = kwargs.get("role", "")
@@ -43,7 +43,7 @@ async def _wrap_set_search_criteria(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("sourcing", require_company=False)
+@tool_handler("sourcing")
 async def _wrap_suggest_skills(**kwargs: Any) -> dict[str, Any]:
     """Suggest relevant skills based on role and context."""
     role = kwargs.get("role", "")
@@ -83,7 +83,7 @@ async def _wrap_suggest_skills(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("sourcing", require_company=False)
+@tool_handler("sourcing")
 async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
     """Execute talent search based on defined criteria."""
     skills = kwargs.get("skills", [])
@@ -202,7 +202,7 @@ async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("sourcing", require_company=False)
+@tool_handler("sourcing")
 async def _wrap_filter_results(**kwargs: Any) -> dict[str, Any]:
     """Apply filters to search results."""
     filters = kwargs.get("filters", {})
@@ -295,7 +295,7 @@ async def _wrap_filter_results(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("sourcing", require_company=False)
+@tool_handler("sourcing")
 async def _wrap_analyze_profile(**kwargs: Any) -> dict[str, Any]:
     """Perform AI analysis of a candidate profile."""
     candidate_id = kwargs.get("candidate_id", "")
@@ -368,7 +368,7 @@ async def _wrap_analyze_profile(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("sourcing", require_company=False)
+@tool_handler("sourcing")
 async def _wrap_compare_candidates(**kwargs: Any) -> dict[str, Any]:
     """Compare multiple candidate profiles."""
     candidate_ids = kwargs.get("candidate_ids", [])
@@ -427,7 +427,7 @@ async def _wrap_compare_candidates(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("sourcing", require_company=False)
+@tool_handler("sourcing")
 async def _wrap_score_candidate(**kwargs: Any) -> dict[str, Any]:
     """Apply WSI scoring to a candidate."""
     candidate_id = kwargs.get("candidate_id", "")
@@ -499,7 +499,7 @@ async def _wrap_score_candidate(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("sourcing", require_company=False)
+@tool_handler("sourcing")
 async def _wrap_add_to_shortlist(**kwargs: Any) -> dict[str, Any]:
     """Add a candidate to the shortlist."""
     candidate_id = kwargs.get("candidate_id", "")
@@ -565,7 +565,7 @@ async def _wrap_add_to_shortlist(**kwargs: Any) -> dict[str, Any]:
             }
 
 
-@tool_handler("sourcing", require_company=False)
+@tool_handler("sourcing")
 async def _wrap_remove_from_shortlist(**kwargs: Any) -> dict[str, Any]:
     """Remove a candidate from the shortlist."""
     candidate_id = kwargs.get("candidate_id", "")
@@ -603,7 +603,7 @@ async def _wrap_remove_from_shortlist(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("sourcing", require_company=False)
+@tool_handler("sourcing")
 async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
     """Rank candidates in the shortlist."""
     shortlist_id = kwargs.get("shortlist_id", "")
@@ -678,7 +678,7 @@ async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("sourcing", require_company=False)
+@tool_handler("sourcing")
 async def _wrap_send_outreach(**kwargs: Any) -> dict[str, Any]:
     """Send recruitment outreach message to a candidate."""
     candidate_id = kwargs.get("candidate_id", "")
@@ -732,7 +732,7 @@ async def _wrap_send_outreach(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("sourcing", require_company=False)
+@tool_handler("sourcing")
 async def _wrap_generate_message(**kwargs: Any) -> dict[str, Any]:
     """Generate a personalized outreach message."""
     candidate_id = kwargs.get("candidate_id", "")
@@ -804,7 +804,7 @@ async def _wrap_generate_message(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("sourcing", require_company=False)
+@tool_handler("sourcing")
 async def _wrap_track_response(**kwargs: Any) -> dict[str, Any]:
     """Track candidate response to outreach."""
     candidate_id = kwargs.get("candidate_id", "")
@@ -860,7 +860,7 @@ async def _wrap_track_response(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("sourcing", require_company=False)
+@tool_handler("sourcing")
 async def _wrap_view_candidate(**kwargs: Any) -> dict[str, Any]:
     """View detailed candidate profile."""
     candidate_id = kwargs.get("candidate_id", "")
@@ -1170,7 +1170,7 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
 ]
 
 
-@tool_handler("sourcing", require_company=False)
+@tool_handler("sourcing")
 async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     report_type = kwargs.get("report_type", "summary")
     period = kwargs.get("period", "month")
@@ -1226,7 +1226,7 @@ TOOL_DEFINITIONS.append(
     )
 )
 
-@tool_handler("sourcing", require_company=False)
+@tool_handler("sourcing")
 async def _wrap_enrich_candidate_profile(**kwargs: Any) -> dict[str, Any]:
     """Enrich a candidate profile with Apify (LinkedIn person + email discovery)."""
     from app.domains.sourcing.services.apify_service import apify_service
@@ -1259,7 +1259,7 @@ async def _wrap_enrich_candidate_profile(**kwargs: Any) -> dict[str, Any]:
     }
 
 
-@tool_handler("sourcing", require_company=False)
+@tool_handler("sourcing")
 async def _wrap_enrich_candidate_contact(**kwargs: Any) -> dict[str, Any]:
     """Enrich a candidate's contact info (email/phone) via Apify ($0.01/candidate)."""
     from uuid import UUID as _UUID
@@ -1365,7 +1365,7 @@ TOOL_DEFINITIONS.append(
 )
 
 
-@tool_handler("sourcing", require_company=False)
+@tool_handler("sourcing")
 async def _wrap_rag_search(**kwargs) -> dict:
     """Busca semantica hibrida de candidatos (BM25 + pgvector)."""
     query = kwargs.get("query", "")

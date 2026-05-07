@@ -1,6 +1,6 @@
 # ADR-029 — ToolDefinition Unification + Runtime Context Wrapper
 
-**Status**: Proposed
+**Status**: Accepted (Sprint 1B Sprint 1C landed; Sprint 3 RuntimeContext pending)
 **Data**: 2026-05-06
 **Contexto**: Wizard bug audit revelou 2 ToolDefinition classes coexistindo + 145 tenant ID leaks
 **Sprint**: Q2 Canonical Refactor (Sprint 0)

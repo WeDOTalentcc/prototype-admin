@@ -1,6 +1,6 @@
 # ADR-028 — Single Source of Truth para System Prompts (PromptComposer)
 
-**Status**: Proposed
+**Status**: Accepted (Sprint 2 implementation pending — see Q2 Canonical Refactor)
 **Data**: 2026-05-06
 **Contexto**: Wizard "ID empresa" bug audit (sessão Sprint B+) revelou 18 sources of truth para mesma regra
 **Autor**: Claude Opus 4.7 com decisão Paulo

@@ -1,6 +1,6 @@
 # ADR-031 — Protected Attributes YAML Governance + LGPD/Fairness Compliance
 
-**Status**: Proposed
+**Status**: Superseded by ADR-031 v2 (2026-05-06 — v1 P0 premise was wrong; loader path bug fixed in commit ca6f004cf; see ADR-031-v2-protected-attributes-loader-fix.md)
 **Data**: 2026-05-06
 **Severity**: 🔴 P0 — LGPD/Fairness rodando fail-open em produção
 **Sprint**: Q2 Canonical Refactor (Sprint 1 — Estabilização)

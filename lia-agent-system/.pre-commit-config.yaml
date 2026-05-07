@@ -105,3 +105,107 @@ repos:
         files: ^(libs/models/lia_models/.*\.py|alembic/versions/.*\.py)$
         pass_filenames: false
         always_run: false
+
+      - id: agent-compliance-warn
+        name: "G7: agent canonical anatomy (warn-only)"
+        language: system
+        entry: bash -c "python3 scripts/check_agent_compliance.py 2>&1; exit 0"
+        files: ^app/domains/.*react_agent\.py$
+        pass_filenames: false
+        always_run: false
+
+      - id: deprecated-rail-a-tools-warn
+        name: "Rail A × @deprecated tools sensor (warn-only)"
+        language: system
+        entry: bash -c "python3 scripts/check_deprecated_rail_a_tools.py 2>&1; exit 0"
+        files: ^app/.*\.py$
+        pass_filenames: false
+        always_run: false
+
+      - id: domain-prompt-super-warn
+        name: "G-DOMAIN: domain.py super().get_system_prompt() (warn-only)"
+        language: system
+        entry: bash -c "python3 scripts/check_domain_prompt_super.py 2>&1; exit 0"
+        files: ^app/domains/.*domain\.py$
+        pass_filenames: false
+        always_run: false
+
+      - id: duplicate-indexes-warn
+        name: "Duplicate SQLAlchemy index detection (warn-only)"
+        language: system
+        entry: bash -c "python3 scripts/check_duplicate_indexes.py 2>&1; exit 0"
+        files: ^libs/models/.*\.py$
+        pass_filenames: false
+        always_run: false
+
+      - id: forbidden-imports-warn
+        name: "ADR-012: forbidden imports drift (warn-only)"
+        language: system
+        entry: bash -c "python3 scripts/check_forbidden_imports.py 2>&1; exit 0"
+        files: ^app/.*\.py$
+        pass_filenames: false
+        always_run: false
+
+      - id: init-completeness-warn
+        name: "lia_models __init__ completeness (warn-only)"
+        language: system
+        entry: bash -c "python3 scripts/check_init_completeness.py 2>&1; exit 0"
+        files: ^libs/models/lia_models/.*\.py$
+        pass_filenames: false
+        always_run: false
+
+      - id: llm-imports-warn
+        name: "Direct LLM SDK imports outside allowlist (warn-only)"
+        language: system
+        entry: bash -c "python3 scripts/check_llm_imports.py 2>&1; exit 0"
+        files: ^app/.*\.py$
+        pass_filenames: false
+        always_run: false
+
+      - id: no-getattr-on-models-warn
+        name: "G6: no getattr on SQLAlchemy model rows (warn-only)"
+        language: system
+        entry: bash -c "python3 scripts/check_no_getattr_on_models.py 2>&1; exit 0"
+        files: ^app/.*\.py$
+        pass_filenames: false
+        always_run: false
+
+      - id: no-langchain-tool-decorator-warn
+        name: "F11: forbid langchain_core.tools @tool inside domain (warn-only)"
+        language: system
+        entry: bash -c "python3 scripts/check_no_langchain_tool_decorator.py 2>&1; exit 0"
+        files: ^app/domains/.*\.py$
+        pass_filenames: false
+        always_run: false
+
+      - id: no-legacy-tool-decorator-warn
+        name: "S7.3: forbid legacy @tool decorator (warn-only)"
+        language: system
+        entry: bash -c "python3 scripts/check_no_legacy_tool_decorator.py 2>&1; exit 0"
+        files: ^app/domains/.*\.py$
+        pass_filenames: false
+        always_run: false
+
+      - id: require-company-exemptions-warn
+        name: "F8: require_company=False needs # kept comment (warn-only)"
+        language: system
+        entry: bash -c "python3 scripts/check_require_company_exemptions.py 2>&1; exit 0"
+        files: ^app/.*\.py$
+        pass_filenames: false
+        always_run: false
+
+      - id: shim-sla-warn
+        name: "S7.1: shim file SLA aging (warn-only)"
+        language: system
+        entry: bash -c "python3 scripts/check_shim_sla.py 2>&1; exit 0"
+        files: ^app/.*\.py$
+        pass_filenames: false
+        always_run: false
+
+      - id: tool-authoring-surface-warn
+        name: "S7.5: forbid direct tool_registry.register outside canonical (warn-only)"
+        language: system
+        entry: bash -c "python3 scripts/check_tool_authoring_surface.py 2>&1; exit 0"
+        files: ^app/.*\.py$
+        pass_filenames: false
+        always_run: false

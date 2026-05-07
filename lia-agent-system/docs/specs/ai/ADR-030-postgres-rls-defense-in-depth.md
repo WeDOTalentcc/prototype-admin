@@ -1,6 +1,6 @@
 # ADR-030 — Postgres Row-Level Security (RLS) como Defense-in-Depth Multi-Tenancy
 
-**Status**: Proposed
+**Status**: Superseded by ADR-030 v2 (2026-05-06 — v1 had factual errors; see ADR-030-v2-postgres-rls-baseline-and-gaps.md)
 **Data**: 2026-05-06
 **Contexto**: Audit revelou multi-tenancy 100% dependente de app layer (sem fallback DB)
 **Sprint**: Q2 Canonical Refactor (Sprint 0)

@@ -18,10 +18,12 @@ import logging
 import os
 from typing import Any
 
-# Context variable to carry company_id into tool function calls
-_CURRENT_COMPANY_ID: contextvars.ContextVar[str] = contextvars.ContextVar(
-    "autonomous_agent_company_id", default=""
-)
+# ADR-029 §3 / Audit H 2026-05-06: use canonical ContextVar from auth_enforcement
+# instead of a sibling ContextVar. Previously this module defined its own
+# `_CURRENT_COMPANY_ID` which bypassed the R-008 setter lockdown and the
+# Sprint 1B `tool_handler` decorator's ContextVar resolution path.
+# The local alias name is kept for backward compat in this file's call sites.
+from app.middleware.auth_enforcement import _current_company_id as _CURRENT_COMPANY_ID  # noqa: E402, F401
 
 from lia_agents_core.agent_interface import AgentInput, AgentOutput, AgentAction
 from lia_agents_core.enhanced_agent_mixin import EnhancedAgentMixin
