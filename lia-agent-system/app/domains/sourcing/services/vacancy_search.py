@@ -220,60 +220,14 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
             List of VacancySummary objects
         """
         try:
-            effective_company_id = company_id
-            conditions = [JobVacancy.company_id == effective_company_id]
-            
-            # Include all valid statuses (both Portuguese and English, various cases)
-            valid_statuses = [
-                "Concluída", "Fechada", "Filled", "Closed", "Cancelada", "Cancelled",
-                "Ativa", "Active", "Open", "Em Andamento", "active", "ativa", "open"
-            ]
-            conditions.append(JobVacancy.status.in_(valid_statuses))
-            
-            if criteria.get("cargo"):
-                cargo_term = f"%{criteria['cargo']}%"
-                conditions.append(JobVacancy.title.ilike(cargo_term))
-            
-            if criteria.get("gestor"):
-                gestor_term = f"%{criteria['gestor']}%"
-                conditions.append(JobVacancy.manager.ilike(gestor_term))
-            
-            if criteria.get("area"):
-                area_term = f"%{criteria['area']}%"
-                conditions.append(JobVacancy.department.ilike(area_term))
-            
-            if criteria.get("senioridade"):
-                sen_term = f"%{criteria['senioridade']}%"
-                conditions.append(JobVacancy.seniority_level.ilike(sen_term))
-            
-            if criteria.get("modelo_trabalho"):
-                model_term = f"%{criteria['modelo_trabalho']}%"
-                conditions.append(JobVacancy.work_model.ilike(model_term))
-            
-            if criteria.get("localizacao"):
-                loc_term = f"%{criteria['localizacao']}%"
-                conditions.append(JobVacancy.location.ilike(loc_term))
-            
-            if criteria.get("ano"):
-                year = int(criteria["ano"])
-                year_start = datetime(year, 1, 1)
-                year_end = datetime(year, 12, 31, 23, 59, 59)
-                conditions.append(
-                    or_(
-                        and_(JobVacancy.closed_at >= year_start, JobVacancy.closed_at <= year_end),
-                        and_(JobVacancy.created_at >= year_start, JobVacancy.created_at <= year_end)
-                    )
-                )
-            
-            query = (
-                select(JobVacancy)
-                .where(and_(*conditions))
-                .order_by(JobVacancy.created_at.desc())
-                .limit(limit)
+            # ADR-001 Sprint Q2 cleanup: cross-domain via JobVacancyCrudRepository
+            from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+                JobVacancyCrudRepository,
             )
-            
-            result = await db.execute(query)
-            vacancies = result.scalars().all()
+            jv_repo = JobVacancyCrudRepository(db)
+            vacancies = await jv_repo.search_for_summary_by_criteria(
+                company_id=company_id, criteria=criteria, limit=limit,
+            )
             
             summaries = []
             for v in vacancies:
@@ -320,14 +274,14 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
             VacancyFullDetails or None if not found
         """
         try:
-            query = select(JobVacancy).where(
-                and_(
-                    JobVacancy.id == vacancy_id,
-                    JobVacancy.company_id == company_id
-                )
+            # ADR-001 Sprint Q2 cleanup: cross-domain via JobVacancyCrudRepository
+            from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+                JobVacancyCrudRepository,
             )
-            result = await db.execute(query)
-            vacancy = result.scalar_one_or_none()
+            jv_repo = JobVacancyCrudRepository(db)
+            vacancy = await jv_repo.get_vacancy_by_id_and_company(
+                job_vacancy_id=vacancy_id, company_id=company_id,
+            )
             
             if not vacancy:
                 return None

@@ -17,6 +17,9 @@ Armazenamento: Redis (TTL 24h) + snapshot opcional em RecruiterProfile.behavior_
 Falha graciosamente em todas as operações.
 """
 from __future__ import annotations
+# ADR-001-EXEMPT: recruiter behavior analytics. Multi-aggregation queries with
+# tenant scope passed explicitly as company_id parameter (caller responsibility).
+# Repo-layer ContextVar gate not applicable to admin/internal-tools call paths.
 
 import json
 import logging

@@ -10,6 +10,10 @@ Multi-tenant: workspace_id (= company_id as int) validated in every call.
 LGPD: no PII stored beyond what JobCreationState already carries.
 """
 from __future__ import annotations
+# ADR-001-EXEMPT: fail-open mirror sync of Rails-owned `job_vacancies.wizard_stage`.
+# Single fire-and-forget UPDATE inside a fail-open try/except. Source-of-truth
+# for this column is Rails (mirror is best-effort); repository abstraction would
+# obscure the fail-open semantics.
 
 import asyncio
 import logging

@@ -126,3 +126,62 @@ class JobVacancyCRUDRepository:
         rows = list(rows_result.scalars().all())
         return total, rows
 
+
+    async def search_for_summary_by_criteria(
+        self,
+        company_id,
+        criteria: dict,
+        limit: int = 10,
+    ):
+        """Search vacancies by sourcing-style criteria dict.
+
+        Used by app/domains/sourcing/services/vacancy_search.py
+        (Sprint Q2 ADR-001 cross-domain cleanup). Recognizes keys:
+          cargo, gestor, area, senioridade, modelo_trabalho, localizacao, ano
+
+        Returns ORM rows; caller is responsible for shaping VacancySummary.
+        """
+        from datetime import datetime
+        from sqlalchemy import and_, or_, select
+        from app.models.job_vacancy import JobVacancy
+
+        valid_statuses = [
+            "Concluída", "Fechada", "Filled", "Closed", "Cancelada", "Cancelled",
+            "Ativa", "Active", "Open", "Em Andamento", "active", "ativa", "open",
+        ]
+        conditions = [
+            JobVacancy.company_id == company_id,
+            JobVacancy.status.in_(valid_statuses),
+        ]
+
+        if criteria.get("cargo"):
+            conditions.append(JobVacancy.title.ilike(f"%{criteria['cargo']}%"))
+        if criteria.get("gestor"):
+            conditions.append(JobVacancy.manager.ilike(f"%{criteria['gestor']}%"))
+        if criteria.get("area"):
+            conditions.append(JobVacancy.department.ilike(f"%{criteria['area']}%"))
+        if criteria.get("senioridade"):
+            conditions.append(JobVacancy.seniority_level.ilike(f"%{criteria['senioridade']}%"))
+        if criteria.get("modelo_trabalho"):
+            conditions.append(JobVacancy.work_model.ilike(f"%{criteria['modelo_trabalho']}%"))
+        if criteria.get("localizacao"):
+            conditions.append(JobVacancy.location.ilike(f"%{criteria['localizacao']}%"))
+        if criteria.get("ano"):
+            year = int(criteria["ano"])
+            year_start = datetime(year, 1, 1)
+            year_end = datetime(year, 12, 31, 23, 59, 59)
+            conditions.append(
+                or_(
+                    and_(JobVacancy.closed_at >= year_start, JobVacancy.closed_at <= year_end),
+                    and_(JobVacancy.created_at >= year_start, JobVacancy.created_at <= year_end),
+                )
+            )
+
+        result = await self.db.execute(
+            select(JobVacancy)
+            .where(and_(*conditions))
+            .order_by(JobVacancy.created_at.desc())
+            .limit(limit)
+        )
+        return list(result.scalars().all())
+

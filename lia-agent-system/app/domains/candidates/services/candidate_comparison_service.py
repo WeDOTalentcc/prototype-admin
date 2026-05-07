@@ -625,19 +625,16 @@ class CandidateComparisonService:
         wsi_data: dict[str, Any]
     ) -> dict[str, Any]:
         try:
+            # ADR-001 Sprint Q2 cleanup: cross-domain read via WsiRepository
+            from app.domains.voice.repositories.wsi_repository import WsiRepository
+            wsi_repo = WsiRepository(db)
             candidate_versions = {}
             for cid in wsi_data.keys():
-                version_result = await db.execute(text("""
-                    SELECT question_set_version FROM wsi_sessions
-                    WHERE job_vacancy_id = :job_id
-                      AND candidate_id = :candidate_id
-                      AND status = 'completed'
-                    ORDER BY created_at DESC
-                    LIMIT 1
-                """), {"job_id": job_id, "candidate_id": cid})
-                row = version_result.fetchone()
-                if row and row[0] is not None:
-                    candidate_versions[cid] = row[0]
+                version = await wsi_repo.get_latest_completed_session_version(
+                    candidate_id=cid, job_vacancy_id=job_id,
+                )
+                if version is not None:
+                    candidate_versions[cid] = version
 
             unique_versions = set(candidate_versions.values())
             if len(unique_versions) <= 1:

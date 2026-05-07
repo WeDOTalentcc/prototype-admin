@@ -1,3 +1,10 @@
+# ADR-001-EXEMPT (Sprint 6 follow-up): 4 INSERT statements into
+# wsi_sessions/wsi_questions/wsi_response_analyses/wsi_results.
+# WsiRepository (app/domains/voice/repositories/wsi_repository.py) already
+# has upsert_session/insert_question/insert_response_analysis/upsert_result
+# methods, but param signatures don't match exactly (e.g. completed_at
+# parameter missing from upsert_session). Refactor requires extending
+# WsiRepository methods + careful test pass; tracked separately.
 """
 Post-completion actions: feedback generation, notifications, WSI persistence.
 """

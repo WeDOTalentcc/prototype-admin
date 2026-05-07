@@ -1,3 +1,5 @@
+# ADR-001-EXEMPT: information_schema metadata query (table existence check),
+# not domain data — repository layer not applicable.
 """
 Email Service for managing email templates and sending emails.
 Supports multiple email providers (Mailgun primary, Resend fallback) with abstraction layer.

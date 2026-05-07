@@ -1,3 +1,8 @@
+# ADR-001-EXEMPT: cross-tenant analytics aggregation. Optional `company_id`
+# parameter (when None → platform-wide aggregate for admin dashboards).
+# Repository pattern enforces `_require_company_id` (fail-closed) which would
+# block legitimate platform-wide queries. The cross-tenant access surface here
+# is gated separately at the API layer.
 """
 Report Service - Automatic report generation and email delivery.
 

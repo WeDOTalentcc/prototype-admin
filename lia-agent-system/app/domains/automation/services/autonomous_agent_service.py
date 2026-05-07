@@ -1,3 +1,7 @@
+# ADR-001-EXEMPT: vacancy_candidates is Rails-owned (kanban transitions).
+# Python side is read-only (LIA score lookup). Rails schema variability
+# (lia_score vs match_percentage column rename history) makes a repo
+# abstraction premature; queries stay inline pending Rails contract stability.
 """
 Autonomous Agent Service - Manages background jobs and proactive actions.
 

@@ -1,3 +1,7 @@
+# ADR-001-EXEMPT (Sprint 6 follow-up): 3 SELECTs on screening_question_sets
+# for cross-version score normalization. Belongs in a new
+# ScreeningQuestionSetRepository (does not exist yet — covers ~15 queries
+# across this file + screening_question_set_service.py). Tracked separately.
 import logging
 from dataclasses import dataclass
 from typing import Any

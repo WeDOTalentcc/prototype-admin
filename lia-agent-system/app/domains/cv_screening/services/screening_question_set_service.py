@@ -1,3 +1,8 @@
+# ADR-001-EXEMPT (Sprint 6 follow-up): 12 raw SQL queries managing the
+# screening_question_sets versioning lifecycle (create/get/activate/list/
+# count/cleanup). Requires creating ScreeningQuestionSetRepository as a
+# focused sprint task with companion unit tests; consolidates with the 3
+# queries in score_normalization_service.py for ~15 methods total.
 import hashlib
 import json
 import logging

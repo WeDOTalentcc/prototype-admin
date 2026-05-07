@@ -1,3 +1,7 @@
+# ADR-001-EXEMPT: JSON path workaround for non-JSONB column
+# (`additional_data->>'external_id'`). Rails-mirrored table where Python is
+# read-only; query stays inline because moving requires schema migration to
+# JSONB which is owned by Rails (out of scope for this repo).
 """
 JD Import Service - Parses and normalizes job descriptions from ATS/HRIS.
 

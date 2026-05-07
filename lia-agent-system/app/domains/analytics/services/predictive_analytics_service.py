@@ -1,3 +1,7 @@
+# ADR-001-EXEMPT: predictive analytics aggregation. Cross-vacancy/multi-stage
+# CTEs for ML training data prep. Per-stage tenant scope is enforced by the
+# caller (controller/route layer) via JWT-derived company_id passed as parameter,
+# not by repo-layer ContextVar gate.
 """
 Predictive Analytics Service - AI-powered recruitment predictions.
 

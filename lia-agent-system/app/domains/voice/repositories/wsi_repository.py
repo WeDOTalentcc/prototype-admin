@@ -618,3 +618,29 @@ class WsiRepository:
             {"call_id": call_sid, "session_id": session_id},
         )
         await self.db.commit()
+
+    # ------------------------------------------------------------------
+    # Cross-domain helpers (added Sprint Q2 ADR-001 cleanup)
+    # ------------------------------------------------------------------
+
+    async def get_latest_completed_session_version(
+        self, candidate_id: str, job_vacancy_id: str,
+    ) -> int | None:
+        """Latest completed `question_set_version` for (candidate, job).
+
+        Used by candidates/services/candidate_comparison_service.py to
+        normalize scores across question-set versions when comparing
+        candidates for the same job. Returns None if no completed session.
+        """
+        result = await self.db.execute(
+            text(
+                "SELECT question_set_version FROM wsi_sessions "
+                "WHERE job_vacancy_id = :job_id "
+                "  AND candidate_id = :candidate_id "
+                "  AND status = 'completed' "
+                "ORDER BY created_at DESC LIMIT 1"
+            ),
+            {"job_id": job_vacancy_id, "candidate_id": candidate_id},
+        )
+        row = result.fetchone()
+        return row[0] if row and row[0] is not None else None
