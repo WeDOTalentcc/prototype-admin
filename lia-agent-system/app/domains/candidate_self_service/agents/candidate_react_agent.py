@@ -33,6 +33,61 @@ class CandidateSelfServiceAgent(LangGraphReActBase, EnhancedAgentMixin):
     # `compose_runtime_prompt()` below, not at class-attr level.
     DOMAIN_INSTRUCTIONS = PromptComposer.for_candidate_self_service().text
 
+    # Sprint 2 Phase 3.1 P0 fix: candidate-facing persona (NOT recruiter).
+    # Audit N 2026-05-07: SystemPromptBuilder.build(agent_type="candidate_self_service")
+    # was returning the LIA recruiter persona ("recrutadora sênior...") to
+    # candidates — identity leak + LGPD/UX risk. This persona block replaces
+    # the recruiter LIA persona for candidate flows.
+    CANDIDATE_PERSONA = (
+        "## Quem é a LIA (para você, candidato)\n\n"
+        "A LIA é a assistente da plataforma WeDOTalent que te ajuda a acompanhar "
+        "seu processo seletivo de forma transparente e respeitosa.\n\n"
+        "### O que a LIA faz para você:\n"
+        "- Mostra o status atual da sua candidatura\n"
+        "- Informa sobre próximas etapas e entrevistas agendadas\n"
+        "- Explica feedbacks e orientações da empresa de forma clara\n"
+        "- Aponta seus direitos sob a LGPD (Art. 20 — direito de revisão)\n\n"
+        "### O que a LIA NÃO faz:\n"
+        "- Não compartilha scores internos, red flags ou dados sigilosos\n"
+        "- Não toma decisões pelo recrutador\n"
+        "- Não acessa nem expõe dados de outros candidatos\n\n"
+        "### Tom de voz:\n"
+        "- Empática, clara e respeitosa — você é uma pessoa, não um perfil.\n"
+        "- Usa linguagem simples; evita jargão técnico de RH.\n"
+        "- Direta sobre o que pode e o que não pode informar."
+    )
+
+    def _get_system_prompt(self, input: AgentInput) -> str:
+        """OVERRIDE: skip SystemPromptBuilder (recruiter persona) for candidate.
+
+        Sprint 2 Phase 3.1 P0 — identity-leak fix. Audit N 2026-05-07
+        confirmed `SystemPromptBuilder.build(agent_type="candidate_self_service")`
+        returns 12k chars of recruiter LIA persona (because no candidate entry
+        in agent_prompts.yaml → fallthrough). This override builds a
+        candidate-appropriate prompt directly via PromptComposer, NOT the
+        recruiter assembly chain.
+
+        Composition (canonical block order):
+            CANDIDATE_PERSONA + DOMAIN_INSTRUCTIONS [+ tenant_context]
+        """
+        ctx = input.context or {}
+        tenant_snippet = ctx.get("tenant_context_snippet", "")
+        memory = ctx.get("memory_summary", "")
+
+        comp = PromptComposer.compose(
+            agent_type="candidate_self_service",
+            persona=self.CANDIDATE_PERSONA,
+            domain_specific=PromptComposer.for_candidate_self_service().components.get(
+                "domain_specific", ""
+            ),
+            few_shot_examples=PromptComposer.for_candidate_self_service().components.get(
+                "few_shot_examples", ""
+            ),
+            tenant_context_snippet=tenant_snippet,
+            memory_summary=memory,
+        )
+        return comp.text
+
     @staticmethod
     def compose_runtime_prompt(
         *,
