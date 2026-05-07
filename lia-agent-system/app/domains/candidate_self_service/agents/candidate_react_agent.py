@@ -8,13 +8,10 @@ from lia_agents_core.enhanced_agent_mixin import EnhancedAgentMixin
 from lia_agents_core.langgraph_react_base import LangGraphReActBase
 from lia_agents_core.working_memory import WorkingMemoryService
 
-from app.domains.candidate_self_service.agents.candidate_system_prompt import (
-    CSS_DOMAIN_SPECIFIC,
-    CSS_FEW_SHOT_EXAMPLES,
-)
 from app.domains.candidate_self_service.agents.candidate_tool_registry import get_candidate_tools
 from app.shared.agents.agent_registry import register_agent
 from app.shared.compliance.fairness_guard import FairnessGuard
+from app.shared.prompts.prompt_composer import PromptComposer
 from app.shared.services.confidence_policy_service import confidence_policy_service
 
 logger = logging.getLogger(__name__)
@@ -30,7 +27,28 @@ class CandidateSelfServiceAgent(LangGraphReActBase, EnhancedAgentMixin):
     HITL: triggered when feedback state_updates are present.
     """
 
-    DOMAIN_INSTRUCTIONS = CSS_DOMAIN_SPECIFIC + "\n\n" + CSS_FEW_SHOT_EXAMPLES
+    # ADR-028 Sprint 2 Phase 1: assembled via canonical PromptComposer.
+    # Replaces hand-rolled `CSS_DOMAIN_SPECIFIC + "\n\n" + CSS_FEW_SHOT_EXAMPLES`
+    # concatenation. Runtime blocks (tenant_context, memory) flow via
+    # `compose_runtime_prompt()` below, not at class-attr level.
+    DOMAIN_INSTRUCTIONS = PromptComposer.for_candidate_self_service().text
+
+    @staticmethod
+    def compose_runtime_prompt(
+        *,
+        tenant_context_snippet: str = "",
+        memory_summary: str = "",
+    ) -> str:
+        """Build a system prompt with runtime blocks (tenant context, memory).
+
+        Used by callers that need to inject per-request context. Class-attr
+        DOMAIN_INSTRUCTIONS provides the static base; this method extends it.
+        """
+        comp = PromptComposer.for_candidate_self_service(
+            tenant_context_snippet=tenant_context_snippet,
+            memory_summary=memory_summary,
+        )
+        return comp.text
 
     def __init__(self) -> None:
         super().__init__()
