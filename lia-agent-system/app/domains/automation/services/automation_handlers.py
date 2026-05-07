@@ -5,7 +5,6 @@ Individual handlers for automation triggers, called by the StageAutomationEngine
 import logging
 from typing import Any
 
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.shared.messaging.rails_event_publisher import publish_rails_event
@@ -23,28 +22,26 @@ async def validate_multi_tenancy(
     Validate that candidate and vacancy belong to the specified company.
     Returns (is_valid, error_message).
     """
-    from lia_models.candidate import VacancyCandidate
-    from lia_models.job_vacancy import JobVacancy
-    
-    vacancy_result = await db.execute(
-        select(JobVacancy).where(
-            JobVacancy.id == vacancy_id,
-            JobVacancy.company_id == company_id
-        )
+    from app.domains.candidates.repositories.vacancy_candidate_repository import (
+        VacancyCandidateRepository,
     )
-    if not vacancy_result.scalar_one_or_none():
+    from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+        JobVacancyCRUDRepository,
+    )
+
+    job_repo = JobVacancyCRUDRepository(db)
+    if not await job_repo.get_vacancy_by_id_and_company(vacancy_id, company_id):
         return False, "Vacancy not found or belongs to different company"
-    
-    vacancy_candidate_result = await db.execute(
-        select(VacancyCandidate).where(
-            VacancyCandidate.candidate_id == candidate_id,
-            VacancyCandidate.vacancy_id == vacancy_id,
-            VacancyCandidate.company_id == company_id
-        )
+
+    vc_repo = VacancyCandidateRepository(db)
+    vc = await vc_repo.get_by_vacancy_candidate_and_company(
+        vacancy_id=vacancy_id,
+        candidate_id=candidate_id,
+        company_id=company_id,
     )
-    if not vacancy_candidate_result.scalar_one_or_none():
+    if not vc:
         return False, "Candidate not found or not associated with this vacancy/company"
-    
+
     return True, ""
 
 
@@ -63,7 +60,7 @@ async def handle_screening_completed(
     CASCADE: screening_completed → send feedback communication
     """
     logger.info(f"[HANDLER] Screening completed for candidate {candidate_id}")
-    
+
     result = {
         "action": "screening_completed",
         "candidate_id": candidate_id,
@@ -72,11 +69,11 @@ async def handle_screening_completed(
         "feedback_sent": False,
         "cascade_errors": []
     }
-    
+
     try:
         from app.domains.analytics.services.activity_service import ActivityService
         activity_service = ActivityService()
-        
+
         await activity_service.create_activity(
             activity_type="screening_completed",
             title="Triagem Concluída",
@@ -100,6 +97,9 @@ async def handle_screening_completed(
         result["cascade_errors"].append(f"activity_creation: {e}")
 
     try:
+        from app.domains.candidates.repositories.candidate_repository import (
+            CandidateRepository,
+        )
         from app.domains.communication.services.communication_dispatcher import CommunicationDispatcher
         comm_dispatcher = CommunicationDispatcher()
 
@@ -111,11 +111,8 @@ async def handle_screening_completed(
             f"Resultado: {status_label}."
         )
 
-        from lia_models.candidate import Candidate
-        candidate_result = await db.execute(
-            select(Candidate).where(Candidate.id == candidate_id)
-        )
-        candidate = candidate_result.scalar_one_or_none()
+        candidate_repo = CandidateRepository(db)
+        candidate = await candidate_repo.get_by_id_str(candidate_id)
 
         if candidate and (candidate.email or getattr(candidate, 'phone', None)):
             dispatch_result = await comm_dispatcher.dispatch_message(
@@ -160,11 +157,11 @@ async def handle_interview_scheduled(
     Sends confirmation and creates calendar events.
     """
     logger.info(f"[HANDLER] Interview scheduled for candidate {candidate_id}")
-    
+
     try:
         from app.domains.analytics.services.activity_service import ActivityService
         activity_service = ActivityService()
-        
+
         await activity_service.create_activity(
             activity_type="interview_scheduled",
             title="Entrevista Agendada",
@@ -183,7 +180,7 @@ async def handle_interview_scheduled(
             },
             category="automation"
         )
-        
+
         return {
             "action": "interview_scheduled",
             "candidate_id": candidate_id,
@@ -210,11 +207,11 @@ async def handle_interview_completed(
     Generates parecer and updates candidate status.
     """
     logger.info(f"[HANDLER] Interview completed for candidate {candidate_id}")
-    
+
     try:
         from app.domains.analytics.services.activity_service import ActivityService
         activity_service = ActivityService()
-        
+
         await activity_service.create_activity(
             activity_type="interview_completed",
             title="Entrevista Concluída",
@@ -233,7 +230,7 @@ async def handle_interview_completed(
             },
             category="automation"
         )
-        
+
         return {
             "action": "interview_completed",
             "candidate_id": candidate_id,
@@ -259,11 +256,11 @@ async def handle_candidate_inactive(
     Sends follow-up communication or creates task for recruiter.
     """
     logger.info(f"[HANDLER] Candidate {candidate_id} inactive for {days_inactive} days")
-    
+
     try:
         from app.domains.analytics.services.activity_service import ActivityService
         activity_service = ActivityService()
-        
+
         await activity_service.create_activity(
             activity_type="candidate_inactive",
             title="Candidato Inativo",
@@ -281,7 +278,7 @@ async def handle_candidate_inactive(
             },
             category="automation"
         )
-        
+
         return {
             "action": "candidate_inactive",
             "candidate_id": candidate_id,
@@ -306,11 +303,11 @@ async def handle_candidate_no_show(
     Creates task to reschedule or reject candidate.
     """
     logger.info(f"[HANDLER] Candidate {candidate_id} no-show")
-    
+
     try:
         from app.domains.analytics.services.activity_service import ActivityService
         activity_service = ActivityService()
-        
+
         await activity_service.create_activity(
             activity_type="candidate_no_show",
             title="No-Show na Entrevista",
@@ -327,7 +324,7 @@ async def handle_candidate_no_show(
             },
             category="automation"
         )
-        
+
         return {
             "action": "candidate_no_show",
             "candidate_id": candidate_id,
@@ -351,11 +348,11 @@ async def handle_offer_sent(
     Logs activity and starts monitoring for response.
     """
     logger.info(f"[HANDLER] Offer sent to candidate {candidate_id}")
-    
+
     try:
         from app.domains.analytics.services.activity_service import ActivityService
         activity_service = ActivityService()
-        
+
         await activity_service.create_activity(
             activity_type="offer_sent",
             title="Proposta Enviada",
@@ -414,11 +411,11 @@ async def handle_candidate_hired(
     Syncs with ATS and triggers onboarding process.
     """
     logger.info(f"[HANDLER] Candidate {candidate_id} hired")
-    
+
     try:
         from app.domains.analytics.services.activity_service import ActivityService
         activity_service = ActivityService()
-        
+
         await activity_service.create_activity(
             activity_type="candidate_hired",
             title="Candidato Contratado",
@@ -435,7 +432,7 @@ async def handle_candidate_hired(
             },
             category="automation"
         )
-        
+
         return {
             "action": "candidate_hired",
             "candidate_id": candidate_id,
@@ -461,11 +458,11 @@ async def handle_candidate_rejected(
     Sends feedback and optionally adds to talent pool.
     """
     logger.info(f"[HANDLER] Candidate {candidate_id} rejected")
-    
+
     try:
         from app.domains.analytics.services.activity_service import ActivityService
         activity_service = ActivityService()
-        
+
         await activity_service.create_activity(
             activity_type="candidate_rejected",
             title="Candidato Não Aprovado",
@@ -483,7 +480,7 @@ async def handle_candidate_rejected(
             },
             category="automation"
         )
-        
+
         queue_promoted = []
         try:
             promoted = await process_screening_queue(
@@ -527,18 +524,18 @@ async def handle_ats_sync(
     Synchronizes stage changes with external ATS.
     """
     logger.info(f"[HANDLER] ATS sync for candidate {candidate_id}: {previous_stage} -> {new_stage}")
-    
+
     try:
         from app.domains.ats_integration.services.ats_sync_service import ATSSyncService
         ats_sync_service = ATSSyncService()
-        
+
         result = await ats_sync_service.sync_candidate_stage(
             candidate_id=candidate_id,
             vacancy_id=vacancy_id,
             company_id=company_id,
             new_stage=new_stage
         )
-        
+
         return {
             "action": "ats_sync",
             "candidate_id": candidate_id,
@@ -566,7 +563,7 @@ async def handle_stage_changed(
     CASCADE: stage_changed → schedule interview (if approved) OR send rejection (if rejected)
     """
     logger.info(f"[HANDLER] Stage changed for candidate {candidate_id}: {previous_stage} -> {new_stage}")
-    
+
     result = {
         "action": "stage_changed",
         "candidate_id": candidate_id,
@@ -580,7 +577,7 @@ async def handle_stage_changed(
     try:
         from app.domains.analytics.services.activity_service import ActivityService
         activity_service = ActivityService()
-        
+
         await activity_service.create_activity(
             activity_type="stage_changed",
             title="Etapa Alterada",
@@ -612,21 +609,20 @@ async def handle_stage_changed(
         try:
             from datetime import datetime, timedelta
 
+            from app.domains.candidates.repositories.candidate_repository import (
+                CandidateRepository,
+            )
             from app.domains.interview_scheduling.services.scheduling_service import SchedulingService
-            from lia_models.candidate import Candidate
-            from lia_models.job_vacancy import JobVacancy
+            from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+                JobVacancyCRUDRepository,
+            )
 
             scheduling_service = SchedulingService()
 
-            candidate_result = await db.execute(
-                select(Candidate).where(Candidate.id == candidate_id)
+            candidate = await CandidateRepository(db).get_by_id_str(candidate_id)
+            vacancy = await JobVacancyCRUDRepository(db).get_vacancy_by_id_and_company(
+                vacancy_id, company_id
             )
-            candidate = candidate_result.scalar_one_or_none()
-
-            vacancy_result = await db.execute(
-                select(JobVacancy).where(JobVacancy.id == vacancy_id)
-            )
-            vacancy = vacancy_result.scalar_one_or_none()
 
             candidate_name = candidate.name if candidate else "Candidato"
             candidate_email = candidate.email if candidate else ""
@@ -668,16 +664,15 @@ async def handle_stage_changed(
 
     elif stage_lower in rejected_stages:
         try:
+            from app.domains.candidates.repositories.candidate_repository import (
+                CandidateRepository,
+            )
             from app.domains.communication.services.communication_dispatcher import CommunicationDispatcher
-            from lia_models.candidate import Candidate
 
             comm_dispatcher = CommunicationDispatcher()
             rejection_reason = kwargs.get("rejection_reason", "Perfil não aderente aos requisitos da vaga")
 
-            candidate_result = await db.execute(
-                select(Candidate).where(Candidate.id == candidate_id)
-            )
-            candidate = candidate_result.scalar_one_or_none()
+            candidate = await CandidateRepository(db).get_by_id_str(candidate_id)
 
             if candidate and (candidate.email or getattr(candidate, 'phone', None)):
                 rejection_body = (
@@ -990,35 +985,34 @@ async def process_screening_queue(
     - Update WhatsApp conversation state if applicable
     - Send screening invite via WhatsApp or chat web link via email
     """
-    from sqlalchemy import and_
-
-    from lia_models.candidate import Candidate, VacancyCandidate
-    from lia_models.whatsapp_conversation import ConversationState, WhatsAppConversation
-
-    queued_result = await db.execute(
-        select(VacancyCandidate)
-        .where(
-            and_(
-                VacancyCandidate.vacancy_id == vacancy_id,
-                VacancyCandidate.status == "awaiting_screening",
-            )
-        )
-        .order_by(
-            VacancyCandidate.lia_score.desc().nullslast(),
-            VacancyCandidate.created_at.asc(),
-        )
-        .limit(max_promote)
+    from app.domains.candidates.repositories.candidate_repository import (
+        CandidateRepository,
     )
-    queued_candidates = queued_result.scalars().all()
+    from app.domains.candidates.repositories.vacancy_candidate_repository import (
+        VacancyCandidateRepository,
+    )
+    from app.domains.communication.repositories.whatsapp_repository import (
+        WhatsappRepository,
+    )
+    from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+        JobVacancyCRUDRepository,
+    )
+    from lia_models.whatsapp_conversation import ConversationState
+
+    vc_repo = VacancyCandidateRepository(db)
+    candidate_repo = CandidateRepository(db)
+    whatsapp_repo = WhatsappRepository(db)
+    job_repo = JobVacancyCRUDRepository(db)
+
+    queued_candidates = await vc_repo.list_awaiting_screening_for_vacancy(
+        vacancy_id=vacancy_id, limit=max_promote
+    )
 
     promoted = []
 
     for vc in queued_candidates:
         try:
-            candidate_result = await db.execute(
-                select(Candidate).where(Candidate.id == vc.candidate_id)
-            )
-            candidate = candidate_result.scalar_one_or_none()
+            candidate = await candidate_repo.get_by_id(vc.candidate_id)
             if not candidate:
                 logger.warning(f"[QUEUE] Candidate {vc.candidate_id} not found, skipping")
                 continue
@@ -1027,28 +1021,15 @@ async def process_screening_queue(
             vc.stage = "screening"
             vc.notes = (vc.notes or "") + "\n[Auto] Promovido da fila de espera"
 
-            conv_result = await db.execute(
-                select(WhatsAppConversation)
-                .where(
-                    and_(
-                        WhatsAppConversation.candidate_id == vc.candidate_id,
-                        WhatsAppConversation.job_vacancy_id == vc.vacancy_id,
-                        WhatsAppConversation.state == ConversationState.AWAITING_SCREENING,
-                    )
-                )
-                .order_by(WhatsAppConversation.created_at.desc())
-                .limit(1)
+            conversation = await whatsapp_repo.get_latest_awaiting_screening_for_candidate_vacancy(
+                candidate_id=vc.candidate_id,
+                job_vacancy_id=vc.vacancy_id,
             )
-            conversation = conv_result.scalar_one_or_none()
 
             invite_channel = "email"
             invite_sent = False
 
-            from lia_models.job_vacancy import JobVacancy
-            job_result = await db.execute(
-                select(JobVacancy).where(JobVacancy.id == vc.vacancy_id)
-            )
-            job = job_result.scalar_one_or_none()
+            job = await job_repo.get_vacancy_by_id_and_company(vc.vacancy_id, company_id)
             job_title = job.title if job else "a vaga"
             company_name = getattr(job, "company_name", None) or "Nossa Empresa"
 
@@ -1140,25 +1121,29 @@ async def handle_recruiter_override_approve(
     This is a priority promotion: the recruiter explicitly approves a queued
     candidate, bypassing the queue order.
     """
-    from sqlalchemy import and_
-
-    from lia_models.candidate import Candidate, VacancyCandidate
-    from lia_models.whatsapp_conversation import ConversationState, WhatsAppConversation
+    from app.domains.candidates.repositories.candidate_repository import (
+        CandidateRepository,
+    )
+    from app.domains.candidates.repositories.vacancy_candidate_repository import (
+        VacancyCandidateRepository,
+    )
+    from app.domains.communication.repositories.whatsapp_repository import (
+        WhatsappRepository,
+    )
+    from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+        JobVacancyCRUDRepository,
+    )
+    from lia_models.whatsapp_conversation import ConversationState
 
     logger.info(
         f"[OVERRIDE] Recruiter override approve for candidate {candidate_id} "
         f"in vacancy {vacancy_id}"
     )
 
-    vc_result = await db.execute(
-        select(VacancyCandidate).where(
-            and_(
-                VacancyCandidate.candidate_id == candidate_id,
-                VacancyCandidate.vacancy_id == vacancy_id,
-            )
-        )
+    vc_repo = VacancyCandidateRepository(db)
+    vc = await vc_repo.get_by_vacancy_and_candidate(
+        vacancy_id=vacancy_id, candidate_id=candidate_id
     )
-    vc = vc_result.scalar_one_or_none()
 
     if not vc:
         return {"success": False, "error": "VacancyCandidate not found"}
@@ -1178,19 +1163,11 @@ async def handle_recruiter_override_approve(
     additional["override_type"] = "manual_approve"
     vc.additional_data = additional
 
-    conv_result = await db.execute(
-        select(WhatsAppConversation)
-        .where(
-            and_(
-                WhatsAppConversation.candidate_id == candidate_id,
-                WhatsAppConversation.job_vacancy_id == vacancy_id,
-                WhatsAppConversation.state == ConversationState.AWAITING_SCREENING,
-            )
-        )
-        .order_by(WhatsAppConversation.created_at.desc())
-        .limit(1)
+    whatsapp_repo = WhatsappRepository(db)
+    conversation = await whatsapp_repo.get_latest_awaiting_screening_for_candidate_vacancy(
+        candidate_id=candidate_id,
+        job_vacancy_id=vacancy_id,
     )
-    conversation = conv_result.scalar_one_or_none()
 
     if conversation:
         conversation.state = ConversationState.SCREENING
@@ -1205,27 +1182,23 @@ async def handle_recruiter_override_approve(
         max_promote=0,
     )
 
-    candidate_result = await db.execute(
-        select(Candidate).where(Candidate.id == candidate_id)
-    )
-    candidate = candidate_result.scalar_one_or_none()
+    candidate_repo = CandidateRepository(db)
+    candidate = await candidate_repo.get_by_id_str(candidate_id)
     candidate_name = candidate.name if candidate else "Candidato"
 
     invite_sent = False
     invite_channel = "none"
 
+    job_repo = JobVacancyCRUDRepository(db)
+
     if conversation and conversation.phone_number:
         invite_channel = "whatsapp"
         try:
             from app.domains.communication.services.whatsapp_factory import WhatsAppProviderFactory
-            from lia_models.job_vacancy import JobVacancy
 
             provider = await WhatsAppProviderFactory.get_provider(company_id, db)
 
-            job_result = await db.execute(
-                select(JobVacancy).where(JobVacancy.id == vacancy_id)
-            )
-            job = job_result.scalar_one_or_none()
+            job = await job_repo.get_vacancy_by_id_and_company(vacancy_id, company_id)
             job_title = job.title if job else "a vaga"
 
             msg = (
@@ -1242,13 +1215,9 @@ async def handle_recruiter_override_approve(
     if not invite_sent and candidate and candidate.email:
         invite_channel = "email"
         try:
-            from lia_models.job_vacancy import JobVacancy
             from app.domains.candidates.services.candidate_feedback_service import candidate_feedback_service
 
-            job_result = await db.execute(
-                select(JobVacancy).where(JobVacancy.id == vacancy_id)
-            )
-            job = job_result.scalar_one_or_none()
+            job = await job_repo.get_vacancy_by_id_and_company(vacancy_id, company_id)
             job_title = job.title if job else "a vaga"
             company_name = getattr(job, "company_name", None) or "Nossa Empresa"
 
@@ -1321,7 +1290,7 @@ from datetime import datetime
 def register_all_handlers():
     """Register all handlers with the StageAutomationEngine."""
     from app.domains.automation.services.stage_automation_engine import TriggerType, stage_automation_engine
-    
+
     stage_automation_engine.register_handler(TriggerType.SCREENING_COMPLETED, handle_screening_completed)
     stage_automation_engine.register_handler(TriggerType.INTERVIEW_SCHEDULED, handle_interview_scheduled)
     stage_automation_engine.register_handler(TriggerType.INTERVIEW_COMPLETED, handle_interview_completed)
@@ -1335,5 +1304,5 @@ def register_all_handlers():
     stage_automation_engine.register_handler(TriggerType.JOB_PUBLISHED, handle_job_published)
     stage_automation_engine.register_handler(TriggerType.CANDIDATES_SOURCED, handle_candidates_sourced)
     stage_automation_engine.register_handler(TriggerType.SLOT_OPENED, handle_slot_opened)
-    
+
     logger.info("[AUTOMATION] All handlers registered with StageAutomationEngine (including cross-domain cascades)")

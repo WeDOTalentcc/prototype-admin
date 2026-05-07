@@ -26,6 +26,33 @@ class DepartmentRepository:
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
+    async def list_active_for_company(self, company_id: UUID) -> list[Department]:
+        """Active departments for a company, ordered by display order."""
+        result = await self.db.execute(
+            select(Department)
+            .where(
+                Department.company_id == company_id,
+                Department.is_active,
+            )
+            .order_by(Department.order)
+        )
+        return list(result.scalars().all())
+
+    async def list_filtered(
+        self,
+        company_id: UUID | None = None,
+        include_inactive: bool = False,
+    ) -> list[Department]:
+        """List departments with optional company scoping and active filter."""
+        query = select(Department)
+        if company_id:
+            query = query.where(Department.company_id == company_id)
+        if not include_inactive:
+            query = query.where(Department.is_active)
+        query = query.order_by(Department.order)
+        result = await self.db.execute(query)
+        return list(result.scalars().all())
+
     async def get_by_id(self, dept_id: UUID) -> Department | None:
         result = await self.db.execute(
             select(Department).where(Department.id == dept_id)

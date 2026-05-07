@@ -13,10 +13,18 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Any
 
-from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.candidates.repositories.candidate_repository import CandidateRepository
+from app.domains.interview_scheduling.repositories.interview_repository import (
+    InterviewRepository,
+)
+from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+    JobVacancyCRUDRepository,
+)
+from app.domains.notifications.repositories.alert_repository import AlertRepository
 from app.domains.sourcing.services.pearch_service import pearch_service
+from app.domains.tasks.repositories.tasks_repository import TasksRepository
 from lia_models.alert import Alert, AlertSeverity, AlertStatus, AlertType
 from lia_models.candidate import Candidate
 from lia_models.interview import Interview
@@ -131,14 +139,12 @@ class SourcingPipelineService:
         Returns:
             PipelineJobStatus or None if job not found
         """
-        result = await db.execute(
-            select(JobVacancy).where(JobVacancy.id == job_id)
-        )
-        job = result.scalar_one_or_none()
-        
+        job_repo = JobVacancyCRUDRepository(db)
+        job = await job_repo.get_vacancy_by_id(job_id)
+
         if not job:
             return None
-        
+
         return await self._build_job_status(db, job)
     
     async def get_jobs_needing_candidates(
@@ -156,12 +162,10 @@ class SourcingPipelineService:
         Returns:
             List of PipelineJobStatus for jobs needing candidates
         """
-        result = await db.execute(
-            select(JobVacancy).where(
-                JobVacancy.status.in_(["open", "Ativa", "active"])
-            ).limit(limit)
+        job_repo = JobVacancyCRUDRepository(db)
+        open_jobs = await job_repo.list_by_statuses(
+            ["open", "Ativa", "active"], limit=limit
         )
-        open_jobs = result.scalars().all()
         
         jobs_needing_candidates = []
         
@@ -215,11 +219,9 @@ class SourcingPipelineService:
         self._running_jobs[job_id] = datetime.utcnow()
         
         try:
-            result = await db.execute(
-                select(JobVacancy).where(JobVacancy.id == job_id)
-            )
-            job = result.scalar_one_or_none()
-            
+            job_repo = JobVacancyCRUDRepository(db)
+            job = await job_repo.get_vacancy_by_id(job_id)
+
             if not job:
                 return PipelineRunResult(
                     job_id=job_id,
@@ -386,22 +388,13 @@ class SourcingPipelineService:
         job: JobVacancy
     ) -> PipelineJobStatus:
         """Build a PipelineJobStatus for a job."""
-        total_count = await db.execute(
-            select(func.count(func.distinct(Interview.candidate_id))).where(
-                Interview.job_vacancy_id == job.id
-            )
+        interview_repo = InterviewRepository(db)
+        total_candidates = await interview_repo.count_distinct_candidates_for_job(
+            job.id
         )
-        total_candidates = total_count.scalar() or 0
-        
-        qualified_count = await db.execute(
-            select(func.count(func.distinct(Interview.candidate_id))).where(
-                and_(
-                    Interview.job_vacancy_id == job.id,
-                    Interview.status.in_(["scheduled", "confirmed", "completed"])
-                )
-            )
+        qualified_candidates = await interview_repo.count_distinct_candidates_for_job(
+            job.id, statuses=["scheduled", "confirmed", "completed"]
         )
-        qualified_candidates = qualified_count.scalar() or 0
         
         qualified_ratio = qualified_candidates / total_candidates if total_candidates > 0 else 0.0
         
@@ -467,22 +460,13 @@ class SourcingPipelineService:
         if not skill_names:
             skill_names = [job.title]
         
-        existing_candidates = await db.execute(
-            select(Interview.candidate_id).where(
-                Interview.job_vacancy_id == job.id
-            ).distinct()
+        interview_repo = InterviewRepository(db)
+        existing_ids = await interview_repo.get_candidate_ids_for_job(job.id)
+
+        candidate_repo = CandidateRepository(db)
+        all_candidates = await candidate_repo.list_active_not_blacklisted(
+            limit=self.config.search_limit_local
         )
-        existing_ids = {row[0] for row in existing_candidates.fetchall()}
-        
-        query = select(Candidate).where(
-            and_(
-                Candidate.is_active,
-                not Candidate.is_blacklisted
-            )
-        )
-        
-        result = await db.execute(query.limit(self.config.search_limit_local))
-        all_candidates = result.scalars().all()
         
         matched_candidates = []
         for candidate in all_candidates:
@@ -638,19 +622,15 @@ class SourcingPipelineService:
             Number of candidates added
         """
         added_count = 0
-        
+        interview_repo = InterviewRepository(db)
+
         for candidate in candidates:
-            existing_interview = await db.execute(
-                select(Interview).where(
-                    and_(
-                        Interview.candidate_id == candidate.id,
-                        Interview.job_vacancy_id == job.id
-                    )
-                )
+            existing_interview = await interview_repo.get_for_candidate_and_job(
+                candidate.id, job.id
             )
-            if existing_interview.scalar_one_or_none():
+            if existing_interview:
                 continue
-            
+
             match_score = self._calculate_local_match_score(candidate, job)
             candidate.lia_score = match_score
             
@@ -701,34 +681,21 @@ class SourcingPipelineService:
             Number of candidates added
         """
         added_count = 0
-        
+        candidate_repo = CandidateRepository(db)
+        interview_repo = InterviewRepository(db)
+
         for data in pearch_candidates:
             email = data.get("email")
             existing_candidate = None
-            
+
             if email:
-                from app.shared.encryption.encrypted_field_mixin import _sha256_hash
-                from sqlalchemy import or_
-                result = await db.execute(
-                    select(Candidate).where(
-                        or_(
-                            Candidate.email_hash == _sha256_hash(email),
-                            Candidate._email_raw == email,
-                        )
-                    )
-                )
-                existing_candidate = result.scalar_one_or_none()
-            
+                existing_candidate = await candidate_repo.get_by_email(email)
+
             if existing_candidate:
-                existing_interview = await db.execute(
-                    select(Interview).where(
-                        and_(
-                            Interview.candidate_id == existing_candidate.id,
-                            Interview.job_vacancy_id == job.id
-                        )
-                    )
+                existing_interview = await interview_repo.get_for_candidate_and_job(
+                    existing_candidate.id, job.id
                 )
-                if existing_interview.scalar_one_or_none():
+                if existing_interview:
                     continue
                 candidate = existing_candidate
             else:
@@ -793,16 +760,11 @@ class SourcingPipelineService:
         Returns:
             Created Task or None if task already exists
         """
-        existing = await db.execute(
-            select(Task).where(
-                and_(
-                    Task.related_job_id == str(job.id),
-                    Task.task_type == TaskType.SOURCING,
-                    Task.status.in_([TaskStatus.PENDING, TaskStatus.IN_PROGRESS])
-                )
-            )
+        tasks_repo = TasksRepository(db)
+        existing_task = await tasks_repo.get_active_task_for_job_and_type(
+            str(job.id), TaskType.SOURCING
         )
-        if existing.scalar_one_or_none():
+        if existing_task:
             return None
         
         needed = self.config.min_candidates_per_job - current_count
@@ -856,16 +818,11 @@ class SourcingPipelineService:
         if days_open < self.config.days_before_low_volume_alert:
             return None
         
-        existing = await db.execute(
-            select(Alert).where(
-                and_(
-                    Alert.job_id == str(job.id),
-                    Alert.alert_type == AlertType.JOB_LOW_VOLUME,
-                    Alert.status == AlertStatus.ACTIVE
-                )
-            )
+        alert_repo = AlertRepository(db)
+        existing_alert = await alert_repo.get_active_alert_for_job_and_type(
+            str(job.id), AlertType.JOB_LOW_VOLUME
         )
-        if existing.scalar_one_or_none():
+        if existing_alert:
             return None
         
         severity = AlertSeverity.CRITICAL if current_count < 3 else AlertSeverity.HIGH
@@ -929,12 +886,10 @@ class SourcingPipelineService:
             }
         """
         logger.info(f"🚀 Running post-publish sourcing for job: {job_id}")
-        
-        result = await db.execute(
-            select(JobVacancy).where(JobVacancy.id == job_id)
-        )
-        job = result.scalar_one_or_none()
-        
+
+        job_repo = JobVacancyCRUDRepository(db)
+        job = await job_repo.get_vacancy_by_id(job_id)
+
         if not job:
             logger.error(f"Job {job_id} not found for post-publish sourcing")
             return {
@@ -1020,12 +975,10 @@ class SourcingPipelineService:
             }
         """
         logger.info(f"🌍 Confirming global search for job: {job_id}, user: {user_id}, credits: {credits_to_use}")
-        
-        result = await db.execute(
-            select(JobVacancy).where(JobVacancy.id == job_id)
-        )
-        job = result.scalar_one_or_none()
-        
+
+        job_repo = JobVacancyCRUDRepository(db)
+        job = await job_repo.get_vacancy_by_id(job_id)
+
         if not job:
             return {
                 "success": False,

@@ -129,6 +129,51 @@ class InterviewRepository:
         return result.scalars().all()
 
     # ------------------------------------------------------------------
+    # Sourcing pipeline helpers (Sprint Q2 ADR-001 cross-domain cleanup)
+    # Used by app/domains/sourcing/services/sourcing_pipeline_service.py
+    # ------------------------------------------------------------------
+
+    async def count_distinct_candidates_for_job(
+        self,
+        job_vacancy_id: uuid.UUID,
+        statuses: Optional[list[str]] = None,
+    ) -> int:
+        """Count distinct candidate_id rows for a job, optionally filtered by status."""
+        from sqlalchemy import func as _func
+        query = select(_func.count(_func.distinct(Interview.candidate_id))).where(
+            Interview.job_vacancy_id == job_vacancy_id
+        )
+        if statuses:
+            query = query.where(Interview.status.in_(statuses))
+        result = await self.db.execute(query)
+        return result.scalar() or 0
+
+    async def get_candidate_ids_for_job(self, job_vacancy_id: uuid.UUID) -> set:
+        """Return distinct candidate_ids that already have any interview for this job."""
+        result = await self.db.execute(
+            select(Interview.candidate_id)
+            .where(Interview.job_vacancy_id == job_vacancy_id)
+            .distinct()
+        )
+        return {row[0] for row in result.fetchall() if row[0] is not None}
+
+    async def get_for_candidate_and_job(
+        self,
+        candidate_id: uuid.UUID,
+        job_vacancy_id: uuid.UUID,
+    ) -> Optional[Interview]:
+        """Return existing interview row for (candidate, job) pair if any."""
+        result = await self.db.execute(
+            select(Interview).where(
+                and_(
+                    Interview.candidate_id == candidate_id,
+                    Interview.job_vacancy_id == job_vacancy_id,
+                )
+            )
+        )
+        return result.scalar_one_or_none()
+
+    # ------------------------------------------------------------------
     # Vacancy helpers
     # ------------------------------------------------------------------
 

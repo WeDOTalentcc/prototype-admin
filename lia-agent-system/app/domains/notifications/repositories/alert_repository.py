@@ -5,10 +5,10 @@ Extracted from app/api/v1/alerts.py as part of Phase 2 refactor.
 import logging
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.alert import AlertConfig, AlertPreference
+from app.models.alert import Alert, AlertConfig, AlertPreference, AlertStatus
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +16,29 @@ logger = logging.getLogger(__name__)
 class AlertRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
+
+    # ── Alert (entity) helpers — Sprint Q2 ADR-001 cross-domain cleanup ──────
+
+    async def get_active_alert_for_job_and_type(
+        self,
+        job_id: str,
+        alert_type,
+    ) -> Alert | None:
+        """Return an ACTIVE alert for a job by type if any.
+
+        Used by app/domains/sourcing/services/sourcing_pipeline_service.py
+        to dedupe low-volume alert creation.
+        """
+        result = await self.db.execute(
+            select(Alert).where(
+                and_(
+                    Alert.job_id == job_id,
+                    Alert.alert_type == alert_type,
+                    Alert.status == AlertStatus.ACTIVE,
+                )
+            )
+        )
+        return result.scalar_one_or_none()
 
     async def list_configs_for_company(self, company_id: str) -> list[AlertConfig]:
         result = await self.db.execute(

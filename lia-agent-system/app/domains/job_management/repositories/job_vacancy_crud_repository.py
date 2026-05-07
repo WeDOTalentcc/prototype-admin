@@ -60,6 +60,31 @@ class JobVacancyCRUDRepository:
         )
         return result.scalar_one_or_none()
 
+    async def get_vacancy_by_id(self, job_vacancy_id):
+        """Get vacancy by id without company filter.
+
+        Used by app/domains/sourcing/services/sourcing_pipeline_service.py
+        (Sprint Q2 ADR-001 cross-domain cleanup). The sourcing pipeline runs
+        in system context (background scheduler) without a per-request
+        company_id. Caller is responsible for any tenant scoping required.
+        """
+        result = await self.db.execute(
+            select(JobVacancy).where(JobVacancy.id == job_vacancy_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def list_by_statuses(self, statuses: list[str], limit: int = 50):
+        """List vacancies whose status is in the given set, ordered by created_at desc.
+
+        Used by sourcing pipeline (system context, no company filter).
+        """
+        result = await self.db.execute(
+            select(JobVacancy)
+            .where(JobVacancy.status.in_(statuses))
+            .limit(limit)
+        )
+        return list(result.scalars().all())
+
     # ── List ──────────────────────────────────────────────────────────────────
 
     async def list_vacancies(
@@ -184,4 +209,3 @@ class JobVacancyCRUDRepository:
             .limit(limit)
         )
         return list(result.scalars().all())
-

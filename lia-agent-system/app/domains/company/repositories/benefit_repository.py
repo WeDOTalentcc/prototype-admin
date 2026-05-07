@@ -20,6 +20,31 @@ class BenefitRepository:
         )
         return list(result.scalars().all())
 
+    async def list_active_for_company(self, company_id: UUID) -> list[Benefit]:
+        """Active benefits for a company, ordered by category and order."""
+        result = await self.db.execute(
+            select(Benefit)
+            .where(
+                Benefit.company_id == company_id,
+                Benefit.is_active,
+            )
+            .order_by(Benefit.category, Benefit.order)
+        )
+        return list(result.scalars().all())
+
+    async def list_optional_company(
+        self, company_id: UUID | None = None
+    ) -> list[Benefit]:
+        """List benefits; if company_id provided, scope to that company.
+
+        Used by AI summary endpoint that may aggregate across companies.
+        """
+        query = select(Benefit)
+        if company_id is not None:
+            query = query.where(Benefit.company_id == company_id)
+        result = await self.db.execute(query)
+        return list(result.scalars().all())
+
     async def get_by_id(self, benefit_id: UUID) -> Benefit | None:
         result = await self.db.execute(
             select(Benefit).where(Benefit.id == benefit_id)

@@ -226,6 +226,25 @@ class CandidateRepository:
 
         return candidates, total_count
 
+    async def list_active_not_blacklisted(self, limit: int = 50) -> list[Candidate]:
+        """List active, non-blacklisted candidates up to the given limit.
+
+        Used by app/domains/sourcing/services/sourcing_pipeline_service.py
+        (Sprint Q2 ADR-001 cross-domain cleanup) for local sourcing match.
+        """
+        from sqlalchemy import and_ as _and
+        result = await self.db.execute(
+            select(Candidate)
+            .where(
+                _and(
+                    Candidate.is_active,
+                    ~Candidate.is_blacklisted,
+                )
+            )
+            .limit(limit)
+        )
+        return list(result.scalars().all())
+
     async def create(self, candidate: Candidate) -> Candidate:
         self.db.add(candidate)
         await self.db.commit()

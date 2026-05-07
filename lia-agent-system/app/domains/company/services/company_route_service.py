@@ -9,8 +9,19 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domains.company.repositories.benefit_repository import BenefitRepository
+from app.domains.company.repositories.company_profile_repository import (
+    CompanyProfileRepository,
+)
+from app.domains.company.repositories.culture_profile_repository import (
+    CultureProfileRepository,
+)
+from app.domains.company.repositories.culture_value_repository import (
+    CultureValueRepository,
+)
+from app.domains.company.repositories.department_repository import DepartmentRepository
 
 logger = logging.getLogger(__name__)
 
@@ -58,23 +69,20 @@ class CompanyRouteService:
         """
         from lia_models.company import CompanyCultureProfile, CompanyProfile
 
+        company_repo = CompanyProfileRepository(db)
+        culture_repo = CultureProfileRepository(db)
+
         profile = None
 
         if company_id:
             try:
                 company_uuid = UUID(company_id)
-                existing = await db.execute(
-                    select(CompanyProfile).where(CompanyProfile.id == company_uuid)
-                )
-                profile = existing.scalar_one_or_none()
+                profile = await company_repo.get_by_id(company_uuid)
             except ValueError:
                 logger.warning(f"Invalid company_id format: {company_id}")
 
         if not profile:
-            existing = await db.execute(
-                select(CompanyProfile).where(CompanyProfile.is_default)
-            )
-            profile = existing.scalar_one_or_none()
+            profile = await company_repo.get_default()
 
         onboarding_metadata = {
             "hiring_volume": hiring_volume,
@@ -134,12 +142,7 @@ class CompanyRouteService:
         await db.refresh(profile)
 
         if culture_profile_data:
-            existing_culture = await db.execute(
-                select(CompanyCultureProfile).where(
-                    CompanyCultureProfile.company_id == profile.id
-                )
-            )
-            culture_profile = existing_culture.scalar_one_or_none()
+            culture_profile = await culture_repo.get_for_company(profile.id)
 
             cp = culture_profile_data
             if culture_profile:
@@ -256,13 +259,10 @@ class CompanyRouteService:
         Returns:
             Dict with keys: success, evp_analysis (or error)
         """
-        from lia_models.company import CompanyProfile
         from app.domains.ai.services.llm import llm_service
 
-        result = await db.execute(
-            select(CompanyProfile).where(CompanyProfile.id == profile_id)
-        )
-        profile = result.scalar_one_or_none()
+        company_repo = CompanyProfileRepository(db)
+        profile = await company_repo.get_by_id(profile_id)
 
         if not profile:
             return {"success": False, "error": "Company profile not found"}
@@ -390,39 +390,19 @@ REGRAS:
             Dict with profile data plus departments, benefits, culture_values lists,
             or None if not found.
         """
-        from lia_models.company import Benefit, CompanyProfile, CultureValue, Department
+        company_repo = CompanyProfileRepository(db)
+        dept_repo = DepartmentRepository(db)
+        benefit_repo = BenefitRepository(db)
+        culture_value_repo = CultureValueRepository(db)
 
-        result = await db.execute(
-            select(CompanyProfile).where(CompanyProfile.id == profile_id)
-        )
-        profile = result.scalar_one_or_none()
+        profile = await company_repo.get_by_id(profile_id)
 
         if not profile:
             return None
 
-        deps_result = await db.execute(
-            select(Department).where(
-                Department.company_id == profile_id,
-                Department.is_active,
-            ).order_by(Department.order)
-        )
-        departments = deps_result.scalars().all()
-
-        bens_result = await db.execute(
-            select(Benefit).where(
-                Benefit.company_id == profile_id,
-                Benefit.is_active,
-            ).order_by(Benefit.category, Benefit.order)
-        )
-        benefits = bens_result.scalars().all()
-
-        vals_result = await db.execute(
-            select(CultureValue).where(
-                CultureValue.company_id == profile_id,
-                CultureValue.is_active,
-            ).order_by(CultureValue.order)
-        )
-        culture_values = vals_result.scalars().all()
+        departments = await dept_repo.list_active_for_company(profile_id)
+        benefits = await benefit_repo.list_active_for_company(profile_id)
+        culture_values = await culture_value_repo.list_active_for_company(profile_id)
 
         def _serialize(obj: Any) -> dict[str, Any]:
             result_dict = {}
@@ -455,27 +435,16 @@ REGRAS:
         Returns:
             List of department dicts with headcount field added.
         """
-        from lia_models.company import Department, DepartmentMember
+        dept_repo = DepartmentRepository(db)
 
-        query = select(Department)
-        if company_id:
-            query = query.where(Department.company_id == company_id)
-        if not include_inactive:
-            query = query.where(Department.is_active)
-        query = query.order_by(Department.order)
-
-        result = await db.execute(query)
-        departments = result.scalars().all()
+        departments = await dept_repo.list_filtered(
+            company_id=company_id,
+            include_inactive=include_inactive,
+        )
 
         dept_dicts: list[dict[str, Any]] = []
         for dept in departments:
-            member_count_result = await db.execute(
-                select(func.count(DepartmentMember.id)).where(
-                    DepartmentMember.department_id == dept.id,
-                    DepartmentMember.is_active,
-                )
-            )
-            member_count = member_count_result.scalar() or 0
+            member_count = await dept_repo.count_members(dept.id)
 
             dept_dict = {
                 "id": str(dept.id),
@@ -504,7 +473,8 @@ REGRAS:
         Returns:
             Dict with department data including id.
         """
-        from lia_models.company import CompanyProfile, Department
+        company_repo = CompanyProfileRepository(db)
+        dept_repo = DepartmentRepository(db)
 
         resolved_company_id = None
         if company_id:
@@ -514,27 +484,15 @@ REGRAS:
                 pass
 
         if not resolved_company_id:
-            result = await db.execute(
-                select(CompanyProfile).where(CompanyProfile.is_default)
-                .order_by(CompanyProfile.created_at.desc()).limit(1)
-            )
-            profile = result.scalars().first()
+            profile = await company_repo.get_latest_default()
             if not profile:
-                result = await db.execute(
-                    select(CompanyProfile).where(CompanyProfile.is_active)
-                    .order_by(CompanyProfile.created_at.desc()).limit(1)
-                )
-                profile = result.scalars().first()
+                profile = await company_repo.get_latest_active()
             if profile:
                 resolved_company_id = profile.id
 
-        department = Department(
-            company_id=resolved_company_id,
-            **department_data,
+        department = await dept_repo.create(
+            {"company_id": resolved_company_id, **department_data}
         )
-        db.add(department)
-        await db.commit()
-        await db.refresh(department)
 
         return {
             "id": str(department.id),
@@ -556,12 +514,8 @@ REGRAS:
         Returns:
             Updated department dict or None if not found.
         """
-        from lia_models.company import Department
-
-        result = await db.execute(
-            select(Department).where(Department.id == department_id)
-        )
-        department = result.scalar_one_or_none()
+        dept_repo = DepartmentRepository(db)
+        department = await dept_repo.get_by_id(department_id)
 
         if not department:
             return None
@@ -590,12 +544,8 @@ REGRAS:
         Returns:
             Dict with success/message or None if not found.
         """
-        from lia_models.company import Department
-
-        result = await db.execute(
-            select(Department).where(Department.id == department_id)
-        )
-        department = result.scalar_one_or_none()
+        dept_repo = DepartmentRepository(db)
+        department = await dept_repo.get_by_id(department_id)
 
         if not department:
             return None
@@ -619,25 +569,21 @@ REGRAS:
             Dict with keys: success, fields_updated, apify_data, inferred_data, errors
         """
         from app.domains.sourcing.services.apify_service import apify_service
-        from lia_models.company import CompanyCultureProfile, CompanyProfile
         from app.domains.ai.services.llm import llm_service
+
+        company_repo = CompanyProfileRepository(db)
+        culture_repo = CultureProfileRepository(db)
 
         errors: list[str] = []
         fields_updated: list[str] = []
         apify_data: dict[str, Any] = {}
         inferred_data: dict[str, Any] = {}
 
-        result = await db.execute(
-            select(CompanyProfile).where(CompanyProfile.id == profile_id)
-        )
-        profile = result.scalar_one_or_none()
+        profile = await company_repo.get_by_id(profile_id)
         if not profile:
             return {"success": False, "error": "Company profile not found"}
 
-        culture_result = await db.execute(
-            select(CompanyCultureProfile).where(CompanyCultureProfile.company_id == profile_id)
-        )
-        culture_profile = culture_result.scalar_one_or_none()
+        culture_profile = await culture_repo.get_for_company(profile_id)
 
         linkedin_data: dict[str, Any] = {}
         glassdoor_data: dict[str, Any] = {}
@@ -819,14 +765,10 @@ REGRAS:
         """
         import uuid as uuid_mod
 
-        from lia_models.company import Benefit
+        benefit_repo = BenefitRepository(db)
 
-        query = select(Benefit)
-        if company_id:
-            query = query.where(Benefit.company_id == uuid_mod.UUID(company_id))
-
-        result = await db.execute(query)
-        all_benefits = result.scalars().all()
+        scoped_company_id = uuid_mod.UUID(company_id) if company_id else None
+        all_benefits = await benefit_repo.list_optional_company(scoped_company_id)
 
         active_benefits = [b for b in all_benefits if b.is_active]
         highlighted_benefits = [b for b in active_benefits if b.is_highlighted]

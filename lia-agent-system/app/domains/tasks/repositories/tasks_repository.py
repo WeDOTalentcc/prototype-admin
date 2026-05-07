@@ -53,6 +53,27 @@ class TasksRepository:
         await self.db.refresh(task)
         return task
 
+    async def get_active_task_for_job_and_type(
+        self,
+        job_id: str,
+        task_type: TaskType,
+    ) -> Task | None:
+        """Return an active (PENDING/IN_PROGRESS) task for a job by type.
+
+        Used by app/domains/sourcing/services/sourcing_pipeline_service.py
+        (Sprint Q2 ADR-001 cross-domain cleanup) to dedupe sourcing tasks.
+        """
+        result = await self.db.execute(
+            select(Task).where(
+                and_(
+                    Task.related_job_id == job_id,
+                    Task.task_type == task_type,
+                    Task.status.in_([TaskStatus.PENDING, TaskStatus.IN_PROGRESS]),
+                )
+            )
+        )
+        return result.scalar_one_or_none()
+
     async def get_task(self, task_id: str) -> Task | None:
         """Get a task by ID."""
         result = await self.db.execute(select(Task).where(Task.id == task_id))

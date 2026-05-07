@@ -7,14 +7,14 @@ This service handles:
 - Analyzing divergences between LIA and recruiter decisions
 - Generating calibration suggestions
 - Applying approved weight adjustments
+
+ADR-001: Persistence/SQL access lives in CalibrationRepository.
 """
 import uuid
 from datetime import datetime, timedelta
 from typing import Any
 
-from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.sql import desc
 
 from lia_models.calibration import (
     CalibrationEvent,
@@ -23,13 +23,18 @@ from lia_models.calibration import (
     FeedbackType,
 )
 
+from app.domains.analytics.repositories.calibration_repository import (
+    CalibrationRepository,
+)
+
 
 class CalibrationService:
     """Service for managing calibration loop operations."""
-    
+
     def __init__(self, db: AsyncSession):
         self.db = db
-    
+        self.repo = CalibrationRepository(db)
+
     async def record_explicit_feedback(
         self,
         candidate_id: str,
@@ -55,13 +60,13 @@ class CalibrationService:
             context=context or {},
             created_at=datetime.utcnow()
         )
-        
+
         self.db.add(event)
         await self.db.commit()
         await self.db.refresh(event)
-        
+
         return event
-    
+
     async def record_implicit_feedback(
         self,
         candidate_id: str,
@@ -84,7 +89,7 @@ class CalibrationService:
         else:
             feedback_type = FeedbackType.IMPLICIT_OVERRIDE
             score_delta = 0
-        
+
         event = CalibrationEvent(
             id=str(uuid.uuid4()),
             feedback_type=feedback_type,
@@ -100,13 +105,13 @@ class CalibrationService:
             context=context or {},
             created_at=datetime.utcnow()
         )
-        
+
         self.db.add(event)
         await self.db.commit()
         await self.db.refresh(event)
-        
+
         return event
-    
+
     async def record_post_hire_feedback(
         self,
         candidate_id: str,
@@ -130,13 +135,13 @@ class CalibrationService:
             context=context or {},
             created_at=datetime.utcnow()
         )
-        
+
         self.db.add(event)
         await self.db.commit()
         await self.db.refresh(event)
-        
+
         return event
-    
+
     async def get_divergences(
         self,
         days: int = 30,
@@ -145,27 +150,8 @@ class CalibrationService:
     ) -> list[dict[str, Any]]:
         """Get recent divergences between LIA and recruiter decisions."""
         since = datetime.utcnow() - timedelta(days=days)
-        
-        stmt = select(CalibrationEvent).where(
-            and_(
-                CalibrationEvent.created_at >= since,
-                or_(
-                    CalibrationEvent.feedback_type == FeedbackType.EXPLICIT_DISAGREE,
-                    and_(
-                        CalibrationEvent.feedback_type == FeedbackType.IMPLICIT_REJECT,
-                        CalibrationEvent.lia_score > 70
-                    ),
-                    and_(
-                        CalibrationEvent.feedback_type == FeedbackType.IMPLICIT_ADVANCE,
-                        CalibrationEvent.lia_score < 60
-                    )
-                )
-            )
-        ).order_by(desc(CalibrationEvent.created_at)).limit(limit)
-        
-        result = await self.db.execute(stmt)
-        events = result.scalars().all()
-        
+        events = await self.repo.list_divergences(since=since, limit=limit)
+
         divergences = []
         for event in events:
             divergences.append({
@@ -181,80 +167,26 @@ class CalibrationService:
                 "score_delta": event.score_delta,
                 "created_at": event.created_at.isoformat() if event.created_at else None
             })
-        
+
         return divergences
-    
+
     async def get_calibration_stats(self, days: int = 30) -> dict[str, Any]:
         """Get calibration statistics for the dashboard."""
         since = datetime.utcnow() - timedelta(days=days)
-        
-        total_stmt = select(func.count(CalibrationEvent.id)).where(
-            CalibrationEvent.created_at >= since
-        )
-        total_result = await self.db.execute(total_stmt)
-        total_events = total_result.scalar() or 0
-        
-        agree_stmt = select(func.count(CalibrationEvent.id)).where(
-            and_(
-                CalibrationEvent.created_at >= since,
-                CalibrationEvent.feedback_type == FeedbackType.EXPLICIT_AGREE
-            )
-        )
-        agree_result = await self.db.execute(agree_stmt)
-        explicit_agree = agree_result.scalar() or 0
-        
-        disagree_stmt = select(func.count(CalibrationEvent.id)).where(
-            and_(
-                CalibrationEvent.created_at >= since,
-                CalibrationEvent.feedback_type == FeedbackType.EXPLICIT_DISAGREE
-            )
-        )
-        disagree_result = await self.db.execute(disagree_stmt)
-        explicit_disagree = disagree_result.scalar() or 0
-        
-        advances_stmt = select(func.count(CalibrationEvent.id)).where(
-            and_(
-                CalibrationEvent.created_at >= since,
-                CalibrationEvent.feedback_type == FeedbackType.IMPLICIT_ADVANCE
-            )
-        )
-        advances_result = await self.db.execute(advances_stmt)
-        implicit_advances = advances_result.scalar() or 0
-        
-        rejects_stmt = select(func.count(CalibrationEvent.id)).where(
-            and_(
-                CalibrationEvent.created_at >= since,
-                CalibrationEvent.feedback_type == FeedbackType.IMPLICIT_REJECT
-            )
-        )
-        rejects_result = await self.db.execute(rejects_stmt)
-        implicit_rejects = rejects_result.scalar() or 0
-        
-        high_score_rejects_stmt = select(func.count(CalibrationEvent.id)).where(
-            and_(
-                CalibrationEvent.created_at >= since,
-                CalibrationEvent.feedback_type == FeedbackType.IMPLICIT_REJECT,
-                CalibrationEvent.lia_score > 70
-            )
-        )
-        high_score_result = await self.db.execute(high_score_rejects_stmt)
-        high_score_rejects = high_score_result.scalar() or 0
-        
-        low_score_advances_stmt = select(func.count(CalibrationEvent.id)).where(
-            and_(
-                CalibrationEvent.created_at >= since,
-                CalibrationEvent.feedback_type == FeedbackType.IMPLICIT_ADVANCE,
-                CalibrationEvent.lia_score < 60
-            )
-        )
-        low_score_result = await self.db.execute(low_score_advances_stmt)
-        low_score_advances = low_score_result.scalar() or 0
-        
+
+        total_events = await self.repo.count_total_events(since)
+        explicit_agree = await self.repo.count_explicit_agree(since)
+        explicit_disagree = await self.repo.count_explicit_disagree(since)
+        implicit_advances = await self.repo.count_implicit_advances(since)
+        implicit_rejects = await self.repo.count_implicit_rejects(since)
+        high_score_rejects = await self.repo.count_high_score_rejects(since)
+        low_score_advances = await self.repo.count_low_score_advances(since)
+
         total_explicit = explicit_agree + explicit_disagree
         agreement_rate = (explicit_agree / total_explicit * 100) if total_explicit > 0 else 100
-        
+
         divergence_count = high_score_rejects + low_score_advances + explicit_disagree
-        
+
         return {
             "period_days": days,
             "total_events": total_events,
@@ -276,12 +208,12 @@ class CalibrationService:
             },
             "accuracy_indicator": round(100 - (divergence_count / max(total_events, 1) * 100), 1)
         }
-    
+
     async def generate_suggestions(self) -> list[CalibrationSuggestion]:
         """Analyze divergences and generate calibration suggestions."""
         stats = await self.get_calibration_stats(days=30)
         suggestions = []
-        
+
         if stats["divergences"]["high_score_rejects"] >= 3:
             suggestion = CalibrationSuggestion(
                 id=str(uuid.uuid4()),
@@ -303,7 +235,7 @@ class CalibrationService:
             )
             suggestions.append(suggestion)
             self.db.add(suggestion)
-        
+
         if stats["divergences"]["low_score_advances"] >= 3:
             suggestion = CalibrationSuggestion(
                 id=str(uuid.uuid4()),
@@ -325,52 +257,35 @@ class CalibrationService:
             )
             suggestions.append(suggestion)
             self.db.add(suggestion)
-        
+
         if suggestions:
             await self.db.commit()
-        
+
         return suggestions
-    
+
     async def get_pending_suggestions(self) -> list[dict[str, Any]]:
         """Get all pending calibration suggestions."""
-        stmt = select(CalibrationSuggestion).where(
-            CalibrationSuggestion.status == "pending"
-        ).order_by(desc(CalibrationSuggestion.created_at))
-        
-        result = await self.db.execute(stmt)
-        suggestions = result.scalars().all()
-        
+        suggestions = await self.repo.list_pending_suggestions()
         return [s.to_dict() for s in suggestions]
-    
+
     async def approve_suggestion(
         self,
         suggestion_id: str,
         user_id: str
     ) -> CalibrationSuggestion | None:
         """Approve a calibration suggestion."""
-        stmt = select(CalibrationSuggestion).where(
-            CalibrationSuggestion.id == suggestion_id
-        )
-        result = await self.db.execute(stmt)
-        suggestion = result.scalar_one_or_none()
-        
+        suggestion = await self.repo.get_suggestion_by_id(suggestion_id)
+
         if not suggestion:
             return None
-        
+
         suggestion.status = "approved"
         suggestion.approved_by = user_id
         suggestion.approved_at = datetime.utcnow()
-        
+
         if suggestion.dimension:
-            weight_stmt = select(CalibrationWeight).where(
-                and_(
-                    CalibrationWeight.dimension == suggestion.dimension,
-                    CalibrationWeight.is_active
-                )
-            )
-            weight_result = await self.db.execute(weight_stmt)
-            weight = weight_result.scalar_one_or_none()
-            
+            weight = await self.repo.get_active_weight_by_dimension(suggestion.dimension)
+
             if weight:
                 old_weight = weight.adjusted_weight
                 weight.adjusted_weight = suggestion.suggested_weight
@@ -402,12 +317,12 @@ class CalibrationService:
                     created_at=datetime.utcnow()
                 )
                 self.db.add(weight)
-        
+
         await self.db.commit()
         await self.db.refresh(suggestion)
-        
+
         return suggestion
-    
+
     async def reject_suggestion(
         self,
         suggestion_id: str,
@@ -415,60 +330,41 @@ class CalibrationService:
         reason: str | None = None
     ) -> CalibrationSuggestion | None:
         """Reject a calibration suggestion."""
-        stmt = select(CalibrationSuggestion).where(
-            CalibrationSuggestion.id == suggestion_id
-        )
-        result = await self.db.execute(stmt)
-        suggestion = result.scalar_one_or_none()
-        
+        suggestion = await self.repo.get_suggestion_by_id(suggestion_id)
+
         if not suggestion:
             return None
-        
+
         suggestion.status = "rejected"
         suggestion.rejected_by = user_id
         suggestion.rejected_at = datetime.utcnow()
         suggestion.rejection_reason = reason
-        
+
         await self.db.commit()
         await self.db.refresh(suggestion)
-        
+
         return suggestion
-    
+
     async def get_recent_events(
         self,
         limit: int = 50,
         feedback_types: list[str] | None = None
     ) -> list[dict[str, Any]]:
         """Get recent calibration events."""
-        stmt = select(CalibrationEvent).order_by(
-            desc(CalibrationEvent.created_at)
-        ).limit(limit)
-        
+        type_enums: list[FeedbackType] | None = None
         if feedback_types:
-            type_enums = [FeedbackType(t) for t in feedback_types if t in [e.value for e in FeedbackType]]
-            if type_enums:
-                stmt = stmt.where(CalibrationEvent.feedback_type.in_(type_enums))
-        
-        result = await self.db.execute(stmt)
-        events = result.scalars().all()
-        
+            valid_values = {e.value for e in FeedbackType}
+            type_enums = [FeedbackType(t) for t in feedback_types if t in valid_values]
+            if not type_enums:
+                type_enums = None
+
+        events = await self.repo.list_recent_events(
+            limit=limit, feedback_types=type_enums
+        )
+
         return [e.to_dict() for e in events]
-    
+
     async def get_weights(self, job_id: str | None = None) -> list[dict[str, Any]]:
         """Get current calibration weights."""
-        stmt = select(CalibrationWeight).where(
-            CalibrationWeight.is_active
-        )
-        
-        if job_id:
-            stmt = stmt.where(
-                or_(
-                    CalibrationWeight.job_id == job_id,
-                    CalibrationWeight.job_id.is_(None)
-                )
-            )
-        
-        result = await self.db.execute(stmt)
-        weights = result.scalars().all()
-        
+        weights = await self.repo.list_active_weights(job_id=job_id)
         return [w.to_dict() for w in weights]

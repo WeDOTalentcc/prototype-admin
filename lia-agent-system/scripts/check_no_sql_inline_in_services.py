@@ -91,7 +91,12 @@ def scan_file(path: Path) -> list[tuple[int, str]]:
 
 
 def main() -> int:
-    block = "--block" in sys.argv
+    # Sprint 7 (2026-05-07): promoted to blocking by default after sensor reached
+    # 0 violations via Sprint 6 ScreeningQuestionSetRepository + WsiRepository
+    # extension + Sprint 7 top-5 select() refactor. Use --warn-only to opt out
+    # for legacy ratchet on branches that haven't caught up.
+    warn_only = "--warn-only" in sys.argv
+    block = not warn_only
 
     if not SERVICES_DIR.exists():
         print(f"[ADR-001 SQL sensor] WARN: {SERVICES_DIR} does not exist")
@@ -130,8 +135,9 @@ def main() -> int:
     )
 
     if block:
+        print("[ADR-001 SQL sensor] BLOCKING mode (default since Sprint 7) — failing build.")
         return 1
-    print("[ADR-001 SQL sensor] WARN-ONLY mode — not blocking.")
+    print("[ADR-001 SQL sensor] WARN-ONLY mode (opt-out via --warn-only flag).")
     return 0
 
 

@@ -68,3 +68,37 @@ class WhatsappRepository:
 
         result = await self.db.execute(query)
         return list(result.scalars().all())
+
+    # ── Cross-domain reads (used by automation_handlers — ADR-001) ──────────
+
+    async def get_latest_awaiting_screening_for_candidate_vacancy(
+        self,
+        candidate_id,
+        job_vacancy_id,
+    ):
+        """Return the most-recent AWAITING_SCREENING conversation for (candidate, vacancy).
+
+        Used by automation_handlers.process_screening_queue and
+        handle_recruiter_override_approve to flip the conversation state to
+        SCREENING when promoting a queued candidate.
+        """
+        from sqlalchemy import and_
+
+        from app.models.whatsapp_conversation import (
+            ConversationState,
+            WhatsAppConversation,
+        )
+
+        result = await self.db.execute(
+            select(WhatsAppConversation)
+            .where(
+                and_(
+                    WhatsAppConversation.candidate_id == candidate_id,
+                    WhatsAppConversation.job_vacancy_id == job_vacancy_id,
+                    WhatsAppConversation.state == ConversationState.AWAITING_SCREENING,
+                )
+            )
+            .order_by(WhatsAppConversation.created_at.desc())
+            .limit(1)
+        )
+        return result.scalar_one_or_none()

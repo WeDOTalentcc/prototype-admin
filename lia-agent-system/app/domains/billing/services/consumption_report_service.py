@@ -14,6 +14,32 @@ APIFY_USD_TO_BRL_RATE = float(os.environ.get("APIFY_USD_TO_BRL_RATE", "5.50"))
 PEARCH_CREDIT_PRICE_BRL = float(os.environ.get("PEARCH_CREDIT_PRICE_BRL", "0.50"))
 
 
+# ADR-001-EXEMPT: External-API consumption analytics (cost/usage rollups for apify, pearch,
+# scraping providers). Every select() in this service is a heavy reporting aggregation —
+# func.sum(cost_usd|cost_brl|credits_consumed), func.count(id), case() success counters,
+# cast(created_at, Date) for daily trend, multi-column GROUP BY (provider, operation,
+# company_id, user_id, day), and ORDER BY computed sum() expressions. These do not map to
+# generic per-tenant CRUD repo methods; pushing each into billing_repository would create
+# 15 single-use thin wrappers around the same SQLAlchemy expressions and would hide the
+# analytic intent without adding safety.
+#
+# Tenant scoping rationale (per query category):
+#   - get_report_by_period / get_invoice_data / get_dashboard / get_detailed_invoice:
+#     ALWAYS tenant-scoped; company_id passed as required arg from API layer
+#     (app/api/v1/consumption.py: company_id = Depends(get_verified_company_id)).
+#     The /invoice endpoint adds an extra target_company_id == company_id assertion
+#     before calling get_detailed_invoice (line 194-195). Fail-closed at the route.
+#   - get_tenant_summary / get_pricing_analytics: BY DESIGN cross-tenant capable
+#     (company_id: str | None = None). When None, produces platform-wide rollups
+#     (group by company_id, total_platform_cost_usd) used for admin/billing dashboards
+#     and finance reconciliation. _require_company_id at the repo layer would block
+#     this legitimate aggregation. Tenant scope is a passed parameter, not implicit.
+#
+# Multi-tenancy invariant is preserved at the API boundary (get_verified_company_id),
+# never trusting payload-supplied company_id; this file is the analytic engine and
+# trusts its caller to pass the verified value (or explicitly None for admin reports).
+
+
 class ConsumptionReportService:
 
     @staticmethod

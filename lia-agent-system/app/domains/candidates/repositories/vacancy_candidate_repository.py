@@ -71,3 +71,51 @@ class VacancyCandidateRepository:
         await self.db.commit()
         await self.db.refresh(vacancy_candidate)
         return vacancy_candidate
+
+    # ── Cross-domain reads (used by automation_handlers — ADR-001) ──────────
+
+    async def get_by_vacancy_candidate_and_company(
+        self,
+        vacancy_id: str | UUID,
+        candidate_id: str | UUID,
+        company_id: str | UUID,
+    ) -> VacancyCandidate | None:
+        """Multi-tenant lookup of a VacancyCandidate triple.
+
+        Used by automation handlers' multi-tenancy validation.
+        """
+        result = await self.db.execute(
+            select(VacancyCandidate).where(
+                VacancyCandidate.candidate_id == candidate_id,
+                VacancyCandidate.vacancy_id == vacancy_id,
+                VacancyCandidate.company_id == company_id,
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def list_awaiting_screening_for_vacancy(
+        self,
+        vacancy_id: str | UUID,
+        limit: int = 1,
+    ) -> list[VacancyCandidate]:
+        """Return queued candidates ordered by lia_score DESC, created_at ASC.
+
+        Used by automation_handlers.process_screening_queue (slot promotion).
+        """
+        from sqlalchemy import and_
+
+        result = await self.db.execute(
+            select(VacancyCandidate)
+            .where(
+                and_(
+                    VacancyCandidate.vacancy_id == vacancy_id,
+                    VacancyCandidate.status == "awaiting_screening",
+                )
+            )
+            .order_by(
+                VacancyCandidate.lia_score.desc().nullslast(),
+                VacancyCandidate.created_at.asc(),
+            )
+            .limit(limit)
+        )
+        return list(result.scalars().all())

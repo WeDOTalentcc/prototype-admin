@@ -39,6 +39,26 @@ class CompanyProfileRepository:
         )
         return result.scalars().first()
 
+    async def get_latest_default(self) -> CompanyProfile | None:
+        """Most recently created default profile (created_at desc)."""
+        result = await self.db.execute(
+            select(CompanyProfile)
+            .where(CompanyProfile.is_default)
+            .order_by(CompanyProfile.created_at.desc())
+            .limit(1)
+        )
+        return result.scalars().first()
+
+    async def get_latest_active(self) -> CompanyProfile | None:
+        """Most recently created active profile (created_at desc)."""
+        result = await self.db.execute(
+            select(CompanyProfile)
+            .where(CompanyProfile.is_active)
+            .order_by(CompanyProfile.created_at.desc())
+            .limit(1)
+        )
+        return result.scalars().first()
+
     async def list_for_company(
         self, company_id: str, skip: int = 0, limit: int = 100
     ) -> list[CompanyProfile]:

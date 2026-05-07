@@ -20,6 +20,20 @@ class CultureValueRepository:
         )
         return list(result.scalars().all())
 
+    async def list_active_for_company(
+        self, company_id: UUID
+    ) -> list[CultureValue]:
+        """Active culture values for a company, ordered by display order."""
+        result = await self.db.execute(
+            select(CultureValue)
+            .where(
+                CultureValue.company_id == company_id,
+                CultureValue.is_active,
+            )
+            .order_by(CultureValue.order)
+        )
+        return list(result.scalars().all())
+
     async def get_by_id(self, cv_id: UUID) -> CultureValue | None:
         result = await self.db.execute(
             select(CultureValue).where(CultureValue.id == cv_id)
