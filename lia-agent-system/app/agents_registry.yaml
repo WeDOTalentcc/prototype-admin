@@ -41,6 +41,16 @@ agents:
     system_prompt_path: null
     enabled: true
 
+  # R-013 (2026-05-08): TalentFunnelReActAgent — recruitment funnel domain (discovery,
+  # analysis, action planning for active candidates). NOT the same as talent (talent bank).
+  # Renamed from TalentReActAgent to eliminate @register_agent decorator collision risk.
+  - name: talent_funnel
+    domain: talent_funnel
+    class_path: app.domains.recruiter_assistant.agents.talent_funnel_react_agent.TalentFunnelReActAgent
+    model_id: claude-sonnet-4-6
+    system_prompt_path: null
+    enabled: true
+
   # R-004 (2026-05-07): apontava para app.domains.kanban.agents.kanban_agent.KanbanAgent
   # (módulo inexistente). Parent canonical em recruiter_assistant; subagents
   # (action/insight/search) acessíveis via tool_registry.

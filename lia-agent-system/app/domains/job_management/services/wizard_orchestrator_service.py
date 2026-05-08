@@ -11,6 +11,7 @@ from enum import Enum, StrEnum
 from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import HTTPException
 
 MAX_CONTEXT_CHARS = 16000
 
@@ -326,3 +327,31 @@ class WizardOrchestratorService:
 
 
 wizard_orchestrator_service = WizardOrchestratorService()
+
+# ---------------------------------------------------------------------------
+# Tombstone: get_wizard_step → HTTP 410 Gone (Task #857 N-02)
+# Canonical path: WS /ws/agent-chat with domain=job_creation
+# ---------------------------------------------------------------------------
+
+_WIZARD_410_DETAIL = {
+    "error": (
+        "Endpoint deprecated. Use WS /ws/agent-chat with "
+        "domain=job_creation."
+    ),
+}
+
+import logging as _logging
+_wizard_orch_logger = _logging.getLogger(__name__)
+
+
+async def get_wizard_step(session_id: str, _company_id: str = "", **kwargs):
+    """Tombstone — raises HTTPException 410 to enforce migration away from legacy wizard."""
+    _wizard_orch_logger.info(
+        "wizard.legacy.deprecated_call",
+        extra={
+            "tenant.company_id": _company_id,
+            "caller": "WizardOrchestratorService.get_wizard_step",
+            "path": "wizard_orchestrator_service",
+        },
+    )
+    raise HTTPException(status_code=410, detail=_WIZARD_410_DETAIL)

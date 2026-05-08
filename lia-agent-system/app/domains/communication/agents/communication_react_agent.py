@@ -64,6 +64,30 @@ class CommunicationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         return list(self._all_tool_names)
 
 
+    
+    def _get_runtime_domain_instructions(self, input: "AgentInput") -> str:  # type: ignore[override]
+        """Phase 3.4: runtime compliance injection (LGPD/fairness/memory).
+
+        Fixes the empty-placeholder defect (Audit G): static DOMAIN_INSTRUCTIONS
+        bakes empty {memory_summary}/{stage_context} at class-load time.
+        Sprint 2 Phase 4 canonical — see PromptComposer.for_domain_runtime.
+        """
+        try:
+            ctx = input.context or {}
+            return PromptComposer.for_domain_runtime(
+                agent_type="communication",
+                domain_specific=COMMUNICATION_DOMAIN_SPECIFIC,
+                memory_summary=ctx.get("memory_summary", ""),
+                stage_context=ctx.get("stage_context", ""),
+            ).text
+        except Exception as exc:
+            logger.warning(
+                "[communication] runtime prompt composition failed: %s — "
+                "falling back to static DOMAIN_INSTRUCTIONS",
+                exc,
+            )
+            return self.DOMAIN_INSTRUCTIONS
+
     def _get_tool_contracts(self) -> list:
         """Ativa GovernanceToolNode para este agente."""
         try:

@@ -340,7 +340,8 @@ def _ensure_agents_loaded() -> None:
         from app.domains.job_management.agents.wizard_react_agent import WizardReActAgent  # noqa: F401
         from app.domains.cv_screening.agents.pipeline_react_agent import PipelineReActAgent  # noqa: F401
         from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent  # noqa: F401
-        from app.domains.recruiter_assistant.agents.talent_react_agent import TalentReActAgent  # noqa: F401
+        from app.domains.recruiter_assistant.agents.talent_react_agent import TalentReActAgent  # noqa: F401  # backward-compat shim
+        from app.domains.recruiter_assistant.agents.talent_funnel_react_agent import TalentFunnelReActAgent  # noqa: F401
         from app.domains.recruiter_assistant.agents.kanban_react_agent import KanbanReActAgent  # noqa: F401
         from app.domains.recruiter_assistant.agents.jobs_mgmt_react_agent import JobsManagementReActAgent  # noqa: F401
         from app.domains.hiring_policy.agents.policy_react_agent import PolicyReActAgent  # noqa: F401

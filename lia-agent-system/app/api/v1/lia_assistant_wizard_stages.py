@@ -351,7 +351,8 @@ async def wizard_stage9_evaluate(
     try:
         from lia_agents_core.agent_interface import AgentInput
 
-        from app.domains.recruiter_assistant.agents.talent_react_agent import TalentReActAgent
+        from app.domains.recruiter_assistant.agents.talent_react_agent import TalentReActAgent  # backward-compat shim
+        from app.domains.recruiter_assistant.agents.talent_funnel_react_agent import TalentFunnelReActAgent  # noqa: F401
 
         # Resolve calibration cutoffs via learning_hub_service (replaces _get_calibration_context)
         learning_enhanced = False

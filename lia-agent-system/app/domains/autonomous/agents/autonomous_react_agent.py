@@ -117,6 +117,46 @@ class AutonomousReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         return list(self._all_tool_names)
 
 
+    
+    def _get_runtime_domain_instructions(self, input: "AgentInput") -> str:  # type: ignore[override]
+        """Phase 3.4: runtime compliance injection for cross-domain autonomous agent.
+
+        Falls back gracefully to static DOMAIN_INSTRUCTIONS if composition fails.
+        """
+        try:
+            ctx = input.context or {}
+            return PromptComposer.for_domain_runtime(
+                agent_type="autonomous",
+                domain_specific=(
+                    "Você foi acionada porque a solicitação cruza múltiplos domínios de "
+                    "recrutamento (vagas, sourcing, pipeline, analytics, agendamento) e "
+                    "nenhum agente especializado pôde resolver sozinho.\n\n"
+                    "## Suas responsabilidades:\n"
+                    "1. Entender a query cross-domain do usuário\n"
+                    "2. Usar as ferramentas disponíveis para coletar informações de diferentes domínios\n"
+                    "3. Consolidar o contexto com a tool `summarize_context`\n"
+                    "4. Fornecer uma resposta completa e integrada\n\n"
+                    "## Regras obrigatórias:\n"
+                    "- NUNCA invente dados — use apenas informações retornadas pelas tools\n"
+                    "- Se não encontrar dados suficientes, use `clarify_request` para pedir mais informações\n"
+                    "- Priorize leitura (read) antes de qualquer operação de escrita\n"
+                    "- Se a query for simples e coberta por um único domínio, responda diretamente\n\n"
+                    "## Formato da resposta:\n"
+                    "- Seja objetivo e direto\n"
+                    "- Inclua dados concretos retornados pelas tools (nomes, scores, contagens)\n"
+                    "- Para comparações, use ranking com justificativa clara"
+                ),
+                memory_summary=ctx.get("memory_summary", ""),
+                stage_context=ctx.get("stage_context", ""),
+            ).text
+        except Exception as exc:
+            logger.warning(
+                "[autonomous] runtime prompt composition failed: %s — "
+                "falling back to static DOMAIN_INSTRUCTIONS",
+                exc,
+            )
+            return self.DOMAIN_INSTRUCTIONS
+
     def _get_tool_contracts(self) -> list:
         """Ativa GovernanceToolNode para este agente."""
         try:
