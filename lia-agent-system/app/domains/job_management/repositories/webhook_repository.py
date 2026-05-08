@@ -92,3 +92,18 @@ class WebhookRepository:
             q = q.where(WebhookRegistration.company_id == company_id)
         result = await self.db.execute(q)
         return list(result.scalars().all())
+
+
+    async def list_active_for_company(self, company_id: str) -> list["WebhookRegistration"]:
+        """Used by job_status_webhook_service to dispatch status_changed events.
+
+        Returns all is_active=True webhooks for a company; caller filters by
+        event_types post-hoc.
+        """
+        result = await self.db.execute(
+            select(WebhookRegistration).where(
+                WebhookRegistration.company_id == company_id,
+                WebhookRegistration.is_active,
+            )
+        )
+        return list(result.scalars())

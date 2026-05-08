@@ -134,3 +134,30 @@ class CompanyProfileRepository:
             "benefits": benefits,
             "culture_values": culture_values,
         }
+
+
+    # ── Sprint Q2 ADR-001 cleanup: company_configuration_service ──────
+
+    async def get_by_id_with_culture_values(
+        self, profile_id
+    ) -> CompanyProfile | None:
+        """CompanyProfile by id with culture_values eagerly loaded."""
+        from sqlalchemy.orm import selectinload
+
+        result = await self.db.execute(
+            select(CompanyProfile)
+            .where(CompanyProfile.id == profile_id)
+            .options(selectinload(CompanyProfile.culture_values))
+        )
+        return result.scalar_one_or_none()
+
+    async def get_default_with_culture_values(self) -> CompanyProfile | None:
+        """Default CompanyProfile with culture_values eagerly loaded."""
+        from sqlalchemy.orm import selectinload
+
+        result = await self.db.execute(
+            select(CompanyProfile)
+            .where(CompanyProfile.is_default)
+            .options(selectinload(CompanyProfile.culture_values))
+        )
+        return result.scalar_one_or_none()

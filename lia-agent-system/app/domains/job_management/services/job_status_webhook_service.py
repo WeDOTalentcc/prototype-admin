@@ -14,10 +14,10 @@ from datetime import datetime
 from typing import Any
 
 import httpx
-from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
+from app.domains.job_management.repositories.webhook_repository import WebhookRepository
 from lia_models.audit_log import AuditLog, DecisionType
 from lia_models.webhook_registration import JOB_STATUS_WEBHOOK_EVENTS, WebhookDeliveryLog, WebhookRegistration
 
@@ -141,15 +141,7 @@ class JobStatusWebhookService:
         db: AsyncSession
     ) -> list[WebhookRegistration]:
         """Get active webhooks for a company subscribed to an event type."""
-        result = await db.execute(
-            select(WebhookRegistration).where(
-                and_(
-                    WebhookRegistration.company_id == company_id,
-                    WebhookRegistration.is_active
-                )
-            )
-        )
-        all_webhooks = list(result.scalars())
+        all_webhooks = await WebhookRepository(db).list_active_for_company(company_id)
         
         matching_webhooks = [
             w for w in all_webhooks 
@@ -430,15 +422,7 @@ class JobStatusWebhookService:
             Test result
         """
         try:
-            result = await db.execute(
-                select(WebhookRegistration).where(
-                    and_(
-                        WebhookRegistration.id == webhook_id,
-                        WebhookRegistration.company_id == company_id
-                    )
-                )
-            )
-            webhook = result.scalar_one_or_none()
+            webhook = await WebhookRepository(db).get_by_id(webhook_id, company_id)
             
             if not webhook:
                 return {

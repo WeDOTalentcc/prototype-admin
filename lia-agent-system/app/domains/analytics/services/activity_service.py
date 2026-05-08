@@ -12,6 +12,9 @@ from typing import Any
 from sqlalchemy import and_, desc, or_, select
 
 from app.core.database import AsyncSessionLocal
+from app.domains.analytics.repositories.activity_feed_repository import (
+    ActivityFeedRepository,
+)
 from app.models import ActivityFeed
 
 logger = logging.getLogger(__name__)
@@ -141,23 +144,12 @@ class ActivityService:
                     )
                 )
             
-            # Count query with SAME filters (use func.count for efficiency)
-            count_query = select(func.count()).select_from(ActivityFeed).where(and_(*where_conditions))
-            count_result = await session.execute(count_query)
-            total = count_result.scalar() or 0
-            
-            # Data query with filters + ordering + pagination
-            data_query = (
-                select(ActivityFeed)
-                .where(and_(*where_conditions))
-                .order_by(desc(ActivityFeed.created_at))  # Stable ordering
-                .limit(limit)
-                .offset(offset)
+            repo = ActivityFeedRepository(session)
+            activities, total = await repo.list_with_filters(
+                where_conditions=where_conditions,
+                limit=limit,
+                offset=offset,
             )
-            
-            # Execute query
-            result = await session.execute(data_query)
-            activities = result.scalars().all()
             
             logger.info(f"📋 Retrieved {len(activities)} activities (total: {total})")
             
@@ -179,9 +171,8 @@ class ActivityService:
             ActivityFeed instance or None if not found
         """
         async with AsyncSessionLocal() as session:
-            query = select(ActivityFeed).where(ActivityFeed.id == activity_id)
-            result = await session.execute(query)
-            activity = result.scalar_one_or_none()
+            repo = ActivityFeedRepository(session)
+            activity = await repo.get_by_id(activity_id)
             
             if activity:
                 logger.info(f"📋 Retrieved activity: {activity.title}")
@@ -202,15 +193,8 @@ class ActivityService:
             Count of urgent activities
         """
         async with AsyncSessionLocal() as session:
-            query = select(ActivityFeed).where(
-                and_(
-                    ActivityFeed.is_visible,
-                    ActivityFeed.priority == "urgent"
-                )
-            )
-            
-            result = await session.execute(query)
-            activities = result.scalars().all()
+            repo = ActivityFeedRepository(session)
+            activities = await repo.list_urgent_visible()
             
             logger.info(f"🔔 {len(activities)} urgent activities")
             return len(activities)

@@ -62,12 +62,11 @@ class JobReportService:
     
     async def _get_job_vacancy(self, job_id: UUID, company_id: str, db: AsyncSession) -> JobVacancy | None:
         """Get job vacancy with multi-tenancy check."""
-        result = await db.execute(
-            select(JobVacancy).where(
-                and_(JobVacancy.id == job_id, JobVacancy.company_id == company_id)
-            )
+        from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+            JobVacancyCrudRepository,
         )
-        return result.scalar_one_or_none()
+        repo = JobVacancyCrudRepository(db)
+        return await repo.get_vacancy_by_id_and_company(job_id, company_id)
     
     async def _get_funnel_data(self, job_id: UUID, db: AsyncSession) -> dict[str, Any]:
         """Get funnel metrics for a job vacancy."""
@@ -153,6 +152,10 @@ class JobReportService:
     
     async def _get_candidates_list(self, job_id: UUID, db: AsyncSession) -> list[dict[str, Any]]:
         """Get list of candidates for a job vacancy."""
+        # ADR-001-EXEMPT: cross-domain JOIN VacancyCandidate x Candidate for PDF report
+        # generation. Specific to analytics report shape; reuse via repo would require
+        # extending VacancyCandidateRepository (owned by candidates domain). Promote
+        # in a follow-up sprint.
         result = await db.execute(
             select(VacancyCandidate, Candidate)
             .join(Candidate, VacancyCandidate.candidate_id == Candidate.id)

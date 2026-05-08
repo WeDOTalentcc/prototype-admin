@@ -6,11 +6,12 @@ Automatically provisions WorkOS Organizations when new clients are created.
 import logging
 import os
 
-from sqlalchemy import select, update
+from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
 from workos import WorkOSClient
 
 from app.auth.workos_models import CompanyWorkOSConfig
+from app.domains.company.repositories.tenant_repository import TenantRepository
 from lia_models.client_account import ClientAccount
 
 logger = logging.getLogger(__name__)
@@ -99,11 +100,9 @@ async def provision_workos_organization(
         await db.execute(stmt)
         await db.commit()
         
-        config_query = select(CompanyWorkOSConfig).where(
-            CompanyWorkOSConfig.company_id == client_id_str
+        config = await TenantRepository(db).get_workos_config_by_company(
+            client_id_str
         )
-        config_result = await db.execute(config_query)
-        config = config_result.scalar_one_or_none()
         
         if config:
             await db.refresh(config)

@@ -76,3 +76,47 @@ class BenefitRepository:
         benefit.is_active = False
         await self.db.commit()
         return True
+    # ── Extensions for benefits_service (ADR-001 cleanup, Sprint Q2) ──────
+
+    async def list_active_ordered(self, company_id) -> list[Benefit]:
+        """Active benefits for a company, ordered by order/category/name.
+
+        Used by BenefitsService.get_active_benefits.
+        """
+        result = await self.db.execute(
+            select(Benefit)
+            .where(
+                Benefit.company_id == company_id,
+                Benefit.is_active,
+            )
+            .order_by(Benefit.order, Benefit.category, Benefit.name)
+        )
+        return list(result.scalars().all())
+
+    async def list_highlighted(self, company_id) -> list[Benefit]:
+        """Highlighted active benefits, ordered by order/name."""
+        result = await self.db.execute(
+            select(Benefit)
+            .where(
+                Benefit.company_id == company_id,
+                Benefit.is_active,
+                Benefit.is_highlighted,
+            )
+            .order_by(Benefit.order, Benefit.name)
+        )
+        return list(result.scalars().all())
+
+    async def list_by_category(
+        self, company_id, category: str
+    ) -> list[Benefit]:
+        """Active benefits in a specific category, ordered by order/name."""
+        result = await self.db.execute(
+            select(Benefit)
+            .where(
+                Benefit.company_id == company_id,
+                Benefit.is_active,
+                Benefit.category == category,
+            )
+            .order_by(Benefit.order, Benefit.name)
+        )
+        return list(result.scalars().all())

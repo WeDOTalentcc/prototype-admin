@@ -14,8 +14,10 @@ from statistics import mean, median
 from typing import Any
 from uuid import UUID, uuid4
 
-from sqlalchemy import and_, or_, select
+from sqlalchemy import or_
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domains.job_management.repositories.job_pattern_repository import JobPatternRepository
 
 from app.core.database import AsyncSessionLocal
 from lia_models.feedback_learning import JobOutcome
@@ -134,17 +136,9 @@ class JobPatternService:
                     )
                 )
             
-            result = await db.execute(
-                select(JobPattern)
-                .where(and_(*conditions))
-                .order_by(
-                    JobPattern.confidence.desc(),
-                    JobPattern.sample_count.desc()
-                )
-                .limit(limit)
+            patterns = await JobPatternRepository(db).find_patterns_with_conditions(
+                conditions, limit
             )
-            
-            patterns = result.scalars().all()
             
             self.logger.info(
                 f"Found {len(patterns)} similar patterns for '{job_title}' "
@@ -191,14 +185,7 @@ class JobPatternService:
             if seniority:
                 conditions.append(SalaryBenchmark.seniority == seniority.lower())
             
-            result = await db.execute(
-                select(SalaryBenchmark)
-                .where(and_(*conditions))
-                .order_by(SalaryBenchmark.sample_count.desc())
-                .limit(1)
-            )
-            
-            benchmark = result.scalar_one_or_none()
+            benchmark = await JobPatternRepository(db).find_salary_benchmark(conditions)
             
             if benchmark and benchmark.sample_count >= self.MIN_SAMPLES_FOR_RECOMMENDATION:
                 confidence = min(0.95, 0.5 + (benchmark.sample_count / 20))
@@ -521,21 +508,12 @@ class JobPatternService:
         try:
             company_uuid = UUID(company_id)
             
-            result = await db.execute(
-                select(JobOutcome)
-                .where(
-                    and_(
-                        JobOutcome.company_id == company_uuid,
-                        JobOutcome.outcome_status.in_(["filled", "hired"]),
-                        JobOutcome.hire_quality_score >= 4.0,
-                        JobOutcome.job_title_normalized == self.normalize_job_title(job_title)
-                    )
-                )
-                .order_by(JobOutcome.hire_quality_score.desc())
-                .limit(10)
+            successful_outcomes = await JobPatternRepository(db).list_successful_outcomes(
+                company_id=company_uuid,
+                job_title_normalized=self.normalize_job_title(job_title),
+                min_quality=4.0,
+                limit=10,
             )
-            
-            successful_outcomes = result.scalars().all()
             
             if len(successful_outcomes) < 2:
                 return {
@@ -682,16 +660,9 @@ class JobPatternService:
                 seniority=outcome.seniority
             )
             
-            result = await db.execute(
-                select(JobPattern).where(
-                    and_(
-                        JobPattern.company_id == outcome.company_id,
-                        JobPattern.pattern_key == pattern_key,
-                        JobPattern.is_active
-                    )
-                )
+            pattern = await JobPatternRepository(db).get_active_pattern_by_key(
+                company_id=outcome.company_id, pattern_key=pattern_key
             )
-            pattern = result.scalar_one_or_none()
             
             is_success = outcome.is_successful
             
@@ -794,16 +765,11 @@ class JobPatternService:
             if not outcome.salary_min and not outcome.salary_max:
                 return
             
-            result = await db.execute(
-                select(SalaryBenchmark).where(
-                    and_(
-                        SalaryBenchmark.company_id == outcome.company_id,
-                        SalaryBenchmark.job_title_normalized == outcome.job_title_normalized,
-                        SalaryBenchmark.seniority == (outcome.seniority.lower() if outcome.seniority else None)
-                    )
-                )
+            benchmark = await JobPatternRepository(db).get_salary_benchmark_for_outcome(
+                company_id=outcome.company_id,
+                job_title_normalized=outcome.job_title_normalized,
+                seniority=outcome.seniority.lower() if outcome.seniority else None,
             )
-            benchmark = result.scalar_one_or_none()
             
             salary = outcome.final_salary or ((outcome.salary_min or 0) + (outcome.salary_max or 0)) / 2
             

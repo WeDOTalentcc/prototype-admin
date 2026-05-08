@@ -131,26 +131,25 @@ class CompanyJobHistoryService:
     async def _fetch_vacancies(self, company_id: str) -> list[Any]:
         """Fetch up to 50 vacancies for company; swallows DB errors (degraded mode)."""
         try:
-            stmt = self._build_stmt(company_id)
-            result = await self._db.execute(stmt)
-            return result.scalars().all()
+            from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+                JobVacancyCRUDRepository,
+            )
+            return await JobVacancyCRUDRepository(self._db).list_for_company_history(
+                company_id, limit=50
+            )
         except Exception as exc:
-            logger.warning("[CompanyJobHistoryService] DB error (degraded mode): %s", exc)
+            logger.warning(
+                "[CompanyJobHistoryService] DB error (degraded mode): %s", exc
+            )
             return []
 
     @staticmethod
     def _build_stmt(company_id: str):
-        """Build SQLAlchemy select statement — lazy import for testability."""
-        try:
-            from sqlalchemy import select
-            from app.domains.job_management.models.job_vacancy import JobVacancy
-            return (
-                select(JobVacancy)
-                .where(JobVacancy.company_id == company_id)
-                .limit(50)
-            )
-        except ImportError:
-            return None  # test environments: mock intercepts execute() anyway
+        """Deprecated — kept for backwards compat with tests that monkeypatch.
+
+        New code path uses JobVacancyCRUDRepository.list_for_company_history.
+        """
+        return None
 
     def _score_and_filter(
         self, vacancies: list[Any], role: str, seniority: str

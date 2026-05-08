@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 from typing import Any
 from uuid import UUID
 
+from app.domains.communication.repositories.data_request_repository import DataRequestRepository
 from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -260,23 +261,9 @@ class DataRequestService:
         Returns:
             List of data requests
         """
-        query = select(DataRequest).where(DataRequest.candidate_id == candidate_id)
-        
-        if status:
-            query = query.where(DataRequest.status == status)
-        
-        if not include_expired:
-            query = query.where(
-                or_(
-                    DataRequest.status != DataRequestStatus.EXPIRED,
-                    DataRequest.expires_at > datetime.utcnow()
-                )
-            )
-        
-        query = query.order_by(DataRequest.created_at.desc())
-        
-        result = await db.execute(query)
-        return list(result.scalars().all())
+        return await DataRequestRepository(db).list_for_candidate(
+            candidate_id=candidate_id, status=status, include_expired=include_expired
+        )
     
     async def get_vacancy_data_requests(
         self,
@@ -295,15 +282,9 @@ class DataRequestService:
         Returns:
             List of data requests
         """
-        query = select(DataRequest).where(DataRequest.vacancy_id == vacancy_id)
-        
-        if status:
-            query = query.where(DataRequest.status == status)
-        
-        query = query.order_by(DataRequest.created_at.desc())
-        
-        result = await db.execute(query)
-        return list(result.scalars().all())
+        return await DataRequestRepository(db).list_for_vacancy(
+            vacancy_id=vacancy_id, status=status
+        )
     
     async def get_data_request_by_id(
         self,
@@ -319,9 +300,7 @@ class DataRequestService:
         token: str,
     ) -> DataRequest | None:
         """Get a data request by token."""
-        query = select(DataRequest).where(DataRequest.token == token)
-        result = await db.execute(query)
-        return result.scalar_one_or_none()
+        return await DataRequestRepository(db).get_by_token(token)
     
     async def cancel_data_request(
         self,
@@ -349,16 +328,15 @@ class DataRequestService:
         company_id: UUID,
     ) -> DataRequestConfig:
         """Get or create company config."""
-        query = select(DataRequestConfig).where(DataRequestConfig.company_id == company_id)
-        result = await db.execute(query)
-        config = result.scalar_one_or_none()
-        
+        repo = DataRequestRepository(db)
+        config = await repo.get_config_for_company(company_id=company_id)
+
         if not config:
             config = DataRequestConfig(company_id=company_id)
-            db.add(config)
+            repo.add_config(config)
             await db.commit()
             await db.refresh(config)
-        
+
         return config
     
     async def update_config(
@@ -386,17 +364,9 @@ class DataRequestService:
         active_only: bool = True,
     ) -> list[DataRequestTemplate]:
         """List templates for a company."""
-        query = select(DataRequestTemplate).where(
-            DataRequestTemplate.company_id == company_id
+        return await DataRequestRepository(db).list_templates_for_company(
+            company_id=company_id, active_only=active_only
         )
-        
-        if active_only:
-            query = query.where(DataRequestTemplate.is_active)
-        
-        query = query.order_by(DataRequestTemplate.created_at.desc())
-        
-        result = await db.execute(query)
-        return list(result.scalars().all())
     
     async def create_template(
         self,
@@ -484,13 +454,9 @@ class DataRequestService:
                 field_copy["is_default"] = True
                 fields.append(field_copy)
         
-        query = select(DataRequestField).where(
-            DataRequestField.company_id == company_id,
-            DataRequestField.is_active
-        ).order_by(DataRequestField.order)
-        
-        result = await db.execute(query)
-        custom_fields = result.scalars().all()
+        custom_fields = await DataRequestRepository(db).list_active_fields_for_company(
+            company_id=company_id
+        )
         
         for field in custom_fields:
             fields.append({
@@ -575,12 +541,9 @@ class DataRequestService:
         Returns:
             Dict with stage_configs and source indicator
         """
-        vacancy_config = await db.execute(
-            select(VacancyDataRequestConfig).where(
-                VacancyDataRequestConfig.vacancy_id == vacancy_id
-            )
+        vacancy_config = await DataRequestRepository(db).get_vacancy_config(
+            vacancy_id=vacancy_id
         )
-        vacancy_config = vacancy_config.scalar_one_or_none()
         
         if vacancy_config and not vacancy_config.use_company_defaults:
             return {
@@ -631,12 +594,9 @@ class DataRequestService:
             Dict with fields and trigger config, or None if no trigger
         """
         if vacancy_id:
-            vacancy_config = await db.execute(
-                select(VacancyDataRequestConfig).where(
-                    VacancyDataRequestConfig.vacancy_id == vacancy_id
-                )
+            vacancy_config = await DataRequestRepository(db).get_vacancy_config(
+                vacancy_id=vacancy_id
             )
-            vacancy_config = vacancy_config.scalar_one_or_none()
             
             if vacancy_config and not vacancy_config.use_company_defaults:
                 stage_configs = vacancy_config.stage_configs or {}
@@ -650,20 +610,9 @@ class DataRequestService:
                         "fields": config.get("fields", []),
                     }
         
-        templates_result = await db.execute(
-            select(DataRequestTemplate).where(
-                and_(
-                    DataRequestTemplate.company_id == company_id,
-                    DataRequestTemplate.trigger_stage == stage,
-                    DataRequestTemplate.is_active,
-                    DataRequestTemplate.trigger_type.in_([
-                        TriggerType.STAGE_ENTRY,
-                        TriggerType.AUTOMATIC
-                    ])
-                )
-            ).order_by(DataRequestTemplate.is_default.desc())
+        template = await DataRequestRepository(db).find_active_template_for_stage(
+            company_id=company_id, stage=stage
         )
-        template = templates_result.scalar_one_or_none()
         
         if template:
             return {
@@ -713,6 +662,9 @@ class DataRequestService:
         
         Prevents duplicate requests for the same stage.
         """
+        # ADR-001-EXEMPT: dynamic where-clause (optional vacancy_id refinement) is awkward
+        # to expose via repo without leaking SQLAlchemy column references. Sprint 6 follow-up:
+        # promote to repo with a kwarg-driven filter helper.
         query = select(DataRequest).where(
             and_(
                 DataRequest.candidate_id == candidate_id,

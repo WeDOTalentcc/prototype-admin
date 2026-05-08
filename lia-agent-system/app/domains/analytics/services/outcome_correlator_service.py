@@ -19,6 +19,9 @@ from typing import Any
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.analytics.repositories.intelligence_repository import (
+    IntelligenceRepository,
+)
 from lia_models.feedback_learning import JobOutcome, JobOutcomeType
 from lia_models.intelligence_layer import OutcomeCorrelation
 
@@ -123,16 +126,8 @@ class OutcomeCorrelatorService:
         """
         try:
             cutoff_date = datetime.utcnow() - timedelta(days=months_back * 30)
-            
-            query = select(JobOutcome).where(
-                and_(
-                    JobOutcome.company_id == company_id,
-                    JobOutcome.outcome == JobOutcomeType.FILLED,
-                    JobOutcome.created_at >= cutoff_date
-                )
-            )
-            result = await db.execute(query)
-            outcomes = list(result.scalars().all())
+            repo = IntelligenceRepository(db)
+            outcomes = await repo.list_filled_outcomes_since(company_id, cutoff_date)
             
             if len(outcomes) < MIN_SAMPLE_SIZE:
                 self.logger.info(
@@ -338,16 +333,10 @@ class OutcomeCorrelatorService:
         saved = []
         try:
             for corr in correlations:
-                existing = await db.execute(
-                    select(OutcomeCorrelation).where(
-                        and_(
-                            OutcomeCorrelation.company_id == company_id,
-                            OutcomeCorrelation.factor == corr.factor,
-                            OutcomeCorrelation.outcome_metric == corr.outcome
-                        )
-                    )
+                _repo = IntelligenceRepository(db)
+                existing_corr = await _repo.find_correlation(
+                    company_id, corr.factor, corr.outcome
                 )
-                existing_corr = existing.scalar_one_or_none()
                 
                 if existing_corr:
                     existing_corr.correlation = corr.correlation
@@ -391,16 +380,12 @@ class OutcomeCorrelatorService:
     ) -> list[OutcomeCorrelation]:
         """Retrieve stored correlations."""
         try:
-            conditions = [OutcomeCorrelation.company_id == company_id]
-            
-            if factor:
-                conditions.append(OutcomeCorrelation.factor == factor)
-            if outcome_metric:
-                conditions.append(OutcomeCorrelation.outcome_metric == outcome_metric)
-            
-            query = select(OutcomeCorrelation).where(and_(*conditions))
-            result = await db.execute(query)
-            return list(result.scalars().all())
+            repo = IntelligenceRepository(db)
+            return await repo.list_correlations_filtered(
+                company_id=company_id,
+                factor=factor,
+                outcome_metric=outcome_metric,
+            )
             
         except Exception as e:
             self.logger.error(f"Error getting correlations: {e}")
@@ -420,15 +405,8 @@ class OutcomeCorrelatorService:
         Uses historical data to estimate how long a position will take to fill.
         """
         try:
-            query = select(JobOutcome).where(
-                and_(
-                    JobOutcome.company_id == company_id,
-                    JobOutcome.outcome == JobOutcomeType.FILLED,
-                    JobOutcome.time_to_fill_days.isnot(None)
-                )
-            )
-            result = await db.execute(query)
-            outcomes = list(result.scalars().all())
+            repo = IntelligenceRepository(db)
+            outcomes = await repo.list_filled_with_time_to_fill(company_id)
             
             if len(outcomes) < 10:
                 return {

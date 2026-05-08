@@ -11,9 +11,11 @@ import logging
 import uuid
 from datetime import datetime
 
-from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.cv_screening.repositories.interview_note_repository import (
+    InterviewNoteRepository,
+)
 from lia_models.interview import InterviewNote
 
 logger = logging.getLogger(__name__)
@@ -73,9 +75,8 @@ async def create_interview_note(
         status=status,
         created_by=created_by,
     )
-    db.add(note)
-    await db.commit()
-    await db.refresh(note)
+    repo = InterviewNoteRepository(db)
+    note = await repo.add(note)
     logger.info("InterviewNote created", extra={"note_id": str(note.id), "company_id": company_id})
     return note
 
@@ -85,15 +86,8 @@ async def get_interview_note(
     note_id: str,
     company_id: str,
 ) -> InterviewNote | None:
-    result = await db.execute(
-        select(InterviewNote).where(
-            and_(
-                InterviewNote.id == uuid.UUID(note_id),
-                InterviewNote.company_id == uuid.UUID(company_id),
-            )
-        )
-    )
-    return result.scalar_one_or_none()
+    repo = InterviewNoteRepository(db)
+    return await repo.get_by_id(note_id=note_id, company_id=company_id)
 
 
 async def get_notes_for_candidate(
@@ -102,19 +96,12 @@ async def get_notes_for_candidate(
     company_id: str,
     job_id: str | None = None,
 ) -> list[InterviewNote]:
-    conditions = [
-        InterviewNote.candidate_id == uuid.UUID(candidate_id),
-        InterviewNote.company_id == uuid.UUID(company_id),
-    ]
-    if job_id:
-        conditions.append(InterviewNote.job_id == uuid.UUID(job_id))
-
-    result = await db.execute(
-        select(InterviewNote)
-        .where(and_(*conditions))
-        .order_by(InterviewNote.created_at.desc())
+    repo = InterviewNoteRepository(db)
+    return await repo.list_for_candidate(
+        candidate_id=candidate_id,
+        company_id=company_id,
+        job_id=job_id,
     )
-    return list(result.scalars().all())
 
 
 async def update_interview_note(
@@ -123,16 +110,11 @@ async def update_interview_note(
     company_id: str,
     **fields,
 ) -> InterviewNote | None:
-    note = await get_interview_note(db, note_id, company_id)
+    repo = InterviewNoteRepository(db)
+    note = await repo.get_by_id(note_id=note_id, company_id=company_id)
     if not note:
         return None
-
-    for key, value in fields.items():
-        if hasattr(note, key) and value is not None:
-            setattr(note, key, value)
-
     note.updated_at = datetime.utcnow()
-    await db.commit()
-    await db.refresh(note)
+    note = await repo.update(note, **fields)
     logger.info("InterviewNote updated", extra={"note_id": note_id, "fields": list(fields.keys())})
     return note

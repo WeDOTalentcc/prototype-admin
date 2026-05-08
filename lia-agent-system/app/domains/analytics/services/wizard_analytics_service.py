@@ -245,6 +245,7 @@ class WizardAnalyticsService:
             company_uuid = UUID(company_id)
             cutoff_date = datetime.utcnow() - timedelta(days=days)
             
+            # ADR-001-EXEMPT: filtered JobOutcome aggregation with wizard-specific time fields; promote to FeedbackRepository in Sprint 6
             result = await db.execute(
                 select(JobOutcome).where(
                     and_(

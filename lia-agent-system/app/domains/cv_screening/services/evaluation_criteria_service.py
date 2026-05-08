@@ -9,8 +9,9 @@ from difflib import SequenceMatcher
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domains.cv_screening.repositories.evaluation_criteria_repository import EvaluationCriteriaRepository
 
 from lia_models.evaluation_criteria import CriterionCategory, EvaluationCriteria
 from app.shared.services.responsibilities_catalog_service import RESPONSIBILITIES_CATALOG
@@ -269,9 +270,8 @@ class EvaluationCriteriaService:
         return SequenceMatcher(None, a.lower(), b.lower()).ratio()
 
     async def seed_from_catalogs(self, db: AsyncSession) -> dict[str, int]:
-        existing_count = await db.scalar(
-            select(func.count()).select_from(EvaluationCriteria)
-        )
+        repo = EvaluationCriteriaRepository(db)
+        existing_count = await repo.count_all()
         if existing_count and existing_count > 0:
             logger.info(
                 f"Evaluation criteria already seeded ({existing_count} records). Skipping."
@@ -297,7 +297,7 @@ class EvaluationCriteriaService:
                         source="seed",
                         is_active=True,
                     )
-                    db.add(criteria)
+                    repo.add(criteria)
                     created += 1
 
         for key, comp_data in BEHAVIORAL_COMPETENCIES_CATALOG.items():
@@ -356,7 +356,7 @@ class EvaluationCriteriaService:
                     db.add(criteria)
                     created += 1
 
-        await db.flush()
+        await repo.flush()
         logger.info(f"Seeded {created} evaluation criteria from catalogs")
         return {"created": created, "skipped": 0}
 
@@ -366,10 +366,7 @@ class EvaluationCriteriaService:
         requirements: list[str],
         min_score: float = 0.4,
     ) -> list[dict[str, Any]]:
-        result = await db.execute(
-            select(EvaluationCriteria).where(EvaluationCriteria.is_active)
-        )
-        all_criteria = result.scalars().all()
+        all_criteria = await EvaluationCriteriaRepository(db).list_active()
 
         matches: list[dict[str, Any]] = []
 
@@ -414,10 +411,7 @@ class EvaluationCriteriaService:
         criteria_id: UUID,
         was_helpful: bool,
     ) -> EvaluationCriteria | None:
-        result = await db.execute(
-            select(EvaluationCriteria).where(EvaluationCriteria.id == criteria_id)
-        )
-        criteria = result.scalar_one_or_none()
+        criteria = await EvaluationCriteriaRepository(db).get_by_id(criteria_id)
 
         if not criteria:
             logger.warning(f"Criteria {criteria_id} not found for effectiveness update")
@@ -443,23 +437,14 @@ class EvaluationCriteriaService:
         db: AsyncSession,
         category: str | None = None,
     ) -> list[EvaluationCriteria]:
-        query = select(EvaluationCriteria).where(EvaluationCriteria.is_active)
-        if category:
-            query = query.where(EvaluationCriteria.category == category)
-        query = query.order_by(EvaluationCriteria.effectiveness_score.desc())
-
-        result = await db.execute(query)
-        return list(result.scalars().all())
+        return await EvaluationCriteriaRepository(db).list_active_by_category(category=category)
 
     async def get_by_id(
         self,
         db: AsyncSession,
         criteria_id: UUID,
     ) -> EvaluationCriteria | None:
-        result = await db.execute(
-            select(EvaluationCriteria).where(EvaluationCriteria.id == criteria_id)
-        )
-        return result.scalar_one_or_none()
+        return await EvaluationCriteriaRepository(db).get_by_id(criteria_id)
 
 
 evaluation_criteria_service = EvaluationCriteriaService()

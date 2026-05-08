@@ -14,13 +14,19 @@ import uuid
 from datetime import datetime, timedelta
 from typing import Any
 
-from sqlalchemy import and_, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
+from app.domains.automation.repositories.communication_automation_repository import (
+    CommunicationAutomationRepository,
+)
+from app.domains.candidates.repositories.candidate_repository import CandidateRepository
+from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+    JobVacancyCRUDRepository,
+)
+from app.services.notification_service import NotificationService
 from lia_models.automation import ActionType, AutomationExecutionLog, CommunicationAutomation
 from lia_models.task import Task, TaskPriority, TaskType
-from app.services.notification_service import NotificationService
 
 logger = logging.getLogger(__name__)
 
@@ -64,11 +70,7 @@ class AutomationService:
             return True
         
         try:
-            from lia_models.candidate import Candidate
-            result = await db.execute(
-                select(Candidate).where(Candidate.id == candidate_id)
-            )
-            candidate = result.scalar_one_or_none()
+            candidate = await CandidateRepository(db).get_by_id_str(str(candidate_id))
             if not candidate:
                 logger.warning(f"⚠️ Candidate not found: {candidate_id}")
                 return False
@@ -87,11 +89,7 @@ class AutomationService:
             return True
         
         try:
-            from lia_models.job_vacancy import JobVacancy
-            result = await db.execute(
-                select(JobVacancy).where(JobVacancy.id == vacancy_id)
-            )
-            vacancy = result.scalar_one_or_none()
+            vacancy = await JobVacancyCRUDRepository(db).get_vacancy_by_id(vacancy_id)
             if not vacancy:
                 logger.warning(f"⚠️ Vacancy not found: {vacancy_id}")
                 return False
@@ -125,17 +123,10 @@ class AutomationService:
             should_close = True
         
         try:
-            result = await db.execute(
-                select(CommunicationAutomation).where(
-                    and_(
-                        CommunicationAutomation.company_id == company_id,
-                        CommunicationAutomation.trigger_type == trigger_type,
-                        CommunicationAutomation.is_active
-                    )
-                )
-            )
-            automations = result.scalars().all()
-            
+            automations = await CommunicationAutomationRepository(
+                db
+            ).list_active_for_trigger(company_id, trigger_type)
+
             executed = []
             skipped = []
             errors = []
@@ -749,34 +740,20 @@ class AutomationService:
             should_close = True
         
         try:
-            query = select(CommunicationAutomation).where(
-                CommunicationAutomation.company_id == company_id
+            page = await CommunicationAutomationRepository(db).list_paginated(
+                company_id,
+                is_active=is_active,
+                trigger_type=trigger_type,
+                limit=limit,
+                offset=offset,
             )
-            
-            if is_active is not None:
-                query = query.where(CommunicationAutomation.is_active == is_active)
-            
-            if trigger_type:
-                query = query.where(CommunicationAutomation.trigger_type == trigger_type)
-            
-            count_result = await db.execute(
-                select(func.count()).select_from(query.subquery())
-            )
-            total = count_result.scalar() or 0
-            
-            query = query.order_by(desc(CommunicationAutomation.created_at))
-            query = query.limit(limit).offset(offset)
-            
-            result = await db.execute(query)
-            automations = result.scalars().all()
-            
             return {
-                "automations": [a.to_dict() for a in automations],
-                "total": total,
-                "limit": limit,
-                "offset": offset
+                "automations": [a.to_dict() for a in page["automations"]],
+                "total": page["total"],
+                "limit": page["limit"],
+                "offset": page["offset"],
             }
-            
+
         finally:
             if should_close:
                 await db.close()
@@ -794,16 +771,10 @@ class AutomationService:
             should_close = True
         
         try:
-            result = await db.execute(
-                select(CommunicationAutomation).where(
-                    and_(
-                        CommunicationAutomation.id == automation_id,
-                        CommunicationAutomation.company_id == company_id
-                    )
-                )
+            return await CommunicationAutomationRepository(db).get_by_id_for_company(
+                automation_id, company_id
             )
-            return result.scalar_one_or_none()
-            
+
         finally:
             if should_close:
                 await db.close()
@@ -1029,31 +1000,19 @@ class AutomationService:
             should_close = True
         
         try:
-            query = select(AutomationExecutionLog).where(
-                AutomationExecutionLog.company_id == company_id
+            page = await CommunicationAutomationRepository(db).list_execution_logs(
+                company_id,
+                automation_id=automation_id,
+                limit=limit,
+                offset=offset,
             )
-            
-            if automation_id:
-                query = query.where(AutomationExecutionLog.automation_id == automation_id)
-            
-            count_result = await db.execute(
-                select(func.count()).select_from(query.subquery())
-            )
-            total = count_result.scalar() or 0
-            
-            query = query.order_by(desc(AutomationExecutionLog.executed_at))
-            query = query.limit(limit).offset(offset)
-            
-            result = await db.execute(query)
-            logs = result.scalars().all()
-            
             return {
-                "logs": [log.to_dict() for log in logs],
-                "total": total,
-                "limit": limit,
-                "offset": offset
+                "logs": [log.to_dict() for log in page["logs"]],
+                "total": page["total"],
+                "limit": page["limit"],
+                "offset": page["offset"],
             }
-            
+
         finally:
             if should_close:
                 await db.close()

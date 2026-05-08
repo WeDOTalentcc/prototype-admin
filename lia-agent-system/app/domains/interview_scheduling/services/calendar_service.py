@@ -34,15 +34,11 @@ async def _get_company_calendar_credentials(company_id: str, db: AsyncSession, p
     Returns None if no matching active credentials are found.
     """
     try:
-        from lia_models.company_calendar_credentials import CompanyCalendarCredentials
-        filters = [
-            CompanyCalendarCredentials.company_id == company_id,
-            CompanyCalendarCredentials.is_active.is_(True),
-        ]
-        if provider:
-            filters.append(CompanyCalendarCredentials.provider == provider)
-        result = await db.execute(select(CompanyCalendarCredentials).where(*filters))
-        return result.scalar_one_or_none()
+        from app.domains.interview_scheduling.repositories.calendar_credentials_repository import (
+            CalendarCredentialsRepository,
+        )
+        repo = CalendarCredentialsRepository(db)
+        return await repo.get_active_credentials(company_id, provider)
     except Exception:
         return None
 

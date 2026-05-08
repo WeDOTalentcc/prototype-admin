@@ -218,12 +218,8 @@ class TeamsOrchestratorBridge:
         """
         if db:
             try:
-                from lia_models.teams import TeamsConversation
-                stmt = select(TeamsConversation).where(
-                    TeamsConversation.user_id == teams_user_id
-                ).limit(1)
-                result = await db.execute(stmt)
-                row = result.scalar_one_or_none()
+                from app.domains.communication.repositories.teams_repository import TeamsRepository
+                row = await TeamsRepository(db).get_any_conversation_by_user_id(teams_user_id)
                 if row and getattr(row, "company_id", None):
                     return row.company_id
             except Exception:

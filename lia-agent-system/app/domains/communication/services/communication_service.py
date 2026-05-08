@@ -27,6 +27,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from typing import Any
 
+from app.domains.communication.repositories.communication_repository import CommunicationRepository
 from sqlalchemy import and_, desc, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -191,18 +192,12 @@ class CommunicationService:
         """
         today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
         
-        result = await db.execute(
-            select(CommunicationLog).where(
-                and_(
-                    CommunicationLog.candidate_id == candidate_id,
-                    CommunicationLog.company_id == company_id,
-                    CommunicationLog.sent_at >= today_start,
-                    CommunicationLog.status.in_(["sent", "delivered", "read"])
-                )
-            )
+        logs = await CommunicationRepository(db).list_logs_since(
+            candidate_id=candidate_id,
+            company_id=company_id,
+            since=today_start,
+            statuses=["sent", "delivered", "read"],
         )
-        
-        logs = list(result.scalars())
         messages_today = len(logs)
         
         return messages_today < self.MAX_MESSAGES_PER_DAY, messages_today
@@ -220,21 +215,11 @@ class CommunicationService:
         Returns:
             Tuple of (is_opted_out, opt_out_record)
         """
-        result = await db.execute(
-            select(CandidateOptOut).where(
-                and_(
-                    CandidateOptOut.candidate_id == candidate_id,
-                    CandidateOptOut.company_id == company_id,
-                    CandidateOptOut.is_active,
-                    or_(
-                        CandidateOptOut.channel == channel.value,
-                        CandidateOptOut.opt_out_type == "all"
-                    )
-                )
-            )
+        opt_out = await CommunicationRepository(db).get_active_optout(
+            candidate_id=candidate_id,
+            company_id=company_id,
+            channel_value=channel.value,
         )
-        
-        opt_out = result.scalar_one_or_none()
         return bool(opt_out), opt_out
     
     async def _check_quarantine(
@@ -251,18 +236,11 @@ class CommunicationService:
         """
         now = datetime.utcnow()
         
-        result = await db.execute(
-            select(CandidateQuarantine).where(
-                and_(
-                    CandidateQuarantine.candidate_id == candidate_id,
-                    CandidateQuarantine.company_id == company_id,
-                    CandidateQuarantine.is_active,
-                    CandidateQuarantine.quarantine_end > now
-                )
-            )
+        quarantine = await CommunicationRepository(db).get_active_quarantine(
+            candidate_id=candidate_id,
+            company_id=company_id,
+            now=now,
         )
-        
-        quarantine = result.scalar_one_or_none()
         return bool(quarantine), quarantine
     
     async def validate_can_send(
@@ -482,12 +460,7 @@ class CommunicationService:
 
         async with _get_db(db) as db:
             try:
-                result = await db.execute(
-                    select(PendingApproval).where(
-                        PendingApproval.id == approval_id
-                    )
-                )
-                approval = result.scalar_one_or_none()
+                approval = await CommunicationRepository(db).get_pending_approval_by_id(approval_id)
 
                 if not approval:
                     return {"success": False, "error": "not_found"}
@@ -625,6 +598,8 @@ class CommunicationService:
             if priority:
                 conditions.append(PendingApproval.priority == priority)
             
+            # ADR-001-EXEMPT: dynamic where conditions list + computed order-by;
+            # promoting to repo would require leaking SQLAlchemy expressions. Sprint 6 follow-up.
             result = await db.execute(
                 select(PendingApproval)
                 .where(and_(*conditions))
@@ -1075,17 +1050,11 @@ class CommunicationService:
         """Record a candidate's consent for communications (LGPD compliance)."""
         async with _get_db(db) as db:
             try:
-                result = await db.execute(
-                    select(CandidateOptOut).where(
-                        and_(
-                            CandidateOptOut.candidate_id == candidate_id,
-                            CandidateOptOut.company_id == company_id,
-                            CandidateOptOut.channel == channel.value,
-                            CandidateOptOut.is_active
-                        )
-                    )
+                opt_out = await CommunicationRepository(db).get_active_optout_for_channel(
+                    candidate_id=candidate_id,
+                    company_id=company_id,
+                    channel_value=channel.value,
                 )
-                opt_out = result.scalar_one_or_none()
                 
                 if opt_out:
                     opt_out.is_active = False
@@ -1167,12 +1136,7 @@ class CommunicationService:
         """Lift a quarantine early."""
         async with _get_db(db) as db:
             try:
-                result = await db.execute(
-                    select(CandidateQuarantine).where(
-                        CandidateQuarantine.id == quarantine_id
-                    )
-                )
-                quarantine = result.scalar_one_or_none()
+                quarantine = await CommunicationRepository(db).get_quarantine_by_id(quarantine_id)
                 
                 if not quarantine:
                     return {"success": False, "error": "not_found"}
@@ -1221,6 +1185,8 @@ class CommunicationService:
             if status:
                 conditions.append(CommunicationLog.status == status.value)
             
+            # ADR-001-EXEMPT: dynamic where conditions list (channel/status filters built inline).
+            # Sprint 6 follow-up: promote to repo with kwarg-driven filter helper.
             result = await db.execute(
                 select(CommunicationLog)
                 .where(and_(*conditions))
@@ -1251,17 +1217,9 @@ class CommunicationService:
             day_start = date.replace(hour=0, minute=0, second=0, microsecond=0)
             day_end = day_start + timedelta(days=1)
             
-            result = await db.execute(
-                select(CommunicationLog).where(
-                    and_(
-                        CommunicationLog.company_id == company_id,
-                        CommunicationLog.created_at >= day_start,
-                        CommunicationLog.created_at < day_end
-                    )
-                )
+            logs = await CommunicationRepository(db).list_logs_in_day(
+                company_id=company_id, day_start=day_start, day_end=day_end
             )
-            
-            logs = list(result.scalars())
             
             stats = {
                 "date": day_start.strftime("%Y-%m-%d"),
@@ -1456,19 +1414,11 @@ class CommunicationService:
             try:
                 now = datetime.utcnow()
                 
-                result = await db.execute(
-                    select(CommunicationLog).where(
-                        and_(
-                            CommunicationLog.status == CommunicationStatus.QUEUED.value,
-                            or_(
-                                CommunicationLog.next_retry_at.is_(None),
-                                CommunicationLog.next_retry_at <= now
-                            )
-                        )
-                    ).limit(100)
+                queued_logs = await CommunicationRepository(db).list_queued_logs_for_retry(
+                    now=now,
+                    queued_status=CommunicationStatus.QUEUED.value,
+                    limit=100,
                 )
-                
-                queued_logs = list(result.scalars())
                 processed = 0
                 
                 for log in queued_logs:

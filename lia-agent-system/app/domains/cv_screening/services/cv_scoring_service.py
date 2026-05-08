@@ -19,6 +19,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
+from app.domains.cv_screening.repositories.screening_repository import ScreeningRepository
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -271,10 +272,7 @@ class CVScoringService:
     async def _get_candidate_data(self, candidate_id: str, db: AsyncSession) -> dict[str, Any] | None:
         """Fetch candidate data from database."""
         try:
-            result = await db.execute(
-                select(Candidate).where(Candidate.id == UUID(candidate_id))
-            )
-            candidate = result.scalar_one_or_none()
+            candidate = await ScreeningRepository(db).get_candidate_by_uuid_string(candidate_id)
             
             if not candidate:
                 return None
@@ -307,12 +305,7 @@ class CVScoringService:
     async def _get_job_requirements(self, job_id: str, db: AsyncSession) -> list[JobRequirementCreate]:
         """Fetch job requirements from database."""
         try:
-            result = await db.execute(
-                select(JobRequirement).where(
-                    JobRequirement.job_vacancy_id == UUID(job_id)
-                )
-            )
-            db_requirements = result.scalars().all()
+            db_requirements = await ScreeningRepository(db).list_requirements_by_vacancy_uuid_string(job_id)
             
             return [
                 JobRequirementCreate(
@@ -345,10 +338,7 @@ class CVScoringService:
     async def _get_job_info(self, job_id: str, db: AsyncSession) -> dict[str, Any] | None:
         """Fetch job vacancy info from database."""
         try:
-            result = await db.execute(
-                select(JobVacancy).where(JobVacancy.id == UUID(job_id))
-            )
-            job = result.scalar_one_or_none()
+            job = await ScreeningRepository(db).get_job_vacancy_by_uuid_string(job_id)
             
             if not job:
                 return None
@@ -374,6 +364,9 @@ class CVScoringService:
     ) -> None:
         """Update candidate with screening score."""
         try:
+            # ADR-001-EXEMPT: VacancyCandidate.job_vacancy_id is used here (legacy column name)
+            # while screening_repository.get_vacancy_candidate uses VacancyCandidate.vacancy_id.
+            # Keeping inline preserves existing semantics; Sprint 6 follow-up to consolidate.
             result = await db.execute(
                 select(VacancyCandidate).where(
                     VacancyCandidate.candidate_id == UUID(candidate_id),

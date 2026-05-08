@@ -85,3 +85,38 @@ class CommunicationMatrixRepository:
         """Count entries for a company (or platform defaults)."""
         entries = await self.list_entries(company_id)
         return len(entries)
+
+
+    async def get_by_trigger_name(
+        self,
+        *,
+        trigger_name: str,
+        company_id: str | None,
+    ) -> CommunicationMatrixEntry | None:
+        """Find matrix entry by trigger_name.
+
+        Priority: company-specific entry, falling back to platform default
+        (company_id IS NULL) when no company-specific record matches.
+        """
+        if not trigger_name:
+            return None
+
+        if company_id:
+            result = await self.db.execute(
+                select(CommunicationMatrixEntry).where(
+                    CommunicationMatrixEntry.trigger_name == trigger_name,
+                    CommunicationMatrixEntry.company_id == company_id,
+                )
+            )
+            entry = result.scalars().first()
+            if entry:
+                return entry
+
+        # Platform default fallback
+        result = await self.db.execute(
+            select(CommunicationMatrixEntry).where(
+                CommunicationMatrixEntry.trigger_name == trigger_name,
+                CommunicationMatrixEntry.company_id.is_(None),
+            )
+        )
+        return result.scalars().first()

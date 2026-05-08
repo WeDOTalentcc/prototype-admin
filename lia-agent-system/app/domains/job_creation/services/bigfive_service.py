@@ -24,10 +24,12 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.hiring_policy.repositories.hiring_policy_repository import (
+    HiringPolicyRepository,
+)
 from app.domains.job_creation.repositories.bigfive_department_profile_repository import (
     ALLOWED_TRAITS,
     BigFiveDepartmentProfileRepository,
@@ -97,17 +99,26 @@ class BigFiveDepartmentService:
     async def _get_culture_profile(self, company_id: str):
         """Carrega CompanyCultureProfile da empresa, ou None."""
         try:
-            from lia_models.company_culture import CompanyCultureProfile
+            from app.domains.company.repositories.culture_profile_repository import (
+                CultureProfileRepository,
+            )
         except ImportError:
-            logger.error("[BigFiveSvc] CompanyCultureProfile model unavailable")
+            logger.error("[BigFiveSvc] CultureProfileRepository unavailable")
+            return None
+
+        import uuid as _uuid
+        try:
+            _company_uuid = (
+                company_id
+                if isinstance(company_id, _uuid.UUID)
+                else _uuid.UUID(str(company_id))
+            )
+        except (ValueError, AttributeError):
             return None
 
         try:
-            stmt = select(CompanyCultureProfile).where(
-                CompanyCultureProfile.company_id == company_id,
-            )
-            result = await self.db.execute(stmt)
-            return result.scalar_one_or_none()
+            repo = CultureProfileRepository(self.db)
+            return await repo.get_for_company(_company_uuid)
         except SQLAlchemyError as exc:
             logger.warning(
                 "[BigFiveSvc] culture profile DB error: %s", str(exc)[:100],
@@ -116,17 +127,11 @@ class BigFiveDepartmentService:
 
     async def _get_toggles(self, company_id: str) -> dict:
         """Carrega learning_loops toggles de CompanyHiringPolicy ou defaults."""
-        from lia_models.company_hiring_policy import (
-            AUTOMATION_RULES_DEFAULTS,
-            CompanyHiringPolicy,
-        )
+        from lia_models.company_hiring_policy import AUTOMATION_RULES_DEFAULTS
         defaults = AUTOMATION_RULES_DEFAULTS["learning_loops"]
         try:
-            stmt = select(CompanyHiringPolicy).where(
-                CompanyHiringPolicy.company_id == company_id,
-            )
-            result = await self.db.execute(stmt)
-            policy = result.scalar_one_or_none()
+            repo = HiringPolicyRepository(self.db)
+            policy = await repo.get_by_company(company_id)
             if policy and policy.automation_rules:
                 return policy.automation_rules.get("learning_loops", defaults)
         except SQLAlchemyError as exc:

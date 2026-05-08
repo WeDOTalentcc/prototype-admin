@@ -21,6 +21,10 @@ from uuid import UUID
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.analytics.repositories.feedback_repository import FeedbackRepository
+from app.domains.analytics.repositories.recruiter_profile_repository import (
+    RecruiterProfileRepository,
+)
 from lia_models.feedback_learning import WizardFeedback
 from lia_models.recruiter_profile import (
     PersonalizationSettings,
@@ -165,11 +169,8 @@ class RecruiterPersonalizationService:
         company_id: str
     ) -> RecruiterProfile:
         """Get existing profile or create a new one."""
-        query = select(RecruiterProfile).where(
-            RecruiterProfile.recruiter_id == recruiter_id
-        )
-        result = await db.execute(query)
-        profile = result.scalar_one_or_none()
+        repo = RecruiterProfileRepository(db)
+        profile = await repo.get_profile(recruiter_id)
         
         if not profile:
             profile = RecruiterProfile(
@@ -199,11 +200,8 @@ class RecruiterPersonalizationService:
             profile = await self.get_or_create_profile(db, recruiter_id, company_id)
             context.profile = profile
             
-            settings_query = select(PersonalizationSettings).where(
-                PersonalizationSettings.recruiter_id == recruiter_id
-            )
-            settings_result = await db.execute(settings_query)
-            context.settings = settings_result.scalar_one_or_none()
+            repo = RecruiterProfileRepository(db)
+            context.settings = await repo.get_settings(recruiter_id)
             
             if context.settings and not context.settings.enable_personalization:  # type: ignore[union-attr]
                 context.personalization_level = "disabled"
@@ -218,11 +216,7 @@ class RecruiterPersonalizationService:
             context.is_new_user = False
             context.personalization_level = "full" if total_jobs >= 30 else "partial"
             
-            prefs_query = select(RecruiterFieldPreference).where(
-                RecruiterFieldPreference.recruiter_id == recruiter_id
-            )
-            prefs_result = await db.execute(prefs_query)
-            for pref in prefs_result.scalars():
+            for pref in await repo.list_field_preferences(recruiter_id):
                 context.field_preferences[str(pref.field_name)] = pref  # type: ignore[union-attr]
             
             context.flow_config = self._build_flow_config(profile)
@@ -366,14 +360,8 @@ class RecruiterPersonalizationService:
         final_value: Any = None
     ) -> None:
         """Update field preference based on event."""
-        query = select(RecruiterFieldPreference).where(
-            and_(
-                RecruiterFieldPreference.recruiter_id == recruiter_id,
-                RecruiterFieldPreference.field_name == field_name
-            )
-        )
-        result = await db.execute(query)
-        pref = result.scalar_one_or_none()
+        repo = RecruiterProfileRepository(db)
+        pref = await repo.find_field_preference(recruiter_id, field_name)
         
         if not pref:
             pref = RecruiterFieldPreference(
@@ -427,11 +415,8 @@ class RecruiterPersonalizationService:
         to update the recruiter's profile with detected patterns.
         """
         try:
-            profile_query = select(RecruiterProfile).where(
-                RecruiterProfile.recruiter_id == recruiter_id
-            )
-            result = await db.execute(profile_query)
-            profile = result.scalar_one_or_none()
+            repo = RecruiterProfileRepository(db)
+            profile = await repo.get_profile(recruiter_id)
             
             if not profile:
                 return None
@@ -442,11 +427,8 @@ class RecruiterPersonalizationService:
                 "correction_patterns": profile.correction_patterns or {},
             }
             
-            feedback_query = select(WizardFeedback).where(
-                WizardFeedback.user_id == recruiter_id
-            )
-            feedback_result = await db.execute(feedback_query)
-            feedbacks = list(feedback_result.scalars().all())
+            feedback_repo = FeedbackRepository(db)
+            feedbacks = await feedback_repo.list_wizard_feedback_for_user(recruiter_id)
             
             job_ids = set()
             seniorities: dict[str, int] = {}
@@ -552,11 +534,8 @@ class RecruiterPersonalizationService:
         consent_version: str | None = None
     ) -> PersonalizationSettings:
         """Update personalization settings for a recruiter."""
-        query = select(PersonalizationSettings).where(
-            PersonalizationSettings.recruiter_id == recruiter_id
-        )
-        result = await db.execute(query)
-        settings = result.scalar_one_or_none()
+        repo = RecruiterProfileRepository(db)
+        settings = await repo.get_settings(recruiter_id)
         
         if not settings:
             settings = PersonalizationSettings(recruiter_id=recruiter_id)
@@ -583,11 +562,8 @@ class RecruiterPersonalizationService:
         recruiter_id: str
     ) -> dict[str, Any]:
         """Get a summary of personalization status for a recruiter."""
-        query = select(RecruiterProfile).where(
-            RecruiterProfile.recruiter_id == recruiter_id
-        )
-        result = await db.execute(query)
-        profile = result.scalar_one_or_none()
+        repo = RecruiterProfileRepository(db)
+        profile = await repo.get_profile(recruiter_id)
         
         if not profile:
             return {

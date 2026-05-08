@@ -19,6 +19,9 @@ from sqlalchemy import and_, delete, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
+from app.domains.policy.repositories.policy_engine_repository import (
+    PolicyEngineRepository,
+)
 from lia_models.policy import (
     DEFAULT_BUSINESS_RULES,
     DEFAULT_ESCALATION_RULES,
@@ -238,18 +241,10 @@ class PolicyEngineService:
 
         async with AsyncSessionLocal() as session:
             try:
-                query = select(BusinessRule).where(
-                    and_(
-                        BusinessRule.is_active,
-                        or_(
-                            BusinessRule.company_id is None,
-                            BusinessRule.company_id == _company_uuid if _company_uuid else True,
-                        )
-                    )
-                ).order_by(BusinessRule.priority.asc())
-                
-                result = await session.execute(query)
-                rules = result.scalars().all()
+                _engine_repo = PolicyEngineRepository(session)
+                rules = await _engine_repo.list_active_business_rules_for_company(
+                    _company_uuid
+                )
                 
                 matching_rule: BusinessRule | None = None
                 evaluation_result = PolicyEvaluationResult.ALLOW
@@ -450,19 +445,12 @@ class PolicyEngineService:
             RateLimitResult with the decision and current counts
         """
         async def _check(db_session: AsyncSession) -> RateLimitResult:
-            query = select(RateLimitRule).where(
-                and_(
-                    RateLimitRule.is_active,
-                    RateLimitRule.target_type == target_type,
-                    or_(
-                        RateLimitRule.company_id is None,
-                        RateLimitRule.company_id == UUID(company_id) if company_id else True
-                    )
-                )
+            _engine_repo = PolicyEngineRepository(db_session)
+            _company_uuid = UUID(company_id) if company_id else None
+            rules = await _engine_repo.list_active_rate_limit_rules(
+                target_type=target_type,
+                company_uuid=_company_uuid,
             )
-            
-            result = await db_session.execute(query)
-            rules = result.scalars().all()
             
             matching_rule: RateLimitRule | None = None
             for rule in rules:
@@ -491,15 +479,11 @@ class PolicyEngineService:
             now = datetime.utcnow()
             window_start = now - timedelta(seconds=matching_rule.window_seconds)
             
-            counter_query = select(RateLimitCounter).where(
-                and_(
-                    RateLimitCounter.rule_id == matching_rule.id,
-                    RateLimitCounter.target_key == target_key,
-                    RateLimitCounter.window_start >= window_start
-                )
+            counters = await _engine_repo.list_rate_limit_counters_in_window(
+                rule_id=matching_rule.id,
+                target_key=target_key,
+                window_start=window_start,
             )
-            counter_result = await db_session.execute(counter_query)
-            counters = counter_result.scalars().all()
             
             current_count = sum(c.count for c in counters)
             
@@ -623,32 +607,23 @@ class PolicyEngineService:
         
         async with AsyncSessionLocal() as session:
             try:
+                _engine_repo = PolicyEngineRepository(session)
                 if rule_id:
-                    query = select(EscalationRule).where(
-                        and_(
-                            EscalationRule.id == UUID(rule_id),
-                            EscalationRule.is_active
-                        )
+                    _rule = await _engine_repo.get_active_escalation_rule_by_id(
+                        UUID(rule_id)
                     )
+                    rules = [_rule] if _rule else []
                 elif trigger_type:
-                    query = select(EscalationRule).where(
-                        and_(
-                            EscalationRule.trigger_type == trigger_type,
-                            EscalationRule.is_active,
-                            or_(
-                                EscalationRule.company_id is None,
-                                EscalationRule.company_id == UUID(company_id) if company_id else True
-                            )
-                        )
-                    ).order_by(EscalationRule.priority.asc())
+                    _company_uuid = UUID(company_id) if company_id else None
+                    rules = await _engine_repo.list_escalation_rules_by_trigger(
+                        trigger_type=trigger_type,
+                        company_uuid=_company_uuid,
+                    )
                 else:
                     return EscalationResult(
                         success=False,
                         message="Either rule_id or trigger_type must be provided"
                     )
-                
-                result = await session.execute(query)
-                rules = result.scalars().all()
                 
                 if not rules:
                     return EscalationResult(
@@ -833,11 +808,9 @@ class PolicyEngineService:
             }
             
             try:
+                _engine_repo = PolicyEngineRepository(session)
                 for rule_data in DEFAULT_BUSINESS_RULES:
-                    existing = await session.execute(
-                        select(BusinessRule).where(BusinessRule.name == rule_data["name"])
-                    )
-                    if existing.scalar_one_or_none():
+                    if await _engine_repo.get_business_rule_by_name(rule_data["name"]):
                         stats["business_rules_skipped"] += 1
                         continue
                     
@@ -855,10 +828,7 @@ class PolicyEngineService:
                     stats["business_rules_created"] += 1
                 
                 for rule_data in DEFAULT_RATE_LIMIT_RULES:
-                    existing = await session.execute(
-                        select(RateLimitRule).where(RateLimitRule.name == rule_data["name"])
-                    )
-                    if existing.scalar_one_or_none():
+                    if await _engine_repo.get_rate_limit_rule_by_name(rule_data["name"]):
                         stats["rate_limit_rules_skipped"] += 1
                         continue
                     
@@ -875,10 +845,7 @@ class PolicyEngineService:
                     stats["rate_limit_rules_created"] += 1
                 
                 for rule_data in DEFAULT_ESCALATION_RULES:
-                    existing = await session.execute(
-                        select(EscalationRule).where(EscalationRule.name == rule_data["name"])
-                    )
-                    if existing.scalar_one_or_none():
+                    if await _engine_repo.get_escalation_rule_by_name(rule_data["name"]):
                         stats["escalation_rules_skipped"] += 1
                         continue
                     
@@ -968,12 +935,11 @@ class PolicyEngineService:
         }
 
         async def _upsert(session: AsyncSession) -> dict:
-            result = await session.execute(
-                select(CompanyHiringPolicy).where(
-                    CompanyHiringPolicy.company_id == company_id
-                )
+            from app.domains.hiring_policy.repositories.hiring_policy_repository import (
+                HiringPolicyRepository,
             )
-            policy = result.scalar_one_or_none()
+            _hp_repo = HiringPolicyRepository(session)
+            policy = await _hp_repo.get_by_company(company_id)
 
             if policy:
                 existing_automation = dict(policy.automation_rules or {})

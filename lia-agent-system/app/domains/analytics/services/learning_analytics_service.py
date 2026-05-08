@@ -95,6 +95,7 @@ class LearningAnalyticsService:
             await db.rollback()
             return {"success": False, "error": str(exc)}
 
+            # ADR-001-EXEMPT: single-table StageFeedback aggregation for analytics dashboard; promote to CompanyLearningRepository in Sprint 6 cleanup
     async def get_stage_analytics(
         self,
         db: AsyncSession,

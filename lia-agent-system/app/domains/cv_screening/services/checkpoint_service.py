@@ -13,14 +13,13 @@ LangGraph path, PostgresSaver manages checkpoints automatically.
 from __future__ import annotations
 
 import logging
-from datetime import datetime
 from typing import Any
 
-from sqlalchemy import select
-from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.agent_checkpoint import AgentCheckpoint
+from app.domains.cv_screening.repositories.agent_checkpoint_repository import (
+    AgentCheckpointRepository,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -56,32 +55,16 @@ async def save_checkpoint(
     """Upsert the agent state for the given session.
 
     Used only by legacy graph paths (e.g., custom start_node in JobWizardGraph).
-    LangGraph's PostgresSaver handles checkpoints for the standard path.
+    LangGraph PostgresSaver handles checkpoints for the standard path.
     """
     sanitized = _sanitize_state(state)
-
-    stmt = (
-        pg_insert(AgentCheckpoint)
-        .values(
-            session_id=session_id,
-            agent_type=agent_type,
-            company_id=company_id,
-            state_json=sanitized,
-            created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow(),
-        )
-        .on_conflict_do_update(
-            constraint="uq_agent_checkpoints_session_type",
-            set_={
-                "state_json": sanitized,
-                "company_id": company_id,
-                "updated_at": datetime.utcnow(),
-            },
-        )
+    repo = AgentCheckpointRepository(db)
+    await repo.upsert(
+        session_id=session_id,
+        agent_type=agent_type,
+        state=sanitized,
+        company_id=company_id,
     )
-
-    await db.execute(stmt)
-    await db.commit()
     logger.debug("Checkpoint saved", extra={"session_id": session_id, "agent_type": agent_type})
 
 
@@ -95,13 +78,8 @@ async def restore_checkpoint(
     Used only by legacy graph paths. For the standard LangGraph path,
     PostgresSaver restores state automatically via thread_id at ainvoke() time.
     """
-    result = await db.execute(
-        select(AgentCheckpoint).where(
-            AgentCheckpoint.session_id == session_id,
-            AgentCheckpoint.agent_type == agent_type,
-        )
-    )
-    row = result.scalar_one_or_none()
+    repo = AgentCheckpointRepository(db)
+    row = await repo.get(session_id=session_id, agent_type=agent_type)
     if row is None:
         return None
     logger.debug("Checkpoint restored", extra={"session_id": session_id, "agent_type": agent_type})
@@ -118,14 +96,6 @@ async def delete_checkpoint(
     Used only by legacy graph paths. For the standard LangGraph path,
     PostgresSaver manages cleanup via thread_id.
     """
-    result = await db.execute(
-        select(AgentCheckpoint).where(
-            AgentCheckpoint.session_id == session_id,
-            AgentCheckpoint.agent_type == agent_type,
-        )
-    )
-    row = result.scalar_one_or_none()
-    if row:
-        await db.delete(row)
-        await db.commit()
-        logger.info("Checkpoint deleted", extra={"session_id": session_id})
+    repo = AgentCheckpointRepository(db)
+    await repo.delete(session_id=session_id, agent_type=agent_type)
+    logger.info("Checkpoint deleted", extra={"session_id": session_id})

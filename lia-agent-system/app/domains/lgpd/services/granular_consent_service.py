@@ -25,8 +25,11 @@ import logging
 from dataclasses import dataclass, field
 from datetime import datetime
 
-from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domains.lgpd.repositories.lgpd_consent_repository import (
+    LGPDConsentRepository,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -109,6 +112,7 @@ class GranularConsentService:
 
     def __init__(self, db: AsyncSession):
         self.db = db
+        self.repo = LGPDConsentRepository(db)
 
     def _consent_type_for(self, purpose: str) -> str:
         """Retorna consent_type granular para a finalidade. Default: SCREENING."""
@@ -125,18 +129,12 @@ class GranularConsentService:
         Constrói um status para cada finalidade suportada, mesmo que o registro
         não exista no banco (nesse caso: given=False, revoked=False, absent=True).
         """
-        from lia_models.communication_settings import LGPDConsent
-
         # Busca todos os registros do candidato de uma vez
-        result = await self.db.execute(
-            select(LGPDConsent).where(
-                and_(
-                    LGPDConsent.candidate_id == candidate_id,
-                    LGPDConsent.company_id == company_id,
-                )
-            )
+        records = await self.repo.list_for_candidate(
+            candidate_id=candidate_id,
+            company_id=company_id,
         )
-        db_consents = {c.consent_type: c for c in result.scalars().all()}
+        db_consents = {c.consent_type: c for c in records}
 
         statuses: list[GranularConsentStatus] = []
         for purpose, ctype in GRANULAR_PURPOSE_MAP.items():
@@ -202,16 +200,11 @@ class GranularConsentService:
         for purpose, given in updates.items():
             ctype = self._consent_type_for(purpose)
 
-            result = await self.db.execute(
-                select(LGPDConsent).where(
-                    and_(
-                        LGPDConsent.candidate_id == candidate_id,
-                        LGPDConsent.company_id == company_id,
-                        LGPDConsent.consent_type == ctype,
-                    )
-                )
+            record = await self.repo.get_for_candidate_purpose(
+                candidate_id=candidate_id,
+                company_id=company_id,
+                consent_type=ctype,
             )
-            record = result.scalar_one_or_none()
 
             if record is None:
                 record = LGPDConsent(
@@ -264,18 +257,12 @@ class GranularConsentService:
         Retorna True se consent_given=True e não revogado. Fail-open: True em caso de erro.
         """
         try:
-            from lia_models.communication_settings import LGPDConsent
             ctype = self._consent_type_for(purpose)
-            result = await self.db.execute(
-                select(LGPDConsent).where(
-                    and_(
-                        LGPDConsent.candidate_id == candidate_id,
-                        LGPDConsent.company_id == company_id,
-                        LGPDConsent.consent_type == ctype,
-                    )
-                )
+            record = await self.repo.get_for_candidate_purpose(
+                candidate_id=candidate_id,
+                company_id=company_id,
+                consent_type=ctype,
             )
-            record = result.scalar_one_or_none()
             if record is None:
                 return False
             return bool(record.consent_given) and not bool(record.revoked_at)

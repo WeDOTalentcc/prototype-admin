@@ -21,7 +21,11 @@ from langchain_core.prompts import ChatPromptTemplate
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.candidates.repositories.candidate_repository import CandidateRepository
 from app.domains.cv_screening.constants.wsi_constants import WSI_DIMENSION_LABELS
+from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+    JobVacancyCrudRepository,
+)
 from lia_models.candidate import Candidate
 from lia_models.job_vacancy import JobVacancy
 from lia_models.voice_screening import VoiceScreeningAnalysis, VoiceScreeningCall
@@ -172,6 +176,9 @@ class CandidateReportService:
             candidate.current_title
         )
         
+        # ADR-001-EXEMPT: cross-domain read of VoiceScreeningCall for analytics report
+        # readiness check. WsiRepository is owned by another agent in Sprint Q2 cleanup;
+        # consolidate this query into voice repo in follow-up sprint.
         voice_screening = await db.execute(
             select(VoiceScreeningCall)
             .where(VoiceScreeningCall.candidate_id == candidate_id)
@@ -709,20 +716,23 @@ Resumo: {interview_data.get('summary', 'N/A')}"""
     
     async def _get_candidate(self, db: AsyncSession, candidate_id: str) -> Candidate | None:
         """Get candidate by ID."""
-        result = await db.execute(
-            select(Candidate).where(Candidate.id == candidate_id)
-        )
-        return result.scalar_one_or_none()
+        repo = CandidateRepository(db)
+        return await repo.get_by_id_str(candidate_id)
     
     async def _get_job(self, db: AsyncSession, job_id: str) -> JobVacancy | None:
         """Get job vacancy by ID."""
-        result = await db.execute(
-            select(JobVacancy).where(JobVacancy.id == job_id)
-        )
-        return result.scalar_one_or_none()
+        from uuid import UUID
+        repo = JobVacancyCrudRepository(db)
+        try:
+            return await repo.get_vacancy_by_id_only(UUID(job_id))
+        except (ValueError, TypeError):
+            return None
     
     async def _get_screening_data(self, db: AsyncSession, candidate_id: str) -> dict | None:
         """Get voice screening data for candidate."""
+        # ADR-001-EXEMPT: cross-domain JOIN on voice_screening tables for analytics
+        # report. WsiRepository is owned by another agent (Sprint Q2 scope split);
+        # promote this JOIN to a voice repo method in a follow-up sprint.
         result = await db.execute(
             select(VoiceScreeningCall, VoiceScreeningAnalysis)
             .join(VoiceScreeningAnalysis, VoiceScreeningCall.id == VoiceScreeningAnalysis.screening_call_id, isouter=True)

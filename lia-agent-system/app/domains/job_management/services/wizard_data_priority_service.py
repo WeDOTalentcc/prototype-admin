@@ -18,8 +18,10 @@ from enum import Enum, StrEnum
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import and_, desc, func, or_, select
+from sqlalchemy import or_
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domains.job_management.repositories.wizard_data_priority_repository import WizardDataPriorityRepository
 
 from lia_models.company import Benefit, Department
 from lia_models.company_learning import CompanyResponsibility, CompanySkill
@@ -219,12 +221,9 @@ class WizardDataPriorityService:
         """Query company settings (Menu Configurações)."""
         
         if field == "department":
-            result = await db.execute(
-                select(Department).where(
-                    Department.company_id == str(context.company_id)
-                )
+            departments = await WizardDataPriorityRepository(db).list_departments(
+                str(context.company_id)
             )
-            departments = result.scalars().all()
             if departments:
                 return Suggestion(
                     value=[d.name for d in departments],
@@ -234,12 +233,9 @@ class WizardDataPriorityService:
                 )
         
         elif field == "benefits":
-            result = await db.execute(
-                select(Benefit).where(
-                    Benefit.company_id == str(context.company_id)
-                )
+            benefits = await WizardDataPriorityRepository(db).list_benefits(
+                str(context.company_id)
             )
-            benefits = result.scalars().all()
             if benefits:
                 return Suggestion(
                     value=[b.name for b in benefits],
@@ -259,16 +255,9 @@ class WizardDataPriorityService:
         """Query LIA platform history (vagas criadas anteriormente)."""
         
         if field == "technical_skills":
-            result = await db.execute(
-                select(CompanySkill).where(
-                    and_(
-                        CompanySkill.company_id == str(context.company_id),
-                        CompanySkill.is_promoted,
-                        CompanySkill.skill_type == "technical"
-                    )
-                ).order_by(desc(CompanySkill.times_confirmed)).limit(20)
+            skills = await WizardDataPriorityRepository(db).list_promoted_technical_skills(
+                str(context.company_id), limit=20
             )
-            skills = result.scalars().all()
             if skills:
                 return Suggestion(
                     value=[{"name": s.skill_name, "category": s.category} for s in skills],
@@ -278,15 +267,9 @@ class WizardDataPriorityService:
                 )
         
         elif field == "responsibilities":
-            result = await db.execute(
-                select(CompanyResponsibility).where(
-                    and_(
-                        CompanyResponsibility.company_id == str(context.company_id),
-                        CompanyResponsibility.is_promoted
-                    )
-                ).order_by(desc(CompanyResponsibility.times_confirmed)).limit(10)
+            responsibilities = await WizardDataPriorityRepository(db).list_promoted_responsibilities(
+                str(context.company_id), limit=10
             )
-            responsibilities = result.scalars().all()
             if responsibilities:
                 return Suggestion(
                     value=[r.description for r in responsibilities],
@@ -299,16 +282,11 @@ class WizardDataPriorityService:
             if not context.job_title:
                 return None
             
-            result = await db.execute(
-                select(JobPattern).where(
-                    and_(
-                        JobPattern.company_id == context.company_id,
-                        JobPattern.job_title_normalized.ilike(f"%{context.job_title}%"),
-                        JobPattern.sample_count >= 2
-                    )
-                ).order_by(desc(JobPattern.sample_count)).limit(1)
+            pattern = await WizardDataPriorityRepository(db).find_top_job_pattern_by_title(
+                company_id=context.company_id,
+                job_title=context.job_title,
+                min_samples=2,
             )
-            pattern = result.scalar_one_or_none()
             if pattern and pattern.avg_salary_min:
                 return Suggestion(
                     value={
@@ -349,12 +327,7 @@ class WizardDataPriorityService:
         if context.seniority:
             filters.append(ImportedJobDescription.seniority == context.seniority)
         
-        result = await db.execute(
-            select(ImportedJobDescription).where(
-                and_(*filters)
-            ).order_by(desc(ImportedJobDescription.created_at)).limit(10)
-        )
-        jds = result.scalars().all()
+        jds = await WizardDataPriorityRepository(db).list_imported_jds(filters, limit=10)
         
         if not jds:
             return None
@@ -488,12 +461,7 @@ class WizardDataPriorityService:
                 )
             )
         
-        result = await db.execute(
-            select(ImportedJobDescription).where(
-                and_(*filters)
-            ).order_by(desc(ImportedJobDescription.created_at)).limit(limit)
-        )
-        jds = result.scalars().all()
+        jds = await WizardDataPriorityRepository(db).list_imported_jds(filters, limit=limit)
         
         for jd in jds:
             similar.append({
@@ -520,27 +488,10 @@ class WizardDataPriorityService:
         
         Shows which sources have data and coverage percentage.
         """
-        imported_count = await db.execute(
-            select(func.count()).select_from(ImportedJobDescription).where(
-                ImportedJobDescription.company_id == company_id
-            )
-        )
-        
-        skills_count = await db.execute(
-            select(func.count()).select_from(ClientSkillCatalog).where(
-                ClientSkillCatalog.company_id == company_id
-            )
-        )
-        
-        patterns_count = await db.execute(
-            select(func.count()).select_from(JobPattern).where(
-                JobPattern.company_id == company_id
-            )
-        )
-        
-        imported = imported_count.scalar() or 0
-        skills = skills_count.scalar() or 0
-        patterns = patterns_count.scalar() or 0
+        counts = await WizardDataPriorityRepository(db).coverage_counts(company_id)
+        imported = counts["imported"]
+        skills = counts["skills"]
+        patterns = counts["patterns"]
         
         coverage = {
             "imported_jds": imported,

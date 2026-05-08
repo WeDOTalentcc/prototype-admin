@@ -17,6 +17,8 @@ from typing import Any
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.job_management.repositories.job_vacancy_crud_repository import JobVacancyCRUDRepository
+
 from lia_models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
@@ -764,14 +766,9 @@ class JobInsightsService:
         """
         try:
             if job_id:
-                job_query = select(JobVacancy).where(
-                    and_(
-                        JobVacancy.id == job_id,
-                        JobVacancy.company_id == company_id
-                    )
+                job = await JobVacancyCRUDRepository(db).get_by_id_strict_company(
+                    job_id, company_id
                 )
-                job_result = await db.execute(job_query)
-                job = job_result.scalar_one_or_none()
                 
                 if job:
                     role = str(job.title) if job.title is not None else None

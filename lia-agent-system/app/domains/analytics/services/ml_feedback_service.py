@@ -146,19 +146,13 @@ class MLFeedbackService:
         Retorna JobScoringWeights com weights em [0.7, 1.3].
         """
         try:
-            from lia_models.calibration import CalibrationEvent  # type: ignore[union-attr]
-            cutoff = datetime.utcnow() - timedelta(days=lookback_days)
-
-            # CalibrationEvent não tem company_id — filtra apenas por job_id
-            result = await db.execute(
-                select(CalibrationEvent).where(
-                    and_(
-                        CalibrationEvent.job_id == job_id,
-                        CalibrationEvent.created_at >= cutoff,
-                    )
-                ).limit(200)
+            from app.domains.analytics.repositories.calibration_repository import (
+                CalibrationRepository,
             )
-            events = result.scalars().all()
+            cutoff = datetime.utcnow() - timedelta(days=lookback_days)
+            # CalibrationEvent não tem company_id — filtra apenas por job_id
+            _repo = CalibrationRepository(db)
+            events = await _repo.list_events_by_job(job_id, cutoff, limit=200)
 
             if len(events) < MIN_FEEDBACK_SAMPLES:
                 logger.info(

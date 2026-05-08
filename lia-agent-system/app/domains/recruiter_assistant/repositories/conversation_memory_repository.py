@@ -69,3 +69,107 @@ class ConversationMemoryRepository:
         result = await self._db.execute(stmt)
         rows = result.scalars().all()
         return list(reversed(rows))
+
+
+    # ── Sprint Q2 ADR-001 cleanup: extracted from memory_service.py ──────
+
+    async def search_similar_messages(
+        self,
+        *,
+        company_id: UUID | str,
+        query_embedding: list[float],
+        session_id: str | None = None,
+        user_id: str | None = None,
+        limit: int = 5,
+        min_similarity: float = 0.7,
+    ) -> list[tuple[ConversationMemory, float]]:
+        """Vector-similarity search over ConversationMemory using pgvector.
+
+        Returns list of (memory, similarity_score) tuples filtered by
+        min_similarity, capped at `limit`.
+        """
+        self._require_company_id(company_id)
+
+        from sqlalchemy import text
+
+        filters = [ConversationMemory.company_id == company_id]
+        if session_id:
+            filters.append(ConversationMemory.session_id == session_id)
+        if user_id:
+            filters.append(ConversationMemory.user_id == user_id)
+
+        similarity_expr = text(
+            "1 - (embedding <=> :query_embedding::vector)"
+        )
+
+        stmt = (
+            select(
+                ConversationMemory,
+                similarity_expr.bindparams(
+                    query_embedding=str(query_embedding)
+                ).label("similarity"),
+            )
+            .where(and_(*filters))
+            .where(ConversationMemory.embedding.isnot(None))
+            .order_by(text("similarity DESC"))
+            .limit(limit * 2)
+        )
+
+        result = await self._db.execute(stmt)
+        rows = result.all()
+
+        out: list[tuple[ConversationMemory, float]] = []
+        for memory, similarity in rows:
+            if similarity >= min_similarity:
+                out.append((memory, float(similarity)))
+            if len(out) >= limit:
+                break
+        return out
+
+    async def search_knowledge_base(
+        self,
+        *,
+        company_id: UUID | str,
+        query_embedding: list[float],
+        document_types: list[str] | None = None,
+        limit: int = 5,
+        min_similarity: float = 0.7,
+    ) -> list[tuple[object, float]]:
+        """Vector-similarity search over KnowledgeBase using pgvector."""
+        self._require_company_id(company_id)
+
+        from sqlalchemy import text
+
+        from lia_models.memory import KnowledgeBase
+
+        filters = [KnowledgeBase.company_id == company_id]
+        if document_types:
+            filters.append(KnowledgeBase.document_type.in_(document_types))
+
+        similarity_expr = text(
+            "1 - (embedding <=> :query_embedding::vector)"
+        )
+
+        stmt = (
+            select(
+                KnowledgeBase,
+                similarity_expr.bindparams(
+                    query_embedding=str(query_embedding)
+                ).label("similarity"),
+            )
+            .where(and_(*filters))
+            .where(KnowledgeBase.embedding.isnot(None))
+            .order_by(text("similarity DESC"))
+            .limit(limit * 2)
+        )
+
+        result = await self._db.execute(stmt)
+        rows = result.all()
+
+        out: list[tuple[object, float]] = []
+        for kb_entry, similarity in rows:
+            if similarity >= min_similarity:
+                out.append((kb_entry, float(similarity)))
+            if len(out) >= limit:
+                break
+        return out

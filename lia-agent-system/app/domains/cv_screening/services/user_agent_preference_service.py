@@ -14,11 +14,12 @@ Referência: docs/analises/PLANO_IMPLEMENTACAO_GAPS_IA.md → Sprint J3
 from __future__ import annotations
 
 import logging
-from datetime import datetime
 
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.cv_screening.repositories.user_agent_preference_repository import (
+    UserAgentPreferenceRepository,
+)
 from lia_models.user_agent_preference import UserAgentPreference
 
 logger = logging.getLogger(__name__)
@@ -36,14 +37,13 @@ class UserAgentPreferenceService:
         action_type: str,
     ) -> UserAgentPreference | None:
         """Retorna preferência existente ou None."""
-        stmt = select(UserAgentPreference).where(
-            UserAgentPreference.user_id == user_id,
-            UserAgentPreference.company_id == company_id,
-            UserAgentPreference.domain == domain,
-            UserAgentPreference.action_type == action_type,
+        repo = UserAgentPreferenceRepository(db)
+        return await repo.get(
+            user_id=user_id,
+            company_id=company_id,
+            domain=domain,
+            action_type=action_type,
         )
-        result = await db.execute(stmt)
-        return result.scalar_one_or_none()
 
     @staticmethod
     async def check_auto_confirm(
@@ -78,25 +78,14 @@ class UserAgentPreferenceService:
         Cria ou atualiza preferência de auto_confirm.
         Upsert por (user_id, company_id, domain, action_type).
         """
-        pref = await UserAgentPreferenceService.get(
-            db, user_id=user_id, company_id=company_id,
-            domain=domain, action_type=action_type,
+        repo = UserAgentPreferenceRepository(db)
+        pref = await repo.upsert(
+            user_id=user_id,
+            company_id=company_id,
+            domain=domain,
+            action_type=action_type,
+            auto_confirm=auto_confirm,
         )
-        if pref:
-            pref.auto_confirm = auto_confirm
-            pref.updated_at = datetime.utcnow()
-        else:
-            pref = UserAgentPreference(
-                user_id=user_id,
-                company_id=company_id,
-                domain=domain,
-                action_type=action_type,
-                auto_confirm=auto_confirm,
-            )
-            db.add(pref)
-
-        await db.commit()
-        await db.refresh(pref)
         logger.info(
             "[UserAgentPrefs] user=%s domain=%s action=%s auto_confirm=%s",
             user_id, domain, action_type, auto_confirm,
@@ -111,9 +100,5 @@ class UserAgentPreferenceService:
         company_id: str,
     ) -> list[UserAgentPreference]:
         """Lista todas as preferências de um usuário."""
-        stmt = select(UserAgentPreference).where(
-            UserAgentPreference.user_id == user_id,
-            UserAgentPreference.company_id == company_id,
-        )
-        result = await db.execute(stmt)
-        return list(result.scalars().all())
+        repo = UserAgentPreferenceRepository(db)
+        return await repo.list_for_user(user_id=user_id, company_id=company_id)

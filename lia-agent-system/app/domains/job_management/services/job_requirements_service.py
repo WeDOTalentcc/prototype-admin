@@ -11,6 +11,8 @@ from uuid import UUID
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.job_management.repositories.job_requirement_repository import JobRequirementRepository
+
 from app.core.database import AsyncSessionLocal
 from lia_models.rubric import JobRequirement
 from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
@@ -97,12 +99,7 @@ class JobRequirementsService:
     ) -> list[dict[str, Any]]:
         """Return all requirements for a job as serialisable dicts."""
         job_uuid = UUID(job_id) if isinstance(job_id, str) else job_id
-        result = await db.execute(
-            select(JobRequirement).where(
-                JobRequirement.job_vacancy_id == job_uuid
-            )
-        )
-        reqs = result.scalars().all()
+        reqs = await JobRequirementRepository(db).list_for_job(job_uuid)
         return [
             {
                 "id": str(r.id),

@@ -17,10 +17,10 @@ import time
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
+from app.domains.company.repositories.benefit_repository import BenefitRepository
 from lia_models.company import Benefit
 
 logger = logging.getLogger(__name__)
@@ -124,18 +124,8 @@ class BenefitsService:
             should_close = True
         
         try:
-            result = await db.execute(
-                select(Benefit)
-                .where(
-                    and_(
-                        Benefit.company_id == company_id,
-                        Benefit.is_active
-                    )
-                )
-                .order_by(Benefit.order, Benefit.category, Benefit.name)
-            )
-            benefits = list(result.scalars().all())
-            
+            benefits = await BenefitRepository(db).list_active_ordered(company_id)
+
             self.cache.set(cache_key, benefits)
             logger.info(f"✅ Loaded {len(benefits)} active benefits for company {company_id}")
             
@@ -176,19 +166,8 @@ class BenefitsService:
             should_close = True
         
         try:
-            result = await db.execute(
-                select(Benefit)
-                .where(
-                    and_(
-                        Benefit.company_id == company_id,
-                        Benefit.is_active,
-                        Benefit.is_highlighted
-                    )
-                )
-                .order_by(Benefit.order, Benefit.name)
-            )
-            benefits = list(result.scalars().all())
-            
+            benefits = await BenefitRepository(db).list_highlighted(company_id)
+
             self.cache.set(cache_key, benefits)
             logger.info(f"⭐ Loaded {len(benefits)} highlighted benefits for company {company_id}")
             
@@ -231,19 +210,8 @@ class BenefitsService:
             should_close = True
         
         try:
-            result = await db.execute(
-                select(Benefit)
-                .where(
-                    and_(
-                        Benefit.company_id == company_id,
-                        Benefit.is_active,
-                        Benefit.category == category
-                    )
-                )
-                .order_by(Benefit.order, Benefit.name)
-            )
-            benefits = list(result.scalars().all())
-            
+            benefits = await BenefitRepository(db).list_by_category(company_id, category)
+
             self.cache.set(cache_key, benefits)
             category_name = BENEFIT_CATEGORIES.get(category, category)
             logger.info(f"📂 Loaded {len(benefits)} benefits in category '{category_name}' for company {company_id}")
@@ -287,17 +255,7 @@ class BenefitsService:
             should_close = True
         
         try:
-            result = await db.execute(
-                select(Benefit)
-                .where(
-                    and_(
-                        Benefit.company_id == company_id,
-                        Benefit.is_active
-                    )
-                )
-                .order_by(Benefit.order, Benefit.category, Benefit.name)
-            )
-            all_benefits = list(result.scalars().all())
+            all_benefits = await BenefitRepository(db).list_active_ordered(company_id)
             
             benefits = []
             for benefit in all_benefits:

@@ -5,8 +5,9 @@ Provides default templates for all recruitment pipeline stages.
 import logging
 from typing import Any
 
-from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domains.job_management.repositories.recruitment_email_template_repository import RecruitmentEmailTemplateRepository
 
 from lia_models.recruitment_email_template import RecruitmentEmailTemplate, RecruitmentStageName, TemplateType
 
@@ -757,17 +758,13 @@ async def seed_default_templates(db: AsyncSession, company_id: str | None = None
     created_templates = []
     
     for template_data in DEFAULT_TEMPLATES:
-        existing = await db.execute(
-            select(RecruitmentEmailTemplate).where(
-                and_(
-                    RecruitmentEmailTemplate.stage_name == template_data["stage_name"],
-                    RecruitmentEmailTemplate.template_type == template_data["template_type"],
-                    RecruitmentEmailTemplate.company_id == company_id if company_id else RecruitmentEmailTemplate.company_id.is_(None)
-                )
-            )
+        existing = await RecruitmentEmailTemplateRepository(db).find_by_stage_type_company(
+            stage_name=template_data["stage_name"],
+            template_type=template_data["template_type"],
+            company_id=company_id,
         )
-        
-        if existing.scalar_one_or_none():
+
+        if existing:
             continue
         
         template = RecruitmentEmailTemplate(
@@ -806,32 +803,17 @@ async def get_template_for_stage(
     Get the active template for a specific stage.
     First looks for company-specific template, then falls back to system template.
     """
+    repo = RecruitmentEmailTemplateRepository(db)
     if company_id:
-        result = await db.execute(
-            select(RecruitmentEmailTemplate).where(
-                and_(
-                    RecruitmentEmailTemplate.stage_name == stage_name,
-                    RecruitmentEmailTemplate.template_type == template_type,
-                    RecruitmentEmailTemplate.company_id == company_id,
-                    RecruitmentEmailTemplate.is_active
-                )
-            )
+        template = await repo.find_active_for_stage(
+            stage_name=stage_name, template_type=template_type, company_id=company_id
         )
-        template = result.scalar_one_or_none()
         if template:
             return template
-    
-    result = await db.execute(
-        select(RecruitmentEmailTemplate).where(
-            and_(
-                RecruitmentEmailTemplate.stage_name == stage_name,
-                RecruitmentEmailTemplate.template_type == template_type,
-                RecruitmentEmailTemplate.company_id.is_(None),
-                RecruitmentEmailTemplate.is_active
-            )
-        )
+
+    return await repo.find_active_system_for_stage(
+        stage_name=stage_name, template_type=template_type
     )
-    return result.scalar_one_or_none()
 
 
 async def list_templates(
@@ -845,29 +827,12 @@ async def list_templates(
     List recruitment email templates with optional filtering.
     Returns company templates plus system templates.
     """
-    query = select(RecruitmentEmailTemplate)
-    
-    if company_id:
-        query = query.where(
-            or_(
-                RecruitmentEmailTemplate.company_id == company_id,
-                RecruitmentEmailTemplate.company_id.is_(None)
-            )
-        )
-    
-    if stage_name:
-        query = query.where(RecruitmentEmailTemplate.stage_name == stage_name)
-    
-    if template_type:
-        query = query.where(RecruitmentEmailTemplate.template_type == template_type)
-    
-    if is_active is not None:
-        query = query.where(RecruitmentEmailTemplate.is_active == is_active)
-    
-    query = query.order_by(RecruitmentEmailTemplate.stage_name, RecruitmentEmailTemplate.template_type)
-    
-    result = await db.execute(query)
-    return list(result.scalars().all())
+    return await RecruitmentEmailTemplateRepository(db).list_templates(
+        company_id=company_id,
+        stage_name=stage_name,
+        template_type=template_type,
+        is_active=is_active,
+    )
 
 
 def render_template(template: RecruitmentEmailTemplate, variables: dict[str, str]) -> dict[str, str]:
@@ -907,29 +872,19 @@ async def clone_templates_for_company(
     """
     Clone system templates for a specific company.
     """
-    system_templates = await db.execute(
-        select(RecruitmentEmailTemplate).where(
-            and_(
-                RecruitmentEmailTemplate.company_id.is_(None),
-                RecruitmentEmailTemplate.is_system
-            )
-        )
-    )
-    
+    repo = RecruitmentEmailTemplateRepository(db)
+    system_templates_list = await repo.list_system_templates()
+
     created_templates = []
-    
-    for system_template in system_templates.scalars().all():
-        existing = await db.execute(
-            select(RecruitmentEmailTemplate).where(
-                and_(
-                    RecruitmentEmailTemplate.stage_name == system_template.stage_name,
-                    RecruitmentEmailTemplate.template_type == system_template.template_type,
-                    RecruitmentEmailTemplate.company_id == company_id
-                )
-            )
+
+    for system_template in system_templates_list:
+        existing = await repo.find_by_stage_type_company(
+            stage_name=system_template.stage_name,
+            template_type=system_template.template_type,
+            company_id=company_id,
         )
-        
-        if existing.scalar_one_or_none():
+
+        if existing:
             continue
         
         new_template = RecruitmentEmailTemplate(

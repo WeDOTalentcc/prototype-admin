@@ -13,10 +13,13 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 
-from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lia_models.communication_settings import LGPDConsent
+
+from app.domains.lgpd.repositories.lgpd_consent_repository import (
+    LGPDConsentRepository,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +56,7 @@ class ConsentCheckerService:
 
     def __init__(self, db: AsyncSession):
         self.db = db
+        self.repo = LGPDConsentRepository(db)
 
     async def check_candidate_consent(
         self,
@@ -74,15 +78,11 @@ class ConsentCheckerService:
         consent_type = self.PURPOSE_TO_CONSENT_TYPE.get(purpose, "SCREENING")
 
         try:
-            query = select(LGPDConsent).where(
-                and_(
-                    LGPDConsent.candidate_id == candidate_id,
-                    LGPDConsent.company_id == company_id,
-                    LGPDConsent.consent_type == consent_type,
-                )
+            consent = await self.repo.get_for_candidate_purpose(
+                candidate_id=candidate_id,
+                company_id=company_id,
+                consent_type=consent_type,
             )
-            result = await self.db.execute(query)
-            consent = result.scalar_one_or_none()
 
             # Caso 1: Consentimento revogado — BLOQUEAR
             if consent and not consent.consent_given and consent.revoked_at:
@@ -207,15 +207,11 @@ class ConsentCheckerService:
 
         Usa UPSERT por (company_id, candidate_id, consent_type).
         """
-        query = select(LGPDConsent).where(
-            and_(
-                LGPDConsent.candidate_id == candidate_id,
-                LGPDConsent.company_id == company_id,
-                LGPDConsent.consent_type == consent_type,
-            )
+        existing = await self.repo.get_for_candidate_purpose(
+            candidate_id=candidate_id,
+            company_id=company_id,
+            consent_type=consent_type,
         )
-        result = await self.db.execute(query)
-        existing = result.scalar_one_or_none()
 
         if existing:
             existing.consent_given = consent_given
@@ -247,8 +243,7 @@ class ConsentCheckerService:
                 ip_address=ip_address,
                 revoked_at=datetime.utcnow() if not consent_given else None,
             )
-            self.db.add(consent)
-            await self.db.flush()
+            await self.repo.add(consent)
             return consent
 
     async def get_candidate_consents(
@@ -257,12 +252,8 @@ class ConsentCheckerService:
         company_id: str,
     ) -> list:
         """Retorna todos os consentimentos de um candidato."""
-        query = select(LGPDConsent).where(
-            and_(
-                LGPDConsent.candidate_id == candidate_id,
-                LGPDConsent.company_id == company_id,
-            )
+        consents = await self.repo.list_for_candidate(
+            candidate_id=candidate_id,
+            company_id=company_id,
         )
-        result = await self.db.execute(query)
-        consents = result.scalars().all()
         return [c.to_dict() for c in consents]

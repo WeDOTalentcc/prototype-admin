@@ -12,9 +12,12 @@ Enforces tenant isolation via mandatory company_id.
 import logging
 from typing import Any
 
-from sqlalchemy import and_, select, or_
+from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.interview_intelligence.repositories.interview_repository import (
+    InterviewRepository,
+)
 from app.domains.interview_intelligence.services.interview_wsi_service import (
     interview_wsi_service,
 )
@@ -34,12 +37,10 @@ class ComparativeAnalysisService:
         if not company_id:
             return {"success": False, "error": "company_id is required for tenant isolation"}
 
-        result = await db.execute(
-            select(Interview).where(
-                and_(Interview.id == interview_id, Interview.company_id == company_id)
-            )
+        _ii_repo = InterviewRepository(db)
+        interview = await _ii_repo.get_for_company(
+            interview_id=interview_id, company_id=company_id
         )
-        interview = result.scalar_one_or_none()
         if not interview:
             return {"success": False, "error": "Interview not found"}
 
@@ -140,18 +141,13 @@ class ComparativeAnalysisService:
         if not interview.job_vacancy_id:
             return []
 
-        result = await db.execute(
-            select(Interview).where(
-                and_(
-                    Interview.job_vacancy_id == interview.job_vacancy_id,
-                    Interview.company_id == company_id,
-                    Interview.id != exclude_id,
-                    Interview.transcript.isnot(None),
-                    Interview.status.in_(["completed", "transcribed"]),
-                )
-            ).limit(20)
+        _ii_repo = InterviewRepository(db)
+        return await _ii_repo.list_vacancy_peers_with_transcript(
+            job_vacancy_id=interview.job_vacancy_id,
+            company_id=company_id,
+            exclude_id=exclude_id,
+            limit=20,
         )
-        return list(result.scalars().all())
 
     async def _get_hired_top_performers(
         self,
@@ -167,6 +163,11 @@ class ComparativeAnalysisService:
             if not interview.job_vacancy_id:
                 return []
 
+            # ADR-001-EXEMPT: bespoke cross-domain column-only reads (JobVacancy.title,
+            # JobVacancy.id, VacancyCandidate.candidate_id) used solely to build the
+            # `hired_ids` filter for the Interview cohort below. Wrapping each of these
+            # ad-hoc selects in a foreign repo would create single-callsite methods with
+            # no other consumers. The Interview cohort read itself uses the repo.
             jv_result = await db.execute(
                 select(JobVacancy.title).where(
                     and_(
@@ -187,6 +188,7 @@ class ComparativeAnalysisService:
 
             title_filters = [JobVacancy.title.ilike(f"%{w}%") for w in title_words]
 
+            # ADR-001-EXEMPT: see comment above (cross-domain column-only ad-hoc query).
             similar_vacancy_ids = await db.execute(
                 select(JobVacancy.id).where(
                     and_(
@@ -199,6 +201,7 @@ class ComparativeAnalysisService:
             if not similar_ids:
                 return []
 
+            # ADR-001-EXEMPT: see comment above (cross-domain column-only ad-hoc query).
             hired_candidate_ids = await db.execute(
                 select(VacancyCandidate.candidate_id).where(
                     and_(
@@ -213,18 +216,13 @@ class ComparativeAnalysisService:
             if not hired_ids:
                 return []
 
-            result = await db.execute(
-                select(Interview).where(
-                    and_(
-                        Interview.candidate_id.in_(hired_ids),
-                        Interview.company_id == company_id,
-                        Interview.id != exclude_id,
-                        Interview.transcript.isnot(None),
-                        Interview.status.in_(["completed", "transcribed"]),
-                    )
-                ).limit(10)
+            _ii_repo = InterviewRepository(db)
+            return await _ii_repo.list_with_transcript_for_candidates(
+                candidate_ids=list(hired_ids),
+                company_id=company_id,
+                exclude_id=exclude_id,
+                limit=10,
             )
-            return list(result.scalars().all())
         except Exception as exc:
             logger.debug("Failed to get hired top performers: %s", exc)
             return []
@@ -242,6 +240,9 @@ class ComparativeAnalysisService:
             if not interview.job_vacancy_id:
                 return []
 
+            # ADR-001-EXEMPT: cross-domain column-only ad-hoc query
+            # (VacancyCandidate.candidate_id) used solely to build the `high_scorer_ids`
+            # filter for the Interview cohort below. Single-callsite, no leverage in repo.
             vc_result = await db.execute(
                 select(VacancyCandidate.candidate_id).where(
                     and_(
@@ -255,18 +256,13 @@ class ComparativeAnalysisService:
             if not high_scorer_ids:
                 return []
 
-            result = await db.execute(
-                select(Interview).where(
-                    and_(
-                        Interview.candidate_id.in_(high_scorer_ids),
-                        Interview.company_id == company_id,
-                        Interview.id != exclude_id,
-                        Interview.transcript.isnot(None),
-                        Interview.status.in_(["completed", "transcribed"]),
-                    )
-                ).limit(10)
+            _ii_repo = InterviewRepository(db)
+            return await _ii_repo.list_with_transcript_for_candidates(
+                candidate_ids=list(high_scorer_ids),
+                company_id=company_id,
+                exclude_id=exclude_id,
+                limit=10,
             )
-            return list(result.scalars().all())
         except Exception as exc:
             logger.debug("Failed to get triaged high scorers: %s", exc)
             return []

@@ -18,6 +18,9 @@ from typing import Any
 from sqlalchemy import and_, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.analytics.repositories.intelligence_repository import (
+    IntelligenceRepository,
+)
 from lia_models.feedback_learning import JobOutcome, JobOutcomeType, WizardFeedback
 from lia_models.intelligence_layer import (
     CorrectionPattern,
@@ -118,22 +121,14 @@ class PatternDetectorService:
         """
         try:
             cutoff_date = datetime.utcnow() - timedelta(days=months_back * 30)
-            
-            conditions = [
-                WizardFeedback.company_id == company_id,
-                WizardFeedback.created_at >= cutoff_date
-            ]
-            
-            if field:
-                conditions.append(WizardFeedback.field_corrected == field)
-            if seniority:
-                conditions.append(func.lower(WizardFeedback.seniority) == seniority.lower())
-            if role_pattern:
-                conditions.append(WizardFeedback.role.ilike(f"%{role_pattern}%"))
-            
-            query = select(WizardFeedback).where(and_(*conditions))
-            result = await db.execute(query)
-            feedbacks = list(result.scalars().all())
+            repo = IntelligenceRepository(db)
+            feedbacks = await repo.list_wizard_feedback_filtered(
+                company_id=company_id,
+                cutoff_date=cutoff_date,
+                field=field,
+                seniority=seniority,
+                role_pattern=role_pattern,
+            )
             
             if len(feedbacks) < MIN_CORRECTIONS_FOR_PATTERN:
                 self.logger.info(
@@ -356,9 +351,13 @@ class PatternDetectorService:
             if role_pattern:
                 conditions.append(JobOutcome.role.ilike(f"%{role_pattern}%"))
             
-            query = select(JobOutcome).where(and_(*conditions))
-            result = await db.execute(query)
-            outcomes = list(result.scalars().all())
+            repo = IntelligenceRepository(db)
+            outcomes = await repo.list_filled_outcomes_filtered(
+                company_id=company_id,
+                cutoff_date=cutoff_date,
+                seniority=seniority,
+                role_pattern=role_pattern,
+            )
             
             if len(outcomes) < MIN_OUTCOMES_FOR_SUCCESS_PROFILE:
                 self.logger.info(
@@ -496,9 +495,12 @@ class PatternDetectorService:
             if pattern_key:
                 conditions.append(PatternCache.pattern_key == pattern_key)
             
-            query = select(PatternCache).where(and_(*conditions))
-            result = await db.execute(query)
-            return list(result.scalars().all())
+            repo = IntelligenceRepository(db)
+            return await repo.list_active_pattern_caches(
+                company_id=company_id,
+                pattern_type=pattern_type,
+                pattern_key=pattern_key,
+            )
             
         except Exception as e:
             self.logger.error(f"Error getting cached patterns: {e}")
@@ -516,16 +518,12 @@ class PatternDetectorService:
             for pattern in patterns:
                 data = pattern.data
                 
-                existing = await db.execute(
-                    select(CorrectionPattern).where(
-                        and_(
-                            CorrectionPattern.company_id == company_id,
-                            CorrectionPattern.field == pattern.field,
-                            CorrectionPattern.seniority == data.get("seniority")
-                        )
-                    )
+                _repo4 = IntelligenceRepository(db)
+                existing_pattern = await _repo4.find_correction_pattern_by_field(
+                    company_id=company_id,
+                    field=pattern.field,
+                    seniority=data.get("seniority"),
                 )
-                existing_pattern = existing.scalar_one_or_none()
                 
                 if existing_pattern:
                     existing_pattern.adjustment_direction = data.get("direction", "unknown")

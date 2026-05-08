@@ -16,8 +16,9 @@ from datetime import datetime
 from typing import Any
 
 import httpx
-from sqlalchemy import and_, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domains.communication.repositories.webhook_repository import WebhookRepository
 
 from app.core.config import settings
 from app.core.database import AsyncSessionLocal
@@ -154,15 +155,9 @@ class WebhookService:
             should_close = True
         
         try:
-            result = await db.execute(
-                select(Webhook).where(
-                    and_(
-                        Webhook.id == webhook_id,
-                        Webhook.company_id == company_id
-                    )
-                )
+            webhook = await WebhookRepository(db).get_by_id_and_company(
+                webhook_id=webhook_id, company_id=company_id
             )
-            webhook = result.scalar_one_or_none()
             
             if not webhook:
                 return {
@@ -225,15 +220,9 @@ class WebhookService:
             should_close = True
         
         try:
-            result = await db.execute(
-                select(Webhook).where(
-                    and_(
-                        Webhook.id == webhook_id,
-                        Webhook.company_id == company_id
-                    )
-                )
+            webhook = await WebhookRepository(db).get_by_id_and_company(
+                webhook_id=webhook_id, company_id=company_id
             )
-            webhook = result.scalar_one_or_none()
             
             if not webhook:
                 return {
@@ -294,19 +283,9 @@ class WebhookService:
             should_close = True
         
         try:
-            conditions = [Webhook.company_id == company_id]
-            
-            if is_active is not None:
-                conditions.append(Webhook.is_active == is_active)
-            
-            result = await db.execute(
-                select(Webhook)
-                .where(and_(*conditions))
-                .order_by(desc(Webhook.created_at))
-                .limit(limit)
-                .offset(offset)
+            webhooks = await WebhookRepository(db).list_for_company(
+                company_id=company_id, is_active=is_active, limit=limit, offset=offset
             )
-            webhooks = list(result.scalars())
             
             if event_filter:
                 webhooks = [w for w in webhooks if event_filter in (w.events or [])]
@@ -351,15 +330,9 @@ class WebhookService:
             should_close = True
         
         try:
-            result = await db.execute(
-                select(Webhook).where(
-                    and_(
-                        Webhook.id == webhook_id,
-                        Webhook.company_id == company_id
-                    )
-                )
+            webhook = await WebhookRepository(db).get_by_id_and_company(
+                webhook_id=webhook_id, company_id=company_id
             )
-            webhook = result.scalar_one_or_none()
             
             if not webhook:
                 return {
@@ -407,15 +380,7 @@ class WebhookService:
             should_close = True
         
         try:
-            result = await db.execute(
-                select(Webhook).where(
-                    and_(
-                        Webhook.company_id == company_id,
-                        Webhook.is_active
-                    )
-                )
-            )
-            all_webhooks = list(result.scalars())
+            all_webhooks = await WebhookRepository(db).list_active_for_company(company_id=company_id)
             
             webhooks = [w for w in all_webhooks if event in (w.events or [])]
             
@@ -659,15 +624,9 @@ class WebhookService:
             should_close = True
         
         try:
-            result = await db.execute(
-                select(Webhook).where(
-                    and_(
-                        Webhook.id == webhook_id,
-                        Webhook.company_id == company_id
-                    )
-                )
+            webhook = await WebhookRepository(db).get_by_id_and_company(
+                webhook_id=webhook_id, company_id=company_id
             )
-            webhook = result.scalar_one_or_none()
             
             if not webhook:
                 return {
@@ -727,22 +686,10 @@ class WebhookService:
             should_close = True
         
         try:
-            conditions = [
-                WebhookLog.webhook_id == webhook_id,
-                WebhookLog.company_id == company_id
-            ]
-            
-            if status_filter:
-                conditions.append(WebhookLog.status == status_filter)
-            
-            result = await db.execute(
-                select(WebhookLog)
-                .where(and_(*conditions))
-                .order_by(desc(WebhookLog.triggered_at))
-                .limit(limit)
-                .offset(offset)
+            logs = await WebhookRepository(db).list_logs_for_webhook(
+                webhook_id=webhook_id, company_id=company_id, status_filter=status_filter,
+                limit=limit, offset=offset
             )
-            logs = list(result.scalars())
             
             return {
                 "success": True,

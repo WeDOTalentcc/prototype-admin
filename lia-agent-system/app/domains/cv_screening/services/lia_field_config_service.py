@@ -17,6 +17,7 @@ from enum import Enum, StrEnum
 from typing import Any
 from uuid import UUID
 
+from app.domains.cv_screening.repositories.lia_field_config_repository import LiaFieldConfigRepository
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -279,28 +280,18 @@ class LiaFieldConfigService:
     
     async def _load_toggles(self, company_uuid: UUID) -> dict[str, LiaFieldToggle]:
         """Load all field toggles for a company."""
-        result = await self.db.execute(
-            select(LiaFieldToggle).where(LiaFieldToggle.company_id == company_uuid)
-        )
-        toggles = result.scalars().all()
+        toggles = await LiaFieldConfigRepository(self.db).list_field_toggles(company_uuid)
         return {t.field_key: t for t in toggles}
     
     async def _load_company_profile(self, company_uuid: UUID) -> CompanyProfile | None:
         """Load company profile data."""
-        result = await self.db.execute(
-            select(CompanyProfile).where(CompanyProfile.id == company_uuid)
-        )
-        return result.scalar_one_or_none()
+        return await LiaFieldConfigRepository(self.db).get_company_profile(company_uuid)
     
     async def _load_job_history(self, company_id: str, limit: int = 20) -> list[dict[str, Any]]:
         """Load recent job history for pattern analysis."""
-        result = await self.db.execute(
-            select(JobVacancy)
-            .where(JobVacancy.company_id == company_id)
-            .order_by(JobVacancy.created_at.desc())
-            .limit(limit)
+        jobs = await LiaFieldConfigRepository(self.db).list_recent_jobs_for_company(
+            company_id=company_id, limit=limit
         )
-        jobs = result.scalars().all()
         
         return [
             {
@@ -728,13 +719,9 @@ class LiaFieldConfigService:
         """Load recruiter field preferences from database."""
         from lia_models.recruiter_profile import RecruiterFieldPreference
         
-        result = await self.db.execute(
-            select(RecruiterFieldPreference).where(
-                RecruiterFieldPreference.recruiter_id == user_id,
-                RecruiterFieldPreference.company_id == company_id
-            )
+        prefs = await LiaFieldConfigRepository(self.db).list_recruiter_preferences(
+            recruiter_id=user_id, company_id=company_id
         )
-        prefs = result.scalars().all()
         return {p.field_name: p for p in prefs}
     
     async def update_reminder_preference(
@@ -760,14 +747,9 @@ class LiaFieldConfigService:
 
         from lia_models.recruiter_profile import RecruiterFieldPreference
         
-        result = await self.db.execute(
-            select(RecruiterFieldPreference).where(
-                RecruiterFieldPreference.recruiter_id == user_id,
-                RecruiterFieldPreference.company_id == company_id,
-                RecruiterFieldPreference.field_name == field_key
-            )
+        pref = await LiaFieldConfigRepository(self.db).get_recruiter_preference_for_field(
+            recruiter_id=user_id, company_id=company_id, field_name=field_key
         )
-        pref = result.scalar_one_or_none()
         
         if not pref:
             pref = RecruiterFieldPreference(

@@ -16,10 +16,12 @@ import logging
 from datetime import date, datetime
 from typing import Any
 
-from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.job_creation.repositories.manager_preferences_repository import (
+    ManagerPreferencesRepository,
+)
 from lia_models.manager_preferences import ManagerPreferences
 
 logger = logging.getLogger(__name__)
@@ -40,13 +42,8 @@ class ManagerPreferencesService:
         manager_name: str | None = None,
     ) -> ManagerPreferences:
         """Return existing preferences or create an empty record."""
-        result = await db.execute(
-            select(ManagerPreferences).where(
-                ManagerPreferences.company_id == company_id,
-                ManagerPreferences.manager_email == manager_email,
-            )
-        )
-        prefs = result.scalar_one_or_none()
+        repo = ManagerPreferencesRepository(db)
+        prefs = await repo.get_by_company_and_email(company_id, manager_email)
         if prefs:
             return prefs
 
@@ -74,13 +71,8 @@ class ManagerPreferencesService:
         Only fills fields not already explicit in state.
         """
         try:
-            result = await db.execute(
-                select(ManagerPreferences).where(
-                    ManagerPreferences.company_id == company_id,
-                    ManagerPreferences.manager_email == manager_email,
-                )
-            )
-            prefs = result.scalar_one_or_none()
+            repo = ManagerPreferencesRepository(db)
+            prefs = await repo.get_by_company_and_email(company_id, manager_email)
             if not prefs or prefs.jobs_created_count < 1:
                 return {}
 

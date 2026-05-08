@@ -16,6 +16,7 @@ from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
+from app.domains.analytics.repositories.feedback_repository import FeedbackRepository
 from lia_models.feedback import InteractionFeedback, LearningPattern
 
 logger = logging.getLogger(__name__)
@@ -131,16 +132,8 @@ class FeedbackService:
             pattern_key = self._generate_pattern_key(feedback)
             company_id = feedback.company_id
             
-            result = await db.execute(
-                select(LearningPattern).where(
-                    and_(
-                        LearningPattern.company_id == company_id,
-                        LearningPattern.pattern_key == pattern_key,
-                        LearningPattern.is_active
-                    )
-                )
-            )
-            pattern = result.scalar_one_or_none()
+            repo = FeedbackRepository(db)
+            pattern = await repo.find_active_pattern(company_id, pattern_key)
             
             is_positive = (
                 feedback.thumbs == "up" or 
@@ -221,12 +214,8 @@ class FeedbackService:
             db = AsyncSessionLocal()
         
         try:
-            result = await db.execute(
-                select(InteractionFeedback).where(
-                    not InteractionFeedback.processed
-                ).limit(100)
-            )
-            unprocessed = result.scalars().all()
+            repo = FeedbackRepository(db)
+            unprocessed = await repo.list_unprocessed_feedback(limit=100)
             
             processed_count = 0
             patterns_updated = 0
@@ -291,16 +280,10 @@ class FeedbackService:
                 self.logger.warning(f"Invalid company_id: {company_id}")
                 return []
             
-            result = await db.execute(
-                select(LearningPattern).where(
-                    and_(
-                        LearningPattern.company_id == company_uuid,
-                        LearningPattern.is_active,
-                        LearningPattern.confidence >= 0.5
-                    )
-                ).order_by(LearningPattern.success_rate.desc())
+            repo = FeedbackRepository(db)
+            all_patterns = await repo.list_active_patterns_min_confidence(
+                company_uuid, min_confidence=0.5
             )
-            all_patterns = result.scalars().all()
             
             relevant = []
             for pattern in all_patterns:
@@ -352,10 +335,8 @@ class FeedbackService:
                 self.logger.warning(f"Invalid pattern_id: {pattern_id}")
                 return
             
-            result = await db.execute(
-                select(LearningPattern).where(LearningPattern.id == pattern_uuid)
-            )
-            pattern = result.scalar_one_or_none()
+            repo = FeedbackRepository(db)
+            pattern = await repo.find_pattern_by_id(pattern_uuid)
             
             if not pattern:
                 self.logger.warning(f"Pattern not found: {pattern_id}")

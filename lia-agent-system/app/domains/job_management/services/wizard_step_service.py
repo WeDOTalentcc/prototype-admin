@@ -10,6 +10,8 @@ from uuid import UUID, uuid4
 
 from sqlalchemy import select, and_, text
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domains.job_management.repositories.wizard_step_repository import WizardStepRepository
 import logging
 
 from app.models.job_draft import JobDraft, DraftFieldHistory, JobDraftStatus, ChangeType
@@ -124,9 +126,7 @@ class WizardStepService:
             conv_uuid = uuid4()
             conversation_id = str(conv_uuid)
 
-        draft_query = select(JobDraft).where(JobDraft.conversation_id == conv_uuid)
-        draft_result = await db.execute(draft_query)
-        job_draft_model = draft_result.scalar_one_or_none()
+        job_draft_model = await WizardStepRepository(db).get_draft_by_conversation(conv_uuid)
 
         if not job_draft_model:
             # Create new draft in database
@@ -337,35 +337,23 @@ class WizardStepService:
             company_profile = None
 
             try:
-                benefits_query = select(CompanyBenefit).where(
-                    and_(
-                        CompanyBenefit.company_id == company_id,
-                        CompanyBenefit.is_active == True
-                    )
-                ).order_by(CompanyBenefit.order)
-                benefits_result = await db.execute(benefits_query)
+                _benefits = await WizardStepRepository(db).list_active_company_benefits(company_id)
                 company_benefits = [
                     {"name": b.name, "category": b.category, "description": b.description}
-                    for b in benefits_result.scalars().all()
+                    for b in _benefits
                 ]
             except Exception as e:
                 logger.warning(f"Could not fetch company benefits: {e}")
 
             try:
-                profile_query = select(CompanyProfile).where(
-                    CompanyProfile.is_active == True
-                ).limit(1)
-                profile_result = await db.execute(profile_query)
-                company_profile = profile_result.scalar_one_or_none()
+                _repo = WizardStepRepository(db)
+                company_profile = await _repo.get_active_company_profile()
 
                 if company_profile:
-                    dept_query = select(Department).where(
-                        Department.company_id == company_profile.id
-                    ).order_by(Department.name)
-                    dept_result = await db.execute(dept_query)
+                    _depts = await _repo.list_departments_for_profile(company_profile.id)
                     company_departments = [
                         {"name": d.name, "manager": d.manager_name, "location": d.location}
-                        for d in dept_result.scalars().all()
+                        for d in _depts
                     ]
             except Exception as e:
                 logger.warning(f"Could not fetch company profile/departments: {e}")

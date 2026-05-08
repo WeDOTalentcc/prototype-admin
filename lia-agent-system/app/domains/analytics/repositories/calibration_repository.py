@@ -199,3 +199,27 @@ class CalibrationRepository:
             )
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
+    async def list_events_by_job(
+        self,
+        job_id,
+        since: datetime,
+        limit: int = 200,
+    ) -> list[CalibrationEvent]:
+        """List CalibrationEvent rows for a job_id since a cutoff.
+
+        Note: CalibrationEvent has no company_id column — multi-tenancy is enforced
+        upstream via job_id ownership.
+        """
+        stmt = (
+            select(CalibrationEvent)
+            .where(
+                and_(
+                    CalibrationEvent.job_id == job_id,
+                    CalibrationEvent.created_at >= since,
+                )
+            )
+            .limit(limit)
+        )
+        result = await self.db.execute(stmt)
+        return list(result.scalars().all())
+

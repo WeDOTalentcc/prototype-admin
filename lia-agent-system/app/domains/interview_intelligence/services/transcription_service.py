@@ -257,12 +257,12 @@ class TranscriptionService:
         db: AsyncSession,
         language_hint: str = "pt-BR",
     ) -> dict[str, Any]:
-        from sqlalchemy import select
-        from app.models.interview import Interview
+        from app.domains.interview_intelligence.repositories.interview_repository import (
+            InterviewRepository,
+        )
 
-        stmt = select(Interview).where(Interview.id == interview_id)
-        result = await db.execute(stmt)
-        interview = result.scalar_one_or_none()
+        _ii_repo = InterviewRepository(db)
+        interview = await _ii_repo.get_by_id_unscoped(interview_id)
         if not interview:
             raise ValueError(f"Interview {interview_id} not found")
 
@@ -326,15 +326,16 @@ class TranscriptionService:
             return
 
         try:
-            from sqlalchemy import select, update
-            from lia_models.candidate import VacancyCandidate
-
-            stmt = select(VacancyCandidate).where(
-                VacancyCandidate.candidate_id == interview.candidate_id,
-                VacancyCandidate.vacancy_id == interview.job_vacancy_id,
+            from sqlalchemy import update  # noqa: F401  # used elsewhere in this method
+            from app.domains.candidates.repositories.vacancy_candidate_repository import (
+                VacancyCandidateRepository,
             )
-            result = await db.execute(stmt)
-            vc = result.scalar_one_or_none()
+
+            _vc_repo = VacancyCandidateRepository(db)
+            vc = await _vc_repo.get_by_vacancy_and_candidate(
+                vacancy_id=interview.job_vacancy_id,
+                candidate_id=interview.candidate_id,
+            )
 
             if not vc:
                 logger.info(

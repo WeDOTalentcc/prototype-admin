@@ -36,3 +36,17 @@ class TenantRepository:
             )
         )
         return result.scalars().first()
+
+
+    # ── Sprint Q2 ADR-001 cleanup ──────
+
+    async def get_workos_config_by_company(
+        self, company_id: str
+    ) -> CompanyWorkOSConfig | None:
+        """Lookup CompanyWorkOSConfig by tenant company_id (post-update fetch)."""
+        result = await self.db.execute(
+            select(CompanyWorkOSConfig).where(
+                CompanyWorkOSConfig.company_id == company_id
+            )
+        )
+        return result.scalar_one_or_none()

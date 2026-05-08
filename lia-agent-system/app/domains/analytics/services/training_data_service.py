@@ -16,6 +16,7 @@ from uuid import UUID
 from sqlalchemy import and_, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.analytics.repositories.feedback_repository import FeedbackRepository
 from lia_models.feedback import InteractionFeedback
 
 logger = logging.getLogger(__name__)
@@ -98,29 +99,14 @@ class TrainingDataService:
             self.logger.warning(f"Invalid company_id: {company_id}")
             return []
         
-        base_conditions = [
-            InteractionFeedback.company_id == company_uuid,
-            InteractionFeedback.user_message.isnot(None),
-            InteractionFeedback.lia_response.isnot(None),
-            func.length(InteractionFeedback.lia_response) > self.MIN_RESPONSE_LENGTH,
-        ]
-        
-        if require_correction:
-            base_conditions.append(InteractionFeedback.correction.isnot(None))
-        else:
-            quality_conditions = or_(
-                InteractionFeedback.thumbs == "up",
-                InteractionFeedback.rating >= min_rating
-            )
-            base_conditions.append(quality_conditions)
-        
-        result = await self.db.execute(
-            select(InteractionFeedback)
-            .where(and_(*base_conditions))
-            .order_by(InteractionFeedback.created_at.desc())
-            .limit(limit * 2)
+        repo = FeedbackRepository(self.db)
+        all_feedback = await repo.list_quality_feedback(
+            company_id=company_uuid,
+            min_rating=min_rating,
+            limit=limit * 2,
+            require_correction=require_correction,
+            min_response_length=self.MIN_RESPONSE_LENGTH,
         )
-        all_feedback = result.scalars().all()
         
         quality_feedback = []
         for feedback in all_feedback:
@@ -405,20 +391,13 @@ class TrainingDataService:
         
         curated_ids = []
         
-        rating_5_result = await self.db.execute(
-            select(InteractionFeedback)
-            .where(
-                and_(
-                    InteractionFeedback.company_id == company_uuid,
-                    InteractionFeedback.rating == 5,
-                    InteractionFeedback.lia_response.isnot(None),
-                    func.length(InteractionFeedback.lia_response) > self.MIN_RESPONSE_LENGTH
-                )
-            )
-            .order_by(InteractionFeedback.created_at.desc())
-            .limit(target_count)
+        repo = FeedbackRepository(self.db)
+        rating_5_entries = await repo.list_feedback_by_rating(
+            company_id=company_uuid,
+            rating=5,
+            limit=target_count,
+            min_response_length=self.MIN_RESPONSE_LENGTH,
         )
-        rating_5_entries = rating_5_result.scalars().all()
         
         for entry in rating_5_entries:
             if self._is_quality_response(entry):
@@ -429,20 +408,12 @@ class TrainingDataService:
             return curated_ids[:target_count]
         
         remaining = target_count - len(curated_ids)
-        rating_4_result = await self.db.execute(
-            select(InteractionFeedback)
-            .where(
-                and_(
-                    InteractionFeedback.company_id == company_uuid,
-                    InteractionFeedback.rating == 4,
-                    InteractionFeedback.lia_response.isnot(None),
-                    func.length(InteractionFeedback.lia_response) > self.MIN_RESPONSE_LENGTH
-                )
-            )
-            .order_by(InteractionFeedback.created_at.desc())
-            .limit(remaining * 2)
+        rating_4_entries = await repo.list_feedback_by_rating(
+            company_id=company_uuid,
+            rating=4,
+            limit=remaining * 2,
+            min_response_length=self.MIN_RESPONSE_LENGTH,
         )
-        rating_4_entries = rating_4_result.scalars().all()
         
         for entry in rating_4_entries:
             if len(curated_ids) >= target_count:
@@ -455,23 +426,11 @@ class TrainingDataService:
             return curated_ids[:target_count]
         
         remaining = target_count - len(curated_ids)
-        thumbs_up_result = await self.db.execute(
-            select(InteractionFeedback)
-            .where(
-                and_(
-                    InteractionFeedback.company_id == company_uuid,
-                    InteractionFeedback.thumbs == "up",
-                    InteractionFeedback.lia_response.isnot(None),
-                    func.length(InteractionFeedback.lia_response) > self.MIN_RESPONSE_LENGTH
-                )
-            )
-            .order_by(
-                InteractionFeedback.confidence_score.desc().nullslast(),
-                InteractionFeedback.created_at.desc()
-            )
-            .limit(remaining * 2)
+        thumbs_up_entries = await repo.list_feedback_thumbs_up(
+            company_id=company_uuid,
+            limit=remaining * 2,
+            min_response_length=self.MIN_RESPONSE_LENGTH,
         )
-        thumbs_up_entries = thumbs_up_result.scalars().all()
         
         for entry in thumbs_up_entries:
             if len(curated_ids) >= target_count:

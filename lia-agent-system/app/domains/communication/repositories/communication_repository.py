@@ -116,3 +116,186 @@ class CommunicationRepository:
             "organic_saturated": organic_saturated,
             "sourcing_saturated": sourcing_saturated,
         }
+
+
+    # ------------------------------------------------------------------ #
+    # CommunicationLog / PendingApproval / OptOut / Quarantine extensions   #
+    # ------------------------------------------------------------------ #
+
+    async def list_logs_since(
+        self,
+        *,
+        candidate_id: str,
+        company_id: str,
+        since,
+        statuses: list,
+    ) -> list:
+        if not company_id:
+            raise ValueError("company_id is required (multi-tenancy invariant)")
+        result = await self.db.execute(
+            select(CommunicationLog).where(
+                and_(
+                    CommunicationLog.candidate_id == candidate_id,
+                    CommunicationLog.company_id == company_id,
+                    CommunicationLog.sent_at >= since,
+                    CommunicationLog.status.in_(statuses),
+                )
+            )
+        )
+        return list(result.scalars())
+
+    async def list_logs_by_candidate_with_filters(
+        self,
+        *,
+        company_id: str,
+        candidate_id: str,
+        channel: str | None = None,
+        status: str | None = None,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> list:
+        if not company_id:
+            raise ValueError("company_id is required (multi-tenancy invariant)")
+        from sqlalchemy import desc
+        conditions = [
+            CommunicationLog.company_id == company_id,
+            CommunicationLog.candidate_id == candidate_id,
+        ]
+        if channel:
+            conditions.append(CommunicationLog.channel == channel)
+        if status:
+            conditions.append(CommunicationLog.status == status)
+        result = await self.db.execute(
+            select(CommunicationLog)
+            .where(and_(*conditions))
+            .order_by(desc(CommunicationLog.created_at))
+            .limit(limit)
+            .offset(offset)
+        )
+        return list(result.scalars())
+
+    async def list_logs_in_day(
+        self,
+        *,
+        company_id: str,
+        day_start,
+        day_end,
+    ) -> list:
+        if not company_id:
+            raise ValueError("company_id is required (multi-tenancy invariant)")
+        result = await self.db.execute(
+            select(CommunicationLog).where(
+                and_(
+                    CommunicationLog.company_id == company_id,
+                    CommunicationLog.created_at >= day_start,
+                    CommunicationLog.created_at < day_end,
+                )
+            )
+        )
+        return list(result.scalars())
+
+    async def list_queued_logs_for_retry(
+        self,
+        *,
+        now,
+        queued_status: str,
+        limit: int = 100,
+    ) -> list:
+        from sqlalchemy import or_
+        result = await self.db.execute(
+            select(CommunicationLog).where(
+                and_(
+                    CommunicationLog.status == queued_status,
+                    or_(
+                        CommunicationLog.next_retry_at.is_(None),
+                        CommunicationLog.next_retry_at <= now,
+                    ),
+                )
+            ).limit(limit)
+        )
+        return list(result.scalars())
+
+    async def get_active_optout(
+        self,
+        *,
+        candidate_id: str,
+        company_id: str,
+        channel_value: str,
+        opt_out_type_all: str = "all",
+    ):
+        if not company_id:
+            raise ValueError("company_id is required (multi-tenancy invariant)")
+        from app.domains.communication.services.communication_models import CandidateOptOut
+        from sqlalchemy import or_
+        result = await self.db.execute(
+            select(CandidateOptOut).where(
+                and_(
+                    CandidateOptOut.candidate_id == candidate_id,
+                    CandidateOptOut.company_id == company_id,
+                    CandidateOptOut.is_active,
+                    or_(
+                        CandidateOptOut.channel == channel_value,
+                        CandidateOptOut.opt_out_type == opt_out_type_all,
+                    ),
+                )
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def get_active_optout_for_channel(
+        self,
+        *,
+        candidate_id: str,
+        company_id: str,
+        channel_value: str,
+    ):
+        if not company_id:
+            raise ValueError("company_id is required (multi-tenancy invariant)")
+        from app.domains.communication.services.communication_models import CandidateOptOut
+        result = await self.db.execute(
+            select(CandidateOptOut).where(
+                and_(
+                    CandidateOptOut.candidate_id == candidate_id,
+                    CandidateOptOut.company_id == company_id,
+                    CandidateOptOut.channel == channel_value,
+                    CandidateOptOut.is_active,
+                )
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def get_active_quarantine(
+        self,
+        *,
+        candidate_id: str,
+        company_id: str,
+        now,
+    ):
+        if not company_id:
+            raise ValueError("company_id is required (multi-tenancy invariant)")
+        from app.domains.communication.services.communication_models import CandidateQuarantine
+        result = await self.db.execute(
+            select(CandidateQuarantine).where(
+                and_(
+                    CandidateQuarantine.candidate_id == candidate_id,
+                    CandidateQuarantine.company_id == company_id,
+                    CandidateQuarantine.is_active,
+                    CandidateQuarantine.quarantine_end > now,
+                )
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def get_quarantine_by_id(self, quarantine_id: str):
+        from app.domains.communication.services.communication_models import CandidateQuarantine
+        result = await self.db.execute(
+            select(CandidateQuarantine).where(CandidateQuarantine.id == quarantine_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def get_pending_approval_by_id(self, approval_id: str):
+        from app.domains.communication.services.communication_models import PendingApproval
+        result = await self.db.execute(
+            select(PendingApproval).where(PendingApproval.id == approval_id)
+        )
+        return result.scalar_one_or_none()

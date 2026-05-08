@@ -258,3 +258,92 @@ class ScreeningRepository:
         await self.db.flush()
         await self.db.refresh(candidate)
         return candidate
+
+
+    # ------------------------------------------------------------------ #
+    # Candidate dedup + scoring helper methods                              #
+    # ------------------------------------------------------------------ #
+
+    async def find_active_candidate_by_email(self, email: str):
+        """Lookup active Candidate by email (hash or raw fallback)."""
+        from app.models.candidate import Candidate
+        from app.shared.encryption.encrypted_field_mixin import _sha256_hash
+        from sqlalchemy import or_
+        result = await self.db.execute(
+            select(Candidate).where(
+                or_(
+                    Candidate.email_hash == _sha256_hash(email),
+                    Candidate._email_raw == email,
+                ),
+                Candidate.is_active,
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def list_active_candidates_by_name_lowered(self, name_normalized: str):
+        from app.models.candidate import Candidate
+        result = await self.db.execute(
+            select(Candidate).where(
+                func.lower(Candidate.name) == name_normalized,
+                Candidate.is_active,
+            )
+        )
+        return list(result.scalars().all())
+
+    async def find_active_candidate_by_linkedin_username(self, linkedin_username: str):
+        from app.models.candidate import Candidate
+        result = await self.db.execute(
+            select(Candidate).where(
+                Candidate.linkedin_url.ilike(f"%{linkedin_username}%"),
+                Candidate.is_active,
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def get_candidate_by_uuid_string(self, candidate_id: str):
+        """Get Candidate by string UUID (auto-converts)."""
+        from app.models.candidate import Candidate
+        try:
+            cid = uuid.UUID(candidate_id)
+        except Exception:
+            return None
+        result = await self.db.execute(
+            select(Candidate).where(Candidate.id == cid)
+        )
+        return result.scalar_one_or_none()
+
+    async def get_job_vacancy_by_uuid_string(self, job_id: str):
+        """Get JobVacancy by string UUID (auto-converts)."""
+        from app.models.job_vacancy import JobVacancy
+        try:
+            jid = uuid.UUID(job_id)
+        except Exception:
+            return None
+        result = await self.db.execute(
+            select(JobVacancy).where(JobVacancy.id == jid)
+        )
+        return result.scalar_one_or_none()
+
+    async def list_requirements_by_vacancy_uuid_string(self, job_id: str):
+        from app.models.job_requirement import JobRequirement
+        try:
+            jid = uuid.UUID(job_id)
+        except Exception:
+            return []
+        result = await self.db.execute(
+            select(JobRequirement).where(JobRequirement.job_vacancy_id == jid)
+        )
+        return list(result.scalars().all())
+
+    async def get_vacancy_candidate_by_pair(
+        self, *, vacancy_id, candidate_id
+    ):
+        """Get VacancyCandidate by (vacancy_id, candidate_id) — accepts UUID or str."""
+        from app.models.candidate import VacancyCandidate
+        result = await self.db.execute(
+            select(VacancyCandidate).where(
+                VacancyCandidate.vacancy_id == vacancy_id,
+                VacancyCandidate.candidate_id == candidate_id,
+            )
+        )
+        return result.scalar_one_or_none()

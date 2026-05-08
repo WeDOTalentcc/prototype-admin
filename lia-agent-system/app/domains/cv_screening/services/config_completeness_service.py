@@ -468,6 +468,8 @@ class ConfigCompletenessService:
                 if field == 'department':
                     # Try to get departments from company
                     try:
+                        # ADR-001-EXEMPT: cross-domain Department lookup; no admin/companies repo
+                        # exposes it yet. Sprint 6 follow-up: extract to DepartmentRepository.
                         dept_query = select(Department).where(
                             Department.company_id == company_id
                         ).limit(10)

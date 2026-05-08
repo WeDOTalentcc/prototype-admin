@@ -8,8 +8,9 @@ import uuid
 from pathlib import Path
 from typing import Any
 
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domains.job_management.repositories.email_template_repository import EmailTemplateRepository
 
 from app.core.template_channels import (
     CHANNEL_BELL,
@@ -101,15 +102,9 @@ async def seed_default_templates(db: AsyncSession) -> dict[str, Any]:
     skipped_templates = []
     
     for template_data in DEFAULT_TEMPLATES:
-        existing = await db.execute(
-            select(EmailTemplate).where(
-                EmailTemplate.situation == template_data["situation"],
-                EmailTemplate.channel == template_data["channel"],
-                EmailTemplate.is_system_template,
-                EmailTemplate.company_id.is_(None)
-            )
+        existing_template = await EmailTemplateRepository(db).find_system_template(
+            situation=template_data["situation"], channel=template_data["channel"]
         )
-        existing_template = existing.scalar_one_or_none()
         
         if existing_template:
             skipped_templates.append(template_data["name"])
@@ -171,26 +166,18 @@ async def clone_templates_for_client(db: AsyncSession, client_id: str, auto_comm
     Raises:
         Any database errors are propagated to the caller (not swallowed)
     """
-    result = await db.execute(
-        select(EmailTemplate).where(
-            EmailTemplate.is_system_template,
-            EmailTemplate.company_id.is_(None),
-            EmailTemplate.is_active
-        )
-    )
-    system_templates = result.scalars().all()
+    repo = EmailTemplateRepository(db)
+    system_templates = await repo.list_active_system_templates()
     
     cloned_templates = []
     
     for template in system_templates:
-        existing = await db.execute(
-            select(EmailTemplate).where(
-                EmailTemplate.company_id == client_id,
-                EmailTemplate.situation == template.situation,
-                EmailTemplate.channel == template.channel
-            )
+        existing = await repo.find_for_client(
+            company_id=client_id,
+            situation=template.situation,
+            channel=template.channel,
         )
-        if existing.scalar_one_or_none():
+        if existing:
             continue
         
         cloned = EmailTemplate(

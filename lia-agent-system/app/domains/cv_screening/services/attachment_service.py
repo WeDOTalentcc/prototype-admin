@@ -8,9 +8,10 @@ import logging
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import and_, desc, func, select
-
 from app.core.database import AsyncSessionLocal
+from app.domains.cv_screening.repositories.candidate_attachment_repository import (
+    CandidateAttachmentRepository,
+)
 from lia_models.candidate_attachment import CandidateAttachment
 
 logger = logging.getLogger(__name__)
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 class AttachmentService:
     """Service for managing candidate attachments"""
-    
+
     async def create_attachment(
         self,
         candidate_id: str,
@@ -36,29 +37,9 @@ class AttachmentService:
         description: str | None = None,
         uploaded_by_name: str | None = None,
     ) -> CandidateAttachment:
-        """
-        Create a new attachment record.
-        
-        Args:
-            candidate_id: ID of the candidate
-            candidate_name: Name of the candidate
-            file_name: Original file name
-            file_type: Type of file (cv, document, certificate, video, transcript, other)
-            file_url: URL where file is stored
-            upload_source: Source of upload (candidate, recruiter, lia, ats)
-            uploaded_by: ID of who uploaded the file
-            company_id: Company ID for multi-tenancy
-            file_size: File size in bytes (optional)
-            mime_type: MIME type of file (optional)
-            related_entity_type: Type of related entity (optional)
-            related_entity_id: ID of related entity (optional)
-            description: Description of the attachment (optional)
-            uploaded_by_name: Display name of uploader (optional)
-            
-        Returns:
-            Created CandidateAttachment instance
-        """
+        """Create a new attachment record."""
         async with AsyncSessionLocal() as session:
+            repo = CandidateAttachmentRepository(session)
             attachment = CandidateAttachment(
                 candidate_id=candidate_id,
                 candidate_name=candidate_name,
@@ -76,14 +57,10 @@ class AttachmentService:
                 company_id=company_id,
                 is_active=True,
             )
-            
-            session.add(attachment)
-            await session.commit()
-            await session.refresh(attachment)
-            
-            logger.info(f"✅ Attachment created: {attachment.id}")
+            attachment = await repo.add(attachment)
+            logger.info(f"Attachment created: {attachment.id}")
             return attachment
-    
+
     async def list_attachments(
         self,
         company_id: str,
@@ -94,91 +71,40 @@ class AttachmentService:
         limit: int = 50,
         offset: int = 0,
     ) -> dict[str, Any]:
-        """
-        List attachments with optional filters.
-        
-        Args:
-            company_id: Company ID (required for multi-tenancy)
-            candidate_id: Filter by candidate ID (optional)
-            file_type: Filter by file type (optional)
-            upload_source: Filter by upload source (optional)
-            is_active: Filter by active status (default: True)
-            limit: Max number of results (default: 50)
-            offset: Offset for pagination (default: 0)
-            
-        Returns:
-            Dict with attachments list, total count, limit, offset
-        """
+        """List attachments with optional filters."""
         async with AsyncSessionLocal() as session:
-            where_conditions = [CandidateAttachment.company_id == company_id]
-            
-            if candidate_id:
-                where_conditions.append(CandidateAttachment.candidate_id == candidate_id)
-            
-            if file_type:
-                where_conditions.append(CandidateAttachment.file_type == file_type)
-            
-            if upload_source:
-                where_conditions.append(CandidateAttachment.upload_source == upload_source)
-            
-            if is_active is not None:
-                where_conditions.append(CandidateAttachment.is_active == is_active)
-            
-            count_query = (
-                select(func.count())
-                .select_from(CandidateAttachment)
-                .where(and_(*where_conditions))
+            repo = CandidateAttachmentRepository(session)
+            attachments, total = await repo.list_with_filters(
+                company_id=company_id,
+                candidate_id=candidate_id,
+                file_type=file_type,
+                upload_source=upload_source,
+                is_active=is_active,
+                limit=limit,
+                offset=offset,
             )
-            count_result = await session.execute(count_query)
-            total = count_result.scalar() or 0
-            
-            data_query = (
-                select(CandidateAttachment)
-                .where(and_(*where_conditions))
-                .order_by(desc(CandidateAttachment.created_at))
-                .limit(limit)
-                .offset(offset)
-            )
-            
-            result = await session.execute(data_query)
-            attachments = result.scalars().all()
-            
-            logger.info(f"📋 Retrieved {len(attachments)} attachments (total: {total})")
-            
+            logger.info(f"Retrieved {len(attachments)} attachments (total: {total})")
             return {
                 "attachments": [att.to_dict() for att in attachments],
                 "total": total,
                 "limit": limit,
                 "offset": offset,
             }
-    
+
     async def get_attachment_by_id(
         self,
-        attachment_id: str
+        attachment_id: str,
     ) -> CandidateAttachment | None:
-        """
-        Get a single attachment by ID.
-        
-        Args:
-            attachment_id: Attachment UUID
-            
-        Returns:
-            CandidateAttachment instance or None if not found
-        """
+        """Get a single attachment by ID."""
         async with AsyncSessionLocal() as session:
-            query = select(CandidateAttachment).where(
-                CandidateAttachment.id == attachment_id
-            )
-            result = await session.execute(query)
-            attachment = result.scalar_one_or_none()
-            
+            repo = CandidateAttachmentRepository(session)
+            attachment = await repo.get_by_id(attachment_id)
             if attachment:
-                logger.info(f"📋 Retrieved attachment: {attachment.id}")
+                logger.info(f"Retrieved attachment: {attachment.id}")
             else:
-                logger.warning(f"⚠️ Attachment not found: {attachment_id}")
-            
+                logger.warning(f"Attachment not found: {attachment_id}")
             return attachment
-    
+
     async def get_candidate_attachments(
         self,
         candidate_id: str,
@@ -186,82 +112,36 @@ class AttachmentService:
         limit: int = 100,
         offset: int = 0,
     ) -> dict[str, Any]:
-        """
-        Get all attachments for a specific candidate.
-        
-        Args:
-            candidate_id: Candidate ID
-            company_id: Company ID (for multi-tenancy)
-            limit: Max number of results (default: 100)
-            offset: Offset for pagination (default: 0)
-            
-        Returns:
-            Dict with attachments list and total count
-        """
+        """Get all attachments for a specific candidate."""
         async with AsyncSessionLocal() as session:
-            where_conditions = [
-                CandidateAttachment.candidate_id == candidate_id,
-                CandidateAttachment.company_id == company_id,
-                CandidateAttachment.is_active,
-            ]
-            
-            count_query = (
-                select(func.count())
-                .select_from(CandidateAttachment)
-                .where(and_(*where_conditions))
+            repo = CandidateAttachmentRepository(session)
+            attachments, total = await repo.list_for_candidate(
+                candidate_id=candidate_id,
+                company_id=company_id,
+                limit=limit,
+                offset=offset,
             )
-            count_result = await session.execute(count_query)
-            total = count_result.scalar() or 0
-            
-            data_query = (
-                select(CandidateAttachment)
-                .where(and_(*where_conditions))
-                .order_by(desc(CandidateAttachment.created_at))
-                .limit(limit)
-                .offset(offset)
-            )
-            
-            result = await session.execute(data_query)
-            attachments = result.scalars().all()
-            
-            logger.info(f"📋 Retrieved {len(attachments)} attachments for candidate {candidate_id}")
-            
+            logger.info(f"Retrieved {len(attachments)} attachments for candidate {candidate_id}")
             return {
                 "attachments": [att.to_dict() for att in attachments],
                 "total": total,
             }
-    
+
     async def deactivate_attachment(
         self,
-        attachment_id: str
+        attachment_id: str,
     ) -> CandidateAttachment | None:
-        """
-        Soft delete an attachment by setting is_active=False.
-        
-        Args:
-            attachment_id: Attachment UUID
-            
-        Returns:
-            Updated CandidateAttachment instance or None if not found
-        """
+        """Soft delete an attachment by setting is_active=False."""
         async with AsyncSessionLocal() as session:
-            query = select(CandidateAttachment).where(
-                CandidateAttachment.id == attachment_id
-            )
-            result = await session.execute(query)
-            attachment = result.scalar_one_or_none()
-            
+            repo = CandidateAttachmentRepository(session)
+            attachment = await repo.get_by_id(attachment_id)
             if not attachment:
-                logger.warning(f"⚠️ Attachment not found for deactivation: {attachment_id}")
+                logger.warning(f"Attachment not found for deactivation: {attachment_id}")
                 return None
-            
             attachment.is_active = False
             attachment.updated_at = datetime.utcnow()
-            
-            await session.commit()
-            await session.refresh(attachment)
-            
-            logger.info(f"✅ Attachment deactivated: {attachment_id}")
+            attachment = await repo.commit_changes(attachment)
+            logger.info(f"Attachment deactivated: {attachment_id}")
             return attachment
 
 

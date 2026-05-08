@@ -54,6 +54,27 @@ class OptoutRepository:
         )
         return result.scalar_one_or_none()
 
+    async def get_lgpd_consent(
+        self,
+        *,
+        candidate_id: str,
+        company_id: str,
+        consent_type: str,
+    ):
+        """Return the LGPDConsent row for (candidate, company, consent_type) or None."""
+        from lia_models.communication_settings import LGPDConsent
+
+        result = await self.db.execute(
+            select(LGPDConsent).where(
+                and_(
+                    LGPDConsent.candidate_id == candidate_id,
+                    LGPDConsent.company_id == company_id,
+                    LGPDConsent.consent_type == consent_type,
+                )
+            )
+        )
+        return result.scalar_one_or_none()
+
     async def create_optout_event(
         self,
         company_id: uuid.UUID,

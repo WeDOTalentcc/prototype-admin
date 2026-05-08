@@ -755,6 +755,7 @@ class JobInsightsService:
             db: Database session
             company_id: Company ID for scoping
             job_id: Optional specific job ID to find similar filled jobs
+                # ADR-001-EXEMPT: filtered JobVacancy list with recruiter+status filters; would require new method in JobVacancyCrudRepository (foreign repo) — defer to Sprint 6
             role: Role/title filter
             seniority: Seniority level filter
             department: Department filter

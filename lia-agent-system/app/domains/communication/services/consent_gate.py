@@ -14,8 +14,9 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 
-from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domains.communication.repositories.optout_repository import OptoutRepository
 
 from app.enums.communication import MessageChannel
 
@@ -80,17 +81,12 @@ class CommunicationConsentGate:
         consent_type = consent_map.get(channel_str, "EMAIL_TRANSACTIONAL")
 
         try:
-            from lia_models.communication_settings import LGPDConsent
-
-            query = select(LGPDConsent).where(
-                and_(
-                    LGPDConsent.candidate_id == candidate_id,
-                    LGPDConsent.company_id == company_id,
-                    LGPDConsent.consent_type == consent_type,
-                )
+            repo = OptoutRepository(self.db)
+            consent = await repo.get_lgpd_consent(
+                candidate_id=candidate_id,
+                company_id=company_id,
+                consent_type=consent_type,
             )
-            result = await self.db.execute(query)
-            consent = result.scalar_one_or_none()
 
             # Revoked → block
             if consent and not consent.consent_given:
@@ -184,8 +180,6 @@ class CommunicationConsentGate:
     ) -> None:
         """Record consent check for audit trail (best-effort)."""
         try:
-            from lia_models.communication_settings import LGPDConsent
-
             # Use a lightweight log entry via the existing CommunicationLog or direct insert
             logger.info(
                 "[ConsentGate] audit: candidate=%s company=%s channel=%s consent_type=%s result=%s",

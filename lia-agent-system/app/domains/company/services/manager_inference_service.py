@@ -1,4 +1,12 @@
 """
+
+# ADR-001-EXEMPT: Heuristic manager inference scanner with complex
+# fuzzy-matching queries (func.lower().contains, multi-source candidate
+# ranking across CompanyProfile + Department + DepartmentMember). Tenant
+# scope established via company_id at service entry.
+# TODO Sprint 6: extract to ManagerInferenceRepository with composite
+# match-and-score methods.
+
 Manager Inference Service - Infer manager email from company structure.
 
 Searches for managers in:

@@ -12,8 +12,9 @@ import os
 from typing import Any
 from uuid import UUID, uuid4
 
-from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domains.job_management.repositories.job_template_repository import JobTemplateRepository
 
 from app.data.templates import (
     get_all_system_templates,
@@ -86,17 +87,15 @@ class JobTemplateService:
     
     def __init__(self, db: AsyncSession):
         self.db = db
-    
+        self._repo = JobTemplateRepository(db)
+
     def validate_template(self, template_data: dict[str, Any], strict: bool = False) -> dict[str, Any]:
         """Validate template meets WSI quality gates."""
         return validate_wsi_quality(template_data, strict)
     
     async def get_template_by_id(self, template_id: UUID) -> JobTemplate | None:
         """Get a template by ID."""
-        result = await self.db.execute(
-            select(JobTemplate).where(JobTemplate.id == template_id)
-        )
-        return result.scalar_one_or_none()
+        return await self._repo.get_by_id(template_id)
     
     async def get_templates(
         self,
@@ -123,32 +122,15 @@ class JobTemplateService:
         Returns:
             List of JobTemplate objects
         """
-        query = select(JobTemplate).where(JobTemplate.is_active)
-        
-        if company_id and include_system:
-            query = query.where(
-                or_(
-                    JobTemplate.company_id == company_id,
-                    JobTemplate.is_system
-                )
-            )
-        elif company_id:
-            query = query.where(JobTemplate.company_id == company_id)
-        elif include_system:
-            query = query.where(JobTemplate.is_system)
-        
-        if category:
-            query = query.where(JobTemplate.category == category)
-        if subcategory:
-            query = query.where(JobTemplate.subcategory == subcategory)
-        if seniority:
-            query = query.where(JobTemplate.seniority == seniority)
-        
-        query = query.order_by(JobTemplate.popularity_score.desc())
-        query = query.limit(limit).offset(offset)
-        
-        result = await self.db.execute(query)
-        return list(result.scalars().all())
+        return await self._repo.list_filtered(
+            company_id=company_id,
+            category=category,
+            subcategory=subcategory,
+            seniority=seniority,
+            include_system=include_system,
+            limit=limit,
+            offset=offset,
+        )
     
     async def search_templates(
         self,
@@ -167,35 +149,7 @@ class JobTemplateService:
         Returns:
             List of matching templates
         """
-        query_lower = f"%{query.lower()}%"
-        
-        sql_query = (
-            select(JobTemplate)
-            .where(JobTemplate.is_active)
-            .where(
-                or_(
-                    func.lower(JobTemplate.title).like(query_lower),
-                    func.lower(JobTemplate.title_normalized).like(query_lower),
-                    func.lower(func.array_to_string(JobTemplate.title_alternatives, ' ')).like(query_lower),
-                )
-            )
-        )
-        
-        if company_id:
-            sql_query = sql_query.where(
-                or_(
-                    JobTemplate.company_id == company_id,
-                    JobTemplate.is_system
-                )
-            )
-        else:
-            sql_query = sql_query.where(JobTemplate.is_system)
-        
-        sql_query = sql_query.order_by(JobTemplate.popularity_score.desc())
-        sql_query = sql_query.limit(limit)
-        
-        result = await self.db.execute(sql_query)
-        return list(result.scalars().all())
+        return await self._repo.search(query, company_id=company_id, limit=limit)
     
     async def get_popular_templates(
         self,
@@ -204,26 +158,9 @@ class JobTemplateService:
         limit: int = 10,
     ) -> list[JobTemplate]:
         """Get most popular templates."""
-        query = (
-            select(JobTemplate)
-            .where(JobTemplate.is_active)
-            .order_by(JobTemplate.usage_count.desc())
-            .limit(limit)
+        return await self._repo.get_popular(
+            company_id=company_id, category=category, limit=limit
         )
-        
-        if category:
-            query = query.where(JobTemplate.category == category)
-        
-        if company_id:
-            query = query.where(
-                or_(
-                    JobTemplate.company_id == company_id,
-                    JobTemplate.is_system
-                )
-            )
-        
-        result = await self.db.execute(query)
-        return list(result.scalars().all())
     
     async def create_template(self, template_data: dict[str, Any]) -> JobTemplate:
         """Create a new template."""
@@ -389,14 +326,10 @@ class JobTemplateService:
         count = 0
         
         for data in templates_data:
-            existing = await self.db.execute(
-                select(JobTemplate).where(
-                    JobTemplate.is_system,
-                    JobTemplate.title == data["title"],
-                    JobTemplate.seniority == data["seniority"],
-                )
+            existing = await self._repo.find_system_by_title_seniority(
+                data["title"], data["seniority"]
             )
-            if existing.scalar_one_or_none():
+            if existing:
                 continue
             
             await self.create_template(data)
@@ -410,17 +343,7 @@ class JobTemplateService:
     
     async def get_category_stats(self) -> dict[str, int]:
         """Get template count by category."""
-        result = await self.db.execute(
-            select(
-                JobTemplate.category,
-                func.count(JobTemplate.id).label("count")
-            )
-            .where(JobTemplate.is_active)
-            .where(JobTemplate.is_system)
-            .group_by(JobTemplate.category)
-        )
-        
-        return {row.category: row.count for row in result}
+        return await self._repo.category_stats()
 
 
 async def enrich_template_with_ai(

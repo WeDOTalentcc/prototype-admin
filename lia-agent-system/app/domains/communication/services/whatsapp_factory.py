@@ -131,7 +131,9 @@ class WhatsAppProviderFactory:
         """Query company settings for WhatsApp provider preference."""
         try:
             from lia_models.company import Company
-            
+
+            # ADR-001-EXEMPT: cross-domain Company lookup; foreign-domain repo would be admin/companies.
+            # Single primary-key fetch — defer to Sprint 6 when CompanyRepository becomes canonical.
             result = await db.execute(
                 select(Company).where(Company.id == company_id)
             )

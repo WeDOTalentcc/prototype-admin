@@ -12,7 +12,6 @@ Fallback: ["email"] se a lista resultante for vazia.
 """
 import logging
 
-from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lia_models.candidate import Candidate
@@ -122,10 +121,11 @@ class CandidateChannelSelector:
         """Busca candidato por ID."""
         try:
             from uuid import UUID
-            result = await self.db.execute(
-                select(Candidate).where(Candidate.id == UUID(candidate_id))
+            from app.domains.candidates.repositories.candidate_repository import (
+                CandidateRepository,
             )
-            return result.scalar_one_or_none()
+            repo = CandidateRepository(self.db)
+            return await repo.get_by_id(UUID(candidate_id))
         except Exception as e:
             logger.warning(f"[CHANNEL_SELECTOR] Erro ao buscar candidato {candidate_id}: {e}")
             return None
@@ -136,16 +136,13 @@ class CandidateChannelSelector:
         """
         consented = set()
         try:
-            result = await self.db.execute(
-                select(LGPDConsent).where(
-                    and_(
-                        LGPDConsent.candidate_id == candidate_id,
-                        LGPDConsent.company_id == company_id,
-                        LGPDConsent.consent_given,
-                    )
-                )
+            from app.domains.lgpd.repositories.lgpd_consent_repository import (
+                LGPDConsentRepository,
             )
-            consents = result.scalars().all()
+            consent_repo = LGPDConsentRepository(self.db)
+            consents = await consent_repo.list_active_for_candidate(
+                candidate_id=candidate_id, company_id=company_id
+            )
 
             for consent in consents:
                 # Mapear consent_type de volta para canal

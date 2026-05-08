@@ -277,6 +277,7 @@ class CompensationAnalysisService:
                     CompensationPolicy.effective_from.is_(None),
                     CompensationPolicy.effective_from <= now
                 ),
+            # ADR-001-EXEMPT: single-row CompensationPolicy lookup; CompensationPolicyRepository pending Sprint 6 follow-up
                 or_(
                     CompensationPolicy.effective_until.is_(None),
                     CompensationPolicy.effective_until >= now

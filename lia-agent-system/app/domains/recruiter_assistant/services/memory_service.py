@@ -7,12 +7,15 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID, uuid4
 
-from sqlalchemy import and_, delete, select, text
+from sqlalchemy import and_, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
-from lia_models.memory import DOCUMENT_TYPES, ConversationMemory, KnowledgeBase
+from app.domains.recruiter_assistant.repositories.conversation_memory_repository import (
+    ConversationMemoryRepository,
+)
 from app.shared.services.embedding_service import embedding_service
+from lia_models.memory import DOCUMENT_TYPES, ConversationMemory, KnowledgeBase
 
 logger = logging.getLogger(__name__)
 
@@ -113,44 +116,23 @@ class MemoryService:
         
         try:
             query_embedding = await self.embedding_service.generate_embedding(query)
-            
-            filters = [ConversationMemory.company_id == company_id]
-            if session_id:
-                filters.append(ConversationMemory.session_id == session_id)
-            if user_id:
-                filters.append(ConversationMemory.user_id == user_id)
-            
-            similarity_expr = text(
-                "1 - (embedding <=> :query_embedding::vector)"
+            repo = ConversationMemoryRepository(db)
+            results = await repo.search_similar_messages(
+                company_id=company_id,
+                query_embedding=query_embedding,
+                session_id=session_id,
+                user_id=user_id,
+                limit=limit,
+                min_similarity=min_similarity,
             )
-            
-            stmt = (
-                select(
-                    ConversationMemory,
-                    similarity_expr.bindparams(query_embedding=str(query_embedding)).label("similarity")
-                )
-                .where(and_(*filters))
-                .where(ConversationMemory.embedding.isnot(None))
-                .order_by(text("similarity DESC"))
-                .limit(limit * 2)  # Get more to filter by threshold
-            )
-            
-            result = await db.execute(stmt)
-            rows = result.all()
-            
+
             messages = []
-            for row in rows:
-                memory, similarity = row
-                if similarity >= min_similarity:
-                    msg_dict = memory.to_dict()
-                    msg_dict["similarity"] = float(similarity)
-                    messages.append(msg_dict)
-                
-                if len(messages) >= limit:
-                    break
-            
+            for memory, similarity in results:
+                msg_dict = memory.to_dict()
+                msg_dict["similarity"] = similarity
+                messages.append(msg_dict)
             return messages
-            
+
         except Exception as e:
             logger.error(f"Error searching similar messages: {e}")
             return []
@@ -182,24 +164,15 @@ class MemoryService:
             db = AsyncSessionLocal()
         
         try:
-            stmt = (
-                select(ConversationMemory)
-                .where(
-                    and_(
-                        ConversationMemory.company_id == company_id,
-                        ConversationMemory.session_id == session_id
-                    )
-                )
-                .order_by(ConversationMemory.created_at.desc())
-                .limit(limit)
+            repo = ConversationMemoryRepository(db)
+            memories = await repo.get_recent_for_session(
+                company_id=company_id,
+                session_id=session_id,
+                limit=limit,
             )
-            
-            result = await db.execute(stmt)
-            memories = result.scalars().all()
-            
-            messages = [m.to_dict() for m in reversed(memories)]
+            messages = [m.to_dict() for m in memories]
             return messages
-            
+
         except Exception as e:
             logger.error(f"Error getting conversation context: {e}")
             return []
@@ -312,42 +285,22 @@ class MemoryService:
         
         try:
             query_embedding = await self.embedding_service.generate_embedding(query)
-            
-            filters = [KnowledgeBase.company_id == company_id]
-            if document_types:
-                filters.append(KnowledgeBase.document_type.in_(document_types))
-            
-            similarity_expr = text(
-                "1 - (embedding <=> :query_embedding::vector)"
+            repo = ConversationMemoryRepository(db)
+            results = await repo.search_knowledge_base(
+                company_id=company_id,
+                query_embedding=query_embedding,
+                document_types=document_types,
+                limit=limit,
+                min_similarity=min_similarity,
             )
-            
-            stmt = (
-                select(
-                    KnowledgeBase,
-                    similarity_expr.bindparams(query_embedding=str(query_embedding)).label("similarity")
-                )
-                .where(and_(*filters))
-                .where(KnowledgeBase.embedding.isnot(None))
-                .order_by(text("similarity DESC"))
-                .limit(limit * 2)
-            )
-            
-            result = await db.execute(stmt)
-            rows = result.all()
-            
+
             documents = []
-            for row in rows:
-                kb_entry, similarity = row
-                if similarity >= min_similarity:
-                    doc_dict = kb_entry.to_dict()
-                    doc_dict["similarity"] = float(similarity)
-                    documents.append(doc_dict)
-                
-                if len(documents) >= limit:
-                    break
-            
+            for kb_entry, similarity in results:
+                doc_dict = kb_entry.to_dict()
+                doc_dict["similarity"] = similarity
+                documents.append(doc_dict)
             return documents
-            
+
         except Exception as e:
             logger.error(f"Error searching knowledge base: {e}")
             return []

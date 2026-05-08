@@ -9,8 +9,11 @@ from datetime import datetime
 from enum import Enum, StrEnum
 from typing import Any
 
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domains.automation.repositories.communication_automation_repository import (
+    CommunicationAutomationRepository,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -173,8 +176,6 @@ class StageAutomationEngine:
         trigger_type: TriggerType
     ) -> dict[str, Any]:
         """Get company-specific automation rules for a trigger type."""
-        from lia_models.automation import CommunicationAutomation
-        
         trigger_type_mapping = {
             TriggerType.SCREENING_COMPLETED: "screening_completed",
             TriggerType.INTERVIEW_SCHEDULED: "interview_scheduled",
@@ -195,14 +196,10 @@ class StageAutomationEngine:
         db_trigger_type = trigger_type_mapping.get(trigger_type, trigger_type.value)
         
         try:
-            result = await db.execute(
-                select(CommunicationAutomation).where(
-                    CommunicationAutomation.company_id == company_id,
-                    CommunicationAutomation.trigger_type == db_trigger_type,
-                    CommunicationAutomation.is_active
-                )
+            repo = CommunicationAutomationRepository(db)
+            rule = await repo.find_first_active_for_trigger(
+                company_id, db_trigger_type
             )
-            rule = result.scalar_one_or_none()
             
             if rule:
                 trigger_config = rule.trigger_config or {}

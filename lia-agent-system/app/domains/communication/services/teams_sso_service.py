@@ -133,15 +133,11 @@ class TeamsSSOService:
             return {"company_id": None, "user_id": teams_user_id, "is_authenticated": False}
 
         try:
-            from app.models import User
-            from lia_models.teams import TeamsConversation
+            from app.domains.communication.repositories.teams_repository import TeamsRepository
 
             # Find conversation record
-            stmt = select(TeamsConversation).where(
-                TeamsConversation.user_id == teams_user_id
-            ).limit(1)
-            result = await db.execute(stmt)
-            conv = result.scalar_one_or_none()
+            repo = TeamsRepository(db)
+            conv = await repo.get_any_conversation_by_user_id(teams_user_id)
 
             if conv:
                 # Try to find WeDOTalent user by AAD object ID or stored email
@@ -149,11 +145,7 @@ class TeamsSSOService:
                 if aad_id:
                     # Look up by aad_object_id in users table (if column exists)
                     try:
-                        user_stmt = select(User).where(
-                            User.azure_ad_object_id == aad_id
-                        ).limit(1)
-                        user_result = await db.execute(user_stmt)
-                        user = user_result.scalar_one_or_none()
+                        user = await repo.get_user_by_aad_object_id(aad_id)
                         if user:
                             return {
                                 "company_id": str(user.company_id) if user.company_id else None,

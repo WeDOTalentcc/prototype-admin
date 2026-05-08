@@ -23,6 +23,7 @@ from uuid import UUID
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.analytics.repositories.feedback_repository import FeedbackRepository
 from lia_models.feedback_learning import JobOutcome, JobOutcomeType, SuggestionFeedback, WizardFeedback
 
 logger = logging.getLogger(__name__)
@@ -346,25 +347,14 @@ class FeedbackLearningService:
         try:
             cutoff_date = datetime.utcnow() - timedelta(days=months_back * 30)
             
-            conditions = [
-                WizardFeedback.company_id == company_id,
-                WizardFeedback.field_corrected == field,
-                WizardFeedback.created_at >= cutoff_date
-            ]
-            
-            if role:
-                conditions.append(
-                    func.lower(WizardFeedback.role).contains(role.lower())
-                )
-            
-            if seniority:
-                conditions.append(
-                    func.lower(WizardFeedback.seniority) == seniority.lower()
-                )
-            
-            query = select(WizardFeedback).where(and_(*conditions))
-            result = await db.execute(query)
-            feedbacks = result.scalars().all()
+            repo = FeedbackRepository(db)
+            feedbacks = await repo.list_wizard_feedback_corrections(
+                company_id=company_id,
+                field=field,
+                cutoff_date=cutoff_date,
+                role=role,
+                seniority=seniority,
+            )
             
             if not feedbacks:
                 return {
@@ -582,19 +572,12 @@ class FeedbackLearningService:
                 JobOutcome.created_at >= cutoff_date
             ]
             
-            if role:
-                conditions.append(
-                    func.lower(JobOutcome.role).contains(role.lower())
-                )
-            
-            if seniority:
-                conditions.append(
-                    func.lower(JobOutcome.seniority) == seniority.lower()
-                )
-            
-            query = select(JobOutcome).where(and_(*conditions))
-            result = await db.execute(query)
-            outcomes = cast(list[JobOutcome], list(result.scalars().all()))
+            repo = FeedbackRepository(db)
+            outcomes = cast(list[JobOutcome], await repo.list_outcomes_for_role_analysis(
+                company_id=company_id,
+                role=role,
+                seniority=seniority,
+            ))
             
             if not outcomes:
                 return {

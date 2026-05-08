@@ -10,6 +10,7 @@ from datetime import datetime
 from docx import Document
 from fastapi import HTTPException, UploadFile
 from pypdf import PdfReader
+from app.domains.cv_screening.repositories.screening_repository import ScreeningRepository
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -503,19 +504,8 @@ Retorne APENAS o objeto JSON, sem texto adicional ou markdown."""
         """
         try:
             if parsed_cv.email:
-                from app.shared.encryption.encrypted_field_mixin import _sha256_hash
-                from sqlalchemy import or_
                 _cv_email = parsed_cv.email
-                result = await db.execute(
-                    select(Candidate).where(
-                        or_(
-                            Candidate.email_hash == _sha256_hash(_cv_email),
-                            Candidate._email_raw == _cv_email,
-                        ),
-                        Candidate.is_active,
-                    )
-                )
-                existing = result.scalar_one_or_none()
+                existing = await ScreeningRepository(db).find_active_candidate_by_email(_cv_email)
                 if existing:
                     candidate_name = getattr(existing, 'name', None)
                     return DuplicateCheck(
@@ -530,13 +520,9 @@ Retorne APENAS o objeto JSON, sem texto adicional ou markdown."""
                 name_normalized = parsed_cv.full_name.lower().strip()
                 phone_normalized = re.sub(r'\D', '', parsed_cv.phone)
                 
-                result = await db.execute(
-                    select(Candidate).where(
-                        func.lower(Candidate.name) == name_normalized,
-                        Candidate.is_active
-                    )
+                candidates = await ScreeningRepository(db).list_active_candidates_by_name_lowered(
+                    name_normalized
                 )
-                candidates = result.scalars().all()
                 
                 for candidate in candidates:
                     phone_attr = getattr(candidate, 'phone', None)
@@ -556,13 +542,9 @@ Retorne APENAS o objeto JSON, sem texto adicional ou markdown."""
             if parsed_cv.linkedin:
                 linkedin_username = self._extract_linkedin_username(parsed_cv.linkedin)
                 if linkedin_username:
-                    result = await db.execute(
-                        select(Candidate).where(
-                            Candidate.linkedin_url.ilike(f"%{linkedin_username}%"),
-                            Candidate.is_active
-                        )
+                    existing = await ScreeningRepository(db).find_active_candidate_by_linkedin_username(
+                        linkedin_username
                     )
-                    existing = result.scalar_one_or_none()
                     if existing:
                         exist_name = getattr(existing, 'name', None)
                         return DuplicateCheck(

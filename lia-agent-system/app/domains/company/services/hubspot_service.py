@@ -15,9 +15,11 @@ from hubspot.crm.contacts import SimplePublicObjectInputForCreate as ContactInpu
 from hubspot.crm.contacts.exceptions import ApiException as ContactApiException
 from hubspot.crm.deals import SimplePublicObjectInputForCreate as DealInput
 from hubspot.crm.deals.exceptions import ApiException as DealApiException
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.clients.repositories.client_account_repository import (
+    ClientAccountRepository,
+)
 from lia_models.client_account import ClientAccount
 
 logger = logging.getLogger(__name__)
@@ -552,9 +554,7 @@ class HubSpotService:
             import uuid
             client_uuid = uuid.UUID(client_id)
             
-            stmt = select(ClientAccount).where(ClientAccount.id == client_uuid)
-            result = await db.execute(stmt)
-            client = result.scalar_one_or_none()
+            client = await ClientAccountRepository(db).get_by_id(client_uuid)
             
             if client:
                 new_settings = dict(client.settings) if client.settings else {}
@@ -608,9 +608,7 @@ class HubSpotService:
             import uuid
             client_uuid = uuid.UUID(client_id)
             
-            stmt = select(ClientAccount).where(ClientAccount.id == client_uuid)
-            result = await db.execute(stmt)
-            client = result.scalar_one_or_none()
+            client = await ClientAccountRepository(db).get_by_id(client_uuid)
             
             if not client:
                 return {"success": False, "error": "Client not found"}
@@ -695,9 +693,7 @@ class HubSpotService:
             import uuid
             client_uuid = uuid.UUID(client_id)
             
-            stmt = select(ClientAccount).where(ClientAccount.id == client_uuid)
-            result = await db.execute(stmt)
-            client = result.scalar_one_or_none()
+            client = await ClientAccountRepository(db).get_by_id(client_uuid)
             
             if not client:
                 return {

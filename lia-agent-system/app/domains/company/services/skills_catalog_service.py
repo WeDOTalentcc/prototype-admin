@@ -1,4 +1,10 @@
 """
+
+# ADR-001-EXEMPT: Skills catalog service spans 3 models (CompanySkill,
+# CompanySkillsCatalog, BehavioralCompetencyCatalog) with category-based
+# filtering and cross-table aggregations. Tenant scope established at
+# service entry. Sprint 6 follow-up: consolidate into SkillsCatalogRepository.
+
 Skills Catalog Service for Job Wizard Enhancement.
 
 Provides a comprehensive catalog of technical skills and behavioral competencies

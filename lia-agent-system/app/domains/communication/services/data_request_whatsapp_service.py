@@ -107,16 +107,16 @@ class DataRequestWhatsAppService:
     
     async def _get_config(self, db: AsyncSession, company_id: UUID) -> DataRequestConfig:
         """Get or create company config."""
-        query = select(DataRequestConfig).where(DataRequestConfig.company_id == company_id)
-        result = await db.execute(query)
-        config = result.scalar_one_or_none()
-        
+        from app.domains.communication.repositories.data_request_repository import DataRequestRepository
+        repo = DataRequestRepository(db)
+        config = await repo.get_config_for_company(company_id=company_id)
+
         if not config:
             config = DataRequestConfig(company_id=company_id)
-            db.add(config)
+            repo.add_config(config)
             await db.commit()
             await db.refresh(config)
-        
+
         return config
     
     def _get_message(self, config: DataRequestConfig, message_key: str) -> str:

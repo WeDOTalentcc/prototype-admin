@@ -99,6 +99,7 @@ class WeeklyDigestService:
 
             svc = PredictiveAnalyticsService()
 
+            # ADR-001-EXEMPT: JobVacancy filtered by recruiter+status / User filtered by role; cross-domain reads better promoted alongside notifications domain refactor
             result = await db.execute(
                 select(JobVacancy).where(
                     and_(
@@ -361,6 +362,7 @@ class WeeklyDigestService:
         try:
             from app.auth.models import User
 
+            # ADR-001-EXEMPT: JobVacancy filtered by recruiter+status / User filtered by role; cross-domain reads better promoted alongside notifications domain refactor
             result = await db.execute(
                 select(User).where(User.role.in_(["recruiter", "admin", "manager"]))
             )

@@ -267,6 +267,10 @@ class ReturnEventService:
     ) -> dict[str, Any] | None:
         """Load VacancyCandidate and associated Candidate data."""
         try:
+            # ADR-001-EXEMPT: cross-domain VacancyCandidate/Candidate single-PK reads.
+            # ScreeningRepository.get_vacancy_candidate requires (vacancy_id,candidate_id) tuple
+            # while this flow only has vacancy_candidate_id PK. Sprint 6 follow-up: extend
+            # screening repo with get_vacancy_candidate_by_id(vc_id) + reuse get_candidate_by_id.
             vc_result = await self.db.execute(
                 select(VacancyCandidate).where(
                     VacancyCandidate.id == vacancy_candidate_id

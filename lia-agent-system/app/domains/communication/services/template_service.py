@@ -13,8 +13,9 @@ Consumers should call ``render_message_template()`` to get a rendered
 import logging
 from typing import Any
 
-from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domains.communication.repositories.email_template_repository import EmailTemplateRepository
 
 from app.enums.communication import ABTestName, MESSAGE_TYPE_TO_SITUATION, MessageChannel, MessageType
 from app.templates.communication_templates import EmailTemplates, WhatsAppTemplates
@@ -105,31 +106,17 @@ async def resolve_db_template(
         except Exception as exc:
             logger.debug("[ABTesting] variant lookup skipped: %s", exc)
 
+    repo = EmailTemplateRepository(db)
     template = None
     if recommended_template_id:
-        result = await db.execute(
-            select(EmailTemplate).where(
-                and_(
-                    EmailTemplate.id == recommended_template_id,
-                    EmailTemplate.is_active,
-                )
-            ).limit(1)
-        )
-        template = result.scalar_one_or_none()
+        template = await repo.get_active_by_id(recommended_template_id)
         if not template:
             recommended_template_id = None
 
     if not template:
-        result = await db.execute(
-            select(EmailTemplate).where(
-                and_(
-                    EmailTemplate.situation == situation,
-                    EmailTemplate.is_active,
-                    EmailTemplate.channel == channel.value,
-                )
-            ).limit(1)
+        template = await repo.find_active_by_situation_channel(
+            situation=situation, channel=channel.value
         )
-        template = result.scalar_one_or_none()
 
     return template, ab_variant_prompt
 

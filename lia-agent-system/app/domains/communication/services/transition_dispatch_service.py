@@ -8,6 +8,8 @@ import uuid
 from datetime import datetime
 from typing import Any
 
+from app.domains.communication.repositories.communication_matrix_repository import CommunicationMatrixRepository
+from app.domains.communication.repositories.email_template_repository import EmailTemplateRepository
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -234,25 +236,9 @@ class TransitionDispatchService:
         if not trigger_name:
             return None
         try:
-            if company_id:
-                result = await self.db.execute(
-                    select(CommunicationMatrixEntry).where(
-                        CommunicationMatrixEntry.trigger_name == trigger_name,
-                        CommunicationMatrixEntry.company_id == company_id,
-                    )
-                )
-                entry = result.scalars().first()
-                if entry:
-                    return entry
-
-            # Platform default
-            result = await self.db.execute(
-                select(CommunicationMatrixEntry).where(
-                    CommunicationMatrixEntry.trigger_name == trigger_name,
-                    CommunicationMatrixEntry.company_id == None,  # noqa: E711
-                )
+            return await CommunicationMatrixRepository(self.db).get_by_trigger_name(
+                trigger_name=trigger_name, company_id=company_id
             )
-            return result.scalars().first()
         except Exception as e:
             logger.warning(
                 f"Error querying communication matrix for trigger '{trigger_name}': {e}"
@@ -481,16 +467,11 @@ class TransitionDispatchService:
     ) -> EmailTemplate | None:
         """Find best matching template. Priority: company-specific > system template."""
         try:
+            email_template_repo = EmailTemplateRepository(self.db)
             if company_id:
-                company_result = await self.db.execute(
-                    select(EmailTemplate).where(
-                        EmailTemplate.situation == situation,
-                        EmailTemplate.channel == channel,
-                        EmailTemplate.is_active,
-                        EmailTemplate.company_id == company_id,
-                    )
+                company_template = await email_template_repo.find_active_by_situation_channel_company(
+                    situation=situation, channel=channel, company_id=company_id
                 )
-                company_template = company_result.scalars().first()
                 if company_template:
                     logger.info(
                         f"Found company-specific template: {company_template.name} "
@@ -498,29 +479,18 @@ class TransitionDispatchService:
                     )
                     return company_template
 
-            system_result = await self.db.execute(
-                select(EmailTemplate).where(
-                    EmailTemplate.situation == situation,
-                    EmailTemplate.channel == channel,
-                    EmailTemplate.is_active,
-                    EmailTemplate.is_system_template,
-                )
+            system_template = await email_template_repo.find_system_template(
+                situation=situation, channel=channel
             )
-            system_template = system_result.scalars().first()
             if system_template:
                 logger.info(
                     f"Found system template: {system_template.name} (id={system_template.id})"
                 )
                 return system_template
 
-            fallback_result = await self.db.execute(
-                select(EmailTemplate).where(
-                    EmailTemplate.situation == situation,
-                    EmailTemplate.channel == channel,
-                    EmailTemplate.is_active,
-                )
+            fallback_template = await email_template_repo.find_any_active_for_situation_channel(
+                situation=situation, channel=channel
             )
-            fallback_template = fallback_result.scalars().first()
             if fallback_template:
                 logger.info(
                     f"Found fallback template: {fallback_template.name} (id={fallback_template.id})"
@@ -749,6 +719,8 @@ class TransitionDispatchService:
                 )
                 return
 
+            # ADR-001-EXEMPT: cross-domain WsiResponse read; voice/wsi domain repo is
+            # frozen for this sprint (other agent territory). Sprint 6 follow-up.
             stmt = _select(WsiResponse).where(
                 WsiResponse.vacancy_candidate_id == vacancy_candidate_id,
             )

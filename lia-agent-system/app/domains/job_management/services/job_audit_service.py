@@ -9,6 +9,8 @@ from typing import Any
 from sqlalchemy import and_, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.job_management.repositories.job_audit_repository import JobAuditRepository
+
 from lia_models.job_vacancy_audit import AuditAction, JobVacancyAuditLog
 
 logger = logging.getLogger(__name__)
@@ -289,20 +291,9 @@ class JobAuditService:
             JobVacancyAuditLog.company_id == company_id,
         )
         
-        count_query = select(func.count()).select_from(JobVacancyAuditLog).where(where_conditions)
-        count_result = await db.execute(count_query)
-        total = count_result.scalar() or 0
-        
-        data_query = (
-            select(JobVacancyAuditLog)
-            .where(where_conditions)
-            .order_by(desc(JobVacancyAuditLog.changed_at))
-            .limit(limit)
-            .offset(offset)
-        )
-        
-        result = await db.execute(data_query)
-        audit_logs = result.scalars().all()
+        repo = JobAuditRepository(db)
+        total = await repo.count_for_job(where_conditions)
+        audit_logs = await repo.list_for_job(where_conditions, limit=limit, offset=offset)
         
         logger.info(f"📋 Retrieved {len(audit_logs)} audit logs for job {job_id}")
         

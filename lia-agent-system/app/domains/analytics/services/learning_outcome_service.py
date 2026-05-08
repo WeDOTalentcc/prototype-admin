@@ -5,20 +5,24 @@ Extracted from LearningHubService (Sprint 5).
 Handles: record_job_outcome, get_outcome_insights,
          _update_outcome_patterns_no_commit, _update_pattern_no_commit,
          _update_outcome_patterns.
+
+ADR-001 refactor: SQL/select() moved to CompanyLearningRepository.
 """
 import logging
 from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.company_learning import CompanyPattern, CompanySkill, LearningSource
+from lia_models.company_learning import CompanyPattern, LearningSource
 from lia_models.feedback_learning import JobOutcome
 from app.shared.services.learning_confirmation_service import (
     _calculate_confidence,
     learning_confirmation_service,
+)
+from app.domains.analytics.repositories.company_learning_repository import (
+    CompanyLearningRepository,
 )
 
 logger = logging.getLogger(__name__)
@@ -60,10 +64,8 @@ class LearningOutcomeService:
             from lia_models.feedback_learning import JobOutcomeType
 
             outcome_enum = JobOutcomeType(outcome)
-
-            stmt = select(JobOutcome).where(JobOutcome.job_id == job_id)
-            result = await db.execute(stmt)
-            existing = result.scalar_one_or_none()
+            repo = CompanyLearningRepository(db)
+            existing = await repo.get_outcome_by_job(job_id)
 
             common_fields = dict(
                 outcome=outcome_enum,
@@ -143,6 +145,7 @@ class LearningOutcomeService:
     ) -> dict[str, Any]:
         """Update patterns from outcome — does not commit."""
         patterns_updated: dict[str, Any] = {}
+        repo = CompanyLearningRepository(db)
 
         if outcome.value == "filled":
             if role and time_to_fill:
@@ -168,14 +171,9 @@ class LearningOutcomeService:
                 patterns_updated["salary"] = True
 
             for skill in skills_used[:10]:
-                stmt = select(CompanySkill).where(
-                    and_(
-                        CompanySkill.company_id == company_id,
-                        CompanySkill.skill_name == skill.lower(),
-                    )
+                skill_record = await repo.find_skill_by_exact_name_lower(
+                    company_id, skill.lower()
                 )
-                result = await db.execute(stmt)
-                skill_record = result.scalar_one_or_none()
                 if skill_record:
                     skill_record.times_confirmed += 1
                     skill_record.source = LearningSource.OUTCOME_SUCCESS
@@ -192,15 +190,8 @@ class LearningOutcomeService:
         pattern_value: Any,
         sample_size: int = 1,
     ) -> bool:
-        stmt = select(CompanyPattern).where(
-            and_(
-                CompanyPattern.company_id == company_id,
-                CompanyPattern.pattern_type == pattern_type,
-                CompanyPattern.pattern_key == pattern_key,
-            )
-        )
-        result = await db.execute(stmt)
-        existing = result.scalar_one_or_none()
+        repo = CompanyLearningRepository(db)
+        existing = await repo.find_pattern(company_id, pattern_type, pattern_key)
 
         if existing:
             existing.pattern_value = pattern_value
@@ -230,20 +221,10 @@ class LearningOutcomeService:
         try:
             from lia_models.feedback_learning import JobOutcomeType
 
-            base_query = select(JobOutcome).where(
-                JobOutcome.company_id == company_id
+            repo = CompanyLearningRepository(db)
+            outcomes = await repo.list_outcomes_filtered(
+                company_id=company_id, role=role, seniority=seniority
             )
-            if role:
-                base_query = base_query.where(
-                    func.lower(JobOutcome.role) == role.lower()
-                )
-            if seniority:
-                base_query = base_query.where(
-                    func.lower(JobOutcome.seniority) == seniority.lower()
-                )
-
-            result = await db.execute(base_query)
-            outcomes = result.scalars().all()
 
             if not outcomes:
                 return {"has_data": False, "message": "No historical data"}

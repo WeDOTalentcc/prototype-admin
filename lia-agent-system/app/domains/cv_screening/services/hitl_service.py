@@ -96,16 +96,13 @@ async def _db_resolve(
 ) -> None:
     """Atualiza o registro pendente e insere no audit trail (best-effort)."""
     try:
-        from sqlalchemy import select
-
         from app.core.database import AsyncSessionLocal
-        from lia_models.hitl import HITLAuditTrail, HITLPendingAction
+        from app.domains.cv_screening.repositories.hitl_repository import HITLRepository
+        from lia_models.hitl import HITLAuditTrail
         now = datetime.now(UTC)
         async with AsyncSessionLocal() as db:
-            result = await db.execute(
-                select(HITLPendingAction).where(HITLPendingAction.pending_id == pending_id)
-            )
-            record = result.scalar_one_or_none()
+            repo = HITLRepository(db)
+            record = await repo.get_by_pending_id(pending_id)
             if record:
                 record.status = "approved" if approved else "rejected"
                 record.approved = approved
@@ -124,7 +121,7 @@ async def _db_resolve(
                 resolved_by=resolved_by,
                 resolved_at=now,
             )
-            db.add(trail)
+            repo.add_audit_trail(trail)
             await db.commit()
     except Exception as exc:
         try:
@@ -137,23 +134,11 @@ async def _db_resolve(
 async def _db_get_pending(thread_id: str) -> dict | None:
     """Busca aprovação pendente no DB como fallback do Redis."""
     try:
-        from sqlalchemy import select
-
         from app.core.database import AsyncSessionLocal
-        from lia_models.hitl import HITLPendingAction
+        from app.domains.cv_screening.repositories.hitl_repository import HITLRepository
         now = datetime.now(UTC)
         async with AsyncSessionLocal() as db:
-            result = await db.execute(
-                select(HITLPendingAction)
-                .where(
-                    HITLPendingAction.thread_id == thread_id,
-                    HITLPendingAction.status == "pending",
-                    HITLPendingAction.expires_at > now,
-                )
-                .order_by(HITLPendingAction.created_at.desc())
-                .limit(1)
-            )
-            record = result.scalar_one_or_none()
+            record = await HITLRepository(db).get_latest_pending_for_thread(thread_id=thread_id, now=now)
             if record:
                 d = record.to_dict()
                 d["requested_at"] = d["created_at"]
@@ -395,22 +380,11 @@ class HITLService:
         results: list[dict] = []
         db_available = True
         try:
-            from sqlalchemy import select
-            from lia_models.hitl import HITLPendingAction
+            from app.domains.cv_screening.repositories.hitl_repository import HITLRepository
             now = datetime.now(UTC)
 
             async def _run_query(session):
-                query = (
-                    select(HITLPendingAction)
-                    .where(
-                        HITLPendingAction.company_id == company_id,
-                        HITLPendingAction.status == "pending",
-                        HITLPendingAction.expires_at > now,
-                    )
-                    .order_by(HITLPendingAction.created_at.desc())
-                )
-                result = await session.execute(query)
-                records = result.scalars().all()
+                records = await HITLRepository(session).list_pending_for_company(company_id=company_id, now=now)
                 for record in records:
                     d = record.to_dict()
                     d["requested_at"] = d.get("created_at", d.get("requested_at"))

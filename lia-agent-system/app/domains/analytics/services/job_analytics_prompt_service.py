@@ -429,6 +429,9 @@ class JobAnalyticsPromptService:
                 should_close_session = True
             
             try:
+                # ADR-001-EXEMPT: cross-domain JobVacancy lookup without company scope.
+                # Caller path validates context separately; promote to JobVacancyCrudRepository
+                # method get_vacancy_by_id_only in a follow-up sprint.
                 job_query = select(JobVacancy).where(JobVacancy.id == job_id)
                 result = await db.execute(job_query)
                 job = result.scalar_one_or_none()

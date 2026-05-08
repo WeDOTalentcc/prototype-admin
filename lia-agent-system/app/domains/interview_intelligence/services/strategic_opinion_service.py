@@ -13,8 +13,11 @@ import json
 import logging
 from typing import Any, Optional
 
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domains.interview_intelligence.repositories.interview_repository import (
+    InterviewRepository,
+)
 
 from app.models.interview import Interview
 
@@ -80,12 +83,10 @@ class StrategicOpinionService:
         if not company_id:
             return {"success": False, "error": "company_id is required for tenant isolation"}
         from sqlalchemy import and_
-        result = await db.execute(
-            select(Interview).where(
-                and_(Interview.id == interview_id, Interview.company_id == company_id)
-            )
+        _ii_repo = InterviewRepository(db)
+        interview = await _ii_repo.get_for_company(
+            interview_id=interview_id, company_id=company_id
         )
-        interview = result.scalar_one_or_none()
         if not interview:
             return {"success": False, "error": "Interview not found"}
 

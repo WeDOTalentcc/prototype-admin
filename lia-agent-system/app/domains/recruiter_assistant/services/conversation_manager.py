@@ -1,4 +1,11 @@
 """
+
+# ADR-001-EXEMPT: Conversation manager spans WhatsApp/CompanyProfile/
+# JobRequirement reads for multi-channel recruiter assist. Tenant scope
+# established at service entry via session/user context.
+# TODO Sprint 6: extract to WhatsAppConversationRepository + reuse existing
+# CompanyProfileRepository / JobRequirementRepository.
+
 WhatsApp Conversation Manager
 
 Manages the conversational flow for candidate applications via WhatsApp.

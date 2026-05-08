@@ -59,3 +59,64 @@ class InterviewRepository:
         )
         result = await self._db.execute(stmt)
         return result.scalar_one_or_none()
+
+    async def list_vacancy_peers_with_transcript(
+        self,
+        *,
+        job_vacancy_id: UUID | str,
+        company_id: UUID | str,
+        exclude_id: UUID | str,
+        limit: int = 20,
+    ) -> list[Interview]:
+        """Peer interviews on the same vacancy, transcript present, completed/transcribed."""
+        self._require_company_id(company_id)
+        stmt = (
+            select(Interview)
+            .where(
+                and_(
+                    Interview.job_vacancy_id == job_vacancy_id,
+                    Interview.company_id == company_id,
+                    Interview.id != exclude_id,
+                    Interview.transcript.isnot(None),
+                    Interview.status.in_(["completed", "transcribed"]),
+                )
+            )
+            .limit(limit)
+        )
+        result = await self._db.execute(stmt)
+        return list(result.scalars().all())
+
+    async def list_with_transcript_for_candidates(
+        self,
+        *,
+        candidate_ids: list,
+        company_id: UUID | str,
+        exclude_id: UUID | str,
+        limit: int = 10,
+    ) -> list[Interview]:
+        """Interviews for any candidate in candidate_ids, transcript present, completed/transcribed."""
+        self._require_company_id(company_id)
+        if not candidate_ids:
+            return []
+        stmt = (
+            select(Interview)
+            .where(
+                and_(
+                    Interview.candidate_id.in_(candidate_ids),
+                    Interview.company_id == company_id,
+                    Interview.id != exclude_id,
+                    Interview.transcript.isnot(None),
+                    Interview.status.in_(["completed", "transcribed"]),
+                )
+            )
+            .limit(limit)
+        )
+        result = await self._db.execute(stmt)
+        return list(result.scalars().all())
+
+    async def get_by_id_unscoped(self, interview_id: UUID | str) -> Interview | None:
+        """Lookup by id without company filter (admin/transcription pipeline trusts
+        interview_id origin and applies its own tenant scoping)."""
+        stmt = select(Interview).where(Interview.id == interview_id)
+        result = await self._db.execute(stmt)
+        return result.scalar_one_or_none()

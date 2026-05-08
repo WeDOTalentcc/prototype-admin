@@ -258,3 +258,19 @@ class TeamsRepository:
             _select(User).where(User.id == platform_user_id).limit(1)
         )
         return result.scalar_one_or_none()
+
+
+    async def get_any_conversation_by_user_id(self, user_id: str):
+        """Find any TeamsConversation by user_id (no is_active filter).
+
+        Used by teams_sso_service / teams_orchestrator_bridge resolve flows
+        where the conversation may exist independent of active flag.
+        """
+        from sqlalchemy import select as _select
+        from lia_models.teams import TeamsConversation
+        result = await self.db.execute(
+            _select(TeamsConversation).where(
+                TeamsConversation.user_id == user_id
+            ).limit(1)
+        )
+        return result.scalar_one_or_none()

@@ -20,11 +20,23 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID as UUID_type
 
-from sqlalchemy import and_, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from app.core.database import AsyncSessionLocal
+from app.domains.communication.repositories.communication_settings_repository import (
+    CommunicationSettingsRepository,
+)
+from app.domains.company.repositories.benefit_repository import BenefitRepository
+from app.domains.company.repositories.company_profile_repository import (
+    CompanyProfileRepository,
+)
+from app.domains.pipeline.repositories.pipeline_template_repository import (
+    PipelineTemplateRepository,
+)
+from app.domains.recruitment.repositories.company_screening_question_repository import (
+    CompanyScreeningQuestionRepository,
+)
 from lia_models.communication_settings import CommunicationSettings
 from lia_models.company import Benefit, CompanyProfile
 from lia_models.pipeline_template import PipelineTemplate
@@ -268,24 +280,15 @@ class CompanyConfigurationService:
             company_uuid = _to_uuid(company_id)
             profile = None
             
+            cp_repo = CompanyProfileRepository(db)
             if company_uuid:
-                result = await db.execute(
-                    select(CompanyProfile)
-                    .where(CompanyProfile.id == company_uuid)
-                    .options(selectinload(CompanyProfile.culture_values))
-                )
-                profile = result.scalar_one_or_none()
-            
+                profile = await cp_repo.get_by_id_with_culture_values(company_uuid)
+
             if not profile:
                 if not allow_default_fallback:
                     raise ValueError(f"Company profile not found for {company_id} and fallback disabled")
                 logger.warning(f"Company profile not found for {company_id}, using default (multi-tenant risk)")
-                result = await db.execute(
-                    select(CompanyProfile)
-                    .where(CompanyProfile.is_default)
-                    .options(selectinload(CompanyProfile.culture_values))
-                )
-                profile = result.scalar_one_or_none()
+                profile = await cp_repo.get_default_with_culture_values()
             
             if profile:
                 culture_values = []
@@ -334,17 +337,9 @@ class CompanyConfigurationService:
                 logger.warning(f"Invalid company_id format for benefits: {company_id}")
                 return []
             
-            result = await db.execute(
-                select(Benefit)
-                .where(
-                    and_(
-                        Benefit.company_id == company_uuid,
-                        Benefit.is_active
-                    )
-                )
-                .order_by(Benefit.order)
+            benefits_list = await BenefitRepository(db).list_active_ordered(
+                company_uuid
             )
-            benefits_list = result.scalars().all()
             
             return [
                 {
@@ -370,17 +365,9 @@ class CompanyConfigurationService:
     ) -> list[dict[str, Any]]:
         """Load pipeline templates."""
         try:
-            result = await db.execute(
-                select(PipelineTemplate)
-                .where(
-                    and_(
-                        PipelineTemplate.company_id == company_id,
-                        PipelineTemplate.is_active
-                    )
-                )
-                .order_by(PipelineTemplate.is_default.desc())
+            templates, _total = await PipelineTemplateRepository(db).list_for_company(
+                company_id, is_active=True, page=1, size=1000
             )
-            templates = result.scalars().all()
             
             return [
                 {
@@ -404,17 +391,9 @@ class CompanyConfigurationService:
     ) -> list[dict[str, Any]]:
         """Load default screening questions."""
         try:
-            result = await db.execute(
-                select(CompanyScreeningQuestion)
-                .where(
-                    and_(
-                        CompanyScreeningQuestion.company_id == company_id,
-                        CompanyScreeningQuestion.is_active
-                    )
-                )
-                .order_by(CompanyScreeningQuestion.order)
-            )
-            questions = result.scalars().all()
+            questions = await CompanyScreeningQuestionRepository(
+                db
+            ).list_for_company(company_id, is_active=True)
             
             return [
                 {
@@ -440,11 +419,9 @@ class CompanyConfigurationService:
     ) -> dict[str, Any] | None:
         """Load communication settings."""
         try:
-            result = await db.execute(
-                select(CommunicationSettings)
-                .where(CommunicationSettings.company_id == company_id)
-            )
-            settings = result.scalar_one_or_none()
+            settings = await CommunicationSettingsRepository(
+                db
+            ).get_by_company_id(company_id)
             
             if settings:
                 return settings.to_dict()

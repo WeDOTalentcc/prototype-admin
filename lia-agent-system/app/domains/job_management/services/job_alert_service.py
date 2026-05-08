@@ -11,12 +11,10 @@ import logging
 from datetime import datetime, timedelta
 from typing import Any
 
-from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.job_management.repositories.job_alert_repository import JobAlertRepository
 from lia_models.alert import Alert, AlertSeverity, AlertStatus, AlertType
-from lia_models.candidate import Candidate
-from lia_models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
 
@@ -58,15 +56,7 @@ class JobAlertService:
         
         cutoff_date = datetime.utcnow() - timedelta(days=self.CRITICAL_DAYS_OPEN)
         
-        result = await db.execute(
-            select(JobVacancy).where(
-                and_(
-                    JobVacancy.status == "open",
-                    JobVacancy.created_at < cutoff_date
-                )
-            )
-        )
-        critical_jobs = result.scalars().all()
+        critical_jobs = await JobAlertRepository(db).list_open_jobs_created_before(cutoff_date)
         
         for job in critical_jobs:
             existing = await self._check_existing_alert(
@@ -111,15 +101,7 @@ class JobAlertService:
         
         cutoff_date = datetime.utcnow() - timedelta(days=self.STALE_DAYS)
         
-        result = await db.execute(
-            select(JobVacancy).where(
-                and_(
-                    JobVacancy.status == "open",
-                    JobVacancy.updated_at < cutoff_date
-                )
-            )
-        )
-        stale_jobs = result.scalars().all()
+        stale_jobs = await JobAlertRepository(db).list_open_jobs_updated_before(cutoff_date)
         
         for job in stale_jobs:
             existing = await self._check_existing_alert(
@@ -159,18 +141,11 @@ class JobAlertService:
         """Check for jobs with low candidate volume."""
         alerts = []
         
-        result = await db.execute(
-            select(JobVacancy).where(JobVacancy.status == "open")
-        )
-        open_jobs = result.scalars().all()
-        
+        repo = JobAlertRepository(db)
+        open_jobs = await repo.list_open_jobs()
+
         for job in open_jobs:
-            candidate_count = await db.execute(
-                select(func.count(Candidate.id)).where(
-                    Candidate.pipeline_job_id == job.id
-                )
-            )
-            count = candidate_count.scalar() or 0
+            count = await repo.count_candidates_for_job(job.id)
             
             if count >= self.MIN_CANDIDATES_THRESHOLD:
                 continue
@@ -220,15 +195,7 @@ class JobAlertService:
         
         cutoff_date = datetime.utcnow() - timedelta(days=self.FEEDBACK_OVERDUE_DAYS)
         
-        result = await db.execute(
-            select(Candidate).where(
-                and_(
-                    Candidate.pipeline_stage == "awaiting_feedback",
-                    Candidate.updated_at < cutoff_date
-                )
-            )
-        )
-        waiting_candidates = result.scalars().all()
+        waiting_candidates = await JobAlertRepository(db).list_candidates_awaiting_feedback_before(cutoff_date)
         
         for candidate in waiting_candidates:
             existing = await self._check_existing_alert(
@@ -274,20 +241,9 @@ class JobAlertService:
         candidate_id: str | None = None
     ) -> Alert | None:
         """Check if an active alert already exists."""
-        query = select(Alert).where(
-            and_(
-                Alert.alert_type == alert_type,
-                Alert.status == AlertStatus.ACTIVE
-            )
+        return await JobAlertRepository(db).find_active_alert(
+            alert_type, job_id=job_id, candidate_id=candidate_id
         )
-        
-        if job_id:
-            query = query.where(Alert.job_id == job_id)
-        if candidate_id:
-            query = query.where(Alert.candidate_id == candidate_id)
-        
-        result = await db.execute(query)
-        return result.scalar_one_or_none()
     
     async def get_active_alerts(
         self,
@@ -297,20 +253,9 @@ class JobAlertService:
         limit: int = 50
     ) -> list[Alert]:
         """Get active alerts."""
-        query = select(Alert).where(Alert.status == AlertStatus.ACTIVE)
-        
-        if user_id:
-            query = query.where(Alert.user_id == user_id)
-        if severity:
-            query = query.where(Alert.severity == severity)
-        
-        query = query.order_by(
-            Alert.severity.desc(),
-            Alert.created_at.desc()
-        ).limit(limit)
-        
-        result = await db.execute(query)
-        return list(result.scalars().all())
+        return await JobAlertRepository(db).list_active_alerts(
+            user_id=user_id, severity=severity, limit=limit
+        )
     
     async def acknowledge_alert(
         self,
@@ -319,14 +264,11 @@ class JobAlertService:
         user_id: str
     ) -> Alert | None:
         """Acknowledge an alert."""
-        result = await db.execute(
-            select(Alert).where(Alert.id == alert_id)
-        )
-        alert = result.scalar_one_or_none()
-        
+        alert = await JobAlertRepository(db).get_alert_by_id(alert_id)
+
         if not alert:
             return None
-        
+
         alert.status = AlertStatus.ACKNOWLEDGED
         alert.acknowledged_at = datetime.utcnow()
         alert.acknowledged_by = user_id
@@ -345,14 +287,11 @@ class JobAlertService:
         resolution_note: str | None = None
     ) -> Alert | None:
         """Resolve an alert."""
-        result = await db.execute(
-            select(Alert).where(Alert.id == alert_id)
-        )
-        alert = result.scalar_one_or_none()
-        
+        alert = await JobAlertRepository(db).get_alert_by_id(alert_id)
+
         if not alert:
             return None
-        
+
         alert.status = AlertStatus.RESOLVED
         alert.resolved_at = datetime.utcnow()
         alert.resolved_by = user_id
@@ -368,16 +307,7 @@ class JobAlertService:
     
     async def get_alert_summary(self, db: AsyncSession) -> dict[str, Any]:
         """Get summary of active alerts."""
-        result = await db.execute(
-            select(
-                Alert.severity,
-                func.count(Alert.id).label("count")
-            ).where(
-                Alert.status == AlertStatus.ACTIVE
-            ).group_by(Alert.severity)
-        )
-        
-        counts = {row.severity.value: row.count for row in result.all()}
+        counts = await JobAlertRepository(db).severity_counts()
         
         return {
             "critical": counts.get("critical", 0),

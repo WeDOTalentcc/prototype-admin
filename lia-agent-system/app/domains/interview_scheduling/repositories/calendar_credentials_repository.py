@@ -26,6 +26,29 @@ class CalendarCredentialsRepository:
         )
         return result.scalar_one_or_none()
 
+    async def get_active_credentials(
+        self,
+        company_id,
+        provider: str | None = None,
+    ):
+        """Return active CompanyCalendarCredentials for company (optionally filtered
+        by provider), or None.
+
+        Used by calendar_service to resolve a delegated OAuth token at request time.
+        """
+        from app.models.company_calendar_credentials import CompanyCalendarCredentials
+
+        filters = [
+            CompanyCalendarCredentials.company_id == company_id,
+            CompanyCalendarCredentials.is_active.is_(True),
+        ]
+        if provider:
+            filters.append(CompanyCalendarCredentials.provider == provider)
+        result = await self.db.execute(
+            select(CompanyCalendarCredentials).where(*filters)
+        )
+        return result.scalar_one_or_none()
+
     async def upsert_credentials(
         self,
         company_id: uuid.UUID,

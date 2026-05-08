@@ -12,6 +12,7 @@ import logging
 from typing import Any
 from uuid import UUID
 
+from app.domains.cv_screening.repositories.screening_repository import ScreeningRepository
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -90,6 +91,9 @@ async def _load_calibration_weights(
         from sqlalchemy import and_
         from lia_models.calibration import CalibrationWeight
 
+        # ADR-001-EXEMPT: dynamic chained where() — base query reused with two different
+        # job_id refinements (job-specific then null fallback). Sprint 6 follow-up to expose
+        # via repo with two explicit list_by_company_for_job(job_id|None) calls.
         query = select(CalibrationWeight).where(
             and_(
                 CalibrationWeight.company_id == company_id,
@@ -118,8 +122,7 @@ async def _load_calibration_weights(
 
 async def _get_candidate_data(candidate_id: str, db: AsyncSession) -> dict[str, Any] | None:
     try:
-        result = await db.execute(select(Candidate).where(Candidate.id == UUID(candidate_id)))
-        candidate = result.scalar_one_or_none()
+        candidate = await ScreeningRepository(db).get_candidate_by_uuid_string(candidate_id)
         if not candidate:
             return None
         return {
@@ -153,9 +156,7 @@ async def _get_candidate_data(candidate_id: str, db: AsyncSession) -> dict[str, 
 
 async def _get_job_requirements(job_id: str, db: AsyncSession) -> list[JobRequirementCreate]:
     try:
-        result = await db.execute(
-            select(JobRequirement).where(JobRequirement.job_vacancy_id == UUID(job_id))
-        )
+        db_requirements = await ScreeningRepository(db).list_requirements_by_vacancy_uuid_string(job_id)
         return [
             JobRequirementCreate(
                 requirement=req.requirement,
@@ -163,7 +164,7 @@ async def _get_job_requirements(job_id: str, db: AsyncSession) -> list[JobRequir
                 priority=_normalize_priority(req.priority),
                 category=req.category,
             )
-            for req in result.scalars().all()
+            for req in db_requirements
         ]
     except Exception as e:
         logger.error(f"Error fetching job requirements for {job_id}: {e}")
@@ -172,8 +173,7 @@ async def _get_job_requirements(job_id: str, db: AsyncSession) -> list[JobRequir
 
 async def _get_job_title(job_id: str, db: AsyncSession) -> str:
     try:
-        result = await db.execute(select(JobVacancy).where(JobVacancy.id == UUID(job_id)))
-        job = result.scalar_one_or_none()
+        job = await ScreeningRepository(db).get_job_vacancy_by_uuid_string(job_id)
         return job.title if job else "Vaga"
     except Exception as e:
         logger.error(f"Error fetching job info for {job_id}: {e}")
@@ -182,8 +182,7 @@ async def _get_job_title(job_id: str, db: AsyncSession) -> str:
 
 async def _get_job_salary_range(job_id: str, db: AsyncSession) -> dict[str, Any] | None:
     try:
-        result = await db.execute(select(JobVacancy).where(JobVacancy.id == UUID(job_id)))
-        job = result.scalar_one_or_none()
+        job = await ScreeningRepository(db).get_job_vacancy_by_uuid_string(job_id)
         return job.salary_range if job else None
     except Exception as e:
         logger.error(f"Error fetching salary range for job {job_id}: {e}")

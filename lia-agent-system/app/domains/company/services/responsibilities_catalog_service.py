@@ -18,9 +18,11 @@ from dataclasses import dataclass
 from difflib import SequenceMatcher
 from typing import Any
 
-from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.company.repositories.company_responsibility_repository import (
+    CompanyResponsibilityRepository,
+)
 from lia_models.company_learning import CompanyResponsibility
 
 logger = logging.getLogger(__name__)
@@ -569,14 +571,9 @@ class ResponsibilitiesCatalogService:
             List of responsibility descriptions
         """
         try:
-            conditions = [
-                CompanyResponsibility.company_id == company_id,
-                CompanyResponsibility.is_promoted
-            ]
-            
-            stmt = select(CompanyResponsibility).where(and_(*conditions))
-            result = await db.execute(stmt)
-            company_responsibilities = result.scalars().all()
+            company_responsibilities = await CompanyResponsibilityRepository(
+                db
+            ).list_promoted_for_company(company_id)
             
             descriptions = []
             for resp in company_responsibilities:

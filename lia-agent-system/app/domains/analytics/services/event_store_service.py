@@ -86,6 +86,7 @@ class EventStoreService:
         """Get ordered event history for an aggregate. Fail-open: returns []."""
         try:
             DomainEvent = _DomainEvent or __import__("app.models.event_store", fromlist=["DomainEvent"]).DomainEvent
+            # ADR-001-EXEMPT: DomainEvent is a system-level event log without a dedicated repo; promote in Sprint 6 cleanup
             result = await db.execute(
                 select(DomainEvent).where(
                     DomainEvent.aggregate_type == aggregate_type,

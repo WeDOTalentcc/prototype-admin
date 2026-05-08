@@ -5,7 +5,7 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from sqlalchemy import and_, select
+from sqlalchemy import and_, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import aliased
 
@@ -226,3 +226,49 @@ class InterviewRepository:
         query = query.where(and_(*filters))
         result = await self.db.execute(query)
         return [str(row[0]) for row in result.fetchall() if row[0] is not None]
+
+    async def search_interviews(
+        self,
+        *,
+        candidate_id: Optional[str] = None,
+        vacancy_id: Optional[str] = None,
+        interviewer_email: Optional[str] = None,
+        status: Optional[str] = None,
+        from_date: Optional[datetime] = None,
+        to_date: Optional[datetime] = None,
+        skip: int = 0,
+        limit: int = 50,
+    ) -> tuple[list[Interview], int]:
+        """Search interviews with optional filters; returns (rows, total).
+
+        Used by SchedulingService.list_interviews — kept distinct from list_interviews
+        above (which returns tuples with job_code/job_manager) because consumers differ.
+        """
+        base_query = select(Interview)
+
+        filters = []
+        if candidate_id:
+            filters.append(Interview.candidate_id == candidate_id)
+        if vacancy_id:
+            filters.append(Interview.job_vacancy_id == vacancy_id)
+        if interviewer_email:
+            filters.append(Interview.interviewer_email == interviewer_email)
+        if status:
+            filters.append(Interview.status == status)
+        if from_date:
+            filters.append(Interview.start_time >= from_date)
+        if to_date:
+            filters.append(Interview.start_time <= to_date)
+
+        if filters:
+            base_query = base_query.where(and_(*filters))
+
+        total_result = await self.db.execute(base_query)
+        total = len(total_result.scalars().all())
+
+        page_query = (
+            base_query.order_by(desc(Interview.start_time)).offset(skip).limit(limit)
+        )
+        page_result = await self.db.execute(page_query)
+        rows = list(page_result.scalars().all())
+        return rows, total

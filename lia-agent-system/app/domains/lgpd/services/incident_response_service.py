@@ -13,10 +13,13 @@ import logging
 from datetime import datetime, timezone
 from typing import Optional
 
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lia_models.incident import DataIncident, IncidentSeverity, IncidentStatus
+
+from app.domains.lgpd.repositories.data_incident_repository import (
+    DataIncidentRepository,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -91,18 +94,8 @@ class IncidentResponseService:
         company_id: str,
     ) -> list:
         """Get all open/investigating incidents for a company (for DPO review)."""
-        result = await db.execute(
-            select(DataIncident)
-            .where(
-                DataIncident.company_id == company_id,
-                DataIncident.status.in_([
-                    IncidentStatus.OPEN,
-                    IncidentStatus.INVESTIGATING,
-                ])
-            )
-            .order_by(DataIncident.incident_detected_at.desc())
-        )
-        return list(result.scalars().all())
+        repo = DataIncidentRepository(db)
+        return await repo.list_open_for_company(company_id)
 
     async def update_status(
         self,
@@ -111,10 +104,8 @@ class IncidentResponseService:
         new_status: IncidentStatus,
     ) -> Optional[DataIncident]:
         """Update incident status (e.g., mark as REPORTED_ANPD after manual notification)."""
-        result = await db.execute(
-            select(DataIncident).where(DataIncident.id == incident_id)
-        )
-        incident = result.scalar_one_or_none()
+        repo = DataIncidentRepository(db)
+        incident = await repo.get_by_id(incident_id)
         if not incident:
             return None
         incident.status = new_status

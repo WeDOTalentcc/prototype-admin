@@ -18,6 +18,9 @@ from uuid import UUID
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.analytics.repositories.intelligence_repository import (
+    IntelligenceRepository,
+)
 from lia_models.feedback_learning import JobOutcome, JobOutcomeType, WizardFeedback
 from lia_models.intelligence_layer import (
     CorrectionPattern,
@@ -242,48 +245,27 @@ class IntelligenceLayerService:
             context.data_quality = await self.assess_data_quality(db, company_id)
             
             if context.data_quality.pattern_detection_ready:
-                patterns_query = select(CorrectionPattern).where(
-                    and_(
-                        CorrectionPattern.company_id == company_id,
-                        CorrectionPattern.is_active
-                    )
+                _repo = IntelligenceRepository(db)
+                context.correction_patterns = await _repo.list_active_correction_patterns(
+                    company_id, seniority=seniority
                 )
-                if seniority:
-                    patterns_query = patterns_query.where(
-                        (CorrectionPattern.seniority == seniority) |
-                        (CorrectionPattern.seniority.is_(None))
-                    )
-                
-                patterns_result = await db.execute(patterns_query)
-                context.correction_patterns = list(patterns_result.scalars().all())
-                
+
                 patterns_need_refresh = await self._is_cache_expired(
                     db, company_id, "correction_patterns"
                 )
                 if not context.correction_patterns or patterns_need_refresh:
                     await self._ensure_patterns_detected(db, company_id)
-                    patterns_result = await db.execute(patterns_query)
-                    context.correction_patterns = list(patterns_result.scalars().all())
+                    context.correction_patterns = await _repo.list_active_correction_patterns(
+                        company_id, seniority=seniority
+                    )
             
             if context.data_quality.correlation_analysis_ready:
-                profile_query = select(SuccessProfile).where(
-                    SuccessProfile.company_id == company_id
+                _repo2 = IntelligenceRepository(db)
+                context.success_profile = await _repo2.find_top_success_profile(
+                    company_id, seniority=seniority
                 )
-                if seniority:
-                    profile_query = profile_query.where(
-                        (SuccessProfile.seniority == seniority) |
-                        (SuccessProfile.seniority.is_(None))
-                    )
-                profile_query = profile_query.order_by(SuccessProfile.sample_size.desc()).limit(1)
 
-                profile_result = await db.execute(profile_query)
-                context.success_profile = profile_result.scalar_one_or_none()
-
-                corr_query = select(OutcomeCorrelation).where(
-                    OutcomeCorrelation.company_id == company_id
-                )
-                corr_result = await db.execute(corr_query)
-                context.correlations = list(corr_result.scalars().all())
+                context.correlations = await _repo2.list_outcome_correlations(company_id)
 
                 correlations_need_refresh = await self._is_cache_expired(
                     db, company_id, "outcome_correlations"
@@ -291,11 +273,13 @@ class IntelligenceLayerService:
                 if not context.success_profile or not context.correlations or correlations_need_refresh:
                     await self._ensure_correlations_analyzed(db, company_id)
                     if not context.success_profile or correlations_need_refresh:
-                        profile_result = await db.execute(profile_query)
-                        context.success_profile = profile_result.scalar_one_or_none()
+                        context.success_profile = await _repo2.find_top_success_profile(
+                            company_id, seniority=seniority
+                        )
                     if not context.correlations or correlations_need_refresh:
-                        corr_result = await db.execute(corr_query)
-                        context.correlations = list(corr_result.scalars().all())
+                        context.correlations = await _repo2.list_outcome_correlations(
+                            company_id
+                        )
 
                 context.time_to_fill_prediction = await self.outcome_correlator.predict_time_to_fill(
                     db, company_id, seniority=seniority
@@ -330,15 +314,9 @@ class IntelligenceLayerService:
         Returns True if cache is expired or missing, False if valid cache exists.
         """
         try:
-            cache_query = select(PatternCache).where(
-                and_(
-                    PatternCache.company_id == company_id,
-                    PatternCache.pattern_type == pattern_type,
-                    PatternCache.expires_at > datetime.utcnow()
-                )
-            )
-            result = await db.execute(cache_query)
-            return result.scalar_one_or_none() is None
+            repo = IntelligenceRepository(db)
+            cache = await repo.find_active_cache(company_id, pattern_type)
+            return cache is None
         except Exception as e:
             self.logger.error(f"Error checking cache expiry: {e}")
             return True
@@ -651,9 +629,8 @@ class IntelligenceLayerService:
         final_value: Any = None
     ) -> None:
         """Record the outcome of an insight (was it applied and accepted?)."""
-        query = select(IntelligenceInsight).where(IntelligenceInsight.id == insight_id)
-        result = await db.execute(query)
-        insight = result.scalar_one_or_none()
+        repo = IntelligenceRepository(db)
+        insight = await repo.find_insight_by_id(insight_id)
         
         if insight:
             insight.was_applied = was_applied  # type: ignore[union-attr]

@@ -972,6 +972,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
         
         try:
             result = await db.execute(
+                # ADR-001-EXEMPT: PersonalizedFeedbackRecord model is defined inline in this service module (line ~159); extracting to a repo would require relocating the model first. Tracked for Sprint 6 follow-up (move model to lia_models, then create PersonalizedFeedbackRepository).
                 select(PersonalizedFeedbackRecord).where(
                     PersonalizedFeedbackRecord.id == feedback_id
                 )
@@ -1052,6 +1053,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
         
         try:
             result = await db.execute(
+                # ADR-001-EXEMPT: PersonalizedFeedbackRecord model is defined inline in this service module (line ~159); extracting to a repo would require relocating the model first. Tracked for Sprint 6 follow-up (move model to lia_models, then create PersonalizedFeedbackRepository).
                 select(PersonalizedFeedbackRecord).where(
                     PersonalizedFeedbackRecord.id == feedback_id
                 )
@@ -1132,6 +1134,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
         
         try:
             result = await db.execute(
+                # ADR-001-EXEMPT: PersonalizedFeedbackRecord model is defined inline in this service module (line ~159); extracting to a repo would require relocating the model first. Tracked for Sprint 6 follow-up (move model to lia_models, then create PersonalizedFeedbackRepository).
                 select(PersonalizedFeedbackRecord).where(
                     PersonalizedFeedbackRecord.id == feedback_id
                 )
@@ -1195,6 +1198,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
         
         try:
             result = await db.execute(
+                # ADR-001-EXEMPT: PersonalizedFeedbackRecord model is defined inline in this service module (line ~159); extracting to a repo would require relocating the model first. Tracked for Sprint 6 follow-up (move model to lia_models, then create PersonalizedFeedbackRepository).
                 select(PersonalizedFeedbackRecord).where(
                     PersonalizedFeedbackRecord.id == feedback_id
                 )
@@ -1264,6 +1268,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
 
         try:
             result = await db.execute(
+                # ADR-001-EXEMPT: PersonalizedFeedbackRecord model is defined inline in this service module (line ~159); extracting to a repo would require relocating the model first. Tracked for Sprint 6 follow-up (move model to lia_models, then create PersonalizedFeedbackRepository).
                 select(PersonalizedFeedbackRecord).where(
                     PersonalizedFeedbackRecord.id == feedback_id
                 )
@@ -1325,6 +1330,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
             cutoff = datetime.utcnow() - timedelta(days=days)
             
             result = await db.execute(
+                # ADR-001-EXEMPT: PersonalizedFeedbackRecord model is defined inline in this service module (line ~159); extracting to a repo would require relocating the model first. Tracked for Sprint 6 follow-up (move model to lia_models, then create PersonalizedFeedbackRepository).
                 select(PersonalizedFeedbackRecord).where(
                     and_(
                         PersonalizedFeedbackRecord.company_id == company_id,

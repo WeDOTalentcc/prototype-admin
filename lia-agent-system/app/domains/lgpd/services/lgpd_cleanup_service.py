@@ -28,6 +28,10 @@ from uuid import UUID
 from sqlalchemy import and_, delete, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.candidates.repositories.candidate_repository import (
+    CandidateRepository,
+)
+
 from app.core.database import AsyncSessionLocal
 from lia_models.ai_consumption import AiConsumption
 from lia_models.candidate import Candidate, VacancyCandidate
@@ -70,10 +74,8 @@ async def schedule_deletion_for_candidate(
     days = retention_days or RETENTION_DAYS.get(reason, 90)
     deletion_at = datetime.utcnow() + timedelta(days=days)
 
-    result = await db.execute(
-        select(Candidate).where(Candidate.id == UUID(candidate_id))
-    )
-    candidate = result.scalar_one_or_none()
+    candidate_repo = CandidateRepository(db)
+    candidate = await candidate_repo.get_by_id(UUID(candidate_id))
     if candidate:
         candidate.scheduled_deletion_at = deletion_at
         await db.commit()

@@ -11,6 +11,8 @@ from uuid import UUID
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.job_management.repositories.job_vacancy_crud_repository import JobVacancyCRUDRepository
+
 from lia_models.candidate import VacancyCandidate
 from lia_models.feedback_learning import JobOutcome, JobOutcomeType
 from lia_models.job_vacancy import JobVacancy
@@ -101,10 +103,7 @@ class OutcomeTracker:
             return None
 
     async def _fetch_job(self, db: AsyncSession, job_id: str) -> JobVacancy | None:
-        result = await db.execute(
-            select(JobVacancy).where(JobVacancy.id == UUID(job_id))
-        )
-        return result.scalar_one_or_none()
+        return await JobVacancyCRUDRepository(db).get_by_id_only_uuid(UUID(job_id))
 
     def _calc_time_to_fill(self, job: JobVacancy) -> int | None:
         open_date = getattr(job, "open_date", None) or getattr(job, "created_at", None)

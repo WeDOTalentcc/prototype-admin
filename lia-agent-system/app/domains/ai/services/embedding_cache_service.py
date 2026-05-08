@@ -111,6 +111,10 @@ class EmbeddingCacheService:
         if self._warmed_up:
             return
         try:
+            # ADR-001-EXEMPT: warm-up scan across all active job vacancies (system-wide,
+            # not tenant-scoped) for embedding pre-warming. Cross-domain JobVacancy reads
+            # in job_management; introducing a foreign repo for a single warm-up site is
+            # disproportionate. Bounded by limit(100).
             from sqlalchemy import select
 
             from lia_models.job_vacancy import JobVacancy

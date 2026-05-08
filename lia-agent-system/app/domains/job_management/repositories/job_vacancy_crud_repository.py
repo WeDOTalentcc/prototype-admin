@@ -209,3 +209,94 @@ class JobVacancyCRUDRepository:
             .limit(limit)
         )
         return list(result.scalars().all())
+
+
+    # ── Lookup helpers (Sprint Q2 ADR-001 — job_clone_service) ────────────────
+
+    async def get_by_job_id_and_company(self, job_id: str, company_id):
+        result = await self.db.execute(
+            select(JobVacancy).where(
+                JobVacancy.job_id == job_id,
+                JobVacancy.company_id == company_id,
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def search_by_title_ilike(self, title_pattern: str, company_id):
+        result = await self.db.execute(
+            select(JobVacancy).where(
+                JobVacancy.title.ilike(f"%{title_pattern}%"),
+                JobVacancy.company_id == company_id,
+            )
+        )
+        return list(result.scalars().all())
+
+    async def get_vacancy_by_id_only(self, job_vacancy_id: UUID):
+        """Used by job_clone_service.get_job_summary_for_clone — caller scopes."""
+        result = await self.db.execute(
+            select(JobVacancy).where(JobVacancy.id == job_vacancy_id)
+        )
+        return result.scalar_one_or_none()
+
+
+    async def list_for_company_history(self, company_id: str, *, limit: int = 50):
+        """Used by CompanyJobHistoryService — inference window of recent vacancies."""
+        result = await self.db.execute(
+            select(JobVacancy)
+            .where(JobVacancy.company_id == company_id)
+            .limit(limit)
+        )
+        return list(result.scalars().all())
+
+
+    async def list_indeed_published_active(self, company_id):
+        """Used by job_board_service Indeed XML feed export."""
+        from sqlalchemy import and_ as _and_
+        result = await self.db.execute(
+            select(JobVacancy).where(
+                _and_(
+                    JobVacancy.company_id == company_id,
+                    JobVacancy.published_indeed,
+                    JobVacancy.status.in_(["Ativa", "Publicada"]),
+                )
+            )
+        )
+        return list(result.scalars().all())
+
+
+    async def get_by_id_strict_company(self, job_id, company_id):
+        """Strict id+company lookup used by report/insights services."""
+        from sqlalchemy import and_ as _and_
+        result = await self.db.execute(
+            select(JobVacancy).where(
+                _and_(JobVacancy.id == job_id, JobVacancy.company_id == company_id)
+            )
+        )
+        return result.scalar_one_or_none()
+
+
+    async def get_by_id_only_uuid(self, job_uuid: UUID):
+        """Used by outcome_tracker._fetch_job — system context."""
+        result = await self.db.execute(
+            select(JobVacancy).where(JobVacancy.id == job_uuid)
+        )
+        return result.scalar_one_or_none()
+
+
+    async def search_by_conditions(self, conditions: list, *, limit: int = 50):
+        """Generic conditions-based search used by vacancy_search_service."""
+        from sqlalchemy import and_ as _and_
+        result = await self.db.execute(
+            select(JobVacancy)
+            .where(_and_(*conditions))
+            .order_by(JobVacancy.created_at.desc())
+            .limit(limit)
+        )
+        return list(result.scalars().all())
+
+
+# Backwards-compatible alias: callers in app/domains/analytics + app/domains/sourcing
+# import "JobVacancyCrudRepository" (PascalCase) — pre-existing in the codebase.
+# Real class name is JobVacancyCRUDRepository (all-caps CRUD). Alias avoids
+# breaking those imports while keeping a single canonical class.
+JobVacancyCrudRepository = JobVacancyCRUDRepository

@@ -12,9 +12,10 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID, uuid4
 
-from sqlalchemy import and_, func, or_, select, text
+from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
+from app.domains.job_management.repositories.job_embedding_repository import JobEmbeddingRepository
 from lia_models.job_pattern import EMBEDDING_DIMENSION, JobEmbedding
 from app.shared.intelligence.embedding_service import EmbeddingService
 
@@ -152,12 +153,7 @@ class JobEmbeddingService:
             )
 
             async with AsyncSessionLocal() as session:
-                existing = await session.execute(
-                    select(JobEmbedding).where(
-                        JobEmbedding.job_id == UUID(job_id)
-                    )
-                )
-                job_embedding = existing.scalar_one_or_none()
+                job_embedding = await JobEmbeddingRepository(session).get_by_job_id(UUID(job_id))
 
                 normalized_title = self._normalize_title(job_title)
 
@@ -379,20 +375,12 @@ class JobEmbeddingService:
         try:
             async with AsyncSessionLocal() as session:
                 normalized = self._normalize_title(job_title)
-                
-                query = select(JobEmbedding).where(
-                    and_(
-                        JobEmbedding.company_id == UUID(company_id),
-                        JobEmbedding.is_active,
-                        or_(
-                            JobEmbedding.job_title_normalized.ilike(f"%{normalized}%"),
-                            JobEmbedding.department == department if department else True
-                        )
-                    )
-                ).limit(limit)
-                
-                result = await session.execute(query)
-                jobs = result.scalars().all()
+                jobs = await JobEmbeddingRepository(session).text_search_active(
+                    company_id=UUID(company_id),
+                    normalized_title=normalized,
+                    department=department,
+                    limit=limit,
+                )
                 
                 return [
                     {
@@ -474,24 +462,11 @@ class JobEmbeddingService:
         
         try:
             async with AsyncSessionLocal() as session:
-                if job_ids:
-                    query = select(JobEmbedding).where(
-                        and_(
-                            JobEmbedding.company_id == UUID(company_id),
-                            JobEmbedding.job_id.in_([UUID(jid) for jid in job_ids]),
-                            JobEmbedding.embedding is None
-                        )
-                    ).limit(limit)
-                else:
-                    query = select(JobEmbedding).where(
-                        and_(
-                            JobEmbedding.company_id == UUID(company_id),
-                            JobEmbedding.embedding is None
-                        )
-                    ).limit(limit)
-                
-                result = await session.execute(query)
-                jobs = result.scalars().all()
+                jobs = await JobEmbeddingRepository(session).list_missing_embeddings(
+                    company_id=UUID(company_id),
+                    job_ids=[UUID(jid) for jid in job_ids] if job_ids else None,
+                    limit=limit,
+                )
                 
                 for job in jobs:
                     try:
@@ -549,34 +524,12 @@ class JobEmbeddingService:
         """Get statistics about job embeddings for a company."""
         try:
             async with AsyncSessionLocal() as session:
-                total = await session.execute(
-                    select(func.count(JobEmbedding.id)).where(
-                        JobEmbedding.company_id == UUID(company_id)
-                    )
-                )
-                
-                with_embedding = await session.execute(
-                    select(func.count(JobEmbedding.id)).where(
-                        and_(
-                            JobEmbedding.company_id == UUID(company_id),
-                            JobEmbedding.embedding is not None
-                        )
-                    )
-                )
-                
-                templates = await session.execute(
-                    select(func.count(JobEmbedding.id)).where(
-                        and_(
-                            JobEmbedding.company_id == UUID(company_id),
-                            JobEmbedding.is_template
-                        )
-                    )
-                )
-                
+                stats = await JobEmbeddingRepository(session).stats(UUID(company_id))
+
                 return {
-                    "total_jobs": total.scalar() or 0,
-                    "with_embeddings": with_embedding.scalar() or 0,
-                    "templates": templates.scalar() or 0,
+                    "total_jobs": stats["total_jobs"],
+                    "with_embeddings": stats["with_embeddings"],
+                    "templates": stats["templates"],
                     "coverage_percent": round(
                         (with_embedding.scalar() or 0) / max(total.scalar() or 1, 1) * 100, 1
                     )
@@ -623,15 +576,9 @@ class JobEmbeddingService:
         
         try:
             async with AsyncSessionLocal() as session:
-                result = await session.execute(
-                    select(JobVacancy).where(
-                        and_(
-                            JobVacancy.id == UUID(job_id),
-                            JobVacancy.company_id == company_id
-                        )
-                    )
+                job = await JobEmbeddingRepository(session).get_vacancy_for_embedding(
+                    UUID(job_id), company_id
                 )
-                job = result.scalar_one_or_none()
                 
                 if not job:
                     return None
@@ -785,15 +732,9 @@ class JobEmbeddingService:
         """
         try:
             async with AsyncSessionLocal() as session:
-                source_embedding = await session.execute(
-                    select(JobEmbedding).where(
-                        and_(
-                            JobEmbedding.company_id == company_id,
-                            JobEmbedding.job_id == source_job_id
-                        )
-                    )
+                source = await JobEmbeddingRepository(session).get_by_company_and_job(
+                    company_id, source_job_id
                 )
-                source = source_embedding.scalar_one_or_none()
                 
                 if source:
                     current_metadata = source.metadata_json or {}
@@ -859,15 +800,9 @@ class JobEmbeddingService:
         """
         try:
             async with AsyncSessionLocal() as session:
-                result = await session.execute(
-                    select(JobEmbedding).where(
-                        and_(
-                            JobEmbedding.company_id == company_id,
-                            JobEmbedding.job_id == job_id
-                        )
-                    )
+                embedding = await JobEmbeddingRepository(session).get_by_company_and_job(
+                    company_id, job_id
                 )
-                embedding = result.scalar_one_or_none()
                 
                 if embedding:
                     embedding.outcome_status = outcome_status
@@ -933,15 +868,9 @@ class JobEmbeddingService:
         """
         try:
             async with AsyncSessionLocal() as session:
-                result = await session.execute(
-                    select(JobEmbedding).where(
-                        and_(
-                            JobEmbedding.company_id == company_id,
-                            JobEmbedding.metadata_json.isnot(None)
-                        )
-                    ).limit(100)
+                embeddings = await JobEmbeddingRepository(session).list_with_metadata(
+                    company_id, limit=100
                 )
-                embeddings = result.scalars().all()
                 
                 total_uses = 0
                 total_publishes = 0

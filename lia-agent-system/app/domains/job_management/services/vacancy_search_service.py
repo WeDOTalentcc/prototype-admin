@@ -17,6 +17,8 @@ from pydantic import BaseModel
 from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.job_management.repositories.job_vacancy_crud_repository import JobVacancyCRUDRepository
+
 from lia_models.job_vacancy import JobVacancy
 from app.domains.ai.services.llm import llm_service
 
@@ -265,15 +267,9 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
                     )
                 )
             
-            query = (
-                select(JobVacancy)
-                .where(and_(*conditions))
-                .order_by(JobVacancy.created_at.desc())
-                .limit(limit)
+            vacancies = await JobVacancyCRUDRepository(db).search_by_conditions(
+                conditions, limit=limit
             )
-            
-            result = await db.execute(query)
-            vacancies = result.scalars().all()
             
             summaries = []
             for v in vacancies:
@@ -320,14 +316,9 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
             VacancyFullDetails or None if not found
         """
         try:
-            query = select(JobVacancy).where(
-                and_(
-                    JobVacancy.id == vacancy_id,
-                    JobVacancy.company_id == company_id
-                )
+            vacancy = await JobVacancyCRUDRepository(db).get_by_id_strict_company(
+                vacancy_id, company_id
             )
-            result = await db.execute(query)
-            vacancy = result.scalar_one_or_none()
             
             if not vacancy:
                 return None

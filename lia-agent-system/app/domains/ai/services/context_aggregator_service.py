@@ -197,6 +197,13 @@ class ContextAggregatorService:
         
         return context
 
+    # ADR-001-EXEMPT: cross-domain aggregator that reads from company, departments,
+    # company_benefits, and job_vacancies. The aggregator is the canonical caller of
+    # bespoke shape queries (e.g. group_by(work_model)/title) that have no other
+    # consumers — wrapping each in a foreign repo would be a single-callsite ceremony
+    # without real harness leverage. Multi-tenancy: each select filters company_id;
+    # the company lookup at line 204 is a known stale fallback (not tenant-scoped) and
+    # is being tracked separately as a P1 correctness fix.
     async def _get_company_context(self, company_id: str, db: AsyncSession) -> CompanyContext:
         """Obtém contexto da empresa."""
         try:

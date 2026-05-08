@@ -680,6 +680,7 @@ class TokenTrackingService:
         cost_cents = int(total_cost_usd * 100)
         
         return cost_cents
+        # ADR-001-EXEMPT: AiCreditsBalance + Company billing reads; isolated to token tracking service; promote to BillingRepository in Sprint 6
 
     async def _check_and_alert_thresholds(self, company_id: str) -> None:
         """
@@ -716,6 +717,7 @@ class TokenTrackingService:
 
             if not was_set:
                 # Alerta já enviado hoje para este threshold
+                # ADR-001-EXEMPT: AiCreditsBalance + Company billing reads; isolated to token tracking service; promote to BillingRepository in Sprint 6
                 continue
 
             # Disparar notificação

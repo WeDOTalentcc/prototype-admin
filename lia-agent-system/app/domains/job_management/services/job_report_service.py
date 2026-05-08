@@ -20,6 +20,9 @@ from reportlab.platypus import PageBreak, Paragraph, SimpleDocTemplate, Spacer, 
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.job_management.repositories.job_report_repository import JobReportRepository
+from app.domains.job_management.repositories.job_vacancy_crud_repository import JobVacancyCRUDRepository
+
 from lia_models.candidate import Candidate, VacancyCandidate
 from lia_models.job_vacancy import JobVacancy
 from lia_models.recruitment_stages import CandidateStageHistory
@@ -62,12 +65,9 @@ class JobReportService:
     
     async def _get_job_vacancy(self, job_id: UUID, company_id: str, db: AsyncSession) -> JobVacancy | None:
         """Get job vacancy with multi-tenancy check."""
-        result = await db.execute(
-            select(JobVacancy).where(
-                and_(JobVacancy.id == job_id, JobVacancy.company_id == company_id)
-            )
+        return await JobVacancyCRUDRepository(db).get_by_id_strict_company(
+            job_id, company_id
         )
-        return result.scalar_one_or_none()
     
     async def _get_funnel_data(self, job_id: UUID, db: AsyncSession) -> dict[str, Any]:
         """Get funnel metrics for a job vacancy."""
@@ -153,15 +153,10 @@ class JobReportService:
     
     async def _get_candidates_list(self, job_id: UUID, db: AsyncSession) -> list[dict[str, Any]]:
         """Get list of candidates for a job vacancy."""
-        result = await db.execute(
-            select(VacancyCandidate, Candidate)
-            .join(Candidate, VacancyCandidate.candidate_id == Candidate.id)
-            .where(VacancyCandidate.vacancy_id == job_id)
-            .order_by(VacancyCandidate.created_at.desc())
-        )
-        
+        rows = await JobReportRepository(db).list_candidates_with_profile(job_id)
+
         candidates = []
-        for vc, candidate in result.all():
+        for vc, candidate in rows:
             candidates.append({
                 'name': candidate.name,
                 'email': candidate.email or '',

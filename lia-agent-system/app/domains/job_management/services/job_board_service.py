@@ -13,6 +13,8 @@ from xml.dom import minidom
 from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.job_management.repositories.job_vacancy_crud_repository import JobVacancyCRUDRepository
+
 from lia_models.job_vacancy import JobVacancy
 
 logger = logging.getLogger(__name__)
@@ -379,15 +381,7 @@ class JobBoardService:
         Returns:
             XML string in Indeed format
         """
-        query = select(JobVacancy).where(
-            and_(
-                JobVacancy.company_id == company_id,
-                JobVacancy.published_indeed,
-                JobVacancy.status.in_(["Ativa", "Publicada"])
-            )
-        )
-        result = await db.execute(query)
-        jobs = result.scalars().all()
+        jobs = await JobVacancyCRUDRepository(db).list_indeed_published_active(company_id)
         
         root = ET.Element("source")
         

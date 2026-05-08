@@ -2,7 +2,7 @@ import logging
 from datetime import datetime
 from typing import Any, Optional
 
-from sqlalchemy import select, and_
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lia_models.billing import (
@@ -10,6 +10,10 @@ from lia_models.billing import (
     ModuleStatus,
     ModuleTier,
     AVAILABLE_MODULES,
+)
+
+from app.domains.modules.repositories.company_module_repository import (
+    CompanyModuleRepository,
 )
 
 logger = logging.getLogger(__name__)
@@ -28,14 +32,8 @@ class ModuleService:
         module_name: str,
     ) -> bool:
         try:
-            stmt = select(CompanyModule).where(
-                and_(
-                    CompanyModule.company_id == company_id,
-                    CompanyModule.module_name == module_name,
-                )
-            )
-            result = await db.execute(stmt)
-            mod = result.scalar_one_or_none()
+            repo = CompanyModuleRepository(db)
+            mod = await repo.get_by_company_and_name(company_id, module_name)
 
             if mod:
                 if mod.status in _EXPLICITLY_OFF:
@@ -56,14 +54,8 @@ class ModuleService:
         module_name: str,
     ) -> Optional[str]:
         try:
-            stmt = select(CompanyModule).where(
-                and_(
-                    CompanyModule.company_id == company_id,
-                    CompanyModule.module_name == module_name,
-                )
-            )
-            result = await db.execute(stmt)
-            mod = result.scalar_one_or_none()
+            repo = CompanyModuleRepository(db)
+            mod = await repo.get_by_company_and_name(company_id, module_name)
             if not mod:
                 return None
             if mod.expires_at and mod.expires_at < datetime.utcnow():
@@ -79,9 +71,8 @@ class ModuleService:
         company_id: str,
         include_catalog: bool = False,
     ) -> list[dict[str, Any]]:
-        stmt = select(CompanyModule).where(CompanyModule.company_id == company_id)
-        result = await db.execute(stmt)
-        modules = result.scalars().all()
+        repo = CompanyModuleRepository(db)
+        modules = await repo.list_by_company(company_id)
 
         module_dict = {m.module_name: m for m in modules}
 
@@ -126,14 +117,8 @@ class ModuleService:
         if module_name not in AVAILABLE_MODULES:
             return {"success": False, "error": f"Unknown module: {module_name}"}
 
-        stmt = select(CompanyModule).where(
-            and_(
-                CompanyModule.company_id == company_id,
-                CompanyModule.module_name == module_name,
-            )
-        )
-        result = await db.execute(stmt)
-        existing = result.scalar_one_or_none()
+        repo = CompanyModuleRepository(db)
+        existing = await repo.get_by_company_and_name(company_id, module_name)
 
         if existing:
             existing.status = status
@@ -152,7 +137,7 @@ class ModuleService:
                 expires_at=expires_at,
                 metadata_json=metadata or {},
             )
-            db.add(mod)
+            await repo.add(mod)
 
         await db.flush()
         self.logger.info(f"Module {module_name} activated for {company_id} (status={status}, tier={tier})")
@@ -170,14 +155,8 @@ class ModuleService:
         if module_name not in AVAILABLE_MODULES:
             return {"success": False, "error": f"Unknown module: {module_name}"}
 
-        stmt = select(CompanyModule).where(
-            and_(
-                CompanyModule.company_id == company_id,
-                CompanyModule.module_name == module_name,
-            )
-        )
-        result = await db.execute(stmt)
-        mod = result.scalar_one_or_none()
+        repo = CompanyModuleRepository(db)
+        mod = await repo.get_by_company_and_name(company_id, module_name)
 
         if not mod:
             return {"success": False, "error": f"Module {module_name} not found for company {company_id}"}
@@ -199,14 +178,8 @@ class ModuleService:
         company_id: str,
         module_name: str,
     ) -> dict[str, Any]:
-        stmt = select(CompanyModule).where(
-            and_(
-                CompanyModule.company_id == company_id,
-                CompanyModule.module_name == module_name,
-            )
-        )
-        result = await db.execute(stmt)
-        mod = result.scalar_one_or_none()
+        repo = CompanyModuleRepository(db)
+        mod = await repo.get_by_company_and_name(company_id, module_name)
 
         if not mod:
             return {"success": False, "error": "Module not found for this company"}
@@ -222,14 +195,8 @@ class ModuleService:
         company_id: str,
         module_name: str,
     ) -> Optional[str]:
-        stmt = select(CompanyModule).where(
-            and_(
-                CompanyModule.company_id == company_id,
-                CompanyModule.module_name == module_name,
-            )
-        )
-        result = await db.execute(stmt)
-        mod = result.scalar_one_or_none()
+        repo = CompanyModuleRepository(db)
+        mod = await repo.get_by_company_and_name(company_id, module_name)
         return mod.tier if mod else None
 
     async def get_module_by_id(
@@ -237,14 +204,8 @@ class ModuleService:
         db: AsyncSession,
         module_id: str,
     ) -> Optional[CompanyModule]:
-        import uuid as _uuid
-        try:
-            uid = _uuid.UUID(module_id)
-        except (ValueError, AttributeError):
-            return None
-        stmt = select(CompanyModule).where(CompanyModule.id == uid)
-        result = await db.execute(stmt)
-        return result.scalar_one_or_none()
+        repo = CompanyModuleRepository(db)
+        return await repo.get_by_id(module_id)
 
     async def update_module_by_id(
         self,
@@ -276,17 +237,13 @@ class ModuleService:
         module_name: str,
     ) -> Optional[dict[str, Any]]:
         from lia_models.billing import CreditAccount
-        stmt = select(CompanyModule).where(
-            and_(
-                CompanyModule.company_id == company_id,
-                CompanyModule.module_name == module_name,
-            )
-        )
-        result = await db.execute(stmt)
-        mod = result.scalar_one_or_none()
+        repo = CompanyModuleRepository(db)
+        mod = await repo.get_by_company_and_name(company_id, module_name)
         if not mod:
             return None
 
+        # ADR-001-EXEMPT: cross-domain CreditAccount read; credits domain has no
+        # get_account_by_company helper yet (Sprint 6 follow-up to extend CreditsRepository).
         acct_stmt = select(CreditAccount).where(CreditAccount.company_id == company_id)
         acct_result = await db.execute(acct_stmt)
         acct = acct_result.scalar_one_or_none()
@@ -303,16 +260,10 @@ class ModuleService:
         company_id: str,
     ) -> list[dict[str, Any]]:
         created = []
+        repo = CompanyModuleRepository(db)
         for name, info in AVAILABLE_MODULES.items():
             initial_status = info.get("initial_status", "beta")
-            stmt = select(CompanyModule).where(
-                and_(
-                    CompanyModule.company_id == company_id,
-                    CompanyModule.module_name == name,
-                )
-            )
-            result = await db.execute(stmt)
-            if result.scalar_one_or_none():
+            if await repo.get_by_company_and_name(company_id, name):
                 continue
 
             mod = CompanyModule(

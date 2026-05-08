@@ -1,4 +1,11 @@
 """
+
+# ADR-001-EXEMPT: Pipeline stage service handles CandidateStageHistory
+# transitions + ATSStageMapping resolution (multi-source pipeline state
+# machine). Tenant scope established by caller via vacancy_id ownership.
+# TODO Sprint 6: extract to CandidateStageHistoryRepository +
+# ATSStageMappingRepository.
+
 Pipeline Stage Service - Centralized stage/sub-status management.
 
 This service handles all stage transitions for candidates:

@@ -1,0 +1,156 @@
+"""PlannedTaskRepository — data access for PlannedTask + ExecutionPlan models.
+
+Per ADR-001: services delegate SQL access to this repository.
+PlannedTask and ExecutionPlan carry company_id; multi-tenant filtering at
+service boundary is enforced by callers (see PlannedTaskService).
+"""
+import logging
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from lia_models.planned_task import (
+    ExecutionPlan,
+    PlannedTask,
+    PlannedTaskStatus,
+)
+
+logger = logging.getLogger(__name__)
+
+
+class PlannedTaskRepository:
+    """Repository for PlannedTask + ExecutionPlan."""
+
+    def __init__(self, db: AsyncSession):
+        self.db = db
+
+    async def get_by_id(self, task_id: str) -> PlannedTask | None:
+        """Get a planned task by ID."""
+        result = await self.db.execute(
+            select(PlannedTask).where(PlannedTask.id == task_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def list_by_goal(
+        self,
+        goal_id: str,
+        *,
+        include_completed: bool = False,
+    ) -> list[PlannedTask]:
+        """List tasks belonging to a specific goal."""
+        query = select(PlannedTask).where(PlannedTask.goal_id == goal_id)
+
+        if not include_completed:
+            query = query.where(
+                PlannedTask.status.notin_(
+                    [PlannedTaskStatus.COMPLETED, PlannedTaskStatus.CANCELLED]
+                )
+            )
+
+        query = query.order_by(
+            PlannedTask.execution_level, PlannedTask.priority_score.desc()
+        )
+
+        result = await self.db.execute(query)
+        return list(result.scalars().all())
+
+    async def list_subtasks(self, parent_task_id: str) -> list[PlannedTask]:
+        """List subtasks of a parent task."""
+        result = await self.db.execute(
+            select(PlannedTask)
+            .where(PlannedTask.parent_task_id == parent_task_id)
+            .order_by(
+                PlannedTask.execution_level, PlannedTask.priority_score.desc()
+            )
+        )
+        return list(result.scalars().all())
+
+    async def list_by_ids(self, task_ids: list[str]) -> list[PlannedTask]:
+        """Bulk fetch planned tasks by id list."""
+        if not task_ids:
+            return []
+        result = await self.db.execute(
+            select(PlannedTask).where(PlannedTask.id.in_(task_ids))
+        )
+        return list(result.scalars().all())
+
+    async def list_completed_ids(self) -> set[str]:
+        """Return all PlannedTask ids in COMPLETED status (for dependency checks)."""
+        result = await self.db.execute(
+            select(PlannedTask.id).where(
+                PlannedTask.status == PlannedTaskStatus.COMPLETED
+            )
+        )
+        return set(row[0] for row in result.fetchall())
+
+    async def list_ready_candidates(
+        self,
+        *,
+        goal_id: str | None = None,
+        parent_task_id: str | None = None,
+        company_id: str | None = None,
+        agent_type: str | None = None,
+    ) -> list[PlannedTask]:
+        """List tasks in READY/PENDING with optional filters."""
+        query = select(PlannedTask).where(
+            PlannedTask.status.in_(
+                [PlannedTaskStatus.READY, PlannedTaskStatus.PENDING]
+            )
+        )
+
+        if goal_id:
+            query = query.where(PlannedTask.goal_id == goal_id)
+        if parent_task_id:
+            query = query.where(PlannedTask.parent_task_id == parent_task_id)
+        if company_id:
+            query = query.where(PlannedTask.company_id == company_id)
+        if agent_type:
+            query = query.where(PlannedTask.agent_type == agent_type)
+
+        result = await self.db.execute(query)
+        return list(result.scalars().all())
+
+    async def list_for_priority_context(
+        self, *, goal_id: str | None, parent_task_id: str | None
+    ) -> list[PlannedTask]:
+        """Sibling tasks needed for dependents-impact priority calculation."""
+        if goal_id:
+            result = await self.db.execute(
+                select(PlannedTask).where(PlannedTask.goal_id == goal_id)
+            )
+        else:
+            result = await self.db.execute(
+                select(PlannedTask).where(
+                    PlannedTask.parent_task_id == parent_task_id
+                )
+            )
+        return list(result.scalars().all())
+
+    async def get_execution_plan(self, plan_id: str) -> ExecutionPlan | None:
+        """Get execution plan by id."""
+        result = await self.db.execute(
+            select(ExecutionPlan).where(ExecutionPlan.id == plan_id)
+        )
+        return result.scalar_one_or_none()
+
+    async def add(self, entity) -> object:
+        """Persist a new entity (PlannedTask or ExecutionPlan)."""
+        self.db.add(entity)
+        await self.db.commit()
+        await self.db.refresh(entity)
+        return entity
+
+    async def commit(self) -> None:
+        """Commit pending changes."""
+        await self.db.commit()
+
+    async def commit_refresh(self, entity) -> object:
+        """Commit and refresh."""
+        await self.db.commit()
+        await self.db.refresh(entity)
+        return entity
+
+    async def refresh(self, entity) -> object:
+        """Refresh entity from DB."""
+        await self.db.refresh(entity)
+        return entity

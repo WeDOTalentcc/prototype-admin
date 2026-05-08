@@ -146,6 +146,8 @@ class DeadlineCalculatorService:
         
         async with AsyncSessionLocal() as db:
             if pipeline_template_id:
+                # ADR-001-EXEMPT: PipelineTemplate is owned by job_management/screening pipeline
+                # surface; no repo exposes it today. Sprint 6 follow-up: add PipelineTemplateRepository.
                 result = await db.execute(
                     select(PipelineTemplate).where(
                         PipelineTemplate.id == pipeline_template_id

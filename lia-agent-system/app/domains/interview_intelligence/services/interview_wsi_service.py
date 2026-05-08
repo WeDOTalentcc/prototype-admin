@@ -16,8 +16,11 @@ Enforces tenant isolation via mandatory company_id.
 import logging
 from typing import Any
 
-from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domains.interview_intelligence.repositories.interview_repository import (
+    InterviewRepository,
+)
 
 from app.domains.interview_scheduling.services.interview_transcript_analysis_service import (
     interview_transcript_analysis_service,
@@ -51,15 +54,10 @@ class InterviewWSIService:
         if not company_id:
             return {"success": False, "error": "company_id is required for tenant isolation"}
 
-        result = await db.execute(
-            select(Interview).where(
-                and_(
-                    Interview.id == interview_id,
-                    Interview.company_id == company_id,
-                )
-            )
+        _ii_repo = InterviewRepository(db)
+        interview = await _ii_repo.get_for_company(
+            interview_id=interview_id, company_id=company_id
         )
-        interview = result.scalar_one_or_none()
         if not interview:
             return {"success": False, "error": "Interview not found"}
 

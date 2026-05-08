@@ -1,4 +1,12 @@
 """
+
+# ADR-001-EXEMPT: Cross-tenant proactive trigger scanner. Scans aggregate
+# operational health across companies (no_contact, deadlines, interview metrics)
+# for ops dashboards and alert dispatch. Tenant isolation reapplied when alerts
+# fan out to per-company handlers downstream.
+# TODO Sprint 6: extract scanning queries to dedicated cross-tenant repos with
+# explicit company_id filtering audit logs.
+
 Proactive Alert Service - Intelligent alert system for recruiters.
 
 This service monitors KPIs and indicators to proactively alert recruiters

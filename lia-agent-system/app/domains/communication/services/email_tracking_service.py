@@ -19,8 +19,9 @@ import urllib.parse
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domains.communication.repositories.email_tracking_repository import EmailTrackingRepository
 
 _TRACKING_BASE_URL = os.getenv("API_BASE_URL", "https://api.wedotalent.com")
 
@@ -97,12 +98,7 @@ class EmailTrackingService:
             True se token válido e evento registrado, False caso contrário.
         """
         # Buscar token base para pegar notification_id e company_id
-        stmt = select(EmailTrackingEvent).where(
-            EmailTrackingEvent.token == token,
-            EmailTrackingEvent.event_type == "token",
-        )
-        result = await db.execute(stmt)
-        base_event = result.scalar_one_or_none()
+        base_event = await EmailTrackingRepository(db).get_base_event_by_token(token)
 
         if not base_event:
             logger.debug("[EmailTracking] Token inválido: %s", token[:16])
@@ -136,12 +132,7 @@ class EmailTrackingService:
         Returns:
             URL de destino para redirecionar o usuário, ou None se token inválido.
         """
-        stmt = select(EmailTrackingEvent).where(
-            EmailTrackingEvent.token == token,
-            EmailTrackingEvent.event_type == "token",
-        )
-        result = await db.execute(stmt)
-        base_event = result.scalar_one_or_none()
+        base_event = await EmailTrackingRepository(db).get_base_event_by_token(token)
 
         if not base_event:
             logger.debug("[EmailTracking] Token clique inválido: %s", token[:16])
@@ -173,31 +164,10 @@ class EmailTrackingService:
         Returns:
             Dict com opens, clicks, unique_opens (por recipient_hash).
         """
-        # Contagem por tipo
-        stmt = (
-            select(EmailTrackingEvent.event_type, func.count().label("count"))
-            .where(
-                EmailTrackingEvent.notification_id == notification_id,
-                EmailTrackingEvent.company_id == company_id,
-                EmailTrackingEvent.event_type.in_(["open", "click"]),
-            )
-            .group_by(EmailTrackingEvent.event_type)
-        )
-        result = await db.execute(stmt)
-        counts = {row.event_type: row.count for row in result}
-
-        # Unique opens por recipient
-        stmt_unique = (
-            select(func.count(EmailTrackingEvent.recipient_hash.distinct()).label("unique_opens"))
-            .where(
-                EmailTrackingEvent.notification_id == notification_id,
-                EmailTrackingEvent.company_id == company_id,
-                EmailTrackingEvent.event_type == "open",
-                EmailTrackingEvent.recipient_hash.isnot(None),
-            )
-        )
-        result_unique = await db.execute(stmt_unique)
-        unique_opens = result_unique.scalar() or 0
+        # Contagem por tipo / unique opens via repo
+        repo = EmailTrackingRepository(db)
+        counts = await repo.count_by_event_type(notification_id=notification_id, company_id=company_id)
+        unique_opens = await repo.count_unique_opens(notification_id=notification_id, company_id=company_id)
 
         return {
             "notification_id": notification_id,
@@ -229,12 +199,7 @@ class EmailTrackingService:
         company_id = ""
 
         try:
-            from lia_models.message_queue import MessageQueue
-            stmt = select(MessageQueue.id, MessageQueue.company_id).where(
-                MessageQueue.extra_data["sg_message_id"].astext == sg_message_id,
-            ).limit(1)
-            result = await db.execute(stmt)
-            row = result.first()
+            row = await EmailTrackingRepository(db).find_message_queue_by_sg_id(sg_message_id)
             if row:
                 notification_id = str(row.id)
                 company_id = str(row.company_id or "")
@@ -295,15 +260,7 @@ class EmailTrackingService:
             Tuple of (company_id, template_id). Empty strings if not found.
         """
         try:
-            from lia_models.message_queue import MessageQueue
-            stmt = select(
-                MessageQueue.company_id,
-                MessageQueue.extra_data,
-            ).where(
-                MessageQueue.extra_data["sg_message_id"].astext == sg_message_id,
-            ).limit(1)
-            result = await db.execute(stmt)
-            row = result.first()
+            row = await EmailTrackingRepository(db).find_message_queue_by_sg_id(sg_message_id)
             if row:
                 company_id = str(row.company_id or "")
                 extra = row.extra_data or {}
@@ -320,15 +277,7 @@ class EmailTrackingService:
     ) -> dict[str, str]:
         """Resolve A/B test data from CommunicationLog.extra_data via provider_message_id."""
         try:
-            from app.domains.communication.services.communication_models import CommunicationLog
-            stmt = select(
-                CommunicationLog.company_id,
-                CommunicationLog.extra_data,
-            ).where(
-                CommunicationLog.provider_message_id == sg_message_id,
-            ).limit(1)
-            result = await db.execute(stmt)
-            row = result.first()
+            row = await EmailTrackingRepository(db).find_communication_log_by_provider_message_id(sg_message_id)
             if row:
                 extra = row.extra_data or {}
                 return {

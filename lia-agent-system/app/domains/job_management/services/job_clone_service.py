@@ -11,9 +11,10 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.job_management.repositories.job_clone_repository import JobCloneRepository
+from app.domains.job_management.repositories.job_vacancy_crud_repository import JobVacancyCRUDRepository
 from lia_models.candidate import VacancyCandidate
 from lia_models.job_vacancy import JobVacancy
 
@@ -66,37 +67,20 @@ class JobCloneService:
             
         identifier = identifier.strip()
         
+        crud_repo = JobVacancyCRUDRepository(db)
         try:
             job_uuid = uuid.UUID(identifier)
-            result = await db.execute(
-                select(JobVacancy).where(
-                    JobVacancy.id == job_uuid,
-                    JobVacancy.company_id == company_id
-                )
-            )
-            job = result.scalar_one_or_none()
+            job = await crud_repo.get_vacancy_by_id_and_company(job_uuid, company_id)
             if job:
                 return job
         except ValueError:
             pass
-        
-        result = await db.execute(
-            select(JobVacancy).where(
-                JobVacancy.job_id == identifier,
-                JobVacancy.company_id == company_id
-            )
-        )
-        job = result.scalar_one_or_none()
+
+        job = await crud_repo.get_by_job_id_and_company(identifier, company_id)
         if job:
             return job
-        
-        result = await db.execute(
-            select(JobVacancy).where(
-                JobVacancy.title.ilike(f"%{identifier}%"),
-                JobVacancy.company_id == company_id
-            )
-        )
-        jobs = result.scalars().all()
+
+        jobs = await crud_repo.search_by_title_ilike(identifier, company_id)
         if len(jobs) == 1:
             return jobs[0]
         elif len(jobs) > 1:
@@ -110,10 +94,7 @@ class JobCloneService:
         vacancy_id: uuid.UUID
     ) -> list[VacancyCandidate]:
         """Get all candidates linked to a vacancy."""
-        result = await db.execute(
-            select(VacancyCandidate).where(VacancyCandidate.vacancy_id == vacancy_id)
-        )
-        return result.scalars().all()
+        return await JobCloneRepository(db).list_candidates_for_vacancy(vacancy_id)
     
     def _generate_job_id(self, base_title: str, copy_number: int = 1) -> str:
         """Generate a unique job ID with timestamp to avoid collisions."""
@@ -162,14 +143,10 @@ class JobCloneService:
         Returns:
             Dict with created jobs and summary
         """
-        result = await db.execute(
-            select(JobVacancy).where(
-                JobVacancy.id == source_job_id,
-                JobVacancy.company_id == company_id
-            )
+        source_job = await JobVacancyCRUDRepository(db).get_vacancy_by_id_and_company(
+            source_job_id, company_id
         )
-        source_job = result.scalar_one_or_none()
-        
+
         if not source_job:
             return {
                 "success": False,
@@ -318,14 +295,10 @@ class JobCloneService:
         Returns:
             Dict with created job info
         """
-        result = await db.execute(
-            select(JobVacancy).where(
-                JobVacancy.id == source_job_id,
-                JobVacancy.company_id == company_id
-            )
+        source_job = await JobVacancyCRUDRepository(db).get_vacancy_by_id_and_company(
+            source_job_id, company_id
         )
-        source_job = result.scalar_one_or_none()
-        
+
         if not source_job:
             return {
                 "success": False,
@@ -424,10 +397,7 @@ class JobCloneService:
         """
         Get a summary of a job for displaying to the user before cloning.
         """
-        result = await db.execute(
-            select(JobVacancy).where(JobVacancy.id == job_id)
-        )
-        job = result.scalar_one_or_none()
+        job = await JobVacancyCRUDRepository(db).get_vacancy_by_id_only(job_id)
         
         if not job:
             return None

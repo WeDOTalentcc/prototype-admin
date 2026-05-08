@@ -20,6 +20,10 @@ from sqlalchemy import and_, desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lia_models.interview import Interview
+
+from app.domains.interview_scheduling.repositories.interview_repository import (
+    InterviewRepository,
+)
 from app.shared.policy_middleware import get_policy_for_company, resolve_policy_value
 
 _microsoft_graph_service = None
@@ -133,6 +137,9 @@ class SchedulingService:
         
         if company_id:
             try:
+                # ADR-001-EXEMPT: cross-domain CompanyProfile single-column lookup;
+                # company domain is owned by other agent and has no reusable get_by_id helper
+                # at the time of this Sprint 8 cleanup. Read-only, scoped by id.
                 from lia_models.company import CompanyProfile
                 result = await db.execute(
                     select(CompanyProfile).where(
@@ -545,10 +552,8 @@ class SchedulingService:
         Returns:
             Updated Interview object
         """
-        result = await db.execute(
-            select(Interview).where(Interview.id == interview_id)
-        )
-        interview = result.scalar_one_or_none()
+        _is_repo = InterviewRepository(db)
+        interview = await _is_repo.get_interview_by_id(interview_id)
         
         if not interview:
             raise ValueError(f"Interview {interview_id} not found")
@@ -599,10 +604,8 @@ class SchedulingService:
         Returns:
             Cancelled Interview object
         """
-        result = await db.execute(
-            select(Interview).where(Interview.id == interview_id)
-        )
-        interview = result.scalar_one_or_none()
+        _is_repo = InterviewRepository(db)
+        interview = await _is_repo.get_interview_by_id(interview_id)
         
         if not interview:
             raise ValueError(f"Interview {interview_id} not found")
@@ -643,10 +646,8 @@ class SchedulingService:
         Returns:
             Completed Interview object
         """
-        result = await db.execute(
-            select(Interview).where(Interview.id == interview_id)
-        )
-        interview = result.scalar_one_or_none()
+        _is_repo = InterviewRepository(db)
+        interview = await _is_repo.get_interview_by_id(interview_id)
         
         if not interview:
             raise ValueError(f"Interview {interview_id} not found")
@@ -686,10 +687,8 @@ class SchedulingService:
         interview_id: str
     ) -> Interview | None:
         """Get a single interview by ID."""
-        result = await db.execute(
-            select(Interview).where(Interview.id == interview_id)
-        )
-        return result.scalar_one_or_none()
+        _is_repo = InterviewRepository(db)
+        return await _is_repo.get_interview_by_id(interview_id)
     
     async def list_interviews(
         self,
@@ -709,33 +708,17 @@ class SchedulingService:
         Returns:
             Tuple of (list of interviews, total count)
         """
-        query = select(Interview)
-        
-        filters = []
-        if candidate_id:
-            filters.append(Interview.candidate_id == candidate_id)
-        if vacancy_id:
-            filters.append(Interview.job_vacancy_id == vacancy_id)
-        if interviewer_email:
-            filters.append(Interview.interviewer_email == interviewer_email)
-        if status:
-            filters.append(Interview.status == status)
-        if from_date:
-            filters.append(Interview.start_time >= from_date)
-        if to_date:
-            filters.append(Interview.start_time <= to_date)
-        
-        if filters:
-            query = query.where(and_(*filters))
-        
-        count_result = await db.execute(query)
-        total = len(count_result.scalars().all())
-        
-        query = query.order_by(desc(Interview.start_time)).offset(skip).limit(limit)
-        result = await db.execute(query)
-        interviews = result.scalars().all()
-        
-        return list(interviews), total
+        _is_repo = InterviewRepository(db)
+        return await _is_repo.search_interviews(
+            candidate_id=candidate_id,
+            vacancy_id=vacancy_id,
+            interviewer_email=interviewer_email,
+            status=status,
+            from_date=from_date,
+            to_date=to_date,
+            skip=skip,
+            limit=limit,
+        )
     
     def generate_ics_content(
         self,

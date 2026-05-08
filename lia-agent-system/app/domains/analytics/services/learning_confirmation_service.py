@@ -7,6 +7,8 @@ Handles: record_skill_confirmation, record_skill_rejection,
          get_company_skills, get_company_responsibilities,
          get_skills_without_duplicates, get_learning_context,
          update_pattern, _calculate_confidence, and pattern helpers.
+
+ADR-001 refactor: SQL/select() moved to CompanyLearningRepository.
 """
 import hashlib
 import logging
@@ -14,7 +16,6 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lia_models.company_learning import (
@@ -24,7 +25,10 @@ from lia_models.company_learning import (
     CompanySkill,
     LearningSource,
 )
-from lia_models.feedback_learning import JobOutcome
+
+from app.domains.analytics.repositories.company_learning_repository import (
+    CompanyLearningRepository,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -80,15 +84,8 @@ class LearningConfirmationService:
         created_by: str | None = None,
     ) -> ConfirmationResult:
         try:
-            normalized = skill_name.strip().lower()
-            stmt = select(CompanySkill).where(
-                and_(
-                    CompanySkill.company_id == company_id,
-                    func.lower(CompanySkill.skill_name) == normalized,
-                )
-            )
-            result = await db.execute(stmt)
-            existing = result.scalar_one_or_none()
+            repo = CompanyLearningRepository(db)
+            existing = await repo.find_skill_by_normalized_name(company_id, skill_name)
 
             if existing:
                 existing.times_confirmed += 1
@@ -160,15 +157,8 @@ class LearningConfirmationService:
         self, db: AsyncSession, company_id: str, skill_name: str
     ) -> bool:
         try:
-            normalized = skill_name.strip().lower()
-            stmt = select(CompanySkill).where(
-                and_(
-                    CompanySkill.company_id == company_id,
-                    func.lower(CompanySkill.skill_name) == normalized,
-                )
-            )
-            result = await db.execute(stmt)
-            existing = result.scalar_one_or_none()
+            repo = CompanyLearningRepository(db)
+            existing = await repo.find_skill_by_normalized_name(company_id, skill_name)
             if existing:
                 existing.times_rejected += 1
                 if existing.times_rejected > existing.times_confirmed * 2:
@@ -195,22 +185,12 @@ class LearningConfirmationService:
         limit: int = 20,
     ) -> list[dict[str, Any]]:
         try:
-            conditions = [CompanySkill.company_id == company_id]
-            if only_promoted:
-                conditions.append(CompanySkill.is_promoted)
-
-            stmt = (
-                select(CompanySkill)
-                .where(and_(*conditions))
-                .order_by(
-                    CompanySkill.is_promoted.desc(),
-                    CompanySkill.times_confirmed.desc(),
-                    CompanySkill.confidence_score.desc(),
-                )
-                .limit(limit)
+            repo = CompanyLearningRepository(db)
+            skills = await repo.list_skills_for_company(
+                company_id=company_id,
+                only_promoted=only_promoted,
+                limit=limit,
             )
-            result = await db.execute(stmt)
-            skills = result.scalars().all()
 
             skill_list = []
             for s in skills:
@@ -242,16 +222,10 @@ class LearningConfirmationService:
         exclude_already_selected: list[str] | None = None,
     ) -> list[dict[str, Any]]:
         try:
-            stmt = select(CompanySkill).where(
-                CompanySkill.company_id == company_id
-            ).order_by(
-                CompanySkill.is_promoted.desc(),
-                CompanySkill.times_confirmed.desc(),
+            repo = CompanyLearningRepository(db)
+            skills = await repo.list_skills_with_role_filter(
+                company_id=company_id, role=role
             )
-            if role:
-                stmt = stmt.where(CompanySkill.roles_associated.contains([role]))
-            result = await db.execute(stmt)
-            skills = result.scalars().all()
 
             exclude_set = {s.lower() for s in (exclude_already_selected or [])}
             seen: set = set()
@@ -297,14 +271,8 @@ class LearningConfirmationService:
     ) -> ConfirmationResult:
         try:
             desc_hash = self._hash_description(description)
-            stmt = select(CompanyResponsibility).where(
-                and_(
-                    CompanyResponsibility.company_id == company_id,
-                    CompanyResponsibility.description_hash == desc_hash,
-                )
-            )
-            result = await db.execute(stmt)
-            existing = result.scalar_one_or_none()
+            repo = CompanyLearningRepository(db)
+            existing = await repo.find_responsibility_by_hash(company_id, desc_hash)
 
             if existing:
                 existing.times_confirmed += 1
@@ -367,20 +335,10 @@ class LearningConfirmationService:
         limit: int = 10,
     ) -> list[dict[str, Any]]:
         try:
-            conditions = [CompanyResponsibility.company_id == company_id]
-            if only_promoted:
-                conditions.append(CompanyResponsibility.is_promoted)
-            stmt = (
-                select(CompanyResponsibility)
-                .where(and_(*conditions))
-                .order_by(
-                    CompanyResponsibility.is_promoted.desc(),
-                    CompanyResponsibility.times_confirmed.desc(),
-                )
-                .limit(limit)
+            repo = CompanyLearningRepository(db)
+            responsibilities = await repo.list_responsibilities_for_company(
+                company_id=company_id, only_promoted=only_promoted, limit=limit
             )
-            result = await db.execute(stmt)
-            responsibilities = result.scalars().all()
 
             resp_list = []
             for r in responsibilities:
@@ -464,15 +422,8 @@ class LearningConfirmationService:
         sample_size: int = 1,
     ) -> bool:
         try:
-            stmt = select(CompanyPattern).where(
-                and_(
-                    CompanyPattern.company_id == company_id,
-                    CompanyPattern.pattern_type == pattern_type,
-                    CompanyPattern.pattern_key == pattern_key,
-                )
-            )
-            result = await db.execute(stmt)
-            existing = result.scalar_one_or_none()
+            repo = CompanyLearningRepository(db)
+            existing = await repo.find_pattern(company_id, pattern_type, pattern_key)
 
             if existing:
                 existing.pattern_value = pattern_value
@@ -501,11 +452,8 @@ class LearningConfirmationService:
         self, db: AsyncSession, company_id: str
     ) -> dict[str, Any]:
         try:
-            stmt = select(CompanyPattern).where(
-                CompanyPattern.company_id == company_id
-            )
-            result = await db.execute(stmt)
-            patterns = result.scalars().all()
+            repo = CompanyLearningRepository(db)
+            patterns = await repo.list_patterns_for_company(company_id)
             return {
                 f"{p.pattern_type}_{p.pattern_key}": {
                     "value": p.pattern_value,
@@ -521,16 +469,8 @@ class LearningConfirmationService:
         self, db: AsyncSession, company_id: str
     ) -> dict[str, float]:
         try:
-            stmt = (
-                select(
-                    JobOutcome.outcome,
-                    func.count(JobOutcome.id).label("count"),
-                )
-                .where(JobOutcome.company_id == company_id)
-                .group_by(JobOutcome.outcome)
-            )
-            result = await db.execute(stmt)
-            outcomes = result.all()
+            repo = CompanyLearningRepository(db)
+            outcomes = await repo.get_outcome_counts_grouped(company_id)
             total = sum(o.count for o in outcomes)
             if total == 0:
                 return {"fill_rate": 0.0, "cancel_rate": 0.0}

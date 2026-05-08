@@ -1,4 +1,12 @@
 """
+
+# ADR-001-EXEMPT: Cross-domain read-only aggregator for AI prediction services.
+# Aggregates VacancyCandidate + Candidate + JobVacancy + InterviewNote by ID
+# from a trusted parent context (e.g., SubStatusPredictor). Tenant scope is
+# established by the caller passing pre-validated vacancy_candidate_id.
+# TODO Sprint 6: refactor to use existing VacancyCandidateRepository,
+# CandidateRepository, JobVacancyCRUDRepository explicitly.
+
 CandidateContextAggregator - Aggregates candidate data for AI predictions.
 Collects WSI scores, interview notes, stage history, and feedback into a standardized format.
 """

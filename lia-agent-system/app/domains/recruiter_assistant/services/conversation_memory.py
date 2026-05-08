@@ -1,4 +1,10 @@
 """
+
+# ADR-001-EXEMPT: Conversation memory persists Conversation/Message lifecycle
+# (get_or_create, get_by_id, recent_messages, list_for_user). Tenant scope
+# inherited from authenticated user context.
+# TODO Sprint 6: extract to ConversationRepository + MessageRepository.
+
 Conversation Memory Service - Persistent memory for LIA conversations.
 
 Provides:
