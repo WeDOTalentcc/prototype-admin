@@ -4,7 +4,8 @@
   "private": true,
   "packageManager": "pnpm@9.15.4",
   "scripts": {
-    "dev": "NODE_OPTIONS='--max-old-space-size=4096' next dev -H 0.0.0.0 -p 5000",
+    "predev": "rm -rf .next/dev",
+    "dev": "NODE_OPTIONS='--max-old-space-size=2560' next dev -H 0.0.0.0 -p 5000",
     "dev:turbo": "NODE_OPTIONS='--max-old-space-size=4096' next dev --turbopack -H 0.0.0.0 -p 3000",
     "dev:webpack": "NODE_OPTIONS='--max-old-space-size=4096' next dev -H 0.0.0.0 -p 3000",
     "build": "NODE_OPTIONS='--max-old-space-size=4096' next build --turbopack",
