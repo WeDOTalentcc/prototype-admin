@@ -195,6 +195,7 @@ async def run_cleanup(dry_run: bool = True) -> dict:
 
             if not dry_run and candidates_to_delete:
                 ids = [row.id for row in candidates_to_delete]
+                # ADR-001-EXEMPT: Rails-owned Candidate table — LGPD Art. 18 erasure right (data subject request)
                 await db.execute(
                     delete(Candidate).where(Candidate.id.in_(ids))
                 )

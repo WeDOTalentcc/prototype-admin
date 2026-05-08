@@ -360,6 +360,7 @@ async def _run_retention_cleanup_async() -> dict:
                 cutoff_date = datetime.now(UTC) - timedelta(
                     days=policy.retention_months * 30
                 )
+                # ADR-001-EXEMPT: Rails-owned Candidate table — LGPD Art. 16 data retention policy (anonymization)
                 result = await session.execute(
                     update(Candidate)
                     .where(

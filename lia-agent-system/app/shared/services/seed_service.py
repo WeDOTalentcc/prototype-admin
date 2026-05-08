@@ -1246,6 +1246,7 @@ async def seed_demo_data(db: AsyncSession) -> dict[str, Any]:
             delete(VacancyCandidate).where(VacancyCandidate.source == "SEED_DATA")
         )
         await db.execute(
+        # ADR-001-EXEMPT: Rails-owned Candidate table — seed/demo data teardown (test lifecycle)
             delete(Candidate).where(Candidate.source == "SEED_DATA")
         )
         await db.execute(
@@ -1349,6 +1350,7 @@ async def clear_demo_data(db: AsyncSession) -> dict[str, Any]:
             select(func.count()).where(Candidate.source == "SEED_DATA")
         )
         await db.execute(
+        # ADR-001-EXEMPT: Rails-owned Candidate table — seed/demo data teardown (test lifecycle)
             delete(Candidate).where(Candidate.source == "SEED_DATA")
         )
         

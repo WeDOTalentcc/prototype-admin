@@ -497,6 +497,7 @@ class ConversationMemory:
             .where(ConversationSummary.conversation_id == conv_uuid)
         )
         
+        # ADR-001-EXEMPT: Rails-owned Message table — conversation lifecycle cleanup (cascade delete)
         await db.execute(
             delete(Message)
             .where(Message.conversation_id == conv_uuid)
@@ -536,6 +537,7 @@ class ConversationMemory:
             .where(ConversationSummary.conversation_id == conv_uuid)
         )
         
+        # ADR-001-EXEMPT: Rails-owned Message table — conversation reset (clear history, preserve Conversation metadata)
         await db.execute(
             delete(Message)
             .where(Message.conversation_id == conv_uuid)
