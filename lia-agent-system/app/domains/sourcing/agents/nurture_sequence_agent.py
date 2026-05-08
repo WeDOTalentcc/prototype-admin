@@ -45,6 +45,6 @@ class NurtureSequenceAgent(SourcingReActAgent):
         return "sourcing_nurture_sequence"
 
     def _get_tools(self) -> list:
-        from lia_agents_core.react_loop import tool_definition_to_langchain_tool
+        from lia_agents_core.tool_adapter import tool_definition_to_langchain_tool
         tool_defs = get_nurture_sequence_tools() + self._get_all_enhanced_tools()
         return [tool_definition_to_langchain_tool(td) for td in tool_defs]

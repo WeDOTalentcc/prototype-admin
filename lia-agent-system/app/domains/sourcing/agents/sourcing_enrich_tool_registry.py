@@ -5,7 +5,7 @@ Expõe tools das etapas profile-analysis e shortlist-creation:
 análise de perfil, scoring WSI, comparação e shortlist.
 """
 
-from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolDefinition
 
 from app.domains.sourcing.agents.sourcing_tool_registry import _TOOL_MAP
 

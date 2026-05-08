@@ -155,7 +155,7 @@ class SourcingReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         invocar sub-agentes separadamente. SOURCING_SUBAGENT_STAGE_MAP documenta
         a associação domain→stage para referência de stage context (não é roteamento ativo).
         """
-        from lia_agents_core.react_loop import tool_definition_to_langchain_tool
+        from lia_agents_core.tool_adapter import tool_definition_to_langchain_tool
         from app.domains.sourcing.agents.github_tool_registry import get_github_tools
         from app.domains.sourcing.agents.stackoverflow_tool_registry import get_stackoverflow_tools
         from app.domains.sourcing.agents.diversity_tool_registry import get_diversity_tools

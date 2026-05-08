@@ -5,7 +5,7 @@ Expõe tools da etapa outreach: envio, geração de mensagens e rastreamento.
 send_outreach é GUARDRAIL — requer confirmação HITL (AUD-4).
 """
 
-from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolDefinition
 
 from app.domains.sourcing.agents.sourcing_tool_registry import _TOOL_MAP
 from app.shared.compliance.safety_category import SafetyCategory
