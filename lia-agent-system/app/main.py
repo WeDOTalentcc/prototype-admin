@@ -188,6 +188,37 @@ async def lifespan(app: FastAPI):
     # Validate Redis encryption key (R-001 — fail-fast in prod/staging)
     _validate_redis_encryption_key()
 
+    # ─── R-007: alerta agregado de flags de bypass de compliance ──────────────
+    # Estas flags desligam camadas de compliance (FairnessGuard, PII strip,
+    # AuditService, etc.). Em produção, NUNCA devem estar ON exceto rollback
+    # emergencial — log CRITICAL + Sentry breadcrumb pra detecção.
+    _BYPASS_FLAGS = {
+        "LIA_ALLOW_NON_COMPLIANT_DOMAINS": "Bypass de ComplianceDomainPrompt (FairnessGuard, PII, PromptInjection, FactCheck)",
+        "LIA_ALLOW_NON_COMPLIANT_AGENTS": "Bypass de LangGraphReActBase compliance em agents",
+        "LIA_DISABLE_C3B": "KILL SWITCH da camada C3b inteira (PII strip + Fairness L3 + FactCheck + Audit) — passthrough total",
+    }
+    _active_bypasses = [
+        f"{flag}: {desc}"
+        for flag, desc in _BYPASS_FLAGS.items()
+        if os.getenv(flag, "0") == "1"
+    ]
+    if _active_bypasses:
+        logger.critical(
+            "🚨 COMPLIANCE BYPASS ATIVA — %d flag(s):\n%s\n"
+            "Em produção isso desabilita garantias LGPD/Fairness/Audit. "
+            "Remover IMEDIATAMENTE se não for emergência rollback.",
+            len(_active_bypasses),
+            "\n".join(f"  • {b}" for b in _active_bypasses),
+        )
+        if os.getenv("APP_ENV", "development").lower() in ("production", "prod"):
+            try:
+                sentry_sdk.capture_message(
+                    f"COMPLIANCE BYPASS ATIVA em produção: {[f.split(':')[0] for f in _active_bypasses]}",
+                    level="error",
+                )
+            except Exception:
+                pass
+
     # Initialize database
     try:
         await init_db()

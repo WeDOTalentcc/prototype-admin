@@ -550,3 +550,43 @@ async def performance_metrics():
             "timestamp": datetime.utcnow().isoformat(),
         },
     )
+
+
+# ─── R-007: compliance bypass status endpoint ────────────────────────────
+# Espelha as flags de bypass logadas no lifespan (app/main.py). Canary
+# monitoring usa pra detectar produção rodando com bypass ativo.
+_BYPASS_FLAGS_RUNTIME: dict[str, str] = {
+    "LIA_ALLOW_NON_COMPLIANT_DOMAINS": "Bypass ComplianceDomainPrompt (FairnessGuard, PII, PromptInjection, FactCheck)",
+    "LIA_ALLOW_NON_COMPLIANT_AGENTS": "Bypass LangGraphReActBase compliance em agents",
+    "LIA_DISABLE_C3B": "KILL SWITCH camada C3b inteira (PII strip + Fairness L3 + FactCheck + Audit)",
+    "LIA_ALLOW_REGISTRY_DRIFT": "Permite class_path inválido em registry (R-004 rollback)",
+}
+
+
+@router.get("/health/compliance/bypass-status", response_model=None)
+async def compliance_bypass_status():
+    """
+    R-007 — Status de flags de bypass de compliance ativas.
+
+    Espelha o alerta CRITICAL emitido no startup (app/main.py lifespan).
+    Canary monitoring deve alertar quando ``warning_count > 0`` em produção
+    pra detectar bypass deixado ON após rollback emergencial.
+
+    Returns:
+        200 + payload sempre (active_bypasses pode ser vazia). Canary olha
+        para ``warning_count`` no JSON, não para o status code, porque
+        bypass ativo NÃO é unhealthy do ponto de vista do liveness — é
+        configuration drift.
+    """
+    active = [
+        {"flag": flag, "description": desc}
+        for flag, desc in _BYPASS_FLAGS_RUNTIME.items()
+        if os.getenv(flag, "0") == "1"
+    ]
+    payload = {
+        "active_bypasses": active,
+        "warning_count": len(active),
+        "environment": os.getenv("APP_ENV", "development"),
+        "timestamp": datetime.utcnow().isoformat(),
+    }
+    return JSONResponse(status_code=200, content=payload)

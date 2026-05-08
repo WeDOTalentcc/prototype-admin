@@ -90,3 +90,23 @@ python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().d
 
 Setar via Doppler (preferido) ou env var direto. Validação cobre `production`,
 `prod` e `staging`; `development` mantém posture fail-OPEN com warning.
+
+## Compliance Bypass Flags (R-007 — emergency only)
+
+Plataforma tem 4 env flags que bypassam camadas de compliance:
+
+| Flag | Efeito |
+|---|---|
+| `LIA_ALLOW_NON_COMPLIANT_DOMAINS=1` | Bypassa ComplianceDomainPrompt (FairnessGuard + PII + PromptInjection + FactCheck) em domains |
+| `LIA_ALLOW_NON_COMPLIANT_AGENTS=1` | Bypassa LangGraphReActBase compliance em agents (PII/Fairness/Audit em agent layer) |
+| `LIA_DISABLE_C3B=1` | **KILL SWITCH** da camada C3b inteira (PII strip + FairnessGuard L3 + FactCheck + Audit) — passthrough total |
+| `LIA_ALLOW_REGISTRY_DRIFT=1` | Permite class_path inválido em agents_registry (R-004 emergency rollback only) |
+
+**Em produção:** apenas para rollback emergencial. Quando ON:
+- `app/main.py` lifespan loga **CRITICAL** no startup com lista agregada das flags ativas
+- Sentry `capture_message` (level=error) em prod/prod-only
+- Endpoint `/api/v1/health/compliance/bypass-status` exposes em runtime (canary monitoring deve alertar quando `warning_count > 0`)
+
+**Default**: tudo OFF. Ver `.env.example` seção "COMPLIANCE / EMERGENCY FLAGS".
+
+Origem: R-007 do plano de remediação, finding F-053.
