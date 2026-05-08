@@ -56,3 +56,6 @@ e2e/reports/html/
 ._*
 **/._*
 .DS_Store
+
+# E2E test evidence (screenshots captured during test runs — never commit)
+e2e/evidence/
