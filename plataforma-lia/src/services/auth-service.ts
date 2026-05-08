@@ -28,6 +28,8 @@ export interface SSOUser {
   organizationId: string | null
   connectionType: string
   authMethod: 'sso'
+  // R-020 P0-C: SSO users may carry company_id from JWT claims
+  company_id?: string
 }
 
 export type AuthenticatedUser = User | SSOUser

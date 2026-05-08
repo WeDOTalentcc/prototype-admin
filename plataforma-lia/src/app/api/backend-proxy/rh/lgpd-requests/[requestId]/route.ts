@@ -1,31 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { getAuthHeaders } from '@/lib/api/auth-headers'
 
-const FASTAPI_BASE = process.env.FASTAPI_URL || 'http://localhost:8000'
-
-async function getAuthHeaders(req: NextRequest): Promise<Record<string, string>> {
-  const authHeader = req.headers.get('authorization')
-  if (authHeader) return { Authorization: authHeader }
-  try {
-    const session = await getServerSession()
-    if ((session as any)?.accessToken) {
-      return { Authorization: `Bearer ${(session as any).accessToken}` }
-    }
-  } catch {}
-  return {}
-}
+// R-020 P0-A: replaced next-auth (not installed) with canonical getAuthHeaders
+const FASTAPI_BASE = process.env.FASTAPI_URL || process.env.BACKEND_URL || 'http://localhost:8000'
 
 export async function PATCH(
   req: NextRequest,
   { params }: { params: { requestId: string } }
 ) {
-  const authHeaders = await getAuthHeaders(req)
+  const authHeaders = getAuthHeaders(req)
   try {
     const res = await fetch(
       `${FASTAPI_BASE}/api/v1/rh/lgpd-requests/${params.requestId}/respond`,
       {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', ...authHeaders },
+        headers: { ...authHeaders },
         cache: 'no-store',
       }
     )
