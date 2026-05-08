@@ -12,6 +12,9 @@ from datetime import datetime
 from typing import Any
 
 from fastapi import APIRouter, Body, Depends, HTTPException, Query
+
+from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
+from app.auth.models import User
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -29,7 +32,6 @@ class DecomposeTaskRequest(BaseModel):
     parent_task_id: str | None = None
     goal_id: str | None = None
     deadline: datetime | None = None
-    company_id: str | None = None
     persist: bool = True
     additional_context: dict[str, Any] | None = None
 
@@ -48,7 +50,6 @@ class CreatePlannedTaskRequest(BaseModel):
     goal_criticality: float = 0.5
     related_job_id: str | None = None
     related_candidate_id: str | None = None
-    company_id: str | None = None
     context: dict[str, Any] | None = None
 
 
@@ -58,7 +59,6 @@ class CreateExecutionPlanRequest(BaseModel):
     task_ids: list[str]
     description: str | None = None
     goal_id: str | None = None
-    company_id: str | None = None
 
 
 class PrioritizeTasksRequest(BaseModel):
@@ -78,7 +78,8 @@ class UpdateTaskStatusRequest(BaseModel):
 @router.post("/decompose", response_model=None)
 async def decompose_task(
     request: DecomposeTaskRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """
     Decompose a complex task into subtasks using AI.
@@ -89,10 +90,11 @@ async def decompose_task(
     - Estimate duration for each subtask
     - Assign appropriate agent types
     """
+    company_id = get_user_company_id(current_user)
     agent = AutomationReActAgent()
     response = await agent.decompose_task(
         task_description=request.task_description,
-        company_id=request.company_id,
+        company_id=company_id,
         goal_id=request.goal_id,
         parent_task_id=request.parent_task_id,
         deadline=request.deadline,
@@ -113,9 +115,11 @@ async def decompose_task(
 @router.post("/tasks", response_model=None)
 async def create_planned_task(
     request: CreatePlannedTaskRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """Create a new planned task."""
+    company_id = get_user_company_id(current_user)
     try:
         task = await planned_task_service.create_planned_task(
             db=db,
@@ -131,7 +135,7 @@ async def create_planned_task(
             goal_criticality=request.goal_criticality,
             related_job_id=request.related_job_id,
             related_candidate_id=request.related_candidate_id,
-            company_id=request.company_id,
+            company_id=company_id,
             context=request.context
         )
         
@@ -290,7 +294,8 @@ async def build_task_dag(
 @router.post("/execution-plans", response_model=None)
 async def create_execution_plan(
     request: CreateExecutionPlanRequest,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """
     Create an execution plan from a set of tasks.
@@ -300,6 +305,7 @@ async def create_execution_plan(
     - Execution levels for parallel processing
     - Duration estimates
     """
+    company_id = get_user_company_id(current_user)
     try:
         plan = await planned_task_service.create_execution_plan(
             db=db,
@@ -307,7 +313,7 @@ async def create_execution_plan(
             task_ids=request.task_ids,
             description=request.description,
             goal_id=request.goal_id,
-            company_id=request.company_id
+            company_id=company_id
         )
         
         return {
@@ -339,9 +345,9 @@ async def get_next_tasks(
     goal_id: str | None = Query(None),
     parent_task_id: str | None = Query(None),
     agent_type: str | None = Query(None),
-    company_id: str | None = Query(None),
     limit: int = Query(5, ge=1, le=20),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
     """
     Get the next tasks that are ready for execution.
@@ -351,6 +357,7 @@ async def get_next_tasks(
     2. Are in READY or PENDING status
     3. Sorted by priority score
     """
+    company_id = get_user_company_id(current_user)
     tasks = await planned_task_service.get_next_tasks(
         db=db,
         goal_id=goal_id,

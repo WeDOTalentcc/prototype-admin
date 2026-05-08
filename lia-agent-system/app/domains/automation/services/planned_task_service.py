@@ -65,6 +65,12 @@ class PlannedTaskService:
         chain_of_thought: list[str] | None = None
     ) -> PlannedTask:
         """Create a new planned task."""
+        # R-019 P0: company_id must come from JWT — validated by the API layer.
+        # Belt-and-suspenders runtime guard here too.
+        if not company_id:
+            raise ValueError(
+                "company_id is required (R-019 P0: must come from JWT, never from request body)"
+            )
         task = PlannedTask(
             title=title,
             description=description,
@@ -469,6 +475,11 @@ class PlannedTaskService:
         created_by: str | None = None
     ) -> ExecutionPlan:
         """Create an execution plan from a set of tasks."""
+        # R-019 P0: company_id must come from JWT — validated by API layer.
+        if not company_id:
+            raise ValueError(
+                "company_id is required (R-019 P0: must come from JWT, never from request body)"
+            )
         dag_result = await self.build_task_dag(db, task_ids)
 
         if dag_result["has_cycle"]:

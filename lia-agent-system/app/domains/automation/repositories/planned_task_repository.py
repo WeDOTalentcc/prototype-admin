@@ -24,6 +24,21 @@ class PlannedTaskRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
+    @staticmethod
+    def _require_company_id(company_id) -> str:
+        """Fail-closed multi-tenancy guard (R-019 P0).
+
+        company_id must come from JWT/session context, never from the
+        request body.  Raises ValueError if empty or None so the error
+        surfaces loudly at the data-access layer.
+        """
+        if not company_id:
+            raise ValueError(
+                "company_id is required for fail-closed multi-tenancy "
+                "(R-019 P0: never trust company_id from request body)"
+            )
+        return str(company_id)
+
     async def get_by_id(self, task_id: str) -> PlannedTask | None:
         """Get a planned task by ID."""
         result = await self.db.execute(
@@ -91,7 +106,15 @@ class PlannedTaskRepository:
         company_id: str | None = None,
         agent_type: str | None = None,
     ) -> list[PlannedTask]:
-        """List tasks in READY/PENDING with optional filters."""
+        """List tasks in READY/PENDING with optional filters.
+
+        When company_id is provided it must be non-empty (R-019 P0
+        fail-closed).  Pass None only when you intentionally want
+        cross-tenant listing (system/admin contexts).
+        """
+        if company_id is not None:
+            company_id = self._require_company_id(company_id)
+
         query = select(PlannedTask).where(
             PlannedTask.status.in_(
                 [PlannedTaskStatus.READY, PlannedTaskStatus.PENDING]
