@@ -1,5 +1,5 @@
 """Tool registry for CandidateSelfServiceAgent — whitelist of 4 read-only tools ONLY."""
-from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolDefinition
 
 from app.domains.candidate_self_service.tools.get_application_status import get_application_status
 from app.domains.candidate_self_service.tools.get_interview_info import get_interview_info

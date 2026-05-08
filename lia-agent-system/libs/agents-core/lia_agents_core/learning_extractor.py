@@ -9,7 +9,7 @@ import logging
 from collections import Counter
 from typing import Any, Dict, List
 
-from lia_agents_core.react_loop import ReActState
+from lia_agents_core.tool_adapter import ReActState
 
 logger = logging.getLogger(__name__)
 

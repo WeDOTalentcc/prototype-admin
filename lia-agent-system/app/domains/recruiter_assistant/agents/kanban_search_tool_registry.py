@@ -5,7 +5,7 @@ Subset of kanban_tool_registry for KanbanSearchAgent (6 tools).
 Focus: read-only queries on candidates and pipeline state.
 """
 
-from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolDefinition
 
 from app.domains.recruiter_assistant.agents.kanban_tool_registry import _TOOL_MAP
 

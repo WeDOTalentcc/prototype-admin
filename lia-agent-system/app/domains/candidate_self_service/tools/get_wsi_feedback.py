@@ -8,7 +8,7 @@ LGPD Art. 20 disclosure is appended by the agent, not this tool.
 import logging
 from typing import Any
 
-from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolDefinition
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.tool_handler import tool_handler
 

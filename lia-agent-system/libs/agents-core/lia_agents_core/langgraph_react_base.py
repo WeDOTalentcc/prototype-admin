@@ -302,7 +302,7 @@ class LangGraphReActBase(LangGraphBase):
         # --- Post-loop learning (EnhancedAgentMixin) ---
         if hasattr(self, "_post_loop_learning"):
             try:
-                from lia_agents_core.react_loop import ReActState
+                from lia_agents_core.tool_adapter import ReActState
                 synth_state = ReActState(
                     final_response=output.message,
                     error=output.error,

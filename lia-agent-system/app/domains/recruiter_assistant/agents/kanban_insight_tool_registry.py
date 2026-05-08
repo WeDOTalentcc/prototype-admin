@@ -5,7 +5,7 @@ Subset of kanban_tool_registry for KanbanInsightAgent (8 tools).
 Focus: analysis, bottleneck detection, risk prediction, aging reports.
 """
 
-from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolDefinition
 
 from app.domains.recruiter_assistant.agents.kanban_tool_registry import _TOOL_MAP
 

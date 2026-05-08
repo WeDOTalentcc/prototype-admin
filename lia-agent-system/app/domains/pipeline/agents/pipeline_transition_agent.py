@@ -67,7 +67,7 @@ class PipelineTransitionAgent(LangGraphReActBase, EnhancedAgentMixin):
 
     def _get_tools(self) -> list:
         """Todos os tools do domínio Pipeline Transition (LangGraph usa set completo)."""
-        from lia_agents_core.react_loop import tool_definition_to_langchain_tool
+        from lia_agents_core.tool_adapter import tool_definition_to_langchain_tool
 
         from app.domains.pipeline.agents.pipeline_tool_registry import ALL_TOOLS
         enhanced = self._get_all_enhanced_tools()

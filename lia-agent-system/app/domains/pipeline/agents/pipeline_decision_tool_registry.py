@@ -6,7 +6,7 @@ Focus: validate transitions, suggest sub-statuses, extract preferences,
        request data collection, manage recruiter preferences.
 """
 
-from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolDefinition
 
 from app.domains.pipeline.agents.pipeline_tool_registry import _TOOL_MAP
 

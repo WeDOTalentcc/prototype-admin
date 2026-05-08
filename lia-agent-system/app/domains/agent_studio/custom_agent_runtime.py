@@ -111,7 +111,7 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
     })
 
     def _get_tools(self) -> list:
-        from lia_agents_core.react_loop import tool_definition_to_langchain_tool
+        from lia_agents_core.tool_adapter import tool_definition_to_langchain_tool
 
         # GAP 5: Load tools from autonomous pool + domain-specific registries
         all_tools = []

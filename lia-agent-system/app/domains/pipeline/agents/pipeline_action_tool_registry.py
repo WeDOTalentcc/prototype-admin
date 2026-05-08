@@ -8,7 +8,7 @@ Focus: update candidate fields, personalize communication, check rejection fairn
 check_rejection_fairness is MANDATORY in this registry (compliance).
 """
 
-from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolDefinition
 
 from app.domains.pipeline.agents.pipeline_tool_registry import _TOOL_MAP
 from app.shared.compliance.safety_category import SafetyCategory

@@ -15,7 +15,7 @@ from lia_agents_core.working_memory import WorkingMemoryService
 from lia_agents_core.long_term_memory import LongTermMemoryService
 from lia_agents_core.autonomy_engine import AutonomyEngine
 from lia_agents_core.learning_extractor import LearningExtractor
-from lia_agents_core.react_loop import ReActConfig, ReActState, ToolDefinition
+from lia_agents_core.tool_adapter import ReActConfig, ReActState, ToolDefinition
 from app.shared.tools.insight_tools import get_insight_tools
 from app.shared.tools.proactive_tools import get_proactive_tools
 from app.shared.tools.predictive_tools import get_predictive_tools

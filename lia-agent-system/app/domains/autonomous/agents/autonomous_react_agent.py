@@ -173,7 +173,7 @@ class AutonomousReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         did not already provide it.  This ensures the LLM cannot omit company_id
         and accidentally expose cross-tenant records (IDOR prevention).
         """
-        from lia_agents_core.react_loop import tool_definition_to_langchain_tool
+        from lia_agents_core.tool_adapter import tool_definition_to_langchain_tool
         from dataclasses import replace as dataclass_replace
         from app.domains.autonomous.agents.autonomous_tool_registry import TOOL_PERMISSION_SCOPE
 

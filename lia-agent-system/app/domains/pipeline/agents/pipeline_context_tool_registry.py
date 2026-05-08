@@ -5,7 +5,7 @@ Subset of pipeline_tool_registry for PipelineContextAgent (7 tools).
 Focus: read-only queries on candidate profiles, scores, salary and job context.
 """
 
-from lia_agents_core.react_loop import ToolDefinition
+from lia_agents_core.tool_adapter import ToolDefinition
 
 from app.domains.pipeline.agents.pipeline_tool_registry import _TOOL_MAP
 
