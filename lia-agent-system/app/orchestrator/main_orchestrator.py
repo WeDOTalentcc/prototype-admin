@@ -392,8 +392,11 @@ class MainOrchestrator:
                                     ctx, conv_id, conv,
                                     {"response": _agentic_result["response"]}, db,
                                 )
-                            except Exception:
-                                pass
+                            except Exception as exc:
+                                logger.warning(
+                                    "[main_orchestrator] _persist_response failed (message lost) conv_id=%s: %s",
+                                    conv_id, exc, exc_info=True,
+                                )
 
                         _resp = ChatResponse(
                             success=True,
@@ -1001,8 +1004,11 @@ class MainOrchestrator:
                         await conversation_memory.update_summary(
                             db=db, conversation_id=conv_id, llm_service=self._orchestrator.llm_service,
                         )
-                    except Exception:
-                        pass
+                    except Exception as exc:
+                        logger.warning(
+                            "[main_orchestrator] update_summary failed (memory lost) conv_id=%s: %s",
+                            conv_id, exc, exc_info=True,
+                        )
             await db.commit()
         except Exception as _persist_exc:
             try:

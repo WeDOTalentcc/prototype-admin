@@ -79,7 +79,8 @@ def _resolve_ptbr_datetime(date_str: str) -> datetime | None:
         if hour is not None:
             parsed = parsed.replace(hour=hour, minute=minute, second=0, microsecond=0)
         return parsed
-    except Exception:
+    except Exception as exc:
+        logger.debug("[pipeline_actions] dateutil.parse(%r) failed: %s", date_str, exc, exc_info=True)
         return None
 
 

@@ -149,8 +149,11 @@ def schedule_audit_log(coro) -> None:
             logger.warning("scoring_safeguards: failed to schedule audit task: %s", exc)
             try:
                 coro.close()
-            except Exception:
-                pass
+            except Exception as close_exc:
+                logger.warning(
+                    "[scoring_safeguards] coro.close() after schedule failure failed (compliance): %s",
+                    close_exc, exc_info=True,
+                )
         return
 
     try:
@@ -159,5 +162,8 @@ def schedule_audit_log(coro) -> None:
         logger.warning("scoring_safeguards: failed to run audit coroutine: %s", exc)
         try:
             coro.close()
-        except Exception:
-            pass
+        except Exception as close_exc:
+            logger.warning(
+                "[scoring_safeguards] coro.close() after asyncio.run failure failed (compliance): %s",
+                close_exc, exc_info=True,
+            )

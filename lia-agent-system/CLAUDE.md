@@ -23,7 +23,7 @@ Estas regras vêm do CLAUDE.md global do usuário. **Aplicam a 100% do código.*
 | Endpoint sem `response_model=` | Type contract quebrado | `G2: response-model-required` |
 | Import de path proibido (ADR-012) | Camadas violadas | `G5: no-forbidden-imports` |
 | `require_company=False` sem justificativa documentada | Bypass multi-tenant não rastreável | `F8: require-company-exemptions` |
-| `try: ... except Exception: pass` | Silent failure destrói sensor — falhar alto > capturar e descartar | code review humano (TODO: linter) |
+| `try: ... except Exception: pass` | Silent failure destrói sensor — falhar alto > capturar e descartar | `G7: no-silent-swallow` (`scripts/check_no_silent_swallow.py` — warn-only). Ver seção "Exception handling discipline (R-003)" abaixo. |
 
 ## Regras canonical-fix
 
@@ -31,6 +31,35 @@ Estas regras vêm do CLAUDE.md global do usuário. **Aplicam a 100% do código.*
 - **Schema é fonte de verdade.** Modelo SQLAlchemy + Pydantic types > comentários > docstrings.
 - **Não duplicar.** Antes de criar função/serviço novo, `grep` por nome similar. Reuso > NIH.
 - **Não inventar tipos.** `String(255), nullable=True, indexed` em `User.company_id`? Replicar exato em outras colunas tenant.
+
+## Exception handling discipline (R-003)
+
+`except Exception:` silencioso (`pass` ou `return` sem `logger.*`) é proibido em:
+- `app/orchestrator/**`
+- `app/shared/{llm,compliance,providers}/**`
+- `app/middleware/**`
+- `libs/agents-core/**`
+
+**Pattern hot path (debug — não polui mas registra):**
+```python
+except Exception as exc:
+    logger.debug("[component] operation failed: %s", exc, exc_info=True)
+    return None  # mantém comportamento existente
+```
+
+**Pattern compliance/fairness (warning — nunca silenciar):**
+```python
+except Exception as exc:
+    logger.warning("[component] failed (compliance): %s", exc, exc_info=True)
+    # ainda fail-open por design, mas registrado
+```
+
+**Aceitáveis (excluir do gate):**
+- `except ImportError:` para optional deps
+- `except asyncio.CancelledError:` cancelamento legítimo
+- `except ValueError:` em loop com `continue` (skip-on-invalid)
+
+Sensor: `scripts/check_no_silent_swallow.py` (warn-only). Promote para CI gate em R-003.2 (Wave 3) quando 25 sites adiados forem fixados.
 
 ## Regras de organização de branch e BRANCH_MAP
 

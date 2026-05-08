@@ -326,8 +326,11 @@ class Orchestrator:
                 if conv.message_count and conv.message_count % settings.ROUTER_SUMMARY_EVERY_N_MESSAGES == 0:
                     try:
                         await self.conversation_memory.update_summary(db=db, conversation_id=conversation_id, llm_service=self.llm_service)
-                    except Exception:
-                        pass
+                    except Exception as exc:
+                        logger.warning(
+                            "[orchestrator] update_summary failed (memory lost) conv_id=%s: %s",
+                            conversation_id, exc, exc_info=True,
+                        )
             await db.commit()
             result.update({"conversation_id": conversation_id, "context_type": context_type, "context_id": context_id})
             return result

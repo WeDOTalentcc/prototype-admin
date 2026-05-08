@@ -777,19 +777,26 @@ class FairnessGuard:
                 # Close client before returning cached result
                 try:
                     await _redis.aclose()
-                except Exception:
-                    pass
+                except Exception as exc:
+                    logger.warning(
+                        "[fairness_guard] redis.aclose() failed (compliance): %s", exc, exc_info=True,
+                    )
                 return FairnessCheckResult(**cached_data)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning(
+                "[fairness_guard] LLM cache read failed (compliance): %s", exc, exc_info=True,
+            )
 
         # Layer 3 — LLM semântico com Haiku — respeitando feature flag FAIRNESS_LAYER3_ENABLED
         _layer3_enabled = False
         try:
             from lia_config.config import settings as _settings
             _layer3_enabled = getattr(_settings, "FAIRNESS_LAYER3_ENABLED", False)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning(
+                "[fairness_guard] FAIRNESS_LAYER3_ENABLED settings read failed (compliance): %s",
+                exc, exc_info=True,
+            )
 
         if not _layer3_enabled:
             return FairnessCheckResult(
@@ -821,8 +828,10 @@ class FairnessGuard:
                         "confidence": semantic_result.confidence,
                         "soft_warnings": implicit_warnings,
                     }))
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.warning(
+                    "[fairness_guard] LLM cache setex failed (compliance): %s", exc, exc_info=True,
+                )
             return FairnessCheckResult(
                 is_blocked=semantic_result.is_blocked,
                 blocked_terms=semantic_result.blocked_terms,

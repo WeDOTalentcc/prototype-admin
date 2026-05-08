@@ -46,7 +46,8 @@ def _get_intent_matcher():
             keywords_map, domain_id="action_executor"
         )
         return _INTENT_MATCHER
-    except Exception:
+    except Exception as exc:
+        logger.debug("[action_executor.utils] build KeywordIntentMatcher failed: %s", exc, exc_info=True)
         return None
 
 
@@ -132,7 +133,8 @@ def _detect_intent_from_message(message: str, conversation_history: list | None 
                 # Fall through to Phase 2 (LLM-based) instead of repeating same action
                 logger.info("[LIA-M04] Loop detected: last response was action confirmation, skipping regex intent")
                 return None
-        except Exception:
+        except Exception as exc:
+            logger.debug("[action_executor.utils] loop-detection lookup failed: %s", exc, exc_info=True)
             pass  # fail-open
 
     detected_intent = None
@@ -287,5 +289,6 @@ def _resolve_ptbr_datetime(date_str: str) -> datetime | None:
         if hour is not None:
             parsed = parsed.replace(hour=hour, minute=minute, second=0, microsecond=0)
         return parsed
-    except Exception:
+    except Exception as exc:
+        logger.debug("[action_executor.utils] dateutil.parse(%r) failed: %s", date_str, exc, exc_info=True)
         return None

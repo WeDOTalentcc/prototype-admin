@@ -126,8 +126,8 @@ class PolicyEngine:
         finally:
             try:
                 conn.close()
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.debug("[policy_engine] conn.close() in _get_daily_usage failed: %s", exc, exc_info=True)
 
     def _check_usage_limit(self, tenant_id: str, usage_type: str = "chat_requests") -> dict[str, Any]:
         """Check if tenant is within daily usage limits for a given usage type."""
@@ -185,13 +185,13 @@ class PolicyEngine:
             logger.warning(f"PolicyEngine: Failed to record usage for {tenant_id}: {e}")
             try:
                 conn.rollback()
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.debug("[policy_engine] conn.rollback() after record_usage failure failed: %s", exc, exc_info=True)
         finally:
             try:
                 conn.close()
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.debug("[policy_engine] conn.close() in record_usage failed: %s", exc, exc_info=True)
 
     async def _validate_search_request(
         self, 

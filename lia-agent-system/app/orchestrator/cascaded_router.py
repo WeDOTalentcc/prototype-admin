@@ -451,8 +451,10 @@ class CascadedRouter:
                                         "source": cascade_result.source,
                                     },
                                 )
-                            except Exception:
-                                pass
+                            except Exception as exc:
+                                logger.debug(
+                                    "[cascaded_router] vector_cache.set failed: %s", exc, exc_info=True,
+                                )
                         if _ab_variant_id:
                             if cascade_result.intent_details is None:
                                 cascade_result.intent_details = {}
@@ -677,8 +679,10 @@ class CascadedRouter:
                     "[CascadedRouter][E9] adaptive adjustment domain=%s factor=%.3f conf %.4f→%.4f",
                     route_result.domain_id, factor, original_conf, route_result.confidence,
                 )
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.debug(
+                "[cascaded_router][E9] adaptive_confidence lookup failed: %s", exc, exc_info=True,
+            )
         return route_result
 
     async def _route_via_autonomous_agent(
@@ -755,8 +759,10 @@ class CascadedRouter:
                             if v.variant_id == ab_variant_id:
                                 ab_system_prompt = v.prompt_text
                                 break
-                except Exception:
-                    pass
+                except Exception as exc:
+                    logger.debug(
+                        "[cascaded_router] A/B variant prompt lookup failed: %s", exc, exc_info=True,
+                    )
 
             if ab_system_prompt:
                 result = await llm_cascade_router.route(
