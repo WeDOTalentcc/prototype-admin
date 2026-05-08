@@ -200,6 +200,12 @@ jobs:
 
       - name: "G-GOV: tool governance contracts (PII/decision/delete)"
         run: python scripts/check_tool_governance.py
+      # R-017 — ADR-002 model completeness: every *.py in lia_models/ must appear in __init__.py.
+      # Prevents silent ImportError when new model files are added but not re-exported.
+      # Fix: add `from lia_models.<module> import ...` to libs/models/lia_models/__init__.py.
+      - name: "G-MODELS: lia_models __init__ completeness (ADR-002)"
+        run: python scripts/check_init_completeness.py
+
 
 
       # LIA-D04: TODO — make lint blocking once 752 ruff errors are resolved.

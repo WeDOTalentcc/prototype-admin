@@ -705,3 +705,65 @@ __all__ = [
     "TriagemSession",
     "TriagemMessage",
 ]
+
+# R-017 — missing model imports (ADR-002 completeness)
+from lia_models.affirmative_audit import AffirmativeAuditLog, CandidateAffirmativeDocument
+from lia_models.agent_activity import ActivityStatus, AgentActivity, AgentMetricsSnapshot
+from lia_models.agent_approval import AgentApprovalRequest
+from lia_models.agent_deployment import AgentDeployment, DeploymentTargetType, DeploymentTriggerMode
+from lia_models.agent_execution_log import AgentExecutionLog
+from lia_models.agent_quality_evaluation import AgentQualityEvaluation
+from lia_models.agent_template import AgentTemplate, AgentTemplateStatus
+from lia_models.agent_version_snapshot import AgentVersionSnapshot
+from lia_models.ai_consumption import AiConsumption, AiCreditsBalance
+from lia_models.bias_audit_snapshot import BiasAuditSnapshot
+from lia_models.bigfive_department_profile import BigFiveDepartmentProfile
+from lia_models.client_account import ClientAccount, ClientStatus
+from lia_models.client_user import ClientUser, ClientUserRole, ClientUserStatus
+from lia_models.communication_matrix import CommunicationMatrixEntry, ModuleType, RecipientType, ChannelType
+from lia_models.company_benefit import CompanyBenefit
+from lia_models.company_calendar_credentials import CompanyCalendarCredentials
+from lia_models.company_hiring_policy import CompanyHiringPolicy
+from lia_models.custom_agent import CustomAgent, CustomAgentStatus, MarketplaceListingStatus
+from lia_models.digital_twin import DigitalTwin, TwinDecision
+from lia_models.email_tracking import EmailTrackingEvent
+from lia_models.event_store import DomainEvent
+from lia_models.external_api_consumption import ExternalApiConsumption, ExternalApiProvider, ExternalApiOperation
+from lia_models.fairness_audit import FairnessAuditLog
+from lia_models.global_policies import PlatformPolicy, PolicyCategory, PolicyValueType
+from lia_models.global_policy import GlobalPolicy, PolicyType, PolicyScope
+from lia_models.goal import Goal, GoalTemplate, GoalCategory, GoalPeriod, GoalStatus
+from lia_models.health_check import ComplianceHealthCheckItem, ComplianceHealthCheckHistory, ComplianceFrameworkType, HealthCheckStatus, ReviewFrequency
+from lia_models.hitl import HITLPendingAction, HITLAuditTrail
+from lia_models.incident import DataIncident, IncidentSeverity, IncidentStatus
+from lia_models.intelligent_cache import CacheEntry, QueryEmbedding
+from lia_models.jd_similar_history import JdSimilarHistory
+from lia_models.job_template import JobTemplate, TemplateCategory, TemplateUsageLog
+from lia_models.lgpd_references import LegalBasis, ConsentVersion
+from lia_models.lia_profile_analysis import LiaProfileAnalysis, AnalysisType
+from lia_models.manager_preferences import ManagerPreferences
+from lia_models.ml_model_registry import MLModelRegistryRecord
+from lia_models.pearch import (
+    SearchType, MatchLevel, QueryInsight, CandidateInsights, CompanyInfo, CompanyRole,
+    CandidateExperience, CandidateEducation, Language, CandidateProfile,
+    PearchSearchResult, PearchSearchRequest, PearchSearchResponse,
+    HybridSearchRequest, HybridSearchResponse, CreditEstimate, SearchConfirmation, SearchSpec,
+)
+from lia_models.recruiter_decision_feedback import RecruiterDecisionFeedback, RecruiterDecision
+from lia_models.recruitment_email_template import RecruitmentEmailTemplate, TemplateType, RecruitmentStageName
+from lia_models.retention_policy import CompanyRetentionPolicy
+from lia_models.routing_feedback import RoutingFeedback
+from lia_models.rubric import JobRequirement, RubricEvaluation, RequirementPriority, EvaluationLevel
+from lia_models.saas_metrics import ClientSaasMetrics, ClientUsageMetrics, ClientHealthMetrics, PaymentHistory, ChurnRisk, EngagementLevel, PaymentStatus, PaymentMethod, BillingCycle
+from lia_models.screening_question_set import ScreeningQuestionSet
+from lia_models.skills_catalog import CompanySkillsCatalog, BehavioralCompetencyCatalog, SkillUsageAnalytics
+from lia_models.sourcing_agent import SourcingAgent, SourcingAgentSignal
+from lia_models.talent_pool import TalentPool, TalentPoolCandidate
+from lia_models.task_record import TaskRecord, TaskSchedule, DeadLetterRecord
+from lia_models.technical_tests import TechnicalTest, ClientTestConfig, TestResult, TestCategory, TestSubcategory, TestDifficulty
+from lia_models.tenant_llm_config import TenantLLMConfig
+from lia_models.trust_center import TrustCenterSettings, Subprocessor, TrustCenterResource, TrustCenterUpdate, SubprocessorCategory, ResourceCategory, UpdateCategory
+from lia_models.ui_actions import UIAction, UIComponentType, SidePanelType, ChatCardType, ChatActionType
+from lia_models.user_agent_preference import UserAgentPreference
+from lia_models.whatsapp_conversation import WhatsAppConversation, WhatsAppMessage, ConversationState
+from lia_models.wsi_question_effectiveness import WsiQuestionEffectiveness
