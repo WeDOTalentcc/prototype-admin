@@ -134,8 +134,8 @@ class TestSafePatternsPass:
         # returncode may still be 0 (no violations in this file portion)
         # We just verify no crash
         returncode, output = run_sensor_on_content(code, tmp_path)
-        # job_id is not a PII variable name the sensor targets
-        assert "job_id" not in output.lower() or "violation" not in output.lower(), (
+        # job_id is not a PII variable name the sensor targets — sensor should exit 0
+        assert returncode == 0 and "[FAIL]" not in output, (
             f"False positive: safe log flagged. Output: {output!r}"
         )
 
@@ -150,8 +150,10 @@ class TestSafePatternsPass:
             """
         )
         returncode, output = run_sensor_on_content(code, tmp_path)
-        # count is not a PII variable — should not be flagged
-        assert "f-string" not in output.lower() or "violation" not in output.lower(), (
+        # count is not a PII variable — sensor should exit 0 (no violations)
+        # Note: PASS output also contains "f-string" and "violation" words in success
+        # line, so we check returncode and absence of "[FAIL]" rather than word presence.
+        assert returncode == 0 and "[FAIL]" not in output, (
             f"False positive: count variable incorrectly flagged. Output: {output!r}"
         )
 
@@ -160,22 +162,24 @@ class TestSensorSelfConsistency:
     """Sensor produces consistent output for the fixed job_vacancy_service.py."""
 
     def test_fixed_service_file_passes(self):
-        """After R-010.1 fixes, job_vacancy_service.py should have 0 f-string PII violations."""
+        """After R-010.1 fixes, job_vacancy_service.py should have 0 f-string PII violations.
+
+        Runs the sensor against only job_vacancy_service.py using the single-file
+        argument added in R-010.1 (check_no_pii_in_logs.py accepts an optional path).
+        """
         service_path = (
             SENSOR_PATH.parent.parent
             / "app/domains/job_management/services/job_vacancy_service.py"
         )
         assert service_path.exists(), f"Service file not found at {service_path}"
 
-        # Import check_fstring_pii directly from the sensor module
-        import importlib.util
-        spec = importlib.util.spec_from_file_location("sensor", str(SENSOR_PATH))
-        sensor_mod = importlib.util.load_from_spec(spec)  # type: ignore[attr-defined]
-        spec.loader.exec_module(sensor_mod)  # type: ignore[union-attr]
-
-        lines = service_path.read_text(encoding="utf-8").splitlines()
-        violations = sensor_mod.check_fstring_pii(service_path, lines)
-        assert violations == [], (
-            f"job_vacancy_service.py still has f-string PII violations after fix:\n"
-            + "\n".join(violations)
+        result = subprocess.run(
+            [sys.executable, str(SENSOR_PATH), str(service_path)],
+            capture_output=True,
+            text=True,
+            cwd=str(SENSOR_PATH.parent.parent),
+        )
+        combined = result.stdout + result.stderr
+        assert result.returncode == 0, (
+            f"job_vacancy_service.py still has PII violations after R-010.1 fix:\n{combined}"
         )

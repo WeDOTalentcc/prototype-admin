@@ -12,6 +12,10 @@ import sys
 import re
 from pathlib import Path
 
+# Optional: accept a single file argument to scan just that file (used by tests).
+# Usage: python3 scripts/check_no_pii_in_logs.py [path/to/single_file.py]
+_single_file_arg = Path(sys.argv[1]) if len(sys.argv) > 1 else None
+
 # Fields that are actual PII when used as log kwargs
 PII_FIELD_PATTERNS = [
     r"\brecipient_email\s*=",
@@ -93,11 +97,14 @@ fstring_errors = []
 errors = []
 checked = 0
 
-for path in Path("app").rglob("*.py"):
-    if "__pycache__" in str(path) or "test" in str(path).lower():
-        continue
-    if "scripts" in str(path):
-        continue
+_scan_targets = [_single_file_arg] if _single_file_arg else [
+    p for p in Path("app").rglob("*.py")
+    if "__pycache__" not in str(p)
+    and "test" not in str(p).lower()
+    and "scripts" not in str(p)
+]
+
+for path in _scan_targets:
     checked += 1
     lines = path.read_text(encoding="utf-8", errors="ignore").splitlines()
     fstring_errors.extend(check_fstring_pii(path, lines))
