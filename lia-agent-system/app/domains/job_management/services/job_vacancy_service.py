@@ -51,7 +51,7 @@ async def infer_manager_email_if_missing(
             department=department
         )
         if result and result.get("email"):
-            logger.info(f"✅ Inferred manager email for {manager_name}: {result['email']}")
+            logger.info("Inferred manager email for job (identity redacted)")
             return result["email"]
     except Exception as e:
         logger.warning(f"Failed to infer manager email: {e}")
@@ -474,7 +474,7 @@ class JobVacancyService:
             recruiter_email = getattr(current_user, 'email', None)
             if not recruiter_name:
                 recruiter_name = getattr(current_user, 'name', None) or getattr(current_user, 'full_name', None)
-            logger.info(f"✅ Auto-filled recruiter from current user: {recruiter_email}")
+            logger.info("Auto-filled recruiter from current user (email redacted)")
         
         # === DEADLINE CALCULATION ===
         # Calculate deadlines from pipeline SLAs
@@ -570,8 +570,8 @@ class JobVacancyService:
         await db.refresh(job_vacancy)
         
         logger.info(f"✅ Job vacancy finalized: {job_vacancy.id} - {job_vacancy.title}")
-        logger.info(f"   Manager: {state.manager_name} ({manager_email})")
-        logger.info(f"   Recruiter: {recruiter_name} ({recruiter_email})")
+        logger.info("Manager assigned (identity redacted)", extra={"job_id": str(job_vacancy.id)})
+        logger.info("Recruiter assigned (identity redacted)", extra={"job_id": str(job_vacancy.id)})
         logger.info(f"   Deadline: {deadlines.get('deadline')}")
         
         return job_vacancy

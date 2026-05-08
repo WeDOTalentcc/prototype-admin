@@ -51,6 +51,45 @@ EXCLUSION_COMPILED = [re.compile(p, re.IGNORECASE) for p in EXCLUSION_PATTERNS]
 
 MAX_LOG_SPAN = 10  # max lines a single logger call can span before we assume false positive
 
+
+# ---- F-string PII detection ----
+# Variable-name patterns that indicate PII inside an f-string expression
+PII_FSTRING_VAR_PATTERNS = [
+    re.compile(r'\{[^}]*\bemail\b[^}]*\}', re.IGNORECASE),        # {email}, {manager_email}, etc.
+    re.compile(r'\{[^}]*\bphone\b[^}]*\}', re.IGNORECASE),        # {phone}, {phone_number}
+    re.compile(r'\{[^}]*\bcpf\b[^}]*\}', re.IGNORECASE),          # {cpf}
+    re.compile(r'\{[^}]*\bname\b[^}]*\}', re.IGNORECASE),         # {manager_name}, {recruiter_name}
+    re.compile(r'\{[^}]*_name[^}]*\}', re.IGNORECASE),              # {candidate_name}, {user_name}
+    re.compile(r'\{[^}]*_email[^}]*\}', re.IGNORECASE),             # {recruiter_email}, {sender_email}
+]
+
+# Match any logger call that contains an f-string argument
+FSTRING_LOG_PATTERN = re.compile(
+    r'(logger|logging|log)\.(info|warning|warn|error|debug|critical|exception)\s*\(\s*f["\']',
+    re.IGNORECASE,
+)
+
+
+def check_fstring_pii(filepath: "Path", lines: list) -> list:
+    """Return violation strings for logger f-string calls containing PII variable names."""
+    violations = []
+    for i, line in enumerate(lines, 1):
+        stripped = line.strip()
+        if stripped.startswith("#"):
+            continue
+        if not FSTRING_LOG_PATTERN.search(line):
+            continue
+        for pat in PII_FSTRING_VAR_PATTERNS:
+            if pat.search(line):
+                violations.append(
+                    f"{filepath}:{i}: f-string log with PII variable\n"
+                    f"  > {stripped[:120]}"
+                )
+                break  # one violation per line is enough
+    return violations
+
+
+fstring_errors = []
 errors = []
 checked = 0
 
@@ -61,6 +100,7 @@ for path in Path("app").rglob("*.py"):
         continue
     checked += 1
     lines = path.read_text(encoding="utf-8", errors="ignore").splitlines()
+    fstring_errors.extend(check_fstring_pii(path, lines))
 
     in_log_call = False
     log_start_line = 0
@@ -99,16 +139,18 @@ for path in Path("app").rglob("*.py"):
             if paren_depth <= 0:
                 in_log_call = False
 
-if errors:
-    print(f"\n[FAIL] PII in log calls: {len(errors)} violations")
+all_errors = errors + fstring_errors
+if all_errors:
+    print(f"\n[FAIL] PII in log calls: {len(all_errors)} violations ({len(errors)} kwargs, {len(fstring_errors)} f-string)")
     print()
-    for e in errors[:20]:
+    for e in all_errors[:25]:
         print(f"  {e}")
-    if len(errors) > 20:
-        print(f"  ... and {len(errors) - 20} more")
+    if len(all_errors) > 25:
+        print(f"  ... and {len(all_errors) - 25} more")
     print()
-    print("Fix: Remove PII fields from log calls. See ARCHITECTURE.md ADR-006.")
+    print("Fix: Remove PII fields from log calls. Use %s format or structured extra={}.")
+    print("See ARCHITECTURE.md ADR-006.")
     sys.exit(1)
 
-print(f"[PASS] No PII in log calls ({checked} files checked)")
+print(f"[PASS] No PII in log calls ({checked} files checked, 0 kwargs violations, 0 f-string violations)")
 sys.exit(0)
