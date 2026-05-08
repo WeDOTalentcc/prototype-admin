@@ -1413,13 +1413,28 @@ async def teams_tab_auth(
     azure_tenant_id = os.environ.get("AZURE_TENANT_ID", "")
 
     if not (azure_client_id and azure_client_secret and azure_tenant_id):
-        # SSO not configured — return a minimal guest token for dev
-        logger.warning("[TeamsTabAuth] Azure not configured, returning guest token")
+        # R-006: gate dev-fallback por _DEV_MODE (R-006/R-008 lockdown).
+        # Em prod sem Azure, recusa servir token bobo silencioso.
+        from app.middleware.auth_enforcement import _DEV_MODE
+        if not _DEV_MODE:
+            logger.error(
+                "[TeamsTabAuth] Azure SSO not configured in non-dev environment "
+                "(APP_ENV=%s). Refusing to issue fallback token.",
+                os.getenv("APP_ENV", "?"),
+            )
+            raise HTTPException(
+                status_code=503,
+                detail="Teams SSO unavailable: Azure not configured",
+            )
+        logger.warning(
+            "[TeamsTabAuth] Azure not configured (DEV mode active) — issuing dev token. "
+            "Set AZURE_CLIENT_ID/SECRET/TENANT_ID to enable real SSO."
+        )
         return TabAuthResponse(
-            access_token="dev-fallback-token",
+            access_token=os.getenv("TEAMS_DEV_FALLBACK_TOKEN", "dev-fallback-token"),
             user_id="dev-user",
             email="dev@wedotalent.com",
-            company_id=None,
+            company_id="",
         )
 
     try:
