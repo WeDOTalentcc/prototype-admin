@@ -13,6 +13,7 @@ from typing import Optional
 
 from app.domains.credits.services.token_budget_service import check_request_budget_before_llm
 from app.shared.providers.llm_provider import LLMProviderABC
+from app.shared.observability.llm_metrics import record_fallback, record_circuit_open
 
 logger = logging.getLogger(__name__)
 
@@ -242,6 +243,7 @@ class ProviderContainer:
                         self._tenant_id,
                         provider_name,
                     )
+                    record_fallback(self._primary, provider_name, tenant_id=self._tenant_id)
                 # UC-P1-07: enrich span with LLM context
                 _tokens = getattr(result, "usage", {}).get("total_tokens") if hasattr(result, "usage") else None
                 enrich_llm_span(
@@ -263,6 +265,7 @@ class ProviderContainer:
                     self._tenant_id,
                     provider_name,
                 )
+                record_circuit_open(provider_name)
             except Exception as e:
                 errors.append(f"{provider_name}(tenant-key): {type(e).__name__}: {e}")
                 tenant_key = self._api_keys.get(provider_name)

@@ -590,3 +590,64 @@ async def compliance_bypass_status():
         "timestamp": datetime.utcnow().isoformat(),
     }
     return JSONResponse(status_code=200, content=payload)
+
+
+# ─── R-021: LLM provider fallback / circuit breaker metrics ─────────────────
+@router.get("/health/llm-metrics")
+async def llm_provider_metrics():
+    """
+    R-021 — LLM provider fallback and circuit breaker metrics.
+
+    Returns in-memory counters updated in real-time by llm_factory.py.
+    Canary monitoring should alert when fallback_total or circuit_open_total
+    grow unexpectedly in production.
+    """
+    from app.shared.observability.llm_metrics import get_metrics
+    return get_metrics()
+
+@router.get("/health/dlq", response_model=None)
+async def dlq_health_status():
+    """R-024 DLQ health summary for canary monitoring.
+
+    Returns status (healthy/degraded), total entry count, and per-queue breakdown.
+    Canary alert if status != healthy.
+    """
+    from app.shared.resilience.dlq_service import DLQService
+    import datetime
+
+    _DLQ_ALERT_TOTAL = 100
+    _DLQ_ALERT_PER_QUEUE = 30
+
+    dlq = DLQService()
+    try:
+        summary = await dlq.summary()
+    except Exception as exc:
+        return JSONResponse(
+            status_code=503,
+            content={"status": "error", "error": str(exc)[:200]},
+        )
+
+    total = summary.get("total_entries", 0)
+    queues = summary.get("queues", {})
+
+    alerts = []
+    if total > _DLQ_ALERT_TOTAL:
+        alerts.append("total_entries={} exceeds threshold={}".format(total, _DLQ_ALERT_TOTAL))
+    for queue_name, count in queues.items():
+        if count > _DLQ_ALERT_PER_QUEUE:
+            alerts.append("queue={} count={} exceeds threshold={}".format(queue_name, count, _DLQ_ALERT_PER_QUEUE))
+
+    status_str = "healthy" if not alerts else "degraded"
+    status_code = 200 if not alerts else 503
+
+    return JSONResponse(
+        status_code=status_code,
+        content={
+            "status": status_str,
+            "total_entries": total,
+            "queues": queues,
+            "alerts": alerts,
+            "ttl_days": 30,
+            "timestamp": datetime.datetime.utcnow().isoformat(),
+        },
+    )
