@@ -450,6 +450,84 @@ async def liveness_check():
     )
 
 
+# RLS critical tables — monitored for runtime drift detection.
+# Migration 068 + 118-126 cobrem ~119 tabelas; aqui acompanhamos as 9 mais
+# sensíveis em multi-tenancy / LGPD (audit_logs, lgpd_consents, etc).
+_RLS_CRITICAL_TABLES: tuple[str, ...] = (
+    "audit_logs",
+    "users",
+    "lgpd_consents",
+    "tenant_llm_configs",
+    "vacancy_candidates",
+    "triagem_sessions",
+    "bias_audits",
+    "compliance_reports",
+    "fairness_reports",
+)
+
+
+@router.get("/health/rls", response_model=None)
+async def health_rls(db: AsyncSession = Depends(get_db)):
+    """
+    R-002 — Sensor de runtime para Postgres RLS em tabelas críticas.
+
+    Verifica que RLS Postgres está ENABLED + FORCED em tabelas críticas
+    via inspeção de pg_class.relrowsecurity / pg_class.relforcerowsecurity.
+    Detecta drift manual (ALTER TABLE ... DISABLE ROW LEVEL SECURITY) ou
+    tabela nova sem migration RLS (deploys onde alguém esqueceu de aplicar
+    o pattern canonical de migration 068).
+
+    Migration 068 + 118-126 cobrem ~119 tabelas. Esta é a checagem de
+    runtime para detectar drift desde o último deploy.
+
+    Conformidade: LGPD Art. 12 (controle de acesso a dados pessoais), Art.
+    19 (segurança lógica em multi-tenancy).
+
+    Returns:
+        200 + payload se todas tabelas críticas com RLS forçado.
+        503 + payload com lista de drift se ALGUMA tabela crítica perdeu RLS.
+    """
+    sql = text(
+        """
+        SELECT relname, relrowsecurity, relforcerowsecurity
+        FROM pg_class
+        WHERE relname = ANY(:tables)
+        """
+    )
+    result = await db.execute(sql, {"tables": list(_RLS_CRITICAL_TABLES)})
+    rows = result.fetchall()
+
+    found_tables = {row[0]: (row[1], row[2]) for row in rows}
+    missing: list[dict] = []
+    rls_protected: list[str] = []
+
+    for tbl in _RLS_CRITICAL_TABLES:
+        if tbl not in found_tables:
+            missing.append({"table": tbl, "reason": "table not found in pg_class"})
+            continue
+        rowsec, forcesec = found_tables[tbl]
+        if not (rowsec and forcesec):
+            missing.append({
+                "table": tbl,
+                "reason": (
+                    f"relrowsecurity={rowsec}, "
+                    f"relforcerowsecurity={forcesec}"
+                ),
+            })
+        else:
+            rls_protected.append(tbl)
+
+    payload = {
+        "rls_protected": rls_protected,
+        "missing": missing,
+        "checked_count": len(_RLS_CRITICAL_TABLES),
+        "timestamp": datetime.utcnow().isoformat(),
+    }
+    if missing:
+        return JSONResponse(status_code=503, content=payload)
+    return JSONResponse(status_code=200, content=payload)
+
+
 @router.get("/performance", response_model=None)
 async def performance_metrics():
     """

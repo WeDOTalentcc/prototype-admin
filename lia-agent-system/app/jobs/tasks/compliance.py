@@ -465,3 +465,104 @@ def cleanup_expired_working_memory(self) -> dict:
         if self.request.retries >= self.max_retries:
             _emit_dlq_push("agent_working_memory.cleanup", exc)
         raise self.retry(exc=exc, countdown=3600)
+
+@celery_app.task(name="rls.health_check", bind=True, max_retries=2)
+def rls_health_check(self) -> dict:
+    """
+    R-002 — Sensor diário de RLS Postgres em tabelas críticas (cron 04h UTC).
+
+    Verifica via pg_class.relrowsecurity / relforcerowsecurity que tabelas
+    críticas (audit_logs, lgpd_consents, tenant_llm_configs, etc) ainda
+    estão com RLS FORCED. Detecta drift causado por:
+      - ALTER TABLE ... DISABLE ROW LEVEL SECURITY manual via psql
+      - Tabela nova introduzida sem migration RLS canonical
+
+    Equivalente runtime de pgrep ao endpoint GET /api/v1/health/rls.
+    Migration 068 + 118-126 cobrem ~119 tabelas; este job pulsa diário no
+    subset crítico e dispara CRITICAL log + Sentry breadcrumb se drift.
+
+    Conformidade: LGPD Art. 12, Art. 19 (segurança lógica multi-tenancy).
+
+    Returns:
+        Dict com {status: ok|drift_detected, missing: [...], checked: N}.
+    """
+    import asyncio
+    from sqlalchemy import text as _text
+    from app.core.database import AsyncSessionLocal
+
+    _RLS_CRITICAL_TABLES = (
+        "audit_logs",
+        "users",
+        "lgpd_consents",
+        "tenant_llm_configs",
+        "vacancy_candidates",
+        "triagem_sessions",
+        "bias_audits",
+        "compliance_reports",
+        "fairness_reports",
+    )
+
+    async def _check() -> list[str]:
+        async with AsyncSessionLocal() as session:
+            sql = _text(
+                """
+                SELECT relname, relrowsecurity, relforcerowsecurity
+                FROM pg_class WHERE relname = ANY(:tables)
+                """
+            )
+            result = await session.execute(sql, {"tables": list(_RLS_CRITICAL_TABLES)})
+            rows = result.fetchall()
+            found = {r[0]: (r[1], r[2]) for r in rows}
+            missing: list[str] = []
+            for tbl in _RLS_CRITICAL_TABLES:
+                if tbl not in found:
+                    missing.append(f"{tbl}: not found in pg_class")
+                    continue
+                rowsec, forcesec = found[tbl]
+                if not (rowsec and forcesec):
+                    missing.append(
+                        f"{tbl}: rowsec={rowsec}, forcesec={forcesec}"
+                    )
+            return missing
+
+    span = _celery_span("celery.task_start", "rls.health_check")
+    try:
+        missing = asyncio.run(_check())
+        _finish_celery_success(span, "rls.health_check")
+    except Exception as exc:
+        _finish_celery_failure(span, "rls.health_check", exc)
+        logger.error("rls.health_check failed: %s", exc)
+        _emit_celery_retry(
+            "rls.health_check", exc,
+            self.request.retries, self.max_retries, 600,
+        )
+        if self.request.retries >= self.max_retries:
+            _emit_dlq_push("rls.health_check", exc)
+        raise self.retry(exc=exc, countdown=600)
+
+    if missing:
+        logger.critical(
+            "[RLS Health] DRIFT DETECTED in critical tables: %s",
+            missing,
+        )
+        try:
+            import sentry_sdk  # type: ignore[import-not-found]
+            sentry_sdk.capture_message(
+                f"RLS drift detected in critical tables: {missing}",
+                level="error",
+            )
+        except Exception:
+            # Sentry optional — never let alerting failure mask the result
+            pass
+        return {
+            "status": "drift_detected",
+            "missing": missing,
+            "checked": len(_RLS_CRITICAL_TABLES),
+        }
+
+    logger.info(
+        "[RLS Health] All %d critical tables RLS-protected",
+        len(_RLS_CRITICAL_TABLES),
+    )
+    return {"status": "ok", "checked": len(_RLS_CRITICAL_TABLES)}
+
