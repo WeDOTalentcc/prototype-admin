@@ -511,12 +511,44 @@ def reload_from_yaml(path: str) -> List[str]:
             if not name:
                 logger.warning("[AgentRegistry] Agent entry missing 'name', skipping: %s", agent_cfg)
                 continue
+
+            # R-004 (2026-05-07): valida que class_path resolve em runtime.
+            # Antes desta validação, o loader nunca chamava import_module,
+            # portanto drift de class_path era invisível em runtime.
+            class_path = agent_cfg.get("class_path", "")
+            if class_path:
+                try:
+                    import importlib
+                    module_path, class_name = class_path.rsplit(".", 1)
+                    mod = importlib.import_module(module_path)
+                    cls = getattr(mod, class_name)
+                    agent_cfg["_class_validated"] = True
+                except (ImportError, AttributeError, ValueError) as exc:
+                    agent_cfg["_class_validated"] = False
+                    agent_cfg["_class_error"] = str(exc)
+                    logger.error(
+                        "[AgentRegistry] class_path inválido: %s — %s. Agent '%s' não será carregado.",
+                        class_path, exc, name,
+                    )
+                    # Em prod, abortar a menos que LIA_ALLOW_REGISTRY_DRIFT=1.
+                    env = os.getenv("APP_ENV", "development").lower()
+                    if env in ("production", "prod", "staging"):
+                        if os.getenv("LIA_ALLOW_REGISTRY_DRIFT", "0") != "1":
+                            raise RuntimeError(
+                                f"AgentRegistry drift in {env}: {class_path} não resolve. "
+                                f"Set LIA_ALLOW_REGISTRY_DRIFT=1 para emergencial OU corrigir registry."
+                            ) from exc
+                    # Em dev, continua mas marca como inválido e pula registro.
+                    continue
+
             _flat_registry[name] = {k: v for k, v in agent_cfg.items()}
             loaded.append(name)
             logger.info("[AgentRegistry] Loaded agent from YAML: %s", name)
 
     except Exception as exc:  # noqa: BLE001
-        logger.warning("[AgentRegistry] reload_from_yaml failed (%s): %s", path, exc)
+        # R-004 (2026-05-07): promovido de warning para error — falhas em reload
+        # mascaravam drift em produção (try/except amplo retorna [] silenciosamente).
+        logger.error("[AgentRegistry] reload_from_yaml failed (%s): %s", path, exc)
         return []
 
     return loaded

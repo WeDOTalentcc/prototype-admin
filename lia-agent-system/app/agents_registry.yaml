@@ -32,33 +32,37 @@ agents:
     system_prompt_path: app/domains/job_management/agents/system_prompt.py
     enabled: true
 
+  # R-004 (2026-05-07): apontava para app.domains.talent.agents.talent_agent.TalentAgent
+  # (módulo inexistente). Real é talent_pool (domain-aligned).
   - name: talent
     domain: talent
-    class_path: app.domains.talent.agents.talent_agent.TalentAgent
+    class_path: app.domains.talent_pool.agents.talent_pool_agent.TalentPoolReActAgent
     model_id: claude-haiku-4-5-20251001
     system_prompt_path: null
     enabled: true
 
+  # R-004 (2026-05-07): apontava para app.domains.kanban.agents.kanban_agent.KanbanAgent
+  # (módulo inexistente). Parent canonical em recruiter_assistant; subagents
+  # (action/insight/search) acessíveis via tool_registry.
   - name: kanban
     domain: kanban
-    class_path: app.domains.kanban.agents.kanban_agent.KanbanAgent
+    class_path: app.domains.recruiter_assistant.agents.kanban_react_agent.KanbanReActAgent
     model_id: claude-haiku-4-5-20251001
     system_prompt_path: null
     enabled: true
 
+  # R-004 (2026-05-07): apontava para app.domains.policy.agents.policy_agent.PolicySetupAgent
+  # (módulo inexistente). Real é hiring_policy.PolicyReActAgent.
   - name: policy
     domain: policy
-    class_path: app.domains.policy.agents.policy_agent.PolicySetupAgent
+    class_path: app.domains.hiring_policy.agents.policy_react_agent.PolicyReActAgent
     model_id: claude-haiku-4-5-20251001
     system_prompt_path: null
     enabled: true
 
-  - name: jobs_management
-    domain: jobs_management
-    class_path: app.domains.job_management.agents.jobs_management_agent.JobsManagementReActAgent
-    model_id: claude-sonnet-4-6
-    system_prompt_path: null
-    enabled: true
+  # R-004 (2026-05-07): entry jobs_management DELETADA — consolidada em wizard
+  # (mesma classe). Histórico apontava para jobs_management_agent.JobsManagementReActAgent
+  # (módulo inexistente). Real era WizardReActAgent / JobWizardGraph já cobertos por wizard.
 
   - name: analytics
     domain: analytics
