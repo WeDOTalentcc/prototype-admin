@@ -1,0 +1,51 @@
+name: ADR-001 Repository Pattern Sensors
+
+# Lightweight CI workflow that enforces ADR-001 (services MUST NOT contain
+# raw SQL or `select(Model)` direct — all DB access via repositories).
+#
+# Both sensors are blocking (Sprint 7 + Sprint 8 batch 2 promoted them).
+# Files marked `# ADR-001-EXEMPT: <reason>` are skipped per the marker.
+#
+# This workflow is INTENTIONALLY isolated from the heavy `ci.yml.disabled`
+# to keep PR feedback fast and the rule enforcement decoupled from the
+# broader test pipeline.
+
+on:
+  push:
+    branches: [main, develop, "feat/**", "fix/**"]
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "lia-agent-system/app/domains/**/services/**"
+      - "lia-agent-system/scripts/check_no_*.py"
+      - ".github/workflows/adr-001-sensors.yml"
+
+concurrency:
+  group: adr-001-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sensors:
+    name: ADR-001 Sensors (raw SQL + select direct)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lia-agent-system
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Sensor 1 — services MUST NOT contain raw SQL inline
+        run: |
+          # Blocking by default since Sprint 7 (commit 228dae85f).
+          # Use `--warn-only` if you legitimately need to bypass on a stale branch.
+          python3 scripts/check_no_sql_inline_in_services.py
+
+      - name: Sensor 2 — services MUST NOT contain select() direct on ORM models
+        run: |
+          # Blocking by default since Sprint 8 batch 2 (commit 65b033556).
+          # Use `--warn-only` if you legitimately need to bypass on a stale branch.
+          python3 scripts/check_no_select_in_services.py

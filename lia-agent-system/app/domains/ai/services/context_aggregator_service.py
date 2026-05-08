@@ -201,14 +201,21 @@ class ContextAggregatorService:
     # company_benefits, and job_vacancies. The aggregator is the canonical caller of
     # bespoke shape queries (e.g. group_by(work_model)/title) that have no other
     # consumers — wrapping each in a foreign repo would be a single-callsite ceremony
-    # without real harness leverage. Multi-tenancy: each select filters company_id;
-    # the company lookup at line 204 is a known stale fallback (not tenant-scoped) and
-    # is being tracked separately as a P1 correctness fix.
+    # without real harness leverage. Multi-tenancy: every select filters by
+    # company_id (P1 fix Sprint 9 — earlier the company lookup ignored company_id
+    # and returned a global is_active profile, propagating wrong-tenant data
+    # downstream).
     async def _get_company_context(self, company_id: str, db: AsyncSession) -> CompanyContext:
         """Obtém contexto da empresa."""
         try:
+            # Multi-tenancy: scope by company_id FIRST, then is_active filter.
+            # Pre-Sprint 9 had `where(is_active).limit(1)` only, which returned
+            # ANY active profile globally — multi-tenancy P1 bug closed here.
             result = await db.execute(
-                select(CompanyProfile).where(CompanyProfile.is_active).limit(1)
+                select(CompanyProfile)
+                .where(CompanyProfile.id == company_id)
+                .where(CompanyProfile.is_active)
+                .limit(1)
             )
             company = result.scalar_one_or_none()
             
