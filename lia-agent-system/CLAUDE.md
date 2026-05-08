@@ -518,3 +518,15 @@ Se time decidir consolidar, pattern alternativo seria:
 - Único `MSTeamsChannelAdapter` em `app/shared/channels/adapters/teams_adapter.py` (já existe!) que internamente escolhe o path correto via feature detection (webhook vs ConversationReference vs Incoming Webhook URL).
 - Nesse caso, todos os 4 viram implementations privadas atrás do adapter.
 - Decisão arquitetural pendente — não fazer agora.
+
+## Convenção shared/observability/ vs shared/services/ (R-005)
+
+Padrão canônico para módulos em `app/shared/`:
+
+- `observability/` — telemetria, alertas, métricas, drift detection, budget tracking, health alerts
+- `services/`      — regra de negócio compartilhada cross-domain (não-observability)
+
+**Proibido**: mesmo basename de arquivo em ambos diretórios. Sensor `scripts/check_no_observability_services_dup.py` valida em CI.
+
+Histórico: drift bidirecional acumulado em 6 arquivos (R-005.2 cobre os 5 restantes em Wave 2).
+
