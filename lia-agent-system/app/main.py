@@ -45,6 +45,47 @@ install_global_pii_masking()  # L7: LGPD — mascara CPF, e-mail, telefone e nom
 logger = logging.getLogger(__name__)
 
 
+
+def _validate_redis_encryption_key() -> None:
+    """
+    R-001 — Fail-fast guard for REDIS_ENCRYPTION_KEY.
+
+    Without REDIS_ENCRYPTION_KEY, ``app.shared.security.redis_crypto.RedisCrypto``
+    silently falls back to plaintext storage (FAIL-OPEN by design for gradual
+    rollout in dev). In production this is unacceptable — candidate PII,
+    session data, and voting/fairness caches would land in Redis as plaintext.
+
+    Pattern mirrors the LLM-key and OPENMIC_ALLOW_UNSIGNED_WEBHOOK guards in
+    this same lifespan: warn in dev, raise ``RuntimeError`` in prod/staging.
+
+    Raises:
+        RuntimeError: if APP_ENV is production/prod/staging and the key is
+            empty or whitespace-only.
+    """
+    _redis_key = os.getenv("REDIS_ENCRYPTION_KEY", "").strip()
+    _is_production_env = os.getenv("APP_ENV", "development").lower() in (
+        "production",
+        "prod",
+        "staging",
+    )
+    if _redis_key:
+        logger.info("✅ Redis encryption configured (REDIS_ENCRYPTION_KEY present)")
+        return
+    if _is_production_env:
+        logger.critical(
+            "🚨 SECURITY: REDIS_ENCRYPTION_KEY is empty in production environment! "
+            "PII (candidate data, sessions, voting cache) would be stored in plaintext. "
+            "Generate key with: python -c \"from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())\""
+        )
+        raise RuntimeError(
+            "REDIS_ENCRYPTION_KEY is required in production/staging environments. "
+            "Refusing to start with PII at risk of plaintext storage."
+        )
+    logger.warning(
+        "⚠️  REDIS_ENCRYPTION_KEY not set — PII stored in plaintext (dev mode only)"
+    )
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """
@@ -143,7 +184,10 @@ async def lifespan(app: FastAPI):
         )
     else:
         logger.info("✅ OpenMic webhook configured (HMAC-SHA256 signature validation enabled)")
-    
+
+    # Validate Redis encryption key (R-001 — fail-fast in prod/staging)
+    _validate_redis_encryption_key()
+
     # Initialize database
     try:
         await init_db()

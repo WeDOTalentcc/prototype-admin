@@ -68,3 +68,25 @@ The platform uses Next.js, React, and TypeScript for the frontend, styled with R
 - Twilio (Voice — PSTN fallback only)
 - Deepgram (STT/transcrição de voz)
 - Celery
+
+
+## Redis Encryption (REDIS_ENCRYPTION_KEY) — obrigatório em prod
+
+Plataforma usa Fernet (cryptography lib) para encriptar PII em Redis: sessões,
+candidate_list_store, fairness cache, voice transcripts.
+
+**REDIS_ENCRYPTION_KEY** deve estar setado em `production` e `staging`.
+
+- Default `app.shared.security.redis_crypto.RedisCrypto` é fail-OPEN (plaintext)
+  se key ausente — para gradual rollout em dev.
+- Em prod: `app/main.py:lifespan` levanta `RuntimeError` no boot se key vazia
+  (R-001 do plano de remediação, finding F-049).
+
+Gerar key:
+
+```
+python -c "from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())"
+```
+
+Setar via Doppler (preferido) ou env var direto. Validação cobre `production`,
+`prod` e `staging`; `development` mantém posture fail-OPEN com warning.
