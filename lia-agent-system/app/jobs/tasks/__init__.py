@@ -58,6 +58,10 @@ from app.jobs.tasks.voice import (  # noqa: F401
     run_openmic_wsi_pipeline_task,
 )
 
+from app.jobs.tasks.health import (  # noqa: F401
+    check_dlq_health_task,
+)
+
 __all__ = [
     # agents
     "wizard_process_async_task",
@@ -107,4 +111,6 @@ __all__ = [
     "recompute_active_ml_jobs_task",
     # voice
     "run_openmic_wsi_pipeline_task",
+    # health (R-024)
+    "check_dlq_health_task",
 ]

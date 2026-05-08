@@ -1310,3 +1310,73 @@ def register_sourcing_query_tools() -> None:
     ))
     
     logger.info("✅ Registered 9 sourcing query tools")
+
+
+
+# ---------------------------------------------------------------------------
+# compare_candidates — multi-tenant candidate comparison tool (Security P0)
+# ---------------------------------------------------------------------------
+
+async def compare_candidates(
+    candidate_ids: "list[str]",
+    company_id: "str | None" = None,  # ignored; always overridden by _context
+    **kwargs,
+) -> "dict":
+    """Compare two or more candidates by their profile data.
+
+    Multi-tenancy: the *company_id* kwarg is intentionally ignored so that
+    a prompt-injected caller cannot target another tenant's data.  The only
+    authoritative source is the ``_context`` object injected by the tool
+    executor middleware.
+
+    Args:
+        candidate_ids: List of candidate UUID strings to compare.
+        company_id: Silently ignored.  Caller-supplied value is never used.
+        **kwargs: May contain ``_context`` with the authenticated tenant context.
+
+    Returns:
+        Dict with ``success``, ``candidates`` list, and optional ``error`` key.
+    """
+    context = _extract_context(kwargs)
+
+    # Fail-fast: no context = no tenant = hard stop (never guess a tenant).
+    tenant_company_id: "str | None" = getattr(context, "company_id", None) if context else None
+    if not tenant_company_id:
+        return {
+            "success": False,
+            "error": "missing_tenant_context",
+            "candidates": [],
+        }
+
+    if not candidate_ids:
+        return {"success": False, "error": "no_candidate_ids", "candidates": []}
+
+    try:
+        from sqlalchemy import text as sa_text
+        from app.core.database import AsyncSessionLocal
+
+        placeholders = ", ".join(f":id_{i}" for i in range(len(candidate_ids)))
+        params: dict = {"_company_id": tenant_company_id}
+        for i, cid in enumerate(candidate_ids):
+            params[f"id_{i}"] = cid
+
+        sql = sa_text(
+            f"SELECT id, name, email, status, company_id "
+            f"FROM candidates "
+            f"WHERE id IN ({placeholders}) "
+            f"AND company_id = :_company_id"
+        )
+
+        async with AsyncSessionLocal() as db:
+            result = await db.execute(sql, params)
+            rows = result.mappings().all()
+
+        candidates = [dict(r) for r in rows]
+        if not candidates:
+            return {"success": False, "error": "Candidatos nao encontrados.", "candidates": []}
+
+        return {"success": True, "candidates": candidates}
+
+    except Exception as exc:
+        logger.error("[compare_candidates] DB error: %s", exc, exc_info=True)
+        return {"success": False, "error": str(exc), "candidates": []}

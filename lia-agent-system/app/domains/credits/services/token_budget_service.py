@@ -382,25 +382,32 @@ async def increment_usage(
             tokens_used,
             new_total,
         )
-        # UC-P1-08: 80% threshold alert
+        # UC-P1-08 + R-022: threshold alerts via budget_alert_service (80% and 100%)
         _ALERT_THRESHOLD = 0.80
         try:
             plan_code = await get_plan_for_company(company_id)
             limit = get_plan_limit(plan_code)
-            if limit > 0 and new_total / limit >= _ALERT_THRESHOLD:
-                logger.warning(
-                    "[TOKEN-BUDGET] 80%% alert: company_id=%s used=%d limit=%d (%.1f%%)",
-                    company_id, new_total, limit, (new_total / limit) * 100,
-                )
-                try:
-                    import sentry_sdk
-                    sentry_sdk.capture_message(
-                        f"Token budget 80% alert: {company_id} ({new_total}/{limit})",
-                        level="warning",
-                        tags={"company_id": str(company_id), "alert_type": "token_budget_80pct"},
-                    )
-                except Exception:
-                    pass  # Sentry unavailable — log is enough
+            if limit > 0:
+                pct = new_total / limit
+                if pct >= 1.0:
+                    alert_threshold = 100
+                elif pct >= _ALERT_THRESHOLD:
+                    alert_threshold = 80
+                else:
+                    alert_threshold = 0
+                if alert_threshold:
+                    try:
+                        import asyncio as _asyncio
+                        from app.domains.credits.services.budget_alert_service import send_budget_alert
+                        _asyncio.ensure_future(send_budget_alert(
+                            company_id=str(company_id),
+                            threshold_pct=alert_threshold,
+                            used=int(new_total),
+                            limit=int(limit),
+                            plan_code=plan_code,
+                        ))
+                    except Exception as _ae:
+                        logger.debug("[BudgetAlert] dispatch failed: %s", _ae)
         except Exception as _exc:
             logger.debug("[TOKEN-BUDGET] Could not check threshold: %s", _exc)
         return new_total

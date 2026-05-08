@@ -1137,3 +1137,223 @@ async def set_chat_context(
         conversation_id=payload.conversation_id,
         message=f"Contexto atualizado para '{ctx}' (domain={domain}).",
     )
+
+
+
+# ---------------------------------------------------------------------------
+# _build_response_from_action — convert action metadata to human-readable text
+# ---------------------------------------------------------------------------
+
+def _build_response_from_action(metadata: "dict | None") -> "str | None":
+    """Convert action execution metadata into a human-readable override message.
+
+    Returns None when there is nothing to report (empty or missing metadata),
+    so the caller can fall back to the regular LLM response.
+
+    Handles these paths:
+
+    * ``action_result.status == "executed"``  → success message.
+    * ``action_result.status == "cancelled"`` → cancellation message.
+    * ``action_result.status == "error"``     → error narrative.
+    * ``pending_action.awaiting_confirmation is True`` → confirmation prompt.
+    * ``pending_action`` with ``missing_params``       → clarification prompt.
+
+    Args:
+        metadata: The ``metadata`` dict returned by the action flow, or None.
+
+    Returns:
+        A user-facing string, or None.
+    """
+    if not metadata:
+        return None
+
+    action_result = metadata.get("action_result")
+    if action_result:
+        status = action_result.get("status", "")
+        if status == "executed":
+            return action_result.get("message", "Ação executada com sucesso.")
+        if status == "cancelled":
+            return "Ação cancelada."
+        if status == "error":
+            msg = action_result.get("message", "Erro desconhecido.")
+            return f"Não foi possível executar a ação: {msg}"
+
+    pending = metadata.get("pending_action")
+    if not pending:
+        return None
+
+    awaiting = pending.get("awaiting_confirmation", False)
+    collected = pending.get("collected_params") or {}
+    missing = pending.get("missing_params") or []
+
+    if awaiting:
+        candidate_name = collected.get("candidate_name", "")
+        to_stage = collected.get("to_stage", "")
+        if candidate_name and to_stage:
+            return (
+                f"Vou mover {candidate_name} para '{to_stage}'. Confirma?"
+            )
+        return "Confirma a ação?"
+
+    # Missing params — ask for the first missing param.
+    if missing:
+        first_missing = missing[0]
+        if first_missing == "candidate_id":
+            candidate_name = collected.get("candidate_name", "")
+            if candidate_name:
+                return f"Qual é o candidato exato? Encontrei '{candidate_name}' mas preciso confirmar."
+            return "Qual candidato você quer mover?"
+        if first_missing == "to_stage":
+            candidate_name = collected.get("candidate_name", "")
+            if candidate_name:
+                return f"Para qual etapa do pipeline você quer mover {candidate_name}?"
+            return "Para qual etapa do pipeline?"
+        return f"Preciso de mais informações: {first_missing}"
+
+    return None
+
+
+# ---------------------------------------------------------------------------
+# handle_action_flow — multi-turn parameter collection + confirmation loop
+# ---------------------------------------------------------------------------
+
+async def handle_action_flow(
+    conversation_id: str,
+    user_message_text: str,
+    intent: str,
+    entities: "dict",
+    user_id: str,
+    current_user: "Any",
+    db: "Any",
+) -> "dict | None":
+    """Orchestrate multi-turn parameter collection and action confirmation.
+
+    On each call this function:
+
+    1. Looks up any in-progress ``PendingActionState`` for *conversation_id*.
+    2. If none exists (and intent is not in ACTIONABLE_INTENTS), returns None.
+    3. If the current state is ``awaiting_confirmation``:
+       - User says yes → execute via ``action_executor._execute_action``.
+       - User says no  → cancel and clear state.
+    4. Otherwise, fill in missing params from the user message (trying
+       ``resolve_candidate_by_name`` for ``candidate_id`` slots) and
+       update the state.
+    5. When all params are collected, move to ``awaiting_confirmation=True``.
+    6. Returns a dict suitable for ``_build_response_from_action``.
+
+    Returns:
+        Dict with ``pending_action`` or ``action_result`` key, or None.
+    """
+    from app.orchestrator.action_executor import ACTIONABLE_INTENTS, action_executor
+    from app.orchestrator.action_executor.utils import is_confirmation, is_rejection
+
+    # Step 1 — check for existing pending state.
+    pending = pending_action_store.get(conversation_id)
+
+    # Step 2 — no pending state and unknown intent → pass through.
+    if pending is None:
+        if intent not in ACTIONABLE_INTENTS:
+            return None
+        # Start new pending state.
+        config = ACTIONABLE_INTENTS[intent]
+        import uuid as _uuid
+        pending = PendingActionState(
+            pending_id=str(_uuid.uuid4()),
+            intent=intent,
+            action_id=config.get("action_id", intent),
+            domain_id=config.get("domain_id", "pipeline_transition"),
+            collected_params=dict(entities or {}),
+            missing_params=list(config.get("required_params", [])),
+            conversation_id=conversation_id,
+            company_id=str(getattr(current_user, "company_id", "") or ""),
+            awaiting_confirmation=False,
+        )
+        # Immediately remove collected params from missing list.
+        for key in list(pending.collected_params.keys()):
+            if key in pending.missing_params:
+                pending.missing_params.remove(key)
+
+        pending_action_store.save(conversation_id, pending)
+
+    # Step 3 — awaiting confirmation.
+    if pending.awaiting_confirmation:
+        if is_confirmation(user_message_text):
+            # Execute the action.
+            try:
+                config = ACTIONABLE_INTENTS.get(pending.intent, {})
+                result = await action_executor._execute_action(
+                    intent=pending.intent,
+                    config=config,
+                    params=pending.collected_params,
+                    context={
+                        "user_id": user_id,
+                        "company_id": str(getattr(current_user, "company_id", "") or ""),
+                    },
+                )
+                pending_action_store.remove(conversation_id)
+                return {
+                    "action_result": {
+                        "status": result.status,
+                        "message": result.message,
+                        "success": result.status == "executed",
+                    }
+                }
+            except Exception as exc:
+                logger.error("[handle_action_flow] execution failed: %s", exc)
+                pending_action_store.remove(conversation_id)
+                return {
+                    "action_result": {
+                        "status": "error",
+                        "message": str(exc),
+                        "success": False,
+                    }
+                }
+        elif is_rejection(user_message_text):
+            pending_action_store.remove(conversation_id)
+            return {"action_result": {"status": "cancelled", "success": False}}
+        else:
+            # Ambiguous — stay in awaiting_confirmation.
+            return {
+                "pending_action": {
+                    "awaiting_confirmation": True,
+                    "collected_params": pending.collected_params,
+                    "missing_params": pending.missing_params,
+                }
+            }
+
+    # Step 4 — fill in next missing param.
+    next_param = pending.next_missing_param()
+    if next_param:
+        if next_param == "candidate_id":
+            # Try to resolve candidate by name from the user message.
+            company_id = str(getattr(current_user, "company_id", "") or "")
+            candidate = await resolve_candidate_by_name(
+                candidate_name=user_message_text,
+                company_id=company_id,
+                db=db,
+            )
+            if candidate:
+                pending.add_param("candidate_id", candidate["id"])
+                # Store candidate name for better UX messaging.
+                if "candidate_name" not in pending.collected_params:
+                    pending.add_param("candidate_name", user_message_text)
+            else:
+                # Store raw name so next turn can reference it.
+                pending.add_param("candidate_name", user_message_text)
+                # candidate_id still missing.
+        else:
+            pending.add_param(next_param, user_message_text)
+
+    # Step 5 — check if all params collected.
+    if pending.is_complete:
+        pending.awaiting_confirmation = True
+
+    pending_action_store.save(conversation_id, pending)
+
+    return {
+        "pending_action": {
+            "awaiting_confirmation": pending.awaiting_confirmation,
+            "collected_params": dict(pending.collected_params),
+            "missing_params": list(pending.missing_params),
+        }
+    }

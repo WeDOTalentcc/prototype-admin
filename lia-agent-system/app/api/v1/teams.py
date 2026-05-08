@@ -1570,3 +1570,52 @@ async def teams_tab_events(
 
     logger.info(f"[TeamsTabEvents] Proactive card sent for event='{payload.event_type}', user='{teams_user_id}'")
     return {"status": "sent", "event_type": payload.event_type}
+
+
+# ---------------------------------------------------------------------------
+# _enforce_company_id_scope — multi-tenancy guard for proactive endpoints
+# ---------------------------------------------------------------------------
+
+def _enforce_company_id_scope(
+    requested_company_id,
+    current_user,
+    *,
+    allow_none: bool = False,
+):
+    """Guard multi-tenancy on proactive endpoints.
+
+    Returns the resolved company_id that the caller is allowed to operate on.
+    Raises HTTPException 403 if a non-admin user tries to target another
+    company's data.
+
+    Args:
+        requested_company_id: The company_id the caller wants to use.
+            When None the caller's own company_id is returned unless
+            allow_none is True.
+        current_user: The authenticated user object with role and
+            company_id attributes.
+        allow_none: When True, a None requested_company_id is returned
+            as-is instead of falling back to the user's own company.
+    """
+    from app.auth.models import UserRole
+
+    is_admin = getattr(current_user, "role", None) == UserRole.admin
+    user_company = getattr(current_user, "company_id", None)
+
+    if requested_company_id is None:
+        if allow_none:
+            return None
+        return user_company
+
+    if is_admin:
+        return requested_company_id
+
+    if requested_company_id != user_company:
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                f"cross-tenant access denied: cannot target company "
+                f"{requested_company_id!r}"
+            ),
+        )
+    return requested_company_id

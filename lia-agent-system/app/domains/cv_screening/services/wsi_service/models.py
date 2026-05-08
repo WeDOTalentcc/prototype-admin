@@ -216,3 +216,25 @@ class CandidateFeedback(BaseModel):
     recommended_resources: list[str] | None = None
 
 
+
+
+# ---------------------------------------------------------------------------
+# Layer2Signals — LLM-extracted structural signals (Camada 2, audit rev.18 M01)
+# ---------------------------------------------------------------------------
+
+class Layer2Signals(BaseModel):
+    """LLM-extracted structural signals from WSI response (Camada 2, audit rev.18 M01)."""
+
+    is_paraphrase: bool = False
+    is_first_person: bool = True
+    has_R_outcome: bool = True
+    language_consistency: bool = True
+    prompt_injection_detected: bool = False
+    word_count_band: str = "50-150"
+    trait_signals_count: int = 0
+    has_quantification: bool = False
+    semantic_inflation: bool = False
+    bloom_demonstrated: int = 3
+    dreyfus_demonstrated: int = 3
+    confidence: float = 1.0
+    extraction_warnings: list[str] = []

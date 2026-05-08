@@ -44,4 +44,5 @@ from app.jobs.tasks import (  # noqa: F401
     rebuild_all_domains_task,
     recompute_active_ml_jobs_task,
     run_openmic_wsi_pipeline_task,
+    check_dlq_health_task,
 )

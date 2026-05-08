@@ -1213,3 +1213,24 @@ def get_main_orchestrator(orchestrator: Any = None) -> MainOrchestrator:
             orchestrator = get_orchestrator()
         _main_orchestrator_instance = MainOrchestrator(orchestrator)
     return _main_orchestrator_instance
+
+
+
+# ---------------------------------------------------------------------------
+# _is_fallback_react_enabled — feature flag for LIA_V2_USE_FALLBACK_REACT
+# ---------------------------------------------------------------------------
+
+def _is_fallback_react_enabled() -> bool:
+    """Check the ``LIA_V2_USE_FALLBACK_REACT`` feature flag.
+
+    Reads the environment variable and returns ``True`` only when it is set
+    to a recognised truthy value.  The check is case-insensitive.
+
+    Returns:
+        True when the env var is one of ``{"1", "true", "yes", "on"}``,
+        False in all other cases (absent, empty, "false", "0", …).
+    """
+    import os
+
+    val = os.getenv("LIA_V2_USE_FALLBACK_REACT", "").lower().strip()
+    return val in {"1", "true", "yes", "on"}

@@ -8,7 +8,7 @@ Chaves Redis:
   dlq:{queue}         → Redis LIST (LPUSH) com entradas JSON, cap MAX_ENTRIES
   dlq:index           → Redis SET com nomes de filas que têm entradas
 
-TTL: DLQ_TTL_SECONDS (7 dias)
+TTL: DLQ_TTL_SECONDS (30 dias -- R-024)
 Cap por fila: MAX_ENTRIES (1000)
 """
 from __future__ import annotations
@@ -23,7 +23,7 @@ from app.shared.tracing import trace_span
 
 logger = logging.getLogger(__name__)
 
-DLQ_TTL_SECONDS = 7 * 24 * 3600  # 7 dias
+DLQ_TTL_SECONDS = 30 * 24 * 3600  # 30 dias (was 7 dias -- R-024)
 MAX_ENTRIES = 1000
 _KEY_PREFIX = "dlq"
 _INDEX_KEY = "dlq:index"

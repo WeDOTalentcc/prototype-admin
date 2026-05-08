@@ -26,3 +26,7 @@ def resolve_tenant_id_lenient(company_id: str | None, *, fallback: str = "unknow
         )
         return fallback
     return company_id
+
+
+# Backward-compat: fixed UUID used as demo tenant in seed/test data.
+DEMO_COMPANY_UUID: str = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"

@@ -1061,3 +1061,54 @@ class SourcingPipelineService:
 
 
 sourcing_pipeline_service = SourcingPipelineService()
+
+
+
+# ---------------------------------------------------------------------------
+# Module-level helpers used by tests and internal services (C6)
+# ---------------------------------------------------------------------------
+
+def _build_criteria_text(job, tags: "list[str] | None" = None) -> str:
+    """Build a plain-text blob from job fields + extra tags for FairnessGuard.
+
+    Combines the job title, description, location, and base requirements with
+    any caller-supplied additional tags so the guard can scan all criteria in
+    one pass.
+
+    Args:
+        job: A job/vacancy object with ``title``, ``description``,
+            ``location``, and ``requirements`` attributes (None-safe).
+        tags: Additional skill or keyword strings to include.
+
+    Returns:
+        Space-joined string of all non-empty parts.
+    """
+    parts: list[str] = []
+    for attr in ("title", "description", "location"):
+        val = getattr(job, attr, None)
+        if val:
+            parts.append(str(val))
+    for req in (getattr(job, "requirements", None) or []):
+        if req:
+            parts.append(str(req))
+    for tag in (tags or []):
+        if tag:
+            parts.append(str(tag))
+    return " ".join(parts)
+
+
+def _prompt_hash(text: str) -> str:
+    """Return the stable SHA-256 hex digest of *text*.
+
+    Used to fingerprint sourcing criteria prompts for audit log deduplication.
+    The same input always produces the same 64-character hex string.
+
+    Args:
+        text: The string to hash.
+
+    Returns:
+        64-character lowercase hex string (SHA-256).
+    """
+    import hashlib
+
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()

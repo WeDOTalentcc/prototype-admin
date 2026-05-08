@@ -1076,3 +1076,17 @@ class FairnessGuard:
             except Exception:
                 pass
             logger.error("FairnessGuard audit log failed (non-blocking): %s", e)
+
+
+# ---------------------------------------------------------------------------
+# Backward-compat alias (tests/fairness/test_bias_detector_consolidation.py)
+# ---------------------------------------------------------------------------
+
+# IMPLICIT_BIAS_TERMS_EN is the dict{term: warning_message} already defined
+# above. This alias exposes the same dict under the name the test imports.
+INCLUSIVE_LANGUAGE_REPLACEMENTS_EN: dict = IMPLICIT_BIAS_TERMS_EN
+
+
+# IMPLICIT_BIAS_TERMS is the Portuguese dict{term: warning_message} defined above.
+# This alias exposes it under the name that tests/fairness/ imports.
+INCLUSIVE_LANGUAGE_REPLACEMENTS_PT: dict = IMPLICIT_BIAS_TERMS

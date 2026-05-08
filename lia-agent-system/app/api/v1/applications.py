@@ -520,3 +520,15 @@ async def track_resubmit_click(
     except Exception as e:
         logger.error(f"Error tracking click: {e}")
         raise HTTPException(status_code=500, detail=f"Erro ao registrar clique: {str(e)}")
+
+
+
+async def _require_auth_401():
+    """FastAPI dependency: raises HTTP 401 if not authenticated.
+
+    Backward-compat: used as a dependency_override target in tests.
+    In production the dependency override is replaced with the real
+    get_current_active_user so that all endpoints inherit the same auth
+    chain without explicitly importing from app.auth.dependencies.
+    """
+    raise HTTPException(status_code=401, detail="Not authenticated")

@@ -358,7 +358,13 @@ celery_app.conf.update(
             "schedule": crontab(hour=3, minute=15),
             "options": {"expires": 7200},
         },
-        # R-002 — Sensor diário de RLS Postgres em tabelas críticas (04h UTC)
+        # R-024: DLQ health check -- runs hourly, alerts if queue backlog exceeds thresholds
+        "dlq-health-check-hourly": {
+            "task": "health.check_dlq_health",
+            "schedule": crontab(minute=10),  # :10 past every hour
+            "options": {"expires": 3600, "queue": "celery"},
+        },
+        # R-002 -- Sensor diario de RLS Postgres em tabelas criticas (04h UTC)
         "rls-health-check-daily": {
             "task": "rls.health_check",
             "schedule": crontab(hour=4, minute=0),  # 01h Brasília / UTC-3

@@ -398,3 +398,116 @@ class BulkAssignRecruiterRequest(BaseModel):
 class BulkChangeStatusRequest(BaseModel):
     job_ids: list[UUID] = Field(..., min_length=1, max_length=100)
     new_status: str = Field(..., min_length=1)
+
+
+
+# ---------------------------------------------------------------------------
+# JD fairness helpers (Task #358)
+# ---------------------------------------------------------------------------
+
+def _build_jd_fairness_text(
+    *,
+    title: str = "",
+    description: str = "",
+    requirements: "list[str] | None" = None,
+    technical_requirements: "list[dict] | None" = None,
+    behavioral_competencies: "list[dict] | None" = None,
+    languages: "list[dict] | None" = None,
+) -> str:
+    """Build a concatenated text blob from JD fields for fairness analysis.
+
+    Combines title, description, plain requirement strings, plus the
+    key text fields extracted from structured dicts so the FairnessGuard
+    can scan the entire posting in a single pass.
+
+    Args:
+        title: Job title string.
+        description: Free-text job description.
+        requirements: List of plain-text requirement strings.
+        technical_requirements: List of dicts with a "technology" or "name" key.
+        behavioral_competencies: List of dicts with a "competency" key.
+        languages: List of dicts with a "language" key.
+
+    Returns:
+        Space-joined string of all non-empty parts.
+    """
+    parts: list[str] = []
+    if title:
+        parts.append(title)
+    if description:
+        parts.append(description)
+    for req in (requirements or []):
+        if req:
+            parts.append(str(req))
+    for tr in (technical_requirements or []):
+        val = tr.get("technology") or tr.get("name", "")
+        if val:
+            parts.append(str(val))
+    for bc in (behavioral_competencies or []):
+        val = bc.get("competency", "")
+        if val:
+            parts.append(str(val))
+    for lang in (languages or []):
+        val = lang.get("language", "")
+        if val:
+            parts.append(str(val))
+    return " ".join(parts)
+
+
+def run_fairness_guard_on_jd(
+    *,
+    title: str = "",
+    description: str = "",
+    requirements: "list[str] | None" = None,
+    technical_requirements: "list[dict] | None" = None,
+    behavioral_competencies: "list[dict] | None" = None,
+    languages: "list[dict] | None" = None,
+) -> "list[str]":
+    """Run the FairnessGuard over all JD text fields.
+
+    Returns a (possibly empty) list of soft-warning strings when the JD
+    passes but contains implicit-bias language.
+
+    Raises:
+        HTTPException(422): when the JD contains explicitly discriminatory
+            content (``result.is_blocked`` is True).  The detail payload
+            conforms to the frontend contract::
+
+                {
+                    "code": "fairness_blocked",
+                    "category": "<category>",
+                    "message": "<educational_message>",
+                    "blocked_terms": [...],
+                }
+    """
+    from fastapi import HTTPException as _HTTPException
+    from app.shared.compliance.fairness_guard import FairnessGuard
+
+    text = _build_jd_fairness_text(
+        title=title,
+        description=description,
+        requirements=requirements,
+        technical_requirements=technical_requirements,
+        behavioral_competencies=behavioral_competencies,
+        languages=languages,
+    )
+
+    try:
+        guard = FairnessGuard()
+        result = guard.check(text)
+    except Exception:
+        # FairnessGuard regression must never block a save.
+        return []
+
+    if result.is_blocked:
+        raise _HTTPException(
+            status_code=422,
+            detail={
+                "code": "fairness_blocked",
+                "category": result.category,
+                "message": result.educational_message or "Conteúdo discriminatório detectado.",
+                "blocked_terms": result.blocked_terms,
+            },
+        )
+
+    return list(result.soft_warnings or [])

@@ -1222,3 +1222,74 @@ async def http_chat_message(req: HTTPChatRequest, request: Request):
             content="Erro interno ao processar sua mensagem.",
             error="internal_error",
         )
+
+
+
+# ---------------------------------------------------------------------------
+# _resume_wizard_canonical_streaming — HITL/approval resume via canonical graph
+# ---------------------------------------------------------------------------
+
+async def _resume_wizard_canonical_streaming(
+    thread_id: str,
+    message: dict,
+    on_token,
+) -> "tuple[str, dict, int]":
+    """Resume a wizard session after HITL approval, with token streaming.
+
+    Merges the prior checkpointed state with recruiter updates contained in
+    *message*, then delegates to ``JobCreationGraph.stream_invoke`` which
+    drives the compiled LangGraph with streaming output.
+
+    Args:
+        thread_id: Wizard session / checkpointer thread identifier.
+        message: Dict containing:
+            - ``"context"``: Flat dict of recruiter-supplied updates
+              (e.g. ``{"hitl_approved": True, "draft": {...}}``).
+            - ``"approval_payload"``: Optional dict of additional params
+              (merged into state at the top level).
+        on_token: Async callable that receives each streaming LLM chunk.
+
+    Returns:
+        Tuple of:
+        - ``message_str``: Human-readable status message extracted from
+          the terminal ``ws_stage_payload``, or a safe fallback.
+        - ``stage_payload``: The raw ``ws_stage_payload`` dict (or ``{}``).
+        - ``tokens_emitted``: Number of tokens reported by ``stream_invoke``.
+    """
+    from app.domains.job_creation import graph as graph_module
+
+    # Retrieve prior state from checkpointer.  On miss/error, fall back to
+    # an empty dict so the resume is still safe.
+    try:
+        prior_snapshot = graph_module.job_creation_graph._graph.get_state(
+            {"configurable": {"thread_id": thread_id}}
+        )
+        prior_state: dict = dict(prior_snapshot.values) if prior_snapshot else {}
+    except Exception:
+        prior_state = {}
+
+    # Build merged state: prior < approval_payload < context flags.
+    context_updates: dict = message.get("context") or {}
+    approval_updates: dict = message.get("approval_payload") or {}
+    merged_state: dict = {**prior_state, **approval_updates, **context_updates}
+
+    # Invoke the graph with streaming.
+    result_tuple = await graph_module.job_creation_graph.stream_invoke(
+        merged_state, thread_id, on_token
+    )
+    final_state, tokens_emitted = result_tuple
+
+    # Extract stage payload and human message.
+    stage_payload: dict = final_state.get("ws_stage_payload") or {}
+    if stage_payload:
+        message_str: str = (
+            stage_payload.get("data", {}).get("message")
+            or stage_payload.get("message")
+            or "Captei a vaga. Vou seguir para o próximo passo."
+        )
+    elif final_state.get("current_stage") == "completed":
+        message_str = "Vaga criada com sucesso."
+    else:
+        message_str = "Captei a vaga. Vou seguir para o próximo passo."
+
+    return message_str, stage_payload, tokens_emitted

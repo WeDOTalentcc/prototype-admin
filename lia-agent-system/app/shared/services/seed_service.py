@@ -1377,3 +1377,59 @@ async def clear_demo_data(db: AsyncSession) -> dict[str, Any]:
             "success": False,
             "error": str(e)
         }
+
+
+
+# ---------------------------------------------------------------------------
+# Demo company profile seed helpers (Task #819)
+# ---------------------------------------------------------------------------
+
+#: Canonical culture/size data for the demo tenant.
+#: ``website`` is intentionally absent — preserving the ``analyze_company_website``
+#: offer (contract §5.1). Tests assert on "industry" and "company_size" fields.
+_DEMO_CULTURE_PROFILE: dict = {
+    "industry": "Tecnologia",
+    "company_size": "51-200",
+    "description": "Empresa de tecnologia demonstrativa para testes e onboarding.",
+}
+
+
+async def _ensure_demo_company_profile(db) -> bool:
+    """Idempotently seed the canonical company_profiles row for the demo tenant.
+
+    Uses an ``INSERT … ON CONFLICT DO UPDATE`` (upsert) so that:
+
+    * **New row**: inserts ``name``, ``industry``, and ``company_size``.
+    * **Existing row**: backfills any NULL columns (does not overwrite
+      admin-entered values because we use ``COALESCE`` for each field).
+    * **website** is deliberately excluded — keeping it NULL preserves the
+      ``analyze_company_website`` onboarding offer (contract §5.1).
+
+    Args:
+        db: An async SQLAlchemy session.
+
+    Returns:
+        ``True`` when the row was freshly inserted (``xmax = 0``),
+        ``False`` when the row already existed (DO UPDATE path).
+    """
+    from sqlalchemy import text as sa_text
+    from app.core.tenant import DEMO_COMPANY_UUID
+
+    sql = sa_text(
+        "INSERT INTO company_profiles (id, name, industry, company_size) "
+        "VALUES (:cid, :name, :industry, :company_size) "
+        "ON CONFLICT (id) DO UPDATE SET "
+        "  name         = COALESCE(company_profiles.name,         EXCLUDED.name), "
+        "  industry     = COALESCE(company_profiles.industry,     EXCLUDED.industry), "
+        "  company_size = COALESCE(company_profiles.company_size, EXCLUDED.company_size) "
+        "RETURNING (xmax = 0) AS inserted"
+    )
+    params = {
+        "cid": DEMO_COMPANY_UUID,
+        "name": "WeDO Talent Demo",
+        "industry": _DEMO_CULTURE_PROFILE["industry"],
+        "company_size": _DEMO_CULTURE_PROFILE["company_size"],
+    }
+    result = await db.execute(sql, params)
+    row = result.first()
+    return bool(row[0]) if row else True
