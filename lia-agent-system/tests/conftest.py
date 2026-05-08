@@ -58,3 +58,56 @@ def observer():
         domain="test",
         agent_class="TestAgent",
     )
+
+
+# ─── LLM Bootstrap test fixtures (R-009) ────────────────────────────────────
+
+@pytest.fixture()
+def reset_company_contextvar():
+    """Reset _current_company_id ContextVar before and after each test."""
+    try:
+        from app.middleware.auth_enforcement import _current_company_id
+        token = _current_company_id.set("")
+        yield _current_company_id
+        _current_company_id.reset(token)
+    except ImportError:
+        # Graceful skip if middleware not importable in test context
+        from contextvars import ContextVar
+        yield ContextVar("_current_company_id", default="")
+
+
+@pytest.fixture()
+def mock_anthropic_client():
+    """Return a MagicMock mimicking anthropic.Anthropic client."""
+    client = MagicMock()
+    client.messages = MagicMock()
+    client.messages.create = MagicMock()
+    client.messages.stream = MagicMock()
+    return client
+
+
+@pytest.fixture()
+def mock_openai_client():
+    """Return a MagicMock mimicking openai.OpenAI client."""
+    client = MagicMock()
+    client.chat = MagicMock()
+    client.chat.completions = MagicMock()
+    client.chat.completions.create = MagicMock()
+    return client
+
+
+@pytest.fixture()
+def mock_genai_client():
+    """Return a MagicMock mimicking google.genai.Client."""
+    client = MagicMock()
+    client.models = MagicMock()
+    client.models.generate_content = MagicMock()
+    return client
+
+
+@pytest.fixture()
+def patched_llm_audit_log():
+    """Patch _audit_log in llm_bootstrap and return the MagicMock for assertions."""
+    from unittest.mock import patch as _patch
+    with _patch("app.shared.llm_bootstrap._audit_log") as mock_audit:
+        yield mock_audit
