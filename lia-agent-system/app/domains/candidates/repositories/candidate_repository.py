@@ -37,6 +37,57 @@ class CandidateRepository:
     async def get_by_id_str(self, candidate_id: str) -> Candidate | None:
         return await self.get_by_id(uuid.UUID(candidate_id))
 
+    async def list_by_ids(self, candidate_ids: list[str | UUID]) -> list[Candidate]:
+        """Return candidates whose ids are in the given list (no tenancy filter).
+
+        Used by candidate_comparison_service after callers have already
+        validated tenant ownership. ADR-001 cross-domain read pattern.
+        """
+        if not candidate_ids:
+            return []
+        result = await self.db.execute(
+            select(Candidate).where(Candidate.id.in_(candidate_ids))
+        )
+        return list(result.scalars().all())
+
+    async def find_experience_by_candidate_company_title(
+        self,
+        candidate_id: UUID | str,
+        company_name: str,
+        title: str,
+    ):
+        """Return CandidateExperience matching (candidate_id, company, title), or None.
+
+        Used by enrichment service to dedupe before adding scraped experiences.
+        """
+        from app.models.candidate import CandidateExperience
+        result = await self.db.execute(
+            select(CandidateExperience).where(
+                CandidateExperience.candidate_id == candidate_id,
+                CandidateExperience.company_name == company_name,
+                CandidateExperience.title == title,
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def find_education_by_candidate_institution(
+        self,
+        candidate_id: UUID | str,
+        institution: str,
+    ):
+        """Return CandidateEducation matching (candidate_id, institution), or None.
+
+        Used by enrichment service to dedupe before adding scraped education.
+        """
+        from app.models.candidate import CandidateEducation
+        result = await self.db.execute(
+            select(CandidateEducation).where(
+                CandidateEducation.candidate_id == candidate_id,
+                CandidateEducation.institution == institution,
+            )
+        )
+        return result.scalar_one_or_none()
+
     async def get_by_email(self, email: str) -> Candidate | None:
         """
         Look up a candidate by email using the SHA-256 hash index.
@@ -225,6 +276,20 @@ class CandidateRepository:
         candidates = list(result.scalars().all())
 
         return candidates, total_count
+
+    async def list_paginated_no_tenant(
+        self, limit: int = 30, offset: int = 0
+    ) -> list[Candidate]:
+        """Paginated list across all tenants — used by Rails-adapter local
+        fallback only. Caller is responsible for any tenancy check.
+
+        ADR-001 cross-domain read: integration layer fallback when Rails
+        is unavailable; Rails owns tenancy at the API gateway.
+        """
+        result = await self.db.execute(
+            select(Candidate).limit(limit).offset(offset)
+        )
+        return list(result.scalars().all())
 
     async def list_active_not_blacklisted(self, limit: int = 50) -> list[Candidate]:
         """List active, non-blacklisted candidates up to the given limit.

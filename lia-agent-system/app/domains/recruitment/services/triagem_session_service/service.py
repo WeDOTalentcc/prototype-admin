@@ -5,10 +5,13 @@ import logging
 import uuid
 from typing import Any
 
-from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lia_models.triagem import TriagemMessage, TriagemSession
+
+from app.domains.recruitment.repositories.triagem_session_repository import (
+    TriagemSessionRepository,
+)
 
 from ._shared import _build_progress, _get_session_blocks
 from .lifecycle import (
@@ -93,10 +96,8 @@ class TriagemSessionService:
     async def generate_tts_for_message(
         self, db: AsyncSession, token: str, message_id: str
     ) -> dict[str, Any]:
-        result = await db.execute(
-            select(TriagemSession).where(TriagemSession.token == token)
-        )
-        session = result.scalar_one_or_none()
+        repo = TriagemSessionRepository(db)
+        session = await repo.get_session_by_token(token)
         if not session:
             return {"error": "not_found"}
         return await generate_tts_for_message(db, session, message_id)
@@ -104,10 +105,8 @@ class TriagemSessionService:
     async def request_phone_call(
         self, db: AsyncSession, token: str, candidate_phone: str
     ) -> dict[str, Any]:
-        result = await db.execute(
-            select(TriagemSession).where(TriagemSession.token == token)
-        )
-        session = result.scalar_one_or_none()
+        repo = TriagemSessionRepository(db)
+        session = await repo.get_session_by_token(token)
         if not session:
             return {"error": "not_found"}
         if session.status == "completed":

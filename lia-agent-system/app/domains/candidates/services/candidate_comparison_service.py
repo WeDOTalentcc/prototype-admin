@@ -266,27 +266,29 @@ class CandidateComparisonService:
         return result.to_dict()
     
     async def _get_candidates(
-        self, 
-        db: AsyncSession, 
+        self,
+        db: AsyncSession,
         candidate_ids: list[str]
     ) -> list[Candidate]:
         """Fetch candidates by IDs."""
-        result = await db.execute(
-            select(Candidate).where(Candidate.id.in_(candidate_ids))
+        from app.domains.candidates.repositories.candidate_repository import (
+            CandidateRepository,
         )
-        return list(result.scalars().all())
-    
+        repo = CandidateRepository(db)
+        return await repo.list_by_ids(candidate_ids)
+
     async def _get_job(
-        self, 
-        db: AsyncSession, 
+        self,
+        db: AsyncSession,
         job_id: str
     ) -> JobVacancy | None:
         """Fetch job vacancy by ID."""
-        result = await db.execute(
-            select(JobVacancy).where(JobVacancy.id == job_id)
+        from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+            JobVacancyCRUDRepository,
         )
-        return result.scalar_one_or_none()
-    
+        repo = JobVacancyCRUDRepository(db)
+        return await repo.get_vacancy_by_id(job_id)
+
     async def _get_vacancy_candidate(
         self,
         db: AsyncSession,
@@ -294,13 +296,16 @@ class CandidateComparisonService:
         vacancy_id: str
     ) -> VacancyCandidate | None:
         """Get VacancyCandidate record if exists."""
-        result = await db.execute(
-            select(VacancyCandidate).where(
-                VacancyCandidate.candidate_id == candidate_id,
-                VacancyCandidate.vacancy_id == vacancy_id
-            )
+        from app.domains.candidates.repositories.vacancy_candidate_repository import (
+            VacancyCandidateRepository,
         )
-        return result.scalar_one_or_none()
+        repo = VacancyCandidateRepository(db)
+        import uuid
+        try:
+            vacancy_uuid = uuid.UUID(str(vacancy_id))
+        except (ValueError, TypeError):
+            return None
+        return await repo.get_by_vacancy_and_candidate(vacancy_uuid, candidate_id)
     
     async def _get_wsi_data(
         self, 
@@ -343,10 +348,15 @@ class CandidateComparisonService:
                     "summary": getattr(vacancy_candidate, 'wsi_summary', None),
                 }
         
+        # ADR-001-EXEMPT: legacy VoiceScreeningCall+VoiceScreeningAnalysis JOIN
+        # with conditional ilike on job.title — fallback path only used when
+        # VacancyCandidate.wsi_completed=False. WsiRepository is the canonical
+        # path (handled higher up). These legacy tables have no dedicated repo
+        # and only two callers (this file + analytics/candidate_report_service).
         base_query = (
             select(VoiceScreeningCall, VoiceScreeningAnalysis)
             .join(
-                VoiceScreeningAnalysis, 
+                VoiceScreeningAnalysis,
                 VoiceScreeningCall.id == VoiceScreeningAnalysis.screening_call_id,
                 isouter=True
             )

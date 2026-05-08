@@ -88,7 +88,11 @@ def scan_file(path: Path) -> list[tuple[int, str, str]]:
 
 
 def main() -> int:
-    block = "--block" in sys.argv
+    # Sprint 8 batch 2 (2026-05-07): promoted to blocking by default after
+    # sensor reached 0 violations via 8 parallel-agent dispatches across all
+    # service domains. Use --warn-only to opt out for legacy ratchet.
+    warn_only = "--warn-only" in sys.argv
+    block = not warn_only
 
     if not SERVICES_DIR.exists():
         print(f"[ADR-001 select sensor] WARN: {SERVICES_DIR} does not exist")
@@ -129,8 +133,9 @@ def main() -> int:
     )
 
     if block:
+        print("[ADR-001 select sensor] BLOCKING mode (default since Sprint 8) — failing build.")
         return 1
-    print("[ADR-001 select sensor] WARN-ONLY mode — not blocking.")
+    print("[ADR-001 select sensor] WARN-ONLY mode (opt-out via --warn-only flag).")
     return 0
 
 

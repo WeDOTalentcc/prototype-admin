@@ -7,9 +7,9 @@ Every balance change is recorded as an immutable CreditTransaction.
 import logging
 from datetime import datetime
 
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.credits.repositories.credits_data_repository import CreditsDataRepository
 from lia_models.billing import (
     CreditAccount,
     CreditTransaction,
@@ -46,10 +46,8 @@ class CreditService:
     async def get_or_create_account(
         self, db: AsyncSession, company_id: str
     ) -> CreditAccount:
-        result = await db.execute(
-            select(CreditAccount).where(CreditAccount.company_id == company_id)
-        )
-        account = result.scalars().first()
+        repo = CreditsDataRepository(db)
+        account = await repo.get_account_by_company(company_id)
         if account:
             return account
 
@@ -110,12 +108,8 @@ class CreditService:
         if amount <= 0:
             raise ValueError("Consumption amount must be positive")
 
-        result = await db.execute(
-            select(CreditAccount)
-            .where(CreditAccount.company_id == company_id)
-            .with_for_update()
-        )
-        account = result.scalars().first()
+        repo = CreditsDataRepository(db)
+        account = await repo.get_account_by_company_for_update(company_id)
         if not account:
             account = await self.get_or_create_account(db, company_id)
 
@@ -196,12 +190,8 @@ class CreditService:
         if amount <= 0:
             raise ValueError("Credit amount must be positive")
 
-        result = await db.execute(
-            select(CreditAccount)
-            .where(CreditAccount.company_id == company_id)
-            .with_for_update()
-        )
-        account = result.scalars().first()
+        repo = CreditsDataRepository(db)
+        account = await repo.get_account_by_company_for_update(company_id)
         if not account:
             account = await self.get_or_create_account(db, company_id)
 
@@ -246,14 +236,11 @@ class CreditService:
         limit: int = 50,
         offset: int = 0,
     ) -> list[dict]:
-        result = await db.execute(
-            select(CreditTransaction)
-            .where(CreditTransaction.company_id == company_id)
-            .order_by(CreditTransaction.created_at.desc())
-            .limit(limit)
-            .offset(offset)
+        repo = CreditsDataRepository(db)
+        transactions = await repo.list_transactions_by_company(
+            company_id, limit=limit, offset=offset
         )
-        return [t.to_dict() for t in result.scalars().all()]
+        return [t.to_dict() for t in transactions]
 
 
 credit_service = CreditService()

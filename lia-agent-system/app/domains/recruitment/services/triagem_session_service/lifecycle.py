@@ -3,16 +3,18 @@ Session lifecycle: validate_token, get_session_config, create_session, start_ses
 get_history, complete_session.
 """
 import logging
-import random
 import uuid
 from datetime import datetime, timedelta
 from typing import Any
 
-from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from lia_models.job_vacancy import JobVacancy
 from lia_models.triagem import TriagemMessage, TriagemSession
+
+from app.domains.recruitment.repositories.triagem_session_repository import (
+    TriagemSessionRepository,
+    find_job_vacancy_for_triagem,
+)
 
 from ._shared import (
     BLOCK_TRANSITION_MESSAGES,
@@ -32,10 +34,8 @@ logger = logging.getLogger(__name__)
 
 
 async def validate_token(db: AsyncSession, token: str) -> dict[str, Any]:
-    result = await db.execute(
-        select(TriagemSession).where(TriagemSession.token == token)
-    )
-    session = result.scalar_one_or_none()
+    repo = TriagemSessionRepository(db)
+    session = await repo.get_session_by_token(token)
 
     if not session:
         return {"valid": False, "error": "not_found", "status_code": 404}
@@ -55,33 +55,16 @@ async def get_session_config(db: AsyncSession, token: str) -> dict[str, Any] | N
         return validation
 
     session_data = validation["session"]
-    session_result = await db.execute(
-        select(TriagemSession).where(TriagemSession.token == token)
-    )
-    session_orm: TriagemSession | None = session_result.scalar_one_or_none()
-    msg_result = await db.execute(
-        select(TriagemMessage).where(
-            TriagemMessage.session_id == uuid.UUID(session_data["id"])
-        ).order_by(TriagemMessage.created_at)
-    )
-    messages = msg_result.scalars().all()
+    repo = TriagemSessionRepository(db)
+    session_orm = await repo.get_session_by_token(token)
+    messages = await repo.list_messages_for_session(uuid.UUID(session_data["id"]))
 
     job_info: dict[str, Any] = {}
     job_id = session_data.get("job_id")
     company_id = session_data.get("company_id")
     if job_id:
         try:
-            query = select(JobVacancy).where(JobVacancy.job_id == job_id)
-            if company_id and hasattr(JobVacancy, "company_id"):
-                query = query.where(JobVacancy.company_id == company_id)
-            job_result = await db.execute(query)
-            job = job_result.scalar_one_or_none()
-            if not job:
-                query2 = select(JobVacancy).where(JobVacancy.id == uuid.UUID(job_id))
-                if company_id and hasattr(JobVacancy, "company_id"):
-                    query2 = query2.where(JobVacancy.company_id == company_id)
-                job_result2 = await db.execute(query2)
-                job = job_result2.scalar_one_or_none()
+            job = await find_job_vacancy_for_triagem(db, job_id, company_id)
             if job:
                 job_info["jobDescription"] = (job.description or "")[:500] if job.description else None
                 job_info["location"] = job.location
@@ -176,27 +159,10 @@ async def create_session(
     expires_days: int = 7,
     voice_mode: bool = False,
 ) -> TriagemSession:
-    job = None
     screening_config: dict[str, Any] = {}
-    try:
-        q = select(JobVacancy).where(JobVacancy.job_id == job_id)
-        if company_id and hasattr(JobVacancy, "company_id"):
-            q = q.where(JobVacancy.company_id == company_id)
-        job_result = await db.execute(q)
-        job = job_result.scalar_one_or_none()
-        if not job:
-            try:
-                q2 = select(JobVacancy).where(JobVacancy.id == uuid.UUID(job_id))
-                if company_id and hasattr(JobVacancy, "company_id"):
-                    q2 = q2.where(JobVacancy.company_id == company_id)
-                job_result2 = await db.execute(q2)
-                job = job_result2.scalar_one_or_none()
-            except Exception:
-                pass
-        if job:
-            screening_config = getattr(job, "screening_config", None) or {}
-    except Exception as exc:
-        logger.warning(f"[Triagem] Could not load job for session creation (job_id={job_id}): {exc}")
+    job = await find_job_vacancy_for_triagem(db, job_id, company_id)
+    if job:
+        screening_config = getattr(job, "screening_config", None) or {}
 
     blocks, qs_id, qs_version = await _load_or_generate_blocks(db, job_id, job)
     total_blocks = len(blocks)
@@ -284,10 +250,8 @@ async def create_session(
 
 
 async def start_session(db: AsyncSession, token: str, voice_mode: bool | None = None) -> dict[str, Any]:
-    result = await db.execute(
-        select(TriagemSession).where(TriagemSession.token == token)
-    )
-    session = result.scalar_one_or_none()
+    repo = TriagemSessionRepository(db)
+    session = await repo.get_session_by_token(token)
     if not session:
         return {"error": "not_found"}
 
@@ -330,19 +294,12 @@ async def start_session(db: AsyncSession, token: str, voice_mode: bool | None = 
 
 
 async def get_history(db: AsyncSession, token: str) -> dict[str, Any]:
-    result = await db.execute(
-        select(TriagemSession).where(TriagemSession.token == token)
-    )
-    session = result.scalar_one_or_none()
+    repo = TriagemSessionRepository(db)
+    session = await repo.get_session_by_token(token)
     if not session:
         return {"error": "not_found"}
 
-    msg_result = await db.execute(
-        select(TriagemMessage).where(
-            TriagemMessage.session_id == session.id
-        ).order_by(TriagemMessage.created_at)
-    )
-    messages = msg_result.scalars().all()
+    messages = await repo.list_messages_for_session(session.id)
 
     return {
         "session": session.to_dict(),
@@ -352,10 +309,8 @@ async def get_history(db: AsyncSession, token: str) -> dict[str, Any]:
 
 
 async def complete_session(db: AsyncSession, token: str) -> dict[str, Any]:
-    result = await db.execute(
-        select(TriagemSession).where(TriagemSession.token == token)
-    )
-    session = result.scalar_one_or_none()
+    repo = TriagemSessionRepository(db)
+    session = await repo.get_session_by_token(token)
     if not session:
         return {"error": "not_found"}
 
@@ -365,26 +320,8 @@ async def complete_session(db: AsyncSession, token: str) -> dict[str, Any]:
     session.status = "completed"
     session.completed_at = datetime.utcnow()
 
-    scored_msgs_result = await db.execute(
-        select(TriagemMessage).where(
-            and_(
-                TriagemMessage.session_id == session.id,
-                TriagemMessage.sender == "candidate",
-            )
-        ).order_by(TriagemMessage.created_at)
-    )
-    candidate_msgs = scored_msgs_result.scalars().all()
-
-    lia_msgs_result = await db.execute(
-        select(TriagemMessage).where(
-            and_(
-                TriagemMessage.session_id == session.id,
-                TriagemMessage.sender == "lia",
-                TriagemMessage.message_type == "question",
-            )
-        ).order_by(TriagemMessage.created_at)
-    )
-    lia_question_msgs = lia_msgs_result.scalars().all()
+    candidate_msgs = await repo.list_candidate_messages_for_session(session.id)
+    lia_question_msgs = await repo.list_lia_question_messages_for_session(session.id)
     lia_by_block: dict[int, list[TriagemMessage]] = {}
     for lm in lia_question_msgs:
         bidx = lm.wsi_block if lm.wsi_block is not None else 0

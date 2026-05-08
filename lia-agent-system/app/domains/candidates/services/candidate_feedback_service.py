@@ -14,10 +14,12 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
+from app.domains.candidates.repositories.candidate_feedback_repository import (
+    CandidateFeedbackRepository,
+)
 from app.domains.communication.services.email_service import email_service
 from lia_models.candidate_feedback import CandidateFeedback, FeedbackType
 from app.services.notification_service import (
@@ -488,18 +490,16 @@ class CandidateFeedbackService:
             should_close = True
         
         try:
-            result = await db.execute(
-                select(CandidateFeedback).where(CandidateFeedback.id == feedback_id)
-            )
-            feedback = result.scalar_one_or_none()
-            
+            repo = CandidateFeedbackRepository(db)
+            feedback = await repo.get_by_id(feedback_id)
+
             if feedback:
                 feedback.resubmit_clicked = True
                 feedback.resubmit_clicked_at = datetime.utcnow()
                 await db.commit()
                 logger.info(f"Marked resubmit clicked for feedback {feedback_id}")
                 return True
-            
+
             return False
         except Exception:
             try:
@@ -524,11 +524,9 @@ class CandidateFeedbackService:
             should_close = True
         
         try:
-            result = await db.execute(
-                select(CandidateFeedback).where(CandidateFeedback.id == feedback_id)
-            )
-            feedback = result.scalar_one_or_none()
-            
+            repo = CandidateFeedbackRepository(db)
+            feedback = await repo.get_by_id(feedback_id)
+
             if feedback:
                 feedback.resubmit_completed = True
                 feedback.resubmit_completed_at = datetime.utcnow()
@@ -537,7 +535,7 @@ class CandidateFeedbackService:
                 await db.commit()
                 logger.info(f"Marked resubmit completed for feedback {feedback_id}")
                 return True
-            
+
             return False
         except Exception:
             try:
@@ -562,17 +560,8 @@ class CandidateFeedbackService:
             should_close = True
         
         try:
-            from datetime import timedelta
-            cutoff_date = datetime.utcnow() - timedelta(days=days)
-            
-            conditions = [CandidateFeedback.created_at >= cutoff_date]
-            if vacancy_id:
-                conditions.append(CandidateFeedback.vacancy_id == vacancy_id)
-            
-            result = await db.execute(
-                select(CandidateFeedback).where(and_(*conditions))
-            )
-            feedbacks = list(result.scalars())
+            repo = CandidateFeedbackRepository(db)
+            feedbacks = await repo.list_recent(days=days, vacancy_id=vacancy_id)
             
             total_sent = len(feedbacks)
             email_sent = sum(1 for f in feedbacks if f.email_sent)

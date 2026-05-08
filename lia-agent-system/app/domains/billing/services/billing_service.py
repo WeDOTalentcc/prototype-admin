@@ -9,7 +9,6 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lia_models.billing import (
@@ -20,6 +19,7 @@ from lia_models.billing import (
     SubscriptionStatus,
 )
 from lia_models.client_account import ClientAccount
+from app.domains.billing.repositories.billing_repository import BillingRepository
 from app.services.billing_providers.base import (
     BillingProviderBase,
     CustomerData,
@@ -49,6 +49,7 @@ class BillingService:
         """
         self.db = db
         self.default_provider = default_provider
+        self._repo = BillingRepository(db)
         self._providers: dict[str, BillingProviderBase] = {
             "iugu": IuguProvider(),
             "vindi": VindiProvider(),
@@ -63,32 +64,21 @@ class BillingService:
     
     async def get_client(self, client_id: UUID) -> ClientAccount | None:
         """Get client account by ID."""
-        result = await self.db.execute(
-            select(ClientAccount).where(ClientAccount.id == client_id)
-        )
-        return result.scalar_one_or_none()
-    
+        return await self._repo.get_client_by_id(client_id)
+
     async def get_subscription(self, subscription_id: UUID) -> Subscription | None:
         """Get subscription by ID."""
-        result = await self.db.execute(
-            select(Subscription).where(Subscription.id == subscription_id)
-        )
-        return result.scalar_one_or_none()
-    
+        return await self._repo.get_subscription_by_id(subscription_id)
+
     async def get_active_subscription(self, client_id: UUID) -> Subscription | None:
         """Get active subscription for a client."""
-        result = await self.db.execute(
-            select(Subscription).where(
-                and_(
-                    Subscription.client_id == client_id,
-                    Subscription.status.in_([
-                        SubscriptionStatus.ACTIVE.value,
-                        SubscriptionStatus.TRIALING.value
-                    ])
-                )
-            )
+        return await self._repo.get_active_subscription_for_client(
+            client_id,
+            active_statuses=[
+                SubscriptionStatus.ACTIVE.value,
+                SubscriptionStatus.TRIALING.value,
+            ],
         )
-        return result.scalar_one_or_none()
     
     async def create_subscription(
         self,
@@ -356,24 +346,16 @@ class BillingService:
         Returns:
             List of invoice dictionaries
         """
-        query = select(Invoice).where(Invoice.client_id == client_id)
-        
-        if status:
-            query = query.where(Invoice.status == status)
-        
-        query = query.order_by(Invoice.created_at.desc()).limit(limit)
-        
-        result = await self.db.execute(query)
-        invoices = result.scalars().all()
-        
+        invoices = await self._repo.list_invoices_for_client(
+            client_id=client_id,
+            status=status,
+            limit=limit,
+        )
         return [inv.to_dict() for inv in invoices]
-    
+
     async def get_invoice(self, invoice_id: UUID) -> dict[str, Any] | None:
         """Get invoice by ID."""
-        result = await self.db.execute(
-            select(Invoice).where(Invoice.id == invoice_id)
-        )
-        invoice = result.scalar_one_or_none()
+        invoice = await self._repo.get_invoice_by_id(invoice_id)
         return invoice.to_dict() if invoice else None
     
     async def sync_invoices(self, subscription_id: UUID) -> dict[str, Any]:
@@ -404,17 +386,12 @@ class BillingService:
         
         for inv_data in invoices_data:
             external_id = inv_data.get("id") or inv_data.get("external_id")
-            
-            existing = await self.db.execute(
-                select(Invoice).where(
-                    and_(
-                        Invoice.external_id == str(external_id),
-                        Invoice.provider == subscription.provider
-                    )
-                )
+
+            existing_invoice = await self._repo.get_invoice_by_external_and_provider(
+                external_id=str(external_id),
+                provider=subscription.provider,
             )
-            existing_invoice = existing.scalar_one_or_none()
-            
+
             if not existing_invoice:
                 invoice = Invoice(
                     subscription_id=subscription.id,
@@ -565,17 +542,12 @@ class BillingService:
         external_id = data.get("id") or data.get("subscription_id")
         if not external_id:
             return
-        
-        result = await self.db.execute(
-            select(Subscription).where(
-                and_(
-                    Subscription.external_id == str(external_id),
-                    Subscription.provider == provider
-                )
-            )
+
+        subscription = await self._repo.get_subscription_by_external_and_provider(
+            external_id=str(external_id),
+            provider=provider,
         )
-        subscription = result.scalar_one_or_none()
-        
+
         if not subscription:
             logger.warning(f"Subscription not found for external_id: {external_id}")
             return
@@ -607,17 +579,12 @@ class BillingService:
         external_id = data.get("id") or data.get("invoice_id") or data.get("bill_id")
         if not external_id:
             return
-        
-        result = await self.db.execute(
-            select(Invoice).where(
-                and_(
-                    Invoice.external_id == str(external_id),
-                    Invoice.provider == provider
-                )
-            )
+
+        invoice = await self._repo.get_invoice_by_external_and_provider(
+            external_id=str(external_id),
+            provider=provider,
         )
-        invoice = result.scalar_one_or_none()
-        
+
         if not invoice:
             logger.warning(f"Invoice not found for external_id: {external_id}")
             return

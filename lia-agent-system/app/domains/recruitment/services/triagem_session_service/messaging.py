@@ -6,10 +6,13 @@ import random
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lia_models.triagem import TriagemMessage, TriagemSession
+
+from app.domains.recruitment.repositories.triagem_session_repository import (
+    TriagemSessionRepository,
+)
 
 from ._shared import (
     BLOCK_TRANSITION_MESSAGES,
@@ -37,10 +40,8 @@ async def process_message(
     message_type: str = "text",
     voice_mode: bool | None = None,
 ) -> dict[str, Any]:
-    result = await db.execute(
-        select(TriagemSession).where(TriagemSession.token == token)
-    )
-    session = result.scalar_one_or_none()
+    repo = TriagemSessionRepository(db)
+    session = await repo.get_session_by_token(token)
     if not session:
         return {"error": "not_found"}
 
@@ -85,15 +86,9 @@ async def process_message(
     db.add(lia_msg)
     await db.flush()
 
-    all_cand_result = await db.execute(
-        select(TriagemMessage).where(
-            and_(
-                TriagemMessage.session_id == session.id,
-                TriagemMessage.sender == "candidate",
-            )
-        )
+    answered_count = len(
+        await repo.list_candidate_messages_for_session(session.id)
     )
-    answered_count = len(all_cand_result.scalars().all())
     active_blocks = _get_session_blocks(session)
 
     return {
@@ -107,15 +102,8 @@ async def process_message(
 async def _generate_lia_response(
     db: AsyncSession, session: TriagemSession, candidate_content: str
 ) -> dict[str, Any]:
-    msg_result = await db.execute(
-        select(TriagemMessage).where(
-            and_(
-                TriagemMessage.session_id == session.id,
-                TriagemMessage.sender == "candidate",
-            )
-        ).order_by(TriagemMessage.created_at)
-    )
-    candidate_msgs = msg_result.scalars().all()
+    repo = TriagemSessionRepository(db)
+    candidate_msgs = await repo.list_candidate_messages_for_session(session.id)
     candidate_count = len(candidate_msgs)
 
     active_blocks = _get_session_blocks(session)
@@ -129,16 +117,7 @@ async def _generate_lia_response(
     block_type = current_block.get("block_type", "behavioral")
     competency = current_block.get("competency", "general")
 
-    last_lia_result = await db.execute(
-        select(TriagemMessage).where(
-            and_(
-                TriagemMessage.session_id == session.id,
-                TriagemMessage.sender == "lia",
-                TriagemMessage.message_type == "question",
-            )
-        ).order_by(TriagemMessage.created_at.desc())
-    )
-    last_lia_msg = last_lia_result.scalars().first()
+    last_lia_msg = await repo.get_last_lia_question_message(session.id)
     current_question_text = last_lia_msg.content if last_lia_msg else questions[0]
 
     intent = await _classify_intent(candidate_content, block_name, current_question_text)
@@ -195,16 +174,9 @@ async def _generate_lia_response(
 
     score_result = _score_response_deterministic(candidate_content, block_type, competency)
 
-    block_msg_result = await db.execute(
-        select(TriagemMessage).where(
-            and_(
-                TriagemMessage.session_id == session.id,
-                TriagemMessage.sender == "candidate",
-                TriagemMessage.wsi_block == current_block_idx,
-            )
-        )
+    block_candidate_msgs = await repo.list_candidate_messages_in_block(
+        session.id, current_block_idx
     )
-    block_candidate_msgs = block_msg_result.scalars().all()
     q_index = len(block_candidate_msgs)
 
     if q_index < len(questions):

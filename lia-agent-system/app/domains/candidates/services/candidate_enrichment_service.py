@@ -9,9 +9,9 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.domains.candidates.repositories.candidate_repository import CandidateRepository
 from app.domains.sourcing.services.apify_mcp_client import ApifyMCPClient
 from lia_models.candidate import Candidate, CandidateEducation, CandidateExperience
 
@@ -67,11 +67,9 @@ class CandidateEnrichmentService:
         Returns:
             Dict with enrichment results including updated fields and any errors
         """
-        result = await db.execute(
-            select(Candidate).where(Candidate.id == candidate_id)
-        )
-        candidate = result.scalar_one_or_none()
-        
+        candidate_repo = CandidateRepository(db)
+        candidate = await candidate_repo.get_by_id(candidate_id)
+
         if not candidate:
             return {
                 "success": False,
@@ -554,14 +552,13 @@ class CandidateEnrichmentService:
             if not company_name:
                 continue
             
-            existing = await db.execute(
-                select(CandidateExperience).where(
-                    CandidateExperience.candidate_id == candidate.id,
-                    CandidateExperience.company_name == company_name,
-                    CandidateExperience.title == (exp.get("title") or exp.get("position") or "")
-                )
+            candidate_repo = CandidateRepository(db)
+            existing = await candidate_repo.find_experience_by_candidate_company_title(
+                candidate_id=candidate.id,
+                company_name=company_name,
+                title=(exp.get("title") or exp.get("position") or ""),
             )
-            if existing.scalar_one_or_none():
+            if existing:
                 continue
             
             company_info = exp.get("companyInfo") or exp.get("company_info") or {}
@@ -644,13 +641,12 @@ class CandidateEnrichmentService:
             if not institution:
                 continue
             
-            existing = await db.execute(
-                select(CandidateEducation).where(
-                    CandidateEducation.candidate_id == candidate.id,
-                    CandidateEducation.institution == institution
-                )
+            candidate_repo = CandidateRepository(db)
+            existing = await candidate_repo.find_education_by_candidate_institution(
+                candidate_id=candidate.id,
+                institution=institution,
             )
-            if existing.scalar_one_or_none():
+            if existing:
                 continue
             
             is_completed = edu.get("isCompleted") or edu.get("is_completed")

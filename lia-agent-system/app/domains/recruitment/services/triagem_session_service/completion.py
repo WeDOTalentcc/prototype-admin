@@ -7,10 +7,14 @@ import uuid
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import select, text
+from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lia_models.triagem import TriagemMessage, TriagemSession
+
+from app.domains.recruitment.repositories.triagem_session_repository import (
+    find_job_vacancy_for_triagem,
+)
 
 from ._shared import _get_event_dispatcher, _get_screening_config
 
@@ -36,10 +40,11 @@ async def _trigger_post_completion(db: AsyncSession, session: TriagemSession, re
         import json as _json
         import os as _os
 
+        from app.domains.candidates.repositories.candidate_repository import (
+            CandidateRepository,
+        )
         from app.domains.communication.services.communication_dispatcher import CommunicationDispatcher
         from app.domains.cv_screening.services.wsi_feedback_generator import get_feedback_generator
-        from lia_models.candidate import Candidate
-        from lia_models.job_vacancy import JobVacancy
 
         comm_dispatcher = CommunicationDispatcher()
         response_scores = response_scores or []
@@ -48,10 +53,9 @@ async def _trigger_post_completion(db: AsyncSession, session: TriagemSession, re
         seniority_level = "junior"
         candidate_phone = None
         try:
-            job_result = await db.execute(
-                select(JobVacancy).where(JobVacancy.id == session.job_id)
+            job = await find_job_vacancy_for_triagem(
+                db, session.job_id, session.company_id
             )
-            job = job_result.scalar_one_or_none()
             if job and getattr(job, "seniority_level", None):
                 seniority_level = job.seniority_level
         except Exception as _e:
@@ -59,10 +63,12 @@ async def _trigger_post_completion(db: AsyncSession, session: TriagemSession, re
 
         # 2 — Resolve candidate phone for WhatsApp
         try:
-            cand_result = await db.execute(
-                select(Candidate).where(Candidate.id == session.candidate_id)
+            cand_repo = CandidateRepository(db)
+            cand = (
+                await cand_repo.get_by_id_str(session.candidate_id)
+                if session.candidate_id
+                else None
             )
-            cand = cand_result.scalar_one_or_none()
             if cand:
                 candidate_phone = getattr(cand, "mobile_phone", None) or getattr(cand, "phone", None)
         except Exception as _e:

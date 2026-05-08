@@ -808,6 +808,13 @@ class PearchService:
             )
         
         # Query base
+        # ADR-001-EXEMPT: dynamic query builder with 13 optional filter kwargs
+        # (industries, funding_stages, company_hq_countries, company_tags,
+        # institution_tiers, institution_countries, institution_ranking_max,
+        # timezones, timezone_pattern, require_email, require_phone, exclude_ids,
+        # search_terms) and 6 EXISTS subqueries on CandidateExperience/Education.
+        # Encapsulating in a repo method would either require passing 13 kwargs
+        # downstream or duplicating the builder skeleton — net loss of clarity.
         stmt = select(Candidate).where(
             Candidate.is_active
         )
@@ -997,6 +1004,11 @@ class PearchService:
                 )
             
             # Query staging table - exclude already promoted profiles
+            # ADR-001-EXEMPT: same dynamic builder pattern as line 811 (Candidate
+            # branch above) — this is the parallel staging-table branch sharing
+            # search_terms/require_email/require_phone with conditional WHERE
+            # accumulation. Splitting into a repo while keeping symmetry with
+            # line 811 would duplicate the optional-filter wiring.
             staging_stmt = select(ExternalCandidateProfile).where(
                 ExternalCandidateProfile.status != 'promoted',
                 ExternalCandidateProfile.promoted_to_candidate_id.is_(None)

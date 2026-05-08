@@ -85,6 +85,18 @@ class JobVacancyCRUDRepository:
         )
         return list(result.scalars().all())
 
+    async def list_paginated_no_tenant(self, limit: int = 30, offset: int = 0):
+        """Paginated list across all tenants — used by Rails-adapter local
+        fallback only. Caller is responsible for any tenancy check.
+
+        ADR-001 cross-domain read: integration layer fallback when Rails
+        is unavailable; Rails owns tenancy at the API gateway.
+        """
+        result = await self.db.execute(
+            select(JobVacancy).limit(limit).offset(offset)
+        )
+        return list(result.scalars().all())
+
     # ── List ──────────────────────────────────────────────────────────────────
 
     async def list_vacancies(

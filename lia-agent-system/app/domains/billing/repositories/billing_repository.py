@@ -53,6 +53,42 @@ class BillingRepository:
         result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
+    async def get_subscription_by_id(self, subscription_id: UUID):
+        """Return a single Subscription by primary key, or None."""
+        query = select(Subscription).where(Subscription.id == subscription_id)
+        result = await self.db.execute(query)
+        return result.scalar_one_or_none()
+
+    async def get_active_subscription_for_client(
+        self,
+        client_id: UUID,
+        active_statuses: list[str],
+    ):
+        """Return the active/trialing subscription for a client, or None."""
+        query = select(Subscription).where(
+            and_(
+                Subscription.client_id == client_id,
+                Subscription.status.in_(active_statuses),
+            )
+        )
+        result = await self.db.execute(query)
+        return result.scalar_one_or_none()
+
+    async def get_subscription_by_external_and_provider(
+        self,
+        external_id: str,
+        provider: str,
+    ):
+        """Return a Subscription matching (external_id, provider), or None."""
+        query = select(Subscription).where(
+            and_(
+                Subscription.external_id == external_id,
+                Subscription.provider == provider,
+            )
+        )
+        result = await self.db.execute(query)
+        return result.scalar_one_or_none()
+
     async def flush_and_refresh_subscription(self, subscription) -> None:
         """Flush pending changes and refresh the subscription instance."""
         await self.db.flush()
@@ -75,6 +111,35 @@ class BillingRepository:
         query = query.order_by(Invoice.created_at.desc()).limit(limit).offset(offset)
         result = await self.db.execute(query)
         return list(result.scalars().all())
+
+    async def list_invoices_for_client(
+        self,
+        client_id: UUID,
+        status: str | None = None,
+        limit: int = 50,
+    ) -> list:
+        """Return invoices for a client, optionally filtered by status, ordered desc."""
+        query = select(Invoice).where(Invoice.client_id == client_id)
+        if status:
+            query = query.where(Invoice.status == status)
+        query = query.order_by(Invoice.created_at.desc()).limit(limit)
+        result = await self.db.execute(query)
+        return list(result.scalars().all())
+
+    async def get_invoice_by_external_and_provider(
+        self,
+        external_id: str,
+        provider: str,
+    ):
+        """Return an Invoice matching (external_id, provider), or None."""
+        query = select(Invoice).where(
+            and_(
+                Invoice.external_id == external_id,
+                Invoice.provider == provider,
+            )
+        )
+        result = await self.db.execute(query)
+        return result.scalar_one_or_none()
 
     async def count_invoices(self, conditions: list) -> int:
         """Return total count of invoices matching conditions."""

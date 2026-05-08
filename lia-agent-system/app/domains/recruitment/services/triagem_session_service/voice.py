@@ -6,10 +6,14 @@ import logging
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import and_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lia_models.triagem import TriagemMessage, TriagemSession
+
+from app.domains.recruitment.repositories.triagem_session_repository import (
+    TriagemSessionRepository,
+    find_job_vacancy_for_triagem,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -45,15 +49,8 @@ async def generate_tts_for_message(
     except (ValueError, AttributeError):
         return {"error": "not_found"}
 
-    msg_result = await db.execute(
-        select(TriagemMessage).where(
-            and_(
-                TriagemMessage.id == msg_uuid,
-                TriagemMessage.session_id == session.id,
-            )
-        )
-    )
-    message = msg_result.scalar_one_or_none()
+    repo = TriagemSessionRepository(db)
+    message = await repo.get_message_for_session(msg_uuid, session.id)
     if not message:
         return {"error": "not_found"}
 
@@ -76,28 +73,11 @@ async def generate_tts_for_message(
 async def request_phone_call(
     db: AsyncSession, session: TriagemSession, candidate_phone: str
 ) -> dict[str, Any]:
-    from lia_models.job_vacancy import JobVacancy
-    from sqlalchemy import select
-    import uuid as _uuid
-
     job_id = session.job_id
     company_id = session.company_id
     job = None
     if job_id:
-        try:
-            q = select(JobVacancy).where(JobVacancy.job_id == job_id)
-            if company_id and hasattr(JobVacancy, "company_id"):
-                q = q.where(JobVacancy.company_id == company_id)
-            r = await db.execute(q)
-            job = r.scalar_one_or_none()
-            if not job:
-                q2 = select(JobVacancy).where(JobVacancy.id == _uuid.UUID(job_id))
-                if company_id and hasattr(JobVacancy, "company_id"):
-                    q2 = q2.where(JobVacancy.company_id == company_id)
-                r2 = await db.execute(q2)
-                job = r2.scalar_one_or_none()
-        except Exception as e:
-            logger.warning(f"[Triagem] Could not fetch job for phone call: {e}")
+        job = await find_job_vacancy_for_triagem(db, job_id, company_id)
 
     sc = (getattr(job, "screening_config", None) or {}) if job else {}
     phone_ch = (sc.get("channels") or {}).get("phone") or {}

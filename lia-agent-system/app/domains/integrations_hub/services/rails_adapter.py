@@ -16,7 +16,6 @@ Usage:
 import logging
 import os
 
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 logger = logging.getLogger(__name__)
@@ -591,11 +590,11 @@ class RailsAdapter:
 
         if self.db:
             try:
-                from lia_models.candidate import Candidate
-                result = await self.db.execute(
-                    select(Candidate).where(Candidate.id == candidate_id)
+                from app.domains.candidates.repositories.candidate_repository import (
+                    CandidateRepository,
                 )
-                candidate = result.scalar_one_or_none()
+                candidate_repo = CandidateRepository(self.db)
+                candidate = await candidate_repo.get_by_id_str(candidate_id)
                 if candidate:
                     logger.debug("[RailsAdapter] Candidate %s from local DB", candidate_id)
                     return {"source": "local", "id": str(candidate.id), "email": candidate.email}
@@ -619,11 +618,14 @@ class RailsAdapter:
 
         if self.db:
             try:
-                from lia_models.candidate import Candidate
-                result = await self.db.execute(
-                    select(Candidate).limit(limit).offset((page - 1) * limit)
+                from app.domains.candidates.repositories.candidate_repository import (
+                    CandidateRepository,
                 )
-                return [{"source": "local", "id": str(c.id)} for c in result.scalars().all()]
+                candidate_repo = CandidateRepository(self.db)
+                candidates = await candidate_repo.list_paginated_no_tenant(
+                    limit=limit, offset=(page - 1) * limit
+                )
+                return [{"source": "local", "id": str(c.id)} for c in candidates]
             except Exception:
                 pass
 
@@ -767,11 +769,11 @@ class RailsAdapter:
 
         if self.db:
             try:
-                from lia_models.job_vacancy import JobVacancy
-                result = await self.db.execute(
-                    select(JobVacancy).where(JobVacancy.id == job_id)
+                from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+                    JobVacancyCRUDRepository,
                 )
-                job = result.scalar_one_or_none()
+                job_repo = JobVacancyCRUDRepository(self.db)
+                job = await job_repo.get_vacancy_by_id(job_id)
                 if job:
                     return {"source": "local", "id": str(job.id), "title": job.title}
             except Exception:
@@ -794,12 +796,15 @@ class RailsAdapter:
 
         if self.db:
             try:
-                from lia_models.job_vacancy import JobVacancy
-                result = await self.db.execute(
-                    select(JobVacancy).limit(limit).offset((page - 1) * limit)
+                from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+                    JobVacancyCRUDRepository,
+                )
+                job_repo = JobVacancyCRUDRepository(self.db)
+                jobs = await job_repo.list_paginated_no_tenant(
+                    limit=limit, offset=(page - 1) * limit
                 )
                 return [{"source": "local", "id": str(j.id), "title": j.title}
-                        for j in result.scalars().all()]
+                        for j in jobs]
             except Exception:
                 pass
 

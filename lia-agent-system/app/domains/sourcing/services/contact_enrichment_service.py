@@ -5,8 +5,10 @@ from datetime import datetime, timedelta
 from typing import Any
 from uuid import UUID
 
-from sqlalchemy import select, update
+from sqlalchemy import update
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.domains.candidates.repositories.candidate_repository import CandidateRepository
 
 from app.domains.sourcing.ports.enrichment_port import (
     IEnrichmentPort,
@@ -73,10 +75,8 @@ class ContactEnrichmentService:
         company_id: str | None = None,
         user_id: str | None = None,
     ) -> dict[str, Any]:
-        result = await db.execute(
-            select(Candidate).where(Candidate.id == candidate_id)
-        )
-        candidate = result.scalar_one_or_none()
+        candidate_repo = CandidateRepository(db)
+        candidate = await candidate_repo.get_by_id(candidate_id)
         if not candidate:
             return {"success": False, "error": "Candidate not found", "source": None}
 
@@ -418,12 +418,10 @@ class ContactEnrichmentService:
 
     async def _linkedin_url_recently_enriched(self, db: AsyncSession, linkedin_url: str) -> bool:
         normalized = linkedin_url.strip().rstrip("/").split("?")[0]
-        result = await db.execute(
-            select(Candidate).where(
-                Candidate.linkedin_url.ilike(f"%{normalized.split('/in/')[-1]}%")
-            )
+        candidate_repo = CandidateRepository(db)
+        candidates = await candidate_repo.search_by_linkedin_substring(
+            normalized.split("/in/")[-1]
         )
-        candidates = result.scalars().all()
         for cand in candidates:
             enrichment_data = (cand.additional_data or {}).get("enrichment", {})
             last_enriched = enrichment_data.get("last_enriched_at")
