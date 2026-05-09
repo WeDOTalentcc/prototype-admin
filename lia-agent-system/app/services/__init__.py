@@ -199,3 +199,9 @@ __all__ = [
     "CacheConfig",
     "cached_response",
 ]
+
+# Shim: voice_screening_analysis accessible from app.services
+try:
+    from app.domains.voice.services import voice_screening_analysis  # noqa: F401
+except ImportError:
+    pass

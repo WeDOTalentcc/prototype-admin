@@ -58,6 +58,7 @@ class AgentActivity(Base):
     __table_args__ = (
         Index('idx_agent_activity_agent_date', 'agent_id', 'started_at'),
         Index('idx_agent_activity_status_date', 'status', 'started_at'),
+        {"extend_existing": True},
     )
     
     def __repr__(self):
@@ -112,6 +113,7 @@ class AgentMetricsSnapshot(Base):
     
     __table_args__ = (
         Index('idx_metrics_agent_hour', 'agent_id', 'snapshot_hour', unique=True),
+        {"extend_existing": True},
     )
     
     def __repr__(self):

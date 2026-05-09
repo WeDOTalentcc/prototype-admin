@@ -241,7 +241,8 @@ class CommunicationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         _msg_type = input.context.get("message_type", "")
         if not _hitl_approved and _msg_type in self._HITL_MESSAGE_TYPES:
             try:
-                from app.domains.cv_screening.services.hitl_service import hitl_service
+                import app.services.hitl_service as _hitl_svc_mod
+                hitl_service = _hitl_svc_mod.hitl_service
                 from app.shared.compliance.audit_service import PROTECTED_CRITERIA, audit_service
                 thread_id = str(input.session_id)
                 candidate_id = input.context.get("candidate_id", "")

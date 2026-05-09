@@ -331,8 +331,9 @@ class SourcingReActAgent(LangGraphReActBase, EnhancedAgentMixin):
             _msg_lower = input.message.strip().lower()
             if any(w in _msg_lower for w in _CONFIRMATION_WORDS):
                 try:
-                    from app.domains.cv_screening.services.hitl_service import hitl_service
+                    import app.services.hitl_service as _hitl_svc_mod
                     from app.shared.compliance.audit_service import PROTECTED_CRITERIA, audit_service
+                    hitl_service = _hitl_svc_mod.hitl_service
                     thread_id = str(input.session_id)
                     candidate_ids = input.context.get("selected_candidates", [])
                     candidate_count = len(candidate_ids) if candidate_ids else 1
