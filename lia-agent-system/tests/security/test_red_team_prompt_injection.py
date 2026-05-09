@@ -10,8 +10,8 @@ Atributos resultado: is_suspicious (bool), risk_level (str), confidence (float)
 
 Findings:
 DETECTADO: "Ignore all previous instructions" (pattern: system_prompt_override)
-GAP (xfail): HTML injection, "Ignore the previous prompt", JAILBREAK, DAN, language model attacks
-→ PromptInjectionGuard tem cobertura limitada — expandir padrões necessário (ACH-028)
+RESOLVIDO (R-041): HTML injection, "Ignore the previous prompt", JAILBREAK, DAN, language model attacks
+→ Padrões expandidos em security_patterns.py: html_comment_injection, jailbreak_previous_prompt, jailbreak_keyword_persona
 """
 import pytest
 from unittest.mock import MagicMock, patch
@@ -87,14 +87,9 @@ class TestPromptInjectionGuardDetection:
         # Módulo referencia _injection_guard (importado de agent_chat_ws) ou PromptInjection
         assert "_injection_guard" in src or "prompt_injection" in src.lower() or "InjectionGuard" in src
 
-    @pytest.mark.xfail(
-        reason="GAP: PromptInjectionGuard não detecta HTML injection, JAILBREAK, DAN, etc. "
-               "Expandir padrões necessário (ACH-028).",
-        strict=False,
-    )
     @pytest.mark.parametrize("payload", _INJECTION_GAPS)
     def test_gap_payloads_not_detected(self, payload):
-        """[GAP] Ataques avançados não detectados pelo guard atual."""
+        """Ataques avançados detectados pelo guard — padrões expandidos (ACH-028, R-041)."""
         from app.shared.prompt_injection import PromptInjectionGuard
         result = PromptInjectionGuard().check(payload)
         assert result.is_suspicious, f"GAP não detectado: '{payload[:60]}'"

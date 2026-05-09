@@ -372,6 +372,45 @@ SECURITY_PATTERNS: list[dict[str, Any]] = [
             re.compile(r"<prompt[^>]*>\s*ignore", re.IGNORECASE),
         ],
     },
+    # ── NEW: HTML comment injection ─────────────────────────────────────────────
+    {
+        "name": "html_comment_injection",
+        "category": ThreatCategory.JAILBREAK,
+        "risk": RiskLevel.HIGH,
+        "confidence": 0.88,
+        "patterns": [
+            re.compile(r"<!--.*?(ignore|forget|override|desconsidere|anule).*?-->", re.IGNORECASE | re.DOTALL),
+            re.compile(r"<!--.*?(instructions?|guidelines?|instru[\u00e7c][\u00f5o]es?).*?-->", re.IGNORECASE | re.DOTALL),
+            re.compile(r"<!--.*?(send|envie?|post|submit).*?-->", re.IGNORECASE | re.DOTALL),
+        ],
+    },
+    # ── NEW: "previous prompt" variant (lowercase, no caps) ─────────────────────
+    {
+        "name": "jailbreak_previous_prompt",
+        "category": ThreatCategory.JAILBREAK,
+        "risk": RiskLevel.HIGH,
+        "confidence": 0.87,
+        "patterns": [
+            re.compile(r"ignore\s+the\s+previous\s+prompt", re.IGNORECASE),
+            re.compile(r"ignore\s+your\s+previous\s+prompt", re.IGNORECASE),
+            re.compile(r"forget\s+(you\s+are|that\s+you\s+are)\s+(a\s+)?AI", re.IGNORECASE),
+            re.compile(r"you\s+are\s+now\s+DAN\b", re.IGNORECASE),
+        ],
+    },
+    # ── NEW: JAILBREAK keyword + language model persona confusion ─────────────────
+    {
+        "name": "jailbreak_keyword_persona",
+        "category": ThreatCategory.JAILBREAK,
+        "risk": RiskLevel.CRITICAL,
+        "confidence": 0.95,
+        "patterns": [
+            re.compile(r"\bJAILBREAK\s*:", re.IGNORECASE),
+            re.compile(r"\bJAILBREAK\b", re.IGNORECASE),
+            re.compile(r"as\s+a\s+language\s+model\s+without\s+restrictions?", re.IGNORECASE),
+            re.compile(r"language\s+model\s+without\s+restrictions?", re.IGNORECASE),
+            re.compile(r"as\s+an?\s+AI\s+without\s+(restrictions?|limits?|guidelines?|ethics?)", re.IGNORECASE),
+        ],
+    },
 ]
 
 
