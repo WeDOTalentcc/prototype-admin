@@ -16,15 +16,9 @@ const WeeklyDigestChatProvider = dynamic(
   { ssr: false }
 )
 
-const WorkflowRailWrapper = dynamic(
-  () => import("@/components/workflow-rail/WorkflowRailWrapper"),
-  { ssr: false }
-)
-
 export default function DeferredLayoutClients() {
   return (
     <>
-      <WorkflowRailWrapper />
       <UnifiedChatConditional />
       <WeeklyDigestChatProvider />
       <LIAGlobalModals />
