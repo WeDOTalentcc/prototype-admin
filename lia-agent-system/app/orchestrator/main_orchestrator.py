@@ -368,12 +368,10 @@ class MainOrchestrator:
                     )
                     if _DISCOVERY_RE.search(ctx.message or ""):
                         _tmpls = PlanTemplateRegistry.TEMPLATES
-                        _lines = ["📋 **Planos disponíveis** — diga qual quer executar:
-"]
+                        _lines = ["📋 **Planos disponíveis** — diga qual quer executar:\n"]
                         for _key, _info in _tmpls.items():
-                            _lines.append(f"• **{_info[name]}** — {_info[description]}")
-                        _discovery_text = "
-".join(_lines)
+                            _lines.append("\u2022 **" + _info['name'] + "** \u2014 " + _info['description'])
+                        _discovery_text = "\n".join(_lines)
                         _disc_resp = ChatResponse(
                             success=True,
                             content=_discovery_text,
