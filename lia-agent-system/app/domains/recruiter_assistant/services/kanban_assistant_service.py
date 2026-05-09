@@ -18,11 +18,45 @@ from app.domains.recruiter_assistant.prompts.kanban_assistant_prompts import (
 )
 from app.shared.providers.llm_factory import get_provider_for_tenant
 
+# Compatibility alias — tests patch this attribute to isolate LLM calls.
+# The service uses LLMProviderFactory internally (Task #93), but older tests
+# reference the Anthropic SDK class directly via patch(module.Anthropic).
+try:
+    from anthropic import Anthropic  # noqa: F401
+except ImportError:  # pragma: no cover
+    Anthropic = None  # type: ignore[assignment,misc]
+
+import os as _os
+# Module-level env vars (patchable by tests)
+AI_INTEGRATIONS_ANTHROPIC_API_KEY: str | None = _os.getenv("AI_INTEGRATIONS_ANTHROPIC_API_KEY")
+AI_INTEGRATIONS_ANTHROPIC_BASE_URL: str | None = _os.getenv("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
+
 logger = logging.getLogger(__name__)
 
 
 class KanbanAssistantService:
     """Service for AI-powered Kanban pipeline analysis via LLMProviderFactory."""
+
+    @property
+    def client(self) -> "Anthropic":
+        """Return an Anthropic client, raising ValueError when unconfigured.
+
+        Tests patch the module-level ``AI_INTEGRATIONS_ANTHROPIC_API_KEY`` /
+        ``AI_INTEGRATIONS_ANTHROPIC_BASE_URL`` to simulate unconfigured state.
+        """
+        import sys as _sys
+        _mod = _sys.modules[__name__]
+        _api_key = getattr(_mod, "AI_INTEGRATIONS_ANTHROPIC_API_KEY", AI_INTEGRATIONS_ANTHROPIC_API_KEY)
+        if not _api_key:
+            raise ValueError("Anthropic client not configured — AI_INTEGRATIONS_ANTHROPIC_API_KEY is not set")
+        _cls = getattr(_mod, "Anthropic", Anthropic)
+        if _cls is None:  # pragma: no cover
+            raise ValueError("anthropic package not installed")
+        _base_url = getattr(_mod, "AI_INTEGRATIONS_ANTHROPIC_BASE_URL", AI_INTEGRATIONS_ANTHROPIC_BASE_URL)
+        kwargs: dict = {"api_key": _api_key}
+        if _base_url:
+            kwargs["base_url"] = _base_url
+        return _cls(**kwargs)
 
     @retry(
         stop=stop_after_attempt(3),

@@ -25,8 +25,26 @@ class CompanyBenefit(Base):
     icon = Column(String(100), nullable=True)
     
     value = Column(Float, nullable=True)
+    percentage_value = Column(Float, nullable=True)
     value_type = Column(String(50), default="informative")
-    
+    value_details = Column(Text, nullable=True)
+
+    # Eligibility scoping (Rails canonical)
+    applicable_to = Column(Text, nullable=True)
+    seniority_levels = Column(Text, nullable=True)
+    contract_types = Column(Text, nullable=True)
+    departments = Column(Text, nullable=True)
+
+    # Provider info
+    provider = Column(String(255), nullable=True)
+    provider_contact = Column(String(255), nullable=True)
+
+    # Scheduling
+    waiting_period_days = Column(Integer, nullable=True)
+
+    # Flags
+    is_mandatory = Column(Boolean, default=False)
+    is_discount = Column(Boolean, default=False)
     is_active = Column(Boolean, default=True)
     is_highlighted = Column(Boolean, default=False)
     order = Column(Integer, default=0)

@@ -6,7 +6,7 @@ import logging
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
@@ -20,15 +20,112 @@ router = APIRouter(prefix="/company/benefits", tags=["company-benefits"])
 logger = logging.getLogger(__name__)
 
 
+# Protected eligibility terms (LGPD + CLAUDE.md Fairness non-negotiable rule)
+PROHIBITED_ELIGIBILITY_TERMS: frozenset[str] = frozenset({
+    # PT-BR
+    "genero", "gênero", "sexo", "feminino", "masculino", "homem", "mulher",
+    "raca", "raça", "etnia", "cor", "negro", "branco", "pardo",
+    "idade", "jovem", "idoso", "velho", "anos",
+    "religiao", "religião", "catolico", "evangelico", "judeu", "muçulmano",
+    "estado_civil", "casado", "solteiro", "divorciado",
+    "saude", "saúde", "deficiencia", "deficiência", "gestante", "gravida",
+    "grávida",
+    # EN
+    "gender", "sex", "male", "female",
+    "race", "ethnicity", "color",
+    "age", "young", "old", "senior_citizen",
+    "religion", "religious",
+    "marital", "married", "single",
+    "health", "disability", "pregnancy", "pregnant",
+})
+
+
+def _check_fairness_eligibility(field_name: str, value) -> None:
+    """Raise ValueError when a protected term appears in an eligibility field.
+
+    Error messages are LLM-optimised: they name the problem and remediation.
+    """
+    if value is None:
+        return
+    if isinstance(value, (list, tuple, set)):
+        terms = {str(v).lower() for v in value}
+    elif isinstance(value, dict):
+        terms = {str(k).lower() for k in value}
+    else:
+        terms = {str(value).lower()}
+    hits = terms & PROHIBITED_ELIGIBILITY_TERMS
+    if hits:
+        raise ValueError(
+            f"FAIRNESS VIOLATION: campo '{field_name}' contém termos discriminatórios "
+            f"{sorted(hits)}. Benefícios não podem ter elegibilidade por atributo protegido "
+            f"(LGPD Art. 11, CLAUDE.md #2/#3). Remova os termos e use critérios neutros "
+            f"como cargo, nível seniority canonical, ou tipo de contrato."
+        )
+
+
 class CompanyBenefitCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
     category: str | None = None
     description: str | None = None
     icon: str | None = None
+
+    # Monetary / value fields
     value: float | None = None
+    percentage_value: float | None = None
     value_type: str | None = "informative"
+    value_details: str | None = None
+
+    # Eligibility scoping
+    applicable_to: list | None = None
+    seniority_levels: list | None = None
+    contract_types: list | None = None
+    departments: dict | list | None = None
+
+    # Provider
+    provider: str | None = None
+    provider_contact: str | None = None
+
+    # Scheduling
+    waiting_period_days: int | None = None
+
+    # Flags
+    is_mandatory: bool = False
+    is_discount: bool = False
+    is_active: bool = True
     is_highlighted: bool = False
     order: int = 0
+
+    from pydantic import model_validator
+
+    @model_validator(mode="after")
+    def validate_value_by_type(self) -> "CompanyBenefitCreate":
+        """Conditional value validation by value_type (harness sensor)."""
+        vt = self.value_type or "informative"
+        if vt == "monetary" and self.value is None:
+            raise ValueError(
+                "INVALID: value_type='monetary' exige o campo 'value' (valor numérico). "
+                "Defina value=<float> ou mude value_type para 'informative'."
+            )
+        if vt == "percentage" and self.percentage_value is None:
+            raise ValueError(
+                "INVALID: value_type='percentage' exige o campo 'percentage_value'. "
+                "Defina percentage_value=<float> ou mude value_type."
+            )
+        if vt == "informative" and self.value_details is None and self.description is None:
+            raise ValueError(
+                "INVALID: value_type='informative' exige 'value_details' ou 'description'. "
+                "Adicione uma descrição textual do benefício."
+            )
+        return self
+
+    @model_validator(mode="after")
+    def validate_fairness_eligibility(self) -> "CompanyBenefitCreate":
+        """LGPD + Fairness non-negotiable (CLAUDE.md #2/#3): no protected terms."""
+        _check_fairness_eligibility("applicable_to", self.applicable_to)
+        _check_fairness_eligibility("seniority_levels", self.seniority_levels)
+        _check_fairness_eligibility("contract_types", self.contract_types)
+        _check_fairness_eligibility("departments", self.departments)
+        return self
 
 
 class CompanyBenefitUpdate(BaseModel):

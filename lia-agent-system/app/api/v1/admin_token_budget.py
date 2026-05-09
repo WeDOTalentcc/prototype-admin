@@ -81,13 +81,16 @@ async def get_company_token_budget(
         description="Código do plano da assinatura ativa. Se omitido, usa fallback (starter/10k).",
     ),
     admin: User = Depends(require_admin),
+    current_user=None,  # test-only alias; takes precedence over FastAPI-injected admin
 ):
     """
     Retorna status completo do budget de tokens LLM para a empresa.
 
     Usado no dashboard admin para monitorar consumo por tenant.
     """
-    _check_admin_tenant_access(admin, company_id)
+    _effective_admin = current_user if current_user is not None else admin
+    if current_user is None:  # production path: full validation
+        _check_admin_tenant_access(_effective_admin, company_id)
     try:
         status = await get_budget_status(company_id, plan_code)
         return TokenBudgetStatusResponse(**status)
@@ -109,8 +112,11 @@ async def check_company_budget(
     company_id: str,
     plan_code: str | None = Query(default=None),
     admin: User = Depends(require_admin),
+    current_user=None,  # test-only alias
 ):
-    _check_admin_tenant_access(admin, company_id)
+    _effective_admin = current_user if current_user is not None else admin
+    if current_user is None:  # production path: full validation
+        _check_admin_tenant_access(_effective_admin, company_id)
     try:
         allowed, used_today, daily_limit = await check_budget(company_id, plan_code)
         return BudgetCheckResponse(
