@@ -8,7 +8,7 @@ import type { ChatContextType } from "@/contexts/lia-float-context";
 import { cn } from "@/lib/utils";
 import { Brain, Building, FileSpreadsheet, Globe } from "lucide-react";
 import { useTranslations } from "next-intl";
-import React, { useEffect } from "react";
+import React from "react";
 import type { ChatMode } from "./unified-chat-types";
 
 interface Props {
@@ -49,35 +49,6 @@ export function UnifiedChatEmptyState({
 }: Props) {
   const isCompact = mode === "sidebar" || mode === "floating";
   const t = useTranslations("chat");
-
-  // Sinaliza para o WorkflowRail global que o trilho interno do chat
-  // (ChatWorkflowReels) está montado/visível, evitando duplicação visual.
-  // Em settings_config não renderizamos o reels, então não contamos.
-  // Uso de ref-count global (window.__liaChatReelsCount) para tolerar
-  // múltiplas instâncias do empty state montadas em paralelo
-  // (ex: sidebar + dashboard inline) sem uma desmontagem zerar o sinal
-  // enquanto outra ainda está visível.
-  const reelsVisible = contextType !== "settings_config";
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!reelsVisible) return;
-    const w = window as unknown as { __liaChatReelsCount?: number };
-    w.__liaChatReelsCount = (w.__liaChatReelsCount ?? 0) + 1;
-    window.dispatchEvent(
-      new CustomEvent("lia:chat-reels-visibility", {
-        detail: { count: w.__liaChatReelsCount },
-      }),
-    );
-    return () => {
-      const cur = (w.__liaChatReelsCount ?? 1) - 1;
-      w.__liaChatReelsCount = Math.max(0, cur);
-      window.dispatchEvent(
-        new CustomEvent("lia:chat-reels-visibility", {
-          detail: { count: w.__liaChatReelsCount },
-        }),
-      );
-    };
-  }, [reelsVisible]);
 
   if (contextType === "settings_config") {
     return (
