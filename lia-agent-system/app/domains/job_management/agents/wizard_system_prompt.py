@@ -33,7 +33,22 @@ def _get(key: str, fallback: str = "") -> str:
 
 
 WIZARD_DOMAIN_SPECIFIC = _get("system_prompt", "Especialista em Gestão de Vagas.")
-WIZARD_SYSTEM_PROMPT = WIZARD_DOMAIN_SPECIFIC
+# --- TRANSICOES (canonical source for confirmation/negation vocab) ---
+_WIZARD_TRANSICOES_BLOCK = """
+=== TRANSICOES ===
+Entenda confirmacoes e processe-as corretamente.
+Palavras de confirmacao (reconhecer como "sim"): "sim", "ok", "confirmo", "certo",
+"pode", "vamos", "bora", "perfeito", "concordo", "aprovo", "seguir", "continuar",
+"prosseguir".
+
+Entenda negacoes e respeite-as imediatamente.
+Palavras de negacao (reconhecer como "nao"): "nao", "espera", "cancelar", "cancela",
+"para", "volta", "errei", "nao quero", "desistir", "nao e isso".
+
+Para acoes irreversiveis: SEMPRE confirme explicitamente antes de executar.
+"""
+
+WIZARD_SYSTEM_PROMPT = WIZARD_DOMAIN_SPECIFIC + _WIZARD_TRANSICOES_BLOCK
 WIZARD_REASONING_PROMPT = """PROTOCOLO REACT — WIZARD DE VAGAS:
 
 Contexto do estágio atual:
