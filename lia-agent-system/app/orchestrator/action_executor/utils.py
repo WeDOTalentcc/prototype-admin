@@ -18,6 +18,8 @@ from app.orchestrator.action_executor.intents_config import (
     VALID_PIPELINE_STAGES,
 )
 
+from app.orchestrator.intent_types import OrchestratorIntentResult
+
 
 # ---------------------------------------------------------------------------
 # LIA-I04: Build a shadow KeywordIntentMatcher from MESSAGE_INTENT_PATTERNS
@@ -111,7 +113,7 @@ def resolve_stage(stage_text: str | None) -> str | None:
     return stage_text.title()
 
 
-def _detect_intent_from_message(message: str, conversation_history: list | None = None) -> str | None:
+def _detect_intent_from_message(message: str, conversation_history: list | None = None) -> OrchestratorIntentResult | None:
     """Detect an actionable intent from a raw message string.
 
     LIA-I04: shadow-compares with KeywordIntentMatcher for telemetry.
@@ -160,7 +162,13 @@ def _detect_intent_from_message(message: str, conversation_history: list | None 
     except Exception as e:
         logger.debug("[LIA-I04] Shadow match failed (fail-open): %s", e)
 
-    return detected_intent
+    if detected_intent is None:
+        return None
+    return OrchestratorIntentResult(
+        intent_id=detected_intent,
+        confidence=0.8,
+        source="keyword",
+    )
 
 
 def _extract_entities_from_message(message: str, intent: str) -> dict[str, Any]:

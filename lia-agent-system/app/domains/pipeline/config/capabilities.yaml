@@ -19,3 +19,8 @@ intent_keywords:
   listar etapas: list_pipeline_stages
   etapas do pipeline: list_pipeline_stages
   ver pipeline: list_pipeline_stages
+  registrar contratação: register_hire
+  contratar candidato: register_hire
+  registrar hire: register_hire
+  formalizar contratação: register_hire
+  contratar: register_hire

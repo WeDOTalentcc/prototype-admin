@@ -24,6 +24,7 @@ from app.orchestrator.domain_mappings import AGENT_TYPE_TO_DOMAIN, resolve_domai
 from app.orchestrator.fast_router import FastRouter
 from app.orchestrator.semantic_cache import SemanticCache
 from app.shared.tracing import get_tracer, trace_span
+from app.orchestrator.intent_types import OrchestratorIntentResult
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +46,7 @@ class RouteResult:
     confidence: float
     source: str
     matched_pattern: str | None = None
-    intent_details: dict[str, Any] | None = None
+    intent_details: OrchestratorIntentResult | None = None
     cached: bool = False
     resolved_at: datetime = field(default_factory=datetime.utcnow)
     # Campos de clarificação (Fase 2 — Gap #2)
@@ -196,7 +197,7 @@ class CascadedRouter:
                         "[CascadedRouter] rail_a_hint override: card=%s → domain=%s intent=%s",
                         (context.get("metadata") or {}).get("card_id", "?"),
                         _hint_route.domain_id,
-                        (_hint_route.intent_details or {}).get("raw_intent", "?"),
+                        (_hint_route.intent_details.to_dict() if _hint_route.intent_details else {}).get("raw_intent", "?"),
                     )
                     if _hit_counter:
                         _hit_counter.labels(tier="rail_a_hint").inc()
@@ -457,9 +458,13 @@ class CascadedRouter:
                                 )
                         if _ab_variant_id:
                             if cascade_result.intent_details is None:
-                                cascade_result.intent_details = {}
-                            cascade_result.intent_details["ab_variant"] = _ab_variant_id
-                            cascade_result.intent_details["ab_prompt_hash"] = _ab_prompt_hash
+                                cascade_result.intent_details = OrchestratorIntentResult(
+                                    intent_id="unknown",
+                                    confidence=cascade_result.confidence,
+                                    source="llm",
+                                )
+                            cascade_result.intent_details.ab_variant = _ab_variant_id
+                            cascade_result.intent_details.ab_prompt_hash = _ab_prompt_hash
                             _t5_span.set_attribute("ab_variant", _ab_variant_id)
                         self._stats["llm_hits"] += 1
                         if _hit_counter:
@@ -612,12 +617,17 @@ class CascadedRouter:
                                     domain_id=f"custom:{_studio_agent.name}",
                                     confidence=0.70,
                                     source="studio_agent",
-                                    intent_details={
-                                        "agent_id": str(_studio_agent.id),
-                                        "agent_name": _studio_agent.name,
-                                        "deployment_id": str(_dep.id),
-                                        "response": _output.message,
-                                    },
+                                    intent_details=OrchestratorIntentResult(
+                                        intent_id=f"studio:{_studio_agent.name}",
+                                        confidence=0.70,
+                                        source="studio_agent",
+                                        routing_metadata={
+                                            "agent_id": str(_studio_agent.id),
+                                            "agent_name": _studio_agent.name,
+                                            "deployment_id": str(_dep.id),
+                                            "response": _output.message,
+                                        },
+                                    ),
                                 )
                                 return _studio_result
 
@@ -718,12 +728,17 @@ class CascadedRouter:
                     domain_id="autonomous",
                     confidence=output.confidence,
                     source="autonomous_react:tier6",
-                    intent_details={
-                        "response": output.message,
-                        "tool_calls": len(output.actions or []),
-                        "tier": 6,
-                        "metadata": output.metadata or {},
-                    },
+                    intent_details=OrchestratorIntentResult(
+                        intent_id="autonomous",
+                        confidence=output.confidence,
+                        source="autonomous_react",
+                        routing_metadata={
+                            "response": output.message,
+                            "tool_calls": len(output.actions or []),
+                            "tier": 6,
+                            "metadata": output.metadata or {},
+                        },
+                    ),
                 )
             logger.debug(
                 "[CascadedRouter][Tier6] Autonomous confidence %.2f < 0.5 — skipping",
@@ -778,12 +793,17 @@ class CascadedRouter:
                 domain_id=domain_id,
                 confidence=confidence,
                 source=f"llm_cascade:{result.get('tier', 'unknown')}",
-                intent_details={
-                    "model_used": result.get("model_used"),
-                    "tier": result.get("tier"),
-                    "tokens_est": result.get("tokens_est"),
-                    "reason": result.get("reason"),
-                },
+                intent_details=OrchestratorIntentResult(
+                    intent_id=result.get("domain", "unknown"),
+                    confidence=confidence,
+                    source="llm",
+                    routing_metadata={
+                        "model_used": result.get("model_used"),
+                        "tier": result.get("tier"),
+                        "tokens_est": result.get("tokens_est"),
+                        "reason": result.get("reason"),
+                    },
+                ),
             )
         except Exception as exc:
             logger.debug("[CascadedRouter] llm_cascade falhou: %s", exc)
