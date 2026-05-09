@@ -1,3 +1,4 @@
+import asyncio
 """
 PR-CAL — schedule_interview tests (TDD).
 
@@ -25,7 +26,7 @@ async def call_schedule(
     company_id: str = "comp_test",
 ) -> dict:
     from app.domains.interview_scheduling.tools.scheduling_tools import schedule_interview
-    return await schedule_interview(
+    kwargs = dict(
         candidate_id=candidate_id,
         interviewer_id=interviewer_id,
         datetime_str=datetime_str,
@@ -33,6 +34,15 @@ async def call_schedule(
         meeting_url=meeting_url,
         company_id=company_id,
     )
+    # schedule_interview is a LangChain StructuredTool — not directly callable
+    if hasattr(schedule_interview, "coroutine") and schedule_interview.coroutine is not None:
+        return await schedule_interview.coroutine(**kwargs)
+    if hasattr(schedule_interview, "func") and schedule_interview.func is not None:
+        result = schedule_interview.func(**kwargs)
+        if asyncio.iscoroutine(result):
+            return await result
+        return result
+    return await schedule_interview.ainvoke(kwargs)
 
 
 class TestScheduleInterviewNoFakeLink:

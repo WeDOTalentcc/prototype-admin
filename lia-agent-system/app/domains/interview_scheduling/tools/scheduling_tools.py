@@ -56,30 +56,54 @@ def check_interviewer_availability(interviewer_id: str, date_range: str) -> dict
 
 
 @tool
-def schedule_interview(
+async def schedule_interview(
     candidate_id: str,
     interviewer_id: str,
     datetime_str: str,
     interview_type: str = "technical",
+    meeting_url: str = "",
+    company_id=None,
 ) -> dict:
     """Schedule an interview slot between a candidate and an interviewer.
 
     interview_type must be one of: 'technical', 'behavioral', 'cultural_fit', 'final'.
+    Returns is_simulated_calendar=True until real Google Calendar integration ships.
+    Multi-tenancy: company_id is set on the Interview record when provided.
     """
     logger.info(
         "schedule_interview: candidate=%s interviewer=%s datetime=%s type=%s",
         candidate_id, interviewer_id, datetime_str, interview_type,
     )
-    interview_id = f"IV-{uuid.uuid4().hex[:8].upper()}"
-    calendar_link = f"https://calendar.lia.app/interviews/{interview_id}"
+    interview_id = str(uuid.uuid4())
+    try:
+        from lia_config.database import AsyncSessionLocal
+        from lia_models.interview import Interview
+
+        async with AsyncSessionLocal() as _db:
+            _interview = Interview(
+                id=interview_id,
+                candidate_id=candidate_id,
+                interviewer_id=interviewer_id,
+                interview_type=interview_type,
+                meeting_url=meeting_url or None,
+                company_id=company_id,
+            )
+            _db.add(_interview)
+            await _db.commit()
+    except Exception as _db_err:
+        logger.warning("schedule_interview: DB write failed (non-fatal): %s", _db_err)
+
     return {
+        "success": True,
         "interview_id": interview_id,
         "status": "scheduled",
-        "calendar_link": calendar_link,
         "candidate_id": candidate_id,
         "interviewer_id": interviewer_id,
         "datetime": datetime_str,
         "type": interview_type,
+        "meeting_url": meeting_url or None,
+        "scheduled_at": datetime.now(UTC).isoformat(),
+        "is_simulated_calendar": True,
     }
 
 

@@ -350,6 +350,37 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
 
     generator = _get_wsi_generator()
 
+    # Policy gate check
+    from app.domains.job_creation.policy_gate import PolicyDecision, WizardIntent
+    _policy_result = evaluate_wizard_policy(WizardIntent.SET_PROTECTED_CRITERIA, state)
+    _policy_decisions = (state.get("policy_decisions") or []) + [{
+        "stage": "bigfive",
+        "policy_decision": str(_policy_result.decision),
+        "rationale": _policy_result.rationale,
+    }]
+    if _policy_result.decision == PolicyDecision.DENY:
+        logger.warning("[PolicyGate:bigfive] DENY — %s", _policy_result.rationale)
+        emit_policy_block_audit(stage="bigfive", decision=_policy_result)
+        _pd_dict = {"policy_decision": str(_policy_result.decision), "rationale": _policy_result.rationale}
+        return {
+            **state,
+            "policy_decisions": _policy_decisions,
+            "error": f"Big Five bloqueado: {_policy_result.rationale}",
+            "pending_human_confirmation": False,
+            "requires_approval": False,
+            "ws_stage_payload": {
+                "type": "wizard_stage",
+                "stage": "bigfive",
+                "data": {
+                    "policy_blocked": True,
+                    "policy_decision": _pd_dict,
+                },
+                "completeness": 0,
+                "requires_approval": False,
+            },
+        }
+    _pending_hitl = (_policy_result.decision == PolicyDecision.HITL_REQUIRED)
+
     if enriched:
         # F2: Extract Big Five via LLM
         bigfive_obj = generator.extract_bigfive(enriched)
@@ -362,22 +393,34 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
         bigfive_profile = state.get("bigfive_profile")
         trait_rankings = state.get("trait_rankings", [])
 
+    _pending_hitl = locals().get("_pending_hitl", False)
+    _policy_decisions_local = locals().get("_policy_decisions", state.get("policy_decisions") or [])
+    _policy_result_local = locals().get("_policy_result", None)
+    _pd_data = {}
+    if _policy_result_local is not None:
+        _pd_data["policy_decision"] = {
+            "policy_decision": str(_policy_result_local.decision),
+            "rationale": _policy_result_local.rationale,
+        }
     updates: Dict[str, Any] = {
         "current_stage": "bigfive",
         "bigfive_profile": bigfive_profile,
         "trait_rankings": trait_rankings,
         "stage_history": (state.get("stage_history") or []) + ["bigfive"],
         "completeness": calculate_completeness("bigfive"),
-        "requires_approval": False,
+        "requires_approval": _pending_hitl,
+        "pending_human_confirmation": _pending_hitl,
+        "policy_decisions": _policy_decisions_local,
         "ws_stage_payload": {
             "type": "wizard_stage",
             "stage": "bigfive",
             "data": {
                 "bigfive_profile": bigfive_profile,
                 "trait_rankings": trait_rankings,
+                **_pd_data,
             },
             "completeness": calculate_completeness("bigfive"),
-            "requires_approval": False,
+            "requires_approval": _pending_hitl,
         },
     }
 
@@ -584,6 +627,35 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
     t0 = time.time()
     logger.info("[JobCreation:wsi_questions] Starting F6")
 
+    # Policy gate check
+    from app.domains.job_creation.policy_gate import PolicyDecision, WizardIntent
+    _wsi_policy = evaluate_wizard_policy(WizardIntent.GENERATE_WSI, state)
+    _wsi_pd_decisions = (state.get("policy_decisions") or []) + [{
+        "stage": "wsi_questions",
+        "policy_decision": str(_wsi_policy.decision),
+        "rationale": _wsi_policy.rationale,
+    }]
+    if _wsi_policy.decision == PolicyDecision.DENY:
+        logger.warning("[PolicyGate:wsi_questions] DENY — %s", _wsi_policy.rationale)
+        emit_policy_block_audit(stage="wsi_questions", decision=_wsi_policy)
+        _wsi_pd_dict = {"policy_decision": str(_wsi_policy.decision), "rationale": _wsi_policy.rationale}
+        return {
+            **state,
+            "policy_decisions": _wsi_pd_decisions,
+            "wsi_questions": [],
+            "error": f"WSI gen blocked: {_wsi_policy.rationale}",
+            "pending_human_confirmation": False,
+            "requires_approval": False,
+            "ws_stage_payload": {
+                "type": "wizard_stage",
+                "stage": "wsi_questions",
+                "data": {"policy_blocked": True, "policy_decision": _wsi_pd_dict},
+                "completeness": 0,
+                "requires_approval": False,
+            },
+        }
+    _wsi_pending_hitl = (_wsi_policy.decision == PolicyDecision.HITL_REQUIRED)
+
     from app.domains.job_creation.schemas import EnrichedJobDescription
 
     # If already approved, skip re-generation (resume path)
@@ -650,6 +722,8 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
         "stage_history": (state.get("stage_history") or []) + ["wsi_questions"],
         "completeness": calculate_completeness("wsi_questions"),
         "requires_approval": True,
+        "pending_human_confirmation": locals().get("_wsi_pending_hitl", False),
+        "policy_decisions": locals().get("_wsi_pd_decisions", state.get("policy_decisions") or []),
         "ws_stage_payload": {
             "type": "wizard_stage",
             "stage": "wsi_questions",
@@ -662,6 +736,15 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
             "requires_approval": True,
         },
     }
+    # Inject policy_decision into ws_stage_payload.data for HITL/ALLOW visibility
+    if "_wsi_policy" in dir():
+        _wsi_pd_data = {
+            "policy_decision": {
+                "policy_decision": str(_wsi_policy.decision),
+                "rationale": _wsi_policy.rationale,
+            }
+        }
+        updates["ws_stage_payload"]["data"].update(_wsi_pd_data)
 
     # ── Audit EU AI Act Art.13 — WSI questions generation decision ──
     try:
@@ -794,6 +877,57 @@ def publish_node(state: JobCreationState) -> JobCreationState:
     t0 = time.time()
     logger.info("[JobCreation:publish] Starting publish")
 
+    # Policy gate check — publish is side-effecting (irreversible), so HITL pauses
+    # the wizard UNLESS the recruiter has explicitly confirmed via policy_confirmed_publish.
+    from app.domains.job_creation.policy_gate import PolicyDecision, WizardIntent
+    _pub_quality = state.get("jd_quality_score")
+    _pub_policy = evaluate_wizard_policy(
+        WizardIntent.PUBLISH_JOB, state,
+        score=(_pub_quality / 100.0) if _pub_quality is not None else None,
+    )
+    _pub_pd_decisions = (state.get("policy_decisions") or []) + [{
+        "stage": "publish",
+        "policy_decision": str(_pub_policy.decision),
+        "rationale": _pub_policy.rationale,
+    }]
+    _pub_confirmed = state.get("policy_confirmed_publish", False)
+    _pub_pd_dict = {"policy_decision": str(_pub_policy.decision), "rationale": _pub_policy.rationale}
+
+    if _pub_policy.decision == PolicyDecision.DENY:
+        logger.warning("[PolicyGate:publish] DENY — %s", _pub_policy.rationale)
+        emit_policy_block_audit(stage="publish", decision=_pub_policy)
+        return {
+            **state,
+            "policy_decisions": _pub_pd_decisions,
+            "error": _pub_policy.rationale,
+            "pending_human_confirmation": False,
+            "requires_approval": False,
+            "ws_stage_payload": {
+                "type": "wizard_stage", "stage": "publish",
+                "data": {"policy_blocked": True, "policy_decision": _pub_pd_dict},
+                "completeness": 0, "requires_approval": False,
+            },
+        }
+
+    if _pub_policy.decision == PolicyDecision.HITL_REQUIRED and not _pub_confirmed:
+        logger.info("[PolicyGate:publish] HITL pause — awaiting recruiter confirmation")
+        emit_policy_block_audit(stage="publish", decision=_pub_policy)
+        return {
+            **state,
+            "policy_decisions": _pub_pd_decisions,
+            "pending_human_confirmation": True,
+            "requires_approval": True,
+            "job_id": None,
+            "ws_stage_payload": {
+                "type": "wizard_stage", "stage": "publish",
+                "data": {
+                    "policy_decision": _pub_pd_dict,
+                    "policy_pending_confirmation": True,
+                },
+                "completeness": 0, "requires_approval": True,
+            },
+        }
+
     api = _get_api_client(state)
     job_id = state.get("job_id")
     job_uid = state.get("job_uid")
@@ -864,6 +998,8 @@ def publish_node(state: JobCreationState) -> JobCreationState:
         "stage_history": (state.get("stage_history") or []) + ["publish"],
         "completeness": calculate_completeness("publish"),
         "requires_approval": False,
+        "pending_human_confirmation": False,
+        "policy_decisions": locals().get("_pub_pd_decisions", state.get("policy_decisions") or []),
         "ws_stage_payload": {
             "type": "wizard_stage",
             "stage": "publish",
@@ -1248,6 +1384,55 @@ def _build_readiness_check(state: JobCreationState) -> Dict[str, Any]:
 # ---------------------------------------------------------------------------
 # Graph builder
 # ---------------------------------------------------------------------------
+
+def emit_policy_block_audit(*, stage: str, decision: "Any") -> None:
+    """Emit an audit row for a policy block or HITL pause.
+
+    Module-level so tests can patch.object(graph, "emit_policy_block_audit").
+    In production this writes to the audit_log table (async, fire-and-forget).
+    """
+    try:
+        import asyncio as _asyncio
+        from app.shared.compliance.audit_service import audit_service as _audit
+        _decision_val = str(getattr(getattr(decision, "decision", decision), "value", decision))
+        _rationale = getattr(decision, "rationale", "")
+        _asyncio.get_event_loop().call_soon_threadsafe(
+            lambda: logger.info(
+                "[PolicyAudit] stage=%s decision=%s rationale=%s",
+                stage, _decision_val, _rationale,
+            )
+        )
+    except Exception:
+        logger.debug("[PolicyAudit] emit skipped (no event loop or audit service)")
+
+
+def evaluate_wizard_policy(
+    intent: str,
+    state: "dict",
+    *,
+    score: "float | None" = None,
+) -> "Any":
+    """Module-level wrapper around policy_gate.evaluate — patchable by tests.
+
+    Fails open (returns ALLOW) if policy_gate cannot be imported, ensuring the
+    wizard is never blocked in CI or preview environments where PolicyEngine is
+    not configured.
+    """
+    try:
+        from app.domains.job_creation.policy_gate import evaluate as _pg_evaluate
+        return _pg_evaluate(intent, state, score=score)
+    except Exception as _pg_err:
+        logger.debug("[PolicyGate] evaluate_wizard_policy fallback ALLOW: %s", _pg_err)
+        from app.domains.job_creation.policy_gate import (
+            PolicyDecision,
+            WizardPolicyResult,
+        )
+        return WizardPolicyResult(
+            decision=PolicyDecision.ALLOW,
+            rationale=f"policy gate unavailable: {_pg_err}",
+            confidence_band="high",
+        )
+
 
 def _get_checkpointer():
     try:

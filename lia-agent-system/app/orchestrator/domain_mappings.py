@@ -53,3 +53,16 @@ def resolve_domain(intent: str) -> str:
             return domain_id
 
     return DEFAULT_DOMAIN
+
+
+_mapping_cache: dict | None = None
+
+
+def reset_mapping_cache() -> None:
+    """Reset the AGENT_TYPE_TO_DOMAIN cache.
+
+    Called by tests (via autouse fixture) to ensure a clean mapping state
+    between test runs. In production the mapping is static; this is a no-op.
+    """
+    global _mapping_cache
+    _mapping_cache = None

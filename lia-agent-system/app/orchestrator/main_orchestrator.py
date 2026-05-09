@@ -184,10 +184,20 @@ class MainOrchestrator:
     controlados aqui.
     """
 
-    def __init__(self, orchestrator: Any) -> None:
+    def __init__(
+        self,
+        orchestrator: Any,
+        *,
+        plan_service=None,
+        fallback_react_service=None,
+        policy_gate_service=None,
+    ) -> None:
         self._orchestrator = orchestrator
         self._fairness_guard = FairnessGuard()
         self._tenant_context_service = TenantContextService()
+        self._plan_service = plan_service
+        self._fallback_react_service = fallback_react_service
+        self._policy_gate_service = policy_gate_service
 
     async def process(
         self,

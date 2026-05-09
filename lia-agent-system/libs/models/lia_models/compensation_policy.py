@@ -52,3 +52,55 @@ class CompensationPolicy(Base):
     created_by = Column(String(255), nullable=True)
     
     company = relationship("CompanyProfile", back_populates="compensation_policies")
+
+
+# ---------------------------------------------------------------------------
+# Default Brazilian compensation policy templates
+# ---------------------------------------------------------------------------
+
+DEFAULT_BR_COMPENSATION_TEMPLATES: list[dict] = [
+    {
+        "name": "Política Padrão — Engenharia",
+        "policy_type": "hierarchical_bands",
+        "currency": "BRL",
+        "applicable_departments": ["Engenharia", "Tecnologia"],
+        "applicable_seniority": ["junior", "pleno", "senior"],
+        "salary_bands": [
+            {"level": "junior", "min": 4000, "max": 7000},
+            {"level": "pleno", "min": 7000, "max": 12000},
+            {"level": "senior", "min": 12000, "max": 20000},
+        ],
+        "is_active": True,
+        "is_default": True,
+    },
+    {
+        "name": "Política Padrão — Comercial",
+        "policy_type": "mixed",
+        "currency": "BRL",
+        "applicable_departments": ["Vendas", "Comercial"],
+        "applicable_seniority": ["junior", "pleno", "senior"],
+        "salary_bands": [
+            {"level": "junior", "min": 2500, "max": 4000},
+            {"level": "pleno", "min": 4000, "max": 8000},
+            {"level": "senior", "min": 8000, "max": 15000},
+        ],
+        "variable_compensation": {
+            "items": [{"kind": "commission", "percentage": 5.0, "frequency": "monthly"}]
+        },
+        "is_active": True,
+        "is_default": True,
+    },
+    {
+        "name": "Política Padrão — Produto",
+        "policy_type": "hierarchical_bands",
+        "currency": "BRL",
+        "applicable_departments": ["Produto"],
+        "applicable_seniority": ["pleno", "senior"],
+        "salary_bands": [
+            {"level": "pleno", "min": 8000, "max": 14000},
+            {"level": "senior", "min": 14000, "max": 22000},
+        ],
+        "is_active": True,
+        "is_default": True,
+    },
+]

@@ -21,8 +21,9 @@ class WSIResponseAnalyzer:
     O LLM NÃO participa do cálculo de scores - apenas da extração de informações.
     """
     
-    def __init__(self, llm):
+    def __init__(self, llm, *, enable_layer2: bool = True):
         self.llm = llm
+        self._enable_layer2 = enable_layer2
     
     async def analyze(
         self,

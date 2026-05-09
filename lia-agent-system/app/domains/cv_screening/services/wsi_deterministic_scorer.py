@@ -363,7 +363,7 @@ def detect_red_flags(text: str, autodeclaracao: float | None, context_score: flo
     return red_flags
 
 
-def calculate_penalty(text: str, autodeclaracao: float | None, context_score: float) -> float:
+def calculate_penalty(text: str, autodeclaracao: float | None, context_score: float, *, layer2=None) -> float:
     """
     Calcula penalidade determinística.
     
@@ -382,6 +382,11 @@ def calculate_penalty(text: str, autodeclaracao: float | None, context_score: fl
     if len(text.split()) < PENALTY_TRIGGERS["no_context"]["min_words"]:
         penalty += PENALTY_TRIGGERS["no_context"]["penalty"]
     
+    # M06 — Camada 2: semantic inflation override (priority over lexical heuristic)
+    if layer2 is not None:
+        if getattr(layer2, "semantic_inflation", False):
+            penalty += PENALTY_TRIGGERS.get("inflation", {}).get("penalty", 0)
+
     return round(penalty, 2)
 
 

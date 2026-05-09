@@ -74,6 +74,63 @@ JOB_ACTION_MAP: dict[str, str] = {
 
 SKIP_ACTION_INTENTS = {"create_job", "greeting", "general_question", "unknown", "search_candidates"}
 
+# EN → PT intent name mapping (tests patch via app.api.v1.chat.INTENT_TO_ACTIONABLE)
+INTENT_TO_ACTIONABLE: dict[str, str] = {
+    "move_candidate": "mover_candidato",
+    "start_screening": "iniciar_triagem",
+    "reject_candidate": "reprovar_candidato",
+    "approve_candidate": "aprovar_candidato",
+    "send_email": "enviar_email",
+    "send_message": "enviar_mensagem",
+    "schedule_interview": "agendar_entrevista",
+    "trigger_screening": "disparar_triagem",
+    "analyze_profile": "analisar_perfil",
+    "detailed_analysis": "analise_detalhada",
+    "pause_job": "pausar_vaga",
+    "close_job": "fechar_vaga",
+    "duplicate_job": "duplicar_vaga",
+    "reopen_job": "reabrir_vaga",
+    "update_candidate_status": "atualizar_status_candidato",
+    "update_status": "atualizar_status_candidato",
+}
+
+
+def map_intent_to_actionable(intent: str, context: dict | None = None) -> str | None:
+    """Map an intent name (EN or PT) to the canonical PT actionable name.
+
+    Returns None when the intent should not produce an actionable action
+    (e.g. create_job, greeting, general_question) or when no mapping exists.
+    """
+    if context is None:
+        context = {}
+
+    # Already a canonical PT actionable intent — pass through
+    if intent in ACTIONABLE_INTENTS:
+        return intent
+
+    # EN → PT translation
+    if intent in INTENT_TO_ACTIONABLE:
+        return INTENT_TO_ACTIONABLE[intent]
+
+    # update_job: derive actionable from context ação/action field
+    if intent == "update_job":
+        raw_action = (
+            context.get("ação")
+            or context.get("acao")
+            or context.get("action")
+            or ""
+        ).lower()
+        for key, mapped in JOB_ACTION_MAP.items():
+            if key in raw_action:
+                return mapped
+        return None  # update_job without recognisable sub-action
+
+    # Intents that should never produce an actionable result
+    if intent in SKIP_ACTION_INTENTS:
+        return None
+
+    return None
+
 
 async def resolve_candidate_by_name(
     candidate_name: str,
