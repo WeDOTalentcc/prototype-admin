@@ -93,6 +93,7 @@ def build_hint_route(domain_id: str, intent_id: str | None) -> RouteResult:
     """Constrói RouteResult para hint do Rail A.
 
     Lazy import de ``RouteResult`` para evitar circular dependency.
+    Returns intent_details as a plain dict for backward-compat (callers use .get()).
     """
     from app.orchestrator.cascaded_router import RouteResult
 

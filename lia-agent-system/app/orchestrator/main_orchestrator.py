@@ -330,6 +330,33 @@ class MainOrchestrator:
                 except Exception as e:
                     logger.warning("[LIA-M01] Memory setup failed (non-blocking): %s", e)
 
+            # ── Phase 0.5: Rail A capability gate (PR-J) ──────────────────
+            # Computational guide: check capability_map BEFORE pending action or LLM.
+            # Non-chat-executable intents (add_candidate, interview_scheduling) return
+            # ui_action immediately — no LLM call needed.
+            try:
+                from app.orchestrator.rail_a_capability_check import check_rail_a_capability
+                _cap_result = await check_rail_a_capability(
+                    context=ctx.extra or {},
+                    message=message_text,
+                    company_id=str(ctx.company_id or ""),
+                    db=db,
+                )
+                if _cap_result is not None:
+                    return ChatResponse(
+                        success=_cap_result.get("success", True),
+                        content=_cap_result.get("content", ""),
+                        agent_used=_cap_result.get("domain", "capability_map"),
+                        confidence=float(_cap_result.get("confidence", 1.0)),
+                        intent_detected=_cap_result.get("intent_hint", ""),
+                        conversation_id=conv_id,
+                        ui_action=_cap_result.get("ui_action"),
+                        ui_action_params=_cap_result.get("ui_action_params"),
+                        fairness_warnings=_soft_warnings,
+                    )
+            except Exception as _cap_exc:
+                logger.debug("[MainOrchestrator] Rail A capability gate skipped: %s", _cap_exc)
+
             # ── Phase 0: PendingAction ──────────────────────────────────────
             pending_response = await self._handle_pending_action(ctx, conv_id)
             if pending_response is not None:

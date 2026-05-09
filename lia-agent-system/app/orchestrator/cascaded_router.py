@@ -197,7 +197,7 @@ class CascadedRouter:
                         "[CascadedRouter] rail_a_hint override: card=%s → domain=%s intent=%s",
                         (context.get("metadata") or {}).get("card_id", "?"),
                         _hint_route.domain_id,
-                        (_hint_route.intent_details.to_dict() if _hint_route.intent_details else {}).get("raw_intent", "?"),
+                        ((_hint_route.intent_details.to_dict() if hasattr(_hint_route.intent_details, "to_dict") else (_hint_route.intent_details or {})) or {}).get("raw_intent", "?"),
                     )
                     if _hit_counter:
                         _hit_counter.labels(tier="rail_a_hint").inc()

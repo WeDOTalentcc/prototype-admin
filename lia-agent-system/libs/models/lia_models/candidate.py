@@ -272,6 +272,10 @@ class Candidate(EncryptedFieldMixin, Base):
     lia_insights = Column(JSON, default={})
     skills_match_percentage = Column(Float, nullable=True)
     
+    # Multi-tenancy (migration 082 — Task #346)
+    # NULL for rows imported before the migration; new rows always have this set.
+    company_id = Column(String(255), nullable=True, index=True)
+
     # Status & Workflow
     status = Column(String(50), default="new", index=True)
     is_active = Column(Boolean, default=True, index=True)
