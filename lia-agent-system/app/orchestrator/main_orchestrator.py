@@ -355,6 +355,36 @@ class MainOrchestrator:
                 try:
                     from app.shared.execution.plan_detector import PlanDetector
                     from app.shared.execution.plan_executor import PlanExecutor
+                    from app.shared.execution.plan_templates import PlanTemplateRegistry
+
+                    # ── Template Discovery ────────────────────────────────
+                    # Respond to "que planos tem?" / "listar templates" / etc.
+                    import re as _re_plan
+                    _DISCOVERY_RE = _re_plan.compile(
+                        r"(que\s+planos|quais\s+planos|listar?\s+planos|listar?\s+templates?|"
+                        r"que\s+automações|o\s+que\s+você\s+pode\s+automatizar|"
+                        r"mostrar?\s+planos|planos\s+disponíveis)",
+                        _re_plan.IGNORECASE,
+                    )
+                    if _DISCOVERY_RE.search(ctx.message or ""):
+                        _tmpls = PlanTemplateRegistry.TEMPLATES
+                        _lines = ["📋 **Planos disponíveis** — diga qual quer executar:
+"]
+                        for _key, _info in _tmpls.items():
+                            _lines.append(f"• **{_info[name]}** — {_info[description]}")
+                        _discovery_text = "
+".join(_lines)
+                        _disc_resp = ChatResponse(
+                            success=True,
+                            content=_discovery_text,
+                            intent_detected="plan_template_discovery",
+                            conversation_id=conv_id,
+                            action_executed=False,
+                            structured_data={"templates": list(_tmpls.keys())},
+                        )
+                        if _soft_warnings:
+                            _disc_resp.fairness_warnings = _soft_warnings
+                        return _disc_resp
 
                     _plan_detector = PlanDetector()
                     _detected_plan = _plan_detector.detect(ctx.message)

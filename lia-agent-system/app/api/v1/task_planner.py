@@ -402,3 +402,56 @@ async def add_chain_of_thought(
         "task_id": task_id,
         "chain_of_thought": task.chain_of_thought
     }
+
+
+# ---------------------------------------------------------------------------
+# Plan & Execute Templates (UC-P3-14 Sprint 1)
+# ---------------------------------------------------------------------------
+
+@router.get("/execution-templates")
+async def list_execution_templates(
+    current_user: User = Depends(get_current_user_or_demo),
+):
+    """List all available Plan & Execute templates (multi-step workflow plans).
+
+    Returns the catalog of pre-defined plan templates the LIA can execute
+    via chat (e.g., "agendar entrevistas em lote", "fechamento mensal").
+    """
+    from app.shared.execution.plan_templates import PlanTemplateRegistry
+    from app.shared.execution.plan_detector import PlanDetector
+
+    detector = PlanDetector()
+    patterns_by_name = {p.name: p.patterns for p in detector._patterns}
+
+    templates = []
+    for key, info in PlanTemplateRegistry.TEMPLATES.items():
+        templates.append({
+            "id": key,
+            "name": info["name"],
+            "description": info["description"],
+            "step_count": len(info["steps"]),
+            "trigger_phrases": patterns_by_name.get(key, [])[:3],  # top 3 NL triggers
+        })
+
+    return {
+        "templates": templates,
+        "total": len(templates),
+    }
+
+
+@router.get("/execution-templates/{template_id}")
+async def get_execution_template(
+    template_id: str,
+    current_user: User = Depends(get_current_user_or_demo),
+):
+    """Get details of a specific Plan & Execute template."""
+    from app.shared.execution.plan_templates import PlanTemplateRegistry
+
+    template = PlanTemplateRegistry.get_template(template_id)
+    if not template:
+        raise HTTPException(status_code=404, detail=f"Template {template_id} not found")
+
+    return {
+        "id": template_id,
+        **template,
+    }
