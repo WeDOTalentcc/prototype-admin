@@ -252,6 +252,52 @@ class AuditService:
             logger.info(f"📋 Retrieved {len(audit_logs)} audit logs for agent {agent_name}")
             return list(audit_logs)
 
+    async def get_decisions_by_user(
+        self,
+        company_id: str,
+        actor_user_id: str,
+        start_date=None,
+        end_date=None,
+        limit: int = 100,
+        offset: int = 0,
+    ) -> dict:
+        """Get AI decisions triggered by a specific user (Task #366).
+
+        Multi-tenant: enforced via company_id filter (fail-closed).
+        Paged result: {audit_logs, total, limit, offset}.
+        """
+        from sqlalchemy import func
+
+        async with AsyncSessionLocal() as session:
+            conditions = [AuditLog.company_id == company_id]
+            # actor_user_id stored in session_id until dedicated column is promoted.
+            conditions.append(AuditLog.session_id == actor_user_id)
+            if start_date:
+                conditions.append(AuditLog.created_at >= start_date)
+            if end_date:
+                conditions.append(AuditLog.created_at <= end_date)
+
+            count_q = select(func.count()).select_from(AuditLog).where(and_(*conditions))
+            total = (await session.execute(count_q)).scalar() or 0
+
+            rows_q = (
+                select(AuditLog)
+                .where(and_(*conditions))
+                .order_by(desc(AuditLog.created_at))
+                .limit(limit)
+                .offset(offset)
+            )
+            rows = (await session.execute(rows_q)).scalars().all()
+
+            logger.info("[AuditService] get_decisions_by_user: %d rows for %s / %s",
+                        len(rows), actor_user_id, company_id)
+            return {
+                "audit_logs": [r.to_dict() for r in rows],
+                "total": total,
+                "limit": limit,
+                "offset": offset,
+            }
+
     async def log_output(
         self,
         *,

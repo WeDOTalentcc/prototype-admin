@@ -18,6 +18,17 @@ from app.auth.models import User
 from app.domains.bulk_actions.dependencies import get_bulk_actions_repo
 from app.domains.bulk_actions.repositories.bulk_actions_repository import BulkActionsRepository
 from app.domains.communication.services.email_service import get_email_service
+from app.shared.compliance.audit_service import audit_service  # module-level for test patchability
+from app.shared.compliance.fairness_guard import FairnessGuard as _FairnessGuard
+_fairness_guard = _FairnessGuard()
+_DECISION_TYPE_MAP = {
+    'rejected': 'reject_candidate',
+    'hired': 'approve_candidate',
+    'screening': 'move_stage',
+    'interview': 'move_stage',
+    'offer': 'move_stage',
+    'new': 'move_stage',
+}
 from app.domains.communication.services.email_service import EmailService
 from app.models.job_vacancy import JobVacancy
 
@@ -224,10 +235,28 @@ async def bulk_update_candidate_status(
                     ))
                     continue
 
+                _old_status = candidate.status
                 candidate.status = request.new_status
                 candidate.updated_at = datetime.utcnow()
                 candidate.last_activity_at = datetime.utcnow()
                 processed_ids.append(candidate_id)
+                # Compliance: per-candidate audit trail (Task #311)
+                try:
+                    await audit_service.log_decision(
+                        company_id=getattr(current_user, "company_id", ""),
+                        agent_name="bulk_actions_api",
+                        decision_type=_DECISION_TYPE_MAP.get(request.new_status, "move_stage"),
+                        action=f"bulk_update_status_{request.new_status}",
+                        decision=request.new_status,
+                        reasoning=[
+                            f"from_stage: {_old_status}",
+                            f"to_stage: {request.new_status}",
+                        ],
+                        criteria_used=["bulk_status_update"],
+                        candidate_id=candidate_id,
+                    )
+                except Exception as _ae:
+                    logger.debug("audit log failed (non-blocking): %s", _ae)
 
             except ValueError:
                 errors.append(BulkOperationError(
@@ -280,6 +309,19 @@ async def bulk_assign_to_job(
     processed_ids: list[str] = []
 
     try:
+        # LGPD/Fairness guard: check notes for discriminatory content before any DB call
+        if request.notes:
+            _fg_result = _fairness_guard.check(request.notes)
+            if _fg_result.is_blocked:
+                raise HTTPException(
+                    status_code=422,
+                    detail={
+                        "error": "fairness_blocked",
+                        "field": "notes",
+                        "needs_review": _fg_result.blocked_terms or [],
+                        "category": _fg_result.category,
+                    },
+                )
         job_vacancy = await repo.get_job_vacancy_by_id(uuid.UUID(request.job_vacancy_id))
 
         if not job_vacancy:
@@ -803,6 +845,23 @@ async def bulk_delete_candidates(
                     candidate.updated_at = datetime.utcnow()
 
                 processed_ids.append(candidate_id)
+                # Compliance: per-candidate audit trail (Task #311)
+                try:
+                    await audit_service.log_decision(
+                        company_id=getattr(current_user, "company_id", ""),
+                        agent_name="bulk_actions_api",
+                        decision_type="reject_candidate",
+                        action="bulk_delete",
+                        decision="deleted",
+                        reasoning=[
+                            f"permanent: {request.permanent}",
+                            f"candidate_id: {candidate_id}",
+                        ],
+                        criteria_used=["bulk_delete"],
+                        candidate_id=candidate_id,
+                    )
+                except Exception as _ae:
+                    logger.debug("audit log failed (non-blocking): %s", _ae)
 
             except ValueError:
                 errors.append(BulkOperationError(

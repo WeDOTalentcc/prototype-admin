@@ -52,9 +52,7 @@ class JobCreationDomain(ComplianceDomainPrompt):
             self._graph = get_job_creation_graph()
         return self._graph
 
-    @property
-    def domain_id(self) -> str:
-        return "job_creation"
+    domain_id: str = "job_creation"
 
     @property
     def domain_name(self) -> str:

@@ -22,10 +22,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.shared.tenant_guard import get_verified_company_id
-from app.shared.services.bias_audit_service import (
-    BiasAuditReport,
-    bias_audit_service,
-)
+from typing import TYPE_CHECKING
+
+from app.domains.integrations_hub.services.rails_adapter import RailsAdapter
+
+if TYPE_CHECKING:
+    from app.shared.services.bias_audit_service import BiasAuditReport
+
+# UC-P0-13: route all bias audit calls through rails_adapter
+_bias_adapter = RailsAdapter()
 
 
 logger = logging.getLogger(__name__)
@@ -99,7 +104,7 @@ async def get_bias_audit(
     alert_level: "ok" | "warning" (ratio < 0.80)
     """
     try:
-        report = await bias_audit_service.get_adverse_impact_by_job(
+        report = await _bias_adapter.get_adverse_impact_by_job(
             db, job_id, company_id=UUID(company_id)
         )
         return _to_response(report)
@@ -122,7 +127,7 @@ async def get_bias_audit_history(
     Isolamento multi-tenant via X-Company-ID header.
     """
     try:
-        snapshots = await bias_audit_service.get_snapshot_history(
+        snapshots = await _bias_adapter.get_bias_audit_snapshot_history(
             db, UUID(company_id), job_id, limit
         )
         return {

@@ -18,6 +18,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
 from app.domains.automation.services.stage_transition_automation import SubStatusPredictor, stage_transition_service
+from app.shared.compliance.audit_service import audit_service  # module-level for test patchability
+from app.shared.compliance.fairness_guard import FairnessGuard as _FairnessGuard
+_fairness_guard_sta = _FairnessGuard()
 
 logger = logging.getLogger(__name__)
 
@@ -394,12 +397,32 @@ async def bulk_predict_substatus(request: BulkPredictSubStatusRequest):
                     to_stage=request.to_stage
                 )
 
-            predictions.append(CandidatePrediction(
+            _pred = CandidatePrediction(
                 candidate_id=candidate.id,
                 predicted_substatus=result.get('predicted_substatus', 'profile_not_aligned'),
                 confidence=result.get('confidence', 0.0),
                 reasoning=result.get('reasoning', '')
-            ))
+            )
+            predictions.append(_pred)
+            # Compliance: per-candidate audit trail (Task #311)
+            try:
+                await audit_service.log_decision(
+                    company_id=getattr(candidate, "company_id", ""),
+                    agent_name="automation_engine",
+                    decision_type="reject_candidate",
+                    action=f"bulk_predict_{request.to_stage}",
+                    decision=_pred.predicted_substatus,
+                    reasoning=[
+                        f"from_stage: {request.from_stage}",
+                        f"to_stage: {request.to_stage}",
+                        f"confidence: {_pred.confidence}",
+                        _pred.reasoning or "",
+                    ],
+                    criteria_used=["bulk_predict_substatus"],
+                    candidate_id=candidate.id,
+                )
+            except Exception as _ae:
+                logger.debug("audit log failed (non-blocking): %s", _ae)
         except Exception as e:
             logger.error(f"Error predicting substatus for candidate {candidate.id}: {e}")
             predictions.append(CandidatePrediction(
@@ -438,6 +461,20 @@ async def bulk_generate_messages(request: BulkGenerateMessagesRequest):
             )
 
             ai_personalized = result.get('metadata', {}).get('generated_by', '') == 'lia_claude'
+            # Compliance: check generated message body for discriminatory content
+            _body = result.get('body', '')
+            if _body:
+                _fg_result = _fairness_guard_sta.check(_body)
+                if _fg_result.is_blocked:
+                    raise HTTPException(
+                        status_code=422,
+                        detail={
+                            "error": "fairness_blocked",
+                            "field": "body",
+                            "needs_review": {candidate.id: _fg_result.blocked_terms or []},
+                            "category": _fg_result.category,
+                        },
+                    )
 
             messages.append(CandidateMessage(
                 candidate_id=candidate.id,
@@ -445,6 +482,8 @@ async def bulk_generate_messages(request: BulkGenerateMessagesRequest):
                 body=result.get('body', ''),
                 ai_personalized=ai_personalized
             ))
+        except HTTPException:
+            raise  # fairness_blocked and other HTTP errors must propagate
         except Exception as e:
             logger.error(f"Error generating message for candidate {candidate.id}: {e}")
             candidate_name = candidate.name.split()[0] if candidate.name else 'Candidato'

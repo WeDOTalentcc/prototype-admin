@@ -171,6 +171,29 @@ class CascadedRouter:
         normalized = message.lower().strip()
         return hashlib.md5(normalized.encode()).hexdigest()
 
+    def _wizard_domain_override(self, message: str, cached_domain: str) -> bool:
+        """Return True if fast router strongly identifies wizard domain for this message,
+        while the cache holds a different (stale) non-wizard entry.
+
+        harness-engineering [sensor computacional] — guards LRU/Redis Tier 1/2 against
+        returning stale job_management entries for wizard-patterned messages.
+        Fail-open: any exception returns False (trust cache).
+
+        Post-mortem 2026-04-30: without this, Tier 1/2 could return stale job_management
+        entries for "criar uma vaga", bypassing the Tier 2.5 wizard guard entirely.
+        """
+        if cached_domain == "wizard":
+            return False  # already wizard — no override needed
+
+        try:
+            result = self.fast.match(message)
+            if result is None:
+                return False
+            threshold = settings.ROUTER_FAST_CONFIDENCE_THRESHOLD
+            return result.domain_id == "wizard" and result.confidence >= threshold
+        except Exception:
+            return False  # fail-open: trust cache on error
+
     @trace_span("router.route", attributes={"component": "cascaded_router"})
     async def route(
         self,
