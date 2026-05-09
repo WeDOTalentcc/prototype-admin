@@ -844,6 +844,54 @@ class MainOrchestrator:
         return None
 
         # ------------------------------------------------------------------
+    async def _try_plan_via_service(
+        self,
+        ctx,
+        conv_id: str,
+        orchestrator_context: dict,
+    ) -> "dict | None":
+        """Sprint III.B — delegate to injected plan_service.
+
+        Returns a V1-compatible response dict on success, or None so the caller
+        falls through to V1 delegation (graceful degradation).
+
+        Multi-tenancy: tenant_id from ctx.company_id, never from payload (LGPD/CLAUDE.md #1).
+        """
+        if self._plan_service is None:
+            return None
+        try:
+            detected = self._plan_service.detect(ctx.message)
+            if detected is None:
+                return None
+
+            tenant_id = str(ctx.company_id) if getattr(ctx, "company_id", None) else None
+            user_id = str(getattr(ctx, "user_id", "system") or "system")
+
+            plan_result = await self._plan_service.execute(
+                detected,
+                user_id=user_id,
+                session_id=conv_id or "",
+                tenant_id=tenant_id,
+            )
+
+            return {
+                "success": plan_result.success,
+                "message": plan_result.message,
+                "intent": "plan:" + str(plan_result.pattern),
+                "agent": "plan_executor",
+                "agent_type": "execution_plan",
+                "conversation_id": conv_id,
+                "execution_plan": plan_result.summary,
+                "suggested_prompts": list(plan_result.suggestions or []),
+                "data": plan_result.data or {},
+            }
+        except Exception as exc:
+            logger.warning(
+                "[MainOrchestrator] _try_plan_via_service failed — falling through to V1: %s",
+                exc,
+            )
+            return None
+
     # Phase 2 — Pipeline consolidado (sem delegação intermediária)
     # ------------------------------------------------------------------
 
