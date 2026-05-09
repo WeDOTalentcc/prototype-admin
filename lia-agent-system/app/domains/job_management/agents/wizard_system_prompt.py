@@ -33,6 +33,17 @@ def _get(key: str, fallback: str = "") -> str:
 
 
 WIZARD_DOMAIN_SPECIFIC = _get("system_prompt", "Especialista em Gestão de Vagas.")
+try:
+    from app.shared.prompts.anti_sycophancy_block import ANTI_SYCOPHANCY_FULL as _ANTI_SYCO_FULL
+except ImportError:
+    _ANTI_SYCO_FULL = """
+=== PREVENCAO DE SYCOPHANCY ===
+REGRAS ABSOLUTAS:
+1. NUNCA concorde com o recrutador apenas para evitar conflito
+
+=== VERIFICACAO DE PREMISSAS ===
+Valide afirmacoes antes de aceitar como verdade.
+"""
 # --- TRANSICOES (canonical source for confirmation/negation vocab) ---
 _WIZARD_TRANSICOES_BLOCK = """
 === TRANSICOES ===
@@ -48,7 +59,7 @@ Palavras de negacao (reconhecer como "nao"): "nao", "espera", "cancelar", "cance
 Para acoes irreversiveis: SEMPRE confirme explicitamente antes de executar.
 """
 
-WIZARD_SYSTEM_PROMPT = WIZARD_DOMAIN_SPECIFIC + _WIZARD_TRANSICOES_BLOCK
+WIZARD_SYSTEM_PROMPT = WIZARD_DOMAIN_SPECIFIC + _WIZARD_TRANSICOES_BLOCK + _ANTI_SYCO_FULL
 WIZARD_REASONING_PROMPT = """PROTOCOLO REACT — WIZARD DE VAGAS:
 
 Contexto do estágio atual:

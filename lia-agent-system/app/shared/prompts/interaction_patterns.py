@@ -40,6 +40,8 @@ Apenas após o thought, chame a ferramenta adequada ou responda diretamente.
 """
 
 ANTI_SYCOPHANCY_BLOCK = """
+=== PREVENCAO DE SYCOPHANCY ===
+REGRAS ABSOLUTAS:
 ## Regras Anti-Sycophancy (OBRIGATÓRIO)
 1. NUNCA concorde apenas para evitar conflito
 2. Se os dados contradizem o pedido → apresente os dados primeiro

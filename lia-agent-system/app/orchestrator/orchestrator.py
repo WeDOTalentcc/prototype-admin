@@ -55,6 +55,16 @@ from app.tools.scope_config import (
 
 logger = logging.getLogger(__name__)
 
+# _LIA_SYSTEM_PROMPT: module-level constant for orchestrator anti-sycophancy guard.
+# Tests import this directly. Uses ORCHESTRATOR variant (compact, <200 chars).
+try:
+    from app.shared.prompts.anti_sycophancy_block import ANTI_SYCOPHANCY_ORCHESTRATOR as _LIA_SYSTEM_PROMPT
+except ImportError:
+    _LIA_SYSTEM_PROMPT = (
+        "Anti-sycophancy rule: NUNCA concorde apenas para evitar conflito. "
+        "Apresente dados antes de concordar com afirmações do recrutador."
+    )
+
 SCOPE_MAPPING = {
     OrchestratorScope.TALENT_FUNNEL: PromptScope.TALENT_FUNNEL,
     OrchestratorScope.JOB_TABLE: PromptScope.JOB_TABLE,

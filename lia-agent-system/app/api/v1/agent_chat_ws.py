@@ -702,6 +702,11 @@ async def agent_chat_ws(
             context = msg.get("context", {})
             context.setdefault("company_id", company_id)
             context.setdefault("user_id", user_id)
+            # Rail A hint: promote top-level metadata into context (idempotent — caller wins)
+            if not context.get("metadata"):
+                _msg_metadata = msg.get("metadata")
+                if _msg_metadata:
+                    context["metadata"] = _msg_metadata
             active_domain = msg.get("domain", domain)
 
             _c3b_result = await pre_compliance(content, company_id, active_domain)
@@ -1101,6 +1106,8 @@ class HTTPChatRequest(BaseModel):
     domain: str = ""
     session_id: str = ""
     context: dict[str, Any] = {}
+    # Rail A hint metadata — promotes into context["metadata"] for cascaded_router
+    metadata: dict[str, Any] = {}
 
     class Config:
         from_attributes = True
@@ -1135,6 +1142,9 @@ async def http_chat_message(req: HTTPChatRequest, request: Request):
     context = req.context or {}
     context.setdefault("company_id", company_id)
     context.setdefault("user_id", user_id)
+    # Rail A hint: promote req.metadata into context (idempotent — caller wins)
+    if not context.get("metadata") and req.metadata:
+        context["metadata"] = req.metadata
 
     _inj_result = _injection_guard.check(content)
     if _inj_result.risk_level == "high":

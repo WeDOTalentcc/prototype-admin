@@ -79,6 +79,16 @@ class AgenticLoop:
         """
         self._ensure_deps()
 
+        # UC-P0-10: Fail-closed tenant guard — both required before ANY processing
+        if not company_id or not user_id:
+            logger.warning(
+                "[AgenticLoop] Missing tenant context (company_id=%r, user_id=%r) — "
+                "returning empty response without LLM/tool execution.",
+                company_id,
+                user_id,
+            )
+            return {"response": None, "tool_calls_made": [], "iterations": 0}
+
         max_iter = max_iterations or MAX_TOOL_ITERATIONS
         tool_schemas = self.get_tool_schemas(provider)
 
