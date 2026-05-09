@@ -303,11 +303,14 @@ celery_app.conf.update(
             "options": {"expires": 7000},
         },
         # ACH-027 — Avaliação RAGAS diária às 03h UTC (00h Brasília)
-        "ragas-evaluate-daily": {
-            "task": "ragas.evaluate_batch",
-            "schedule": crontab(hour=3, minute=0),  # 00h Brasília / UTC-3
-            "options": {"expires": 7200},
-        },
+        # Condicionada a ENABLE_RAG_EVAL (default: true). Desabilitar em ambientes sem RAGAS.
+        **({
+            "ragas-evaluate-daily": {
+                "task": "ragas.evaluate_batch",
+                "schedule": crontab(hour=3, minute=0),  # 00h Brasília / UTC-3
+                "options": {"expires": 7200},
+            },
+        } if os.getenv("ENABLE_RAG_EVAL", "true").lower() == "true" else {}),
         # E9 — Adaptive Routing: recompute ajustes de confiança diariamente às 07h UTC (04h Brasília)
         "routing-recompute-daily": {
             "task": "routing.recompute_adjustments",

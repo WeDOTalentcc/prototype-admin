@@ -1,5 +1,6 @@
 """Celery tasks: ml (Fase 7)."""
 import asyncio
+import os
 import re
 from datetime import UTC
 
@@ -22,6 +23,10 @@ def run_ragas_evaluate_batch(self, domain: str = "all", days_back: int = 1) -> d
     Returns:
         Dict com { evaluated, skipped, errors, domain }
     """
+    if os.getenv("ENABLE_RAG_EVAL", "true").lower() != "true":
+        logger.info("ragas.evaluate_batch: ENABLE_RAG_EVAL is disabled, skipping")
+        return {"status": "disabled", "reason": "ENABLE_RAG_EVAL=false"}
+
     async def _run() -> dict:
         from datetime import datetime, timedelta
 

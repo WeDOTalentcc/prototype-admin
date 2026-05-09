@@ -16,6 +16,7 @@ Celery task: 'ragas.evaluate_batch' — executado diariamente às 03h UTC.
 Fail-safe: falha na avaliação RAGAS não afeta o funcionamento dos agentes.
 """
 import logging
+import os
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import Any
@@ -24,7 +25,8 @@ from uuid import uuid4
 logger = logging.getLogger(__name__)
 
 # Threshold de alerta (score abaixo disso gera WARNING no log)
-RAGAS_QUALITY_THRESHOLD = 0.70
+# Configurável via RAGAS_QUALITY_THRESHOLD env var (padrão: 0.70)
+RAGAS_QUALITY_THRESHOLD = float(os.getenv("RAGAS_QUALITY_THRESHOLD", "0.70"))
 
 
 @dataclass
@@ -257,6 +259,7 @@ class RAGASEvaluationService:
         """Persiste resultado na tabela agent_ragas_evaluations."""
         try:
             from sqlalchemy import text
+            # ADR-001-EXEMPT: direct SQL — ragas eval is a non-tenant time-series table, no company_id filter needed at eval layer
             await db.execute(
                 text(
                     """
