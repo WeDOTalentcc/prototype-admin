@@ -1312,6 +1312,63 @@ class MainOrchestrator:
 
         return result
 
+    async def _try_fallback_react_substitute(
+        self,
+        v1_result: "dict",
+        ctx: "Any",
+        extra_kwargs: "dict",
+    ) -> "dict":
+        """Late-intercept: if V1 emits a technical stub message, ask
+        ``_fallback_react_service`` for a natural-language substitute.
+
+        Behaviour (Sprint III.D / ADR-019):
+        - Non-technical V1 response → return v1_result unchanged.
+        - No service injected → return v1_result unchanged.
+        - Service raises / returns success=False → return v1_result (graceful).
+        - Service succeeds → merge natural message + ``_fallback_substituted=True``,
+          preserve V1 metadata (intent, conversation_id, etc.).
+        """
+        from app.orchestrator.heuristics import is_technical_response
+
+        message = v1_result.get("message", "")
+        if not is_technical_response(message):
+            return v1_result
+
+        svc = self._fallback_react_service
+        if svc is None:
+            return v1_result
+
+        try:
+            intent = v1_result.get("intent") or "general_chat"
+            entities = (
+                (v1_result.get("result") or {})
+                .get("data", {})
+                .get("entities", {})
+            )
+            company_id = extra_kwargs.get("company_id", "")
+
+            fb_result = await svc.handle_directly(
+                intent=intent,
+                entities=entities,
+                company_id=company_id,
+                context=ctx,
+            )
+
+            if not (fb_result or {}).get("success"):
+                return v1_result
+
+            # Merge: replace message, add marker, keep V1 metadata
+            merged = dict(v1_result)
+            merged["message"] = fb_result.get("message", message)
+            merged["_fallback_substituted"] = True
+            return merged
+
+        except Exception as exc:
+            logger.debug(
+                "[MainOrchestrator] _try_fallback_react_substitute exception (graceful): %s", exc
+            )
+            return v1_result
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -1365,6 +1422,7 @@ def get_main_orchestrator(orchestrator: Any = None) -> MainOrchestrator:
             orchestrator = get_orchestrator()
         _main_orchestrator_instance = MainOrchestrator(orchestrator)
     return _main_orchestrator_instance
+
 
 
 
