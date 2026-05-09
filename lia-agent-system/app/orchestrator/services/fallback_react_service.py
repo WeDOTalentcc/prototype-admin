@@ -65,7 +65,7 @@ STRUCTURED_INTENT_ADDENDA: Final[dict[str, str]] = {
 # Configuration constants
 # ─────────────────────────────────────────────────────────────────────────────
 MAX_HISTORY_MESSAGES: Final[int] = 10
-TOOL_BIND_ENV_VAR: Final[str] = "LIA_FALLBACK_BIND_TOOLS"
+TOOL_BIND_ENV_VAR: Final[str] = "LIA_FALLBACK_BIND_TOOLS"  # R-044: verified-active — controls bind_tools in fallback ReAct path
 AGENT_USED_LABEL: Final[str] = "LIA Orchestrator"
 AGENT_TYPE_LABEL: Final[str] = "orchestrator"
 

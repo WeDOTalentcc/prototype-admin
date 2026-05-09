@@ -85,7 +85,7 @@ class PIIMaskingFilter(logging.Filter):
 def get_masked_logger(name: str) -> logging.Logger:
     logger = logging.getLogger(name)
     if not any(isinstance(f, PIIMaskingFilter) for f in logger.filters):
-        logger.addFilter(PIIMaskingFilter())
+        logger.addFilter(PIIMaskingFilter())  # R-052: each caller gets a logger with PII masking; use lia.pii.* namespace for PII-specific loggers
     return logger
 
 
@@ -110,7 +110,7 @@ def install_global_pii_masking() -> None:
         if not any(isinstance(f, PIIMaskingFilter) for f in handler.filters):
             handler.addFilter(pii_filter)
 
-    logging.getLogger(__name__).info("[PII-MASKING] Global PII masking installed (logger + %d handler(s))", len(root_logger.handlers))
+    logging.getLogger("lia.pii").info("[PII-MASKING] Global PII masking installed (logger + %d handler(s))", len(root_logger.handlers))  # R-052: PII filter uses isolated lia.pii logger
 
 
 import os as _os

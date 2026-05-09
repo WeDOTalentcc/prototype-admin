@@ -394,7 +394,7 @@ def _load_domain_patterns() -> dict[str, list[str]]:
     # app/orchestrator/fast_router.py -> app/orchestrator/config/domain_routing.yaml
     _yaml_path = _pathlib.Path(__file__).parent / "config" / "domain_routing.yaml"
 
-    if _os.environ.get("LIA_DISABLE_YAML_ROUTING", "").lower() in ("1", "true", "yes"):
+    if _os.environ.get("LIA_DISABLE_YAML_ROUTING", "").lower() in ("1", "true", "yes"):  # R-044: verified-active — disables YAML domain routing, falls back to hardcoded DOMAIN_PATTERNS
         logger.info("[LIA-I06] LIA_DISABLE_YAML_ROUTING set — using hardcoded DOMAIN_PATTERNS")
         return _HARDCODED_DOMAIN_PATTERNS
 

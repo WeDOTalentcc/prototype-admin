@@ -436,7 +436,7 @@ class Orchestrator:
             # ReAct agents already have tools via create_react_agent; this gives the
             # _handle_directly fallback path the same agentic capability.
             llm = self.llm_service.get_audited_model()
-            _bind_tools_enabled = os.environ.get("LIA_FALLBACK_BIND_TOOLS", "true").lower() in ("1", "true", "yes")
+            _bind_tools_enabled = os.environ.get("LIA_FALLBACK_BIND_TOOLS", "true").lower() in ("1", "true", "yes")  # R-044: verified-active — mirrors FallbackReActService.TOOL_BIND_ENV_VAR
             if _bind_tools_enabled:
                 try:
                     from app.tools import get_all_tool_schemas

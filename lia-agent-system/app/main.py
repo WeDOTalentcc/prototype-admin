@@ -219,6 +219,17 @@ async def lifespan(app: FastAPI):
             except Exception:
                 pass
 
+    # ─── R-051: LangSmith availability warning ──────────────────────────────────
+    from app.config.langsmith import is_langsmith_enabled  # R-051
+    if not is_langsmith_enabled():
+        _startup_logger = logging.getLogger("lia.startup")
+        _startup_logger.warning(
+            "LangSmith tracing not configured (LANGSMITH_API_KEY / LANGCHAIN_API_KEY not set). "
+            "LLM traces will not be captured. Set LANGSMITH_API_KEY to enable."
+        )  # R-051
+    else:
+        logging.getLogger("lia.startup").info("LangSmith tracing enabled (lia.startup)")  # R-051
+
     # Initialize database
     try:
         await init_db()

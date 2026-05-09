@@ -193,6 +193,18 @@ celery_app.conf.update(
     task_track_started=True,
     result_expires=3600,  # resultados expiram em 1 hora
 
+    # R-049: Prefetch tuning
+    # sourcing_high (long LLM tasks): prefetch=1 to prevent queue starvation
+    # evaluation_normal (RAGAS batch): prefetch=1
+    # vagas_normal (job updates): prefetch=1
+    # onboarding_low (background tasks): prefetch=10 (fast, short)
+    # worker_prefetch_multiplier=1 is safe default for LLM workloads
+    # Note: Celery does not support per-queue prefetch; the global value is
+    # intentionally set to 1 (conservative) to avoid long LLM tasks blocking
+    # short ones on the same worker. For onboarding_low tasks a dedicated
+    # worker process with --prefetch-multiplier=10 can be launched separately.
+    worker_prefetch_multiplier=1,
+
     # Filas com prioridade
     task_queues=(
         Queue("sourcing_high",     _default_exchange, routing_key="sourcing_high",     queue_arguments={"x-max-priority": 10}),

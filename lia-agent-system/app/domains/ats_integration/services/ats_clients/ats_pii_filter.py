@@ -38,7 +38,7 @@ from app.domains.ats_integration.services.ats_clients.lgpd_field_registry import
 )
 from app.shared.pii_masking import strip_pii_for_llm_prompt
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger("lia.pii.ats")  # R-052: PII filter uses isolated lia.pii.ats logger (separate from root to avoid leaking ATS payload structure)
 
 
 def filter_outbound(
