@@ -26,6 +26,8 @@ from app.config.industry_weights import ScoringWeights, get_weights_for_industry
 IndustryWeights = ScoringWeights
 
 logger = logging.getLogger(__name__)
+from app.shared.compliance import scoring_safeguards as _ss
+from app.shared.compliance.scoring_safeguards import FairnessBlockedError
 
 
 class DataAvailability(Enum):
@@ -644,6 +646,28 @@ class LIAScoreService:
         Returns:
             LIAScoreResult with score, breakdown, and reasoning
         """
+        # C2 — Fairness gate (LGPD Art.20 / CLAUDE.md #2/#3).
+        _lia_query = (criteria.get("query") or "")
+        _lia_company = criteria.get("company_id") or "unknown"
+        _lia_fg, _lia_unavail = _ss.run_fairness_check(_lia_query)
+        if _lia_unavail or (_lia_fg and _lia_fg.is_blocked):
+            _lia_fg = _lia_fg or type(
+                "FR", (), {"is_blocked": True, "category": "unavailable",
+                           "educational_message": "fairness guard unavailable"}
+            )()
+            _ss.schedule_audit_log(_ss.log_scoring_decision(
+                company_id=_lia_company,
+                agent_name="lia_score_service",
+                decision_type="fairness_block",
+                action="cv_screening.fairness_block",
+                decision="blocked",
+                reasoning=[f"FairnessGuard: category={_lia_fg.category}",
+                            _lia_fg.educational_message or ""],
+                criteria_used=["fairness_guard"],
+                human_review_required=True,
+            ))
+            raise FairnessBlockedError(_lia_fg)
+
         weights = get_weights_for_industry(industry) if industry else IndustryWeights()
         
         query = criteria.get("query", "")

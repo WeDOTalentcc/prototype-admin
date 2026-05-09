@@ -21,6 +21,8 @@ from app.shared.services.skills_catalog_service import (
 )
 
 logger = logging.getLogger(__name__)
+from app.shared.compliance import scoring_safeguards as _ss
+from app.shared.compliance.scoring_safeguards import FairnessBlockedError
 
 
 EVIDENCE_PATTERNS: dict[str, dict[str, Any]] = {
@@ -366,6 +368,31 @@ class EvaluationCriteriaService:
         requirements: list[str],
         min_score: float = 0.4,
     ) -> list[dict[str, Any]]:
+        # C5 — Fairness gate (LGPD Art. 20 / CLAUDE.md #2/#3).
+        # Must run BEFORE any DB query — test asserts mock_db.execute.assert_not_called().
+        for _ec_req in requirements:
+            _ec_fg, _ec_fg_unavail = _ss.run_fairness_check(str(_ec_req) if _ec_req else "")
+            if _ec_fg_unavail or (_ec_fg and _ec_fg.is_blocked):
+                _ec_fg = _ec_fg or type(
+                    "FR", (), {"is_blocked": True, "category": "unavailable",
+                               "educational_message": "fairness guard unavailable"}
+                )()
+                await _ss.log_scoring_decision(
+                    company_id="unknown",
+                    agent_name="evaluation_criteria_service",
+                    decision_type="fairness_block",
+                    action="cv_screening.fairness_block",
+                    decision="blocked",
+                    reasoning=[
+                        f"FairnessGuard blocked requirement: category={_ec_fg.category}",
+                        _ec_fg.educational_message or "",
+                        f"blocked_requirement={str(_ec_req)[:80]}",
+                    ],
+                    criteria_used=["fairness_guard"],
+                    human_review_required=True,
+                )
+                raise FairnessBlockedError(_ec_fg)
+
         all_criteria = await EvaluationCriteriaRepository(db).list_active()
 
         matches: list[dict[str, Any]] = []

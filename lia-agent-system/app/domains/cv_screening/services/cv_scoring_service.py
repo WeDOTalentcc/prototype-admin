@@ -32,6 +32,7 @@ from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
 from app.domains.analytics.services.activity_service import activity_service
 
 logger = logging.getLogger(__name__)
+from app.shared.compliance import scoring_safeguards as _ss
 
 
 class CVScoringService:
@@ -98,7 +99,34 @@ class CVScoringService:
                     "error": "candidate_not_found",
                     "message": f"Candidato {candidate_id} não encontrado"
                 }
-            
+
+            # C1 — Fairness gate (LGPD Art.20 / CLAUDE.md #2/#3): check
+            # resume_text before rubric evaluation. Never queries DB on block.
+            _cv_text = (
+                (candidate_data.get("resume_text") or "")
+                + " " + (candidate_data.get("summary") or "")
+            ).strip()
+            _cv_fg, _cv_unavail = _ss.run_fairness_check(_cv_text)
+            if _cv_unavail or (_cv_fg and _cv_fg.is_blocked):
+                _cv_fg = _cv_fg or type(
+                    "FR", (), {"is_blocked": True, "category": "unavailable",
+                               "educational_message": "fairness guard unavailable"}
+                )()
+                await _ss.log_scoring_decision(
+                    company_id=company_id,
+                    agent_name="cv_scoring_service",
+                    decision_type="fairness_block",
+                    action="cv_screening.fairness_block",
+                    decision="blocked",
+                    reasoning=[f"FairnessGuard: category={_cv_fg.category}",
+                                _cv_fg.educational_message or ""],
+                    criteria_used=["fairness_guard"],
+                    candidate_id=candidate_id, job_vacancy_id=vacancy_id,
+                    human_review_required=True,
+                )
+                return {"success": False, "error": "fairness_block",
+                        "message": _cv_fg.educational_message or "blocked"}
+
             requirements = await self._get_job_requirements(vacancy_id, db)
             if not requirements:
                 return {

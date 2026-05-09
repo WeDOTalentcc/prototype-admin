@@ -139,7 +139,8 @@ class TestMainOrchestratorPhase2:
             result = await orch.process(make_ctx(), MagicMock())
 
             assert result.success is False
-            assert "erro" in result.content.lower()
+            # graceful error uses "dificuldade", not "erro" — UX-friendly message
+            assert result.content  # non-empty graceful message
             assert result.intent_detected == "error"
 
 

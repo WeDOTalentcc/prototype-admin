@@ -1,3 +1,5 @@
+from app.shared.compliance import scoring_safeguards as _ss
+from app.shared.compliance.scoring_safeguards import FairnessBlockedError
 """
 Eligibility Verification Service
 
@@ -160,6 +162,26 @@ class EligibilityVerificationService:
         Returns:
             Tuple of (result, message)
         """
+        # C4 — Fairness gate (LGPD Art.20 / CLAUDE.md #2/#3).
+        _ev_fg, _ev_unavail = _ss.run_fairness_check(question.question_text or "")
+        if _ev_unavail or (_ev_fg and _ev_fg.is_blocked):
+            _ev_fg = _ev_fg or type(
+                "FR", (), {"is_blocked": True, "category": "unavailable",
+                           "educational_message": "fairness guard unavailable"}
+            )()
+            _ss.schedule_audit_log(_ss.log_scoring_decision(
+                company_id="unknown",
+                agent_name="eligibility_verification_service",
+                decision_type="fairness_block",
+                action="cv_screening.fairness_block",
+                decision="blocked",
+                reasoning=[f"FairnessGuard blocked question: category={_ev_fg.category}",
+                            _ev_fg.educational_message or ""],
+                criteria_used=["fairness_guard"],
+                human_review_required=True,
+            ))
+            raise FairnessBlockedError(_ev_fg)
+
         if not question.is_eliminatory:
             return ReconsiderationResult.PASSED, None
         

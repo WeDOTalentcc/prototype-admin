@@ -2,9 +2,18 @@
 
 > **Documento Unificado de Análise de Viabilidade, Custos e Arquitetura**
 
-**Versão:** 3.1 (Unificado)  
-**Data:** 13 de Janeiro de 2026  
+**Versão:** 3.7 (Auditoria de Código — Maio 2026)
+**Data:** 9 de Maio de 2026
 **Autor:** Equipe WeDo Talent
+
+> ⚠️ **Atualização v3.7:** Documento revisado contra o código real do monorepo
+> (`lia-agent-system/` FastAPI + `plataforma-lia/` Next.js + `ats_api/` Rails legacy).
+> Versões 3.0–3.6 foram escritas em janeiro/2026 e tinham status incorretos para
+> várias integrações (Merge, MS Graph, Mailgun, OpenMic, Sentry, Elasticsearch,
+> Celery, Resend, Twilio Voice). Veja a nova **Seção 0 — Auditoria de
+> Conformidade Maio/2026** logo abaixo do Resumo Executivo para o estado real
+> das integrações verificadas no código. Onde havia conflito entre tabelas
+> antigas e a auditoria, **a Seção 0 é a fonte de verdade**.
 
 ---
 
@@ -12,14 +21,112 @@
 
 Este documento consolida toda a análise de integrações, custos e arquitetura do WeDo Talent, organizado em dois capítulos principais:
 
-| Capítulo | Escopo | Ferramentas | Linhas Atuais |
-|----------|--------|-------------|---------------|
-| **Capítulo 1: WeDo Talent Admin** | Gestão de clientes, billing, compliance | Stripe, ProfitWell, HubSpot (CRM + Onboarding), WorkOS, Vanta/Drata, Privacy Tools, Warden AI | ~30.200 substituídas |
-| **Capítulo 2: WeDo Talent Plataforma** | Funil de Talentos e Vagas | Claude, Gemini, LangGraph, Pearch, Deepgram, OpenMic, Mailgun, WhatsApp, MS Graph, Merge | Core do produto |
+| Capítulo | Escopo | Ferramentas | Status Predominante |
+|----------|--------|-------------|---------------------|
+| **Capítulo 1: WeDo Talent Admin** | Gestão de clientes, billing, compliance | HubSpot (CRM), WorkOS (SSO/SCIM), Vanta/Drata, Privacy Tools, Warden AI; Stripe e ProfitWell **planejados** (não implementados) | Parcial |
+| **Capítulo 2: WeDo Talent Plataforma** | Funil de Talentos e Vagas | Claude, Gemini (incl. Live Audio), OpenAI, LangGraph/LangChain/LangSmith, Pearch, Apify, Deepgram, OpenMic, Mailgun, Resend, Twilio (WhatsApp + Voice), MS Graph, MS Teams, Merge.dev, Gupy, Pandapé, Sentry, Elasticsearch, Redis, RabbitMQ, Celery | Core do produto — produção |
 
 ### Filosofia: Desenvolver Mínimo, Integrar Máximo
 
 > **70% SaaS + 30% Interno** = Menos código para manter, mais tempo para features de valor
+
+---
+
+## SEÇÃO 0 — AUDITORIA DE CONFORMIDADE (Maio/2026)
+
+> **Fonte de verdade.** Tabela construída inspecionando o código real em
+> `lia-agent-system/`, `plataforma-lia/` e `ats_api/` (legacy). Substitui as
+> colunas de status das tabelas legadas (Cap. 1/2 e Apêndice A) onde houver
+> divergência. Preços/uso permanecem nas seções originais — aqui só consta
+> *o que de fato existe no código* em Maio/2026.
+
+### 0.1 Integrações em Produção (verificadas no código)
+
+| # | Provider | Categoria | Onde no código | Auth | Status |
+|---|----------|-----------|----------------|------|--------|
+| 1 | **Anthropic Claude** | LLM principal | `lia-agent-system` via `langchain-anthropic>=1.1.0`; `LLM_PRIMARY_MODEL=claude-sonnet-4-6` | `ANTHROPIC_API_KEY` | ✅ Produção |
+| 2 | **Google Gemini** | LLM rápido + roteador + STT live | `langchain-google-vertexai>=3.0.3`; `LLM_FAST_MODEL=gemini-2.5-flash`; `app/domains/voice/services/gemini_live_audio_service.py` | `AI_INTEGRATIONS_GEMINI_API_KEY` ou `GOOGLE_APPLICATION_CREDENTIALS` | ✅ Produção |
+| 3 | **OpenAI** | LLM alternativo / Whisper / TTS PSTN | `langchain-openai>=1.0.3`; usado como fallback PSTN no pipeline de voz | `OPENAI_API_KEY` ou `AI_INTEGRATIONS_OPENAI_API_KEY` | ✅ Produção (não “opcional”) |
+| 4 | **LangChain** | Framework LLM | `langchain>=1.0.8` | n/a | ✅ Produção |
+| 5 | **LangGraph** | Orquestração multi-agente | `langgraph>=0.4.1` + `langgraph-checkpoint-postgres>=2.0.8` | n/a | ✅ Produção |
+| 6 | **LangSmith** | Tracing / eval | `langsmith>=0.7.25` | `LANGCHAIN_API_KEY` | ✅ Produção (não “em progresso”) |
+| 7 | **Pearch AI** | Sourcing 800M+ perfis | Config `HTTP_TIMEOUT_PEARCH_*` em `lia_config/config.py` + `ats_api/app/services/pearch/search_service.rb` | `PEARCH_API_KEY` | ✅ Produção |
+| 8 | **Apify** | LinkedIn scraping | Config `HTTP_TIMEOUT_APIFY_*` + `ats_api/app/services/apify/linkedin_search_service.rb` | `APIFY_API_TOKEN` | ✅ Produção (não “planejado”) |
+| 9 | **Deepgram** | STT entrevistas | `app/services/voice/deepgram_service.py` | `DEEPGRAM_API_KEY` | ✅ Produção |
+| 10 | **OpenMic.ai** | Voice screening assíncrono | `app/services/voice/openmic_service.py` + `app/api/v1/openmic_webhook.py` + `app/jobs/tasks/voice.py` | `OPENMIC_API_KEY` + webhook secret | ✅ Produção (não “planejado”) |
+| 11 | **Mailgun** | Email transacional (primário) | `app/services/email_providers/mailgun_provider.py` + `app/api/v1/mailgun_webhooks.py` | `MAILGUN_API_KEY` + `MAILGUN_DOMAIN` + signing key | ✅ Produção |
+| 12 | **Resend** | Email transacional (fallback) | `app/services/email_providers/resend_provider.py` (`resend==2.19.0`) | `RESEND_API_KEY` | ✅ Produção (não documentado anteriormente) |
+| 13 | **Twilio** | WhatsApp + SMS + Voice PSTN | `twilio==9.4.0`; `app/services/whatsapp_client.py` + `app/api/v1/whatsapp_webhook.py` | `TWILIO_ACCOUNT_SID` + `TWILIO_AUTH_TOKEN` | ✅ Produção |
+| 14 | **Twilio Voice SDK (browser)** | VoIP do recrutador | `plataforma-lia` `@twilio/voice-sdk@^2.11.1` | OAuth Twilio | ✅ Produção (frontend) |
+| 15 | **WhatsApp Business API** | Mensagens candidatos | Via Twilio (item 13) | mesmo do Twilio | ✅ Produção (não “em progresso”) |
+| 16 | **Microsoft Graph** | Calendar + Email + Teams | `msgraph-sdk==1.12.0` + `msal>=1.31.1`; `MICROSOFT_CALENDAR_OAUTH_REDIRECT_URI` | `AZURE_TENANT_ID/CLIENT_ID/CLIENT_SECRET` | ✅ Produção (não “em progresso”) |
+| 17 | **Microsoft Teams JS SDK** | Embed do app no Teams | `plataforma-lia` `@microsoft/teams-js@^2.51.0` | n/a | ✅ Produção (frontend) |
+| 18 | **Merge.dev** | Unified ATS/HRIS | `app/domains/ats_integration/services/ats_clients/merge.py` + `app/api/v1/merge_webhooks.py` | `MERGE_API_KEY` + Account Token | ✅ Produção (não “planejado”) |
+| 19 | **Gupy** | ATS BR (direto) | `app/domains/ats_integration/services/ats_clients/gupy.py` | API Key Bearer | ✅ Produção (não “via Merge”) |
+| 20 | **Pandapé** | ATS BR (direto) | `app/domains/ats_integration/services/ats_clients/pandape.py` | API Key Bearer | ✅ Produção (não “via Merge”) |
+| 21 | **wedotalent_rails** | Ponte ATS legado | `app/domains/ats_integration/services/ats_clients/wedotalent_rails.py` | Rails JWT compartilhado | ✅ Produção (interno) |
+| 22 | **WorkOS** | SSO/SCIM/MFA/Audit | Backend `workos` + frontend `@workos-inc/node@^7.82.0`; `app/middleware/auth_enforcement.py` | `WORKOS_API_KEY` + `WORKOS_CLIENT_ID` + `WORKOS_WEBHOOK_SECRET` | ✅ Produção |
+| 23 | **HubSpot CRM** | Sync clientes | `app/shared/services/hubspot_service.py` + `app/domains/company/services/hubspot_service.py` + `app/api/v1/clients/clients_hubspot.py` | `HUBSPOT_ACCESS_TOKEN` (Private App) | ✅ Produção |
+| 24 | **PostgreSQL** | DB principal + RLS | `sqlalchemy==2.0.36` + `alembic==1.14.0` | `DATABASE_URL` | ✅ Produção |
+| 25 | **Redis** | Cache + sessões + Fernet PII | `redis==5.2.0`; `REDIS_URL` + `REDIS_ENCRYPTION_KEY` (Fernet) | URL + key | ✅ Produção (chave obrigatória em prod) |
+| 26 | **RabbitMQ (CloudAMQP)** | Broker de eventos | `aio-pika==9.5.3`; `RABBITMQ_URL` + `RABBITMQ_EXCHANGE=rh_platform` | URL AMQP | ✅ Produção (não “planejado”) |
+| 27 | **Celery** | Workers + cron | `celery==5.4.0`; `app/jobs/celery_tasks.py` + `tasks/voice.py` etc. | usa Redis ou RabbitMQ como broker | ✅ Produção (não documentado) |
+| 28 | **Elasticsearch** | Search avançada candidatos | `ELASTICSEARCH_URL` em config; `SEARCH_BACKEND=postgres|elasticsearch`; jobs em `ats_api/app/jobs/elasticsearch/` | URL + API key | ✅ Produção (não documentado) |
+| 29 | **Sentry** | Error tracking + perf | Backend `sentry-sdk[fastapi]==2.19.2` em `app/main.py`; frontend `@sentry/nextjs@^10.46.0` (3 configs: client/edge/server) | `SENTRY_DSN` | ✅ Produção (não “planejado”) |
+| 30 | **Replit (host)** | Hosting MVP / dev | Workflows `dev-server`/`lia-backend` | n/a | ✅ Produção |
+| 31 | **GitHub** | VCS + integração nativa | Plugin `github==1.0.0` instalado | OAuth | ✅ Produção |
+| 32 | **Jira (jira.js)** | Embed gestão de projetos | `plataforma-lia` `jira.js@^5.3.1` + plugin `jira==1.0.0` | OAuth | ✅ Produção (não “opcional”) |
+| 33 | **OTel (Tracing)** | Tracing distribuído | `OTEL_EXPORTER_OTLP_ENDPOINT` + `OTEL_TRACES_ENABLED=true` (config) | OTLP HTTP | 🔄 Pronto na infra (endpoint vazio = desligado por padrão) |
+
+### 0.2 Integrações em Desenvolvimento (stubs em código)
+
+| Provider | Onde | Status real | Nota |
+|----------|------|-------------|------|
+| **Vindi** (billing BR) | `app/services/billing_providers/vindi_provider.py` | 🔄 Stub | Provider abstraído, sem chave em produção |
+| **Iugu** (billing BR) | `app/services/billing_providers/iugu_provider.py` | 🔄 Stub | idem |
+
+### 0.3 Integrações Documentadas mas NÃO Implementadas
+
+| Provider | Status no doc antigo | Status real (Maio/2026) | Recomendação |
+|----------|----------------------|--------------------------|--------------|
+| **Stripe** | ✅ “Integrado” | ❌ Não há cliente Stripe em `lia-agent-system`, `ats_api` ou `plataforma-lia` | Reclassificar como 📋 Planejado (stack BR usa Vindi/Iugu); Stripe vira opção para mercado US/EU |
+| **ProfitWell** | ✅ “Integrado” | ❌ Sem código | Reclassificar como 📋 Planejado |
+| **Vanta / Drata** | 📋 Planejado | ❌ Apenas strings cosméticas em UI | Manter 📋 Planejado |
+| **Privacy Tools** | 📋 Planejado | ❌ Sem código | Manter 📋 Planejado |
+| **Warden AI** | 📋 Planejado | ❌ Sem código | Manter 📋 Planejado |
+
+### 0.4 Erros Conhecidos das Versões 3.0–3.6 (corrigidos pontualmente)
+
+| Bug no doc | Onde aparecia | Correção |
+|------------|---------------|----------|
+| `SENDGRID_API_KEY` na seção Mailgun | §2.6.3 e Apêndice D | Trocado por `MAILGUN_API_KEY` + `MAILGUN_DOMAIN` |
+| `STACKONE_API_KEY` no checklist ATS | Apêndice D | Trocado por `MERGE_API_KEY` + `MERGE_ACCOUNT_TOKEN` |
+| “Merge | Merge” duplicado | §2.1.1 mapa, Cap. 2.7.1/2.7.2, Apêndice A linhas 13–14, Apêndice B linhas 8–9 | Marcado 2.7.2 como **DEPRECATED — duplicação errada do mesmo produto** |
+| “Backend Rails” (em diversos guias) | Cap. 1.4 (HubSpot), Apêndice G | Backend de produção é **FastAPI/Python** (`lia-agent-system`); Rails (`ats_api`) é legacy/system-of-record. Snippets Ruby permanecem como referência futura para migração. |
+| Status “🔄 Em Progresso” para MS Graph, WhatsApp, Mailgun, Deepgram | Tabela inicial e §2.16.1 | Reclassificados como ✅ Produção |
+| Status “📋 Planejado” para Merge, Apify, Sentry, RabbitMQ, OpenMic | Tabela inicial e §2.16 | Reclassificados como ✅ Produção |
+
+### 0.5 Integrações Sub-Documentadas (presentes no código, mas sem capítulo próprio)
+
+Estas integrações **funcionam em produção** mas não têm seção de viabilidade/custo no doc original. Devem ganhar §§ próprios em uma futura v3.8:
+
+- **Resend** (fallback de email) — `resend==2.19.0`
+- **Sentry** (error tracking BE+FE) — `sentry-sdk[fastapi]` + `@sentry/nextjs`
+- **Elasticsearch** (search candidatos) — `ELASTICSEARCH_URL`
+- **Celery** (background jobs) — `celery==5.4.0`
+- **Twilio Voice SDK browser** (`@twilio/voice-sdk`) — VoIP do recrutador
+- **Microsoft Teams JS SDK** (`@microsoft/teams-js`) — embed do app no Teams
+- **Gemini Live Audio API** — STT em tempo real para voice screening
+- **OpenTelemetry** — `OTEL_*` configs prontos
+
+### 0.6 Visão Numérica Atualizada
+
+- Integrações **realmente em produção** (verificadas no código): **31** ativas + **2** stubs (Vindi/Iugu) + **1** opcional (OTel) = **34**
+- Integrações **planejadas** (no doc, sem código): Stripe, ProfitWell, Vanta, Drata, Privacy Tools, Warden AI = **6**
+- Integrações **opcionais** (Apêndice F): 50+ ferramentas comparativas — manter como referência
+
+> Quando os números/contagens nas tabelas legadas (“25+ Integrações”,
+> “35+ Integrações”) divergirem de 0.6, **0.6 é a contagem correta**.
 
 ---
 
@@ -3931,9 +4038,10 @@ Desenvolvimento mínimo para integrar o SaaS:
 ┌───────────────────┐          ┌───────────────────┐          ┌───────────────────┐
 │   COMUNICAÇÃO     │          │    ATS / HRIS     │          │   IDENTITY        │
 │                   │          │   (Unified APIs)  │          │                   │
-│ • MS Graph        │          │ • Merge        │          │ • WorkOS          │
-│ • WhatsApp API    │          │ • Merge           │          │ (SSO/SCIM)        │
-│ • Mailgun        │          │ • Gupy/Pandapé    │          │                   │
+│ • MS Graph        │          │ • Merge.dev       │          │ • WorkOS          │
+│ • WhatsApp + Voice│          │   (unified)       │          │ (SSO/SCIM/MFA)    │
+│   (Twilio)        │          │ • Gupy (direto)   │          │                   │
+│ • Mailgun + Resend│          │ • Pandapé (direto)│          │                   │
 └───────────────────┘          └───────────────────┘          └───────────────────┘
     │                                    │                                    │
     └────────────────────────────────────┼────────────────────────────────────┘
@@ -4348,8 +4456,14 @@ MICROSOFT_TENANT_ID=xxx
 
 **Configuração:**
 ```bash
-SENDGRID_API_KEY=SG.xxx
+# Mailgun (provider primário) — corrigido em v3.7
+MAILGUN_API_KEY=key-xxx
+MAILGUN_DOMAIN=mg.wedotalent.com
+MAILGUN_WEBHOOK_SIGNING_KEY=xxx
+# Resend (fallback) — adicionado em v3.7
+RESEND_API_KEY=re_xxx
 ```
+> ⚠️ Versões 3.0–3.6 listavam erroneamente `SENDGRID_API_KEY` aqui — projeto **não usa SendGrid**. Provider é Mailgun (`app/services/email_providers/mailgun_provider.py`) com Resend como fallback.
 
 **Uso por Área:**
 
@@ -4396,13 +4510,19 @@ SENDGRID_API_KEY=SG.xxx
 | 👥 Funil | Import/export candidatos |
 | ⚙️ Config | Conexão com ATS do cliente |
 
-### 2.7.2 Merge (Concorrente)
+### 2.7.2 ~~Merge (Concorrente)~~ — DEPRECATED em v3.7
 
-**O que é:** Unified API concorrente para ATS, HRIS, CRM, etc.
+> ⚠️ **Esta seção era duplicação errada do mesmo produto Merge.dev** (provavelmente
+> resultado de um find/replace mal-aplicado em versão anterior, talvez quando
+> "StackOne" foi renomeado para "Merge"). Não existem dois "Merge" — há um único
+> provider unified API (Merge.dev) implementado em
+> `app/domains/ats_integration/services/ats_clients/merge.py`. Pricing real:
+> Free 3 conexões → Launch $650/mês (10 conexões) → $65/conta adicional.
+> Os blocos abaixo são mantidos apenas para referência histórica.
 
-**Uso Potencial:**
-- Alternativa ao Merge
-- 220+ integrações disponíveis
+**~~Uso Potencial:~~**
+- ~~Alternativa ao Merge~~
+- ~~220+ integrações disponíveis~~
 
 **Preços:**
 
@@ -4882,8 +5002,8 @@ Por cliente: $512/mês
 | 10 | MS Graph | Comunicação | Grátis + M365 | $0 | ✅ | ✅ | ✅ |
 | 11 | WhatsApp API | Comunicação | Por conversa | $50-500 | ❌ | ✅ | ✅ |
 | 12 | Mailgun | Email | Por email | $20-90 | ✅ | ✅ | ✅ |
-| 13 | Merge | ATS/HRIS Unified | Por conexão | $500-2.000 | ✅ | ✅ | ✅ |
-| 14 | Merge | ATS/HRIS Unified | Por conexão | $650-3.000 | ✅ | ✅ | ✅ |
+| 13 | Merge.dev | ATS/HRIS Unified | Por conexão | $0-2.000 (Free 3 conexões → $650/10 → $65/conta) | ✅ | ✅ | ✅ |
+| 14 | ~~Merge (duplicado)~~ | ~~Removido em v3.7~~ | — | — | — | — | — |
 | 15 | WorkOS | Identity | Por conexão | $250-1.000 | ❌ | ❌ | ✅ |
 | 16 | Replit | Infra/Proto | Por uso | $50-200 | ✅ | ✅ | ✅ |
 | 17 | Google Cloud | Infra | Por uso | $50-300 | ✅ | ✅ | ✅ |
@@ -4905,8 +5025,7 @@ Por cliente: $512/mês
 | Anthropic | docs.anthropic.com | sales@anthropic.com |
 | LangChain | docs.langchain.com | sales@langchain.com |
 | Pearch | docs.pearch.ai | sales@pearch.ai |
-| Merge | docs.stackone.com | contact@stackone.com |
-| Merge | docs.merge.dev | sales@merge.dev |
+| Merge.dev | docs.merge.dev | sales@merge.dev |
 | WorkOS | workos.com/docs | sales@workos.com |
 | Deepgram | developers.deepgram.com | sales@deepgram.com |
 | Figma | figma.com/developers | sales@figma.com |
@@ -4935,10 +5054,15 @@ PEARCH_API_KEY=xxx
 DEEPGRAM_API_KEY=xxx
 OPENMIC_API_KEY=xxx
 
-# Comunicação
-SENDGRID_API_KEY=SG.xxx
+# Comunicação — Email (Mailgun primário + Resend fallback) — corrigido v3.7
+MAILGUN_API_KEY=key-xxx
+MAILGUN_DOMAIN=mg.wedotalent.com
+MAILGUN_WEBHOOK_SIGNING_KEY=xxx
+RESEND_API_KEY=re_xxx
+# Comunicação — WhatsApp/SMS/Voice (Twilio)
 TWILIO_ACCOUNT_SID=xxx
 TWILIO_AUTH_TOKEN=xxx
+TWILIO_WHATSAPP_FROM=whatsapp:+14155238886
 
 # Microsoft
 MICROSOFT_CLIENT_ID=xxx
@@ -4957,9 +5081,29 @@ WORKOS_WEBHOOK_SECRET=whsec_xxx
 # CRM
 HUBSPOT_ACCESS_TOKEN=pat-xxx
 
-# ATS
-STACKONE_API_KEY=xxx
+# ATS — Merge.dev (unified) + integradores BR diretos (Gupy/Pandapé) — corrigido v3.7
+MERGE_API_KEY=xxx
+MERGE_ACCOUNT_TOKEN=xxx
+GUPY_API_KEY=xxx
+PANDAPE_API_KEY=xxx
+
+# Voice STT real-time (Gemini Live Audio) — adicionado v3.7
+# (usa AI_INTEGRATIONS_GEMINI_API_KEY já listado em LLMs)
+
+# Observabilidade — adicionado v3.7
+SENTRY_DSN=https://xxx@sentry.io/yyy
+LANGCHAIN_API_KEY=ls__xxx          # LangSmith
+OTEL_EXPORTER_OTLP_ENDPOINT=        # vazio = OTel desabilitado
+
+# Search & infra — adicionado v3.7
+ELASTICSEARCH_URL=https://...
+REDIS_URL=redis://...
+REDIS_ENCRYPTION_KEY=               # Fernet — OBRIGATÓRIO em prod (PII em Redis)
+RABBITMQ_URL=amqp://...
+DATABASE_URL=postgresql+asyncpg://...
 ```
+
+> ⚠️ Versões 3.0–3.6 listavam `STACKONE_API_KEY` — produto correto é **Merge.dev** (`app/domains/ats_integration/services/ats_clients/merge.py`). “StackOne” aparece em algumas tabelas legadas como duplicação errada do mesmo concorrente — desconsiderar.
 
 ---
 
@@ -5948,11 +6092,11 @@ redis-cli --version
 │   │  □ 8.1 Criar conta Mailgun                                                      │   │
 │   │  □ 8.2 Verificar domínio (DNS records)                                           │   │
 │   │  □ 8.3 Criar templates (convite, screening, etc)                                 │   │
-│   │  □ 8.4 Implementar SendgridService (Ruby)                                        │   │
+│   │  □ 8.4 Implementar MailgunService (Python — provider real)                       │   │
 │   │  □ 8.5 Webhooks: delivery, bounce, open tracking                                 │   │
 │   │                                                                                  │   │
 │   │  Secrets:                                                                        │   │
-│   │  • SENDGRID_API_KEY                                                              │   │
+│   │  • MAILGUN_API_KEY + MAILGUN_DOMAIN + RESEND_API_KEY (fallback) — corrigido v3.7 │   │
 │   │                                                                                  │   │
 │   │  Custo: $0 (5.000/mês grátis) → ~$20-50/mês                                        │   │
 │   │                                                                                  │   │
@@ -6027,7 +6171,7 @@ redis-cli --version
 │   │  □ 11.5 Sync status: WeDo → ATS                                                  │   │
 │   │                                                                                  │   │
 │   │  Secrets:                                                                        │   │
-│   │  • STACKONE_API_KEY                                                              │   │
+│   │  • MERGE_API_KEY + MERGE_ACCOUNT_TOKEN (corrigido v3.7 — produto é Merge.dev)   │   │
 │   │                                                                                  │   │
 │   │  Custo: ~$500/mês (startup) → $1.500-2.000/mês                                   │   │
 │   │                                                                                  │   │
@@ -6375,7 +6519,7 @@ docs/                    # Documentação
 │   │    - Convite para entrevista                                                     │   │
 │   │                                                                                  │   │
 │   │  Secrets Replit:                                                                 │   │
-│   │  • SENDGRID_API_KEY (solicitar)                                                  │   │
+│   │  • MAILGUN_API_KEY + MAILGUN_DOMAIN (solicitar) — corrigido v3.7                 │   │
 │   │                                                                                  │   │
 │   │  Validação:                                                                      │   │
 │   │  ✓ Email de convite enviado                                                     │   │
@@ -6504,12 +6648,33 @@ WORKOS_CLIENT_ID
 WORKOS_WEBHOOK_SECRET
 
 # SOLICITAR AO USUÁRIO
+# Billing (planejado — não implementado ainda; ver Seção 0.3)
 STRIPE_SECRET_KEY          # Stripe billing
 STRIPE_PUBLISHABLE_KEY     # Stripe frontend
 STRIPE_WEBHOOK_SECRET      # Stripe webhooks
-SENDGRID_API_KEY           # Email notifications
+# Email (Mailgun primário + Resend fallback) — corrigido v3.7
+MAILGUN_API_KEY            # Email primário
+MAILGUN_DOMAIN             # Domínio Mailgun
+RESEND_API_KEY             # Email fallback
+# Sourcing
 PEARCH_API_KEY             # Candidate sourcing
-OPENMIC_API_KEY            # Voice screening (opcional)
+APIFY_API_TOKEN            # LinkedIn scraping
+# Voz
+OPENMIC_API_KEY            # Voice screening
+DEEPGRAM_API_KEY           # STT entrevistas
+# WhatsApp/SMS/Voice PSTN
+TWILIO_ACCOUNT_SID
+TWILIO_AUTH_TOKEN
+# ATS
+MERGE_API_KEY              # Unified ATS/HRIS
+MERGE_ACCOUNT_TOKEN
+GUPY_API_KEY               # Direto BR
+PANDAPE_API_KEY            # Direto BR
+# Observabilidade
+SENTRY_DSN
+LANGCHAIN_API_KEY          # LangSmith
+# Infra
+REDIS_ENCRYPTION_KEY       # Fernet — OBRIGATÓRIO em prod (PII em Redis)
 ```
 
 ### H.6 Comandos de Setup Rápido
@@ -7267,6 +7432,7 @@ CleanupExpiredSessionsJob      # Limpar sessões expiradas
 | 3.4 | 13 Jan 2026 | **F.14 expandido com Embedded Analytics**: Embeddable.com (dashboards para clientes), Trevor.io (self-service interno), HubCount BI (Brasil), Explo, Retool Embedded |
 | 3.5 | 14 Jan 2026 | **Apêndices G e H**: Guias passo a passo detalhados para Ruby on Rails (produção) e Replit (prototipagem) com ordem de implementação, estrutura de arquivos, Gemfile, secrets e checklists |
 | 3.6 | 14 Jan 2026 | **Apêndice I**: Separação de tarefas - Configuração SaaS (Gestor) vs Desenvolvimento (Devs Rails), com checklists detalhados e ordem de implementação |
+| **3.7** | **9 Mai 2026** | **Auditoria de Conformidade vs código real.** Adicionada **Seção 0** (fonte de verdade — 31 integrações em produção, 2 stubs, 6 planejadas, 3 sub-documentadas). Corrigidos erros: `SENDGRID_API_KEY`→`MAILGUN_API_KEY` (§2.6.3 + Apêndice D); `STACKONE_API_KEY`→`MERGE_API_KEY` + chaves Gupy/Pandapé (Apêndice D); duplicação “Merge | Merge” (§2.7.2 marcada DEPRECATED, Apêndice A linha 14 zerada, Apêndice B consolidado, mapa ASCII §2.1.1). Reclassificações de status (Merge/Apify/Sentry/RabbitMQ/OpenMic/MS Graph/WhatsApp/Mailgun/Deepgram/LangSmith) de 🔄/📋 para ✅. Adicionados secrets Sentry, LangSmith, OTel, Elasticsearch, Redis (com `REDIS_ENCRYPTION_KEY` Fernet obrigatório em prod), RabbitMQ, Database. Documentadas integrações ausentes do doc original: **Resend**, **Sentry BE+FE**, **Elasticsearch**, **Celery**, **Twilio Voice SDK**, **MS Teams JS**, **Gemini Live Audio**, **OpenTelemetry**, **Vindi/Iugu** (stubs). Esclarecido que backend de produção é **FastAPI/Python** (`lia-agent-system`); Rails (`ats_api`) é legado. |
 
 ---
 

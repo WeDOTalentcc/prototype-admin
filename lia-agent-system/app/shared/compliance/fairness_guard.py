@@ -199,6 +199,11 @@ DISCRIMINATORY_CATEGORIES = {
             r"\bage\s*[:<]\s*\d+\b",
             r"\bno\s+older\s+than\s+\d+\b",
             r"\bage\s+limit\b",
+            # Task #364 — promoted from Layer-2: age proxies in PT-BR
+            r"\bjovem\s+e\s+din[âa]mico\b",
+            r"\bdin[âa]mica\s+e\s+jovem\b",
+            r"\benerg[íi]a\s+jovem\b",
+            r"\bsangue\s+novo\b",
         ],
         "message": (
             "A LIA não pode filtrar candidatos por idade. "
@@ -366,6 +371,11 @@ DISCRIMINATORY_CATEGORIES = {
             r"\bperfil\s+atl[eé]tico\b",
             r"\b(ótima|excelente)\s+aparência\s+(f[íi]sica|pessoal)?\b",
             r"\b(otima|excelente)\s+aparencia\b",
+            # Task #364 — promoted from Layer-2: appearance proxies that discriminate
+            r"\bboa\s+aparên[cç]ia\b",
+            r"\bboa\s+aparencia\b",
+            r"\bboa\s+apresenta[cç][aã]o\s+pessoal\b",
+            r"\bboa\s+apresentacao\s+pessoal\b",
         ],
         "message": (
             "A LIA não pode filtrar candidatos por características físicas como altura, "
@@ -380,6 +390,22 @@ DISCRIMINATORY_CATEGORIES = {
 
 # English-language patterns (separate from the 13 core PT-BR categories)
 DISCRIMINATORY_CATEGORIES_EN = {
+    "appearance_en": {
+        "terms": [
+            # Task #386 — EN appearance discrimination proxies
+            r"\bgood[\s\-]?looking\b",
+            r"\bgood\s+looks\b",
+            r"\bpresentable\b",
+            r"\battractive\s+(candidate|applicant|professional)\b",
+            r"\bphysically\s+attractive\b",
+        ],
+        "message": (
+            "LIA cannot filter candidates by physical appearance. "
+            "Appearance-based requirements violate Lei 9.029/95 and "
+            "anti-discrimination law in most jurisdictions. "
+            "Please specify objective professional conduct criteria."
+        ),
+    },
     "gender_en": {
         "terms": [
             r"\b(only|just)\s+(men|women|male|female|males|females)\b",
@@ -413,6 +439,10 @@ DISCRIMINATORY_CATEGORIES_EN = {
             r"\b(young|youthful)\s+(candidate|professional|team\s+member)\b",
             r"\bno\s+older\s+than\s+\d+\b",
             r"\bage\s+limit\b",
+            # Task #386 — promoted from Layer-2: EN age proxies
+            r"\byoung\s+and\s+dynamic\b",
+            r"\byoung\s+blood\b",
+            r"\benergetic\b",
         ],
         "message": (
             "Age-based filtering may violate age discrimination laws "

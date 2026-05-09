@@ -14,6 +14,8 @@ from enum import Enum, StrEnum
 from typing import Any
 
 logger = logging.getLogger(__name__)
+from app.shared.compliance import scoring_safeguards as _ss
+from app.shared.compliance.scoring_safeguards import FairnessBlockedError
 
 
 class PreQualificationResult(StrEnum):
@@ -154,6 +156,26 @@ class PreQualificationService:
         Returns:
             PreQualificationOutput with result, message, and buttons
         """
+        # C3 — Fairness gate (LGPD Art.20 / CLAUDE.md #2/#3).
+        _pq_fg, _pq_unavail = _ss.run_fairness_check(job_title or "")
+        if _pq_unavail or (_pq_fg and _pq_fg.is_blocked):
+            _pq_fg = _pq_fg or type(
+                "FR", (), {"is_blocked": True, "category": "unavailable",
+                           "educational_message": "fairness guard unavailable"}
+            )()
+            _ss.schedule_audit_log(_ss.log_scoring_decision(
+                company_id=company_name or "unknown",
+                agent_name="pre_qualification_service",
+                decision_type="fairness_block",
+                action="cv_screening.fairness_block",
+                decision="blocked",
+                reasoning=[f"FairnessGuard blocked job_title: category={_pq_fg.category}",
+                            _pq_fg.educational_message or ""],
+                criteria_used=["fairness_guard"],
+                human_review_required=True,
+            ))
+            raise FairnessBlockedError(_pq_fg)
+
         thresholds = thresholds or self.default_thresholds
         
         result = self._determine_result(adherence_score, thresholds)
