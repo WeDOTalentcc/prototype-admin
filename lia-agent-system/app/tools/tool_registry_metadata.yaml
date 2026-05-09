@@ -27,7 +27,13 @@ tools:
         seniority: {type: string}
         location: {type: string}
         industry: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: validate_job_fields
     description: Validate job creation fields and check for missing required information.
     allowed_agents: [job_planner, job_intake, orchestrator, job_wizard]
@@ -38,7 +44,13 @@ tools:
       required: [fields]
       properties:
         fields: {type: object}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: get_job_suggestions
     description: Get AI-powered suggestions to improve a job description or requirements.
     allowed_agents: [job_planner, job_intake, orchestrator, job_wizard]
@@ -51,7 +63,13 @@ tools:
         job_title: {type: string}
         current_description: {type: string}
         industry: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: save_job_draft
     description: Save the current job vacancy as a draft to the database.
     allowed_agents: [job_planner, job_intake, orchestrator, job_wizard]
@@ -63,7 +81,13 @@ tools:
       properties:
         fields: {type: object}
         draft_id: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: get_company_config
     description: Get company configuration including hiring workflow and approval settings.
     allowed_agents: [job_planner, job_intake, orchestrator, job_wizard]
@@ -73,7 +97,13 @@ tools:
       type: object
       properties:
         config_type: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: get_intelligent_salary
     description: Get intelligent salary suggestions based on market data and company budget.
     allowed_agents: [job_planner, job_intake, orchestrator, job_wizard]
@@ -86,7 +116,13 @@ tools:
         job_title: {type: string}
         seniority: {type: string}
         location: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: get_intelligent_skills
     description: Get intelligent skill suggestions for a given job title and seniority.
     allowed_agents: [job_planner, job_intake, orchestrator, job_wizard]
@@ -99,7 +135,13 @@ tools:
         job_title: {type: string}
         seniority: {type: string}
         industry: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: capture_wizard_feedback
     description: Capture user feedback about the job creation wizard experience.
     allowed_agents: [job_planner, job_intake, orchestrator, job_wizard]
@@ -112,7 +154,13 @@ tools:
         feedback_type: {type: string}
         rating: {type: integer}
         comment: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: generate_enriched_jd
     description: Generate an enriched job description based on collected fields and market data.
     allowed_agents: [job_planner, job_intake, orchestrator, job_wizard]
@@ -126,7 +174,13 @@ tools:
         tone: {type: string}
 
   # ── Candidate Tools ────────────────────────────────────────────────────────
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: update_candidate_stage
     description: Move a candidate to a different pipeline stage within a vacancy.
     allowed_agents: [orchestrator, recruiter_assistant, screening, analyst_feedback]
@@ -141,7 +195,13 @@ tools:
         job_id: {type: string}
         notes: {type: string}
         notify_candidate: {type: boolean}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: add_candidate_to_vacancy
     description: Add a candidate from the talent pool to a specific vacancy.
     allowed_agents: [orchestrator, recruiter_assistant]
@@ -155,7 +215,13 @@ tools:
         vacancy_id: {type: string}
         stage: {type: string}
         notes: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: reject_candidate
     description: Reject a candidate from a vacancy with an optional reason.
     allowed_agents: [orchestrator, recruiter_assistant, screening, analyst_feedback]
@@ -169,7 +235,13 @@ tools:
         vacancy_id: {type: string}
         reason: {type: string}
         notify: {type: boolean}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: shortlist_candidate
     description: Add a candidate to a shortlist for a specific vacancy.
     allowed_agents: [orchestrator, recruiter_assistant]
@@ -182,7 +254,13 @@ tools:
         candidate_id: {type: string}
         vacancy_id: {type: string}
         notes: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: bulk_update_candidates_stage
     description: Move multiple candidates to a new pipeline stage in bulk.
     allowed_agents: [orchestrator, recruiter_assistant, screening, analyst_feedback]
@@ -197,7 +275,13 @@ tools:
           items: {type: string}
         target_stage: {type: string}
         job_id: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: add_to_list
     description: Add a candidate to a named candidate list (talent pool management).
     allowed_agents: [orchestrator, recruiter_assistant]
@@ -210,7 +294,13 @@ tools:
         candidate_id: {type: string}
         list_name: {type: string}
         notes: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: wsi_screening
     description: Initiate a WSI (Workforce Screening Interview) for a candidate.
     allowed_agents: [orchestrator, recruiter_assistant]
@@ -223,7 +313,13 @@ tools:
         candidate_id: {type: string}
         job_id: {type: string}
         screening_type: {type: string, enum: [voice, text, video]}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: hide_candidate
     description: Hide a candidate from the active pipeline view (soft remove).
     allowed_agents: [orchestrator, recruiter_assistant, screening, analyst_feedback]
@@ -238,7 +334,13 @@ tools:
         reason: {type: string}
 
   # ── Query / Analytics Tools ────────────────────────────────────────────────
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: search_candidates
     description: Search the talent pool for candidates matching specified criteria.
     allowed_agents: [orchestrator, recruiter_assistant, sourcing, analytics]
@@ -251,7 +353,13 @@ tools:
         filters: {type: object}
         limit: {type: integer}
         offset: {type: integer}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: get_candidate_details
     description: Get full profile details for a specific candidate.
     allowed_agents: [orchestrator, recruiter_assistant, screening, analytics]
@@ -263,7 +371,13 @@ tools:
       properties:
         candidate_id: {type: string}
         include_history: {type: boolean}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: get_candidate_stats
     description: Get aggregate statistics about candidates in the talent pool.
     allowed_agents: [orchestrator, recruiter_assistant, analytics]
@@ -274,7 +388,13 @@ tools:
       properties:
         filters: {type: object}
         group_by: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: search_jobs
     description: Search job vacancies by title, status, department, or other criteria.
     allowed_agents: [orchestrator, recruiter_assistant, analytics, job_planner]
@@ -287,7 +407,13 @@ tools:
         status: {type: string}
         department: {type: string}
         limit: {type: integer}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: get_job_details
     description: Get full details of a specific job vacancy including requirements and pipeline.
     allowed_agents: [orchestrator, recruiter_assistant, analytics, job_planner]
@@ -299,7 +425,13 @@ tools:
       properties:
         job_id: {type: string}
         include_candidates: {type: boolean}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: get_pipeline_stats
     description: Get pipeline statistics for a specific vacancy or all vacancies.
     allowed_agents: [orchestrator, recruiter_assistant, analytics]
@@ -310,7 +442,13 @@ tools:
       properties:
         job_id: {type: string}
         date_range: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: get_vacancy_funnel
     description: Get funnel data for a specific vacancy showing candidates at each stage.
     allowed_agents: [orchestrator, recruiter_assistant, analytics]
@@ -324,7 +462,13 @@ tools:
         include_rejected: {type: boolean}
 
   # ── Export Tools ──────────────────────────────────────────────────────────
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: export_candidates
     description: Export candidate data to CSV or Excel format.
     allowed_agents: [orchestrator, recruiter_assistant, analytics]
@@ -340,7 +484,13 @@ tools:
         fields: {type: array, items: {type: string}}
 
   # ── Communication Tools ───────────────────────────────────────────────────
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: send_email
     description: Send an email to one or more candidates or recruiters.
     allowed_agents: [orchestrator, recruiter_assistant, communication]
@@ -356,7 +506,13 @@ tools:
         subject: {type: string}
         body: {type: string}
         template_id: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: send_whatsapp
     description: Send a WhatsApp message to a candidate phone number.
     allowed_agents: [orchestrator, recruiter_assistant, communication]
@@ -371,7 +527,13 @@ tools:
         template_name: {type: string}
 
   # ── Job Management Tools ──────────────────────────────────────────────────
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: create_job
     description: Create a new job vacancy with the specified requirements and settings.
     allowed_agents: [orchestrator, job_planner, job_wizard]
@@ -387,7 +549,13 @@ tools:
         location: {type: string}
         salary_range: {type: object}
         requirements: {type: array, items: {type: string}}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: update_job
     description: Update fields of an existing job vacancy.
     allowed_agents: [orchestrator, job_planner, job_wizard]
@@ -399,7 +567,13 @@ tools:
       properties:
         job_id: {type: string}
         fields: {type: object}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: publish_job
     description: Publish a job vacancy to make it visible to candidates and job boards.
     allowed_agents: [orchestrator, job_planner]
@@ -415,7 +589,13 @@ tools:
           items: {type: string}
 
   # ── Global Tools ──────────────────────────────────────────────────────────
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: generate_report
     description: Generate a recruitment analytics report for a given date range and scope.
     allowed_agents: [orchestrator, analytics]
@@ -429,7 +609,13 @@ tools:
         date_from: {type: string}
         date_to: {type: string}
         format: {type: string, enum: [pdf, csv, json]}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: schedule_report
     description: Schedule a recurring analytics report to be sent automatically.
     allowed_agents: [orchestrator, analytics]
@@ -448,6 +634,13 @@ tools:
   # === Phase 6/8: New tools ===
 
   # Talent Pool (5)
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: create_talent_pool
     description: Create a new live talent pool with optional archetype
     allowed_agents: [talent_pool, recruiter_assistant, orchestrator]
@@ -460,7 +653,13 @@ tools:
         name: {type: string}
         archetype_id: {type: string}
         description: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: list_talent_pools
     description: List active talent pools for the current company
     allowed_agents: [talent_pool, recruiter_assistant, orchestrator]
@@ -470,7 +669,13 @@ tools:
       type: object
       properties:
         status: {type: string, enum: [active, paused, archived]}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: add_to_talent_pool
     description: Add candidates to a talent pool
     allowed_agents: [talent_pool, sourcing, orchestrator]
@@ -482,7 +687,13 @@ tools:
       properties:
         pool_id: {type: string}
         candidate_ids: {type: array, items: {type: string}}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: move_pool_to_job
     description: Move candidates from talent pool to a job vacancy
     allowed_agents: [talent_pool, orchestrator]
@@ -496,7 +707,13 @@ tools:
         job_id: {type: string}
         candidate_ids: {type: array, items: {type: string}}
         target_stage: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: get_pool_candidates
     description: List candidates in a talent pool with stage filtering
     allowed_agents: [talent_pool, recruiter_assistant, orchestrator]
@@ -510,6 +727,13 @@ tools:
         stage: {type: string, enum: [discovered, contacted, screening, screened, ready]}
 
   # Agent Studio (4)
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: create_sourcing_agent
     description: Create a persistent sourcing agent for a job or talent pool
     allowed_agents: [agent_studio, orchestrator]
@@ -523,7 +747,13 @@ tools:
         sector_template: {type: string}
         job_id: {type: string}
         talent_pool_id: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: calibrate_sourcing_agent
     description: Start calibration for a sourcing agent (trigger Big Card modal)
     allowed_agents: [agent_studio, orchestrator]
@@ -534,7 +764,13 @@ tools:
       required: [agent_id]
       properties:
         agent_id: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: get_agent_status
     description: Get status, strategy, and metrics of a sourcing agent
     allowed_agents: [agent_studio, recruiter_assistant, orchestrator]
@@ -545,7 +781,13 @@ tools:
       required: [agent_id]
       properties:
         agent_id: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: run_multi_strategy_search
     description: Execute 4 parallel search strategies (direct, adjacent, silver medalists, reengagement)
     allowed_agents: [agent_studio, sourcing, orchestrator]
@@ -561,6 +803,13 @@ tools:
         seniority: {type: string}
 
   # Digital Twins (3)
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: create_digital_twin
     description: Create a Digital Twin from a Subject Matter Expert
     allowed_agents: [digital_twin, orchestrator]
@@ -573,7 +822,13 @@ tools:
         twin_name: {type: string}
         sme_user_id: {type: string}
         specialties: {type: array, items: {type: string}}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: evaluate_with_twin
     description: Evaluate a candidate using a Digital Twin's reasoning (RAG few-shot)
     allowed_agents: [digital_twin, cv_screening, orchestrator]
@@ -586,7 +841,13 @@ tools:
         twin_id: {type: string}
         candidate_id: {type: string}
         job_id: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: list_digital_twins
     description: List available Digital Twins for the current company
     allowed_agents: [digital_twin, recruiter_assistant, orchestrator]
@@ -597,6 +858,13 @@ tools:
       properties: {}
 
   # Campaigns (3)
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: create_recruitment_campaign
     description: Create an end-to-end recruitment campaign for a job or pool
     allowed_agents: [recruitment_campaign, orchestrator]
@@ -610,7 +878,13 @@ tools:
         job_id: {type: string}
         talent_pool_id: {type: string}
         automation_level: {type: string, enum: [auto, semi, assisted]}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: get_campaign_progress
     description: Get current stage and progress of a recruitment campaign
     allowed_agents: [recruitment_campaign, recruiter_assistant, orchestrator]
@@ -621,7 +895,13 @@ tools:
       required: [campaign_id]
       properties:
         campaign_id: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: advance_campaign_stage
     description: Advance a recruitment campaign to the next stage
     allowed_agents: [recruitment_campaign, orchestrator]
@@ -634,6 +914,13 @@ tools:
         campaign_id: {type: string}
 
   # Job Flow Completion (4)
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: create_offer_letter
     description: Generate an offer letter for a selected candidate
     allowed_agents: [pipeline_action, orchestrator]
@@ -647,7 +934,13 @@ tools:
         job_id: {type: string}
         salary: {type: number}
         start_date: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: confirm_placement
     description: Confirm a candidate has been hired and close the position
     allowed_agents: [pipeline_action, orchestrator]
@@ -660,7 +953,13 @@ tools:
         candidate_id: {type: string}
         job_id: {type: string}
         start_date: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: cancel_vacancy
     description: Cancel a job vacancy with a structured reason
     allowed_agents: [job_planner, orchestrator]
@@ -672,7 +971,13 @@ tools:
       properties:
         job_id: {type: string}
         reason: {type: string, enum: [budget_cut, position_eliminated, internal_hire, other]}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: pause_vacancy
     description: Pause a job vacancy with reason and expected resume date
     allowed_agents: [job_planner, orchestrator]
@@ -687,6 +992,13 @@ tools:
         resume_date: {type: string}
 
   # Marketplace (3)
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: publish_to_job_board
     description: Publish a job vacancy to external job boards (LinkedIn, Indeed)
     allowed_agents: [job_planner, communication, orchestrator]
@@ -698,7 +1010,13 @@ tools:
       properties:
         job_id: {type: string}
         board: {type: string, enum: [linkedin, indeed, gupy, glassdoor]}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: get_external_applications
     description: Import applications from external job boards
     allowed_agents: [sourcing, orchestrator]
@@ -710,7 +1028,13 @@ tools:
       properties:
         job_id: {type: string}
         board: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: search_candidates_pearch
     description: Search candidates using Pearch AI (800M+ profiles, consumes credits)
     allowed_agents: [sourcing, sourcing_search, agent_studio, orchestrator]
@@ -726,7 +1050,13 @@ tools:
         show_emails: {type: boolean}
 
   # ── Talent Intelligence: Skills Ontology ─────────────────────────────────
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: infer_related_skills
     description: Infer related skills from a set of input skills using the ontology graph with adjacency traversal and semantic proximity scoring
     allowed_agents: [orchestrator, recruiter_assistant, sourcing, analytics, job_planner, job_wizard]
@@ -740,7 +1070,13 @@ tools:
         skills: {type: array, items: {type: string}}
         depth: {type: integer, minimum: 1, maximum: 3}
         limit: {type: integer, minimum: 1, maximum: 30}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: get_skill_adjacencies
     description: Get adjacent skills for a given skill with proximity weights, domain classification, and relationship type from the skills ontology graph
     allowed_agents: [orchestrator, recruiter_assistant, sourcing, analytics, job_planner, job_wizard]
@@ -753,7 +1089,13 @@ tools:
       properties:
         skill: {type: string}
         min_weight: {type: number, minimum: 0, maximum: 1}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: analyze_skill_gaps
     description: Analyze skill gaps between candidate and job requirements using ontology adjacencies, identifying matched, missing, and transferable skills with development suggestions
     allowed_agents: [orchestrator, recruiter_assistant, sourcing, analytics, screening]
@@ -767,7 +1109,13 @@ tools:
         required_skills: {type: array, items: {type: string}}
         candidate_id: {type: string}
         job_id: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: map_candidate_skills_to_ontology
     description: Map raw skill strings from a candidate profile to canonical ontology nodes with domain and specialization classification
     allowed_agents: [orchestrator, recruiter_assistant, sourcing, analytics, screening]
@@ -781,7 +1129,13 @@ tools:
         candidate_id: {type: string}
 
   # ── Talent Intelligence: Internal Mobility ───────────────────────────────
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: match_internal_candidates
     description: Match internal employees to an open position considering direct skill matches, adjacent/transferable skills via ontology, and development potential
     allowed_agents: [orchestrator, recruiter_assistant, analytics]
@@ -799,7 +1153,13 @@ tools:
         limit: {type: integer, minimum: 1, maximum: 50}
 
   # ── Talent Intelligence: Workforce Planning ──────────────────────────────
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: forecast_hiring_needs
     description: Forecast hiring needs based on historical turnover data, pipeline velocity, growth targets, and seasonality for a given time period
     allowed_agents: [orchestrator, recruiter_assistant, analytics]
@@ -815,7 +1175,13 @@ tools:
         include_backfills: {type: boolean}
 
   # ── Talent Intelligence: Interview Intelligence ──────────────────────────
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: analyze_interview_recording
     description: "Análise completa de entrevista: WSI (Bloom, Dreyfus, CBI, Big Five) + detecção de viés + análise comparativa + parecer estratégico + feedback ao candidato."
     allowed_agents: [orchestrator, recruiter_assistant, screening, analytics]
@@ -835,7 +1201,13 @@ tools:
         include_comparative: {type: boolean, default: true}
         include_opinion: {type: boolean, default: true}
         include_feedback: {type: boolean, default: true}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: detect_interview_bias
     description: "Detectar viés em entrevista: padrões linguísticos + análise LLM. Identifica viés de idade, gênero, aparência, afinidade e perguntas ilegais."
     allowed_agents: [orchestrator, recruiter_assistant, screening, analytics]
@@ -848,7 +1220,13 @@ tools:
       properties:
         interview_id: {type: string}
         use_llm: {type: boolean, default: true}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: generate_interview_opinion
     description: "Gerar parecer estratégico de contratação: CONTRATAR / NÃO CONTRATAR / AVALIAR MAIS com evidências da transcrição."
     allowed_agents: [orchestrator, recruiter_assistant, screening, analytics]
@@ -860,7 +1238,13 @@ tools:
       required: [interview_id]
       properties:
         interview_id: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: generate_candidate_feedback
     description: "Gerar feedback estruturado e construtivo para devolver ao candidato após entrevista."
     allowed_agents: [orchestrator, recruiter_assistant, screening, analytics]
@@ -872,7 +1256,13 @@ tools:
       required: [interview_id]
       properties:
         interview_id: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: compare_interview_performance
     description: "Comparar performance do candidato vs. outros da mesma vaga com ranking, benchmarks e insights."
     allowed_agents: [orchestrator, recruiter_assistant, screening, analytics]
@@ -886,7 +1276,13 @@ tools:
         interview_id: {type: string}
 
   # ── Talent Intelligence: Passive Candidate Nurture ───────────────────────
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: create_nurture_sequence
     description: Create an automated nurture sequence to engage passive candidates over time with multi-channel touchpoints
     allowed_agents: [orchestrator, recruiter_assistant, communication, recruitment_campaign]
@@ -901,7 +1297,13 @@ tools:
         template: {type: string, enum: [tech_talent, leadership, silver_medalist, general]}
         custom_name: {type: string}
         tags: {type: array, items: {type: string}}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: get_engagement_metrics
     description: Get engagement metrics for nurture sequences including open rates, click rates, and conversion to applicant/hire
     allowed_agents: [orchestrator, recruiter_assistant, analytics, recruitment_campaign]
@@ -913,7 +1315,13 @@ tools:
       properties:
         sequence_id: {type: string}
         period: {type: string, enum: [week, month, quarter]}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: suggest_reengagement
     description: Suggest inactive candidates for re-engagement based on inactivity period, past scores, and engagement signals
     allowed_agents: [orchestrator, recruiter_assistant, sourcing, recruitment_campaign]
@@ -925,7 +1333,13 @@ tools:
       properties:
         days_inactive: {type: integer, minimum: 7}
         limit: {type: integer, minimum: 1, maximum: 50}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: get_market_intelligence
     description: Get real-time market intelligence for a role — salary benchmarks from external sources (web search + LLM parsing), demand trends, in-demand skills, and competitive analysis
     allowed_agents: [orchestrator, recruiter_assistant, sourcing, analyst_feedback, wsi_evaluator]
@@ -943,7 +1357,13 @@ tools:
       required: [job_title]
 
   # ── Proactive Intelligence Tools ────────────────────────────────────────────
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: get_proactive_alerts
     description: Get proactive pipeline alerts (stale candidates, SLA risks, bottlenecks, empty pipelines, high rejection rates)
     allowed_agents: [orchestrator, recruiter_assistant]
@@ -954,7 +1374,13 @@ tools:
       properties:
         severity: {type: string, enum: [low, medium, high, critical]}
         category: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: get_autonomous_actions
     description: List autonomous actions executed or pending confirmation by LIA
     allowed_agents: [orchestrator, recruiter_assistant]
@@ -964,7 +1390,13 @@ tools:
       type: object
       properties:
         status: {type: string, enum: [pending, executed, all]}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: confirm_autonomous_action
     description: Confirm a pending autonomous action for execution
     allowed_agents: [orchestrator, recruiter_assistant]
@@ -975,7 +1407,13 @@ tools:
       required: [action_id]
       properties:
         action_id: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: reject_autonomous_action
     description: Reject a pending autonomous action
     allowed_agents: [orchestrator, recruiter_assistant]
@@ -987,7 +1425,13 @@ tools:
       properties:
         action_id: {type: string}
         reason: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: detect_pending_decisions
     description: Detect pending hiring manager decisions and send escalation notifications
     allowed_agents: [orchestrator, recruiter_assistant]
@@ -997,7 +1441,13 @@ tools:
       type: object
       properties:
         send_notifications: {type: boolean, default: false}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: get_learning_insights
     description: Get insights from hiring outcome learning (successful patterns, ranking adjustments)
     allowed_agents: [orchestrator, recruiter_assistant]
@@ -1008,7 +1458,13 @@ tools:
       properties:
         role: {type: string}
         seniority: {type: string}
-
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}
   - name: record_hiring_outcome
     description: Record a hiring outcome for learning (filled, cancelled, turnover)
     allowed_agents: [orchestrator, recruiter_assistant]
@@ -1023,3 +1479,10 @@ tools:
         outcome: {type: string, enum: [filled, cancelled, expired, turnover]}
         satisfaction_score: {type: number, minimum: 1, maximum: 5}
         retention_days: {type: integer}
+    returns:
+      type: object
+      required: [success, message]
+      properties:
+        success: {type: boolean, description: Whether the operation succeeded}
+        message: {type: string, description: Human-readable result summary}
+        data: {type: object, description: Tool-specific result payload}

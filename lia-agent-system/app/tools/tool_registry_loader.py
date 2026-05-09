@@ -138,7 +138,9 @@ def validate_registry_against_yaml(
                     "yaml": yaml_desc[:80],
                 })
 
-    ok = not missing_in_yaml and not missing_in_registry and not description_mismatches
+    missing_returns = [name for name, meta in metadata.items() if "returns" not in meta]
+
+    ok = not missing_in_yaml and not missing_in_registry and not description_mismatches and not missing_returns
     report = {
         "ok": ok,
         "registered_count": len(registered_names),
@@ -146,7 +148,12 @@ def validate_registry_against_yaml(
         "missing_in_yaml": missing_in_yaml,
         "missing_in_registry": missing_in_registry,
         "description_mismatches": description_mismatches,
+        "missing_returns": missing_returns,
     }
+    if missing_returns:
+        report["warnings"] = report.get("warnings", []) + [
+            f"Tools missing returns: {missing_returns}"
+        ]
 
     if not ok:
         logger.warning(f"Tool registry YAML validation issues: {report}")

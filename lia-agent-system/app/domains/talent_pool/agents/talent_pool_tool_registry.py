@@ -15,7 +15,7 @@ import logging
 import uuid
 from typing import Any
 
-from lia_agents_core.tool_adapter import ToolDefinition
+from lia_agents_core.tool_adapter import ToolDefinition, ToolOutput
 
 from app.shared.tool_handler import tool_handler
 
@@ -387,6 +387,7 @@ def get_talent_pool_tools() -> list[ToolDefinition]:
                 },
                 "required": [],
             },
+            output_schema=ToolOutput,
             function=_wrap_list_talent_pools,
         ),
         ToolDefinition(
@@ -417,6 +418,7 @@ def get_talent_pool_tools() -> list[ToolDefinition]:
                 },
                 "required": ["pool_id"],
             },
+            output_schema=ToolOutput,
             function=_wrap_get_pool_candidates,
         ),
         ToolDefinition(
@@ -444,6 +446,7 @@ def get_talent_pool_tools() -> list[ToolDefinition]:
                 },
                 "required": ["name"],
             },
+            output_schema=ToolOutput,
             function=_wrap_create_talent_pool,
         ),
         ToolDefinition(
@@ -472,6 +475,7 @@ def get_talent_pool_tools() -> list[ToolDefinition]:
                 },
                 "required": ["pool_id", "candidate_ids"],
             },
+            output_schema=ToolOutput,
             function=_wrap_add_candidate_to_pool,
         ),
         ToolDefinition(
@@ -505,6 +509,7 @@ def get_talent_pool_tools() -> list[ToolDefinition]:
                 },
                 "required": ["pool_id", "job_id", "candidate_ids"],
             },
+            output_schema=ToolOutput,
             function=_wrap_move_pool_to_job,
         ),
         ToolDefinition(
@@ -525,6 +530,7 @@ def get_talent_pool_tools() -> list[ToolDefinition]:
                 },
                 "required": ["pool_id"],
             },
+            output_schema=ToolOutput,
             function=_wrap_create_job_from_pool,
         ),
     ]

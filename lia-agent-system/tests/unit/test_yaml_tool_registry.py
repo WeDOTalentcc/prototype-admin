@@ -322,3 +322,24 @@ class TestDefaultYamlContent:
             assert tool.get("scope") in valid_scopes, (
                 f"Tool {name} has invalid scope: {tool.get('scope')}"
             )
+
+    def test_all_tools_have_returns_field(self):
+        """Every tool in tool_registry_metadata.yaml must declare returns: schema (R-029)."""
+        from app.tools.tool_registry_loader import load_tool_metadata
+        metadata = load_tool_metadata()
+        missing = [name for name, meta in metadata.items() if "returns" not in meta]
+        assert not missing, f"Tools missing returns: field: {missing}"
+
+    def test_returns_field_has_required_properties(self):
+        """returns: schema must have success and message as required properties (R-029)."""
+        from app.tools.tool_registry_loader import load_tool_metadata
+        metadata = load_tool_metadata()
+        for name, tool in metadata.items():
+            returns = tool.get("returns", {})
+            required = returns.get("required", [])
+            assert "success" in required, (
+                f"Tool {name} returns: missing required 'success' field"
+            )
+            assert "message" in required, (
+                f"Tool {name} returns: missing required 'message' field"
+            )
