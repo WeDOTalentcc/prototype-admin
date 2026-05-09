@@ -839,7 +839,7 @@ class MainOrchestrator:
                     agent_used=_cached.get("agent_used", _detected_domain),
                     intent_detected=_cached.get("intent_detected", _detected_domain),
                     confidence=_cached.get("confidence", 1.0),
-                    structured_data=_cached.get("structured_data"),
+                    structured_data=StructuredDataAdapter.unwrap(_cached.get("structured_data")),
                     suggested_prompts=_cached.get("suggested_prompts", []),
                     conversation_id=conv_id,
                 )
