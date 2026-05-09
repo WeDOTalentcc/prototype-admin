@@ -47,8 +47,11 @@ class CandidateListStore:
     """
 
     def __init__(self) -> None:
-        # Fallback in-memory: {conv_id: (candidates_list, expiry_monotonic)}
-        self._memory: dict[str, tuple[list[dict[str, Any]], float]] = {}
+        # Fallback in-memory: {conv_id: candidates_list}
+        # Kept as bare lists for backward-compat with tests that access _memory directly.
+        self._memory: dict[str, list[dict[str, Any]]] = {}
+        # TTL expiry stored separately so _memory keeps the plain-list contract.
+        self._memory_ttl: dict[str, float] = {}
         self._redis: Any | None = None
         self._redis_available = False
 
@@ -91,10 +94,12 @@ class CandidateListStore:
         # Fallback: guarda no dict in-memory com TTL via monotonic clock
         now = _now()
         # Sweep expired entries before adding new one
-        expired = [k for k, (_, exp) in self._memory.items() if now > exp]
+        expired = [k for k, exp in self._memory_ttl.items() if now > exp]
         for k in expired:
-            del self._memory[k]
-        self._memory[conv_id] = (candidates, now + LIST_TTL_SECONDS)
+            self._memory.pop(k, None)
+            del self._memory_ttl[k]
+        self._memory[conv_id] = candidates
+        self._memory_ttl[conv_id] = now + LIST_TTL_SECONDS
 
     async def get(self, conv_id: str) -> list[dict[str, Any]] | None:
         """Recupera a lista completa de candidatos. Retorna None se não encontrada/expirada."""
@@ -110,12 +115,13 @@ class CandidateListStore:
             except Exception as exc:
                 logger.warning("[CandidateListStore] Redis get failed (%s), falling back", exc)
         # In-memory fallback: check TTL
-        entry = self._memory.get(conv_id)
-        if entry is None:
+        candidates = self._memory.get(conv_id)
+        if candidates is None:
             return None
-        candidates, expiry = entry
+        expiry = self._memory_ttl.get(conv_id, float('inf'))
         if _now() > expiry:
             del self._memory[conv_id]
+            self._memory_ttl.pop(conv_id, None)
             return None
         return candidates
 
@@ -148,6 +154,7 @@ class CandidateListStore:
             except Exception as exc:
                 logger.warning("[CandidateListStore] Redis delete failed (%s)", exc)
         self._memory.pop(conv_id, None)
+        self._memory_ttl.pop(conv_id, None)
 
     async def get_ttl(self, conv_id: str) -> int | None:
         """Retorna o TTL restante em segundos (-1 se não existe, -2 se sem TTL)."""
