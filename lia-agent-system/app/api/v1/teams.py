@@ -966,7 +966,7 @@ async def teams_sso_page(
     """
     import os
     azure_client_id = client_id or os.environ.get("AZURE_CLIENT_ID", "")
-    azure_tenant_id = tenant_id or os.environ.get("AZURE_TENANT_ID", "")
+    azure_tenant_id = tenant_id or os.environ.get("MICROSOFT_TENANT_ID") or os.environ.get("AZURE_TENANT_ID", "")
     platform_url = os.environ.get("WEDOTALENT_PLATFORM_URL", "https://wedotalent.cc")
     redirect_uri = f"{platform_url}/api/v1/teams/auth/callback"
 
@@ -1410,7 +1410,7 @@ async def teams_tab_auth(
 
     azure_client_id = os.environ.get("AZURE_CLIENT_ID", "")
     azure_client_secret = os.environ.get("AZURE_CLIENT_SECRET", "")
-    azure_tenant_id = os.environ.get("AZURE_TENANT_ID", "")
+    azure_tenant_id = os.environ.get("MICROSOFT_TENANT_ID") or os.environ.get("AZURE_TENANT_ID", "")
 
     if not (azure_client_id and azure_client_secret and azure_tenant_id):
         # R-006: gate dev-fallback por _DEV_MODE (R-006/R-008 lockdown).

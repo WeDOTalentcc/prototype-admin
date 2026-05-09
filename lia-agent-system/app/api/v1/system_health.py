@@ -205,7 +205,7 @@ def _check_external_integrations() -> dict:
     # --- Microsoft Calendar (Graph API / Teams) ---
     az_client = os.getenv("AZURE_CLIENT_ID")
     az_secret = os.getenv("AZURE_CLIENT_SECRET")
-    az_tenant = os.getenv("AZURE_TENANT_ID")
+    az_tenant = os.getenv("MICROSOFT_TENANT_ID") or os.getenv("AZURE_TENANT_ID")
     ms_configured = bool(az_client and az_secret and az_tenant)
     integrations["microsoft_calendar"] = {
         "status": "connected" if ms_configured else "not_configured",

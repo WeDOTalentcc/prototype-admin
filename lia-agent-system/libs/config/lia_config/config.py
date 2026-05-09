@@ -15,7 +15,7 @@ Hierarchy:
   Settings          → inherits all + validators
 """
 
-from pydantic import model_validator
+from pydantic import AliasChoices, Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # ---------------------------------------------------------------------------
@@ -181,7 +181,7 @@ class AuthSettings(BaseSettings):
     WORKOS_WEBHOOK_SECRET: str | None = None
 
     # Azure AD / Microsoft Graph (client credentials — service-to-service)
-    AZURE_TENANT_ID: str | None = None
+    AZURE_TENANT_ID: str | None = Field(default=None, validation_alias=AliasChoices("AZURE_TENANT_ID", "MICROSOFT_TENANT_ID"))
     AZURE_CLIENT_ID: str | None = None
     AZURE_CLIENT_SECRET: str | None = None
 

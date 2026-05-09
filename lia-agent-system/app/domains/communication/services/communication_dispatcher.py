@@ -334,7 +334,11 @@ class CommunicationDispatcher:
         """
         self._ensure_initialized()
         
-        from_whatsapp = os.getenv("TWILIO_WHATSAPP_FROM", "whatsapp:+14155238886")
+        _twilio_phone = os.getenv("TWILIO_PHONE_NUMBER", "")
+        from_whatsapp = (
+            os.getenv("TWILIO_WHATSAPP_FROM")
+            or (f"whatsapp:{_twilio_phone}" if _twilio_phone else "whatsapp:+14155238886")
+        )
         
         if not to_phone.startswith("whatsapp:"):
             to_whatsapp = f"whatsapp:{to_phone}"

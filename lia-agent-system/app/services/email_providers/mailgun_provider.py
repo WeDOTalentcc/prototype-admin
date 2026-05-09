@@ -45,7 +45,7 @@ class MailgunProvider(EmailProvider):
         from_name: str | None = None,
         api_base: str | None = None,
     ):
-        self.api_key = api_key or os.getenv("MAILGUN_API_KEY")
+        self.api_key = api_key or os.getenv("MAILGUN") or os.getenv("MAILGUN_API_KEY")
         self.domain = domain or os.getenv("MAILGUN_DOMAIN")
         self.from_email = from_email or os.getenv(
             "MAILGUN_FROM_EMAIL",
