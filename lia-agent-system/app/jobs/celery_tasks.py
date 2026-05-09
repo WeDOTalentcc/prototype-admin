@@ -4,6 +4,11 @@ Celery Task Definitions — facade (Fase 7 split)
 All tasks moved to app/jobs/tasks/*.py
 Import paths unchanged: from app.jobs.celery_tasks import <task_name>
 """
+# Re-export celery_app so tests can import from app.jobs.celery_tasks
+from lia_config.celery_app import celery_app  # noqa: F401
+# Re-export private async runner for unit testing of retention logic
+from app.jobs.tasks.compliance import _run_retention_cleanup_async  # noqa: F401
+
 from app.jobs.tasks import (  # noqa: F401
     wizard_process_async_task,
     pipeline_transition_async_task,

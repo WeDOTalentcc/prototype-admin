@@ -33,6 +33,7 @@ class CompanyRetentionPolicy(Base):
     """
 
     __tablename__ = "company_retention_policies"
+    __table_args__ = {"extend_existing": True}
 
     id: Mapped[str] = mapped_column(String(255), primary_key=True)
     company_id: Mapped[str] = mapped_column(
