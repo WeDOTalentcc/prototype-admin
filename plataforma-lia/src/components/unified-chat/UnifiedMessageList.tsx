@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl"
 import { Copy, Plus, ThumbsUp, ThumbsDown, RotateCcw } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { PlanProgressCard, type ExecutionPlanData } from "@/components/chat/plan-progress-card"
-import FlowStepMessage from "@/components/workflow-rail/FlowStepMessage"
+import FlowStepMessage from "@/components/unified-chat/FlowStepMessage"
 import { ThinkingStepsCard } from "./ThinkingStepsCard"
 import { OutreachCard } from "./OutreachCard"
 import { WizardPublishedJobCard } from "./wizard/WizardPublishedJobCard"
@@ -335,7 +335,7 @@ export function UnifiedMessageList({
                 {/* Flow steps (workflow visual) */}
                 {hasFlowSteps && (
                   <FlowStepMessage
-                    steps={meta!.flowSteps as unknown as import("@/components/workflow-rail/FlowStepMessage").FlowStep[]}
+                    steps={meta!.flowSteps as unknown as import("@/components/unified-chat/FlowStepMessage").FlowStep[]}
                     question={meta!.flowQuestion as string | undefined}
                     compact
                   />

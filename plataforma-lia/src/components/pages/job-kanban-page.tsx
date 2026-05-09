@@ -7,7 +7,7 @@ import { KanbanJobHeader } from "@/components/pages/job-kanban/KanbanJobHeader"
 import { KanbanPageModals } from "@/components/pages/job-kanban/KanbanPageModals"
 import { KanbanPageContent } from "@/components/pages/job-kanban/KanbanPageContent"
 import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
-import { VagaProgressBar } from "@/components/workflow-rail"
+import VagaProgressBar from "@/components/jobs/VagaProgressBar"
 import "@/components/pages/job-kanban-page.css"
 
 export function JobKanbanPage({ job, onBack }: { job?: Record<string, unknown>, onBack?: () => void }) {

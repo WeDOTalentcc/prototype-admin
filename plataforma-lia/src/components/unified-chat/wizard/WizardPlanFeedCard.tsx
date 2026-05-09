@@ -19,7 +19,7 @@
  * (`buildPlanFlowSteps`, `planCardTitleForStage`) so they can never drift.
  */
 import * as React from "react"
-import FlowStepMessage from "@/components/workflow-rail/FlowStepMessage"
+import FlowStepMessage from "@/components/unified-chat/FlowStepMessage"
 import {
   buildPlanFlowSteps,
   planCardTitleForStage,

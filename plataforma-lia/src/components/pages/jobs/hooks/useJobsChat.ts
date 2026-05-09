@@ -172,15 +172,9 @@ export function useJobsChat({
     [onAddRecentItem, openGlobalChat],
   );
 
-  // Handle ?action=create query param (entry point from WorkflowRail "Criar vaga").
-  // Defined here so it can call openJobCreationChat directly — avoids mount-order
-  // races where the effect runs before any ref forwarder is populated.
-  //
-  // The trigger fires every time `action=create` is present in the URL. We then
-  // immediately strip it via router.replace, which both prevents a refresh from
-  // re-triggering and frees up the trigger to fire again on the next click
-  // (WorkflowRailWrapper uses router.replace when already on /jobs to re-fire
-  // this effect by re-emitting the param).
+  // Handle ?action=create query param to open the job-creation chat.
+  // Strips the param via router.replace after firing so a refresh does not
+  // re-trigger and a subsequent click can re-fire by re-emitting the param.
   useEffect(() => {
     if (!searchParams) return;
     if (searchParams.get("action") !== "create") return;

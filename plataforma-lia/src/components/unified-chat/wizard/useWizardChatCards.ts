@@ -55,7 +55,7 @@ import {
   type WizardPublishedJobCardData,
 } from "./wizard-plan-card"
 import type { WizardStage } from "./wizard-types"
-import type { FlowStep } from "@/components/workflow-rail/FlowStepMessage"
+import type { FlowStep } from "@/components/unified-chat/FlowStepMessage"
 import type { LiaChatMessage } from "@/hooks/chat/lia-chat-connection-types"
 
 export interface UseWizardChatCardsOptions {

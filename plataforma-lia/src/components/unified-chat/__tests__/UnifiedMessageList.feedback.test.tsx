@@ -59,7 +59,7 @@ vi.mock("@/components/chat/typing-indicator", () => ({
   TypingIndicator: () => null,
 }))
 
-vi.mock("@/components/workflow-rail/FlowStepMessage", () => ({
+vi.mock("@/components/unified-chat/FlowStepMessage", () => ({
   default: () => null,
 }))
 

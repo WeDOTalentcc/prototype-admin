@@ -2,12 +2,7 @@
  * Canonical funnel stages — single source of truth for the recruiter funnel
  * vocabulary (labels, icons, colors, navigation paths).
  *
- * Consumed by:
- *  - WorkflowRail (footer, fixed/expandable)
- *  - ChatWorkflowReels (chat home empty-state, dock-magnified)
- *
- * Both rails render the same stages with the same identity; only the density
- * (compact vs expanded) and the click affordance differ.
+ * Consumed by ChatWorkflowReels (chat home empty-state, dock-magnified).
  *
  * The keys here intentionally match the existing chat translation namespace
  * (`chat.workflowReels.stages.<id>`) so we can reuse all PT-BR/EN labels

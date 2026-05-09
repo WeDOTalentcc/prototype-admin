@@ -26,8 +26,8 @@ export const ONBOARDING_TOUR_STEPS: TourStep[] = [
   {
     id: "tour_campaigns",
     type: "spotlight",
-    message: "2. CAMPANHAS — cada vaga tem uma campanha de recrutamento com etapas automaticas: sourcing, triagem, entrevista, oferta. O Workflow Rail mostra o progresso em tempo real.",
-    selector: "[data-tour='nav-campaigns'], [data-tour='workflow-rail'], [data-nav='campaigns']",
+    message: "2. CAMPANHAS — cada vaga tem uma campanha de recrutamento com etapas automaticas: sourcing, triagem, entrevista, oferta.",
+    selector: "[data-tour='nav-campaigns'], [data-nav='campaigns']",
     spotlightText: "Campanhas — fluxo automatico de recrutamento",
     position: "right",
   },

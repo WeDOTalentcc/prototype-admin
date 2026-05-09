@@ -10,7 +10,7 @@
  * Single source of truth: the visible-stage subset and labels both come
  * from `wizard-types.ts`. We never duplicate the labels here.
  */
-import type { FlowStep } from "@/components/workflow-rail/FlowStepMessage"
+import type { FlowStep } from "@/components/unified-chat/FlowStepMessage"
 import {
   STAGE_LABELS,
   STAGE_ORDER,
