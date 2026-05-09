@@ -34,6 +34,9 @@ AGENT_TYPE_TO_DOMAIN: dict[str, str] = {
     "agent_studio": "agent_studio",
     "digital_twin": "digital_twin",
     "recruitment_campaign": "recruitment_campaign",
+    "company_settings": "company_settings",
+    "company_profile": "company_settings",
+    "company_config": "company_settings",
     "multi_strategy": "agent_studio",
     "voice_screening": "talent_pool",
 }

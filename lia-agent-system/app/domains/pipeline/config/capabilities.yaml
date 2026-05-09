@@ -14,8 +14,6 @@ intent_keywords:
   interpretar: interpret_context
   prever sub-status: predict_sub_status
   predizer sub-status: predict_sub_status
-  sugerir ação: suggest_next_action
-  próxima ação: suggest_next_action
   listar etapas: list_pipeline_stages
   etapas do pipeline: list_pipeline_stages
   ver pipeline: list_pipeline_stages
@@ -24,3 +22,4 @@ intent_keywords:
   registrar hire: register_hire
   formalizar contratação: register_hire
   contratar: register_hire
+  próxima etapa do pipeline: suggest_next_action

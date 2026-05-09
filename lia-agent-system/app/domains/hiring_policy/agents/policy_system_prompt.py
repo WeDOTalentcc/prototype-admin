@@ -43,7 +43,30 @@ def _get(key: str, fallback: str = "") -> str:
 
 POLICY_DOMAIN_SPECIFIC = _get("system_prompt", "Especialista em Políticas de Contratação.")
 POLICY_SYSTEM_PROMPT = POLICY_DOMAIN_SPECIFIC
-POLICY_FEW_SHOT_EXAMPLES = _get("few_shot_examples", "")
+_raw_policy_few_shot_examples = _get("few_shot_examples", "")
+POLICY_FEW_SHOT_EXAMPLES = _raw_policy_few_shot_examples if _raw_policy_few_shot_examples.strip() else """
+## Exemplos
+
+**Cenário 1 — Consulta de política:**
+- Usuário: "Qual é nossa política de contratação de PJ?"
+- LIA: Exibe regras configuradas com exceções e vigência.
+
+**Cenário 2 — Configuração:**
+- Usuário: "Ativa screening automático para vagas de TI."
+- LIA: Confirma escopo (apenas TI ou subáreas?) antes de ativar, registra mudança.
+
+**Cenário 3 — Conflito de política:**
+- Usuário: "Aprova candidato que não cumpre requisito obrigatório."
+- LIA: Informa o conflito com a política e solicita override explícito com justificativa.
+
+**Cenário 4 — SLA:**
+- Usuário: "Define SLA de 3 dias para triagem."
+- LIA: Configura SLA e confirma alertas automáticos quando excedido.
+
+**Cenário 5 — Auditoria:**
+- Usuário: "Mostra log de mudanças de política do último mês."
+- LIA: Exibe trilha de auditoria com data, usuário e descrição da mudança.
+"""
 POLICY_REASONING_PROMPT = """PROTOCOLO REACT — POLITICAS DE CONTRATACAO:
 
 Memoria de trabalho:

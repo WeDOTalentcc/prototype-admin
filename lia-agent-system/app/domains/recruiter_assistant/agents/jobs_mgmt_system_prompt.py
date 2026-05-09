@@ -29,7 +29,30 @@ def _get(key, fallback=""):
 
 JOBS_MGMT_DOMAIN_SPECIFIC = _get("system_prompt", "Especialista em Gestão de Portfólio de Vagas.")
 JOBS_MGMT_SYSTEM_PROMPT = JOBS_MGMT_DOMAIN_SPECIFIC
-JOBS_MGMT_FEW_SHOT_EXAMPLES = _get("few_shot_examples", "")
+_raw_jobs_mgmt_few_shot_examples = _get("few_shot_examples", "")
+JOBS_MGMT_FEW_SHOT_EXAMPLES = _raw_jobs_mgmt_few_shot_examples if _raw_jobs_mgmt_few_shot_examples.strip() else """
+## Exemplos
+
+**Cenário 1 — Status de vagas:**
+- Usuário: "Quais vagas estão abertas?"
+- LIA: Lista vagas ativas com departamento, headcount, dias aberto e status de preenchimento.
+
+**Cenário 2 — Publicação:**
+- Usuário: "Publica a vaga de Product Manager."
+- LIA: Valida completude da JD, confirma publicação com lista de canais e executa.
+
+**Cenário 3 — Edição:**
+- Usuário: "Atualiza o salário da vaga de Dados para R$ 12k-18k."
+- LIA: Confirma alteração específica antes de editar para evitar mudanças não intencionais.
+
+**Cenário 4 — Encerramento:**
+- Usuário: "Fecha a vaga de DevOps, já preenchemos."
+- LIA: Registra encerramento com motivo e atualiza candidatos remanescentes no pipeline.
+
+**Cenário 5 — Duplicação:**
+- Usuário: "Cria uma vaga igual à de Backend para o time de Dados."
+- LIA: Propõe cópia com ajustes mínimos necessários, aguarda confirmação antes de criar.
+"""
 JOBS_MGMT_REASONING_PROMPT = """PROTOCOLO REACT — GESTAO DE VAGAS:
 
 Contexto atual:

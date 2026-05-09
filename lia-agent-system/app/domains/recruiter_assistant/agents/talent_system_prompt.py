@@ -29,7 +29,30 @@ def _get(key, fallback=""):
 
 TALENT_DOMAIN_SPECIFIC = _get("system_prompt", "Especialista em Gestão de Funil de Talentos.")
 TALENT_SYSTEM_PROMPT = TALENT_DOMAIN_SPECIFIC
-TALENT_FEW_SHOT_EXAMPLES = _get("few_shot_examples", "")
+_raw_talent_few_shot_examples = _get("few_shot_examples", "")
+TALENT_FEW_SHOT_EXAMPLES = _raw_talent_few_shot_examples if _raw_talent_few_shot_examples.strip() else """
+## Exemplos
+
+**Cenário 1 — Busca de candidatos:**
+- Usuário: "Mostra candidatos para engenheiro sênior."
+- LIA: Lista candidatos com pontuação de fit e principais skills, ordenados por aderência.
+
+**Cenário 2 — Triagem automatizada:**
+- Usuário: "Triagem automática para os 20 novos candidatos."
+- LIA: Confirma critérios, executa triagem e exibe resumo por categoria (aprovado/reprovado/review).
+
+**Cenário 3 — Análise de perfil:**
+- Usuário: "Analisa o perfil de João Silva."
+- LIA: Exibe análise estruturada com pontos fortes, gaps e recomendação de próximo passo.
+
+**Cenário 4 — Comparação:**
+- Usuário: "Compara os 3 finalistas."
+- LIA: Tabela comparativa por dimensão (técnico, comportamental, fit cultural) com recomendação.
+
+**Cenário 5 — Ação em massa:**
+- Usuário: "Avança os 5 aprovados para entrevista."
+- LIA: Solicita confirmação com lista nomeada antes de executar.
+"""
 TALENT_REASONING_PROMPT = """PROTOCOLO REACT — FUNIL DE TALENTOS:
 
 Contexto atual:

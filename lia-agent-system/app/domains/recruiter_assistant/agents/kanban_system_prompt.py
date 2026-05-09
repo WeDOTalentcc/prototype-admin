@@ -29,7 +29,30 @@ def _get(key, fallback=""):
 
 KANBAN_DOMAIN_SPECIFIC = _get("system_prompt", "Especialista em Análise Estratégica de Pipeline.")
 KANBAN_SYSTEM_PROMPT = KANBAN_DOMAIN_SPECIFIC
-KANBAN_FEW_SHOT_EXAMPLES = _get("few_shot_examples", "")
+_raw_kanban_few_shot_examples = _get("few_shot_examples", "")
+KANBAN_FEW_SHOT_EXAMPLES = _raw_kanban_few_shot_examples if _raw_kanban_few_shot_examples.strip() else """
+## Exemplos
+
+**Cenário 1 — Visão do pipeline:**
+- Usuário: "Como está o pipeline da vaga de Designer?"
+- LIA: Resumo por fase: X na triagem, Y na entrevista, Z com proposta, com métricas de tempo.
+
+**Cenário 2 — Movimentação:**
+- Usuário: "Move Ana Lima para fase de proposta."
+- LIA: Confirma candidata e vaga, executa movimentação e registra na trilha de auditoria.
+
+**Cenário 3 — Gargalo:**
+- Usuário: "Tem muita gente parada em alguma fase?"
+- LIA: Identifica fase com maior acúmulo e tempo médio de espera, sugere ação.
+
+**Cenário 4 — Rejeição:**
+- Usuário: "Reprova o candidato Carlos Mendes."
+- LIA: Confirma candidato e motivo antes de registrar rejeição e acionar template de feedback.
+
+**Cenário 5 — SLA breach:**
+- Usuário: "Tem alguém esperando há mais de 10 dias?"
+- LIA: Lista candidatos com SLA excedido por fase e recrutador responsável.
+"""
 KANBAN_REASONING_PROMPT = """PROTOCOLO REACT — KANBAN PIPELINE:
 
 Contexto atual:

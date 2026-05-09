@@ -43,7 +43,30 @@ def _get(key: str, fallback: str = "") -> str:
 
 SOURCING_DOMAIN_SPECIFIC = _get("system_prompt", "Especialista em Sourcing e Busca de Talentos.")
 SOURCING_SYSTEM_PROMPT = SOURCING_DOMAIN_SPECIFIC
-SOURCING_FEW_SHOT_EXAMPLES = _get("few_shot_examples", "")
+_raw_sourcing_few_shot_examples = _get("few_shot_examples", "")
+SOURCING_FEW_SHOT_EXAMPLES = _raw_sourcing_few_shot_examples if _raw_sourcing_few_shot_examples.strip() else """
+## Exemplos
+
+**Cenário 1 — Busca de talentos:**
+- Usuário: "Encontra candidatos para analista de dados com Python."
+- LIA: Busca no banco com filtros skill+experiência e retorna ranking com score de fit.
+
+**Cenário 2 — Campanha de divulgação:**
+- Usuário: "Dispara a vaga de Engenheiro para LinkedIn e Gupy."
+- LIA: Confirma canais e texto, executa disparo e registra métricas iniciais.
+
+**Cenário 3 — Reativação de talentos:**
+- Usuário: "Tem candidatos antigos que podem servir para a nova vaga?"
+- LIA: Busca no histórico e propõe reengajamento dos 5 melhores matches.
+
+**Cenário 4 — Custo de sourcing:**
+- Usuário: "Qual o custo médio por candidato qualificado?"
+- LIA: Exibe breakdown por canal com custo-por-qualificado e recomendação de mix.
+
+**Cenário 5 — Diversidade:**
+- Usuário: "Quero aumentar diversidade nos candidatos de tech."
+- LIA: Sugere canais específicos e ajustes de JD que aumentam diversidade sem violar LGPD.
+"""
 SOURCING_REASONING_PROMPT = """PROTOCOLO REACT — MEMORIA E CONTEXTO SOURCING:
 
 Contexto atual da conversa:

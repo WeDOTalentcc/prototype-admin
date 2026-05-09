@@ -86,7 +86,7 @@ class TestRequestApproval:
 
     @pytest.mark.asyncio
     async def test_returns_string_pending_id(self, svc):
-        with patch("app.services.hitl_service._get_redis", return_value=None), \
+        with patch("app.domains.cv_screening.services.hitl_service._get_redis", return_value=None), \
              patch("app.api.v1.ws_manager.ws_manager.send_to_session", new_callable=AsyncMock):
             pending_id = await svc.request_approval(
                 thread_id="t-1",
@@ -100,7 +100,7 @@ class TestRequestApproval:
 
     @pytest.mark.asyncio
     async def test_pending_id_is_unique_per_call(self, svc):
-        with patch("app.services.hitl_service._get_redis", return_value=None), \
+        with patch("app.domains.cv_screening.services.hitl_service._get_redis", return_value=None), \
              patch("app.api.v1.ws_manager.ws_manager.send_to_session", new_callable=AsyncMock):
             id1 = await svc.request_approval("t-1", "create_job", "desc", {}, "s-1")
             id2 = await svc.request_approval("t-1", "create_job", "desc", {}, "s-1")
@@ -108,7 +108,7 @@ class TestRequestApproval:
 
     @pytest.mark.asyncio
     async def test_stores_in_memory_when_redis_unavailable(self, svc):
-        with patch("app.services.hitl_service._get_redis", return_value=None), \
+        with patch("app.domains.cv_screening.services.hitl_service._get_redis", return_value=None), \
              patch("app.api.v1.ws_manager.ws_manager.send_to_session", new_callable=AsyncMock):
             pending_id = await svc.request_approval("t-1", "action", "desc", {}, "s-1")
         key = f"hitl:t-1:{pending_id}"
@@ -118,7 +118,7 @@ class TestRequestApproval:
     @pytest.mark.asyncio
     async def test_redis_key_contains_thread_id(self, svc):
         r_mock, stored = _mock_redis()
-        with patch("app.services.hitl_service._get_redis", return_value=r_mock), \
+        with patch("app.domains.cv_screening.services.hitl_service._get_redis", return_value=r_mock), \
              patch("app.api.v1.ws_manager.ws_manager.send_to_session", new_callable=AsyncMock):
             pending_id = await svc.request_approval("my-thread", "action", "desc", {}, "s-1")
         assert any("my-thread" in k for k in stored)
@@ -126,7 +126,7 @@ class TestRequestApproval:
     @pytest.mark.asyncio
     async def test_redis_ttl_is_24h(self, svc):
         r_mock, stored = _mock_redis()
-        with patch("app.services.hitl_service._get_redis", return_value=r_mock), \
+        with patch("app.domains.cv_screening.services.hitl_service._get_redis", return_value=r_mock), \
              patch("app.api.v1.ws_manager.ws_manager.send_to_session", new_callable=AsyncMock):
             pending_id = await svc.request_approval("t-1", "action", "desc", {}, "s-1")
         key = f"hitl:t-1:{pending_id}"
@@ -137,7 +137,7 @@ class TestRequestApproval:
     @pytest.mark.asyncio
     async def test_ws_send_failure_does_not_raise(self, svc):
         """Falha no envio WS não deve propagar exceção."""
-        with patch("app.services.hitl_service._get_redis", return_value=None), \
+        with patch("app.domains.cv_screening.services.hitl_service._get_redis", return_value=None), \
              patch("app.api.v1.ws_manager.ws_manager.send_to_session",
                    side_effect=Exception("WS offline")):
             # Não deve lançar exceção
@@ -153,7 +153,7 @@ class TestReceiveApproval:
 
     @pytest.mark.asyncio
     async def test_stores_approved_true(self, svc):
-        with patch("app.services.hitl_service._get_redis", return_value=None):
+        with patch("app.domains.cv_screening.services.hitl_service._get_redis", return_value=None):
             # Pre-store pendente
             svc._memory["hitl:t-1:p-1"] = {
                 "pending_id": "p-1", "thread_id": "t-1",
@@ -165,7 +165,7 @@ class TestReceiveApproval:
 
     @pytest.mark.asyncio
     async def test_stores_approved_false(self, svc):
-        with patch("app.services.hitl_service._get_redis", return_value=None):
+        with patch("app.domains.cv_screening.services.hitl_service._get_redis", return_value=None):
             svc._memory["hitl:t-2:p-2"] = {
                 "pending_id": "p-2", "thread_id": "t-2",
                 "action": "x", "description": "", "data": {},
@@ -176,14 +176,14 @@ class TestReceiveApproval:
 
     @pytest.mark.asyncio
     async def test_stores_comment(self, svc):
-        with patch("app.services.hitl_service._get_redis", return_value=None):
+        with patch("app.domains.cv_screening.services.hitl_service._get_redis", return_value=None):
             result = await svc.receive_approval("t-3", "p-3", approved=True, comment="ok")
         assert result["comment"] == "ok"
 
     @pytest.mark.asyncio
     async def test_creates_record_when_not_exists(self, svc):
         """receive_approval cria registro mesmo quando não existe pending anterior."""
-        with patch("app.services.hitl_service._get_redis", return_value=None):
+        with patch("app.domains.cv_screening.services.hitl_service._get_redis", return_value=None):
             result = await svc.receive_approval("t-new", "p-new", approved=True)
         assert result["approved"] is True
         assert result["thread_id"] == "t-new"
@@ -197,16 +197,16 @@ class TestGetPending:
 
     @pytest.mark.asyncio
     async def test_returns_none_when_redis_unavailable(self, svc):
-        with patch("app.services.hitl_service._get_redis", return_value=None), \
-             patch("app.services.hitl_service._db_get_pending", return_value=None):
+        with patch("app.domains.cv_screening.services.hitl_service._get_redis", return_value=None), \
+             patch("app.domains.cv_screening.services.hitl_service._db_get_pending", return_value=None):
             result = await svc.get_pending("t-99")
         # sem nada in-memory → None
         assert result is None
 
     @pytest.mark.asyncio
     async def test_returns_none_when_no_pending(self, svc):
-        with patch("app.services.hitl_service._get_redis", return_value=None), \
-             patch("app.services.hitl_service._db_get_pending", return_value=None):
+        with patch("app.domains.cv_screening.services.hitl_service._get_redis", return_value=None), \
+             patch("app.domains.cv_screening.services.hitl_service._db_get_pending", return_value=None):
             # Adicionar apenas aprovado (não pendente)
             svc._memory["hitl:t-1:p-done"] = {
                 "pending_id": "p-done", "thread_id": "t-1",
@@ -217,7 +217,7 @@ class TestGetPending:
 
     @pytest.mark.asyncio
     async def test_returns_pending_item(self, svc):
-        with patch("app.services.hitl_service._get_redis", return_value=None):
+        with patch("app.domains.cv_screening.services.hitl_service._get_redis", return_value=None):
             svc._memory["hitl:t-2:p-1"] = {
                 "pending_id": "p-1", "thread_id": "t-2",
                 "approved": None, "requested_at": "2026-01-01T10:00:00"
@@ -229,7 +229,7 @@ class TestGetPending:
     @pytest.mark.asyncio
     async def test_graceful_on_exception(self, svc):
         """get_pending não deve lançar exceção mesmo com falha interna."""
-        with patch("app.services.hitl_service._get_redis", side_effect=Exception("boom")):
+        with patch("app.domains.cv_screening.services.hitl_service._get_redis", side_effect=Exception("boom")):
             result = await svc.get_pending("t-99")
         assert result is None
 
@@ -242,7 +242,7 @@ class TestIsApproved:
 
     @pytest.mark.asyncio
     async def test_returns_none_when_pending(self, svc):
-        with patch("app.services.hitl_service._get_redis", return_value=None):
+        with patch("app.domains.cv_screening.services.hitl_service._get_redis", return_value=None):
             svc._memory["hitl:t-1:p-1"] = {
                 "pending_id": "p-1", "approved": None
             }
@@ -251,7 +251,7 @@ class TestIsApproved:
 
     @pytest.mark.asyncio
     async def test_returns_true_when_approved(self, svc):
-        with patch("app.services.hitl_service._get_redis", return_value=None):
+        with patch("app.domains.cv_screening.services.hitl_service._get_redis", return_value=None):
             svc._memory["hitl:t-1:p-2"] = {
                 "pending_id": "p-2", "approved": True
             }
@@ -260,7 +260,7 @@ class TestIsApproved:
 
     @pytest.mark.asyncio
     async def test_returns_false_when_rejected(self, svc):
-        with patch("app.services.hitl_service._get_redis", return_value=None):
+        with patch("app.domains.cv_screening.services.hitl_service._get_redis", return_value=None):
             svc._memory["hitl:t-1:p-3"] = {
                 "pending_id": "p-3", "approved": False
             }
@@ -269,12 +269,12 @@ class TestIsApproved:
 
     @pytest.mark.asyncio
     async def test_returns_none_when_not_found(self, svc):
-        with patch("app.services.hitl_service._get_redis", return_value=None):
+        with patch("app.domains.cv_screening.services.hitl_service._get_redis", return_value=None):
             result = await svc.is_approved("p-nonexistent")
         assert result is None
 
     @pytest.mark.asyncio
     async def test_graceful_on_redis_exception(self, svc):
-        with patch("app.services.hitl_service._get_redis", side_effect=Exception("redis down")):
+        with patch("app.domains.cv_screening.services.hitl_service._get_redis", side_effect=Exception("redis down")):
             result = await svc.is_approved("p-any")
         assert result is None

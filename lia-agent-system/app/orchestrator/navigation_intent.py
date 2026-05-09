@@ -80,8 +80,8 @@ _PATTERNS: list[tuple[list[tuple[str, float]], str, str]] = [
     (
         [("criar vaga", 1.0), ("abrir vaga", 1.0), ("publicar vaga", 1.0),
          ("nova vaga", 1.0), ("job description", 0.7), ("headcount", 0.7),
-         ("posição aberta", 0.7), ("requisição", 0.5), ("aprovação de vaga", 1.0),
-         ("vagas", 0.3), ("vaga", 0.3)],
+         ("posição aberta", 0.7), ("requisição", 1.0), ("aprovação de vaga", 1.0),
+         ("vagas", 0.7), ("vaga", 1.0)],
         "Vagas",
         "Quer que eu abra a página de Vagas?",
     ),
@@ -91,8 +91,8 @@ _PATTERNS: list[tuple[list[tuple[str, float]], str, str]] = [
         [("buscar candidato", 1.0), ("buscar candidatos", 1.0), ("procurar candidato", 1.0),
          ("sourcing", 0.7), ("banco de talentos", 1.0), ("perfil candidato", 0.7),
          ("score lia", 0.7), ("screening", 0.5), ("triagem", 0.4),
-         ("funil", 0.4), ("candidato", 0.2), ("candidatos", 0.2),
-         ("talento", 0.2), ("talentos", 0.2), ("cv", 0.3), ("currículo", 0.3)],
+         ("funil", 1.0), ("candidato", 1.0), ("candidatos", 1.0),
+         ("talento", 0.2), ("talentos", 0.2), ("cv", 1.0), ("currículo", 0.7)],
         "Funil de Talentos",
         "Quer que eu abra o Funil de Talentos?",
     ),
@@ -100,7 +100,7 @@ _PATTERNS: list[tuple[list[tuple[str, float]], str, str]] = [
     # 5. Kanban / pipeline
     (
         [("kanban", 0.7), ("pipeline", 0.5), ("mover candidato", 1.0),
-         ("avançar candidato", 1.0), ("mover para etapa", 1.0), ("board", 0.5)],
+         ("avançar candidato", 1.0), ("mover para etapa", 1.0), ("board", 1.0)],
         "Funil de Talentos",
         "Quer que eu abra o Funil para ver o Kanban?",
     ),
@@ -108,7 +108,7 @@ _PATTERNS: list[tuple[list[tuple[str, float]], str, str]] = [
     # 6. Painel de Controle
     (
         [("painel de controle", 1.0), ("dashboard", 0.7), ("tarefas pendentes", 1.0),
-         ("atividades", 0.4), ("pendências", 0.5), ("agenda do recrutador", 1.0)],
+         ("atividades", 0.4), ("pendências", 1.0), ("agenda do recrutador", 1.0)],
         "Painel de Controle",
         "Quer que eu abra o Painel de Controle?",
     ),
