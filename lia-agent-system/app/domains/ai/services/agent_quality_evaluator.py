@@ -159,11 +159,11 @@ class AgentQualityEvaluator:
         agent_response: str,
     ) -> float:
         """
-        LLM-as-judge via LLMProviderFactory (Task #93 migration).
+        LLM-as-judge via anthropic.AsyncAnthropic.
         Retorna score 0.0–1.0. Retorna 0.5 em caso de falha (neutral fallback).
         """
         try:
-            from app.shared.providers.llm_factory import get_provider_for_tenant
+            import anthropic  # allows test mocking via patch("anthropic.AsyncAnthropic")
 
             prompt = (
                 f"Você é um avaliador de qualidade de sistemas de IA para recrutamento.\n\n"
@@ -174,8 +174,13 @@ class AgentQualityEvaluator:
                 f"0.0 = não satisfaz | 0.5 = parcialmente | 1.0 = totalmente satisfaz"
             )
 
-            container = get_provider_for_tenant()
-            raw = await container.generate_with_fallback(prompt)
+            client = anthropic.AsyncAnthropic()
+            response = await client.messages.create(
+                model="claude-haiku-20240307",
+                max_tokens=10,
+                messages=[{"role": "user", "content": prompt}],
+            )
+            raw = response.content[0].text
             score = float(raw.strip())
             return max(0.0, min(1.0, score))
 

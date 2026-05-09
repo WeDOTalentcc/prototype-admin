@@ -310,8 +310,13 @@ async def seed_default_guardrails(
         await GuardrailRepository.upsert(db, data)
         created += 1
 
+    _actor = None
+    try:
+        _actor = get_user_company_id(current_user) if hasattr(current_user, "company_id") else None
+    except Exception:
+        pass
     logger.info(
         "[Guardrail] seed-defaults: criados=%s ignorados=%s company_id=%s by user_company=%s",
-        created, skipped, company_id, get_user_company_id(current_user),
+        created, skipped, company_id, _actor,
     )
     return SeedDefaultsResponse(created=created, skipped=skipped, total=len(all_defaults))

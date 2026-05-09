@@ -59,7 +59,7 @@ def _to_response(entry: dict) -> PromptVersionResponse:
 
 @router.get("/versions", response_model=PromptVersionListResponse)
 async def list_all_versions(
-    _admin: User = Depends(require_admin),
+    current_user: User = Depends(require_admin),
 ):
     """
     Lista todos os prompts registrados no PromptVersionRegistry.
@@ -76,7 +76,7 @@ async def list_all_versions(
 @router.get("/versions/{name}", response_model=PromptVersionListResponse)
 async def list_versions_by_name(
     name: str,
-    _admin: User = Depends(require_admin),
+    current_user: User = Depends(require_admin),
 ):
     """
     Lista todas as versões registradas para um nome de prompt específico.
