@@ -27,6 +27,8 @@ def apply_audit_lifecycle_policy(self) -> dict:
         result = asyncio.run(storage.apply_lifecycle_policy())
         _finish_celery_success(span, "audit.apply_lifecycle_policy")
         logger.info(f"[audit.lifecycle] Applied: {result}")
+        from app.shared.resilience.cron_health import record_cron_run
+        record_cron_run("audit.apply_lifecycle_policy")
         return {"applied": result}
     except Exception as exc:
         _finish_celery_failure(span, "audit.apply_lifecycle_policy", exc)
@@ -71,6 +73,8 @@ def run_lgpd_cleanup_task(self, dry_run: bool = False) -> dict:
         result = asyncio.run(_run())
         _finish_celery_success(span, "lgpd.run_cleanup_daily")
         logger.info("lgpd.run_cleanup_daily concluído: %s", result)
+        from app.shared.resilience.cron_health import record_cron_run
+        record_cron_run("lgpd.run_cleanup_daily")
         return result
     except Exception as exc:
         _finish_celery_failure(span, "lgpd.run_cleanup_daily", exc)
@@ -315,6 +319,8 @@ def run_retention_cleanup(self) -> dict:
     try:
         result = asyncio.run(_run_retention_cleanup_async())
         _finish_celery_success(span, "data.retention.run")
+        from app.shared.resilience.cron_health import record_cron_run
+        record_cron_run("data.retention.run")
         return result
     except Exception as exc:
         _finish_celery_failure(span, "data.retention.run", exc)

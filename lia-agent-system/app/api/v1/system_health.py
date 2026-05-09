@@ -651,3 +651,18 @@ async def dlq_health_status():
             "timestamp": datetime.datetime.utcnow().isoformat(),
         },
     )
+
+
+# ─── R-036: Cron sentinel health ────────────────────────────────────────────
+@router.get("/health/crons")
+async def cron_sentinel_health():
+    """R-036 — Verify all registered crons ran within expected cadence.
+
+    Canary: alert if status != healthy (means a cron went silent).
+    LGPD compliance crons (lgpd.run_cleanup_daily, audit.apply_lifecycle_policy,
+    data.retention.run) are especially critical — silence = regulatory violation.
+    """
+    from app.shared.resilience.cron_health import get_cron_health
+    result = get_cron_health()
+    status_code = 200 if result["status"] == "healthy" else 503
+    return JSONResponse(status_code=status_code, content=result)

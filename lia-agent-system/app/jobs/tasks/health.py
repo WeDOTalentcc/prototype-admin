@@ -69,6 +69,8 @@ def check_dlq_health_task(self) -> dict:
         }
 
         _finish_celery_success(span, "health.check_dlq_health")
+        from app.shared.resilience.cron_health import record_cron_run
+        record_cron_run("health.check_dlq_health")
         return result
 
     except Exception as exc:
