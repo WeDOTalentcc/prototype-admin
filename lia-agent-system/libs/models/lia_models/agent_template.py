@@ -42,6 +42,7 @@ class AgentTemplate(Base):
     __table_args__ = (
         Index("ix_agent_templates_company_domain", "company_id", "domain", "status"),
         Index("ix_agent_templates_public", "domain", "status"),
+        {"extend_existing": True},
     )
 
     id: Mapped[str] = mapped_column(String(255), primary_key=True)

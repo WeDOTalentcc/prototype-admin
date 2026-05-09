@@ -48,12 +48,58 @@ class InjectionCheckResult:
         return self.is_suspicious
 
 
+# Maps low-level security pattern names → canonical injection categories.
+# PromptInjectionGuard exposes simplified category names for backward compat.
+_PATTERN_TO_CATEGORY: dict[str, str] = {
+    # System prompt override (ignore/disregard/forget instructions)
+    "jailbreak_ignore_instructions_en": "system_prompt_override",
+    "jailbreak_ignore_instructions_pt": "system_prompt_override",
+    # Jailbreak attempts (DAN, developer mode, act-as, etc.)
+    "jailbreak_dan_developer_mode": "jailbreak_attempt",
+    "jailbreak_act_as_override": "role_manipulation",
+    "jailbreak_previous_prompt": "jailbreak_attempt",
+    "jailbreak_keyword_persona": "jailbreak_attempt",
+    # Role manipulation
+    "role_manipulation_pretend": "role_manipulation",
+    # System prompt extraction
+    "system_override_extract_prompt": "system_prompt_extraction",
+    # Delimiter injection
+    "system_override_delimiter": "delimiter_injection",
+    "delimiter_injection_markdown": "delimiter_injection",
+}
+
+
+def _normalize_risk(risk: str) -> str:
+    """Normalize security_patterns risk levels to PromptInjectionGuard scale.
+
+    security_patterns uses CRITICAL (highest) but PromptInjectionGuard
+    tests expect 'high' as the maximum level.
+    """
+    if str(risk) == "critical":
+        return "high"
+    return str(risk)
+
+
 def _to_injection_result(sec: SecurityCheckResult, sanitized: str = "") -> InjectionCheckResult:
-    """Convert canonical SecurityCheckResult to legacy InjectionCheckResult."""
+    """Convert canonical SecurityCheckResult to legacy InjectionCheckResult.
+
+    Adds canonical category names to matched_patterns (in addition to raw
+    pattern names) so callers that check for 'system_prompt_override' etc.
+    keep working.
+    """
+    # Build enriched pattern list: raw names + canonical categories (deduped)
+    raw_names = list(sec.matched_pattern_names)
+    categories: list[str] = []
+    for name in raw_names:
+        cat = _PATTERN_TO_CATEGORY.get(name)
+        if cat and cat not in raw_names and cat not in categories:
+            categories.append(cat)
+    enriched_patterns = raw_names + categories
+
     return InjectionCheckResult(
         is_suspicious=sec.is_blocked,
-        risk_level=sec.risk_level,
-        matched_patterns=sec.matched_pattern_names,
+        risk_level=_normalize_risk(sec.risk_level),
+        matched_patterns=enriched_patterns,
         original_input=sec.original_input,
         sanitized_input=sanitized or sec.original_input,
         confidence=sec.confidence,

@@ -106,6 +106,7 @@ SECURITY_PATTERNS: list[dict[str, Any]] = [
             re.compile(r"modo\s+desenvolvedor", re.IGNORECASE),
             re.compile(r"sem\s+(restr[ií][çc][õo]es|limites?|filtros?)", re.IGNORECASE),
             re.compile(r"without\s+(restrictions?|limits?|filters?)", re.IGNORECASE),
+            re.compile(r"bypass\s+(safety\s+|security\s+)?(filter|restriction|guideline|safeguard)", re.IGNORECASE),
         ],
     },
     # ── 4. JAILBREAK — "From now on you are / Act as" ────────────────────────
@@ -116,8 +117,9 @@ SECURITY_PATTERNS: list[dict[str, Any]] = [
         "confidence": 0.88,
         "patterns": [
             re.compile(r"(from\s+now\s+on|starting\s+now)\s+you\s+(are|will\s+be)", re.IGNORECASE),
-            re.compile(r"you\s+are\s+now\s+(a|an|the)\s+\w+\s+without", re.IGNORECASE),
+            re.compile(r"you\s+are\s+now\s+(a|an|the)\s+[\w\s]+?\s+without", re.IGNORECASE),
             re.compile(r"act\s+as\s+(a|an)\s+\w+\s+without\s+(restriction|ethic|guideline)", re.IGNORECASE),
+            re.compile(r"act\s+as\s+(a|an)\s+[\w\s]*(hacker|adversarial|unrestricted|malicious|unethical|dangerous)", re.IGNORECASE),
             re.compile(r"de\s+agora\s+em\s+diante\s+voc[êe]\s+[ée]", re.IGNORECASE),
             re.compile(r"voc[êe]\s+agora\s+[ée]\s+(um|uma)\s+\w+\s+sem", re.IGNORECASE),
         ],
