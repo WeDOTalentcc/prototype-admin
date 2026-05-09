@@ -346,6 +346,72 @@ class MainOrchestrator:
                     action_response.fairness_warnings = _soft_warnings
                 return action_response
 
+            # ── Phase 1.3: Plan & Execute (LIA-P&E / UC-P3-14) ─────────────────
+            # Feature-flagged: LIA_V2_USE_PLAN_SERVICE=true
+            # Sits between ActionExecutor (closed actions) and AgenticLoop (open LLM).
+            # Handles multi-step coordinated plans ("buscar e comparar", templates, etc.)
+            # Promotion to production without flag: 2026-07-01
+            if _is_plan_service_enabled():
+                try:
+                    from app.shared.execution.plan_detector import PlanDetector
+                    from app.shared.execution.plan_executor import PlanExecutor
+
+                    _plan_detector = PlanDetector()
+                    _detected_plan = _plan_detector.detect(ctx.message)
+
+                    if _detected_plan is not None:
+                        _plan_executor = PlanExecutor()
+                        _pe_company_id = getattr(ctx, "company_id", None)
+                        _pe_user_id = str(getattr(ctx, "user_id", "system") or "system")
+
+                        _completed_plan = await _plan_executor.execute(
+                            _detected_plan,
+                            user_id=_pe_user_id,
+                            session_id=conv_id or "",
+                            tenant_id=str(_pe_company_id) if _pe_company_id else None,
+                        )
+
+                        _plan_domain_resp = _plan_executor.build_consolidated_response(_completed_plan)
+                        _plan_text = _plan_domain_resp.message
+
+                        if conv and not ctx.skip_memory_persist:
+                            try:
+                                await self._persist_response(
+                                    ctx, conv_id, conv, {"response": _plan_text}, db
+                                )
+                            except Exception as _pe_exc:
+                                logger.warning("[LIA-P&E] memory persist failed: %s", _pe_exc)
+
+                        _plan_resp = ChatResponse(
+                            success=True,
+                            content=_plan_text,
+                            intent_detected="plan_execute",
+                            conversation_id=conv_id,
+                            action_executed=True,
+                            structured_data={
+                                "plan_id": _completed_plan.plan_id,
+                                "pattern": _completed_plan.detected_pattern,
+                                "tasks": len(_completed_plan.tasks),
+                                "status": _completed_plan.status.value,
+                            },
+                        )
+                        if _soft_warnings:
+                            _plan_resp.fairness_warnings = _soft_warnings
+
+                        logger.info(
+                            "[LIA-P&E] plan executed: pattern=%s tasks=%d status=%s",
+                            _completed_plan.detected_pattern,
+                            len(_completed_plan.tasks),
+                            _completed_plan.status.value,
+                        )
+                        return _plan_resp
+
+                except Exception as _pe_err:
+                    logger.warning(
+                        "[LIA-P&E] plan detection/execution failed — falling through to Phase 1.5: %s",
+                        _pe_err,
+                    )
+
             # ── Phase 1.5: Agentic Tool Calling (LIA-A04) ──────────────────
             # If Phase 1 did not match, let the LLM decide whether to call tools
             # via function calling. Feature-flagged: LIA_AGENTIC_LOOP=true

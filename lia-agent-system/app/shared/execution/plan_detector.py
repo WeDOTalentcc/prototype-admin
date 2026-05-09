@@ -200,6 +200,149 @@ PLAN_PATTERNS: list[PlanPattern] = [
         ],
         description="Parsear CV, cadastrar candidato e disparar triagem WSI",
     ),
+    PlanPattern(
+        name="launch_job_sourcing",
+        patterns=[
+            r"lan[cç]ar?\s+(busca|sourcing|search)",
+            r"iniciar?\s+(sourcing|busca)\s+(para|da|de)\s+vaga",
+            r"ativar?\s+sourcing",
+            r"come[cç]ar?\s+(a\s+)?buscar?\s+candidatos?\s+(para|da)\s+vaga",
+        ],
+        pipeline=[
+            PipelineStep(domain_id="job_management", action_id="enrich_job_description"),
+            PipelineStep(domain_id="sourcing", action_id="start_sourcing", context_from="task_0.job_id"),
+            PipelineStep(domain_id="communication", action_id="notify_sourcing_started", context_from="task_1.job_id"),
+        ],
+        description="Lançar busca de candidatos para uma vaga",
+    ),
+    PlanPattern(
+        name="close_stale_jobs",
+        patterns=[
+            r"fechar?\s+vagas?\s+(paradas?|estagnadas?|antigas?)",
+            r"arquivar?\s+vagas?\s+sem\s+movimenta[cç][aã]o",
+            r"limpar?\s+vagas?\s+abertas?\s+h[aá]\s+muito",
+        ],
+        pipeline=[
+            PipelineStep(domain_id="job_management", action_id="list_stale_jobs"),
+            PipelineStep(domain_id="communication", action_id="notify_stale_job_owners", context_from="task_0.job_ids"),
+            PipelineStep(domain_id="job_management", action_id="archive_stale_jobs", context_from="task_0.job_ids"),
+        ],
+        description="Fechar vagas estagnadas",
+    ),
+    PlanPattern(
+        name="screening_campaign",
+        patterns=[
+            r"enviar?\s+(wsi|triagem)\s+(em\s+lote|para\s+todos|em\s+massa)",
+            r"disparar?\s+campanha\s+de\s+triagem",
+            r"triagem\s+em\s+lote",
+        ],
+        pipeline=[
+            PipelineStep(domain_id="cv_screening", action_id="list_pending_screening"),
+            PipelineStep(domain_id="cv_screening", action_id="send_wsi_batch", context_from="task_0.candidate_ids"),
+        ],
+        description="Campanha de triagem em lote",
+    ),
+    PlanPattern(
+        name="onboarding_pipeline",
+        patterns=[
+            r"onboarding\s+(pipeline|flow|completo)",
+            r"preparar?\s+onboarding",
+            r"iniciar?\s+processo\s+de\s+admiss[aã]o",
+            r"day.?1\s+e\s+documentos",
+        ],
+        pipeline=[
+            PipelineStep(domain_id="communication", action_id="request_onboarding_documents"),
+            PipelineStep(domain_id="interview_scheduling", action_id="schedule_day_one", context_from="task_0.candidate_id"),
+            PipelineStep(domain_id="communication", action_id="notify_team_new_hire", context_from="task_0.candidate_id"),
+        ],
+        description="Pipeline completo de onboarding",
+    ),
+    PlanPattern(
+        name="full_hiring_launch",
+        patterns=[
+            r"lan[cç]amento\s+completo\s+(de\s+)?vaga",
+            r"criar?\s+publicar?\s+e\s+(lan[cç]ar?|iniciar?)\s+sourcing",
+            r"setup\s+completo\s+(de\s+)?vaga",
+        ],
+        pipeline=[
+            PipelineStep(domain_id="job_management", action_id="enrich_job_description"),
+            PipelineStep(domain_id="job_management", action_id="publish_job", context_from="task_0.job_id"),
+            PipelineStep(domain_id="sourcing", action_id="start_sourcing", context_from="task_1.job_id"),
+        ],
+        description="Lançamento completo de vaga",
+    ),
+    PlanPattern(
+        name="weekly_report",
+        patterns=[
+            r"relat[oó]rio\s+semanal",
+            r"gerar?\s+relat[oó]rio\s+da\s+semana",
+            r"enviar?\s+resumo\s+semanal",
+            r"weekly\s+report",
+        ],
+        pipeline=[
+            PipelineStep(domain_id="analytics", action_id="collect_weekly_metrics"),
+            PipelineStep(domain_id="analytics", action_id="generate_weekly_report", context_from="task_0.metrics"),
+            PipelineStep(domain_id="communication", action_id="send_weekly_report", context_from="task_1.report"),
+        ],
+        description="Relatório semanal de recrutamento",
+    ),
+    PlanPattern(
+        name="candidate_nurturing",
+        patterns=[
+            r"nutri[cç][aã]o\s+de\s+candidatos",
+            r"engajar?\s+candidatos?\s+(no\s+)?pipeline",
+            r"enviar?\s+atualiza[cç][oõ]es?\s+para\s+candidatos",
+        ],
+        pipeline=[
+            PipelineStep(domain_id="cv_screening", action_id="list_active_pipeline"),
+            PipelineStep(domain_id="communication", action_id="send_pipeline_updates", context_from="task_0.candidate_ids"),
+        ],
+        description="Nutrição de candidatos no pipeline",
+    ),
+    PlanPattern(
+        name="interview_prep_pack",
+        patterns=[
+            r"kit\s+de\s+prepara[cç][aã]o",
+            r"enviar?\s+prepara[cç][aã]o\s+para\s+entrevista",
+            r"briefing\s+e\s+guia\s+de\s+entrevista",
+        ],
+        pipeline=[
+            PipelineStep(domain_id="interview_scheduling", action_id="get_upcoming_interview"),
+            PipelineStep(domain_id="communication", action_id="send_interview_prep_guide", context_from="task_0.interview_id"),
+            PipelineStep(domain_id="communication", action_id="send_company_briefing", context_from="task_0.candidate_id"),
+        ],
+        description="Kit de preparação para entrevista",
+    ),
+    PlanPattern(
+        name="talent_pool_build",
+        patterns=[
+            r"construir?\s+pool\s+de\s+talentos",
+            r"adicionar?\s+reprovados?\s+(ao\s+)?pool",
+            r"talent\s+pool",
+        ],
+        pipeline=[
+            PipelineStep(domain_id="cv_screening", action_id="list_recently_rejected"),
+            PipelineStep(domain_id="analytics", action_id="classify_by_competency", context_from="task_0.candidate_ids"),
+            PipelineStep(domain_id="sourcing", action_id="add_to_talent_pool", context_from="task_1.classified"),
+        ],
+        description="Construção de pool de talentos",
+    ),
+    PlanPattern(
+        name="end_of_month_closure",
+        patterns=[
+            r"fechamento\s+mensal",
+            r"fechar?\s+o\s+m[eê]s",
+            r"relat[oó]rio\s+mensal",
+            r"encerrar?\s+ciclo\s+mensal",
+        ],
+        pipeline=[
+            PipelineStep(domain_id="job_management", action_id="list_filled_jobs_month"),
+            PipelineStep(domain_id="job_management", action_id="archive_filled_jobs", context_from="task_0.job_ids"),
+            PipelineStep(domain_id="analytics", action_id="generate_monthly_report", context_from="task_0.metrics"),
+            PipelineStep(domain_id="communication", action_id="send_monthly_report", context_from="task_2.report"),
+        ],
+        description="Fechamento mensal de recrutamento",
+    ),
 ]
 
 

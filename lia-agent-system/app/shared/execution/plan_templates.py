@@ -56,6 +56,99 @@ class PlanTemplateRegistry:
                 {"task_id": "notify_results", "domain_id": "communication", "action_id": "notify_sourcing_results", "depends_on": ["import_candidates"], "is_critical": False},
             ]
         },
+        "launch_job_sourcing": {
+            "name": "Lancar Busca de Candidatos",
+            "description": "Enriquece a vaga, lanca sourcing automatizado e notifica recruiter",
+            "steps": [
+                {"task_id": "enrich_jd", "domain_id": "job_management", "action_id": "enrich_job_description", "is_critical": True},
+                {"task_id": "source_candidates", "domain_id": "sourcing", "action_id": "start_sourcing", "depends_on": ["enrich_jd"], "is_critical": True},
+                {"task_id": "notify_recruiter", "domain_id": "communication", "action_id": "notify_sourcing_started", "depends_on": ["source_candidates"], "is_critical": False},
+            ]
+        },
+        "close_stale_jobs": {
+            "name": "Fechar Vagas Estagnadas",
+            "description": "Identifica vagas sem movimentacao >30 dias, notifica responsavel e arquiva",
+            "steps": [
+                {"task_id": "find_stale", "domain_id": "job_management", "action_id": "list_stale_jobs", "is_critical": True},
+                {"task_id": "notify_owners", "domain_id": "communication", "action_id": "notify_stale_job_owners", "depends_on": ["find_stale"], "is_critical": False},
+                {"task_id": "archive_jobs", "domain_id": "job_management", "action_id": "archive_stale_jobs", "depends_on": ["notify_owners"], "is_critical": False},
+            ]
+        },
+        "screening_campaign": {
+            "name": "Campanha de Triagem",
+            "description": "Envio em massa de WSI para candidatos em triagem inicial",
+            "steps": [
+                {"task_id": "list_candidates", "domain_id": "cv_screening", "action_id": "list_pending_screening", "is_critical": True},
+                {"task_id": "send_wsi", "domain_id": "cv_screening", "action_id": "send_wsi_batch", "depends_on": ["list_candidates"], "is_critical": True},
+                {"task_id": "update_status", "domain_id": "job_management", "action_id": "mark_screening_sent", "depends_on": ["send_wsi"], "is_critical": False},
+            ]
+        },
+        "onboarding_pipeline": {
+            "name": "Pipeline de Onboarding",
+            "description": "Prepara candidato aprovado: documentos, agenda Day-1, notifica equipe",
+            "steps": [
+                {"task_id": "collect_docs", "domain_id": "communication", "action_id": "request_onboarding_documents", "is_critical": True},
+                {"task_id": "schedule_day1", "domain_id": "interview_scheduling", "action_id": "schedule_day_one", "depends_on": ["collect_docs"], "is_critical": False},
+                {"task_id": "notify_team", "domain_id": "communication", "action_id": "notify_team_new_hire", "depends_on": ["schedule_day1"], "is_critical": False},
+                {"task_id": "update_stage", "domain_id": "job_management", "action_id": "mark_hired", "depends_on": ["collect_docs"], "is_critical": True},
+            ]
+        },
+        "full_hiring_launch": {
+            "name": "Lancamento Completo de Vaga",
+            "description": "Cria, enriquece, publica e inicia sourcing de uma nova vaga",
+            "steps": [
+                {"task_id": "enrich", "domain_id": "job_management", "action_id": "enrich_job_description", "is_critical": True},
+                {"task_id": "publish", "domain_id": "job_management", "action_id": "publish_job", "depends_on": ["enrich"], "is_critical": True},
+                {"task_id": "sourcing", "domain_id": "sourcing", "action_id": "start_sourcing", "depends_on": ["publish"], "is_critical": False},
+                {"task_id": "notify", "domain_id": "communication", "action_id": "notify_job_published", "depends_on": ["publish"], "is_critical": False},
+            ]
+        },
+        "weekly_report": {
+            "name": "Relatorio Semanal de Recrutamento",
+            "description": "Gera e envia relatorio consolidado da semana para gestores",
+            "steps": [
+                {"task_id": "collect_metrics", "domain_id": "analytics", "action_id": "collect_weekly_metrics", "is_critical": True},
+                {"task_id": "generate_report", "domain_id": "analytics", "action_id": "generate_weekly_report", "depends_on": ["collect_metrics"], "is_critical": True},
+                {"task_id": "send_report", "domain_id": "communication", "action_id": "send_weekly_report", "depends_on": ["generate_report"], "is_critical": False},
+            ]
+        },
+        "candidate_nurturing": {
+            "name": "Nutricao de Candidatos",
+            "description": "Envia atualizacoes de status e conteudo de engajamento para pipeline ativo",
+            "steps": [
+                {"task_id": "list_pipeline", "domain_id": "cv_screening", "action_id": "list_active_pipeline", "is_critical": True},
+                {"task_id": "send_updates", "domain_id": "communication", "action_id": "send_pipeline_updates", "depends_on": ["list_pipeline"], "is_critical": False},
+                {"task_id": "log_touchpoints", "domain_id": "analytics", "action_id": "log_nurturing_touchpoints", "depends_on": ["send_updates"], "is_critical": False},
+            ]
+        },
+        "interview_prep_pack": {
+            "name": "Kit de Preparacao para Entrevista",
+            "description": "Envia guia de preparacao, agenda, e briefing ao candidato antes da entrevista",
+            "steps": [
+                {"task_id": "get_interview", "domain_id": "interview_scheduling", "action_id": "get_upcoming_interview", "is_critical": True},
+                {"task_id": "send_guide", "domain_id": "communication", "action_id": "send_interview_prep_guide", "depends_on": ["get_interview"], "is_critical": False},
+                {"task_id": "send_briefing", "domain_id": "communication", "action_id": "send_company_briefing", "depends_on": ["get_interview"], "is_critical": False},
+            ]
+        },
+        "talent_pool_build": {
+            "name": "Construcao de Pool de Talentos",
+            "description": "Importa candidatos reprovados para pool, classifica por competencia",
+            "steps": [
+                {"task_id": "collect_rejected", "domain_id": "cv_screening", "action_id": "list_recently_rejected", "is_critical": True},
+                {"task_id": "classify", "domain_id": "analytics", "action_id": "classify_by_competency", "depends_on": ["collect_rejected"], "is_critical": False},
+                {"task_id": "add_to_pool", "domain_id": "sourcing", "action_id": "add_to_talent_pool", "depends_on": ["classify"], "is_critical": True},
+            ]
+        },
+        "end_of_month_closure": {
+            "name": "Fechamento Mensal",
+            "description": "Arquiva vagas preenchidas, gera relatorio mensal, atualiza metas",
+            "steps": [
+                {"task_id": "find_filled", "domain_id": "job_management", "action_id": "list_filled_jobs_month", "is_critical": True},
+                {"task_id": "archive", "domain_id": "job_management", "action_id": "archive_filled_jobs", "depends_on": ["find_filled"], "is_critical": False},
+                {"task_id": "generate_monthly_report", "domain_id": "analytics", "action_id": "generate_monthly_report", "depends_on": ["find_filled"], "is_critical": True},
+                {"task_id": "send_to_managers", "domain_id": "communication", "action_id": "send_monthly_report", "depends_on": ["generate_monthly_report"], "is_critical": False},
+            ]
+        },
     }
 
     @classmethod
