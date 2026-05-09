@@ -53,11 +53,10 @@ interface MultiStrategySearchPanelProps {
   onAddToJob?: (ids: string[], jobId: string) => void
   onAddToPool?: (ids: string[], poolId: string) => void
   onAddToList?: (ids: string[]) => void
-  onAddToWorkflowRail?: (query: string, count: number) => void
 }
 
 export default function MultiStrategySearchPanel({
-  onAddToJob, onAddToPool, onAddToList, onAddToWorkflowRail,
+  onAddToJob, onAddToPool, onAddToList,
 }: MultiStrategySearchPanelProps) {
   const t = useTranslations('agents.multiStrategy')
   const [jobTitle, setJobTitle] = useState("")
@@ -95,8 +94,6 @@ export default function MultiStrategySearchPanel({
       const data = await res.json()
       setResult(data)
       setStrategiesInProgress(new Set())
-
-      if (onAddToWorkflowRail) onAddToWorkflowRail(jobTitle.trim(), data?.total_unique || 0)
     } catch (err) {
       console.error("Multi-strategy search failed:", err)
       setStrategiesInProgress(new Set())
