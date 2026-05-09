@@ -12,7 +12,7 @@ import {
   CANONICAL_UTILITY_STAGES,
   type CanonicalStage,
   type CanonicalStageId,
-} from "./canonicalFunnelStages"
+} from "@/lib/canonical-funnel-stages"
 
 /**
  * Funnel stage keys used by the WorkflowRail's state machine. These map 1:1

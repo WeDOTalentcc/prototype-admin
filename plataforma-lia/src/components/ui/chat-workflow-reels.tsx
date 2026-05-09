@@ -12,7 +12,7 @@ import {
   type CanonicalStageId,
   type CanonicalUtilityId,
   type CanonicalStageColor,
-} from "@/components/workflow-rail/canonicalFunnelStages";
+} from "@/lib/canonical-funnel-stages";
 import { useTranslations } from "next-intl";
 import React, {
   useState,
