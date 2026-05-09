@@ -13,7 +13,7 @@ import uuid
 from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, Request, status
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 from app.domains.automation.services.webhook_adapters import (
     DocumentWebhookAdapter,
@@ -128,21 +128,30 @@ async def handle_ats_webhook(
         )
     
     try:
-        payload = await request.json()
+        raw_payload = await request.json()
     except Exception as e:
-        logger.error(f"❌ Failed to parse webhook payload: {e}")
+        logger.error("Failed to parse webhook payload: %s", e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid JSON payload"
         )
-    
-    event_type = payload.get("event_type") or payload.get("event") or payload.get("type", "unknown")
-    candidate_id = (
-        payload.get("ats_candidate_id") or 
-        payload.get("candidate_id") or 
-        payload.get("candidateId") or
-        payload.get("data", {}).get("candidate_id")
-    )
+
+    # Validate against typed model where fields match; fall back to raw dict for flexible ATS schemas
+    try:
+        ats_event = ATSWebhookEvent.model_validate(raw_payload)
+        event_type = ats_event.event_type
+        candidate_id = ats_event.ats_candidate_id
+        payload = raw_payload  # keep raw dict for background tasks that access extra fields
+    except ValidationError:
+        # ATS payloads often have platform-specific field names — fall back gracefully
+        payload = raw_payload
+        event_type = payload.get("event_type") or payload.get("event") or payload.get("type", "unknown")
+        candidate_id = (
+            payload.get("ats_candidate_id") or
+            payload.get("candidate_id") or
+            payload.get("candidateId") or
+            payload.get("data", {}).get("candidate_id")
+        )
     
     logger.info(f"[WEBHOOK] ATS {platform} event: {event_type} for candidate {candidate_id}")
     

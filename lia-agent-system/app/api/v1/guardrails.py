@@ -18,9 +18,11 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
-# sqlalchemy select moved to GuardrailRepository
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.auth.dependencies import get_user_company_id, require_admin
+from app.auth.models import User
 from app.core.database import get_db
 from app.models.guardrail import Guardrail
 from app.shared.compliance.guardrail_repository import GuardrailCreate, GuardrailRepository
@@ -106,9 +108,15 @@ async def list_guardrails(
 async def create_guardrail(
     data: GuardrailCreate,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_admin),
 ):
-    """Cria um novo guardrail."""
+    """Cria um novo guardrail. Requer role admin."""
     guardrail = await GuardrailRepository.upsert(db, data)
+    logger.info(
+        "[Guardrail] modified guardrail_id=%s (create) by company_id=%s",
+        str(guardrail.id),
+        get_user_company_id(current_user),
+    )
     return GuardrailResponse.from_orm(guardrail)
 
 
@@ -133,6 +141,7 @@ async def update_guardrail(
     guardrail_id: str,
     data: GuardrailUpdateRequest,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_admin),
 ):
     """Atualiza um guardrail existente."""
     stmt = select(Guardrail).where(Guardrail.id == guardrail_id)
@@ -151,6 +160,11 @@ async def update_guardrail(
 
     await db.flush()
     await db.refresh(guardrail)
+    logger.info(
+        "[Guardrail] modified guardrail_id=%s (update) by company_id=%s",
+        guardrail_id,
+        get_user_company_id(current_user),
+    )
     return GuardrailResponse.from_orm(guardrail)
 
 
@@ -158,6 +172,7 @@ async def update_guardrail(
 async def toggle_guardrail(
     guardrail_id: str,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_admin),
 ):
     """Ativa ou desativa um guardrail sem deletá-lo."""
     guardrail = await GuardrailRepository.toggle_active(db, guardrail_id)
@@ -165,7 +180,12 @@ async def toggle_guardrail(
     if not guardrail:
         raise HTTPException(status_code=404, detail=f"Guardrail {guardrail_id} não encontrado")
 
-    logger.info(f"[guardrails] Toggle guardrail {guardrail_id} → is_active={guardrail.is_active}")
+    logger.info(
+        "[Guardrail] modified guardrail_id=%s is_active=%s by company_id=%s",
+        guardrail_id,
+        guardrail.is_active,
+        get_user_company_id(current_user),
+    )
     return GuardrailResponse.from_orm(guardrail)
 
 
@@ -173,12 +193,17 @@ async def toggle_guardrail(
 async def delete_guardrail(
     guardrail_id: str,
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_admin),
 ):
     """Soft delete: desativa o guardrail (is_active=False). Dados preservados para auditoria."""
     deleted = await GuardrailRepository.soft_delete(db, guardrail_id)
     if not deleted:
         raise HTTPException(status_code=404, detail=f"Guardrail {guardrail_id} não encontrado")
-    logger.info(f"[guardrails] Soft delete guardrail {guardrail_id}")
+    logger.info(
+        "[Guardrail] modified guardrail_id=%s (soft-delete) by company_id=%s",
+        guardrail_id,
+        get_user_company_id(current_user),
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -251,6 +276,7 @@ class SeedDefaultsResponse(BaseModel):
 async def seed_default_guardrails(
     company_id: str | None = Query(None, description="Tenant específico. None = global"),
     db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(require_admin),
 ):
     """
     Seed idempotente de guardrails padrão (primários e secundários).
@@ -284,5 +310,8 @@ async def seed_default_guardrails(
         await GuardrailRepository.upsert(db, data)
         created += 1
 
-    logger.info(f"[guardrails] seed-defaults: criados={created} ignorados={skipped} company_id={company_id}")
+    logger.info(
+        "[Guardrail] seed-defaults: criados=%s ignorados=%s company_id=%s by user_company=%s",
+        created, skipped, company_id, get_user_company_id(current_user),
+    )
     return SeedDefaultsResponse(created=created, skipped=skipped, total=len(all_defaults))

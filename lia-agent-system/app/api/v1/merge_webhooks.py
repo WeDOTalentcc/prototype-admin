@@ -9,7 +9,7 @@ import os
 from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Request
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 router = APIRouter(prefix="/webhooks/merge", tags=["merge-webhooks"])
 logger = logging.getLogger(__name__)
@@ -54,13 +54,23 @@ async def handle_merge_webhook(
         if not verify_merge_signature(body, x_merge_signature):
             raise HTTPException(status_code=401, detail="Invalid signature")
     
-    data = await request.json()
-    event_type = data.get("hook", {}).get("event")
-    
-    logger.info(f"[MERGE] Received webhook: {event_type}")
-    
-    background_tasks.add_task(process_merge_event, data)
-    
+    try:
+        raw_data = await request.json()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+
+    try:
+        event = MergeWebhookEvent.model_validate(raw_data)
+    except ValidationError as exc:
+        logger.warning("[MERGE] Invalid payload schema: %s", exc)
+        raise HTTPException(status_code=422, detail=exc.errors())
+
+    event_type = event.hook.get("event")
+
+    logger.info("[MERGE] Received webhook: %s", event_type)
+
+    background_tasks.add_task(process_merge_event, raw_data)
+
     return {"status": "received", "event": event_type}
 
 
