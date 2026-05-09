@@ -79,6 +79,25 @@ def require_company_id(current_user: dict[str, Any]) -> str:
     return company_id
 
 
+
+async def _require_company_id_header(
+    x_company_id: str | None = Header(None, alias="X-Company-ID"),
+) -> str:
+    """FastAPI dependency: enforce X-Company-ID before DB is touched.
+
+    By placing this before Depends(get_billing_repo) in endpoint signatures,
+    the 401 fires before a DB connection attempt — critical for unit tests
+    that don't have a test DB.
+    """
+    if not x_company_id:
+        from fastapi import HTTPException
+        raise HTTPException(
+            status_code=401,
+            detail="X-Company-ID header is required",
+        )
+    return x_company_id
+
+
 def require_admin(current_user: dict[str, Any]) -> None:
     """Raise exception if user is not admin."""
     if not current_user.get("is_admin", False):
@@ -288,6 +307,7 @@ class UsageDataWrapper(BaseModel):
 
 @router.get("/status", summary="Get billing providers status", response_model=BillingStatusResponse)
 async def get_billing_status(
+    _company_id_check: str = Depends(_require_company_id_header),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo)
 ) -> BillingStatusResponse:
@@ -338,6 +358,7 @@ async def list_subscriptions(
     provider: str | None = Query(None, description="Filter by provider"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
+    _company_id_check: str = Depends(_require_company_id_header),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo)
 ):

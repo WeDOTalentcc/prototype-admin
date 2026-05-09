@@ -15,6 +15,7 @@ trust vulnerability (where a user could forge a different company_id).
 
 import logging
 import os
+from app.core.tenant import DEMO_COMPANY_UUID  # canonical demo UUID (not DEMO_COMPANY_UUID)
 from contextvars import ContextVar
 
 from fastapi import Request
@@ -50,7 +51,7 @@ def _set_company_id_from_jwt(verified_payload: dict) -> str:
     return str(company_id)
 
 
-def _set_company_id_synthetic_dev_only(synthetic_company_id: str = "demo_company") -> str:
+def _set_company_id_synthetic_dev_only(synthetic_company_id: str = DEMO_COMPANY_UUID) -> str:
     """R-008: helper para path DEV_MODE — APENAS chamavel quando _DEV_MODE=True
     (ja gateado pelo R-006: ENVIRONMENT in safe envs). Documenta intent
     claramente e separa do path de auth real.
@@ -134,7 +135,8 @@ PUBLIC_PATHS = {
 # Hashimoto: nunca mais bypass de auth ativo em staging/production por config drift.
 _LIA_DEV_MODE_RAW = os.environ.get("LIA_DEV_MODE", "").lower() in ("1", "true", "yes")
 _ALLOWED_DEV_ENVIRONMENTS = ("test", "development", "local", "dev")
-_CURRENT_ENVIRONMENT = os.environ.get("ENVIRONMENT", "").lower()
+# R-006: check ENVIRONMENT first, fall back to APP_ENV (test compatibility)
+_CURRENT_ENVIRONMENT = (os.environ.get("ENVIRONMENT") or os.environ.get("APP_ENV", "")).lower()
 _DEV_MODE = _LIA_DEV_MODE_RAW and _CURRENT_ENVIRONMENT in _ALLOWED_DEV_ENVIRONMENTS
 _DEV_API_KEY = os.environ.get("LIA_DEV_API_KEY", "")
 
@@ -288,10 +290,10 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
                 rejection = _check_dev_api_key(request, path)
                 if rejection is not None:
                     return rejection
-                request.state.token_payload = {"sub": "dev-user", "company_id": "demo_company", "role": "admin"}
+                request.state.token_payload = {"sub": "dev-user", "company_id": DEMO_COMPANY_UUID, "role": "admin"}
                 request.state.user_id = "dev-user"
-                request.state.company_id = "demo_company"
-                _set_company_id_synthetic_dev_only("demo_company")  # R-008
+                request.state.company_id = DEMO_COMPANY_UUID
+                _set_company_id_synthetic_dev_only(DEMO_COMPANY_UUID)  # R-008
                 request.state.user_role = "admin"
                 logger.debug(f"[AuthEnforcement] DEV MODE: synthetic user for {request.method} {path}")
                 return await call_next(request)
@@ -331,10 +333,10 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
                 rejection = _check_dev_api_key(request, path)
                 if rejection is not None:
                     return rejection
-                request.state.token_payload = {"sub": "dev-user", "company_id": "demo_company", "role": "admin"}
+                request.state.token_payload = {"sub": "dev-user", "company_id": DEMO_COMPANY_UUID, "role": "admin"}
                 request.state.user_id = "dev-user"
-                request.state.company_id = "demo_company"
-                _set_company_id_synthetic_dev_only("demo_company")  # R-008
+                request.state.company_id = DEMO_COMPANY_UUID
+                _set_company_id_synthetic_dev_only(DEMO_COMPANY_UUID)  # R-008
                 request.state.user_role = "admin"
                 logger.debug(f"[AuthEnforcement] DEV MODE: synthetic user for invalid token on {path}")
                 return await call_next(request)
@@ -381,10 +383,10 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
                 rejection = _check_dev_api_key(request, path)
                 if rejection is not None:
                     return rejection
-                request.state.token_payload = {"sub": "dev-user", "company_id": "demo_company", "role": "admin"}
+                request.state.token_payload = {"sub": "dev-user", "company_id": DEMO_COMPANY_UUID, "role": "admin"}
                 request.state.user_id = "dev-user"
-                request.state.company_id = "demo_company"
-                _set_company_id_synthetic_dev_only("demo_company")  # R-008
+                request.state.company_id = DEMO_COMPANY_UUID
+                _set_company_id_synthetic_dev_only(DEMO_COMPANY_UUID)  # R-008
                 request.state.user_role = "admin"
                 logger.debug(f"[AuthEnforcement] DEV MODE: synthetic user after token error on {path}: {e}")
                 return await call_next(request)
