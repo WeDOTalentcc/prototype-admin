@@ -120,6 +120,6 @@ async def _polling_fallback():
     """Fallback if RabbitMQ not available: poll Rails API."""
     while True:
         await asyncio.sleep(30)
-        # TODO: Poll Rails for new invited users
+        # TODO: Poll Rails for new invited users  # R-048: needs owner + ticket
         # GET /v1/users?activation_state=invited&onboarding_started=false
         pass

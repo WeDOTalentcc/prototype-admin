@@ -1,4 +1,10 @@
 """
+# R-054: DUPLICATE — this file is byte-for-byte identical to app/shared/llm/callbacks.py
+# which is the canonical. No callers import from this path.
+# Same: PIIStripCallback, AuditLogCallback (100% identical implementation)
+# Different: nothing — pure duplicate
+# Action: delete this file; update any future callers to use app/shared/llm/callbacks.py
+
 LangChain callbacks for PII stripping and audit logging.
 
 Used by llm_service.get_audited_model() to wrap ChatAnthropic/ChatOpenAI

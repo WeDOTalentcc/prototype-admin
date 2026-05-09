@@ -4,7 +4,7 @@
 # operational health across companies (no_contact, deadlines, interview metrics)
 # for ops dashboards and alert dispatch. Tenant isolation reapplied when alerts
 # fan out to per-company handlers downstream.
-# TODO Sprint 6: extract scanning queries to dedicated cross-tenant repos with
+# TODO Sprint 6: extract scanning queries to dedicated cross-tenant repos with  # R-048: needs owner + ticket
 # explicit company_id filtering audit logs.
 
 Automation Trigger Service - Proactive automation engine.

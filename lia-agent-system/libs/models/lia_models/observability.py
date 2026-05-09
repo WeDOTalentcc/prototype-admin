@@ -581,6 +581,10 @@ class BreachStatus(str, enum.Enum):
     RESOLVED = "resolved"
 
 
+# R-053: DUPLICATE DecisionType — different variants (SCREENING/RANKING/REJECTION) from
+# canonical in libs/models/lia_models/audit_log.py. No callers import this version.
+# Action: if LGPD Article 20 needs its own type, rename to LgpdDecisionType and import
+# from audit_log; otherwise remove this class.
 class DecisionType(str, enum.Enum):
     """Types of automated decisions for LGPD Article 20."""
     SCREENING = "screening"

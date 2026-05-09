@@ -1,4 +1,8 @@
 """
+# R-055: domain-specific calibration service — not a duplicate.
+# Canonical implementation for analytics/calibration domain.
+# app/shared/services/calibration_service.py is a backwards-compat shim that re-exports from here.
+
 Calibration Service - Service for managing the calibration loop.
 
 This service handles:

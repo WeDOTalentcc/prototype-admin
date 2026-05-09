@@ -12,7 +12,7 @@ import enum
 import uuid
 
 
-class DecisionType(str, enum.Enum):
+class DecisionType(str, enum.Enum):  # R-053: canonical DecisionType — single active definition; observability.py has a dead duplicate
     """Types of AI decisions that can be audited."""
     SCORE_CANDIDATE = "score_candidate"
     APPROVE_CANDIDATE = "approve_candidate"

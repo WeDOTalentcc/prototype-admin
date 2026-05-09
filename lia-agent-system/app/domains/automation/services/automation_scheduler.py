@@ -3,7 +3,7 @@
 # ADR-001-EXEMPT: Background apscheduler service performs cross-tenant
 # periodic scans (e.g., overdue interviews, no-movement vacancies). Multi-tenancy
 # enforced downstream when results are dispatched to per-tenant handlers.
-# TODO Sprint 6: extract to dedicated CrossTenantSchedulerRepository with
+# TODO Sprint 6: extract to dedicated CrossTenantSchedulerRepository with  # R-048: needs owner + ticket
 # explicit  audit log + scoped methods per scan.
 
 Automation Scheduler Service

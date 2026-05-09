@@ -3,7 +3,7 @@
 # ADR-001-EXEMPT: Pipeline service performs cross-domain reads (Candidate,
 # JobVacancy) for recruiter pipeline visualization. Tenant scope established
 # by caller via authenticated session.
-# TODO Sprint 6: refactor to use existing CandidateRepository +
+# TODO Sprint 6: refactor to use existing CandidateRepository +  # R-048: needs owner + ticket
 # JobVacancyCRUDRepository explicitly.
 
 Pipeline Service - Manages stale candidates and pipeline health.

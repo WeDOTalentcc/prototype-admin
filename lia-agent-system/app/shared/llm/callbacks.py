@@ -3,6 +3,9 @@ LangChain callbacks for PII stripping and audit logging.
 
 Used by llm_service.get_audited_model() to wrap ChatAnthropic/ChatOpenAI
 with PII protection and structured audit logging on every LLM call.
+
+# R-054: canonical callbacks — app/shared/observability/callbacks.py is an
+# identical duplicate with no callers. That file should be deleted.
 """
 import logging
 import time

@@ -4,7 +4,7 @@
 # Aggregates VacancyCandidate + Candidate + JobVacancy + InterviewNote by ID
 # from a trusted parent context (e.g., SubStatusPredictor). Tenant scope is
 # established by the caller passing pre-validated vacancy_candidate_id.
-# TODO Sprint 6: refactor to use existing VacancyCandidateRepository,
+# TODO Sprint 6: refactor to use existing VacancyCandidateRepository,  # R-048: needs owner + ticket
 # CandidateRepository, JobVacancyCRUDRepository explicitly.
 
 CandidateContextAggregator - Aggregates candidate data for AI predictions.

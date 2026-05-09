@@ -946,7 +946,7 @@ async def receive_card_feedback(
     feedback_text = payload.get("feedback_text", "")
     user_id = payload.get("user_id", "unknown")
     logger.info(f"[Teams Feedback] type={feedback_type} user={user_id} text={feedback_text[:80]!r}")
-    # TODO: persist to feedback table for LIA training
+    # TODO: persist to feedback table for LIA training  # R-048: needs owner + ticket
     return {"status": "received", "feedback": feedback_type}
 
 

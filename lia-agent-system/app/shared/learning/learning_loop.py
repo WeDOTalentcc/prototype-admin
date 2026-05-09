@@ -70,8 +70,8 @@ class LearningLoopService:
         Currently logs and returns; persistence is deferred (TODO above).
         Does NOT raise — callers should treat this as fire-and-forget.
         """
-        # TODO: Persist via LearningSignalRepository (company_id already present)
-        # TODO: Route to FewShotEvolutionService when correction_count > 3 for intent
+        # TODO: Persist via LearningSignalRepository (company_id already present)  # R-048: needs owner + ticket
+        # TODO: Route to FewShotEvolutionService when correction_count > 3 for intent  # R-048: needs owner + ticket
         logger.info(
             "[LearningLoop] Correction recorded: company=%s user=%s type=%s confidence=%.2f",
             signal.company_id,

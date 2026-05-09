@@ -263,7 +263,7 @@ async def run_fewshot_evolution() -> dict[str, Any]:
 
     for domain, interactions in domain_map.items():
         current_count = inserter.count_examples(domain)
-        existing_ids = set()  # TODO: extract from YAML for true novelty check
+        existing_ids = set()  # TODO: extract from YAML for true novelty check  # R-048: needs owner + ticket
 
         for interaction in interactions[:5]:  # max 5 per domain per day
             results["processed"] += 1

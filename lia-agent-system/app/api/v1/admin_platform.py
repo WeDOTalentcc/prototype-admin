@@ -91,7 +91,7 @@ async def hubspot_webhook(request: Request):
                         f"[hubspot-webhook] Deal {event.get(objectId)} closed won — "
                         f"triggering client creation"
                     )
-                    # TODO: call clients_crud.create_client + workos provisioning
+                    # TODO: call clients_crud.create_client + workos provisioning  # R-048: needs owner + ticket
                     processed += 1
         
         return {
@@ -132,21 +132,21 @@ async def onboard_client_manual(
         }
         
         # Step 1: Create client (placeholder — connect to clients_crud)
-        # TODO: call actual client creation service
+        # TODO: call actual client creation service  # R-048: needs owner + ticket
         steps["client_created"] = True
         client_id = "pending-implementation"
         
         # Step 2: WorkOS Organization
-        # TODO: call workos_provisioning_service.provision_workos_organization
+        # TODO: call workos_provisioning_service.provision_workos_organization  # R-048: needs owner + ticket
         steps["workos_org_created"] = True
         
         # Step 3: Welcome email
-        # TODO: call email_service.send_welcome_email
+        # TODO: call email_service.send_welcome_email  # R-048: needs owner + ticket
         steps["welcome_email_sent"] = True
         
         # Step 4: HubSpot sync
         if data.hubspot_deal_id:
-            # TODO: call hubspot_service.update_onboarding_status
+            # TODO: call hubspot_service.update_onboarding_status  # R-048: needs owner + ticket
             steps["hubspot_updated"] = True
         
         return {
@@ -171,7 +171,7 @@ async def get_onboarding_status(_admin: User = Depends(require_admin)):
     Shows setup progress across 5 sections per client.
     """
     try:
-        # TODO: query ClientAccount + setup sections from DB
+        # TODO: query ClientAccount + setup sections from DB  # R-048: needs owner + ticket
         # For now return structure the admin frontend expects
         return {
             "success": True,

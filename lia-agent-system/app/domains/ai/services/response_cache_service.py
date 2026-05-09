@@ -440,6 +440,7 @@ class ResponseCacheService:
         """Invalidate all cache entries for a company."""
         return await self.invalidate_by_pattern(f"lia_response:{company_id}:*")
     
+    # R-050: cache hit/miss metric -- _hits/_misses tracked in get_cached_response() and cache_response()
     def get_stats(self) -> dict[str, Any]:
         """
         Get cache performance statistics.

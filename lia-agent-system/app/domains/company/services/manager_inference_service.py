@@ -4,7 +4,7 @@
 # fuzzy-matching queries (func.lower().contains, multi-source candidate
 # ranking across CompanyProfile + Department + DepartmentMember). Tenant
 # scope established via company_id at service entry.
-# TODO Sprint 6: extract to ManagerInferenceRepository with composite
+# TODO Sprint 6: extract to ManagerInferenceRepository with composite  # R-048: needs owner + ticket
 # match-and-score methods.
 
 Manager Inference Service - Infer manager email from company structure.
