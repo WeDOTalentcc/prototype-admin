@@ -341,17 +341,46 @@ def extract_years_experience(text: str) -> float:
     return 2.0
 
 
-def detect_red_flags(text: str, autodeclaracao: float | None, context_score: float) -> list[str]:
+def detect_red_flags(
+    text: str,
+    autodeclaracao: float | None,
+    context_score: float,
+    *,
+    layer2=None,
+) -> list[str]:
     """
     Detecta red flags na resposta.
-    
+
+    Args:
+        layer2: Layer2Signals optional. When provided and layer2.semantic_inflation
+                is True, emits the semantic flag (M06) and suppresses the lexical
+                inflation heuristic to avoid double-flagging.
+
     Returns: Lista de red flags detectados
     """
     red_flags = []
     text_lower = text.lower()
-    
-    if autodeclaracao and autodeclaracao >= 4.5 and context_score < 3.0:
-        red_flags.append("Inflação de score: autodeclaração alta, contexto fraco")
+
+    # M06 — Layer2 semantic inflation takes priority over lexical heuristic.
+    if layer2 is not None:
+        if getattr(layer2, "semantic_inflation", False):
+            red_flags.append("Inflação semântica detectada (Layer 2)")
+            # Do NOT fall through to lexical inflation check.
+        else:
+            # Layer2 says no inflation — still apply lexical if thresholds met
+            from app.domains.cv_screening.constants.wsi_scale import (
+                INFLATION_AUTODECLARATION_MIN, INFLATION_CONTEXT_MAX,
+            )
+            if (
+                autodeclaracao is not None
+                and autodeclaracao >= INFLATION_AUTODECLARATION_MIN
+                and context_score < INFLATION_CONTEXT_MAX
+            ):
+                red_flags.append("Inflação de score: autodeclaração alta, contexto fraco")
+    else:
+        from app.domains.cv_screening.constants.wsi_scale import INFLATION_AUTODECLARATION_MIN, INFLATION_CONTEXT_MAX
+        if autodeclaracao is not None and autodeclaracao >= INFLATION_AUTODECLARATION_MIN and context_score < INFLATION_CONTEXT_MAX:
+            red_flags.append("Inflação de score: autodeclaração alta, contexto fraco")
     
     if len(text.split()) < PENALTY_TRIGGERS["no_context"]["min_words"]:
         red_flags.append("Resposta muito curta, falta contexto")
@@ -363,7 +392,7 @@ def detect_red_flags(text: str, autodeclaracao: float | None, context_score: flo
     return red_flags
 
 
-def calculate_penalty(text: str, autodeclaracao: float | None, context_score: float, *, layer2=None) -> float:
+def calculate_penalty(text: str, autodeclaracao: float | None, context_score: float, *, layer2=None, expects_first_person: bool = False) -> float:
     """
     Calcula penalidade determinística.
     
@@ -382,32 +411,113 @@ def calculate_penalty(text: str, autodeclaracao: float | None, context_score: fl
     if len(text.split()) < PENALTY_TRIGGERS["no_context"]["min_words"]:
         penalty += PENALTY_TRIGGERS["no_context"]["penalty"]
     
-    # M06 — Camada 2: semantic inflation override (priority over lexical heuristic)
+    # M04+M06 — Camada 2 signals (semantic + structural penalties)
     if layer2 is not None:
+        from app.domains.cv_screening.constants.wsi_scale import (
+            PENALTY_PARAPHRASE, PENALTY_LANGUAGE_MISMATCH, PENALTY_MISSING_R_OUTCOME,
+            PENALTY_NO_FIRST_PERSON, PENALTY_WORD_BAND_VERY_SHORT, PENALTY_WORD_BAND_SHORT,
+        )
+        # Paraphrase — repeats question without adding content
+        if getattr(layer2, "is_paraphrase", False):
+            penalty += PENALTY_PARAPHRASE
+
+        # Language mismatch
+        if not getattr(layer2, "language_consistency", True):
+            penalty += PENALTY_LANGUAGE_MISMATCH
+
+        # Missing R-outcome (STAR without result)
+        if not getattr(layer2, "has_R_outcome", True):
+            penalty += PENALTY_MISSING_R_OUTCOME
+
+        # No first-person — only penalizes in behavioral context
+        if not getattr(layer2, "is_first_person", True) and expects_first_person:
+            penalty += PENALTY_NO_FIRST_PERSON
+
+        # Word band penalties (avoid double-charging with lexical no_context gate)
+        word_band = getattr(layer2, "word_count_band", "50-150") or "50-150"
+        word_count = len(text.split())
+        lexical_no_context_gate = PENALTY_TRIGGERS["no_context"]["min_words"]  # typically 20
+        if word_band == "<30":
+            # Only add band penalty if lexical no_context hasn't already fired
+            if word_count >= lexical_no_context_gate:
+                penalty += PENALTY_WORD_BAND_VERY_SHORT
+        elif word_band == "30-50":
+            penalty += PENALTY_WORD_BAND_SHORT
+
+        # M06 — semantic inflation (already handled lexically above; add here if layer2 signals it)
         if getattr(layer2, "semantic_inflation", False):
-            penalty += PENALTY_TRIGGERS.get("inflation", {}).get("penalty", 0)
+            # Inflation already handled by lexical heuristic unless layer2 is explicitly set
+            pass  # semantic inflation captured by detect_red_flags, not double-charged here
 
     return round(penalty, 2)
 
 
-def calculate_bonus(text: str) -> float:
+def calculate_bonus(
+    text: str,
+    *,
+    layer2=None,
+    dreyfus_expected: int | None = None,
+    trait_signals_expected: int | None = None,
+    is_behavioral: bool = False,
+    bloom_expected: int | None = None,
+) -> float:
     """
     Calcula bônus determinístico.
-    
-    Returns: Valor positivo do bônus
+
+    M05 — Layer2 spec adjustments:
+      - has_quantification → BONUS_QUANTIFICATION
+      - dreyfus_demonstrated > dreyfus_expected → BONUS_DREYFUS_EXCEEDS
+      - dreyfus_demonstrated < dreyfus_expected-1 → PENALTY_DREYFUS_BELOW
+      - is_behavioral + trait_signals_count==0 → PENALTY_NO_TRAIT_SIGNALS
+      - bloom_demonstrated > bloom_expected → BONUS_BLOOM_EXCEEDS
+      - trait_signals_count > trait_signals_expected → BONUS_TRAIT_SIGNALS_EXCEED
+
+    Returns: Float (positive bonus minus spec-driven penalties)
     """
     bonus = 0.0
     text_lower = text.lower()
-    
+
     humility_count = sum(1 for kw in BONUS_TRIGGERS["humility"]["keywords"] if kw in text_lower)
     if humility_count >= 1:
         bonus += BONUS_TRIGGERS["humility"]["bonus"]
-    
+
     exceptional_count = sum(1 for kw in BONUS_TRIGGERS["exceptional_evidence"]["keywords"] if kw in text_lower)
     if exceptional_count >= 1:
         bonus += BONUS_TRIGGERS["exceptional_evidence"]["bonus"]
-    
-    return round(min(1.0, bonus), 2)
+
+    # M05 — Camada 2 spec adjustments
+    if layer2 is not None:
+        from app.domains.cv_screening.constants.wsi_scale import (
+            BONUS_QUANTIFICATION, BONUS_DREYFUS_EXCEEDS, BONUS_BLOOM_EXCEEDS,
+            BONUS_TRAIT_SIGNALS_EXCEED, PENALTY_DREYFUS_BELOW, PENALTY_NO_TRAIT_SIGNALS,
+        )
+        # Quantification bonus
+        if getattr(layer2, "has_quantification", False):
+            bonus += BONUS_QUANTIFICATION
+
+        # Dreyfus level adjustments (spec §F8.3-M05)
+        dreyfus_demo = getattr(layer2, "dreyfus_demonstrated", None)
+        if dreyfus_demo is not None and dreyfus_expected is not None:
+            if dreyfus_demo > dreyfus_expected:
+                bonus += BONUS_DREYFUS_EXCEEDS
+            elif dreyfus_demo < dreyfus_expected - 1:
+                bonus += PENALTY_DREYFUS_BELOW  # negative value
+
+        # Bloom exceeds expected
+        bloom_demo = getattr(layer2, "bloom_demonstrated", None)
+        if bloom_demo is not None and bloom_expected is not None:
+            if bloom_demo > bloom_expected:
+                bonus += BONUS_BLOOM_EXCEEDS
+
+        # Trait signals
+        trait_count = getattr(layer2, "trait_signals_count", 0)
+        if is_behavioral and trait_count == 0:
+            bonus += PENALTY_NO_TRAIT_SIGNALS  # negative value
+        if trait_signals_expected is not None and trait_count > trait_signals_expected:
+            bonus += BONUS_TRAIT_SIGNALS_EXCEED
+
+    from app.domains.cv_screening.constants.wsi_scale import BONUS_MAX
+    return round(min(BONUS_MAX, bonus), 2)
 
 
 def extract_evidences(text: str) -> list[str]:
@@ -485,6 +595,9 @@ def calculate_wsi_deterministic(
     years_reference: dict[str, tuple[float, float]] | None = None,
     question_type: str = "technical",   # "technical" | "behavioral"
     bloom_expected: int = 3,            # nível Bloom esperado pela pergunta
+    layer2_signals=None,                # Optional[Layer2Signals] — M04/M05/M06
+    dreyfus_expected: int | None = None,          # nível Dreyfus esperado
+    trait_signals_expected: int | None = None,    # qtd traits esperados
 ) -> DeterministicWSIResult:
     """
     Calcula WSI de forma 100% determinística — Spec F8 fórmula v2.
@@ -528,18 +641,66 @@ def calculate_wsi_deterministic(
     years = years_experience if years_experience is not None else extract_years_experience(response_text)
     dreyfus_level, dreyfus_name = calculate_dreyfus_level(years, context_score, years_reference=years_reference)
 
-    red_flags = detect_red_flags(response_text, autodeclaracao, context_score)
+    red_flags = detect_red_flags(response_text, autodeclaracao, context_score, layer2=layer2_signals)
 
     # Flags estruturadas para G6 (spec F10)
+    is_prompt_injection = (
+        layer2_signals is not None
+        and getattr(layer2_signals, "prompt_injection_detected", False)
+    )
+    is_semantic_inflation = (
+        layer2_signals is not None
+        and getattr(layer2_signals, "semantic_inflation", False)
+    )
     flags_structured: dict[str, bool] = {
         "is_inflation": autodeclaracao >= 4.5 and context_score < 3.0,
         "is_generic": sum(1 for kw in PENALTY_TRIGGERS["generic"]["keywords"]
                          if kw in response_text.lower()) >= 2,
         "is_short": len(response_text.split()) < PENALTY_TRIGGERS["no_context"]["min_words"],
     }
+    if is_prompt_injection:
+        flags_structured["is_prompt_injection"] = True
+    if is_semantic_inflation:
+        flags_structured["is_semantic_inflation"] = True
 
-    penalty = calculate_penalty(response_text, autodeclaracao, context_score)
-    bonus = calculate_bonus(response_text)
+    # M04 — prompt injection override: final_score = PROMPT_INJECTION_OVERRIDE_SCORE
+    if is_prompt_injection:
+        from app.domains.cv_screening.constants.wsi_scale import PROMPT_INJECTION_OVERRIDE_SCORE
+        return DeterministicWSIResult(
+            autodeclaracao_score=autodeclaracao,
+            context_score=context_score,
+            bloom_level=0,
+            bloom_name="N/A",
+            dreyfus_level=0,
+            dreyfus_name="N/A",
+            evidences=[],
+            red_flags=["prompt-injection detectado (Layer 2)"],
+            penalty=0.0,
+            bonus=0.0,
+            final_score=PROMPT_INJECTION_OVERRIDE_SCORE,
+            formula_applied="prompt_injection_override",
+            justification="Resposta bloqueada: injeção de prompt detectada.",
+            formula_version="v2",
+            star_components={},
+            star_score=0.0,
+            bloom_alignment=0.0,
+            flags_structured=flags_structured,
+        )
+
+    is_behavioral = question_type == "behavioral"
+    penalty = calculate_penalty(
+        response_text, autodeclaracao, context_score,
+        layer2=layer2_signals,
+        expects_first_person=is_behavioral,
+    )
+    bonus = calculate_bonus(
+        response_text,
+        layer2=layer2_signals,
+        dreyfus_expected=dreyfus_expected,
+        trait_signals_expected=trait_signals_expected,
+        is_behavioral=is_behavioral,
+        bloom_expected=bloom_expected,
+    )
 
     # Fórmula v2 — tri-componente por tipo (Spec F8)
     if question_type == "behavioral":
