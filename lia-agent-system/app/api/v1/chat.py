@@ -1274,6 +1274,77 @@ def _build_response_from_action(metadata: "dict | None") -> "str | None":
 # handle_action_flow — multi-turn parameter collection + confirmation loop
 # ---------------------------------------------------------------------------
 
+
+def _build_tool_schema_for_intent(action_id: str, config: "dict") -> "dict":
+    """Build a Claude tool schema dict for param extraction via generate_with_tools."""
+    required_params = config.get("required_params", [])
+    optional_params = config.get("optional_params", [])
+    clarification_prompts = config.get("clarification_prompts", {})
+    param_labels = config.get("param_labels", {})
+
+    properties: dict = {}
+    for param in list(required_params) + list(optional_params):
+        description = (
+            clarification_prompts.get(param)
+            or param_labels.get(param)
+            or param
+        )
+        properties[param] = {"type": "string", "description": description}
+
+    return {
+        "name": action_id,
+        "description": f"Extrair parametros para a acao {action_id}",
+        "input_schema": {
+            "type": "object",
+            "properties": properties,
+            "required": list(required_params),
+        },
+    }
+
+
+async def _try_extract_params_with_llm(
+    user_message: str,
+    intent: str,
+    config: "dict",
+    collected_params: "dict",
+    missing: "list[str]",
+) -> "dict | None":
+    """Try to extract missing params via LLM generate_with_tools.
+
+    Returns merged params dict if ALL required params present after extraction,
+    else None (graceful fallback to multi-turn collection).
+    """
+    try:
+        action_id = config.get("action_id", intent)
+        tool_schema = _build_tool_schema_for_intent(action_id, config)
+
+        from app.services.llm import LLMService
+        llm = LLMService()
+        response = await llm.generate_with_tools(
+            messages=[{"role": "user", "content": user_message}],
+            tools=[tool_schema],
+        )
+
+        if not getattr(response, "is_tool_call", False):
+            return None
+
+        tool_calls = getattr(response, "tool_calls", [])
+        if not tool_calls:
+            return None
+
+        extracted = getattr(tool_calls[0], "parameters", {}) or {}
+        merged = {**collected_params, **extracted}
+
+        required = config.get("required_params", [])
+        if any(r not in merged for r in required):
+            return None
+
+        return merged
+    except Exception as exc:
+        logger.debug("[chat] _try_extract_params_with_llm failed (multi-turn fallback): %s", exc)
+        return None
+
+
 async def handle_action_flow(
     conversation_id: str,
     user_message_text: str,
