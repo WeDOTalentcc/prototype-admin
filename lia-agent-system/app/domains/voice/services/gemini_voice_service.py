@@ -8,8 +8,20 @@ Suporta múltiplos formatos de áudio e vídeo.
 import logging
 import os
 
-from google import genai
-from google.genai import types
+# R-056: lazy import for optional Google dependency
+try:
+    from google import genai
+    from google.genai import types
+    _GOOGLE_GENAI_AVAILABLE = True
+except ImportError:
+    genai = None  # type: ignore[assignment]
+    types = None  # type: ignore[assignment]
+    _GOOGLE_GENAI_AVAILABLE = False
+    import logging as _log
+    _log.getLogger(__name__).warning(
+        "google-genai not installed -- GeminiVoiceService will not work. "
+        "Install with: pip install google-genai"
+    )
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 logger = logging.getLogger(__name__)

@@ -1,6 +1,8 @@
 """
 AgentBus — Redis Pub/Sub based Agent-to-Agent communication.
 
+# R-057: canonical AgentBus — see also libs/agents-core/lia_agents_core/agent_bus.py which is a re-export shim for backward compat
+
 Agents can publish events to other agents via Redis channels.
 Channel pattern: lia:agent_bus:{company_id}:{to_agent}
 
