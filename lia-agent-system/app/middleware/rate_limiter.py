@@ -46,6 +46,9 @@ class RateLimiter:
         self._fallback_blocked_users: dict[str, datetime] = {}
         self._fallback_blocked_companies: dict[str, datetime] = {}
         self._fallback_lock = asyncio.Lock()
+        # Periodic sweep: remove stale outer keys from fallback dicts.
+        self._fallback_last_sweep: float | None = None
+        self._FALLBACK_SWEEP_INTERVAL_SECONDS: float = 60.0
 
     async def _get_redis(self):
         """Lazily initialise Redis connection with cooldown to avoid hammering unavailable Redis."""
@@ -174,10 +177,37 @@ class RateLimiter:
             self._redis_available = False
             return True, None
 
+    def _maybe_sweep_fallback(self, now: datetime) -> None:
+        """Remove stale outer keys from all fallback dicts (periodic, non-blocking)."""
+        sweep_needed = (
+            self._fallback_last_sweep is None
+            or (now.timestamp() - self._fallback_last_sweep) >= self._FALLBACK_SWEEP_INTERVAL_SECONDS
+        )
+        if not sweep_needed:
+            return
+        hour_cutoff = now - timedelta(hours=1)
+        # Sweep request buckets: drop keys whose timestamps are all older than 1h
+        for requests_dict in (self._fallback_user_requests, self._fallback_company_requests):
+            stale_keys = [
+                k for k, reqs in requests_dict.items()
+                if not any(r > hour_cutoff for r in reqs)
+            ]
+            for k in stale_keys:
+                del requests_dict[k]
+        # Sweep expired blocks
+        for blocked_dict in (self._fallback_blocked_users, self._fallback_blocked_companies):
+            expired_keys = [k for k, t in blocked_dict.items() if now >= t]
+            for k in expired_keys:
+                del blocked_dict[k]
+        self._fallback_last_sweep = now.timestamp()
+
     async def _check_memory(self, user_id: str, company_id: str) -> tuple[bool, int | None]:
         """In-memory fallback rate limiting."""
         async with self._fallback_lock:
             now = datetime.utcnow()
+
+            # Periodic sweep of stale outer keys (mirrors Redis TTL eviction)
+            self._maybe_sweep_fallback(now)
 
             # Check blocks
             for blocked, entity_id in [

@@ -15,11 +15,15 @@ Fallback: in-memory dict quando Redis indisponível (dev local / testes).
 """
 import json
 import logging
+import time
 from typing import Any
 
 logger = logging.getLogger(__name__)
 
 LIST_TTL_SECONDS = 1800  # 30 minutos
+
+# Injectable monotonic clock for testability (monkeypatch this in tests).
+_now = time.monotonic
 KEY_PREFIX = "candidate_list:"
 
 try:
@@ -43,7 +47,8 @@ class CandidateListStore:
     """
 
     def __init__(self) -> None:
-        self._memory: dict[str, list[dict[str, Any]]] = {}
+        # Fallback in-memory: {conv_id: (candidates_list, expiry_monotonic)}
+        self._memory: dict[str, tuple[list[dict[str, Any]], float]] = {}
         self._redis: Any | None = None
         self._redis_available = False
 
@@ -83,8 +88,13 @@ class CandidateListStore:
                 return
             except Exception as exc:
                 logger.warning("[CandidateListStore] Redis set failed (%s), falling back", exc)
-        # Fallback: guarda no dict in-memory (sem TTL, expira com o processo)
-        self._memory[conv_id] = candidates
+        # Fallback: guarda no dict in-memory com TTL via monotonic clock
+        now = _now()
+        # Sweep expired entries before adding new one
+        expired = [k for k, (_, exp) in self._memory.items() if now > exp]
+        for k in expired:
+            del self._memory[k]
+        self._memory[conv_id] = (candidates, now + LIST_TTL_SECONDS)
 
     async def get(self, conv_id: str) -> list[dict[str, Any]] | None:
         """Recupera a lista completa de candidatos. Retorna None se não encontrada/expirada."""
@@ -99,7 +109,15 @@ class CandidateListStore:
                 return None
             except Exception as exc:
                 logger.warning("[CandidateListStore] Redis get failed (%s), falling back", exc)
-        return self._memory.get(conv_id)
+        # In-memory fallback: check TTL
+        entry = self._memory.get(conv_id)
+        if entry is None:
+            return None
+        candidates, expiry = entry
+        if _now() > expiry:
+            del self._memory[conv_id]
+            return None
+        return candidates
 
     async def get_by_position(
         self, conv_id: str, position: int

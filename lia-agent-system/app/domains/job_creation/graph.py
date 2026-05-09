@@ -183,7 +183,11 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
                 **state,
                 "current_stage": "jd_enrichment",
                 "fairness_blocked": True,
+                "jd_fairness_blocked": True,
                 "fairness_block_reason": _fg_input.educational_message,
+                "error": "fairness_blocked",
+                "jd_approved": False,
+                "jd_quality_score": 0.0,
                 "stage_history": (state.get("stage_history") or []) + ["jd_enrichment_blocked"],
                 "ws_stage_payload": {
                     "type": "wizard_stage",
@@ -244,8 +248,8 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
         jd_enriched_dict = enriched_obj.model_dump()
 
         # ── Layer 3: output fairness check (AFTER LLM) ──
-        # Sweep enriched JD for bias the LLM may have introduced.
-        # Soft warning (does NOT block) — adds to fairness_corrections for HITL review.
+        # Hard block — if LLM introduced discriminatory content, block the output.
+        # LGPD Art. 11 + EU AI Act Art. 13: biased JD must never reach recruiter UI.
         try:
             _enriched_text_parts = []
             if jd_enriched_dict.get("titulo_padronizado"):
@@ -260,18 +264,33 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
                 _fg_output = _fg.check(_enriched_text)
                 if _fg_output.is_blocked:
                     logger.warning(
-                        "[JobCreation:jd_enrichment] FairnessGuard L3 WARN output: "
-                        "category=%s, terms=%s — LLM may have introduced bias",
+                        "[JobCreation:jd_enrichment] FairnessGuard L3 BLOCK output: "
+                        "category=%s, terms=%s — LLM introduced bias, blocking",
                         _fg_output.category, _fg_output.blocked_terms,
                     )
-                    _existing_corrections = jd_enriched_dict.get("fairness_corrections") or []
-                    _existing_corrections.append({
-                        "category": _fg_output.category,
-                        "terms": _fg_output.blocked_terms,
-                        "source": "llm_output_l3",
-                        "educational_message": _fg_output.educational_message,
-                    })
-                    jd_enriched_dict["fairness_corrections"] = _existing_corrections
+                    return {
+                        **state,
+                        "current_stage": "jd_enrichment",
+                        "jd_enriched": None,
+                        "jd_approved": False,
+                        "jd_quality_score": 0.0,
+                        "jd_fairness_blocked": True,
+                        "fairness_blocked": True,
+                        "fairness_block_reason": _fg_output.educational_message,
+                        "error": "fairness_blocked_output",
+                        "requires_approval": False,
+                        "stage_history": (state.get("stage_history") or []) + ["jd_enrichment_blocked_l3"],
+                        "ws_stage_payload": {
+                            "type": "wizard_stage",
+                            "stage": "jd_enrichment",
+                            "data": {
+                                "error": "fairness_blocked_output",
+                                "category": _fg_output.category,
+                                "message": _fg_output.educational_message,
+                            },
+                            "requires_approval": False,
+                        },
+                    }
         except Exception as _fg_l3_exc:
             logger.warning(
                 "[JobCreation:jd_enrichment] FairnessGuard L3 check failed (fail-open): %s",
@@ -280,10 +299,11 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
 
     updates: Dict[str, Any] = {
         "current_stage": "jd_enrichment",
-        "jd_raw": jd_raw,
+        "jd_raw": raw_input,
         "jd_enriched": jd_enriched_dict,
         "jd_quality_score": jd_quality_score,
         "jd_quality_warnings": jd_quality_warnings,
+        "jd_fairness_blocked": False,
         "stage_history": (state.get("stage_history") or []) + ["jd_enrichment"],
         "completeness": calculate_completeness("jd_enrichment"),
         "requires_approval": True,
@@ -291,7 +311,7 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
             "type": "wizard_stage",
             "stage": "jd_enrichment",
             "data": {
-                "jd_raw": jd_raw,
+                "jd_raw": raw_input,
                 "jd_enriched": jd_enriched_dict,
                 "quality_score": jd_quality_score,
                 "quality_warnings": jd_quality_warnings,
@@ -346,7 +366,44 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
     from app.domains.job_creation.schemas import EnrichedJobDescription
 
     jd_enriched_dict = state.get("jd_enriched", {})
-    enriched = EnrichedJobDescription(**jd_enriched_dict) if jd_enriched_dict else None
+
+    # ── FairnessGuard pre-check (bigfive input) ──
+    # If jd_enriched already contains discriminatory text, skip LLM call.
+    if jd_enriched_dict:
+        _bf_text_parts = [
+            jd_enriched_dict.get("about_role", ""),
+            " ".join(jd_enriched_dict.get("responsabilidades", []) or []),
+        ]
+        _bf_text = " ".join(filter(None, _bf_text_parts))
+        try:
+            from app.shared.compliance.fairness_guard import FairnessGuard as _BFFg
+            _bf_fg_result = _BFFg().check(_bf_text)
+            if _bf_fg_result.is_blocked:
+                logger.warning(
+                    "[JobCreation:bigfive] FairnessGuard PRE-BLOCK: category=%s — skipping LLM",
+                    _bf_fg_result.category,
+                )
+                return {**state, "current_stage": "bigfive"}
+        except Exception as _bf_fg_exc:
+            logger.warning("[JobCreation:bigfive] FairnessGuard pre-check failed (fail-open): %s", _bf_fg_exc)
+
+    # ── PII masking (BEFORE LLM) ──
+    # Strip PII from enriched JD fields before feeding to Big Five LLM.
+    _safe_enriched_dict = dict(jd_enriched_dict) if jd_enriched_dict else {}
+    try:
+        from app.domains.job_creation.compliance import mask_pii_for_llm as _mask_pii
+        for _field in ("about_role", "titulo_padronizado"):
+            if _safe_enriched_dict.get(_field):
+                _safe_enriched_dict[_field] = _mask_pii(_safe_enriched_dict[_field])
+        if _safe_enriched_dict.get("responsabilidades"):
+            _safe_enriched_dict["responsabilidades"] = [
+                _mask_pii(r) if isinstance(r, str) else r
+                for r in _safe_enriched_dict["responsabilidades"]
+            ]
+    except Exception as _bf_pii_exc:
+        logger.warning("[JobCreation:bigfive] PII masking failed (fail-open): %s", _bf_pii_exc)
+
+    enriched = EnrichedJobDescription(**_safe_enriched_dict) if _safe_enriched_dict else None
 
     generator = _get_wsi_generator()
 
@@ -663,22 +720,61 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
         questions_data = state["wsi_questions"]
     else:
         jd_enriched_dict = state.get("jd_enriched", {})
-        enriched = EnrichedJobDescription(**jd_enriched_dict) if jd_enriched_dict else None
-        distribution = state.get("question_distribution", {"technical": 5, "behavioral": 2})
-        seniority = state.get("seniority_resolved", "pleno")
-        trait_rankings = state.get("trait_rankings", [])
 
-        if enriched:
-            generator = _get_wsi_generator()
-            question_objs = generator.generate_questions(
-                enriched=enriched,
-                seniority=seniority,
-                distribution=distribution,
-                trait_rankings=trait_rankings,
-            )
-            questions_data = [q.model_dump() for q in question_objs]
-        else:
+        # ── FairnessGuard pre-check (WSI input) ──
+        # If jd_enriched is discriminatory, do not call the LLM at all.
+        _wsi_input_blocked = False
+        if jd_enriched_dict:
+            _wsi_pre_text = " ".join(filter(None, [
+                jd_enriched_dict.get("about_role", ""),
+                " ".join(jd_enriched_dict.get("responsabilidades", []) or []),
+            ]))
+            try:
+                from app.shared.compliance.fairness_guard import FairnessGuard as _WSIFg
+                _wsi_pre_check = _WSIFg().check(_wsi_pre_text)
+                if _wsi_pre_check.is_blocked:
+                    logger.warning(
+                        "[JobCreation:wsi_questions] FairnessGuard PRE-BLOCK: category=%s — skipping LLM",
+                        _wsi_pre_check.category,
+                    )
+                    _wsi_input_blocked = True
+            except Exception as _wsi_pre_exc:
+                logger.warning("[JobCreation:wsi_questions] FairnessGuard pre-check failed (fail-open): %s", _wsi_pre_exc)
+
+        if _wsi_input_blocked:
             questions_data = []
+        else:
+            # ── PII masking (BEFORE LLM) ──
+            _safe_wsi_dict = dict(jd_enriched_dict) if jd_enriched_dict else {}
+            try:
+                from app.domains.job_creation.compliance import mask_pii_for_llm as _wsi_mask
+                for _f in ("about_role", "titulo_padronizado"):
+                    if _safe_wsi_dict.get(_f):
+                        _safe_wsi_dict[_f] = _wsi_mask(_safe_wsi_dict[_f])
+                if _safe_wsi_dict.get("responsabilidades"):
+                    _safe_wsi_dict["responsabilidades"] = [
+                        _wsi_mask(r) if isinstance(r, str) else r
+                        for r in _safe_wsi_dict["responsabilidades"]
+                    ]
+            except Exception as _wsi_pii_exc:
+                logger.warning("[JobCreation:wsi_questions] PII masking failed (fail-open): %s", _wsi_pii_exc)
+
+            enriched = EnrichedJobDescription(**_safe_wsi_dict) if _safe_wsi_dict else None
+            distribution = state.get("question_distribution", {"technical": 5, "behavioral": 2})
+            seniority = state.get("seniority_resolved", "pleno")
+            trait_rankings = state.get("trait_rankings", [])
+
+            if enriched:
+                generator = _get_wsi_generator()
+                question_objs = generator.generate_questions(
+                    enriched=enriched,
+                    seniority=seniority,
+                    distribution=distribution,
+                    trait_rankings=trait_rankings,
+                )
+                questions_data = [q.model_dump() for q in question_objs]
+            else:
+                questions_data = []
 
     # ── Layer 4: question fairness guard (per-question scan) ──
     # Removes biased questions and registers in wsi_dropped_questions for audit.
@@ -697,8 +793,8 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
                 _wsi_dropped.append({
                     "question": _q_text,
                     "category": _check.category,
-                    "terms": _check.blocked_terms,
-                    "educational_message": _check.educational_message,
+                    "blocked_terms": _check.blocked_terms,
+                    "message": _check.educational_message,
                 })
                 logger.warning(
                     "[JobCreation:wsi_questions] FairnessGuard L4 dropped question: "
@@ -715,6 +811,19 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
         )
         # On failure, keep all questions (don't lose recruiter's work)
 
+    # Build ws_stage_payload data — include fairness_warning when questions were dropped
+    _wsi_stage_data: Dict[str, Any] = {
+        "questions": questions_data,
+        "screening_mode": state.get("screening_mode"),
+        "distribution": state.get("question_distribution"),
+    }
+    if _wsi_dropped:
+        _wsi_stage_data["fairness_warning"] = {
+            "kind": "questions_dropped",
+            "dropped_count": len(_wsi_dropped),
+        }
+        _wsi_stage_data["dropped_questions"] = _wsi_dropped
+
     updates: Dict[str, Any] = {
         "current_stage": "wsi_questions",
         "wsi_questions": questions_data,
@@ -727,11 +836,7 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
         "ws_stage_payload": {
             "type": "wizard_stage",
             "stage": "wsi_questions",
-            "data": {
-                "questions": questions_data,
-                "screening_mode": state.get("screening_mode"),
-                "distribution": state.get("question_distribution"),
-            },
+            "data": _wsi_stage_data,
             "completeness": calculate_completeness("wsi_questions"),
             "requires_approval": True,
         },
@@ -1227,6 +1332,16 @@ def handoff_node(state: JobCreationState) -> JobCreationState:
     # (when current_stage == "handoff"). G8 idempotency_key (MD5) is
     # generated there. See wizard_session_service.py:253+.
 
+    # ── Audit EU AI Act Art.13 — single job_creation audit row ──
+    # Emitted exactly once per successful wizard run at handoff.
+    try:
+        from app.domains.job_creation.compliance import emit_job_creation_audit
+        emit_job_creation_audit({**state, **updates})
+    except Exception as _handoff_audit_exc:
+        logger.warning(
+            "[JobCreation:handoff] audit emission failed (fail-open): %s", _handoff_audit_exc,
+        )
+
     elapsed = (time.time() - t0) * 1000
     logger.info("[JobCreation:handoff] url=%s | %0.fms", handoff_url, elapsed)
     return {**state, **updates}
@@ -1240,9 +1355,15 @@ def route_after_jd(state: JobCreationState) -> str:
     """After JD enrichment: if HITL pending (not yet approved), END (wait for user).
     If approved and quality >= 50, proceed to bigfive.
     If quality < 30, loop back (recruiter must improve JD).
+    If fairness blocked, terminate without looping back.
     """
     approved = state.get("jd_approved")
     quality = state.get("jd_quality_score", 0.0)
+
+    # Fairness block: recruiter must rewrite the input — end (not intake loop)
+    if state.get("jd_fairness_blocked") is True:
+        logger.info("[JobCreation:route] jd_enrichment -> END (fairness blocked)")
+        return "end"
 
     if approved is None:
         # Waiting for recruiter approval — END to return control

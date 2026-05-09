@@ -15,6 +15,7 @@ Architecture:
 
 import hashlib
 import json
+import logging
 import os
 import re
 from datetime import datetime
@@ -27,6 +28,11 @@ try:
 except ImportError:
     redis = None
     REDIS_AVAILABLE = False
+
+logger = logging.getLogger(__name__)
+
+# Max entries in the in-memory fallback cache (injectable for tests).
+_MEMORY_CACHE_MAX_ENTRIES: int = 1000
 
 import logging
 
@@ -257,8 +263,27 @@ class AICacheService:
             except Exception as e:
                 logger.warning(f"Redis set failed: {e}")
         
+        # Sweep expired entries from memory cache before adding new one
+        now_dt = datetime.utcnow()
+        expired_keys = [
+            k for k, v in self._memory_cache.items()
+            if v.get("expires_at") and datetime.fromisoformat(v["expires_at"]) <= now_dt
+        ]
+        for k in expired_keys:
+            del self._memory_cache[k]
+
         self._memory_cache[cache_key] = cache_data
-        
+
+        # Enforce size cap: evict oldest entries when over limit
+        if len(self._memory_cache) > _MEMORY_CACHE_MAX_ENTRIES:
+            # Sort by cached_at and remove oldest
+            sorted_keys = sorted(
+                self._memory_cache.keys(),
+                key=lambda k: self._memory_cache[k].get("cached_at", ""),
+            )
+            for k in sorted_keys[: len(self._memory_cache) - _MEMORY_CACHE_MAX_ENTRIES]:
+                del self._memory_cache[k]
+
         index_key = f"{cache_type}:{company_id}"
         if index_key not in self._similarity_index:
             self._similarity_index[index_key] = []

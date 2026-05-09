@@ -18,12 +18,19 @@ import hashlib
 import json
 import logging
 import sys
+import time
 
 
 logger = logging.getLogger(__name__)
 
 _REDIS_PREFIX = "emb:"
 _REDIS_TTL_DEFAULT = 86400  # 24h — alinhado com SEMANTIC_CACHE_TTL
+
+# Injectable monotonic clock for testability (monkeypatch this in tests).
+_now = time.monotonic
+
+# Max entries in local in-memory fallback (injectable for tests).
+_LOCAL_MAX_ENTRIES: int = 500
 
 
 class EmbeddingCacheService:
@@ -35,7 +42,8 @@ class EmbeddingCacheService:
     """
 
     def __init__(self):
-        self._local: dict[str, list[float]] = {}   # fallback in-memory
+        # Fallback in-memory: {key: (embedding, expiry_monotonic)}
+        self._local: dict[str, tuple[list[float], float]] = {}
         self._redis = None
         self._redis_ok: bool = False
         self._warmed_up = False
@@ -69,7 +77,7 @@ class EmbeddingCacheService:
     # ------------------------------------------------------------------
 
     async def get_embedding(self, text: str, model: str = "text-embedding-3-small") -> list[float] | None:
-        """Retorna embedding cacheado ou None se não encontrado."""
+        """Retorna embedding cacheado ou None se não encontrado/expirado."""
         key = self._make_key(text, model)
         redis = await self._get_redis()
         if redis and self._redis_ok:
@@ -79,7 +87,15 @@ class EmbeddingCacheService:
                     return json.loads(raw)
             except Exception as exc:
                 logger.debug("[EmbeddingCache] Redis get falhou: %s", exc)
-        return self._local.get(key)
+        # In-memory fallback: check TTL
+        entry = self._local.get(key)
+        if entry is None:
+            return None
+        embedding, expiry = entry
+        if _now() > expiry:
+            del self._local[key]
+            return None
+        return embedding
 
     async def cache_embedding(
         self,
@@ -97,8 +113,14 @@ class EmbeddingCacheService:
                 await redis.setex(key, ttl, serialized)
             except Exception as exc:
                 logger.debug("[EmbeddingCache] Redis set falhou: %s", exc)
-        # Write-through para local (acesso instantâneo sem rede)
-        self._local[key] = embedding
+        # Write-through para local (acesso instantâneo sem rede) com TTL
+        self._local[key] = (embedding, _now() + ttl)
+        # Enforce size cap: evict oldest entries when over limit
+        if len(self._local) > _LOCAL_MAX_ENTRIES:
+            # Remove entries up to the cap (no ordering guarantee needed — just drop some)
+            excess = len(self._local) - _LOCAL_MAX_ENTRIES
+            for k in list(self._local.keys())[:excess]:
+                del self._local[k]
 
     async def warm_up(self, db_session) -> None:
         """

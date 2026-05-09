@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import json
 import logging
+import time
 from dataclasses import asdict, dataclass, field
 from datetime import UTC, datetime
 from typing import Any
@@ -13,6 +14,9 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 _SESSION_TTL_SECONDS = 86400 * 7  # 7 days default
+
+# Injectable monotonic clock for testability (monkeypatch this in tests).
+_now = time.monotonic
 
 
 @dataclass
@@ -52,7 +56,8 @@ class SessionBridge:
     
     def __init__(self, ttl_seconds: int = _SESSION_TTL_SECONDS):
         self._ttl = ttl_seconds
-        self._memory_store: dict[str, str] = {}  # fallback
+        # Fallback in-memory: {key: (serialized_json, expiry_monotonic)}
+        self._memory_store: dict[str, tuple[str, float]] = {}
         self._redis = None
         self._init_redis()
     
@@ -85,6 +90,13 @@ class SessionBridge:
     def _key(self, session_id: str) -> str:
         return f"lia:session:{session_id}"
     
+    def _sweep_memory_store(self) -> None:
+        """Evict expired entries from in-memory fallback (TTL-based)."""
+        now = _now()
+        expired = [k for k, (_, exp) in self._memory_store.items() if now > exp]
+        for k in expired:
+            del self._memory_store[k]
+
     async def save(self, ctx: SessionContext) -> None:
         """Persist session context."""
         ctx.last_active = datetime.now(UTC)
@@ -98,24 +110,32 @@ class SessionBridge:
                     get_redis_crypto().encrypt(serialized),
                 )
             else:
-                self._memory_store[self._key(ctx.session_id)] = serialized
+                # Sweep expired entries before adding new one
+                self._sweep_memory_store()
+                expiry = _now() + self._ttl
+                self._memory_store[self._key(ctx.session_id)] = (serialized, expiry)
         except Exception as exc:
             logger.error("[SessionBridge] Failed to save session %s: %s", ctx.session_id, exc)
-    
+
     async def load(self, session_id: str) -> SessionContext | None:
         """Load session context by session_id."""
         try:
             key = self._key(session_id)
-            raw = None
             redis_client = await self._get_redis_client()
             if redis_client:
                 raw = await redis_client.get(key)
+                if raw:
+                    from app.shared.security.redis_crypto import get_redis_crypto
+                    return SessionContext.from_json(get_redis_crypto().decrypt(raw))
             else:
-                raw = self._memory_store.get(key)
-
-            if raw:
-                from app.shared.security.redis_crypto import get_redis_crypto
-                return SessionContext.from_json(get_redis_crypto().decrypt(raw))
+                entry = self._memory_store.get(key)
+                if entry:
+                    serialized, expiry = entry
+                    if _now() > expiry:
+                        # Expired — sweep and return None
+                        del self._memory_store[key]
+                        return None
+                    return SessionContext.from_json(serialized)
         except Exception as exc:
             logger.error("[SessionBridge] Failed to load session %s: %s", session_id, exc)
         return None
