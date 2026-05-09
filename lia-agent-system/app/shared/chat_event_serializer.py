@@ -21,7 +21,85 @@ Event types:
 """
 import json
 import time
-from typing import Any
+from typing import Any, Literal, NotRequired, TypedDict
+
+
+# ---------------------------------------------------------------------------
+# TypedDicts — typed event envelopes (R-042)
+# ---------------------------------------------------------------------------
+
+class ThinkingEvent(TypedDict):
+    type: Literal["thinking"]
+    content: str
+    step: int
+
+
+class TokenEvent(TypedDict):
+    type: Literal["token"]
+    content: str
+
+
+class TokenDoneEvent(TypedDict):
+    type: Literal["token_done"]
+    tokens_sent: int
+
+
+class MessageEvent(TypedDict):
+    type: Literal["message"]
+    content: str
+    confidence: float
+    domain: str
+    source: str
+    actions: NotRequired[list]
+    navigation: NotRequired[dict]
+    state_updates: NotRequired[dict]
+    fairness_warnings: NotRequired[list]
+    execution_plan: NotRequired[dict]
+    conversation_id: NotRequired[str]
+
+
+class ErrorEvent(TypedDict):
+    type: Literal["error"]
+    message: str
+    error_code: NotRequired[str]
+
+
+class PanelUpdateEvent(TypedDict):
+    type: Literal["panel_update"]
+    panel_type: str
+    panel_data: dict[str, Any]
+    panel_title: str
+    action: str
+
+
+class BackgroundTaskUpdateEvent(TypedDict):
+    type: Literal["background_task_update"]
+    task_id: str
+    task_type: str
+    label: str
+    status: str
+    progress: NotRequired[int]
+    message: NotRequired[str]
+    result: NotRequired[dict[str, Any]]
+
+
+class ConnectedEvent(TypedDict):
+    type: Literal["connected"]
+    session_id: str
+    domain: str
+
+
+# Union of all known event types
+ChatEvent = (
+    ThinkingEvent
+    | TokenEvent
+    | TokenDoneEvent
+    | MessageEvent
+    | ErrorEvent
+    | PanelUpdateEvent
+    | BackgroundTaskUpdateEvent
+    | ConnectedEvent
+)
 
 
 _EVENT_COUNTER = 0
@@ -39,16 +117,16 @@ def serialize_event(event_type: str, **kwargs: Any) -> dict[str, Any]:
     return payload
 
 
-def serialize_thinking(content: str = "", step: int = 0) -> dict[str, Any]:
-    return serialize_event("thinking", content=content, step=step)
+def serialize_thinking(content: str = "", step: int = 0) -> ThinkingEvent:
+    return serialize_event("thinking", content=content, step=step)  # type: ignore[return-value]
 
 
-def serialize_token(content: str) -> dict[str, Any]:
-    return serialize_event("token", content=content)
+def serialize_token(content: str) -> TokenEvent:
+    return serialize_event("token", content=content)  # type: ignore[return-value]
 
 
-def serialize_token_done(tokens_sent: int = 0) -> dict[str, Any]:
-    return serialize_event("token_done", tokens_sent=tokens_sent)
+def serialize_token_done(tokens_sent: int = 0) -> TokenDoneEvent:
+    return serialize_event("token_done", tokens_sent=tokens_sent)  # type: ignore[return-value]
 
 
 def serialize_message(
@@ -62,7 +140,7 @@ def serialize_message(
     fairness_warnings: list | None = None,
     execution_plan: dict | None = None,
     conversation_id: str | None = None,
-) -> dict[str, Any]:
+) -> MessageEvent:
     payload = serialize_event(
         "message",
         content=content,
@@ -82,14 +160,14 @@ def serialize_message(
         payload["execution_plan"] = execution_plan
     if conversation_id:
         payload["conversation_id"] = conversation_id
-    return payload
+    return payload  # type: ignore[return-value]
 
 
-def serialize_error(message: str, error_code: str = "") -> dict[str, Any]:
+def serialize_error(message: str, error_code: str = "") -> ErrorEvent:
     payload = serialize_event("error", message=message)
     if error_code:
         payload["error_code"] = error_code
-    return payload
+    return payload  # type: ignore[return-value]
 
 
 def serialize_panel_update(
@@ -97,7 +175,7 @@ def serialize_panel_update(
     panel_data: dict[str, Any],
     panel_title: str = "",
     action: str = "open",
-) -> dict[str, Any]:
+) -> PanelUpdateEvent:
     return serialize_event(
         "panel_update",
         panel_type=panel_type,
@@ -115,7 +193,7 @@ def serialize_background_task_update(
     progress: int | None = None,
     message: str = "",
     result: dict[str, Any] | None = None,
-) -> dict[str, Any]:
+) -> BackgroundTaskUpdateEvent:
     return serialize_event(
         "background_task_update",
         task_id=task_id,
@@ -128,7 +206,7 @@ def serialize_background_task_update(
     )
 
 
-def serialize_connected(session_id: str, domain: str = "") -> dict[str, Any]:
+def serialize_connected(session_id: str, domain: str = "") -> ConnectedEvent:
     return serialize_event("connected", session_id=session_id, domain=domain)
 
 

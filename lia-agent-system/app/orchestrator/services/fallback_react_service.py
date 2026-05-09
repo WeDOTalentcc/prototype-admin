@@ -38,6 +38,7 @@ import os
 from typing import Any, Final
 
 from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
+from app.shared.constants.prompt_constants import SALARY_BENCHMARK_ADDENDUM
 
 logger = logging.getLogger(__name__)
 
@@ -56,14 +57,7 @@ STRUCTURED_INTENT_ADDENDA: Final[dict[str, str]] = {
         "```\n"
         "O match_score deve ser um número inteiro de 0 a 100."
     ),
-    "salary_benchmark": (
-        "\n\nRegra de saída salarial (C-06): sempre inclua faixas salariais no formato "
-        "R$ XX.XXX - R$ XX.XXX mensais (CLT). Estruture a resposta com:\n"
-        "- Faixa mínima: R$ X.XXX\n"
-        "- Faixa máxima: R$ X.XXX\n"
-        "- Mediana: R$ X.XXX\n"
-        "Use ponto como separador de milhar (ex: R$ 12.000)."
-    ),
+    "salary_benchmark": SALARY_BENCHMARK_ADDENDUM,  # R-039
 }
 
 

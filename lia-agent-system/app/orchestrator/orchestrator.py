@@ -45,6 +45,7 @@ from app.shared.services.response_cache_service import response_cache_service
 from app.shared.memory.conversation_state import ConversationState
 from app.tools import get_all_tool_schemas, initialize_tools, tool_registry
 from app.enums.orchestrator import CacheableIntent, OrchestratorScope
+from app.shared.constants.prompt_constants import SALARY_BENCHMARK_ADDENDUM
 from app.tools.scope_config import (
     PromptScope,
     filter_tools_by_scope,
@@ -381,14 +382,7 @@ class Orchestrator:
             "```\n"
             "O match_score deve ser um número inteiro de 0 a 100."
         ),
-        "salary_benchmark": (
-            "\n\nRegra de saída salarial (C-06): sempre inclua faixas salariais no formato "
-            "R$ XX.XXX - R$ XX.XXX mensais (CLT). Estruture a resposta com:\n"
-            "- Faixa mínima: R$ X.XXX\n"
-            "- Faixa máxima: R$ X.XXX\n"
-            "- Mediana: R$ X.XXX\n"
-            "Use ponto como separador de milhar (ex: R$ 12.000)."
-        ),
+        "salary_benchmark": SALARY_BENCHMARK_ADDENDUM,  # R-039
     }
 
     async def _handle_directly(

@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import uuid
 from datetime import UTC, datetime
 from typing import Any
@@ -23,7 +24,7 @@ from app.shared.tracing import trace_span
 
 logger = logging.getLogger(__name__)
 
-DLQ_TTL_SECONDS = 30 * 24 * 3600  # 30 dias (was 7 dias -- R-024)
+DLQ_TTL_SECONDS = int(os.getenv("DLQ_TTL_DAYS", "30")) * 24 * 3600  # default 30d, max 90d recommended (R-035)
 MAX_ENTRIES = 1000
 _KEY_PREFIX = "dlq"
 _INDEX_KEY = "dlq:index"

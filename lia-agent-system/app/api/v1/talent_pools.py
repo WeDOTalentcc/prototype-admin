@@ -63,6 +63,22 @@ class CreateJobFromPoolRequest(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Response Models (R-028)
+# ---------------------------------------------------------------------------
+
+class TalentPoolResponse(BaseModel):
+    data: dict[str, Any]
+
+
+class TalentPoolListResponse(BaseModel):
+    data: list[dict[str, Any]]
+
+
+class TalentPoolCandidateListResponse(BaseModel):
+    data: list[dict[str, Any]]
+
+
+# ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
@@ -127,7 +143,7 @@ async def _refresh_counts(pool_id: UUID, db: AsyncSession) -> None:
 # Pool CRUD
 # ---------------------------------------------------------------------------
 
-@router.get("")
+@router.get("", response_model=TalentPoolListResponse)
 async def list_pools(
     status: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
@@ -145,7 +161,7 @@ async def list_pools(
     return {"data": [_jsonapi_pool(p) for p in pools]}
 
 
-@router.post("", status_code=201)
+@router.post("", status_code=201, response_model=TalentPoolResponse)
 async def create_pool(
     payload: dict[str, Any],
     db: AsyncSession = Depends(get_db),
@@ -171,7 +187,7 @@ async def create_pool(
     return {"data": _jsonapi_pool(pool)}
 
 
-@router.get("/{pool_id}")
+@router.get("/{pool_id}", response_model=TalentPoolResponse)
 async def get_pool(
     pool_id: UUID,
     db: AsyncSession = Depends(get_db),
@@ -222,7 +238,7 @@ async def delete_pool(
 # Candidate operations
 # ---------------------------------------------------------------------------
 
-@router.get("/{pool_id}/candidates")
+@router.get("/{pool_id}/candidates", response_model=TalentPoolCandidateListResponse)
 async def list_candidates(
     pool_id: UUID,
     stage: str | None = Query(None),
