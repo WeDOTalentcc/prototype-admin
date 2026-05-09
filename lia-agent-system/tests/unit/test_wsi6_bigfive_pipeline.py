@@ -110,7 +110,7 @@ class TestF25OceanExtraction:
 
     @pytest.mark.asyncio
     async def test_uses_temperature_04(self):
-        """F2.5 deve chamar LLM com temperature=0.4."""
+        """F2.5 deve chamar LLM com temperature=0.1 (safe_invoke)."""
         gen = _make_generator()
         mock_response = MagicMock()
         mock_response.content = """{
@@ -122,14 +122,15 @@ class TestF25OceanExtraction:
                 "stability":         {"score": 60, "evidence": [], "confidence": "medium"}
             }
         }"""
-        bind_mock = MagicMock()
-        bind_mock.ainvoke = AsyncMock(return_value=mock_response)
-        gen.llm.claude = MagicMock()
-        gen.llm.claude.bind.return_value = bind_mock
+        gen.llm.safe_invoke = AsyncMock(return_value=mock_response)
 
         await gen._extract_ocean_scores("descrição da vaga")
 
-        gen.llm.claude.bind.assert_called_once_with(temperature=0.1, max_tokens=800)
+        gen.llm.safe_invoke.assert_called_once()
+        call_kwargs = gen.llm.safe_invoke.call_args
+        assert call_kwargs.kwargs.get("temperature") == 0.1 or (
+            len(call_kwargs.args) >= 2 and call_kwargs.args[1] == 0.1
+        )
 
     @pytest.mark.asyncio
     async def test_fallback_on_llm_error(self):
@@ -214,12 +215,11 @@ class TestF66TraitQuestion:
         }"""
         captured_prompt = []
 
-        async def capture_invoke(prompt):
+        async def capture_invoke(prompt, **kwargs):
             captured_prompt.append(prompt)
             return mock_response
 
-        gen.llm.claude = MagicMock()
-        gen.llm.claude.bind.return_value.ainvoke = capture_invoke
+        gen.llm.safe_invoke = capture_invoke
 
         comp = _make_competency()
         await gen._generate_bigfive_question(comp, ocean_trait="conscientiousness")
@@ -272,12 +272,11 @@ class TestF66TraitQuestion:
         mock_response.content = '{"question_text": "X", "expected_signals": [], "scoring_criteria": {}}'
         captured = []
 
-        async def capture(p):
+        async def capture(p, **kwargs):
             captured.append(p)
             return mock_response
 
-        gen.llm.claude = MagicMock()
-        gen.llm.claude.bind.return_value.ainvoke = capture
+        gen.llm.safe_invoke = capture
 
         comp = _make_competency()
         await gen._generate_bigfive_question(comp, ocean_trait="conscientiousness")
