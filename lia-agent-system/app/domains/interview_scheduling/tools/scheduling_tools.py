@@ -106,24 +106,61 @@ def send_interview_invitation(
 
 
 @tool
-def reschedule_interview(
-    interview_id: str, new_datetime_str: str, reason: str = ""
+async def reschedule_interview(
+    interview_id: str,
+    new_datetime_str: str,
+    reason: str = "",
+    company_id=None,
 ) -> dict:
     """Reschedule an existing interview to a new date/time.
 
-    Stores the old datetime as 'N/A' since this is a simulation without persistent state.
+    Fetches the old datetime from DB when available (non-fatal fallback to N/A).
+    Returns is_simulated_calendar=True (simulation stub until real calendar API).
+
+    Multi-tenancy: company_id filters the DB query when provided.
     """
+    from lia_config.database import AsyncSessionLocal
+    from sqlalchemy import select as _select
+
+    old_datetime_str = "N/A"
+    try:
+        from lia_models.interview import Interview  # type: ignore[import]
+    except ImportError:
+        try:
+            from libs.models.lia_models.interview import Interview  # type: ignore[import]
+        except ImportError:
+            Interview = None
+
+    if Interview is not None:
+        try:
+            async with AsyncSessionLocal() as _db:
+                _q = _select(Interview).where(Interview.id == interview_id)
+                if company_id:
+                    _q = _q.where(Interview.company_id == company_id)
+                _result = await _db.execute(_q)
+                _interview = _result.scalar_one_or_none()
+                if _interview and _interview.start_time:
+                    old_datetime_str = (
+                        _interview.start_time.isoformat()
+                        if hasattr(_interview.start_time, "isoformat")
+                        else str(_interview.start_time)
+                    )
+        except Exception as _db_err:
+            logger.warning("reschedule_interview: DB lookup failed (non-fatal): %s", _db_err)
+
     logger.info(
         "reschedule_interview: interview=%s new_datetime=%s reason=%s",
         interview_id, new_datetime_str, reason,
     )
     return {
+        "success": True,
         "interview_id": interview_id,
         "status": "rescheduled",
-        "old_datetime": "N/A",
+        "old_datetime": old_datetime_str,
         "new_datetime": new_datetime_str,
         "reason": reason,
         "updated_at": datetime.now(UTC).isoformat(),
+        "is_simulated_calendar": True,
     }
 
 

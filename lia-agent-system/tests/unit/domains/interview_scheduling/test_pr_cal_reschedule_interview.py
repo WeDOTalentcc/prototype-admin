@@ -32,7 +32,16 @@ async def _call_reschedule(**kwargs: Any) -> dict:
     from app.domains.interview_scheduling.tools.scheduling_tools import (
         reschedule_interview,
     )
-    return await reschedule_interview(**kwargs)
+    # reschedule_interview is a LangChain StructuredTool — call its underlying coroutine
+    if hasattr(reschedule_interview, "coroutine") and reschedule_interview.coroutine is not None:
+        return await reschedule_interview.coroutine(**kwargs)
+    if hasattr(reschedule_interview, "func") and reschedule_interview.func is not None:
+        result = reschedule_interview.func(**kwargs)
+        import asyncio
+        if asyncio.iscoroutine(result):
+            return await result
+        return result
+    return await reschedule_interview.ainvoke(kwargs)
 
 
 def _make_mock_interview(start_time: datetime) -> MagicMock:
