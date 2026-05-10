@@ -35,10 +35,41 @@ _CONFIRMATION_WORDS = {
 
 
 from app.shared.agents.agent_registry import register_agent
+from app.shared.agents.tenant_aware_agent import TenantAwareAgentMixin
 from app.shared.prompts.prompt_composer import PromptComposer
 
 @register_agent("wizard")
-class WizardReActAgent(LangGraphReActBase, EnhancedAgentMixin):
+class WizardReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
+    """Wizard de criação de vaga — piloto canônico da TenantAwareAgentMixin (T-B).
+
+    Wizard é fail-CLOSED por design: NUNCA pode operar sem tenant resolvido.
+    Antes desta refatoração, o override de ``_get_runtime_domain_instructions``
+    chamava ``PromptComposer.for_domain_runtime`` direto (sem
+    ``tenant_context_snippet``) — derrubando o snippet que o
+    ``MainOrchestrator`` / handlers SSE/WS injetavam em ``input.context``.
+    Resultado em produção: a LIA perguntava "qual o ID da sua empresa?" no
+    chat do wizard, mesmo com JWT correto.
+
+    Refatoração:
+        1. Herda de ``TenantAwareAgentMixin`` (primeiro no MRO) → ganha
+           pre-resolução async em ``_process_langgraph`` + override sync de
+           defesa em profundidade em ``_get_system_prompt``.
+        2. ``tenant_strict_override = True`` → mesmo com
+           ``LIA_AGENT_TENANT_STRICT=false`` em dev, o wizard fail-closes.
+        3. ``_get_runtime_domain_instructions`` agora usa
+           ``self._compose_runtime_prompt(...)`` em vez de chamar o composer
+           direto — o helper auto-injeta ``tenant_context_snippet`` lido de
+           ``input.context``.
+
+    Origem da causa raiz e contrato canônico:
+        ``app/shared/agents/tenant_aware_agent.py`` (T-A canônico).
+    """
+
+    # Wizard NUNCA degrada para "sua empresa" — força strict mesmo em dev.
+    # Opt-out só via env auditável (LIA_AGENT_TENANT_STRICT) — bloqueado por
+    # design no mixin (`tenant_strict_override` aceita True ou None).
+    tenant_strict_override = True
+
     DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
         agent_type="wizard",
         domain_specific=WIZARD_DOMAIN_SPECIFIC,
@@ -46,15 +77,16 @@ class WizardReActAgent(LangGraphReActBase, EnhancedAgentMixin):
     ).text
 
     def _get_runtime_domain_instructions(self, input: AgentInput) -> str:
-        """Sprint 2 Phase 4: substitute {memory_summary} + {stage_context}
-        from input.context at runtime (vs empty class-attr default).
+        """Substitui {memory_summary} + {stage_context} em runtime e
+        propaga ``tenant_context_snippet`` via ``self._compose_runtime_prompt``
+        (helper canônico do TenantAwareAgentMixin — T-B).
 
         Falls back to legacy DOMAIN_INSTRUCTIONS if PromptComposer fails.
         """
         try:
             ctx = input.context or {}
-            return PromptComposer.for_domain_runtime(
-                agent_type="wizard",
+            return self._compose_runtime_prompt(
+                input,
                 domain_specific=WIZARD_DOMAIN_SPECIFIC,
                 reasoning_template=WIZARD_REASONING_PROMPT,
                 memory_summary=ctx.get("memory_summary", ""),

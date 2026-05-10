@@ -117,11 +117,49 @@ class WizardSessionService:
         Multi-tenancy: workspace_id always derived from company_id param,
         never trusted from prior_state (prevents tenant escalation via
         stale checkpoint data).
+
+        T-B canonical (Task #970): valida ``company_id`` via
+        ``CompanyId.parse`` (UUID v4 ou slug). Em strict-mode (default em
+        prod/staging) qualquer entrada inválida — vazia, ``"default"``,
+        formato errado — levanta ``InvalidCompanyIdError`` AQUI, antes de
+        invocar o grafo. Em legacy/dev mode (``LIA_AGENT_TENANT_STRICT=false``)
+        loga warning e degrada para ``workspace_id=0``/``company_id=""`` (compat).
+
+        Para UUID v4 / slug não-numérico: ``workspace_id=0`` e ``company_id``
+        normalizado é propagado como string — ``review_node`` faz fallback
+        ``workspace_id or company_id`` para ``api_client.get_company_defaults``
+        (vide replit.md → "UUID company_id tenants use workspace_id=0 with
+        company_id string fallback in review_node").
+
+        Para slug numérico legado: ``workspace_id`` recebe o int (compat com
+        Rails ``workspace_id`` integer column).
         """
-        _cid = str(company_id).strip() if company_id else ""
-        if _cid and _cid.isdigit():
-            safe_workspace_id = int(_cid)
-        else:
+        from app.shared.agents.tenant_aware_agent import is_tenant_strict_mode
+        from app.shared.exceptions.tenant_errors import InvalidCompanyIdError
+        from app.shared.value_objects.company_id import CompanyId
+
+        try:
+            parsed_cid = CompanyId.parse(company_id)
+            normalized_cid = parsed_cid.as_str()
+            # Legacy: slug puramente numérico mapeia 1:1 em workspace_id int
+            safe_workspace_id = (
+                int(normalized_cid) if normalized_cid.isdigit() else 0
+            )
+        except InvalidCompanyIdError:
+            if is_tenant_strict_mode():
+                logger.error(
+                    "[WizardSession] company_id inválido em strict-mode "
+                    "thread=%s raw=%r — abortando (fail-closed canônico T-B).",
+                    thread_id, company_id,
+                )
+                raise
+            logger.warning(
+                "[WizardSession] company_id inválido em legacy-mode "
+                "thread=%s raw=%r — degradando para workspace_id=0 "
+                "(compat dev). Set LIA_AGENT_TENANT_STRICT=true para fail-closed.",
+                thread_id, company_id,
+            )
+            normalized_cid = ""
             safe_workspace_id = 0
 
         ctx = context or {}
@@ -134,7 +172,7 @@ class WizardSessionService:
                 **prior_state,
                 # Override tenant fields with authoritative values
                 "workspace_id": safe_workspace_id,
-                "company_id": str(company_id) if company_id else "",
+                "company_id": normalized_cid,
                 "user_id": str(user_id) if user_id else prior_state.get("user_id", ""),
                 # Update query fields with new message
                 "user_query": user_message,
@@ -161,7 +199,7 @@ class WizardSessionService:
             "session_id": session_id,
             "user_id": str(user_id) if user_id else "",
             "workspace_id": safe_workspace_id,
-            "company_id": str(company_id) if company_id else "",
+            "company_id": normalized_cid,
             "auth_token": "",
             "language": "pt-BR",
             "current_stage": None,
