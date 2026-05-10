@@ -18,12 +18,12 @@ from unittest.mock import AsyncMock, patch
 class TestFastRouterPatternMatching:
 
     def test_job_management_pattern_routes_correctly(self):
-        """'criar vaga' deve rotear para job_management com confiança >= 0.7."""
+        """'criar vaga' deve rotear para wizard (JobCreationGraph canônico)."""
         from app.orchestrator.fast_router import FastRouter
         router = FastRouter()
         result = router.match("quero criar uma nova vaga para Python Developer")
         assert result is not None
-        assert result.domain_id == "job_management"
+        assert result.domain_id == "wizard"
         assert result.confidence >= 0.7
 
     def test_cv_screening_pattern_routes_correctly(self):

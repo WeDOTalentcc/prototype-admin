@@ -22,8 +22,10 @@ from app.main import app
 
 @pytest.mark.asyncio
 async def test_health_ok():
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        resp = await client.get("/api/v1/health")
+    # Mock Redis — unavailable in test env; we test app logic not infra availability
+    with patch("app.api.v1.system_health._check_redis", return_value={"status": "healthy", "latency_ms": 1}):
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            resp = await client.get("/api/v1/health")
     assert resp.status_code == 200
     data = resp.json()
     assert data["status"] in ("healthy", "degraded")
