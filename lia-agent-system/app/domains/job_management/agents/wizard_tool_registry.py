@@ -362,6 +362,7 @@ async def _wrap_change_vacancy_status(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_validate_job_requirements(**kwargs: Any) -> dict[str, Any]:
     text = kwargs.get("text", "")
     field_name = kwargs.get("field_name", "requirements")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[wizard_tools] validate_job_requirements called for field={field_name}")
     try:
         explicit_result = _fairness_guard.check(text)

@@ -185,6 +185,7 @@ async def get_communication(communication_id: str):
                 detail=f"Communication not found: {communication_id}"
             )
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"📋 Retrieved communication: {communication.id}")
         
         return communication.to_dict()

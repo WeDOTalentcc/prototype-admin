@@ -707,6 +707,7 @@ async def upload_file(
         data_request.status = DataRequestStatus.PARTIALLY_FILLED
     
     
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"File uploaded for data request {data_request.id}, field {field_name}")
     
     return FileUploadResponse(

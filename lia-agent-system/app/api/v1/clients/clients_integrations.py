@@ -93,6 +93,7 @@ async def add_client_integration(
         settings["integrations"] = integrations
         client.settings = settings
         await repo.save(client)
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Added integration '{data.name}' for client {client_id}")
         return {"success": True, "message": f"Integration '{data.name}' added successfully", "data": new_integration}
     except HTTPException:

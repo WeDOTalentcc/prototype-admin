@@ -335,6 +335,7 @@ async def update_policy(
             updated_by=str(updated_by) if updated_by else None,
         )
         await db.commit()
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Updated compensation policy: {policy.name} v{policy.version}")
         return _to_response(policy)
     except HTTPException:

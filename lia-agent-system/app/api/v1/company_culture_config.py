@@ -59,6 +59,7 @@ async def create_culture_value(
     """Create a new culture value."""
     try:
         cv = await cv_repo.create({"company_id": company_id, **data.model_dump()})
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created culture value: {cv.name}")
         return cv
     except Exception as e:

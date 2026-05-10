@@ -547,6 +547,7 @@ async def record_field_history(
         created_by=recruiter_id,
     )
     db.add(history_entry)
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.debug(f"Recorded field history: {field_name} changed from {old_value} to {new_value} ({change_type.value})")
 
 

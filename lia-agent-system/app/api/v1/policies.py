@@ -231,6 +231,7 @@ async def create_policy(
         repo = GlobalPolicyRepository(db)
         policy = await repo.create(policy)
 
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"✅ Created policy: {policy.name} (ID: {policy.id})")
 
         return {
@@ -320,6 +321,7 @@ async def update_policy(
         update_data["updated_by"] = user_id
         policy = await repo.update(policy, update_data)
 
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"✅ Updated policy: {policy.name} (ID: {policy.id})")
 
         return {
@@ -384,6 +386,7 @@ async def delete_policy(
         policy_name = policy.name
         await repo.delete(policy)
 
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"🗑️ Deleted policy: {policy_name} (ID: {policy_id})")
 
         return {

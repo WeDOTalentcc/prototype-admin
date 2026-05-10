@@ -225,6 +225,7 @@ async def create_email_template(
     Create a new email template.
     """
     try:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Creating email template: {template_data.name}")
 
         detected_vars = email_svc.extract_variables(

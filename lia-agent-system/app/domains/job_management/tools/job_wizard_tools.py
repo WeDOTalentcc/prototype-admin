@@ -155,6 +155,7 @@ async def get_job_suggestions(
     Returns:
         Suggestions for the specified field from real data sources
     """
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"Getting suggestions for field: {field_name}, company_id: {company_id}")
     
     try:
@@ -253,10 +254,12 @@ async def get_job_suggestions(
             else:
                 suggestions["suggestions"] = []
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Returning {len(suggestions['suggestions'])} suggestions for {field_name}")
         return suggestions
         
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error getting suggestions for {field_name}: {e}", exc_info=True)
         return {
             "field_name": field_name,
@@ -641,6 +644,7 @@ async def capture_wizard_feedback(
     Returns:
         Confirmation of capture
     """
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.debug(f"Capturing feedback for field: {field_name}")
     
     try:

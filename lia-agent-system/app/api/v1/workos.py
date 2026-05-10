@@ -579,6 +579,7 @@ async def scim_group_action(
             detail="Invalid action. Must be created, updated, or deleted."
         )
 
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"SCIM group.{action}: {group_data.workos_id} ({group_data.name})")
 
     if action == "created":

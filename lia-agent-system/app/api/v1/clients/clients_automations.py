@@ -89,6 +89,7 @@ async def create_client_automation(
         settings["automations"] = automations
         client.settings = settings
         await repo.save(client)
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created automation '{data.name}' for client {client_id}")
         return {"success": True, "message": "Automation created successfully", "data": new_automation}
     except HTTPException:

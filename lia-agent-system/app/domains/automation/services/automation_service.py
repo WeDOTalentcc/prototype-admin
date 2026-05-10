@@ -189,6 +189,7 @@ class AutomationService:
                     })
                     
                 except Exception as e:
+                    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                     logger.error(f"Error executing automation {automation.id}: {e}")
                     
                     await self._log_execution(

@@ -640,6 +640,7 @@ async def update_company_profile(
 
         update_data["updated_at"] = datetime.utcnow()
         updated = await profile_repo.update(profile_id, update_data)
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Updated company profile: {updated.name}")
         return updated
     except HTTPException:

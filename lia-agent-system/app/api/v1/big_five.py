@@ -256,6 +256,7 @@ async def create_profile(
         profiles.append(new_profile)
         save_big_five_profiles(client, profiles)
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"✅ Created Big Five profile '{data.name}' for company {current_user['company_id']}")
         
         return {

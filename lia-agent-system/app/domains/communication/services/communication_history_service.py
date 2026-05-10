@@ -119,6 +119,7 @@ class CommunicationHistoryService:
             repo = CommunicationHistoryRepository(session)
             communication = await repo.get_by_id(communication_id)
             if communication:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"Retrieved communication: {communication.id}")
             else:
                 logger.warning(f"Communication not found: {communication_id}")

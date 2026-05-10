@@ -348,6 +348,7 @@ class ATSSyncService:
                         "ats_field": ats_field,
                         "value": field_value
                     })
+                    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                     logger.info(f"   ✅ Will sync: {field_name} → {ats_field}")
             else:
                 mapping = ATSFieldMapping.get_mapping(ats_type).get(field_name, {})
@@ -357,6 +358,7 @@ class ATSSyncService:
                     "reason": reason
                 })
                 wedotalent_only.append(field_name)
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"   ⏭️ Skip ATS (WedoTalent only): {field_name} - {reason}")
         
         action = self._determine_action(trigger)

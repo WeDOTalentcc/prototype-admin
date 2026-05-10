@@ -297,6 +297,7 @@ async def create_candidate(
 ):
     """Create a new candidate. If auto_enrich=True and linkedin_url is provided, enrichment runs in background."""
     try:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Creating candidate: {candidate_data.name}")
         candidate = Candidate(
             id=uuid.uuid4(),

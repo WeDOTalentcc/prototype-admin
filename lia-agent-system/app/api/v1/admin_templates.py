@@ -193,6 +193,7 @@ async def update_system_template(
                 )
 
         template = await repo.update_system_template(template, update_data)
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"System template updated: {template_id} (v{template.version})")
         return template_to_response(template)
     except HTTPException:
