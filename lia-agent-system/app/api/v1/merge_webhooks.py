@@ -85,7 +85,10 @@ async def process_merge_event(data: dict[str, Any]):
     account_token = linked_account.get("id", "")
     integration_name = linked_account.get("integration", "")
     
-    logger.info(f"[MERGE] Processing {event_type} for {integration_name} (company: {company_id})")
+    logger.info(
+        "[MERGE] Processing webhook event",
+        extra={"event_type": event_type, "integration_name": integration_name, "company_id": company_id},
+    )
     
     for record in records:
         try:
@@ -117,7 +120,11 @@ async def handle_candidate_created(record: dict, company_id: str, account_token:
     first_name = record.get("first_name", "")
     last_name = record.get("last_name", "")
     
-    logger.info(f"[MERGE] New candidate: {candidate_id} - {first_name} {last_name}")
+    # P0-1 fix: removed first_name + last_name (PII direta — LGPD Art.12). Mantém candidate_id apenas.
+    logger.info(
+        "[MERGE] New candidate created",
+        extra={"candidate_id": candidate_id},
+    )
     
     try:
         from app.domains.analytics.services.activity_service import activity_service
@@ -161,7 +168,10 @@ async def handle_stage_changed(record: dict, company_id: str, account_token: str
     candidate_id = record.get("candidate")
     job_id = record.get("job")
     
-    logger.info(f"[MERGE] Stage changed: {application_id} -> {new_stage_name}")
+    logger.info(
+        "[MERGE] Stage changed",
+        extra={"application_id": application_id, "new_stage_name": new_stage_name},
+    )
     
     try:
         from app.domains.ats_integration.services.merge_ats_service import merge_ats_service
@@ -207,7 +217,10 @@ async def handle_job_created(record: dict, company_id: str, account_token: str):
     job_id = record.get("id")
     job_name = record.get("name", "")
     
-    logger.info(f"[MERGE] New job: {job_id} - {job_name}")
+    logger.info(
+        "[MERGE] New job created",
+        extra={"job_id": job_id, "job_name": job_name},
+    )
 
 
 async def handle_job_updated(record: dict, company_id: str, account_token: str):
