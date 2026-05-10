@@ -821,7 +821,7 @@ class FairnessGuard:
         _layer3_enabled = False
         try:
             from lia_config.config import settings as _settings
-            _layer3_enabled = getattr(_settings, "FAIRNESS_LAYER3_ENABLED", False)
+            _layer3_enabled = getattr(_settings, "FAIRNESS_LAYER3_ENABLED", True)  # P1-3: defense-in-depth default-on
         except Exception as exc:
             logger.warning(
                 "[fairness_guard] FAIRNESS_LAYER3_ENABLED settings read failed (compliance): %s",

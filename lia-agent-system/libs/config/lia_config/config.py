@@ -234,7 +234,7 @@ class AppSettings(BaseSettings):
     ENABLE_TWILIO: bool = False
     ENABLE_MICROSOFT_GRAPH: bool = True
     ENABLE_GOOGLE_CALENDAR: bool = False
-    FAIRNESS_LAYER3_ENABLED: bool = False
+    FAIRNESS_LAYER3_ENABLED: bool = True  # P1-3 (2026-05-10): default-on para Inegociável #3 (FairnessGuard 100% high-impact). Layer 3 só dispara em sourcing search + JD import (custo controlado via Haiku + cache 1h)
     # LIA-C03: FairnessGuard check em tool call args no TimedToolNode (env: FAIRNESS_TOOL_CHECK_ENABLED)
     FAIRNESS_TOOL_CHECK_ENABLED: bool = True
     # LGPD consent enforcement: False=soft (aviso+continua), True=hard (bloqueia ausência como revogado)
