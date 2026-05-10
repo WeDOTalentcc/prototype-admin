@@ -279,6 +279,7 @@ async def regenerate_wsi_questions(
     request: RegenerateQuestionsRequest,
     wsi_svc: WSIService = Depends(get_wsi_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Regenerate WSI questions when competencies change.
 
@@ -376,6 +377,7 @@ async def regenerate_wsi_questions(
 
 @router.get("/question-templates", response_model=None)
 async def get_question_templates():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get available question templates for reference.
     """

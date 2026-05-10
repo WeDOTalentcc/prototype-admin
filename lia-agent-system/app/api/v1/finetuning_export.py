@@ -12,6 +12,7 @@ async def get_export_stats(
     company_id: str,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     stats = await _service.get_export_stats(company_id, db)
     return stats
 
@@ -23,6 +24,7 @@ async def trigger_export(
     min_quality: float = Query(default=0.7, ge=0.0, le=1.0),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     content = await _service.export_to_file(company_id, db, output_format=format)
     lines = content.strip().split("\n") if content.strip() else []
     return {

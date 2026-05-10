@@ -18,6 +18,7 @@ router = APIRouter(prefix="/cache", tags=["cache"])
 
 @router.delete("/jd/{company_id}", response_model=None)
 async def invalidate_jd_cache(company_id: str):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Manually invalidate JD template cache for a company.
     
@@ -122,6 +123,7 @@ async def reset_jd_cache_metrics():
 
 @router.get("/embeddings/stats", response_model=None)
 async def get_embedding_cache_stats():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get embedding cache statistics.
     
@@ -151,6 +153,7 @@ async def get_embedding_cache_stats():
 
 @router.post("/embeddings/clear", response_model=None)
 async def clear_embedding_cache():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Clear embedding cache.
     

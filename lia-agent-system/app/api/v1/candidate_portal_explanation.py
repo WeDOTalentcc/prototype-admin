@@ -55,6 +55,7 @@ async def explain_candidate_decisions_endpoint(
         description="Vaga específica; se omitido, usa a vaga do token",
     ),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Retorna explicação das decisões tomadas sobre a candidatura.
 
     Auth: JWT token via query param `candidate_token`.

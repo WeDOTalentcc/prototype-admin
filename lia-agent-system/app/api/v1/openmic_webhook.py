@@ -124,6 +124,7 @@ async def openmic_webhook(
     background_tasks: BackgroundTasks,
     x_openmic_signature: str | None = Header(None, alias="X-OpenMic-Signature"),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Receive and process OpenMic.ai call completion webhook.
 

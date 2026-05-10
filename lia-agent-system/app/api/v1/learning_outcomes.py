@@ -152,6 +152,7 @@ async def get_outcome_stats(
     company_id: str,
     repo: LearningOutcomeRepository = Depends(get_learning_outcome_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     try:
         stats = await repo.get_stats(company_id)
         total = stats["total"]
@@ -182,6 +183,7 @@ async def get_outcome_patterns(
     group_by: str = Query(default="role", regex="^(role|seniority|department)$"),
     repo: LearningOutcomeRepository = Depends(get_learning_outcome_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     try:
         rows = await repo.get_patterns(company_id=company_id, group_by=group_by)
 

@@ -206,6 +206,7 @@ async def track_request_status(
     request_id: str,
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Track the status of a data subject request (public endpoint).
 

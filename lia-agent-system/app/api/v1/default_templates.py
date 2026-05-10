@@ -69,6 +69,7 @@ def _to_response(t: DefaultTemplate) -> DefaultTemplateResponse:
 
 @router.get("/variables", response_model=None)
 async def list_template_variables() -> TemplateVariablesListResponse:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get all available template variables."""
     variables = [TemplateVariableResponse(**var) for var in AVAILABLE_TEMPLATE_VARIABLES]
     return TemplateVariablesListResponse(variables=variables)
@@ -83,6 +84,7 @@ async def list_default_templates(
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
 ) -> DefaultTemplateListResponse:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List all default templates with optional filtering."""
     try:
         conditions = []
@@ -107,6 +109,7 @@ async def get_default_template(
     template_id: UUID,
     db: AsyncSession = Depends(get_db),
 ) -> DefaultTemplateResponse:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get a specific default template by ID."""
     try:
         repo = DefaultTemplateRepository(db)

@@ -56,6 +56,7 @@ def get_user_from_headers(
 
 @router.get("/technical-tests/options", summary="Get test options", response_model=None)
 async def get_test_options():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get available test categories, subcategories, and difficulties."""
     subcategory_options = [
         {"value": s.value, "label": s.value.replace("_", " ").title()}

@@ -109,6 +109,7 @@ async def search_candidates(
     audit_svc: AuditService = Depends(get_audit_service),
     pearch_svc: PearchService = Depends(get_pearch_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Search for candidates using natural language query (Pearch AI - PAID)."""
     try:
         _timeout = getattr(request, "timeout", 60) or 60
@@ -157,6 +158,7 @@ async def search_candidates_get(
     timeout: int = Query(60, ge=10, le=1800, description="Timeout in seconds"),
     pearch_svc: PearchService = Depends(get_pearch_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Search for candidates using GET request (convenient for testing)."""
     try:
         from lia_models.pearch import SearchType as _ST
@@ -177,6 +179,7 @@ async def search_by_job_description(
     limit: int = Query(20, ge=1, le=100),
     pearch_svc: PearchService = Depends(get_pearch_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Search candidates by pasting a full job description."""
     try:
         return await pearch_svc.search_by_job_description(

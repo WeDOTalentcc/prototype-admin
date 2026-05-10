@@ -27,6 +27,7 @@ async def get_stale_candidates(
     limit: int = Query(default=50, ge=1, le=100, description="Maximum candidates to return"),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get candidates that have been inactive for X days.
     
@@ -50,6 +51,7 @@ async def execute_pipeline_action(
     db: AsyncSession = Depends(get_db),
     audit_svc: AuditService = Depends(get_audit_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Execute a pipeline action on a candidate.
     

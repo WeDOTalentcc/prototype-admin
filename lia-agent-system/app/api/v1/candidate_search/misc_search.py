@@ -47,6 +47,7 @@ async def search_from_cv(
     cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
     pearch_svc: PearchService = Depends(get_pearch_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Upload a CV file and search for similar candidates.
     
@@ -220,6 +221,7 @@ class AnalyzeSearchResponse(BaseModel):
 
 @router.post("/analyze", response_model=AnalyzeSearchResponse)
 async def analyze_search_results(request: AnalyzeSearchRequest):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Analisa resultados de busca e retorna métricas proativas.
     
@@ -294,6 +296,7 @@ class EnhancePromptResponse(BaseModel):
 
 @router.post("/enhance-prompt", response_model=EnhancePromptResponse)
 async def enhance_search_prompt(request: EnhancePromptRequest):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Analisa e aprimora um prompt de busca de candidatos.
     

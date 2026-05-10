@@ -25,6 +25,7 @@ async def list_activities(
     offset: int = Query(0, ge=0, description="Offset for pagination (default: 0)"),
     activity_svc: ActivityService = Depends(get_activity_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     List activities with optional filters.
     
@@ -65,6 +66,7 @@ async def get_urgent_count(
     user_id: str | None = Query(None, description="Optional user_id to filter visible activities"),
     activity_svc: ActivityService = Depends(get_activity_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get count of urgent activities.
     
@@ -94,6 +96,7 @@ async def get_activity(
     activity_id: str,
     activity_svc: ActivityService = Depends(get_activity_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get a single activity by ID.
     

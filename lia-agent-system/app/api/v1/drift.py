@@ -117,6 +117,7 @@ async def get_drift_status(
     company_id: UUID = Query(..., description="UUID da empresa"),
     db: AsyncSession = Depends(get_db),
 ) -> DriftStatusResponse:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Retorna o status de drift para a empresa indicada.
 

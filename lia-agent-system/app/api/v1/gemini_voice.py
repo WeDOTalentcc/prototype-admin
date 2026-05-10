@@ -693,6 +693,7 @@ async def gemini_live_stream_websocket(
 
 @router.get("/gemini-voice/session/{session_id}", response_model=None)
 async def get_gemini_session_status(session_id: str):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     from app.shared.services.gemini_live_audio_service import get_gemini_live_service
 
     live_service = get_gemini_live_service()

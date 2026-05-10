@@ -514,6 +514,7 @@ async def get_empty_field_notifications(
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user_or_demo)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get notifications for fields with active toggles but empty company config.
     
@@ -569,6 +570,7 @@ async def update_empty_field_preference(
     db: AsyncSession = Depends(get_db),
     current_user = Depends(get_current_user_or_demo)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Update recruiter's preference for an empty field reminder.
     

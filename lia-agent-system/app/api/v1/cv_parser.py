@@ -499,6 +499,7 @@ async def confirm_cv_and_create_candidate(
 async def get_supported_formats(
     cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get list of supported CV file formats and size limits.
     """

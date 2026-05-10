@@ -214,6 +214,7 @@ async def validate_invitation(
 
 @router.get("/options", summary="List available role and status options", response_model=None)
 async def list_options():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List all available role and status options for client users."""
     return {
         "success": True,

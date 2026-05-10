@@ -35,6 +35,7 @@ def _serialize(entry: GlossaryEntry) -> dict:
     tags=["glossary"],
 )
 async def list_terms() -> dict:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Return the canonical prompt terms that have a definition available."""
     glossary = get_glossary()
     available: list[dict] = []
@@ -57,6 +58,7 @@ async def list_terms() -> dict:
     tags=["glossary"],
 )
 async def get_term_definition(term: str) -> dict:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Return the canonical definition for ``term`` (tolerant to case/accent)."""
     cleaned = term.strip()
     if not cleaned:

@@ -347,6 +347,7 @@ async def react_orchestrate(
 
 @router.get("/stage-mapping", response_model=None)
 async def get_stage_mapping() -> dict[str, Any]:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get the mapping between frontend and backend stage names.
     

@@ -162,6 +162,7 @@ async def orchestrated_job_chat(
 
 @router.get("/orchestrator/job-chat/intents", response_model=None)
 async def get_job_chat_intents():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get available intents and agent mappings for job chat."""
     return {
         "intents": [

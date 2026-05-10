@@ -54,6 +54,7 @@ class QualityScoreResponse(BaseModel):
 
 @router.get("/templates", response_model=list[TemplateResponse])
 async def list_templates():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List available agent templates. Recruiter picks one as starting point."""
     try:
         # Try multiple paths (dev vs production)

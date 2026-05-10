@@ -16,6 +16,7 @@ router = APIRouter()
 
 @router.post("/analysis/candidates", response_model=AnalysisResponse)
 async def analyze_candidates(request: AnalysisRequest) -> AnalysisResponse:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Analyze candidates using AI-powered LIA methodology.
     
@@ -56,6 +57,7 @@ async def analyze_candidates(request: AnalysisRequest) -> AnalysisResponse:
 
 @router.get("/analysis/archetypes", response_model=None)
 async def get_archetypes():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get available Big Five archetypes.
     """
@@ -115,6 +117,7 @@ async def get_archetypes():
 
 @router.get("/analysis/scoring-methodology", response_model=None)
 async def get_scoring_methodology():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get the LIA scoring methodology.
     """

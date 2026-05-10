@@ -32,6 +32,7 @@ router = APIRouter()
 
 @router.get("/status-options", summary="List available status options", response_model=None)
 async def list_status_options():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List all available client status options."""
     return {
         "success": True,

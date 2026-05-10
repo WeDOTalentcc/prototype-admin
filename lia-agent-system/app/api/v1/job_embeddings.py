@@ -229,6 +229,7 @@ async def batch_process_embeddings(request: BatchProcessRequest):
 
 @router.get("/stats/{company_id}", response_model=None)
 async def get_embedding_stats(company_id: str):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get embedding statistics for a company.
     """
@@ -313,6 +314,7 @@ async def update_job_outcome(request: OutcomeUpdateRequest):
 
 @router.get("/fast-track/insights/{company_id}", response_model=None)
 async def get_fast_track_insights(company_id: str):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get Fast Track usage insights for a company.
     

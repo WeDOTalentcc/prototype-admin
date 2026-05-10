@@ -25,6 +25,7 @@ router = APIRouter(prefix="/webhooks", tags=["Webhooks"])
 
 @router.get("/events", summary="List allowed webhook event types")
 async def list_allowed_events():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Return the catalog of webhook event types clients can subscribe to."""
     return {"events": ALLOWED_EVENTS}
 

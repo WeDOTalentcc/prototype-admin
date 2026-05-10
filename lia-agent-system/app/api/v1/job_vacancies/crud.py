@@ -1064,6 +1064,7 @@ async def get_clone_summary(
     job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get a summary of a job for displaying before cloning."""
     from app.domains.job_management.services.job_clone_service import job_clone_service
 

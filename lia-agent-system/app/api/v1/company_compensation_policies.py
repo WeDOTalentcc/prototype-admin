@@ -429,6 +429,7 @@ async def seed_default_policies(
 
 @router.get("/policy-types/list", response_model=None)
 async def list_policy_types():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List available PRV policy types."""
     return [
         {

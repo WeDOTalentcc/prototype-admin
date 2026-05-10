@@ -24,6 +24,7 @@ async def get_vacancy_prediction(
     vacancy_id: str = Query(..., description="UUID da vaga"),
     company_id: str = Query(..., description="UUID da empresa"),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Retorna probabilidade de fechamento de uma vaga específica.
 
@@ -53,6 +54,7 @@ async def get_vacancy_prediction(
 async def get_company_overview(
     company_id: str = Query(..., description="UUID da empresa"),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Retorna previsões de todas as vagas ativas da empresa,
     ordenadas por closure_probability ascendente (mais em risco primeiro).

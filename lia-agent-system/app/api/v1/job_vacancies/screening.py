@@ -108,6 +108,7 @@ async def get_screening_config(
     job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     repo: JobVacancyScreeningRepository = Depends(get_job_vacancy_screening_repo)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get screening configuration for a job vacancy."""
     try:
         job = await repo.get_vacancy_by_id(job_id)

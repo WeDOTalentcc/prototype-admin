@@ -134,6 +134,7 @@ Use hífen (-) para bullet points. Seja abrangente mas conciso."""
 
 @router.post("", response_model=ProfileAnalysisResponse)
 async def generate_profile_analysis(request: ProfileAnalysisRequest):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Generate an AI-powered profile analysis for a candidate."""
     
     valid_types = ['bullet_points', 'short_paragraph', 'detailed_bullets']
@@ -280,6 +281,7 @@ async def delete_candidate_analysis(
     company_id: str = Query(..., description="Company ID for multi-tenancy"),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Delete a specific analysis for a candidate."""
     try:
         repo = ProfileAnalysisRepository(db)

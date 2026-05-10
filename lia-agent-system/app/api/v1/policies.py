@@ -65,6 +65,7 @@ class PolicyUpdate(BaseModel):
 
 @router.get("/types", summary="List policy types", response_model=None)
 async def list_policy_types():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     List all available policy types with their schemas.
     """

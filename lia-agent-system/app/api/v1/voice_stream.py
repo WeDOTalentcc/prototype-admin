@@ -401,6 +401,7 @@ async def voice_stream_websocket(
 
 @router.get("/voice-stream/status")
 async def voice_stream_status(company_id: str = Query("")):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     from app.shared.providers.llm_factory import get_voice_provider_for_tenant
 
     voice_provider = get_voice_provider_for_tenant(

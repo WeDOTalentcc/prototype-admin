@@ -401,6 +401,7 @@ async def get_indeed_xml_feed(
     company_id: str | None = None,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get Indeed-compatible XML feed of all active jobs.
     

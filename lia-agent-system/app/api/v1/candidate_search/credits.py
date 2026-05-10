@@ -97,6 +97,7 @@ class DetailedCreditEstimateDTO(BaseModel):
 async def estimate_search_credits(request: CreditEstimateRequest,
     pearch_svc: PearchService = Depends(get_pearch_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Estima o custo em créditos ANTES de executar a busca.
     

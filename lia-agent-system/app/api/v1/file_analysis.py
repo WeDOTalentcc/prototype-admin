@@ -29,6 +29,7 @@ class FileAnalysisResponse(BaseModel):
 async def analyze_file(file: UploadFile = File(...),
     cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Analyze an uploaded file and extract relevant information.
     

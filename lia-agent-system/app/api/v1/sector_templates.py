@@ -43,6 +43,7 @@ class ApplySectorResponse(BaseModel):
 
 @router.get("/agent-templates/sectors", response_model=list[SectorTemplateSummary])
 async def list_sector_templates():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List available sector templates for the Agent Studio gallery."""
     from app.shared.agent_templates.sector_templates import list_templates
     return list_templates()

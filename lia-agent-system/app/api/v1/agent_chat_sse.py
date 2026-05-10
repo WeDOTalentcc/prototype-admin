@@ -167,6 +167,7 @@ async def sse_chat_action(
     request: Request,
     authorization: str = Header(default=""),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     REST endpoint for HITL approval actions when using SSE transport.
 
@@ -205,6 +206,7 @@ async def sse_chat_stream(
     authorization: str = Header(default=""),
     last_event_id: str = Header(default="", alias="Last-Event-ID"),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     SSE streaming endpoint for agent chat.
 

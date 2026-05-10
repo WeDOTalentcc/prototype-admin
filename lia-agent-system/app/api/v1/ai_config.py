@@ -181,6 +181,7 @@ async def update_ai_config(
 
 @router.get("/defaults/{sector}")
 async def get_sector_defaults(sector: str):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get benchmark defaults for a sector. Helps recruiters decide."""
     SECTOR_BENCHMARKS: dict[str, dict[str, Any]] = {
         "tech": {

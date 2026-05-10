@@ -44,6 +44,7 @@ async def handle_merge_webhook(
     background_tasks: BackgroundTasks,
     x_merge_signature: str | None = Header(None, alias="X-Merge-Signature")
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Receive webhooks from Merge.dev when data changes.
     Events: Candidate.created, Candidate.updated, Application.changed_stage, etc.

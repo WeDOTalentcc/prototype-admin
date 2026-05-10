@@ -159,6 +159,7 @@ async def list_active_sessions(
     token: str = Query(default=""),
     ws_mgr: WSManager = Depends(get_ws_manager),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List active WebSocket sessions for the authenticated user.
 
     Returns only session IDs belonging to the current user, not all
@@ -1123,6 +1124,7 @@ class HTTPChatResponse(BaseModel):
 
 @router.post("/chat/message", response_model=HTTPChatResponse)
 async def http_chat_message(req: HTTPChatRequest, request: Request):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     HTTP fallback for agent chat when WebSocket is unavailable.
     Same logic as WS handler but synchronous request/response.

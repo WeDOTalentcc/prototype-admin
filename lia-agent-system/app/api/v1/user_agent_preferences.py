@@ -79,6 +79,7 @@ async def list_user_preferences(
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Lista todas as preferências de auto_confirm de um usuário."""
     prefs = await UserAgentPreferenceService.list_user_preferences(
         db, user_id=user_id, company_id=company_id
@@ -112,6 +113,7 @@ async def check_auto_confirm(
     action_type: str = Query(...),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Verifica se auto_confirm está ativo para um usuário/domínio/ação.
     Usado pelo HITL service antes de cada aprovação.

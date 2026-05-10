@@ -104,6 +104,7 @@ async def list_matrix_entries(
 
 @router.get("/modules", summary="List available modules", response_model=None)
 async def list_modules():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     List all available modules with their labels and descriptions.
     """

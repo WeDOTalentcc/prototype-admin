@@ -28,6 +28,7 @@ async def validate_transition(
     target_stage: str = Query(...),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Validate whether a pipeline transition is allowed based on company policy.
     
@@ -106,6 +107,7 @@ async def get_pipeline_templates(
     company_id: str,
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get available pipeline templates for a company.
     

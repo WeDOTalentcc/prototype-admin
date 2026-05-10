@@ -117,6 +117,7 @@ async def orchestrated_talent_chat(
 
 @router.get("/talent-chat/intents", response_model=None)
 async def get_talent_chat_intents():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     return {
         "intents": [
             {"id": "rankear_candidatos", "description": "Ranking de candidatos", "keywords": ["ranking", "ordenar", "top", "melhores"]},

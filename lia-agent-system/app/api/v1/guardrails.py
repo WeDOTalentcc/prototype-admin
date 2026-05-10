@@ -93,6 +93,7 @@ async def list_guardrails(
     level: str | None = Query(None, description="Filtrar por nível: primary | secondary"),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Lista guardrails com filtros opcionais."""
     guardrails = await GuardrailRepository.list_filtered(
         db,
@@ -125,6 +126,7 @@ async def get_guardrail(
     guardrail_id: str,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Retorna um guardrail pelo ID."""
     stmt = select(Guardrail).where(Guardrail.id == guardrail_id)
     result = await db.execute(stmt)

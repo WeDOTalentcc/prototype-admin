@@ -170,6 +170,7 @@ async def send_bulk_email(req: BulkEmailRequest):
 
 @router.get("/jobs/{job_id}/status", response_model=AsyncJobStatusResponse, summary="Status de tarefa async")
 async def get_job_status(job_id: str):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Polling fallback — retorna status atual de uma tarefa Celery.
     Preferir WebSocket /ws/jobs/{job_id} para atualizações em tempo real.

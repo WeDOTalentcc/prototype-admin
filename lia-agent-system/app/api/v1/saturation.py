@@ -366,6 +366,7 @@ class ProcessQueueResponse(BaseModel):
 
 @router.get("/job-vacancies/{job_id}/screening-queue", response_model=QueueStatusResponse, tags=["saturation"])
 async def get_screening_queue(job_id: UUID, db: AsyncSession = Depends(get_db)):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
     vacancy = result.scalar_one_or_none()
     if not vacancy:

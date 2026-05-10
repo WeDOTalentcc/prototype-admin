@@ -32,6 +32,7 @@ async def get_daily_briefing(
     user_id: str = "default_user",
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get daily briefing for a user.
 
@@ -69,6 +70,7 @@ async def refresh_briefing(
     user_id: str = "default_user",
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Force refresh the daily briefing.
     """

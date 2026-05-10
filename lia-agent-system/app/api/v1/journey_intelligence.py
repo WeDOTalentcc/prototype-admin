@@ -52,6 +52,7 @@ async def get_company_overview(
     current_user=Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Visão geral da saúde de pipeline por vaga ativa da empresa.
     Vagas ordenadas por health_score ASC (piores primeiro).

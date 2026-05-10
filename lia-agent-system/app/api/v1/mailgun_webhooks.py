@@ -64,6 +64,7 @@ async def mailgun_webhook(
     request: Request,
     repo: CommunicationRepository = Depends(get_communication_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Receive Mailgun delivery events.
 

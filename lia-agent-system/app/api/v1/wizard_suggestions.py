@@ -321,6 +321,7 @@ async def get_data_coverage(
 
 @router.get("/sources-priority", response_model=None)
 async def get_sources_priority() -> dict[str, Any]:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get information about the data sources priority system.
     

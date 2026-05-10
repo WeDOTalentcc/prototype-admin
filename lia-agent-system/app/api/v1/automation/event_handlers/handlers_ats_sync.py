@@ -220,6 +220,7 @@ async def handle_ats_sync(
     audit_svc: AuditService = Depends(get_audit_service),
     activity_svc: ActivityService = Depends(get_activity_service_canonical),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Handle ats_sync trigger: sync candidate stage with external ATS platform."""
     try:
         return await _process_ats_sync(request, db, audit_svc, activity_svc)

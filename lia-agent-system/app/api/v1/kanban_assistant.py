@@ -56,6 +56,7 @@ class KanbanAssistantResponse(BaseModel):
 
 @router.post("/lia/kanban-assistant", response_model=KanbanAssistantResponse)
 async def kanban_assistant(request: KanbanAssistantRequest) -> KanbanAssistantResponse:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Process a Kanban assistant command for AI-powered pipeline analysis.
     
@@ -134,6 +135,7 @@ class StageMoveSuggestionsResponse(BaseModel):
 
 @router.post("/lia/kanban-assistant/stage-move-suggestions", response_model=StageMoveSuggestionsResponse)
 async def get_stage_move_suggestions(context: StageMoveContext) -> StageMoveSuggestionsResponse:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Return contextual LIA suggestions when a candidate is moved to a new stage.
 
@@ -208,6 +210,7 @@ async def get_stage_move_suggestions(context: StageMoveContext) -> StageMoveSugg
 
 @router.get("/lia/kanban-assistant/command-types", response_model=None)
 async def get_command_types():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get available command types for the Kanban assistant.
     """

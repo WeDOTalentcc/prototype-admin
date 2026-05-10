@@ -83,6 +83,7 @@ async def search_similar_candidates(
 ,
     pearch_svc: PearchService = Depends(get_pearch_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Encontra candidatos similares a um perfil específico.
     
@@ -220,6 +221,7 @@ async def combine_profiles_for_search(
 ,
     cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Combine multiple candidate profiles (URLs and/or CVs) into an ideal profile.
     

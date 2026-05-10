@@ -12,6 +12,7 @@ router = APIRouter(prefix="/pipeline", tags=["Pipeline Agent"])
 
 @router.post("/react-orchestrate", response_model=None)
 async def pipeline_react_orchestrate(request: Request):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Pipeline agent endpoint - ReAct based autonomous candidate management."""
     if not os.getenv("USE_REACT_AGENTS", "false").lower() == "true":
         return {"error": "ReAct agents not enabled", "detail": "Set USE_REACT_AGENTS=true"}

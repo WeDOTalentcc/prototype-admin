@@ -122,6 +122,7 @@ async def list_attachments(
     limit: int = Query(50, ge=1, le=200, description="Max results (default: 50, max: 200)"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     List attachments with optional filters.
     
@@ -152,6 +153,7 @@ async def list_attachments(
 
 @router.get("/{attachment_id}", response_model=AttachmentResponse)
 async def get_attachment(attachment_id: str):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get a single attachment by ID.
     
@@ -182,6 +184,7 @@ async def get_attachment(attachment_id: str):
 
 @router.delete("/{attachment_id}", response_model=AttachmentResponse)
 async def delete_attachment(attachment_id: str):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Soft delete an attachment (deactivate).
     

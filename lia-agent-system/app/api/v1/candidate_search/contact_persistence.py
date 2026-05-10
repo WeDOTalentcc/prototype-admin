@@ -79,6 +79,7 @@ async def persist_revealed_contact(
     request: RevealedContactDTO,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Persiste dados de contato revelados de candidatos Pearch.
     

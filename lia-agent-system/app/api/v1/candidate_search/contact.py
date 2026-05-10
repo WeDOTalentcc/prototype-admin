@@ -92,6 +92,7 @@ class RevealCostEstimate(BaseModel):
 async def get_reveal_cost(
     reveal_type: str = Query(..., description="Tipo: 'email' ou 'phone'")
 ) -> RevealCostEstimate:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Retorna o custo para revelar email ou telefone.
     
@@ -119,6 +120,7 @@ async def reveal_contact(
     db: AsyncSession = Depends(get_db),
     pearch_svc: PearchService = Depends(get_pearch_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Revela email ou telefone de um candidato.
     
@@ -406,6 +408,7 @@ async def get_filter_suggestions(
     request: FilterSuggestionsRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Retorna sugestões de filtros com contagem de candidatos.
     

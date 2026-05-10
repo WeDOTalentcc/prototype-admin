@@ -304,6 +304,7 @@ async def list_models(
     active_only: bool = True,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     List registered ML models.
 
@@ -325,6 +326,7 @@ async def get_model_performance(
     model_id: str,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get performance metrics for a specific model.
     """
@@ -349,6 +351,7 @@ async def compare_models(
     model_ids: list[str],
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Compare performance of multiple models.
     """

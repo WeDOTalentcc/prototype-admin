@@ -510,6 +510,7 @@ async def get_static_skill_suggestions(
     seniority: str | None = Query(None, description="Seniority level"),
     limit: int = Query(10, ge=1, le=20, description="Maximum number of skills"),
 ) -> dict[str, Any]:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get skill suggestions from the static catalog only.
     
@@ -548,6 +549,7 @@ async def search_skills(
     q: str = Query(..., min_length=2, description="Search query"),
     area: str | None = Query(None, description="Filter by area"),
 ) -> dict[str, Any]:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Search for skills in the static catalog.
     

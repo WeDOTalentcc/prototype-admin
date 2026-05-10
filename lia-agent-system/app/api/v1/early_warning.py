@@ -28,6 +28,7 @@ async def get_early_warning(
     current_user=Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Retorna candidatos em risco de desengajamento ordenados por EWS score.
     Inclui resumo por nível de risco e top candidatos críticos.

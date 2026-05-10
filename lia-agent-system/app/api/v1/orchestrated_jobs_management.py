@@ -194,6 +194,7 @@ def _extract_param_value_from_message(
 
 @router.post("/jobs-management", response_model=OrchestratedJobsManagementResponse)
 async def orchestrated_jobs_management(request: OrchestratedJobsManagementRequest):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Process job portfolio queries through the Jobs Management Assistant.
 
@@ -534,6 +535,7 @@ async def orchestrated_jobs_management(request: OrchestratedJobsManagementReques
 
 @router.get("/jobs-management/intents", response_model=None)
 async def get_jobs_management_intents():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     return {
         "intents": [
             {

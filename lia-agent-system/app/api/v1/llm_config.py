@@ -313,6 +313,7 @@ async def test_llm_provider(
 
 @router.get("/providers", response_model=None)
 async def list_available_providers():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List all available LLM providers with their capabilities."""
     return {
         "providers": [

@@ -21,6 +21,7 @@ async def populate_activities(
     db: AsyncSession = Depends(get_db),
     activity_svc: ActivityService = Depends(get_activity_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Create sample activities for all types to test the Activity Feed UI.
     """
@@ -119,6 +120,7 @@ async def populate_activities(
 
 @router.delete("/clear-test-activities", response_model=None)
 async def clear_test_activities(db: AsyncSession = Depends(get_db)):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Delete all test activities (those with test- prefixed IDs).
     """

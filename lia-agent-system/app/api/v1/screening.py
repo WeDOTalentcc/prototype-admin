@@ -256,6 +256,7 @@ async def list_screening_tasks(
     job_id: str,
     repo: ScreeningRepository = Depends(get_screening_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     try:
         tasks = await repo.list_tasks_by_job(job_id)
         return {"job_id": job_id, "tasks": [t.to_dict() for t in tasks], "total": len(tasks)}
@@ -269,6 +270,7 @@ async def execute_screening_task(
     task_id: str,
     repo: ScreeningRepository = Depends(get_screening_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     try:
         task_uuid = uuid_mod.UUID(task_id)
     except ValueError:

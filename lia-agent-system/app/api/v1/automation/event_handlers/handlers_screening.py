@@ -496,6 +496,7 @@ async def handle_screening_completed(
     activity_svc: ActivityService = Depends(get_activity_service_canonical),
     comm_svc: CommunicationService = Depends(get_communication_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Handle screening_completed trigger: WSI calculation and candidate notification."""
     try:
         return await _process_screening_completed(request, db, audit_svc, activity_svc, comm_svc)

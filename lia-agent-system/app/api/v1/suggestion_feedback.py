@@ -107,6 +107,7 @@ async def get_suggestion_stats(
     company_id: str,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     try:
         _repo = SuggestionFeedbackRepository(db)
         total, accepted_total = await _repo.get_total_and_accepted(company_id)
@@ -143,6 +144,7 @@ async def get_learned_adjustments(
     seniority: str | None = Query(default=None),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     try:
         sample_suggestion = {"salary_range": {"min": 0, "max": 0, "currency": "BRL"}}
         result = await _feedback_service.apply_learning(

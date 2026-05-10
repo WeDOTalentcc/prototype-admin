@@ -268,6 +268,7 @@ async def handle_interview_scheduled(
     db: AsyncSession = Depends(get_db),
     activity_svc: ActivityService = Depends(get_activity_service_canonical),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Handle interview_scheduled trigger: send invites and create calendar event."""
     try:
         return await _process_interview_scheduled(request, db, activity_svc)

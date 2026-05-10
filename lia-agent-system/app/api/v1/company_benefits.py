@@ -334,6 +334,7 @@ async def seed_default_benefits(
 
 @router.get("/categories/list", response_model=None)
 async def list_benefit_categories():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List available benefit categories."""
     return [
         {"id": "health", "name": "Saúde", "icon": "🏥"},

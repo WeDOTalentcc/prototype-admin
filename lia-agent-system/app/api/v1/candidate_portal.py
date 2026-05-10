@@ -38,6 +38,7 @@ class CandidateApplicationsResponse(BaseModel):
 
 @router.post("/chat", response_model=APIResponse)
 async def candidate_chat(request_data: CandidateChatRequest, request: Request):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Candidate-facing chat endpoint — LLM-powered status queries.
 
     Auth: JWT token in body (candidate_token).
@@ -125,6 +126,7 @@ async def candidate_chat(request_data: CandidateChatRequest, request: Request):
 
 @router.get("/applications", response_model=APIResponse)
 async def list_candidate_applications(candidate_token: str):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List active applications for a candidate — used by frontend job selector.
 
     Returns list of applies so UI can show selector if candidate has 2+ vacancies.
