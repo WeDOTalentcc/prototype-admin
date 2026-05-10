@@ -158,6 +158,7 @@ async def create_automation(
             db=db
         )
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"✅ Created automation: {automation.name} (ID: {automation.id})")
         
         return {
@@ -263,6 +264,7 @@ async def update_automation(
                 detail=f"Automation not found: {automation_id}"
             )
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"✅ Updated automation: {automation.name}")
         
         return {

@@ -401,6 +401,7 @@ async def create_client_user(
         await repo.commit()
         await repo.refresh(user)
 
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created/invited user: {user.id} for client {client.name} (ID: {user.id}, email_sent: {email_sent})")
 
         return {

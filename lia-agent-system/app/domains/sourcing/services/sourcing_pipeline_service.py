@@ -232,6 +232,7 @@ class SourcingPipelineService:
                     error_message=f"Job {job_id} not found"
                 )
             
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"🚀 Running sourcing pipeline for job: {job.title} ({job_id})")
             
             status = await self._build_job_status(db, job)
@@ -544,6 +545,7 @@ class SourcingPipelineService:
             ):
                 matched_candidates.append(candidate)
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Local search found {len(matched_candidates)} matching candidates for {job.title}")
         
         return matched_candidates
@@ -883,6 +885,7 @@ class SourcingPipelineService:
         await db.commit()
         await db.refresh(task)
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created sourcing task: {task.id} for job {job.title}")
         
         return task
@@ -943,6 +946,7 @@ class SourcingPipelineService:
         await db.commit()
         await db.refresh(alert)
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created low volume alert: {alert.id} for job {job.title}")
         
         return alert

@@ -152,6 +152,7 @@ async def finalize_job_vacancy(
     """Finalize job vacancy creation from conversational flow."""
     try:
         company_id = get_user_company_id(current_user)
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Finalizing job vacancy: {request.job_vacancy_state.job_title} for company: {company_id}")
 
         if not request.job_vacancy_state.is_ready_for_publication():

@@ -1225,6 +1225,7 @@ Analise esta descrição de vaga e extraia TODAS as informações possíveis.
                             confidence_emoji = "🟢" if salary_adj.get("confidence") == "high" else "🟡" if salary_adj.get("confidence") == "medium" else "🔴"
                             learning_info = f"\n\n🧠 **Ajuste baseado em aprendizado:** Com base no histórico de correções da sua empresa, ajustei a faixa salarial em **{adjustment_pct:+.0f}%** {direction_text}. {confidence_emoji} Confiança: {salary_adj.get('confidence', 'low')}"
 
+                            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                             logger.info(f"Learning adjustment applied in benchmarks: {adjustment_pct:+.1f}% for role {job_draft.get('cargo') or job_draft.get('job_title')}")
 
                     lia_message = f"""Perfeito! Vamos definir a **Remuneração**. 💰

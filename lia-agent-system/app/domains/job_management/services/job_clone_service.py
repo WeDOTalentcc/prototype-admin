@@ -252,6 +252,7 @@ class JobCloneService:
                 "candidates_count": len(source_candidates) if include_candidates else 0
             })
             
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"✅ Created duplicate job: {new_job.title} (ID: {new_job.id})")
         
         await db.commit()
@@ -357,6 +358,7 @@ class JobCloneService:
         db.add(new_job)
         await db.commit()
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"✅ Created job from template: {new_job.title} (ID: {new_job.id})")
         
         return {

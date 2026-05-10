@@ -109,8 +109,10 @@ async def process_merge_event(data: dict[str, Any]):
             elif event_type == "Job.updated":
                 await handle_job_updated(record, company_id, account_token)
             else:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.debug(f"[MERGE] Unhandled event type: {event_type}")
         except Exception as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"[MERGE] Error processing {event_type}: {e}", exc_info=True)
 
 

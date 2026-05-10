@@ -1060,6 +1060,7 @@ async def get_market_benchmarks(
     context = _extract_context(kwargs)
     company_id = context.company_id if context else None
     
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"🏆 Getting market benchmarks (company: {company_id}, title: {job_title})")
     
     try:

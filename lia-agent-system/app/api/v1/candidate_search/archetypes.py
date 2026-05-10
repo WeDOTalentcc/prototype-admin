@@ -297,6 +297,7 @@ async def create_archetype_from_search(
         await db.flush()
         await db.refresh(archetype)
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created archetype '{archetype.name}' (id={archetype.id}) from search spec")
         
         return ArchetypeFromSearchResponse(
@@ -1215,6 +1216,7 @@ Responda APENAS com o JSON, sem explicações adicionais."""
         await db.flush()
         await db.refresh(new_archetype)
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"✅ Created archetype '{name}' from job '{job.title}'")
         
         return ArchetypeGenerationResponse(

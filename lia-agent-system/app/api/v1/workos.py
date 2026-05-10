@@ -1325,6 +1325,7 @@ async def scim_webhook(
 
     company_id = await _get_company_id_from_directory(directory_id, workos_repo) or None
 
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"Received WorkOS webhook: {event_type} (event_id={event_id}, directory={directory_id}, company={company_id})")
 
     handler_result = {"success": True, "message": f"Event {event_type} acknowledged"}
@@ -1351,8 +1352,10 @@ async def scim_webhook(
         elif event_type == "dsync.group.user_removed":
             handler_result = await _handle_dsync_group_user_removed(data, directory_id, company_id, event_id, user_repo, workos_repo)
         else:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"No handler for event type: {event_type}")
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error handling {event_type}: {e}", exc_info=True)
         handler_result = {"success": False, "message": f"Handler error: {str(e)}"}
 

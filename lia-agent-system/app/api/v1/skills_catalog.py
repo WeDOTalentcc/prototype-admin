@@ -530,6 +530,7 @@ async def get_static_skill_suggestions(
         }
         
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error getting static suggestions for {job_title}: {e}")
         raise HTTPException(
             status_code=500,

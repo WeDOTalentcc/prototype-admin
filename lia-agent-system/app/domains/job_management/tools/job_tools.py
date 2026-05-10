@@ -213,6 +213,7 @@ async def update_job(
             job.updated_at = datetime.utcnow()
             await db.commit()
             
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"✅ Updated job vacancy: {job_id} - {job_title}")
             
             return {

@@ -246,6 +246,7 @@ async def handle_tool_call(
         else:
             return {"success": False, "error": f"Unknown tool: {tool_name}"}
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[PIPELINE-DOMAIN] Tool {tool_name} failed: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 

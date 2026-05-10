@@ -73,6 +73,7 @@ async def create_benefit(
             raise HTTPException(status_code=400, detail=f"Invalid company_id format: {company_id}")
 
         benefit = await benefit_repo.create({"company_id": resolved_company_id, **data.model_dump()})
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created benefit: {benefit.name}")
         return benefit
     except HTTPException:

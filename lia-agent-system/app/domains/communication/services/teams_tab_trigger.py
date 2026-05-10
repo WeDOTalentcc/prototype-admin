@@ -88,6 +88,7 @@ class TeamsTabTriggerEngine:
         """
         action = COMPLEX_ACTIONS.get(event_type)
         if not action:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.debug(f"[TeamsTabTrigger] Event '{event_type}' is not a complex action — ignoring")
             return None
 
@@ -100,6 +101,7 @@ class TeamsTabTriggerEngine:
         deep_link = f"{self.platform_url}{path}"
 
         card = self._build_card(title, description, deep_link)
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"[TeamsTabTrigger] Triggering proactive card for event='{event_type}', link='{deep_link}'")
         return card
 

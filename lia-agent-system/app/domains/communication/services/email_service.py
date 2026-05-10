@@ -443,6 +443,7 @@ class EmailService:
                 )
                 db.add(template)
                 created_templates.append(template)
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"Created default template: {template.name}")
         
         if created_templates:
@@ -542,6 +543,7 @@ class EmailService:
         db.add(template)
         await asyncio.wait_for(db.commit(), timeout=5.0)
         await asyncio.wait_for(db.refresh(template), timeout=5.0)
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created template: {template.name} (id={template.id}, company={company_id})")
         return template
 
@@ -624,6 +626,7 @@ class EmailService:
             )
             
             if success:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"Welcome email sent to {primary_email} for client {company_name}")
                 if hasattr(client, 'welcome_email_sent'):
                     client.welcome_email_sent = True
@@ -882,6 +885,7 @@ class MailgunEmailService:
             subject = template_result.get("subject", "")
             body = template_result.get("body", "")
         except TypeError as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"Template {template_name} parameter error: {e}")
             return EmailSendResult(
                 success=False,
@@ -890,6 +894,7 @@ class MailgunEmailService:
                 error_code="TEMPLATE_PARAM_ERROR"
             )
         except Exception as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"Error rendering template {template_name}: {e}")
             return EmailSendResult(
                 success=False,

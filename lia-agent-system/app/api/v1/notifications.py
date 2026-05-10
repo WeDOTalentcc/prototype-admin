@@ -936,6 +936,7 @@ Recrutador: {request.recruiter_name or request.recruiter_email}
             notifications_sent["manager"]["teams"]
         ])
 
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"\ud83d\udcec Job created notification sent: {request.job_title} - Results: {notifications_sent}")
 
         return {

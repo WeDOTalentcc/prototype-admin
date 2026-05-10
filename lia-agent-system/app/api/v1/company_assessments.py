@@ -145,6 +145,7 @@ async def create_big_five_role_profile(
     """Create a new Big Five role profile."""
     try:
         profile = await bf_repo.create_role_profile(data.model_dump())
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created Big Five role profile: {profile.name}")
         return profile
     except Exception as e:
@@ -291,6 +292,7 @@ async def create_technical_template(
     """Create a new technical test template."""
     try:
         template = await tt_repo.create_template(data.model_dump())
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created technical template: {template.name}")
         return template
     except Exception as e:

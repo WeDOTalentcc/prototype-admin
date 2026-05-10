@@ -111,6 +111,7 @@ class CompensationAnalysisService:
         Returns:
             CompensationAnalysisResult with complete analysis
         """
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         self.logger.info(f"Analyzing compensation for {job_title} ({seniority}) at company {company_id}")
         
         data_sources_used: list[DataSource] = []
@@ -329,6 +330,7 @@ class CompensationAnalysisService:
                     best_match = policy
             
             if not best_match:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 self.logger.info(f"No matching policy found for {job_title} ({seniority})")
                 return None
             

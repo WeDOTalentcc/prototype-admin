@@ -164,6 +164,7 @@ class ChatRepository:
             if row:
                 return {"id": str(row.id), "title": row.title, "status": row.status}
         except Exception as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.warning(f"Failed to resolve job by title '{job_title}': {e}")
         return None
 

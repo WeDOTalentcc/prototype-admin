@@ -46,6 +46,7 @@ async def search_salary_benchmark(
     Returns:
         Salary benchmark data with min, max, median values
     """
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"Searching salary benchmark for: {job_title}, seniority={seniority}")
     
     try:
@@ -168,6 +169,7 @@ async def get_job_suggestions(
         }
         
         if field_name == "skills":
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"Fetching skills for role: {job_title}, seniority: {seniority}")
             skill_data = skills_catalog_service.suggest_skills(
                 role=job_title,
@@ -180,6 +182,7 @@ async def get_job_suggestions(
             suggestions["categories"] = skill_data.get("categories", [])
             
         elif field_name == "behavioral_competencies":
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"Fetching behavioral competencies for role: {job_title}")
             competencies = skills_catalog_service.get_behavioral_competencies_for_role(job_title)
             suggestions["suggestions"] = [
@@ -475,6 +478,7 @@ async def get_intelligent_salary(
     Returns:
         Consolidated salary data with source attribution
     """
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"Getting intelligent salary for: {job_title}, seniority={seniority}")
     
     try:
@@ -560,6 +564,7 @@ async def get_intelligent_skills(
     Returns:
         Consolidated skills with source attribution
     """
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"Getting intelligent skills for: {job_title}")
     
     try:

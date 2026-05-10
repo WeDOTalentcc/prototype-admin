@@ -222,6 +222,7 @@ async def get_template_by_stage(
     except HTTPException:
         raise
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error getting template for stage {stage_name}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 

@@ -35,6 +35,7 @@ async def analyze_voice_screening(
     - Overall scoring (0-100)
     - Detailed recommendations
     """
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"Analyzing voice screening for {job_title} - {len(transcript)} chars transcript")
 
     # SEG-3B: data minimization — remover PII da transcrição antes de enviar ao LLM (LGPD Art. 12)

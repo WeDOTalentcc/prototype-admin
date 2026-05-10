@@ -594,6 +594,7 @@ class AutonomousAgentService:
 
     async def _execute_screening_job(self, job: BackgroundJob) -> dict:
         """Execute a screening job."""
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         self.logger.info(f"Executing screening job: {job.name}")
         
         config = job.config or {}
@@ -643,6 +644,7 @@ class AutonomousAgentService:
     
     async def _execute_sourcing_job(self, job: BackgroundJob) -> dict:
         """Execute a sourcing job."""
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         self.logger.info(f"Executing sourcing job: {job.name}")
         
         config = job.config or {}
@@ -670,6 +672,7 @@ class AutonomousAgentService:
     
     async def _execute_report_job(self, job: BackgroundJob) -> dict:
         """Execute a report generation job."""
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         self.logger.info(f"Executing report job: {job.name}")
         
         config = job.config or {}
@@ -708,6 +711,7 @@ class AutonomousAgentService:
     
     async def _execute_market_analysis_job(self, job: BackgroundJob) -> dict:
         """Execute a market analysis job."""
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         self.logger.info(f"Executing market analysis job: {job.name}")
         
         config = job.config or {}
@@ -752,6 +756,7 @@ class AutonomousAgentService:
     
     async def _execute_outreach_job(self, job: BackgroundJob) -> dict:
         """Execute a candidate outreach job."""
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         self.logger.info(f"Executing outreach job: {job.name}")
         
         config = job.config or {}
@@ -777,6 +782,7 @@ class AutonomousAgentService:
     
     async def _execute_pattern_learning_job(self, job: BackgroundJob) -> dict:
         """Execute a pattern learning job."""
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         self.logger.info(f"Executing pattern learning job: {job.name}")
         
         

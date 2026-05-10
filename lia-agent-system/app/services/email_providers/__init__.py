@@ -116,6 +116,7 @@ def get_email_provider(
     if use_cache:
         _provider_instances[cache_key] = provider
 
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"Created email provider: {provider_name}")
     return provider
 
@@ -164,6 +165,7 @@ def get_provider_for_client(
 
     _provider_instances[cache_key] = provider
 
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"Created email provider for client {client_id}: {provider.provider_name}")
     return provider
 

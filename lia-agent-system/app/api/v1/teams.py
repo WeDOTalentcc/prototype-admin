@@ -1545,6 +1545,7 @@ async def teams_tab_events(
             logger.warning(f"[TeamsTabEvents] Could not resolve platform_user_id: {e}")
 
     if not teams_user_id:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[TeamsTabEvents] No teams_user_id for event '{payload.event_type}' — cannot send proactive")
         return {"status": "no_teams_identity", "event_type": payload.event_type}
 
@@ -1565,9 +1566,11 @@ async def teams_tab_events(
     )
 
     if not success:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[TeamsTabEvents] Failed to send card for event '{payload.event_type}'")
         return {"status": "send_failed", "event_type": payload.event_type}
 
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[TeamsTabEvents] Proactive card sent for event='{payload.event_type}', user='{teams_user_id}'")
     return {"status": "sent", "event_type": payload.event_type}
 

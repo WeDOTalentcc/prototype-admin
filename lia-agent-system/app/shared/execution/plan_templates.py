@@ -168,6 +168,7 @@ class PlanTemplateRegistry:
     ) -> ExecutionPlan | None:
         template = cls.get_template(template_name)
         if not template:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.warning(f"Template '{template_name}' not found")
             return None
 

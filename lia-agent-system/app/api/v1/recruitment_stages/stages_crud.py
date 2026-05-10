@@ -91,6 +91,7 @@ async def create_stage(
             **stage.model_dump()
         })
 
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created stage: {stage.name} for company {effective_company_id}")
         return new_stage.to_dict()
     except HTTPException:

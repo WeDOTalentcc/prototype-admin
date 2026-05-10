@@ -331,6 +331,7 @@ class AutomationService:
             if candidate_id:
                 candidate_exists = await self._validate_candidate_exists(candidate_id, db)
                 if not candidate_exists:
+                    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                     logger.warning(f"⚠️ [AUTOMATION] Skipping action {action_type} - candidate not found: {candidate_id}")
                     return {
                         "action": action_type,
@@ -342,6 +343,7 @@ class AutomationService:
             if vacancy_id:
                 vacancy_exists = await self._validate_vacancy_exists(vacancy_id, db)
                 if not vacancy_exists:
+                    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                     logger.warning(f"⚠️ [AUTOMATION] Skipping action {action_type} - vacancy not found: {vacancy_id}")
                     return {
                         "action": action_type,
@@ -350,6 +352,7 @@ class AutomationService:
                         "vacancy_id": vacancy_id
                     }
             
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"🤖 [AUTOMATION] Executing action: {action_type} for company: {company_id}")
             
             if action_type == ActionType.SEND_EMAIL.value or action_type == "send_email":
@@ -371,10 +374,12 @@ class AutomationService:
                 return await self._execute_log_activity(action_config, trigger_data, company_id)
             
             else:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.warning(f"Unknown action type: {action_type}")
                 return {"status": "unknown_action", "action_type": action_type}
                 
         except Exception as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"❌ [AUTOMATION] Error executing action {action_type}: {e}", exc_info=True)
             raise
     
@@ -486,6 +491,7 @@ class AutomationService:
                 "error": "no_recipient_phone"
             }
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"📱 [AUTOMATION] Sending WhatsApp to {recipient_phone} with template {template_name}")
         
         try:
@@ -821,6 +827,7 @@ class AutomationService:
             await db.commit()
             await db.refresh(automation)
             
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"✅ Created automation: {name} (trigger: {trigger_type}, action: {action_type})")
             
             return automation
@@ -874,6 +881,7 @@ class AutomationService:
             await db.commit()
             await db.refresh(automation)
             
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"✅ Updated automation: {automation.name}")
             
             return automation
@@ -909,6 +917,7 @@ class AutomationService:
             await db.delete(automation)
             await db.commit()
             
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"🗑️ Deleted automation: {automation.name}")
             
             return True

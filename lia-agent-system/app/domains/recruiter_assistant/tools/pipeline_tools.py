@@ -53,6 +53,7 @@ async def create_pipeline_stage(
     effective_company_id = context.company_id if context else company_id
     user_id = context.user_id if context else "system"
 
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"🔧 Creating pipeline stage: {stage_name} (company: {effective_company_id})")
 
     try:
@@ -186,6 +187,7 @@ async def create_pipeline_stage(
 
             stage_id = str(stage.id)
 
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"✅ Created pipeline stage: {stage_id} - {stage_name}")
 
             return {

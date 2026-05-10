@@ -312,6 +312,7 @@ async def create_goal_template(
     try:
         template = await repo.create_template(data.model_dump())
 
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created goal template: {template.name}")
         return template
     except Exception as e:

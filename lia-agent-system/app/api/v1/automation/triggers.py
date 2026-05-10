@@ -450,6 +450,7 @@ async def execute_action(
     except HTTPException:
         raise
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error executing action '{request.action_type}': {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
@@ -689,6 +690,7 @@ async def trigger_automation_event(
         }
         
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error triggering event '{request.event_type}': {e}", exc_info=True)
         raise HTTPException(
             status_code=500,

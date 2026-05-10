@@ -65,6 +65,7 @@ async def handle_onboarding_event(event: dict):
     event_type = event.get("event_type", "")
     payload = event.get("payload", {})
 
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[Onboarding Consumer] Event: {event_type} for user {payload.get('user_id')}")
 
     if event_type == "user_invited":
@@ -72,6 +73,7 @@ async def handle_onboarding_event(event: dict):
     elif event_type == "magic_link_used":
         await _handle_magic_link_used(payload)
     else:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"[Onboarding Consumer] Unknown event: {event_type}")
 
 

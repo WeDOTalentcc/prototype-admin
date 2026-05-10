@@ -195,6 +195,7 @@ class GupyService:
                 response.raise_for_status()
                 webhook = response.json()
                 
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"✅ Created Gupy webhook for {event_type}")
                 return webhook
                 

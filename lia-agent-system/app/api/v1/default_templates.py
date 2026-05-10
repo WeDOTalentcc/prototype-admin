@@ -140,6 +140,7 @@ async def create_default_template(
             "status": data.status.value,
             "created_by": data.created_by or current_user.get("user_id"),
         })
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created default template: {template.id} - {template.name}")
         return _to_response(template)
     except HTTPException:
@@ -180,6 +181,7 @@ async def update_default_template(
             update_data["status"] = data.status.value
 
         template = await repo.update(template, update_data)
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Updated default template: {template.id} - {template.name}")
         return _to_response(template)
     except HTTPException:
@@ -205,6 +207,7 @@ async def delete_default_template(
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Template not found")
         template_name = template.name
         await repo.delete(template)
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Deleted default template: {template_id} - {template_name}")
         return {"success": True, "message": f"Template '{template_name}' deleted successfully"}
     except HTTPException:

@@ -214,6 +214,7 @@ class BenefitsService:
 
             self.cache.set(cache_key, benefits)
             category_name = BENEFIT_CATEGORIES.get(category, category)
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"📂 Loaded {len(benefits)} benefits in category '{category_name}' for company {company_id}")
             
             return benefits

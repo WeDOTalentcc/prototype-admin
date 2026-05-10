@@ -181,9 +181,11 @@ class PromptLibrary:
             template: The PromptTemplate to register
         """
         if template.name in cls._templates:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.warning(f"Overwriting existing template: {template.name}")
 
         cls._templates[template.name] = template
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.debug(f"Registered prompt template: {template.name}")
 
     @classmethod

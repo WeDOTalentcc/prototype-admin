@@ -174,6 +174,7 @@ async def create_client(
         except RuntimeError as e:
             raise HTTPException(status_code=500, detail=str(e))
 
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created client: {client.name} (ID: {client.id})")
 
         organization_id = await provision_workos_organization(client, repo.db)
@@ -248,6 +249,7 @@ async def update_client(
 
         from uuid import UUID as _UUID
         client = await repo.update(_UUID(client_id), update_data)
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Updated client: {client.name} (ID: {client.id})")
         return {"success": True, "message": "Client updated successfully", "data": client.to_dict()}
     except HTTPException:
@@ -280,6 +282,7 @@ async def update_client_status(
         if result is None:
             raise HTTPException(status_code=404, detail=f"Client not found: {client_id}")
         client, old_status = result
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Updated client status: {client.name} from {old_status} to {data.status}")
         return {
             "success": True,
@@ -312,6 +315,7 @@ async def delete_client(
         client = await repo.soft_delete(client_uuid, deleted_by=user_id)
         if not client:
             raise HTTPException(status_code=404, detail=f"Client not found: {client_id}")
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Soft deleted client: {client.name} (ID: {client.id})")
         return {"success": True, "message": f"Client '{client.name}' has been deleted"}
     except HTTPException:

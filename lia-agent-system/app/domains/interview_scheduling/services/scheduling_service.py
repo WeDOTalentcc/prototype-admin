@@ -908,6 +908,7 @@ class SchedulingService:
             )
             
             if send_result.get("success"):
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"📧 Interview invite sent for {job_title}")
                 logger.info(f"   Bookings Link: {bookings_link}")
                 

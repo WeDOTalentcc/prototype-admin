@@ -519,6 +519,7 @@ class BillingService:
         event_type = parsed.get("event_type", "")
         event_data = parsed.get("data", {})
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Processing {provider} webhook: {event_type}")
         
         if event_type.startswith("subscription."):

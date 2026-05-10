@@ -202,6 +202,7 @@ class ToolExecutor:
         start_time = datetime.utcnow()
         timeout = timeout or self.DEFAULT_TIMEOUT
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         self.logger.info(f"Executing tool: {tool_name} with params: {list(parameters.keys())}")
         
         tool = self.registry.get_tool(tool_name)
@@ -236,6 +237,7 @@ class ToolExecutor:
         try:
             if context:
                 parameters["_context"] = context
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 self.logger.debug(f"Tool {tool_name} executing with tenant context: company_id={context.company_id}")
             
             handler_result = await asyncio.wait_for(
@@ -260,6 +262,7 @@ class ToolExecutor:
             )
             
         except Exception as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             self.logger.error(f"Tool execution error for {tool_name}: {e}", exc_info=True)
             if _SENTRY_AVAILABLE:
                 _sentry_sdk.add_breadcrumb(

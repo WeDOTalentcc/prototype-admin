@@ -203,6 +203,7 @@ async def generate_wsi_questions(
         for tmpl in ELIGIBILITY_TEMPLATES:
             questions.insert(0, tmpl.model_copy())
         questions = questions[:request.max_questions]
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Generated {len(questions)} WSI questions via canonical F6 pipeline for '{request.job_title}'")
 
         # A2/G1: FairnessGuard check on generated question texts

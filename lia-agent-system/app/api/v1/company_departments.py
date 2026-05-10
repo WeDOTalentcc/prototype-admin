@@ -78,6 +78,7 @@ async def create_department(
 
         dept_data = {"company_id": resolved_company_id, **data.model_dump()}
         department = await dept_repo.create(dept_data)
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created department: {department.name}")
         return department
     except HTTPException:

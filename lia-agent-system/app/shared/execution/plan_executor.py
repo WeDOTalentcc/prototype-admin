@@ -316,6 +316,7 @@ class PlanExecutor:
             try:
                 await callback(event_type, data)
             except Exception as e:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.warning(f"Progress callback error for event {event_type}: {e}")
 
     def _resolve_context_path(self, context_path: str, plan: ExecutionPlan) -> Any:

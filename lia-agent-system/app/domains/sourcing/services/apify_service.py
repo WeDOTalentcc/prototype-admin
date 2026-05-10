@@ -174,6 +174,7 @@ class ApifyService:
             logger.warning("No company name provided for Glassdoor scraping")
             return {}
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Scraping Glassdoor for company: {company_name}")
         
         input_data = {

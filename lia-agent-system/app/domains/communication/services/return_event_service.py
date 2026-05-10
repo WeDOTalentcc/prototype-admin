@@ -174,6 +174,7 @@ class ReturnEventService:
         """
         try:
             if event_type not in RETURN_EVENT_CONFIG:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.warning(f"Unknown return event type: {event_type}")
                 return {
                     "success": False,

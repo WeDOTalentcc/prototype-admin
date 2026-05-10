@@ -67,6 +67,7 @@ class EventActionConnector:
                 if notification_sent:
                     stats["notifications_sent"] += 1
             except Exception as e:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.error(f"Error processing event {event.event_type}: {e}")
                 stats["errors"] += 1
 

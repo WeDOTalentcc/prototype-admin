@@ -694,6 +694,7 @@ class PolicyEngineService:
                 await session.commit()
                 await session.refresh(escalation_log)
                 
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"Escalation triggered: {rule.name} -> {rule.escalation_action}")
                 
                 return EscalationResult(

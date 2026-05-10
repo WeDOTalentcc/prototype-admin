@@ -180,6 +180,7 @@ def handle_agent_errors(
             try:
                 return await func(*args, **kwargs)
             except AgentError as e:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.warning(f"{agent_name}: AgentError - {e.code.value}: {e.technical_message}")
                 from app.agents.base_agent import AgentResponse
                 return AgentResponse(
@@ -188,6 +189,7 @@ def handle_agent_errors(
                     data=e.to_response().to_dict()
                 )
             except ValueError as e:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.warning(f"{agent_name}: ValidationError - {str(e)}")
                 error = create_user_friendly_error(
                     AgentErrorCode.VALIDATION_ERROR,
@@ -200,6 +202,7 @@ def handle_agent_errors(
                     data=error.to_dict()
                 )
             except KeyError as e:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.warning(f"{agent_name}: MissingEntity - {str(e)}")
                 error = create_user_friendly_error(
                     AgentErrorCode.MISSING_REQUIRED_ENTITY,
@@ -214,6 +217,7 @@ def handle_agent_errors(
                     requires_user_input=True
                 )
             except TimeoutError as e:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.error(f"{agent_name}: Timeout - {str(e)}")
                 error = create_user_friendly_error(
                     AgentErrorCode.TIMEOUT,
@@ -226,6 +230,7 @@ def handle_agent_errors(
                     data=error.to_dict()
                 )
             except Exception as e:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.error(f"{agent_name}: UnexpectedError - {str(e)}\n{traceback.format_exc()}")
                 error = create_user_friendly_error(
                     default_error_code,

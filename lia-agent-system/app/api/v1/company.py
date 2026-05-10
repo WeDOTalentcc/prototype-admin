@@ -166,6 +166,7 @@ async def submit_onboarding(
     Creates or updates company profile with the provided information.
     """
     try:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Received onboarding data for company: {data.company_name}")
 
         profile = None
@@ -182,6 +183,7 @@ async def submit_onboarding(
         if not profile:
             profile = await profile_repo.get_default()
             if profile:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"Found default company profile: {profile.name}")
 
         onboarding_metadata = {
@@ -220,6 +222,7 @@ async def submit_onboarding(
                 "additional_data": {**(profile.additional_data or {}), **onboarding_metadata},
             }
             profile = await profile_repo.update(profile.id, update_data)
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"Updated existing company profile: {data.company_name}")
         else:
             create_data = {
@@ -238,6 +241,7 @@ async def submit_onboarding(
                 "additional_data": onboarding_metadata,
             }
             profile = await profile_repo.create(create_data, set_default=False)
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"Created new company profile: {data.company_name}")
 
         if data.culture_profile:
@@ -257,6 +261,7 @@ async def submit_onboarding(
                 "updated_at": datetime.utcnow(),
             }
             await cp_repo.create_or_update(profile.id, cp_data)
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"Saved culture profile for company: {data.company_name}")
 
         return {
@@ -291,6 +296,7 @@ async def enrich_company_profile(
                 errors.append("Failed to fetch LinkedIn data or no data found")
 
         if data.glassdoor_company_name:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"Enriching from Glassdoor: {data.glassdoor_company_name}")
             glassdoor_data = await apify_service.scrape_glassdoor_company(data.glassdoor_company_name)
             if not glassdoor_data:
@@ -360,6 +366,7 @@ async def auto_enrich_company(
 
         if profile.name:
             try:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"Auto-enriching from Glassdoor: {profile.name}")
                 glassdoor_data = await apify_service.scrape_glassdoor_company(profile.name)
                 apify_data["glassdoor"] = glassdoor_data
@@ -497,6 +504,7 @@ REGRAS:
         if culture_profile:
             await cp_repo.update(profile_id, {"updated_at": datetime.utcnow()})
 
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Auto-enriched company {profile.name}, updated fields: {fields_updated}")
 
         return AutoEnrichResponse(
@@ -600,6 +608,7 @@ async def create_company_profile(
                 pass
 
         profile = await profile_repo.create(profile_data)
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created company profile: {profile.name} (client_account_id={resolved_client_id})")
         return profile
     except Exception as e:
@@ -735,6 +744,7 @@ REGRAS:
 4. Use linguagem profissional mas acessível
 5. Responda APENAS com o JSON, sem texto adicional"""
 
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Generating EVP for company: {profile.name}")
         evp_response = await llm_service.generate(prompt, provider="gemini")
 
@@ -762,6 +772,7 @@ REGRAS:
 
         updated_additional_data = {**(profile.additional_data or {}), "evp_analysis": evp_analysis}
         await profile_repo.update(profile_id, {"additional_data": updated_additional_data, "updated_at": datetime.utcnow()})
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Generated EVP for company: {profile.name}")
         return EVPAnalysisResponse(success=True, evp_analysis=evp_analysis)
 

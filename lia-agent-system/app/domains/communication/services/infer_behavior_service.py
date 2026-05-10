@@ -185,6 +185,7 @@ Responda APENAS com JSON:
             if isinstance(a, dict) and a.get("behavior") in VALID_BEHAVIORS
         ][:3]
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"[INFER-LLM] Classified '{stage_name}' as {result['suggested_behavior']} (confidence: {result['confidence']})")
         return result
         

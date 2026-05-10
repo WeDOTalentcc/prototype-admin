@@ -126,6 +126,7 @@ async def log_action_audit(
             job_vacancy_id=job_vacancy_id,
         )
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"Audit log skipped for {action_type}: {e}")
 
 
@@ -176,4 +177,5 @@ async def sync_to_rails(
             data=data,
         )
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"Rails sync skipped for {event_type}/{entity_type}: {e}")

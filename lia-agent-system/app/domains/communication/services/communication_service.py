@@ -805,6 +805,7 @@ class CommunicationService:
                 if success:
                     return True, msg_id, response
                 
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.warning(f"Provider {provider.name} failed, trying next...")
             
             if retry < self.MAX_RETRIES - 1:

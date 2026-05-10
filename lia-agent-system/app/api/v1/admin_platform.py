@@ -122,6 +122,7 @@ async def onboard_client_manual(
     4. Update HubSpot (if deal_id provided)
     """
     try:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"[onboard-client] Manual trigger for {data.company_name}")
         
         steps = {

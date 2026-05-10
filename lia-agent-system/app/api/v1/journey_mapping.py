@@ -562,6 +562,7 @@ async def create_integration(
 
         integration = await repo.create_integration(**data.model_dump())
 
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created journey integration: {integration.name}")
         return integration
     except Exception as e:

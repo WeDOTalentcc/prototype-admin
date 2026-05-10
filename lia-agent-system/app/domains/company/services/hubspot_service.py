@@ -135,6 +135,7 @@ class HubSpotService:
             )
             
             result["success"] = True
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"✅ Successfully synced client {client.name} to HubSpot (Company: {company_id}, Deal: {deal_id})")
             
         except Exception as e:

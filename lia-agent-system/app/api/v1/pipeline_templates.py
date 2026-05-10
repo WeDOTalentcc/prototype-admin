@@ -136,6 +136,7 @@ async def create_pipeline_template(
         created_by=user_email,
     )
 
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"Created pipeline template: {template.name} for company {company_id}")
     return _to_response(template)
 
@@ -194,6 +195,7 @@ async def update_pipeline_template(
         update_data["is_active"] = data.is_active
 
     template = await repo.update(template, update_data)
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"Updated pipeline template: {template.name}")
     return _to_response(template)
 
@@ -216,6 +218,7 @@ async def delete_pipeline_template(
         raise HTTPException(status_code=404, detail="Pipeline template not found")
 
     await repo.soft_delete(template)
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"Deleted pipeline template: {template.name}")
     return {"success": True, "message": "Template deleted successfully"}
 

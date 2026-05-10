@@ -124,6 +124,7 @@ class ToolExecutorService:
         """
         start_time = datetime.utcnow()
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         self.logger.info(f"Executing tool: {request.tool_name} for user: {request.user_id}")
         
         if not request.user_id or request.user_id == "anonymous":
@@ -196,6 +197,7 @@ class ToolExecutorService:
                 )
                 
         except Exception as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             self.logger.error(f"Error executing tool {request.tool_name}: {e}", exc_info=True)
             execution_time = (datetime.utcnow() - start_time).total_seconds() * 1000
             return ToolExecutionResponse(

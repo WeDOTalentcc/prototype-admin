@@ -233,6 +233,7 @@ async def create_connection(
             field_mappings=request.field_mappings,
         )
 
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created integration connection: {connection.id} for provider {provider.name}")
         return _connection_to_response(connection, provider)
 

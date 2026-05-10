@@ -214,6 +214,7 @@ async def create_company_benefit(
         effective_company_id = company_id or get_user_company_id(current_user)
         repo = CompanyBenefitRepository(db)
         new_benefit = await repo.create(effective_company_id, benefit.model_dump())
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created company benefit: {new_benefit.name} for company: {effective_company_id}")
         return _to_response(new_benefit)
     except Exception as e:
@@ -256,6 +257,7 @@ async def update_company_benefit(
         if not benefit:
             raise HTTPException(status_code=404, detail="Benefit not found")
         benefit = await repo.update(benefit, updates.model_dump(exclude_unset=True))
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Updated company benefit: {benefit.name}")
         return _to_response(benefit)
     except HTTPException:

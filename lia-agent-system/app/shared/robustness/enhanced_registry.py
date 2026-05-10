@@ -141,6 +141,7 @@ class EnhancedAgentRegistry:
     def register(self, agent: BaseAgent) -> None:
         """Register an agent."""
         self._agents[agent.agent_type] = agent
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Registered agent: {agent.name} ({agent.agent_type.value})")
     
     def unregister(self, agent_type: AgentType) -> bool:

@@ -142,6 +142,7 @@ async def create_ideal_profile(
     """Create a new ideal profile."""
     try:
         profile = await ip_repo.create({"company_id": company_id, **data.model_dump()})
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created ideal profile: {profile.name}")
         return profile
     except Exception as e:

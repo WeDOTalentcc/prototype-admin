@@ -220,6 +220,7 @@ async def update_matrix_entry(
 
         entry = await repo.update_entry(entry, update_data)
 
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"✅ Updated matrix entry: {entry.trigger_name} (ID: {entry.id})")
 
         return {

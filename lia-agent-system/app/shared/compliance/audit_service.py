@@ -249,6 +249,7 @@ class AuditService:
             result = await session.execute(query)
             audit_logs = result.scalars().all()
 
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"📋 Retrieved {len(audit_logs)} audit logs for agent {agent_name}")
             return list(audit_logs)
 

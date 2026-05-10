@@ -276,6 +276,7 @@ class WhatsAppService:
         try:
             message = template_method(**template_data)
         except TypeError as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"Template {template_name} parameter error: {e}")
             return WhatsAppSendResult(
                 success=False,
@@ -284,6 +285,7 @@ class WhatsAppService:
                 error_code="TEMPLATE_PARAM_ERROR"
             )
         except Exception as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"Error rendering template {template_name}: {e}")
             return WhatsAppSendResult(
                 success=False,

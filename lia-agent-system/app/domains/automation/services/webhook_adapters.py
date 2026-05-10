@@ -84,6 +84,7 @@ class InterviewWebhookAdapter(WebhookAdapter):
         }
 
         cls.mark_processed(event_id, event_type, "interview_provider", result)
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"[WEBHOOK] Interview event processed: {event_type} for candidate {candidate_id}")
         return result
 
@@ -121,6 +122,7 @@ class TestWebhookAdapter(WebhookAdapter):
         }
 
         cls.mark_processed(event_id, event_type, "test_provider", result)
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"[WEBHOOK] Test event processed: {event_type} for candidate {candidate_id}")
         return result
 

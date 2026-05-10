@@ -117,6 +117,7 @@ async def provision_workos_organization(
         await db.refresh(client)
         logger.info(f"✅ Updated workos_organization_created tracking for client {client.id}")
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"✅ WorkOS Organization created: {organization_id} for client {client.name} (ID: {client.id})")
         
         return organization_id

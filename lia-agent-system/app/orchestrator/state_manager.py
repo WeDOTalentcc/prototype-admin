@@ -198,6 +198,7 @@ class StateManager:
             "timestamp": datetime.now().isoformat()
         }
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"💾 Agent result stored: {agent_name}")
     
     def get_agent_result(

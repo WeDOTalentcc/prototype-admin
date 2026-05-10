@@ -296,6 +296,7 @@ async def _send_candidates_added_notification(
             title=f"Pipeline Atualizado - {job_title}"
         )
 
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Notification sent: {candidates_added} candidates added to {job_title}")
 
     except Exception as e:

@@ -58,9 +58,11 @@ class ToolRegistry:
             tool: The tool definition to register
         """
         if tool.name in self._tools:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             self.logger.warning(f"Tool '{tool.name}' already registered, overwriting")
         
         self._tools[tool.name] = tool
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         self.logger.info(f"Registered tool: {tool.name}")
     
     def get_tool(self, name: str) -> ToolDefinition | None:

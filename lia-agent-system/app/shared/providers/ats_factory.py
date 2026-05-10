@@ -44,6 +44,7 @@ class ATSProviderFactory:
 
         client = client_cls(config)
         cls._cache[provider_name] = client
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created ATS client for provider: {provider_name}")
         return client
 

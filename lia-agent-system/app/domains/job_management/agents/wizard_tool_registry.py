@@ -412,6 +412,7 @@ async def _wrap_get_salary_benchmarks(**kwargs: Any) -> dict[str, Any]:
     seniority = kwargs.get("seniority", "pleno")
     location = kwargs.get("location", "")
     department = kwargs.get("department", "")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[wizard_tools] get_salary_benchmarks called for title={job_title}, seniority={seniority}")
 
     internal_avg: dict[str, Any] | None = None

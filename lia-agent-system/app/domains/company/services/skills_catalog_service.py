@@ -948,6 +948,7 @@ class SkillsCatalogDBService:
                 existing_skill.description = kwargs.get("description")
                 existing_skill.updated_at = datetime.utcnow()
                 
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 self.logger.info(f"Updated skill {skill_name} for company {company_id}")
             else:
                 new_skill = CompanySkillsCatalog(
@@ -966,6 +967,7 @@ class SkillsCatalogDBService:
                 self.db.add(new_skill)
                 existing_skill = new_skill
                 
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 self.logger.info(f"Added skill {skill_name} to company {company_id} catalog")
             
             await self.db.commit()
@@ -983,6 +985,7 @@ class SkillsCatalogDBService:
         
         except Exception as e:
             await self.db.rollback()
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             self.logger.error(f"Error adding skill {skill_name} to catalog: {e}")
             raise
     
@@ -1147,6 +1150,7 @@ class SkillsCatalogDBService:
         
         except Exception as e:
             await self.db.rollback()
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             self.logger.error(f"Error recording skill usage for {skill_name}: {e}")
             raise
     

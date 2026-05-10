@@ -206,6 +206,7 @@ async def analyze_interview(
         if questions:
             questions_list = [q.strip() for q in questions.split(",") if q.strip()]
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"🎯 Analyzing interview: {audio.filename}, job={job_title}")
         
         result = await service.transcribe_interview(

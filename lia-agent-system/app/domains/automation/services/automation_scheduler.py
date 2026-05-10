@@ -796,6 +796,7 @@ Equipe de Recrutamento
                         job.screening_config = updated_config
                         
                         completed_count += 1
+                        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                         logger.info(f"✅ [Scheduler] Auto-completed screening for job {job.id} ({job.title}) - end date was {scheduled_end_date}")
                         
                     except Exception as e:
