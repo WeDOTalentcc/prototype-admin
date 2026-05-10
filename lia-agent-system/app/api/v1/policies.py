@@ -78,7 +78,6 @@ async def list_policy_types():
     }
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("", summary="List policies", response_model=None)
 async def list_policies(
     policy_type: str | None = Query(None, description="Filter by policy type"),
@@ -129,7 +128,6 @@ async def list_policies(
         )
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/{policy_id}", summary="Get policy by ID", response_model=None)
 async def get_policy(
     policy_id: str,
@@ -181,7 +179,6 @@ async def get_policy(
         )
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("", status_code=status.HTTP_201_CREATED, summary="Create policy", response_model=None)
 async def create_policy(
     data: PolicyCreate,
@@ -254,7 +251,6 @@ async def create_policy(
         )
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.put("/{policy_id}", summary="Update policy", response_model=None)
 async def update_policy(
     policy_id: str,
@@ -345,7 +341,6 @@ async def update_policy(
         )
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.delete("/{policy_id}", summary="Delete policy", response_model=None)
 async def delete_policy(
     policy_id: str,

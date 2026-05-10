@@ -334,7 +334,6 @@ async def delete_technical_test(
         )
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/clients/{client_id}/tests", summary="Get tests configured for a client", response_model=None)
 async def get_client_tests(
     client_id: str,
@@ -403,7 +402,6 @@ async def get_client_tests(
         )
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.put("/clients/{client_id}/tests/{test_id}", summary="Configure test for client", response_model=None)
 async def configure_client_test(
     client_id: str,
@@ -491,7 +489,6 @@ async def configure_client_test(
         )
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.delete("/clients/{client_id}/tests/{test_id}", summary="Remove test from client", response_model=None)
 async def remove_client_test(
     client_id: str,
@@ -547,7 +544,6 @@ async def remove_client_test(
         )
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/clients/{client_id}/tests/stats", summary="Get test statistics for client", response_model=None)
 async def get_client_test_stats(
     client_id: str,

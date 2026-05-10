@@ -232,7 +232,6 @@ async def refresh_token(
     )
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_info(
     current_user: User = Depends(get_current_user_or_demo)
@@ -321,7 +320,6 @@ async def change_password(
     return {"message": "Senha alterada com sucesso"}
 
 
-# multi-tenancy: public endpoint (public) — no tenant data
 @router.post("/public-register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def public_register(
     user_data: UserPublicRegister,

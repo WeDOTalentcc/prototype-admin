@@ -50,7 +50,6 @@ class MultiStrategyResponse(BaseModel):
     elapsed_ms: float
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/multi-strategy", response_model=MultiStrategyResponse)
 async def multi_strategy_search(
     body: MultiStrategyRequest,

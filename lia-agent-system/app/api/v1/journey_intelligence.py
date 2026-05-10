@@ -18,7 +18,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/journey", tags=["journey-intelligence"])
 
 
-# multi-tenancy: public endpoint (metrics) — no tenant data
 @router.get("/metrics", response_model=None)
 async def get_journey_metrics(
     vacancy_id: str = Query(..., description="ID da vaga"),

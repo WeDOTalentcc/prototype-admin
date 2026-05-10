@@ -29,7 +29,6 @@ async def list_allowed_events():
     return {"events": ALLOWED_EVENTS}
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("", response_model=WebhookResponse, status_code=201)
 async def create_webhook(
     body: CreateWebhookRequest,
@@ -56,7 +55,6 @@ async def create_webhook(
         raise HTTPException(status_code=500, detail="Failed to create webhook")
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("", response_model=WebhookListResponse)
 async def list_webhooks(
     current_user=Depends(require_role([UserRole.admin])),
@@ -70,7 +68,6 @@ async def list_webhooks(
     )
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.patch("/{webhook_id}", response_model=WebhookResponse)
 async def update_webhook(
     webhook_id: str,
@@ -91,7 +88,6 @@ async def update_webhook(
     return WebhookResponse(**webhook.to_dict())
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.delete("/{webhook_id}", status_code=204)
 async def delete_webhook(
     webhook_id: str,
@@ -107,7 +103,6 @@ async def delete_webhook(
     await db.commit()
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/{webhook_id}/test", summary="Send test event to webhook")
 async def test_webhook(
     webhook_id: str,

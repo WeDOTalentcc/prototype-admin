@@ -76,7 +76,6 @@ def _probe_graph(name: str, factory) -> GraphHealthItem:
         "os 3 graph agents migrados. Acesso restrito a administradores."
     ),
 )
-# multi-tenancy: public endpoint (health) — no tenant data
 async def langgraph_health(
     x_admin_key: str | None = Header(default=None, alias="X-Admin-Key"),
 ) -> LangGraphHealthResponse:

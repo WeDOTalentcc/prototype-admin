@@ -318,7 +318,6 @@ async def _run_wsi_pipeline_inline(task_data: dict) -> None:
     await run_voice_wsi_pipeline(task_data)
 
 
-# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/webhook/health", response_model=None)
 async def openmic_webhook_health():
     """Health check for OpenMic webhook service."""

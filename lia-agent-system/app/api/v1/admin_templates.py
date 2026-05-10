@@ -85,7 +85,6 @@ def template_to_response(template: EmailTemplate) -> SystemTemplateResponse:
     )
 
 
-# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.get("", response_model=SystemTemplateListResponse)
 async def list_system_templates(
     category: str | None = Query(None),
@@ -112,7 +111,6 @@ async def list_system_templates(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.post("", response_model=SystemTemplateResponse, status_code=201)
 async def create_system_template(
     template_data: SystemTemplateCreate,
@@ -149,7 +147,6 @@ async def create_system_template(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.get("/{template_id}", response_model=SystemTemplateResponse)
 async def get_system_template(
     template_id: str,
@@ -172,7 +169,6 @@ async def get_system_template(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.put("/{template_id}", response_model=SystemTemplateResponse)
 async def update_system_template(
     template_id: str,
@@ -210,7 +206,6 @@ async def update_system_template(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.delete("/{template_id}", response_model=None)
 async def delete_system_template(
     template_id: str,
@@ -237,7 +232,6 @@ async def delete_system_template(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.post("/{template_id}/publish", response_model=PublishResult)
 async def publish_template_to_companies(
     template_id: str,

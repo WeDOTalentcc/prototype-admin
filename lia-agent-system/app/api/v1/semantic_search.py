@@ -28,7 +28,6 @@ class SemanticSearchResponse(BaseModel):
     data: SemanticExpansionResult
     
 
-# multi-tenancy: public endpoint (semantic_search) — no tenant data
 @router.post("/skills", response_model=SemanticSearchResponse)
 async def expand_skills(request: SemanticSearchRequest):
     """
@@ -46,7 +45,6 @@ async def expand_skills(request: SemanticSearchRequest):
     return SemanticSearchResponse(data=result)
 
 
-# multi-tenancy: public endpoint (semantic_search) — no tenant data
 @router.post("/job-titles", response_model=SemanticSearchResponse)
 async def expand_job_titles(request: SemanticSearchRequest):
     """
@@ -64,7 +62,6 @@ async def expand_job_titles(request: SemanticSearchRequest):
     return SemanticSearchResponse(data=result)
 
 
-# multi-tenancy: public endpoint (semantic_search) — no tenant data
 @router.post("/roles", response_model=SemanticSearchResponse)
 async def expand_roles(request: SemanticSearchRequest):
     """
@@ -82,7 +79,6 @@ async def expand_roles(request: SemanticSearchRequest):
     return SemanticSearchResponse(data=result)
 
 
-# multi-tenancy: public endpoint (semantic_search) — no tenant data
 @router.post("/industries", response_model=SemanticSearchResponse)
 async def expand_industries(request: SemanticSearchRequest):
     """
@@ -100,7 +96,6 @@ async def expand_industries(request: SemanticSearchRequest):
     return SemanticSearchResponse(data=result)
 
 
-# multi-tenancy: public endpoint (semantic_search) — no tenant data
 @router.post("/expertise", response_model=SemanticSearchResponse)
 async def expand_expertise(request: SemanticSearchRequest):
     """
@@ -118,7 +113,6 @@ async def expand_expertise(request: SemanticSearchRequest):
     return SemanticSearchResponse(data=result)
 
 
-# multi-tenancy: public endpoint (semantic_search) — no tenant data
 @router.post("/fields-of-study", response_model=SemanticSearchResponse)
 async def expand_fields_of_study(request: SemanticSearchRequest):
     """
@@ -136,7 +130,6 @@ async def expand_fields_of_study(request: SemanticSearchRequest):
     return SemanticSearchResponse(data=result)
 
 
-# multi-tenancy: public endpoint (semantic_search) — no tenant data
 @router.post("/companies", response_model=SemanticSearchResponse)
 async def expand_company_competitors(request: SemanticSearchRequest):
     """
@@ -154,7 +147,6 @@ async def expand_company_competitors(request: SemanticSearchRequest):
     return SemanticSearchResponse(data=result)
 
 
-# multi-tenancy: public endpoint (semantic_search) — no tenant data
 @router.post("/expand/{domain}", response_model=SemanticSearchResponse)
 async def expand_generic(
     domain: SemanticDomain,

@@ -15,7 +15,6 @@ from app.core.database import get_db
 router = APIRouter(prefix="/admin/lgpd", tags=["Admin - LGPD"])
 
 
-# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.post("/run-cleanup", response_model=None)
 async def trigger_lgpd_cleanup(
     dry_run: bool = Query(True, description="Simular sem deletar (default: True para segurança)"),
@@ -37,7 +36,6 @@ async def trigger_lgpd_cleanup(
     }
 
 
-# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.get("/cleanup-status", response_model=None)
 async def get_cleanup_status(
     _user=Depends(require_admin),
@@ -58,7 +56,6 @@ async def get_cleanup_status(
     }
 
 
-# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.get("/retention-policy", response_model=None)
 async def get_retention_policy(
     _user=Depends(require_admin),

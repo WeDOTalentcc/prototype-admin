@@ -41,7 +41,6 @@ def detect_mime_type(filename: str, content_type: str | None) -> str:
     return "audio/mpeg"
 
 
-# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/voice/health", response_model=None)
 async def voice_health_check():
     """Check if Gemini Voice service is configured."""

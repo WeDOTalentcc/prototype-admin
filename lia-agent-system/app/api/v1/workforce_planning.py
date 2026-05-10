@@ -338,7 +338,6 @@ async def list_plan_departments(
         )
 
 
-# multi-tenancy: public endpoint (metrics) — no tenant data
 @router.post("/{plan_id}/calculate", summary="Recalculate plan metrics", response_model=None)
 async def calculate_plan_metrics(
     plan_id: str,

@@ -412,7 +412,6 @@ def _report_to_pdf_bytes(report: FairnessReportResponse) -> bytes:
     return weasyprint.HTML(string=html).write_pdf()
 
 
-# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.get("/fairness/report", response_model=None)
 async def get_fairness_report(
     period: Literal["7d", "30d", "90d", "custom"] = Query(

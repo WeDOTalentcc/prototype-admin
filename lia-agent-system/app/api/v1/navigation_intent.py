@@ -27,7 +27,6 @@ class NavigationIntentResponse(BaseModel):
     matched_pattern: str | None = None
 
 
-# multi-tenancy: public endpoint (navigation_intent) — no tenant data
 @router.post("", response_model=NavigationIntentResponse)
 async def classify_navigation_intent(request: NavigationIntentRequest) -> NavigationIntentResponse:
     """

@@ -50,7 +50,6 @@ class CalendarHealthResponse(BaseModel):
     graph_configured: bool
 
 
-# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/health", response_model=CalendarHealthResponse)
 async def calendar_health():
     """Health check for calendar integration."""
@@ -279,7 +278,6 @@ class GoogleCalendarHealthResponse(BaseModel):
     oauth_client_configured: bool
 
 
-# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/google/health", response_model=GoogleCalendarHealthResponse)
 async def google_calendar_health():
     """Health check for Google Calendar integration."""

@@ -101,7 +101,6 @@ async def update_global_search_settings(
 # User Management Endpoints
 # ==========================================
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/users", response_model=list[UserManagementResponse])
 async def list_users(
     company_id: str = Query(..., description="Company ID (required for tenant isolation)"),
@@ -283,7 +282,6 @@ async def resend_invitation(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/users/list", response_model=CompanyUsersListResponse)
 async def list_company_users(
     role: str | None = Query(None, description="Filter by role (recruiter, admin, viewer)"),

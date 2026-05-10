@@ -62,7 +62,6 @@ class RAGSearchResponse(BaseModel):
         "Multi-tenant: resultados escopados por company_id."
     ),
 )
-# multi-tenancy: public endpoint (rag_search) — no tenant data
 async def rag_search_candidates(
     q: str = Query(..., min_length=1, description="Query em linguagem natural"),
     company_id: str = Query(..., min_length=1, description="Tenant ID"),

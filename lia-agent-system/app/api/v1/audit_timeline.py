@@ -75,7 +75,6 @@ class TimelineResponse(BaseModel):
 
 @router.get("/executions/{execution_id}/timeline", response_model=TimelineResponse)
 # TODO(phase2): extract to repository — audit timeline queries
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 async def get_execution_timeline(
     execution_id: str,
     db: AsyncSession = Depends(get_db),
@@ -149,7 +148,6 @@ async def get_execution_timeline(
     )
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/executions", response_model=list[ExecutionMetadataResponse])
 async def list_executions(
     domain: str | None = Query(None),

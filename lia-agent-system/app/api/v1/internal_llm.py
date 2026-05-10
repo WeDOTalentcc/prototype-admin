@@ -23,7 +23,6 @@ class GenerateResponse(BaseModel):
     text: str
 
 
-# multi-tenancy: admin/platform-level (internal_) — role-based access required
 @router.post("/generate", response_model=GenerateResponse)
 async def generate(body: GenerateRequest, request: Request) -> GenerateResponse:
     """Internal endpoint: generates text via the LLM factory.

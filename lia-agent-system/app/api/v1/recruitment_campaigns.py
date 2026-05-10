@@ -36,7 +36,6 @@ async def list_campaigns(
     }
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("", status_code=501)
 async def create_campaign(
     payload: dict[str, Any],

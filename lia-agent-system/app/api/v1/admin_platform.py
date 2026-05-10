@@ -57,7 +57,6 @@ class IntegrationHealthItem(BaseModel):
 
 # ─── POST /webhooks/hubspot ──────────────────────────────────────────────────
 
-# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.post("/webhooks/hubspot", tags=["webhooks"])
 async def hubspot_webhook(request: Request):
     """
@@ -110,7 +109,6 @@ async def hubspot_webhook(request: Request):
 
 # ─── POST /automation/onboard-client ─────────────────────────────────────────
 
-# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.post("/automation/onboard-client", tags=["automation"])
 async def onboard_client_manual(
     data: OnboardClientRequest,
@@ -167,7 +165,6 @@ async def onboard_client_manual(
 
 # ─── GET /automation/onboarding-status ───────────────────────────────────────
 
-# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.get("/automation/onboarding-status", tags=["automation"])
 async def get_onboarding_status(_admin: User = Depends(require_admin)):
     """
@@ -194,7 +191,6 @@ async def get_onboarding_status(_admin: User = Depends(require_admin)):
 
 # ─── GET /admin/integrations/health ──────────────────────────────────────────
 
-# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/admin/integrations/health", tags=["admin"])
 async def get_integrations_health(_admin: User = Depends(require_admin)):
     """
@@ -245,7 +241,6 @@ async def get_integrations_health(_admin: User = Depends(require_admin)):
 
 # ─── GET /admin/version ──────────────────────────────────────────────────────
 
-# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.get("/admin/version", tags=["admin"])
 async def get_system_version(_admin: User = Depends(require_admin)):
     """Return system version, commit, and environment info."""

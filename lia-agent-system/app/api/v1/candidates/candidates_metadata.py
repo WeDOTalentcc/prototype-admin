@@ -141,7 +141,6 @@ class FavoriteUpdate(BaseModel):
     is_pinned: bool | None = None
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/{candidate_id}/favorite", response_model=None)
 async def toggle_favorite(
     candidate_id: str,
@@ -276,7 +275,6 @@ class HiddenCreate(BaseModel):
     source: str | None = None
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/{candidate_id}/hide", response_model=None)
 async def toggle_hidden(
     candidate_id: str,

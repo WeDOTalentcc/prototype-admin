@@ -502,7 +502,6 @@ async def get_supported_formats(
     return SupportedFormatsResponse(**formats_info)
 
 
-# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/health", response_model=None)
 async def health_check():
     """
@@ -517,7 +516,6 @@ async def health_check():
     }
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/upload-and-screen", response_model=None)
 async def upload_and_screen_cv(
     file: UploadFile | None = File(None),

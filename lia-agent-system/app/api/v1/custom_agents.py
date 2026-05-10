@@ -43,7 +43,6 @@ async def list_available_tools(
     return {"tools": get_available_tool_names()}
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("", response_model=CustomAgentResponse, status_code=status.HTTP_201_CREATED)
 async def create_custom_agent(
     body: CreateCustomAgentRequest,
@@ -70,7 +69,6 @@ async def create_custom_agent(
         raise HTTPException(status_code=500, detail="Failed to create custom agent")
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("", response_model=CustomAgentListResponse)
 async def list_custom_agents(
     status_filter: Optional[str] = Query(None, alias="status"),
@@ -94,7 +92,6 @@ async def list_custom_agents(
     )
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/{agent_id}", response_model=CustomAgentResponse)
 async def get_custom_agent(
     agent_id: str,
@@ -109,7 +106,6 @@ async def get_custom_agent(
     return CustomAgentResponse(**agent.to_dict())
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.patch("/{agent_id}", response_model=CustomAgentResponse)
 async def update_custom_agent(
     agent_id: str,
@@ -162,7 +158,6 @@ async def update_custom_agent(
         raise HTTPException(status_code=500, detail="Failed to update custom agent")
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.delete("/{agent_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_custom_agent(
     agent_id: str,
@@ -184,7 +179,6 @@ async def delete_custom_agent(
         raise HTTPException(status_code=500, detail="Failed to delete custom agent")
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/{agent_id}/test", response_model=TestCustomAgentResponse)
 async def test_custom_agent(
     agent_id: str,
@@ -244,7 +238,6 @@ async def test_custom_agent(
         raise HTTPException(status_code=500, detail=f"Test execution failed: {e}")
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/{agent_id}/execute", response_model=ExecuteCustomAgentResponse)
 async def execute_custom_agent(
     agent_id: str,
@@ -415,7 +408,6 @@ async def execute_custom_agent(
         raise HTTPException(status_code=500, detail=f"Execution failed: {e}")
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/{agent_id}/publish", response_model=MarketplaceListingResponse)
 async def publish_to_marketplace(
     agent_id: str,
@@ -595,7 +587,6 @@ async def review_listing(
         raise HTTPException(status_code=500, detail="Failed to review listing")
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/{agent_id}/executions", summary="Get execution history for an agent")
 async def get_agent_executions(
     agent_id: str,
@@ -632,7 +623,6 @@ async def get_agent_executions(
     }
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/studio/consumption", summary="Get Studio agent consumption breakdown")
 async def get_studio_consumption(
     days: int = Query(default=30, ge=1, le=365),
@@ -652,7 +642,6 @@ async def get_studio_consumption(
         raise HTTPException(status_code=500, detail="Failed to fetch studio consumption")
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/studio/quota", summary="Get Studio agent quota status")
 async def get_studio_quota(
     current_user=Depends(get_current_user),
@@ -686,7 +675,6 @@ async def get_studio_quota(
         raise HTTPException(status_code=500, detail="Failed to fetch studio quota")
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/{agent_id}/versions", summary="List agent version history")
 async def list_agent_versions(
     agent_id: str,
@@ -712,7 +700,6 @@ async def list_agent_versions(
     }
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/{agent_id}/versions/{version}", summary="Get specific version snapshot")
 async def get_agent_version(
     agent_id: str,
@@ -733,7 +720,6 @@ async def get_agent_version(
     return snap.to_dict()
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/{agent_id}/revert/{version}", summary="Revert agent to previous version")
 async def revert_agent_to_version(
     agent_id: str,
@@ -773,7 +759,6 @@ async def revert_agent_to_version(
         raise HTTPException(status_code=500, detail="Failed to revert agent")
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/search", summary="Search agents by name (fuzzy)")
 async def search_agents_by_name(
     name: str = Query(..., min_length=1, max_length=256),
@@ -808,7 +793,6 @@ async def search_agents_by_name(
     }
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/studio/compliance-summary", summary="Aggregated compliance metrics for Studio")
 async def get_studio_compliance_summary(
     period_days: int = Query(30, ge=1, le=365),
@@ -944,7 +928,6 @@ async def get_studio_compliance_summary(
     }
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/studio/metrics/summary", summary="Aggregated Studio metrics for dashboard/chat")
 async def get_studio_metrics_summary(
     period_days: int = Query(7, ge=1, le=90),
@@ -1173,7 +1156,6 @@ Responda APENAS com o JSON, sem texto adicional."""
         raise HTTPException(status_code=500, detail=f"Erro ao gerar configuracao: {e}")
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/{agent_id}/clone", summary="Clone an existing agent")
 async def clone_custom_agent(
     agent_id: str,
@@ -1217,7 +1199,6 @@ async def clone_custom_agent(
         raise HTTPException(status_code=500, detail="Failed to clone agent")
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/{agent_id}/preview-prompt")
 async def preview_agent_prompt(
     agent_id: str,

@@ -25,7 +25,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/analytics", tags=["analytics"])
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/calibration-dashboard")
 async def get_calibration_dashboard_v2(
     days: int = Query(30, ge=7, le=365),

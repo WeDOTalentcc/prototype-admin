@@ -89,7 +89,6 @@ async def approve_hitl_action(
     )
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/pending", response_model=None)
 async def get_all_pending_approvals(
     current_user: User = Depends(get_current_user),

@@ -52,7 +52,6 @@ class RetentionPolicyResponse(BaseModel):
 
 @router.patch("/company/retention-policy", response_model=RetentionPolicyResponse)
 # TODO(phase2): extract to repository — company retention data
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 async def update_retention_policy(
     body: RetentionPolicyRequest,
     current_user=Depends(get_current_user),
@@ -99,7 +98,6 @@ async def update_retention_policy(
     )
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/company/retention-policy", response_model=RetentionPolicyResponse)
 async def get_retention_policy(
     current_user=Depends(get_current_user),

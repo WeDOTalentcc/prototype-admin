@@ -197,7 +197,6 @@ class BulkDeleteRequest(BaseModel):
         return v
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/candidates/bulk/update-status", response_model=BulkOperationResult)
 async def bulk_update_candidate_status(
     request: BulkUpdateStatusRequest,
@@ -809,7 +808,6 @@ async def bulk_export_candidates(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.delete("/candidates/bulk/delete", response_model=BulkOperationResult)
 async def bulk_delete_candidates(
     request: BulkDeleteRequest,

@@ -143,7 +143,6 @@ def _build_usage_response(usage) -> ClientUsageMetricsResponse:
     response_model=PlatformAggregateMetrics,
     summary="Get platform-wide aggregated metrics",
 )
-# multi-tenancy: public endpoint (metrics) — no tenant data
 async def get_aggregate_metrics(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),
@@ -272,7 +271,6 @@ async def get_aggregate_metrics(
     response_model=PlatformMetricsSummary,
     summary="Get platform metrics summary",
 )
-# multi-tenancy: public endpoint (metrics) — no tenant data
 async def get_platform_summary(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),
@@ -357,7 +355,6 @@ async def get_platform_summary(
     response_model=ClientAllMetricsResponse,
     summary="Get all metrics for a client",
 )
-# multi-tenancy: public endpoint (metrics) — no tenant data
 async def get_all_client_metrics(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -404,7 +401,6 @@ async def get_all_client_metrics(
     response_model=ClientSaasMetricsResponse,
     summary="Get revenue metrics for a client",
 )
-# multi-tenancy: public endpoint (metrics) — no tenant data
 async def get_revenue_metrics(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -448,7 +444,6 @@ async def get_revenue_metrics(
     response_model=ClientUsageMetricsResponse,
     summary="Get usage metrics for a client",
 )
-# multi-tenancy: public endpoint (metrics) — no tenant data
 async def get_usage_metrics(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -492,7 +487,6 @@ async def get_usage_metrics(
     response_model=ClientHealthMetricsResponse,
     summary="Get health metrics for a client",
 )
-# multi-tenancy: public endpoint (health) — no tenant data
 async def get_health_metrics(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -536,7 +530,6 @@ async def get_health_metrics(
     response_model=PaymentHistoryListResponse,
     summary="Get payment history for a client",
 )
-# multi-tenancy: public endpoint (metrics) — no tenant data
 async def get_payment_history(
     client_id: str,
     status_filter: str | None = Query(None, alias="status", description="Filter by status"),
@@ -592,7 +585,6 @@ async def get_payment_history(
     response_model=PaymentHistoryResponse,
     summary="Record a payment",
 )
-# multi-tenancy: public endpoint (metrics) — no tenant data
 async def create_payment(
     client_id: str,
     payment_data: PaymentHistoryCreate,
@@ -656,7 +648,6 @@ async def create_payment(
     response_model=ClientMetrics,
     summary="Get client-specific metrics",
 )
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 async def get_client_metrics(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
@@ -768,7 +759,6 @@ async def get_client_metrics(
     response_model=ClientMetricsList,
     summary="List all client metrics",
 )
-# multi-tenancy: public endpoint (metrics) — no tenant data
 async def list_client_metrics(
     status_filter: str | None = Query(None, alias="status", description="Filter by status"),
     plan: str | None = Query(None, description="Filter by plan"),
@@ -853,7 +843,6 @@ async def list_client_metrics(
     response_model=ChurnAnalysis,
     summary="Get churn analysis",
 )
-# multi-tenancy: public endpoint (metrics) — no tenant data
 async def get_churn_analysis(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),
@@ -906,7 +895,6 @@ async def get_churn_analysis(
     response_model=RevenueAnalysis,
     summary="Get revenue analysis",
 )
-# multi-tenancy: public endpoint (metrics) — no tenant data
 async def get_revenue_analysis(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),

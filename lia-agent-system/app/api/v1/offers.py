@@ -30,7 +30,6 @@ router = APIRouter(prefix="/offers", tags=["offers"])
 logger = logging.getLogger(__name__)
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/drafts", response_model=OfferDraftResponse, status_code=status.HTTP_201_CREATED)
 async def create_offer_draft(
     data: OfferDraftCreate,
@@ -66,7 +65,6 @@ async def create_offer_draft(
     return draft
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/drafts/{offer_id}", response_model=OfferDraftResponse)
 async def get_offer_draft(
     offer_id: UUID,
@@ -82,7 +80,6 @@ async def get_offer_draft(
     return draft
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.patch("/drafts/{offer_id}", response_model=OfferDraftResponse)
 async def update_offer_draft(
     offer_id: UUID,
@@ -103,7 +100,6 @@ async def update_offer_draft(
     return draft
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/drafts/{offer_id}/send-auto", response_model=OfferSendAutoResponse)
 async def send_offer_auto(
     offer_id: UUID,
@@ -133,7 +129,6 @@ async def send_offer_auto(
     )
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/drafts/{offer_id}/prepare-manual", response_model=OfferPrepareManualResponse)
 async def prepare_offer_manual(
     offer_id: UUID,
@@ -161,7 +156,6 @@ async def prepare_offer_manual(
     )
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.delete("/drafts/{offer_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def cancel_offer_draft(
     offer_id: UUID,

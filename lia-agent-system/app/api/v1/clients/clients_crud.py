@@ -42,7 +42,6 @@ async def list_status_options():
     }
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("", summary="List clients", response_model=None)
 async def list_clients(
     status: str | None = Query(None),
@@ -224,7 +223,6 @@ async def create_client(
         raise HTTPException(status_code=500, detail=f"Failed to create client: {str(e)}")
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.put("/{client_id}", summary="Update client", response_model=None)
 async def update_client(
     client_id: str,

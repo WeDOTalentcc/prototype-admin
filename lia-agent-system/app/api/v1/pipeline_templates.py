@@ -85,7 +85,6 @@ def _to_response(t) -> PipelineTemplateResponse:
     )
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/", response_model=PipelineTemplateListResponse)
 async def list_pipeline_templates(
     page: int = Query(1, ge=1),
@@ -112,7 +111,6 @@ async def list_pipeline_templates(
     )
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/", response_model=PipelineTemplateResponse)
 async def create_pipeline_template(
     data: PipelineTemplateCreate,
@@ -143,7 +141,6 @@ async def create_pipeline_template(
     return _to_response(template)
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/{template_id}", response_model=PipelineTemplateResponse)
 async def get_pipeline_template(
     template_id: str,
@@ -163,7 +160,6 @@ async def get_pipeline_template(
     return _to_response(template)
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.put("/{template_id}", response_model=PipelineTemplateResponse)
 async def update_pipeline_template(
     template_id: str,
@@ -204,7 +200,6 @@ async def update_pipeline_template(
     return _to_response(template)
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.delete("/{template_id}", response_model=None)
 async def delete_pipeline_template(
     template_id: str,
@@ -228,7 +223,6 @@ async def delete_pipeline_template(
     return {"success": True, "message": "Template deleted successfully"}
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/{template_id}/clone", response_model=PipelineTemplateResponse)
 async def clone_pipeline_template(
     template_id: str,
@@ -257,7 +251,6 @@ async def clone_pipeline_template(
     return _to_response(cloned)
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/seed-defaults", response_model=None)
 async def seed_default_templates(
     force: bool = Query(False, description="Force re-seeding even if templates exist"),
@@ -282,7 +275,6 @@ async def seed_default_templates(
     return {"success": True, "message": f"Seeded {seeded} default templates", "seeded": seeded}
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/{template_id}/increment-usage", response_model=None)
 async def increment_template_usage(
     template_id: str,

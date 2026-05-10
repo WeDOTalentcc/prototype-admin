@@ -106,7 +106,6 @@ async def get_dashboard_summary(
         raise HTTPException(status_code=500, detail=f"Failed to get dashboard summary: {str(e)}")
 
 
-# multi-tenancy: admin/platform-level (platform_) — role-based access required
 @router.get("/stats/overview", summary="Platform statistics overview", response_model=None)
 async def get_platform_stats(
     current_user: dict[str, Any] = Depends(get_user_from_headers),

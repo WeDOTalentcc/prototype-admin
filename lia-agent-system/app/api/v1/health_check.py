@@ -48,7 +48,6 @@ FRAMEWORK_MAPPING = {
 }
 
 
-# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/summary", response_model=HealthCheckSummaryResponse, summary="Get health check summary")
 async def get_health_check_summary(
     repo: HealthCheckRepository = Depends(get_health_check_repo),
@@ -148,7 +147,6 @@ async def get_health_check_summary(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/export", summary="Export health check items", response_model=None)
 async def export_health_check(
     framework: str | None = Query(None, description="Filter by framework"),
@@ -209,7 +207,6 @@ async def export_health_check(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: public endpoint (health) — no tenant data
 @router.post("/seed", response_model=SeedHealthCheckResponse, summary="Seed default health check items")
 async def seed_health_check_items(
     repo: HealthCheckRepository = Depends(get_health_check_repo),
@@ -228,7 +225,6 @@ async def seed_health_check_items(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: public endpoint (health) — no tenant data
 @router.post("/sync-from-library", response_model=SeedHealthCheckResponse, summary="Sync controls from library")
 async def sync_from_library(
     repo: HealthCheckRepository = Depends(get_health_check_repo),
@@ -247,7 +243,6 @@ async def sync_from_library(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/{req_id}/history", response_model=HealthCheckHistoryListResponse, summary="Get item history")
 async def get_item_history(
     req_id: str,
@@ -276,7 +271,6 @@ async def get_item_history(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: public endpoint (health) — no tenant data
 @router.put("/{req_id}/check", response_model=HealthCheckItemResponse, summary="Mark item as verified")
 async def mark_item_checked(
     req_id: str,
@@ -310,7 +304,6 @@ async def mark_item_checked(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: public endpoint (health) — no tenant data
 @router.put("/{req_id}/status", response_model=HealthCheckItemResponse, summary="Update item status")
 async def update_item_status(
     req_id: str,
@@ -345,7 +338,6 @@ async def update_item_status(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/{req_id}", response_model=HealthCheckItemResponse, summary="Get health check item by req_id")
 async def get_health_check_item(
     req_id: str,
@@ -369,7 +361,6 @@ async def get_health_check_item(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("", response_model=HealthCheckItemListResponse, summary="List health check items")
 async def list_health_check_items(
     framework: str | None = Query(None, description="Filter by framework (SOX, SOC2, ISO27001, LGPD, BCB498, EUAI, NYC144)"),
@@ -405,7 +396,6 @@ async def list_health_check_items(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: public endpoint (health) — no tenant data
 @router.post("", response_model=HealthCheckItemResponse, status_code=status.HTTP_201_CREATED, summary="Create health check item")
 async def create_health_check_item(
     data: HealthCheckItemCreate,

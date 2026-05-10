@@ -9,19 +9,16 @@ from app.auth.models import User
 router = APIRouter(tags=["stubs"])
 
 
-# multi-tenancy: public endpoint (stubs) — no tenant data
 @router.get("/talent-pools")
 async def list_talent_pools(current_user: User = Depends(get_current_user_or_demo)):
     return {"items": [], "total": 0}
 
 
-# multi-tenancy: public endpoint (stubs) — no tenant data
 @router.get("/talent-pools/{pool_id}")
 async def get_talent_pool(pool_id: str, current_user: User = Depends(get_current_user_or_demo)):
     return {"id": pool_id, "name": "", "candidates": []}
 
 
-# multi-tenancy: public endpoint (stubs) — no tenant data
 @router.get("/recruitment-campaigns")
 async def list_recruitment_campaigns(
     status: str = "active",
@@ -30,7 +27,6 @@ async def list_recruitment_campaigns(
     return {"items": [], "total": 0}
 
 
-# multi-tenancy: public endpoint (stubs) — no tenant data
 @router.get("/recruitment-campaigns/{campaign_id}")
 async def get_recruitment_campaign(campaign_id: str, current_user: User = Depends(get_current_user_or_demo)):
     return {"id": campaign_id}

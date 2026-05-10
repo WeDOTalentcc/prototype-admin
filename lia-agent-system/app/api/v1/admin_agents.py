@@ -24,7 +24,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/admin/agents", tags=["Admin - Agents"])
 
 
-# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.post("/reload", response_model=None)
 async def reload_agent_registry(
     x_company_id: str = Header(..., alias="X-Company-ID"),

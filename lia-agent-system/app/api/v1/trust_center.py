@@ -42,7 +42,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/trust-center", tags=["trust-center"])
 
 
-# multi-tenancy: public endpoint (trust_center) — no tenant data
 @router.get("/{company_slug}/overview", response_model=TrustCenterOverviewResponse, summary="Get public trust center overview")
 async def get_trust_center_overview(
     company_slug: str,
@@ -99,7 +98,6 @@ async def get_trust_center_overview(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: public endpoint (trust_center) — no tenant data
 @router.get("/{company_slug}/certifications", response_model=TrustCenterCertificationsResponse, summary="List public certifications")
 async def get_trust_center_certifications(
     company_slug: str,
@@ -147,7 +145,6 @@ async def get_trust_center_certifications(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: public endpoint (trust_center) — no tenant data
 @router.get("/{company_slug}/controls", response_model=TrustCenterControlsResponse, summary="Get public control status")
 async def get_trust_center_controls(
     company_slug: str,
@@ -210,7 +207,6 @@ async def get_trust_center_controls(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: public endpoint (trust_center) — no tenant data
 @router.get("/{company_slug}/bias-audits", response_model=TrustCenterBiasAuditsResponse, summary="Get public bias audit reports")
 async def get_trust_center_bias_audits(
     company_slug: str,
@@ -255,7 +251,6 @@ async def get_trust_center_bias_audits(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: public endpoint (trust_center) — no tenant data
 @router.get("/{company_slug}/subprocessors", response_model=SubprocessorListResponse, summary="List data subprocessors")
 async def get_trust_center_subprocessors(
     company_slug: str,
@@ -282,7 +277,6 @@ async def get_trust_center_subprocessors(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: public endpoint (trust_center) — no tenant data
 @router.get("/{company_slug}/resources", response_model=TrustCenterResourceListResponse, summary="List downloadable resources")
 async def get_trust_center_resources(
     company_slug: str,
@@ -306,7 +300,6 @@ async def get_trust_center_resources(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: public endpoint (trust_center) — no tenant data
 @router.get("/{company_slug}/updates", response_model=TrustCenterUpdateListResponse, summary="Get compliance updates")
 async def get_trust_center_updates(
     company_slug: str,
@@ -332,7 +325,6 @@ async def get_trust_center_updates(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: public endpoint (trust_center) — no tenant data
 @router.post("/settings", response_model=TrustCenterSettingsResponse, summary="Create trust center settings")
 async def create_trust_center_settings(
     settings_data: TrustCenterSettingsCreate,
@@ -366,7 +358,6 @@ async def create_trust_center_settings(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: public endpoint (trust_center) — no tenant data
 @router.put("/settings", response_model=TrustCenterSettingsResponse, summary="Update trust center settings")
 async def update_trust_center_settings(
     settings_data: TrustCenterSettingsUpdate,
@@ -401,7 +392,6 @@ async def update_trust_center_settings(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: public endpoint (trust_center) — no tenant data
 @router.get("/settings", response_model=TrustCenterSettingsResponse, summary="Get trust center settings")
 async def get_trust_center_settings(
     company_id: str = Depends(get_verified_company_id),
@@ -426,7 +416,6 @@ async def get_trust_center_settings(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: public endpoint (trust_center) — no tenant data
 @router.post("/resources", response_model=TrustCenterResourceResponse, summary="Add a resource")
 async def create_trust_center_resource(
     resource_data: TrustCenterResourceCreate,
@@ -443,7 +432,6 @@ async def create_trust_center_resource(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: public endpoint (trust_center) — no tenant data
 @router.post("/subprocessors", response_model=SubprocessorResponse, summary="Add a subprocessor")
 async def create_subprocessor(
     subprocessor_data: SubprocessorCreate,
@@ -460,7 +448,6 @@ async def create_subprocessor(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# multi-tenancy: public endpoint (trust_center) — no tenant data
 @router.post("/updates", response_model=TrustCenterUpdateResponse, summary="Post an update")
 async def create_trust_center_update(
     update_data: TrustCenterUpdateCreate,

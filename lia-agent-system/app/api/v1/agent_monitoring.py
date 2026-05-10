@@ -94,7 +94,6 @@ class LogActivityRequest(BaseModel):
     sla_breach: bool = False
 
 
-# multi-tenancy: public endpoint (metrics) — no tenant data
 @router.get("/metrics", response_model=GlobalMetricsResponse)
 async def get_global_metrics(db: AsyncSession = Depends(get_db)):
     """Get global metrics across all agents."""
@@ -121,7 +120,6 @@ async def get_agent_summary(agent_id: str, db: AsyncSession = Depends(get_db)):
     return AgentSummaryResponse(**summary)
 
 
-# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/agents/{agent_id}/health", response_model=AgentHealthResponse)
 async def get_agent_health(agent_id: str, db: AsyncSession = Depends(get_db)):
     """Get health score and details for a specific agent."""
@@ -207,7 +205,6 @@ async def log_activity(request: LogActivityRequest, db: AsyncSession = Depends(g
     return ActivityResponse(**activity.to_dict())
 
 
-# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/domains/health", response_model=None)
 async def get_domains_health(
     company_id: str = Query(..., description="ID da empresa"),
@@ -231,7 +228,6 @@ async def get_domains_health(
     }
 
 
-# multi-tenancy: public endpoint (metrics) — no tenant data
 @router.get("/domains/{domain}/metrics", response_model=None)
 async def get_domain_metrics(
     domain: str,

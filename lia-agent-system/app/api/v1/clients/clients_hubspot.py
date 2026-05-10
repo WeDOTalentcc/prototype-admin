@@ -27,7 +27,6 @@ class HubSpotOnboardingUpdate(BaseModel):
     users_count: int | None = None
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/{client_id}/hubspot/status", summary="Get HubSpot sync status", response_model=None)
 async def get_hubspot_sync_status(
     client_id: str,

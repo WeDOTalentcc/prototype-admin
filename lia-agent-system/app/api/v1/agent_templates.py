@@ -84,7 +84,6 @@ class AgentTemplateResponse(BaseModel):
 
 # ── Endpoints ─────────────────────────────────────────────────────────────────
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/agent-templates", response_model=list[AgentTemplateResponse])
 async def list_templates(
     domain: str | None = None,
@@ -117,7 +116,6 @@ async def list_templates(
     return templates
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/agent-templates", response_model=AgentTemplateResponse, status_code=201)
 async def create_template(
     body: AgentTemplateCreate,
@@ -140,7 +138,6 @@ async def create_template(
     return template
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/agent-templates/{template_id}", response_model=AgentTemplateResponse)
 async def get_template(
     template_id: str,
@@ -161,7 +158,6 @@ async def get_template(
     return template
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.patch("/agent-templates/{template_id}", response_model=AgentTemplateResponse)
 async def update_template(
     template_id: str,
@@ -214,7 +210,6 @@ async def update_template(
         })
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/agent-templates/{template_id}/publish", response_model=AgentTemplateResponse)
 async def publish_template(
     template_id: str,
@@ -247,7 +242,6 @@ async def publish_template(
     })
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.delete("/agent-templates/{template_id}", status_code=204, response_model=None)
 async def archive_template(
     template_id: str,

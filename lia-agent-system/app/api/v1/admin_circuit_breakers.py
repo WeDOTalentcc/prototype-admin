@@ -88,7 +88,6 @@ def _compute_slo_status(name: str, stats: dict, slo: dict | None) -> str:
     return "ok"
 
 
-# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.get("", summary="Status de todos os circuit breakers", response_model=None)
 async def list_circuit_breakers(_user=Depends(require_admin)) -> dict[str, Any]:
     """
@@ -113,7 +112,6 @@ async def list_circuit_breakers(_user=Depends(require_admin)) -> dict[str, Any]:
         raise HTTPException(status_code=500, detail=str(exc))
 
 
-# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.post("/{circuit_name}/reset", summary="Reset manual de um circuit breaker", response_model=None)
 async def reset_circuit_breaker(
     circuit_name: str = Path(..., description="Nome do circuit breaker"),
@@ -146,7 +144,6 @@ async def reset_circuit_breaker(
     )
 
 
-# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.post("/reset-all", summary="Reset de todos os circuit breakers", response_model=None)
 async def reset_all_circuit_breakers(_user=Depends(require_admin)) -> dict[str, Any]:
     """

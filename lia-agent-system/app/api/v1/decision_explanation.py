@@ -131,7 +131,6 @@ PROTECTED_CRITERIA_LABELS = {
     "/candidates/{candidate_id}/explain",
     response_model=DecisionExplanationResponse,
 )
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 async def explain_candidate_decisions(
     candidate_id: str,
     job_id: str = Query(..., description="Job vacancy ID"),

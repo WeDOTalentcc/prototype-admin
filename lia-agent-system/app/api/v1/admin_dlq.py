@@ -63,7 +63,6 @@ class ClearResponse(BaseModel):
 
 # ── endpoints ─────────────────────────────────────────────────────────────────
 
-# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.get("", response_model=DLQSummaryResponse)
 async def get_dlq_summary(
     _: None = Depends(require_admin),
@@ -81,7 +80,6 @@ async def get_dlq_summary(
     )
 
 
-# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.get("/{queue}", response_model=list[DLQEntry])
 async def list_dlq_entries(
     queue: str = Path(..., description="Nome da fila (ex: onboarding_low)"),
@@ -102,7 +100,6 @@ async def list_dlq_entries(
     return [DLQEntry.model_validate(e) for e in entries]
 
 
-# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.post("/{queue}/requeue/{entry_id}", response_model=RequeueResponse)
 async def requeue_entry(
     queue: str = Path(..., description="Nome da fila"),
@@ -133,7 +130,6 @@ async def requeue_entry(
     )
 
 
-# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.delete("/{queue}", response_model=ClearResponse)
 async def clear_dlq_queue(
     queue: str = Path(..., description="Nome da fila a limpar"),

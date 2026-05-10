@@ -243,7 +243,6 @@ async def get_integrations_status(
     }
 
 
-# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/health", response_model=None)
 async def get_integrations_health(
     current_user: dict[str, Any] = Depends(get_current_user)

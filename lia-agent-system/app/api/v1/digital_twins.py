@@ -37,7 +37,6 @@ class ManualDecisionRequest(BaseModel):
     job_snapshot: Optional[dict] = None
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("")
 async def create_twin(
     body: CreateTwinRequest,
@@ -89,7 +88,6 @@ async def create_twin(
     }
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("")
 async def list_twins(
     current_user: dict = Depends(get_current_user),

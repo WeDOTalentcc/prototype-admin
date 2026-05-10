@@ -534,7 +534,6 @@ async def list_providers():
     }
 
 
-# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/health", response_model=None)
 async def whatsapp_health():
     """

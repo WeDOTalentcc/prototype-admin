@@ -30,7 +30,6 @@ def _is_token_configured() -> bool:
     return bool(os.environ.get("RAILS_API_TOKEN", ""))
 
 
-# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/health", summary="Rails API health check")
 async def rails_health(adapter: RailsAdapter = Depends(get_rails_adapter)) -> dict[str, Any]:
     """
@@ -73,7 +72,6 @@ async def rails_health(adapter: RailsAdapter = Depends(get_rails_adapter)) -> di
     return result
 
 
-# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/status", summary="Rails circuit breaker status")
 async def rails_circuit_status() -> dict[str, Any]:
     """

@@ -48,7 +48,6 @@ async def list_sector_templates():
     return list_templates()
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/agent-templates/sectors/{sector}/apply", response_model=ApplySectorResponse)
 async def apply_sector_template(
     sector: str,

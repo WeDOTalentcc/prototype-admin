@@ -228,7 +228,6 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 # REST API ENDPOINTS
 # =============================================
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("", response_model=ChatResponse)
 async def send_message(
     message_data: MessageCreate,
@@ -893,7 +892,6 @@ async def _sse_via_orchestrator(
             logger.warning("[Fase3] Failed to persist SSE response: %s", exc)
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/stream", response_model=None)
 async def stream_message(
     request: Request,
@@ -1004,7 +1002,6 @@ async def stream_message(
     )
 
 
-# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/actions/candidate-field-update", response_model=None)
 async def direct_candidate_field_update(
     request: Request,

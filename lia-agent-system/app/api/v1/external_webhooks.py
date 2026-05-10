@@ -382,7 +382,6 @@ async def get_webhook_event_log(limit: int = 50):
     }
 
 
-# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/health", response_model=None)
 async def external_webhooks_health():
     """Check external webhook endpoints health and configuration."""
