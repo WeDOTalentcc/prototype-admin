@@ -35,6 +35,7 @@ from app.domains.autonomous.agents.autonomous_tool_registry import (
     get_autonomous_tools,
     get_tool_names,
 )
+from app.shared.agents.agent_registry import register_agent
 
 _AUTONOMOUS_MAX_STEPS_DEFAULT = 10
 
@@ -65,6 +66,7 @@ def _get_circuit_breaker() -> Any:
     return _CIRCUIT_BREAKER
 
 
+@register_agent("autonomous")
 class AutonomousReActAgent(LangGraphReActBase, EnhancedAgentMixin):
     """
     Agente ReAct autônomo cross-domain — Tier 6 do CascadedRouter.
