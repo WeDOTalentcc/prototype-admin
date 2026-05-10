@@ -790,12 +790,25 @@ class TransitionDispatchService:
 
         Multi-tenancy: company_id from the caller's JWT context (NOT
         from any payload).
+
+        P1-2 (post-audit): BiasAuditService is marked RAILS-DEPRECATED
+        at module level (UC-P1-22 in CROSS_CUTTING_AUDIT_AND_REMEDIATION_PLAN.md).
+        However: bias-audit is statistical computation over RubricEvaluation
+        and Candidate JOIN, not Rails-owned CRUD. There is no
+        rails_adapter equivalent today — the deprecation is preventive,
+        not migratable. We suppress the import-time DeprecationWarning at
+        this single canonical caller so production logs stay clean. When
+        a Rails-side bias-audit endpoint exists, swap this call for the
+        rails_adapter equivalent and remove the suppression.
         """
         if not company_id or not job_id:
             return
         try:
+            import warnings as _warnings
             from uuid import UUID as _UUID
-            from app.shared.services.bias_audit_service import BiasAuditService
+            with _warnings.catch_warnings():
+                _warnings.simplefilter("ignore", DeprecationWarning)
+                from app.shared.services.bias_audit_service import BiasAuditService
 
             svc = BiasAuditService()
             try:
