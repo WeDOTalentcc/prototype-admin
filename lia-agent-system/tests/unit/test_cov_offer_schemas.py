@@ -21,12 +21,14 @@ _DT = datetime(2024, 6, 1, 12, 0)
 
 class TestOfferBonusVariable:
     def test_basic(self):
-        m = OfferBonusVariable(type="performance", value=5000.0)
+        from decimal import Decimal
+        m = OfferBonusVariable(type="performance", value=Decimal("5000.00"))
         assert m.type == "performance"
-        assert m.value == pytest.approx(5000.0)
+        assert m.value == Decimal("5000.00")
 
     def test_commission(self):
-        m = OfferBonusVariable(type="commission", value=2000.0)
+        from decimal import Decimal
+        m = OfferBonusVariable(type="commission", value=Decimal("2000.00"))
         assert m.type == "commission"
 
 
@@ -42,12 +44,12 @@ class TestOfferCancelRequest:
 
 class TestOfferDraftCreate:
     def test_basic(self):
-        m = OfferDraftCreate(candidate_id=_UUID1, job_id=_UUID2)
-        assert m.candidate_id == _UUID1
+        m = OfferDraftCreate(candidate_id="cand-001", job_id=_UUID2)
+        assert m.candidate_id == "cand-001"
         assert m.job_id == _UUID2
 
     def test_optional_fields(self):
-        m = OfferDraftCreate(candidate_id=_UUID1, job_id=_UUID2)
+        m = OfferDraftCreate(candidate_id="cand-002", job_id=_UUID1)
         # Check model is valid and optional fields are accessible
         assert m is not None
 
@@ -58,18 +60,19 @@ class TestOfferDraftUpdate:
         assert m is not None
 
     def test_salary_update(self):
-        m = OfferDraftUpdate(salary_value=12000.0, currency="BRL")
-        assert m.salary_value == pytest.approx(12000.0)
-        assert m.currency == "BRL"
+        from decimal import Decimal
+        m = OfferDraftUpdate(offered_salary=Decimal("12000.00"), offered_salary_currency="BRL")
+        assert m.offered_salary == Decimal("12000.00")
+        assert m.offered_salary_currency == "BRL"
 
 
 class TestOfferDraftResponse:
     def test_basic(self):
         m = OfferDraftResponse(
             id=_UUID1,
-            company_id=_UUID2,
-            candidate_id=_UUID3,
-            job_id=_UUID1,
+            company_id="co-001",
+            candidate_id="cand-001",
+            job_id=_UUID2,
             job_data_snapshot={"title": "Backend Dev"},
             candidate_data_snapshot={"name": "Ana Silva"},
             status="draft",
@@ -84,9 +87,9 @@ class TestOfferDraftResponse:
     def test_sent_status(self):
         m = OfferDraftResponse(
             id=_UUID2,
-            company_id=_UUID1,
-            candidate_id=_UUID3,
-            job_id=_UUID2,
+            company_id="co-002",
+            candidate_id="cand-002",
+            job_id=_UUID1,
             job_data_snapshot={},
             candidate_data_snapshot={},
             status="sent",

@@ -20,9 +20,9 @@ from app.schemas.recruiter_profile import (
     RecruiterPersonalizationContext,
 )
 
+_DT = datetime(2024, 3, 15, 10, 0)
 _UUID1 = UUID("550e8400-e29b-41d4-a716-446655440001")
 _UUID2 = UUID("550e8400-e29b-41d4-a716-446655440002")
-_DT = datetime(2024, 3, 15, 10, 0)
 
 
 class TestWizardFlowConfig:
@@ -30,13 +30,21 @@ class TestWizardFlowConfig:
         m = WizardFlowConfig()
         assert m is not None
 
-    def test_with_steps(self):
+    def test_with_values(self):
         m = WizardFlowConfig(
-            skip_steps=["benefits", "compensation"],
-            default_tab="requirements",
+            show_detailed_explanations=True,
+            skip_optional_confirmations=False,
+            auto_expand_sections=True,
+            suggest_jd_import=True,
         )
-        assert m.skip_steps == ["benefits", "compensation"]
-        assert m.default_tab == "requirements"
+        assert m.show_detailed_explanations is True
+        assert m.skip_optional_confirmations is False
+
+    def test_with_thresholds(self):
+        m = WizardFlowConfig(
+            confidence_thresholds={"salary": 0.8, "seniority": 0.7},
+        )
+        assert m.confidence_thresholds["salary"] == pytest.approx(0.8)
 
 
 class TestPersonalizedDefaults:
@@ -46,13 +54,19 @@ class TestPersonalizedDefaults:
 
     def test_with_values(self):
         m = PersonalizedDefaults(
-            contract_type="CLT",
             seniority="senior",
-            currency="BRL",
+            department="Engineering",
             work_model="hybrid",
+            salary_percentile_hint=60.0,
         )
-        assert m.contract_type == "CLT"
+        assert m.seniority == "senior"
         assert m.work_model == "hybrid"
+
+    def test_with_skills(self):
+        m = PersonalizedDefaults(
+            suggested_skills=["Python", "Docker", "FastAPI"],
+        )
+        assert len(m.suggested_skills) == 3
 
 
 class TestPersonalizationSettingsBase:
@@ -60,12 +74,15 @@ class TestPersonalizationSettingsBase:
         m = PersonalizationSettingsBase()
         assert m is not None
 
-    def test_with_values(self):
+    def test_with_flags(self):
         m = PersonalizationSettingsBase(
-            theme="dark",
-            language="pt-BR",
+            enable_personalization=True,
+            enable_learning=True,
+            learn_from_corrections=True,
+            show_personalization_indicators=False,
         )
-        assert m.theme == "dark"
+        assert m.enable_personalization is True
+        assert m.show_personalization_indicators is False
 
 
 class TestPersonalizationSettingsCreate:
@@ -73,13 +90,14 @@ class TestPersonalizationSettingsCreate:
         m = PersonalizationSettingsCreate(recruiter_id="rec-001")
         assert m.recruiter_id == "rec-001"
 
-    def test_with_extras(self):
+    def test_with_consent(self):
         m = PersonalizationSettingsCreate(
             recruiter_id="rec-002",
-            theme="light",
-            language="en-US",
+            consent_version="v1.2",
+            enable_learning=True,
         )
-        assert m.language == "en-US"
+        assert m.consent_version == "v1.2"
+        assert m.enable_learning is True
 
 
 class TestPersonalizationSettingsUpdate:
@@ -87,9 +105,9 @@ class TestPersonalizationSettingsUpdate:
         m = PersonalizationSettingsUpdate()
         assert m is not None
 
-    def test_update_theme(self):
-        m = PersonalizationSettingsUpdate(theme="dark")
-        assert m.theme == "dark"
+    def test_disable_learning(self):
+        m = PersonalizationSettingsUpdate(enable_learning=False)
+        assert m.enable_learning is False
 
 
 class TestPersonalizationSettingsResponse:
@@ -102,15 +120,17 @@ class TestPersonalizationSettingsResponse:
         assert m.recruiter_id == "rec-001"
         assert m.created_at == _DT
 
-    def test_with_settings(self):
+    def test_with_consent(self):
         m = PersonalizationSettingsResponse(
             recruiter_id="rec-002",
-            theme="dark",
-            language="pt-BR",
+            consent_version="v1.0",
+            consent_given_at=_DT,
+            enable_personalization=True,
             created_at=_DT,
             updated_at=_DT,
         )
-        assert m.theme == "dark"
+        assert m.consent_version == "v1.0"
+        assert m.enable_personalization is True
 
 
 class TestPersonalizationEventCreate:
@@ -118,19 +138,31 @@ class TestPersonalizationEventCreate:
         m = PersonalizationEventCreate(
             recruiter_id="rec-001",
             company_id="co-001",
-            event_type="theme_changed",
+            event_type="field_corrected",
         )
         assert m.recruiter_id == "rec-001"
-        assert m.event_type == "theme_changed"
+        assert m.event_type == "field_corrected"
 
-    def test_with_payload(self):
+    def test_with_values(self):
         m = PersonalizationEventCreate(
             recruiter_id="rec-001",
             company_id="co-001",
-            event_type="default_updated",
-            payload={"field": "contract_type", "value": "CLT"},
+            event_type="field_accepted",
+            field_name="salary_range",
+            suggested_value="10000-15000",
+            final_value="12000-16000",
         )
-        assert m.payload["field"] == "contract_type"
+        assert m.field_name == "salary_range"
+        assert m.final_value == "12000-16000"
+
+    def test_with_timing(self):
+        m = PersonalizationEventCreate(
+            recruiter_id="rec-001",
+            company_id="co-001",
+            event_type="field_corrected",
+            time_to_decision_ms=1500,
+        )
+        assert m.time_to_decision_ms == 1500
 
 
 class TestPersonalizationEventResponse:
@@ -138,12 +170,26 @@ class TestPersonalizationEventResponse:
         m = PersonalizationEventResponse(
             recruiter_id="rec-001",
             company_id="co-001",
-            event_type="login",
-            id="event-001",
+            event_type="field_accepted",
+            id=_UUID1,
             created_at=_DT,
         )
-        assert m.id == "event-001"
-        assert m.event_type == "login"
+        assert m.id == _UUID1
+        assert m.event_type == "field_accepted"
+
+    def test_full(self):
+        m = PersonalizationEventResponse(
+            recruiter_id="rec-002",
+            company_id="co-002",
+            event_type="field_corrected",
+            field_name="contract_type",
+            suggested_value="PJ",
+            final_value="CLT",
+            id=_UUID2,
+            created_at=_DT,
+        )
+        assert m.field_name == "contract_type"
+        assert m.final_value == "CLT"
 
 
 class TestRecruiterFieldPreferenceBase:
@@ -155,13 +201,16 @@ class TestRecruiterFieldPreferenceBase:
         assert m.recruiter_id == "rec-001"
         assert m.field_name == "contract_type"
 
-    def test_with_value(self):
+    def test_with_stats(self):
         m = RecruiterFieldPreferenceBase(
             recruiter_id="rec-002",
             field_name="seniority",
-            preferred_value="senior",
+            times_seen=20,
+            times_corrected=5,
+            times_accepted=15,
         )
-        assert m.preferred_value == "senior"
+        assert m.times_seen == 20
+        assert m.times_corrected == 5
 
 
 class TestRecruiterFieldPreferenceResponse:
@@ -169,11 +218,11 @@ class TestRecruiterFieldPreferenceResponse:
         m = RecruiterFieldPreferenceResponse(
             recruiter_id="rec-001",
             field_name="currency",
-            id="pref-001",
+            id=_UUID1,
             created_at=_DT,
             updated_at=_DT,
         )
-        assert m.id == "pref-001"
+        assert m.id == _UUID1
         assert m.field_name == "currency"
 
 
@@ -183,14 +232,27 @@ class TestRecruiterProfileBase:
         assert m.recruiter_id == "rec-001"
         assert m.company_id == "co-001"
 
-    def test_optional_fields(self):
+    def test_with_stats(self):
         m = RecruiterProfileBase(
             recruiter_id="rec-002",
             company_id="co-002",
-            display_name="Ana Recruiter",
-            avatar_url="https://cdn.example.com/avatar.jpg",
+            total_jobs_created=15,
+            prefers_quick_flow=True,
+            uses_jd_import=False,
         )
-        assert m.display_name == "Ana Recruiter"
+        assert m.total_jobs_created == 15
+        assert m.prefers_quick_flow is True
+
+    def test_with_preferences(self):
+        m = RecruiterProfileBase(
+            recruiter_id="rec-003",
+            company_id="co-003",
+            preferred_seniorities=["senior", "pleno"],
+            preferred_departments=["Engineering", "Product"],
+            communication_style="concise",
+        )
+        assert len(m.preferred_seniorities) == 2
+        assert m.communication_style == "concise"
 
 
 class TestRecruiterProfileCreate:
@@ -205,8 +267,11 @@ class TestRecruiterProfileUpdate:
         assert m is not None
 
     def test_partial(self):
-        m = RecruiterProfileUpdate(display_name="New Name")
-        assert m.display_name == "New Name"
+        m = RecruiterProfileUpdate(
+            total_jobs_created=20,
+            prefers_quick_flow=True,
+        )
+        assert m.total_jobs_created == 20
 
 
 class TestRecruiterProfileResponse:
@@ -214,23 +279,26 @@ class TestRecruiterProfileResponse:
         m = RecruiterProfileResponse(
             recruiter_id="rec-001",
             company_id="co-001",
-            id="prof-001",
+            id=_UUID1,
             created_at=_DT,
             updated_at=_DT,
         )
-        assert m.id == "prof-001"
+        assert m.id == _UUID1
         assert m.recruiter_id == "rec-001"
 
-    def test_with_full_profile(self):
+    def test_with_stats(self):
         m = RecruiterProfileResponse(
             recruiter_id="rec-002",
             company_id="co-002",
-            id="prof-002",
-            display_name="Ana Silva",
+            id=_UUID2,
+            total_jobs_created=25,
+            avg_correction_rate=0.15,
+            is_active=True,
             created_at=_DT,
             updated_at=_DT,
         )
-        assert m.display_name == "Ana Silva"
+        assert m.total_jobs_created == 25
+        assert m.is_active is True
 
 
 class TestRecruiterPersonalizationContext:
@@ -238,11 +306,19 @@ class TestRecruiterPersonalizationContext:
         m = RecruiterPersonalizationContext(recruiter_id="rec-001")
         assert m.recruiter_id == "rec-001"
 
-    def test_with_company(self):
+    def test_with_context(self):
         m = RecruiterPersonalizationContext(
             recruiter_id="rec-002",
-            company_id="co-001",
-            context_data={"last_job_title": "Backend Dev"},
+            is_new_user=True,
+            personalization_level="low",
         )
-        assert m.company_id == "co-001"
-        assert m.context_data["last_job_title"] == "Backend Dev"
+        assert m.is_new_user is True
+        assert m.personalization_level == "low"
+
+    def test_with_defaults(self):
+        defaults = PersonalizedDefaults(seniority="pleno", work_model="remote")
+        m = RecruiterPersonalizationContext(
+            recruiter_id="rec-003",
+            personalized_defaults=defaults,
+        )
+        assert m.personalized_defaults.seniority == "pleno"
