@@ -78,6 +78,16 @@ class CompanyId:
             )
 
         if isinstance(raw, UUID):
+            # Mesma política aplicada ao branch string: v4 only.
+            if raw.version != 4:
+                raise InvalidCompanyIdError(
+                    f"company_id deve ser UUID v4, recebido v{raw.version}: {raw!s}",
+                    details={
+                        "company_id_raw": repr(raw),
+                        "reason": "uuid_version",
+                        "uuid_version": raw.version,
+                    },
+                )
             return cls(value=str(raw).lower())
 
         if not isinstance(raw, str):

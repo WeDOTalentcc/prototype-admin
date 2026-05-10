@@ -144,3 +144,38 @@ class TestUuidVersionEnforcement:
         # Garante que is_uuid não regrediu para "qualquer UUID"
         v4 = CompanyId.parse("00000000-0000-4000-a000-000000000001")
         assert v4.is_uuid is True
+
+
+class TestUuidVersionEnforcementOnUuidObjects:
+    """T-A R-1 (round 3): branch UUID-object também exige v4."""
+
+    def test_uuid_v1_object_rejected(self):
+        from app.shared.exceptions.tenant_errors import InvalidCompanyIdError
+
+        v1 = UUID("550e8400-e29b-11d4-a716-446655440000")
+        with pytest.raises(InvalidCompanyIdError) as exc:
+            CompanyId.parse(v1)
+        assert exc.value.details.get("reason") == "uuid_version"
+        assert exc.value.details.get("uuid_version") == 1
+
+    def test_uuid_v3_object_rejected(self):
+        from app.shared.exceptions.tenant_errors import InvalidCompanyIdError
+
+        v3 = UUID("a3bb189e-8bf9-3888-9912-ace4e6543002")
+        with pytest.raises(InvalidCompanyIdError) as exc:
+            CompanyId.parse(v3)
+        assert exc.value.details.get("uuid_version") == 3
+
+    def test_uuid_v5_object_rejected(self):
+        from app.shared.exceptions.tenant_errors import InvalidCompanyIdError
+
+        v5 = UUID("886313e1-3b8a-5372-9b90-0c9aee199e5d")
+        with pytest.raises(InvalidCompanyIdError) as exc:
+            CompanyId.parse(v5)
+        assert exc.value.details.get("uuid_version") == 5
+
+    def test_uuid_v4_object_accepted(self):
+        v4 = UUID("00000000-0000-4000-a000-000000000001")
+        cid = CompanyId.parse(v4)
+        assert cid.is_uuid is True
+        assert cid.as_uuid() == v4
