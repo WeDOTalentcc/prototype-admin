@@ -189,7 +189,7 @@ class TestSavePolicyBlock:
         mock_db.flush = AsyncMock()
         mock_db.commit = AsyncMock()
 
-        with patch("app.services.policy_engine_service.AsyncSessionLocal") as mock_session_cls:
+        with patch("app.domains.policy.services.policy_engine_service.AsyncSessionLocal") as mock_session_cls:
             mock_ctx = AsyncMock()
             mock_ctx.__aenter__ = AsyncMock(return_value=mock_db)
             mock_ctx.__aexit__ = AsyncMock(return_value=False)
@@ -216,7 +216,7 @@ class TestSavePolicyBlock:
         mock_db.flush = AsyncMock()
         mock_db.commit = AsyncMock()
 
-        with patch("app.services.policy_engine_service.AsyncSessionLocal") as mock_session_cls:
+        with patch("app.domains.policy.services.policy_engine_service.AsyncSessionLocal") as mock_session_cls:
             mock_ctx = AsyncMock()
             mock_ctx.__aenter__ = AsyncMock(return_value=mock_db)
             mock_ctx.__aexit__ = AsyncMock(return_value=False)

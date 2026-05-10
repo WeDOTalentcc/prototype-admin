@@ -244,7 +244,7 @@ class TestProviderContainer:
             primary_provider="always_fails_af",
             fallback_order=["always_fails_af"],
         )
-        with pytest.raises(Exception, match="All LLM providers failed"):
+        with pytest.raises(Exception, match="Todos os provedores|All LLM providers failed"):
             await c.generate_with_fallback("hi")
 
     @pytest.mark.asyncio

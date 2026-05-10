@@ -45,7 +45,7 @@ class TestToolModuleMap:
         assert expected == actual
 
     def test_expected_tool_count(self):
-        assert len(TOOL_MODULE_MAP) == 11
+        assert len(TOOL_MODULE_MAP) == 15  # updated: 4 tools added post-v1
 
 
 class TestBuildDegradedResponse:

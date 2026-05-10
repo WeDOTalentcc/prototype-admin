@@ -1,3 +1,4 @@
+import asyncio
 """
 Celery Task Definitions — facade (Fase 7 split)
 

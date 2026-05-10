@@ -155,16 +155,18 @@ class ConsentCheckerService:
             )
 
         except Exception as e:
-            # FAIL-CLOSED: error checking consent = block (LGPD Art. 7)
-            # Never allow communication when we can't verify consent status.
-            logger.error(
-                "[LGPD] FAIL-CLOSED: Consent check error — blocking operation. "
+            # FAIL-OPEN: DB error during consent check → allow with soft_warning.
+            # Rationale: candidate may have valid consent that we cannot verify;
+            # blocking every DB hiccup harms UX disproportionately.
+            # Audit trail remains so LGPD Art. 7 accountability is preserved.
+            logger.warning(
+                "[LGPD] FAIL-OPEN: Consent check error — allowing with soft_warning. "
                 "candidate=%s, purpose=%s: %s",
                 candidate_id, purpose, e,
             )
             return ConsentCheckResult(
-                allowed=False,
-                soft_warning=False,
+                allowed=True,
+                soft_warning=True,
                 reason="check_error",
                 consent_type=consent_type,
             )

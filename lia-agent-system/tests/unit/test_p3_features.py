@@ -40,7 +40,7 @@ class TestBriefingCeleryTask:
             "celery_tasks deve ter send_daily_briefing_task definido"
         )
 
-    @patch("app.jobs.celery_tasks.asyncio")
+    @patch("app.jobs.tasks.communication.asyncio")
     def test_send_daily_calls_asyncio_run(self, mock_asyncio):
         """send_daily_briefing_task deve chamar asyncio.run(...)."""
         from app.jobs.celery_tasks import send_daily_briefing_task
@@ -48,7 +48,7 @@ class TestBriefingCeleryTask:
         result = send_daily_briefing_task()
         mock_asyncio.run.assert_called_once()
 
-    @patch("app.jobs.celery_tasks.asyncio")
+    @patch("app.jobs.tasks.communication.asyncio")
     def test_send_daily_returns_dict(self, mock_asyncio):
         """send_daily_briefing_task deve retornar dict com sent/skipped/errors."""
         from app.jobs.celery_tasks import send_daily_briefing_task

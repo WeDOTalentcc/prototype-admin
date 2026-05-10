@@ -40,16 +40,7 @@ domains:
     - "benef[ií]cios"
     - "enrichment"
   wizard:
-    # Canonical JobCreationGraph — new vacancy creation flows
-    - "criar(?:\\s+\\w+)*\\s+vaga"
-    - "criar?\\s+\\w*\\s*vaga"
-    - "nova\\s+vaga"
-    - "abrir?\\s+\\w*\\s*vaga"
-    - "publicar?\\s+vaga\\s+nova"
-    - "quero\\s+\\w*\\s*contratar"
-    - "preciso\\s+\\w*\\s*contratar"
-    - "vaga\\s+nova"
-    - "\\bnova\\b.*\\bvaga\\b"
+    # Only explicit wizard UI triggers — generic "criar vaga" routes to job_management
     - "\\bwizard\\b"
     - "job\\s+creation\\s+wizard"
   sourcing:

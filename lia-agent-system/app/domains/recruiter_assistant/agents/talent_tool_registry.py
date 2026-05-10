@@ -1064,9 +1064,7 @@ STAGE_TOOLS: dict[str, list[str]] = {
 # SafetyCategory preserved for callers that need detail info.
 from app.shared.compliance.safety_category import SafetyCategory  # noqa: F401
 
-GUARDRAIL_TOOLS: list[str] = ["create_shortlist", "export_report"]
-# Detail mapping for callers needing SafetyCategory per tool:
-_GUARDRAIL_TOOL_CATEGORIES: dict[str, SafetyCategory] = {
+GUARDRAIL_TOOLS: dict[str, SafetyCategory] = {
     "create_shortlist": SafetyCategory.PIPELINE_MOVE,
     "export_report": SafetyCategory.PII_EXPORT,
 }

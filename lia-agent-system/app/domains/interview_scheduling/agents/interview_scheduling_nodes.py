@@ -11,7 +11,8 @@ from datetime import date, datetime, timedelta
 from typing import Any
 
 from app.core.database import get_db
-from app.shared.providers.llm_factory import get_provider_for_tenant
+# get_provider_for_tenant imported lazily inside functions to avoid circular import
+# (llm_factory → token_budget_service → domains.__init__ → interview_scheduling → llm_factory)
 from app.domains.interview_scheduling.agents.interview_system_prompt import get_extraction_prompt
 from app.domains.interview_scheduling.services.calendar_service import calendar_service
 from app.models.interview import Interview
@@ -216,6 +217,7 @@ async def interview_details_collector(state: dict[str, Any]) -> dict[str, Any]:
     )
     
     try:
+        from app.shared.providers.llm_factory import get_provider_for_tenant  # lazy
         container = get_provider_for_tenant()
         extracted_json = await container.generate_with_fallback(extraction_prompt)
         # Clean JSON

@@ -25,7 +25,7 @@ class TestGuardrailToolsConteudo:
         assert "export_report" in GUARDRAIL_TOOLS
 
     def test_guardrail_tools_e_lista(self):
-        assert isinstance(GUARDRAIL_TOOLS, list)
+        assert isinstance(GUARDRAIL_TOOLS, dict)  # UC-P2-09: dict[str, SafetyCategory]
         assert len(GUARDRAIL_TOOLS) >= 2
 
 

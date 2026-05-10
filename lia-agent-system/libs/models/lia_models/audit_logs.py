@@ -63,7 +63,7 @@ class SOXAuditLog(Base):
     # Será tornado NOT NULL após backfill completo (migration 080)
     company_id = Column(UUID(as_uuid=True), nullable=True, index=True)
 
-    client_id = Column(String(255), nullable=True, index=True)
+    client_id = Column(String(255), nullable=True, index=True, server_default="system")
     client_name = Column(String(255), nullable=True)
     
     action = Column(String(255), nullable=False, index=True)

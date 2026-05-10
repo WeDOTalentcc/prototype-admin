@@ -12,7 +12,7 @@ class TestWrapGetCandidateProfile:
     @pytest.mark.easy
     async def test_no_candidate_id(self):
         from app.domains.pipeline.agents.pipeline_tool_registry import _wrap_get_candidate_profile
-        result = await _wrap_get_candidate_profile()
+        result = await _wrap_get_candidate_profile(company_id="test-company")
         assert result["success"] is False
         assert "obrigatório" in result["error"]
 
@@ -50,7 +50,7 @@ class TestWrapGetCandidateProfile:
         mock_session.__aexit__ = AsyncMock(return_value=False)
 
         with patch("app.domains.pipeline.agents.pipeline_tool_registry.AsyncSessionLocal", return_value=mock_session):
-            result = await _wrap_get_candidate_profile(candidate_id="c1")
+            result = await _wrap_get_candidate_profile(candidate_id="c1", company_id="test-company")
         assert result["success"] is True
         assert result["profile"]["name"] == "Ana"
 

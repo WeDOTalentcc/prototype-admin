@@ -222,7 +222,7 @@ async def test_search_alpha_zero_uses_bm25_path(service, mock_db):
     with (
         patch.object(service, "_bm25_search", new=AsyncMock(return_value=bm25_rows)) as mock_bm25,
         patch.object(service, "_semantic_search", new=AsyncMock(return_value=[])) as mock_sem,
-        patch("app.services.rag_pipeline_service.generate_embedding", new=AsyncMock(return_value=None)) as mock_emb,
+        patch("app.domains.ai.services.rag_pipeline_service.generate_embedding", new=AsyncMock(return_value=None)) as mock_emb,
     ):
         result = await service.search("python", "company-1", mock_db, limit=10, alpha=0.0)
 
@@ -242,7 +242,7 @@ async def test_search_alpha_one_uses_semantic_path(service, mock_db):
     with (
         patch.object(service, "_bm25_search", new=AsyncMock(return_value=[])) as mock_bm25,
         patch.object(service, "_semantic_search", new=AsyncMock(return_value=sem_rows)) as mock_sem,
-        patch("app.services.rag_pipeline_service.generate_embedding", new=AsyncMock(return_value=fake_embedding)),
+        patch("app.domains.ai.services.rag_pipeline_service.generate_embedding", new=AsyncMock(return_value=fake_embedding)),
     ):
         result = await service.search("python", "company-1", mock_db, limit=10, alpha=1.0)
 
@@ -262,7 +262,7 @@ async def test_search_alpha_half_uses_hybrid_path(service, mock_db):
     with (
         patch.object(service, "_bm25_search", new=AsyncMock(return_value=bm25_rows)),
         patch.object(service, "_semantic_search", new=AsyncMock(return_value=sem_rows)),
-        patch("app.services.rag_pipeline_service.generate_embedding", new=AsyncMock(return_value=fake_embedding)),
+        patch("app.domains.ai.services.rag_pipeline_service.generate_embedding", new=AsyncMock(return_value=fake_embedding)),
     ):
         result = await service.search("python", "company-1", mock_db, limit=10, alpha=0.5)
 
@@ -273,7 +273,7 @@ async def test_search_alpha_half_uses_hybrid_path(service, mock_db):
 async def test_search_returns_rag_search_result_instance(service, mock_db):
     with (
         patch.object(service, "_bm25_search", new=AsyncMock(return_value=_make_bm25_rows(2))),
-        patch("app.services.rag_pipeline_service.generate_embedding", new=AsyncMock(return_value=None)),
+        patch("app.domains.ai.services.rag_pipeline_service.generate_embedding", new=AsyncMock(return_value=None)),
     ):
         result = await service.search("dev", "company-1", mock_db, alpha=0.0)
 
@@ -286,7 +286,7 @@ async def test_search_returns_rag_search_result_instance(service, mock_db):
 async def test_search_empty_results(service, mock_db):
     with (
         patch.object(service, "_bm25_search", new=AsyncMock(return_value=[])),
-        patch("app.services.rag_pipeline_service.generate_embedding", new=AsyncMock(return_value=None)),
+        patch("app.domains.ai.services.rag_pipeline_service.generate_embedding", new=AsyncMock(return_value=None)),
     ):
         result = await service.search("inexistente", "company-1", mock_db, alpha=0.0)
 
@@ -304,7 +304,7 @@ async def test_search_embedding_unavailable_falls_back_to_bm25(service, mock_db)
     with (
         patch.object(service, "_bm25_search", new=AsyncMock(return_value=bm25_rows)),
         patch.object(service, "_semantic_search", new=AsyncMock(return_value=[])) as mock_sem,
-        patch("app.services.rag_pipeline_service.generate_embedding", new=AsyncMock(return_value=None)),
+        patch("app.domains.ai.services.rag_pipeline_service.generate_embedding", new=AsyncMock(return_value=None)),
     ):
         result = await service.search("python", "company-1", mock_db, alpha=0.5)
 
@@ -323,7 +323,7 @@ async def test_search_passes_company_id_to_bm25(service, mock_db):
     """_bm25_search deve receber o company_id correto."""
     with (
         patch.object(service, "_bm25_search", new=AsyncMock(return_value=[])) as mock_bm25,
-        patch("app.services.rag_pipeline_service.generate_embedding", new=AsyncMock(return_value=None)),
+        patch("app.domains.ai.services.rag_pipeline_service.generate_embedding", new=AsyncMock(return_value=None)),
     ):
         await service.search("python", "tenant-xyz", mock_db, alpha=0.0)
 
@@ -341,7 +341,7 @@ async def test_search_passes_company_id_to_semantic(service, mock_db):
     with (
         patch.object(service, "_semantic_search", new=AsyncMock(return_value=[])) as mock_sem,
         patch.object(service, "_bm25_search", new=AsyncMock(return_value=[])),
-        patch("app.services.rag_pipeline_service.generate_embedding", new=AsyncMock(return_value=fake_embedding)),
+        patch("app.domains.ai.services.rag_pipeline_service.generate_embedding", new=AsyncMock(return_value=fake_embedding)),
     ):
         await service.search("python", "tenant-abc", mock_db, alpha=1.0)
 
@@ -358,7 +358,7 @@ async def test_search_passes_company_id_to_semantic(service, mock_db):
 async def test_search_metadata_contains_alpha(service, mock_db):
     with (
         patch.object(service, "_bm25_search", new=AsyncMock(return_value=_make_bm25_rows(1))),
-        patch("app.services.rag_pipeline_service.generate_embedding", new=AsyncMock(return_value=None)),
+        patch("app.domains.ai.services.rag_pipeline_service.generate_embedding", new=AsyncMock(return_value=None)),
     ):
         result = await service.search("q", "c1", mock_db, alpha=0.3)
 
@@ -369,7 +369,7 @@ async def test_search_metadata_contains_alpha(service, mock_db):
 async def test_search_metadata_embedding_flag_false_when_unavailable(service, mock_db):
     with (
         patch.object(service, "_bm25_search", new=AsyncMock(return_value=[])),
-        patch("app.services.rag_pipeline_service.generate_embedding", new=AsyncMock(return_value=None)),
+        patch("app.domains.ai.services.rag_pipeline_service.generate_embedding", new=AsyncMock(return_value=None)),
     ):
         result = await service.search("q", "c1", mock_db, alpha=0.5)
 
@@ -383,7 +383,7 @@ async def test_search_metadata_embedding_flag_true_when_available(service, mock_
     with (
         patch.object(service, "_bm25_search", new=AsyncMock(return_value=[])),
         patch.object(service, "_semantic_search", new=AsyncMock(return_value=[])),
-        patch("app.services.rag_pipeline_service.generate_embedding", new=AsyncMock(return_value=fake_embedding)),
+        patch("app.domains.ai.services.rag_pipeline_service.generate_embedding", new=AsyncMock(return_value=fake_embedding)),
     ):
         result = await service.search("q", "c1", mock_db, alpha=0.5)
 
@@ -401,7 +401,7 @@ async def test_search_respects_limit(service, mock_db):
 
     with (
         patch.object(service, "_bm25_search", new=AsyncMock(return_value=bm25_rows)),
-        patch("app.services.rag_pipeline_service.generate_embedding", new=AsyncMock(return_value=None)),
+        patch("app.domains.ai.services.rag_pipeline_service.generate_embedding", new=AsyncMock(return_value=None)),
     ):
         result = await service.search("q", "c1", mock_db, limit=5, alpha=0.0)
 
