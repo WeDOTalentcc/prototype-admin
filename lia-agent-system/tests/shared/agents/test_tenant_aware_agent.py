@@ -242,3 +242,136 @@ class TestStrictOverrideSafety:
         agent = _WeirdAgent()
         with pytest.raises(RuntimeError):
             agent._is_strict()
+
+
+class TestCacheKeyByRequestId:
+    """T-A R-4: cache deve ser keyed por (company_id, request_id|session_id)."""
+
+    @pytest.mark.asyncio
+    async def test_cache_key_uses_request_id_when_present(self):
+        reset_tenant_context_metrics()
+
+        class _Agent(TenantAwareAgentMixin, _FakeBase):
+            domain_name = "cache_agent"
+
+        agent = _Agent()
+
+        class _FakeCtx:
+            def to_prompt_snippet(self):
+                return "snippet-A"
+
+        # request_id "req-1" → cacheia
+        i1 = _FakeAgentInput(metadata={"request_id": "req-1"}, context={"tenant_context": _FakeCtx()})
+        ctx1 = await agent._resolve_tenant_context(i1)
+        assert ctx1 is not None
+        store = i1.metadata["_tenant_ctx_cache"]
+        assert isinstance(store, dict)
+        assert (i1.company_id, "req-1") in store
+
+        # Mesmo company, request_id diferente → MISS
+        i2 = _FakeAgentInput(metadata={"request_id": "req-2", "_tenant_ctx_cache": store})
+        # Sem tenant_context pré-injetado e sem db → retorna None (não usa cache de outra request)
+        ctx2 = await agent._resolve_tenant_context(i2)
+        assert ctx2 is None
+
+    @pytest.mark.asyncio
+    async def test_cache_key_falls_back_to_session_id(self):
+        class _Agent(TenantAwareAgentMixin, _FakeBase):
+            domain_name = "session_cache_agent"
+
+        agent = _Agent()
+
+        class _FakeCtx:
+            def to_prompt_snippet(self):
+                return "snippet-S"
+
+        i = _FakeAgentInput(context={"tenant_context": _FakeCtx()})
+        await agent._resolve_tenant_context(i)
+        store = i.metadata["_tenant_ctx_cache"]
+        assert (i.company_id, i.session_id) in store
+
+
+class TestComposeRuntimePrompt:
+    """T-A R-spec: helper canônico que auto-injeta tenant_context_snippet."""
+
+    def test_compose_runtime_prompt_injects_snippet_from_context(self):
+        class _Agent(TenantAwareAgentMixin, _FakeBase):
+            domain_name = "wizard"
+
+        agent = _Agent()
+        i = _FakeAgentInput(context={"tenant_context_snippet": "Empresa: Acme"})
+        result = agent._compose_runtime_prompt(
+            i,
+            domain_specific="DOMAIN",
+            reasoning_template="MEMORY={memory_summary} STAGE={stage_context}",
+            memory_summary="m",
+            stage_context="s",
+        )
+        # PromptComposition retorna um objeto com `text` ou similar
+        text = getattr(result, "text", None) or getattr(result, "system_prompt", None) or str(result)
+        assert "Empresa: Acme" in text
+
+    def test_compose_runtime_prompt_empty_snippet_when_absent(self):
+        class _Agent(TenantAwareAgentMixin, _FakeBase):
+            domain_name = "wizard"
+
+        agent = _Agent()
+        i = _FakeAgentInput(context={})
+        # Não levanta — só monta sem snippet (a hook async é quem decide strict)
+        result = agent._compose_runtime_prompt(
+            i,
+            domain_specific="DOMAIN",
+            reasoning_template="X",
+        )
+        assert result is not None
+
+
+class TestProcessLanggraphPreResolution:
+    """T-A R-2: _process_langgraph pre-resolve snippet via async resolver."""
+
+    @pytest.mark.asyncio
+    async def test_pre_resolution_populates_snippet_before_super(self, monkeypatch):
+        monkeypatch.setenv("APP_ENV", "development")
+        monkeypatch.setenv("LIA_AGENT_TENANT_STRICT", "false")
+
+        captured = {}
+
+        class _AsyncBase:
+            async def _process_langgraph(self, input):
+                captured["snippet_at_super"] = (input.context or {}).get("tenant_context_snippet")
+                return "OK"
+
+        class _Agent(TenantAwareAgentMixin, _AsyncBase):
+            domain_name = "pre_resolve_agent"
+
+        class _FakeCtx:
+            def to_prompt_snippet(self):
+                return "RESOLVED-VIA-DB"
+
+        agent = _Agent()
+        i = _FakeAgentInput(context={"tenant_context": _FakeCtx()})
+        out = await agent._process_langgraph(i)
+        assert out == "OK"
+        assert captured["snippet_at_super"] == "RESOLVED-VIA-DB"
+
+
+class TestPrometheusMetric:
+    """T-A R-3: outcome registrado em Counter com labels {agent, outcome}."""
+
+    def test_prometheus_counter_increments_on_hit(self, monkeypatch):
+        from app.shared.agents import tenant_aware_agent as taa
+        if taa._TENANT_CONTEXT_COUNTER is None:
+            pytest.skip("prometheus_client indisponível neste ambiente")
+
+        # Snapshot do counter ANTES
+        before = taa._TENANT_CONTEXT_COUNTER.labels(agent="prom_agent", outcome="hit")._value.get()
+
+        class _Agent(TenantAwareAgentMixin, _FakeBase):
+            domain_name = "prom_agent"
+
+        agent = _Agent()
+        i = _FakeAgentInput(context={"tenant_context_snippet": "X"})
+        agent._get_system_prompt(i)
+
+        after = taa._TENANT_CONTEXT_COUNTER.labels(agent="prom_agent", outcome="hit")._value.get()
+        assert after == before + 1

@@ -14,17 +14,31 @@ Causa raiz endereçada (.local/tasks/canonical-tenant-aware-agent-infra.md):
 Esta mixin é o ponto canônico de injeção. Agentes herdam de
 ``TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin`` e ganham:
 
-    1. ``_resolve_tenant_context(input)`` → ``TenantContext`` (com cache de
-       request via ``input.metadata['_tenant_ctx_cache']``).
-    2. ``_get_tenant_context_snippet(input)`` → ``str`` não-vazio OU
+    1. ``_resolve_tenant_context(input)`` async → ``TenantContext`` (com cache
+       por ``(company_id, request_id|session_id)`` em
+       ``input.metadata['_tenant_ctx_cache']``).
+    2. ``_get_tenant_context_snippet(input)`` async → ``str`` não-vazio OU
        ``MissingTenantContextError`` quando ``LIA_AGENT_TENANT_STRICT=true``.
-    3. Override de ``_get_system_prompt`` que GARANTE que o snippet vai pro
-       ``ctx.tenant_context_snippet`` antes do ``LangGraphReActBase`` montar
-       o prompt — mesmo se o caller esqueceu de injetar.
+    3. Override async de ``_process_langgraph`` que PRE-RESOLVE o snippet via
+       ``TenantContextService`` ANTES do ``LangGraphReActBase`` chamar o sync
+       ``_get_system_prompt`` — fechando o gap "snippet só funciona quando
+       caller pré-injeta".
+    4. Override sync de ``_get_system_prompt`` como rede de proteção
+       (defense-in-depth) — se algum caller pular ``_process_langgraph``,
+       a flag estrita ainda decide.
+    5. ``_compose_runtime_prompt(input, ...)`` → wrapper canônico de
+       ``PromptComposer.for_domain_runtime`` que auto-injeta snippet, pra
+       agentes que sobrescrevem ``_get_runtime_domain_instructions``.
 
-Não substitui ``LangGraphReActBase`` nem ``EnhancedAgentMixin`` — soma.
+Métricas (Prometheus + snapshot in-memory):
+    - Counter ``lia_agent_tenant_context_resolved_total{agent,outcome}``
+      registrado no canonical metrics registry quando ``prometheus_client``
+      está disponível (fail-OPEN se não estiver).
+    - Snapshot in-memory exposto via ``get_tenant_context_metrics()`` pro
+      endpoint ``/health/compliance/bypass-status`` (continua ativo
+      mesmo sem Prometheus).
 
-Métricas (in-memory, expostas via ``get_tenant_context_metrics``):
+Outcomes:
     - ``hit``: snippet veio populado e foi usado
     - ``miss``: snippet veio vazio mas conseguimos resolver via DB
     - ``fail_open``: tenant não resolvível e flag estrita OFF (warning + segue)
@@ -43,7 +57,7 @@ from app.shared.exceptions.tenant_errors import (
 from app.shared.value_objects.company_id import CompanyId
 
 if TYPE_CHECKING:
-    from lia_agents_core.agent_interface import AgentInput
+    from lia_agents_core.agent_interface import AgentInput, AgentOutput
     from app.shared.services.tenant_context_service import TenantContext
 
 logger = logging.getLogger(__name__)
@@ -78,14 +92,42 @@ def is_tenant_strict_mode() -> bool:
 
 
 # ----------------------------------------------------------------------
-# Métricas in-memory (mesmo padrão de app/shared/observability/llm_metrics.py)
+# Métricas — Prometheus (canonical) + snapshot in-memory (health endpoint)
 # ----------------------------------------------------------------------
+_OUTCOMES = ("hit", "miss", "fail_open", "fail_closed")
 _METRICS: dict[str, dict[str, int]] = {}
+
+# Counter Prometheus opcional. ``prometheus_client`` é dep transitiva via
+# FastAPI/observability stack; se ausente, só atualizamos in-memory.
+try:  # pragma: no cover — exercitado via integração
+    from prometheus_client import Counter as _PromCounter
+    from prometheus_client import REGISTRY as _PROM_REGISTRY
+
+    # Idempotente — se outro import já registrou, reutiliza
+    _existing = getattr(_PROM_REGISTRY, "_names_to_collectors", {}).get(
+        "lia_agent_tenant_context_resolved_total"
+    )
+    if _existing is not None:
+        _TENANT_CONTEXT_COUNTER = _existing
+    else:
+        _TENANT_CONTEXT_COUNTER = _PromCounter(
+            "lia_agent_tenant_context_resolved_total",
+            "Total de resoluções de tenant context por agente e outcome (T-A canonical).",
+            labelnames=("agent", "outcome"),
+        )
+except Exception:  # pragma: no cover — fail-OPEN se prometheus indisponível
+    _TENANT_CONTEXT_COUNTER = None
 
 
 def _record_metric(agent: str, outcome: str) -> None:
-    bucket = _METRICS.setdefault(agent, {"hit": 0, "miss": 0, "fail_open": 0, "fail_closed": 0})
+    """Incrementa Prometheus counter (se disponível) + snapshot in-memory."""
+    bucket = _METRICS.setdefault(agent, {k: 0 for k in _OUTCOMES})
     bucket[outcome] = bucket.get(outcome, 0) + 1
+    if _TENANT_CONTEXT_COUNTER is not None:
+        try:
+            _TENANT_CONTEXT_COUNTER.labels(agent=agent, outcome=outcome).inc()
+        except Exception:  # pragma: no cover — defensive
+            pass
 
 
 def get_tenant_context_metrics() -> dict[str, dict[str, int]]:
@@ -99,6 +141,27 @@ def reset_tenant_context_metrics() -> None:
 
 
 # ----------------------------------------------------------------------
+# Cache key helper
+# ----------------------------------------------------------------------
+def _cache_key(input: "AgentInput") -> tuple[str, str]:
+    """Chave canônica do cache: ``(company_id, request_id|session_id)``.
+
+    Preferimos ``metadata['request_id']`` (injetado pelo middleware HTTP);
+    caímos em ``session_id`` quando ausente. Isso garante que duas requests
+    diferentes na mesma sessão não compartilhem snippet stale.
+    """
+    company_raw = str(input.company_id or "")
+    metadata = getattr(input, "metadata", None) or {}
+    req_id = (
+        metadata.get("request_id")
+        or metadata.get("trace_id")
+        or getattr(input, "session_id", None)
+        or ""
+    )
+    return (company_raw, str(req_id))
+
+
+# ----------------------------------------------------------------------
 # Mixin
 # ----------------------------------------------------------------------
 class TenantAwareAgentMixin:
@@ -109,14 +172,24 @@ class TenantAwareAgentMixin:
         class MyAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
             ...
 
-    O mixin NÃO requer mudanças no ``LangGraphReActBase``: o override de
-    ``_get_system_prompt`` injeta o snippet em ``input.context`` antes de
-    delegar pro ``super()``.
+    O mixin opera em duas camadas:
 
-    Subclasses que QUEREM controle fino podem chamar
-    ``self._get_tenant_context_snippet(input)`` diretamente dentro do seu
-    ``_get_runtime_domain_instructions(input)`` e passar o resultado pro
-    ``PromptComposer.for_domain_runtime(tenant_context_snippet=...)``.
+    1. **Pre-resolução async** (caminho normal): ``_process_langgraph``
+       é override pra resolver e injetar o snippet em ``input.context``
+       ANTES do ``super()._process_langgraph`` chamar
+       ``_get_system_prompt`` (sync). Assim o resolver async via DB
+       (``TenantContextService``) funciona sem precisar de
+       ``asyncio.run`` dentro de hook sync.
+
+    2. **Defense-in-depth sync**: o override de ``_get_system_prompt``
+       cobre callers que pularam ``_process_langgraph`` (testes, hooks
+       custom). Ele só consegue resolver via cache ou
+       ``input.context['tenant_context']`` síncrono — sem hit no DB.
+
+    Subclasses que sobrescrevem ``_get_runtime_domain_instructions`` devem
+    chamar ``self._compose_runtime_prompt(input, ...)`` em vez de
+    ``PromptComposer.for_domain_runtime`` direto, pra herdar a injeção
+    automática do snippet.
     """
 
     # Permite a subclasse FORÇAR strict-mode mesmo em dev (agentes que NUNCA
@@ -132,27 +205,32 @@ class TenantAwareAgentMixin:
     # ------------------------------------------------------------------
 
     async def _resolve_tenant_context(self, input: "AgentInput") -> "TenantContext | None":
-        """Resolve ``TenantContext`` para a request.
+        """Resolve ``TenantContext`` para a request com cache por
+        ``(company_id, request_id|session_id)``.
 
         Estratégia:
-            1. Se ``input.context['tenant_context']`` já vier populado pelo
-               orquestrador → usa direto (cache hit do MainOrchestrator).
-            2. Senão, valida ``input.company_id`` via ``CompanyId.parse`` e
-               consulta ``TenantContextService.get_context``.
-            3. Cacheia o resultado em ``input.metadata['_tenant_ctx_cache']``
-               pra evitar rebusca dentro da mesma request.
+            1. Cache hit → retorna direto.
+            2. ``input.context['tenant_context']`` populado pelo orquestrador
+               → cacheia + retorna.
+            3. Valida ``input.company_id`` via ``CompanyId.parse`` e consulta
+               ``TenantContextService.get_context``.
 
-        Retorna ``None`` quando ``CompanyId.parse`` falha (caller decide
-        fail-open/closed via ``_get_tenant_context_snippet``).
+        Retorna ``None`` quando ``CompanyId.parse`` falha ou quando não há
+        ``db`` no contexto (caller decide fail-open/closed via
+        ``_get_tenant_context_snippet``).
         """
-        cache = input.metadata.get("_tenant_ctx_cache") if input.metadata else None
-        if cache is not None:
-            return cache
+        metadata = getattr(input, "metadata", None) or {}
+        cache_store = metadata.get("_tenant_ctx_cache")
+        key = _cache_key(input)
+
+        # Cache hit por (company_id, request_id)
+        if isinstance(cache_store, dict) and key in cache_store:
+            return cache_store[key]
 
         # Caller já resolveu (rota feliz — MainOrchestrator)
         ctx_obj = (input.context or {}).get("tenant_context")
         if ctx_obj is not None and hasattr(ctx_obj, "to_prompt_snippet"):
-            input.metadata.setdefault("_tenant_ctx_cache", ctx_obj)
+            self._cache_put(input, key, ctx_obj)
             return ctx_obj
 
         # Fallback: resolver via DB
@@ -186,8 +264,7 @@ class TenantAwareAgentMixin:
                 db=db,
                 job_id=job_id,
             )
-            if input.metadata is not None:
-                input.metadata["_tenant_ctx_cache"] = tenant_ctx
+            self._cache_put(input, key, tenant_ctx)
             return tenant_ctx
         except Exception as exc:  # pragma: no cover — defensive
             logger.warning(
@@ -199,6 +276,18 @@ class TenantAwareAgentMixin:
                 },
             )
             return None
+
+    @staticmethod
+    def _cache_put(input: "AgentInput", key: tuple[str, str], value: Any) -> None:
+        """Insere no cache ``input.metadata['_tenant_ctx_cache'][key] = value``."""
+        metadata = getattr(input, "metadata", None)
+        if metadata is None:
+            return
+        store = metadata.get("_tenant_ctx_cache")
+        if not isinstance(store, dict):
+            store = {}
+            metadata["_tenant_ctx_cache"] = store
+        store[key] = value
 
     async def _get_tenant_context_snippet(self, input: "AgentInput") -> str:
         """Retorna o snippet pro prompt — fail-closed quando estrito.
@@ -267,7 +356,30 @@ class TenantAwareAgentMixin:
         return ""
 
     # ------------------------------------------------------------------
-    # Override que LangGraphReActBase consome automaticamente
+    # Pre-resolução async — gancho canônico no fluxo do LangGraphReActBase
+    # ------------------------------------------------------------------
+
+    async def _process_langgraph(self, input: "AgentInput") -> "AgentOutput":
+        """Pre-resolve tenant snippet antes do super() async rodar.
+
+        ``LangGraphReActBase._process_langgraph`` chama ``_get_system_prompt``
+        (sync) na linha 190. Como o resolver via DB é async, precisamos
+        garantir que o snippet já esteja em ``input.context`` ANTES desse
+        ponto. Esta override roda primeiro a resolução async (com cache)
+        e depois delega pro super.
+
+        Em strict-mode, falha aqui já levanta ``MissingTenantContextError``
+        — request rejeitada antes de qualquer chamada LLM.
+        """
+        # Garante snippet via caminho async (cache + DB fallback)
+        snippet = await self._get_tenant_context_snippet(input)
+        if snippet and input.context is not None:
+            input.context["tenant_context_snippet"] = snippet
+
+        return await super()._process_langgraph(input)  # type: ignore[misc]
+
+    # ------------------------------------------------------------------
+    # Override sync — defense-in-depth (callers que pularam pre-resolução)
     # ------------------------------------------------------------------
 
     def _get_system_prompt(self, input: "AgentInput") -> str:  # type: ignore[override]
@@ -278,18 +390,25 @@ class TenantAwareAgentMixin:
         ``SystemPromptBuilder.build()``. Se vier vazio, todo o trabalho do
         ``MainOrchestrator`` se perde no agente.
 
-        Aqui resolvemos sincronamente via ``input.context`` (caso já
-        injetado) ou caímos no caminho async-aware via
-        ``_resolve_tenant_context_sync_fallback``. Quando o snippet é
-        verdadeiramente irrecuperável, deixamos a flag estrita decidir.
+        No fluxo normal, ``_process_langgraph`` (override acima) já populou
+        o snippet via caminho async. Esta hook é defense-in-depth pra
+        callers que invocam ``_get_system_prompt`` direto (testes, hooks
+        custom): tenta resolver via cache ou ``tenant_context`` sync; se
+        falhar, deixa a flag estrita decidir.
         """
         agent = self._tenant_aware_agent_name()
         ctx = input.context if input.context is not None else {}
 
         snippet = ctx.get("tenant_context_snippet", "")
         if not (isinstance(snippet, str) and snippet.strip()):
-            # Tenta TenantContext já resolvido (sem await — síncrono)
-            tenant_ctx = ctx.get("tenant_context")
+            # Tenta cache (populado por _resolve_tenant_context)
+            cached = None
+            metadata = getattr(input, "metadata", None) or {}
+            store = metadata.get("_tenant_ctx_cache")
+            if isinstance(store, dict):
+                cached = store.get(_cache_key(input))
+
+            tenant_ctx = cached if cached is not None else ctx.get("tenant_context")
             if tenant_ctx is not None and hasattr(tenant_ctx, "to_prompt_snippet"):
                 try:
                     snippet = tenant_ctx.to_prompt_snippet() or ""
@@ -337,6 +456,51 @@ class TenantAwareAgentMixin:
         # ``super()`` é seguro porque a MRO inclui ``LangGraphReActBase`` quando
         # o agente herda na ordem recomendada.
         return super()._get_system_prompt(input)  # type: ignore[misc]
+
+    # ------------------------------------------------------------------
+    # Helper canônico pra agentes que sobrescrevem _get_runtime_domain_instructions
+    # ------------------------------------------------------------------
+
+    def _compose_runtime_prompt(
+        self,
+        input: "AgentInput",
+        *,
+        domain_specific: str = "",
+        few_shot_examples: str = "",
+        reasoning_template: str = "",
+        memory_summary: str = "",
+        stage_context: str = "",
+        memory_summary_fallback: str | None = None,
+    ) -> Any:
+        """Wrapper canônico de ``PromptComposer.for_domain_runtime`` que
+        auto-injeta ``tenant_context_snippet`` lido de ``input.context``.
+
+        Subclasses que sobrescrevem ``_get_runtime_domain_instructions``
+        devem usar este helper (em vez de chamar
+        ``PromptComposer.for_domain_runtime`` direto) pra garantir que o
+        snippet já resolvido pelo mixin chega ao composer.
+
+        Nota: a resolução real é feita em ``_process_langgraph``
+        (async, com DB fallback). Este helper é puramente sync e lê o
+        snippet já populado no contexto.
+        """
+        from app.shared.prompts.prompt_composer import PromptComposer
+
+        ctx = input.context or {}
+        snippet = ctx.get("tenant_context_snippet", "") or ""
+
+        kwargs: dict[str, Any] = dict(
+            agent_type=self._tenant_aware_agent_name(),
+            domain_specific=domain_specific,
+            few_shot_examples=few_shot_examples,
+            reasoning_template=reasoning_template,
+            memory_summary=memory_summary,
+            stage_context=stage_context,
+            tenant_context_snippet=snippet,
+        )
+        if memory_summary_fallback is not None:
+            kwargs["memory_summary_fallback"] = memory_summary_fallback
+        return PromptComposer.for_domain_runtime(**kwargs)
 
     # ------------------------------------------------------------------
     # Internals
