@@ -21,6 +21,7 @@ from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User, UserRole
 from app.core.database import get_db
 from app.shared.governance.feature_flag_service import FeatureFlagService, get_feature_flag_service
+from app.shared.pii_masking import mask_pii as _mask_pii  # P1-3: LGPD redaction on free-text fields
 
 logger = logging.getLogger(__name__)
 
@@ -489,7 +490,8 @@ async def request_feature_flag_toggle(
         target_id=None,  # P0-A`: column is UUID; flag_key kept in target_data only
         target_type="feature_flag",
         target_name=request.flag_key,
-        target_description=request.justification,
+        # P1-3: LGPD Art.11 — redact PII from free-text justification (stored forever per B5)
+        target_description=_mask_pii(request.justification) if request.justification else request.justification,
         target_data={
             "flag_key": request.flag_key,
             "requested_value": request.requested_value,
@@ -501,6 +503,23 @@ async def request_feature_flag_toggle(
         expires_at=_dt.utcnow() + _td(days=_APPROVAL_EXPIRY_DAYS),
     )
     repo = _build_approvals_repo(db)
+
+    # P1-1 idempotency: 409 when same (company_id, flag_key, requester_id)
+    # already has a PENDING request. Prevents audit log bloat + UX confusion.
+    existing = await repo.find_pending_duplicate(
+        company_id=company_id,
+        flag_key=request.flag_key,
+        requester_id=getattr(current_user, 'id', None),
+    )
+    if existing is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                f"A pending approval for flag '{request.flag_key}' already "
+                f"exists (id={existing.id}). Wait for admin resolution."
+            ),
+        )
+
     await repo.add_and_flush(approval)
 
     # Fail-soft email + audit (LGPD Art. 20 trail)

@@ -16,17 +16,10 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from lia_models.bigfive_department_profile import BigFiveDepartmentProfile
+# P1-2 canonical fix: ALLOWED_TRAITS moved to shared single source of truth
+from app.shared.ocean_constants import ALLOWED_TRAITS
 
 logger = logging.getLogger(__name__)
-
-
-ALLOWED_TRAITS = frozenset({
-    "openness",
-    "conscientiousness",
-    "extraversion",
-    "agreeableness",
-    "stability",
-})
 
 
 class BigFiveDepartmentProfileRepository:

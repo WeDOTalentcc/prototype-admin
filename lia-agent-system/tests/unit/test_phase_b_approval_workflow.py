@@ -112,6 +112,7 @@ def test_request_toggle_endpoint_creates_approval_request_with_flag_payload():
 
     mock_repo = MagicMock()
     mock_repo.add_and_flush = AsyncMock(side_effect=_mock_add_and_flush)
+    mock_repo.find_pending_duplicate = AsyncMock(return_value=None)
 
     body = FeatureFlagToggleRequest(
         flag_key="learning_loops.bigfive_department_history",

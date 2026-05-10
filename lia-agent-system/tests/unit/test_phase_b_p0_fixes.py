@@ -68,6 +68,7 @@ def test_request_toggle_persists_approver_name_non_empty():
 
     mock_repo = MagicMock()
     mock_repo.add_and_flush = AsyncMock(side_effect=_capture)
+    mock_repo.find_pending_duplicate = AsyncMock(return_value=None)
 
     body = FeatureFlagToggleRequest(
         flag_key="learning_loops.bigfive_department_history",
@@ -123,6 +124,7 @@ def test_request_toggle_persists_approver_email_non_null():
 
     mock_repo = MagicMock()
     mock_repo.add_and_flush = AsyncMock(side_effect=_capture)
+    mock_repo.find_pending_duplicate = AsyncMock(return_value=None)
 
     body = FeatureFlagToggleRequest(
         flag_key="learning_loops.bigfive_department_history",
@@ -173,6 +175,7 @@ def test_request_toggle_does_not_pass_string_to_target_id():
 
     mock_repo = MagicMock()
     mock_repo.add_and_flush = AsyncMock(side_effect=_capture)
+    mock_repo.find_pending_duplicate = AsyncMock(return_value=None)
 
     body = FeatureFlagToggleRequest(
         flag_key="learning_loops.bigfive_department_history",

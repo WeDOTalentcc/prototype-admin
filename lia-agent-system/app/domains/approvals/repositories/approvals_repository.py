@@ -79,6 +79,33 @@ class ApprovalsRepository:
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
+
+    async def find_pending_duplicate(
+        self,
+        company_id: str,
+        flag_key: str,
+        requester_id,
+    ) -> "Optional[ApprovalRequest]":
+        """P1-1 idempotency: return existing PENDING feature_flag_toggle
+        request for (company_id, flag_key, requester_id) or None.
+
+        target_name stores the flag_key (set in request_feature_flag_toggle).
+        Status filter is PENDING only — resolved requests allow re-submission.
+        """
+        from app.models.approval import ApprovalType
+        result = await self.db.execute(
+            select(ApprovalRequest).where(
+                and_(
+                    ApprovalRequest.company_id == company_id,
+                    ApprovalRequest.request_type == ApprovalType.FEATURE_FLAG_TOGGLE.value,
+                    ApprovalRequest.target_name == flag_key,
+                    ApprovalRequest.requester_id == requester_id,
+                    ApprovalRequest.status == ApprovalStatus.PENDING.value,
+                )
+            ).limit(1)
+        )
+        return result.scalar_one_or_none()
+
     async def get_default_company_id(self):
         from sqlalchemy import select
         result = await self.db.execute(

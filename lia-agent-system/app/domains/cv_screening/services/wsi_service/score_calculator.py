@@ -4,6 +4,8 @@ WSI Score Calculator - Weighted average scoring and percentile ranking.
 import logging
 
 from .models import ResponseAnalysis, WSIResult
+# P1-2 canonical fix: single source of truth for OCEAN trait whitelist
+from app.shared.ocean_constants import ALLOWED_TRAITS
 
 logger = logging.getLogger(__name__)
 
@@ -123,19 +125,10 @@ class WSIScoreCalculator:
         against accidental non-OCEAN strings that would later fail
         BigFiveDepartmentService.record_hire's ALLOWED_TRAITS guard).
         """
-        # Local copy to avoid coupling to bigfive_service import — must
-        # match ALLOWED_TRAITS in app/domains/job_creation/services/bigfive_service.py:34
-        valid_traits = {
-            "openness",
-            "conscientiousness",
-            "extraversion",
-            "agreeableness",
-            "stability",
-        }
         buckets: dict[str, list[float]] = {}
         for r in responses:
             trait = getattr(r, "trait_ocean", None)
-            if trait is None or trait not in valid_traits:
+            if trait is None or trait not in ALLOWED_TRAITS:
                 continue
             score = getattr(r, "final_score", None)
             if score is None:
