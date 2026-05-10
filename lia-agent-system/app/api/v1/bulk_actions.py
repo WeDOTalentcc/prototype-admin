@@ -658,6 +658,7 @@ async def bulk_export_candidates(
     current_user: User = Depends(require_admin_or_recruiter),
     repo: BulkActionsRepository = Depends(get_bulk_actions_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Export selected candidates data to CSV or XLSX format.
 

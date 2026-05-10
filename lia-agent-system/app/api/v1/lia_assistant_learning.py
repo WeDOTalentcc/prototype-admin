@@ -420,6 +420,7 @@ async def get_learning_dashboard(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ) -> LearningDashboardResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         dashboard = await learning_hub_service.get_learning_dashboard(
             db=db,

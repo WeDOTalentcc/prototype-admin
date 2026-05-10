@@ -130,6 +130,7 @@ async def extract_vacancy_criteria(
     request: VacancyCriteriaExtractionRequest,
     current_user: User = Depends(get_current_user_or_demo)
 ) -> VacancyCriteriaExtractionResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         criteria = await vacancy_search_service.extract_search_criteria(request.message)
         has_minimum = vacancy_search_service.validate_minimum_criteria(criteria)

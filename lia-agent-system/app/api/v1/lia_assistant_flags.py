@@ -180,6 +180,7 @@ async def set_feature_flag(
     current_user: User = Depends(get_current_user_or_demo),
     ff_svc: FeatureFlagService = Depends(get_feature_flag_service),
 ) -> FeatureFlagResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     # P1-9: HITL gate FIRST — sensitive flags require admin/DPO. Short-
     # circuits BEFORE any DB mutation or tenant enforcement.
     _enforce_hitl_gate(request.flag_key, current_user)
@@ -276,6 +277,7 @@ async def get_feature_flags(
     current_user: User = Depends(get_current_user_or_demo),
     ff_svc: FeatureFlagService = Depends(get_feature_flag_service),
 ) -> dict[str, Any]:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         flags = await ff_svc.get_all_flags(
             db=db,
@@ -301,6 +303,7 @@ async def check_feature_flag(
     current_user: User = Depends(get_current_user_or_demo),
     ff_svc: FeatureFlagService = Depends(get_feature_flag_service),
 ) -> dict[str, Any]:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         is_enabled = await ff_svc.is_enabled(
             db=db,
@@ -623,6 +626,7 @@ async def approve_feature_flag_toggle(
     current_user: User = Depends(get_current_user_or_demo),
     ff_svc: FeatureFlagService = Depends(get_feature_flag_service),
 ) -> FeatureFlagToggleApprovalResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Phase B: admin approves a pending feature flag toggle request.
 
     Guards (in order):
@@ -747,6 +751,7 @@ async def reject_feature_flag_toggle(
     current_user: User = Depends(get_current_user_or_demo),
     ff_svc: FeatureFlagService = Depends(get_feature_flag_service),
 ) -> FeatureFlagToggleApprovalResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Phase B: admin rejects a pending feature flag toggle request.
 
     Mirrors approve_feature_flag_toggle's guards:

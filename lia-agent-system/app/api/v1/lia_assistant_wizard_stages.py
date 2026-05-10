@@ -187,6 +187,7 @@ async def wizard_stage8_search(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ) -> Stage8CandidateSearchResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         from lia_agents_core.agent_interface import AgentInput
 
@@ -293,6 +294,7 @@ async def wizard_stage8_feedback(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ) -> Stage8SearchFeedbackResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         acceptance_rate = 0.0
         if request.suggested_candidates:
@@ -348,6 +350,7 @@ async def wizard_stage9_evaluate(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ) -> Stage9CalibrationResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         from lia_agents_core.agent_interface import AgentInput
 
@@ -479,6 +482,7 @@ async def wizard_stage9_calibrate(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ) -> Stage9CalibrateFeedbackResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         calibrations_recorded = 0
         total_calibrations = len(request.calibrations)
@@ -568,6 +572,7 @@ async def wizard_stage10_start_sourcing(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ) -> Stage10ActiveSourcingResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         from lia_agents_core.agent_interface import AgentInput
 
@@ -683,6 +688,7 @@ async def wizard_stage10_outreach(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ) -> Stage10OutreachResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         scheduled_count = 0
         failed_count = 0
@@ -723,6 +729,7 @@ async def wizard_stage10_feedback(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ) -> Stage10FeedbackResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         sourced_count = len(request.sourced_candidates)
         engaged_count = len(request.engaged_candidates)

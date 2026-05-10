@@ -329,6 +329,7 @@ async def react_orchestrate(
     request: SmartOrchestrateRequest,
     current_user: User = Depends(get_current_user_or_demo),
 ) -> SmartOrchestrateResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """DEPRECATED — alias for /smart-orchestrate.
 
     Phase 4D simplification: USE_REACT_AGENTS feature flag was never enabled

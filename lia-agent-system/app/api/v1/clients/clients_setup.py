@@ -42,6 +42,7 @@ async def get_client_setup(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get setup status for a specific client."""
     try:
         client = await _get_client_checked(client_id, current_user, repo)

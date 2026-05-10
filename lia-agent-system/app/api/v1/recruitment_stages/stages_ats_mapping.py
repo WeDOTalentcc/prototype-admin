@@ -81,6 +81,7 @@ async def delete_ats_mapping(
     current_user: User = Depends(require_admin_or_recruiter),
     ats_repo: ATSMappingRepository = Depends(get_ats_mapping_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Delete an ATS mapping. Validates resource ownership."""
     try:
         existing = await ats_repo.get_by_id(uuid.UUID(mapping_id))

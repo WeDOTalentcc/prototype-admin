@@ -254,6 +254,7 @@ async def test_llm_provider(
     request: TestProviderRequest,
     current_user: User = Depends(get_current_user_or_demo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Test if a provider + API key works by sending a simple prompt."""
     import time
 

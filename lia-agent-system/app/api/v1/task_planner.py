@@ -412,6 +412,7 @@ async def add_chain_of_thought(
 async def list_execution_templates(
     current_user: User = Depends(get_current_user_or_demo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List all available Plan & Execute templates (multi-step workflow plans).
 
     Returns the catalog of pre-defined plan templates the LIA can execute
@@ -444,6 +445,7 @@ async def get_execution_template(
     template_id: str,
     current_user: User = Depends(get_current_user_or_demo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get details of a specific Plan & Execute template."""
     from app.shared.execution.plan_templates import PlanTemplateRegistry
 

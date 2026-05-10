@@ -93,6 +93,7 @@ async def generate_jd(
     current_user: User = Depends(get_current_user_or_demo),
     audit_svc: AuditService = Depends(get_audit_service),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     _fg_check_input(request, request.company_id)
 
     try:

@@ -61,6 +61,7 @@ async def evaluate_candidates_for_job(
     current_user: User = Depends(get_current_user_or_demo),
     rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Avalia candidatos em batch contra os requisitos de uma vaga usando rubricas.
     

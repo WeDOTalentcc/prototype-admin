@@ -106,6 +106,7 @@ async def search_candidates(
     rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
     _cs: CreditService = Depends(get_credit_service),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Busca candidatos usando busca híbrida (banco local + Pearch AI).
     

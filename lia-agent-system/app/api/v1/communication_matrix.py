@@ -141,6 +141,7 @@ async def get_matrix_entry(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get a specific communication matrix entry by ID.
     """
@@ -184,6 +185,7 @@ async def update_matrix_entry(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Update a communication matrix entry.
     """

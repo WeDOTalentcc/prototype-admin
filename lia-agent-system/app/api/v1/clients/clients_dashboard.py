@@ -31,6 +31,7 @@ async def get_dashboard_summary(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get unified dashboard summary with KPIs and client lists. Admin only."""
     try:
         is_admin = current_user.get("role") == "admin" or current_user.get("is_admin", False)

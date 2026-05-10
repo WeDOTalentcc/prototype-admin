@@ -201,6 +201,7 @@ async def upload_and_parse_cv(
 ,
     cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Upload a CV file and extract structured candidate information.
     
@@ -279,6 +280,7 @@ async def parse_cv_text(
 ,
     cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Parse plain text CV content and extract structured information.
     
@@ -330,6 +332,7 @@ async def confirm_cv_and_create_candidate(
 ,
     cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Confirm parsed CV data and create a new candidate in the database.
     

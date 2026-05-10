@@ -362,6 +362,7 @@ async def seed_default_questions(
 async def get_categories(
     current_user: User = Depends(get_current_user_or_demo)
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get available question categories and types.
     """

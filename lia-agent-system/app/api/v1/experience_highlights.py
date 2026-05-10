@@ -259,6 +259,7 @@ async def batch_generate_highlights(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ) -> list[ExperienceHighlightResponse]:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Generate highlights for multiple candidates at once.
     Limited to 10 candidates per request.

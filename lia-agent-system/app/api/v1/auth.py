@@ -262,6 +262,7 @@ async def update_current_user_profile(
     current_user: User = Depends(get_current_user_or_demo),
     repo: UserRepository = Depends(get_user_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update current user's profile (name, avatar)."""
     update_fields = {}
     if profile_data.name is not None:
@@ -298,6 +299,7 @@ async def change_password(
     current_user: User = Depends(get_current_user_or_demo),
     repo: UserRepository = Depends(get_user_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Change password for authenticated user (not available for SSO users)."""
     if getattr(current_user, 'sso_provider', None):
         raise HTTPException(

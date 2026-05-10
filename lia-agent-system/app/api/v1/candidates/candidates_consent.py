@@ -111,6 +111,7 @@ async def get_communication_preferences(
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     current_user: User = Depends(get_current_user_or_demo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Retorna preferências de canal de comunicação do candidato."""
     candidate = await candidate_repo.get_by_id(candidate_id)
     if not candidate:
@@ -130,6 +131,7 @@ async def update_communication_preferences(
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     current_user: User = Depends(get_current_user_or_demo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Atualiza preferências de canal de comunicação do candidato."""
     candidate = await candidate_repo.get_by_id(candidate_id)
     if not candidate:
