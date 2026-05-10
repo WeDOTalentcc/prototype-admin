@@ -83,6 +83,9 @@ def client():
     Single TestClient for the whole module.
     Patches decode_token so the AuthEnforcementMiddleware accepts our fake Bearer token,
     and patches get_current_user/strict so FastAPI deps return the mock user.
+    
+    Mocks init_db to prevent pool contamination from other tests that used
+    asyncio.run() to create asyncpg connections on different event loops.
     """
     app.dependency_overrides[get_db] = get_mock_db
     app.dependency_overrides[get_current_user] = get_jwt_user
@@ -90,7 +93,7 @@ def client():
     app.dependency_overrides[get_current_user_or_demo] = get_jwt_user
     app.dependency_overrides[get_current_user_strict] = get_jwt_user
 
-    with patch("app.auth.security.decode_token", return_value=FAKE_JWT_PAYLOAD):
+    with patch("app.auth.security.decode_token", return_value=FAKE_JWT_PAYLOAD),          patch("app.main.init_db", new=AsyncMock()):
         with TestClient(app, raise_server_exceptions=False) as c:
             yield c
 
