@@ -152,6 +152,35 @@ async def consolidate(conn) -> dict[str, Any]:
         if count:
             report["leftovers"].append((table_name, column_name, count))
 
+    # ---- Step 5b: enumerate every FK that targets companies(id), regardless
+    # of column name. The convention across the codebase is
+    # `company_id`/`tenant_id`, but architect review flagged that any
+    # future divergent FK name would silently miss the rewrite above.
+    # Surface them in the report so operators can reconcile by hand.
+    fk_rows = await conn.execute(text(
+        """
+        SELECT  src_ns.nspname || '.' || src.relname AS source_table,
+                src_att.attname                       AS source_column
+        FROM    pg_constraint c
+        JOIN    pg_class       src     ON src.oid = c.conrelid
+        JOIN    pg_namespace   src_ns  ON src_ns.oid = src.relnamespace
+        JOIN    pg_class       tgt     ON tgt.oid = c.confrelid
+        JOIN    pg_namespace   tgt_ns  ON tgt_ns.oid = tgt.relnamespace
+        JOIN    pg_attribute   src_att ON src_att.attrelid = src.oid
+                                       AND src_att.attnum  = ANY(c.conkey)
+        JOIN    pg_attribute   tgt_att ON tgt_att.attrelid = tgt.oid
+                                       AND tgt_att.attnum  = ANY(c.confkey)
+        WHERE   c.contype = 'f'
+          AND   tgt_ns.nspname = 'public'
+          AND   tgt.relname    = 'companies'
+          AND   tgt_att.attname = 'id'
+        ORDER BY source_table, source_column
+        """
+    ))
+    report["fk_targets_companies_id"] = [
+        f"{row[0]}.{row[1]}" for row in fk_rows.fetchall()
+    ]
+
     if report["leftovers"]:
         return report  # caller will abort before deletion
 
@@ -178,6 +207,13 @@ def _format_report(report: dict[str, Any]) -> str:
     if report["defaults_updated"]:
         for table_name, column_name in report["defaults_updated"]:
             lines.append(f"  default refreshed: {table_name}.{column_name}")
+    fks = report.get("fk_targets_companies_id") or []
+    if fks:
+        lines.append(f"  FK targets to companies(id) [{len(fks)} total]:")
+        for ref in fks:
+            lines.append(f"    {ref}")
+    else:
+        lines.append("  FK targets to companies(id): none discovered")
     if report["leftovers"]:
         lines.append("  LEFTOVER LEGACY REFERENCES (abort, no deletion):")
         for table_name, column_name, count in report["leftovers"]:
