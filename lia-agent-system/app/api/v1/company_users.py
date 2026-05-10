@@ -107,6 +107,7 @@ async def list_users(
     user_repo: UserRepository = Depends(get_user_repo),
     current_user=Depends(get_current_user_or_demo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List all users for a company."""
     if not company_id or company_id in ("default", "unknown"):
         raise HTTPException(status_code=400, detail="Valid company_id is required")
@@ -289,6 +290,7 @@ async def list_company_users(
     user_repo: UserRepository = Depends(get_user_repo),
     current_user: User = Depends(get_current_user_or_demo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List users belonging to the same company as the current user."""
     try:
         if not current_user.company_id:

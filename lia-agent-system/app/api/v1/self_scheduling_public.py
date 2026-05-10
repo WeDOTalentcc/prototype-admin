@@ -64,6 +64,7 @@ async def get_scheduling_link(
     token: str,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: public endpoint (public) — no tenant data
     """
     Retorna dados públicos de um link de auto-agendamento.
 
@@ -108,6 +109,7 @@ async def confirm_scheduling_slot(
     body: ConfirmSlotRequest,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: public endpoint (public) — no tenant data
     """
     Candidato confirma o horário escolhido.
 
@@ -146,6 +148,7 @@ async def create_scheduling_link(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: public endpoint (public) — no tenant data
     """
     Cria um link de auto-agendamento e envia ao candidato via WhatsApp ou e-mail.
 

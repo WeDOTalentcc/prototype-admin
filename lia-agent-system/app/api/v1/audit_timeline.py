@@ -80,6 +80,7 @@ async def get_execution_timeline(
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Reconstrói a timeline completa de uma execução de agente.
 
@@ -158,6 +159,7 @@ async def list_executions(
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Lista execuções recentes com metadados leves.
     Filtros: domain, agent_type, success. Paginação: limit/offset.

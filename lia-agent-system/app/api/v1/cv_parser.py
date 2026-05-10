@@ -504,6 +504,7 @@ async def get_supported_formats(
 
 @router.get("/health", response_model=None)
 async def health_check():
+    # multi-tenancy: public endpoint (health) — no tenant data
     """
     Check if CV Parser service is properly configured.
     """
@@ -529,6 +530,7 @@ async def upload_and_screen_cv(
     current_user: User = Depends(get_service_or_user),
     parser: CVParserService = Depends(get_cv_parser_service),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Full CV flow: parse → create Candidate → add to vacancy → BARS score.
     

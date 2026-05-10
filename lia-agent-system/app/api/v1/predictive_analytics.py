@@ -292,6 +292,7 @@ async def get_pipeline_forecast(
 
 @router.get("/health", response_model=None)
 async def analytics_health():
+    # multi-tenancy: public endpoint (health) — no tenant data
     """Health check for predictive analytics service."""
     return {
         "status": "healthy",

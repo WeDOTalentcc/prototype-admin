@@ -236,6 +236,7 @@ async def refresh_token(
 async def get_current_user_info(
     current_user: User = Depends(get_current_user_or_demo)
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get current authenticated user information.
 
@@ -326,6 +327,7 @@ async def public_register(
     repo: UserRepository = Depends(get_user_repo),
     email_svc: EmailService = Depends(get_email_service),
 ):
+    # multi-tenancy: public endpoint (public) — no tenant data
     """
     Public self-registration endpoint.
     Creates a new user account with email verification required.

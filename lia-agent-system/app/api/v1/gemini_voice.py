@@ -724,6 +724,7 @@ async def get_gemini_session_status(session_id: str):
 
 @router.get("/gemini-voice/health", response_model=None)
 async def gemini_voice_health():
+    # multi-tenancy: public endpoint (health) — no tenant data
     from app.shared.services.gemini_live_audio_service import get_gemini_live_service
 
     live_service = get_gemini_live_service()

@@ -148,6 +148,7 @@ async def toggle_favorite(
     current_user: User = Depends(get_current_user_or_demo),
     favorites_repo: CandidateFavoritesRepository = Depends(get_candidate_favorites_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Toggle favorite status for a candidate."""
     try:
         user_id = str(current_user.id)
@@ -282,6 +283,7 @@ async def toggle_hidden(
     current_user: User = Depends(get_current_user_or_demo),
     hidden_repo: CandidateHiddenRepository = Depends(get_candidate_hidden_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Toggle hidden status for a candidate."""
     try:
         user_id = str(current_user.id)

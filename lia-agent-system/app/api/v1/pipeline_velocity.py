@@ -26,6 +26,7 @@ async def get_pipeline_velocity(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Retorna métricas de velocidade por etapa do pipeline.
 
@@ -63,6 +64,7 @@ async def get_velocity_bottlenecks(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Lista candidatos atualmente acima do limite de tempo em sua etapa.
 

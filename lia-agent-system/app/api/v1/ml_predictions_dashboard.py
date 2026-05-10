@@ -42,6 +42,7 @@ async def get_ml_predictions(
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Time-to-fill predictions for open vacancies.
 

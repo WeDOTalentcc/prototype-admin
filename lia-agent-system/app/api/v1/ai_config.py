@@ -155,6 +155,7 @@ async def get_ai_config(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get unified AI configuration for the current tenant."""
     company_id = str(current_user.company_id)
     policy = await _get_or_create_policy(company_id, db)
@@ -167,6 +168,7 @@ async def update_ai_config(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update AI configuration. Only provided fields are changed."""
     company_id = str(current_user.company_id)
     policy = await _get_or_create_policy(company_id, db)

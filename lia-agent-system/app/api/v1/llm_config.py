@@ -81,6 +81,7 @@ async def get_llm_config(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get current LLM configuration for the tenant."""
     company_id = current_user.company_id
 
@@ -135,6 +136,7 @@ async def update_llm_config(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update LLM configuration for the tenant.
     Uses merge semantics: only keys with real (non-masked) values are updated.
     If a provider's api_key contains '...' it is treated as masked and the

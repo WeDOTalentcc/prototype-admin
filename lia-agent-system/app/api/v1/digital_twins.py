@@ -43,6 +43,7 @@ async def create_twin(
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Create a Digital Twin and optionally index ATS history.
 
@@ -93,6 +94,7 @@ async def list_twins(
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List all Digital Twins for the current company."""
     from lia_models.digital_twin import DigitalTwin
     from sqlalchemy import select

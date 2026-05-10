@@ -33,6 +33,7 @@ async def search_candidates_local(
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     audit_svc: AuditService = Depends(get_audit_service),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Search candidates in proprietary PostgreSQL database (FREE - no credits consumed).
 
@@ -190,6 +191,7 @@ async def search_by_job_description(
 
 @router.get("/health", response_model=None)
 async def health_check():
+    # multi-tenancy: public endpoint (health) — no tenant data
     """Check if Pearch AI integration is properly configured."""
     import os
     api_key_configured = bool(os.getenv("PEARCH_API_KEY"))

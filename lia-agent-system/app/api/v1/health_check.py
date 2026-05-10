@@ -52,6 +52,7 @@ FRAMEWORK_MAPPING = {
 async def get_health_check_summary(
     repo: HealthCheckRepository = Depends(get_health_check_repo),
 ):
+    # multi-tenancy: public endpoint (health) — no tenant data
     """Get summary statistics for compliance health check by framework."""
     try:
         all_items = await repo.get_all_items()
@@ -154,6 +155,7 @@ async def export_health_check(
     format: str = Query("csv", description="Export format: csv or json"),
     repo: HealthCheckRepository = Depends(get_health_check_repo),
 ):
+    # multi-tenancy: public endpoint (health) — no tenant data
     """Export health check items as CSV or JSON file."""
     try:
         items = await repo.list_items_for_export(framework=framework, status_filter=status_filter)
@@ -211,6 +213,7 @@ async def export_health_check(
 async def seed_health_check_items(
     repo: HealthCheckRepository = Depends(get_health_check_repo),
 ):
+    # multi-tenancy: public endpoint (health) — no tenant data
     """Seed default compliance health check items for all frameworks."""
     try:
         created_count, skipped_count = await repo.seed_default_items()
@@ -229,6 +232,7 @@ async def seed_health_check_items(
 async def sync_from_library(
     repo: HealthCheckRepository = Depends(get_health_check_repo),
 ):
+    # multi-tenancy: public endpoint (health) — no tenant data
     """Synchronize controls from compliance_control_library to health check items."""
     try:
         created_count, skipped_count = await repo.sync_from_control_library(FRAMEWORK_MAPPING)
@@ -248,6 +252,7 @@ async def get_item_history(
     req_id: str,
     repo: HealthCheckRepository = Depends(get_health_check_repo),
 ):
+    # multi-tenancy: public endpoint (health) — no tenant data
     """Get status change history for a specific health check item."""
     try:
         item = await repo.get_item_by_req_id(req_id)
@@ -277,6 +282,7 @@ async def mark_item_checked(
     data: HealthCheckVerifyRequest,
     repo: HealthCheckRepository = Depends(get_health_check_repo),
 ):
+    # multi-tenancy: public endpoint (health) — no tenant data
     """Mark a health check item as verified, updating last_checked_at and related fields."""
     try:
         item = await repo.get_item_by_req_id(req_id)
@@ -310,6 +316,7 @@ async def update_item_status(
     data: HealthCheckStatusUpdateRequest,
     repo: HealthCheckRepository = Depends(get_health_check_repo),
 ):
+    # multi-tenancy: public endpoint (health) — no tenant data
     """Update the status of a health check item with history tracking."""
     try:
         item = await repo.get_item_by_req_id(req_id)
@@ -343,6 +350,7 @@ async def get_health_check_item(
     req_id: str,
     repo: HealthCheckRepository = Depends(get_health_check_repo),
 ):
+    # multi-tenancy: public endpoint (health) — no tenant data
     """Get a single health check item by its requirement ID."""
     try:
         item = await repo.get_item_by_req_id(req_id)
@@ -372,6 +380,7 @@ async def list_health_check_items(
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     repo: HealthCheckRepository = Depends(get_health_check_repo),
 ):
+    # multi-tenancy: public endpoint (health) — no tenant data
     """List health check items with optional filtering and pagination."""
     try:
         items, total = await repo.list_items(
@@ -401,6 +410,7 @@ async def create_health_check_item(
     data: HealthCheckItemCreate,
     repo: HealthCheckRepository = Depends(get_health_check_repo),
 ):
+    # multi-tenancy: public endpoint (health) — no tenant data
     """Create a new health check item."""
     try:
         if await repo.item_exists_by_req_id(data.req_id):

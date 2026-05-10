@@ -20,6 +20,7 @@ async def trigger_lgpd_cleanup(
     dry_run: bool = Query(True, description="Simular sem deletar (default: True para segurança)"),
     _user=Depends(require_admin),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """
     Dispara cleanup LGPD manual via Celery.
 
@@ -41,6 +42,7 @@ async def get_cleanup_status(
     _user=Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """
     Retorna contagem de registros pendentes de deleção LGPD.
 
@@ -60,6 +62,7 @@ async def get_cleanup_status(
 async def get_retention_policy(
     _user=Depends(require_admin),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """
     Retorna a política de retenção de dados configurada (LGPD Art. 16).
     """

@@ -59,6 +59,7 @@ class IntegrationHealthItem(BaseModel):
 
 @router.post("/webhooks/hubspot", tags=["webhooks"])
 async def hubspot_webhook(request: Request):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """
     Receive HubSpot webhook events (deal stage changes).
     When a deal moves to closedwon, auto-creates the client.
@@ -114,6 +115,7 @@ async def onboard_client_manual(
     data: OnboardClientRequest,
     _admin: User = Depends(require_admin),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """
     Manually trigger the full client onboarding flow:
     1. Create ClientAccount
@@ -167,6 +169,7 @@ async def onboard_client_manual(
 
 @router.get("/automation/onboarding-status", tags=["automation"])
 async def get_onboarding_status(_admin: User = Depends(require_admin)):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """
     Consolidated onboarding status for all clients.
     Shows setup progress across 5 sections per client.
@@ -193,6 +196,7 @@ async def get_onboarding_status(_admin: User = Depends(require_admin)):
 
 @router.get("/admin/integrations/health", tags=["admin"])
 async def get_integrations_health(_admin: User = Depends(require_admin)):
+    # multi-tenancy: public endpoint (health) — no tenant data
     """
     Check health of all external integrations.
     Returns status for each configured service.
@@ -243,6 +247,7 @@ async def get_integrations_health(_admin: User = Depends(require_admin)):
 
 @router.get("/admin/version", tags=["admin"])
 async def get_system_version(_admin: User = Depends(require_admin)):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Return system version, commit, and environment info."""
     import subprocess
     

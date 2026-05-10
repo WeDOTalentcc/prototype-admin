@@ -55,6 +55,7 @@ async def apply_sector_template(
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Instantiate a sector template as an AgentTemplate for the current tenant.
 

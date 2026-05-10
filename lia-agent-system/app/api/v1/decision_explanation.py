@@ -137,6 +137,7 @@ async def explain_candidate_decisions(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Explain all AI decisions made for a candidate on a specific job.
 

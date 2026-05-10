@@ -31,6 +31,7 @@ async def get_calibration_dashboard_v2(
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Calibration dashboard — per-domain divergence analysis.
 

@@ -153,6 +153,7 @@ async def get_company_metrics(
     company_id: str,
     days: int = Query(30, ge=1, le=365),
 ):
+    # multi-tenancy: public endpoint (metrics) — no tenant data
     """Get aggregated metrics for a company."""
     try:
         metrics = await wizard_analytics_service.get_company_metrics(
@@ -173,6 +174,7 @@ async def get_recruiter_metrics(
     recruiter_id: str,
     days: int = Query(30, ge=1, le=365),
 ):
+    # multi-tenancy: public endpoint (metrics) — no tenant data
     """Get metrics for a specific recruiter."""
     try:
         metrics = await wizard_analytics_service.get_recruiter_metrics(

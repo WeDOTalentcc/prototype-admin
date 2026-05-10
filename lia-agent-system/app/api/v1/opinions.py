@@ -70,6 +70,7 @@ async def get_candidate_opinions_summary(
     repo: OpinionsRepository = Depends(get_opinions_repo),
     current_user: User = Depends(get_current_user_or_demo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get summary of all opinions for a candidate (for preview display)."""
     if not current_user.company_id:
         raise HTTPException(status_code=400, detail="company_id is required but not set for current user")
@@ -124,6 +125,7 @@ async def get_candidate_opinions_history(
     repo: OpinionsRepository = Depends(get_opinions_repo),
     current_user: User = Depends(get_current_user_or_demo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get full history of all opinions for a candidate (including non-current versions)."""
     if not current_user.company_id:
         raise HTTPException(status_code=400, detail="company_id is required but not set for current user")
@@ -152,6 +154,7 @@ async def list_candidate_opinions(
     repo: OpinionsRepository = Depends(get_opinions_repo),
     current_user: User = Depends(get_current_user_or_demo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List all opinions for a candidate with optional filters."""
     if not current_user.company_id:
         raise HTTPException(status_code=400, detail="company_id is required but not set for current user")
@@ -188,6 +191,7 @@ async def get_opinion(
     repo: OpinionsRepository = Depends(get_opinions_repo),
     current_user: User = Depends(get_current_user_or_demo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get a specific opinion by ID."""
     if not current_user.company_id:
         raise HTTPException(status_code=400, detail="company_id is required but not set for current user")
@@ -210,6 +214,7 @@ async def create_opinion(
     repo: OpinionsRepository = Depends(get_opinions_repo),
     current_user: User = Depends(get_current_user_or_demo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new LIA opinion."""
     if not current_user.company_id:
         raise HTTPException(status_code=400, detail="company_id is required but not set for current user")
@@ -300,6 +305,7 @@ async def update_opinion(
     repo: OpinionsRepository = Depends(get_opinions_repo),
     current_user: User = Depends(get_current_user_or_demo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update a LIA opinion (e.g., recruiter notes or override)."""
     if not current_user.company_id:
         raise HTTPException(status_code=400, detail="company_id is required but not set for current user")
@@ -347,6 +353,7 @@ async def delete_opinion(
     repo: OpinionsRepository = Depends(get_opinions_repo),
     current_user: User = Depends(get_current_user_or_demo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Delete a LIA opinion (soft delete by marking as non-current)."""
     if not current_user.company_id:
         raise HTTPException(status_code=400, detail="company_id is required but not set for current user")

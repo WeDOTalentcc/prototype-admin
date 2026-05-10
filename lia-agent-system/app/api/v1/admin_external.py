@@ -150,6 +150,7 @@ async def list_companies(
     _admin: Any = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     conditions = [ClientAccount.is_deleted == False]
 
     if status_filter:
@@ -245,6 +246,7 @@ async def get_company_overview(
     _admin: Any = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     try:
         company_uuid = UUID(company_id)
     except ValueError:
@@ -356,6 +358,7 @@ async def list_studio_agents(
     _admin: Any = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     cid = str(company_id)
 
     custom_result = await db.execute(
@@ -472,6 +475,7 @@ async def get_studio_consumption(
     _admin: Any = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     try:
         company_uuid = UUID(company_id)
     except ValueError:
@@ -556,6 +560,7 @@ async def get_agent_quota(
     _admin: Any = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     try:
         company_uuid = UUID(company_id)
     except ValueError:
@@ -613,6 +618,7 @@ async def update_agent_quota(
     _admin: Any = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     try:
         company_uuid = UUID(company_id)
     except ValueError:

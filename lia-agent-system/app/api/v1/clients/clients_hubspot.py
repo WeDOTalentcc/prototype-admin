@@ -33,6 +33,7 @@ async def get_hubspot_sync_status(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get HubSpot sync status for a client."""
     try:
         is_admin = current_user.get("role") == "admin" or current_user.get("is_admin", False)

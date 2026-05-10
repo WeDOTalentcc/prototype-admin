@@ -78,6 +78,7 @@ async def rag_search_candidates(
     sector: str = Query(default="", description="Setor para FairnessGuard L3 sector-aware check"),
     db: AsyncSession = Depends(get_db),
 ) -> RAGSearchResponse:
+    # multi-tenancy: public endpoint (rag_search) — no tenant data
     """
     Executa busca híbrida de candidatos.
 

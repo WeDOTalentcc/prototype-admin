@@ -748,6 +748,7 @@ async def twiml_voip_connect(
 
 @router.get("/twilio-voice/health", response_model=None)
 async def voice_health():
+    # multi-tenancy: public endpoint (health) — no tenant data
     """Health check for Twilio Voice service."""
     return {
         "service": "Twilio Voice Screening",

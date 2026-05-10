@@ -548,6 +548,7 @@ async def trigger_proactive_suggestions(
 
 @router.get("/health", response_model=None)
 async def sourcing_health_check():
+    # multi-tenancy: public endpoint (health) — no tenant data
     """Health check for sourcing endpoints."""
     return {
         "status": "healthy",

@@ -428,6 +428,7 @@ async def get_fairness_report(
     _admin=Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """
     Exporta relatório de fairness (Four-Fifths Rule / disparate impact).
 

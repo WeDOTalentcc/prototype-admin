@@ -71,6 +71,7 @@ async def fast_track_wizard_step(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ) -> FastTrackWizardResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         conversation_id = request.conversation_id or str(uuid4())
         current_state = request.state

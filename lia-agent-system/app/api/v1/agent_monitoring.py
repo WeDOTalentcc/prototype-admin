@@ -96,6 +96,7 @@ class LogActivityRequest(BaseModel):
 
 @router.get("/metrics", response_model=GlobalMetricsResponse)
 async def get_global_metrics(db: AsyncSession = Depends(get_db)):
+    # multi-tenancy: public endpoint (metrics) — no tenant data
     """Get global metrics across all agents."""
     service = AgentMonitoringService(db)
     metrics = await service.get_global_metrics()
@@ -122,6 +123,7 @@ async def get_agent_summary(agent_id: str, db: AsyncSession = Depends(get_db)):
 
 @router.get("/agents/{agent_id}/health", response_model=AgentHealthResponse)
 async def get_agent_health(agent_id: str, db: AsyncSession = Depends(get_db)):
+    # multi-tenancy: public endpoint (health) — no tenant data
     """Get health score and details for a specific agent."""
     service = AgentMonitoringService(db)
     health = await service.get_agent_health(agent_id)
@@ -210,6 +212,7 @@ async def get_domains_health(
     company_id: str = Query(..., description="ID da empresa"),
     days: int = Query(30, ge=1, le=90, description="Janela de análise em dias"),
 ):
+    # multi-tenancy: public endpoint (health) — no tenant data
     """
     Saúde dos agentes por domínio — baseado em AgentExecutionRecord.
 
@@ -234,6 +237,7 @@ async def get_domain_metrics(
     company_id: str = Query(..., description="ID da empresa"),
     days: int = Query(30, ge=1, le=90, description="Janela de análise em dias"),
 ):
+    # multi-tenancy: public endpoint (metrics) — no tenant data
     """
     Métricas detalhadas de um domínio específico — baseado em AgentExecutionRecord.
     """

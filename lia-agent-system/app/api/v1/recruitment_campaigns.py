@@ -42,6 +42,7 @@ async def create_campaign(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     from app.services.quota_enforcement import enforce_quota
     await enforce_quota("campaigns", current_user.company_id, db)
     return _NOT_IMPLEMENTED

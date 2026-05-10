@@ -234,6 +234,7 @@ async def send_message(
     current_user: User = Depends(get_current_user_or_demo),
     repo: ChatRepository = Depends(get_chat_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Send a message to LIA and get response.
 
@@ -898,6 +899,7 @@ async def stream_message(
     current_user: User = Depends(get_current_user_or_demo),
     repo: ChatRepository = Depends(get_chat_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Stream LIA response as SSE (Server-Sent Events).
 
@@ -1008,6 +1010,7 @@ async def direct_candidate_field_update(
     current_user: User = Depends(get_current_user_or_demo),
     repo: ChatRepository = Depends(get_chat_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Structured endpoint to update one or more candidate fields directly.
     Used by the CV upload closed-loop confirmation flow to avoid

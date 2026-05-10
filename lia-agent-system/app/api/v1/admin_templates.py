@@ -97,6 +97,7 @@ async def list_system_templates(
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(require_admin),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """List all system templates (admin only)."""
     try:
         repo = AdminTemplateRepository(db)
@@ -117,6 +118,7 @@ async def create_system_template(
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(require_admin),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Create a new system template (admin only)."""
     try:
         repo = AdminTemplateRepository(db)
@@ -153,6 +155,7 @@ async def get_system_template(
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(require_admin),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Get a specific system template by ID (admin only)."""
     try:
         repo = AdminTemplateRepository(db)
@@ -176,6 +179,7 @@ async def update_system_template(
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(require_admin),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Update an existing system template (admin only). Increments version."""
     try:
         repo = AdminTemplateRepository(db)
@@ -213,6 +217,7 @@ async def delete_system_template(
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(require_admin),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Delete a system template (admin only). Soft delete by default."""
     try:
         repo = AdminTemplateRepository(db)
@@ -239,6 +244,7 @@ async def publish_template_to_companies(
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(require_admin),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Publish a system template to all or specific companies (admin only)."""
     try:
         repo = AdminTemplateRepository(db)

@@ -31,6 +31,7 @@ async def create_deployment(
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Bind an agent to a target (job, talent pool, pipeline stage, candidate list)."""
     try:
         deployment = await agent_deployment_service.create_deployment(
@@ -98,6 +99,7 @@ async def list_agent_deployments(
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List all deployments for a specific agent."""
     deployments = await agent_deployment_service.list_by_agent(
         db=db, agent_id=agent_id, company_id=current_user.company_id

@@ -61,6 +61,7 @@ def _to_response(entry: dict) -> PromptVersionResponse:
 async def list_all_versions(
     current_user: User = Depends(require_admin),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """
     Lista todos os prompts registrados no PromptVersionRegistry.
 
@@ -78,6 +79,7 @@ async def list_versions_by_name(
     name: str,
     current_user: User = Depends(require_admin),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """
     Lista todas as versões registradas para um nome de prompt específico.
 

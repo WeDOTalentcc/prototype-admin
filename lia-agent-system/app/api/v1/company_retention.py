@@ -57,6 +57,7 @@ async def update_retention_policy(
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Configura a política de retenção de dados da empresa.
 
@@ -103,6 +104,7 @@ async def get_retention_policy(
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Retorna a política de retenção atual da empresa."""
     repo = CompanyRetentionRepository(db)
     policy = await repo.get_by_company_id(current_user.company_id)

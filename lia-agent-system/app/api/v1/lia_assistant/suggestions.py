@@ -29,6 +29,7 @@ async def get_dynamic_suggestions(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Generate dynamic suggestion cards for the homepage based on real data.
 

@@ -94,6 +94,7 @@ async def get_all_pending_approvals(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Retorna todas as aprovações pendentes para a empresa do usuário autenticado."""
     company_id = getattr(current_user, "company_id", "") or ""
     if not company_id:

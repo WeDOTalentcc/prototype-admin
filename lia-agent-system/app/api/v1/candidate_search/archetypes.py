@@ -263,6 +263,7 @@ async def create_archetype_from_search(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo)
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Cria um novo arquétipo a partir de um SearchSpec.
     

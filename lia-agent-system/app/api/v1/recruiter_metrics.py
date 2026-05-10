@@ -28,6 +28,7 @@ async def get_recruiter_summary(
     current_user=Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: public endpoint (metrics) — no tenant data
     """
     Retorna o resumo semanal de produtividade do recrutador:
     backlog_count, critical_count, most_urgent, avg_response_time_days,
@@ -52,6 +53,7 @@ async def get_recruiter_backlog(
     current_user=Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: public endpoint (metrics) — no tenant data
     """
     Retorna a lista priorizada de candidatos aguardando ação do recrutador,
     ordenada por urgência (offer > entrevista > triagem).
@@ -82,6 +84,7 @@ async def get_recruiter_benchmark(
     current_user=Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: public endpoint (metrics) — no tenant data
     """
     Compara métricas do recrutador com a mediana anônima da empresa.
     Requer ≥ 2 recrutadores ativos na empresa para garantir privacidade.

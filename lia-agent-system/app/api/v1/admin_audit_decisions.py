@@ -51,6 +51,7 @@ async def list_decisions_by_user(
     company_id: str = Depends(get_verified_company_id),
     _user: Any = Depends(require_admin),
 ) -> dict:
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Return paginated audit entries authored by ``actor_user_id``.
 
     Backed by the structured ``actor_user_id`` column on ``audit_logs``,

@@ -29,6 +29,7 @@ class NavigationIntentResponse(BaseModel):
 
 @router.post("", response_model=NavigationIntentResponse)
 async def classify_navigation_intent(request: NavigationIntentRequest) -> NavigationIntentResponse:
+    # multi-tenancy: public endpoint (navigation_intent) — no tenant data
     """
     Classify a user message to detect which platform page it refers to.
     Returns page name matching dashboard-app navigation keys.

@@ -295,6 +295,7 @@ async def _check_broker() -> dict:
 
 @router.get("/health", response_model=None)
 async def system_health(db: AsyncSession = Depends(get_db)):
+    # multi-tenancy: public endpoint (health) — no tenant data
     """
     Unified health check for deployment readiness/liveness probes.
 
@@ -406,6 +407,7 @@ async def system_health(db: AsyncSession = Depends(get_db)):
 
 @router.get("/health/ready", response_model=None)
 async def readiness_check(db: AsyncSession = Depends(get_db)):
+    # multi-tenancy: public endpoint (health) — no tenant data
     """
     Kubernetes readiness probe — verifica se o serviço está pronto para receber tráfego.
     Mais restritivo que liveness: falha se DB ou Redis estiver indisponível.
@@ -437,6 +439,7 @@ async def readiness_check(db: AsyncSession = Depends(get_db)):
 
 @router.get("/health/live", response_model=None)
 async def liveness_check():
+    # multi-tenancy: public endpoint (health) — no tenant data
     """
     Kubernetes liveness probe — verifica se o processo está vivo.
     Mínimo: sempre retorna 200 se o processo estiver rodando.
@@ -468,6 +471,7 @@ _RLS_CRITICAL_TABLES: tuple[str, ...] = (
 
 @router.get("/health/rls", response_model=None)
 async def health_rls(db: AsyncSession = Depends(get_db)):
+    # multi-tenancy: public endpoint (health) — no tenant data
     """
     R-002 — Sensor de runtime para Postgres RLS em tabelas críticas.
 
@@ -530,6 +534,7 @@ async def health_rls(db: AsyncSession = Depends(get_db)):
 
 @router.get("/performance", response_model=None)
 async def performance_metrics():
+    # multi-tenancy: public endpoint (health) — no tenant data
     """
     Performance metrics: response times by domain, cache stats, prompt versions.
     """
@@ -565,6 +570,7 @@ _BYPASS_FLAGS_RUNTIME: dict[str, str] = {
 
 @router.get("/health/compliance/bypass-status", response_model=None)
 async def compliance_bypass_status():
+    # multi-tenancy: public endpoint (health) — no tenant data
     """
     R-007 — Status de flags de bypass de compliance ativas.
 
@@ -595,6 +601,7 @@ async def compliance_bypass_status():
 # ─── R-021: LLM provider fallback / circuit breaker metrics ─────────────────
 @router.get("/health/llm-metrics")
 async def llm_provider_metrics():
+    # multi-tenancy: public endpoint (health) — no tenant data
     """
     R-021 — LLM provider fallback and circuit breaker metrics.
 
@@ -607,6 +614,7 @@ async def llm_provider_metrics():
 
 @router.get("/health/dlq", response_model=None)
 async def dlq_health_status():
+    # multi-tenancy: public endpoint (health) — no tenant data
     """R-024 DLQ health summary for canary monitoring.
 
     Returns status (healthy/degraded), total entry count, and per-queue breakdown.
@@ -656,6 +664,7 @@ async def dlq_health_status():
 # ─── R-036: Cron sentinel health ────────────────────────────────────────────
 @router.get("/health/crons")
 async def cron_sentinel_health():
+    # multi-tenancy: public endpoint (health) — no tenant data
     """R-036 — Verify all registered crons ran within expected cadence.
 
     Canary: alert if status != healthy (means a cron went silent).

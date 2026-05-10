@@ -63,6 +63,7 @@ async def update_client_setup_section(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update progress for a specific setup section."""
     try:
         if section_id not in VALID_SECTION_IDS:

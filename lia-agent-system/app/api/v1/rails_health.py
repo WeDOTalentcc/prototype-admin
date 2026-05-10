@@ -32,6 +32,7 @@ def _is_token_configured() -> bool:
 
 @router.get("/health", summary="Rails API health check")
 async def rails_health(adapter: RailsAdapter = Depends(get_rails_adapter)) -> dict[str, Any]:
+    # multi-tenancy: public endpoint (health) — no tenant data
     """
     Probe the Rails API for connectivity.
 
@@ -74,6 +75,7 @@ async def rails_health(adapter: RailsAdapter = Depends(get_rails_adapter)) -> di
 
 @router.get("/status", summary="Rails circuit breaker status")
 async def rails_circuit_status() -> dict[str, Any]:
+    # multi-tenancy: public endpoint (health) — no tenant data
     """
     Return detailed circuit breaker statistics for the rails_api circuit.
 

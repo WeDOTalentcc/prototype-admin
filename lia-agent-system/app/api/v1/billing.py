@@ -311,6 +311,7 @@ async def get_billing_status(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo)
 ) -> BillingStatusResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get status of billing providers (Iugu/Vindi).
     """
@@ -362,6 +363,7 @@ async def list_subscriptions(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo)
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     List subscriptions.
 

@@ -283,6 +283,7 @@ async def process_expanded_prompt(
     _budget: None = Depends(require_token_budget),
     llm_svc: LLMService = Depends(get_llm_service),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Route expanded commands to appropriate agents based on context.
 

@@ -18,6 +18,7 @@ async def run_bias_audit_baseline(
     save_snapshot: bool = True,
     _user=Depends(require_admin),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """
     Executa bias audit com dataset sintético balanceado (golden dataset).
 

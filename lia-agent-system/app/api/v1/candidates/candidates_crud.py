@@ -657,6 +657,7 @@ async def get_candidate_ai_explanation(
     current_user=Depends(get_current_user_or_demo),
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """LGPD Art.20 — Return a human-readable explanation of all AI decisions
     made for a candidate on a specific job vacancy.
 

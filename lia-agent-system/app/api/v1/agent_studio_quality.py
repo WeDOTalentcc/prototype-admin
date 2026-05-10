@@ -97,6 +97,7 @@ async def get_quality_score(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Compute quality score for a custom agent."""
     from uuid import UUID
     from lia_models.custom_agent import CustomAgent

@@ -55,6 +55,7 @@ async def multi_strategy_search(
     body: MultiStrategyRequest,
     current_user: dict = Depends(get_current_user),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Execute 4 search strategies in parallel, deduplicate and rank results.
 

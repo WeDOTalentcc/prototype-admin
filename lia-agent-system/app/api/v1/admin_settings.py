@@ -117,6 +117,7 @@ async def list_roles(
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """List all roles for a company."""
     _check_admin_tenant_access(admin, company_id)
     try:
@@ -140,6 +141,7 @@ async def create_role(
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Create a new role."""
     _check_admin_tenant_access(admin, company_id)
     try:
@@ -167,6 +169,7 @@ async def update_role(
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Update a role."""
     _check_admin_tenant_access(admin, company_id)
     try:
@@ -202,6 +205,7 @@ async def delete_role(
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Delete a role (soft delete by setting is_active=False)."""
     _check_admin_tenant_access(admin, company_id)
     try:
@@ -230,6 +234,7 @@ async def initialize_default_roles(
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Initialize default roles for a company."""
     _check_admin_tenant_access(admin, company_id)
     try:
@@ -251,6 +256,7 @@ async def list_user_roles(
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """List user role assignments."""
     _check_admin_tenant_access(admin, company_id)
     try:
@@ -275,6 +281,7 @@ async def assign_role_to_user(
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Assign a role to a user."""
     _check_admin_tenant_access(admin, company_id)
     try:
@@ -318,6 +325,7 @@ async def remove_role_assignment(
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Remove a role assignment."""
     _check_admin_tenant_access(admin, company_id)
     try:
@@ -344,6 +352,7 @@ async def list_notification_policies(
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """List notification policies."""
     _check_admin_tenant_access(admin, company_id)
     try:
@@ -368,6 +377,7 @@ async def create_notification_policy(
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Create a notification policy."""
     _check_admin_tenant_access(admin, company_id)
     try:
@@ -399,6 +409,7 @@ async def update_notification_policy(
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Update a notification policy."""
     _check_admin_tenant_access(admin, company_id)
     try:
@@ -435,6 +446,7 @@ async def delete_notification_policy(
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Delete a notification policy."""
     _check_admin_tenant_access(admin, company_id)
     try:
@@ -460,6 +472,7 @@ async def get_security_settings(
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Get security settings for a company."""
     _check_admin_tenant_access(admin, company_id)
     try:
@@ -480,6 +493,7 @@ async def update_security_settings(
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Update security settings."""
     _check_admin_tenant_access(admin, company_id)
     try:
@@ -523,6 +537,7 @@ async def get_audit_logs(
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Get audit logs with filtering and pagination."""
     _check_admin_tenant_access(admin, company_id)
     try:
@@ -559,6 +574,7 @@ async def get_audit_logs(
 
 @router.get("/permissions-matrix", response_model=None)
 async def get_permissions_matrix(_admin: User = Depends(require_admin)):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Get the available permissions matrix."""
     return {
         "success": True,
@@ -571,6 +587,7 @@ async def get_permissions_matrix(_admin: User = Depends(require_admin)):
 
 @router.get("/notification-event-types", response_model=None)
 async def get_notification_event_types(_admin: User = Depends(require_admin)):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Get available notification event types."""
     return {
         "success": True,

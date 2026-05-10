@@ -111,6 +111,7 @@ async def get_platform_stats(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
 ):
+    # multi-tenancy: admin/platform-level (platform_) — role-based access required
     """Get platform-wide statistics for all clients. Admin only."""
     try:
         is_admin = current_user.get("role") == "admin" or current_user.get("is_admin", False)

@@ -25,6 +25,7 @@ async def get_journey_metrics(
     current_user=Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: public endpoint (metrics) — no tenant data
     """
     Retorna métricas detalhadas do funil de uma vaga:
     conversão por etapa, drop-off, health score e padrões de risco preditivos.

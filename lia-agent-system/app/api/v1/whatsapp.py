@@ -536,6 +536,7 @@ async def list_providers():
 
 @router.get("/health", response_model=None)
 async def whatsapp_health():
+    # multi-tenancy: public endpoint (health) — no tenant data
     """
     Health check for WhatsApp integration.
 

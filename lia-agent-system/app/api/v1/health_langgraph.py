@@ -79,6 +79,7 @@ def _probe_graph(name: str, factory) -> GraphHealthItem:
 async def langgraph_health(
     x_admin_key: str | None = Header(default=None, alias="X-Admin-Key"),
 ) -> LangGraphHealthResponse:
+    # multi-tenancy: public endpoint (health) — no tenant data
     """
     Health check da camada LangGraph nativa.
 

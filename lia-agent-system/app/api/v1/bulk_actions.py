@@ -203,6 +203,7 @@ async def bulk_update_candidate_status(
     current_user: User = Depends(get_current_user),
     repo: BulkActionsRepository = Depends(get_bulk_actions_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Update status of multiple candidates at once.
 
@@ -814,6 +815,7 @@ async def bulk_delete_candidates(
     current_user: User = Depends(require_admin_or_recruiter),
     repo: BulkActionsRepository = Depends(get_bulk_actions_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Delete multiple candidates (soft delete by default).
 

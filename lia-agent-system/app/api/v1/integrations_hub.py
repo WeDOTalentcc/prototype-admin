@@ -414,6 +414,7 @@ async def get_integration_health(
     company_id: str = Query(..., description="Company ID"),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
+    # multi-tenancy: public endpoint (health) — no tenant data
     """Get overall integration health status."""
     try:
         from app.models.integration_hub import IntegrationStatus
@@ -551,6 +552,7 @@ async def seed_providers(
 
 @router.get("/apify/health")
 async def apify_health_check():
+    # multi-tenancy: public endpoint (health) — no tenant data
     from app.shared.resilience.circuit_breaker import APIFY_CIRCUIT
 
     cb_state = APIFY_CIRCUIT.state

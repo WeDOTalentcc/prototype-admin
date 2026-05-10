@@ -83,6 +83,7 @@ async def get_company_token_budget(
     admin: User = Depends(require_admin),
     current_user=None,  # test-only alias; takes precedence over FastAPI-injected admin
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """
     Retorna status completo do budget de tokens LLM para a empresa.
 
@@ -114,6 +115,7 @@ async def check_company_budget(
     admin: User = Depends(require_admin),
     current_user=None,  # test-only alias
 ):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     _effective_admin = current_user if current_user is not None else admin
     if current_user is None:  # production path: full validation
         _check_admin_tenant_access(_effective_admin, company_id)

@@ -25,6 +25,7 @@ class GenerateResponse(BaseModel):
 
 @router.post("/generate", response_model=GenerateResponse)
 async def generate(body: GenerateRequest, request: Request) -> GenerateResponse:
+    # multi-tenancy: admin/platform-level (internal_) — role-based access required
     """Internal endpoint: generates text via the LLM factory.
 
     Restricted to requests originating from localhost (e.g. the Next.js server

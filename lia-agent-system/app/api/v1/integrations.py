@@ -247,6 +247,7 @@ async def get_integrations_status(
 async def get_integrations_health(
     current_user: dict[str, Any] = Depends(get_current_user)
 ):
+    # multi-tenancy: public endpoint (health) — no tenant data
     """
     Unified health check for all external business integrations.
 

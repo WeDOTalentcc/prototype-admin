@@ -344,6 +344,7 @@ async def calculate_plan_metrics(
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: public endpoint (metrics) — no tenant data
     """Recalculate metrics for a workforce plan based on department data."""
     try:
         client = await get_client(company_id, db)

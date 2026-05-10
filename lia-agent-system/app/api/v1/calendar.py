@@ -52,6 +52,7 @@ class CalendarHealthResponse(BaseModel):
 
 @router.get("/health", response_model=CalendarHealthResponse)
 async def calendar_health():
+    # multi-tenancy: public endpoint (health) — no tenant data
     """Health check for calendar integration."""
     is_configured = (
         settings.AZURE_CLIENT_ID is not None and
@@ -280,6 +281,7 @@ class GoogleCalendarHealthResponse(BaseModel):
 
 @router.get("/google/health", response_model=GoogleCalendarHealthResponse)
 async def google_calendar_health():
+    # multi-tenancy: public endpoint (health) — no tenant data
     """Health check for Google Calendar integration."""
     return {
         "status": "healthy",

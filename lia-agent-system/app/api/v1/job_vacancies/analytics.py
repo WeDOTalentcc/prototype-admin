@@ -956,6 +956,7 @@ async def get_work_model_analytics(
     current_user=Depends(get_current_user_or_demo),
     repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     company_id = str(current_user.company_id) if hasattr(current_user, "company_id") and current_user.company_id else None
     if not company_id:
         raise HTTPException(status_code=403, detail="Company not associated with user")
@@ -1081,6 +1082,7 @@ async def get_pipeline_pulse(
     current_user=Depends(get_current_user_or_demo),
     repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Lightweight pipeline counts grouped by macro recruitment stage."""
     company_id = str(current_user.company_id) if hasattr(current_user, "company_id") and current_user.company_id else None
     if not company_id:
@@ -1120,6 +1122,7 @@ async def get_pipeline_overview(
     current_user=Depends(get_current_user_or_demo),
     repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Aggregate candidate counts by stage across all active job vacancies
     for the current user's company. Returns stage name, count, and enriched

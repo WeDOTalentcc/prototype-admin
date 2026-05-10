@@ -29,6 +29,7 @@ async def reload_agent_registry(
     x_company_id: str = Header(..., alias="X-Company-ID"),
     _user: Any = Depends(require_admin),
 ) -> dict[str, Any]:
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Trigger hot-reload of the agent YAML registry.
 
     Checks both ``agents_registry.yaml`` and ``tool_registry_metadata.yaml``

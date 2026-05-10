@@ -11,11 +11,13 @@ router = APIRouter(tags=["stubs"])
 
 @router.get("/talent-pools")
 async def list_talent_pools(current_user: User = Depends(get_current_user_or_demo)):
+    # multi-tenancy: public endpoint (stubs) — no tenant data
     return {"items": [], "total": 0}
 
 
 @router.get("/talent-pools/{pool_id}")
 async def get_talent_pool(pool_id: str, current_user: User = Depends(get_current_user_or_demo)):
+    # multi-tenancy: public endpoint (stubs) — no tenant data
     return {"id": pool_id, "name": "", "candidates": []}
 
 
@@ -24,9 +26,11 @@ async def list_recruitment_campaigns(
     status: str = "active",
     current_user: User = Depends(get_current_user_or_demo),
 ):
+    # multi-tenancy: public endpoint (stubs) — no tenant data
     return {"items": [], "total": 0}
 
 
 @router.get("/recruitment-campaigns/{campaign_id}")
 async def get_recruitment_campaign(campaign_id: str, current_user: User = Depends(get_current_user_or_demo)):
+    # multi-tenancy: public endpoint (stubs) — no tenant data
     return {"id": campaign_id}

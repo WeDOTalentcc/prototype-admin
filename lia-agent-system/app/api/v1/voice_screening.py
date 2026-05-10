@@ -47,6 +47,7 @@ async def create_voice_session(
     body: CreateSessionRequest,
     current_user: dict = Depends(get_current_user),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Create a new voice screening session for a candidate in a talent pool.
 

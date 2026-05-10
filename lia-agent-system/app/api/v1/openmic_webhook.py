@@ -320,6 +320,7 @@ async def _run_wsi_pipeline_inline(task_data: dict) -> None:
 
 @router.get("/webhook/health", response_model=None)
 async def openmic_webhook_health():
+    # multi-tenancy: public endpoint (health) — no tenant data
     """Health check for OpenMic webhook service."""
     health = await openmic_service.health_check()
     status_code = 200 if health["status"] == "healthy" else 503

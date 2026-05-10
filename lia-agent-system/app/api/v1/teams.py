@@ -685,6 +685,7 @@ router.add_api_route(
 
 @router.get("/health", response_model=None)
 async def teams_health():
+    # multi-tenancy: public endpoint (health) — no tenant data
     """Health check for Teams integration."""
     return {
         "status": "healthy",

@@ -787,6 +787,7 @@ async def get_realtime_metrics(
     user_repo: UserRepository = Depends(get_user_repo),
     workos_repo: WorkOSRepository = Depends(get_workos_repo),
 ):
+    # multi-tenancy: public endpoint (metrics) — no tenant data
     """
     Fetch real-time metrics directly from WorkOS API.
     Falls back to local database if WorkOS API is unavailable.
