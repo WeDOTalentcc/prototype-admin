@@ -74,7 +74,7 @@ class TestHandlerFunctions:
     @pytest.mark.easy
     async def test_handle_interview_scheduled_error(self, mock_db):
         from app.domains.automation.services.automation_handlers import handle_interview_scheduled
-        with patch("app.services.activity_service.ActivityService") as MockAS:
+        with patch("app.domains.analytics.services.activity_service.ActivityService") as MockAS:
             MockAS.return_value.create_activity = AsyncMock(side_effect=Exception("fail"))
             result = await handle_interview_scheduled("c1", "v1", "comp-1", mock_db, interview_datetime="2025-01-15T10:00")
         assert "error" in result
@@ -83,7 +83,7 @@ class TestHandlerFunctions:
     @pytest.mark.easy
     async def test_handle_interview_completed_error(self, mock_db):
         from app.domains.automation.services.automation_handlers import handle_interview_completed
-        with patch("app.services.activity_service.ActivityService") as MockAS:
+        with patch("app.domains.analytics.services.activity_service.ActivityService") as MockAS:
             MockAS.return_value.create_activity = AsyncMock(side_effect=Exception("fail"))
             result = await handle_interview_completed("c1", "v1", "comp-1", mock_db)
         assert "error" in result
@@ -92,7 +92,7 @@ class TestHandlerFunctions:
     @pytest.mark.easy
     async def test_handle_candidate_inactive_error(self, mock_db):
         from app.domains.automation.services.automation_handlers import handle_candidate_inactive
-        with patch("app.services.activity_service.ActivityService") as MockAS:
+        with patch("app.domains.analytics.services.activity_service.ActivityService") as MockAS:
             MockAS.return_value.create_activity = AsyncMock(side_effect=Exception("fail"))
             result = await handle_candidate_inactive("c1", "v1", "comp-1", mock_db)
         assert "error" in result
@@ -101,7 +101,7 @@ class TestHandlerFunctions:
     @pytest.mark.easy
     async def test_handle_candidate_no_show_error(self, mock_db):
         from app.domains.automation.services.automation_handlers import handle_candidate_no_show
-        with patch("app.services.activity_service.ActivityService") as MockAS:
+        with patch("app.domains.analytics.services.activity_service.ActivityService") as MockAS:
             MockAS.return_value.create_activity = AsyncMock(side_effect=Exception("fail"))
             result = await handle_candidate_no_show("c1", "v1", "comp-1", mock_db)
         assert "error" in result
@@ -110,7 +110,7 @@ class TestHandlerFunctions:
     @pytest.mark.easy
     async def test_handle_offer_sent_error(self, mock_db):
         from app.domains.automation.services.automation_handlers import handle_offer_sent
-        with patch("app.services.activity_service.ActivityService") as MockAS:
+        with patch("app.domains.analytics.services.activity_service.ActivityService") as MockAS:
             MockAS.return_value.create_activity = AsyncMock(side_effect=Exception("fail"))
             result = await handle_offer_sent("c1", "v1", "comp-1", mock_db)
         assert "error" in result
@@ -119,7 +119,7 @@ class TestHandlerFunctions:
     @pytest.mark.easy
     async def test_handle_candidate_hired_error(self, mock_db):
         from app.domains.automation.services.automation_handlers import handle_candidate_hired
-        with patch("app.services.activity_service.ActivityService") as MockAS:
+        with patch("app.domains.analytics.services.activity_service.ActivityService") as MockAS:
             MockAS.return_value.create_activity = AsyncMock(side_effect=Exception("fail"))
             result = await handle_candidate_hired("c1", "v1", "comp-1", mock_db)
         assert "error" in result
@@ -128,7 +128,7 @@ class TestHandlerFunctions:
     @pytest.mark.easy
     async def test_handle_candidate_rejected_error(self, mock_db):
         from app.domains.automation.services.automation_handlers import handle_candidate_rejected
-        with patch("app.services.activity_service.ActivityService") as MockAS:
+        with patch("app.domains.analytics.services.activity_service.ActivityService") as MockAS:
             MockAS.return_value.create_activity = AsyncMock(side_effect=Exception("fail"))
             result = await handle_candidate_rejected("c1", "v1", "comp-1", mock_db, reason="No fit")
         assert "error" in result
@@ -137,7 +137,7 @@ class TestHandlerFunctions:
     @pytest.mark.easy
     async def test_handle_ats_sync_error(self, mock_db):
         from app.domains.automation.services.automation_handlers import handle_ats_sync
-        with patch("app.services.activity_service.ActivityService") as MockAS:
+        with patch("app.domains.analytics.services.activity_service.ActivityService") as MockAS:
             MockAS.return_value.create_activity = AsyncMock(side_effect=Exception("fail"))
             result = await handle_ats_sync("c1", "v1", "comp-1", mock_db)
         assert "error" in result

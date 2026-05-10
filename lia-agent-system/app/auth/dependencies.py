@@ -209,6 +209,64 @@ async def get_optional_current_user(
     return result.scalar_one_or_none()
 
 
+def _is_dev_environment() -> bool:
+    """Check whether the app is running in development mode."""
+    from app.core.config import settings as _app_settings
+    return getattr(_app_settings, "ENVIRONMENT", "development") == "development"
+
+
+async def ensure_demo_user(db):
+    """Ensure a demo user exists; repairs placeholder password hashes.
+
+    Raises HTTP 403 outside development so callers cannot accidentally
+    expose this path in staging/production.
+    """
+    if not _is_dev_environment():
+        raise HTTPException(
+            status_code=403,
+            detail="ensure_demo_user is only available in development",
+        )
+
+    from app.shared.encryption.encrypted_field_mixin import _sha256_hash
+    from sqlalchemy import or_ as _or_
+
+    _demo_email = "demo@wedotalent.com"
+    result = await db.execute(
+        select(User).where(
+            _or_(
+                User.email_hash == _sha256_hash(_demo_email),
+                User._email_raw == _demo_email,
+            )
+        )
+    )
+    demo_user = result.scalar_one_or_none()
+
+    if demo_user:
+        # Repair placeholder / non-bcrypt hashes
+        if not demo_user.password_hash.startswith(("$2a$", "$2b$", "$2y$")):
+            from app.auth.security import get_password_hash
+            demo_user.password_hash = get_password_hash("demo123")
+            await db.commit()
+        return demo_user
+
+    # Create demo user with a proper bcrypt hash
+    from uuid import uuid4
+    from app.auth.security import get_password_hash as _gph
+    demo_user = User(
+        id=uuid4(),
+        email=_demo_email,
+        name="Demo User",
+        password_hash=_gph("demo123"),
+        role=UserRole.recruiter,
+        company_id="demo_company",
+        is_active=True,
+    )
+    db.add(demo_user)
+    await db.commit()
+    await db.refresh(demo_user)
+    return demo_user
+
+
 async def get_current_user_or_demo(
     credentials: HTTPAuthorizationCredentials | None = Depends(optional_security),
     db: AsyncSession = Depends(get_db)

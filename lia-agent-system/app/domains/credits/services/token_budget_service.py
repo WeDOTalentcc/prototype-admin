@@ -397,6 +397,18 @@ async def increment_usage(
                     alert_threshold = 0
                 if alert_threshold:
                     try:
+                        import sentry_sdk as _sentry_sdk
+                        _sentry_sdk.capture_message(
+                            "token_budget_80pct" if alert_threshold == 80 else "token_budget_100pct",
+                            level="warning",
+                            extras={
+                                "company_id": str(company_id),
+                                "threshold_pct": alert_threshold,
+                                "used": int(new_total),
+                                "limit": int(limit),
+                                "plan_code": plan_code,
+                            },
+                        )
                         import asyncio as _asyncio
                         from app.domains.credits.services.budget_alert_service import send_budget_alert
                         _asyncio.ensure_future(send_budget_alert(

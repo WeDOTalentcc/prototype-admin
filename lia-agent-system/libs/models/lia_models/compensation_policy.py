@@ -14,44 +14,65 @@ from lia_config.database import Base
 class CompensationPolicy(Base):
     """
     Compensation policies defining salary ranges, bonus structures,
-    and variable compensation by role/department/seniority.
+    and variable compensation. Schema mirrors Rails migration 102
+    (canonical) + FastAPI auditability additions.
     """
     __tablename__ = "compensation_policies"
-    
+
+    # ── identity ──────────────────────────────────────────────────────────
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(UUID(as_uuid=True), ForeignKey("company_profiles.id"), nullable=False)
-    
+
+    # ── classification ────────────────────────────────────────────────────
     name = Column(String(255), nullable=False)
-    department = Column(String(255), nullable=True)
-    role_pattern = Column(String(255), nullable=True)
-    seniority_level = Column(String(100), nullable=True)
-    
-    salary_min = Column(Float, nullable=True)
-    salary_max = Column(Float, nullable=True)
-    salary_target = Column(Float, nullable=True)
-    
-    bonus_enabled = Column(Boolean, default=False)
-    bonus_type = Column(String(100), nullable=True)
-    bonus_min_pct = Column(Float, nullable=True)
-    bonus_target_pct = Column(Float, nullable=True)
-    bonus_max_pct = Column(Float, nullable=True)
-    bonus_criteria = Column(JSON, default={})
-    
-    variable_compensation = Column(JSON, default={})
-    
-    total_comp_annual_min = Column(Float, nullable=True)
-    total_comp_annual_max = Column(Float, nullable=True)
-    
+    description = Column(Text, nullable=True)
+    policy_type = Column(String(100), nullable=True)        # hierarchical_bands | mixed | flat
+    currency = Column(String(10), default="BRL")
+
+    # ── compensation bands (JSON) ─────────────────────────────────────────
+    salary_bands = Column(JSON, default=list)               # [{level, min, max}]
+    bonus_structure = Column(JSON, default=dict)            # {type, target_pct, ...}
+    equity_rules = Column(JSON, default=dict)               # stock/options rules
+    benefits_package = Column(JSON, default=dict)           # health, meal, etc.
+    variable_compensation = Column(JSON, default=dict)      # {items: [{kind, ...}]}
+
+    # ── applicability ─────────────────────────────────────────────────────
+    applicable_departments = Column(JSON, default=list)     # ["Engenharia", ...]
+    applicable_seniority = Column(JSON, default=list)       # ["junior", "pleno", ...]
+    applicable_roles = Column(JSON, default=list)           # ["Backend Engineer", ...]
+
+    # ── lifecycle ─────────────────────────────────────────────────────────
     is_active = Column(Boolean, default=True)
+    is_default = Column(Boolean, default=False)
     effective_from = Column(DateTime, nullable=True)
     effective_until = Column(DateTime, nullable=True)
-    source = Column(String(255), nullable=True)
-    
+
+    # ── governance ────────────────────────────────────────────────────────
+    approved_by = Column(String(255), nullable=True)
+    approved_at = Column(DateTime, nullable=True)
+    version = Column(Integer, default=1)
+    revision_history = Column(JSON, default=list)           # [{version, changed_by, at, diff}]
+    created_by = Column(String(255), nullable=True)
+    updated_by = Column(String(255), nullable=True)
+
+    # ── timestamps ────────────────────────────────────────────────────────
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
-    created_by = Column(String(255), nullable=True)
-    
+
     company = relationship("CompanyProfile", back_populates="compensation_policies")
+
+
+# ---------------------------------------------------------------------------
+# Variable compensation enumerations
+# ---------------------------------------------------------------------------
+
+VARIABLE_COMP_KINDS: list[str] = [
+    "plr", "ppr", "bonus", "commission", "spot_bonus", "equity"
+]
+
+VARIABLE_COMP_FREQUENCIES: list[str] = [
+    "monthly", "quarterly", "annual", "biannual", "one_off", "on_target_achievement"
+]
 
 
 # ---------------------------------------------------------------------------

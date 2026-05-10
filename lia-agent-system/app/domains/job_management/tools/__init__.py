@@ -21,7 +21,7 @@ JOB_MANAGEMENT_TOOLS: list[dict[str, Any]] = [
             "salary_max": {"type": "float", "description": "Salário máximo", "required": False},
             "description": {"type": "string", "description": "Descrição da vaga", "required": False},
         },
-        "handler": "app.tools.job_tools.create_job_vacancy",
+        "handler": "app.domains.job_management.tools.job_tools_compat.create_job_vacancy",
     },
     {
         "tool_id": "update_job_vacancy",
@@ -39,7 +39,7 @@ JOB_MANAGEMENT_TOOLS: list[dict[str, Any]] = [
             "description": {"type": "string", "description": "Nova descrição", "required": False},
             "status": {"type": "string", "description": "Novo status da vaga", "required": False},
         },
-        "handler": "app.tools.job_tools.update_job_vacancy",
+        "handler": "app.domains.job_management.tools.job_tools_compat.update_job_vacancy",
     },
     {
         "tool_id": "close_job_vacancy",
@@ -49,7 +49,7 @@ JOB_MANAGEMENT_TOOLS: list[dict[str, Any]] = [
             "job_id": {"type": "string", "description": "ID da vaga", "required": True},
             "reason": {"type": "string", "description": "Motivo do fechamento", "required": False},
         },
-        "handler": "app.tools.job_tools.close_job_vacancy",
+        "handler": "app.domains.job_management.tools.job_tools_compat.close_job_vacancy",
     },
     {
         "tool_id": "pause_job_vacancy",
@@ -59,7 +59,7 @@ JOB_MANAGEMENT_TOOLS: list[dict[str, Any]] = [
             "job_id": {"type": "string", "description": "ID da vaga", "required": True},
             "reason": {"type": "string", "description": "Motivo da pausa", "required": False},
         },
-        "handler": "app.tools.job_tools.pause_job",
+        "handler": "app.domains.job_management.tools.job_tools_compat.pause_job",
     },
     {
         "tool_id": "duplicate_job_vacancy",
@@ -69,7 +69,7 @@ JOB_MANAGEMENT_TOOLS: list[dict[str, Any]] = [
             "job_id": {"type": "string", "description": "ID da vaga a duplicar", "required": True},
             "include_candidates": {"type": "boolean", "description": "Incluir candidatos na duplicação", "required": False, "default": False},
         },
-        "handler": "app.tools.job_tools.duplicate_job_vacancy",
+        "handler": "app.domains.job_management.tools.job_tools_compat.duplicate_job_vacancy",
     },
     {
         "tool_id": "generate_job_description",

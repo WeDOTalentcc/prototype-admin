@@ -6,6 +6,7 @@ import logging
 from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select  # noqa: F401 — exposed for test mocking
 
 from app.shared.messaging.rails_event_publisher import publish_rails_event
 

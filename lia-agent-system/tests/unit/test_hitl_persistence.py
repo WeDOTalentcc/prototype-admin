@@ -28,7 +28,7 @@ class TestHITLServiceRequestApproval:
     async def test_request_approval_returns_pending_id(self):
         from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
-        with patch("app.services.hitl_service._db_save_pending", new_callable=AsyncMock), \
+        with patch("app.domains.cv_screening.services.hitl_service._db_save_pending", new_callable=AsyncMock), \
              patch("app.api.v1.ws_manager.ws_manager") as mock_ws:
             mock_ws.send_to_session = AsyncMock()
             pending_id = await svc.request_approval(
@@ -46,7 +46,7 @@ class TestHITLServiceRequestApproval:
     async def test_request_approval_calls_db_save(self):
         from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
-        with patch("app.services.hitl_service._db_save_pending", new_callable=AsyncMock) as mock_db, \
+        with patch("app.domains.cv_screening.services.hitl_service._db_save_pending", new_callable=AsyncMock) as mock_db, \
              patch("app.api.v1.ws_manager.ws_manager") as mock_ws:
             mock_ws.send_to_session = AsyncMock()
             await svc.request_approval(
@@ -69,7 +69,7 @@ class TestHITLServiceRequestApproval:
         from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         with patch("app.services.hitl_service._get_redis", return_value=None), \
-             patch("app.services.hitl_service._db_save_pending", new_callable=AsyncMock), \
+             patch("app.domains.cv_screening.services.hitl_service._db_save_pending", new_callable=AsyncMock), \
              patch("app.api.v1.ws_manager.ws_manager") as mock_ws:
             mock_ws.send_to_session = AsyncMock()
             pending_id = await svc.request_approval(
@@ -88,7 +88,7 @@ class TestHITLServiceRequestApproval:
         """DB falha silenciosamente — não bloqueia o fluxo do agente."""
         from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
-        with patch("app.services.hitl_service._db_save_pending", side_effect=Exception("DB down")), \
+        with patch("app.domains.cv_screening.services.hitl_service._db_save_pending", side_effect=Exception("DB down")), \
              patch("app.services.hitl_service._get_redis", return_value=None), \
              patch("app.api.v1.ws_manager.ws_manager") as mock_ws:
             mock_ws.send_to_session = AsyncMock()
@@ -106,7 +106,7 @@ class TestHITLServiceRequestApproval:
     async def test_request_approval_ws_failure_does_not_raise(self):
         from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
-        with patch("app.services.hitl_service._db_save_pending", new_callable=AsyncMock), \
+        with patch("app.domains.cv_screening.services.hitl_service._db_save_pending", new_callable=AsyncMock), \
              patch("app.api.v1.ws_manager.ws_manager") as mock_ws:
             mock_ws.send_to_session = AsyncMock(side_effect=Exception("WS down"))
             pending_id = await svc.request_approval(
@@ -130,7 +130,7 @@ class TestHITLServiceReceiveApproval:
         from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         with patch("app.services.hitl_service._get_redis", return_value=None), \
-             patch("app.services.hitl_service._db_resolve", new_callable=AsyncMock):
+             patch("app.domains.cv_screening.services.hitl_service._db_resolve", new_callable=AsyncMock):
             svc._memory["hitl:t-r1:p-001"] = {
                 "pending_id": "p-001",
                 "thread_id": "t-r1",
@@ -152,7 +152,7 @@ class TestHITLServiceReceiveApproval:
         from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         with patch("app.services.hitl_service._get_redis", return_value=None), \
-             patch("app.services.hitl_service._db_resolve", new_callable=AsyncMock) as mock_resolve:
+             patch("app.domains.cv_screening.services.hitl_service._db_resolve", new_callable=AsyncMock) as mock_resolve:
             await svc.receive_approval(
                 thread_id="t-r2",
                 pending_id="p-002",
@@ -172,7 +172,7 @@ class TestHITLServiceReceiveApproval:
         from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         with patch("app.services.hitl_service._get_redis", return_value=None), \
-             patch("app.services.hitl_service._db_resolve", new_callable=AsyncMock):
+             patch("app.domains.cv_screening.services.hitl_service._db_resolve", new_callable=AsyncMock):
             result = await svc.receive_approval(
                 thread_id="t-new",
                 pending_id="p-new",
@@ -186,7 +186,7 @@ class TestHITLServiceReceiveApproval:
         from app.domains.cv_screening.services.hitl_service import HITLService
         svc = HITLService()
         with patch("app.services.hitl_service._get_redis", return_value=None), \
-             patch("app.services.hitl_service._db_resolve", side_effect=Exception("DB down")):
+             patch("app.domains.cv_screening.services.hitl_service._db_resolve", side_effect=Exception("DB down")):
             result = await svc.receive_approval(
                 thread_id="t-dbfail",
                 pending_id="p-dbfail",
@@ -212,7 +212,7 @@ class TestHITLServiceGetPending:
             "requested_at": "2026-03-08T10:00:00+00:00",
         }
         with patch("app.services.hitl_service._get_redis", return_value=None), \
-             patch("app.services.hitl_service._db_get_pending", new_callable=AsyncMock) as mock_db:
+             patch("app.domains.cv_screening.services.hitl_service._db_get_pending", new_callable=AsyncMock) as mock_db:
             result = await svc.get_pending("t-gp1")
         assert result is not None
         assert result["pending_id"] == "p-A"
@@ -225,7 +225,7 @@ class TestHITLServiceGetPending:
         # Sem nada em Redis/memory
         db_result = {"pending_id": "p-db", "thread_id": "t-gp2", "approved": None}
         with patch("app.services.hitl_service._get_redis", return_value=None), \
-             patch("app.services.hitl_service._db_get_pending", new_callable=AsyncMock, return_value=db_result):
+             patch("app.domains.cv_screening.services.hitl_service._db_get_pending", new_callable=AsyncMock, return_value=db_result):
             result = await svc.get_pending("t-gp2")
         assert result["pending_id"] == "p-db"
 
@@ -239,7 +239,7 @@ class TestHITLServiceGetPending:
             "approved": True,  # já resolvido
         }
         with patch("app.services.hitl_service._get_redis", return_value=None), \
-             patch("app.services.hitl_service._db_get_pending", new_callable=AsyncMock, return_value=None):
+             patch("app.domains.cv_screening.services.hitl_service._db_get_pending", new_callable=AsyncMock, return_value=None):
             result = await svc.get_pending("t-gp3")
         assert result is None
 

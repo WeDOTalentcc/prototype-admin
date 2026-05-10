@@ -679,31 +679,106 @@ Resumo (máximo 200 palavras):"""
             "summarized_count": summarized_count
         }
     
+    def _extract_structured_ids(self, messages: list[dict]) -> str:
+        """Extract structured IDs (UUIDs, labeled refs, long numerics) from messages.
+
+        Returns a comma-separated string of found IDs, or "" if none found.
+        Labeled references (e.g. "vaga 1776373052020", "candidato 42") are kept
+        intact; the numeric portion is not duplicated as a standalone entry.
+        """
+        import re as _re
+        if not messages:
+            return ""
+
+        content = " ".join(str(m.get("content", "")) for m in messages)
+
+        # Labeled reference patterns (Brazilian Portuguese)
+        LABELED_PATTERNS = [
+            r"vaga\s+[\w\-]+",
+            r"candidato\s+[\w\-]+",
+            r"job\s+[\w\-]+",
+            r"empresa\s+[\w\-]+",
+            r"processo\s+[\w\-]+",
+            r"ticket\s+[\w\-]+",
+        ]
+        UUID_PATTERN = r"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+        LONG_NUMERIC = r"\b\d{8,}\b"
+
+        found: list[str] = []
+        labeled_nums: set[str] = set()
+
+        # Collect labeled refs first
+        for pat in LABELED_PATTERNS:
+            for m in _re.finditer(pat, content, _re.IGNORECASE):
+                match_text = m.group(0)
+                found.append(match_text)
+                # Track numerics inside labels to avoid duplication
+                for num in _re.findall(r"\d{5,}", match_text):
+                    labeled_nums.add(num)
+
+        # Collect UUIDs
+        for m in _re.finditer(UUID_PATTERN, content, _re.IGNORECASE):
+            uid = m.group(0)
+            found.append(uid)
+            labeled_nums.add(uid)
+
+        # Collect long standalone numerics not already in a labeled ref
+        for m in _re.finditer(LONG_NUMERIC, content):
+            num = m.group(0)
+            if num not in labeled_nums:
+                found.append(num)
+                labeled_nums.add(num)
+
+        if not found:
+            return ""
+
+        # Deduplicate while preserving order
+        seen: set[str] = set()
+        unique: list[str] = []
+        for item in found:
+            key = item.lower()
+            if key not in seen:
+                seen.add(key)
+                unique.append(item)
+
+        return ", ".join(unique)
+
     async def _generate_summary_from_dicts(self, messages: list[dict]) -> str:
         """
         Generate summary from dict-format messages.
-        
+
+        Prepends ``[IDs preservados: ...]`` to the summary so downstream
+        context windows retain references to structured IDs even after
+        compression.
+
         Args:
             messages: List of message dicts with role/content
-            
+
         Returns:
-            Summary text
+            Summary text (may start with [IDs preservados: ...] prefix)
         """
         if not messages:
             return ""
-        
+
+        structured_ids = self._extract_structured_ids(messages)
+
+        def _prefix(body: str) -> str:
+            if structured_ids:
+                return f"[IDs preservados: {structured_ids}]\n{body}"
+            return body
+
         if not self.llm_service:
-            return self._generate_simple_summary_from_dicts(messages)
-        
+            return _prefix(self._generate_simple_summary_from_dicts(messages))
+
         try:
             messages_text = "\n".join([
                 f"{msg.get('role', 'unknown')}: {str(msg.get('content', ''))[:500]}"
                 for msg in messages[-30:]
             ])
-            
+
             max_tokens = CONTEXT_COMPRESSION_CONFIG["summary_max_tokens"]
             max_words = max_tokens // 2
-            
+
             prompt = f"""Resuma esta conversa de forma concisa em no máximo {max_words} palavras, destacando:
 1. Principais tópicos discutidos
 2. Decisões ou ações tomadas
@@ -715,11 +790,12 @@ Conversa:
 
 Resumo conciso:"""
 
-            return await self.llm_service.safe_invoke(prompt, provider="claude")
-            
+            llm_result = await self.llm_service.safe_invoke(prompt, provider="claude")
+            return _prefix(llm_result)
+
         except Exception as e:
             logger.error(f"LLM summary generation from dicts failed: {e}")
-            return self._generate_simple_summary_from_dicts(messages)
+            return _prefix(self._generate_simple_summary_from_dicts(messages))
     
     def _generate_simple_summary_from_dicts(self, messages: list[dict]) -> str:
         """Generate a simple summary from dict-format messages without LLM."""

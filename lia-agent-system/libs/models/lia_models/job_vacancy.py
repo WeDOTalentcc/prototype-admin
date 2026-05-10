@@ -54,7 +54,7 @@ class JobVacancy(Base):
     # NEW: Structured bonus range
     bonus_range = Column(JSON, nullable=True)  # {"min": 5000, "max": 8000, "currency": "BRL"}
     
-    benefits = Column(ARRAY(String), default=list)
+    benefits = Column(JSON, default=list)
     
     # Status & Workflow
     status = Column(String(50), default="Rascunho", index=True)  # Ativa, Rascunho, Pausada, Concluída, etc
