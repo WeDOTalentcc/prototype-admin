@@ -658,6 +658,9 @@ async def receive_ats_webhook(
     Receive and process webhook events from ATS platforms.
     Verifies webhook signature when a webhook_secret is configured.
     """
+    # multi-tenancy: webhook is INBOUND from external ATS (Gupy/Pandape/Merge) — no JWT;
+    # company_id is resolved via webhook_secret HMAC-SHA256 signature match against
+    # ATSConnection.webhook_secret per-tenant. P2-2 fix (2026-05-10).
     try:
         provider_lower = provider.lower()
         if provider_lower not in SUPPORTED_PROVIDERS:
