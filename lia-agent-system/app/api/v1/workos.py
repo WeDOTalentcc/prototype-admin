@@ -1144,6 +1144,7 @@ async def _handle_dsync_group_created(
         raw_attributes=raw_attributes,
         is_active=True,
     )
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"SCIM created/updated group: {workos_id} ({name})")
     return {"success": True, "message": "Group created/updated", "group_id": str(group.id)}
 

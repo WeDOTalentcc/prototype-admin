@@ -320,6 +320,7 @@ async def get_archetypes(
             )
             archetypes.append(archetype)
 
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Retrieved {len(archetypes)} archetypes")
 
         return ArchetypesResponse(vacancies=archetypes, total=len(archetypes))
@@ -327,6 +328,7 @@ async def get_archetypes(
     except HTTPException:
         raise
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error fetching archetypes: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 

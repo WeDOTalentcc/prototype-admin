@@ -301,6 +301,7 @@ def build_archetype_from_search(
         updated_at=datetime.utcnow()
     )
     
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"Built archetype '{name}' with {len(tags)} tags for company {company_id}")
     
     return archetype

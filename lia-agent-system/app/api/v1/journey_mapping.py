@@ -529,6 +529,7 @@ async def delete_step(
 
         await repo.delete_step(step)
 
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Deleted journey step: {step_id}")
         return {"success": True, "message": "Step deleted successfully"}
     except HTTPException:

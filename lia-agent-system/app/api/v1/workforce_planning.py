@@ -184,6 +184,7 @@ async def create_workforce_plan(
         save_workforce_plans(client, plans)
         
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"✅ Created workforce plan: {new_plan['name']} for company {company_id}")
         
         return {
@@ -242,6 +243,7 @@ async def update_workforce_plan(
         save_workforce_plans(client, plans)
         
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"✅ Updated workforce plan: {plan['name']} ({plan_id})")
         
         return {
@@ -284,6 +286,7 @@ async def delete_workforce_plan(
         save_workforce_plans(client, plans)
         
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"🗑️ Deleted workforce plan: {deleted_plan['name']} ({plan_id})")
         
         return {
@@ -380,6 +383,7 @@ async def calculate_plan_metrics(
         save_workforce_plans(client, plans)
         
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"📊 Recalculated metrics for plan: {plan['name']}")
         
         return {

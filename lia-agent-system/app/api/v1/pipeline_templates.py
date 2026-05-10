@@ -253,6 +253,7 @@ async def clone_pipeline_template(
         new_name or f"{original.name} (Cópia)",
         created_by=user_email,
     )
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"Cloned pipeline template: {original.name} -> {cloned.name}")
     return _to_response(cloned)
 

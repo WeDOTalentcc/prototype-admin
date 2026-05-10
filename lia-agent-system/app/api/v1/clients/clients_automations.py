@@ -127,6 +127,7 @@ async def update_client_automation(
         settings["automations"] = automations
         client.settings = settings
         await repo.save(client)
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Updated automation '{automation.get('name')}' for client {client_id}")
         return {"success": True, "message": "Automation updated successfully", "data": automation}
     except HTTPException:
@@ -189,6 +190,7 @@ async def toggle_client_automation(
         client.settings = settings
         await repo.save(client)
         status_text = "activated" if automation["is_active"] else "deactivated"
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Automation '{automation.get('name')}' {status_text} for client {client_id}")
         return {"success": True, "message": f"Automation {status_text} successfully", "data": automation}
     except HTTPException:

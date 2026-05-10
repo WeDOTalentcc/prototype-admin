@@ -206,6 +206,7 @@ async def sync_client_integration(
         settings["integrations"] = integrations
         client.settings = settings
         await repo.save(client)
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Synced integration '{integration.get('name')}' for client {client_id}")
         return {
             "success": True,

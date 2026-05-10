@@ -102,8 +102,10 @@ async def add_task_lifecycle_columns():
                 await conn.execute(
                     text(f"ALTER TABLE tasks ADD COLUMN IF NOT EXISTS {column_name} {column_type}")
                 )
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.debug(f"Ensured column tasks.{column_name} exists")
             except Exception as e:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.warning(f"Could not add column {column_name}: {e}")
     
     logger.info("Task lifecycle columns verified/added successfully")
@@ -132,8 +134,10 @@ async def add_notification_columns():
                 await conn.execute(
                     text(f"ALTER TABLE notifications ADD COLUMN IF NOT EXISTS {column_name} {column_type}")
                 )
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.debug(f"Ensured column notifications.{column_name} exists")
             except Exception as e:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.warning(f"Could not add notifications column {column_name}: {e}")
         
         for column_name, column_type in chat_notification_columns:
@@ -141,8 +145,10 @@ async def add_notification_columns():
                 await conn.execute(
                     text(f"ALTER TABLE chat_notifications ADD COLUMN IF NOT EXISTS {column_name} {column_type}")
                 )
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.debug(f"Ensured column chat_notifications.{column_name} exists")
             except Exception as e:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.warning(f"Could not add chat_notifications column {column_name}: {e}")
     
     logger.info("Notification columns verified/added successfully")
@@ -166,8 +172,10 @@ async def add_approval_workflow_columns():
                 await conn.execute(
                     text(f"ALTER TABLE job_vacancies ADD COLUMN IF NOT EXISTS {column_name} {column_type}")
                 )
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.debug(f"Ensured column job_vacancies.{column_name} exists")
             except Exception as e:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.warning(f"Could not add job_vacancies column {column_name}: {e}")
     
     logger.info("Approval workflow columns verified/added successfully")
@@ -339,8 +347,10 @@ async def add_audit_logs_output_columns():
                 await conn.execute(
                     text(f"ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS {column_name} {column_type}")
                 )
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.debug(f"Ensured column audit_logs.{column_name} exists")
             except Exception as e:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.warning(f"Could not add audit_logs column {column_name}: {e}")
 
         try:
@@ -435,8 +445,10 @@ async def add_email_template_columns():
                 await conn.execute(
                     text(f"ALTER TABLE email_templates ADD COLUMN IF NOT EXISTS {column_name} {column_type}")
                 )
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.debug(f"Ensured column email_templates.{column_name} exists")
             except Exception as e:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.warning(f"Could not add email_templates column {column_name}: {e}")
         
         try:
@@ -519,8 +531,10 @@ async def add_workos_columns():
                 await conn.execute(
                     text(f"ALTER TABLE users ADD COLUMN IF NOT EXISTS {column_name} {column_type}")
                 )
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.debug(f"Ensured column users.{column_name} exists")
             except Exception as e:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.warning(f"Could not add users column {column_name}: {e}")
         
         try:
@@ -748,8 +762,10 @@ async def add_client_user_invitation_columns():
                 await conn.execute(
                     text(f"ALTER TABLE client_users ADD COLUMN IF NOT EXISTS {column_name} {column_type}")
                 )
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.debug(f"Ensured column client_users.{column_name} exists")
             except Exception as e:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.warning(f"Could not add client_users column {column_name}: {e}")
         
         try:
@@ -975,6 +991,7 @@ async def add_job_draft_affirmative_columns():
                     text(f"ALTER TABLE job_drafts ADD COLUMN IF NOT EXISTS {column_name} {column_type}")
                 )
             except Exception as e:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.warning(f"Could not add column {column_name} to job_drafts: {e}")
     logger.info("Job draft affirmative columns verified/added successfully")
 

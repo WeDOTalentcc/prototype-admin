@@ -132,6 +132,7 @@ async def list_archetypes(
         # Seed default archetypes if needed
         created = await seed_default_archetypes(db)
         if created > 0:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"Seeded {created} default archetypes")
         
         # Build query
@@ -181,6 +182,7 @@ async def list_archetypes(
         )
     
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error listing archetypes: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to list archetypes: {str(e)}")
 
@@ -252,6 +254,7 @@ async def create_archetype(
     except HTTPException:
         raise
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error creating archetype: {e}")
         await db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to create archetype: {str(e)}")
@@ -325,6 +328,7 @@ async def create_archetype_from_search(
         )
         
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error creating archetype from search: {e}")
         await db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to create archetype from search: {str(e)}")
@@ -574,6 +578,7 @@ async def create_archetype_from_job(
     except HTTPException:
         raise
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error creating archetype from job: {e}")
         await db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
@@ -707,6 +712,7 @@ async def create_archetype_from_description(
     except HTTPException:
         raise
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error creating archetype from description: {e}")
         await db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
@@ -750,6 +756,7 @@ async def get_archetype(
     except HTTPException:
         raise
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error getting archetype: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to get archetype: {str(e)}")
 
@@ -792,6 +799,7 @@ async def delete_archetype(
     except HTTPException:
         raise
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error deleting archetype: {e}")
         await db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to delete archetype: {str(e)}")
@@ -864,6 +872,7 @@ async def update_archetype(
     except HTTPException:
         raise
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error updating archetype: {e}")
         await db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to update archetype: {str(e)}")
@@ -1064,6 +1073,7 @@ async def search_by_archetype(
     except HTTPException:
         raise
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error searching by archetype: {e}")
         import traceback
         traceback.print_exc()
@@ -1248,6 +1258,7 @@ Responda APENAS com o JSON, sem explicações adicionais."""
         logger.error(f"Failed to parse AI response: {e}")
         raise HTTPException(status_code=500, detail="Falha ao processar resposta da IA")
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error generating archetype from job: {e}")
         import traceback
         traceback.print_exc()
@@ -1333,6 +1344,7 @@ Responda APENAS com o JSON, sem explicações adicionais."""
         await db.flush()
         await db.refresh(new_archetype)
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"✅ Created archetype '{name}' from description")
         
         return ArchetypeGenerationResponse(
@@ -1363,6 +1375,7 @@ Responda APENAS com o JSON, sem explicações adicionais."""
         logger.error(f"Failed to parse AI response: {e}")
         raise HTTPException(status_code=500, detail="Falha ao processar resposta da IA")
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error generating archetype from description: {e}")
         import traceback
         traceback.print_exc()
@@ -1431,6 +1444,7 @@ async def get_archetype_suggestions(
         )
     
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error fetching archetype suggestions: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 

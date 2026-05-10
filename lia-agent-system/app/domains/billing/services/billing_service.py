@@ -322,6 +322,7 @@ class BillingService:
         await self.db.commit()
         await self.db.refresh(subscription)
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Changed plan for subscription {subscription_id} to {new_plan_code}")
         
         return {

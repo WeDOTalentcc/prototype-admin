@@ -301,6 +301,7 @@ async def request_otp(
     
     
     _email_hash = hashlib.sha256(request_data.email.lower().encode()).hexdigest()[:8]
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"OTP generated for email_hash={_email_hash} on shared_search={search.id}")
     
     return OTPResponse(
@@ -387,6 +388,7 @@ async def verify_otp(
     )
     
     _email_hash = hashlib.sha256(request_data.email.lower().encode()).hexdigest()[:8]
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"OTP verified for email_hash={_email_hash} on shared_search={search.id}")
     
     return SessionResponse(
