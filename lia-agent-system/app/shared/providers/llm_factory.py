@@ -557,23 +557,39 @@ def create_tracked_llm(
         metadata["operation"] = operation
 
     try:
+        # F3-2 fix (2026-05-10): fallback for Replit AI Integration prefix (AI_INTEGRATIONS_*)
+        # Pattern alinhado com Anthropic em llm_bootstrap.py:117 (já tem fallback)
         if provider == "gemini":
             from langchain_google_genai import ChatGoogleGenerativeAI
-            api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY", "")
+            api_key = (
+                os.environ.get("GEMINI_API_KEY")
+                or os.environ.get("GOOGLE_API_KEY")
+                or os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY", "")
+            )
             return ChatGoogleGenerativeAI(
                 model=model_name, google_api_key=api_key, **kwargs,
             )
         elif provider == "claude":
             from langchain_anthropic import ChatAnthropic
-            api_key = os.environ.get("ANTHROPIC_API_KEY", "")
+            api_key = (
+                os.environ.get("ANTHROPIC_API_KEY")
+                or os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY", "")
+            )
             return ChatAnthropic(model=model_name, api_key=api_key, **kwargs)
         elif provider == "openai":
             from langchain_openai import ChatOpenAI
-            api_key = os.environ.get("OPENAI_API_KEY", "")
+            api_key = (
+                os.environ.get("OPENAI_API_KEY")
+                or os.environ.get("AI_INTEGRATIONS_OPENAI_API_KEY", "")
+            )
             return ChatOpenAI(model=model_name, api_key=api_key, **kwargs)
         else:
             from langchain_google_genai import ChatGoogleGenerativeAI
-            api_key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY", "")
+            api_key = (
+                os.environ.get("GEMINI_API_KEY")
+                or os.environ.get("GOOGLE_API_KEY")
+                or os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY", "")
+            )
             return ChatGoogleGenerativeAI(
                 model=model_name, google_api_key=api_key, **kwargs,
             )

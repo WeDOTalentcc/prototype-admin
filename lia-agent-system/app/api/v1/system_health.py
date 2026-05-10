@@ -70,16 +70,27 @@ async def _check_celery_workers() -> dict:
 def _check_llm_providers() -> dict:
     """Check LLM provider configuration (key presence only, no API call)."""
     providers = {}
+    # F3-2 fix (2026-05-10): include AI_INTEGRATIONS_* fallback (Replit AI Integration prefix)
     providers["anthropic"] = {
-        "configured": bool(os.getenv("ANTHROPIC_API_KEY")),
+        "configured": bool(
+            os.getenv("ANTHROPIC_API_KEY")
+            or os.getenv("AI_INTEGRATIONS_ANTHROPIC_API_KEY")
+        ),
         "model": os.getenv("ANTHROPIC_MODEL", "claude-3-5-sonnet-20241022"),
     }
     providers["gemini"] = {
-        "configured": bool(os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")),
+        "configured": bool(
+            os.getenv("GEMINI_API_KEY")
+            or os.getenv("GOOGLE_API_KEY")
+            or os.getenv("AI_INTEGRATIONS_GEMINI_API_KEY")
+        ),
         "model": os.getenv("GEMINI_MODEL", "gemini-2.0-flash"),
     }
     providers["openai"] = {
-        "configured": bool(os.getenv("OPENAI_API_KEY")),
+        "configured": bool(
+            os.getenv("OPENAI_API_KEY")
+            or os.getenv("AI_INTEGRATIONS_OPENAI_API_KEY")
+        ),
         "model": os.getenv("OPENAI_MODEL", "gpt-4o"),
     }
 
@@ -376,9 +387,10 @@ async def system_health(db: AsyncSession = Depends(get_db)):
 
     # --- External services configuration ---
     components["external_services"] = {
-        "anthropic": "configured" if os.getenv("ANTHROPIC_API_KEY") else "not_configured",
-        "openai": "configured" if os.getenv("OPENAI_API_KEY") else "not_configured",
-        "gemini": "configured" if (os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY")) else "not_configured",
+        # F3-2 fix (2026-05-10): include AI_INTEGRATIONS_* fallback
+        "anthropic": "configured" if (os.getenv("ANTHROPIC_API_KEY") or os.getenv("AI_INTEGRATIONS_ANTHROPIC_API_KEY")) else "not_configured",
+        "openai": "configured" if (os.getenv("OPENAI_API_KEY") or os.getenv("AI_INTEGRATIONS_OPENAI_API_KEY")) else "not_configured",
+        "gemini": "configured" if (os.getenv("GEMINI_API_KEY") or os.getenv("GOOGLE_API_KEY") or os.getenv("AI_INTEGRATIONS_GEMINI_API_KEY")) else "not_configured",
         "workos": "configured" if os.getenv("WORKOS_API_KEY") else "not_configured",
         "mailgun": "configured" if (os.getenv("MAILGUN_API_KEY") and os.getenv("MAILGUN_DOMAIN")) else "not_configured",
         "deepgram": "configured" if os.getenv("DEEPGRAM_API_KEY") else "not_configured",

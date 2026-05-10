@@ -217,14 +217,28 @@ def _patch_openai():
     @functools.wraps(_orig_init)
     def _patched_init(self, *args, **kwargs):
         if "api_key" not in kwargs and not args:
-            kwargs["api_key"] = os.environ.get("OPENAI_API_KEY")
+            # F3-2 fix (2026-05-10): fallback for Replit AI Integration prefix
+            kwargs["api_key"] = (
+                os.environ.get("OPENAI_API_KEY")
+                or os.environ.get("AI_INTEGRATIONS_OPENAI_API_KEY")
+            )
+            base_url = os.environ.get("AI_INTEGRATIONS_OPENAI_BASE_URL")
+            if base_url and "base_url" not in kwargs:
+                kwargs["base_url"] = base_url
         _orig_init(self, *args, **kwargs)
         logger.debug("[LLM-Bootstrap] OpenAI client created, caller=%s", _get_caller())
 
     @functools.wraps(_orig_async_init)
     def _patched_async_init(self, *args, **kwargs):
         if "api_key" not in kwargs and not args:
-            kwargs["api_key"] = os.environ.get("OPENAI_API_KEY")
+            # F3-2 fix (2026-05-10): fallback for Replit AI Integration prefix
+            kwargs["api_key"] = (
+                os.environ.get("OPENAI_API_KEY")
+                or os.environ.get("AI_INTEGRATIONS_OPENAI_API_KEY")
+            )
+            base_url = os.environ.get("AI_INTEGRATIONS_OPENAI_BASE_URL")
+            if base_url and "base_url" not in kwargs:
+                kwargs["base_url"] = base_url
         _orig_async_init(self, *args, **kwargs)
         logger.debug("[LLM-Bootstrap] AsyncOpenAI client created, caller=%s", _get_caller())
 
