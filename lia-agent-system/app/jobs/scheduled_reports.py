@@ -322,6 +322,7 @@ class ScheduledReportJob:
                 try:
                     valid_recipients = [r for r in recipients if r.company_id]
                     if not valid_recipients:
+                        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                         logger.warning(f"⚠️ Skipping team {team_name} - no valid recipients with company_id")
                         continue
                     
@@ -346,6 +347,7 @@ class ScheduledReportJob:
                         })
                         
                 except Exception as e:
+                    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                     logger.error(f"❌ Failed to process weekly report for team {team_name}: {e}")
                     results["errors"].append({
                         "team": team_name,

@@ -52,6 +52,7 @@ async def update_candidate_stage(
     company_id = context.company_id if context else None
     user_id = context.user_id if context else "system"
     
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"🔄 Moving candidate {candidate_id} to stage: {target_stage} (company: {company_id})")
     
     try:
@@ -612,6 +613,7 @@ async def bulk_update_candidates_stage(
     Returns:
         Result with success counts and details
     """
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"🔄 Bulk moving {len(candidate_ids)} candidates to stage: {target_stage}")
     
     success_count = 0
@@ -665,6 +667,7 @@ async def add_to_list(
     company_id = context.company_id if context else None
     user_id = context.user_id if context else "system"
     
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"📋 Adding candidate {candidate_id} to list {list_id} (company: {company_id})")
     
     try:

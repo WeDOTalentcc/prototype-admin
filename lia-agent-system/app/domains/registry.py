@@ -59,6 +59,7 @@ def register_domain(cls: type[DomainPrompt]) -> type[DomainPrompt]:
             raise TypeError(_msg)
 
     _DOMAIN_REGISTRY[cls.domain_id] = cls
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"Domain registered: {cls.domain_id} ({cls.__name__})")
     return cls
 

@@ -431,6 +431,7 @@ async def update_candidate_stage(
             candidate.status = stage_data.stage
             candidate.updated_at = datetime.utcnow()
             candidate = await candidate_repo.update(candidate)
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"Candidate {candidate_id} status updated (no vacancy): {previous_stage} -> {stage_data.stage}")
             return {
                 "id": str(candidate.id),

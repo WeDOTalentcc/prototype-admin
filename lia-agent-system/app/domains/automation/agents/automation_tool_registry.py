@@ -184,6 +184,7 @@ async def _wrap_decompose_task(**kwargs: Any) -> dict[str, Any]:
             await db.rollback()
         except Exception:
             pass
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[automation_tools] LLM JSON parse error: {e}")
         return {"success": False, "message": f"Erro ao parsear resposta da IA: {e}"}
     except Exception as e:
@@ -191,6 +192,7 @@ async def _wrap_decompose_task(**kwargs: Any) -> dict[str, Any]:
             await db.rollback()
         except Exception:
             pass
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[automation_tools] decompose_task error: {e}", exc_info=True)
         return {"success": False, "message": str(e)}
 

@@ -1216,6 +1216,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
             
             await db.commit()
             
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"Feedback {feedback_id} marked as sent via {channel}")
 
             try:

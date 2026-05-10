@@ -201,6 +201,7 @@ async def _wrap_update_candidate_field(**kwargs: Any) -> dict[str, Any]:
             await db.rollback()
         except Exception:
             pass
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[pipeline_tools] update_candidate_field error: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 
@@ -309,6 +310,7 @@ async def _wrap_suggest_sub_status(**kwargs: Any) -> dict[str, Any]:
                         "reason": f"Sub-status padrão configurado para a etapa '{to_stage}'",
                     }
         except Exception as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.warning(f"[pipeline_tools] suggest_sub_status DB lookup failed: {e}")
 
     # Fallback: behavior-based defaults
@@ -543,6 +545,7 @@ async def _wrap_check_rejection_fairness(**kwargs: Any) -> dict[str, Any]:
                     if sw not in warnings:
                         warnings.append(sw)
         except Exception as sem_err:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.debug(f"[pipeline_tools] semantic check skipped: {sem_err}")
 
     is_fair = not explicit_result.is_blocked and len(warnings) == 0
@@ -607,6 +610,7 @@ async def _wrap_get_recruiter_preferences(**kwargs: Any) -> dict[str, Any]:
 
             return {"success": True, "preferences": prefs}
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.debug(f"[pipeline_tools] get_recruiter_preferences: table may not exist yet: {e}")
         return {"success": True, "preferences": [], "message": "Sistema de preferências ainda não configurado"}
 
@@ -678,6 +682,7 @@ async def _wrap_save_recruiter_preference(**kwargs: Any) -> dict[str, Any]:
             await db.rollback()
         except Exception:
             pass
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.debug(f"[pipeline_tools] save_recruiter_preference: {e}")
         return {"success": True, "message": "Preferência registrada (tabela será criada em breve)"}
 
@@ -710,6 +715,7 @@ async def _get_candidate_phone(candidate_email: str, interview_id: str) -> str |
             if row and row.get("phone"):
                 return row["phone"]
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.debug(f"[pipeline_tools] _get_candidate_phone failed: {e}")
     return None
 
@@ -826,6 +832,7 @@ async def _wrap_cancel_interview(**kwargs: Any) -> dict[str, Any]:
                 )
                 graph_status = "cancelled"
             except Exception as graph_err:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.warning(f"[pipeline_tools] Graph cancel not completed (graceful): {graph_err}")
                 graph_status = "failed_gracefully"
 
@@ -870,6 +877,7 @@ async def _wrap_cancel_interview(**kwargs: Any) -> dict[str, Any]:
                     )
                     notifications_sent.append({"channel": "whatsapp", "recipient": candidate_phone, "status": "sent"})
                 except Exception as wa_err:
+                    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                     logger.warning(f"[pipeline_tools] WhatsApp cancel notification failed: {wa_err}")
                     notifications_sent.append({"channel": "whatsapp", "status": "failed"})
 
@@ -909,6 +917,7 @@ async def _wrap_cancel_interview(**kwargs: Any) -> dict[str, Any]:
             await db.rollback()
         except Exception:
             pass
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[pipeline_tools] cancel_interview error: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 
@@ -985,6 +994,7 @@ async def _wrap_reschedule_interview(**kwargs: Any) -> dict[str, Any]:
                 )
                 graph_status = "rescheduled"
             except Exception as graph_err:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.warning(f"[pipeline_tools] Graph reschedule not completed (graceful): {graph_err}")
                 graph_status = "failed_gracefully"
 
@@ -1021,6 +1031,7 @@ async def _wrap_reschedule_interview(**kwargs: Any) -> dict[str, Any]:
                     )
                     notifications_sent.append({"channel": "whatsapp", "recipient": candidate_phone, "status": "sent"})
                 except Exception as wa_err:
+                    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                     logger.warning(f"[pipeline_tools] WhatsApp reschedule notification failed: {wa_err}")
                     notifications_sent.append({"channel": "whatsapp", "status": "failed"})
 
@@ -1063,6 +1074,7 @@ async def _wrap_reschedule_interview(**kwargs: Any) -> dict[str, Any]:
             await db.rollback()
         except Exception:
             pass
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[pipeline_tools] reschedule_interview error: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 

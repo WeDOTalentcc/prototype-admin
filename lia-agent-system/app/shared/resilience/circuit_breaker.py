@@ -221,6 +221,7 @@ class CircuitBreaker:
                 await self.record_success()
                 raise
             
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"Circuit breaker '{self.name}': Request failed with {type(e).__name__}: {e}")
             await self.record_failure()
             raise

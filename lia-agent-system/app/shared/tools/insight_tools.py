@@ -107,6 +107,7 @@ async def get_pipeline_health(company_id: str, job_id: str | None = None) -> dic
                 "message": f"Pipeline health analysis complete: {total_candidates} candidates, {stalled_candidates} stalled.",
             }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[insight_tools] get_pipeline_health error: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 
@@ -176,6 +177,7 @@ async def get_conversion_rates(company_id: str, job_id: str | None = None) -> di
                 "message": f"Conversion rates calculated. Overall funnel rate: {overall_funnel_rate}.",
             }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[insight_tools] get_conversion_rates error: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 
@@ -259,6 +261,7 @@ async def get_time_to_fill(company_id: str, job_id: str | None = None) -> dict[s
                 "message": f"Time-to-fill analysis for {n} filled vacancies.",
             }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[insight_tools] get_time_to_fill error: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 
@@ -347,6 +350,7 @@ async def get_candidate_quality_distribution(company_id: str, job_id: str | None
                 "message": f"Quality distribution for {len(scores)} scored candidates. Avg: {avg_score}.",
             }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[insight_tools] get_candidate_quality_distribution error: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 

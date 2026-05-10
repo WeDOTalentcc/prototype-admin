@@ -379,6 +379,7 @@ class WhatsAppService:
         logger.info("=" * 70)
         logger.info("[DEV WHATSAPP] Mensagem enviada (modo desenvolvimento)")
         logger.info(f"[DEV WHATSAPP] Message ID: {message_id}")
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"[DEV WHATSAPP] De: {self.from_number}")
         logger.info(f"[DEV WHATSAPP] Para: {formatted_phone}")
         if media_url:

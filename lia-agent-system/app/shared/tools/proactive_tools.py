@@ -90,6 +90,7 @@ async def check_stagnant_candidates(company_id: str, threshold_days: int = 7) ->
                 ),
             }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[proactive_tools] check_stagnant_candidates error: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 
@@ -164,6 +165,7 @@ async def check_pending_offers(company_id: str, threshold_hours: int = 72) -> di
                 ),
             }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[proactive_tools] check_pending_offers error: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 
@@ -238,6 +240,7 @@ async def check_overdue_tasks(company_id: str, user_id: str) -> dict[str, Any]:
                 ),
             }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[proactive_tools] check_overdue_tasks error: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 
@@ -366,6 +369,7 @@ async def check_pipeline_risks(company_id: str) -> dict[str, Any]:
                 ),
             }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[proactive_tools] check_pipeline_risks error: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 

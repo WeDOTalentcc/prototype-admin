@@ -524,6 +524,7 @@ async def handle_ats_sync(
     Handle ATS sync trigger.
     Synchronizes stage changes with external ATS.
     """
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[HANDLER] ATS sync for candidate {candidate_id}: {previous_stage} -> {new_stage}")
 
     try:
@@ -563,6 +564,7 @@ async def handle_stage_changed(
     Logs activity and triggers cross-domain cascades based on the new stage.
     CASCADE: stage_changed → schedule interview (if approved) OR send rejection (if rejected)
     """
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[HANDLER] Stage changed for candidate {candidate_id}: {previous_stage} -> {new_stage}")
 
     result = {

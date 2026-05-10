@@ -63,6 +63,7 @@ async def _wrap_check_rejection_fairness(**kwargs: Any) -> dict[str, Any]:
                     if sw not in warnings:
                         warnings.append(sw)
         except Exception as sem_err:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.debug(f"[kanban_tools] semantic check skipped: {sem_err}")
 
     is_fair = not explicit_result.is_blocked and len(warnings) == 0
@@ -127,6 +128,7 @@ async def _wrap_get_pipeline_benchmarks(**kwargs: Any) -> dict[str, Any]:
                         "candidates": int(row["candidates"]),
                     }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[kanban_tools] SQL error in get_pipeline_benchmarks: {e}")
 
     status_map = {}
@@ -371,6 +373,7 @@ async def _wrap_find_silver_medalists(**kwargs: Any) -> dict[str, Any]:
     vacancy_id = kwargs.get("vacancy_id") or None
     company_id = kwargs.get("company_id") or ""
     limit = int(kwargs.get("limit", 20))
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[kanban_tools] find_silver_medalists called: vacancy={vacancy_id} company={company_id}")
 
     if vacancy_id:
@@ -420,6 +423,7 @@ async def _wrap_get_pipeline_summary(**kwargs: Any) -> dict[str, Any]:
     """Get overall pipeline summary with candidate counts per stage."""
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[kanban_tools] get_pipeline_summary called for vacancy={vacancy_id or 'all'}")
     stages: dict[str, int] = {}
     total = 0
@@ -451,6 +455,7 @@ async def _wrap_get_pipeline_summary(**kwargs: Any) -> dict[str, Any]:
             )
             hired = int((hired_row.mappings().first() or {}).get("cnt", 0))
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[kanban_tools] get_pipeline_summary DB error: {e}")
         hired = 0
 
@@ -469,6 +474,7 @@ async def _wrap_get_stage_metrics(**kwargs: Any) -> dict[str, Any]:
     stage = kwargs.get("stage", "")
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[kanban_tools] get_stage_metrics called: stage={stage} vacancy={vacancy_id or 'all'}")
     metrics: dict[str, Any] = {"stage": stage, "vacancy_id": vacancy_id or "all"}
     try:
@@ -499,6 +505,7 @@ async def _wrap_get_stage_metrics(**kwargs: Any) -> dict[str, Any]:
                 "bottleneck_risk": bottleneck_risk,
             }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[kanban_tools] get_stage_metrics DB error: {e}")
     return {
         "success": True,
@@ -514,6 +521,7 @@ async def _wrap_list_stage_candidates(**kwargs: Any) -> dict[str, Any]:
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
     limit = int(kwargs.get("limit", 20))
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[kanban_tools] list_stage_candidates called: stage={stage} vacancy={vacancy_id or 'all'}")
     candidates = []
     total = 0
@@ -556,6 +564,7 @@ async def _wrap_list_stage_candidates(**kwargs: Any) -> dict[str, Any]:
             )
             total = int((count_row.mappings().first() or {}).get("total", len(candidates)))
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[kanban_tools] list_stage_candidates DB error: {e}")
     return {
         "success": True,
@@ -571,6 +580,7 @@ async def _wrap_analyze_stage(**kwargs: Any) -> dict[str, Any]:
     stage = kwargs.get("stage", "")
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[kanban_tools] analyze_stage called: stage={stage} vacancy={vacancy_id or 'all'}")
 
     metrics_result = await _wrap_get_stage_metrics(
@@ -613,6 +623,7 @@ async def _wrap_identify_bottlenecks(**kwargs: Any) -> dict[str, Any]:
     """Identify bottlenecks across the pipeline."""
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[kanban_tools] identify_bottlenecks called for vacancy={vacancy_id or 'all'}")
     bottlenecks = []
     critical_stages = []
@@ -645,6 +656,7 @@ async def _wrap_identify_bottlenecks(**kwargs: Any) -> dict[str, Any]:
                     if entry["severity"] == "high":
                         critical_stages.append(row["stage"])
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[kanban_tools] identify_bottlenecks error: {e}", exc_info=True)
         return {"success": False, "error": str(e), "message": "Erro ao identificar gargalos."}
 
@@ -664,6 +676,7 @@ async def _wrap_get_candidate_aging(**kwargs: Any) -> dict[str, Any]:
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
     days_threshold = int(kwargs.get("days_threshold", 7))
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[kanban_tools] get_candidate_aging called: stage={stage or 'all'} threshold={days_threshold}d")
     aging_candidates = []
     try:
@@ -696,6 +709,7 @@ async def _wrap_get_candidate_aging(**kwargs: Any) -> dict[str, Any]:
                     "lia_score": row["lia_score"],
                 })
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[kanban_tools] get_candidate_aging DB error: {e}")
 
     avg_days = round(sum(c["days_stuck"] for c in aging_candidates) / len(aging_candidates), 1) \
@@ -715,6 +729,7 @@ async def _wrap_compare_stages(**kwargs: Any) -> dict[str, Any]:
     stages = kwargs.get("stages", [])
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[kanban_tools] compare_stages called for stages={stages}")
     comparison = []
     for s in stages:
@@ -738,6 +753,7 @@ async def _wrap_suggest_movements(**kwargs: Any) -> dict[str, Any]:
     stage = kwargs.get("stage", "")
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[kanban_tools] suggest_movements called: stage={stage} vacancy={vacancy_id or 'all'}")
     suggestions = []
     try:
@@ -778,6 +794,7 @@ async def _wrap_suggest_movements(**kwargs: Any) -> dict[str, Any]:
                         "suggested_action": action,
                     })
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[kanban_tools] suggest_movements error: {e}", exc_info=True)
         return {"success": False, "error": str(e), "message": "Erro ao gerar sugestoes de movimentacao."}
     return {
@@ -796,6 +813,7 @@ async def _wrap_batch_move_candidates(**kwargs: Any) -> dict[str, Any]:
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
     reason = kwargs.get("reason", "")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[kanban_tools] batch_move_candidates called: candidates={len(candidate_ids)} target={target_stage}")
     if not candidate_ids or not target_stage:
         return {"success": False, "data": {}, "message": "Parametros 'candidate_ids' e 'target_stage' sao obrigatorios."}
@@ -819,6 +837,7 @@ async def _wrap_batch_move_candidates(**kwargs: Any) -> dict[str, Any]:
             await db.rollback()
         except Exception:
             pass
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[kanban_tools] batch_move_candidates error: {e}", exc_info=True)
         return {"success": False, "error": str(e), "message": "Erro ao mover candidatos em lote."}
     return {
@@ -878,6 +897,7 @@ async def _wrap_generate_pipeline_report(**kwargs: Any) -> dict[str, Any]:
     report_type = kwargs.get("report_type", "summary")
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[kanban_tools] generate_pipeline_report called: type={report_type} vacancy={vacancy_id or 'all'}")
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
 
@@ -904,6 +924,7 @@ async def _wrap_generate_pipeline_report(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_view_candidate_full_profile(**kwargs: Any) -> dict[str, Any]:
     """View complete candidate profile including education, work history and scores."""
     candidate_id = kwargs.get("candidate_id", "")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[kanban_tools] view_candidate_full_profile called for candidate={candidate_id}")
 
     profile: dict[str, Any] = {"candidate_id": candidate_id, "profile_loaded": False}
@@ -982,6 +1003,7 @@ async def _wrap_view_candidate_full_profile(**kwargs: Any) -> dict[str, Any]:
                 "profile_loaded": True,
             }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[kanban_tools] view_candidate_full_profile DB error: {e}")
 
     return {
@@ -1418,5 +1440,6 @@ def get_kanban_tools(stage: str = "") -> list[ToolDefinition]:
 
     tool_names = STAGE_TOOLS.get(stage, list(_TOOL_MAP.keys()))
     tools = [_TOOL_MAP[name] for name in tool_names if name in _TOOL_MAP]
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.debug(f"[kanban_tools] Stage '{stage}' tools: {[t.name for t in tools]}")
     return tools

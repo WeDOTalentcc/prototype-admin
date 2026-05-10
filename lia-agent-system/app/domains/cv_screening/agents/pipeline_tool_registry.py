@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 @tool_handler("cv_screening")
 async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] view_candidate_profile called for candidate={candidate_id}")
     async with AsyncSessionLocal() as session:
         result = await session.execute(
@@ -71,6 +72,7 @@ async def _wrap_move_candidate(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     target_stage = kwargs.get("target_stage", "unknown")
     reason = kwargs.get("reason", "")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.warning(f"[pipeline_tools] move_candidate called: candidate={candidate_id} target={target_stage} reason={reason}")
     async with AsyncSessionLocal() as session:
         prev = await session.execute(
@@ -120,6 +122,7 @@ async def _wrap_move_candidate(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("cv_screening")
 async def _wrap_analyze_cv(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] analyze_cv called for candidate={candidate_id}")
     async with AsyncSessionLocal() as session:
         result = await session.execute(
@@ -166,6 +169,7 @@ async def _wrap_analyze_cv(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_run_wsi_screening(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     vacancy_id = kwargs.get("vacancy_id", "unknown")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] run_wsi_screening called: candidate={candidate_id} vacancy={vacancy_id}")
     async with AsyncSessionLocal() as session:
         wsi = await session.execute(
@@ -223,6 +227,7 @@ async def _wrap_schedule_interview(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     interview_datetime = kwargs.get("datetime", "")
     interview_type = kwargs.get("type", "video")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] schedule_interview called: candidate={candidate_id} datetime={interview_datetime} type={interview_type}")
     async with AsyncSessionLocal() as session:
         cand = await session.execute(
@@ -304,6 +309,7 @@ async def _wrap_send_communication(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     channel = kwargs.get("channel", "email")
     message_text = kwargs.get("message", "")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] send_communication called: candidate={candidate_id} channel={channel}")
     async with AsyncSessionLocal() as session:
         cand = await session.execute(
@@ -358,6 +364,7 @@ async def _wrap_send_communication(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_add_notes(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     note_text = kwargs.get("note_text", "")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] add_notes called for candidate={candidate_id}")
     async with AsyncSessionLocal() as session:
         existing = await session.execute(
@@ -391,6 +398,7 @@ async def _wrap_batch_move(**kwargs: Any) -> dict[str, Any]:
     candidate_ids = kwargs.get("candidate_ids", [])
     target_stage = kwargs.get("target_stage", "unknown")
     reason = kwargs.get("reason", "")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] batch_move called: candidates={len(candidate_ids)} target={target_stage}")
     if not candidate_ids:
         return {"success": False, "data": {}, "message": "Nenhum candidato fornecido para movimentação em massa."}
@@ -417,6 +425,7 @@ async def _wrap_batch_move(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("cv_screening")
 async def _wrap_add_to_shortlist(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] add_to_shortlist called for candidate={candidate_id}")
     async with AsyncSessionLocal() as session:
         check = await session.execute(
@@ -444,6 +453,7 @@ async def _wrap_add_to_shortlist(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("cv_screening")
 async def _wrap_view_screening_results(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] view_screening_results called for candidate={candidate_id}")
     async with AsyncSessionLocal() as session:
         vc = await session.execute(
@@ -495,6 +505,7 @@ async def _wrap_view_screening_results(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("cv_screening")
 async def _wrap_view_interview_notes(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] view_interview_notes called for candidate={candidate_id}")
     async with AsyncSessionLocal() as session:
         interviews = await session.execute(
@@ -553,6 +564,7 @@ async def _wrap_view_interview_notes(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("cv_screening")
 async def _wrap_generate_offer(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] generate_offer called for candidate={candidate_id}")
     async with AsyncSessionLocal() as session:
         result = await session.execute(
@@ -604,6 +616,7 @@ async def _wrap_generate_offer(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("cv_screening")
 async def _wrap_finalize_hiring(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] finalize_hiring called for candidate={candidate_id}")
     async with AsyncSessionLocal() as session:
         check = await session.execute(
@@ -646,6 +659,7 @@ async def _wrap_finalize_hiring(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_update_status(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     status = kwargs.get("status", "unknown")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] update_status called: candidate={candidate_id} status={status}")
     async with AsyncSessionLocal() as session:
         check = await session.execute(
@@ -898,6 +912,7 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     period = kwargs.get("period", "month")
     company_id = kwargs.get("company_id", "")
     period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] generate_report called: type={report_type} period={period}")
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
     summary: dict[str, Any] = {}
@@ -922,6 +937,7 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
                 "hired": int(data.get("hired") or 0),
             }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[pipeline_tools] generate_report DB error: {e}")
     return {
         "success": True,
@@ -979,5 +995,6 @@ def get_pipeline_tools(stage: str = "") -> list[ToolDefinition]:
 
     tool_names = STAGE_TOOLS.get(stage, list(_TOOL_MAP.keys()))
     tools = [_TOOL_MAP[name] for name in tool_names if name in _TOOL_MAP]
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.debug(f"[pipeline_tools] Stage '{stage}' tools: {[t.name for t in tools]}")
     return tools

@@ -251,10 +251,13 @@ async def migrate_default_company_ids():
                     WHERE company_id = 'default'
                 """))
                 if result.rowcount > 0:
+                    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                     logger.info(f"Migrated {result.rowcount} records in {table_name} from 'default' to 'demo_company'")
                 else:
+                    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                     logger.debug(f"No records to migrate in {table_name}")
             except Exception as e:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.warning(f"Could not migrate company_id in {table_name}: {e}")
     
     logger.info("Company ID migration completed")

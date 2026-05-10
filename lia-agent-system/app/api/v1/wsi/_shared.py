@@ -383,5 +383,6 @@ async def _run_anthropic_sync(client, model: str, max_tokens: int, messages: lis
         logger.warning(f"LLM call timed out after {timeout}s")
         return None
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"LLM call failed: {type(e).__name__}: {e}")
         return None

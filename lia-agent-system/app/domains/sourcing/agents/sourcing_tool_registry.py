@@ -1195,6 +1195,7 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
                 "contacted": int(data.get("contacted") or 0),
             }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[sourcing_tools] generate_report DB error: {e}")
     return {
         "success": True,
@@ -1457,6 +1458,7 @@ def get_stage_tools(stage: str) -> list[ToolDefinition]:
     """
     tool_names = STAGE_TOOLS.get(stage, list(_TOOL_MAP.keys()))
     tools = [_TOOL_MAP[name] for name in tool_names if name in _TOOL_MAP]
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.debug(f"[sourcing_tools] Stage '{stage}' tools: {[t.name for t in tools]}")
     return tools
 

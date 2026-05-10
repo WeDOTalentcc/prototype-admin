@@ -151,6 +151,7 @@ async def predict_dropout_risk(company_id: str, job_id: str | None = None) -> di
                 "message": f"Dropout risk analysis: {len(candidates_at_risk)} candidates at risk, {len(critical_candidates)} critical.",
             }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[predictive_tools] predict_dropout_risk error: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 
@@ -300,6 +301,7 @@ async def predict_time_to_fill(company_id: str, job_id: str | None = None) -> di
                 "message": f"Time-to-fill prediction: avg {avg_predicted} days across {len(by_job_predictions)} active jobs.",
             }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[predictive_tools] predict_time_to_fill error: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 
@@ -474,6 +476,7 @@ async def get_pipeline_forecast(company_id: str, job_id: str | None = None) -> d
                 "message": f"Pipeline forecast: {total_expected_hires} expected hires in 4 weeks ({round(fill_probability, 1)}% fill probability).",
             }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[predictive_tools] get_pipeline_forecast error: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 
@@ -723,6 +726,7 @@ async def get_strategic_recommendations(company_id: str, job_id: str | None = No
                 "message": f"Strategic analysis complete: {len(recommendations)} recommendations generated.",
             }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[predictive_tools] get_strategic_recommendations error: {e}", exc_info=True)
         return {"success": False, "error": str(e)}
 

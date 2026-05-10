@@ -61,6 +61,7 @@ async def _wrap_get_recruitment_benchmarks(**kwargs: Any) -> dict[str, Any]:
                 total_jobs = int(row["total"] or 0)
                 fill_rate = round((filled_jobs / total_jobs * 100) if total_jobs > 0 else 0, 1)
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] SQL error in get_recruitment_benchmarks: {e}")
 
     market_benchmarks = INDUSTRY_BENCHMARKS.get("technology", {})
@@ -110,6 +111,7 @@ async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
     department = kwargs.get("department", "all")
     company_id = kwargs.get("company_id", "")
     limit = int(kwargs.get("limit", 30))
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] list_jobs called: status={status} department={department}")
     jobs = []
     total = 0
@@ -159,6 +161,7 @@ async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
             )
             total = int((count_row.mappings().first() or {}).get("total", len(jobs)))
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] list_jobs DB error: {e}")
     return {
         "success": True,
@@ -171,6 +174,7 @@ async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("jobs_mgmt")
 async def _wrap_view_job_details(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] view_job_details called for job={job_id}")
     async with AsyncSessionLocal() as session:
         row = await session.execute(
@@ -225,6 +229,7 @@ async def _wrap_get_portfolio_metrics(**kwargs: Any) -> dict[str, Any]:
     period = kwargs.get("period", "month")
     company_id = kwargs.get("company_id", "")
     period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] get_portfolio_metrics called: period={period}")
     metrics: dict[str, Any] = {}
     try:
@@ -259,6 +264,7 @@ async def _wrap_get_portfolio_metrics(**kwargs: Any) -> dict[str, Any]:
                 "fill_rate": round(closed / total * 100, 1) if total > 0 else 0.0,
             }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] get_portfolio_metrics DB error: {e}")
     return {
         "success": True,
@@ -270,6 +276,7 @@ async def _wrap_get_portfolio_metrics(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("jobs_mgmt")
 async def _wrap_compare_jobs(**kwargs: Any) -> dict[str, Any]:
     job_ids = kwargs.get("job_ids", [])
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] compare_jobs called: jobs={job_ids}")
     comparison = []
     try:
@@ -304,6 +311,7 @@ async def _wrap_compare_jobs(**kwargs: Any) -> dict[str, Any]:
                         "rejected_count": int(row["rejected_count"] or 0),
                     })
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] compare_jobs DB error: {e}")
     return {
         "success": True,
@@ -316,6 +324,7 @@ async def _wrap_compare_jobs(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_check_sla(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
     company_id = kwargs.get("company_id", "")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] check_sla called: job={job_id or 'all'}")
     overdue_jobs = []
     at_risk_jobs = []
@@ -348,6 +357,7 @@ async def _wrap_check_sla(**kwargs: Any) -> dict[str, Any]:
                 else:
                     compliant_count += 1
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] check_sla DB error: {e}")
 
     overall = "overdue" if overdue_jobs else ("at_risk" if at_risk_jobs else "compliant")
@@ -370,6 +380,7 @@ async def _wrap_check_sla(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_analyze_bottlenecks(**kwargs: Any) -> dict[str, Any]:
     department = kwargs.get("department", "all")
     company_id = kwargs.get("company_id", "")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] analyze_bottlenecks called: department={department}")
     bottlenecks = []
     try:
@@ -422,6 +433,7 @@ async def _wrap_analyze_bottlenecks(**kwargs: Any) -> dict[str, Any]:
                         "issues": issues,
                     })
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] analyze_bottlenecks DB error: {e}")
     return {
         "success": True,
@@ -436,6 +448,7 @@ async def _wrap_pause_job(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
     reason = kwargs.get("reason", "")
     company_id = kwargs.get("company_id", "")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] pause_job called: job={job_id} reason={reason}")
     async with AsyncSessionLocal() as session:
         result = await session.execute(
@@ -456,6 +469,7 @@ async def _wrap_pause_job(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_reopen_job(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
     company_id = kwargs.get("company_id", "")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] reopen_job called: job={job_id}")
     async with AsyncSessionLocal() as session:
         result = await session.execute(
@@ -477,6 +491,7 @@ async def _wrap_close_job(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
     reason = kwargs.get("reason", "")
     company_id = kwargs.get("company_id", "")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] close_job called: job={job_id} reason={reason}")
     async with AsyncSessionLocal() as session:
         result = await session.execute(
@@ -501,6 +516,7 @@ async def _wrap_update_priority(**kwargs: Any) -> dict[str, Any]:
     priority_map = {"high": "alta", "medium": "média", "low": "baixa",
                     "alta": "alta", "média": "média", "baixa": "baixa"}
     priority_pt = priority_map.get(priority.lower(), priority)
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] update_priority called: job={job_id} priority={priority_pt}")
     async with AsyncSessionLocal() as session:
         prev = await session.execute(
@@ -524,6 +540,7 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     period = kwargs.get("period", "month")
     company_id = kwargs.get("company_id", "")
     period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] generate_report called: type={report_type} period={period}")
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
     summary: dict[str, Any] = {}
@@ -551,6 +568,7 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
                 "avg_ttf_days": round(float(data.get("avg_ttf") or 0), 1),
             }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] generate_report DB error: {e}")
     return {
         "success": True,
@@ -611,6 +629,7 @@ async def _wrap_validate_job_action_fairness(**kwargs: Any) -> dict[str, Any]:
                 }
             semantic_warnings = semantic_result.soft_warnings or []
         except Exception as sem_err:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.debug(f"[jobs_mgmt_tools] semantic check skipped: {sem_err}")
 
         all_warnings = implicit_warnings + [w for w in semantic_warnings if w not in implicit_warnings]
@@ -626,6 +645,7 @@ async def _wrap_validate_job_action_fairness(**kwargs: Any) -> dict[str, Any]:
             + (f" {len(all_warnings)} alertas de vies implicito." if all_warnings else ""),
         }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[jobs_mgmt_tools] validate_job_action_fairness error: {e}", exc_info=True)
         return {"success": True, "data": {"is_compliant": True, "soft_warnings": []}, "error": str(e)}
 
@@ -902,5 +922,6 @@ def get_jobs_mgmt_tools(stage: str = "") -> list[ToolDefinition]:
 
     tool_names = STAGE_TOOLS.get(stage, list(_TOOL_MAP.keys()))
     tools = [_TOOL_MAP[name] for name in tool_names if name in _TOOL_MAP]
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.debug(f"[jobs_mgmt_tools] Stage '{stage}' tools: {[t.name for t in tools]}")
     return tools

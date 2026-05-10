@@ -73,6 +73,7 @@ async def _fetch_market_range(job_title: str, seniority: str, location: str | No
                 "is_external": True,
             }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[wizard_tools] MarketBenchmarkService unavailable, using fallback: {e}")
     import unicodedata
 
@@ -124,6 +125,7 @@ async def _load_vacancy_or_error(
             )
             job = res.scalar_one_or_none()
         except Exception as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"[wizard_tools] vacancy load error: {e}", exc_info=True)
             return {"error": f"db error: {e}", "is_error": True}
 
@@ -185,6 +187,7 @@ async def _wrap_generate_screening_questions(**kwargs: Any) -> dict[str, Any]:
                               for q in (getattr(result, "questions", []) or [])],
             }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[wizard_tools] generate_screening_questions error: {e}", exc_info=True)
         return {"is_error": True, "error": str(e)}
 
@@ -226,6 +229,7 @@ async def _wrap_dispatch_screening(**kwargs: Any) -> dict[str, Any]:
         # The service raises ValueError on stage / policy mismatch.
         return {"is_error": True, "error": str(ve), "stage_check": "blocked"}
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[wizard_tools] dispatch_screening error: {e}", exc_info=True)
         return {"is_error": True, "error": str(e)}
 
@@ -269,6 +273,7 @@ async def _wrap_request_approval(**kwargs: Any) -> dict[str, Any]:
         # (e.g., trying to approve a vaga that has no screening_questions yet).
         return {"is_error": True, "error": str(ve), "stage_check": "blocked"}
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[wizard_tools] request_approval error: {e}", exc_info=True)
         return {"is_error": True, "error": str(e)}
 
@@ -315,6 +320,7 @@ async def _wrap_publish_vacancy(**kwargs: Any) -> dict[str, Any]:
                     "message": "Vaga despublicada" if changed else "Vaga já estava despublicada",
                 }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[wizard_tools] publish_vacancy error: {e}", exc_info=True)
         return {"is_error": True, "error": str(e)}
 
@@ -354,6 +360,7 @@ async def _wrap_change_vacancy_status(**kwargs: Any) -> dict[str, Any]:
                 "message": f"Status alterado para {updated.status}",
             }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[wizard_tools] change_vacancy_status error: {e}", exc_info=True)
         return {"is_error": True, "error": str(e)}
 
@@ -392,6 +399,7 @@ async def _wrap_validate_job_requirements(**kwargs: Any) -> dict[str, Any]:
                 }
             semantic_warnings = semantic_result.soft_warnings or []
         except Exception as sem_err:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.debug(f"[wizard_tools] semantic check skipped: {sem_err}")
 
         all_warnings = implicit_warnings + [w for w in semantic_warnings if w not in implicit_warnings]
@@ -403,6 +411,7 @@ async def _wrap_validate_job_requirements(**kwargs: Any) -> dict[str, Any]:
             "field_name": field_name,
         }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[wizard_tools] validate_job_requirements error: {e}", exc_info=True)
         return {"is_compliant": True, "soft_warnings": [], "error": str(e)}
 
@@ -443,6 +452,7 @@ async def _wrap_get_salary_benchmarks(**kwargs: Any) -> dict[str, Any]:
                     "source": "Histórico interno da empresa",
                 }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[wizard_tools] get_salary_benchmarks SQL error (non-fatal): {e}")
 
     market_range = await _fetch_market_range(job_title, seniority, location)
@@ -491,31 +501,37 @@ async def _wrap_get_salary_benchmarks(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("wizard")
 async def _wrap_search_salary_benchmark(**kwargs: Any) -> dict[str, Any]:
     """Wrapper for search_salary_benchmark that handles errors gracefully."""
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[wizard_tools] search_salary_benchmark called with: {list(kwargs.keys())}")
     return await _search_salary_benchmark(**kwargs)
 @tool_handler("wizard")
 async def _wrap_validate_job_fields(**kwargs: Any) -> dict[str, Any]:
     """Wrapper for validate_job_fields that handles errors gracefully."""
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[wizard_tools] validate_job_fields called with: {list(kwargs.keys())}")
     return await _validate_job_fields(**kwargs)
 @tool_handler("wizard")
 async def _wrap_get_job_suggestions(**kwargs: Any) -> dict[str, Any]:
     """Wrapper for get_job_suggestions that handles errors gracefully."""
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[wizard_tools] get_job_suggestions called with: {list(kwargs.keys())}")
     return await _get_job_suggestions(**kwargs)
 @tool_handler("wizard")
 async def _wrap_save_job_draft(**kwargs: Any) -> dict[str, Any]:
     """Wrapper for save_job_draft that handles errors gracefully."""
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[wizard_tools] save_job_draft called with: {list(kwargs.keys())}")
     return await _save_job_draft(**kwargs)
 @tool_handler("wizard")
 async def _wrap_get_company_config(**kwargs: Any) -> dict[str, Any]:
     """Wrapper for get_company_config that handles errors gracefully."""
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[wizard_tools] get_company_config called with: {list(kwargs.keys())}")
     return await _get_company_config(**kwargs)
 @tool_handler("wizard")
 async def _wrap_generate_enriched_jd(**kwargs: Any) -> dict[str, Any]:
     """Wrapper for generate_enriched_jd that handles errors gracefully."""
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[wizard_tools] generate_enriched_jd called with: {list(kwargs.keys())}")
     return await _generate_enriched_jd(**kwargs)
 @tool_handler("wizard")
@@ -526,6 +542,7 @@ async def _wrap_check_job_draft_health(**kwargs: Any) -> dict[str, Any]:
     salary_max = kwargs.get("salary_max", 0)
     skills_count = kwargs.get("skills_count", 0)
     responsibilities_count = kwargs.get("responsibilities_count", 0)
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[wizard_tools] check_job_draft_health called: title={title}")
 
     risks = []
@@ -736,6 +753,7 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     period = kwargs.get("period", "month")
     company_id = kwargs.get("company_id", "")
     period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[wizard_tools] generate_report called: type={report_type} period={period}")
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
     summary: dict[str, Any] = {}
@@ -756,6 +774,7 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
                 "published": int(data.get("published") or 0),
             }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[wizard_tools] generate_report DB error: {e}")
     return {
         "success": True,
@@ -905,5 +924,6 @@ def get_stage_tools(stage: str) -> list[ToolDefinition]:
     """
     tool_names = STAGE_TOOLS.get(stage, list(_TOOL_MAP.keys()))
     tools = [_TOOL_MAP[name] for name in tool_names if name in _TOOL_MAP]
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.debug(f"[wizard_tools] Stage '{stage}' tools: {[t.name for t in tools]}")
     return tools

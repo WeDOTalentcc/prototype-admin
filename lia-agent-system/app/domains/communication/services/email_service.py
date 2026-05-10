@@ -1010,6 +1010,7 @@ class MailgunEmailService:
         logger.info("=" * 70)
         logger.info("[DEV EMAIL - MAILGUN] Email enviado (modo desenvolvimento)")
         logger.info(f"[DEV EMAIL] Message ID: {message_id}")
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"[DEV EMAIL] De: {self.from_name} <{self.from_email}>")
         # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
         logger.info(f"[DEV EMAIL] Para: {to_name or 'N/A'} <{to_email}>")

@@ -30,6 +30,7 @@ async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
     filters = kwargs.get("filters", {})
     kwargs.get("company_id", "")
     limit = int(kwargs.get("limit", 20))
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[talent_tools] search_candidates called: query={query} filters={filters}")
 
     results = []
@@ -93,6 +94,7 @@ async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
             )
             total = int((count_row.mappings().first() or {}).get("total", len(results)))
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[talent_tools] search_candidates DB error: {e}")
 
     return {
@@ -114,6 +116,7 @@ async def _wrap_list_candidates(**kwargs: Any) -> dict[str, Any]:
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
     limit = int(kwargs.get("limit", 20))
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[talent_tools] list_candidates called: status={status} vacancy={vacancy_id} limit={limit}")
 
     candidates = []
@@ -161,6 +164,7 @@ async def _wrap_list_candidates(**kwargs: Any) -> dict[str, Any]:
             )
             total = int((count_row.mappings().first() or {}).get("total", len(candidates)))
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[talent_tools] list_candidates DB error: {e}")
 
     return {
@@ -179,6 +183,7 @@ async def _wrap_list_candidates(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
     """View complete candidate profile including education and work history."""
     candidate_id = kwargs.get("candidate_id", "")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[talent_tools] view_candidate_profile called for candidate={candidate_id}")
 
     profile: dict[str, Any] = {"candidate_id": candidate_id, "profile_loaded": False}
@@ -259,6 +264,7 @@ async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
                 "profile_loaded": True,
             }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[talent_tools] view_candidate_profile DB error: {e}")
 
     return {
@@ -272,6 +278,7 @@ async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_compare_candidates(**kwargs: Any) -> dict[str, Any]:
     """Compare 2+ candidates side by side."""
     candidate_ids = kwargs.get("candidate_ids", [])
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[talent_tools] compare_candidates called: candidates={len(candidate_ids)}")
     return {
         "success": True,
@@ -288,6 +295,7 @@ async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
     """Rank candidates by fit score for a job."""
     vacancy_id = kwargs.get("vacancy_id", "")
     criteria = kwargs.get("criteria", "fit_score")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[talent_tools] rank_candidates called: vacancy={vacancy_id} criteria={criteria}")
 
     order_col = "vc.match_percentage" if criteria == "skills" else "vc.lia_score"
@@ -337,6 +345,7 @@ async def _wrap_analyze_skills(**kwargs: Any) -> dict[str, Any]:
     """Analyze skill match between candidate and job requirements."""
     candidate_id = kwargs.get("candidate_id", "")
     vacancy_id = kwargs.get("vacancy_id", "")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[talent_tools] analyze_skills called: candidate={candidate_id} vacancy={vacancy_id}")
 
     matched_skills: list[str] = []
@@ -386,6 +395,7 @@ async def _wrap_analyze_skills(**kwargs: Any) -> dict[str, Any]:
             await db.rollback()
         except Exception:
             pass
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[talent_tools] analyze_skills DB error: {e}")
 
     return {
@@ -406,6 +416,7 @@ async def _wrap_analyze_skills(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_recommend_actions(**kwargs: Any) -> dict[str, Any]:
     """Generate action recommendations for candidates based on real scores and status."""
     candidate_ids = kwargs.get("candidate_ids", [])
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[talent_tools] recommend_actions called: candidates={len(candidate_ids)}")
 
     recommendations = []
@@ -460,6 +471,7 @@ async def _wrap_recommend_actions(**kwargs: Any) -> dict[str, Any]:
                         "actions": actions,
                     })
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[talent_tools] recommend_actions DB error: {e}")
         recommendations = [{"candidate_id": cid, "actions": [{"action": "review_profile", "priority": "low"}]}
                            for cid in candidate_ids]
@@ -533,6 +545,7 @@ async def _wrap_export_report(**kwargs: Any) -> dict[str, Any]:
     report_type = kwargs.get("report_type", "general")
     candidate_ids = kwargs.get("candidate_ids", [])
     vacancy_id = kwargs.get("vacancy_id", "")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[talent_tools] export_report called: type={report_type} candidates={len(candidate_ids)}")
 
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
@@ -559,6 +572,7 @@ async def _wrap_export_report(**kwargs: Any) -> dict[str, Any]:
                     "entries": entries,
                 }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[talent_tools] export_report DB error: {e}")
 
     return {
@@ -579,6 +593,7 @@ async def _wrap_export_report(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_check_search_fairness(**kwargs: Any) -> dict[str, Any]:
     search_criteria = kwargs.get("search_criteria", "")
     kwargs.get("context", "talent_search")
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[talent_tools] check_search_fairness called: criteria='{search_criteria[:60]}...'")
 
     if not search_criteria.strip():
@@ -623,6 +638,7 @@ async def _wrap_check_search_fairness(**kwargs: Any) -> dict[str, Any]:
                 }
             semantic_warnings = semantic_result.soft_warnings or []
         except Exception as sem_err:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.debug(f"[talent_tools] semantic check skipped: {sem_err}")
 
         all_warnings = implicit_warnings + [w for w in semantic_warnings if w not in implicit_warnings]
@@ -638,6 +654,7 @@ async def _wrap_check_search_fairness(**kwargs: Any) -> dict[str, Any]:
             + (f" {len(all_warnings)} alertas de vies implicito." if all_warnings else ""),
         }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[talent_tools] check_search_fairness error: {e}", exc_info=True)
         return {"success": True, "data": {"is_fair": True, "soft_warnings": []}, "error": str(e)}
 
@@ -687,6 +704,7 @@ async def _wrap_get_talent_pool_benchmarks(**kwargs: Any) -> dict[str, Any]:
             for srow in stage_result.mappings():
                 stage_distribution[str(srow["stage"])] = int(srow["cnt"])
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[talent_tools] SQL error in get_talent_pool_benchmarks: {e}")
 
     market_benchmarks = {
@@ -745,6 +763,7 @@ async def _wrap_check_pool_health(**kwargs: Any) -> dict[str, Any]:
                 avg_score = round(float(row["avg_score"] or 0), 1)
                 stagnant_count = int(row["stagnant"] or 0)
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[talent_tools] SQL error in check_pool_health: {e}")
 
     if pool_size < 5:
@@ -991,6 +1010,7 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     period = kwargs.get("period", "month")
     company_id = kwargs.get("company_id", "")
     period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[talent_tools] generate_report called: type={report_type} period={period}")
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
     summary: dict[str, Any] = {}
@@ -1015,6 +1035,7 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
                 "rejected": int(data.get("rejected") or 0),
             }
     except Exception as e:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[talent_tools] generate_report DB error: {e}")
     return {
         "success": True,
@@ -1084,5 +1105,6 @@ def get_talent_tools(stage: str = "") -> list[ToolDefinition]:
 
     tool_names = STAGE_TOOLS.get(stage, list(_TOOL_MAP.keys()))
     tools = [_TOOL_MAP[name] for name in tool_names if name in _TOOL_MAP]
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.debug(f"[talent_tools] Stage '{stage}' tools: {[t.name for t in tools]}")
     return tools

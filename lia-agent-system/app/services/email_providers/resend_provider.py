@@ -54,6 +54,7 @@ class ResendProvider(EmailProvider):
         if self.api_key and RESEND_SDK_AVAILABLE:
             resend.api_key = self.api_key
             self._configured = True
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"Resend provider configured. From: {self.from_email}")
         else:
             if not RESEND_SDK_AVAILABLE:

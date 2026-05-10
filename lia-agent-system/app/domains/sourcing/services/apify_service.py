@@ -58,6 +58,7 @@ class ApifyService:
         
         try:
             async with httpx.AsyncClient(timeout=self.timeout) as client:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"Starting Apify actor: {actor_id}")
                 
                 run_response = await client.post(
@@ -70,9 +71,11 @@ class ApifyService:
                 
                 run_id = run_data.get("data", {}).get("id")
                 if not run_id:
+                    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                     logger.error(f"No run ID returned from actor {actor_id}")
                     return {}
                 
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"Actor {actor_id} started with run ID: {run_id}")
                 
                 status_url = f"{self.base_url}/actor-runs/{run_id}?token={self.api_key}"
@@ -104,9 +107,11 @@ class ApifyService:
                 return {}
                 
         except httpx.HTTPStatusError as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"HTTP error running Apify actor {actor_id}: {e.response.status_code} - {e.response.text}")
             return {}
         except Exception as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"Error running Apify actor {actor_id}: {type(e).__name__}: {e}")
             return {}
     

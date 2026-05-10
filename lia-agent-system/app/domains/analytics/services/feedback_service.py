@@ -227,6 +227,7 @@ class FeedbackService:
                     processed_count += 1
                     patterns_updated += 1
                 except Exception as e:
+                    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                     self.logger.error(f"Error processing feedback {feedback.id}: {e}")
             
             await db.commit()

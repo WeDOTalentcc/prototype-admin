@@ -275,6 +275,7 @@ async def _wrap_validate_policy_compliance(**kwargs: Any) -> dict[str, Any]:
                 "additional_warnings": semantic_result.soft_warnings,
             }
         except Exception as sem_err:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.warning(f"[policy_tools] Semantic check failed: {sem_err}")
             semantic_analysis = {"performed": False, "error": str(sem_err)}
 

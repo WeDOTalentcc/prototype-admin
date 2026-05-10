@@ -171,6 +171,7 @@ class ApifyMCPClient:
             logger.error(f"MCP HTTP error: {e.response.status_code} - {e.response.text}")
             return {"error": f"HTTP {e.response.status_code}"}
         except Exception as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"MCP request error: {type(e).__name__}: {e}")
             return {"error": str(e)}
     

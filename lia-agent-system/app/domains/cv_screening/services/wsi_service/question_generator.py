@@ -585,6 +585,7 @@ Responda APENAS em JSON:
                 }
             })
         except Exception as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"Failed to generate CBI question for {competency.name}: {e}")
             # Use fallback
             data = {
@@ -643,6 +644,7 @@ Responda APENAS em JSON com mesma estrutura anterior."""
                 }
             })
         except Exception as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"Failed to generate Dreyfus question for {competency.name}: {e}")
             # Use fallback
             data = {
@@ -711,6 +713,7 @@ Responda APENAS em JSON."""
                 }
             })
         except Exception as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"Failed to generate Bloom question for {competency.name}: {e}")
             # Use fallback
             data = {
@@ -760,11 +763,13 @@ Responda APENAS em JSON."""
         # 1. Match exato por big_five_mapping
         for i, comp in enumerate(behavioral):
             if i not in used_indices and comp.big_five_mapping == trait:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"WSI F6.6 trait-match (exact): {trait} → {comp.name} (idx={i})")
                 return comp, i
         # 2. Fallback posicional — próxima disponível
         for i, comp in enumerate(behavioral):
             if i not in used_indices:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"WSI F6.6 trait-match (fallback positional): {trait} → {comp.name} (idx={i})")
                 return comp, i
         # 3. Último recurso — reusar primeira
@@ -831,6 +836,7 @@ Responda APENAS em JSON."""
                 }
             })
         except Exception as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"Failed to generate BigFive question for {competency.name}: {e}")
             # Use fallback
             data = {

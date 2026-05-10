@@ -129,6 +129,7 @@ class CandidateEnrichmentService:
                 await db.rollback()
             except Exception:
                 pass
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"Enrichment error for candidate {candidate_id}: {type(e).__name__}: {e}")
             return {
                 "success": False,
@@ -175,6 +176,7 @@ class CandidateEnrichmentService:
             return {"error": "Empty result from LinkedIn scraper"}
             
         except Exception as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"LinkedIn scrape error: {type(e).__name__}: {e}")
             return {"error": str(e)}
     

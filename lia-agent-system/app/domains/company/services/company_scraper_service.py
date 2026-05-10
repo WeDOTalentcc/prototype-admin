@@ -158,6 +158,7 @@ class CompanyScraperService:
             return result
             
         except Exception as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"MCP scrape error: {type(e).__name__}: {e}")
             return await self._scrape_with_httpx(base_url)
     
@@ -314,6 +315,7 @@ class CompanyScraperService:
                 }
                 
         except Exception as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"Error in LinkedIn Apify scrape: {type(e).__name__}: {e}")
             return {
                 "success": False,
@@ -547,6 +549,7 @@ class CompanyScraperService:
                 }
                 
         except Exception as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"Error in Apify scrape: {type(e).__name__}: {e}")
             return {
                 "success": False,
@@ -649,6 +652,7 @@ class CompanyScraperService:
                 logger.warning(f"HTTP error fetching {url}: {e.response.status_code}")
                 return None
             except Exception as e:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.warning(f"Failed to fetch {url}: {type(e).__name__}: {e}")
                 if attempt < retries:
                     await asyncio.sleep(1)

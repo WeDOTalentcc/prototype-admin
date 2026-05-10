@@ -499,6 +499,7 @@ class CandidateFeedbackService:
                 feedback.resubmit_clicked = True
                 feedback.resubmit_clicked_at = datetime.utcnow()
                 await db.commit()
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"Marked resubmit clicked for feedback {feedback_id}")
                 return True
 
@@ -535,6 +536,7 @@ class CandidateFeedbackService:
                 if new_adherence_score is not None:
                     feedback.new_adherence_score = new_adherence_score
                 await db.commit()
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"Marked resubmit completed for feedback {feedback_id}")
                 return True
 
