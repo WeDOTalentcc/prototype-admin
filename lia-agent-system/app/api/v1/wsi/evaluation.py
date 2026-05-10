@@ -471,10 +471,13 @@ async def complete_screening(
     classification = classify_wsi_score(avg_score)
 
     archetypes = []
-    o, c, e, a, _n = (
+    # Phase 2.5 boy-scout (A5): use canonical .stability accessor instead
+    # of inverting neuroticism inline. stability = 100 - neuroticism.
+    o, c, e, a, s = (
         avg_big_five.openness, avg_big_five.conscientiousness,
-        avg_big_five.extraversion, avg_big_five.agreeableness, 100 - avg_big_five.neuroticism
+        avg_big_five.extraversion, avg_big_five.agreeableness, avg_big_five.stability,
     )
+    _n = s  # legacy alias kept for any downstream reference
 
     if o >= 70 and e >= 60:
         archetypes.append(ArchetypeIndicator(

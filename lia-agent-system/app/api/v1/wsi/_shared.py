@@ -133,11 +133,37 @@ class GenerateQuestionsResponse(BaseModel):
 
 
 class BigFiveIndicators(BaseModel):
+    """Big Five traits as int 0-100.
+
+    Phase 2.5 boy-scout (A5): the canonical trait taxonomy in this codebase
+    is OPENNESS / CONSCIENTIOUSNESS / EXTRAVERSION / AGREEABLENESS / STABILITY
+    (see ALLOWED_TRAITS in app/domains/job_creation/services/bigfive_service.py:34).
+    The historical `neuroticism` field name (its INVERSE) lives on for
+    backward compatibility with the orphan /wsi/evaluate endpoint and the
+    /big-five/* routes; new code MUST consume `.stability` (the computed
+    inverse) instead. Future cleanup: rename the field after callers
+    migrate.
+    """
     openness: int = Field(ge=0, le=100, description="Curiosity, creativity, openness to new experiences")
     conscientiousness: int = Field(ge=0, le=100, description="Organization, discipline, goal-orientation")
     extraversion: int = Field(ge=0, le=100, description="Sociability, assertiveness, energy")
     agreeableness: int = Field(ge=0, le=100, description="Cooperation, empathy, teamwork")
-    neuroticism: int = Field(ge=0, le=100, description="Emotional stability (inverse: low = stable)")
+    neuroticism: int = Field(
+        ge=0,
+        le=100,
+        description=(
+            "DEPRECATED — use `stability` (the inverse) for new code. "
+            "Kept for backward compat with /wsi/evaluate and /big-five/*. "
+            "stability = 100 - neuroticism."
+        ),
+    )
+
+    @property
+    def stability(self) -> int:
+        """Phase 2.5 canonical alias matching ALLOWED_TRAITS taxonomy
+        (openness / conscientiousness / extraversion / agreeableness /
+        stability). Computed as 100 - neuroticism. New code consumes this."""
+        return 100 - self.neuroticism
 
 
 class AnalyzeResponseRequest(BaseModel):

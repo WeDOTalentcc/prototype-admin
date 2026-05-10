@@ -370,6 +370,102 @@ async def _score_and_decide(request, vacancy, wsi_service):
     return wsi_result, response_analyses, weights, overall_wsi, passed, recommendation, decision, suggested_next_stage
 
 
+async def _persist_lia_opinion_with_ocean(
+    *,
+    db,
+    request,
+    wsi_result,
+    overall_wsi: float,
+    recommendation: str,
+    candidate_feedback,
+) -> None:
+    """Phase 2.5: upsert LiaOpinion(opinion_type='wsi') with the OCEAN
+    snapshot in behavioral_analysis['ocean_traits'].
+
+    The hook _record_bigfive_hire reads this row to drive
+    BigFiveDepartmentService.record_hire when the candidate is later
+    moved to conclusion_hired. Without this persistence step, ocean_traits
+    computed at scoring time would be lost and the learning-loop never
+    accumulates samples.
+
+    Fail-soft: any DB error is logged and swallowed — screening dispatch
+    must never break over a learning-loop write.
+
+    Multi-tenancy: company_id from request.company_id (already validated
+    by validate_multi_tenancy upstream).
+    """
+    try:
+        from sqlalchemy import select as _select
+        from app.models.lia_opinion import LiaOpinion
+        from datetime import datetime as _dt
+
+        ocean_traits = dict(getattr(wsi_result, "ocean_traits", {}) or {})
+        # Existing opinion for (candidate, vacancy, company)?
+        stmt = (
+            _select(LiaOpinion)
+            .where(
+                LiaOpinion.candidate_id == request.candidate_id,
+                LiaOpinion.job_vacancy_id == request.vacancy_id,
+                LiaOpinion.company_id == str(request.company_id),
+                LiaOpinion.is_current.is_(True),
+            )
+            .order_by(LiaOpinion.created_at.desc())
+            .limit(1)
+        )
+        result = await db.execute(stmt)
+        existing = result.scalars().first()
+
+        # Build behavioral_analysis blob (preserve existing keys, layer on
+        # the Phase 2.5 ocean_traits + per-trait WSI breakdown).
+        behavioral_blob: dict = {}
+        if existing is not None:
+            behavioral_blob = dict(existing.behavioral_analysis or {})
+        behavioral_blob["ocean_traits"] = ocean_traits
+        behavioral_blob["wsi_classification"] = wsi_result.classification
+        behavioral_blob["wsi_technical"] = wsi_result.technical_wsi
+        behavioral_blob["wsi_behavioral"] = wsi_result.behavioral_wsi
+        behavioral_blob["recommendation"] = recommendation
+
+        if existing is not None:
+            existing.behavioral_analysis = behavioral_blob
+            existing.wsi_score = float(overall_wsi)
+            existing.recommendation = recommendation
+            existing.source = "text_screening"
+            existing.updated_at = _dt.utcnow()
+        else:
+            opinion = LiaOpinion(
+                candidate_id=request.candidate_id,
+                job_vacancy_id=request.vacancy_id,
+                company_id=str(request.company_id),
+                opinion_type="wsi",
+                source="text_screening",
+                wsi_score=float(overall_wsi),
+                recommendation=recommendation,
+                behavioral_analysis=behavioral_blob,
+                summary=getattr(candidate_feedback, "main_message", None) or None,
+                is_current=True,
+                version=1,
+                created_by="screening_completed",
+            )
+            db.add(opinion)
+
+        try:
+            await db.commit()
+        except Exception:
+            await db.rollback()
+            raise
+        logger.info(
+            "[SCREENING_COMPLETED] LiaOpinion %s with ocean_traits=%s",
+            "updated" if existing is not None else "created",
+            sorted(ocean_traits.keys()),
+        )
+    except Exception as exc:
+        logger.warning(
+            "[SCREENING_COMPLETED] LiaOpinion persist failed (fail-soft): %s",
+            str(exc)[:200],
+        )
+
+
 async def _process_screening_completed(request, db, audit_svc, activity_svc, comm_svc) -> dict:
     """Orchestrate screening_completed trigger: validate, score, notify, audit, respond."""
     logger.info(
@@ -403,6 +499,15 @@ async def _process_screening_completed(request, db, audit_svc, activity_svc, com
     )
     await _log_screening_audit(
         db, audit_svc, request, overall_wsi, wsi_result, recommendation, passed, suggested_next_stage, weights
+    )
+
+    # Phase 2.5: persist LiaOpinion with behavioral_analysis['ocean_traits']
+    # so _hook_conclusion_hired can later read the snapshot and call
+    # BigFiveDepartmentService.record_hire (closes ADR-LGPD-001 data
+    # source). Fail-soft: a missing opinion never breaks screening.
+    await _persist_lia_opinion_with_ocean(
+        db=db, request=request, wsi_result=wsi_result, overall_wsi=overall_wsi,
+        recommendation=recommendation, candidate_feedback=candidate_feedback,
     )
 
     logger.info(f"✅ [SCREENING_COMPLETED] Done: wsi={overall_wsi:.2f}, recommendation={recommendation}")
