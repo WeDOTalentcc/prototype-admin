@@ -590,10 +590,51 @@ class TransitionDispatchService:
         """Sprint B: dispatch outcome events to learning-loop services.
 
         Phase 1: JdSimilarService.mark_filled (was_filled=True + time_to_fill_days)
-        Phase 2: BigFive.record_hire - DEFERRED (requires candidate traits snapshot
-                 from WSI scoring; TODO Phase 2.5 - separate batch reconciliation).
+        Phase 2: BigFive.record_hire — DEFERRED to Phase 2.5.
+        Phase 3: WSI Effectiveness outcomes per skill_probed (record_question_outcome)
 
-        ALWAYS fail-soft - dispatch never blocks if learning loops are unavailable.
+        ─── ADR-LGPD-001 (2026-05-10) ────────────────────────────────────
+        BigFiveDepartmentService.record_hire is intentionally NOT wired
+        from this hook today. Two reasons:
+
+        1. DATA SOURCE PREREQUISITE: record_hire requires
+           candidate_traits_snapshot — a dict with all 5 OCEAN keys
+           (openness, conscientiousness, extraversion, agreeableness,
+           stability) as floats 0-1. The WSI scoring pipeline currently
+           emits {technicalScore, behavioralScore, gapAnalysisScore,
+           contextualScore, totalWSI, decision} (interview.wsi_score
+           JSON) but does NOT emit per-candidate OCEAN traits. Wiring
+           record_hire with a fabricated snapshot would contaminate
+           bigfive_department_profiles with junk data and degrade the
+           learning-loop quality. Phase 2.5 follow-up: extend WSI
+           scoring to emit OCEAN per candidate, then wire here.
+
+        2. LGPD ART. 18 ANALYSIS: bigfive_department_profiles store
+           POPULATION-LEVEL aggregates via running average + temporal
+           decay (lambda 0.05, threshold 540 days). Individual
+           contributions cannot be reverted from the aggregate after
+           the running-average update. Per ANPD interpretation,
+           irreversibly-aggregated statistics qualify as anonymization
+           beyond LGPD Art. 18 erasure scope. When a candidate's PII
+           is erased via lgpd_cleanup_service, NO recompute of
+           bigfive_department_profiles is required.
+
+           If a future regulator interpretation differs, add a
+           recompute hook here using the surviving sample population.
+
+           Reference: Sprint B Phase 3 audit, decisão D1=B (Paulo
+           2026-05-10).
+
+        Sentinel: tests/unit/test_bigfive_phase3_governance.py asserts
+        record_hire is not called from this hook and that this
+        ADR-LGPD-001 reference remains in the docstring. If the
+        sentinel fails, either land Phase 2.5 properly or update the
+        ADR.
+        ──────────────────────────────────────────────────────────────────
+
+        ALWAYS fail-soft — dispatch never blocks if learning loops are
+        unavailable.
+
         Multi-tenancy: company_id required from caller (JWT context).
         """
         if not company_id or not vacancy_candidate_id:

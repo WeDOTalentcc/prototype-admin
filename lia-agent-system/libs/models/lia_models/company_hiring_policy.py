@@ -56,7 +56,7 @@ AUTOMATION_RULES_DEFAULTS = {
     "learning_loops": {
         "enabled": True,                       # master switch
         "bigfive_company_culture": True,       # Phase 2 — DNA cultural estatico, default ON
-        "bigfive_department_history": False,   # Phase 2 — opt-in com disclosure LGPD
+        "bigfive_department_history": True,    # Phase 2 — Sprint B P3 D2 (2026-05-10): default ON; ADR-LGPD-001 (aggregate-not-PII analysis)
         "wsi_question_effectiveness": False,   # Phase 3 — opt-in
         "jd_similar_suggestion": True,         # Phase 1 — baixo risco, default ON
     },
