@@ -101,6 +101,7 @@ Plataforma tem 4 env flags que bypassam camadas de compliance:
 | `LIA_ALLOW_NON_COMPLIANT_AGENTS=1` | Bypassa LangGraphReActBase compliance em agents (PII/Fairness/Audit em agent layer) |
 | `LIA_DISABLE_C3B=1` | **KILL SWITCH** da camada C3b inteira (PII strip + FairnessGuard L3 + FactCheck + Audit) — passthrough total |
 | `LIA_ALLOW_REGISTRY_DRIFT=1` | Permite class_path inválido em agents_registry (R-004 emergency rollback only) |
+| `LIA_AGENT_TENANT_STRICT=false` | **(inversa)** Default: `true` em prod/staging, `false` em dev. Quando `false` em prod, `TenantAwareAgentMixin` opera em fail-OPEN — agentes voltam a degradar silenciosamente para `"sua empresa"/"geral"` quando tenant não resolvível. Origem do bug "LIA pergunta company_id no chat do wizard". Em prod, deixar `true` (ou ausente) para preservar fail-CLOSED canônico (T-A) |
 
 **Em produção:** apenas para rollback emergencial. Quando ON:
 - `app/main.py` lifespan loga **CRITICAL** no startup com lista agregada das flags ativas

@@ -196,12 +196,30 @@ async def lifespan(app: FastAPI):
         "LIA_ALLOW_NON_COMPLIANT_DOMAINS": "Bypass de ComplianceDomainPrompt (FairnessGuard, PII, PromptInjection, FactCheck)",
         "LIA_ALLOW_NON_COMPLIANT_AGENTS": "Bypass de LangGraphReActBase compliance em agents",
         "LIA_DISABLE_C3B": "KILL SWITCH da camada C3b inteira (PII strip + Fairness L3 + FactCheck + Audit) — passthrough total",
+        "LIA_ALLOW_REGISTRY_DRIFT": "Permite class_path inválido em agents_registry (R-004 emergency rollback only)",
     }
     _active_bypasses = [
         f"{flag}: {desc}"
         for flag, desc in _BYPASS_FLAGS.items()
         if os.getenv(flag, "0") == "1"
     ]
+
+    # T-A canonical: LIA_AGENT_TENANT_STRICT é fail-CLOSED por default em
+    # prod/staging. Quando explicitamente OFF em prod, agentes voltam a
+    # degradar silenciosamente em "sua empresa"/"geral" (origem do bug
+    # "LIA pergunta company_id no chat"). Logar como bypass agregado.
+    from app.shared.agents.tenant_aware_agent import is_tenant_strict_mode
+    _tenant_strict = is_tenant_strict_mode()
+    _is_prod_like = os.getenv("APP_ENV", "development").lower() in ("production", "prod", "staging")
+    if _is_prod_like and not _tenant_strict:
+        _active_bypasses.append(
+            "LIA_AGENT_TENANT_STRICT=false: TenantAwareAgentMixin em fail-OPEN — "
+            "agentes vão degradar para 'sua empresa'/'geral' quando tenant ausente"
+        )
+    if _tenant_strict:
+        logger.info("✅ TenantAwareAgentMixin fail-CLOSED ativo (LIA_AGENT_TENANT_STRICT=true)")
+    else:
+        logger.info("ℹ️  TenantAwareAgentMixin fail-OPEN (dev mode — agentes não bloqueiam por tenant ausente)")
     if _active_bypasses:
         logger.critical(
             "🚨 COMPLIANCE BYPASS ATIVA — %d flag(s):\n%s\n"

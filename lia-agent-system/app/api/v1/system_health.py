@@ -579,6 +579,15 @@ _BYPASS_FLAGS_RUNTIME: dict[str, str] = {
     "LIA_ALLOW_REGISTRY_DRIFT": "Permite class_path inválido em registry (R-004 rollback)",
 }
 
+# T-A canonical: flag inversa — bypass quando OFF em prod (TenantAwareAgentMixin
+# fail-OPEN em vez de fail-CLOSED, agentes degradam silenciosamente). Tratada
+# separadamente porque a semântica é "ativa quando ausente/falsa".
+_TENANT_STRICT_FLAG = "LIA_AGENT_TENANT_STRICT"
+_TENANT_STRICT_DESC = (
+    "TenantAwareAgentMixin em fail-OPEN — agentes degradam para 'sua empresa'/'geral' "
+    "quando tenant ausente (origem do bug 'LIA pergunta company_id no chat')"
+)
+
 
 @router.get("/health/compliance/bypass-status", response_model=None)
 async def compliance_bypass_status():
@@ -601,10 +610,26 @@ async def compliance_bypass_status():
         for flag, desc in _BYPASS_FLAGS_RUNTIME.items()
         if os.getenv(flag, "0") == "1"
     ]
+
+    # T-A: TenantAwareAgentMixin strict-mode é fail-CLOSED em prod/staging
+    # por default. Se explicitamente OFF em prod-like → reportar como bypass.
+    from app.shared.agents.tenant_aware_agent import (
+        get_tenant_context_metrics,
+        is_tenant_strict_mode,
+    )
+    _env = os.getenv("APP_ENV", "development").lower()
+    _prod_like = _env in ("production", "prod", "staging")
+    if _prod_like and not is_tenant_strict_mode():
+        active.append({"flag": _TENANT_STRICT_FLAG, "description": _TENANT_STRICT_DESC})
+
     payload = {
         "active_bypasses": active,
         "warning_count": len(active),
         "environment": os.getenv("APP_ENV", "development"),
+        "tenant_aware_agent": {
+            "strict_mode": is_tenant_strict_mode(),
+            "metrics": get_tenant_context_metrics(),
+        },
         "timestamp": datetime.utcnow().isoformat(),
     }
     return JSONResponse(status_code=200, content=payload)
