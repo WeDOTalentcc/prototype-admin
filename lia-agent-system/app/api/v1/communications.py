@@ -5,8 +5,17 @@ Handles communication history for candidates - emails, WhatsApp, screening invit
 Also provides direct email and WhatsApp sending via Mailgun and Twilio integrations.
 """
 
+import hashlib
 import logging
 from typing import Any
+
+
+def _hash(value: Any) -> str:
+    """P0-1 (2026-05-10): hash truncado para PII em logs (LGPD Art.46)."""
+    if not value:
+        return "[empty]"
+    return hashlib.sha256(str(value).encode("utf-8", errors="ignore")).hexdigest()[:8]
+
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 
@@ -79,7 +88,10 @@ async def create_communication(data: CommunicationCreate):
             extra_data=data.extra_data,
         )
         
-        logger.info(f"✅ Created communication {communication.id} for candidate {data.candidate_name}")
+        logger.info(
+            "Created communication",
+            extra={"communication_id": str(communication.id), "candidate_id": str(getattr(data, "candidate_id", None) or "")},
+        )
         
         return communication.to_dict()
         
@@ -335,9 +347,19 @@ async def send_email(
         )
         
         if result.success:
-            logger.info(f"✅ Email sent to {request.to_email} for company {company_id}, ID: {result.message_id}")
+            logger.info(
+                "Email sent successfully",
+                extra={
+                    "to_email_hash": _hash(request.to_email),
+                    "company_id": str(company_id),
+                    "message_id": result.message_id,
+                },
+            )
         else:
-            logger.warning(f"⚠️ Email to {request.to_email} failed: {result.error}")
+            logger.warning(
+                "Email send failed",
+                extra={"to_email_hash": _hash(request.to_email), "error": str(result.error)[:200]},
+            )
         
         return result.model_dump()
         
@@ -389,7 +411,14 @@ async def send_template_email(
         )
         
         if result.success:
-            logger.info(f"✅ Template email '{request.template_name}' sent to {request.to_email} for company {company_id}")
+            logger.info(
+                "Template email sent",
+                extra={
+                    "template_name": request.template_name,
+                    "to_email_hash": _hash(request.to_email),
+                    "company_id": str(company_id),
+                },
+            )
         else:
             logger.warning(f"⚠️ Template email failed: {result.error}")
         
@@ -490,9 +519,15 @@ async def send_whatsapp(
         )
         
         if result.success:
-            logger.info(f"✅ WhatsApp sent to {request.to_phone} for company {company_id}, ID: {result.message_id}")
+            logger.info(
+                "WhatsApp sent successfully",
+                extra={"to_phone_hash": _hash(request.to_phone), "company_id": str(company_id), "message_id": result.message_id},
+            )
         else:
-            logger.warning(f"⚠️ WhatsApp to {request.to_phone} failed: {result.error}")
+            logger.warning(
+                "WhatsApp send failed",
+                extra={"to_phone_hash": _hash(request.to_phone), "error": str(result.error)[:200]},
+            )
         
         return result.model_dump()
         
@@ -538,7 +573,14 @@ async def send_whatsapp_template(
         )
         
         if result.success:
-            logger.info(f"✅ WhatsApp template '{request.template_name}' sent to {request.to_phone} for company {company_id}")
+            logger.info(
+                "WhatsApp template sent",
+                extra={
+                    "template_name": request.template_name,
+                    "to_phone_hash": _hash(request.to_phone),
+                    "company_id": str(company_id),
+                },
+            )
         else:
             logger.warning(f"⚠️ WhatsApp template failed: {result.error}")
         

@@ -2,9 +2,19 @@
 Approvals API endpoints for managing approval workflow requests.
 Handles creation, listing, approval, and rejection of approval requests.
 """
+import hashlib
 import uuid
 from datetime import datetime
 from uuid import UUID
+from typing import Any
+
+
+def _hash(value: Any) -> str:
+    """P0-1 (2026-05-10): hash truncado de PII (email/nome) para logs (LGPD Art.46)."""
+    if not value:
+        return "[empty]"
+    return hashlib.sha256(str(value).encode("utf-8", errors="ignore")).hexdigest()[:8]
+
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
@@ -143,7 +153,10 @@ async def create_approval_request(
         except Exception as e:
             logger.error(f"Failed to send approval request email: {e}")
 
-        logger.info(f"Created approval request {approval.id} for {request.target_name}")
+        logger.info(
+            "Created approval request",
+            extra={"approval_id": str(approval.id), "target_name_hash": _hash(request.target_name)},
+        )
         return to_response(approval)
 
     except Exception as e:
@@ -253,7 +266,10 @@ async def approve_request(
             raise HTTPException(status_code=403, detail="Approval request does not belong to this company")
 
         if approval.approver_email.lower() != approved_by.lower():
-            logger.warning(f"Unauthorized approval attempt: {approved_by} tried to approve request assigned to {approval.approver_email}")
+            logger.warning(
+                "Unauthorized approval attempt",
+                extra={"approved_by_hash": _hash(approved_by), "approver_email_hash": _hash(approval.approver_email)},
+            )
             raise HTTPException(status_code=403, detail="Only the assigned approver can approve this request")
 
         if approval.status != "pending":
@@ -277,7 +293,10 @@ async def approve_request(
             logger.error(f"Failed to send approval result email for {approval_id}: {str(e)}", exc_info=True)
             approval.notification_sent = False
 
-        logger.info(f"Approval request {approval_id} approved by {approved_by}")
+        logger.info(
+            "Approval request approved",
+            extra={"approval_id": str(approval_id), "approved_by_hash": _hash(approved_by)},
+        )
 
         try:
             await audit_svc.log_decision(
@@ -331,7 +350,10 @@ async def reject_request(
             raise HTTPException(status_code=403, detail="Approval request does not belong to this company")
 
         if approval.approver_email.lower() != rejected_by.lower():
-            logger.warning(f"Unauthorized rejection attempt: {rejected_by} tried to reject request assigned to {approval.approver_email}")
+            logger.warning(
+                "Unauthorized rejection attempt",
+                extra={"rejected_by_hash": _hash(rejected_by), "approver_email_hash": _hash(approval.approver_email)},
+            )
             raise HTTPException(status_code=403, detail="Only the assigned approver can reject this request")
 
         if approval.status != "pending":
@@ -355,7 +377,10 @@ async def reject_request(
             logger.error(f"Failed to send rejection email for {approval_id}: {str(e)}", exc_info=True)
             approval.notification_sent = False
 
-        logger.info(f"Approval request {approval_id} rejected by {rejected_by}")
+        logger.info(
+            "Approval request rejected",
+            extra={"approval_id": str(approval_id), "rejected_by_hash": _hash(rejected_by)},
+        )
 
         try:
             await audit_svc.log_decision(
@@ -406,7 +431,10 @@ async def cancel_request(
             raise HTTPException(status_code=403, detail="Approval request does not belong to this company")
 
         if approval.requester_email.lower() != cancelled_by.lower():
-            logger.warning(f"Unauthorized cancel attempt: {cancelled_by} tried to cancel request created by {approval.requester_email}")
+            logger.warning(
+                "Unauthorized cancel attempt",
+                extra={"cancelled_by_hash": _hash(cancelled_by), "requester_email_hash": _hash(approval.requester_email)},
+            )
             raise HTTPException(status_code=403, detail="Only the requester can cancel this request")
 
         if approval.status != "pending":
@@ -422,7 +450,10 @@ async def cancel_request(
 
         approval = await repo.flush_and_refresh(approval)
 
-        logger.info(f"Approval request {approval_id} cancelled by {cancelled_by}")
+        logger.info(
+            "Approval request cancelled",
+            extra={"approval_id": str(approval_id), "cancelled_by_hash": _hash(cancelled_by)},
+        )
         return to_response(approval)
 
     except HTTPException:
