@@ -840,25 +840,20 @@ class TransitionDispatchService:
         if not candidate_id:
             return
         try:
-            from sqlalchemy import select as _select
-            from app.models.lia_opinion import LiaOpinion
+            from app.domains.opinions.repositories.opinions_repository import (
+                OpinionsRepository,
+            )
             from app.domains.job_creation.services.bigfive_service import (
                 BigFiveDepartmentService,
             )
 
-            # Latest LiaOpinion for this candidate scoped by company
-            # (multi-tenancy fail-closed).
-            stmt = (
-                _select(LiaOpinion)
-                .where(
-                    LiaOpinion.candidate_id == candidate_id,
-                    LiaOpinion.company_id == str(company_id),
-                )
-                .order_by(LiaOpinion.created_at.desc())
-                .limit(1)
+            # P1-LiaRepo: delegate to OpinionsRepository (ADR-001 — no
+            # inline select in services). multi-tenancy: company_id from
+            # caller, never from payload.
+            opinion = await OpinionsRepository(self.db).get_latest_for_candidate_company(
+                candidate_id=candidate_id,
+                company_id=str(company_id),
             )
-            result = await self.db.execute(stmt)
-            opinion = result.scalars().first()
             if opinion is None:
                 logger.debug(
                     "[ConclusionHired] no LiaOpinion for candidate=%s — "
