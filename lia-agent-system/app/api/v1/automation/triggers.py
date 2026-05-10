@@ -243,6 +243,7 @@ async def execute_action(
     db: AsyncSession = Depends(get_db),
     activity_svc: ActivityService = Depends(get_activity_service),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Execute a specific automation action.
     
@@ -463,6 +464,7 @@ async def screen_candidate(
     request: ScreenCandidateRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Execute CV screening for a candidate against a vacancy using Rubric Evaluation.
     
@@ -538,6 +540,7 @@ async def trigger_automation_event(
     db: AsyncSession = Depends(get_db),
     activity_svc: ActivityService = Depends(get_activity_service),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Trigger an automation event for agent processing.
     

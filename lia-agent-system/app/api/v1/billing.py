@@ -1113,6 +1113,7 @@ async def handle_iugu_webhook(
     request: Request,
     repo: BillingRepository = Depends(get_billing_repo)
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Handle webhooks from Iugu payment gateway.
 
@@ -1151,6 +1152,7 @@ async def handle_vindi_webhook(
     request: Request,
     repo: BillingRepository = Depends(get_billing_repo)
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Handle webhooks from Vindi payment gateway.
 

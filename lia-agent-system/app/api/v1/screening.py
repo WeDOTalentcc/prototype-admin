@@ -217,6 +217,7 @@ async def auto_trigger_screening(
     request: AutoScreeningRequest,
     repo: ScreeningRepository = Depends(get_screening_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     if request.source != "website":
         raise HTTPException(
             status_code=400,

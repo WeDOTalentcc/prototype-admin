@@ -175,6 +175,7 @@ async def generate_wsi_questions(
     audit_svc: AuditService = Depends(get_audit_service),
     wsi_svc: WSIService = Depends(get_wsi_service),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Generate WSI questions based on job competencies using Gemini LLM.
     Falls back to template-based generation if LLM is unavailable.

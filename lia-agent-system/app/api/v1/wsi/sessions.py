@@ -116,6 +116,7 @@ async def start_interview_graph_session(
     request: InterviewGraphStartRequest,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Cria uma nova sessão de entrevista WSI usando o WSIInterviewGraph.
 
     Carrega o contexto (vaga + candidato), gera o banco de perguntas e

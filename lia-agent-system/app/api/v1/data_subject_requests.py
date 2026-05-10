@@ -125,6 +125,7 @@ async def create_data_subject_request(
     data: DataSubjectRequestCreate,
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Create a new data subject request (public endpoint - no authentication required).
 

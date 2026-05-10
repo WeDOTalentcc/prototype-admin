@@ -149,6 +149,7 @@ async def create_invite(
     x_user_id: str | None = Header(None, alias="X-User-ID"),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     company_id = request.company_id or x_company_id
     if not company_id:
         raise HTTPException(status_code=400, detail="company_id é obrigatório")

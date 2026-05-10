@@ -89,6 +89,7 @@ async def start_voice_stream_session(
     request_body: VoiceStreamStartRequest,
     request: Request,
 ) -> VoiceStreamStartResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     authenticated_tenant = getattr(request.state, "company_id", None) or getattr(
         request.state, "tenant_id", None
     )

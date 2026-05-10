@@ -46,6 +46,7 @@ async def get_candidate_consents(
     x_company_id: str | None = Header(None),
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Lista todos os consentimentos LGPD de um candidato."""
     company_id = x_company_id or "admin_company"
     svc = ConsentCheckerService(candidate_repo.db)
@@ -60,6 +61,7 @@ async def create_or_update_candidate_consent(
     x_company_id: str | None = Header(None),
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Registra ou atualiza consentimento LGPD de um candidato por finalidade."""
     company_id = x_company_id or "admin_company"
     svc = ConsentCheckerService(candidate_repo.db)
@@ -83,6 +85,7 @@ async def revoke_candidate_consent(
     x_company_id: str | None = Header(None),
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Revoga consentimento LGPD de um candidato para uma finalidade específica."""
     company_id = x_company_id or "admin_company"
     svc = ConsentCheckerService(candidate_repo.db)

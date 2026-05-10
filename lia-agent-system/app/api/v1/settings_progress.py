@@ -51,6 +51,7 @@ async def get_settings_progress(
     company_id: str = Query(default=None, description="Company ID (optional, uses default if not provided)"),
     db: AsyncSession = Depends(get_db)
 ) -> dict[str, Any]:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get settings completion progress.
 

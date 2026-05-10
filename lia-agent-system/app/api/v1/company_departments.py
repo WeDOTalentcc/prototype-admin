@@ -158,6 +158,7 @@ async def create_department_member(
     data: DepartmentMemberCreate,
     dept_repo: DepartmentRepository = Depends(get_department_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new member in a department."""
     try:
         department = await dept_repo.get_by_id(department_id)

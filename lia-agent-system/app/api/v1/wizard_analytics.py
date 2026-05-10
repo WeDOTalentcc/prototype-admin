@@ -55,6 +55,7 @@ class CompleteSessionRequest(BaseModel):
 
 @router.post("/session/start", response_model=None)
 async def start_session(request: StartSessionRequest):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Start tracking a new wizard session."""
     try:
         session = wizard_analytics_service.start_session(

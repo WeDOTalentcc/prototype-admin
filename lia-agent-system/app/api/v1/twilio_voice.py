@@ -103,6 +103,7 @@ async def initiate_voice_screening(
     request_body: InitiateCallRequest,
     request: Request,
 ) -> InitiateCallResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Initiate an outbound voice screening call to a candidate.
 

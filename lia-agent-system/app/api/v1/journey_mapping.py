@@ -241,6 +241,7 @@ async def complete_wizard(
     data: WizardCompleteData,
     repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Complete the journey mapping wizard by creating:
     - JourneyBlueprint with all wizard data
@@ -370,6 +371,7 @@ async def create_blueprint(
     data: JourneyBlueprintCreate,
     repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new journey blueprint for a company."""
     try:
         blueprint = await repo.create_blueprint_with_commit(

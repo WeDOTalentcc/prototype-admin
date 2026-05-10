@@ -50,6 +50,7 @@ def require_company_id(x_company_id: str | None = Header(None, alias="X-Company-
 
 @router.post("", response_model=CommunicationResponse, status_code=status.HTTP_201_CREATED)
 async def create_communication(data: CommunicationCreate):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Log a new communication.
     

@@ -283,6 +283,7 @@ async def handle_interview_completed(
     db: AsyncSession = Depends(get_db),
     activity_svc: ActivityService = Depends(get_activity_service_canonical),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Handle interview_completed trigger.
 

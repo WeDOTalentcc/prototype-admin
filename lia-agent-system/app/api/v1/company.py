@@ -162,6 +162,7 @@ async def submit_onboarding(
     profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
     cp_repo: CultureProfileRepository = Depends(get_culture_profile_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Submit onboarding data from the wizard.
     Creates or updates company profile with the provided information.

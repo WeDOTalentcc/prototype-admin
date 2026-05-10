@@ -214,6 +214,7 @@ async def update_module_by_id(
     db: AsyncSession = Depends(get_db),
     svc: ModuleService = Depends(get_module_service),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     mod = await svc.get_module_by_id(db, module_id)
     if not mod:
         raise HTTPException(status_code=404, detail=f"Module {module_id} not found")

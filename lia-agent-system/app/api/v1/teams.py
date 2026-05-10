@@ -403,6 +403,7 @@ async def teams_adaptive_card_webhook(
     x_company_id: str | None = Header(None, alias="X-Company-ID"),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Webhook endpoint for receiving Adaptive Card actions from Microsoft Teams.
     

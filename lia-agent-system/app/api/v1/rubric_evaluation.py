@@ -65,6 +65,7 @@ async def evaluate_candidate(
     rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
     repo: ScreeningRepository = Depends(get_screening_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Evaluate a single candidate against job requirements using structured rubrics.
 

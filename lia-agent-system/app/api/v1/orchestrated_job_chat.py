@@ -103,6 +103,7 @@ async def orchestrated_job_chat(
     main_orchestrator: MainOrchestrator = Depends(get_main_orchestrator),
     _budget: None = Depends(require_token_budget),
 ) -> OrchestratedJobChatResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Unified pipeline via MainOrchestrator.process() (v3.0):
       FairnessGuard → PendingAction → ActionExecutor → CascadedRouter → DomainWorkflow

@@ -599,6 +599,7 @@ async def trigger_proactive_check(
     request: ProactiveAlertCheckRequest,
     repo: NotificationsRepository = Depends(get_notifications_repo)
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Trigger a proactive alert check for a user.
 

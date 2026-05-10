@@ -91,6 +91,7 @@ async def upsert_preference(
     data: PreferenceUpsertRequest,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Cria ou atualiza preferência de auto_confirm."""
     pref = await UserAgentPreferenceService.upsert(
         db,

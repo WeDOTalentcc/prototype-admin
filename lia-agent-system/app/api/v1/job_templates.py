@@ -287,6 +287,7 @@ async def clone_template(
     request: CloneTemplateRequest,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Clone a template for a company with optional modifications."""
     service = JobTemplateService(db)
     
@@ -539,6 +540,7 @@ async def learn_from_job_creation(
     request: LearnFromJobRequest,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Learn from a completed job creation.
     

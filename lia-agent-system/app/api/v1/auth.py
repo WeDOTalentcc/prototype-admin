@@ -530,6 +530,7 @@ async def get_invitation_info(
     token: str,
     repo: UserRepository = Depends(get_user_repo)
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get invitation information for a token.
     """

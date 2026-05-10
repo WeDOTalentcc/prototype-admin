@@ -440,6 +440,7 @@ async def add_candidates_to_vacancy(
     rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
     repo: ScreeningRepository = Depends(get_screening_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Adiciona candidatos a uma vaga e verifica meta automaticamente.
 

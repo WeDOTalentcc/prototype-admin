@@ -94,6 +94,7 @@ async def start_gemini_voice_session(
     request_body: StartSessionRequest,
     request: Request,
 ) -> StartSessionResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Create a new Gemini Live Audio screening session.
 

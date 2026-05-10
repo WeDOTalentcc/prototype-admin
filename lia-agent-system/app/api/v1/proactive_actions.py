@@ -73,6 +73,7 @@ async def get_pending_actions(
     limit: int = Query(default=10, le=50),
     service: AutonomousAgentService = Depends(get_autonomous_agent_service),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get pending proactive actions for a company."""
     try:
         actions = await service.get_pending_actions(company_id, limit=limit)
@@ -106,6 +107,7 @@ async def get_action_history(
     limit: int = Query(default=20, le=100),
     service: AutonomousAgentService = Depends(get_autonomous_agent_service),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get action history (accepted/rejected) for a company."""
     try:
         actions = await service.get_actions_by_status(company_id, status=status, limit=limit)

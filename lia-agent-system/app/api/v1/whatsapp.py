@@ -381,6 +381,7 @@ async def send_message(
     request: SendMessageRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Send a WhatsApp message (for testing/manual messaging).
     

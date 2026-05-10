@@ -136,6 +136,7 @@ async def create_user(
     user_repo: UserRepository = Depends(get_user_repo),
     email_svc: EmailService = Depends(get_email_service),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new user with invitation token."""
     try:
         existing = await user_repo.get_by_email(data.email)

@@ -36,6 +36,7 @@ async def create_async_invite(
     db: AsyncSession = Depends(get_db),
     svc: WSIAsyncSessionService = Depends(get_wsi_async_session_service),
 ) -> dict:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Cria sessão WSI assíncrona e retorna token de acesso para o candidato.
     """

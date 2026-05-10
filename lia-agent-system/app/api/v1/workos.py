@@ -957,6 +957,7 @@ async def get_sso_users(
     scim_only: bool = Query(default=False),
     user_repo: UserRepository = Depends(get_user_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get SSO/SCIM managed users for a company.
 

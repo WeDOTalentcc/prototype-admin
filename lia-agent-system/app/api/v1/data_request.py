@@ -516,6 +516,7 @@ async def list_templates(
     include_inactive: bool = Query(False, description="Include inactive templates"),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     List data request templates for the company.
     
@@ -556,6 +557,7 @@ async def create_template(
     request: CreateTemplateRequest,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Create a new data request template.
     
@@ -613,6 +615,7 @@ async def update_template(
     request: UpdateTemplateRequest,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Update an existing data request template.
     """

@@ -216,6 +216,7 @@ async def create_connection(
     request: ConnectionCreate,
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new integration connection."""
     try:
         provider = await repo.get_provider_by_id(request.provider_id)
