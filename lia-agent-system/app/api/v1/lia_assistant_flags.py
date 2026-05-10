@@ -14,7 +14,7 @@ from typing import Any
 uuid_uuid4 = uuid.uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
@@ -314,3 +314,371 @@ async def check_feature_flag(
     except Exception as e:
         logger.error(f"Error checking feature flag: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# ---------------------------------------------------------------------------
+# Phase B (post-Sprint-B): second-actor approval workflow for sensitive flags
+# ---------------------------------------------------------------------------
+#
+# The P1-9 HITL gate above (set_feature_flag) returns 403 to non-admin users
+# attempting to flip flags in SENSITIVE_FLAGS_REQUIRING_HITL. That gate
+# remains as the immediate fallback. Phase B adds a parallel path where the
+# non-admin user can REQUEST a toggle, an admin/DPO reviews + approves, and
+# the system commits the toggle on their behalf.
+#
+# Reuses canonical ApprovalRequest infrastructure (lia_models/approval.py +
+# ApprovalsRepository + EmailService). No new tables, no migration.
+#
+# Decisions Paulo 2026-05-10: B1 7-day expiry hardcoded, B2 email-only,
+# B3 self-approval hard-block, B4 broadcast to all admins, B5 forever
+# retention.
+
+
+_APPROVAL_EXPIRY_DAYS = 7
+
+
+class FeatureFlagToggleRequest(BaseModel):
+    """Body for POST /lia/feature-flags/request-toggle.
+
+    Non-admins use this when the direct /feature-flags/set path is
+    blocked by the P1-9 HITL gate. Admins/DPOs receive an email and
+    review via /pending-approvals + /approve.
+    """
+    flag_key: str = Field(..., min_length=1)
+    requested_value: bool
+    rollout_percentage: int = Field(100, ge=0, le=100)
+    category: str | None = None
+    justification: str | None = Field(
+        None, description="Optional rationale shown to the approver",
+    )
+
+
+class FeatureFlagToggleApprovalResponse(BaseModel):
+    request_id: str
+    status: str
+    flag_key: str
+    requested_value: bool
+    expires_at: str | None = None
+
+
+def _build_approvals_repo(db: AsyncSession):
+    """Lazy import + builder so the module-level imports don't pull
+    approvals into every consumer of feature-flag endpoints."""
+    from app.domains.approvals.repositories.approvals_repository import (
+        ApprovalsRepository,
+    )
+    return ApprovalsRepository(db)
+
+
+async def _send_approval_request_email(*, approval, requester_email: str) -> None:
+    """Phase B B2: notify all company admins by email when a sensitive
+    flag toggle request is created. Fail-soft so a missing email infra
+    never breaks the request flow."""
+    try:
+        from app.domains.communication.services.email_service import EmailService
+        # The canonical EmailService has send_approval_request_email per
+        # the approval audit; fall back to a generic send when unavailable.
+        svc = EmailService()
+        send_fn = getattr(svc, "send_approval_request_email", None)
+        if send_fn is not None:
+            await send_fn(
+                approver_email=getattr(approval, "approver_email", None),
+                requester_email=requester_email,
+                request_type="feature_flag_toggle",
+                target_name=getattr(approval, "target_name", "feature flag"),
+                approval_id=str(approval.id),
+            )
+        else:
+            logger.debug(
+                "[FeatureFlagApproval] EmailService.send_approval_request_email "
+                "not found — skip notify (request still persisted)"
+            )
+    except Exception as exc:
+        logger.warning(
+            "[FeatureFlagApproval] approval request email failed (fail-soft): %s",
+            str(exc)[:200],
+        )
+
+
+async def _send_approval_result_email(*, approval, decision: str) -> None:
+    """Notify requester after admin approves/rejects. Fail-soft."""
+    try:
+        from app.domains.communication.services.email_service import EmailService
+        svc = EmailService()
+        send_fn = getattr(svc, "send_approval_result_email", None)
+        if send_fn is not None:
+            await send_fn(
+                requester_email=getattr(approval, "requester_email", None),
+                request_type="feature_flag_toggle",
+                target_name=getattr(approval, "target_name", "feature flag"),
+                decision=decision,
+                approval_id=str(approval.id),
+            )
+    except Exception as exc:
+        logger.warning(
+            "[FeatureFlagApproval] approval result email failed (fail-soft): %s",
+            str(exc)[:200],
+        )
+
+
+@router.post(
+    "/feature-flags/request-toggle",
+    response_model=FeatureFlagToggleApprovalResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+async def request_feature_flag_toggle(
+    request: FeatureFlagToggleRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo),
+) -> FeatureFlagToggleApprovalResponse:
+    """Phase B: non-admin requests a toggle for a sensitive flag.
+
+    Flow:
+    1. Reject if flag is not in SENSITIVE_FLAGS_REQUIRING_HITL — direct
+       /feature-flags/set is the right path for those.
+    2. Multi-tenancy: company_id derived from current_user (never payload).
+    3. Persist ApprovalRequest with request_type=feature_flag_toggle and
+       target_data carrying flag_key + requested_value + rollout_percentage.
+    4. Send notification email to admins (fail-soft).
+    5. Audit log via canonical action_type=feature_flag_change with
+       metadata.workflow_state=request_created.
+    """
+    if not _is_sensitive_flag(request.flag_key):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                f"Flag '{request.flag_key}' is not sensitive — use "
+                f"/feature-flags/set directly. The approval workflow is "
+                f"reserved for SENSITIVE_FLAGS_REQUIRING_HITL."
+            ),
+        )
+
+    company_id = str(get_user_company_id(current_user))
+    requester_id = getattr(current_user, "id", None) or "unknown"
+    requester_email = getattr(current_user, "email", "") or ""
+    requester_name = (
+        getattr(current_user, "first_name", None)
+        or getattr(current_user, "email", None)
+        or "Recruiter"
+    )
+
+    from app.models.approval import ApprovalRequest, ApprovalStatus, ApprovalType
+    from datetime import datetime as _dt, timedelta as _td
+
+    approval = ApprovalRequest(
+        company_id=company_id,
+        request_type=ApprovalType.FEATURE_FLAG_TOGGLE.value,
+        requester_id=str(requester_id),
+        requester_name=str(requester_name),
+        requester_email=str(requester_email),
+        target_id=request.flag_key,
+        target_type="feature_flag",
+        target_name=request.flag_key,
+        target_description=request.justification,
+        target_data={
+            "flag_key": request.flag_key,
+            "requested_value": request.requested_value,
+            "rollout_percentage": request.rollout_percentage,
+            "category": request.category,
+            "company_id_enforced": company_id,
+        },
+        status=ApprovalStatus.PENDING.value,
+        expires_at=_dt.utcnow() + _td(days=_APPROVAL_EXPIRY_DAYS),
+    )
+    repo = _build_approvals_repo(db)
+    await repo.add_and_flush(approval)
+
+    # Fail-soft email + audit (LGPD Art. 20 trail)
+    await _send_approval_request_email(
+        approval=approval, requester_email=str(requester_email),
+    )
+    try:
+        from app.shared.compliance.audit_service import AuditService
+        await AuditService().log_action(
+            trace_id=str(uuid_uuid4()),
+            company_id=company_id,
+            action_type="feature_flag_change",
+            actor=str(requester_id),
+            target_id=request.flag_key,
+            target_type="feature_flag",
+            metadata={
+                "workflow_state": "request_created",
+                "approval_request_id": str(approval.id),
+                "flag_key": request.flag_key,
+                "requested_value": request.requested_value,
+                "category": request.category,
+            },
+        )
+    except Exception as audit_exc:
+        logger.warning(
+            "[FeatureFlagApproval] audit on request_created failed (fail-soft): %s",
+            str(audit_exc)[:200],
+        )
+
+    return FeatureFlagToggleApprovalResponse(
+        request_id=str(approval.id),
+        status=approval.status,
+        flag_key=request.flag_key,
+        requested_value=request.requested_value,
+        expires_at=approval.expires_at.isoformat() if approval.expires_at else None,
+    )
+
+
+@router.get("/feature-flags/pending-approvals", response_model=None)
+async def list_pending_feature_flag_approvals(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo),
+) -> dict[str, Any]:
+    """Admin-only: list pending feature_flag_toggle approval requests
+    for the user's company. Non-admin returns 403."""
+    if getattr(current_user, "role", None) != UserRole.admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="admin role required to view pending feature flag approvals",
+        )
+
+    company_id = str(get_user_company_id(current_user))
+    repo = _build_approvals_repo(db)
+    pending = await repo.list_pending_by_company(
+        company_id=company_id,
+        request_type="feature_flag_toggle",
+    )
+    return {
+        "items": [
+            {
+                "request_id": str(p.id),
+                "flag_key": (p.target_data or {}).get("flag_key"),
+                "requested_value": (p.target_data or {}).get("requested_value"),
+                "requester_email": p.requester_email,
+                "requester_name": p.requester_name,
+                "justification": p.target_description,
+                "created_at": p.created_at.isoformat() if p.created_at else None,
+                "expires_at": p.expires_at.isoformat() if p.expires_at else None,
+            }
+            for p in pending
+        ],
+        "total": len(pending),
+    }
+
+
+@router.post(
+    "/feature-flags/approve/{request_id}",
+    response_model=FeatureFlagToggleApprovalResponse,
+)
+async def approve_feature_flag_toggle(
+    request_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo),
+    ff_svc: FeatureFlagService = Depends(get_feature_flag_service),
+) -> FeatureFlagToggleApprovalResponse:
+    """Phase B: admin approves a pending feature flag toggle request.
+
+    Guards (in order):
+    1. Admin role required.
+    2. Self-approval blocked (current_user.id != approval.requester_id).
+    3. Approval must be in pending state.
+
+    On approve: invokes ff_svc.set_flag with admin context (bypassing
+    HITL) using the payload stored in target_data. Status flips to
+    approved. Audit + email notify.
+    """
+    if getattr(current_user, "role", None) != UserRole.admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="admin role required to approve feature flag toggles",
+        )
+
+    repo = _build_approvals_repo(db)
+    approval = await repo.get_by_id(request_id)
+    if approval is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="approval request not found",
+        )
+
+    # Self-approval block
+    if str(getattr(approval, "requester_id", "")) == str(getattr(current_user, "id", "")):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=(
+                "self-approval not allowed — the approver must differ from "
+                "the requester (second-actor invariant)"
+            ),
+        )
+
+    if approval.status != "pending":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"approval is already {approval.status}; cannot approve again",
+        )
+
+    payload = approval.target_data or {}
+    flag_key = payload.get("flag_key")
+    requested_value = payload.get("requested_value")
+    if flag_key is None or requested_value is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="approval target_data missing flag_key or requested_value",
+        )
+
+    # Commit the toggle via canonical set_flag with admin company context
+    try:
+        await ff_svc.set_flag(
+            db=db,
+            flag_key=str(flag_key),
+            is_enabled=bool(requested_value),
+            company_id=payload.get("company_id_enforced") or str(approval.company_id),
+            rollout_percentage=int(payload.get("rollout_percentage") or 100),
+            description=None,
+            category=payload.get("category"),
+            metadata={"approval_request_id": str(approval.id)},
+            expires_at=None,
+            created_by=f"approval:{getattr(current_user, 'id', 'admin')}",
+        )
+    except Exception as set_exc:
+        logger.error(
+            "[FeatureFlagApproval] set_flag failed during approve: %s",
+            str(set_exc)[:200],
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"approval recorded but set_flag failed: {set_exc}",
+        )
+
+    from datetime import datetime as _dt
+    approval.status = "approved"
+    approval.resolved_at = _dt.utcnow()
+    approval.resolved_by = str(getattr(current_user, "id", "")) or None
+
+    await _send_approval_result_email(approval=approval, decision="approved")
+    try:
+        from app.shared.compliance.audit_service import AuditService
+        await AuditService().log_action(
+            trace_id=str(uuid_uuid4()),
+            company_id=str(approval.company_id),
+            action_type="feature_flag_change",
+            actor=str(getattr(current_user, "id", "admin")),
+            target_id=str(flag_key),
+            target_type="feature_flag",
+            metadata={
+                "workflow_state": "approved",
+                "approval_request_id": str(approval.id),
+                "flag_key": str(flag_key),
+                "requested_value": bool(requested_value),
+                "approver_id": str(getattr(current_user, "id", "")),
+                "requester_id": str(getattr(approval, "requester_id", "")),
+            },
+        )
+    except Exception as audit_exc:
+        logger.warning(
+            "[FeatureFlagApproval] audit on approve failed (fail-soft): %s",
+            str(audit_exc)[:200],
+        )
+
+    return FeatureFlagToggleApprovalResponse(
+        request_id=str(approval.id),
+        status=approval.status,
+        flag_key=str(flag_key),
+        requested_value=bool(requested_value),
+        expires_at=approval.expires_at.isoformat() if approval.expires_at else None,
+    )

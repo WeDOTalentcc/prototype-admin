@@ -24,6 +24,11 @@ class ApprovalType(str, enum.Enum):
     CANDIDATE_HIRE = "candidate_hire"
     OFFER_APPROVAL = "offer_approval"
     BUDGET_APPROVAL = "budget_approval"
+    # Phase B (Sprint B post-audit): feature flag second-actor approval
+    # workflow. Admin/DPO approves toggling sensitive learning_loops flags
+    # requested by non-admin users. See app/api/v1/lia_assistant_flags.py
+    # request_feature_flag_toggle / approve_feature_flag_toggle endpoints.
+    FEATURE_FLAG_TOGGLE = "feature_flag_toggle"
     CUSTOM = "custom"
 
 

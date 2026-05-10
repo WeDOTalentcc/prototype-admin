@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
-from app.models.approval import ApprovalRequest
+from app.models.approval import ApprovalRequest, ApprovalStatus
 from app.models.company import CompanyProfile
 import uuid
 from uuid import UUID
@@ -58,15 +58,23 @@ class ApprovalsRepository:
         self,
         company_id: UUID,
         approver_email: Optional[str] = None,
+        request_type: Optional[str] = None,
     ) -> list[ApprovalRequest]:
+        # Phase B fix (Sprint B post-audit): the previous version
+        # referenced an undefined `pending` identifier and crashed at
+        # call time with NameError. Replaced with the canonical
+        # ApprovalStatus.PENDING.value. Added request_type filter for
+        # the feature_flag_toggle workflow.
         query = select(ApprovalRequest).where(
             and_(
                 ApprovalRequest.company_id == company_id,
-                ApprovalRequest.status == pending
+                ApprovalRequest.status == ApprovalStatus.PENDING.value,
             )
         )
         if approver_email:
             query = query.where(ApprovalRequest.approver_email == approver_email)
+        if request_type:
+            query = query.where(ApprovalRequest.request_type == request_type)
         query = query.order_by(ApprovalRequest.created_at.desc())
         result = await self.db.execute(query)
         return list(result.scalars().all())

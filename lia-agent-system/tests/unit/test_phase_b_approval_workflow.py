@@ -203,6 +203,9 @@ def test_approve_request_invokes_set_flag_with_admin_context():
     approval.target_id = "learning_loops.bigfive_department_history"
     approval.company_id = "00000000-0000-0000-0000-0000000000a1"
     approval.requester_email = "user-42@example.com"
+    approval.expires_at = None  # Pydantic response expects None or datetime
+    approval.resolved_at = None
+    approval.resolved_by = None
 
     mock_repo = MagicMock()
     mock_repo.get_by_id = AsyncMock(return_value=approval)
@@ -271,12 +274,16 @@ def test_self_approval_blocked():
     mock_ff_svc.set_flag = AsyncMock()
 
     async def _run():
-        await approve_feature_flag_toggle(
-            request_id="approval-id-1",
-            db=AsyncMock(),
-            current_user=_make_user(is_admin=True, user_id="admin-99"),
-            ff_svc=mock_ff_svc,
-        )
+        with patch(
+            "app.api.v1.lia_assistant_flags._build_approvals_repo",
+            return_value=mock_repo,
+        ):
+            await approve_feature_flag_toggle(
+                request_id="approval-id-1",
+                db=AsyncMock(),
+                current_user=_make_user(is_admin=True, user_id="admin-99"),
+                ff_svc=mock_ff_svc,
+            )
 
     with pytest.raises(HTTPException) as exc_info:
         asyncio.run(_run())
