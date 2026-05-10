@@ -234,7 +234,7 @@ class TestHITLAutoConfirm:
         """Auto-confirmação deve registrar no audit trail (best-effort)."""
         svc = self._make_hitl()
         with patch.object(svc, "_check_auto_confirm", return_value=True), \
-             patch("app.services.hitl_service._db_resolve", new_callable=AsyncMock) as mock_resolve:
+             patch("app.domains.cv_screening.services.hitl_service._db_resolve", new_callable=AsyncMock) as mock_resolve:
             await svc.request_approval(
                 thread_id="t4", action="create_job", description="criar vaga",
                 data={}, ws_session_id="ws4", domain="wizard",

@@ -8,11 +8,13 @@
  * PR-B.
  */
 import { create } from "zustand"
+import { devtools } from "zustand/middleware"
 import type { OfferDraft, OfferDraftUpdate, SalaryWarning } from "@/types/offer"
 import { offersApi } from "@/services/lia-api/offers-api"
 
 interface OfferDraftState {
   draft: OfferDraft | null
+  isOpen: boolean
   isLoading: boolean
   isSaving: boolean
   error: string | null
@@ -25,7 +27,10 @@ interface OfferDraftState {
   sendAuto: () => Promise<{ success: boolean; message: string }>
   prepareManual: () => Promise<{ subject: string; body: string; templateId?: string } | null>
   cancel: (reason?: string) => Promise<void>
+  setDraft: (draft: OfferDraft) => void
+  setOpen: (open: boolean) => void
   clearDraft: () => void
+  reset: () => void
   setSalaryWarnings: (warnings: SalaryWarning[]) => void
 }
 
@@ -45,12 +50,17 @@ function computeSalaryWarnings(draft: OfferDraft): SalaryWarning[] {
   return warnings
 }
 
-export const useOfferDraftStore = create<OfferDraftState>((set, get) => ({
-  draft: null,
+const initialState = {
+  draft: null as OfferDraft | null,
+  isOpen: false,
   isLoading: false,
   isSaving: false,
-  error: null,
-  salaryWarnings: [],
+  error: null as string | null,
+  salaryWarnings: [] as SalaryWarning[],
+}
+
+export const useOfferDraftStore = create<OfferDraftState>()(devtools((set, get) => ({
+  ...initialState,
 
   startDraft: async (candidateId: string, jobId: string) => {
     set({ isLoading: true, error: null })
@@ -128,7 +138,14 @@ export const useOfferDraftStore = create<OfferDraftState>((set, get) => ({
     }
   },
 
+  setDraft: (draft: OfferDraft) => set({ draft, salaryWarnings: computeSalaryWarnings(draft) }),
+
+  setOpen: (open: boolean) => set({ isOpen: open }),
+
   clearDraft: () => set({ draft: null, error: null, salaryWarnings: [] }),
 
+  reset: () => set(initialState),
+
   setSalaryWarnings: (warnings) => set({ salaryWarnings: warnings }),
-}))
+}), { name: "OfferDraftStore" })
+)

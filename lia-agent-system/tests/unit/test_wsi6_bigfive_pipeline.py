@@ -215,11 +215,12 @@ class TestF66TraitQuestion:
         }"""
         captured_prompt = []
 
-        async def capture_invoke(prompt, **kwargs):
-            captured_prompt.append(prompt)
+        async def capture_ainvoke(prompt, **kwargs):
+            captured_prompt.append(str(prompt))
             return mock_response
 
-        gen.llm.safe_invoke = capture_invoke
+        gen.llm.claude = MagicMock()
+        gen.llm.claude.bind.return_value.ainvoke = capture_ainvoke
 
         comp = _make_competency()
         await gen._generate_bigfive_question(comp, ocean_trait="conscientiousness")
@@ -272,11 +273,12 @@ class TestF66TraitQuestion:
         mock_response.content = '{"question_text": "X", "expected_signals": [], "scoring_criteria": {}}'
         captured = []
 
-        async def capture(p, **kwargs):
-            captured.append(p)
+        async def capture_ainvoke2(p, **kwargs):
+            captured.append(str(p))
             return mock_response
 
-        gen.llm.safe_invoke = capture
+        gen.llm.claude = MagicMock()
+        gen.llm.claude.bind.return_value.ainvoke = capture_ainvoke2
 
         comp = _make_competency()
         await gen._generate_bigfive_question(comp, ocean_trait="conscientiousness")

@@ -12,6 +12,7 @@
  */
 import { useCallback } from "react"
 import { useOfferDraftStore } from "@/stores/offer-draft-store"
+import { offersApi } from "@/services/lia-api/offers-api"
 
 export interface OfferReviewTrigger {
   candidateId: string
@@ -20,7 +21,7 @@ export interface OfferReviewTrigger {
 }
 
 export function useOfferReviewFlow() {
-  const { startDraft, loadDraft, clearDraft } = useOfferDraftStore()
+  const { startDraft, loadDraft, clearDraft, setDraft, setOpen } = useOfferDraftStore()
 
   /**
    * Open the offer review modal for a candidate+job pair.
@@ -31,7 +32,13 @@ export function useOfferReviewFlow() {
     if (trigger.draftId) {
       await loadDraft(trigger.draftId)
     } else {
-      await startDraft(trigger.candidateId, trigger.jobId)
+      // Explicitly call offersApi.createDraft so callers can verify draft creation path
+      const newDraft = await offersApi.createDraft({
+        candidate_id: trigger.candidateId,
+        job_id: trigger.jobId,
+      })
+      setDraft(newDraft)  // populate store directly — avoids round-trip GET
+      setOpen(true)
     }
     // Modal is controlled by useOfferDraftStore.draft !== null
     // Components watching the store will open the modal

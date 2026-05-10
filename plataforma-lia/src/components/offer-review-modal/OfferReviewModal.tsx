@@ -18,6 +18,7 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { useOfferDraftStore } from "@/stores/offer-draft-store"
+import { offersApi } from "@/services/lia-api/offers-api"
 import { JobDataPanel } from "./JobDataPanel"
 import { OfferDataForm } from "./OfferDataForm"
 import type { OfferDraftUpdate } from "@/types/offer"
@@ -30,6 +31,8 @@ export function OfferReviewModal() {
 
   const [sendMode, setSendMode] = useState<"auto" | "manual" | null>(null)
   const [isSending, setIsSending] = useState(false)
+  // HITL two-step confirm guard: idle → confirming → send
+  const [confirmState, setConfirmState] = useState<"idle" | "confirming">("idle")
   const [sendResult, setSendResult] = useState<{ success: boolean; message: string } | null>(null)
 
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -52,16 +55,30 @@ export function OfferReviewModal() {
   )
 
   const handleSendAuto = useCallback(async () => {
+    // HITL two-step: require explicit confirmation before sending
+    if (confirmState !== "confirming") {
+      setConfirmState("confirming")
+      return
+    }
     if (debounceTimer.current) clearTimeout(debounceTimer.current)
     if (Object.keys(pendingUpdates.current).length > 0) {
       await updateField({ ...pendingUpdates.current })
       pendingUpdates.current = {}
     }
     setIsSending(true)
-    const result = await sendAuto()
+    setConfirmState("idle")
+    // Send with explicit user confirmation flag (HITL audit requirement)
+    try {
+      const draft = useOfferDraftStore.getState().draft
+      if (draft) {
+        const result = await offersApi.sendDraft(draft.id, { user_confirmation: true })
+        setSendResult({ success: result.success ?? true, message: result.message ?? "Proposta enviada!" })
+      }
+    } catch (err) {
+      setSendResult({ success: false, message: String(err) })
+    }
     setIsSending(false)
-    setSendResult(result)
-  }, [updateField, sendAuto])
+  }, [confirmState, updateField])
 
   const handlePrepareManual = useCallback(async () => {
     if (debounceTimer.current) clearTimeout(debounceTimer.current)
@@ -152,7 +169,7 @@ export function OfferReviewModal() {
               disabled={isSaving || isSending || !draft.offered_salary}
               className="bg-gray-900 text-white hover:bg-gray-800"
             >
-              {isSending ? "Enviando..." : "Enviar Proposta"}
+              {isSending ? "Enviando..." : confirmState === "confirming" ? "Confirmar Envio" : "Enviar Proposta"}
             </Button>
           </div>
         </DialogFooter>
