@@ -125,7 +125,8 @@ class TestEmailTemplatesScreeningPassed:
     def test_screening_passed(self):
         result = EmailTemplates.screening_passed(
             candidate_name="Gustavo",
-            job_title="Analista"
+            job_title="Analista",
+            strengths=["Python", "Comunicacao"]
         )
         assert isinstance(result, dict)
 
@@ -134,7 +135,9 @@ class TestEmailTemplatesScreeningFailed:
     def test_screening_failed(self):
         result = EmailTemplates.screening_failed(
             candidate_name="Helena",
-            job_title="Dev"
+            job_title="Dev",
+            strengths=["Python"],
+            development_areas=["Lideranca"]
         )
         assert isinstance(result, dict)
 
@@ -186,7 +189,7 @@ class TestWhatsAppTemplatesScreeningPassed:
     def test_returns_string(self):
         result = WhatsAppTemplates.screening_passed(
             candidate_name="Eduardo",
-            job_title="Analista"
+            strengths=["Python", "Colaboracao"]
         )
         assert isinstance(result, str)
 
@@ -195,7 +198,8 @@ class TestWhatsAppTemplatesScreeningFailed:
     def test_returns_string(self):
         result = WhatsAppTemplates.screening_failed(
             candidate_name="Fernanda",
-            job_title="Dev"
+            strengths=["Python"],
+            development_areas=["Lideranca"]
         )
         assert isinstance(result, str)
 
@@ -204,18 +208,17 @@ class TestWhatsAppTemplatesScreeningReminder:
     def test_returns_string(self):
         result = WhatsAppTemplates.screening_reminder(
             candidate_name="Gustavo",
-            job_title="PM"
+            hours_remaining=24
         )
         assert isinstance(result, str)
 
 
 class TestWhatsAppTemplatesInterviewScheduled:
     def test_returns_string(self):
+        from datetime import datetime
         result = WhatsAppTemplates.interview_scheduled(
             candidate_name="Helena",
-            job_title="Dev",
-            interview_date="15/05/2026",
-            interview_time="10:00",
+            interview_date=datetime(2026, 5, 15, 10, 0),
             interview_link="https://meet.google.com/test"
         )
         assert isinstance(result, str)

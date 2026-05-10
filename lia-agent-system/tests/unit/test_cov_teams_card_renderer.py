@@ -218,10 +218,11 @@ class TestRenderDeadlineCard:
 class TestRenderScreeningComplete:
     def test_screening_complete_card(self, renderer):
         result = renderer.render_screening_complete_card(
-            vacancy_title="Frontend Dev",
-            screened_count=10,
-            approved_count=3,
-            vacancy_id="v6"
+            candidate_name="Ana Silva",
+            job_title="Frontend Dev",
+            match_score=87.5,
+            recommendation="Aprovado para proxima etapa",
+            candidate_id="cand_123"
         )
         assert result is not None
 

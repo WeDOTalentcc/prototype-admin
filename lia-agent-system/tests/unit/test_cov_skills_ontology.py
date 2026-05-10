@@ -28,22 +28,22 @@ class TestSkillLevel:
 
 class TestSkillNode:
     def test_instantiation_with_required_fields(self):
-        node = SkillNode(id="python", name="Python")
+        node = SkillNode(id="python", name="Python", domain="backend", specialization="language")
         assert node.id == "python"
         assert node.name == "Python"
 
     def test_canonical_property(self):
-        node = SkillNode(id="PYTHON", name="Python")
+        node = SkillNode(id="PYTHON", name="Python", domain="backend", specialization="language")
         assert node.canonical == "python"
 
     def test_with_domain(self):
-        node = SkillNode(id="django", name="Django", domain="backend")
+        node = SkillNode(id="django", name="Django", domain="backend", specialization="framework")
         assert node.domain == "backend"
 
 
 class TestSkillEdge:
     def test_instantiation(self):
-        edge = SkillEdge(source="python", target="django", weight=0.8)
+        edge = SkillEdge(source="python", target="django", weight=0.8, relation="related")
         assert edge.source == "python"
         assert edge.target == "django"
         assert edge.weight == 0.8
