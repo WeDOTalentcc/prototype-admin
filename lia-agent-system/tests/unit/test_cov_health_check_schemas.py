@@ -100,13 +100,13 @@ class TestHealthCheckItemCreate:
             category="Access Control",
             req_id="ISO-A9",
             requirement="Access control policy must be documented",
-            guidance="Document and review access control policy annually",
-            review_frequency=ReviewFrequencyEnum.ANNUAL,
+            status=HealthCheckStatusEnum.PARTIAL,
             priority=PriorityEnum.HIGH,
+            review_frequency=ReviewFrequencyEnum.ANNUAL,
         )
-        assert m.guidance is not None
-        assert m.review_frequency == "annual"
+        assert m.status == "partial"
         assert m.priority == "high"
+        assert m.review_frequency == "annual"
 
     def test_defaults(self):
         m = HealthCheckItemCreate(
@@ -115,7 +115,7 @@ class TestHealthCheckItemCreate:
             req_id="CC1.1",
             requirement="Demonstrate commitment to integrity",
         )
-        assert m.guidance is None
+        assert m.evidence is None
 
 
 class TestHealthCheckItemResponse:
@@ -148,7 +148,7 @@ class TestHealthCheckItemResponse:
         assert m.status == "partial"
         assert m.priority == "critical"
 
-    def test_not_applicable(self):
+    def test_optional_fields_none(self):
         m = HealthCheckItemResponse(
             id="hc-003",
             framework="BCB498",
@@ -159,26 +159,14 @@ class TestHealthCheckItemResponse:
             review_frequency=ReviewFrequencyEnum.ANNUAL.value,
             priority=PriorityEnum.LOW.value,
         )
-        assert m.status == "not_applicable"
-
-    def test_optional_fields(self):
-        m = HealthCheckItemResponse(
-            id="hc-004",
-            framework="ISO27001",
-            category="Access",
-            req_id="A.9",
-            requirement="Access policy",
-            status="pending",
-            review_frequency="monthly",
-            priority="medium",
-        )
-        assert m.responsible_team is None
-        assert m.evidence_notes is None
+        assert m.evidence is None
+        assert m.evidence_details is None
+        assert m.gap_observation is None
 
 
 class TestHealthCheckItemListResponse:
     def test_empty(self):
-        m = HealthCheckItemListResponse(items=[], total=0)
+        m = HealthCheckItemListResponse(items=[], total=0, limit=20, offset=0)
         assert m.items == []
         assert m.total == 0
 
@@ -188,7 +176,7 @@ class TestHealthCheckItemListResponse:
             req_id="L1", requirement="Req",
             status="implemented", review_frequency="annual", priority="high",
         )
-        m = HealthCheckItemListResponse(items=[item], total=1)
+        m = HealthCheckItemListResponse(items=[item], total=1, limit=20, offset=0)
         assert m.total == 1
         assert len(m.items) == 1
 

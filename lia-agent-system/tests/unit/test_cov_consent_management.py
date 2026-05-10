@@ -85,26 +85,29 @@ class TestConsentVersionResponse:
     def test_basic(self):
         m = ConsentVersionResponse(
             id="cv-001",
+            company_id="co-001",
             consent_type="terms_of_service",
             version="1.0",
             title="Terms",
             content_html="<p>Terms</p>",
             content_text="Terms",
-            effective_from=date(2024, 1, 1),
+            hash="sha256abc123",
             is_current=True,
         )
         assert m.id == "cv-001"
         assert m.is_current is True
+        assert m.hash == "sha256abc123"
 
     def test_not_current(self):
         m = ConsentVersionResponse(
             id="cv-002",
+            company_id="co-001",
             consent_type="privacy_policy",
             version="1.0",
             title="Old Privacy Policy",
             content_html="<p>Old</p>",
             content_text="Old",
-            effective_from=date(2023, 1, 1),
+            hash="sha256old",
             is_current=False,
         )
         assert m.is_current is False
@@ -112,17 +115,17 @@ class TestConsentVersionResponse:
 
 class TestConsentVersionListResponse:
     def test_empty(self):
-        m = ConsentVersionListResponse(versions=[], total=0)
+        m = ConsentVersionListResponse(versions=[], total=0, limit=20, offset=0)
         assert m.versions == []
         assert m.total == 0
 
     def test_with_items(self):
         v = ConsentVersionResponse(
-            id="cv-001", consent_type="terms", version="1.0",
-            title="Terms", content_html="<p>T</p>", content_text="T",
-            effective_from=date(2024, 1, 1), is_current=True,
+            id="cv-001", company_id="co-001", consent_type="terms",
+            version="1.0", title="Terms", content_html="<p>T</p>",
+            content_text="T", hash="h1",
         )
-        m = ConsentVersionListResponse(versions=[v], total=1)
+        m = ConsentVersionListResponse(versions=[v], total=1, limit=20, offset=0)
         assert m.total == 1
 
 
@@ -171,7 +174,7 @@ class TestConsentEventCreate:
             event_type=ConsentEventTypeEnum.GRANTED,
             consent_given=True,
         )
-        assert m.channel is None
+        assert m.channel == ConsentChannelEnum.WEB  # default is web
         assert m.ip_address is None
 
 
@@ -179,19 +182,37 @@ class TestConsentEventResponse:
     def test_basic(self):
         m = ConsentEventResponse(
             id="ce-001",
+            company_id="co-001",
             consent_version_id="cv-001",
             subject_email="user@example.com",
             subject_identifier="user-001",
             event_type=ConsentEventTypeEnum.GRANTED.value,
             consent_given=True,
-            created_at=datetime(2024, 5, 10, 14, 30),
+            channel=ConsentChannelEnum.WEB.value,
+            proof_hash="sha256proof",
         )
         assert m.id == "ce-001"
         assert m.consent_given is True
+        assert m.proof_hash == "sha256proof"
+
+    def test_optional_fields(self):
+        m = ConsentEventResponse(
+            id="ce-002",
+            company_id="co-001",
+            consent_version_id="cv-002",
+            subject_email="user2@example.com",
+            subject_identifier="user-002",
+            event_type="revoked",
+            consent_given=False,
+            channel="email",
+            proof_hash="hash2",
+        )
+        assert m.location_country is None
+        assert m.expires_at is None
 
 
 class TestConsentEventListResponse:
     def test_empty(self):
-        m = ConsentEventListResponse(events=[], total=0)
+        m = ConsentEventListResponse(events=[], total=0, limit=20, offset=0)
         assert m.events == []
         assert m.total == 0

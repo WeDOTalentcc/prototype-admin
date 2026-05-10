@@ -37,14 +37,14 @@ class TestRequirementLevel:
 
 
 class TestWorkModel:
-    def test_remoto(self):
-        assert WorkModel.REMOTO == "remoto"
+    def test_remote(self):
+        assert WorkModel.REMOTE == "remoto"
 
-    def test_hibrido(self):
-        assert WorkModel.HIBRIDO == "hibrido"
+    def test_hybrid(self):
+        assert WorkModel.HYBRID == "hibrido"
 
-    def test_presencial(self):
-        assert WorkModel.PRESENCIAL == "presencial"
+    def test_onsite(self):
+        assert WorkModel.ONSITE == "presencial"
 
 
 class TestContractType:
@@ -114,11 +114,12 @@ class TestCompetency:
         assert m.name == "Leadership"
 
     def test_with_level(self):
+        from app.schemas.job_description import RequirementLevel
         m = Competency(
             name="Problem Solving",
-            level="senior",
+            level=RequirementLevel.NICE_TO_HAVE,
         )
-        assert m.level == "senior"  # overrides default
+        assert m.level == RequirementLevel.NICE_TO_HAVE
 
     def test_technical_competency(self):
         m = Competency(

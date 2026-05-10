@@ -128,7 +128,7 @@ class TestAuditLogResponse:
 
 class TestAuditLogListResponse:
     def test_empty(self):
-        m = AuditLogListResponse(logs=[], total=0)
+        m = AuditLogListResponse(logs=[], total=0, limit=20, offset=0)
         assert m.logs == []
         assert m.total == 0
 
