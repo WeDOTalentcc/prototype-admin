@@ -57,6 +57,38 @@ def check_diversity_targets(job_id: str, current_pipeline: str) -> dict:
         ]
     )
 
+    # P2-1 fix (2026-05-10): emit audit row para anti-discrimination tracking (LGPD Art.20 + EU AI Act Art.13)
+    try:
+        if not targets_met:
+            from app.shared.compliance.audit_service import AuditService
+            import asyncio
+            service = AuditService()
+            coro = service.log_decision(
+                company_id="",  # contextvar resolve
+                agent_name="hiring_policy_tools",
+                decision_type="diversity_check",
+                action="check_diversity_targets",
+                decision="adverse_impact_detected",
+                reasoning=[
+                    f"job_id={job_id}",
+                    f"disparate_impact_ratio={disparate_impact_ratio}",
+                    f"groups={list(group_rates.keys())}",
+                ],
+                criteria_used=["IEEE_7003", "four_fifths_rule"],
+                job_vacancy_id=str(job_id),
+                confidence=disparate_impact_ratio,
+                human_review_required=True,
+                criteria_ignored=None,
+            )
+            # Fire-and-forget audit (non-blocking)
+            try:
+                loop = asyncio.get_event_loop()
+                loop.create_task(coro)
+            except Exception:
+                pass
+    except Exception as exc:
+        logger.debug("[policy_tools] audit emission deferred: %s", exc)
+
     return {
         "job_id": job_id,
         "targets_met": targets_met,
@@ -97,6 +129,25 @@ def validate_job_requirements(job_id: str, requirements_text: str) -> dict:
     for pattern, message in _DISCRIMINATORY_PATTERNS:
         if pattern in text_lower:
             issues.append({"pattern": pattern, "message": message})
+
+    # P2-1 fix (2026-05-10): FairnessGuard como SECONDARY check (1.122 LOC + 3 camadas)
+    # complementar ao scan local de _DISCRIMINATORY_PATTERNS. FairnessGuard cobre
+    # patterns mais completos (gênero, raça, idade, religião, orientação, etc.) +
+    # léxico implícito + (Layer 3) LLM semantic.
+    try:
+        from app.shared.compliance.fairness_guard import FairnessGuard
+        fg = FairnessGuard()
+        fg_result = fg.check(requirements_text)
+        if fg_result and getattr(fg_result, "is_blocked", False):
+            for term in (getattr(fg_result, "blocked_terms", []) or []):
+                issues.append({
+                    "pattern": term,
+                    "message": f"FairnessGuard: {getattr(fg_result, 'category', 'discriminatory')} — {getattr(fg_result, 'educational_message', 'discriminação detectada')}",
+                    "source": "fairness_guard",
+                })
+    except Exception as exc:
+        # Fail-open: FairnessGuard não pode bloquear validação local
+        logger.warning("[policy_tools] FairnessGuard fallback: %s", exc)
 
     severity = "none"
     if len(issues) >= 3:
