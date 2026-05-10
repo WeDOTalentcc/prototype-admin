@@ -135,34 +135,68 @@ class WizardSessionService:
         Rails ``workspace_id`` integer column).
         """
         from app.shared.agents.tenant_aware_agent import is_tenant_strict_mode
-        from app.shared.exceptions.tenant_errors import InvalidCompanyIdError
+        from app.shared.exceptions.tenant_errors import (
+            InvalidCompanyIdError,
+            MissingTenantContextError,
+        )
         from app.shared.value_objects.company_id import CompanyId
 
+        ctx = context or {}
+        resolution_source = "valid"
         try:
+            # T-B contract: company_id ausente (None) é "tenant context faltando"
+            # — semanticamente distinto de "company_id presente mas malformado".
+            # Strict-mode levanta MissingTenantContextError nesse caso.
+            if company_id is None:
+                raise MissingTenantContextError(
+                    details={
+                        "tenant_source": "wizard_session_service",
+                        "agent": "wizard_react_agent",
+                        "company_id_raw": None,
+                    },
+                )
             parsed_cid = CompanyId.parse(company_id)
             normalized_cid = parsed_cid.as_str()
             # Legacy: slug puramente numérico mapeia 1:1 em workspace_id int
             safe_workspace_id = (
                 int(normalized_cid) if normalized_cid.isdigit() else 0
             )
-        except InvalidCompanyIdError:
+        except (InvalidCompanyIdError, MissingTenantContextError) as exc:
             if is_tenant_strict_mode():
                 logger.error(
-                    "[WizardSession] company_id inválido em strict-mode "
-                    "thread=%s raw=%r — abortando (fail-closed canônico T-B).",
-                    thread_id, company_id,
+                    "[WizardSession] tenant context faltando/inválido em strict-mode "
+                    "thread=%s raw=%r kind=%s — abortando (fail-closed T-B).",
+                    thread_id, company_id, type(exc).__name__,
                 )
                 raise
+            resolution_source = (
+                "fail_open_missing"
+                if isinstance(exc, MissingTenantContextError)
+                else "fail_open_invalid"
+            )
             logger.warning(
-                "[WizardSession] company_id inválido em legacy-mode "
-                "thread=%s raw=%r — degradando para workspace_id=0 "
+                "[WizardSession] tenant context faltando/inválido em legacy-mode "
+                "thread=%s raw=%r kind=%s — degradando para workspace_id=0 "
                 "(compat dev). Set LIA_AGENT_TENANT_STRICT=true para fail-closed.",
-                thread_id, company_id,
+                thread_id, company_id, type(exc).__name__,
             )
             normalized_cid = ""
             safe_workspace_id = 0
 
-        ctx = context or {}
+        # Structured per-turn log: permite eval suite + canary detectarem
+        # regressão silenciosa de tenant context no wizard.
+        snippet_len = len(ctx.get("tenant_context_snippet") or "")
+        logger.info(
+            "wizard_tenant_context_resolved",
+            extra={
+                "event": "wizard_tenant_context_resolved",
+                "thread_id": thread_id,
+                "company_id": normalized_cid,
+                "workspace_id": safe_workspace_id,
+                "source": resolution_source,
+                "snippet_len": snippet_len,
+            },
+        )
 
         if prior_state:
             # ── Continuing session ──────────────────────────────────────
