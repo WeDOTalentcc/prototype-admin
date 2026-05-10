@@ -30,9 +30,12 @@ import pytest
 # ── C2 — Audit log on feature flag toggle ───────────────────────────────────
 
 
-def _make_flag_request(flag_key: str = "learning_loops.bigfive_department_history",
+def _make_flag_request(flag_key: str = "learning_loops.jd_similar_suggestion",
                        is_enabled: bool = True,
                        company_id: str | None = "co-1"):
+    # Default to a non-sensitive flag so HITL gate (P1-9) doesn't
+    # interfere with audit-log tests. HITL-specific tests live in
+    # test_p1_9_hitl_gate.py.
     from app.api.v1.lia_assistant_flags import FeatureFlagRequest
     return FeatureFlagRequest(
         flag_key=flag_key,

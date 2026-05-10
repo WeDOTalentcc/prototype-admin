@@ -34,9 +34,12 @@ def _make_user(user_id: str = "user-42", company_id: str = "co-A", is_admin: boo
     return user
 
 
-def _make_flag_request(flag_key: str = "learning_loops.bigfive_department_history",
+def _make_flag_request(flag_key: str = "learning_loops.jd_similar_suggestion",
                        is_enabled: bool = True,
                        company_id: str | None = "co-A"):
+    # Default to a non-sensitive flag so HITL gate (P1-9) doesn't
+    # interfere with IDOR/audit-log tests. Tests specifically for HITL
+    # use sensitive flags explicitly.
     from app.api.v1.lia_assistant_flags import FeatureFlagRequest
     return FeatureFlagRequest(
         flag_key=flag_key,

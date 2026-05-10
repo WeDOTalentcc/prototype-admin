@@ -54,6 +54,69 @@ class FeatureFlagResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# HITL gate (Sprint B P1-9, post-audit hardening)
+# ---------------------------------------------------------------------------
+#
+# Per CLAUDE.md compliance-risk + LGPD Art. 20: 'Decisão automatizada (Art. 20)
+# exige direito de revisão humana'. The audit log is forensics — it records
+# what happened, not gating who can flip it.
+#
+# Until the full second-actor approval UI ships, sensitive flags route through
+# admins (UserRole.admin). Admins ARE the human reviewer for these toggles.
+# Non-admin users get HTTP 403 with a message directing them to a DPO/admin.
+#
+# Sensitive flag list is canonical — must include any flag whose ON state
+# triggers population-level LGPD-risky behaviors (homogeneity bias, learning
+# loops over candidate-derived data, etc.).
+SENSITIVE_FLAGS_REQUIRING_HITL: frozenset[str] = frozenset({
+    # Phase 2 / ADR-LGPD-001 — drives bigfive_department_profiles aggregation
+    # over hire outcomes; homogeneity bias risk.
+    "learning_loops.bigfive_department_history",
+    # Phase 3 — drives wsi_question_effectiveness aggregation; bias-aware
+    # ranking of behavioral questions.
+    "learning_loops.wsi_question_effectiveness",
+})
+
+
+def _is_sensitive_flag(flag_key: str) -> bool:
+    """True if the flag_key matches a sensitive flag (HITL required).
+
+    Matches both the bare key ('learning_loops.bigfive_department_history')
+    and templated forms used by policy_sync_service that prefix the
+    company_id (e.g., 'company:co-A.learning_loops.bigfive_department_history').
+    """
+    if not flag_key:
+        return False
+    if flag_key in SENSITIVE_FLAGS_REQUIRING_HITL:
+        return True
+    # Templated forms: any sensitive key as a suffix match
+    for sensitive in SENSITIVE_FLAGS_REQUIRING_HITL:
+        if flag_key.endswith(sensitive):
+            return True
+    return False
+
+
+def _enforce_hitl_gate(flag_key: str, current_user: User) -> None:
+    """Raise HTTP 403 if a non-admin user tries to flip a sensitive flag.
+
+    Admins are unaffected — they are the human reviewer per ADR-LGPD-001
+    Art. 20 contract.
+    """
+    if not _is_sensitive_flag(flag_key):
+        return
+    if getattr(current_user, "role", None) == UserRole.admin:
+        return
+    raise HTTPException(
+        status_code=status.HTTP_403_FORBIDDEN,
+        detail=(
+            f"Flag '{flag_key}' requires DPO/admin approval (LGPD Art. 20 "
+            f"human-review). Please contact your administrator to flip this "
+            f"sensitive learning-loop flag."
+        ),
+    )
+
+
+# ---------------------------------------------------------------------------
 # Multi-tenancy enforcement (Sprint B P0-1, post-audit hardening)
 # ---------------------------------------------------------------------------
 
@@ -116,7 +179,11 @@ async def set_feature_flag(
     current_user: User = Depends(get_current_user_or_demo),
     ff_svc: FeatureFlagService = Depends(get_feature_flag_service),
 ) -> FeatureFlagResponse:
-    # P0-1: enforce tenant FIRST, before any DB mutation. Raises 403 on
+    # P1-9: HITL gate FIRST — sensitive flags require admin/DPO. Short-
+    # circuits BEFORE any DB mutation or tenant enforcement.
+    _enforce_hitl_gate(request.flag_key, current_user)
+
+    # P0-1: enforce tenant, before any DB mutation. Raises 403 on
     # non-admin cross-tenant attempts; otherwise returns the canonical
     # company_id (None allowed only for admins setting global flags).
     enforced_company_id = _enforce_flag_tenant(request.company_id, current_user)
