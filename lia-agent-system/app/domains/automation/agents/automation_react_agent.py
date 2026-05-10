@@ -23,6 +23,7 @@ from app.domains.automation.agents.automation_tool_registry import (
     get_automation_tools,
 )
 from app.shared.agents.agent_registry import register_agent
+from app.shared.agents.tenant_aware_agent import TenantAwareAgentMixin
 from app.shared.services.confidence_policy_service import confidence_policy_service
 from app.shared.prompts.prompt_composer import PromptComposer
 
@@ -30,7 +31,7 @@ logger = logging.getLogger(__name__)
 
 
 @register_agent("automation")
-class AutomationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
+class AutomationReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
     DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
         agent_type="automation",
         domain_specific=AUTOMATION_DOMAIN_SPECIFIC,
@@ -69,7 +70,8 @@ class AutomationReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         """
         try:
             ctx = input.context or {}
-            return PromptComposer.for_domain_runtime(
+            return self._compose_runtime_prompt(
+                input,
                 agent_type="automation",
                 domain_specific=AUTOMATION_DOMAIN_SPECIFIC,
                 memory_summary=ctx.get("memory_summary", ""),

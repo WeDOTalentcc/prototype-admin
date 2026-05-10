@@ -465,6 +465,7 @@ class TenantAwareAgentMixin:
         self,
         input: "AgentInput",
         *,
+        agent_type: str | None = None,
         domain_specific: str = "",
         few_shot_examples: str = "",
         reasoning_template: str = "",
@@ -489,8 +490,12 @@ class TenantAwareAgentMixin:
         ctx = input.context or {}
         snippet = ctx.get("tenant_context_snippet", "") or ""
 
+        # T-D: agentes onde agent_type (chave YAML) ≠ domain_name (cv_screening_pipeline,
+        # jobs_mgmt, etc.) precisam preservar a chave YAML original. Aceita override
+        # explícito; default é domain_name.
+        effective_agent_type = agent_type or self._tenant_aware_agent_name()
         kwargs: dict[str, Any] = dict(
-            agent_type=self._tenant_aware_agent_name(),
+            agent_type=effective_agent_type,
             domain_specific=domain_specific,
             few_shot_examples=few_shot_examples,
             reasoning_template=reasoning_template,

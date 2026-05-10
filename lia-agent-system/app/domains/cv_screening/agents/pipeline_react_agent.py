@@ -35,10 +35,11 @@ _CONFIRMATION_WORDS = {
 
 
 from app.shared.agents.agent_registry import register_agent
+from app.shared.agents.tenant_aware_agent import TenantAwareAgentMixin
 from app.shared.prompts.prompt_composer import PromptComposer
 
 @register_agent("pipeline", aliases=['cv_screening'])
-class PipelineReActAgent(LangGraphReActBase, EnhancedAgentMixin):
+class PipelineReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
     DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
         agent_type="cv_screening_pipeline",
         domain_specific=PIPELINE_DOMAIN_SPECIFIC,
@@ -53,7 +54,8 @@ class PipelineReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         """
         try:
             ctx = input.context or {}
-            return PromptComposer.for_domain_runtime(
+            return self._compose_runtime_prompt(
+                input,
                 agent_type="cv_screening_pipeline",
                 domain_specific=PIPELINE_DOMAIN_SPECIFIC,
                 reasoning_template=PIPELINE_REASONING_PROMPT,

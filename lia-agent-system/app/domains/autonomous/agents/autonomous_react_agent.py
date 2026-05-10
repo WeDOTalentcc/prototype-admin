@@ -36,6 +36,7 @@ from app.domains.autonomous.agents.autonomous_tool_registry import (
     get_tool_names,
 )
 from app.shared.agents.agent_registry import register_agent
+from app.shared.agents.tenant_aware_agent import TenantAwareAgentMixin
 
 _AUTONOMOUS_MAX_STEPS_DEFAULT = 10
 
@@ -67,7 +68,7 @@ def _get_circuit_breaker() -> Any:
 
 
 @register_agent("autonomous")
-class AutonomousReActAgent(LangGraphReActBase, EnhancedAgentMixin):
+class AutonomousReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
     """
     Agente ReAct autônomo cross-domain — Tier 6 do CascadedRouter.
 
@@ -127,7 +128,8 @@ class AutonomousReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         """
         try:
             ctx = input.context or {}
-            return PromptComposer.for_domain_runtime(
+            return self._compose_runtime_prompt(
+                input,
                 agent_type="autonomous",
                 domain_specific=(
                     "Você foi acionada porque a solicitação cruza múltiplos domínios de "

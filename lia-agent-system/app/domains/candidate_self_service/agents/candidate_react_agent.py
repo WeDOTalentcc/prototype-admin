@@ -10,6 +10,7 @@ from lia_agents_core.working_memory import WorkingMemoryService
 
 from app.domains.candidate_self_service.agents.candidate_tool_registry import get_candidate_tools
 from app.shared.agents.agent_registry import register_agent
+from app.shared.agents.tenant_aware_agent import TenantAwareAgentMixin
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.prompts.prompt_composer import PromptComposer
 from app.shared.services.confidence_policy_service import confidence_policy_service
@@ -18,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 @register_agent("candidate_self_service")
-class CandidateSelfServiceAgent(LangGraphReActBase, EnhancedAgentMixin):
+class CandidateSelfServiceAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
     """Read-only agent: candidate queries own recruitment status.
 
     LLM: Claude Haiku 4.5 (volume candidate traffic, lower cost).

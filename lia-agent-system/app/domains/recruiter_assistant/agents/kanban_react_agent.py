@@ -36,10 +36,11 @@ _CONFIRMATION_WORDS = {
 
 
 from app.shared.agents.agent_registry import register_agent
+from app.shared.agents.tenant_aware_agent import TenantAwareAgentMixin
 from app.shared.prompts.prompt_composer import PromptComposer
 
 @register_agent("kanban")
-class KanbanReActAgent(LangGraphReActBase, EnhancedAgentMixin):
+class KanbanReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
     """Autonomous agent for strategic pipeline analysis via LangGraph nativo."""
 
     # Static class-attr (legacy backward compat — empty placeholders).
@@ -60,7 +61,8 @@ class KanbanReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         """
         try:
             ctx = input.context or {}
-            return PromptComposer.for_domain_runtime(
+            return self._compose_runtime_prompt(
+                input,
                 agent_type="kanban",
                 domain_specific=KANBAN_DOMAIN_SPECIFIC,
                 few_shot_examples=KANBAN_FEW_SHOT_EXAMPLES,

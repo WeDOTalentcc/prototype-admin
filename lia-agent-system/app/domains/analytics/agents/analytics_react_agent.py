@@ -27,10 +27,11 @@ logger = logging.getLogger(__name__)
 
 
 from app.shared.agents.agent_registry import register_agent
+from app.shared.agents.tenant_aware_agent import TenantAwareAgentMixin
 from app.shared.prompts.prompt_composer import PromptComposer
 
 @register_agent("analytics")
-class AnalyticsReActAgent(LangGraphReActBase, EnhancedAgentMixin):
+class AnalyticsReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
     DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
         agent_type="analytics",
         domain_specific=ANALYTICS_DOMAIN_SPECIFIC,
@@ -69,7 +70,8 @@ class AnalyticsReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         """
         try:
             ctx = input.context or {}
-            return PromptComposer.for_domain_runtime(
+            return self._compose_runtime_prompt(
+                input,
                 agent_type="analytics",
                 domain_specific=ANALYTICS_DOMAIN_SPECIFIC,
                 memory_summary=ctx.get("memory_summary", ""),

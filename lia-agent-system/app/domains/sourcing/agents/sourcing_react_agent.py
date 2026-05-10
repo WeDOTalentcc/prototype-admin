@@ -79,10 +79,11 @@ def _aggregate_all_tool_names() -> list[str]:
 
 
 from app.shared.agents.agent_registry import register_agent
+from app.shared.agents.tenant_aware_agent import TenantAwareAgentMixin
 from app.shared.prompts.prompt_composer import PromptComposer
 
 @register_agent("sourcing")
-class SourcingReActAgent(LangGraphReActBase, EnhancedAgentMixin):
+class SourcingReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
     DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
         agent_type="sourcing",
         domain_specific=SOURCING_DOMAIN_SPECIFIC,
@@ -98,7 +99,8 @@ class SourcingReActAgent(LangGraphReActBase, EnhancedAgentMixin):
         """
         try:
             ctx = input.context or {}
-            return PromptComposer.for_domain_runtime(
+            return self._compose_runtime_prompt(
+                input,
                 agent_type="sourcing",
                 domain_specific=SOURCING_DOMAIN_SPECIFIC,
             few_shot_examples=SOURCING_FEW_SHOT_EXAMPLES,

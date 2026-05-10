@@ -39,10 +39,12 @@ from app.shared.services.confidence_policy_service import confidence_policy_serv
 logger = logging.getLogger(__name__)
 
 from app.shared.agents.agent_registry import register_agent
+from app.shared.agents.tenant_aware_agent import TenantAwareAgentMixin
+from app.shared.prompts.prompt_composer import PromptComposer
 
 
 @register_agent("talent_pool", aliases=["voice_screening"])
-class TalentPoolReActAgent(LangGraphReActBase, EnhancedAgentMixin):
+class TalentPoolReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
     """
     Autonomous ReAct agent for talent pool (live talent bank) management.
 
@@ -52,6 +54,32 @@ class TalentPoolReActAgent(LangGraphReActBase, EnhancedAgentMixin):
     """
 
     DOMAIN_INSTRUCTIONS = TALENT_POOL_DOMAIN_SPECIFIC
+
+    def _get_runtime_domain_instructions(self, input: AgentInput) -> str:
+        """T-D: injeta tenant_context_snippet via TenantAwareAgentMixin.
+
+        Antes desta refatoração, ``DOMAIN_INSTRUCTIONS`` era apenas o bloco
+        estático ``TALENT_POOL_DOMAIN_SPECIFIC`` — sem snippet de tenant,
+        a LIA respondia "qual a empresa?" mesmo com JWT correto.
+
+        Falls back to legacy DOMAIN_INSTRUCTIONS if PromptComposer fails.
+        """
+        try:
+            ctx = input.context or {}
+            return self._compose_runtime_prompt(
+                input,
+                agent_type="talent_pool",
+                domain_specific=TALENT_POOL_DOMAIN_SPECIFIC,
+                memory_summary=ctx.get("memory_summary", ""),
+                stage_context=ctx.get("stage_context", ""),
+            ).text
+        except Exception as exc:
+            logger.warning(
+                "[talent_pool] runtime prompt composition failed: %s — "
+                "falling back to static DOMAIN_INSTRUCTIONS",
+                exc,
+            )
+            return self.DOMAIN_INSTRUCTIONS
 
     def __init__(self) -> None:
         super().__init__()
