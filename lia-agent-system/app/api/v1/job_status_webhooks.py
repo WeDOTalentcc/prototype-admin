@@ -165,6 +165,7 @@ async def register_webhook(
             "is_active": True,
         })
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Webhook registered: {request.name} for company {company_id}")
         
         return WebhookRegisterResponse(

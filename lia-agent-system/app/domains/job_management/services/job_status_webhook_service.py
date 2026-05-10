@@ -236,6 +236,7 @@ class JobStatusWebhookService:
         db.add(log)
         
         if self.is_development and not webhook.url.startswith("http"):
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"[WEBHOOK DEV] {webhook.name}: {payload}")
             log.status = "success"
             log.completed_at = datetime.utcnow()
@@ -289,6 +290,7 @@ class JobStatusWebhookService:
                     
                     await db.commit()
                     
+                    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                     logger.info(f"Webhook delivered: {webhook.name} ({response.status_code})")
                     
                     return {

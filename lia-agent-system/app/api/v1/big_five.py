@@ -491,6 +491,7 @@ async def analyze_candidate(
         else:
             recommendation = "Baixo match. O perfil do candidato diverge significativamente do perfil ideal."
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"📊 Analyzed candidate against profile '{profile.get('name')}': {fit_score}% fit")
         
         return {

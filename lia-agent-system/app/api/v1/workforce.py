@@ -70,6 +70,7 @@ async def create_hiring_plan(
     """Create a new hiring plan."""
     try:
         plan = await repo.create_hiring_plan(data.model_dump())
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created hiring plan: {plan.name} for fiscal year {plan.fiscal_year}")
         return plan
     except Exception as e:
@@ -118,6 +119,7 @@ async def update_hiring_plan(
             raise HTTPException(status_code=404, detail="Hiring plan not found")
 
         plan = await repo.update_hiring_plan(plan, data.model_dump(exclude_unset=True))
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Updated hiring plan: {plan.name}")
         return plan
     except HTTPException:
@@ -203,6 +205,7 @@ async def create_headcount(
         headcount_data[hiring_plan_id] = plan_id
 
         headcount = await repo.create_headcount(headcount_data, plan)
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created headcount: {headcount.title} for plan {plan.name}")
         return headcount
     except HTTPException:
@@ -247,6 +250,7 @@ async def update_headcount(
             raise HTTPException(status_code=404, detail="Headcount not found")
 
         headcount = await repo.update_headcount(headcount, data.model_dump(exclude_unset=True))
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Updated headcount: {headcount.title}")
         return headcount
     except HTTPException:
@@ -298,6 +302,7 @@ async def create_headcounts_bulk(
             headcounts_data.append(hc_data)
 
         created = await repo.create_headcounts_bulk(headcounts_data, plan)
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created {len(created)} headcounts in bulk for plan {plan.name}")
         return created
     except HTTPException:

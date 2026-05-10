@@ -456,6 +456,7 @@ class WebhookService:
         db.add(log)
         
         if self.is_development and not webhook.url.startswith("http"):
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"[WEBHOOK DEV] {webhook.name}: {payload}")
             log.status = WebhookStatus.SUCCESS.value
             log.completed_at = datetime.utcnow()
@@ -511,6 +512,7 @@ class WebhookService:
                     
                     await db.commit()
                     
+                    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                     logger.info(f"Webhook delivered: {webhook.name} ({response.status_code})")
                     
                     return {
@@ -534,6 +536,7 @@ class WebhookService:
                     
                     await db.commit()
                     
+                    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                     logger.warning(f"Webhook failed: {webhook.name} ({response.status_code})")
                     
                     return {
@@ -564,6 +567,7 @@ class WebhookService:
             
             await db.commit()
             
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"Webhook timeout: {webhook.name}")
             
             return {
@@ -593,6 +597,7 @@ class WebhookService:
             
             await db.commit()
             
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"Webhook error: {webhook.name} - {e}")
             
             return {

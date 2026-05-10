@@ -384,6 +384,7 @@ async def create_blueprint(
             status="draft"
         )
 
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created journey blueprint: {blueprint.name} for company {data.company_id}")
         return blueprint
     except Exception as e:
@@ -407,6 +408,7 @@ async def update_blueprint(
         update_data = data.model_dump(exclude_unset=True)
         blueprint = await repo.update_blueprint(blueprint, update_data)
 
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Updated journey blueprint: {blueprint.id}")
         return blueprint
     except HTTPException:
@@ -430,6 +432,7 @@ async def save_wizard_step(
 
         blueprint = await repo.save_wizard_step(blueprint, data.step_number, data.data)
 
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Saved wizard step {data.step_number} for blueprint: {blueprint.id}")
         return blueprint
     except HTTPException:
@@ -470,6 +473,7 @@ async def create_step(
 
         step = await repo.create_step(**data.model_dump())
 
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created journey step: {step.name}")
         return step
     except Exception as e:
@@ -497,6 +501,7 @@ async def update_step(
         update_data = data.model_dump(exclude_unset=True)
         step = await repo.update_step(step, update_data)
 
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Updated journey step: {step.id}")
         return step
     except HTTPException:

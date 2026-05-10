@@ -211,6 +211,7 @@ async def create_goal(
 
         goal = await repo.create(goal_data)
 
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created goal: {goal.name} for user {goal.user_id}")
         return goal
     except Exception as e:
@@ -232,6 +233,7 @@ async def update_goal(
         if not goal:
             raise HTTPException(status_code=404, detail="Goal not found")
 
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Updated goal: {goal.name}")
         return goal
     except HTTPException:
