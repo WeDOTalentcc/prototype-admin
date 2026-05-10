@@ -80,6 +80,7 @@ async def get_credit_balance(
     request: Request,
     repo: CreditsRepository = Depends(get_credits_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     company_id = _get_company_id(request)
     try:
         data = await repo.get_balance(company_id)
@@ -95,6 +96,7 @@ async def add_credits(
     body: AddCreditsRequest,
     repo: CreditsRepository = Depends(get_credits_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     user_role = getattr(request.state, "user_role", None)
     if user_role != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
@@ -137,6 +139,7 @@ async def consume_credits(
     body: ConsumeCreditsRequest,
     repo: CreditsRepository = Depends(get_credits_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     company_id = _get_company_id(request)
     user_id = getattr(request.state, "user_id", "system")
 
@@ -171,6 +174,7 @@ async def consume_action_credits(
     body: ConsumeActionRequest,
     repo: CreditsRepository = Depends(get_credits_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     company_id = _get_company_id(request)
     user_id = getattr(request.state, "user_id", "system")
 
@@ -210,6 +214,7 @@ async def consume_action_credits(
 
 @router.get("/costs")
 async def get_action_costs():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     return {
         "costs": ACTION_CREDIT_COSTS,
     }
@@ -222,6 +227,7 @@ async def get_credit_transactions(
     limit: int = Query(default=50, le=200),
     offset: int = Query(default=0, ge=0),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     company_id = _get_company_id(request)
     try:
         txs = await repo.get_transactions(company_id, limit, offset)

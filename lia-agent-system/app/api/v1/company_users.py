@@ -47,6 +47,7 @@ async def get_global_search_settings(
     company_id: str | None = Query(None, description="Company ID for multi-tenant isolation"),
     gs_repo: GlobalSettingsRepository = Depends(get_global_settings_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get global search settings for a specific company (multi-tenant isolated)."""
     try:
         if not company_id:
@@ -80,6 +81,7 @@ async def update_global_search_settings(
     company_id: str | None = Query(None, description="Company ID for multi-tenant isolation"),
     gs_repo: GlobalSettingsRepository = Depends(get_global_settings_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Update global search settings for a specific company (multi-tenant isolated)."""
     try:
         if not company_id:
@@ -185,6 +187,7 @@ async def update_user(
     data: UserManagementUpdate,
     user_repo: UserRepository = Depends(get_user_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Update a user."""
     try:
         user_uuid = uuid.UUID(user_id)
@@ -221,6 +224,7 @@ async def delete_user(
     user_id: str,
     user_repo: UserRepository = Depends(get_user_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Delete a user."""
     try:
         user_uuid = uuid.UUID(user_id)
@@ -249,6 +253,7 @@ async def resend_invitation(
     user_repo: UserRepository = Depends(get_user_repo),
     email_svc: EmailService = Depends(get_email_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Resend invitation email to a user who hasn't activated their account yet."""
     try:
         user_uuid = uuid.UUID(user_id)

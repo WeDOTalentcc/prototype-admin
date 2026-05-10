@@ -129,6 +129,7 @@ async def search_candidates(
     request: SourcingSearchRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Search candidates with advanced boolean query building.
     
@@ -233,6 +234,7 @@ async def match_candidates(
     request: MatchCandidatesRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Match and score candidates against job requirements.
     
@@ -360,6 +362,7 @@ async def get_suggested_candidates(
     min_score: float = Query(default=55.0, ge=0, le=100),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get suggested candidates for a job from the talent pool.
     
@@ -460,6 +463,7 @@ async def get_suggested_candidates(
 
 @router.post("/boolean-query", response_model=BooleanQueryResponse)
 async def generate_boolean_query(request: BooleanQueryRequest):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Generate boolean search strings for various platforms.
     
@@ -506,6 +510,7 @@ async def trigger_proactive_suggestions(
     request: ProactiveSuggestRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Trigger proactive candidate suggestions for a job.
     

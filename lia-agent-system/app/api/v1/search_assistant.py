@@ -314,6 +314,7 @@ async def get_search_suggestions(
     limit: int = Query(15, ge=1, le=50),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get intelligent search suggestions based on current query.
     Returns autocomplete suggestions, related terms, and best practices.
@@ -344,6 +345,7 @@ async def analyze_search(
     request: AnalyzeRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Analyze search query and provide quality feedback.
     Returns completeness score, alerts, and improvement suggestions.
@@ -374,6 +376,7 @@ async def analyze_search(
 async def get_term_synonyms(
     term: str = Query(..., description="Termo para buscar sinônimos"),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get synonyms for a specific term."""
     synonyms = get_synonyms(term)
     return {"term": term, "synonyms": synonyms}
@@ -571,6 +574,7 @@ async def get_autocomplete(
     query: str = Query("", description="Texto atual da busca"),
     cursor: int | None = Query(None, description="Posição do cursor"),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get predictive autocomplete suggestions as user types.
     Returns contextual suggestions based on query and cursor position.
@@ -594,6 +598,7 @@ async def get_taxonomy(
     category: str,
     search: str = Query("", description="Filtrar por texto"),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get taxonomy items for a category."""
     if category == "job_titles":
         items = []

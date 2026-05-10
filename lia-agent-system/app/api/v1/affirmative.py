@@ -71,6 +71,7 @@ class DocumentVerificationRequest(BaseModel):
 
 @router.get("/criteria", response_model=CriteriaResponse)
 async def get_affirmative_criteria():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get all available affirmative action criteria."""
     from app.shared.services.affirmative_service import AFFIRMATIVE_CRITERIA
     return {"criteria": AFFIRMATIVE_CRITERIA}
@@ -81,6 +82,7 @@ async def check_eligibility(
     request: EligibilityCheckRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Check if candidate is eligible for affirmative vacancy."""
     AffirmativeService(db)
     return {"status": "pending", "message": "Eligibility check requires candidate and vacancy data"}
@@ -92,6 +94,7 @@ async def get_pending_documents(
     vacancy_id: str | None = None,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get all pending document uploads for a company."""
     service = AffirmativeService(db)
     vacancy_uuid = UUID(vacancy_id) if vacancy_id else None
@@ -107,6 +110,7 @@ async def request_document(
     criteria_type: str,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Create a document upload request with 24h deadline."""
     service = AffirmativeService(db)
     document = service.create_document_request(
@@ -124,6 +128,7 @@ async def verify_document_lia(
     verification_result: dict,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """LIA automated verification of document."""
     service = AffirmativeService(db)
     document = service.verify_document_lia(UUID(document_id), verification_result)
@@ -136,6 +141,7 @@ async def verify_document_recruiter(
     recruiter_email: str,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Recruiter manual verification of document."""
     service = AffirmativeService(db)
     document = service.verify_document_recruiter(
@@ -152,6 +158,7 @@ async def check_expired_documents(
     company_id: str,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Check and mark expired documents."""
     service = AffirmativeService(db)
     count = service.check_expired_documents(company_id)

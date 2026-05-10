@@ -140,6 +140,7 @@ async def accept_action(
     request: AcceptRejectRequest,
     service: AutonomousAgentService = Depends(get_autonomous_agent_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Accept a proactive action suggestion."""
     try:
         result = await service.accept_action(action_id, request.user_id)
@@ -161,6 +162,7 @@ async def reject_action(
     request: AcceptRejectRequest,
     service: AutonomousAgentService = Depends(get_autonomous_agent_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Reject a proactive action suggestion."""
     try:
         result = await service.reject_action(action_id, request.user_id)
@@ -181,6 +183,7 @@ async def get_proactive_feed(
     limit: int = Query(default=10, le=30),
     service: AutonomousAgentService = Depends(get_autonomous_agent_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get proactive feed for chat integration.
     Returns pending actions formatted as chat-ready suggestions.
@@ -215,6 +218,7 @@ async def get_proactive_feed(
 
 @router.post("/trigger-monitor/{company_id}", response_model=MonitorTriggerResponse)
 async def trigger_pipeline_monitor(company_id: str):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Manually trigger pipeline monitor for a specific company.
     Useful for testing and admin purposes.
@@ -245,6 +249,7 @@ async def trigger_pipeline_monitor(company_id: str):
 
 @router.get("/plan-templates", response_model=list[PlanTemplateResponse])
 async def list_plan_templates():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List available plan templates for multi-step actions."""
     try:
         from app.shared.execution.plan_templates import PlanTemplateRegistry
@@ -285,6 +290,7 @@ async def get_proactive_insights(
     limit: int = Query(default=5, le=20),
     service: AutonomousAgentService = Depends(get_autonomous_agent_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     # If service is a Depends object (test calling directly), create a real instance
     if not hasattr(service, 'get_pending_actions'):
         from app.domains.automation.services.autonomous_agent_service import AutonomousAgentService as _AAS

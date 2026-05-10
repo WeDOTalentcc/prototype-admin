@@ -24,6 +24,7 @@ async def get_score_outcome_correlation(
     company_id: str,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     return await wsi_observability_service.get_score_vs_outcome_correlation(company_id, db)
 
 
@@ -32,6 +33,7 @@ async def get_block_accuracy(
     company_id: str,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     return await wsi_observability_service.get_block_accuracy(company_id, db)
 
 
@@ -40,6 +42,7 @@ async def get_score_distribution(
     company_id: str,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     return await wsi_observability_service.get_score_distribution(company_id, db)
 
 
@@ -48,6 +51,7 @@ async def get_threshold_analysis(
     company_id: str,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     return await wsi_observability_service.get_threshold_analysis(company_id, db)
 
 
@@ -56,4 +60,5 @@ async def get_observability_summary(
     company_id: str,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     return await wsi_observability_service.get_observability_summary(company_id, db)

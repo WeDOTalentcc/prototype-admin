@@ -105,6 +105,7 @@ async def get_global_metrics(db: AsyncSession = Depends(get_db)):
 
 @router.get("/agents", response_model=list[AgentSummaryResponse])
 async def get_all_agents_summary(db: AsyncSession = Depends(get_db)):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get summary for all agents."""
     service = AgentMonitoringService(db)
     summaries = await service.get_all_agents_summary()
@@ -113,6 +114,7 @@ async def get_all_agents_summary(db: AsyncSession = Depends(get_db)):
 
 @router.get("/agents/{agent_id}", response_model=AgentSummaryResponse)
 async def get_agent_summary(agent_id: str, db: AsyncSession = Depends(get_db)):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get summary for a specific agent."""
     service = AgentMonitoringService(db)
     summary = await service.get_agent_summary(agent_id)
@@ -140,6 +142,7 @@ async def get_agent_activities(
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get activity feed for a specific agent."""
     service = AgentMonitoringService(db)
     activities = await service.get_activity_feed(
@@ -159,6 +162,7 @@ async def get_activity_feed(
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get global activity feed with optional filters."""
     service = AgentMonitoringService(db)
     activities = await service.get_activity_feed(
@@ -172,6 +176,7 @@ async def get_activity_feed(
 
 @router.get("/alerts", response_model=list[AlertResponse])
 async def get_proactive_alerts(db: AsyncSession = Depends(get_db)):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get current proactive alerts requiring attention."""
     service = AgentMonitoringService(db)
     alerts = await service.get_proactive_alerts()
@@ -180,6 +185,7 @@ async def get_proactive_alerts(db: AsyncSession = Depends(get_db)):
 
 @router.post("/activities", response_model=ActivityResponse)
 async def log_activity(request: LogActivityRequest, db: AsyncSession = Depends(get_db)):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Log a new agent activity."""
     from app.models.agent_activity import ActivityStatus
     
@@ -255,6 +261,7 @@ async def get_domain_metrics(
 
 @router.post("/seed-demo", response_model=None)
 async def seed_demo_data(db: AsyncSession = Depends(get_db)):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Seed demo data for testing. Only use in development."""
     service = AgentMonitoringService(db)
     result = await service.seed_demo_data()

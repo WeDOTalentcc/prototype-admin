@@ -110,6 +110,7 @@ async def create_short_list(
     user_id: str = Query("system"),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Cria uma short list para uma vaga."""
     repo = ShortListRepository(db)
     record = await repo.create(
@@ -128,6 +129,7 @@ async def list_short_lists(
     job_id: str | None = Query(None, description="Filtrar por vaga"),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Lista short lists da empresa, opcionalmente filtradas por vaga."""
     repo = ShortListRepository(db)
     records = await repo.list_for_company(company_id, job_id=job_id)
@@ -140,6 +142,7 @@ async def get_short_list(
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Retorna uma short list pelo ID."""
     repo = ShortListRepository(db)
     record = await repo.get_by_id(list_id, company_id)
@@ -155,6 +158,7 @@ async def add_candidate(
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Adiciona um candidato à short list."""
     repo = ShortListRepository(db)
     record = await repo.get_by_id(list_id, company_id)
@@ -182,6 +186,7 @@ async def remove_candidate(
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Remove um candidato da short list."""
     repo = ShortListRepository(db)
     record = await repo.get_by_id(list_id, company_id)

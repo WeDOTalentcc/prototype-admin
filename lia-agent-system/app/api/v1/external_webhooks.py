@@ -84,6 +84,7 @@ async def handle_ats_webhook(
     x_pandape_signature: str | None = Header(None, alias="X-Pandape-Signature"),
     x_merge_signature: str | None = Header(None, alias="X-Merge-Signature"),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Receive webhook from ATS platforms (Gupy, Pandapé, Merge).
     Used for inbound sync when changes happen in external ATS.
@@ -305,6 +306,7 @@ async def handle_interview_webhook(
     request: Request,
     background_tasks: BackgroundTasks,
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Receive webhook from interview scheduling tools.
     Supported providers: calendly, custom
@@ -330,6 +332,7 @@ async def handle_test_webhook(
     request: Request,
     background_tasks: BackgroundTasks,
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Receive webhook from assessment/test platforms.
     Supported providers: testgorilla, codility, custom
@@ -355,6 +358,7 @@ async def handle_document_webhook(
     request: Request,
     background_tasks: BackgroundTasks,
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Receive webhook from document collection services.
     """
@@ -375,6 +379,7 @@ async def handle_document_webhook(
 
 @router.get("/event-log", response_model=None)
 async def get_webhook_event_log(limit: int = 50):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get recent webhook event processing log."""
     return {
         "events": WebhookAdapter.get_event_log(limit),

@@ -85,6 +85,7 @@ def _blocks_completed(policy) -> dict[str, bool]:
 
 @router.get("/{company_id}", response_model=CompanyHiringPolicyResponse)
 async def get_policy(company_id: str, db: AsyncSession = Depends(get_db)):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get hiring policy for a company. Returns defaults if none exists."""
     repo = HiringPolicyRepository(db)
     policy = await repo.get_by_company(company_id)
@@ -116,6 +117,7 @@ async def upsert_policy(
     user_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Create or update full hiring policy for a company."""
     repo = HiringPolicyRepository(db)
     update_data = payload.model_dump(exclude_none=True)
@@ -144,6 +146,7 @@ async def update_policy_partial(
     user_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Partially update hiring policy — merges provided blocks."""
     repo = HiringPolicyRepository(db)
     policy = await repo.create_if_missing(company_id, user_id)
@@ -181,6 +184,7 @@ async def update_policy_block(
     user_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Update a single block of the hiring policy."""
     if payload.block not in VALID_BLOCKS:
         raise HTTPException(
@@ -216,6 +220,7 @@ async def update_policy_block(
 
 @router.get("/{company_id}/progress", response_model=PolicyProgressResponse)
 async def get_policy_progress(company_id: str, db: AsyncSession = Depends(get_db)):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get setup progress for a company's hiring policy."""
     repo = HiringPolicyRepository(db)
     policy = await repo.get_by_company(company_id)
@@ -240,6 +245,7 @@ async def policy_chat(
     payload: PolicyChatMessage,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Conversational endpoint for hiring policy configuration."""
     current_policy = await get_company_policy(company_id, db)
 

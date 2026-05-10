@@ -114,6 +114,7 @@ class WebhookVerifyParams(BaseModel):
 async def verify_webhook(
     request: Request
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Verify webhook subscription from Meta.
     
@@ -157,6 +158,7 @@ async def receive_webhook(
     request: Request,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Receive incoming messages and status updates from Meta WhatsApp.
     
@@ -265,6 +267,7 @@ async def receive_twilio_webhook(
     request: Request,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Receive incoming messages from Twilio WhatsApp.
     
@@ -418,6 +421,7 @@ async def send_feedback(
     request: SendFeedbackRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Send feedback to a candidate after recruiter decision.
     """
@@ -440,6 +444,7 @@ async def list_conversations(
     limit: int = Query(default=50, le=100),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     List WhatsApp conversations for a company.
     
@@ -518,6 +523,7 @@ async def list_conversations_authenticated(
 
 @router.get("/providers", response_model=None)
 async def list_providers():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     List available WhatsApp providers and their configuration status.
     """

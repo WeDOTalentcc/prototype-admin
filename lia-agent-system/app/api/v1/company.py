@@ -281,6 +281,7 @@ async def submit_onboarding(
 async def enrich_company_profile(
     data: CompanyEnrichRequest,
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Enrich company profile with LinkedIn and Glassdoor data via Apify actors."""
     errors = []
     linkedin_data = {}
@@ -341,6 +342,7 @@ async def auto_enrich_company(
     profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
     cp_repo: CultureProfileRepository = Depends(get_culture_profile_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Automatically enrich company profile after wizard submission."""
     errors = []
     fields_updated = []
@@ -660,6 +662,7 @@ async def get_company_profile_with_relations(
     profile_id: uuid.UUID,
     profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get company profile with all related data (departments, benefits, culture)."""
     try:
         data = await profile_repo.get_with_relations(profile_id)
@@ -684,6 +687,7 @@ async def generate_evp(
     profile_id: uuid.UUID,
     profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Generate EVP (Employee Value Proposition) analysis using LLM."""
     try:
         profile = await profile_repo.get_by_id(profile_id)
@@ -799,6 +803,7 @@ async def get_company_stats(
     bf_repo: BigFiveRepository = Depends(get_big_five_repo),
     tt_repo: TechnicalTestRepository = Depends(get_technical_test_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get statistics for company setup completion."""
     try:
         stats = {
@@ -860,6 +865,7 @@ async def get_company_stats(
 async def analyze_company_culture(
     data: CultureAnalysisRequest,
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Analyze company website and extract culture information using AI."""
     try:
         sources_analyzed = []

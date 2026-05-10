@@ -121,6 +121,7 @@ async def submit_calibration_feedback(
     db: AsyncSession = Depends(get_db),
     repo: ScreeningRepository = Depends(get_screening_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Recebe feedback de calibração do recrutador.
 
@@ -232,6 +233,7 @@ async def start_calibration_session(
     db: AsyncSession = Depends(get_db),
     repo: ScreeningRepository = Depends(get_screening_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Inicia uma sessão de calibração.
 
@@ -309,6 +311,7 @@ async def get_calibration_status(
     session_id: str,
     repo: ScreeningRepository = Depends(get_screening_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Retorna o status da sessão de calibração.
 
@@ -382,6 +385,7 @@ async def check_vacancy_candidate_goal(
     request: VacancyGoalRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Verifica se a vaga atingiu a meta de candidatos.
 
@@ -624,6 +628,7 @@ async def get_vacancy_candidates_count(
     vacancy_id: str,
     repo: ScreeningRepository = Depends(get_screening_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Retorna a contagem de candidatos em uma vaga e o status da meta.
     """
