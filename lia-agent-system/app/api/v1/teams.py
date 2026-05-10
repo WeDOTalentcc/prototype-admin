@@ -1603,8 +1603,13 @@ def _enforce_company_id_scope(
     user_company = getattr(current_user, "company_id", None)
 
     if requested_company_id is None:
-        if allow_none:
+        if allow_none and is_admin:
             return None
+        if user_company is None:
+            raise HTTPException(
+                status_code=403,
+                detail="company_id could not be resolved: user has no company association",
+            )
         return user_company
 
     if is_admin:

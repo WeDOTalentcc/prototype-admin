@@ -297,10 +297,15 @@ async def _generate_daily_briefing(params: dict[str, Any], context: dict[str, An
         if not schedule_lines and not task_lines:
             parts.append("Sua agenda está livre hoje! Aproveite para prospectar candidatos ou revisar vagas abertas.")
 
+        _briefing_data = dict(briefing) if isinstance(briefing, dict) else {}
+        _briefing_data["_legacy_disclaimer"] = (
+            "Os dados deste resumo provêm do serviço legado BriefingService. "
+            "Migração para rails_adapter prevista para antes de 2026-07-16."
+        )
         return ActionResult(
             status="executed",
             message="\n".join(parts),
-            data=briefing,
+            data=_briefing_data,
             action_type="generate_daily_briefing",
         )
     except Exception as e:

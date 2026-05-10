@@ -12,7 +12,7 @@ from datetime import datetime
 from typing import Any
 from uuid import UUID, uuid4
 
-from sqlalchemy import text
+from sqlalchemy import text, select, and_  # noqa: F401 — select/and_ needed by batch_process_jobs and for test patching
 
 from app.core.database import AsyncSessionLocal
 from app.domains.job_management.repositories.job_embedding_repository import JobEmbeddingRepository

@@ -77,6 +77,7 @@ SECURITY_PATTERNS: list[dict[str, Any]] = [
             re.compile(r"disregard\s+(all\s+)?previous", re.IGNORECASE),
             re.compile(r"forget\s+(all\s+)?previous\s+instructions?", re.IGNORECASE),
             re.compile(r"override\s+(previous\s+|your\s+)?instructions?", re.IGNORECASE),
+            re.compile(r"forget\s+your\s+(rules?|guidelines?|instructions?|constraints?|restrictions?)", re.IGNORECASE),
         ],
     },
     # ── 2. JAILBREAK — Ignorar instruções anteriores (PT) ────────────────────
@@ -122,6 +123,7 @@ SECURITY_PATTERNS: list[dict[str, Any]] = [
             re.compile(r"act\s+as\s+(a|an)\s+[\w\s]*(hacker|adversarial|unrestricted|malicious|unethical|dangerous)", re.IGNORECASE),
             re.compile(r"de\s+agora\s+em\s+diante\s+voc[êe]\s+[ée]", re.IGNORECASE),
             re.compile(r"voc[êe]\s+agora\s+[ée]\s+(um|uma)\s+\w+\s+sem", re.IGNORECASE),
+            re.compile(r"act\s+as\s+(a|an)\s+\w+(?:\s+\w+)*\s+and\s+(?:forget|ignore|disregard|bypass)", re.IGNORECASE),
         ],
     },
     # ── 5. DATA EXFILTRATION — "Show me all candidates" ─────────────────────

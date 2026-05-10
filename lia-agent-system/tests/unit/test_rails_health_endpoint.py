@@ -15,6 +15,24 @@ from httpx import AsyncClient, ASGITransport
 from app.main import app
 
 
+@pytest.fixture(autouse=True)
+def _override_tenant_db(monkeypatch):
+    """Override get_tenant_db to avoid DB connection in unit tests."""
+    from unittest.mock import AsyncMock, MagicMock
+    from app.core.database import get_tenant_db
+    from app.domains.integrations_hub.services.rails_adapter_dependency import get_rails_adapter
+
+    async def _fake_db():
+        mock_session = MagicMock()
+        mock_session.__aenter__ = AsyncMock(return_value=MagicMock())
+        mock_session.__aexit__ = AsyncMock(return_value=False)
+        yield mock_session
+
+    app.dependency_overrides[get_tenant_db] = _fake_db
+    yield
+    app.dependency_overrides.pop(get_tenant_db, None)
+
+
 @pytest.mark.asyncio
 async def test_rails_health_when_disabled():
     """When RAILS_API_URL is not set, endpoint returns status=disabled."""

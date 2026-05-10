@@ -170,15 +170,15 @@ class TestFEOnlyCards:
 
 
 class TestLLMFallbackCards:
-    """4 cards whose intents fall through to the keyword/LLM router.
-    Gate must return None — no deterministic path yet configured."""
+    """3 cards whose intents fall through to the keyword/LLM router.
+    Gate must return None — no deterministic path yet configured.
+    Note: schedule_interview was moved to capability_map.yaml (chat_cap_map)."""
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         "intent_hint,card_id",
         [
             ("quick_question",    "candidate-info"),
-            ("schedule_interview", "schedule-interview"),
             ("create_automation", "configure-automations"),
             ("suggest_action",    "ai-suggestions"),
         ],
@@ -471,8 +471,8 @@ class TestGoldenDatasetIntegrity:
             layers[c["routing_layer"]] = layers.get(c["routing_layer"], 0) + 1
         assert layers.get("navigate") == 4
         assert layers.get("modal") == 3
-        assert layers.get("chat_cap_map") == 11
-        assert layers.get("chat_llm_fallback") == 4
+        assert layers.get("chat_cap_map") == 12
+        assert layers.get("chat_llm_fallback") == 3
 
     def test_chat_cap_map_intents_in_capability_map(self, golden_dataset):
         """Every chat_cap_map card must have its intent_hint in capability_map.yaml.
@@ -554,7 +554,7 @@ class TestCapabilityMapSanity:
         from app.shared.services.capability_map_service import CapabilityMapService
 
         intents = CapabilityMapService.load()
-        assert len(intents) == 12, (
+        assert len(intents) == 22, (
             f"Expected 12 intents in capability_map.yaml, got {len(intents)}: "
             f"{sorted(intents.keys())}"
         )

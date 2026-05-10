@@ -68,6 +68,9 @@ _PATTERN_TO_CATEGORY: dict[str, str] = {
     "delimiter_injection_markdown": "delimiter_injection",
 }
 
+# Public catalogue of injection pattern names — used by tests and external audit tools.
+INJECTION_PATTERNS: list[str] = list(_PATTERN_TO_CATEGORY.keys())
+
 
 def _normalize_risk(risk: str) -> str:
     """Normalize security_patterns risk levels to PromptInjectionGuard scale.

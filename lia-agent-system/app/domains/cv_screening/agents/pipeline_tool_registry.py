@@ -17,6 +17,7 @@ from sqlalchemy import text
 from app.core.database import AsyncSessionLocal
 
 from app.shared.tool_handler import tool_handler
+from app.shared.messaging.rails_event_publisher import publish_rails_event  # noqa: F401 — module-level for test patching
 
 logger = logging.getLogger(__name__)
 
@@ -89,6 +90,22 @@ async def _wrap_move_candidate(**kwargs: Any) -> dict[str, Any]:
             {"target_stage": target_stage, "candidate_id": candidate_id},
         )
         await session.commit()
+        # Publish Rails event for pipeline move (fire-and-forget; fail-open)
+        try:
+            await publish_rails_event(
+                event_type="pipeline.moved",
+                payload={
+                    "candidate_id": candidate_id,
+                    "previous_stage": previous_stage,
+                    "new_stage": target_stage,
+                    "reason": reason,
+                    "company_id": kwargs.get("company_id"),
+                    "job_id": kwargs.get("job_id"),
+                    "apply_id": kwargs.get("apply_id"),
+                },
+            )
+        except Exception as _pub_exc:
+            logger.warning("[pipeline_tools] publish_rails_event failed (non-fatal): %s", _pub_exc)
         return {
             "success": True,
             "data": {
@@ -254,6 +271,21 @@ async def _wrap_schedule_interview(**kwargs: Any) -> dict[str, Any]:
             },
         )
         await session.commit()
+        # Publish Rails event for interview.scheduled (fire-and-forget; fail-open)
+        try:
+            await publish_rails_event(
+                event_type="interview.scheduled",
+                payload={
+                    "candidate_id": candidate_id,
+                    "interview_id": interview_id,
+                    "interview_datetime": interview_datetime,
+                    "interview_type": interview_type,
+                    "company_id": kwargs.get("company_id"),
+                    "apply_id": kwargs.get("apply_id"),
+                },
+            )
+        except Exception as _pub_exc:
+            logger.warning("[pipeline_tools] publish_rails_event failed (non-fatal): %s", _pub_exc)
         return {
             "success": True,
             "data": {

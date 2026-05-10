@@ -3,6 +3,10 @@ LangGraph nodes for interview scheduling conversational workflow.
 """
 import json
 import logging
+try:
+    from anthropic import AsyncAnthropic  # noqa: F401 — module-level for test patching
+except ImportError:
+    AsyncAnthropic = None  # type: ignore[assignment,misc]
 from datetime import date, datetime, timedelta
 from typing import Any
 

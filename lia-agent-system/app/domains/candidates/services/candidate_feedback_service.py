@@ -661,6 +661,89 @@ class CandidateFeedbackService:
         ),
     }
 
+    async def _enforce_fairness_on_message(
+        self,
+        *,
+        message: dict,
+        candidate_name: str,
+        vacancy_title: str,
+        company_name: str,
+        adherence_score: float,
+        improvement_tips: list,
+        missing_skills: list,
+        resubmit_url: str,
+        candidate_id: str,
+        vacancy_id: str,
+    ) -> tuple:
+        """Enforce FairnessGuard on a feedback message.
+
+        Returns (message, tips, metadata) where:
+        - message: original or regenerated message dict
+        - tips: original or safe default improvement tips
+        - metadata: {"fairness_blocked": bool, "regenerated": bool}
+
+        Raises LIAFairnessError if the regenerated message is also blocked.
+        This enforces LGPD Art. 11 compliance — no discriminatory content in
+        candidate communications.
+        """
+        from app.shared.compliance.fairness_guard import FairnessGuard
+        from app.shared.errors import LIAFairnessError
+
+        guard = FairnessGuard()
+
+        # Check original message body text
+        body_text = (
+            message.get("body_text") or message.get("html_body") or ""
+        )
+        check_result = guard.check(body_text)
+
+        if not check_result.is_blocked:
+            return (
+                message,
+                improvement_tips,
+                {"fairness_blocked": False, "regenerated": False},
+            )
+
+        # Blocked: log and regenerate with safe defaults
+        logger.warning(
+            "[FairnessGuard] Feedback message blocked for candidate=%s vacancy=%s — regenerating",
+            candidate_id, vacancy_id,
+        )
+
+        # Sanitize tips — do NOT propagate potentially discriminatory user-supplied tips
+        safe_tips = self._generate_improvement_tips(
+            adherence_score=adherence_score,
+            missing_skills=[],  # PII-safe: strip missing_skills from regen path
+        )
+
+        regenerated = await self._generate_feedback_message(
+            candidate_name=candidate_name,
+            vacancy_title=vacancy_title,
+            company_name=company_name,
+            adherence_score=adherence_score,
+            improvement_tips=safe_tips,
+            missing_skills=[],  # PII-safe: never propagate user-supplied skills
+            resubmit_url=resubmit_url,
+        )
+
+        # Validate regenerated message
+        regen_body = (
+            regenerated.get("body_text") or regenerated.get("html_body") or ""
+        )
+        regen_check = guard.check(regen_body)
+
+        if regen_check.is_blocked:
+            raise LIAFairnessError(
+                f"Feedback message still discriminatory after regeneration — "
+                f"candidate_id={candidate_id}, vacancy_id={vacancy_id}"
+            )
+
+        return (
+            regenerated,
+            safe_tips,
+            {"fairness_blocked": True, "regenerated": True},
+        )
+
     async def send_gate_feedback(
         self,
         gate_level: str,

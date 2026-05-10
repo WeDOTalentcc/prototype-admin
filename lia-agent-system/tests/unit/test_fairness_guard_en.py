@@ -2,13 +2,13 @@
 Tests for FairnessGuard EN hardening — Etapa 3.
 
 Cobre:
-- IMPLICIT_BIAS_TERMS_EN: 20 termos presentes
+- IMPLICIT_BIAS_TERMS_EN: 35 termos presentes
 - Detecção de termos EN via check_implicit_bias()
 - Categorias EN: gender_en, race_en, age_en
 - Regex PT-BR de idade: "maiores de X anos", "acima de X", etc.
 - _detect_language(): texto EN→"en", PT-BR→"pt-br", vazio→"pt-br"
-- _PATTERNS_VERSION == 4
-- Total de categorias == 16
+- _PATTERNS_VERSION == 5
+- Total de categorias == 20
 """
 import pytest
 
@@ -22,7 +22,7 @@ class TestImplicitBiasTermsEN:
 
     def test_implicit_bias_terms_en_has_20_terms(self):
         from app.shared.compliance.fairness_guard import IMPLICIT_BIAS_TERMS_EN
-        assert len(IMPLICIT_BIAS_TERMS_EN) == 20
+        assert len(IMPLICIT_BIAS_TERMS_EN) == 35
 
     def test_young_and_dynamic_present(self):
         from app.shared.compliance.fairness_guard import IMPLICIT_BIAS_TERMS_EN
@@ -90,7 +90,7 @@ class TestFairnessGuardENCategories:
 
     def test_total_categories_is_16(self):
         from app.shared.compliance.fairness_guard import DISCRIMINATORY_CATEGORIES
-        assert len(DISCRIMINATORY_CATEGORIES) == 16
+        assert len(DISCRIMINATORY_CATEGORIES) == 20
 
 
 class TestFairnessGuardIdadePatternsPTBR:
@@ -163,4 +163,4 @@ class TestFairnessGuardPatternsVersion:
 
     def test_patterns_version_is_4(self):
         from app.shared.compliance.fairness_guard import _PATTERNS_VERSION
-        assert _PATTERNS_VERSION == 4
+        assert _PATTERNS_VERSION == 5

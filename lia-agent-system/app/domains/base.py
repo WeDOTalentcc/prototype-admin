@@ -137,6 +137,12 @@ class DomainPrompt(ABC):
     via the @register_domain decorator.
     """
     domain_id: str = ""
+    agent_aliases: tuple[str, ...] = ()  # extra routing aliases for this domain
+
+    @classmethod
+    def get_agent_aliases(cls) -> tuple[str, ...]:
+        """Return extra routing aliases for this domain (beyond domain_id self-mapping)."""
+        return getattr(cls, "agent_aliases", ())
     domain_name: str = ""
     description: str = ""
     version: str = "1.0.0"

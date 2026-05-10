@@ -1061,11 +1061,14 @@ STAGE_TOOLS: dict[str, list[str]] = {
     "action_planning": ["recommend_actions", "create_shortlist", "export_report", "generate_report", "view_candidate_profile", "check_search_fairness", "check_pool_health"],
 }
 
-from app.shared.compliance.safety_category import SafetyCategory
+# SafetyCategory preserved for callers that need detail info.
+from app.shared.compliance.safety_category import SafetyCategory  # noqa: F401
 
-GUARDRAIL_TOOLS: dict[str, SafetyCategory] = {
-    "create_shortlist": SafetyCategory.PIPELINE_MOVE,   # cria shortlist — ação que afeta o funil
-    "export_report": SafetyCategory.PII_EXPORT,         # exporta dados de candidatos — sensível LGPD
+GUARDRAIL_TOOLS: list[str] = ["create_shortlist", "export_report"]
+# Detail mapping for callers needing SafetyCategory per tool:
+_GUARDRAIL_TOOL_CATEGORIES: dict[str, SafetyCategory] = {
+    "create_shortlist": SafetyCategory.PIPELINE_MOVE,
+    "export_report": SafetyCategory.PII_EXPORT,
 }
 
 

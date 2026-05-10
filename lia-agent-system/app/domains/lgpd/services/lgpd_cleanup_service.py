@@ -169,6 +169,7 @@ async def run_cleanup(dry_run: bool = True) -> dict:
 
     async with AsyncSessionLocal() as db:
         now = datetime.utcnow()
+        candidates_to_delete: list = []  # initialized here — may be overwritten by query below
 
         # 1. Candidates past their scheduled deletion date
         try:
