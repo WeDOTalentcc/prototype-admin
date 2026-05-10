@@ -478,6 +478,25 @@ async def request_feature_flag_toggle(
     # placeholder values that PG accepts AND remain readable in admin UI.
     # P0-A` fix: target_id is UUID(as_uuid=True); flag_key is a free-text
     # string and lives in target_data. Pass target_id=None.
+
+    # P1-DPO: Look up company DPO from DPORegistry so approval emails go to
+    # the right person (LGPD Art. 41 — DPO must be notified of sensitive
+    # automated-decision requests). Falls back to empty string if company
+    # hasn't configured a DPO yet (backwards-compatible, fail-open).
+    _dpo_email = ""
+    _dpo_name = "Pending DPO Approval"
+    try:
+        from app.domains.lgpd.repositories.lgpd_repository import LgpdRepository
+        _lgpd_repo = LgpdRepository(db)
+        _dpo_record = await _lgpd_repo.get_dpo_by_company(
+            uuid.UUID(str(company_id)) if company_id else None
+        )
+        if _dpo_record is not None:
+            _dpo_email = _dpo_record.dpo_email or ""
+            _dpo_name = _dpo_record.dpo_name or "DPO"
+    except Exception:
+        pass  # fail-open: missing DPO registry never blocks feature request
+
     approval = ApprovalRequest(
         company_id=company_id,
         request_type=ApprovalType.FEATURE_FLAG_TOGGLE.value,
@@ -485,8 +504,9 @@ async def request_feature_flag_toggle(
         requester_name=str(requester_name),
         requester_email=str(requester_email),
         # P0-A: NOT NULL columns must be populated even in broadcast flow
-        approver_name="Pending DPO Approval",
-        approver_email="",  # empty placeholder; canonical sender resolves the actual recipient
+        # P1-DPO: resolved from DPORegistry when company has one configured
+        approver_name=_dpo_name,
+        approver_email=_dpo_email,  # real DPO email when configured
         target_id=None,  # P0-A`: column is UUID; flag_key kept in target_data only
         target_type="feature_flag",
         target_name=request.flag_key,

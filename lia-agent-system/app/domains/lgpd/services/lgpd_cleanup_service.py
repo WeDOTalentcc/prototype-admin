@@ -147,6 +147,21 @@ async def run_cleanup(dry_run: bool = True) -> dict:
       - screening_tasks (created_at TTL — 365 days)
       - fairness_audit_log (created_at TTL — 365 days, AI Act)
 
+    Cascade-handled by PostgreSQL FK (no explicit step needed here):
+      - lia_opinions (candidate_id FK ondelete=CASCADE) — OCEAN personality data
+        deleted automatically when Candidate row is deleted. Sprint B P1 audit
+        confirmed the cascade constraint exists in
+        libs/models/lia_models/lia_opinion.py:53.
+
+    Known gap — bigfive_department_profiles (P1-BigFive-Aggregate):
+      These are AGGREGATE rows per (company, department, seniority), not per
+      candidate. When a candidate requests erasure, their individual contribution
+      cannot be surgically removed from the running average without a full
+      recompute. Current approach: mark bigfive_department_profile rows that
+      included the deleted candidate as stale (last_updated < deletion_at) so
+      the next hire recomputes from scratch. Separate task:
+      bigfive_service.recompute_on_erasure() — Sprint B+ backlog.
+
     Args:
         dry_run: If True, only logs what would be deleted without committing.
                  Always run with dry_run=True first to validate the scope.

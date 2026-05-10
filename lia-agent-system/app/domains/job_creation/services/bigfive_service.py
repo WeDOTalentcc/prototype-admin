@@ -15,6 +15,34 @@ Fairness gate: NAO bloqueia neste estagio (P0.4 fix). adverse_impact_score real
 exigiria comparacao com grupos protegidos (genero/raca/idade) que nao temos
 no candidate_traits_snapshot. Strategy: emitir WARNING estruturado com TODO
 explicito + bloquear apenas via fairness_audit_log batch (proxima fase).
+
+EU AI Act Art. 13 — Transparency Disclosure (Sprint B P1 — 2026-05-10):
+  The BigFive department history learning loop constitutes an automated
+  decision-support system under EU AI Act Art. 6(2) (recruitment AI). The
+  following transparency obligations apply:
+
+  1. Candidates assessed must be informed that AI personality analysis
+     (OCEAN traits) from their screening contributes to hiring-outcome
+     learning for the company's department profile.
+     Disclosure surface: candidate consent modal (LGPD Art. 20 + EU AI Act
+     Art. 13(1)(f)) — managed by CandidateConsentService.
+
+  2. Recruiters must see a notice when BigFive department history is active
+     (toggle learning_loops.bigfive_department_history = true). The notice
+     must include: "This recommendation is partially influenced by hiring
+     patterns from previous candidates in this department."
+     Disclosure surface: feature-flag toggle disclosure modal (lia_assistant_flags.py
+     + frontend Configurações > Políticas de Recrutamento > Loops de Aprendizado).
+
+  3. Right to explanation: any candidate can request via LGPD erasure endpoint
+     (/api/v1/lgpd/candidate-erasure) to have their trait contribution removed.
+     Current implementation: cascade FK deletion removes lia_opinions row;
+     bigfive_department_profiles aggregate is marked stale for recompute
+     (see lgpd_cleanup_service.run_cleanup docstring for the known gap and
+     migration path).
+
+  Implementation status: items 1+2 documented here, item 3 partially covered
+  (FK cascade confirmed, aggregate recompute = Sprint B+ backlog).
 """
 from __future__ import annotations
 

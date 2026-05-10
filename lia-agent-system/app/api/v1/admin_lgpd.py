@@ -68,6 +68,11 @@ async def get_retention_policy(
         "retention_days": RETENTION_DAYS,
         "schedule": "Diário 02h Brasília (Celery Beat: lgpd-cleanup-daily)",
         "dry_run_default": True,
-        "tables_covered": ["candidates", "vacancy_candidates", "ai_consumption"],
+        "tables_covered": [
+            "candidates", "vacancy_candidates", "ai_consumption",
+            "lia_opinions (CASCADE via FK — OCEAN/personality data)",
+            "conversation_messages", "chat_messages", "interview_notes",
+            "screening_tasks", "fairness_audit_log",
+        ],
         "lgpd_article": "Art. 16 — dados pessoais serão eliminados após o término do tratamento",
     }
