@@ -88,7 +88,22 @@ class BigFiveDepartmentProfileRepository:
 
         profile = existing_profile
         if profile is None:
-            profile = await self.get_or_none(company_id, department, seniority_level)
+            # P1-Race: SELECT FOR UPDATE serializes concurrent hires to the same
+            # (company, dept, seniority) row. Without this, two concurrent
+            # transactions both read None → both INSERT → UniqueConstraint violation.
+            stmt = (
+                select(BigFiveDepartmentProfile)
+                .where(
+                    and_(
+                        BigFiveDepartmentProfile.company_id == company_id,
+                        BigFiveDepartmentProfile.department == department,
+                        BigFiveDepartmentProfile.seniority_level == seniority_level,
+                    )
+                )
+                .with_for_update()
+            )
+            result = await self.db.execute(stmt)
+            profile = result.scalar_one_or_none()
 
         if profile is None:
             profile = BigFiveDepartmentProfile(

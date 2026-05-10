@@ -257,6 +257,8 @@ def test_upsert_ocean_opinion_creates_new_when_no_existing():
 
     mock_db = MagicMock()
     mock_db.add = MagicMock()
+    # mark_vacancy_opinions_non_current calls db.execute — needs AsyncMock
+    mock_db.execute = AsyncMock(return_value=MagicMock())
     repo = OpinionsRepository(mock_db)
     repo.get_latest_for_candidate_vacancy = AsyncMock(return_value=None)
 

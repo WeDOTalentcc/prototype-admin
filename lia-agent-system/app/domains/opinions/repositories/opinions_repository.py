@@ -307,6 +307,25 @@ class OpinionsRepository:
             existing.updated_at = _dt.utcnow()
             return existing
         else:
+            # P1-IsCurrentCoord: ensure only one is_current=True row per
+            # (candidate, vacancy, opinion_type='wsi'). Without this, each
+            # writer (screening, interview, etc.) can stack duplicate True rows.
+            from uuid import UUID as _UUID
+
+            def _to_uuid(v):
+                if isinstance(v, _UUID):
+                    return v
+                try:
+                    return _UUID(str(v))
+                except (ValueError, AttributeError):
+                    return v
+
+            await self.mark_vacancy_opinions_non_current(
+                candidate_id=_to_uuid(candidate_id),
+                job_vacancy_id=_to_uuid(vacancy_id),
+                opinion_type="wsi",
+                company_id=_to_uuid(company_id),
+            )
             from app.models.lia_opinion import LiaOpinion as _LiaOpinion
             opinion = _LiaOpinion(
                 candidate_id=candidate_id,
