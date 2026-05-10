@@ -214,10 +214,11 @@ class TestDomainCatalogClassification:
         registered = set(registry.list_domains())
         agentic_ids = {
             "agent_studio", "analytics", "ats_integration", "automation",
-            "communication", "cv_screening", "digital_twin", "hiring_policy",
+            "candidate_self_service", "communication", "company_settings",
+            "cv_screening", "digital_twin", "hiring_policy",
             "interview_scheduling", "job_creation", "job_management",
-            "pipeline_transition", "recruiter_assistant", "recruitment_campaign",
-            "sourcing", "talent_pool",
+            "offer", "pipeline_transition", "recruiter_assistant",
+            "recruitment_campaign", "sourcing", "talent_pool",
         }
         for domain_id in registered:
             assert domain_id in agentic_ids, (

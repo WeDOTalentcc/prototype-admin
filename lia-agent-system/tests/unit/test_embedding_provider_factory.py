@@ -436,7 +436,7 @@ class TestEmbeddingProviderFactory:
         EmbeddingProviderFactory.register(FakeOpenAIFail)
 
         monkeypatch.delenv("EMBEDDING_DEFAULT_PROVIDER", raising=False)
-        with pytest.raises(Exception, match="All embedding providers failed"):
+        with pytest.raises(Exception, match="provedores de embedding falharam"):
             await EmbeddingProviderFactory.embed_with_fallback("hello")
 
     @pytest.mark.asyncio

@@ -336,7 +336,7 @@ async def test_event_history_endpoint_returns_events():
     mock_svc.get_history = AsyncMock(return_value=mock_events)
 
     with patch(
-        "app.services.event_store_service.event_store_service",
+        "app.shared.services.event_store_service.event_store_service",
         mock_svc,
     ):
         with TestClient(app) as client:
