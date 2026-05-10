@@ -766,8 +766,21 @@ class TransitionDispatchService:
                 )
                 return
 
+            # P0-2 (audit fix): pass company_id=None to suppress the
+            # internal save_snapshot side-effect inside
+            # get_adverse_impact_by_job (see bias_audit_service.py:386-393).
+            # We then save explicitly below — exactly one row per hire.
+            try:
+                _job_uuid = _UUID(str(job_id))
+            except (TypeError, ValueError):
+                logger.debug(
+                    "[ConclusionHired] bias snapshot skipped — job_id is not "
+                    "a UUID (got %r)",
+                    job_id,
+                )
+                return
             report = await svc.get_adverse_impact_by_job(
-                db=self.db, company_id=_company_uuid, job_id=job_id,
+                db=self.db, job_id=_job_uuid, company_id=None,
             )
             if report is None:
                 logger.debug(
