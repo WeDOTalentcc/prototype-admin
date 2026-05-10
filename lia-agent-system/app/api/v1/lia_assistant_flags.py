@@ -370,29 +370,27 @@ def _build_approvals_repo(db: AsyncSession):
     return ApprovalsRepository(db)
 
 
-async def _send_approval_request_email(*, approval, requester_email: str) -> None:
-    """Phase B B2: notify all company admins by email when a sensitive
-    flag toggle request is created. Fail-soft so a missing email infra
-    never breaks the request flow."""
+async def _send_approval_request_email(*, db, approval) -> None:
+    """Phase B B2: notify when a sensitive flag toggle request is created.
+
+    P0-B fix (post-audit): the canonical sender is a MODULE-LEVEL
+    function in app.api.v1.approvals, not a method on EmailService. The
+    previous getattr(EmailService(), 'send_approval_request_email', None)
+    returned None and silently skipped notifications. Delegating to the
+    canonical sender keeps a single source of truth for the email
+    template + provider plumbing.
+
+    Broadcast caveat (B4): approval.approver_email is "" placeholder
+    today, so the canonical sender will currently no-op at the
+    `_send_email_provider(to_email='')` step. Real broadcast (resolve
+    all admins) is a follow-up. Until then this records the intent +
+    audit trail; emails resume the moment broadcast resolution lands.
+
+    Fail-soft: never raises.
+    """
     try:
-        from app.domains.communication.services.email_service import EmailService
-        # The canonical EmailService has send_approval_request_email per
-        # the approval audit; fall back to a generic send when unavailable.
-        svc = EmailService()
-        send_fn = getattr(svc, "send_approval_request_email", None)
-        if send_fn is not None:
-            await send_fn(
-                approver_email=getattr(approval, "approver_email", None),
-                requester_email=requester_email,
-                request_type="feature_flag_toggle",
-                target_name=getattr(approval, "target_name", "feature flag"),
-                approval_id=str(approval.id),
-            )
-        else:
-            logger.debug(
-                "[FeatureFlagApproval] EmailService.send_approval_request_email "
-                "not found — skip notify (request still persisted)"
-            )
+        from app.api.v1.approvals import send_approval_request_email
+        await send_approval_request_email(db, approval)
     except Exception as exc:
         logger.warning(
             "[FeatureFlagApproval] approval request email failed (fail-soft): %s",
@@ -400,20 +398,16 @@ async def _send_approval_request_email(*, approval, requester_email: str) -> Non
         )
 
 
-async def _send_approval_result_email(*, approval, decision: str) -> None:
-    """Notify requester after admin approves/rejects. Fail-soft."""
+async def _send_approval_result_email(*, db, approval, approved: bool) -> None:
+    """Notify requester after admin approves/rejects. Fail-soft.
+
+    P0-B fix: delegates to canonical module-level
+    app.api.v1.approvals.send_approval_result_email. The requester_email
+    is set on the approval row, so this path delivers correctly.
+    """
     try:
-        from app.domains.communication.services.email_service import EmailService
-        svc = EmailService()
-        send_fn = getattr(svc, "send_approval_result_email", None)
-        if send_fn is not None:
-            await send_fn(
-                requester_email=getattr(approval, "requester_email", None),
-                request_type="feature_flag_toggle",
-                target_name=getattr(approval, "target_name", "feature flag"),
-                decision=decision,
-                approval_id=str(approval.id),
-            )
+        from app.api.v1.approvals import send_approval_result_email
+        await send_approval_result_email(db, approval, approved=approved)
     except Exception as exc:
         logger.warning(
             "[FeatureFlagApproval] approval result email failed (fail-soft): %s",
@@ -465,13 +459,21 @@ async def request_feature_flag_toggle(
     from app.models.approval import ApprovalRequest, ApprovalStatus, ApprovalType
     from datetime import datetime as _dt, timedelta as _td
 
+    # P0-A fix (post-audit): approver_name/approver_email are NOT NULL on
+    # ApprovalRequest. Decision B4 (broadcast — no specific approver) needs
+    # placeholder values that PG accepts AND remain readable in admin UI.
+    # P0-A` fix: target_id is UUID(as_uuid=True); flag_key is a free-text
+    # string and lives in target_data. Pass target_id=None.
     approval = ApprovalRequest(
         company_id=company_id,
         request_type=ApprovalType.FEATURE_FLAG_TOGGLE.value,
-        requester_id=str(requester_id),
+        requester_id=getattr(current_user, "id", None),  # UUID-native, not str()
         requester_name=str(requester_name),
         requester_email=str(requester_email),
-        target_id=request.flag_key,
+        # P0-A: NOT NULL columns must be populated even in broadcast flow
+        approver_name="Pending DPO Approval",
+        approver_email="",  # empty placeholder; canonical sender resolves the actual recipient
+        target_id=None,  # P0-A`: column is UUID; flag_key kept in target_data only
         target_type="feature_flag",
         target_name=request.flag_key,
         target_description=request.justification,
@@ -489,9 +491,7 @@ async def request_feature_flag_toggle(
     await repo.add_and_flush(approval)
 
     # Fail-soft email + audit (LGPD Art. 20 trail)
-    await _send_approval_request_email(
-        approval=approval, requester_email=str(requester_email),
-    )
+    await _send_approval_request_email(db=db, approval=approval)
     try:
         from app.shared.compliance.audit_service import AuditService
         await AuditService().log_action(
@@ -650,7 +650,7 @@ async def approve_feature_flag_toggle(
     approval.resolved_at = _dt.utcnow()
     approval.resolved_by = str(getattr(current_user, "id", "")) or None
 
-    await _send_approval_result_email(approval=approval, decision="approved")
+    await _send_approval_result_email(db=db, approval=approval, approved=True)
     try:
         from app.shared.compliance.audit_service import AuditService
         await AuditService().log_action(
