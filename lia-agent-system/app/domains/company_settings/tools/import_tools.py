@@ -399,6 +399,40 @@ async def import_benefits_from_data(
 
             await db.commit()
 
+        # P2-4 fix (2026-05-10): audit log para SOX/ISO 27001 compliance
+        # NB: benefits = CONFIG da empresa (entidade jurídica), NÃO PII de pessoa natural.
+        # Consent LGPD não aplica (Art.5 V — titular = pessoa natural).
+        # Audit é tracking de ALTERAÇÕES DE CONFIG corporativa, não de dados pessoais.
+        try:
+            from app.shared.compliance.audit_service import AuditService
+            import asyncio
+            service = AuditService()
+            coro = service.log_decision(
+                company_id=str(company_id),
+                agent_name="company_settings_tools",
+                decision_type="company_settings_change",
+                action="import_benefits_from_data",
+                decision="completed",
+                reasoning=[
+                    f"inserted_count={inserted}",
+                    f"skipped_count={skipped}",
+                    f"replace_existing={replace_existing}",
+                    f"user_id={user_id}",
+                ],
+                criteria_used=["benefit_validation", "company_scoped"],
+                job_vacancy_id=None,
+                confidence=1.0,
+                human_review_required=False,
+                criteria_ignored=None,
+            )
+            try:
+                loop = asyncio.get_event_loop()
+                loop.create_task(coro)
+            except Exception:
+                pass
+        except Exception as exc:
+            logger.debug("[import_benefits] audit emission deferred: %s", exc)
+
         logger.info(
             "[import_benefits] tenant=%s user=%s inserted=%d skipped=%d",
             company_id, user_id, inserted, skipped,
