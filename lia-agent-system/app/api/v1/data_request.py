@@ -299,6 +299,7 @@ async def list_data_requests(
     status: str | None = Query(None, description="Filter by status"),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     List data requests with optional filters.
     
@@ -348,6 +349,7 @@ async def create_data_request(
     request: CreateDataRequestRequest,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Create a new data request for a candidate.
     
@@ -398,6 +400,7 @@ async def create_data_request(
 async def get_config(
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get company data request configuration.
     
@@ -418,6 +421,7 @@ async def update_config(
     request: UpdateConfigRequest,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Update company data request configuration.
     
@@ -443,6 +447,7 @@ async def update_collection_settings(
     request: CollectionSettingsRequest,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Update collection settings including LGPD and WhatsApp configuration.
     
@@ -488,6 +493,7 @@ async def update_collection_settings(
 async def get_collection_settings(
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get current collection settings including LGPD and WhatsApp configuration.
     """
@@ -663,6 +669,7 @@ async def delete_template(
     template_id: UUID,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Delete (deactivate) a data request template.
     
@@ -683,6 +690,7 @@ async def list_fields(
     include_defaults: bool = Query(True, description="Include default fields"),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     List available data request fields.
     
@@ -703,6 +711,7 @@ async def create_field(
     request: CreateFieldRequest,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Create a custom data request field.
     
@@ -764,6 +773,7 @@ async def create_field(
 
 @router.get("/stage-field-mappings", response_model=None)
 async def get_stage_field_mappings():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get default field mappings for each recruitment stage.
     
@@ -807,6 +817,7 @@ async def get_vacancy_triggers(
     vacancy_id: UUID,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get data request trigger configuration for a vacancy.
     
@@ -839,6 +850,7 @@ async def update_vacancy_triggers(
     request: UpdateVacancyTriggersRequest,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Update data request trigger configuration for a vacancy.
     
@@ -878,6 +890,7 @@ async def get_stage_trigger(
     stage_name: str,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get trigger configuration for a specific stage.
     
@@ -922,6 +935,7 @@ async def get_data_request(
     data_request_id: UUID,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get details of a specific data request.
     
@@ -947,6 +961,7 @@ async def cancel_data_request(
     data_request_id: UUID,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Cancel a data request.
     
@@ -969,6 +984,7 @@ async def resend_notification(
     request: ResendNotificationRequest,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Resend notification for a data request.
     
@@ -992,6 +1008,7 @@ async def check_status(
     data_request_id: UUID,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Check and update the completion status of a data request.
     
@@ -1044,6 +1061,7 @@ async def start_whatsapp_collection(
     request: WhatsAppStartRequest,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Start WhatsApp data collection flow.
     
@@ -1095,6 +1113,7 @@ async def process_whatsapp_message(
     request: WhatsAppProcessMessageRequest,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Process incoming WhatsApp message from candidate.
     
@@ -1136,6 +1155,7 @@ async def get_whatsapp_status(
     data_request_id: UUID,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get current WhatsApp conversation status.
     

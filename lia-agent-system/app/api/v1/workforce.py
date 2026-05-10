@@ -47,6 +47,7 @@ async def list_hiring_plans(
     limit: int = Query(50, ge=1, le=100),
     repo: WorkforceRepository = Depends(get_workforce_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List all hiring plans with optional filters."""
     try:
         return await repo.list_hiring_plans(
@@ -67,6 +68,7 @@ async def create_hiring_plan(
     data: HiringPlanCreate,
     repo: WorkforceRepository = Depends(get_workforce_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Create a new hiring plan."""
     try:
         plan = await repo.create_hiring_plan(data.model_dump())
@@ -84,6 +86,7 @@ async def get_hiring_plan(
     plan_id: uuid.UUID,
     repo: WorkforceRepository = Depends(get_workforce_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get a hiring plan with all details including headcounts and import jobs."""
     try:
         plan = await repo.get_hiring_plan_with_details(plan_id)
@@ -111,6 +114,7 @@ async def update_hiring_plan(
     data: HiringPlanUpdate,
     repo: WorkforceRepository = Depends(get_workforce_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Update an existing hiring plan."""
     try:
         plan = await repo.get_hiring_plan(plan_id)
@@ -135,6 +139,7 @@ async def delete_hiring_plan(
     plan_id: uuid.UUID,
     repo: WorkforceRepository = Depends(get_workforce_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Soft delete a hiring plan."""
     try:
         plan = await repo.get_hiring_plan(plan_id)
@@ -165,6 +170,7 @@ async def list_plan_headcounts(
     limit: int = Query(100, ge=1, le=200),
     repo: WorkforceRepository = Depends(get_workforce_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List all headcounts for a hiring plan."""
     try:
         plan = await repo.get_hiring_plan(plan_id)
@@ -195,6 +201,7 @@ async def create_headcount(
     data: PlannedHeadcountCreate,
     repo: WorkforceRepository = Depends(get_workforce_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Create a new planned headcount."""
     try:
         plan = await repo.get_hiring_plan(plan_id)
@@ -221,6 +228,7 @@ async def get_headcount(
     headcount_id: uuid.UUID,
     repo: WorkforceRepository = Depends(get_workforce_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get a specific headcount by ID."""
     try:
         headcount = await repo.get_headcount(headcount_id)
@@ -242,6 +250,7 @@ async def update_headcount(
     data: PlannedHeadcountUpdate,
     repo: WorkforceRepository = Depends(get_workforce_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Update an existing headcount."""
     try:
         headcount = await repo.get_headcount(headcount_id)
@@ -266,6 +275,7 @@ async def delete_headcount(
     headcount_id: uuid.UUID,
     repo: WorkforceRepository = Depends(get_workforce_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Soft delete a headcount."""
     try:
         headcount = await repo.get_headcount(headcount_id)
@@ -289,6 +299,7 @@ async def create_headcounts_bulk(
     headcounts: list[PlannedHeadcountCreate],
     repo: WorkforceRepository = Depends(get_workforce_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Create multiple headcounts at once."""
     try:
         plan = await repo.get_hiring_plan(plan_id)
@@ -319,6 +330,7 @@ async def upload_import_file(
     file: UploadFile = File(...),
     repo: WorkforceRepository = Depends(get_workforce_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Upload a file for import (Excel or CSV)."""
     try:
         plan = await repo.get_hiring_plan(plan_id)
@@ -362,6 +374,7 @@ async def preview_import(
     job_id: uuid.UUID,
     repo: WorkforceRepository = Depends(get_workforce_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get preview of import data with validation."""
     try:
         import_job = await repo.get_import_job(job_id, plan_id)
@@ -419,6 +432,7 @@ async def confirm_import(
     data: ImportConfirm,
     repo: WorkforceRepository = Depends(get_workforce_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Confirm and execute the import."""
     try:
         import_job = await repo.get_import_job(job_id, plan_id)
@@ -453,6 +467,7 @@ async def confirm_import(
 
 @router.get("/import/template", response_model=None)
 async def download_import_template():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Download Excel template for headcount import."""
     try:
         headers = [
@@ -486,6 +501,7 @@ async def get_workforce_stats(
     plan_id: uuid.UUID | None = Query(None),
     repo: WorkforceRepository = Depends(get_workforce_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get workforce planning statistics."""
     try:
         plan = await repo.get_plan_for_stats(company_id=company_id, fiscal_year=fiscal_year, plan_id=plan_id)
@@ -602,6 +618,7 @@ async def get_hiring_timeline(
     months_ahead: int = Query(6, ge=1, le=24),
     repo: WorkforceRepository = Depends(get_workforce_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get timeline of upcoming hires."""
     try:
         today = date.today()
@@ -654,6 +671,7 @@ async def get_workforce_alerts(
     company_id: uuid.UUID | None = Query(None),
     repo: WorkforceRepository = Depends(get_workforce_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get alerts for upcoming or overdue hires."""
     try:
         today = date.today()
@@ -760,6 +778,7 @@ async def get_workforce_entries(
     year: int | None = Query(None),
     repo: WorkforceRepository = Depends(get_workforce_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get simple workforce entries for admin panel."""
     try:
         current_year = year or datetime.now().year
@@ -779,6 +798,7 @@ async def save_workforce_entries(
     data: WorkforceEntriesRequest,
     repo: WorkforceRepository = Depends(get_workforce_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Save simple workforce entries for admin panel."""
     try:
         entries_data = [
@@ -867,6 +887,7 @@ async def parse_workforce_import_file(file: UploadFile) -> list[dict[str, str]]:
 
 @router.get("/entries/import/template", response_model=None)
 async def download_workforce_entries_import_template():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Download CSV template for workforce entries import."""
     try:
         headers = ["department", "month", "year", "planned", "actual", "notes"]
@@ -897,6 +918,7 @@ async def import_workforce_entries(
     company_id: uuid.UUID | None = Query(None),
     repo: WorkforceRepository = Depends(get_workforce_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Simple import for workforce entries from Excel/CSV.
     Expected columns: department, month, year, planned, actual, notes

@@ -136,6 +136,7 @@ async def list_templates(
     limit: int = Query(200, ge=1, le=500, description="Max templates to return"),
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List recruitment templates for a company."""
     try:
         templates = await repo.list_templates(
@@ -160,6 +161,7 @@ async def create_template(
     data: TemplateCreate = None,
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Create a new recruitment template."""
     try:
         template_data = data.dict()
@@ -182,6 +184,7 @@ async def update_template(
     company_id: str = Query(..., description="Company ID"),
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Update a recruitment template."""
     try:
         template = await repo.get_template(uuid.UUID(template_id))
@@ -203,6 +206,7 @@ async def delete_template(
     company_id: str = Query(..., description="Company ID"),
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Delete a recruitment template (soft delete)."""
     try:
         template = await repo.get_template(uuid.UUID(template_id))
@@ -219,6 +223,7 @@ async def delete_template(
 
 @router.get("/templates/defaults", response_model=None)
 async def get_default_templates():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get default template configurations."""
     return {
         "templates": DEFAULT_TEMPLATES,
@@ -231,6 +236,7 @@ async def initialize_templates(
     company_id: str = Query(..., description="Company ID"),
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Initialize default templates for a company."""
     try:
         existing = await repo.get_templates_for_company(uuid.UUID(company_id))
@@ -255,6 +261,7 @@ async def list_slas(
     is_active: bool = True,
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List SLAs for a company."""
     try:
         slas = await repo.list_slas(
@@ -277,6 +284,7 @@ async def create_sla(
     data: SLACreate = None,
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Create a new SLA."""
     try:
         sla_data = data.dict()
@@ -296,6 +304,7 @@ async def update_sla(
     company_id: str = Query(..., description="Company ID"),
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Update an SLA."""
     try:
         sla = await repo.get_sla(uuid.UUID(sla_id))
@@ -320,6 +329,7 @@ async def delete_sla(
     company_id: str = Query(..., description="Company ID"),
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Delete an SLA (soft delete)."""
     try:
         sla = await repo.get_sla(uuid.UUID(sla_id))
@@ -336,6 +346,7 @@ async def delete_sla(
 
 @router.get("/slas/defaults", response_model=None)
 async def get_default_slas():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get default SLA configurations."""
     return {"slas": DEFAULT_SLAS}
 
@@ -345,6 +356,7 @@ async def initialize_slas(
     company_id: str = Query(..., description="Company ID"),
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Initialize default SLAs for a company."""
     try:
         existing = await repo.get_slas_for_company(uuid.UUID(company_id))
@@ -372,6 +384,7 @@ async def get_sla_violations(
     offset: int = 0,
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get SLA violations for a company."""
     try:
         violations, total = await repo.list_violations(
@@ -401,6 +414,7 @@ async def list_automations(
     is_enabled: bool | None = None,
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List automations for a company."""
     try:
         automations = await repo.list_automations(
@@ -424,6 +438,7 @@ async def create_automation(
     data: AutomationCreate = None,
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Create a new automation."""
     try:
         automation = await repo.create_automation(
@@ -443,6 +458,7 @@ async def update_automation(
     company_id: str = Query(..., description="Company ID"),
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Update an automation."""
     try:
         automation = await repo.get_automation(uuid.UUID(automation_id))
@@ -464,6 +480,7 @@ async def delete_automation(
     company_id: str = Query(..., description="Company ID"),
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Delete an automation."""
     try:
         automation = await repo.get_automation(uuid.UUID(automation_id))
@@ -480,6 +497,7 @@ async def delete_automation(
 
 @router.get("/automations/defaults", response_model=None)
 async def get_default_automations():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get default automation configurations."""
     return {
         "automations": DEFAULT_AUTOMATIONS,
@@ -504,6 +522,7 @@ async def initialize_automations(
     company_id: str = Query(..., description="Company ID"),
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Initialize default automations for a company."""
     try:
         existing = await repo.get_automations_for_company(uuid.UUID(company_id))
@@ -527,6 +546,7 @@ async def ai_suggest_template(
     data: AISuggestTemplateRequest = None,
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """AI-powered template suggestion based on job details."""
     try:
         job_title_lower = data.job_title.lower() if data.job_title else ""
@@ -594,6 +614,7 @@ async def ai_optimize_sla(
     data: AIOptimizeSLARequest = None,
     repo: RecruitmentJourneyRepository = Depends(get_recruitment_journey_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """AI-powered SLA optimization based on historical data."""
     try:
         current_slas = await repo.get_active_slas_for_company(uuid.UUID(company_id))
