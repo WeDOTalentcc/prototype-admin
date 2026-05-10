@@ -17,15 +17,40 @@ from app.main import app
 
 
 # ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _mock_db_override():
+    """Returns an async generator that yields a mock DB session."""
+    from app.core.database import get_db
+
+    mock_db_session = AsyncMock()
+    mock_result = MagicMock()
+    mock_result.scalar = MagicMock(return_value=1)
+    mock_db_session.execute = AsyncMock(return_value=mock_result)
+
+    async def override_get_db():
+        yield mock_db_session
+
+    return get_db, override_get_db
+
+
+# ---------------------------------------------------------------------------
 # Health básico
 # ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
 async def test_health_ok():
     # Mock Redis — unavailable in test env; we test app logic not infra availability
-    with patch("app.api.v1.system_health._check_redis", return_value={"status": "healthy", "latency_ms": 1}):
-        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-            resp = await client.get("/api/v1/health")
+    # Mock DB — prevent real DB connections that contaminate async pool
+    get_db, override_get_db = _mock_db_override()
+    app.dependency_overrides[get_db] = override_get_db
+    try:
+        with patch("app.api.v1.system_health._check_redis", return_value={"status": "healthy", "latency_ms": 1}):
+            async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+                resp = await client.get("/api/v1/health")
+    finally:
+        del app.dependency_overrides[get_db]
     assert resp.status_code == 200
     data = resp.json()
     assert data["status"] in ("healthy", "degraded")
@@ -35,16 +60,26 @@ async def test_health_ok():
 
 @pytest.mark.asyncio
 async def test_health_has_database_component():
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        resp = await client.get("/api/v1/health")
+    get_db, override_get_db = _mock_db_override()
+    app.dependency_overrides[get_db] = override_get_db
+    try:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            resp = await client.get("/api/v1/health")
+    finally:
+        del app.dependency_overrides[get_db]
     components = resp.json()["components"]
     assert "database" in components
 
 
 @pytest.mark.asyncio
 async def test_health_has_timestamp():
-    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
-        resp = await client.get("/api/v1/health")
+    get_db, override_get_db = _mock_db_override()
+    app.dependency_overrides[get_db] = override_get_db
+    try:
+        async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test") as client:
+            resp = await client.get("/api/v1/health")
+    finally:
+        del app.dependency_overrides[get_db]
     assert "timestamp" in resp.json()
 
 

@@ -31,9 +31,11 @@ def _init_sentry_with_env(monkeypatch, app_env, explicit_rate=None):
     monkeypatch.setitem(sys.modules, 'sentry_sdk.integrations.fastapi', fake_fastapi_int)
     monkeypatch.setitem(sys.modules, 'sentry_sdk.integrations.starlette', fake_starlette_int)
 
+    # Use monkeypatch.delitem so that app.core.sentry is restored after the test,
+    # preventing contamination of subsequent tests that imported from app.core.sentry.
     for key in list(sys.modules):
         if key == 'app.core.sentry' or key.startswith('app.core.sentry.'):
-            del sys.modules[key]
+            monkeypatch.delitem(sys.modules, key, raising=False)
 
     import app.core.sentry as sentry_mod
     sentry_mod.init_sentry(dsn='https://fake@sentry.example.com/1')

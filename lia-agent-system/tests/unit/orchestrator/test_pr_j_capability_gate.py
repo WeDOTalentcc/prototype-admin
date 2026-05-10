@@ -191,6 +191,12 @@ class TestRailACapabilityGateWired:
         ) as mock_ae, patch(
             "app.domains.recruiter_assistant.services.conversation_memory.conversation_memory",
             AsyncMock(),
+        ), patch(
+            "app.orchestrator.main_orchestrator.get_tenant_llm_config",
+            new=AsyncMock(return_value=None),
+        ), patch(
+            "app.orchestrator.agentic_loop.agentic_loop.run",
+            new=AsyncMock(return_value=None),
         ):
             mock_store.get.return_value = None
             mock_ae.try_execute = AsyncMock(return_value=MagicMock(status="not_actionable"))
@@ -224,6 +230,12 @@ class TestRailACapabilityGateWired:
         ) as mock_ae, patch(
             "app.domains.recruiter_assistant.services.conversation_memory.conversation_memory",
             AsyncMock(),
+        ), patch(
+            "app.orchestrator.main_orchestrator.get_tenant_llm_config",
+            new=AsyncMock(return_value=None),
+        ), patch(
+            "app.orchestrator.agentic_loop.agentic_loop.run",
+            new=AsyncMock(return_value=None),
         ):
             mock_store.get.return_value = None
             mock_ae.try_execute = AsyncMock(return_value=MagicMock(status="not_actionable"))
@@ -261,6 +273,12 @@ class TestRailACapabilityGateWired:
         ) as mock_ae, patch(
             "app.domains.recruiter_assistant.services.conversation_memory.conversation_memory",
             AsyncMock(),
+        ), patch(
+            "app.orchestrator.main_orchestrator.get_tenant_llm_config",
+            new=AsyncMock(return_value=None),
+        ), patch(
+            "app.orchestrator.agentic_loop.agentic_loop.run",
+            new=AsyncMock(return_value=None),
         ):
             mock_store.get.return_value = None
             mock_ae.try_execute = AsyncMock(return_value=MagicMock(status="not_actionable"))
@@ -307,6 +325,12 @@ class TestRailACapabilityGateWired:
         ) as mock_ae, patch(
             "app.domains.recruiter_assistant.services.conversation_memory.conversation_memory",
             AsyncMock(),
+        ), patch(
+            "app.orchestrator.main_orchestrator.get_tenant_llm_config",
+            new=AsyncMock(return_value=None),
+        ), patch(
+            "app.orchestrator.agentic_loop.agentic_loop.run",
+            new=AsyncMock(return_value=None),
         ):
             mock_store.get.return_value = None
             mock_ae.try_execute = AsyncMock(return_value=MagicMock(status="not_actionable"))

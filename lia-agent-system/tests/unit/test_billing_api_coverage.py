@@ -166,6 +166,7 @@ class TestBillingStatusEndpoint:
     @pytest.mark.asyncio
     async def test_status_returns_200_with_mocked_service(self):
         from httpx import AsyncClient, ASGITransport
+        from app.core.database import get_tenant_db
 
         mock_provider = MagicMock()
         mock_provider.is_configured.return_value = True
@@ -175,25 +176,31 @@ class TestBillingStatusEndpoint:
 
         app = _make_app()
 
+        # Override get_tenant_db so no real DB connection is created
+        mock_db_session = AsyncMock()
+        mock_db_session.execute = AsyncMock(
+            return_value=MagicMock(
+                scalar_one_or_none=lambda: None,
+                scalar=lambda: None,
+            )
+        )
+
+        async def override_get_tenant_db():
+            yield mock_db_session
+
+        app.dependency_overrides[get_tenant_db] = override_get_tenant_db
+
         with patch("app.api.v1.billing.BillingService", return_value=mock_billing_service):
-            with patch("app.api.v1.billing.get_billing_repo") as mock_repo_dep:
-                mock_repo = AsyncMock()
-                mock_repo.db = MagicMock()
-
-                async def override_repo():
-                    return mock_repo
-                app.dependency_overrides[mock_repo_dep] = override_repo
-
-                async with AsyncClient(
-                    transport=ASGITransport(app=app), base_url="http://test"
-                ) as ac:
-                    resp = await ac.get(
-                        "/api/v1/billing/status",
-                        headers={"X-Company-ID": str(uuid4())},
-                    )
-                    assert resp.status_code == 200
-                    data = resp.json()
-                    assert data["status"] == "healthy"
+            async with AsyncClient(
+                transport=ASGITransport(app=app), base_url="http://test"
+            ) as ac:
+                resp = await ac.get(
+                    "/api/v1/billing/status",
+                    headers={"X-Company-ID": str(uuid4())},
+                )
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["status"] == "healthy"
 
 
 class TestListSubscriptionsEndpoint:
