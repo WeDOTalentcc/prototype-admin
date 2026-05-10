@@ -368,6 +368,7 @@ class PlanDetector:
                         )
                         return plan
                 except re.error as e:
+                    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                     logger.warning(f"Regex error in pattern '{pattern.name}': {e}")
 
         return None

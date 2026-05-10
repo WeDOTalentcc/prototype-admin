@@ -897,6 +897,7 @@ def _should_allow_call(cb: CircuitBreakerState) -> bool:
         if time.time() - cb.last_failure_time >= cb.recovery_timeout:
             cb.state = CircuitState.HALF_OPEN
             cb.half_open_calls = 0
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"[CIRCUIT-BREAKER] '{cb.service_name}' → HALF_OPEN (testing recovery)")
             return True
         return False
@@ -917,6 +918,7 @@ def _record_success(cb: CircuitBreakerState) -> None:
         if cb.half_open_calls >= cb.half_open_max_calls:
             cb.state = CircuitState.CLOSED
             cb.failure_count = 0
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"[CIRCUIT-BREAKER] '{cb.service_name}' → CLOSED (recovered)")
 
 
@@ -979,6 +981,7 @@ def circuit_breaker(
 
             if not _should_allow_call(cb):
                 if fallback:
+                    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                     logger.info(f"[CIRCUIT-BREAKER] '{service_name}' using fallback")
                     return await fallback(*args, **kwargs) if callable(fallback) else fallback
                 raise CircuitBreakerError(service_name, cb.state)
@@ -1020,6 +1023,7 @@ def reset_circuit(service_name: str) -> None:
     if service_name in _circuits:
         _circuits[service_name].state = CircuitState.CLOSED
         _circuits[service_name].failure_count = 0
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"[CIRCUIT-BREAKER] '{service_name}' manually reset to CLOSED")
 
 

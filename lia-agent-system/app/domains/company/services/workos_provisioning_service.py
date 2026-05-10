@@ -76,6 +76,7 @@ async def provision_workos_organization(
         
         org_name = client.name or client.trade_name or f"Client-{client.id}"
         
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"🔄 Creating WorkOS Organization for client: {org_name}")
         
         if domains:
@@ -106,6 +107,7 @@ async def provision_workos_organization(
         
         if config:
             await db.refresh(config)
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"✅ CompanyWorkOSConfig updated with organization_id: {config.workos_organization_id}")
         else:
             logger.warning(f"⚠️ CompanyWorkOSConfig not found for client_id: {client_id_str}")
@@ -115,6 +117,7 @@ async def provision_workos_organization(
         client.workos_organization_created_at = datetime.utcnow()
         await db.commit()
         await db.refresh(client)
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"✅ Updated workos_organization_created tracking for client {client.id}")
         
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
@@ -127,5 +130,6 @@ async def provision_workos_organization(
             await db.rollback()
         except Exception:
             pass
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"❌ Failed to provision WorkOS Organization for client {client.id}: {str(e)}", exc_info=True)
         return None

@@ -487,6 +487,7 @@ class LLMService:
                         ))
             
             if tool_calls:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"Claude requested {len(tool_calls)} tool calls: {[tc.name for tc in tool_calls]}")
                 return ToolCallResponse(
                     is_tool_call=True,
@@ -601,6 +602,7 @@ class LLMService:
                         text_parts.append(part.text)
             
             if tool_calls:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"Gemini requested {len(tool_calls)} tool calls: {[tc.name for tc in tool_calls]}")
                 return ToolCallResponse(
                     is_tool_call=True,
@@ -685,6 +687,7 @@ class LLMService:
         except Exception:
             pass  # Audit non-blocking
 
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Generating structured output: {output_model.__name__} via {provider}")
         
         if provider == "claude":
@@ -730,12 +733,14 @@ class LLMService:
                 "system": enhanced_system.strip()
             }
             
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.debug(f"Claude structured request: model={output_model.__name__}")
             
             response = client.messages.create(**request_kwargs)
             
             try:
                 result = parse_claude_tool_response(response, output_model, "respond")
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"Successfully parsed structured output: {output_model.__name__}")
                 return result
             except ValueError as parse_error:
@@ -800,6 +805,7 @@ class LLMService:
                 max_output_tokens=max_tokens
             )
             
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.debug(f"Gemini structured request: model={output_model.__name__}")
             
             response = client.models.generate_content(
@@ -810,6 +816,7 @@ class LLMService:
             
             try:
                 result = parse_gemini_json_response(response, output_model)
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"Successfully parsed structured output: {output_model.__name__}")
                 return result
             except ValueError as parse_error:

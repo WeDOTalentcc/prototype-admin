@@ -824,6 +824,7 @@ async def get_realtime_metrics(
     organization_id = config.workos_organization_id if config else None
 
     if not organization_id:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"No WorkOS organization_id configured for company {company_id}")
         return local_data
 

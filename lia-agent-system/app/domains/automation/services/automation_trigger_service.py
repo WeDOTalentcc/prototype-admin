@@ -616,6 +616,7 @@ class AutomationTriggerService:
                 candidate_id = str(item.candidate_id) if item.candidate_id else None
         
         if not recipient_email:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.warning(f"⚠️ [TRIGGER] No email available for item {type(item).__name__}")
             return {"success": False, "error": "no_recipient_email"}
         
@@ -711,6 +712,7 @@ class AutomationTriggerService:
                 candidate_id = str(item.candidate_id) if item.candidate_id else None
         
         if not recipient_phone:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.warning(f"⚠️ [TRIGGER] No phone available for item {type(item).__name__}")
             return {"success": False, "error": "no_recipient_phone"}
         

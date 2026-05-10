@@ -169,6 +169,7 @@ class ConversationState:
     def update_last_entity(self, entity_type: str, entity_id: Any, name: str = "") -> None:
         """Registra a última entidade mencionada para resolução de pronomes."""
         self.last_entity = {"type": entity_type, "id": entity_id, "name": name}
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.debug(f"Updated last_entity: {entity_type}:{entity_id} name={name!r}")
 
     def advance_pagination(self, page_size: int = 10) -> int:

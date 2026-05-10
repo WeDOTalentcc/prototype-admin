@@ -44,6 +44,7 @@ class ModuleService:
             flag_key = f"module_{module_name}_enabled"
             return await feature_flag_service.is_enabled(db, flag_key, company_id)
         except Exception as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             self.logger.error(f"Error checking module {module_name} for {company_id}: {e}")
             return False
 
@@ -62,6 +63,7 @@ class ModuleService:
                 return ModuleStatus.EXPIRED.value
             return mod.status
         except Exception as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             self.logger.error(f"Error getting module status {module_name} for {company_id}: {e}")
             return None
 
@@ -140,6 +142,7 @@ class ModuleService:
             await repo.add(mod)
 
         await db.flush()
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         self.logger.info(f"Module {module_name} activated for {company_id} (status={status}, tier={tier})")
         return {"success": True, "module": mod.to_dict()}
 
@@ -169,6 +172,7 @@ class ModuleService:
             mod.expires_at = expires_at
 
         await db.flush()
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         self.logger.info(f"Module {module_name} updated for {company_id}")
         return {"success": True, "module": mod.to_dict()}
 
@@ -186,6 +190,7 @@ class ModuleService:
 
         mod.status = ModuleStatus.DISABLED.value
         await db.flush()
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         self.logger.info(f"Module {module_name} deactivated for {company_id}")
         return {"success": True, "module": mod.to_dict()}
 
@@ -227,6 +232,7 @@ class ModuleService:
             mod.expires_at = expires_at
 
         await db.flush()
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         self.logger.info(f"Module {mod.module_name} (id={module_id}) updated")
         return {"success": True, "module": mod.to_dict()}
 

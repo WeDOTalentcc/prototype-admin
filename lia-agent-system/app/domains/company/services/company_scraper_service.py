@@ -306,6 +306,7 @@ class CompanyScraperService:
                 
                 structured_data = self._parse_linkedin_data(company_data)
                 
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"LinkedIn scrape completed: extracted data for {structured_data.get('name', 'unknown')}")
                 
                 return {

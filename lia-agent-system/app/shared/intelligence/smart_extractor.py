@@ -131,6 +131,7 @@ class ParamExtractor:
                         else:
                             params[pattern.name] = value
                 except re.error as e:
+                    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                     logger.warning(f"Regex error for pattern '{pattern.name}': {e}")
 
         elapsed = (time.monotonic() - start) * 1000
