@@ -14,7 +14,10 @@
           "description": "Captura e reflete antes de responder",
           "seniority_min": "jr",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "async_communication_clarity",
@@ -22,7 +25,10 @@
           "description": "Mensagens auto-suficientes que dispensam follow-up",
           "seniority_min": "jr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "synchronous_meeting_effectiveness",
@@ -30,7 +36,10 @@
           "description": "Conduz reunião com objetivo + decisão + follow-up",
           "seniority_min": "pl",
           "source": "Lominger",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "cross_team_alignment",
@@ -38,7 +47,10 @@
           "description": "Constrói consenso entre times com objetivos diferentes",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "feedback_giving",
@@ -46,7 +58,10 @@
           "description": "Dá feedback duro construtivo com exemplos",
           "seniority_min": "pl",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "feedback_acceptance",
@@ -54,7 +69,10 @@
           "description": "Recebe crítica direta sem se desestabilizar",
           "seniority_min": "jr",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "conflict_resolution",
@@ -62,7 +80,10 @@
           "description": "Trata desacordo sem escalada",
           "seniority_min": "jr",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "documentation_writing",
@@ -70,7 +91,10 @@
           "description": "Produz docs que outros usam sem perguntar",
           "seniority_min": "jr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "internal_communication_strategy",
@@ -78,7 +102,10 @@
           "description": "Comunica change pra org grande",
           "seniority_min": "sr",
           "source": "Lominger",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         }
       ]
     },
@@ -93,7 +120,10 @@
           "description": "Cumpre prazo apertado sem comprometer qualidade",
           "seniority_min": "jr",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "prioritization_with_competing_demands",
@@ -101,7 +131,10 @@
           "description": "Escolhe entre demandas concorrentes com critério",
           "seniority_min": "jr",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "scope_management",
@@ -109,7 +142,10 @@
           "description": "Corta escopo quando necessário",
           "seniority_min": "pl",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "ownership_of_outcome",
@@ -117,7 +153,10 @@
           "description": "Assume resultado final, não só esforço",
           "seniority_min": "jr",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "recovery_from_failure",
@@ -125,7 +164,10 @@
           "description": "Reage construtivamente quando dá errado",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "attention_to_detail",
@@ -133,7 +175,10 @@
           "description": "Captura erros sutis antes do cliente",
           "seniority_min": "jr",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "process_improvement",
@@ -141,7 +186,10 @@
           "description": "Identifica ineficiência e implementa",
           "seniority_min": "pl",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "time_management",
@@ -149,7 +197,10 @@
           "description": "Organiza próprio tempo entre frentes",
           "seniority_min": "jr",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "quality_under_speed",
@@ -157,7 +208,10 @@
           "description": "Mantém qualidade quando velocidade aperta",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "follow_through",
@@ -165,7 +219,10 @@
           "description": "Termina o que começou, sem pontas soltas",
           "seniority_min": "jr",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "multi_project_juggling",
@@ -173,7 +230,10 @@
           "description": "Mantém 5+ projetos com prioridade variável",
           "seniority_min": "pl",
           "source": "Lominger",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         }
       ]
     },
@@ -188,7 +248,10 @@
           "description": "Aprende stack/ferramenta sem treinamento",
           "seniority_min": "jr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "domain_curiosity",
@@ -196,7 +259,10 @@
           "description": "Vai além do escopo técnico pra entender negócio",
           "seniority_min": "jr",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "adapting_to_change",
@@ -204,7 +270,10 @@
           "description": "Reage a pivôs/reorgs/mudança de prioridade",
           "seniority_min": "jr",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "learning_from_failure",
@@ -212,7 +281,10 @@
           "description": "Extrai lição concreta de erro próprio",
           "seniority_min": "jr",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "cross_domain_translation",
@@ -220,7 +292,10 @@
           "description": "Aplica conceito de uma área em outra",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "proactive_skill_building",
@@ -228,7 +303,10 @@
           "description": "Identifica gaps e investe em fechar",
           "seniority_min": "pl",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "continuous_learning_habit",
@@ -236,7 +314,10 @@
           "description": "Hábito de aprender regular",
           "seniority_min": "jr",
           "source": "Lominger",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         }
       ]
     },
@@ -251,7 +332,10 @@
           "description": "Usa evidência quantitativa",
           "seniority_min": "jr",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "trade_off_articulation",
@@ -259,7 +343,10 @@
           "description": "Explica trade-offs com clareza",
           "seniority_min": "pl",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "root_cause_analysis",
@@ -267,7 +354,10 @@
           "description": "Investiga até causa estrutural",
           "seniority_min": "pl",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "ambiguity_tolerance",
@@ -275,7 +365,10 @@
           "description": "Avança sem requisito 100% claro",
           "seniority_min": "jr",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "hypothesis_driven_thinking",
@@ -283,7 +376,10 @@
           "description": "Forma hipóteses testáveis",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "systems_thinking",
@@ -291,7 +387,10 @@
           "description": "Vê implicações de 2ª ordem",
           "seniority_min": "sr",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "decision_speed",
@@ -299,7 +398,10 @@
           "description": "Decide com 70% info",
           "seniority_min": "pl",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "bias_awareness",
@@ -307,7 +409,10 @@
           "description": "Reconhece próprios vieses",
           "seniority_min": "sr",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "creative_problem_solving",
@@ -315,7 +420,10 @@
           "description": "Combina elementos não-óbvios",
           "seniority_min": "pl",
           "source": "Lominger",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         }
       ]
     },
@@ -330,7 +438,10 @@
           "description": "Entende dor além do que cliente articula",
           "seniority_min": "jr",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "stakeholder_management",
@@ -338,7 +449,10 @@
           "description": "Gerencia expectativas divergentes",
           "seniority_min": "pl",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "customer_advocacy",
@@ -346,7 +460,10 @@
           "description": "Defende cliente internamente",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "difficult_conversation_with_customer",
@@ -354,7 +471,10 @@
           "description": "Dá bad news sem perder relação",
           "seniority_min": "pl",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "expectation_setting",
@@ -362,7 +482,10 @@
           "description": "Antecipa fricções antes de virar problema",
           "seniority_min": "pl",
           "source": "Lominger",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "cross_cultural_communication",
@@ -370,7 +493,10 @@
           "description": "Comunica eficaz entre culturas BR/US/EU",
           "seniority_min": "pl",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "service_recovery",
@@ -378,7 +504,10 @@
           "description": "Recupera relação após algo dar errado",
           "seniority_min": "pl",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         }
       ]
     },
@@ -393,7 +522,10 @@
           "description": "Vende resolvendo problema",
           "seniority_min": "jr",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "medium",
+          "decay_rate": "normal"
         },
         {
           "id": "objection_handling",
@@ -401,7 +533,10 @@
           "description": "Lida com objeção sem ficar defensivo",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "medium",
+          "decay_rate": "normal"
         },
         {
           "id": "negotiation_value_capture",
@@ -409,7 +544,10 @@
           "description": "Negocia valor, não só preço",
           "seniority_min": "pl",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "medium",
+          "decay_rate": "normal"
         },
         {
           "id": "pipeline_discipline",
@@ -417,7 +555,10 @@
           "description": "Mantém disciplina de funil + forecast",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "medium",
+          "decay_rate": "normal"
         },
         {
           "id": "account_expansion",
@@ -425,7 +566,10 @@
           "description": "Cresce conta existente",
           "seniority_min": "pl",
           "source": "Lominger",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "medium",
+          "decay_rate": "normal"
         },
         {
           "id": "influence_without_authority",
@@ -433,7 +577,10 @@
           "description": "Move agenda sem ser chefe formal",
           "seniority_min": "pl",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "medium",
+          "decay_rate": "normal"
         },
         {
           "id": "presentation_skill",
@@ -441,7 +588,10 @@
           "description": "Apresenta variando registro/profundidade",
           "seniority_min": "pl",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "medium",
+          "decay_rate": "normal"
         },
         {
           "id": "closing_under_resistance",
@@ -449,7 +599,10 @@
           "description": "Fecha quando cliente está hesitante",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "medium",
+          "decay_rate": "normal"
         }
       ]
     },
@@ -464,7 +617,10 @@
           "description": "Constrói modelo defensável",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "legal_risk_assessment",
@@ -472,7 +628,10 @@
           "description": "Identifica risco jurídico ambíguo",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "data_storytelling",
@@ -480,7 +639,10 @@
           "description": "Transforma dados em narrativa pra ação",
           "seniority_min": "pl",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "forecast_accuracy",
@@ -488,7 +650,10 @@
           "description": "Faz previsão com erro <X%",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "audit_mindset",
@@ -496,7 +661,10 @@
           "description": "Valida pressuposto, não face value",
           "seniority_min": "pl",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "diagnostic_reasoning",
@@ -504,7 +672,10 @@
           "description": "Diagnostica problema complexo (méd/téc/fin)",
           "seniority_min": "sr",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "stakeholder_data_request_management",
@@ -512,7 +683,10 @@
           "description": "Atende pedidos de exec sem virar 'data monkey'",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "benchmark_thinking",
@@ -520,7 +694,10 @@
           "description": "Compara com referência externa",
           "seniority_min": "pl",
           "source": "Lominger",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         }
       ]
     },
@@ -535,7 +712,10 @@
           "description": "Mantém SLA sob volume crescente",
           "seniority_min": "pl",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "inventory_logistics_optimization",
@@ -543,7 +723,10 @@
           "description": "Otimiza estoque/fluxo",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "crisis_response",
@@ -551,7 +734,10 @@
           "description": "Responde crise operacional sob pressão",
           "seniority_min": "pl",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "sop_creation",
@@ -559,7 +745,10 @@
           "description": "Cria SOPs que outros seguem",
           "seniority_min": "jr",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "workflow_automation_thinking",
@@ -567,7 +756,10 @@
           "description": "Identifica trabalho repetitivo",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "vendor_management",
@@ -575,7 +767,10 @@
           "description": "Gerencia escopo/prazo/qualidade",
           "seniority_min": "pl",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "quality_assurance_process",
@@ -583,7 +778,10 @@
           "description": "Garante qualidade sistemicamente",
           "seniority_min": "pl",
           "source": "Lominger",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         }
       ]
     },
@@ -598,7 +796,10 @@
           "description": "Domina regulação específica (LGPD/CVM/ANVISA)",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "compliance_gap_identification",
@@ -606,7 +807,10 @@
           "description": "Identifica gap antes do auditor",
           "seniority_min": "pl",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "privacy_data_handling",
@@ -614,7 +818,10 @@
           "description": "Lida com dado pessoal sob LGPD/GDPR",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "ethics_dilemma_navigation",
@@ -622,7 +829,10 @@
           "description": "Navega dilema onde regra não resolve",
           "seniority_min": "pl",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "audit_response",
@@ -630,7 +840,10 @@
           "description": "Responde auditoria sem pânico",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "policy_creation_with_practical_lens",
@@ -638,7 +851,10 @@
           "description": "Cria política que protege sem virar burocracia",
           "seniority_min": "sr",
           "source": "Lominger",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         }
       ]
     },
@@ -653,7 +869,10 @@
           "description": "Cria algo do zero",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "medium",
+          "decay_rate": "normal"
         },
         {
           "id": "customer_discovery",
@@ -661,7 +880,10 @@
           "description": "Descobre necessidade real via entrevista",
           "seniority_min": "pl",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "medium",
+          "decay_rate": "normal"
         },
         {
           "id": "mvp_scoping",
@@ -669,7 +891,10 @@
           "description": "Define MVP que valida hipótese",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "medium",
+          "decay_rate": "normal"
         },
         {
           "id": "failed_experiment_lesson_extraction",
@@ -677,7 +902,10 @@
           "description": "Extrai aprendizado",
           "seniority_min": "pl",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "medium",
+          "decay_rate": "normal"
         },
         {
           "id": "scaling_proof_of_concept",
@@ -685,7 +913,10 @@
           "description": "Transforma POC em produto escalável",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "medium",
+          "decay_rate": "normal"
         },
         {
           "id": "resource_constraint_creativity",
@@ -693,7 +924,10 @@
           "description": "Faz mais com menos",
           "seniority_min": "pl",
           "source": "Lominger",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "medium",
+          "decay_rate": "normal"
         }
       ]
     },
@@ -708,7 +942,10 @@
           "description": "Feedback técnico construtivo",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         },
         {
           "id": "production_incident_response",
@@ -716,7 +953,10 @@
           "description": "Mantém calma em downtime",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         },
         {
           "id": "technical_debt_management",
@@ -724,7 +964,10 @@
           "description": "Equilibra refactor vs feature",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         },
         {
           "id": "remote_first_collaboration",
@@ -732,7 +975,10 @@
           "description": "Opera bem em time distribuído async",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         },
         {
           "id": "ml_ai_critical_thinking",
@@ -740,7 +986,10 @@
           "description": "Sabe quando IA/ML resolve",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         },
         {
           "id": "security_first_mindset",
@@ -748,7 +997,10 @@
           "description": "Pensa segurança desde design",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         },
         {
           "id": "performance_engineering",
@@ -756,7 +1008,10 @@
           "description": "Otimiza performance sob restrição",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         },
         {
           "id": "api_design_thinking",
@@ -764,7 +1019,10 @@
           "description": "Projeta API que dura",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         }
       ]
     },
@@ -779,7 +1037,10 @@
           "description": "Avalia candidatos consistentemente",
           "seniority_min": "sr",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "performance_feedback_cycle",
@@ -787,7 +1048,10 @@
           "description": "Conduz 1:1, review, PIP com rigor",
           "seniority_min": "sr",
           "source": "Lominger",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "career_development_coaching",
@@ -795,7 +1059,10 @@
           "description": "Investe no plano de carreira",
           "seniority_min": "sr",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "difficult_termination",
@@ -803,7 +1070,10 @@
           "description": "Conduz desligamento com dignidade",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "team_health_diagnosis",
@@ -811,7 +1081,10 @@
           "description": "Identifica problema antes da crise",
           "seniority_min": "sr",
           "source": "Lominger",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "compensation_calibration",
@@ -819,7 +1092,10 @@
           "description": "Calibra com fairness + budget",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "dei_practical_action",
@@ -827,7 +1103,10 @@
           "description": "Implementa ação concreta DEI",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "team_size_scaling",
@@ -835,7 +1114,10 @@
           "description": "Cresce time sem perder eficiência",
           "seniority_min": "sr",
           "source": "Lominger",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         }
       ]
     },
@@ -850,7 +1132,10 @@
           "description": "Define visão de 2-5 anos",
           "seniority_min": "sr",
           "source": "Lominger",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "organizational_design",
@@ -858,7 +1143,10 @@
           "description": "Estrutura org pra suportar estratégia",
           "seniority_min": "ld",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "board_communication",
@@ -866,7 +1154,10 @@
           "description": "Comunica progresso/risco com transparência",
           "seniority_min": "ld",
           "source": "Lominger",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "capital_allocation",
@@ -874,7 +1165,10 @@
           "description": "Decide onde investir orçamento",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "crisis_leadership",
@@ -882,7 +1176,10 @@
           "description": "Lidera org em crise",
           "seniority_min": "sr",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "culture_definition_evolution",
@@ -890,7 +1187,10 @@
           "description": "Define/evolui cultura deliberadamente",
           "seniority_min": "sr",
           "source": "Lominger",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "public_communication",
@@ -898,7 +1198,10 @@
           "description": "Comunica externamente (imprensa, palco)",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         }
       ]
     },
@@ -913,7 +1216,10 @@
           "description": "Define direção técnica de médio prazo",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         },
         {
           "id": "architecture_decision_making",
@@ -921,7 +1227,10 @@
           "description": "Toma decisão arquitetural defensável",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         },
         {
           "id": "build_vs_buy_decision",
@@ -929,7 +1238,10 @@
           "description": "Decide com critérios estruturados",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         },
         {
           "id": "technical_evangelism",
@@ -937,7 +1249,10 @@
           "description": "Convence stakeholders não-técnicos",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         },
         {
           "id": "platform_thinking",
@@ -945,7 +1260,10 @@
           "description": "Constrói capability reusável",
           "seniority_min": "ld",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         },
         {
           "id": "tech_recruiting_calibration",
@@ -953,7 +1271,10 @@
           "description": "Calibra entrevistas com consistência",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         },
         {
           "id": "open_source_engagement",
@@ -961,7 +1282,10 @@
           "description": "Contribui ou mantém OSS",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         },
         {
           "id": "distributed_systems_design",
@@ -969,7 +1293,10 @@
           "description": "Projeta sistemas distribuídos resilientes",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         },
         {
           "id": "data_intensive_application_design",
@@ -977,7 +1304,10 @@
           "description": "Projeta apps com volume massivo",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         },
         {
           "id": "security_architecture",
@@ -985,7 +1315,10 @@
           "description": "Threat model + defesa em profundidade",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         },
         {
           "id": "observability_engineering",
@@ -993,7 +1326,10 @@
           "description": "Logs + métricas + traces",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         },
         {
           "id": "devops_excellence",
@@ -1001,7 +1337,10 @@
           "description": "CI/CD, deploy, rollback",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         },
         {
           "id": "ml_systems_design",
@@ -1009,7 +1348,10 @@
           "description": "ML em produção (drift, retraining)",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         },
         {
           "id": "frontend_architecture",
@@ -1017,7 +1359,10 @@
           "description": "Frontend escalável (SPA, SSR, micro-FE)",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         }
       ]
     },
@@ -1032,7 +1377,10 @@
           "description": "Levanta issue mesmo inconveniente",
           "seniority_min": "jr",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         },
         {
           "id": "confidentiality_handling",
@@ -1040,7 +1388,10 @@
           "description": "Mantém confidencialidade sob pressão",
           "seniority_min": "jr",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         },
         {
           "id": "inclusive_collaboration",
@@ -1048,7 +1399,10 @@
           "description": "Garante vozes minoritárias ouvidas",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         },
         {
           "id": "integrity_under_pressure",
@@ -1056,7 +1410,10 @@
           "description": "Não corta ética sob pressão",
           "seniority_min": "pl",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         },
         {
           "id": "psychological_safety_building",
@@ -1064,7 +1421,10 @@
           "description": "Cria ambiente de discordância segura",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         },
         {
           "id": "burnout_awareness",
@@ -1072,7 +1432,10 @@
           "description": "Reconhece sinais em si e no time",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         },
         {
           "id": "work_life_boundary_setting",
@@ -1080,7 +1443,10 @@
           "description": "Estabelece limite saudável",
           "seniority_min": "jr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         }
       ]
     },
@@ -1095,7 +1461,10 @@
           "description": "Anamnese, hipóteses, exclusão",
           "seniority_min": "jr",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "medium",
+          "decay_rate": "slow"
         },
         {
           "id": "patient_communication",
@@ -1103,7 +1472,10 @@
           "description": "Comunica diagnóstico/prognóstico com empatia",
           "seniority_min": "jr",
           "source": "HCAHPS",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "medium",
+          "decay_rate": "slow"
         },
         {
           "id": "evidence_based_practice",
@@ -1111,7 +1483,10 @@
           "description": "Atualiza com meta-análises",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "medium",
+          "decay_rate": "slow"
         },
         {
           "id": "multidisciplinary_team_collaboration",
@@ -1119,7 +1494,10 @@
           "description": "Coordena com outras especialidades",
           "seniority_min": "pl",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "medium",
+          "decay_rate": "slow"
         },
         {
           "id": "medical_ethics_navigation",
@@ -1127,7 +1505,10 @@
           "description": "Navega autonomia vs paternalismo",
           "seniority_min": "pl",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "medium",
+          "decay_rate": "slow"
         },
         {
           "id": "clinical_documentation_rigor",
@@ -1135,7 +1516,10 @@
           "description": "Prontuário completo, defensável",
           "seniority_min": "jr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "medium",
+          "decay_rate": "slow"
         },
         {
           "id": "emergency_response_clinical",
@@ -1143,7 +1527,10 @@
           "description": "Estabiliza emergência (BLS/ACLS)",
           "seniority_min": "pl",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "medium",
+          "decay_rate": "slow"
         },
         {
           "id": "patient_safety_culture",
@@ -1151,7 +1538,10 @@
           "description": "Reporta near-miss, segue checklists",
           "seniority_min": "jr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "medium",
+          "decay_rate": "slow"
         }
       ]
     },
@@ -1166,7 +1556,10 @@
           "description": "Aula/curso com objetivo + atividade + avaliação",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         },
         {
           "id": "learning_assessment_design",
@@ -1174,7 +1567,10 @@
           "description": "Cria avaliação que mede o que diz medir",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         },
         {
           "id": "classroom_management",
@@ -1182,7 +1578,10 @@
           "description": "Gerencia disciplina e engajamento",
           "seniority_min": "jr",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         },
         {
           "id": "individualized_learning_adaptation",
@@ -1190,7 +1589,10 @@
           "description": "Adapta ritmo/dificuldade individual",
           "seniority_min": "jr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         },
         {
           "id": "pedagogical_content_knowledge",
@@ -1198,7 +1600,10 @@
           "description": "Sabe COMO ensinar conteúdo",
           "seniority_min": "pl",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         },
         {
           "id": "parent_caregiver_communication",
@@ -1206,7 +1611,10 @@
           "description": "Comunica com pais construtivamente",
           "seniority_min": "jr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         },
         {
           "id": "student_motivation_engagement",
@@ -1214,7 +1622,10 @@
           "description": "Motiva aluno desinteressado",
           "seniority_min": "jr",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "A",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         }
       ]
     },
@@ -1229,7 +1640,10 @@
           "description": "Opera caixa com velocidade + acurácia",
           "seniority_min": "jr",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "store_visual_merchandising",
@@ -1237,7 +1651,10 @@
           "description": "Organiza loja pra conversão + experiência",
           "seniority_min": "jr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "customer_complaint_recovery_floor",
@@ -1245,7 +1662,10 @@
           "description": "Recupera cliente furioso na loja",
           "seniority_min": "jr",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "upsell_floor_technique",
@@ -1253,7 +1673,10 @@
           "description": "Sugere produto adicional sem ser invasivo",
           "seniority_min": "jr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "inventory_count_accuracy",
@@ -1261,7 +1684,10 @@
           "description": "Mantém inventário acurado (loss prevention)",
           "seniority_min": "jr",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "peak_hour_throughput_management",
@@ -1269,7 +1695,10 @@
           "description": "Mantém throughput em horário de pico",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "brand_ambassadorship_floor",
@@ -1277,7 +1706,10 @@
           "description": "Vive marca no atendimento",
           "seniority_min": "jr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         }
       ]
     },
@@ -1292,7 +1724,10 @@
           "description": "Prevê com erro tolerável",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "supply_planning",
@@ -1300,7 +1735,10 @@
           "description": "Planeja suprimento (lead time + buffer)",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "last_mile_optimization",
@@ -1308,7 +1746,10 @@
           "description": "Otimiza entrega final",
           "seniority_min": "pl",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "warehouse_layout_thinking",
@@ -1316,7 +1757,10 @@
           "description": "Layout (fluxo, picking, slotting)",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "freight_negotiation",
@@ -1324,7 +1768,10 @@
           "description": "Negocia com transportador",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "customs_compliance_navigation",
@@ -1332,7 +1779,10 @@
           "description": "Navega documentação aduaneira",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "supplier_audit_capability",
@@ -1340,7 +1790,10 @@
           "description": "Audita qualidade/capacidade/ética",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         }
       ]
     },
@@ -1355,7 +1808,10 @@
           "description": "Define posicionamento defensável",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "medium",
+          "decay_rate": "normal"
         },
         {
           "id": "content_strategy_design",
@@ -1363,7 +1819,10 @@
           "description": "Planeja com funil + persona + canal",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "medium",
+          "decay_rate": "normal"
         },
         {
           "id": "growth_loop_design",
@@ -1371,7 +1830,10 @@
           "description": "Desenha referral, viral, content",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "medium",
+          "decay_rate": "normal"
         },
         {
           "id": "paid_media_optimization",
@@ -1379,7 +1841,10 @@
           "description": "Otimiza ROAS",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "medium",
+          "decay_rate": "normal"
         },
         {
           "id": "marketing_attribution_analysis",
@@ -1387,7 +1852,10 @@
           "description": "Atribui resultado a canal corretamente",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "medium",
+          "decay_rate": "normal"
         },
         {
           "id": "customer_segmentation_thinking",
@@ -1395,7 +1863,10 @@
           "description": "Segmenta com critério acionável",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "medium",
+          "decay_rate": "normal"
         },
         {
           "id": "brand_voice_consistency",
@@ -1403,7 +1874,10 @@
           "description": "Mantém voz consistente em N canais",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "medium",
+          "decay_rate": "normal"
         },
         {
           "id": "community_building",
@@ -1411,7 +1885,10 @@
           "description": "Constrói comunidade de marca",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "medium",
+          "decay_rate": "normal"
         }
       ]
     },
@@ -1426,7 +1903,10 @@
           "description": "Cálculo defensável + verificação",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         },
         {
           "id": "project_management_construction",
@@ -1434,7 +1914,10 @@
           "description": "Prazo, custo, qualidade",
           "seniority_min": "pl",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         },
         {
           "id": "safety_first_engineering",
@@ -1442,7 +1925,10 @@
           "description": "Prioriza NR-X, OSHA",
           "seniority_min": "jr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         },
         {
           "id": "materials_specification_judgment",
@@ -1450,7 +1936,10 @@
           "description": "Resistência, custo, ambiente",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         },
         {
           "id": "regulatory_engineering_compliance",
@@ -1458,7 +1947,10 @@
           "description": "CREA, código de obras",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         },
         {
           "id": "field_problem_solving",
@@ -1466,7 +1958,10 @@
           "description": "Resolve em campo, não no escritório",
           "seniority_min": "pl",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         },
         {
           "id": "multidisciplinary_engineering_coordination",
@@ -1474,7 +1969,10 @@
           "description": "Civil+elétrica+hidráulica",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         }
       ]
     },
@@ -1489,7 +1987,10 @@
           "description": "Health Safety Environment",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         },
         {
           "id": "shutdown_planning",
@@ -1497,7 +1998,10 @@
           "description": "Parada de manutenção crítica",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         },
         {
           "id": "asset_integrity_management",
@@ -1505,7 +2009,10 @@
           "description": "Corrosão, fadiga",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         },
         {
           "id": "root_cause_analysis_industrial",
@@ -1513,7 +2020,10 @@
           "description": "5-Why, Ishikawa, FTA",
           "seniority_min": "pl",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         },
         {
           "id": "lean_manufacturing_implementation",
@@ -1521,7 +2031,10 @@
           "description": "Kaizen, 5S, value stream",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         },
         {
           "id": "environmental_compliance_navigation",
@@ -1529,7 +2042,10 @@
           "description": "Licenciamento CONAMA",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         },
         {
           "id": "contractor_management_field",
@@ -1537,7 +2053,10 @@
           "description": "Gerencia em campo",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "low",
+          "decay_rate": "slow"
         }
       ]
     },
@@ -1552,7 +2071,10 @@
           "description": "Decide o que é notícia/relevante",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "headline_craft",
@@ -1560,7 +2082,10 @@
           "description": "Headline que captura sem clickbait",
           "seniority_min": "jr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "source_validation",
@@ -1568,7 +2093,10 @@
           "description": "Valida antes de publicar",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "deadline_journalism",
@@ -1576,7 +2104,10 @@
           "description": "Entrega sob deadline apertado",
           "seniority_min": "jr",
           "source": "BEI",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "multimedia_storytelling",
@@ -1584,7 +2115,10 @@
           "description": "Texto+vídeo+áudio integrado",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "audience_engagement_thinking",
@@ -1592,7 +2126,10 @@
           "description": "Métricas sem cair em vanity",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         },
         {
           "id": "brand_safety_in_content",
@@ -1600,7 +2137,10 @@
           "description": "Evita risco reputacional",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "E",
+          "bias_risk": "low",
+          "decay_rate": "normal"
         }
       ]
     },
@@ -1615,7 +2155,10 @@
           "description": "Capacidade + resiliência",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         },
         {
           "id": "signal_quality_diagnosis",
@@ -1623,7 +2166,10 @@
           "description": "RF, fibra, ethernet",
           "seniority_min": "pl",
           "source": "ONET",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         },
         {
           "id": "regulatory_telecom_navigation",
@@ -1631,7 +2177,10 @@
           "description": "ANATEL, FCC",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         },
         {
           "id": "customer_carrier_balance",
@@ -1639,7 +2188,10 @@
           "description": "Equilibra B2C vs B2B",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         },
         {
           "id": "capacity_planning_telco",
@@ -1647,7 +2199,10 @@
           "description": "Picos de tráfego (BBB, COPA)",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         },
         {
           "id": "field_install_excellence",
@@ -1655,7 +2210,10 @@
           "description": "Instalação de campo",
           "seniority_min": "jr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "medium",
+          "decay_rate": "fast"
         }
       ]
     },
@@ -1670,7 +2228,10 @@
           "description": "ICH-GCP",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "medium",
+          "decay_rate": "slow"
         },
         {
           "id": "pharmacovigilance_mindset",
@@ -1678,7 +2239,10 @@
           "description": "Reporta adverse events",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "medium",
+          "decay_rate": "slow"
         },
         {
           "id": "regulatory_submission_navigation",
@@ -1686,7 +2250,10 @@
           "description": "Dossier ANVISA/FDA",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "medium",
+          "decay_rate": "slow"
         },
         {
           "id": "gxp_compliance",
@@ -1694,7 +2261,10 @@
           "description": "GMP/GLP/GCP no dia-a-dia",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "medium",
+          "decay_rate": "slow"
         },
         {
           "id": "scientific_publication_quality",
@@ -1702,7 +2272,10 @@
           "description": "Peer-review com qualidade",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "medium",
+          "decay_rate": "slow"
         },
         {
           "id": "biostatistics_judgment",
@@ -1710,7 +2283,10 @@
           "description": "Sem hackear p-value",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "medium",
+          "decay_rate": "slow"
         }
       ]
     },
@@ -1725,7 +2301,10 @@
           "description": "Baseline + holdout + a/b",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "high",
+          "decay_rate": "fast"
         },
         {
           "id": "dataset_quality_thinking",
@@ -1733,7 +2312,10 @@
           "description": "Label, drift, leakage",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "C",
+          "bias_risk": "high",
+          "decay_rate": "fast"
         },
         {
           "id": "llm_application_design",
@@ -1741,7 +2323,10 @@
           "description": "RAG, agentes, eval",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "high",
+          "decay_rate": "fast"
         },
         {
           "id": "ml_ops_excellence",
@@ -1749,7 +2334,10 @@
           "description": "Deploy, monitoring, retrain",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "high",
+          "decay_rate": "fast"
         },
         {
           "id": "ai_safety_alignment",
@@ -1757,7 +2345,10 @@
           "description": "Jailbreak, hallucination, bias",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "high",
+          "decay_rate": "fast"
         },
         {
           "id": "prompt_engineering_systematic",
@@ -1765,7 +2356,10 @@
           "description": "Não trial-error",
           "seniority_min": "pl",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "high",
+          "decay_rate": "fast"
         },
         {
           "id": "model_monitoring_drift_detection",
@@ -1773,7 +2367,10 @@
           "description": "Drift de modelo em prod",
           "seniority_min": "sr",
           "source": "Custom",
-          "fairness_flag": null
+          "fairness_flag": null,
+          "primary_ocean": "O",
+          "bias_risk": "high",
+          "decay_rate": "fast"
         }
       ]
     }

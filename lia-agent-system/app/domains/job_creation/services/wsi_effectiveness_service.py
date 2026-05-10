@@ -19,10 +19,11 @@ from typing import Any
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.domains.job_creation.repositories.wsi_effectiveness_repository import (
-    MIN_SAMPLES_FOR_DISCRIMINATION,
     WsiEffectivenessRepository,
 )
 from app.domains.job_creation.services.wsi_skill_taxonomy import (
+    THRESHOLD_BY_BIAS_RISK,
+    get_sample_threshold,
     parent_of,
     skills_by_parent,
 )
@@ -55,7 +56,7 @@ class WsiEffectivenessService:
         """Pra cada parent, retorna ate top_n_per_parent skills priorizadas.
 
         Hierarchical fallback:
-        1. Skill com >=20 amostras E discrimination >= threshold -> priorizada
+        1. Skill com >= THRESHOLD_BY_BIAS_RISK[skill.bias_risk] amostras E discrimination >= threshold -> priorizada
         2. Skill com <20 amostras -> usa parent rollup pra decidir importancia
         3. Sem dados nem em parent -> retorna skills do parent sem priorizacao
         4. Skills com fairness_blocked=1 -> EXCLUIDAS
@@ -98,7 +99,7 @@ class WsiEffectivenessService:
                     )
                     continue
 
-                if eff is not None and eff.times_used >= MIN_SAMPLES_FOR_DISCRIMINATION:
+                if eff is not None and eff.times_used >= get_sample_threshold(skill):
                     # Filho tem dados suficientes
                     abs_disc = abs(eff.discrimination_score)
                     source = "skill"
