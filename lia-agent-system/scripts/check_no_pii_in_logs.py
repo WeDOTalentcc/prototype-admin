@@ -7,6 +7,19 @@ Usage:
 
 Exits 1 if real PII (email addresses, names, CPF, phone numbers) are passed
 as keyword arguments to logger calls.
+
+Marker support (added 2026-05-10 — P0-1 fix):
+    Inline marker on the same line OR comment marker on line immediately above:
+        # pii-logs ok: <reason — why this is not real PII per LGPD>
+
+    Use cases for marker:
+      - {company.name} — entidade jurídica, NÃO é PII per LGPD Art.5 V (titular = pessoa natural)
+      - {department.name}, {automation.name}, {client.name}, {profile.name} — config/metadata
+      - {template_name}, {trigger_name} — system identifiers, não-PII
+
+    Mantém runtime defense via PIIMaskingFilter (app/shared/pii_masking.py:66) —
+    marker apenas suprime sensor static. Filter continua mascarando email/CPF/phone
+    em runtime via regex.
 """
 import sys
 import re
@@ -53,7 +66,26 @@ LOG_CALL_PATTERN = re.compile(
 PII_PATTERNS_COMPILED = [re.compile(p, re.IGNORECASE) for p in PII_FIELD_PATTERNS]
 EXCLUSION_COMPILED = [re.compile(p, re.IGNORECASE) for p in EXCLUSION_PATTERNS]
 
+# Marker to opt-out a specific log site (P0-1 fix 2026-05-10):
+# Use on the same line OR on the comment line immediately above.
+PII_LOGS_OK_MARKER = re.compile(r'#\s*pii-logs\s+ok\s*:\s*\S+', re.IGNORECASE)
+
 MAX_LOG_SPAN = 10  # max lines a single logger call can span before we assume false positive
+
+
+def has_pii_logs_ok_marker(lines: list, line_num: int) -> bool:
+    """Check if line at line_num (1-indexed) or previous line has # pii-logs ok: <reason>.
+
+    Returns True if marker is present in:
+      - Same line (inline marker after the log call)
+      - Line immediately above (block marker preceding the log call)
+    """
+    idx = line_num - 1  # convert to 0-indexed
+    if 0 <= idx < len(lines) and PII_LOGS_OK_MARKER.search(lines[idx]):
+        return True
+    if idx > 0 and PII_LOGS_OK_MARKER.search(lines[idx - 1]):
+        return True
+    return False
 
 
 # ---- F-string PII detection ----
@@ -75,13 +107,19 @@ FSTRING_LOG_PATTERN = re.compile(
 
 
 def check_fstring_pii(filepath: "Path", lines: list) -> list:
-    """Return violation strings for logger f-string calls containing PII variable names."""
+    """Return violation strings for logger f-string calls containing PII variable names.
+
+    Honors `# pii-logs ok: <reason>` marker (inline or on line above).
+    """
     violations = []
     for i, line in enumerate(lines, 1):
         stripped = line.strip()
         if stripped.startswith("#"):
             continue
         if not FSTRING_LOG_PATTERN.search(line):
+            continue
+        # P0-1 fix: skip if marker present
+        if has_pii_logs_ok_marker(lines, i):
             continue
         for pat in PII_FSTRING_VAR_PATTERNS:
             if pat.search(line):
@@ -131,6 +169,13 @@ for path in _scan_targets:
             continue  # Don't double-count
 
         if in_log_call:
+            # P0-1 fix: skip if marker present on log call start line OR current line
+            if has_pii_logs_ok_marker(lines, log_start_line) or has_pii_logs_ok_marker(lines, i):
+                paren_depth += line.count("(") - line.count(")")
+                if paren_depth <= 0:
+                    in_log_call = False
+                continue
+
             # Check for PII patterns
             for pii_pat in PII_PATTERNS_COMPILED:
                 if pii_pat.search(line):
@@ -156,6 +201,8 @@ if all_errors:
         print(f"  ... and {len(all_errors) - 25} more")
     print()
     print("Fix: Remove PII fields from log calls. Use %s format or structured extra={}.")
+    print("If the log site is NOT real PII (e.g. company.name, automation.name — entidade jurídica/config metadata),")
+    print("add `# pii-logs ok: <reason>` on the same line or the line above.")
     print("See ARCHITECTURE.md ADR-006.")
     sys.exit(1)
 
