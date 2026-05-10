@@ -181,16 +181,28 @@ def test_generate_questions_populates_skill_parent():
 def test_generate_questions_classifier_crash_is_fail_soft():
     """If WsiSkillClassifier.classify raises, generate_questions must NOT
     propagate the error — questions still come back (with skill_probed=None
-    is acceptable here, but generation MUST NOT crash)."""
+    is acceptable here, but generation MUST NOT crash).
+
+    P1-6 hardening (post-audit): we capture the patched mock and assert
+    it was actually invoked. Without this, a future refactor that lazy-
+    imports `classify` on a different path would silently bypass the
+    patch — tests pass for the wrong reason (false-green)."""
     generator = _make_generator_with_fake_llm()
 
     with patch(
         "app.domains.job_creation.services.wsi_skill_classifier.WsiSkillClassifier.classify",
         side_effect=RuntimeError("classifier exploded"),
-    ):
+    ) as classify_mock:
         # Should NOT raise
         questions = _generate(generator)
 
+    assert classify_mock.called, (
+        "WsiSkillClassifier.classify was never invoked. The patch path "
+        "is wrong (lazy import elsewhere?) so this test was passing for "
+        "the wrong reason — fail-soft was never exercised. Update the "
+        "patch path to wherever generate_questions actually imports the "
+        "classifier from, and re-run."
+    )
     assert len(questions) > 0, (
         "generate_questions returned no questions when classifier crashed. "
         "_classify_questions_with_taxonomy already wraps the call in try/except — "

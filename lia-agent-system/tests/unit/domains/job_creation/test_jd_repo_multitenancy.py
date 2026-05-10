@@ -219,3 +219,106 @@ class TestGetByIdCompanyId:
 
         result = asyncio.run(_run())
         assert result is None
+
+    def test_get_by_id_query_includes_company_id_filter(self):
+        """P1-5 hardening (post-audit): the prior cross-tenant test mocked
+        scalar_one_or_none directly, faking the WHERE filter at the mock
+        layer. If the repo accidentally dropped `company_id` from the WHERE
+        clause, the test would still pass (false-green).
+
+        This sentinel captures the SELECT statement passed to db.execute and
+        asserts the compiled SQL references the company_id column. Defends
+        against a regression where someone refactors get_by_id to query by
+        record_id only.
+        """
+        from app.domains.job_creation.repositories.jd_similar_history_repository import (
+            JdSimilarHistoryRepository,
+        )
+
+        captured_stmts: list = []
+
+        async def _capture_execute(stmt, *args, **kwargs):
+            captured_stmts.append(stmt)
+            res = MagicMock()
+            res.scalar_one_or_none = MagicMock(return_value=None)
+            res.scalar = MagicMock(return_value=None)
+            return res
+
+        db = AsyncMock()
+        db.execute = AsyncMock(side_effect=_capture_execute)
+        db.commit = AsyncMock()
+        repo = JdSimilarHistoryRepository(db)
+
+        async def _run():
+            await repo.get_by_id(record_id=uuid.uuid4(), company_id="co-A")
+
+        asyncio.run(_run())
+
+        assert len(captured_stmts) == 1, (
+            f"Expected exactly 1 db.execute call in get_by_id, got "
+            f"{len(captured_stmts)}."
+        )
+        # Compile the statement to a SQL string (literal binds for inspection)
+        compiled = str(captured_stmts[0].compile(
+            compile_kwargs={"literal_binds": True}
+        ))
+        assert "company_id" in compiled.lower(), (
+            f"get_by_id SELECT does NOT filter by company_id. Compiled SQL:\n"
+            f"{compiled}\n\n"
+            f"Restore the WHERE clause `JdSimilarHistory.company_id == "
+            f"company_id` in the SELECT — multi-tenancy P0 regression."
+        )
+
+    def test_mark_filled_query_filters_by_company_id(self):
+        """Same defense for mark_filled: capture the SQL and assert
+        company_id appears in the UPDATE statement WHERE clause."""
+        from app.domains.job_creation.repositories.jd_similar_history_repository import (
+            JdSimilarHistoryRepository,
+        )
+
+        captured_stmts: list = []
+        call_idx = {"i": 0}
+
+        async def _capture_execute(stmt, *args, **kwargs):
+            captured_stmts.append(stmt)
+            res = MagicMock()
+            # First call is ownership SELECT — return matching company_id
+            if call_idx["i"] == 0:
+                res.scalar_one_or_none = MagicMock(return_value="co-A")
+                res.scalar = MagicMock(return_value="co-A")
+            else:
+                res.scalar_one_or_none = MagicMock(return_value=None)
+                res.scalar = MagicMock(return_value=None)
+            call_idx["i"] += 1
+            return res
+
+        db = AsyncMock()
+        db.execute = AsyncMock(side_effect=_capture_execute)
+        db.commit = AsyncMock()
+        repo = JdSimilarHistoryRepository(db)
+
+        async def _run():
+            await repo.mark_filled(
+                record_id=uuid.uuid4(),
+                company_id="co-A",
+                time_to_fill_days=10,
+                candidates_count=20,
+            )
+
+        asyncio.run(_run())
+
+        # Two calls expected: ownership SELECT + UPDATE
+        assert len(captured_stmts) == 2, (
+            f"Expected 2 statements (SELECT ownership + UPDATE), got "
+            f"{len(captured_stmts)}."
+        )
+        update_sql = str(captured_stmts[1].compile(
+            compile_kwargs={"literal_binds": True}
+        )).lower()
+        assert "company_id" in update_sql, (
+            f"mark_filled UPDATE does NOT filter by company_id. Compiled SQL:\n"
+            f"{update_sql}\n\n"
+            f"Restore the WHERE clause referencing company_id in the UPDATE "
+            f"so cross-tenant writes can never slip through even if the "
+            f"ownership SELECT is bypassed."
+        )
