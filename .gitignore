@@ -114,3 +114,9 @@ dump.rdb
 ._*
 **/._*
 .DS_Store
+
+# Coverage artifacts (Task #969 cleanup)
+lia-agent-system/coverage.json
+coverage.json
+.coverage
+htmlcov/

@@ -43,19 +43,57 @@ BEGIN
     END IF;
 END $$;
 
--- 3. Re-point every string company_id / tenant_id column.
+-- 3. Re-point every string column that semantically references the
+--    tenant identifier — MUST mirror the forward consolidation
+--    discovery logic (UNION of FK targets and convention column
+--    names) so rollback never leaves orphan canonical UUIDs in
+--    non-conventional FK columns. Architect review of T-C flagged
+--    convention-only rollback as incomplete relative to the forward
+--    path; this CTE-based discovery brings them to parity.
 DO $$
 DECLARE
     rec RECORD;
     sql TEXT;
 BEGIN
     FOR rec IN
-        SELECT table_name, column_name
-        FROM information_schema.columns
-        WHERE table_schema='public'
-          AND column_name IN ('company_id','tenant_id')
-          AND data_type IN ('character varying','varchar','text','character')
-          AND table_name <> 'companies'
+        WITH fk_columns AS (
+            SELECT  src.relname        AS table_name,
+                    src_att.attname    AS column_name,
+                    fmt.data_type      AS data_type
+            FROM    pg_constraint c
+            JOIN    pg_class       src     ON src.oid = c.conrelid
+            JOIN    pg_namespace   src_ns  ON src_ns.oid = src.relnamespace
+            JOIN    pg_class       tgt     ON tgt.oid = c.confrelid
+            JOIN    pg_namespace   tgt_ns  ON tgt_ns.oid = tgt.relnamespace
+            JOIN    pg_attribute   src_att ON src_att.attrelid = src.oid
+                                           AND src_att.attnum  = ANY(c.conkey)
+            JOIN    pg_attribute   tgt_att ON tgt_att.attrelid = tgt.oid
+                                           AND tgt_att.attnum  = ANY(c.confkey)
+            JOIN    information_schema.columns fmt
+                      ON  fmt.table_schema = src_ns.nspname
+                     AND  fmt.table_name   = src.relname
+                     AND  fmt.column_name  = src_att.attname
+            WHERE   c.contype = 'f'
+              AND   tgt_ns.nspname  = 'public'
+              AND   src_ns.nspname  = 'public'
+              AND   tgt.relname     = 'companies'
+              AND   tgt_att.attname = 'id'
+        ),
+        convention_columns AS (
+            SELECT table_name, column_name, data_type
+            FROM   information_schema.columns
+            WHERE  table_schema = 'public'
+              AND  column_name IN ('company_id','tenant_id')
+        )
+        SELECT DISTINCT table_name, column_name
+        FROM (
+            SELECT * FROM fk_columns
+            UNION ALL
+            SELECT * FROM convention_columns
+        ) u
+        WHERE table_name <> 'companies'
+          AND lower(data_type) IN
+              ('character varying','varchar','text','character')
     LOOP
         sql := format(
             'UPDATE %I SET %I = %L WHERE %I = %L',
