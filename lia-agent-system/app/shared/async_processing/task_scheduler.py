@@ -203,10 +203,12 @@ class TaskScheduler:
                 session.add(record)
                 await session.commit()
                 await session.refresh(record)
+                # pii-logs ok: nome de config (manager/schedule), nao PII pessoa natural
                 logger.info(f"Schedule '{name}' created with id {schedule_id}")
                 return record.to_dict()
             except Exception as e:
                 await session.rollback()
+                # pii-logs ok: nome de config (manager/schedule), nao PII pessoa natural
                 logger.error(f"Failed to add schedule '{name}': {e}")
                 raise
 

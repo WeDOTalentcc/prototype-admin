@@ -174,6 +174,7 @@ class ManagerInferenceService:
                             ))
         
         if not candidates:
+            # pii-logs ok: nome de config (manager/schedule), nao PII pessoa natural
             logger.info(f"No manager found for name: {manager_name}")
             return None
         
