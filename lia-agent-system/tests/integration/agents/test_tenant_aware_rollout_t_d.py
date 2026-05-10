@@ -51,9 +51,12 @@ from app.domains.sourcing.agents.sourcing_react_agent import SourcingReActAgent
 from app.domains.candidate_self_service.agents.candidate_react_agent import (
     CandidateSelfServiceAgent,
 )
+from app.domains.pipeline.agents.pipeline_transition_agent import (
+    PipelineTransitionAgent,
+)
 from app.domains.talent_pool.agents.talent_pool_agent import TalentPoolReActAgent
 
-# Wizard (T-B já feito — incluído pra confirmar inventário 15)
+# Wizard (T-B já feito — incluído pra confirmar inventário 16)
 from app.domains.job_management.agents.wizard_react_agent import WizardReActAgent
 
 
@@ -76,7 +79,7 @@ ALL_REACT_AGENTS_RUNTIME_PATH = [
     WizardReActAgent,  # T-B (incluso pra completude do inventário)
 ]
 
-CSS_AGENTS_SYSTEM_PROMPT_PATH = [CandidateSelfServiceAgent]
+CSS_AGENTS_SYSTEM_PROMPT_PATH = [CandidateSelfServiceAgent, PipelineTransitionAgent]
 
 
 def _make_input() -> AgentInput:
@@ -155,6 +158,19 @@ def test_candidate_self_service_get_system_prompt_propagates_snippet():
     )
 
 
+def test_pipeline_transition_get_system_prompt_propagates_snippet():
+    """Pipeline transition é o outro caso especial: chama
+    ``get_pipeline_system_prompt`` direto (assinatura customizada com
+    from_stage/to_stage). O override T-D prepende o snippet ao base."""
+    inst = PipelineTransitionAgent.__new__(PipelineTransitionAgent)
+    out = inst._get_system_prompt(_make_input())
+    assert SNIPPET_MARKER in out, (
+        "PipelineTransitionAgent._get_system_prompt deveria prefixar o "
+        "tenant_context_snippet — sem isso, transições voltam ao "
+        "'qual a empresa?'."
+    )
+
+
 # ─── Helper aceita agent_type override (regressão T-D) ──────────────────────
 
 
@@ -175,18 +191,28 @@ def test_compose_runtime_prompt_accepts_agent_type_override():
     assert "DOM_X" in out.text
 
 
-# ─── Inventário canônico (15 agentes T-B+T-D = wizard + 14) ─────────────────
+# ─── Inventário canônico (16 agentes T-B+T-D = wizard + 15) ─────────────────
 
 
-def test_canonical_inventory_count_15_agents():
-    """Sentinela: 15 ReActAgents totais herdam TenantAwareAgentMixin
-    (wizard via T-B + 14 via T-D). Se este teste quebrar, foi adicionado
+def test_canonical_inventory_count_16_agents():
+    """Sentinela: 16 ReActAgents totais herdam TenantAwareAgentMixin
+    (wizard via T-B + 15 via T-D). Se este teste quebrar, foi adicionado
     um novo ReActAgent SEM seguir o padrão T-D — a regra canônica.
 
-    Para adicionar um 16o agente: estender lista acima, herdar
-    TenantAwareAgentMixin, usar self._compose_runtime_prompt(...)."""
+    Inventário (16):
+        - 12 standard runtime path: analytics, ats_integration, automation,
+          autonomous, communication, company_settings, cv_screening_pipeline,
+          hiring_policy, jobs_mgmt, kanban, talent_funnel, sourcing.
+        - 1 talent_pool (T-D adicionou _get_runtime_domain_instructions).
+        - 1 wizard (piloto T-B).
+        - 2 caminho _get_system_prompt: candidate_self_service,
+          pipeline_transition.
+
+    Para adicionar um 17º agente: estender lista acima, herdar
+    TenantAwareAgentMixin, usar self._compose_runtime_prompt(...) ou
+    prepender snippet em _get_system_prompt."""
     total = len(ALL_REACT_AGENTS_RUNTIME_PATH) + len(CSS_AGENTS_SYSTEM_PROMPT_PATH)
-    assert total == 15, (
-        f"Inventário canônico de ReActAgents mudou: esperado 15, encontrado {total}. "
+    assert total == 16, (
+        f"Inventário canônico de ReActAgents mudou: esperado 16, encontrado {total}. "
         "Atualize a lista e confirme que o novo agente segue o padrão T-D."
     )

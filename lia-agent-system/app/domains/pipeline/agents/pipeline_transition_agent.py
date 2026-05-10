@@ -28,9 +28,10 @@ logger = logging.getLogger(__name__)
 
 
 from app.shared.agents.agent_registry import register_agent
+from app.shared.agents.tenant_aware_agent import TenantAwareAgentMixin
 
 @register_agent("pipeline_transition")
-class PipelineTransitionAgent(LangGraphReActBase, EnhancedAgentMixin):
+class PipelineTransitionAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
     """Autonomous agent for intelligent candidate stage transitions.
 
     Processes recruiter messages during pipeline transitions using a ReAct
@@ -74,14 +75,24 @@ class PipelineTransitionAgent(LangGraphReActBase, EnhancedAgentMixin):
         return [tool_definition_to_langchain_tool(td) for td in list(ALL_TOOLS) + enhanced]
 
     def _get_system_prompt(self, input: AgentInput) -> str:
-        """System prompt do Pipeline Transition baseado no comportamento."""
-        return get_pipeline_system_prompt(
+        """System prompt do Pipeline Transition baseado no comportamento.
+
+        T-D: prepende ``tenant_context_snippet`` resolvido pelo
+        ``TenantAwareAgentMixin`` (lido de ``input.context`` — populado
+        async em ``_process_langgraph`` antes do prompt ser montado).
+        Sem isso, a LIA respondia "qual a empresa?" no fluxo de transição.
+        """
+        base = get_pipeline_system_prompt(
             action_behavior=input.context.get("action_behavior", "passive"),
             candidate_name=input.context.get("candidate_name", ""),
             job_title=input.context.get("job_title", ""),
             from_stage=input.context.get("from_stage", ""),
             to_stage=input.context.get("to_stage", ""),
         )
+        snippet = (input.context or {}).get("tenant_context_snippet", "") or ""
+        if snippet:
+            return f"{snippet}\n\n{base}"
+        return base
 
     def _state_to_output(self, state: dict, input: AgentInput) -> AgentOutput:
         """Converte MessagesState final em AgentOutput."""
