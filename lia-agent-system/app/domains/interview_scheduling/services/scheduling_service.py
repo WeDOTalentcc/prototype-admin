@@ -244,7 +244,7 @@ class SchedulingService:
         await db.commit()
         await db.refresh(interview)
         
-        logger.info(f"📅 Interview created: {interview.id} for {candidate_name}")
+        logger.info(f"📅 Interview created: {interview.id} for {candidate_id}")
         logger.info(f"   Date/Time: {start_time.isoformat()}")
         logger.info(f"   Type: {interview_type} ({interview_mode})")
         logger.info("   Status: Funcional - Aguardando Configuração Calendar para sync")

@@ -421,7 +421,7 @@ class CommunicationService:
                     db=db
                 )
                 
-                logger.info(f"📝 Approval request created: {approval.id} for {candidate_name}")
+                logger.info(f"📝 Approval request created: {approval.id} for {candidate_id}")
                 
                 return {
                     "success": True,

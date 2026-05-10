@@ -205,7 +205,7 @@ class ChatRepository:
                     "status": row.status,
                 }
         except Exception as e:
-            logger.warning(f"Failed to resolve candidate by name '{candidate_name}': {e}")
+            logger.warning(f"Failed to resolve candidate by name '{candidate_id}': {e}")
         return None
 
     async def lookup_candidate_id_by_name(self, candidate_name: str) -> str | None:

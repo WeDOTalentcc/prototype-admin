@@ -118,7 +118,7 @@ async def update_candidate_stage(
             
             candidate_name = getattr(candidate, 'name', 'Candidato')
             
-            logger.info(f"✅ Candidate {candidate_name} moved from {previous_stage} to {target_stage}")
+            logger.info(f"✅ Candidate {candidate_id} moved from {previous_stage} to {target_stage}")
             
             return {
                 "success": True,
@@ -256,7 +256,7 @@ async def add_candidate_to_vacancy(
             candidate_name = getattr(candidate, 'name', 'Candidato')
             job_title = getattr(job, 'title', 'Vaga')
             
-            logger.info(f"✅ Created VacancyCandidate: {candidate_name} -> {job_title}")
+            logger.info(f"✅ Created VacancyCandidate: {candidate_id} -> {job_title}")
             
             return {
                 "success": True,
@@ -691,7 +691,7 @@ async def add_to_list(
             
             candidate_name = getattr(candidate, 'name', 'Candidato')
             
-            logger.info(f"✅ Added {candidate_name} to list {list_id}")
+            logger.info(f"✅ Added {candidate_id} to list {list_id}")
             
             return {
                 "success": True,
@@ -814,7 +814,7 @@ async def wsi_screening(
                 screening_config["bloom_levels"] = ["apply", "analyze"]
                 screening_config["focus"] = ["bloom"]
             
-            logger.info(f"✅ WSI screening session {screening_session_id} created for {candidate_name}")
+            logger.info(f"✅ WSI screening session {screening_session_id} created for {candidate_id}")
             
             return {
                 "success": True,
@@ -906,7 +906,7 @@ async def hide_candidate(
                     
                 await db.commit()
                 
-                logger.info(f"✅ Candidate {candidate_name} hidden globally")
+                logger.info(f"✅ Candidate {candidate_id} hidden globally")
                 
                 return {
                     "success": True,
@@ -971,7 +971,7 @@ async def hide_candidate(
                     
                 await db.commit()
                 
-                logger.info(f"✅ Candidate {candidate_name} hidden from job {job_id}")
+                logger.info(f"✅ Candidate {candidate_id} hidden from job {job_id}")
                 
                 return {
                     "success": True,

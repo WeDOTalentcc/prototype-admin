@@ -146,7 +146,7 @@ class WSIVoiceOrchestrator:
             VoiceScreeningResult with session_id, call_id, agent_id
         """
         # pii-logs ok: PII (nome/email candidate ou recruiter) mascarado em runtime via PIIMaskingFilter (LGPD Art.46)
-        logger.info(f"🎤 Starting WSI voice screening for {candidate_name} (candidate_id: {candidate_id})")
+        logger.info(f"🎤 Starting WSI voice screening for {candidate_id} (candidate_id: {candidate_id})")
         
         session_id = f"system:{uuid.uuid4()}"
         
@@ -232,7 +232,7 @@ class WSIVoiceOrchestrator:
                 agent_id = call.get("agent_id", "twilio")
                 
                 call_id = call.get("call_id")
-                logger.info(f"📞 Started call: {call_id} to {candidate_name}")
+                logger.info(f"📞 Started call: {call_id} to {candidate_id}")
                 
                 await session.execute(text("""
                     UPDATE wsi_sessions

@@ -73,7 +73,7 @@ class ProactiveService:
         Generate morning briefing for recruiter.
         Called proactively at configured time.
         """
-        logger.info(f"📅 Generating daily briefing for {recruiter_name}")
+        logger.info(f"📅 Generating daily briefing for {recruiter_id}")
         
         briefing_data = await self._gather_briefing_data(recruiter_id)
         
@@ -116,7 +116,7 @@ class ProactiveService:
         Generate end-of-day summary for recruiter.
         Reviews what was accomplished and pending items.
         """
-        logger.info(f"🌙 Generating end-of-day summary for {recruiter_name}")
+        logger.info(f"🌙 Generating end-of-day summary for {recruiter_id}")
         
         summary_data = await self._gather_day_summary(recruiter_id)
         
@@ -160,7 +160,7 @@ class ProactiveService:
         Send interview reminder to recruiter.
         Called before scheduled interview.
         """
-        logger.info(f"🔔 Sending interview reminder to {recruiter_name}")
+        logger.info(f"🔔 Sending interview reminder to {recruiter_id}")
         
         message = RecruiterNotificationTemplates.interview_reminder(
             recruiter_name=recruiter_name,
@@ -259,7 +259,7 @@ class ProactiveService:
         
         Also dispatches screening-completed event to automation handlers.
         """
-        logger.info(f"🎯 Notifying screening completed for {candidate_name}")
+        logger.info(f"🎯 Notifying screening completed for {candidate_id}")
         
         tier = self._get_tier_from_wsi(wsi_score)
         
