@@ -171,4 +171,59 @@ async def _dispatch_tool(
     handler = handlers.get(tool_name)
     if not handler:
         return {"success": False, "error": f"Unknown tool: {tool_name}"}
-    return await handler(params, context)
+
+    # P0-3 fix (2026-05-10): FairnessGuard pre-check em ações de envio
+    # Inegociável #3 (FairnessGuard 100% high-impact) + Crença C02 (Justa).
+    # offer.send é high_impact: True (domain.py:30). Bloqueia carta-oferta
+    # com texto enviesado em recruiter_notes ANTES do envio ao candidato.
+    if tool_name in ("send_offer", "update_offer_draft", "prepare_offer_manual_send"):
+        from app.domains.offer.compliance import check_input_fairness, emit_offer_audit
+        # Concatenar textos livres para fairness check
+        free_text_fields = ["recruiter_notes", "send_mode", "offered_benefits"]
+        offer_text = " ".join([
+            str(params.get(f, "") or "") for f in free_text_fields
+        ]).strip()
+        if offer_text:
+            check = check_input_fairness(offer_text)
+            if check.is_blocked:
+                # Audit blocked attempt
+                emit_offer_audit(
+                    company_id=str(getattr(context, "company_id", "") or ""),
+                    offer_id=str(params.get("offer_id") or ""),
+                    candidate_id=str(params.get("candidate_id") or ""),
+                    job_id=str(params.get("job_id") or ""),
+                    action=tool_name,
+                    success=False,
+                    fairness_blocked=check.blocked_terms,
+                    payload_text=offer_text,
+                )
+                logger.warning(
+                    "[OFFER-DOMAIN] FairnessGuard blocked %s: category=%s terms=%s",
+                    tool_name, check.category, check.blocked_terms,
+                )
+                return {
+                    "success": False,
+                    "blocked_by_fairness": True,
+                    "error": "Conteúdo bloqueado por FairnessGuard (LGPD/EU AI Act compliance)",
+                    "category": check.category,
+                    "blocked_terms": check.blocked_terms,
+                    "educational_message": check.educational_message
+                    or "Identifiquei termos discriminatórios ou enviesados na proposta. Reformule e envie novamente.",
+                }
+
+    result = await handler(params, context)
+
+    # P0-3 fix (2026-05-10): emit audit on send_offer success
+    if tool_name == "send_offer" and result.get("success"):
+        from app.domains.offer.compliance import emit_offer_audit
+        emit_offer_audit(
+            company_id=str(getattr(context, "company_id", "") or ""),
+            offer_id=str(params.get("offer_id") or ""),
+            candidate_id=str(params.get("candidate_id") or result.get("candidate_id") or ""),
+            job_id=str(params.get("job_id") or result.get("job_id") or ""),
+            action="send_offer",
+            success=True,
+            payload_text=str(params.get("recruiter_notes") or ""),
+        )
+
+    return result
