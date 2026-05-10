@@ -80,43 +80,17 @@ async def _record_jd_if_enabled(
     department: str | None,
     seniority_level: str | None,
 ) -> None:
-    """Sprint B Phase 1 wiring (gap W2): record JD into similarity history
-    if the company toggle `learning_loops.jd_similar_suggestion` is ON.
+    """Sprint B Phase 1 wiring (gap W2): thin adapter that delegates to
+    JdSimilarService.record_jd_if_enabled.
 
-    Multi-tenancy: company_id comes from the authenticated event, never the
-    payload directly. Toggle defaults to True per AUTOMATION_RULES_DEFAULTS
-    when no policy row exists yet.
-
-    Fail-soft: any failure here MUST be swallowed — pipeline init has
-    already completed and a missing JD record is a learning-loop concern,
-    not a publish-pipeline concern.
+    P1-1 refactor (post-audit): the toggle/policy lookup + service
+    composition logic moved into JdSimilarService.record_jd_if_enabled
+    so any caller (event handlers, graph nodes, future webhooks) gets
+    the same behavior. This adapter only wires the FastAPI session into
+    the service and swallows any escaping exception (fail-soft) so a
+    missing JD record never breaks the publish pipeline.
     """
     try:
-        # Lazy imports to keep startup cycles light + avoid import cycles
-        from app.domains.hiring_policy.repositories.hiring_policy_repository import (
-            HiringPolicyRepository,
-        )
-        from app.models.company_hiring_policy import AUTOMATION_RULES_DEFAULTS
-
-        # Resolve toggle from CompanyHiringPolicy → fall back to canonical defaults
-        hp_repo = HiringPolicyRepository(db)
-        policy = await hp_repo.get_by_company(company_id)
-        rules = (policy.automation_rules if policy else None) or {}
-        loops = rules.get("learning_loops") or AUTOMATION_RULES_DEFAULTS["learning_loops"]
-        if not loops.get("jd_similar_suggestion", True):
-            logger.debug(
-                "[EventHandler] jd_similar toggle off for company=%s — skip record_jd",
-                company_id,
-            )
-            return
-
-        # Skip if essential fields missing (defensive)
-        if not job_id or not title:
-            logger.debug(
-                "[EventHandler] missing job_id/title in published event — skip record_jd"
-            )
-            return
-
         from app.domains.job_creation.repositories.jd_similar_history_repository import (
             JdSimilarHistoryRepository,
         )
@@ -127,18 +101,20 @@ async def _record_jd_if_enabled(
 
         repo = JdSimilarHistoryRepository(db)
         svc = JdSimilarService(repository=repo, embedding_service=EmbeddingService())
-        await svc.record_jd(
+        attempted = await svc.record_jd_if_enabled(
             company_id=company_id,
-            job_id=job_id,
+            job_id=job_id or "",
             title=title,
-            jd_enriched=jd_enriched or {},
+            jd_enriched=jd_enriched,
             seniority_level=seniority_level,
             department=department,
         )
-        logger.info(
-            "[EventHandler] JD recorded in similarity history company=%s job_id=%s",
-            company_id, job_id,
-        )
+        if attempted:
+            logger.info(
+                "[EventHandler] JD recorded in similarity history "
+                "company=%s job_id=%s",
+                company_id, job_id,
+            )
     except Exception as exc:
         # Fail-soft: never break the publish handler over a learning-loop write
         logger.warning(

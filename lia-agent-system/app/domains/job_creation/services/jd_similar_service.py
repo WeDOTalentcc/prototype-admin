@@ -248,6 +248,102 @@ class JdSimilarService:
 
     # ── Write ───────────────────────────────────────────────────────────────
 
+    async def record_jd_if_enabled(
+        self,
+        company_id: str,
+        job_id: str,
+        title: str,
+        jd_enriched: dict[str, Any] | None,
+        seniority_level: str | None = None,
+        department: str | None = None,
+        hiring_policy_repo: Any = None,
+    ) -> bool:
+        """High-level wrapper around record_jd with toggle gating.
+
+        Sprint B post-audit P1-1 refactor: this used to be
+        `_record_jd_if_enabled` inline in
+        app/api/v1/platform_event_handlers.py with 5 lazy imports. Moved
+        here so any caller (event handler, graph node, future webhook
+        consumer) gets the same behavior with a single one-line call.
+
+        Reads CompanyHiringPolicy.automation_rules.learning_loops.jd_similar_suggestion
+        and short-circuits if disabled. Falls back to AUTOMATION_RULES_DEFAULTS
+        when no policy row exists.
+
+        Returns True if record_jd was attempted, False if skipped (toggle
+        off, missing inputs, etc.). Errors raised by record_jd propagate
+        — callers may swallow them. The toggle/policy lookup failures
+        are swallowed internally (fail-soft, learning loops never block
+        the publish path).
+
+        Args:
+            company_id: tenant id (required, multi-tenancy enforced).
+            job_id: vacancy id (required).
+            title: JD title.
+            jd_enriched: enriched JD dict (responsibilities, requirements).
+            seniority_level: optional.
+            department: optional.
+            hiring_policy_repo: optional injected repo (for tests). When
+                omitted, the wrapper builds one from self's session via
+                lazy import.
+        """
+        if not company_id or not job_id or not title:
+            logger.debug(
+                "[JdSimilar.record_jd_if_enabled] missing required fields "
+                "(company=%s job=%s)",
+                bool(company_id), bool(job_id),
+            )
+            return False
+
+        # Resolve toggle from CompanyHiringPolicy -> fall back to canonical defaults
+        try:
+            from app.models.company_hiring_policy import AUTOMATION_RULES_DEFAULTS
+
+            if hiring_policy_repo is None:
+                from app.domains.hiring_policy.repositories.hiring_policy_repository import (
+                    HiringPolicyRepository,
+                )
+                # Service composes a repo from the same session it has.
+                # Falls back to repo's session attribute or its db, depending
+                # on how the service was constructed.
+                db_session = getattr(self.repository, "db", None)
+                if db_session is None:
+                    logger.debug(
+                        "[JdSimilar.record_jd_if_enabled] cannot resolve db "
+                        "session — skip"
+                    )
+                    return False
+                hiring_policy_repo = HiringPolicyRepository(db_session)
+
+            policy = await hiring_policy_repo.get_by_company(company_id)
+            rules = (policy.automation_rules if policy else None) or {}
+            loops = rules.get("learning_loops") or AUTOMATION_RULES_DEFAULTS["learning_loops"]
+            if not loops.get("jd_similar_suggestion", True):
+                logger.debug(
+                    "[JdSimilar.record_jd_if_enabled] toggle off for company=%s",
+                    company_id,
+                )
+                return False
+        except Exception as exc:
+            logger.warning(
+                "[JdSimilar.record_jd_if_enabled] policy lookup failed "
+                "(fail-soft, will skip) company=%s: %s",
+                company_id, str(exc)[:200],
+            )
+            return False
+
+        # Toggle is ON — call record_jd. record_jd handles its own embedding
+        # fail-soft. Errors that escape are propagated to the caller.
+        await self.record_jd(
+            company_id=company_id,
+            job_id=job_id,
+            title=title,
+            jd_enriched=jd_enriched or {},
+            seniority_level=seniority_level,
+            department=department,
+        )
+        return True
+
     async def record_jd(
         self,
         company_id: str,
