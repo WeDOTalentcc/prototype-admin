@@ -47,6 +47,7 @@ router = APIRouter()
 @router.post("/jd-evaluate", response_model=None)
 # TODO(phase2): extract to repository — complex WSI scoring logic
 async def evaluate_jd(request: JDEvaluateRequest):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Evaluate job description quality using 9 dimensions (spec F1.B).
     Hard block if score < 30 (band=Crítico). 5 quality bands."""
     resp_count   = len(request.responsibilities or [])
@@ -281,6 +282,7 @@ async def analyze_response(
     request: AnalyzeResponseRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Analyze a single candidate response using Claude AI.
 
@@ -431,6 +433,7 @@ async def complete_screening(
     request: CompleteScreeningRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Complete WSI screening by analyzing all responses and generating final report.
 

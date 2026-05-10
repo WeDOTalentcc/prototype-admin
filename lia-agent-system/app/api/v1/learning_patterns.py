@@ -27,6 +27,7 @@ async def get_detected_patterns(
     seniority: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List all detected correction patterns for a company."""
     try:
         repo = LearningPatternsRepository(db)
@@ -68,6 +69,7 @@ async def get_promoted_skills(
     job_title: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List promoted skills for a company (times_confirmed >= threshold)."""
     try:
         repo = LearningPatternsRepository(db)
@@ -114,6 +116,7 @@ async def get_success_profiles(
     seniority: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List success profiles for a company."""
     try:
         repo = LearningPatternsRepository(db)
@@ -153,6 +156,7 @@ async def trigger_pattern_detection(
     company_id: str,
     service: LearningAutomationService = Depends(get_learning_automation_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Manually trigger pattern detection for a company."""
     try:
         detection_result = await service.run_pattern_detection(company_id)

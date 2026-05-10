@@ -47,6 +47,7 @@ class BusinessMetricRecord(BaseModel):
 async def list_active_tests(
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     tests = await _service.list_active_tests(db)
     return {"tests": tests}
 
@@ -56,6 +57,7 @@ async def create_test(
     body: TestCreate,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     variants_data = [v.model_dump() for v in body.variants]
     result = await _service.create_test(body.test_name, variants_data, db)
     return result
@@ -66,6 +68,7 @@ async def get_test_results(
     test_name: str,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     results = await _service.get_test_results(test_name, db)
     return results
 
@@ -158,6 +161,7 @@ async def get_variant(
     session_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     variant = await _service.get_variant(test_name, session_id, db)
     if variant:
         return variant

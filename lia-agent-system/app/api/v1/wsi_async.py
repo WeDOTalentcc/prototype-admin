@@ -64,6 +64,7 @@ async def get_session_state(
     db: AsyncSession = Depends(get_db),
     svc: WSIAsyncSessionService = Depends(get_wsi_async_session_service),
 ) -> dict:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Retorna estado atual da sessão WSI + próxima pergunta.
     """
@@ -92,6 +93,7 @@ async def submit_answer(
     db: AsyncSession = Depends(get_db),
     svc: WSIAsyncSessionService = Depends(get_wsi_async_session_service),
 ) -> dict:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Submete resposta para a pergunta atual da sessão WSI assíncrona.
     """
@@ -133,6 +135,7 @@ async def complete_session(
     db: AsyncSession = Depends(get_db),
     svc: WSIAsyncSessionService = Depends(get_wsi_async_session_service),
 ) -> dict:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Finaliza a sessão WSI assíncrona e dispara scoring.
     """

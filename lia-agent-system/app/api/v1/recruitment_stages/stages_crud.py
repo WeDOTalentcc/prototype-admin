@@ -211,12 +211,14 @@ async def update_stage_config(
 
 @router.get("/catalog", response_model=None)
 async def get_stage_catalog():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get the standard stage catalog for adding new columns."""
     return {"catalog": STANDARD_STAGE_CATALOG, "total": len(STANDARD_STAGE_CATALOG)}
 
 
 @router.get("/stage-catalog", summary="Get standard stage catalog", response_model=None)
 async def get_standard_stage_catalog():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Returns the standard stage catalog with all available pipeline columns.
 
@@ -241,6 +243,7 @@ async def get_standard_stage_catalog():
 
 @router.get("/defaults", response_model=None)
 async def get_defaults():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get default stage configurations.
     Useful for reference and setting up new companies.

@@ -34,6 +34,7 @@ async def submit_feedback(
     body: SubmitFeedbackRequest,
     repo: SearchFeedbackRepository = Depends(get_search_feedback_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     user_id = getattr(request.state, "user_id", None)
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
@@ -77,6 +78,7 @@ async def get_user_feedbacks(
     job_id: str | None = None,
     repo: SearchFeedbackRepository = Depends(get_search_feedback_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     user_id = getattr(request.state, "user_id", None)
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
@@ -93,6 +95,7 @@ async def get_job_feedbacks(
     job_id: str,
     repo: SearchFeedbackRepository = Depends(get_search_feedback_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     feedbacks = await repo.list_for_job(job_id=job_id)
 
     likes = sum(1 for f in feedbacks if f.feedback_type == "like")
@@ -112,6 +115,7 @@ async def delete_feedback(
     feedback_id: str,
     repo: SearchFeedbackRepository = Depends(get_search_feedback_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     user_id = getattr(request.state, "user_id", None)
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")

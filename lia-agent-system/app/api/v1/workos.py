@@ -722,6 +722,7 @@ async def get_sso_status(
     user_repo: UserRepository = Depends(get_user_repo),
     workos_repo: WorkOSRepository = Depends(get_workos_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get SSO/SCIM configuration status for a company.
 
@@ -840,6 +841,7 @@ async def get_groups(
     company_id: str = Query(...),
     workos_repo: WorkOSRepository = Depends(get_workos_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get WorkOS groups for a company with role mappings.
 
@@ -883,6 +885,7 @@ async def set_group_role_mapping(
     company_id: str = Query(...),
     workos_repo: WorkOSRepository = Depends(get_workos_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Set role mapping for a WorkOS group.
 
@@ -924,6 +927,7 @@ async def get_audit_logs(
     event_type: str | None = Query(default=None),
     workos_repo: WorkOSRepository = Depends(get_workos_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get SSO/SCIM audit logs for a company.
 

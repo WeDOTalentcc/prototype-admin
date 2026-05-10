@@ -119,6 +119,7 @@ async def create_approval_request(
     repo: ApprovalsRepository = Depends(get_approvals_repo),
     email_svc: EmailService = Depends(get_email_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Create a new approval request and send notification email to approver."""
     try:
         approval = ApprovalRequest(
@@ -175,6 +176,7 @@ async def list_approval_requests(
     offset: int = Query(0, ge=0),
     repo: ApprovalsRepository = Depends(get_approvals_repo)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List approval requests for a company with optional filters."""
     try:
         try:
@@ -209,6 +211,7 @@ async def list_pending_approvals(
     approver_email: str | None = Query(None, description="Filter by approver email"),
     repo: ApprovalsRepository = Depends(get_approvals_repo)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List pending approval requests for a company."""
     try:
         approvals = await repo.list_pending_by_company(
@@ -227,6 +230,7 @@ async def get_approval_request(
     approval_id: str,
     repo: ApprovalsRepository = Depends(get_approvals_repo)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get a specific approval request by ID."""
     try:
         approval = await repo.get_by_id(UUID(approval_id))

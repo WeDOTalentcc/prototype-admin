@@ -71,6 +71,7 @@ async def send_direct_email(
     request: DirectEmailRequest,
     repo: EmailRepository = Depends(get_email_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Send an email directly without using a template.
 
@@ -128,6 +129,7 @@ async def get_email_history_by_candidate(
     limit: int = Query(50, ge=1, le=100),
     repo: EmailRepository = Depends(get_email_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get email history for a specific candidate.
 
@@ -176,6 +178,7 @@ async def get_all_email_history(
     limit: int = Query(50, ge=1, le=100),
     repo: EmailRepository = Depends(get_email_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get all email history with optional filters.
     """
@@ -212,6 +215,7 @@ async def get_all_email_history(
 
 @router.get("/status", response_model=None)
 async def get_email_system_status():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get the current status of the email system.
 

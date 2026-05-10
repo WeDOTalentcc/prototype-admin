@@ -117,6 +117,7 @@ async def process_return_event(
     request: ReturnEventRequest,
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Process a candidate return event.
 
@@ -177,6 +178,7 @@ async def process_bulk_return_events(
     request: BulkReturnEventRequest,
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Process multiple return events in batch.
     Useful for webhook payloads that report multiple candidate completions at once.
@@ -284,6 +286,7 @@ async def get_recent_return_events(
 
 @router.get("/transition/return-event/types", response_model=None)
 async def list_return_event_types():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     List all supported return event types with their configurations.
     Useful for frontend to know which events are available and their effects.

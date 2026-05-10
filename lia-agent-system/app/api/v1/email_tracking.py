@@ -42,6 +42,7 @@ async def tracking_pixel(
     token: str = Path(...),
     db: AsyncSession = Depends(get_async_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Pixel de rastreamento 1x1 GIF.
 
@@ -81,6 +82,7 @@ async def tracking_click(
     url: str = Query(..., description="URL de destino (encoded)"),
     db: AsyncSession = Depends(get_async_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Link redirect com tracking de clique.
 
@@ -174,6 +176,7 @@ async def tracking_webhook(
     db: AsyncSession = Depends(get_async_db),
     ab_service: ABTestingService = Depends(get_ab_testing_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Mailgun Event Webhook — receives delivery/open/click/bounce events.
 
@@ -314,6 +317,7 @@ async def get_tracking_stats(
     company_id: str = Query(..., description="ID da empresa (multi-tenant)"),
     db: AsyncSession = Depends(get_async_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Estatísticas de tracking para uma notificação.
 

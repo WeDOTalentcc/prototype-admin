@@ -105,6 +105,7 @@ async def _get_orchestrator(db=None):
 
 @router.post("/start")
 async def start_onboarding(req: StartOnboardingRequest):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Start onboarding for a new user. Called by RabbitMQ consumer or directly."""
     from app.services.onboarding_orchestrator import OnboardingSession
 
@@ -148,6 +149,7 @@ async def start_onboarding(req: StartOnboardingRequest):
 
 @router.get("/{user_id}/state")
 async def get_onboarding_state(user_id: int):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get current onboarding state for a user."""
     db = await _get_db()
     session = await _load_session(db, user_id)
@@ -168,6 +170,7 @@ async def get_onboarding_state(user_id: int):
 
 @router.post("/{user_id}/event")
 async def handle_web_event(user_id: int, req: WebEventRequest):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Handle web events (first_login, tour steps, action choices)."""
     db = await _get_db()
     session = await _load_session(db, user_id)
@@ -201,6 +204,7 @@ async def handle_web_event(user_id: int, req: WebEventRequest):
 
 @router.get("/{user_id}/context")
 async def get_whatsapp_context(user_id: int):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get WhatsApp conversation context for web handoff."""
     db = await _get_db()
     session = await _load_session(db, user_id)

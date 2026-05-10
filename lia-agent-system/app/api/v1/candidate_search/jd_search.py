@@ -57,6 +57,7 @@ async def search_by_job_description(
     db: AsyncSession = Depends(get_db),
     pearch_svc: PearchService = Depends(get_pearch_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Busca candidatos a partir de uma descrição de vaga completa.
     
@@ -179,6 +180,7 @@ async def refine_search(
 ,
     pearch_svc: PearchService = Depends(get_pearch_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Refina uma busca existente usando o thread_id.
     
@@ -225,6 +227,7 @@ async def search_local_only(
 ,
     pearch_svc: PearchService = Depends(get_pearch_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Busca APENAS no banco de dados local (sem custo de créditos).
     
@@ -290,6 +293,7 @@ class ParseQueryResponse(BaseModel):
 
 @router.post("/parse-query", response_model=ParseQueryResponse)
 async def parse_search_query(request: ParseQueryRequest):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Extrai entidades de uma query de busca em linguagem natural.
     

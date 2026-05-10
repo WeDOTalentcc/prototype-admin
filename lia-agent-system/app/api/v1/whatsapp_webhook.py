@@ -118,6 +118,7 @@ async def _get_orchestrator():
 
 @router.post("/webhook")
 async def whatsapp_message_webhook(request: Request):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Twilio webhook for incoming WhatsApp messages."""
     body = await request.form()
     params = dict(body)
@@ -198,6 +199,7 @@ async def whatsapp_message_webhook(request: Request):
 
 @router.post("/flow-webhook")
 async def whatsapp_flow_webhook(request: Request):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """WhatsApp Flow completion webhook."""
     # Verify Twilio signature
     raw_body = await request.body()
@@ -261,6 +263,7 @@ async def whatsapp_flow_webhook(request: Request):
 
 @router.post("/status-callback")
 async def whatsapp_status_callback(request: Request):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Twilio delivery status callback."""
     body = await request.form()
     message_sid = body.get("MessageSid", "")

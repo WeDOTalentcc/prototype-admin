@@ -31,6 +31,7 @@ router = APIRouter()
 @router.get("/session/{session_id}", response_model=None)
 # TODO(phase2): extract to repository — WSI session management
 async def get_session(session_id: str, db: AsyncSession = Depends(get_db)):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get WSI session details with questions and responses."""
     try:
         _repo = WsiRepository(db)
@@ -71,6 +72,7 @@ async def get_candidate_results(
     limit: int = 10,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get WSI results for a specific candidate."""
     try:
         _repo = WsiRepository(db)
@@ -173,6 +175,7 @@ async def start_interview_graph_session(
     summary="Envia resposta do candidato na entrevista WSI síncrona",
     response_model=None)
 async def respond_interview_graph(session_id: str, request: InterviewGraphRespondRequest):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Processa a resposta do candidato, pontua e avança para a próxima pergunta.
 
     Retorna a próxima pergunta (se houver) ou o resultado final (se a entrevista encerrou).
@@ -225,6 +228,7 @@ async def respond_interview_graph(session_id: str, request: InterviewGraphRespon
     summary="Resumo auditável da sessão de entrevista WSI",
     response_model=None)
 async def get_interview_graph_session(session_id: str):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Retorna o resumo completo da sessão para fins de auditoria e compliance."""
     from app.domains.cv_screening.agents.wsi_interview_graph import wsi_interview_graph
 

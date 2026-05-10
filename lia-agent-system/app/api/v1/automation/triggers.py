@@ -88,6 +88,7 @@ class TriggerEventResponse(BaseModel):
 
 @router.get("/triggers", response_model=TriggersListResponse)
 async def get_automation_triggers():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get all automation trigger configurations.
     """
@@ -110,6 +111,7 @@ async def update_trigger(
     trigger_id: str,
     request: UpdateTriggerRequest
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Enable or disable an automation trigger.
     """
@@ -133,6 +135,7 @@ async def update_trigger(
 async def check_and_execute_triggers(
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Manually trigger automation check.
     This will check all enabled triggers and execute actions for matching conditions.
@@ -150,6 +153,7 @@ async def check_and_execute_triggers(
 
 @router.get("/status", response_model=AutomationStatusResponse)
 async def get_automation_status():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get automation engine status.
     """
@@ -180,6 +184,7 @@ async def get_stage_suggestions(
     vacancy_id: str | None = Query(None, description="Vacancy ID"),
     company_id: str = Query(..., description="Company ID for multi-tenancy")
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get AI-powered suggestions for automation actions based on stage transition.
     

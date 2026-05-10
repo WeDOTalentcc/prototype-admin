@@ -57,6 +57,7 @@ class OverrideQualificationRequest(BaseModel):
 
 @router.post("/classify", response_model=ClassifyJobResponse)
 async def classify_job(body: ClassifyJobRequest):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Classify a job vacancy qualification level using AI (without saving)."""
     result = await job_qualification_service.classify(
         title=body.title,
@@ -73,6 +74,7 @@ async def classify_job(body: ClassifyJobRequest):
 
 @router.post("/{job_id}/classify", response_model=JobQualificationResponse)
 async def classify_and_save(job_id: str, db: AsyncSession = Depends(get_db)):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Classify a job vacancy and save the result to the database."""
     result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
     job = result.scalar_one_or_none()
@@ -118,6 +120,7 @@ async def classify_and_save(job_id: str, db: AsyncSession = Depends(get_db)):
 
 @router.get("/{job_id}", response_model=JobQualificationResponse)
 async def get_qualification(job_id: str, db: AsyncSession = Depends(get_db)):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get the current qualification level of a job vacancy."""
     result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
     job = result.scalar_one_or_none()
@@ -136,6 +139,7 @@ async def get_qualification(job_id: str, db: AsyncSession = Depends(get_db)):
 
 @router.put("/{job_id}/override", response_model=JobQualificationResponse)
 async def override_qualification(job_id: str, body: OverrideQualificationRequest, db: AsyncSession = Depends(get_db)):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Manually override the qualification level of a job vacancy."""
     result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
     job = result.scalar_one_or_none()

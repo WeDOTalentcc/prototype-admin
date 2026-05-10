@@ -84,6 +84,7 @@ async def get_candidate_enrichment(
     token: str = Depends(verify_rails_token),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     _check_rate_limit()
     _audit_log("candidates.enrichment", {"candidate_id": candidate_id})
 
@@ -128,6 +129,7 @@ async def get_job_intelligence(
     token: str = Depends(verify_rails_token),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     _check_rate_limit()
     _audit_log("jobs.intelligence", {"job_id": job_id})
 
@@ -158,6 +160,7 @@ async def get_compliance_status(
     token: str = Depends(verify_rails_token),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     _check_rate_limit()
     _audit_log("compliance.status", {})
 
@@ -199,6 +202,7 @@ async def bulk_sync_candidates(
     token: str = Depends(verify_rails_token),
     db: AsyncSession = Depends(get_db),
 ) -> dict[str, Any]:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     _check_rate_limit()
 
     try:

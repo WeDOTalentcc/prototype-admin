@@ -71,6 +71,7 @@ async def transcribe_audio(
     language: str = Form("pt-BR", description="Target language (default: pt-BR)"),
     prompt: str | None = Form(None, description="Custom transcription prompt")
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Transcreve arquivo de áudio para texto.
     
@@ -124,6 +125,7 @@ async def analyze_audio(
     audio: UploadFile = File(..., description="Audio file to analyze"),
     analysis_type: str = Form("full", description="Analysis type: full, sentiment, topics, summary")
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Analisa áudio além de transcrição (sentimento, tópicos, insights).
     
@@ -179,6 +181,7 @@ async def analyze_interview(
     job_title: str | None = Form(None, description="Job title for context"),
     questions: str | None = Form(None, description="Expected questions (comma-separated)")
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Transcreve e analisa entrevista de candidato com scoring.
     

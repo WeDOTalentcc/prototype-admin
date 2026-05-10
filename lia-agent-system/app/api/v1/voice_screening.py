@@ -92,6 +92,7 @@ async def submit_audio(
     session_id: str,
     file: UploadFile = File(...),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Submit audio response from candidate. Transcribes and advances the state machine.
     """
@@ -124,6 +125,7 @@ async def submit_text(
     session_id: str,
     body: dict,
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Submit text response (for WhatsApp/chat fallback). Same flow as audio but skips STT.
     """
@@ -158,6 +160,7 @@ async def submit_text(
 
 @router.get("/sessions/{session_id}")
 async def get_session_status(session_id: str):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get current status of a voice screening session."""
     session = _sessions.get(session_id)
     if not session:

@@ -130,6 +130,7 @@ async def get_benefit_templates(
     popular_only: bool = Query(False, description="Show only popular templates"),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get all available benefit templates.
     """
@@ -162,6 +163,7 @@ async def get_benefit_templates(
 async def seed_benefit_templates(
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Seed the database with pre-defined benefit templates.
     Only adds templates that don't already exist (by name).
@@ -206,6 +208,7 @@ async def get_benefit_template(
     template_id: UUID,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get a specific benefit template by ID.
     """
@@ -309,6 +312,7 @@ class BenefitImportResponse(BaseModel):
 
 @router.get("/import/template", response_model=None)
 async def download_benefits_import_template():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Download CSV template for benefits import.
     """
@@ -365,6 +369,7 @@ async def import_benefits(
     company_id: UUID = Query(..., description="Company ID to associate benefits with"),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Import benefits from CSV or Excel file.
     """

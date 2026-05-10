@@ -159,6 +159,7 @@ async def test_ats_connection(
     request: TestATSConnectionRequest,
     current_user=Depends(get_current_user_or_demo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Test ATS connection credentials without saving. Requires authentication.
     """
@@ -571,6 +572,7 @@ async def list_sync_jobs(
     limit: int = Query(20, ge=1, le=100),
     repo: ATSRepository = Depends(get_ats_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     List ATS synchronization jobs.
     """
@@ -612,6 +614,7 @@ async def list_ats_candidates(
     limit: int = Query(50, ge=1, le=200),
     repo: ATSRepository = Depends(get_ats_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     List candidates imported from ATS platforms.
     """
@@ -1071,6 +1074,7 @@ async def list_webhook_logs(
     limit: int = Query(50, ge=1, le=200),
     repo: ATSRepository = Depends(get_ats_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     List webhook logs from ATS platforms.
     """

@@ -105,6 +105,7 @@ async def apply_to_vacancy(
     cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
     rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Processa inscricao de candidato em uma vaga.
 
@@ -336,6 +337,7 @@ async def resubmit_cv(
 ,
     cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Processa reenvio de CV apos feedback de baixa aderencia.
 
@@ -475,6 +477,7 @@ async def get_feedback_analytics(
     days: int = Query(30, ge=1, le=365, description="Periodo em dias"),
     repo: ApplicationRepository = Depends(get_application_repo)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Retorna analytics sobre feedbacks enviados para uma vaga.
 
@@ -503,6 +506,7 @@ async def track_resubmit_click(
     feedback_id: str,
     repo: ApplicationRepository = Depends(get_application_repo)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Registra clique no link de reenvio de CV."""
     try:
         success = await candidate_feedback_service.mark_resubmit_clicked(

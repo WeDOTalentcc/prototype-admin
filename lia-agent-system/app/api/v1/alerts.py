@@ -73,6 +73,7 @@ async def list_alerts(
     limit: int = Query(default=50, le=100),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List active alerts with optional filters."""
     alerts = await job_alert_service.get_active_alerts(
         db=db,
@@ -87,6 +88,7 @@ async def list_alerts(
 async def get_alert_summary(
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get summary of active alerts by severity."""
     summary = await job_alert_service.get_alert_summary(db=db)
     return summary
@@ -97,6 +99,7 @@ async def run_alert_checks(
     background_tasks: BackgroundTasks,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Manually trigger alert checks."""
     alerts = await job_alert_service.check_all_alerts(db=db)
     return {
@@ -112,6 +115,7 @@ async def acknowledge_alert(
     user_id: str = "system",
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Acknowledge an alert."""
     alert = await job_alert_service.acknowledge_alert(
         db=db,
@@ -130,6 +134,7 @@ async def resolve_alert(
     resolution_note: str | None = None,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Resolve an alert."""
     alert = await job_alert_service.resolve_alert(
         db=db,

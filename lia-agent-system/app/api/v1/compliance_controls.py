@@ -56,6 +56,7 @@ async def list_control_library(
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List all controls in the library, optionally filtered by framework."""
     try:
         controls, total = await repo.list_control_library(
@@ -81,6 +82,7 @@ async def create_control_library(
     data: ControlLibraryCreate,
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Create a new control in the library."""
     try:
         control = await repo.create_control_library(
@@ -109,6 +111,7 @@ async def get_controls_by_framework(
     offset: int = Query(0, ge=0),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get all controls for a specific framework."""
     try:
         controls, total = await repo.get_controls_by_framework(
@@ -506,6 +509,7 @@ async def update_sox_control(
 async def seed_control_library(
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Seed the control library with ISO 27001, SOC 2 TSC, and SOX controls."""
     try:
         iso_27001_controls = [
