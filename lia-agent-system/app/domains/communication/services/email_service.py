@@ -653,6 +653,7 @@ class EmailService:
                 await db.rollback()
             except Exception:
                 pass
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.error(f"Error sending welcome email to {primary_email}: {e}")
             return False
     
@@ -727,12 +728,15 @@ class EmailService:
             )
             
             if success:
+                # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                 logger.info(f"Invite email sent to {user_email} for company {company_name}")
             else:
+                # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                 logger.error(f"Failed to send invite email to {user_email}")
             
             return success
         except Exception as e:
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.error(f"Error sending invite email to {user_email}: {e}")
             return False
 

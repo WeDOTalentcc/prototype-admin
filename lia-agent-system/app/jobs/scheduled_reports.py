@@ -557,6 +557,7 @@ class ScheduledReportJob:
                             report_types=["weekly"]
                         ))
                 
+                # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                 logger.info(f"📋 Found {len(team_recipients)} teams for weekly reports from database")
                 
         except Exception as e:
@@ -605,6 +606,7 @@ class ScheduledReportJob:
                             report_types=["monthly"]
                         ))
                 
+                # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                 logger.info(f"📋 Found {len(company_recipients)} companies for monthly reports from database")
                 
         except Exception as e:

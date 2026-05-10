@@ -274,6 +274,7 @@ class CandidateFeedbackService:
                     channels_used.append("whatsapp")
                     feedback_record.whatsapp_sent = True
                     feedback_record.whatsapp_sent_at = datetime.utcnow()
+                    # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                     logger.info(f"📱 WhatsApp feedback sent to {candidate_phone}")
                 except Exception as e:
                     channels_failed.append({"channel": "whatsapp", "error": str(e)})

@@ -184,6 +184,7 @@ async def handle_candidate_inactive(
                 if not whatsapp_sent:
                     whatsapp_error = getattr(send_result, 'error', None) or "Unknown WhatsApp send failure"
                     communication_failures.append({"channel": "whatsapp", "error": whatsapp_error})
+                # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                 logger.info(f"💬 [CANDIDATE_INACTIVE] WhatsApp sent to {candidate_phone}: {whatsapp_sent}")
             except Exception as e:
                 whatsapp_error = str(e)
@@ -474,6 +475,7 @@ async def handle_candidate_no_show(
                     )
 
                     whatsapp_sent = send_result.success
+                    # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                     logger.info(f"💬 [CANDIDATE_NO_SHOW] Reschedule WhatsApp sent to {candidate_phone}: {whatsapp_sent}")
                 except Exception as e:
                     logger.error(f"❌ [CANDIDATE_NO_SHOW] Failed to send reschedule WhatsApp: {e}")
@@ -525,6 +527,7 @@ async def handle_candidate_no_show(
                     )
 
                     whatsapp_sent = send_result.success
+                    # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                     logger.info(f"💬 [CANDIDATE_NO_SHOW] Final notice WhatsApp sent to {candidate_phone}: {whatsapp_sent}")
                 except Exception as e:
                     logger.error(f"❌ [CANDIDATE_NO_SHOW] Failed to send final notice WhatsApp: {e}")

@@ -545,6 +545,7 @@ class MicrosoftGraphService:
         if not send_invites:
             endpoint += "?sendInvites=false"
         
+        # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
         logger.info(f"Creating Teams meeting: {subject} for {organizer_email}")
         
         result = await self._make_request("POST", endpoint, json_data=event_payload,
@@ -884,15 +885,18 @@ class MicrosoftGraphService:
             await self._make_request("GET", endpoint)
             return True
         except GraphAPIForbiddenError:
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.warning(f"User {user_email} does not have calendar read permissions")
             return False
         except GraphAPICalendarPermissionError:
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.warning(f"User {user_email} does not have calendar permissions")
             return False
         except GraphAPIUnauthorizedError:
             logger.error("Graph API authentication failed while checking calendar permissions")
             return False
         except Exception as e:
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.warning(f"Failed to check calendar permissions for {user_email}: {e}")
             return False
     

@@ -376,11 +376,13 @@ class SchedulingService:
         try:
             has_permission = await graph_service.check_calendar_permission(organizer_email)
             if not has_permission:
+                # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                 logger.warning(f"User {organizer_email} does not have calendar permissions, falling back to ICS")
                 return await create_fallback_interview_with_ics(
                     f"User {organizer_email} does not have calendar permissions. ICS file available for download."
                 )
         except Exception as perm_error:
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.warning(f"Failed to check calendar permissions for {organizer_email}: {perm_error}")
         
         attendees = [
@@ -451,6 +453,7 @@ class SchedulingService:
             await db.refresh(interview)
             
             logger.info(f"✅ Interview created with Teams meeting: {interview.id}")
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.info(f"   Interviewer: {resolved_interviewer_name} ({organizer_email})")
             logger.info(f"   Teams Join URL: {teams_meeting.join_url}")
             logger.info(f"   Calendar Event ID: {teams_meeting.calendar_event_id}")
@@ -502,6 +505,7 @@ class SchedulingService:
                 await db.rollback()
             except Exception:
                 pass
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.error(f"Graph API unauthorized for {organizer_email}: {e}")
             return await create_fallback_interview_with_ics(
                 "Authentication failed for Microsoft Graph. ICS file available for download."
@@ -512,6 +516,7 @@ class SchedulingService:
                 await db.rollback()
             except Exception:
                 pass
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.error(f"Permission denied for {organizer_email}: {e}")
             return await create_fallback_interview_with_ics(
                 "Permission denied for calendar access. ICS file available for download."

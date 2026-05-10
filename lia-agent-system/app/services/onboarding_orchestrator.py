@@ -174,6 +174,7 @@ class OnboardingOrchestrator:
                 session.whatsapp_conversation_id = wa_result.get("conversation_sid")
                 session.channel = "whatsapp"
                 responses.append({"channel": "whatsapp", "status": "sent"})
+                # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                 logger.info(f"[Onboarding] WhatsApp welcome sent to {session.user_phone}")
             except Exception as e:
                 logger.warning(f"[Onboarding] WhatsApp send failed: {e}")

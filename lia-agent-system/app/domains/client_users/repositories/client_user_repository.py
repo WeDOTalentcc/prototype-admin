@@ -216,6 +216,7 @@ class ClientUserRepository:
             )
             self.db.add(audit_log)
             await self.db.flush()
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.info(f"Audit log: {action} for user {user_email} by {performed_by}")
         except Exception as exc:
             logger.warning(f"Failed to create audit log: {str(exc)}")

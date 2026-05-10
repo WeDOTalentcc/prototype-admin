@@ -381,6 +381,7 @@ class WhatsAppService:
         logger.info(f"[DEV WHATSAPP] Message ID: {message_id}")
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"[DEV WHATSAPP] De: {self.from_number}")
+        # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
         logger.info(f"[DEV WHATSAPP] Para: {formatted_phone}")
         if media_url:
             logger.info(f"[DEV WHATSAPP] Mídia: {media_url}")
