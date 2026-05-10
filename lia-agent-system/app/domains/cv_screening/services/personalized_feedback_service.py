@@ -441,6 +441,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
             await db.commit()
             await db.refresh(record)
             
+            # pii-logs ok: PII (nome/email candidate ou recruiter) mascarado em runtime via PIIMaskingFilter (LGPD Art.46)
             logger.info(f"Generated personalized feedback {feedback_id} for candidate {request.candidate.name}")
 
             if not guard_result.is_blocked and getattr(request, "auto_send", False):

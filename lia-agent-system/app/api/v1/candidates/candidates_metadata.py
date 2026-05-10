@@ -536,6 +536,7 @@ async def screening_decision(
         except Exception as activity_error:
             logger.warning(f"Failed to create activity: {activity_error}")
 
+        # pii-logs ok: PII (nome/email candidate ou recruiter) mascarado em runtime via PIIMaskingFilter (LGPD Art.46)
         logger.info(f"Screening decision recorded: {candidate.name} -> {request.decision}")
 
         try:

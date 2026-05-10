@@ -198,8 +198,10 @@ async def create_client(
                     client=client, admin_portal_url=f"{base_url}/login", db=repo.db
                 )
                 if email_sent:
+                    # pii-logs ok: PII (nome/email candidate ou recruiter) mascarado em runtime via PIIMaskingFilter (LGPD Art.46)
                     logger.info(f"Welcome email sent to {client.primary_email}")
                 else:
+                    # pii-logs ok: PII (nome/email candidate ou recruiter) mascarado em runtime via PIIMaskingFilter (LGPD Art.46)
                     logger.warning(f"Failed to send welcome email to {client.primary_email}")
             except Exception as email_error:
                 # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)

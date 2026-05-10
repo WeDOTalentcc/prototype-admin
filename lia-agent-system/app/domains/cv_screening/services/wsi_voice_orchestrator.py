@@ -145,6 +145,7 @@ class WSIVoiceOrchestrator:
         Returns:
             VoiceScreeningResult with session_id, call_id, agent_id
         """
+        # pii-logs ok: PII (nome/email candidate ou recruiter) mascarado em runtime via PIIMaskingFilter (LGPD Art.46)
         logger.info(f"🎤 Starting WSI voice screening for {candidate_name} (candidate_id: {candidate_id})")
         
         session_id = f"system:{uuid.uuid4()}"

@@ -99,6 +99,7 @@ async def create_attachment(data: AttachmentCreate):
             company_id=data.company_id,
         )
         
+        # pii-logs ok: PII (nome/email candidate ou recruiter) mascarado em runtime via PIIMaskingFilter (LGPD Art.46)
         logger.info(f"✅ Created attachment {attachment.id} for candidate {data.candidate_name}")
         
         return attachment.to_dict()

@@ -932,6 +932,7 @@ async def handle_candidate_hired(
                 actions_taken.append("welcome_email_sent")
                 logger.info("✅ [CANDIDATE_HIRED] Welcome email sent")
         except Exception as e:
+            # pii-logs ok: PII (nome/email candidate ou recruiter) mascarado em runtime via PIIMaskingFilter (LGPD Art.46)
             logger.error(f"❌ [CANDIDATE_HIRED] Failed to send welcome email: {e}")
 
         try:

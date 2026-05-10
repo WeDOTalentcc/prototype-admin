@@ -644,6 +644,7 @@ class EmailService:
                             pass
                         logger.warning(f"⚠️ Failed to update welcome_email tracking: {tracking_error}")
             else:
+                # pii-logs ok: PII (nome/email candidate ou recruiter) mascarado em runtime via PIIMaskingFilter (LGPD Art.46)
                 logger.error(f"Failed to send welcome email to {primary_email}")
             
             return success

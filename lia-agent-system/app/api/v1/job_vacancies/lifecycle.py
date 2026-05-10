@@ -964,6 +964,7 @@ async def bulk_assign_recruiter(
             errors.append(BulkActionError(job_id=str(job_id), error_message=str(e)))
             failed += 1
 
+    # pii-logs ok: PII (nome/email candidate ou recruiter) mascarado em runtime via PIIMaskingFilter (LGPD Art.46)
     logger.info(f"Bulk assign recruiter ({request.recruiter_email}): {successful} succeeded, {failed} failed")
 
     return BulkActionResponse(
