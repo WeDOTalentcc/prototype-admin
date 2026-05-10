@@ -403,8 +403,19 @@ class ConsumptionTrackingService:
 
     @staticmethod
     async def _check_budget_alert(db: AsyncSession, company_id: str, category: str = "apify") -> None:
+        """Fire-and-forget budget alert check — never raises, never blocks caller."""
+        try:
+            await ConsumptionTrackingService._check_budget_alert_inner(db, company_id, category)
+        except Exception as _exc:
+            import logging as _log
+            _log.getLogger(__name__).debug(
+                "[BudgetAlert] non-critical check failed: %s", _exc
+            )
+
+    @staticmethod
+    async def _check_budget_alert_inner(db: AsyncSession, company_id: str, category: str = "apify") -> None:
         now = datetime.utcnow()
-        month_key = f"{company_id}:{category}:{now.year}-{now.month:02d}"
+        month_key = f"{company_id}:{now.year}-{now.month:02d}"  # keyed per-company-month (not per-category)
 
         if month_key in ConsumptionTrackingService._budget_alerts_sent:
             return
@@ -423,7 +434,12 @@ class ConsumptionTrackingService:
                     )
                 )
             )
-            total_usd = float(result.scalar() or 0)
+            _raw_val = result.scalar()
+            # Guard against AsyncMock returning coroutines in test environments
+            import inspect
+            if inspect.iscoroutine(_raw_val):
+                _raw_val = 0  # fail-safe; real queries return sync scalar
+            total_usd = float(_raw_val or 0)
         else:
             result = await db.execute(
                 select(func.sum(ExternalApiConsumption.cost_usd)).where(

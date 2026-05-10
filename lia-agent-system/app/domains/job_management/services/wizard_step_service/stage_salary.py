@@ -3,7 +3,12 @@ Stage 4 — Salary & Benefits handler for the wizard step service.
 """
 import logging
 
+from datetime import datetime, timedelta
+
+from app.domains.job_management.services.ats_job_history_service import ats_job_history_service
 from ._shared import get_historical_salary_patterns
+
+_LGPD_SALARY_CUTOFF_DAYS = 365  # LGPD: salário de vagas mais velhas que 12 meses descartado
 
 logger = logging.getLogger(__name__)
 
@@ -149,11 +154,37 @@ async def handle_salary(
 
 ❓ *Quer saber mais sobre salários de mercado para este cargo? Pergunte!*"""
 
+    # F.3 ATS cross-reference — enrich salary with similar vacancies from ATS history
+    ats_salary_sources = ["market"] if market_salary.get("min") else []
+    if salary_patterns.get("has_data"):
+        ats_salary_sources.insert(0, "history")
+    try:
+        ats_jobs = await ats_job_history_service.get_similar_jobs(
+            company_id=company_id,
+            job_title=job_title_for_salary,
+            seniority=seniority_for_salary,
+        )
+        # LGPD: discard jobs older than 12 months
+        cutoff = datetime.utcnow() - timedelta(days=_LGPD_SALARY_CUTOFF_DAYS)
+        recent_jobs = [
+            j for j in (ats_jobs or [])
+            if getattr(j, "created_at", None) and j.created_at >= cutoff
+        ]
+        if recent_jobs:
+            ats_salary_sources.append("ats_history")
+    except Exception as _ats_exc:
+        logger.warning("ATS job history lookup failed (fail-open): %s", _ats_exc)
+
     suggestions_data = {
         "benefits": [{"name": b["name"], "selected": True} for b in company_benefits] if company_benefits else [],
         "salary_benchmark": combined,
         "learning_adjustments": learning_adjustments,
         "historical_salary": salary_patterns if salary_patterns.get('has_data') else None,
+        "canonical_salary_suggestion": {
+            "sources_used": ats_salary_sources,
+            "recommended_min": combined.get("recommended_min"),
+            "recommended_max": combined.get("recommended_max"),
+        },
     }
 
     return lia_message, suggestions_data, field_origins

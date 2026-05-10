@@ -234,8 +234,8 @@ class ContactEnrichmentService:
         import time as _time
         _start = _time.monotonic()
         try:
-            profile_data = await self._enrichment_svc.scrape_profile(
-                linkedin_url, "dev_fusion/Linkedin-Profile-Scraper"
+            profile_data = await self._enrichment_svc._scrape_linkedin_profile(
+                linkedin_url
             )
             _elapsed_ms = int((_time.monotonic() - _start) * 1000)
             error_msg = None

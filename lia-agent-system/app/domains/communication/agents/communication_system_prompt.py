@@ -50,6 +50,68 @@ COMMUNICATION_EXEMPLOS = '''
 - LIA: Informa o erro com clareza e sugere alternativa.
 '''
 
+# ---------------------------------------------------------------------------
+# COMMUNICATION_TEMPLATES — canonical message templates (Task #Sprint V)
+# Used by tests, UI template pickers, and system prompt assembly.
+# ---------------------------------------------------------------------------
+COMMUNICATION_TEMPLATES: str = """
+## Templates de Comunicação
+
+Todos os templates passam por FairnessGuard antes do envio.
+Variáveis: {{candidato_nome}}, {{vaga_titulo}}, {{empresa_nome}}, {{data_entrevista}}.
+
+### Convite para WSI (Triagem Assíncrona)
+Olá, {{candidato_nome}}! Gostaríamos de convidá-lo(a) para a etapa de triagem da vaga {{vaga_titulo}}.
+Clique no link para responder às perguntas: {{link_wsi}}
+
+### Reprovação Gate 1 (Triagem)
+Olá, {{candidato_nome}}. Agradecemos seu interesse na vaga {{vaga_titulo}}.
+Após análise do seu perfil, não avançaremos neste processo seletivo. Sucesso na sua jornada!
+
+### Reprovação Gate 2 (Entrevista)
+Olá, {{candidato_nome}}. Foi um prazer conversar com você sobre a vaga {{vaga_titulo}}.
+Após avaliação, decidimos seguir com outros candidatos neste momento.
+
+### Convite Entrevista Final
+Olá, {{candidato_nome}}! Você avançou para a Entrevista Final da vaga {{vaga_titulo}}.
+Data: {{data_entrevista}}. Confirme sua presença respondendo este e-mail.
+
+### Proposta de Contratação (Oferta)
+Olá, {{candidato_nome}}. Com grande satisfação, gostaríamos de formalizar a proposta para {{vaga_titulo}}.
+"""
+
+
+# ---------------------------------------------------------------------------
+# COMMUNICATION_TEMPLATES — canonical message templates (Task #Sprint V)
+# Used by tests, UI template pickers, and system prompt assembly.
+# ---------------------------------------------------------------------------
+COMMUNICATION_TEMPLATES: str = """
+## Templates de Comunicação
+
+Todos os templates passam por FairnessGuard antes do envio.
+Variáveis: {{candidato_nome}}, {{vaga_titulo}}, {{empresa_nome}}, {{data_entrevista}}.
+
+### Convite para WSI (Triagem Assíncrona)
+Olá, {{candidato_nome}}! Gostaríamos de convidá-lo(a) para a etapa de triagem da vaga {{vaga_titulo}}.
+Clique no link para responder às perguntas: {{link_wsi}}
+
+### Reprovação Gate 1 (Triagem)
+Olá, {{candidato_nome}}. Agradecemos seu interesse na vaga {{vaga_titulo}}.
+Após análise do seu perfil, não avançaremos neste processo seletivo. Sucesso na sua jornada!
+
+### Reprovação Gate 2 (Entrevista)
+Olá, {{candidato_nome}}. Foi um prazer conversar com você sobre a vaga {{vaga_titulo}}.
+Após avaliação, decidimos seguir com outros candidatos neste momento.
+
+### Convite Entrevista Final
+Olá, {{candidato_nome}}! Você avançou para a Entrevista Final da vaga {{vaga_titulo}}.
+Data: {{data_entrevista}}. Confirme sua presença respondendo este e-mail.
+
+### Proposta de Contratação (Oferta)
+Olá, {{candidato_nome}}. Com grande satisfação, gostaríamos de formalizar a proposta para {{vaga_titulo}}.
+"""
+
+
 def get_communication_system_prompt() -> str:
     base = COMMUNICATION_DOMAIN_SPECIFIC
     blocks = [
@@ -57,4 +119,6 @@ def get_communication_system_prompt() -> str:
                     COMMUNICATION_EXEMPLOS]
         if b
     ]
+    blocks.append(COMMUNICATION_TEMPLATES)
+    blocks.append(COMMUNICATION_TEMPLATES)
     return base + "\n\n" + "\n\n".join(blocks) if blocks else base

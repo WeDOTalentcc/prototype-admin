@@ -679,6 +679,42 @@ ACTIONABLE_INTENTS: dict[str, dict[str, Any]] = {
         "param_labels": {},
         "clarification_prompts": {},
     },
+    # --- Benefits/PRV intents (Sprint B) ---
+    "apply_compensation_policy": {
+        "domain_id": "job_management",
+        "action_id": "apply_compensation_policy",
+        "required_params": ["job_id"],
+        "optional_params": ["policy_id"],
+        "risk_level": "medium",
+        "requires_confirmation": True,
+        "param_labels": {"job_id": "vaga"},
+        "clarification_prompts": {
+            "job_id": "Qual vaga receberá a política de remuneração?",
+        },
+    },
+    "override_bonus_in_job": {
+        "domain_id": "job_management",
+        "action_id": "override_bonus_in_job",
+        "required_params": ["bonus_min", "bonus_max"],
+        "optional_params": ["job_id"],
+        "risk_level": "medium",
+        "requires_confirmation": True,
+        "param_labels": {"bonus_min": "bônus mínimo", "bonus_max": "bônus máximo"},
+        "clarification_prompts": {
+            "bonus_min": "Qual é o valor mínimo do bônus?",
+            "bonus_max": "Qual é o valor máximo do bônus?",
+        },
+    },
+    "confirm_total_package": {
+        "domain_id": "job_management",
+        "action_id": "confirm_total_package",
+        "required_params": [],
+        "optional_params": ["job_id"],
+        "risk_level": "low",
+        "requires_confirmation": False,
+        "param_labels": {},
+        "clarification_prompts": {},
+    },
 }
 
 CONFIRMATION_PATTERNS = [

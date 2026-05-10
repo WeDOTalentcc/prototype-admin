@@ -53,15 +53,24 @@ class FastRouteResult:
 
 
 _HARDCODED_DOMAIN_PATTERNS: dict[str, list[str]] = {
-    "job_management": [
+    "wizard": [
+        r"criar(?:\s+\w+)*\s+vaga",
         r"criar?\s+\w*\s*vaga",
         r"nova\s+vaga",
+        r"abrir?\s+\w*\s*vaga",
+        r"vaga\s+nova",
+        r"quero\s+\w*\s*contratar",
+        r"preciso\s+\w*\s*contratar",
+        r"\bnova\b.*\bvaga\b",
+        r"\bwizard\b",
+        r"job\s+creation\s+wizard",
+    ],
+    "job_management": [
         r"editar?\s+\w*\s*vaga",
         r"atualizar?\s+\w*\s*vaga",
         r"gerar?\s+jd",
         r"job\s+description",
         r"descri[çc][ãa]o\s+d[aeo]\s+vaga",
-        r"wizard",
         r"requisitos\s+d[aeo]",
         r"clonar?\s+\w*\s*vaga",
         r"fechar?\s+\w*\s*vaga",

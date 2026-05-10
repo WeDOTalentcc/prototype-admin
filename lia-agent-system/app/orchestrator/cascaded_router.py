@@ -310,6 +310,42 @@ class CascadedRouter:
             _t2_span.set_attribute("confidence_score", "0.0")
             _t2_span.set_attribute("latency_ms", f"{(time.perf_counter() - _t0) * 1000:.2f}")
 
+        # Tier 2.5 — Wizard Guard (anti-poisoning sensor)
+        # Pre-checks FastRouter for wizard domain BEFORE consulting the vector cache.
+        # Prevents stale vector cache entries (e.g. job_management for "criar vaga")
+        # from overriding a strong wizard-domain signal from the fast router.
+        # R-025: harness-engineering sensor — computacional, feedforward.
+        _t25_fast_prefetch = self.fast.match(message)
+        if (
+            _t25_fast_prefetch is not None
+            and _t25_fast_prefetch.domain_id == "wizard"
+            and _t25_fast_prefetch.confidence >= settings.ROUTER_FAST_CONFIDENCE_THRESHOLD
+        ):
+            _t25_result = RouteResult(
+                domain_id="wizard",
+                confidence=_t25_fast_prefetch.confidence,
+                source="wizard_guard",
+                matched_pattern=_t25_fast_prefetch.matched_pattern,
+            )
+            self._cache_store(cache_key, _t25_result)
+            try:
+                await self._redis_cache.set(
+                    message,
+                    {
+                        "domain_id": "wizard",
+                        "confidence": _t25_fast_prefetch.confidence,
+                        "matched_pattern": _t25_fast_prefetch.matched_pattern,
+                    },
+                )
+            except Exception:
+                pass
+            logger.debug(
+                "CascadedRouter: [T2.5 wizard_guard] '%s...' → wizard (conf=%.2f)",
+                message[:40],
+                _t25_fast_prefetch.confidence,
+            )
+            return _t25_result
+
         # Tier 3 — VectorSemanticCache (pgvector, cosine similarity)
         if self._vector_cache is not None:
             async with _tracer.start_span("router.tier3_vector_cache", attributes={

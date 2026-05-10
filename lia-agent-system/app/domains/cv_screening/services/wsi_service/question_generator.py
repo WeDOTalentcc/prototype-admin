@@ -572,7 +572,7 @@ Responda APENAS em JSON:
 }}"""
 
         try:
-            response = await self.llm.safe_invoke(prompt, temperature=0.7)
+            response = await self.llm.claude.bind(temperature=0.7).ainvoke(prompt)
             data = safe_json_parse(response.content, fallback={
                 "framework": "CBI",
                 "question_type": "contextual",
@@ -630,7 +630,7 @@ Combina:
 Responda APENAS em JSON com mesma estrutura anterior."""
 
         try:
-            response = await self.llm.safe_invoke(prompt, temperature=0.75)
+            response = await self.llm.claude.bind(temperature=0.75).ainvoke(prompt)
             data = safe_json_parse(response.content, fallback={
                 "framework": "Dreyfus",
                 "question_type": "autodeclaration",
@@ -698,7 +698,7 @@ Responda APENAS em JSON."""
         cognitive_level = "APLICAR" if bloom_level == 3 else "ANALISAR" if bloom_level == 4 else "CRIAR"
         
         try:
-            response = await self.llm.safe_invoke(prompt, temperature=0.75)
+            response = await self.llm.claude.bind(temperature=0.75).ainvoke(prompt)
             data = safe_json_parse(response.content, fallback={
                 "framework": "Bloom",
                 "question_type": "microcase",
@@ -818,7 +818,7 @@ Foco em traços OCEAN:
 Responda APENAS em JSON."""
 
         try:
-            response = await self.llm.safe_invoke(prompt, temperature=0.8)
+            response = await self.llm.claude.bind(temperature=0.8).ainvoke(prompt)
             data = safe_json_parse(response.content, fallback={
                 "framework": "BigFive",
                 "question_type": "situational",

@@ -83,6 +83,58 @@ def get_perf_summary() -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 # UC-P3-14: LIA_V2_USE_PLAN_SERVICE feature flag
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Task #811 — severity-based delegation to company_settings agent
+# Task #817 — canonical contract: exported for audit tests
+# ---------------------------------------------------------------------------
+
+#: Intents that route the turn to the company_settings/onboarding agent.
+#: Stored in LOWERCASE so they never collide with IntentType/EnhancedIntentType
+#: (which emit UPPERCASE values).
+_COMPANY_SETTINGS_INTENTS: frozenset[str] = frozenset({
+    "company_settings",
+    "configure_company",
+    "settings_config",
+    "hiring_policy",
+})
+
+
+def _decide_agent_type_from_hints(
+    hints: list,
+    intent: str = "",
+) -> "tuple[str, list, list]":
+    """Decide which agent should handle a turn based on pre-condition hints.
+
+    Args:
+        hints: List of hint objects with ``.severity`` attribute.
+        intent: Normalized or raw intent string from the classifier.
+
+    Returns:
+        Tuple of (agent_type, blocking_hints, informational_hints) where:
+          - ``agent_type``: "company_settings" or "orchestrator"
+          - ``blocking_hints``: hints with severity "warning" or "critical"
+          - ``informational_hints``: hints with severity "info" or lower
+
+    Routing rules (Task #811):
+      1. If the intent (post-lower/strip) is in _COMPANY_SETTINGS_INTENTS,
+         route to company_settings regardless of hints.
+      2. If any hint has severity "warning" or "critical", route to
+         company_settings so the recruiter can resolve the blocker first.
+      3. Otherwise, route to "orchestrator" (normal flow).
+    """
+    normalized = (intent or "").strip().lower()
+    if normalized in _COMPANY_SETTINGS_INTENTS:
+        return ("company_settings", [], [])
+
+    blocking = [h for h in hints if getattr(h, "severity", "info") in ("warning", "critical")]
+    informational = [h for h in hints if getattr(h, "severity", "info") not in ("warning", "critical")]
+
+    if blocking:
+        return ("company_settings", blocking, informational)
+
+    return ("orchestrator", [], informational)
+
+
 def _is_plan_service_enabled() -> bool:
     """Check if the new PlanService orchestration path is enabled.
 

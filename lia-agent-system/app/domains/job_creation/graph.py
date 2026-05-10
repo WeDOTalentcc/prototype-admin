@@ -89,9 +89,18 @@ def intake_node(state: JobCreationState) -> JobCreationState:
     intake_confidence = 0.0
     intake_source = "none"
     try:
-        from app.domains.job_creation.services.intake_extractor import IntakeExtractor
-        extractor = IntakeExtractor()
-        extraction = extractor.extract(query)
+        # Use module-level get_intake_extractor() so tests can monkeypatch it.
+        extractor = get_intake_extractor()
+        right_panel_form = state.get("right_panel_form") or {}
+        attached_file_text = state.get("attached_file_text") or ""
+        if right_panel_form or attached_file_text:
+            extraction = extractor.extract_from_sources(
+                user_text=query,
+                right_panel_form=right_panel_form,
+                attached_file_text=attached_file_text,
+            )
+        else:
+            extraction = extractor.extract(query)
         # Fill ONLY fields that aren't already explicit in state
         parsed_title = parsed_title or extraction.parsed_title
         parsed_seniority = parsed_seniority or extraction.parsed_seniority
@@ -1726,3 +1735,18 @@ class JobCreationGraph:
 
 def get_job_creation_graph() -> JobCreationGraph:
     return JobCreationGraph()
+
+
+# Module-level singleton alias used by graph_runner and tests via monkeypatch.
+# Tests call: monkeypatch.setattr(jc_graph, "job_creation_graph", stub, raising=True)
+job_creation_graph: JobCreationGraph = get_job_creation_graph()
+
+
+def get_intake_extractor():
+    """Return a fresh IntakeExtractor instance.
+
+    Tests monkeypatch this function at module level to inject a stub extractor
+    without instantiating the full graph stack.
+    """
+    from app.domains.job_creation.services.intake_extractor import IntakeExtractor
+    return IntakeExtractor()

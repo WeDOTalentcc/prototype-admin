@@ -303,7 +303,7 @@ class WSIInterviewNodes:
         if state.candidate_id and state.company_id:
             try:
                 from app.core.database import AsyncSessionLocal
-                from app.shared.services.consent_checker_service import ConsentCheckerService
+                from app.services.consent_checker_service import ConsentCheckerService
                 async with AsyncSessionLocal() as _db:
                     _consent_svc = ConsentCheckerService(_db)
                     _consent = await _consent_svc.check_candidate_consent(

@@ -6,7 +6,7 @@ import logging
 from dataclasses import dataclass
 from dataclasses import field as dc_field
 from datetime import datetime
-from typing import Any, Literal
+from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -168,6 +168,9 @@ class ResponseAnalysis(BaseModel):
     
     final_score: float = Field(ge=1, le=5)
     justification: str
+    # Camada 2 (LLM enrichment) — optional, populated when Layer2Extractor runs
+    layer2_signals: Optional["Layer2Signals"] = None
+    layer2_degraded_reason: Optional[str] = None
 
 
 class WSIResult(BaseModel):
@@ -234,7 +237,7 @@ class Layer2Signals(BaseModel):
     trait_signals_count: int = 0
     has_quantification: bool = False
     semantic_inflation: bool = False
-    bloom_demonstrated: int = 3
-    dreyfus_demonstrated: int = 3
+    bloom_demonstrated: int = Field(default=3, ge=1, le=6, description="Bloom taxonomy level (1..6)")
+    dreyfus_demonstrated: int = Field(default=3, ge=1, le=5, description="Dreyfus skill level (1..5)")
     confidence: float = 1.0
     extraction_warnings: list[str] = []

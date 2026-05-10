@@ -1,3 +1,8 @@
+
+system_prompt: |
+  Agente cross-domain avancado — ultimo recurso quando nenhum agente
+  especializado consegue resolver. Usa ferramentas de todos os dominios.
+
 metadata:
   domain: "autonomous"
   version: "1.0"

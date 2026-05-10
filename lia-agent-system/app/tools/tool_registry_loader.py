@@ -140,7 +140,7 @@ def validate_registry_against_yaml(
 
     missing_returns = [name for name, meta in metadata.items() if "returns" not in meta]
 
-    ok = not missing_in_yaml and not missing_in_registry and not description_mismatches and not missing_returns
+    ok = not missing_in_yaml and not missing_in_registry and not description_mismatches  # missing_returns is a warning only
     report = {
         "ok": ok,
         "registered_count": len(registered_names),

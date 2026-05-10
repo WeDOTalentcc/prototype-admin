@@ -37,7 +37,7 @@ from app.jobs.tasks import (  # noqa: F401
     feedback_process_pending_sends_task,
     followup_process_pending_task,
     wsi_check_abandoned_task,
-    compress_old_episodes_task,
+    compress_old_episodes_task,  # celery task name: memory.compress_old_episodes
     run_ragas_evaluate_batch,
     rebuild_domain_index_task,
     recompute_routing_adjustments,

@@ -1236,6 +1236,76 @@ async def http_chat_message(req: HTTPChatRequest, request: Request):
 
 
 # ---------------------------------------------------------------------------
+# _resume_wizard_canonical — sync HITL resume (used by REST + tests)
+# ---------------------------------------------------------------------------
+
+def _resume_wizard_canonical(
+    thread_id: str,
+    message: dict,
+) -> "tuple[str, dict]":
+    """Resume a wizard session after HITL approval (sync, non-streaming).
+
+    Retrieves prior checkpointed state, merges approval updates from *message*,
+    and invokes JobCreationGraph.resume().
+
+    Args:
+        thread_id: Wizard session / checkpointer thread identifier.
+        message: Dict that may contain:
+            - ``"context"``: Flat dict of recruiter updates
+              (e.g. ``{"draft": {...}}``).
+            - ``"approval_payload"``: Dict of additional params merged into
+              state (e.g. ``{"approved_by": "u-7"}``).
+
+    Returns:
+        Tuple of:
+        - ``message_str``: Recruiter-facing status message.
+        - ``stage_payload``: The raw ``ws_stage_payload`` dict (or ``{}``).
+    """
+    from app.domains.job_creation import graph as graph_module
+
+    jc_graph_inst = graph_module.job_creation_graph
+
+    # Retrieve prior state from checkpointer.
+    try:
+        prior_snapshot = jc_graph_inst._graph.get_state(
+            {"configurable": {"thread_id": thread_id}}
+        )
+        prior_state: dict = dict(prior_snapshot.values) if prior_snapshot else {}
+    except Exception:
+        prior_state = {}
+
+    # Build merged updates: approval_payload fields + context flags.
+    context_updates: dict = message.get("context") or {}
+    approval_payload: dict = message.get("approval_payload") or {}
+
+    resume_updates: dict = {
+        "hitl_approved": True,
+        **approval_payload,   # e.g. approved_by, approval notes
+        **context_updates,    # e.g. draft, updated fields
+    }
+
+    # Invoke via canonical resume API (keeps audit callback wired).
+    final_state: dict = jc_graph_inst.resume(thread_id, prior_state, resume_updates)
+
+    # Extract stage payload and recruiter-facing message.
+    stage_payload: dict = final_state.get("ws_stage_payload") or {}
+    message_str: str = ""
+    if stage_payload:
+        message_str = (
+            stage_payload.get("data", {}).get("message")
+            or stage_payload.get("message")
+            or ""
+        )
+    if not message_str:
+        cs = final_state.get("current_stage", "")
+        if cs == "completed":
+            message_str = "Vaga criada com sucesso."
+        else:
+            message_str = "Captei a vaga. Vou seguir para o próximo passo."
+
+    return message_str, stage_payload
+
+
 # _resume_wizard_canonical_streaming — HITL/approval resume via canonical graph
 # ---------------------------------------------------------------------------
 

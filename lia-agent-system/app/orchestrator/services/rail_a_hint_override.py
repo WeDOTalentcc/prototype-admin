@@ -124,8 +124,13 @@ def try_hint_route(context: dict | None) -> RouteResult | None:
     """
     if not context:
         return None
+    # Primary path: metadata sub-dict (standard WS message format)
     metadata = context.get("metadata")
     resolved = get_hint_domain(metadata)
+    if resolved is None:
+        # Fallback: some WS adapters promote context.extra to top-level context.
+        # Accept context itself as the "metadata" when source+domain_hint are present.
+        resolved = get_hint_domain(context)
     if resolved is None:
         return None
     domain_id, intent_id = resolved

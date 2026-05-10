@@ -21,9 +21,10 @@ class WSIResponseAnalyzer:
     O LLM NÃO participa do cálculo de scores - apenas da extração de informações.
     """
     
-    def __init__(self, llm, *, enable_layer2: bool = True):
+    def __init__(self, llm=None, *, enable_layer2: bool = False, layer2_extractor=None):
         self.llm = llm
         self._enable_layer2 = enable_layer2
+        self._layer2_extractor = layer2_extractor
     
     async def analyze(
         self,
@@ -50,6 +51,16 @@ class WSIResponseAnalyzer:
                 question_framework=question.framework
             )
             
+            justification_text = f"{result.justification} | Fórmula: {result.formula_applied}"
+            layer2_signals = None
+            layer2_degraded_reason = None
+            if self._enable_layer2 and self._layer2_extractor is not None:
+                try:
+                    layer2_signals = await self._layer2_extractor.extract(question, response)
+                except Exception as _l2_exc:
+                    layer2_degraded_reason = str(_l2_exc)
+                    justification_text += " | Camada 2 degradada"
+                    logger.warning("Layer2 extraction degraded: %s", _l2_exc)
             return ResponseAnalysis(
                 question_id=question.id,
                 competency=question.competency,
@@ -62,7 +73,9 @@ class WSIResponseAnalyzer:
                 red_flags=result.red_flags,
                 consistency_penalty=result.penalty,
                 final_score=result.final_score,
-                justification=f"{result.justification} | Fórmula: {result.formula_applied}"
+                justification=justification_text,
+                layer2_signals=layer2_signals,
+                layer2_degraded_reason=layer2_degraded_reason,
             )
         except Exception as e:
             logger.error(f"Deterministic analysis failed for {question.competency}: {e}")

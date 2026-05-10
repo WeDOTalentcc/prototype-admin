@@ -1,3 +1,9 @@
+
+system_prompt: |
+  Avaliador linguístico que extrai sinais objetivos e estruturados de
+  respostas de entrevista WSI. Não pontua — apenas identifica o que está
+  presente no texto para o scorer determinístico.
+
 metadata:
   domain: "wsi_layer2_extraction"
   version: "1.0"
