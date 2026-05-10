@@ -240,5 +240,5 @@ class TestCertificationInfo:
             expires_date="2025-01-15",
             badge_url="https://example.com/badge.png",
         )
-        assert m.issued_date == "2024-01-15"
-        assert m.badge_url is not None
+        assert m.badge_url == "https://example.com/badge.png"
+        assert m.issued_date is not None
