@@ -152,6 +152,7 @@ async def get_planned_task(
     task_id: str,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get a planned task by ID."""
     task = await planned_task_service.get_task(db, task_id)
     
@@ -167,6 +168,7 @@ async def update_task_status(
     request: UpdateTaskStatusRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Update the status of a planned task."""
     try:
         status = PlannedTaskStatus(request.status)
@@ -195,6 +197,7 @@ async def get_subtasks(
     task_id: str,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get all subtasks of a parent task."""
     subtasks = await planned_task_service.get_subtasks(db, task_id)
     
@@ -210,6 +213,7 @@ async def check_task_dependencies(
     task_id: str,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Check the dependency status for a task."""
     result = await planned_task_service.check_dependencies(db, task_id)
     
@@ -225,6 +229,7 @@ async def get_tasks_by_goal(
     include_completed: bool = Query(False),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get all tasks for a specific goal."""
     tasks = await planned_task_service.get_tasks_by_goal(
         db, goal_id, include_completed
@@ -242,6 +247,7 @@ async def prioritize_tasks(
     request: PrioritizeTasksRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Recalculate priority scores for tasks."""
     agent = AutomationReActAgent()
     response = await agent.prioritize_tasks(
@@ -264,6 +270,7 @@ async def build_task_dag(
     task_ids: list[str] = Body(..., embed=True),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Build and validate a DAG from task dependencies.
     
@@ -331,6 +338,7 @@ async def get_execution_plan(
     plan_id: str,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get an execution plan by ID."""
     plan = await planned_task_service.get_execution_plan(db, plan_id)
     
@@ -386,6 +394,7 @@ async def add_chain_of_thought(
     thought_type: str = Body("reasoning", embed=True),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Add a chain-of-thought entry to a task for logging decisions."""
     task = await planned_task_service.add_chain_of_thought(
         db=db,

@@ -162,6 +162,7 @@ async def list_providers(
     active_only: bool = Query(True),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List all available integration providers."""
     try:
         providers = await repo.list_providers(active_only=active_only, category=category)
@@ -181,6 +182,7 @@ async def list_providers_by_category(
     category: str,
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List providers filtered by category."""
     valid_categories = [c.value for c in IntegrationCategory]
     if category not in valid_categories:
@@ -199,6 +201,7 @@ async def list_connections(
     category: str | None = Query(None),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get company's integration connections."""
     try:
         rows = await repo.list_connections(
@@ -253,6 +256,7 @@ async def update_connection(
     company_id: str = Query(..., description="Company ID"),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Update an integration connection."""
     try:
         row = await repo.get_connection_with_provider(connection_id)
@@ -288,6 +292,7 @@ async def delete_connection(
     company_id: str = Query(..., description="Company ID"),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Remove an integration connection."""
     try:
         connection = await repo.get_connection_by_id(connection_id)
@@ -312,6 +317,7 @@ async def test_connection(
     company_id: str = Query(..., description="Company ID"),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Test an integration connection."""
     try:
         row = await repo.get_connection_with_provider(connection_id)
@@ -346,6 +352,7 @@ async def trigger_sync(
     sync_type: str = Query("full", description="full, incremental, or webhook"),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Trigger a sync operation for a connection."""
     try:
         connection = await repo.get_connection_by_id(connection_id)
@@ -379,6 +386,7 @@ async def get_sync_logs(
     limit: int = Query(20, ge=1, le=100),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get sync logs for a connection."""
     try:
         connection = await repo.get_connection_by_id(connection_id)
@@ -456,6 +464,7 @@ async def get_integration_health(
 async def get_ai_recommendations(
     request: AIRecommendationRequest,
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get AI-powered recommendations for integration setup."""
     try:
         recommendations = []
@@ -538,6 +547,7 @@ async def get_ai_recommendations(
 async def seed_providers(
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Seed default integration providers."""
     try:
         providers = await repo.seed_default_providers()

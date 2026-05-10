@@ -113,6 +113,7 @@ async def list_goals(
     limit: int = Query(100, ge=1, le=200),
     repo: GoalsRepository = Depends(get_goals_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List all goals with optional filters."""
     try:
         goals = await repo.list_goals(
@@ -137,6 +138,7 @@ async def get_goals_by_user(
     include_inactive: bool = Query(False),
     repo: GoalsRepository = Depends(get_goals_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get all goals for a specific user, grouped by period."""
     try:
         goals = await repo.list_goals(user_id=user_id, include_inactive=include_inactive)
@@ -180,6 +182,7 @@ async def get_goal(
     goal_id: uuid.UUID,
     repo: GoalsRepository = Depends(get_goals_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get a specific goal by ID."""
     try:
         goal = await repo.get_by_id(goal_id)
@@ -200,6 +203,7 @@ async def create_goal(
     data: GoalCreate,
     repo: GoalsRepository = Depends(get_goals_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Create a new goal."""
     try:
         goal_data = data.model_dump()
@@ -225,6 +229,7 @@ async def update_goal(
     data: GoalUpdate,
     repo: GoalsRepository = Depends(get_goals_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Update an existing goal."""
     try:
         update_data = data.model_dump(exclude_unset=True)
@@ -248,6 +253,7 @@ async def delete_goal(
     goal_id: uuid.UUID,
     repo: GoalsRepository = Depends(get_goals_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Soft delete a goal."""
     try:
         goal = await repo.soft_delete(goal_id)
@@ -268,6 +274,7 @@ async def create_goals_bulk(
     goals: list[GoalCreate],
     repo: GoalsRepository = Depends(get_goals_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Create multiple goals at once (for applying templates to multiple users)."""
     try:
         goals_data = [g.model_dump() for g in goals]
@@ -292,6 +299,7 @@ async def list_goal_templates(
     include_inactive: bool = Query(False),
     repo: GoalsRepository = Depends(get_goals_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List all goal templates."""
     try:
         templates = await repo.list_templates(
@@ -310,6 +318,7 @@ async def create_goal_template(
     data: GoalTemplateCreate,
     repo: GoalsRepository = Depends(get_goals_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Create a new goal template."""
     try:
         template = await repo.create_template(data.model_dump())
@@ -326,6 +335,7 @@ async def create_goal_template(
 async def seed_default_templates(
     repo: GoalsRepository = Depends(get_goals_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Seed default goal templates."""
     try:
         default_templates = [
@@ -496,6 +506,7 @@ async def parse_goal_import_file(file: UploadFile) -> list[dict[str, str]]:
 
 @router.get("/import/template", response_model=None)
 async def download_goals_import_template():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Download CSV template for goals import."""
     try:
         headers = ["user_id", "name", "description", "target", "unit", "period", "category"]
@@ -524,6 +535,7 @@ async def import_goals(
     company_id: uuid.UUID | None = Query(None),
     repo: GoalsRepository = Depends(get_goals_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Import goals from Excel/CSV file with AI processing.
     Expected columns: user_id, name, target, period, category

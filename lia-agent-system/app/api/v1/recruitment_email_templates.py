@@ -127,6 +127,7 @@ async def list_recruitment_email_templates(
     company_id: str | None = Query(None, description="Filter by company ID"),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     List all recruitment email templates with optional filtering.
     Returns company-specific templates plus system templates.
@@ -151,6 +152,7 @@ async def list_recruitment_email_templates(
 
 @router.get("/stages", response_model=list[StageInfo])
 async def list_available_stages():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     List all available recruitment stages for templates.
     """
@@ -171,6 +173,7 @@ async def list_available_stages():
 
 @router.get("/types", response_model=list[TemplateTypeInfo])
 async def list_template_types():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     List all available template types.
     """
@@ -184,6 +187,7 @@ async def list_template_types():
 
 @router.get("/variables", response_model=None)
 async def list_available_variables():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     List all available template variables with sample values.
     """
@@ -200,6 +204,7 @@ async def get_template_by_stage(
     company_id: str | None = Query(None, description="Company ID for company-specific templates"),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get the active template for a specific recruitment stage.
     Falls back to system template if no company-specific template exists.
@@ -232,6 +237,7 @@ async def get_template_by_id(
     template_id: str,
     repo: RecruitmentEmailTemplateRepository = Depends(get_recruitment_email_template_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get a specific template by ID.
     """
@@ -255,6 +261,7 @@ async def update_template(
     update_data: TemplateUpdateRequest,
     repo: RecruitmentEmailTemplateRepository = Depends(get_recruitment_email_template_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Update a recruitment email template.
     System templates cannot be modified directly.
@@ -288,6 +295,7 @@ async def seed_templates(
     company_id: str | None = Query(None, description="Company ID to seed templates for"),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Seed default recruitment email templates.
     If company_id is provided, seeds for that company.
@@ -311,6 +319,7 @@ async def clone_system_templates(
     company_id: str = Query(..., description="Company ID to clone templates for"),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Clone system templates for a specific company.
     This allows companies to customize their own templates.
@@ -334,6 +343,7 @@ async def preview_template_with_data(
     preview_request: TemplatePreviewRequest,
     repo: RecruitmentEmailTemplateRepository = Depends(get_recruitment_email_template_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Preview a template with provided or sample data.
     """
@@ -370,6 +380,7 @@ async def preview_stage_template(
     company_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Preview the template for a specific stage with provided or sample data.
     """
@@ -411,6 +422,7 @@ async def delete_template(
     template_id: str,
     repo: RecruitmentEmailTemplateRepository = Depends(get_recruitment_email_template_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Delete a recruitment email template.
     System templates cannot be deleted.

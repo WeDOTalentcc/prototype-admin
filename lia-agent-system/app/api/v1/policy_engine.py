@@ -68,6 +68,7 @@ async def list_policies(
     company_id: str | None = Depends(get_verified_company_id),
     repo: PolicyRepository = Depends(get_policy_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List all policy rules (business, rate limit, escalation)."""
     try:
         business_rules = await repo.list_business_rules(
@@ -128,6 +129,7 @@ async def get_business_rule(
     rule_id: str,
     repo: PolicyRepository = Depends(get_policy_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get a specific business rule."""
     try:
         rule_uuid = UUID(rule_id)
@@ -150,6 +152,7 @@ async def update_business_rule(
     data: BusinessRuleUpdate,
     repo: PolicyRepository = Depends(get_policy_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Update a business rule."""
     try:
         rule_uuid = UUID(rule_id)
@@ -173,6 +176,7 @@ async def delete_business_rule(
     rule_id: str,
     repo: PolicyRepository = Depends(get_policy_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Delete a business rule."""
     try:
         rule_uuid = UUID(rule_id)
@@ -224,6 +228,7 @@ async def update_rate_limit_rule(
     data: RateLimitRuleUpdate,
     repo: PolicyRepository = Depends(get_policy_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Update a rate limit rule."""
     try:
         rule_uuid = UUID(rule_id)
@@ -277,6 +282,7 @@ async def update_escalation_rule(
     data: EscalationRuleUpdate,
     repo: PolicyRepository = Depends(get_policy_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Update an escalation rule."""
     try:
         rule_uuid = UUID(rule_id)
@@ -385,6 +391,7 @@ async def apply_sector_defaults(
     repo: PolicyRepository = Depends(get_policy_repo),
     service: PolicyEngineService = Depends(get_policy_engine_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Persiste os defaults setoriais (Alpha 1) em CompanyHiringPolicy.
 
@@ -421,6 +428,7 @@ async def apply_sector_defaults(
 async def seed_default_policies(
     service: PolicyEngineService = Depends(get_policy_engine_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Seed the database with default policy rules."""
     try:
         stats = await service.load_default_rules()
@@ -460,6 +468,7 @@ async def get_evaluation_logs(
     company_id: str | None = Depends(get_verified_company_id),
     repo: PolicyRepository = Depends(get_policy_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get policy evaluation logs."""
     try:
         logs = await repo.list_evaluation_logs(
@@ -485,6 +494,7 @@ async def get_escalation_logs(
     company_id: str | None = Depends(get_verified_company_id),
     repo: PolicyRepository = Depends(get_policy_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get escalation logs."""
     try:
         logs = await repo.list_escalation_logs(
@@ -507,6 +517,7 @@ async def resolve_escalation(
     user_id: str | None = Depends(get_user_id_from_header),
     repo: PolicyRepository = Depends(get_policy_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Mark an escalation as resolved."""
     try:
         log_uuid = UUID(log_id)

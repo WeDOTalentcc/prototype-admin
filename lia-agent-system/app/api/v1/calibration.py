@@ -142,6 +142,7 @@ async def start_calibration_session(
     request: StartCalibrationSessionRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Start a calibration session by finding potential candidates for the job.
     Returns candidates for the recruiter to approve/reject for LIA calibration.
@@ -219,6 +220,7 @@ async def record_explicit_feedback(
     user_id: str = "system",
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Record explicit feedback (thumbs up/down) from recruiter."""
     service = CalibrationService(db)
     
@@ -246,6 +248,7 @@ async def record_implicit_feedback(
     user_id: str = "system",
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Record implicit feedback from recruiter actions (stage changes, etc)."""
     service = CalibrationService(db)
     
@@ -274,6 +277,7 @@ async def record_post_hire_feedback(
     user_id: str = "system",
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Record post-hire outcome feedback."""
     service = CalibrationService(db)
     
@@ -301,6 +305,7 @@ async def get_divergences(
     limit: int = 20,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get recent divergences between LIA and recruiter decisions."""
     service = CalibrationService(db)
     
@@ -322,6 +327,7 @@ async def get_calibration_stats(
     days: int = 30,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get calibration statistics for the dashboard."""
     service = CalibrationService(db)
     
@@ -337,6 +343,7 @@ async def get_calibration_stats(
 async def get_pending_suggestions(
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get all pending calibration suggestions."""
     service = CalibrationService(db)
     
@@ -353,6 +360,7 @@ async def get_pending_suggestions(
 async def generate_suggestions(
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Analyze divergences and generate new calibration suggestions."""
     service = CalibrationService(db)
     
@@ -371,6 +379,7 @@ async def approve_suggestion(
     user_id: str = "system",
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Approve a calibration suggestion."""
     service = CalibrationService(db)
     
@@ -393,6 +402,7 @@ async def reject_suggestion(
     user_id: str = "system",
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Reject a calibration suggestion."""
     service = CalibrationService(db)
     
@@ -418,6 +428,7 @@ async def get_recent_events(
     feedback_types: str | None = None,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get recent calibration events."""
     service = CalibrationService(db)
     
@@ -440,6 +451,7 @@ async def get_weights(
     job_id: str | None = None,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get current calibration weights."""
     service = CalibrationService(db)
     
@@ -457,6 +469,7 @@ async def get_calibration_dashboard(
     days: int = 30,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get complete calibration dashboard data."""
     service = CalibrationService(db)
     

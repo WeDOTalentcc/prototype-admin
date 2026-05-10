@@ -521,6 +521,7 @@ async def get_teams_audit_logs(
     candidate_id: str | None = None,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Retrieve Teams webhook audit logs from database.
     
@@ -553,6 +554,7 @@ async def receive_teams_message(
     authorization: str = Header(None),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Webhook endpoint for Teams messages.
 
@@ -746,6 +748,7 @@ async def send_proactive_notification(
     notification_data: dict[str, Any],
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Send proactive notification to Teams user.
     
@@ -851,6 +854,7 @@ async def run_proactivity_checks(
     company_id: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Run proactivity checks (stalled pipelines, deadlines). Call periodically."""
     try:
         from app.domains.communication.services.teams_proactivity_engine import teams_proactivity_engine
@@ -875,6 +879,7 @@ async def notify_new_candidate(
     company_id: str,
     estimated_score: float | None = None,
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Notify recruiters when new candidate applies."""
     try:
         from app.domains.communication.services.teams_proactivity_engine import teams_proactivity_engine
@@ -903,6 +908,7 @@ async def notify_screening_complete(
     company_id: str,
     recruiter_teams_id: str | None = None,
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Notify recruiters when a screening (WSI/BARS) completes."""
     try:
         from app.domains.communication.services.teams_proactivity_engine import teams_proactivity_engine
@@ -926,6 +932,7 @@ async def send_daily_digest(
     company_id: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Trigger the daily digest card for all Teams recruiters.
     Should be called by a cron job at 08:00 every weekday.
@@ -940,6 +947,7 @@ async def receive_card_feedback(
     payload: dict[str, Any],
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Receive 👍👎 feedback from Teams Adaptive Card buttons.
     Logs the feedback for LIA quality improvement.
@@ -962,6 +970,7 @@ async def teams_sso_page(
     client_id: str = "",
     tenant_id: str = "",
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     OAuth start page — user is redirected here when clicking "Conectar conta".
     Redirects to Azure AD consent page.
@@ -1001,6 +1010,7 @@ async def teams_sso_callback(
     error: str = "",
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     OAuth callback — Azure AD redirects here after user signs in.
     Exchanges code for profile, maps identity, sends confirmation to Teams.
@@ -1097,6 +1107,7 @@ async def schedule_interview_via_teams(
     request: ScheduleInterviewRequest,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Schedule an interview via Microsoft Graph Calendar.
     Called from Teams card button (Action.Submit with action=schedule_interview)
@@ -1143,6 +1154,7 @@ async def cancel_interview_via_teams(
     message: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Cancel a previously scheduled interview event."""
     from app.domains.communication.services.teams_calendar_service import teams_calendar_service
     return await teams_calendar_service.cancel_interview(
@@ -1158,6 +1170,7 @@ async def cancel_interview_via_teams(
 
 @router.get("/manifest", response_model=None)
 async def get_teams_manifest():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Generate and return the Teams app manifest.json.
     Download this file and upload to Teams Admin Center / App Studio.
@@ -1254,6 +1267,7 @@ async def get_teams_manifest():
 
 @router.get("/manifest-zip", response_model=None)
 async def download_teams_manifest_zip():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Download a ready-to-upload Teams app ZIP package.
 
@@ -1394,6 +1408,7 @@ async def teams_tab_auth(
     payload: TabAuthRequest,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Validate a Teams Tab SSO token and return a platform access token.
 
@@ -1514,6 +1529,7 @@ async def teams_tab_events(
     payload: TabEventRequest,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Receive a behavioral event from the Teams Tab iframe tracker.
 

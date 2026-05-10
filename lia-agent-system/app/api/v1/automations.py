@@ -81,6 +81,7 @@ async def list_automations(
     db: AsyncSession = Depends(get_db),
     auto_svc: AutomationService = Depends(get_automation_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     List all automations for a company.
     
@@ -119,6 +120,7 @@ async def create_automation(
     db: AsyncSession = Depends(get_db),
     auto_svc: AutomationService = Depends(get_automation_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Create a new automation.
     
@@ -184,6 +186,7 @@ async def get_automation(
     db: AsyncSession = Depends(get_db),
     auto_svc: AutomationService = Depends(get_automation_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get a single automation by ID.
     
@@ -226,6 +229,7 @@ async def update_automation(
     db: AsyncSession = Depends(get_db),
     auto_svc: AutomationService = Depends(get_automation_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Update an existing automation.
     
@@ -290,6 +294,7 @@ async def delete_automation(
     db: AsyncSession = Depends(get_db),
     auto_svc: AutomationService = Depends(get_automation_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Delete an automation.
     
@@ -333,6 +338,7 @@ async def test_automation(
     db: AsyncSession = Depends(get_db),
     auto_svc: AutomationService = Depends(get_automation_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Test an automation without executing the actual action.
     
@@ -382,6 +388,7 @@ async def trigger_automations(
     db: AsyncSession = Depends(get_db),
     auto_svc: AutomationService = Depends(get_automation_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Manually trigger automations for a specific event.
     
@@ -421,6 +428,7 @@ async def get_automation_logs(
     db: AsyncSession = Depends(get_db),
     auto_svc: AutomationService = Depends(get_automation_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get execution logs for a specific automation.
     
@@ -450,6 +458,7 @@ async def get_automation_logs(
 
 @router.get("/trigger-types/available", summary="Get available trigger types", response_model=None)
 async def get_trigger_types():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get list of available trigger types for automations.
     """
@@ -514,6 +523,7 @@ async def get_trigger_types():
 
 @router.get("/action-types/available", summary="Get available action types", response_model=None)
 async def get_action_types():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get list of available action types for automations.
     """

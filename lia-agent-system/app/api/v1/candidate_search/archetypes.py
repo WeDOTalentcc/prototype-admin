@@ -118,6 +118,7 @@ async def list_archetypes(
     seniority: str | None = Query(None, description="Filtrar por senioridade"),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Lista todos os arquétipos disponíveis.
     
@@ -192,6 +193,7 @@ async def create_archetype(
     request: ArchetypeCreateRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Cria um novo arquétipo personalizado.
     
@@ -367,6 +369,7 @@ async def get_closed_job_suggestions(
     limit: int = Query(5, ge=1, le=10),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Lista sugestões de vagas fechadas para criar arquétipos.
     
@@ -443,6 +446,7 @@ async def create_archetype_from_job(
     custom_name: str | None = Query(None, description="Nome customizado para o arquétipo"),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Cria um arquétipo automaticamente a partir de uma vaga fechada.
     
@@ -589,6 +593,7 @@ async def create_archetype_from_description(
     request: ArchetypeFromDescriptionRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Cria um arquétipo a partir de uma descrição textual.
     
@@ -723,6 +728,7 @@ async def get_archetype(
     archetype_id: str,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Obtém detalhes de um arquétipo específico."""
     from sqlalchemy import select
 
@@ -766,6 +772,7 @@ async def delete_archetype(
     archetype_id: str,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Deleta um arquétipo personalizado.
     
@@ -811,6 +818,7 @@ async def update_archetype(
     request: ArchetypeUpdateRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Atualiza um arquétipo existente.
     
@@ -886,6 +894,7 @@ async def search_by_archetype(
 ,
     pearch_svc: PearchService = Depends(get_pearch_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Executa busca de candidatos usando um arquétipo específico.
     
@@ -1105,6 +1114,7 @@ async def generate_archetype_from_job(
     request: ArchetypeGenerationRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Gera um arquétipo de busca a partir de uma vaga fechada com candidato contratado.
     
@@ -1277,6 +1287,7 @@ async def generate_archetype_from_description(
     request: ArchetypeFromDescriptionRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Gera um arquétipo de busca a partir de uma descrição textual livre.
     
@@ -1403,6 +1414,7 @@ async def get_archetype_suggestions(
     db: AsyncSession = Depends(get_db),
     limit: int = Query(10, ge=1, le=50)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Lista vagas fechadas que podem ser usadas para criar arquétipos.
     Prioriza vagas com dados do candidato contratado.

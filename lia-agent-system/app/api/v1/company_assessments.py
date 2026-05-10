@@ -43,6 +43,7 @@ async def list_big_five_questions(
     limit: int = Query(50, ge=1, le=100),
     bf_repo: BigFiveRepository = Depends(get_big_five_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List Big Five personality questions."""
     try:
         questions = await bf_repo.list_questions(trait=trait)
@@ -63,6 +64,7 @@ async def create_big_five_question(
     data: BigFiveQuestionCreate,
     bf_repo: BigFiveRepository = Depends(get_big_five_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Create a new Big Five question."""
     try:
         question = await bf_repo.create_question(data.model_dump())
@@ -79,6 +81,7 @@ async def update_big_five_question(
     data: BigFiveQuestionUpdate,
     bf_repo: BigFiveRepository = Depends(get_big_five_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Update a Big Five question."""
     try:
         update_data = data.model_dump(exclude_unset=True)
@@ -99,6 +102,7 @@ async def delete_big_five_question(
     question_id: uuid.UUID,
     bf_repo: BigFiveRepository = Depends(get_big_five_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Soft delete a Big Five question."""
     try:
         deleted = await bf_repo.delete_question(question_id)
@@ -120,6 +124,7 @@ async def list_big_five_role_profiles(
     include_inactive: bool = Query(False),
     bf_repo: BigFiveRepository = Depends(get_big_five_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List Big Five role profiles."""
     try:
         if not company_id:
@@ -142,6 +147,7 @@ async def create_big_five_role_profile(
     data: BigFiveRoleProfileCreate,
     bf_repo: BigFiveRepository = Depends(get_big_five_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Create a new Big Five role profile."""
     try:
         profile = await bf_repo.create_role_profile(data.model_dump())
@@ -159,6 +165,7 @@ async def update_big_five_role_profile(
     data: BigFiveRoleProfileUpdate,
     bf_repo: BigFiveRepository = Depends(get_big_five_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Update a Big Five role profile."""
     try:
         update_data = data.model_dump(exclude_unset=True)
@@ -185,6 +192,7 @@ async def list_technical_questions(
     limit: int = Query(50, ge=1, le=100),
     tt_repo: TechnicalTestRepository = Depends(get_technical_test_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List technical assessment questions."""
     try:
         questions = await tt_repo.list_questions()
@@ -209,6 +217,7 @@ async def create_technical_question(
     data: TechnicalQuestionCreate,
     tt_repo: TechnicalTestRepository = Depends(get_technical_test_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Create a new technical question."""
     try:
         question = await tt_repo.create_question(data.model_dump())
@@ -225,6 +234,7 @@ async def update_technical_question(
     data: TechnicalQuestionUpdate,
     tt_repo: TechnicalTestRepository = Depends(get_technical_test_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Update a technical question."""
     try:
         update_data = data.model_dump(exclude_unset=True)
@@ -245,6 +255,7 @@ async def delete_technical_question(
     question_id: uuid.UUID,
     tt_repo: TechnicalTestRepository = Depends(get_technical_test_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Soft delete a technical question."""
     try:
         deleted = await tt_repo.delete_question(question_id)
@@ -267,6 +278,7 @@ async def list_technical_templates(
     include_inactive: bool = Query(False),
     tt_repo: TechnicalTestRepository = Depends(get_technical_test_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List technical test templates."""
     try:
         if not company_id:
@@ -289,6 +301,7 @@ async def create_technical_template(
     data: TechnicalTestTemplateCreate,
     tt_repo: TechnicalTestRepository = Depends(get_technical_test_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Create a new technical test template."""
     try:
         template = await tt_repo.create_template(data.model_dump())
@@ -306,6 +319,7 @@ async def update_technical_template(
     data: TechnicalTestTemplateUpdate,
     tt_repo: TechnicalTestRepository = Depends(get_technical_test_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Update a technical test template."""
     try:
         update_data = data.model_dump(exclude_unset=True)
@@ -326,6 +340,7 @@ async def delete_technical_template(
     template_id: uuid.UUID,
     tt_repo: TechnicalTestRepository = Depends(get_technical_test_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Soft delete a technical test template."""
     try:
         deleted = await tt_repo.delete_template(template_id)

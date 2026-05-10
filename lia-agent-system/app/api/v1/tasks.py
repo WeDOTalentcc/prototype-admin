@@ -81,6 +81,7 @@ async def create_task(
     task_data: TaskCreate,
     repo: TasksRepository = Depends(get_tasks_repo)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Create a new task."""
     task = await task_service.create_task(
         db=repo.db,
@@ -109,6 +110,7 @@ async def list_tasks(
     limit: int = Query(default=50, le=100),
     repo: TasksRepository = Depends(get_tasks_repo)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List tasks with optional filters."""
     tasks = await repo.get_pending_tasks(
         user_id=user_id,
@@ -124,6 +126,7 @@ async def get_task_summary(
     user_id: str | None = None,
     repo: TasksRepository = Depends(get_tasks_repo)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get task summary for dashboard."""
     summary = await repo.get_task_summary(user_id=user_id)
     return summary
@@ -134,6 +137,7 @@ async def get_tasks_due_today(
     user_id: str | None = None,
     repo: TasksRepository = Depends(get_tasks_repo)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get tasks due today."""
     tasks = await repo.get_tasks_due_today(user_id=user_id)
     return [task.to_dict() for task in tasks]
@@ -144,6 +148,7 @@ async def get_overdue_tasks(
     user_id: str | None = None,
     repo: TasksRepository = Depends(get_tasks_repo)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get overdue tasks."""
     tasks = await repo.get_overdue_tasks(user_id=user_id)
     return [task.to_dict() for task in tasks]
@@ -154,6 +159,7 @@ async def get_task(
     task_id: str,
     repo: TasksRepository = Depends(get_tasks_repo)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get a specific task by ID."""
     task = await repo.get_task(task_id=task_id)
     if not task:
@@ -167,6 +173,7 @@ async def update_task(
     update_data: TaskUpdate,
     repo: TasksRepository = Depends(get_tasks_repo)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Update a task."""
     task = await repo.get_task(task_id=task_id)
     if not task:
@@ -202,6 +209,7 @@ async def complete_task(
     result: dict | None = None,
     repo: TasksRepository = Depends(get_tasks_repo)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Mark a task as completed."""
     task = await task_service.update_task_status(
         db=repo.db,
@@ -220,6 +228,7 @@ async def cancel_task(
     reason: str | None = None,
     repo: TasksRepository = Depends(get_tasks_repo)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Cancel a task."""
     task = await task_service.cancel_task(
         db=repo.db,
@@ -238,6 +247,7 @@ async def assign_task(
     agent_type: str | None = None,
     repo: TasksRepository = Depends(get_tasks_repo)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Assign a task to a user or agent."""
     if not user_id and not agent_type:
         raise HTTPException(

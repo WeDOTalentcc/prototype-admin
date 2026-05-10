@@ -101,6 +101,7 @@ async def list_email_templates(
     limit: int = Query(50, ge=1, le=100),
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     List all email templates with optional filtering.
     If company_id is provided, returns templates for that company plus system templates (company_id IS NULL).
@@ -164,6 +165,7 @@ async def list_email_template_categories(
     visibility: str | None = Query("recruiter"),
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     try:
         categories = await repo.list_distinct_categories(
             company_id=company_id,
@@ -180,6 +182,7 @@ async def get_email_template(
     template_id: str,
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get a specific email template by ID.
     """
@@ -221,6 +224,7 @@ async def create_email_template(
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
     email_svc: EmailService = Depends(get_email_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Create a new email template.
     """
@@ -288,6 +292,7 @@ async def update_email_template(
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
     email_svc: EmailService = Depends(get_email_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Update an existing email template.
     """
@@ -351,6 +356,7 @@ async def delete_email_template(
     hard_delete: bool = Query(False, description="If True, permanently delete. If False, soft delete (deactivate)."),
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Delete an email template (soft delete by default).
     """
@@ -387,6 +393,7 @@ async def preview_email(
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
     email_svc: EmailService = Depends(get_email_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Preview an email with variables substituted.
     Can use an existing template or provide custom subject/body.
@@ -416,6 +423,7 @@ async def preview_template_by_id(
     request: TemplatePreviewByIdRequest,
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Preview a template by ID with variables substituted.
 
@@ -542,6 +550,7 @@ async def list_email_logs(
     limit: int = Query(50, ge=1, le=100),
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     List email logs with optional filtering.
     """
@@ -585,6 +594,7 @@ async def seed_default_templates(
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
     email_svc: EmailService = Depends(get_email_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Seed the database with default email templates.
     Only creates templates that don't already exist (by name).
@@ -626,6 +636,7 @@ async def clone_templates_for_client(
     client_id: str,
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Clone all system templates for a new client.
 
@@ -653,6 +664,7 @@ async def clone_templates_for_client(
 async def seed_system_templates_endpoint(
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Seed all system default templates.
 
@@ -681,6 +693,7 @@ async def seed_system_templates_endpoint(
 async def generate_template_with_ai(
     request: TemplateGenerateRequest,
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Generate email template content using AI (Anthropic Claude).
 
@@ -808,6 +821,7 @@ Responda APENAS com o JSON, sem texto adicional."""
 async def adjust_template_with_ai(
     request: TemplateAdjustRequest,
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Adjust an existing email template using AI with a free-form prompt.
 

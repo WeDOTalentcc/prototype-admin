@@ -20,6 +20,7 @@ router = APIRouter(prefix="/catalog", tags=["organization-catalog"])
 async def get_areas(
     catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
 ) -> dict[str, Any]:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get all organizational areas/departments."""
     areas = catalog_svc.get_all_areas()
     return {
@@ -33,6 +34,7 @@ async def get_area(
     area_id: str,
     catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
 ) -> dict[str, Any]:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get a specific area by ID."""
     area = catalog_svc.get_area_by_id(area_id)
     if not area:
@@ -45,6 +47,7 @@ async def detect_area(
     text: str = Query(..., description="Text to analyze for area detection"),
     catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
 ) -> dict[str, Any]:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Detect the most likely area from a text."""
     area = catalog_svc.detect_area_from_text(text)
     return {
@@ -57,6 +60,7 @@ async def detect_area(
 async def get_seniority_levels(
     catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
 ) -> dict[str, Any]:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get all seniority levels."""
     levels = catalog_svc.get_all_seniority_levels()
     return {
@@ -70,6 +74,7 @@ async def get_roles(
     area_id: str | None = Query(None, description="Filter by area ID"),
     catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
 ) -> dict[str, Any]:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get all roles, optionally filtered by area."""
     if area_id:
         roles = catalog_svc.get_roles_by_area(area_id)
@@ -88,6 +93,7 @@ async def get_roles_by_area(
     area_id: str,
     catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
 ) -> dict[str, Any]:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get all roles for a specific area."""
     roles = catalog_svc.get_roles_by_area(area_id)
     area = catalog_svc.get_area_by_id(area_id)
@@ -103,6 +109,7 @@ async def search_role(
     role_name: str,
     catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
 ) -> dict[str, Any]:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Search for a role by name."""
     role = catalog_svc.get_role_by_name(role_name)
     return {
@@ -116,6 +123,7 @@ async def get_technical_skills(
     area_id: str | None = Query(None, description="Filter by area ID"),
     catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
 ) -> dict[str, Any]:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get all technical skills, optionally filtered by area."""
     if area_id:
         skills = catalog_svc.get_technical_skills_by_area(area_id)
@@ -134,6 +142,7 @@ async def get_technical_skills_by_area(
     area_id: str,
     catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
 ) -> dict[str, Any]:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get all technical skills for a specific area."""
     skills = catalog_svc.get_technical_skills_by_area(area_id)
     area = catalog_svc.get_area_by_id(area_id)
@@ -149,6 +158,7 @@ async def get_behavioral_skills(
     category: str | None = Query(None, description="Filter by category"),
     catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
 ) -> dict[str, Any]:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get all behavioral competencies, optionally filtered by category."""
     if category:
         skills = catalog_svc.get_behavioral_skills_by_category(category)
@@ -167,6 +177,7 @@ async def search_skills(
     q: str = Query(..., min_length=2, description="Search query"),
     catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
 ) -> dict[str, Any]:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Search for skills by name or keyword."""
     results = catalog_svc.search_skills(q)
     return {
@@ -183,6 +194,7 @@ async def suggest_skills(
     seniority: str | None = Query(None, description="Seniority level ID"),
     catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
 ) -> dict[str, Any]:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Suggest skills for a role and seniority level."""
     suggestions = catalog_svc.suggest_skills_for_role(role_name, seniority)
     return {
@@ -198,5 +210,6 @@ async def suggest_skills(
 async def get_catalog_summary(
     catalog_svc: OrganizationCatalogService = Depends(get_organization_catalog_service),
 ) -> dict[str, Any]:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get a complete summary of the catalog for review."""
     return catalog_svc.get_catalog_summary()

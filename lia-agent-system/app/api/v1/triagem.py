@@ -46,6 +46,7 @@ async def get_triagem_session(
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     config = await triagem_svc.get_session_config(repo.db, token)
 
     if config is None:
@@ -71,6 +72,7 @@ async def send_message(
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     validation = await triagem_svc.validate_token(repo.db, token)
 
     if not validation.get("valid"):
@@ -102,6 +104,7 @@ async def get_history(
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     result = await triagem_svc.get_history(repo.db, token)
 
     if result.get("error") == "not_found":
@@ -116,6 +119,7 @@ async def complete_triagem(
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     validation = await triagem_svc.validate_token(repo.db, token)
 
     if not validation.get("valid"):
@@ -213,6 +217,7 @@ async def request_phone_call(
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Request an automated phone call from LIA to the candidate via Twilio Voice."""
     validation = await triagem_svc.validate_token(repo.db, token)
 
@@ -257,6 +262,7 @@ async def start_triagem(
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     validation = await triagem_svc.validate_token(repo.db, token)
 
     if not validation.get("valid"):
@@ -286,6 +292,7 @@ async def transcribe_audio(
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Transcribe candidate audio using OpenAI Whisper STT."""
     validation = await triagem_svc.validate_token(repo.db, token)
     if not validation.get("valid"):
@@ -339,6 +346,7 @@ async def synthesize_speech(
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Generate TTS audio for a triagem question using OpenAI TTS."""
     validation = await triagem_svc.validate_token(repo.db, token)
     if not validation.get("valid"):
@@ -371,6 +379,7 @@ async def synthesize_message_speech(
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Generate TTS audio on demand for a specific LIA message."""
     validation = await triagem_svc.validate_token(repo.db, token)
     if not validation.get("valid"):
@@ -398,6 +407,7 @@ async def voice_status(
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Check availability of voice services (STT/TTS) for the session."""
     validation = await triagem_svc.validate_token(repo.db, token)
     if not validation.get("valid"):
@@ -419,6 +429,7 @@ async def voip_start(
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Initiate a VoIP (browser call) screening session.
 

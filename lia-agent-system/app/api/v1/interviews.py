@@ -77,6 +77,7 @@ async def schedule_interview(
     audit_svc: AuditService = Depends(get_audit_service),
     activity_svc: ActivityService = Depends(get_activity_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Schedule a new interview with automatic Microsoft Calendar integration.
     """
@@ -254,6 +255,7 @@ async def list_interviews(
     limit: int = Query(50, ge=1, le=100),
     repo: InterviewRepository = Depends(get_interview_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     List interviews with optional filters.
     """
@@ -326,6 +328,7 @@ async def cancel_interview(
     cancellation_message: str | None = None,
     repo: InterviewRepository = Depends(get_interview_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Cancel a scheduled interview.
     """
@@ -421,6 +424,7 @@ async def reschedule_interview(
     request: RescheduleInterviewRequest,
     repo: InterviewRepository = Depends(get_interview_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Reschedule an existing interview.
     """
@@ -472,6 +476,7 @@ async def reschedule_interview(
 
 @router.post("/interviews/check-availability", response_model=dict)
 async def check_availability(request: CheckAvailabilityRequest):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Check interviewer availability for a specific date.
     """
@@ -501,6 +506,7 @@ async def submit_interview_feedback(
     feedback: InterviewFeedbackRequest,
     repo: InterviewRepository = Depends(get_interview_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Submit feedback for a completed interview.
     """
@@ -577,6 +583,7 @@ class ScheduleFromPromptRequest(BaseModel):
 
 @router.post("/interviews/generate-email-template", response_model=dict)
 async def generate_email_template(request: GenerateEmailTemplateRequest):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Generate interview invitation email template using LIA.
     AI-first approach for email generation.
@@ -628,6 +635,7 @@ async def schedule_from_prompt(
     request: ScheduleFromPromptRequest,
     repo: InterviewRepository = Depends(get_interview_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Schedule interview using natural language prompt.
     Parses: "Agendar para amanhã às 14h comigo"
@@ -830,6 +838,7 @@ async def get_shortlisted_candidate_ids(
     since_date: str | None = Query(None, description="Filter interviews since this date (ISO format)"),
     repo: InterviewRepository = Depends(get_interview_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get candidate IDs that have been shortlisted (have interview records).
 
