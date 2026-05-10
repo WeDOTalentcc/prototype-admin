@@ -362,3 +362,83 @@ async def test_process_message_strict_mode_rejects_missing_company(monkeypatch):
     assert graph_called["flag"] is False, (
         "Grafo NÃO deveria ter sido invocado quando tenant context está ausente"
     )
+
+
+# ─── review_node: UUID tenant fallback string (workspace_id=0) ─────────────
+
+def test_review_node_uses_company_id_fallback_for_uuid_tenants(monkeypatch):
+    """Regressão T-B: para UUID tenants (Demo Company), ``workspace_id=0`` e
+    ``review_node`` deve fazer fallback para ``company_id`` string ao chamar
+    ``api_client.get_company_defaults`` — sem isso, defaults da empresa NÃO
+    são carregados e o wizard volta a "esquecer" o contexto na revisão.
+
+    Assertion: o lookup_id passado para o api client é o UUID string
+    (não 0, não "")."""
+    from app.domains.job_creation import graph as graph_mod
+
+    captured = {"lookup_id": None}
+
+    class _FakeResp:
+        success = True
+        data = {
+            "default_screening_mode": "auto",
+            "default_platforms": ["linkedin"],
+            "default_eligibility": ["clt"],
+        }
+
+    class _FakeAPI:
+        def get_company_defaults(self, lookup_id):
+            captured["lookup_id"] = lookup_id
+            return _FakeResp()
+
+    monkeypatch.setattr(graph_mod, "_get_api_client", lambda _state: _FakeAPI())
+
+    state = {
+        "workspace_id": 0,
+        "company_id": DEMO_COMPANY_UUID,
+        "company_defaults_applied": [],
+        "stage_history": [],
+    }
+
+    out = graph_mod.review_node(state)
+
+    assert captured["lookup_id"] == DEMO_COMPANY_UUID, (
+        f"review_node deveria usar company_id (UUID) como lookup_id quando "
+        f"workspace_id=0 — recebeu {captured['lookup_id']!r}"
+    )
+    # E os defaults são aplicados ao state (prova end-to-end do fallback)
+    assert "screening_mode" in out["company_defaults_applied"]
+    assert "publish_platforms" in out["company_defaults_applied"]
+    assert "eligibility_questions" in out["company_defaults_applied"]
+
+
+def test_review_node_uses_workspace_id_for_legacy_numeric_tenants(monkeypatch):
+    """Compat: para tenants legados com workspace_id int (Rails column),
+    review_node usa workspace_id direto (NÃO o company_id string)."""
+    from app.domains.job_creation import graph as graph_mod
+
+    captured = {"lookup_id": None}
+
+    class _FakeResp:
+        success = True
+        data = {}
+
+    class _FakeAPI:
+        def get_company_defaults(self, lookup_id):
+            captured["lookup_id"] = lookup_id
+            return _FakeResp()
+
+    monkeypatch.setattr(graph_mod, "_get_api_client", lambda _state: _FakeAPI())
+
+    state = {
+        "workspace_id": 42,
+        "company_id": "42",
+        "company_defaults_applied": [],
+        "stage_history": [],
+    }
+
+    graph_mod.review_node(state)
+    assert captured["lookup_id"] == 42, (
+        f"review_node deveria preferir workspace_id int para tenants legados "
+        f"— recebeu {captured['lookup_id']!r}"
+    )
