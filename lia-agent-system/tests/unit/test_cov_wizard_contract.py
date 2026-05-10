@@ -59,55 +59,55 @@ class TestBigFiveProfileContract:
 
 class TestTraitRankingContract:
     def test_basic_instantiation(self):
-        m = TraitRankingContract(trait="conscientiousness", weight=0.8, rationale="Cargo exige disciplina")
+        m = TraitRankingContract(trait="conscientiousness", score=0.8, rank=1, weight=0.8)
         assert m.trait == "conscientiousness"
-        assert m.weight == pytest.approx(0.8)
-        assert m.rationale == "Cargo exige disciplina"
+        assert m.score == pytest.approx(0.8)
+        assert m.rank == 1
 
     def test_required_fields(self):
         with pytest.raises(Exception):
             TraitRankingContract()  # missing required fields
 
+    def test_score_and_weight_range(self):
+        m = TraitRankingContract(trait="openness", score=0.0, rank=5, weight=1.0)
+        assert m.score == 0.0
+        assert m.weight == 1.0
+
+
+def _make_q(id_="q1", block="technical", competency="technical"):
+    return ScreeningQuestionContract(
+        id=id_,
+        question="Descreva um desafio técnico que você resolveu.",
+        ideal_answer="Deve mencionar diagnóstico, solução e resultado.",
+        block=block,
+        competency=competency,
+        framework="CBI",
+        skill="system_design",
+    )
+
 
 class TestScreeningQuestionContract:
     def test_basic_instantiation(self):
-        m = ScreeningQuestionContract(
-            id="q1",
-            question="Descreva um desafio técnico que você resolveu.",
-            block="technical",
-            competency="technical",
-            bloom_level=3,
-            dreyfus_level=2,
-            framework="CBI",
-        )
+        m = _make_q()
         assert m.id == "q1"
         assert m.block == "technical"
-        assert m.bloom_level == 3
-
-    def test_defaults(self):
-        m = ScreeningQuestionContract(
-            id="q2",
-            question="Como você lida com feedback?",
-            block="behavioral",
-            competency="behavioral",
-            bloom_level=2,
-            dreyfus_level=1,
-            framework="CBI",
-        )
-        # Optional fields should have defaults
-        assert m.ideal_answer_hints is not None or m.ideal_answer_hints is None
+        assert m.ideal_answer == "Deve mencionar diagnóstico, solução e resultado."
 
     def test_behavioral_block(self):
-        m = ScreeningQuestionContract(
-            id="q3",
-            question="Fale sobre seu processo.",
-            block="behavioral",
-            competency="behavioral",
-            bloom_level=1,
-            dreyfus_level=1,
-            framework="Bloom",
-        )
+        m = _make_q(id_="q3", block="behavioral", competency="behavioral")
         assert m.block == "behavioral"
+
+    def test_default_scoring_rubric(self):
+        m = _make_q()
+        assert m.scoring_rubric == {}
+
+    def test_default_weight(self):
+        m = _make_q()
+        assert m.weight == pytest.approx(1.0)
+
+    def test_default_approved_none(self):
+        m = _make_q()
+        assert m.approved is None
 
 
 class TestEligibilityQuestionContract:
@@ -115,50 +115,64 @@ class TestEligibilityQuestionContract:
         m = EligibilityQuestionContract(
             id="e1",
             question="Você tem CNH categoria B?",
-            expected_answer="yes",
+            required_answer="yes",
         )
         assert m.id == "e1"
-        assert m.expected_answer == "yes"
+        assert m.required_answer == "yes"
 
-    def test_no_expected_answer(self):
+    def test_required_answer_no(self):
         m = EligibilityQuestionContract(
             id="e2",
             question="Você tem disponibilidade para viagens?",
+            required_answer="no",
         )
-        assert m.expected_answer is None or m.expected_answer in ["yes", "no", None]
+        assert m.required_answer == "no"
 
 
 class TestCalibrationCandidateContract:
     def test_basic_instantiation(self):
         m = CalibrationCandidateContract(
-            candidate_id="cand-001",
-            candidate_name="Ana Silva",
-            wsi_score=82.5,
+            id="cand-001",
+            name="Ana Silva",
+            match_score=0.85,
         )
-        assert m.candidate_id == "cand-001"
-        assert m.wsi_score == pytest.approx(82.5)
+        assert m.id == "cand-001"
+        assert m.name == "Ana Silva"
+        assert m.match_score == pytest.approx(0.85)
 
-    def test_defaults(self):
-        m = CalibrationCandidateContract(
-            candidate_id="cand-002",
-            candidate_name="Bruno Costa",
-            wsi_score=70.0,
-        )
+    def test_optional_fields_default_none(self):
+        m = CalibrationCandidateContract(id="cand-002", name="Bruno Costa", match_score=0.70)
+        assert m.current_title is None
         assert m.decision is None
+
+    def test_with_decision(self):
+        m = CalibrationCandidateContract(id="c3", name="Carlos", match_score=0.6, decision="approved")
+        assert m.decision == "approved"
 
 
 class TestWizardStagePayloadContract:
-    def test_basic_empty(self):
-        m = WizardStagePayloadContract()
-        assert m.stage is None
-
-    def test_with_stage(self):
-        m = WizardStagePayloadContract(stage="intake")
+    def test_basic_instantiation(self):
+        m = WizardStagePayloadContract(stage="intake", completeness=0.3)
         assert m.stage == "intake"
+        assert m.completeness == pytest.approx(0.3)
 
-    def test_with_message(self):
-        m = WizardStagePayloadContract(stage="review", message="Revise as informações.")
-        assert m.message == "Revise as informações."
+    def test_default_type(self):
+        m = WizardStagePayloadContract(stage="review", completeness=0.8)
+        assert m.type == "wizard_stage"
+
+    def test_default_requires_approval(self):
+        m = WizardStagePayloadContract(stage="intake", completeness=0.5)
+        assert m.requires_approval is False
+
+    def test_with_data(self):
+        m = WizardStagePayloadContract(
+            stage="bigfive",
+            completeness=1.0,
+            data={"openness": 0.7},
+            requires_approval=True,
+        )
+        assert m.requires_approval is True
+        assert m.data["openness"] == pytest.approx(0.7)
 
 
 class TestJobCreationStateContract:
@@ -219,15 +233,7 @@ class TestJobCreationStateContract:
         assert m.salary_currency == "BRL"
 
     def test_with_wsi_questions(self):
-        q = ScreeningQuestionContract(
-            id="q1",
-            question="How?",
-            block="technical",
-            competency="technical",
-            bloom_level=2,
-            dreyfus_level=1,
-            framework="CBI",
-        )
+        q = _make_q()
         m = JobCreationStateContract(wsi_questions=[q])
         assert len(m.wsi_questions) == 1
 

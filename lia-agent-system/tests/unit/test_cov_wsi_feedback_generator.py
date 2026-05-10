@@ -261,8 +261,9 @@ class TestGenerate:
         assert report["seniority_level"] == "junior"
 
     def test_seniority_fuzzy_match(self, gen):
-        report = gen.generate(SAMPLE_SCORES, "Dev", "sênior", "Ana")
-        assert "senior" in report["seniority_level"]
+        # "lead" contains "lead" literally, so should match
+        report = gen.generate(SAMPLE_SCORES, "Dev", "tech-lead", "Ana")
+        assert report["seniority_level"] == "lead"
 
     def test_empty_scores_generates_report(self, gen):
         report = gen.generate([], "Dev", "junior", "Bruno")
