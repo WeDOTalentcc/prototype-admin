@@ -17,10 +17,7 @@ pytestmark = pytest.mark.integration
 
 def test_tenant_snippet_passes_fairness_guard_l1():
     """Snippet canônico Demo Company T-E não é flagged como discriminatório."""
-    try:
-        from app.shared.compliance.fairness_guard import FairnessGuard
-    except ImportError:
-        pytest.skip("FairnessGuard module not importable in this test env")
+    from app.shared.compliance.fairness_guard import FairnessGuard
 
     snippet = (
         "Empresa: Demo Company T-E (Tecnologia)\n"
@@ -28,10 +25,7 @@ def test_tenant_snippet_passes_fairness_guard_l1():
         "Timezone: America/Sao_Paulo\n"
         "Headcount: 51-200"
     )
-    try:
-        guard = FairnessGuard()
-    except Exception as exc:
-        pytest.skip(f"FairnessGuard init unavailable in unit env: {exc}")
+    guard = FairnessGuard()
 
     result = guard.check(snippet)
     is_blocked = getattr(result, "is_blocked", getattr(result, "blocked", False))

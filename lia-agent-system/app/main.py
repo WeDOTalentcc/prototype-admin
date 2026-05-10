@@ -237,16 +237,29 @@ async def lifespan(app: FastAPI):
             except Exception:
                 pass
 
-    # T-E canary: Sentry breadcrumb dedicado pra LIA_AGENT_TENANT_STRICT=false
+    # T-E canary: Sentry alert dedicado pra LIA_AGENT_TENANT_STRICT=false
     # em prod (alerta isolado pra on-call diferenciar do agregado R-007).
+    # Usa fingerprint estável `LIA_AGENT_TENANT_STRICT_BYPASS` pra Sentry
+    # agrupar em UM issue persistente (alerting rules referenciam essa chave).
     if _is_prod_like and not _tenant_strict and os.getenv("APP_ENV", "development").lower() in ("production", "prod"):
         try:
-            sentry_sdk.capture_message(
-                "LIA_AGENT_TENANT_STRICT=false em produção — TenantAwareAgentMixin "
-                "fail-OPEN: agentes podem voltar a perguntar 'qual empresa' no chat. "
-                "Ver docs/runbooks/missing_tenant_context.md.",
-                level="error",
-            )
+            with sentry_sdk.push_scope() as _scope:
+                _scope.fingerprint = ["LIA_AGENT_TENANT_STRICT_BYPASS"]
+                _scope.set_tag("event_key", "LIA_AGENT_TENANT_STRICT_BYPASS")
+                _scope.set_tag("compliance_flag", "LIA_AGENT_TENANT_STRICT")
+                _scope.set_extra(
+                    "runbook",
+                    "docs/runbooks/missing_tenant_context.md",
+                )
+                _scope.set_extra(
+                    "impact",
+                    "TenantAwareAgentMixin fail-OPEN — agentes podem voltar a "
+                    "perguntar 'qual empresa' no chat (bug histórico).",
+                )
+                sentry_sdk.capture_message(
+                    "LIA_AGENT_TENANT_STRICT_BYPASS",
+                    level="error",
+                )
         except Exception:
             pass
 

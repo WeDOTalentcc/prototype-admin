@@ -631,6 +631,48 @@ async def run(args: argparse.Namespace) -> None:
     print(f"  Results saved: {out_path.name}")
     print(f"  Run eval_report.py {out_path.name} to generate HTML report\n")
 
+    # T-E: append summary to gate history so eval_runner --gate enforces
+    # consecutive-run threshold. by_agent uses normalized 0..1 scores
+    # (raw judge score is 0..2; divide by 2).
+    try:
+        dataset_arg = getattr(args, "dataset", "") or "eval/cases.jsonl"
+        by_agent_scores: dict[str, list[float]] = {}
+        for r in results:
+            agent = r.get("agent") or r.get("category") or "unknown"
+            by_agent_scores.setdefault(agent, []).append(float(r["score"]) / 2.0)
+        by_agent_avg = {a: sum(s) / len(s) for a, s in by_agent_scores.items()}
+        record_gate_run(dataset_arg, by_agent_avg)
+    except Exception as exc:
+        print(f"  [gate] history append skipped: {exc}")
+
+
+def record_gate_run(dataset: str, by_agent: dict[str, float], history_path: str | None = None) -> Path:
+    """Append one run summary to gate history JSON (T-E gate persistence).
+
+    Schema: ``{"runs": [{"ts", "dataset", "by_agent": {agent: avg_0_1}}]}``.
+    Writer used by ``run()`` and by external eval drivers (e.g. the bug-repro
+    suite) so that ``gate_check()`` has real data to enforce consecutive-run
+    failure.
+    """
+    base = Path(__file__).resolve().parent
+    hist = Path(history_path) if history_path else base / ".gate_history.json"
+    if hist.exists():
+        try:
+            data = json.loads(hist.read_text())
+        except Exception:
+            data = {"runs": []}
+    else:
+        data = {"runs": []}
+    data.setdefault("runs", []).append({
+        "ts": datetime.utcnow().isoformat(),
+        "dataset": dataset,
+        "by_agent": by_agent,
+    })
+    # Cap at last 50 runs to keep file small
+    data["runs"] = data["runs"][-50:]
+    hist.write_text(json.dumps(data, indent=2))
+    return hist
+
 
 def gate_check(
     dataset_path: str,
