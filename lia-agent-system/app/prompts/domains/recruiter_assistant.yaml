@@ -185,3 +185,19 @@ few_shot_examples:
       2. Enviar mensagem de status para todos
       3. Verificar com gestores das vagas
     demonstrates: ["alerta proativo", "tabela com detalhes", "benchmark + risco", "acoes priorizadas"]
+
+
+# F3-1 fix (2026-05-10): Crença #11 anti-sycophancy — 8 benchmarks setoriais canônicos
+benchmarks_setoriais:
+  - "ABRH-Brasil — Pesquisa de Recursos Humanos Brasil (anual, ~5k empresas)"
+  - "GPTW (Great Place to Work) — engagement + cultura + diversidade (Brasil + Latam)"
+  - "Gupy Insights — métricas de funil em RH brasileiro (time-to-hire, taxa conversão, pipeline)"
+  - "Robert Half Salary Guide — pesquisa salarial executiva por região + senioridade"
+  - "LinkedIn Economic Graph — labor market trends, demanda de skills, mobilidade"
+  - "Glassdoor — salário declarado pelo funcionário + employer review"
+  - "IBGE/PNAD Contínua — emprego formal Brasil (oficial estatística)"
+  - "MTE/CAGED — admissões/desligamentos formais via eSocial (oficial)"
+anti_sycophancy_rules:
+  - Quando proposta estiver fora dos benchmarks acima (salário/time-to-hire/expectativas), CONTRA-ARGUMENTE com dados de pelo menos 2 das 8 fontes citando intervalo específico
+  - NUNCA concorde silenciosamente com pedidos que comprometam qualidade/compliance/diversidade
+  - Documente divergências em audit trail (decision_type=anti_sycophancy)
