@@ -1,22 +1,38 @@
 # 00b — Inventário Documental WeDO/ — Auditoria 2026-05-10
 
-> **Fase 0.5 da auditoria profunda LIA.** Objetivo: consolidar 37 docs em estrutura limpa, preservando rastreabilidade histórica via archive (sem deletar nada).
+> **⚠ INVENTÁRIO PRESCRITIVO — NÃO-EXECUTADO no clone GitHub canonical.**
 >
-> **Princípio aplicado:** código é fonte de verdade. Docs aqui foram triados para reduzir ruído documental — mas **nenhum TODO de doc arquivado pode entrar no roadmap (Fase 4) sem revalidação via grep/sensor no código**.
+> A pasta `WeDO/` vive dentro do clone do repositório GitHub canonical `WeDOTalentcc/wedotalent02202026.git`. **Modificações nesse clone violam REGRA ZERO** (CLAUDE.md global): tudo do GitHub é canonical e intocável; alterações lá são responsabilidade exclusiva do Anderson/time canonical.
+>
+> Este documento é portanto um **registro/recomendação** do que **deveria ser feito** na higiene documental — não a descrição de ações executadas no canonical. Quando Anderson/time decidir aplicar, este inventário serve como playbook pronto.
+>
+> **Princípio aplicado:** código é fonte de verdade. Docs aqui foram triados para reduzir ruído documental — mas **nenhum TODO de doc desta lista pode entrar no roadmap (Fase 4) sem revalidação via grep/sensor no código**.
 
 ---
 
-## Sumário das ações executadas
+## Status real desta auditoria documental
 
-| Ação | Quantidade | Local destino |
+| Local | O que existe | Status |
 |---|---|---|
-| 🗄 **Arquivado** (status histórico + duplicado) | **11** | `WeDO/_archive/2026-05-10/{analises,planos}/` |
-| ✅ **Header CANONICAL VIVO adicionado** | **9** | In-place em `WeDO/{analises,planos}/` |
-| 🔵 **Mantido sem alteração** (referência permanente) | **7** | `WeDO/analises/` |
-| ⏳ **Pendente arquivamento** (após Fase 4 produzir substituto) | **10** | `WeDO/{analises,planos}/` |
-| 📄 **README.md criado** | 1 | `WeDO/README.md` (índice canonical) |
+| Replit `lia-agent-system/.audit/2026-05-10/` | `00-CAPACIDADES_LIVE.md` + `00b-INVENTARIO_DOCUMENTAL.md` (este doc) | ✅ Comitado (commits `48cdd3bd9` + `0148ba10c`, sem push) |
+| Local `~/Documents/wedotalent_audit_2026-05-10/` | Cópia dos artefatos da auditoria | ✅ Pasta segura fora do clone canonical |
+| GitHub canonical `WeDOTalentcc/wedotalent02202026/WeDO/` | **INTOCADO** | 🔒 REGRA ZERO — não modificamos clones canonical |
 
-**Total processado:** 37 docs (28 em `analises/` + 9 em `planos/`).
+---
+
+## Sumário das ações RECOMENDADAS (não-executadas no canonical)
+
+> Quando Anderson/time canonical optar por aplicar a higiene, esta é a especificação:
+
+| Ação recomendada | Quantidade | Local destino sugerido |
+|---|---|---|
+| 🗄 **Arquivar** (status histórico + duplicado) | **11** | `WeDO/_archive/2026-05-10/{analises,planos}/` |
+| ✅ **Adicionar header CANONICAL VIVO** | **9** | In-place em `WeDO/{analises,planos}/` (apenas adição de bloco no topo) |
+| 🔵 **Manter sem alteração** (referência permanente) | **7** | `WeDO/analises/` |
+| ⏳ **Pendente** (arquivar após Fase 4 produzir substituto) | **10** | Aguardar `04-ROADMAP_PRIORIZADO.md` |
+| 📄 **Criar README.md** | 1 | `WeDO/README.md` (índice canonical) — modelo em `~/Documents/wedotalent_audit_2026-05-10/WeDO_README.md` |
+
+**Total processado (catalogado):** 37 docs (28 em `analises/` + 9 em `planos/`).
 
 ---
 
@@ -38,7 +54,7 @@
 | 10 | `analise-reuniao-alinhamento-06fev2026.md` | `analises/` | STATUS HISTÓRICO | Snapshot reunião 06/02/2026. Múltiplas decisões já implementadas | — |
 | 11 | `analise-comparativa-v5-vs-lia.md` | `analises/` | DUPLICADO | Mesmo escopo de `ANALISE_COMPARATIVA_V5_vs_LIA.md` (versão UPPERCASE, 2172 linhas, 19/03/2026, mais recente) | `analises/ANALISE_COMPARATIVA_V5_vs_LIA.md` |
 
-**Header de obsolescência aplicado em cada um:**
+**Header de obsolescência RECOMENDADO em cada um (modelo):**
 ```markdown
 > **🗄 ARQUIVADO em 2026-05-10.** Doc movido de `WeDO/analises/` ou `WeDO/planos/` para `WeDO/_archive/2026-05-10/`.
 > **Status:** snapshot histórico — válido até a data de "última atualização" no próprio doc. **Não usar como evidência viva** sem cross-check via grep/sensor no código (...)
@@ -48,7 +64,7 @@
 
 ---
 
-### ✅ HEADER CANONICAL VIVO ADICIONADO (9) — in-place
+### ✅ HEADER CANONICAL VIVO RECOMENDADO (9) — in-place
 
 | # | Doc | Pasta | Tema | Próxima validação |
 |---|---|---|---|---|
@@ -62,7 +78,7 @@
 | 8 | `AUDITORIA_TECNICA_EXECUCAO.md` | `analises/` | Plano execução das recomendações (28/02/2026) | Fase 4 |
 | 9 | `PLANO_IMPLEMENTACAO_STATUS.md` | `planos/` | Registro de fases concluídas | Fase 4 (entradas adicionadas) |
 
-**Header aplicado in-place no topo:**
+**Header RECOMENDADO in-place no topo (modelo):**
 ```markdown
 > **✅ CANONICAL VIVO.** Última validação: 2026-05-10 (Fase 0 da auditoria profunda).
 > Doc consultado e cruzado contra código real no Replit branch `feat/benefits-prv-canonical`.
@@ -109,15 +125,15 @@ Os 10 docs de plano que serão substituídos pelo `04-ROADMAP_PRIORIZADO.md`. Po
 
 ## Antes / Depois
 
-### ANTES (2026-05-10 manhã)
+### Estado atual em GitHub canonical (INTOCADO)
 ```
-WeDO/
+WeDOTalentcc/wedotalent02202026/WeDO/
 ├── analises/          (28 .md, mistura de canonical + obsoleto + duplicado)
 ├── planos/            (9 .md, mistura)
 └── (sem README.md)
 ```
 
-### DEPOIS (2026-05-10 tarde — Fase 0.5 completa)
+### Estado RECOMENDADO (se Anderson/time aplicar a higiene)
 ```
 WeDO/
 ├── README.md                              [NEW — índice canonical]
@@ -132,7 +148,26 @@ WeDO/
         └── planos/     (1 .md arquivado: PENDENTES_IA.md)
 ```
 
-**Métricas:**
+### Estado real LOCAL hoje
+```
+/Users/paulomoraes/Documents/wedotalent_audit_2026-05-10/  ← FORA do clone canonical
+├── WeDO_README.md                         [modelo do README sugerido]
+└── auditoria_2026-05-10/
+    ├── 00-CAPACIDADES_LIVE.md             [Fase 0]
+    └── 00b-INVENTARIO_DOCUMENTAL.md       [Fase 0.5 — este doc, agora prescritivo]
+
+/Users/paulomoraes/Documents/Python/wedotalent02202026/  ← clone GitHub canonical
+└── WeDO/  ← INTOCADO, working tree limpo após git restore
+```
+
+### Estado real REPLIT hoje
+```
+lia-agent-system/.audit/2026-05-10/   ← branch feat/benefits-prv-canonical
+├── 00-CAPACIDADES_LIVE.md             [commit 48cdd3bd9]
+└── 00b-INVENTARIO_DOCUMENTAL.md       [commit 0148ba10c]
+```
+
+**Métricas (se aplicado no canonical):**
 - Docs vivos sem ruído: 26 (era 37) → redução de 30%
 - Cada canonical vivo tem header explícito sobre status
 - Zero deleções — 100% rastreabilidade preservada
@@ -150,18 +185,26 @@ WeDO/
 
 ---
 
-## Sensores e métricas de qualidade
+## Sensores e métricas (recomendação — se aplicado no canonical)
 
-| Métrica | Valor | Status |
+| Métrica | Valor pretendido | Status atual no canonical |
 |---|---|---|
-| Docs em `analises/` antes / depois | 28 / 18 | ✅ -10 |
-| Docs em `planos/` antes / depois | 9 / 8 | ✅ -1 |
-| Docs com header canonical | 9 | ✅ |
-| Docs com header arquivado | 11 | ✅ |
-| Docs com cross-ref para `00-CAPACIDADES_LIVE.md` | 20 | ✅ |
-| Deleções | 0 | ✅ |
-| README.md em `WeDO/` | Sim | ✅ |
-| Pasta `_archive/2026-05-10/` criada | Sim | ✅ |
+| Docs em `analises/` antes / depois | 28 / 18 | 28 (intocado) |
+| Docs em `planos/` antes / depois | 9 / 8 | 9 (intocado) |
+| Docs com header canonical | 9 | 0 (intocado) |
+| Docs com header arquivado | 11 | 0 (intocado) |
+| Deleções | 0 | 0 ✅ |
+| README.md em `WeDO/` | Sim | Não (modelo gerado em `~/Documents/wedotalent_audit_2026-05-10/WeDO_README.md`) |
+
+## Próximos passos para Anderson/time canonical
+
+Se o time canonical optar por aplicar:
+
+1. Criar branch dedicada (ex: `chore/wedo-doc-hygiene-2026-05-10`) — não em main/develop
+2. Seguir tabela acima de archive (11 docs) e canonical headers (9 docs)
+3. Copiar `~/Documents/wedotalent_audit_2026-05-10/WeDO_README.md` → `WeDO/README.md`
+4. PR para review do time
+5. Sem urgência — não bloqueia roadmap. É housekeeping puro.
 
 ---
 
