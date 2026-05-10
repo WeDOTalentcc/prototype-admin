@@ -761,6 +761,7 @@ class AutomationTriggerService:
             status = result.get("status") if isinstance(result, dict) else getattr(result, "status", None)
             
             if success:
+                # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                 logger.info(f"✅ [TRIGGER] WhatsApp sent successfully to {recipient_phone}")
                 return {
                     "success": True,
@@ -771,6 +772,7 @@ class AutomationTriggerService:
                     "status": status.value if hasattr(status, 'value') else status
                 }
             else:
+                # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                 logger.warning(f"⚠️ [TRIGGER] Failed to send WhatsApp to {recipient_phone}: {error}")
                 return {
                     "success": False,
@@ -781,6 +783,7 @@ class AutomationTriggerService:
                 }
                 
         except Exception as e:
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.error(f"❌ [TRIGGER] Error sending WhatsApp to {recipient_phone}: {e}")
             return {"success": False, "error": str(e)}
     

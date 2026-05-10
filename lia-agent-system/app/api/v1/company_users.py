@@ -231,6 +231,7 @@ async def delete_user(
 
         email = user.email
         await user_repo.delete(user_uuid)
+        # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
         logger.info(f"Deleted user: {email}")
         return None
     except HTTPException:

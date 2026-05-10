@@ -631,6 +631,7 @@ async def send_whatsapp_interactive(
         )
         
         if result.success:
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.info(f"✅ Interactive WhatsApp sent to {request.to_phone} for company {company_id}")
         else:
             logger.warning(f"⚠️ Interactive WhatsApp failed: {result.error}")

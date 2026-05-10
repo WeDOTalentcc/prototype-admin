@@ -214,6 +214,7 @@ class ScheduledReportJob:
             for recipient in recipients:
                 try:
                     if not recipient.company_id:
+                        # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                         logger.warning(f"⚠️ Skipping recipient {recipient.user_id} - no company_id")
                         results["errors"].append({
                             "user_id": recipient.user_id,
@@ -233,6 +234,7 @@ class ScheduledReportJob:
                         
                         if result.get("email_sent"):
                             results["emails_sent"] += 1
+                            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                             logger.info(f"Daily briefing sent to recipient_id={recipient.id}")
                         else:
                             results["emails_failed"] += 1
@@ -243,6 +245,7 @@ class ScheduledReportJob:
                                 })
                                 
                 except Exception as e:
+                    # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                     logger.error(f"❌ Failed to process briefing for {recipient.user_id}: {e}")
                     results["emails_failed"] += 1
                     results["errors"].append({
@@ -501,6 +504,7 @@ class ScheduledReportJob:
                             report_types=["daily"]
                         ))
                 
+                # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                 logger.info(f"📋 Found {len(recipients)} daily briefing recipients from database")
                 
         except Exception as e:

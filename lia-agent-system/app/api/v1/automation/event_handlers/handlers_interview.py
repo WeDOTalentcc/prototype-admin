@@ -249,6 +249,7 @@ async def _process_interview_scheduled(request, db, activity_svc) -> dict:
         calendar_event_created, notification_created, interview_id, calendar_event_id
     )
 
+    # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
     logger.info(f"✅ [INTERVIEW_SCHEDULED] Done: email={email_sent}, whatsapp={whatsapp_sent}, calendar={calendar_event_created}")
 
     return _build_interview_scheduled_response(

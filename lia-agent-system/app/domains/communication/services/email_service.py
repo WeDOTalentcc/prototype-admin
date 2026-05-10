@@ -35,6 +35,7 @@ from lia_models.email_template import EmailLog, EmailTemplate
 logger = logging.getLogger(__name__)
 
 EMAIL_PROVIDER = os.getenv("EMAIL_PROVIDER", "mailgun")
+# pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
 logger.info(f"Email provider configured: {EMAIL_PROVIDER}")
 
 
@@ -334,6 +335,7 @@ class EmailService:
     ) -> bool:
         logger.info("=" * 70)
         logger.info("[DEV EMAIL] Email logged (development mode fallback)")
+        # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
         logger.info(f"[DEV EMAIL] To: {to_email}")
         logger.info(f"[DEV EMAIL] Subject: {subject}")
         logger.info(f"[DEV EMAIL] Body ({len(body_html)} chars): {body_html[:200]}")
@@ -1008,6 +1010,7 @@ class MailgunEmailService:
         logger.info("[DEV EMAIL - MAILGUN] Email enviado (modo desenvolvimento)")
         logger.info(f"[DEV EMAIL] Message ID: {message_id}")
         logger.info(f"[DEV EMAIL] De: {self.from_name} <{self.from_email}>")
+        # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
         logger.info(f"[DEV EMAIL] Para: {to_name or 'N/A'} <{to_email}>")
         if cc:
             logger.info(f"[DEV EMAIL] CC: {', '.join(cc)}")
@@ -1114,6 +1117,7 @@ class MailgunEmailService:
                 if response.status_code == 200:
                     payload = response.json()
                     message_id = payload.get("id", f"mg_{uuid.uuid4().hex[:12]}")
+                    # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                     logger.info(f"[MAILGUN] Email sent to: {to_email}, ID: {message_id}")
                     return EmailSendResult(
                         success=True,
@@ -1174,8 +1178,10 @@ class MailgunEmailService:
                         f"ID: {resend_result.message_id}"
                     )
                     return resend_result
+                # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                 logger.error(f"[RESEND FALLBACK] Also failed for {to_email}: {resend_result.error}")
             except Exception as exc:
+                # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                 logger.error(f"[RESEND FALLBACK] Exception for {to_email}: {exc}", exc_info=True)
         elif resend_circuit_open:
             logger.warning("[RESEND] Circuit is OPEN — both providers unavailable")

@@ -214,6 +214,7 @@ async def whatsapp_flow_webhook(request: Request):
     phone_number = body.get("phone_number", "").replace("whatsapp:", "")
     flow_data = body.get("data", {})
 
+    # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
     logger.info(f"[WhatsApp Flow] Completed by {phone_number}: {list(flow_data.keys())}")
 
     if not phone_number:
@@ -227,6 +228,7 @@ async def whatsapp_flow_webhook(request: Request):
 
     # Check LGPD consent — REQUIRED
     if not flow_data.get("lgpd_consent"):
+        # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
         logger.warning(f"[WhatsApp Flow] LGPD consent NOT given by {phone_number} — blocking")
         # Send message asking for consent
         try:

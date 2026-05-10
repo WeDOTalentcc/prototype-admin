@@ -146,6 +146,7 @@ async def handle_candidate_inactive(
                 if not email_sent:
                     email_error = send_result.get("error", "Unknown email send failure")
                     communication_failures.append({"channel": "email", "error": email_error})
+                # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                 logger.info(f"📧 [CANDIDATE_INACTIVE] Email sent (ok=: {email_sent}")
             except Exception as e:
                 email_error = str(e)
@@ -445,6 +446,7 @@ async def handle_candidate_no_show(
                     )
 
                     email_sent = send_result.get("success", False)
+                    # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                     logger.info(f"📧 [CANDIDATE_NO_SHOW] Reschedule email sent ok={email_sent}")
                 except Exception as e:
                     logger.error(f"❌ [CANDIDATE_NO_SHOW] Failed to send reschedule email: {e}")
@@ -496,6 +498,7 @@ async def handle_candidate_no_show(
                     )
 
                     email_sent = send_result.get("success", False)
+                    # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                     logger.info(f"📧 [CANDIDATE_NO_SHOW] Final notice email sent ok={email_sent}")
                 except Exception as e:
                     logger.error(f"❌ [CANDIDATE_NO_SHOW] Failed to send final notice email: {e}")

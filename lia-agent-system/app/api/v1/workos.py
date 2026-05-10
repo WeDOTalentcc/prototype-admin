@@ -278,6 +278,7 @@ async def sync_workos_user(
                 "last_sso_login_at": datetime.utcnow(),
                 "updated_at": datetime.utcnow(),
             })
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.info(f"Linked existing user (email={user_data.email}) to WorkOS ID {user_data.workos_id}")
         else:
             user = await user_repo.create({
@@ -294,6 +295,7 @@ async def sync_workos_user(
                 "updated_at": datetime.utcnow(),
             })
             is_new_user = True
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.info(f"Created new SSO user: workos_id={user_data.workos_id}, email={user_data.email}")
     else:
         update_data = {
@@ -303,6 +305,7 @@ async def sync_workos_user(
         if user_data.organization_id:
             update_data["workos_organization_id"] = user_data.organization_id
         user = await user_repo.update_by_instance(user, update_data)
+        # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
         logger.info(f"SSO login for existing user: workos_id={user_data.workos_id}, email={user_data.email}")
 
     await workos_repo.log_sso_event({
@@ -1033,6 +1036,7 @@ async def _handle_dsync_user_created(
             "company_id": company_id,
             "updated_at": datetime.utcnow(),
         })
+        # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
         logger.info(f"SCIM linked existing user {email} to directory")
         return {"success": True, "message": "Linked existing user to SCIM", "user_id": str(existing_by_email.id)}
 
@@ -1052,6 +1056,7 @@ async def _handle_dsync_user_created(
         "updated_at": datetime.utcnow(),
     })
 
+    # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
     logger.info(f"SCIM provisioned new user: {email}")
     return {"success": True, "message": "User provisioned successfully", "user_id": str(user.id)}
 

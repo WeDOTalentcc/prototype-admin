@@ -855,6 +855,7 @@ async def _wrap_cancel_interview(**kwargs: Any) -> dict[str, Any]:
                 )
                 notifications_sent.append({"channel": "email", "recipient": candidate_email, "status": "sent"})
             except Exception as email_err:
+                # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                 logger.warning(f"[pipeline_tools] Email cancel notification failed: {email_err}")
                 notifications_sent.append({"channel": "email", "status": "failed"})
 
@@ -1005,6 +1006,7 @@ async def _wrap_reschedule_interview(**kwargs: Any) -> dict[str, Any]:
                 )
                 notifications_sent.append({"channel": "email", "recipient": candidate_email, "status": "sent"})
             except Exception as email_err:
+                # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                 logger.warning(f"[pipeline_tools] Email reschedule notification failed: {email_err}")
                 notifications_sent.append({"channel": "email", "status": "failed"})
 

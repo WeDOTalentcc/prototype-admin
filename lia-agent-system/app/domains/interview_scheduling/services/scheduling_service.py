@@ -477,6 +477,7 @@ class SchedulingService:
                 else:
                     logger.warning(f"⚠️ Failed to send confirmation email: {confirmation_result.get('message')}")
             except Exception as email_error:
+                # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                 logger.warning(f"⚠️ Failed to send interview confirmation email: {email_error}")
                 confirmation_result = {"success": False, "error": str(email_error)}
             

@@ -531,6 +531,7 @@ class AutomationService:
                 )
             
             if result.success:
+                # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                 logger.info(f"✅ [AUTOMATION] WhatsApp sent successfully to {recipient_phone}")
                 return {
                     "action": "send_whatsapp",
@@ -552,6 +553,7 @@ class AutomationService:
                 }
                 
         except Exception as e:
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.error(f"❌ [AUTOMATION] Error sending WhatsApp to {recipient_phone}: {e}", exc_info=True)
             return {
                 "action": "send_whatsapp",

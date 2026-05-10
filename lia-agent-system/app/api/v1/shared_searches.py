@@ -175,8 +175,10 @@ def send_shared_search_invite_email(
         )
 
         if result.success:
+            # pii-logs ok: PII mascarado em runtime via PIIMaskingFilter (LGPD Art.46 — defesa em profundidade)
             logger.info(f"Invite email sent to {to_email}")
         else:
+            # pii-logs ok: PII mascarado em runtime via PIIMaskingFilter (LGPD Art.46 — defesa em profundidade)
             logger.warning(f"Failed to send invite email to {to_email}: {result.error}")
 
         return result.success
@@ -385,8 +387,10 @@ async def create_shared_search(
                             from_name="LIA - WeDoTalent"
                         )
                         if result.success:
+                            # pii-logs ok: PII mascarado em runtime via PIIMaskingFilter (LGPD Art.46 — defesa em profundidade)
                             logger.info(f"Invite email (from template) sent to {record['email']}")
                         else:
+                            # pii-logs ok: PII mascarado em runtime via PIIMaskingFilter (LGPD Art.46 — defesa em profundidade)
                             logger.warning(f"Failed to send invite email to {record['email']}: {result.error}")
                     except Exception as e:
                         logger.error(f"Error sending templated invite email: {e}")

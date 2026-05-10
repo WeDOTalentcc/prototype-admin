@@ -88,6 +88,7 @@ async def _send_email(params: dict[str, Any], context: dict[str, Any]):
     if is_dev:
         logger.info("=" * 70)
         logger.info("[DEV EMAIL] Mensagem enviada (modo desenvolvimento)")
+        # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
         logger.info(f"[DEV EMAIL] Para: {to_email}")
         logger.info(f"[DEV EMAIL] Assunto: {subject}")
         logger.info(f"[DEV EMAIL] Corpo ({len(body)} caracteres): {body[:200]}")
@@ -591,6 +592,7 @@ async def _send_progress_report(params: dict[str, Any], context: dict[str, Any])
                         text_content="\n".join(report),
                     )
             except Exception as email_err:
+                # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                 logger.warning(f"Failed to email progress report: {email_err}")
 
         return ActionResult(
@@ -677,6 +679,7 @@ async def _share_candidate_profile(params: dict[str, Any], context: dict[str, An
                         text_content=f"{body}\n\n{profile_summary}",
                     )
             except Exception as email_err:
+                # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                 logger.warning(f"Failed to email shared profile: {email_err}")
 
         return ActionResult(

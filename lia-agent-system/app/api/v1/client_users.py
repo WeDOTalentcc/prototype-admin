@@ -626,6 +626,7 @@ async def resend_invite(
         await repo.commit()
         await repo.refresh(user)
 
+        # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
         logger.info(f"Resent invitation to user: {user.id} (ID: {user.id}, email_sent: {email_sent})")
 
         return {

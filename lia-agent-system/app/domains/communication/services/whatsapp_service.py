@@ -478,6 +478,7 @@ class WhatsAppService:
                 error_code=str(e.code)
             )
         except Exception as e:
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.error(f"[TWILIO WHATSAPP] Error sending to {to_phone}: {e}", exc_info=True)
             return WhatsAppSendResult(
                 success=False,

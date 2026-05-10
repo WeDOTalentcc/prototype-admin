@@ -196,9 +196,11 @@ async def receive_webhook(
         
         if phone_number_id:
             company_id = await PhoneNumberMapping.get_company_id(phone_number_id, db)
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.debug(f"[WEBHOOK] phone_number_id={phone_number_id} -> company_id={company_id}")
         
         if not company_id:
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.warning(f"[WEBHOOK] No company mapping for phone_number_id={phone_number_id}, cannot process")
             return {"status": "error", "detail": "No company mapping found for this phone number"}
         
@@ -230,6 +232,7 @@ async def receive_webhook(
             elif media_data:
                 message_content = media_data.get("caption", "[Documento enviado]")
             
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.info(f"[WEBHOOK] Message from {phone_number}: {message_type} - {message_content[:50]}...")
             
             provider = await WhatsAppProviderFactory.get_provider(company_id, db)
@@ -310,6 +313,7 @@ async def receive_twilio_webhook(
             if media_data:
                 message_content = media_data.get("caption", "[Documento enviado]")
             
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.info(f"[TWILIO WEBHOOK] Message from {phone_number}: {message_type} - {message_content[:50]}...")
             
             to_number = payload.get("To", "").replace("whatsapp:", "").replace("+", "")

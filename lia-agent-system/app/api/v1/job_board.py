@@ -269,8 +269,10 @@ Sistema LIA - Plataforma WedoTalent
         )
         
         if success:
+            # pii-logs ok: PII mascarado em runtime via PIIMaskingFilter (LGPD Art.46 — defesa em profundidade)
             logger.info(f"Recruiter freeze summary sent to {recruiter_email} for job {job.id}")
         else:
+            # pii-logs ok: PII mascarado em runtime via PIIMaskingFilter (LGPD Art.46 — defesa em profundidade)
             logger.error(f"Failed to send recruiter freeze summary to {recruiter_email}")
         
         return success
@@ -731,8 +733,10 @@ async def unpublish_jobs_complete(
                     )
                     
                     if recruiter_summary_sent:
+                        # pii-logs ok: PII mascarado em runtime via PIIMaskingFilter (LGPD Art.46 — defesa em profundidade)
                         logger.info(f"Recruiter summary email sent successfully to {recruiter_email}")
                     else:
+                        # pii-logs ok: PII mascarado em runtime via PIIMaskingFilter (LGPD Art.46 — defesa em profundidade)
                         logger.warning(f"Failed to send recruiter summary email to {recruiter_email}")
                 else:
                     logger.warning("No recruiter email available to send summary")

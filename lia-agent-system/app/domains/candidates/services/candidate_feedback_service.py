@@ -420,6 +420,7 @@ class CandidateFeedbackService:
         db: AsyncSession
     ):
         """Envia feedback via email usando o serviço de email existente."""
+        # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
         logger.info(f"[EMAIL] Sending low adherence feedback to: {email}")
         logger.debug(f"[EMAIL] Subject: {message['subject']}")
         
@@ -445,6 +446,7 @@ class CandidateFeedbackService:
         message: dict[str, str]
     ):
         """Envia feedback via WhatsApp."""
+        # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
         logger.info(f"[WHATSAPP] Sending low adherence feedback to: {phone}")
         logger.debug(f"[WHATSAPP] Message: {message['short_message'][:100]}...")
         

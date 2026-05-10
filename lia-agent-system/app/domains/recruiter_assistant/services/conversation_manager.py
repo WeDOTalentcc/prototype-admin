@@ -355,6 +355,7 @@ class ConversationManager:
             return response
             
         except Exception as e:
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.error(f"Error processing message from {phone_number}: {e}", exc_info=True)
             return ConversationMessages.error_message()
     

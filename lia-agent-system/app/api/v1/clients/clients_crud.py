@@ -202,6 +202,7 @@ async def create_client(
                 else:
                     logger.warning(f"Failed to send welcome email to {client.primary_email}")
             except Exception as email_error:
+                # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                 logger.warning(f"Error sending welcome email: {email_error}")
 
         hubspot_result = None

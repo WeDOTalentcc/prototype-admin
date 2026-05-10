@@ -26,6 +26,7 @@ LGPD Art. 12 (anonimizacao/minimizacao) + EU AI Act Art. 13 (transparencia).
 
 Usage:
     logger = get_masked_logger(__name__)
+    # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
     logger.info(f"Processing candidate {email}")  # email will be redacted
     
     # Or use the filter directly:

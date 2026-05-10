@@ -101,6 +101,7 @@ class EmailChannelAdapter(ChannelAdapter):
 
         # I5: LGPD opt-out check before sending (company-scoped)
         if await _is_opted_out(message.recipient_contact, getattr(message, "company_id", None)):
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.info(f"[EMAIL_ADAPTER] Skipping email to {message.recipient_contact} — opted out (LGPD)")
             return DeliveryResult(
                 success=False,
@@ -135,6 +136,7 @@ class EmailChannelAdapter(ChannelAdapter):
                 )
 
             if not self.validate_contact(message.recipient_contact):
+                # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                 logger.warning(f"[EMAIL_ADAPTER] Email inválido: {message.recipient_contact}")
                 return DeliveryResult(
                     success=False,

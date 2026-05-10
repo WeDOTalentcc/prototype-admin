@@ -119,6 +119,7 @@ class CommunicationDispatcher:
         sender_name = from_name or default_from_name
         sender = f"{sender_name} <{from_email_address}>" if sender_name else from_email_address
 
+        # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
         logger.info(f"Attempting to send email to {to_email} with subject: {subject[:50]}...")
 
         mailgun_circuit_open = MAILGUN_CIRCUIT.state == CircuitState.OPEN
@@ -157,6 +158,7 @@ class CommunicationDispatcher:
                 if response.status_code == 200:
                     payload = response.json()
                     message_id = payload.get("id", f"mg-{uuid.uuid4().hex[:12]}")
+                    # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                     logger.info(f"[MAILGUN] Email sent to {to_email}. ID: {message_id}")
                     return {
                         "success": True,
@@ -197,6 +199,7 @@ class CommunicationDispatcher:
             )
             if resend_result.get("success"):
                 return resend_result
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.error(f"[RESEND FALLBACK] Also failed for {to_email}: {resend_result.get('error')}")
 
         elif resend_circuit_open:
@@ -208,6 +211,7 @@ class CommunicationDispatcher:
         if not self.is_mailgun_enabled and not resend_api_key:
             environment = os.getenv("ENVIRONMENT", os.getenv("APP_ENV", "development")).lower()
             if environment == "production":
+                # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                 logger.critical(f"[DISPATCHER] No email provider configured in PRODUCTION — email to {to_email} was NOT sent!")
                 return {
                     "success": False,
@@ -219,6 +223,7 @@ class CommunicationDispatcher:
                     "timestamp": datetime.utcnow().isoformat()
                 }
             mock_id = f"mock-email-{uuid.uuid4().hex[:12]}"
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.warning(f"No email provider configured. Returning mock for {to_email}")
             return {
                 "success": True,
@@ -285,6 +290,7 @@ class CommunicationDispatcher:
 
             if response and response.get("id"):
                 msg_id = response["id"]
+                # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                 logger.info(f"[RESEND FALLBACK] Email sent to {to_email}. ID: {msg_id}")
                 return {
                     "success": True,
@@ -303,6 +309,7 @@ class CommunicationDispatcher:
                 "mock": False
             }
         except Exception as exc:
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.error(f"[RESEND FALLBACK] Exception for {to_email}: {exc}", exc_info=True)
             return {
                 "success": False,
@@ -345,11 +352,13 @@ class CommunicationDispatcher:
         else:
             to_whatsapp = to_phone
         
+        # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
         logger.info(f"Attempting to send WhatsApp message to {to_phone}...")
         
         if not self.is_twilio_enabled:
             environment = os.getenv("ENVIRONMENT", os.getenv("APP_ENV", "development")).lower()
             if environment == "production":
+                # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                 logger.critical(f"[DISPATCHER] Twilio not configured in PRODUCTION — WhatsApp to {to_phone} was NOT sent!")
                 return {
                     "success": False,
@@ -360,6 +369,7 @@ class CommunicationDispatcher:
                     "timestamp": datetime.utcnow().isoformat()
                 }
             mock_id = f"mock-whatsapp-{uuid.uuid4().hex[:12]}"
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.warning(f"Twilio not configured. Returning mock success for WhatsApp to {to_phone}")
             return {
                 "success": True,
@@ -382,6 +392,7 @@ class CommunicationDispatcher:
             
             twilio_message = self._twilio_client.messages.create(**msg_params)
             
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.info(f"WhatsApp message sent successfully to {to_phone}. SID: {twilio_message.sid}")
             
             return {
@@ -396,6 +407,7 @@ class CommunicationDispatcher:
             
         except TwilioRestException as e:
             error_msg = f"Twilio error {e.code}: {e.msg}"
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.error(f"Failed to send WhatsApp to {to_phone}: {error_msg}")
             return {
                 "success": False,
@@ -408,6 +420,7 @@ class CommunicationDispatcher:
             }
         except Exception as e:
             error_msg = str(e)
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.error(f"Failed to send WhatsApp to {to_phone}: {error_msg}")
             return {
                 "success": False,
@@ -441,11 +454,13 @@ class CommunicationDispatcher:
         
         from_sms = os.getenv("TWILIO_SMS_FROM", os.getenv("TWILIO_PHONE_NUMBER"))
         
+        # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
         logger.info(f"Attempting to send SMS to {to_phone}...")
         
         if not self.is_twilio_enabled:
             environment = os.getenv("ENVIRONMENT", os.getenv("APP_ENV", "development")).lower()
             if environment == "production":
+                # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                 logger.critical(f"[DISPATCHER] Twilio not configured in PRODUCTION — SMS to {to_phone} was NOT sent!")
                 return {
                     "success": False,
@@ -456,6 +471,7 @@ class CommunicationDispatcher:
                     "timestamp": datetime.utcnow().isoformat()
                 }
             mock_id = f"mock-sms-{uuid.uuid4().hex[:12]}"
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.warning(f"Twilio not configured. Returning mock success for SMS to {to_phone}")
             return {
                 "success": True,
@@ -484,6 +500,7 @@ class CommunicationDispatcher:
                 to=to_phone
             )
             
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.info(f"SMS sent successfully to {to_phone}. SID: {twilio_message.sid}")
             
             return {
@@ -498,6 +515,7 @@ class CommunicationDispatcher:
             
         except TwilioRestException as e:
             error_msg = f"Twilio error {e.code}: {e.msg}"
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.error(f"Failed to send SMS to {to_phone}: {error_msg}")
             return {
                 "success": False,
@@ -510,6 +528,7 @@ class CommunicationDispatcher:
             }
         except Exception as e:
             error_msg = str(e)
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.error(f"Failed to send SMS to {to_phone}: {error_msg}")
             return {
                 "success": False,

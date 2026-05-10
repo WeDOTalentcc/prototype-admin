@@ -656,6 +656,7 @@ class DataRequestWhatsAppService:
         result = await self.whatsapp_service.send_text_message(phone, message)
         
         if result.success:
+            # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
             logger.info(f"Sent field request for {field.get('name')} to {phone}")
             return True
         

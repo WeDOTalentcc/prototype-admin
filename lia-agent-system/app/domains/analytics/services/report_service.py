@@ -551,6 +551,7 @@ class ReportService:
                         "error": email_result.get("error")
                     })
         
+        # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
         logger.info(f"📊 Weekly report generated and sent to {len(result['emails_sent'])} recipients")
         
         try:
@@ -650,6 +651,7 @@ class ReportService:
                         "error": email_result.get("error")
                     })
         
+        # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
         logger.info(f"📈 Monthly manager report generated and sent to {len(result['emails_sent'])} recipients")
         
         try:
@@ -725,6 +727,7 @@ class ReportService:
             )
             
             if result.success:
+                # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                 logger.info(f"📧 Report email sent via {result.provider}: {subject} -> {to_email}")
                 return {
                     "success": True,

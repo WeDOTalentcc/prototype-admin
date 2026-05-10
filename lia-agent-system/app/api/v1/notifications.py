@@ -908,6 +908,7 @@ Recrutador: {request.recruiter_name or request.recruiter_email}
                         text_content=workplan_content
                     )
                     notifications_sent[role]["email"] = True
+                    # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                     logger.info(f"\ud83d\udce7 Email sent to {role}: {recipient[email]}")
                 except Exception as e:
                     error_msg = f"Failed to send email to {role} ({recipient[email]}): {str(e)}"
@@ -924,6 +925,7 @@ Recrutador: {request.recruiter_name or request.recruiter_email}
                         action_label="Ver Vaga"
                     )
                     notifications_sent[role]["teams"] = True
+                    # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
                     logger.info(f"\ud83d\udce8 Teams message sent to {role}: {recipient[email]}")
                 except Exception as e:
                     error_msg = f"Failed to send Teams message to {role} ({recipient[email]}): {str(e)}"

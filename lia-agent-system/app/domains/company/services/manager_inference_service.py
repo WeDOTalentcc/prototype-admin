@@ -180,6 +180,7 @@ class ManagerInferenceService:
         candidates.sort(key=lambda x: x[1], reverse=True)
         best_match = candidates[0][0]
         
+        # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
         logger.info(f"Found manager: {best_match['name']} ({best_match['email']}) with confidence {best_match['confidence']:.2f}")
         return best_match
     

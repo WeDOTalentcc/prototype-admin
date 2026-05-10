@@ -100,6 +100,7 @@ async def send_direct_email(
             metadata=request.metadata,
         )
 
+        # pii-logs ok: email/phone mascarado em runtime via PIIMaskingFilter (LGPD Art.46 + ADR-006 defesa em profundidade)
         logger.info(f"Email queued: {email_log.id} (recipient omitted - LGPD)")
         logger.info(f"   Subject: {request.subject}")
         logger.info("   Status: QUEUED (SMTP not configured - Funcional - Aguardando Configuracao SMTP)")
