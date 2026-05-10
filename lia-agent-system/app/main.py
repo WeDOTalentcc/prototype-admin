@@ -237,6 +237,19 @@ async def lifespan(app: FastAPI):
             except Exception:
                 pass
 
+    # T-E canary: Sentry breadcrumb dedicado pra LIA_AGENT_TENANT_STRICT=false
+    # em prod (alerta isolado pra on-call diferenciar do agregado R-007).
+    if _is_prod_like and not _tenant_strict and os.getenv("APP_ENV", "development").lower() in ("production", "prod"):
+        try:
+            sentry_sdk.capture_message(
+                "LIA_AGENT_TENANT_STRICT=false em produção — TenantAwareAgentMixin "
+                "fail-OPEN: agentes podem voltar a perguntar 'qual empresa' no chat. "
+                "Ver docs/runbooks/missing_tenant_context.md.",
+                level="error",
+            )
+        except Exception:
+            pass
+
     # ─── R-051: LangSmith availability warning ──────────────────────────────────
     from app.config.langsmith import is_langsmith_enabled  # R-051
     if not is_langsmith_enabled():

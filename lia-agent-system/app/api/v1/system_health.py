@@ -622,10 +622,15 @@ async def compliance_bypass_status():
     if _prod_like and not is_tenant_strict_mode():
         active.append({"flag": _TENANT_STRICT_FLAG, "description": _TENANT_STRICT_DESC})
 
+    flags_state = {
+        flag: os.getenv(flag, "0") == "1" for flag in _BYPASS_FLAGS_RUNTIME
+    }
+    flags_state[_TENANT_STRICT_FLAG] = is_tenant_strict_mode()
     payload = {
         "active_bypasses": active,
         "warning_count": len(active),
         "environment": os.getenv("APP_ENV", "development"),
+        "flags": flags_state,
         "tenant_aware_agent": {
             "strict_mode": is_tenant_strict_mode(),
             "metrics": get_tenant_context_metrics(),

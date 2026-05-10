@@ -632,6 +632,65 @@ async def run(args: argparse.Namespace) -> None:
     print(f"  Run eval_report.py {out_path.name} to generate HTML report\n")
 
 
+def gate_check(
+    dataset_path: str,
+    threshold: float = 0.85,
+    consecutive_runs: int = 2,
+    history_path: str | None = None,
+) -> int:
+    """T-E canonical gate: bloqueia merge se score médio por agente < threshold
+    em ``consecutive_runs`` rodadas seguidas.
+
+    Lê ``history_path`` (default: ``eval/.gate_history.json``), filtra runs do
+    mesmo dataset, agrupa por agente e marca falha se as últimas N rodadas
+    consecutivas tiverem ``avg_score < threshold``.
+
+    Args:
+        dataset_path: caminho do dataset JSONL (ex: eval/golden/tenant_context.jsonl).
+        threshold: score médio mínimo (0..1). Default 0.85 (espelha
+            ``fail_threshold_avg`` do golden dataset).
+        consecutive_runs: número de runs CONSECUTIVOS abaixo do threshold
+            que disparam falha. Default 2 (evita flakes).
+        history_path: arquivo JSON com histórico de runs. Default
+            ``eval/.gate_history.json`` ao lado deste módulo.
+
+    Returns:
+        0 se gate passou, 1 se gate falhou. Use no CI:
+        ``python -m eval.eval_runner --gate eval/golden/tenant_context.jsonl``.
+    """
+    base = Path(__file__).resolve().parent
+    hist = Path(history_path) if history_path else base / ".gate_history.json"
+    if not hist.exists():
+        print(f"[gate] no history at {hist} — pass (no prior data)")
+        return 0
+    try:
+        data = json.loads(hist.read_text())
+    except Exception as e:
+        print(f"[gate] history unreadable ({e}) — fail-CLOSED")
+        return 1
+    runs = [r for r in data.get("runs", []) if r.get("dataset") == dataset_path]
+    if len(runs) < consecutive_runs:
+        print(f"[gate] only {len(runs)} runs for {dataset_path} — pass (warming up)")
+        return 0
+    last_n = runs[-consecutive_runs:]
+    by_agent: dict[str, list[float]] = {}
+    for r in last_n:
+        for agent, score in (r.get("by_agent") or {}).items():
+            by_agent.setdefault(agent, []).append(float(score))
+    failed = [
+        (a, scores)
+        for a, scores in by_agent.items()
+        if len(scores) >= consecutive_runs and all(s < threshold for s in scores)
+    ]
+    if failed:
+        print(f"[gate] FAIL: {len(failed)} agent(s) below {threshold} in {consecutive_runs} consecutive runs:")
+        for a, scores in failed:
+            print(f"  • {a}: {scores}")
+        return 1
+    print(f"[gate] PASS: all agents above {threshold} (last {consecutive_runs} runs)")
+    return 0
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="LIA Eval Runner")
     parser.add_argument("--token", default="", help="JWT Bearer token")
@@ -639,7 +698,17 @@ def main() -> None:
     parser.add_argument("--categories", default="", help="Comma-separated category filter (e.g. JM,CM)")
     parser.add_argument("--id", default="", help="Run single case by ID (e.g. JM-001)")
     parser.add_argument("--timeout", type=float, default=60.0, help="Request timeout in seconds")
+    parser.add_argument(
+        "--gate",
+        default="",
+        help="T-E: dataset path to gate-check (e.g. eval/golden/tenant_context.jsonl). "
+             "Exits 1 if avg score < threshold in N consecutive runs.",
+    )
+    parser.add_argument("--gate-threshold", type=float, default=0.85, help="Gate min avg score (0..1)")
+    parser.add_argument("--gate-consecutive", type=int, default=2, help="Consecutive failing runs to trip gate")
     args = parser.parse_args()
+    if args.gate:
+        sys.exit(gate_check(args.gate, args.gate_threshold, args.gate_consecutive))
     asyncio.run(run(args))
 
 
