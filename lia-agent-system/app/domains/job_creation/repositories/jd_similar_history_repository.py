@@ -52,8 +52,22 @@ class JdSimilarHistoryRepository:
 
     # ── Read ────────────────────────────────────────────────────────────────
 
-    async def get_by_id(self, record_id: UUID) -> JdSimilarHistory | None:
-        stmt = select(JdSimilarHistory).where(JdSimilarHistory.id == record_id)
+    async def get_by_id(
+        self, record_id: UUID, company_id: str
+    ) -> JdSimilarHistory | None:
+        """Lookup by id, scoped to company (multi-tenancy fail-closed).
+
+        Returns None if record doesn't exist OR belongs to another company
+        — cross-tenant access reads as 'not found' for read ops (SPEC D3).
+        Raises ValueError if company_id is empty.
+
+        Sprint B Phase 1, gap C5.
+        """
+        self._require_company_id(company_id)
+        stmt = select(JdSimilarHistory).where(
+            JdSimilarHistory.id == record_id,
+            JdSimilarHistory.company_id == company_id,
+        )
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
@@ -166,13 +180,36 @@ class JdSimilarHistoryRepository:
     async def mark_filled(
         self,
         record_id: UUID,
+        company_id: str,
         time_to_fill_days: int,
         candidates_count: int,
     ) -> None:
-        """Marca JD como preenchida (vaga fechou). Atualiza outcome stats."""
+        """Marca JD como preenchida (vaga fechou). Atualiza outcome stats.
+
+        Multi-tenancy fail-closed (Sprint B Phase 1, gap C5):
+        - Raises ValueError if company_id is empty.
+        - Raises ValueError if record_id belongs to another company
+          (cross-tenant write attempt).
+        """
+        self._require_company_id(company_id)
+        # Ownership check: SELECT FOR ownership before UPDATE
+        owner_stmt = select(JdSimilarHistory.company_id).where(
+            JdSimilarHistory.id == record_id
+        )
+        owner_result = await self.db.execute(owner_stmt)
+        owner = owner_result.scalar_one_or_none()
+        if owner is None or str(owner) != str(company_id):
+            raise ValueError(
+                f"company_id mismatch or record not found: "
+                f"record {record_id} cannot be modified by company {company_id}"
+            )
+
         stmt = (
             update(JdSimilarHistory)
-            .where(JdSimilarHistory.id == record_id)
+            .where(
+                JdSimilarHistory.id == record_id,
+                JdSimilarHistory.company_id == company_id,
+            )
             .values(
                 was_filled=True,
                 time_to_fill_days=time_to_fill_days,
@@ -194,11 +231,30 @@ class JdSimilarHistoryRepository:
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
-    async def increment_reuse(self, record_id: UUID) -> None:
-        """Incrementa contador de reuso quando recruiter reaproveita JD."""
+    async def increment_reuse(self, record_id: UUID, company_id: str) -> None:
+        """Incrementa contador de reuso quando recruiter reaproveita JD.
+
+        Multi-tenancy fail-closed (Sprint B Phase 1, gap C5):
+        - Raises ValueError if company_id is empty or doesn't own record.
+        """
+        self._require_company_id(company_id)
+        owner_stmt = select(JdSimilarHistory.company_id).where(
+            JdSimilarHistory.id == record_id
+        )
+        owner_result = await self.db.execute(owner_stmt)
+        owner = owner_result.scalar_one_or_none()
+        if owner is None or str(owner) != str(company_id):
+            raise ValueError(
+                f"company_id mismatch or record not found: "
+                f"record {record_id} cannot be reused by company {company_id}"
+            )
+
         stmt = (
             update(JdSimilarHistory)
-            .where(JdSimilarHistory.id == record_id)
+            .where(
+                JdSimilarHistory.id == record_id,
+                JdSimilarHistory.company_id == company_id,
+            )
             .values(
                 reused_count=JdSimilarHistory.reused_count + 1,
                 last_reused_at=datetime.utcnow(),

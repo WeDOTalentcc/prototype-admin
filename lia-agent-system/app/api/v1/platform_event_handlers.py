@@ -71,6 +71,82 @@ async def _get_vacancy_candidate(
     return result.scalar_one_or_none()
 
 
+async def _record_jd_if_enabled(
+    db: AsyncSession,
+    company_id: str,
+    job_id: str,
+    title: str,
+    jd_enriched: dict | None,
+    department: str | None,
+    seniority_level: str | None,
+) -> None:
+    """Sprint B Phase 1 wiring (gap W2): record JD into similarity history
+    if the company toggle `learning_loops.jd_similar_suggestion` is ON.
+
+    Multi-tenancy: company_id comes from the authenticated event, never the
+    payload directly. Toggle defaults to True per AUTOMATION_RULES_DEFAULTS
+    when no policy row exists yet.
+
+    Fail-soft: any failure here MUST be swallowed — pipeline init has
+    already completed and a missing JD record is a learning-loop concern,
+    not a publish-pipeline concern.
+    """
+    try:
+        # Lazy imports to keep startup cycles light + avoid import cycles
+        from app.domains.hiring_policy.repositories.hiring_policy_repository import (
+            HiringPolicyRepository,
+        )
+        from app.models.company_hiring_policy import AUTOMATION_RULES_DEFAULTS
+
+        # Resolve toggle from CompanyHiringPolicy → fall back to canonical defaults
+        hp_repo = HiringPolicyRepository(db)
+        policy = await hp_repo.get_by_company(company_id)
+        rules = (policy.automation_rules if policy else None) or {}
+        loops = rules.get("learning_loops") or AUTOMATION_RULES_DEFAULTS["learning_loops"]
+        if not loops.get("jd_similar_suggestion", True):
+            logger.debug(
+                "[EventHandler] jd_similar toggle off for company=%s — skip record_jd",
+                company_id,
+            )
+            return
+
+        # Skip if essential fields missing (defensive)
+        if not job_id or not title:
+            logger.debug(
+                "[EventHandler] missing job_id/title in published event — skip record_jd"
+            )
+            return
+
+        from app.domains.job_creation.repositories.jd_similar_history_repository import (
+            JdSimilarHistoryRepository,
+        )
+        from app.domains.job_creation.services.jd_similar_service import (
+            JdSimilarService,
+        )
+        from app.shared.intelligence.embedding_service import EmbeddingService
+
+        repo = JdSimilarHistoryRepository(db)
+        svc = JdSimilarService(repository=repo, embedding_service=EmbeddingService())
+        await svc.record_jd(
+            company_id=company_id,
+            job_id=job_id,
+            title=title,
+            jd_enriched=jd_enriched or {},
+            seniority_level=seniority_level,
+            department=department,
+        )
+        logger.info(
+            "[EventHandler] JD recorded in similarity history company=%s job_id=%s",
+            company_id, job_id,
+        )
+    except Exception as exc:
+        # Fail-soft: never break the publish handler over a learning-loop write
+        logger.warning(
+            "[EventHandler] record_jd failed (fail-soft) company=%s job_id=%s: %s",
+            company_id, job_id, str(exc)[:200],
+        )
+
+
 async def handle_job_published(event: PlatformEvent) -> None:
     """
     Quando uma vaga é publicada (api-vagas), preparar estrutura de pipeline.
@@ -135,6 +211,18 @@ async def handle_job_published(event: PlatformEvent) -> None:
                     category="notification",
                     priority="high",
                 )
+
+        # Sprint B Phase 1 wiring (gap W2): persist JD in similarity history
+        # so future jobs can suggest reuse. Internally fail-soft.
+        await _record_jd_if_enabled(
+            db=db,
+            company_id=company_id,
+            job_id=job_id or "",
+            title=job_title,
+            jd_enriched=event.payload.get("jd_enriched"),
+            department=event.payload.get("department"),
+            seniority_level=event.payload.get("seniority_level"),
+        )
     except Exception as exc:
         logger.error("[EventHandler] handle_job_published error: %s", exc)
     finally:

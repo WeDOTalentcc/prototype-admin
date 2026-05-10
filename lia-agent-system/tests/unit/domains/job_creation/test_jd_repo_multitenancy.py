@@ -21,11 +21,26 @@ from unittest.mock import AsyncMock, MagicMock
 import pytest
 
 
-def _make_mock_db_with_record(record_company_id: str | None):
-    """AsyncSession mock whose lookup returns a record bound to record_company_id.
+def _make_mock_db_with_record(
+    record_company_id: str | None,
+    caller_company_id: str | None = None,
+):
+    """AsyncSession mock simulating an ownership SELECT and record lookup.
 
-    Returns (db_mock, returned_record). When record_company_id is None,
-    lookup returns None (record not found / not owned).
+    Behavior:
+    - mark_filled / increment_reuse: repo runs `select(JdSimilarHistory.company_id)`
+      → scalar_one_or_none() returns the record's company_id (a string), which
+      the repo compares against caller's company_id. We return record_company_id
+      as the scalar.
+    - get_by_id: repo runs `select(JdSimilarHistory).where(id, company_id=caller)`
+      → in real DB the WHERE clause filters out cross-tenant rows so result is None.
+      We simulate that filter by checking caller_company_id at the mock layer.
+
+    Args:
+      record_company_id: company that actually owns the record (or None if missing)
+      caller_company_id: company making the call. Used to simulate WHERE filtering
+        for get_by_id. If unset, mock returns the record regardless (used when
+        only ownership-by-scalar matters, not WHERE filtering).
     """
     db = AsyncMock()
     db.add = MagicMock()
@@ -34,19 +49,45 @@ def _make_mock_db_with_record(record_company_id: str | None):
     db.refresh = AsyncMock()
 
     if record_company_id is None:
-        # Result that returns None on .scalar_one_or_none()
         execute_result = MagicMock()
         execute_result.scalar_one_or_none = MagicMock(return_value=None)
         execute_result.scalar = MagicMock(return_value=None)
     else:
+        # Build a record-like object for get_by_id full-row select
         record = MagicMock()
         record.company_id = record_company_id
         record.id = uuid.uuid4()
+
+        # Simulate WHERE company_id filter for get_by_id: if caller mismatches,
+        # the row is filtered out and scalar_one_or_none returns None.
+        if caller_company_id is not None and caller_company_id != record_company_id:
+            row_for_caller = None
+        else:
+            row_for_caller = record
+
         execute_result = MagicMock()
-        execute_result.scalar_one_or_none = MagicMock(return_value=record)
+        # For ownership SELECT (select(JdSimilarHistory.company_id)) → scalar value
+        # For full-row SELECT (select(JdSimilarHistory)) → record (or None if filtered)
+        # The repo decides which based on its query, and uses scalar_one_or_none
+        # for both. We pick based on caller intent: ownership check expects the
+        # company_id string; full-row select expects the record. Returning the
+        # company_id as scalar works for ownership; full-row tests must also
+        # accept it because both branches use scalar_one_or_none.
+        # To handle both: side_effect-style — but cleaner is to have separate
+        # mocks per method. For mark_filled/increment_reuse the repo calls
+        # SELECT first (ownership) and we want company_id; for get_by_id the
+        # repo calls SELECT once and we want the (filtered) record.
+
+        # Default: return company_id scalar (works for ownership).
+        # Override per-test: tests using get_by_id will set scalar_one_or_none
+        # to row_for_caller in their own setup if needed.
+        execute_result.scalar_one_or_none = MagicMock(return_value=record_company_id)
         execute_result.scalar = MagicMock(return_value=record_company_id)
+        # Stash row_for_caller so get_by_id tests can swap it in
+        execute_result._row_for_caller = row_for_caller
 
     db.execute = AsyncMock(return_value=execute_result)
+    db._execute_result = execute_result  # expose for per-test tweaks
     return db
 
 
@@ -164,7 +205,13 @@ class TestGetByIdCompanyId:
             JdSimilarHistoryRepository,
         )
 
-        db = _make_mock_db_with_record("co-OTHER")
+        # Simulate WHERE company_id=co-CALLER filtering out row owned by co-OTHER.
+        db = _make_mock_db_with_record("co-OTHER", caller_company_id="co-CALLER")
+        # get_by_id selects full row, so scalar_one_or_none must return the
+        # filtered row (None when caller mismatches).
+        db._execute_result.scalar_one_or_none = MagicMock(
+            return_value=db._execute_result._row_for_caller
+        )
         repo = JdSimilarHistoryRepository(db)
 
         async def _run():

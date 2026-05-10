@@ -15,6 +15,7 @@ ADR-006: nenhum log inclui PII (apenas IDs).
 from __future__ import annotations
 
 import logging
+import re
 from typing import Any
 from uuid import UUID
 
@@ -30,12 +31,83 @@ logger = logging.getLogger(__name__)
 JD_EMBEDDING_DIM = 1536
 
 
+# ── PII Redactor (Sprint B Phase 1, gap C4) ────────────────────────────────
+#
+# Defense-in-depth: even though _build_embedding_text only pulls from JD
+# fields (title, responsibilities, requirements), recruiters routinely paste
+# free-text content that contains candidate PII (CPF/CNPJ/email/phone). This
+# redactor runs computational regex BEFORE the embedding API call so PII
+# never leaves the platform via OpenAI text-embedding-3-small.
+#
+# CLAUDE.md non-negotiable rule #2 (LGPD) + harness sensor (computational).
+
+# Brazilian CNPJ: 14 digits, optionally formatted XX.XXX.XXX/XXXX-XX
+_CNPJ_RE = re.compile(r"\b\d{2}\.?\d{3}\.?\d{3}/\d{4}-?\d{2}\b")
+# Brazilian CPF formatted: XXX.XXX.XXX-XX
+_CPF_FORMATTED_RE = re.compile(r"\b\d{3}\.\d{3}\.\d{3}-\d{2}\b")
+# Email: standard, conservative
+_EMAIL_RE = re.compile(r"\b[\w._%+-]+@[\w.-]+\.[A-Za-z]{2,}\b")
+# Brazilian phones formatted: (DD) 9XXXX-XXXX, +55 DD 9XXXX-XXXX, DD 9XXXX-XXXX
+_PHONE_FORMATTED_RE = re.compile(
+    r"(?:\+?55\s?)?"           # optional +55 country code
+    r"\(?\d{2}\)?\s?"           # 2-digit DDD, optional parens
+    r"9?\d{4}[-\s]\d{4}"        # 8 or 9 digits with required separator
+)
+
+# Context-aware unformatted patterns. Bare 11-digit sequences are ambiguous
+# (could be CPF or 9-digit cellphone with DDD), so we look at preceding
+# keywords to disambiguate. Non-greedy keyword + optional separator + digits.
+_CPF_CONTEXTUAL_RE = re.compile(
+    r"(?:cpf|documento|doc\.|rg)[\s:.\-]+(\d{11})\b",
+    flags=re.IGNORECASE,
+)
+_PHONE_CONTEXTUAL_RE = re.compile(
+    r"(?:telefone|tel\.?|cel(?:ular)?\.?|whatsapp|whats|fone|contato)[\s:.\-]+"
+    r"(\+?\d{10,13})\b",
+    flags=re.IGNORECASE,
+)
+# Bare 11-digit sequences without context default to CPF (more sensitive
+# data class — fail-safe: redact as CPF rather than expose).
+_CPF_BARE_RE = re.compile(r"(?<!\d)\d{11}(?!\d)")
+# 10-digit sequences default to phone (BR landline format).
+_PHONE_BARE_RE = re.compile(r"(?<!\d)\d{10}(?!\d)")
+
+
+def _redact_pii(text: str) -> str:
+    """Replace CPF/CNPJ/email/phone in text with placeholder tokens.
+
+    Strategy (Sprint B Phase 1, gap C4):
+    1. Formatted patterns first (CNPJ → CPF → email → phone) — unambiguous.
+    2. Contextual unformatted: keyword-prefixed digits ("Telefone 11999991234"
+       → [TEL]; "CPF 11122233344" → [CPF]).
+    3. Bare 11-digit defaults to [CPF] (fail-safe: most sensitive class).
+    4. Bare 10-digit defaults to [TEL] (BR landline pattern).
+
+    Non-PII numeric content (years 2024, version 3.11, "5+ anos", team sizes)
+    is preserved — patterns require specific digit counts (≥10 for phone,
+    exactly 11 for unformatted CPF).
+    """
+    if not text:
+        return text
+    out = _CNPJ_RE.sub("[CNPJ]", text)
+    out = _CPF_FORMATTED_RE.sub("[CPF]", out)
+    out = _EMAIL_RE.sub("[EMAIL]", out)
+    out = _PHONE_FORMATTED_RE.sub("[TEL]", out)
+    # Context-aware before bare-default fallback
+    out = _PHONE_CONTEXTUAL_RE.sub("[TEL]", out)
+    out = _CPF_CONTEXTUAL_RE.sub("[CPF]", out)
+    # Bare numeric defaults
+    out = _CPF_BARE_RE.sub("[CPF]", out)
+    out = _PHONE_BARE_RE.sub("[TEL]", out)
+    return out
+
+
 def _build_embedding_text(title: str, jd_enriched: dict[str, Any] | None = None) -> str:
     """Constrói o texto que será embedado.
 
     Inclui: title + responsibilities + requirements (concat).
     EXCLUI: salário, dados de candidatos, info confidencial.
-    Mantém ADR-006 (sem PII).
+    Mantém ADR-006 (sem PII via field-level filter + regex redactor).
     """
     parts: list[str] = [title.strip()] if title else []
     if jd_enriched:
@@ -45,7 +117,9 @@ def _build_embedding_text(title: str, jd_enriched: dict[str, Any] | None = None)
         requirements = jd_enriched.get("requirements") or []
         if isinstance(requirements, list):
             parts.extend(str(r) for r in requirements if r)
-    return " | ".join(p for p in parts if p)
+    # Apply PII redactor to every part before joining (gap C4).
+    redacted = [_redact_pii(p) for p in parts if p]
+    return " | ".join(redacted)
 
 
 def _normalize_title(title: str) -> str:
@@ -234,6 +308,7 @@ class JdSimilarService:
 
         await self.repository.mark_filled(
             record_id=record_id,
+            company_id=company_id,
             time_to_fill_days=time_to_fill_days,
             candidates_count=candidates_count,
         )
@@ -251,7 +326,7 @@ class JdSimilarService:
         if not company_id:
             raise ValueError("company_id is required (multi-tenancy)")
         rec_uuid = record_id if isinstance(record_id, UUID) else UUID(str(record_id))
-        await self.repository.increment_reuse(rec_uuid)
+        await self.repository.increment_reuse(rec_uuid, company_id=company_id)
 
 
 # -- Sync wire helper (sync nodes calling async service) ---------------------

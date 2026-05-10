@@ -223,21 +223,32 @@ async def test_find_similar_above_threshold_runs_similarity_query(
 
 
 @pytest.mark.asyncio
-async def test_mark_filled_executes_update(db_session, fake_uuid_str):
-    """mark_filled runs UPDATE and commits."""
+async def test_mark_filled_executes_update(db_session, fake_uuid_str, fake_company_a):
+    """mark_filled runs ownership SELECT + UPDATE and commits.
+
+    Sprint B Phase 1 gap C5: mark_filled now requires company_id and
+    performs an ownership SELECT before the UPDATE (multi-tenancy fail-closed).
+    Two execute calls expected.
+    """
     from app.domains.job_creation.repositories.jd_similar_history_repository import (
         JdSimilarHistoryRepository,
     )
     from uuid import UUID
 
-    db_session.execute = AsyncMock()
+    # First execute returns ownership SELECT (record belongs to fake_company_a),
+    # second execute is the UPDATE.
+    ownership_result = MagicMock()
+    ownership_result.scalar_one_or_none = MagicMock(return_value=fake_company_a)
+    update_result = MagicMock()
+    db_session.execute = AsyncMock(side_effect=[ownership_result, update_result])
 
     repo = JdSimilarHistoryRepository(db_session)
     await repo.mark_filled(
         record_id=UUID(fake_uuid_str),
+        company_id=fake_company_a,
         time_to_fill_days=18,
         candidates_count=47,
     )
 
-    db_session.execute.assert_awaited_once()
+    assert db_session.execute.await_count == 2
     assert db_session.commits == 1
