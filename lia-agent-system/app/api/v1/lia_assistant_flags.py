@@ -5,8 +5,13 @@ Extracted from lia_assistant.py (Phase 5 decomposition).
 All routes share prefix="/lia" to preserve existing /api/v1/lia/feature-flags/* URLs.
 """
 import logging
+import uuid
 from datetime import datetime as dt
 from typing import Any
+
+# Imported at module level to keep audit log path explicit; the call site
+# uses uuid_uuid4 alias to avoid colliding with any local 'uuid' name.
+uuid_uuid4 = uuid.uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
@@ -76,6 +81,49 @@ async def set_feature_flag(
             expires_at=expires,
             created_by=request.created_by
         )
+
+        # Sprint B Phase 4 (gap C2): LGPD Art. 20 trail. Every feature flag
+        # toggle must be logged so the regulator/recruiter can later inspect
+        # who flipped what and when. Sensitive flags like
+        # learning_loops.bigfive_department_history especially benefit from
+        # this. Fail-soft: a missing audit row should not flip the user's
+        # toggle response to failure (matches AuditService.log_action's own
+        # internal try/except behavior).
+        if result.get("success"):
+            try:
+                from app.shared.compliance.audit_service import AuditService
+                actor_id = (
+                    getattr(current_user, "id", None)
+                    or getattr(current_user, "email", None)
+                    or "unknown"
+                )
+                tenant_id = (
+                    request.company_id
+                    or getattr(current_user, "company_id", None)
+                    or ""
+                )
+                if tenant_id:
+                    await AuditService().log_action(
+                        trace_id=str(uuid_uuid4()),
+                        company_id=str(tenant_id),
+                        action_type="feature_flag_change",
+                        actor=str(actor_id),
+                        target_id=request.flag_key,
+                        target_type="feature_flag",
+                        metadata={
+                            "flag_key": request.flag_key,
+                            "is_enabled": request.is_enabled,
+                            "rollout_percentage": request.rollout_percentage,
+                            "category": request.category,
+                            "company_id_payload": request.company_id,
+                        },
+                    )
+            except Exception as audit_exc:
+                logger.warning(
+                    "[FeatureFlag] audit log failed (fail-soft) flag=%s: %s",
+                    request.flag_key, str(audit_exc)[:200],
+                )
+
         return FeatureFlagResponse(
             success=result.get("success", False),
             flag_id=result.get("flag_id"),

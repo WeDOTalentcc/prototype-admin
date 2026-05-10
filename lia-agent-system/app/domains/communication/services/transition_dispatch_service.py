@@ -724,10 +724,68 @@ class TransitionDispatchService:
                     "[ConclusionHired] WSI outcome hook failed: %s",
                     str(_wsi_exc)[:100],
                 )
+
+            # Sprint B Phase 4 (gap C3): push BiasAuditSnapshot per hire so
+            # the EU AI Act trail is event-driven instead of relying on
+            # admin-pull. Fail-soft so a bias-audit failure cannot block
+            # the conclusion_hired dispatch.
+            await self._push_bias_snapshot(
+                company_id=company_id, job_id=job_id,
+            )
         except Exception as exc:
             logger.warning(
                 "[ConclusionHired hook] failed (non-blocking): %s",
                 str(exc)[:200],
+            )
+
+    async def _push_bias_snapshot(self, *, company_id: str, job_id: str) -> None:
+        """Sprint B Phase 4 (C3): push a BiasAuditSnapshot for `job_id`.
+
+        Generates a fresh adverse-impact report and persists it via
+        BiasAuditService.save_snapshot. Fail-soft: any error is logged
+        and swallowed — bias-audit observability never blocks the hire
+        dispatch flow.
+
+        Multi-tenancy: company_id from the caller's JWT context (NOT
+        from any payload).
+        """
+        if not company_id or not job_id:
+            return
+        try:
+            from uuid import UUID as _UUID
+            from app.shared.services.bias_audit_service import BiasAuditService
+
+            svc = BiasAuditService()
+            try:
+                _company_uuid = _UUID(str(company_id))
+            except (TypeError, ValueError):
+                logger.debug(
+                    "[ConclusionHired] bias snapshot skipped — company_id "
+                    "is not a UUID (got %r)",
+                    company_id,
+                )
+                return
+
+            report = await svc.get_adverse_impact_by_job(
+                db=self.db, company_id=_company_uuid, job_id=job_id,
+            )
+            if report is None:
+                logger.debug(
+                    "[ConclusionHired] bias snapshot skipped — no report for job=%s",
+                    job_id,
+                )
+                return
+            await svc.save_snapshot(
+                db=self.db, company_id=_company_uuid, report=report,
+            )
+            logger.info(
+                "[ConclusionHired] bias snapshot pushed job=%s alerts=%s",
+                job_id, getattr(report, "has_alerts", "?"),
+            )
+        except Exception as snap_exc:
+            logger.warning(
+                "[ConclusionHired] bias snapshot failed (fail-soft) job=%s: %s",
+                job_id, str(snap_exc)[:200],
             )
 
     async def _record_wsi_outcomes_for_candidate(
