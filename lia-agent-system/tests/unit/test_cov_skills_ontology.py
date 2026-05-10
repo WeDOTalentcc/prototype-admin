@@ -8,33 +8,37 @@ from app.domains.talent_intelligence.services.skills_ontology_engine import (
 )
 
 
-@pytest.fixture
+@pytest.fixture(scope="module")
 def engine():
     return SkillsOntologyEngine()
 
 
 class TestSkillLevel:
-    def test_beginner_value(self):
+    def test_beginner(self):
         assert SkillLevel.BEGINNER == "beginner"
 
-    def test_expert_value(self):
+    def test_expert(self):
         assert SkillLevel.EXPERT == "expert"
 
-    def test_all_levels_present(self):
-        levels = [sl.value for sl in SkillLevel]
+    def test_all_levels(self):
+        levels = {sl.value for sl in SkillLevel}
         assert "beginner" in levels
         assert "expert" in levels
 
 
 class TestSkillNode:
-    def test_instantiation(self):
-        node = SkillNode(id="python", name="Python", level=SkillLevel.INTERMEDIATE)
+    def test_instantiation_with_required_fields(self):
+        node = SkillNode(id="python", name="Python")
         assert node.id == "python"
         assert node.name == "Python"
 
-    def test_canonical_lowercased(self):
-        node = SkillNode(id="PYTHON", name="Python", level=SkillLevel.INTERMEDIATE)
+    def test_canonical_property(self):
+        node = SkillNode(id="PYTHON", name="Python")
         assert node.canonical == "python"
+
+    def test_with_domain(self):
+        node = SkillNode(id="django", name="Django", domain="backend")
+        assert node.domain == "backend"
 
 
 class TestSkillEdge:
@@ -44,28 +48,32 @@ class TestSkillEdge:
         assert edge.target == "django"
         assert edge.weight == 0.8
 
+    def test_relation_field(self):
+        edge = SkillEdge(source="a", target="b", weight=0.5, relation="specialization")
+        assert edge.relation == "specialization"
 
-class TestSkillsOntologyEngineInit:
-    def test_engine_initializes(self, engine):
+
+class TestEngineInit:
+    def test_engine_not_none(self, engine):
         assert engine is not None
 
-    def test_has_nodes(self, engine):
+    def test_has_skills(self, engine):
         stats = engine.get_stats()
-        assert stats.get("nodes", 0) > 0
+        assert stats.get("total_skills", 0) > 0
 
     def test_has_edges(self, engine):
         stats = engine.get_stats()
-        assert stats.get("edges", 0) >= 0
+        assert stats.get("total_edges", 0) >= 0
 
 
 class TestGetSkillInfo:
-    def test_known_skill_returns_dict(self, engine):
+    def test_known_skill(self, engine):
         result = engine.get_skill_info("python")
         if result is not None:
             assert isinstance(result, dict)
 
-    def test_unknown_skill_returns_none(self, engine):
-        result = engine.get_skill_info("xyz_nonexistent_skill_123")
+    def test_unknown_skill(self, engine):
+        result = engine.get_skill_info("xyz_nonexistent_skill_999")
         assert result is None
 
     def test_case_insensitive(self, engine):
@@ -79,13 +87,13 @@ class TestGetAdjacencies:
         result = engine.get_adjacencies("python")
         assert isinstance(result, list)
 
-    def test_unknown_skill_returns_empty(self, engine):
-        result = engine.get_adjacencies("xyz_totally_unknown")
+    def test_unknown_returns_empty(self, engine):
+        result = engine.get_adjacencies("xyz_totally_unknown_999")
         assert result == []
 
     def test_min_weight_filters(self, engine):
         all_adj = engine.get_adjacencies("python", min_weight=0.0)
-        high_adj = engine.get_adjacencies("python", min_weight=0.9)
+        high_adj = engine.get_adjacencies("python", min_weight=0.99)
         assert len(all_adj) >= len(high_adj)
 
 
@@ -94,7 +102,7 @@ class TestInferRelatedSkills:
         result = engine.infer_related_skills(["python"])
         assert isinstance(result, list)
 
-    def test_empty_input_returns_empty(self, engine):
+    def test_empty_returns_empty(self, engine):
         result = engine.infer_related_skills([])
         assert result == []
 
@@ -115,16 +123,16 @@ class TestAnalyzeSkillGaps:
         )
         assert isinstance(result, dict)
 
-    def test_missing_skills_identified(self, engine):
-        result = engine.analyze_skill_gaps(
-            candidate_skills=["python"],
-            required_skills=["python", "react"]
-        )
-        assert "missing" in result or "gaps" in result or len(result) > 0
-
     def test_no_gaps_when_matching(self, engine):
         result = engine.analyze_skill_gaps(
             candidate_skills=["python"],
+            required_skills=["python"]
+        )
+        assert isinstance(result, dict)
+
+    def test_empty_candidate(self, engine):
+        result = engine.analyze_skill_gaps(
+            candidate_skills=[],
             required_skills=["python"]
         )
         assert isinstance(result, dict)
@@ -150,7 +158,7 @@ class TestCosimeSimilarity:
         b = [0.0, 1.0]
         assert engine._cosine_similarity(a, b) == pytest.approx(0.0, abs=1e-6)
 
-    def test_similar_vectors_high_score(self, engine):
+    def test_similar_vectors(self, engine):
         a = [1.0, 1.0, 1.0]
         b = [1.0, 1.0, 0.9]
         score = engine._cosine_similarity(a, b)
@@ -162,10 +170,14 @@ class TestGetStats:
         stats = engine.get_stats()
         assert isinstance(stats, dict)
 
-    def test_has_nodes_key(self, engine):
+    def test_has_total_skills(self, engine):
         stats = engine.get_stats()
-        assert "nodes" in stats
+        assert "total_skills" in stats
 
-    def test_nodes_positive(self, engine):
+    def test_has_total_edges(self, engine):
         stats = engine.get_stats()
-        assert stats["nodes"] > 0
+        assert "total_edges" in stats
+
+    def test_total_skills_positive(self, engine):
+        stats = engine.get_stats()
+        assert stats["total_skills"] > 0

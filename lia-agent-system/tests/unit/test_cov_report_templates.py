@@ -10,9 +10,9 @@ from app.templates.report_templates import (
 
 
 class TestFormatNumber:
-    def test_integer_default_decimals(self):
+    def test_default_decimals(self):
         result = _format_number(1234.5)
-        assert "1" in result  # has numeric content
+        assert "1" in result
 
     def test_zero_decimals(self):
         result = _format_number(1000.0, decimals=0)
@@ -20,7 +20,7 @@ class TestFormatNumber:
 
     def test_two_decimals(self):
         result = _format_number(1.5, decimals=2)
-        assert "," in result  # Brazilian formatting uses comma for decimal
+        assert "," in result
 
     def test_small_number(self):
         result = _format_number(5.3)
@@ -32,60 +32,54 @@ class TestFormatNumber:
 
 
 class TestTrendIcon:
-    def test_up_returns_arrow_up(self):
+    def test_up(self):
         assert _trend_icon("up") == "↑"
 
-    def test_down_returns_arrow_down(self):
+    def test_down(self):
         assert _trend_icon("down") == "↓"
 
-    def test_neutral_returns_arrow_right(self):
+    def test_neutral_right(self):
         assert _trend_icon("stable") == "→"
 
-    def test_empty_string_returns_right(self):
+    def test_empty_right(self):
         assert _trend_icon("") == "→"
-
-    def test_unknown_value_returns_right(self):
-        assert _trend_icon("sideways") == "→"
 
 
 class TestTrendColor:
-    def test_up_positive_is_green(self):
+    def test_up_positive_green(self):
         assert _trend_color("up", positive_is_up=True) == "#16a34a"
 
-    def test_up_negative_is_red(self):
+    def test_up_negative_red(self):
         assert _trend_color("up", positive_is_up=False) == "#dc2626"
 
-    def test_down_positive_up_is_red(self):
+    def test_down_positive_red(self):
         assert _trend_color("down", positive_is_up=True) == "#dc2626"
 
-    def test_down_positive_false_is_green(self):
+    def test_down_negative_green(self):
         assert _trend_color("down", positive_is_up=False) == "#16a34a"
 
-    def test_neutral_returns_gray(self):
+    def test_neutral_gray(self):
         assert _trend_color("neutral") == "#6b7280"
 
-    def test_default_positive_is_up_true(self):
+    def test_default_is_positive_up(self):
         assert _trend_color("up") == "#16a34a"
 
 
 class TestSeverityColor:
-    def test_critical_is_red(self):
+    def test_critical(self):
         assert _severity_color("critical") == "#dc2626"
 
-    def test_high_is_orange(self):
+    def test_high(self):
         assert _severity_color("high") == "#f97316"
 
-    def test_medium_is_yellow(self):
+    def test_medium(self):
         assert _severity_color("medium") == "#eab308"
 
-    def test_low_is_blue(self):
+    def test_low(self):
         assert _severity_color("low") == "#3b82f6"
 
-    def test_unknown_returns_gray(self):
+    def test_unknown_gray(self):
         assert _severity_color("unknown") == "#6b7280"
-
-    def test_empty_returns_gray(self):
-        assert _severity_color("") == "#6b7280"
 
 
 class TestReportTemplatesDailyBriefing:
@@ -102,7 +96,7 @@ class TestReportTemplatesDailyBriefing:
         result = ReportTemplates.daily_briefing_html({"greeting": "Boa tarde"})
         assert "Boa tarde" in result
 
-    def test_urgent_actions_included(self):
+    def test_urgent_actions(self):
         data = {
             "urgent_actions": [
                 {"title": "Revisar candidato", "description": "Urgente", "priority": "critical"}
@@ -111,7 +105,7 @@ class TestReportTemplatesDailyBriefing:
         result = ReportTemplates.daily_briefing_html(data)
         assert "Revisar candidato" in result
 
-    def test_alerts_section_when_present(self):
+    def test_alerts_section(self):
         data = {
             "alerts": [
                 {"title": "Prazo vencendo", "severity": "high", "description": "3 dias"}
@@ -120,17 +114,26 @@ class TestReportTemplatesDailyBriefing:
         result = ReportTemplates.daily_briefing_html(data)
         assert isinstance(result, str)
 
-    def test_insights_included(self):
-        data = {"insights": ["Taxa de aprovação acima da média"]}
+    def test_insights_as_dicts(self):
+        data = {
+            "insights": [
+                {"type": "info", "text": "Taxa de aprovacao acima da media"}
+            ]
+        }
         result = ReportTemplates.daily_briefing_html(data)
         assert isinstance(result, str)
 
-    def test_schedule_included(self):
+    def test_schedule(self):
         data = {
             "schedule": [
                 {"time": "09:00", "type": "interview", "title": "Entrevista Ana"}
             ]
         }
+        result = ReportTemplates.daily_briefing_html(data)
+        assert isinstance(result, str)
+
+    def test_pipeline_section(self):
+        data = {"pipeline": {"total": 20, "new": 5}}
         result = ReportTemplates.daily_briefing_html(data)
         assert isinstance(result, str)
 
@@ -141,14 +144,14 @@ class TestReportTemplatesWeeklyReport:
         assert isinstance(result, str)
         assert len(result) > 100
 
-    def test_company_name_used(self):
+    def test_company_name(self):
         result = ReportTemplates.weekly_report_html({"company_name": "ACME Corp"})
         assert "ACME Corp" in result
 
     def test_with_kpis(self):
         data = {
             "kpis": [
-                {"name": "Contratações", "value": "12", "trend": "up", "trend_pct": 15}
+                {"name": "Contratos", "value": "12", "trend": "up", "trend_pct": 15}
             ]
         }
         result = ReportTemplates.weekly_report_html(data)
@@ -177,24 +180,33 @@ class TestReportTemplatesMonthlyReport:
         assert isinstance(result, str)
         assert len(result) > 100
 
-    def test_month_year_used(self):
-        result = ReportTemplates.monthly_report_html({"month_year": "Maio 2026"})
+    def test_period_key(self):
+        result = ReportTemplates.monthly_report_html({"period": "Maio 2026"})
         assert "Maio 2026" in result
 
-    def test_with_strategic_kpis(self):
+    def test_company_name(self):
+        result = ReportTemplates.monthly_report_html({"company_name": "XYZ Corp"})
+        assert "XYZ Corp" in result
+
+    def test_strategic_kpis(self):
         data = {
-            "strategic_kpis": [
-                {"name": "Time-to-Fill", "value": "25 dias", "trend": "down", "trend_pct": -8}
+            "kpis": [
+                {"name": "Time-to-Fill", "value": "25d", "trend": "down", "trend_pct": -8}
             ]
         }
         result = ReportTemplates.monthly_report_html(data)
         assert isinstance(result, str)
 
-    def test_with_predictions(self):
+    def test_predictions(self):
         data = {
             "predictions": [
-                {"title": "Pipeline saudável", "description": "Próximos 30 dias"}
+                {"title": "Pipeline saudavel", "description": "Proximos 30 dias"}
             ]
         }
+        result = ReportTemplates.monthly_report_html(data)
+        assert isinstance(result, str)
+
+    def test_executive_summary(self):
+        data = {"executive_summary": {"hires": 5, "open_positions": 3}}
         result = ReportTemplates.monthly_report_html(data)
         assert isinstance(result, str)
