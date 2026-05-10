@@ -67,14 +67,18 @@ def _make_dispatcher():
     return dispatcher
 
 
-def test_record_hire_not_invoked_during_conclusion_hired_dispatch():
-    """P1-4 behavioral complement to ADR-LGPD-001 source sentinel.
+def test_record_hire_not_invoked_when_no_ocean_traits_available():
+    """Phase 2.5 SHIPPED — record_hire is now WIRED, but only when
+    LiaOpinion.behavioral_analysis['ocean_traits'] is populated. This
+    sentinel covers the graceful-degrade path: when no LiaOpinion
+    exists for the candidate (or its behavioral_analysis lacks
+    ocean_traits), record_hire MUST NOT be called — calling with
+    fabricated/empty snapshot would contaminate dept aggregates per
+    ADR-LGPD-001 fail-safe.
 
-    Dispatches a synthetic conclusion_hired and asserts
-    BigFiveDepartmentService.record_hire was NEVER awaited. If a future
-    change wires record_hire (with or without renaming the helper),
-    this test fails behaviorally — independent of the source-inspection
-    sentinel.
+    Setup: dispatcher's mocked db.execute returns scalars().first()=None
+    for the LiaOpinion lookup (no opinion in DB), so the helper should
+    skip the call.
     """
     dispatcher = _make_dispatcher()
 
@@ -82,7 +86,9 @@ def test_record_hire_not_invoked_during_conclusion_hired_dispatch():
 
     async def _run():
         # Patch all downstream collaborators that would otherwise touch
-        # network or DB — we only care about record_hire absence.
+        # network or DB. Note: we do NOT patch _record_bigfive_hire
+        # itself — we want the real helper to run and short-circuit on
+        # the missing LiaOpinion (db.execute returns None).
         with patch(
             "app.domains.job_creation.services.bigfive_service.BigFiveDepartmentService.record_hire",
             new=record_hire_mock,
@@ -105,9 +111,10 @@ def test_record_hire_not_invoked_during_conclusion_hired_dispatch():
     asyncio.run(_run())
 
     assert not record_hire_mock.called, (
-        "BigFiveDepartmentService.record_hire was invoked from "
-        "_hook_conclusion_hired. Per ADR-LGPD-001 + Phase 2.5 prereq, "
-        "record_hire must NOT be wired here until the WSI scoring "
-        "pipeline emits per-candidate OCEAN traits. Either revert the "
-        "wiring or update ADR-LGPD-001 + this sentinel."
+        "BigFiveDepartmentService.record_hire was invoked despite no "
+        "LiaOpinion / no ocean_traits in the dispatcher's mock chain. "
+        "_record_bigfive_hire helper MUST short-circuit when the "
+        "LiaOpinion lookup returns None or behavioral_analysis lacks "
+        "ocean_traits — calling with empty snapshot would contaminate "
+        "the dept aggregate (ADR-LGPD-001 fail-safe)."
     )

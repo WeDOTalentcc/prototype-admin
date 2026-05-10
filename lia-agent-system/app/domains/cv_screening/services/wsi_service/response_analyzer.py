@@ -76,6 +76,9 @@ class WSIResponseAnalyzer:
                 justification=justification_text,
                 layer2_signals=layer2_signals,
                 layer2_degraded_reason=layer2_degraded_reason,
+                # Phase 2.5: forward the BigFive trait of the question so
+                # downstream score_calculator can build ocean_traits dict.
+                trait_ocean=getattr(question, "big_five_mapping", None),
             )
         except Exception as e:
             logger.error(f"Deterministic analysis failed for {question.competency}: {e}")
@@ -91,7 +94,9 @@ class WSIResponseAnalyzer:
                 red_flags=["Erro no processamento determinístico"],
                 consistency_penalty=0.0,
                 final_score=3.0,
-                justification=f"Fallback aplicado devido a erro: {str(e)}"
+                justification=f"Fallback aplicado devido a erro: {str(e)}",
+                # Phase 2.5: preserve trait association even in fallback path.
+                trait_ocean=getattr(question, "big_five_mapping", None),
             )
 
 

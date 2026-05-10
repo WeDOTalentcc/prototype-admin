@@ -138,45 +138,57 @@ async def test_bigfive_repo_upsert_rejects_non_ocean_traits():
 # ── 3. ADR-LGPD-001 sentinel — record_hire NOT wired in conclusion_hired ────
 
 
-def test_record_hire_is_not_wired_in_hook_conclusion_hired():
-    """Sprint B Phase 2.5 prerequisite: candidate OCEAN traits snapshot is
-    NOT yet emitted by the WSI scoring pipeline. Until that data source
-    exists, _hook_conclusion_hired must NOT invoke
-    BigFiveDepartmentService.record_hire — calling it with fabricated or
-    empty snapshots would contaminate dept profiles with junk data.
+def test_record_hire_is_wired_via_record_bigfive_hire_helper():
+    """Phase 2.5 SHIPPED (was: record_hire NOT wired). Sentinel flipped.
 
-    This sentinel inspects the source of _hook_conclusion_hired to ensure
-    no caller appears, plus an explicit ADR-LGPD-001 reference is present
-    in the docstring/comments.
+    Originally guarded against premature wiring — record_hire must not
+    be called until per-candidate OCEAN traits snapshot exists. Phase 2.5
+    closed that gap (LiaOpinion.behavioral_analysis['ocean_traits']
+    populated by handlers_screening). The hook now invokes record_hire
+    via the _record_bigfive_hire helper, which reads the latest
+    LiaOpinion and forwards the snapshot.
 
-    If this fails: someone wired record_hire prematurely. Either:
-      (a) revert the wiring until candidate_traits_snapshot pipeline
-          lands (Phase 2.5 ticket), OR
-      (b) update this sentinel + ADR-LGPD-001 with the new contract for
-          how snapshot is sourced.
+    This sentinel now ensures:
+      (a) The _record_bigfive_hire helper exists in the dispatcher.
+      (b) _hook_conclusion_hired calls it.
+      (c) ADR-LGPD-001 docstring acknowledges Phase 2.5 shipped.
+
+    If this fails: either record_hire wiring was reverted (look for the
+    helper), or the docstring lost the Phase 2.5 reference.
     """
     import inspect
     from app.domains.communication.services import transition_dispatch_service
 
-    source = inspect.getsource(
-        transition_dispatch_service.TransitionDispatchService._hook_conclusion_hired
+    cls = transition_dispatch_service.TransitionDispatchService
+    hook_source = inspect.getsource(cls._hook_conclusion_hired)
+
+    # Helper must exist on the class
+    assert hasattr(cls, "_record_bigfive_hire"), (
+        "TransitionDispatchService no longer has the "
+        "_record_bigfive_hire helper. Phase 2.5 introduced it to read "
+        "LiaOpinion.behavioral_analysis['ocean_traits'] and call "
+        "BigFiveDepartmentService.record_hire. If the helper was renamed, "
+        "update this sentinel; if removed, restore Phase 2.5 wiring."
     )
 
-    # Negative assertion: record_hire must not be called in current scope
-    assert ".record_hire(" not in source, (
-        "BigFiveDepartmentService.record_hire is being called in "
-        "_hook_conclusion_hired but the candidate OCEAN traits snapshot "
-        "data source does not exist yet (Phase 2.5 prerequisite). "
-        "Either land the snapshot pipeline first, or drop this call. "
-        "See ADR-LGPD-001 in the function's docstring."
+    # Hook must call the helper
+    assert "_record_bigfive_hire" in hook_source, (
+        "_hook_conclusion_hired no longer calls _record_bigfive_hire. "
+        "Phase 2.5 wired this call after _push_bias_snapshot — restore "
+        "or update this sentinel if the call moved."
     )
 
-    # Positive assertion: ADR reference must be present so future readers
-    # know why this hook intentionally skips record_hire.
-    assert "ADR-LGPD-001" in source or "Phase 2.5" in source, (
-        "_hook_conclusion_hired must reference ADR-LGPD-001 (or 'Phase 2.5') "
-        "in its docstring/comments to document why BigFive.record_hire is "
-        "deliberately not wired today. Add a docstring section explaining: "
-        "(1) candidate_traits_snapshot data source is missing, and "
-        "(2) aggregate-not-PII ANPD analysis for LGPD Art. 18."
+    # Docstring must reference Phase 2.5 + LiaOpinion data source
+    assert "Phase 2.5" in hook_source, (
+        "Docstring lost the Phase 2.5 reference. Keep Phase 2.5 mention "
+        "as historical anchor for the data-source change."
+    )
+    assert (
+        "behavioral_analysis" in hook_source
+        or "ocean_traits" in hook_source
+        or "LiaOpinion" in hook_source
+    ), (
+        "Docstring must reference the new data source for ocean_traits "
+        "(LiaOpinion.behavioral_analysis['ocean_traits']) so future "
+        "readers know where the snapshot now comes from."
     )

@@ -149,6 +149,11 @@ class WSIQuestion(BaseModel):
     # F6.8 — validação pós-geração
     needs_manual_review: bool = False
     validation_flags: dict[str, Any] = Field(default_factory=dict)
+    # Phase 2.5: trait OCEAN copied from Competency.big_five_mapping when
+    # the question is constructed. Allows WSIResponseAnalyzer to forward
+    # the trait into ResponseAnalysis for downstream aggregation. None
+    # for technical/non-BigFive questions.
+    big_five_mapping: str | None = None
 
 
 class ResponseAnalysis(BaseModel):
@@ -156,37 +161,51 @@ class ResponseAnalysis(BaseModel):
     question_id: str
     competency: str
     response_text: str
-    
+
     autodeclaration_score: float | None = Field(None, ge=1, le=5)
     context_score: float | None = Field(None, ge=1, le=5)
     bloom_level: int | None = Field(None, ge=1, le=6)
     dreyfus_level: int | None = Field(None, ge=1, le=5)
-    
+
     evidences: list[str]
     red_flags: list[str]
     consistency_penalty: float = 0.0
-    
+
     final_score: float = Field(ge=1, le=5)
     justification: str
     # Camada 2 (LLM enrichment) — optional, populated when Layer2Extractor runs
     layer2_signals: Optional["Layer2Signals"] = None
     layer2_degraded_reason: Optional[str] = None
+    # Phase 2.5: BigFive trait of the originating WSIQuestion (propagated
+    # from WSIQuestion.big_five_mapping by WSIResponseAnalyzer). Carries
+    # the response's score-to-trait association so WSIScoreCalculator can
+    # aggregate ocean_traits for record_hire downstream. None for
+    # technical/non-BigFive questions.
+    trait_ocean: str | None = None
 
 
 class WSIResult(BaseModel):
     """Resultado final da avaliação WSI."""
     candidate_id: str
     job_vacancy_id: str
-    
+
     technical_wsi: float = Field(ge=0, le=5)
     behavioral_wsi: float = Field(ge=0, le=5)
     overall_wsi: float = Field(ge=0, le=5)
-    
+
     classification: Literal["excepcional", "excelente", "alto", "medio", "regular", "baixo"]
     percentile: int | None = None
-    
+
     response_analyses: list[ResponseAnalysis]
     created_at: datetime = Field(default_factory=datetime.now)
+    # Phase 2.5: per-trait aggregate of OCEAN scores normalized to 0..1.
+    # Built by WSIScoreCalculator from response_analyses with non-null
+    # trait_ocean. Persisted by handlers_screening into
+    # LiaOpinion.behavioral_analysis['ocean_traits'] and consumed by
+    # _hook_conclusion_hired to populate
+    # BigFiveDepartmentService.record_hire (ADR-LGPD-001 data source).
+    # Empty dict when no BigFive-tagged responses exist.
+    ocean_traits: dict[str, float] = Field(default_factory=dict)
 
 
 class StructuredReport(BaseModel):

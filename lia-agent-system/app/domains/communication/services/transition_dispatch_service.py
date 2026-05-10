@@ -593,21 +593,32 @@ class TransitionDispatchService:
         Phase 2: BigFive.record_hire — DEFERRED to Phase 2.5.
         Phase 3: WSI Effectiveness outcomes per skill_probed (record_question_outcome)
 
-        ─── ADR-LGPD-001 (rev 2026-05-10, hardened post-audit) ─────────
-        BigFiveDepartmentService.record_hire is intentionally NOT wired
-        from this hook today. Two reasons:
+        ─── ADR-LGPD-001 (rev 2026-05-10, Phase 2.5 shipped) ───────────
+        BigFiveDepartmentService.record_hire IS wired here as of Phase 2.5.
+        Historical context preserved for traceability:
 
-        1. DATA SOURCE PREREQUISITE: record_hire requires
-           candidate_traits_snapshot — a dict with all 5 OCEAN keys
-           (openness, conscientiousness, extraversion, agreeableness,
-           stability) as floats 0-1. The WSI scoring pipeline currently
-           emits {technicalScore, behavioralScore, gapAnalysisScore,
-           contextualScore, totalWSI, decision} (interview.wsi_score
-           JSON) but does NOT emit per-candidate OCEAN traits. Wiring
-           record_hire with a fabricated snapshot would contaminate
-           bigfive_department_profiles with junk data and degrade the
-           learning-loop quality. Phase 2.5 follow-up: extend WSI
-           scoring to emit OCEAN per candidate, then wire here.
+        1. DATA SOURCE (Phase 2.5 shipped): record_hire requires
+           candidate_traits_snapshot — a dict with OCEAN keys (openness,
+           conscientiousness, extraversion, agreeableness, stability) as
+           floats 0-1. Phase 2.5 extended the WSI scoring pipeline to
+           emit per-candidate OCEAN via:
+             WSIQuestion.big_five_mapping
+              -> ResponseAnalysis.trait_ocean (response_analyzer)
+                -> WSIResult.ocean_traits (score_calculator aggregates
+                   by trait, normalizes 1-5 -> 0-1)
+                  -> LiaOpinion.behavioral_analysis['ocean_traits']
+                     (persisted by handlers_screening)
+           This hook (_record_bigfive_hire helper) reads the latest
+           LiaOpinion for the candidate and forwards ocean_traits to
+           record_hire. Missing/empty snapshot triggers graceful
+           degradation (no record_hire call, no contamination).
+
+           Pre-Phase-2.5 status (now resolved): WSI scoring emitted only
+           {technicalScore, behavioralScore, gapAnalysisScore,
+           contextualScore, totalWSI, decision} on interview.wsi_score
+           JSON — no per-candidate OCEAN. Wiring record_hire with a
+           fabricated snapshot would have contaminated
+           bigfive_department_profiles with junk data.
 
         2. LGPD ART. 18 ANALYSIS — aggregate-not-PII argument:
 
@@ -665,7 +676,11 @@ class TransitionDispatchService:
            Decision history: Sprint B Phase 3 audit, decisão D1=B
            (Paulo 2026-05-10). Hardened post-audit 2026-05-10
            with ANPD/Art. 12 §1/EU AI Act Art. 10(5) citations and
-           the MIN_DEPT_SAMPLES quantitative anchor.
+           the MIN_DEPT_SAMPLES quantitative anchor. Phase 2.5
+           shipped 2026-05-10 closing the data-source prerequisite;
+           record_hire reads from
+           LiaOpinion.behavioral_analysis['ocean_traits'] via the
+           _record_bigfive_hire helper below.
 
         Sentinel: tests/unit/test_bigfive_phase3_governance.py asserts
         record_hire is not called from this hook and that this
@@ -684,7 +699,13 @@ class TransitionDispatchService:
         try:
             from datetime import datetime
             from sqlalchemy import select as _select
-            from lia_models.vacancy_candidate import VacancyCandidate
+            # Boy-scout (Phase 2.5): VacancyCandidate canonical lives in
+            # lia_models.candidate (top-of-file already imports both
+            # Candidate and VacancyCandidate from there). The previous
+            # `from lia_models.vacancy_candidate import` was a stale path
+            # that crashed at import time and got swallowed by the outer
+            # try/except, masking the entire hook silently.
+            from lia_models.candidate import VacancyCandidate
             from lia_models.job_vacancy import JobVacancy
             from app.domains.job_creation.repositories.jd_similar_history_repository import (
                 JdSimilarHistoryRepository,
@@ -774,9 +795,114 @@ class TransitionDispatchService:
             await self._push_bias_snapshot(
                 company_id=company_id, job_id=job_id,
             )
+
+            # Phase 2.5 (closes ADR-LGPD-001 deferral): now that the WSI
+            # scoring pipeline emits per-candidate OCEAN traits and
+            # _process_screening_completed persists them in
+            # LiaOpinion.behavioral_analysis['ocean_traits'], we can
+            # finally record this hire in bigfive_department_profiles.
+            # Fail-soft: missing snapshot is fine (degrades graceful).
+            await self._record_bigfive_hire(
+                company_id=company_id,
+                vacancy_candidate=vc,
+                job=job,
+            )
         except Exception as exc:
             logger.warning(
                 "[ConclusionHired hook] failed (non-blocking): %s",
+                str(exc)[:200],
+            )
+
+    async def _record_bigfive_hire(
+        self,
+        *,
+        company_id: str,
+        vacancy_candidate,
+        job,
+    ) -> None:
+        """Phase 2.5: read latest LiaOpinion for the hired candidate, extract
+        OCEAN traits snapshot, and call BigFiveDepartmentService.record_hire.
+
+        Fail-soft: never raises. If LiaOpinion is missing or has no
+        ocean_traits, skip silently — record_hire with empty/junk
+        snapshot would contaminate the dept aggregate (ADR-LGPD-001
+        fail-safe). The MIN_DEPT_SAMPLES gate downstream further
+        protects against premature use of small-N profiles.
+
+        Args:
+          company_id: tenant from JWT context.
+          vacancy_candidate: the VC row (carries candidate_id, vacancy_id).
+          job: the JobVacancy row (carries department, seniority_level).
+        """
+        if not company_id or vacancy_candidate is None:
+            return
+        candidate_id = getattr(vacancy_candidate, "candidate_id", None)
+        if not candidate_id:
+            return
+        try:
+            from sqlalchemy import select as _select
+            from app.models.lia_opinion import LiaOpinion
+            from app.domains.job_creation.services.bigfive_service import (
+                BigFiveDepartmentService,
+            )
+
+            # Latest LiaOpinion for this candidate scoped by company
+            # (multi-tenancy fail-closed).
+            stmt = (
+                _select(LiaOpinion)
+                .where(
+                    LiaOpinion.candidate_id == candidate_id,
+                    LiaOpinion.company_id == str(company_id),
+                )
+                .order_by(LiaOpinion.created_at.desc())
+                .limit(1)
+            )
+            result = await self.db.execute(stmt)
+            opinion = result.scalars().first()
+            if opinion is None:
+                logger.debug(
+                    "[ConclusionHired] no LiaOpinion for candidate=%s — "
+                    "skip BigFive record_hire",
+                    candidate_id,
+                )
+                return
+
+            behavioral_analysis = getattr(opinion, "behavioral_analysis", None) or {}
+            ocean_traits = behavioral_analysis.get("ocean_traits") or {}
+            if not ocean_traits:
+                logger.debug(
+                    "[ConclusionHired] LiaOpinion has no ocean_traits — "
+                    "skip BigFive record_hire (Phase 2.5 graceful degrade)"
+                )
+                return
+
+            department = getattr(job, "department", None) if job is not None else None
+            seniority_level = (
+                getattr(job, "seniority_level", None) if job is not None else None
+            )
+            if not department or not seniority_level:
+                logger.debug(
+                    "[ConclusionHired] job missing department/seniority — "
+                    "skip BigFive record_hire"
+                )
+                return
+
+            svc = BigFiveDepartmentService(self.db)
+            await svc.record_hire(
+                company_id=str(company_id),
+                department=str(department),
+                seniority_level=str(seniority_level),
+                candidate_traits_snapshot=dict(ocean_traits),
+            )
+            logger.info(
+                "[ConclusionHired] BigFive record_hire OK candidate=%s "
+                "dept=%s seniority=%s traits=%s",
+                candidate_id, department, seniority_level,
+                sorted(ocean_traits.keys()),
+            )
+        except Exception as exc:
+            logger.warning(
+                "[ConclusionHired] record_bigfive_hire failed (fail-soft): %s",
                 str(exc)[:200],
             )
 

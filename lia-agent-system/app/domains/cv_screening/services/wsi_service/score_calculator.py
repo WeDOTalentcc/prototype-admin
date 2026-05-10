@@ -93,6 +93,15 @@ class WSIScoreCalculator:
         else:
             classification = "baixo"
         
+        # Phase 2.5: aggregate per-trait OCEAN scores from responses that
+        # carry trait_ocean (propagated from WSIQuestion.big_five_mapping).
+        # Strategy: group by trait, compute mean of final_score (1-5),
+        # normalize to 0-1 via (mean - 1) / 4. Skip responses without
+        # trait_ocean (technical / non-BigFive). Returns {} when no
+        # BigFive-tagged responses exist — degrades graceful (record_hire
+        # accepts partial dict per ALLOWED_TRAITS whitelist).
+        ocean_traits = self._aggregate_ocean_traits(responses)
+
         return WSIResult(
             candidate_id=candidate_id,
             job_vacancy_id=job_vacancy_id,
@@ -101,8 +110,46 @@ class WSIScoreCalculator:
             overall_wsi=round(overall_wsi, 2),
             classification=classification,
             percentile=None,  # Será calculado depois comparando com outros candidatos
-            response_analyses=responses
+            response_analyses=responses,
+            ocean_traits=ocean_traits,
         )
+
+    @staticmethod
+    def _aggregate_ocean_traits(responses: list) -> dict[str, float]:
+        """Group responses by trait_ocean, mean final_score, normalize 1-5 -> 0-1.
+
+        Phase 2.5 helper. Responses without trait_ocean are skipped
+        entirely. Only OCEAN-whitelisted traits contribute (defends
+        against accidental non-OCEAN strings that would later fail
+        BigFiveDepartmentService.record_hire's ALLOWED_TRAITS guard).
+        """
+        # Local copy to avoid coupling to bigfive_service import — must
+        # match ALLOWED_TRAITS in app/domains/job_creation/services/bigfive_service.py:34
+        valid_traits = {
+            "openness",
+            "conscientiousness",
+            "extraversion",
+            "agreeableness",
+            "stability",
+        }
+        buckets: dict[str, list[float]] = {}
+        for r in responses:
+            trait = getattr(r, "trait_ocean", None)
+            if trait is None or trait not in valid_traits:
+                continue
+            score = getattr(r, "final_score", None)
+            if score is None:
+                continue
+            buckets.setdefault(trait, []).append(float(score))
+
+        out: dict[str, float] = {}
+        for trait, scores in buckets.items():
+            if not scores:
+                continue
+            mean_score = sum(scores) / len(scores)  # 1..5
+            normalized = (mean_score - 1.0) / 4.0    # 0..1
+            out[trait] = round(max(0.0, min(1.0, normalized)), 4)
+        return out
     
     def calculate_percentiles(
         self,
