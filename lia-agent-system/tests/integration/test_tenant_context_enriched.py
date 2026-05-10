@@ -116,6 +116,44 @@ async def test_unknown_company_falls_back_to_defaults(db):
     assert ctx.plan == "standard"
 
 
+async def test_consolidation_script_is_idempotent(db):
+    """Two back-to-back runs of ``consolidate()`` against an already
+    consolidated DB must yield identical "no-op" reports — proves the
+    script is safe to re-run from CI / post-merge / operator console
+    without producing duplicate side effects (architect review #2).
+    """
+    from scripts.migrate_demo_company_consolidation import consolidate
+
+    bind = await db.connection()
+
+    report1 = await consolidate(bind)
+    report2 = await consolidate(bind)
+
+    # Idempotent invariants:
+    assert report1["rewrites"] == {}, f"first run rewrote rows: {report1!r}"
+    assert report2["rewrites"] == {}, f"second run rewrote rows: {report2!r}"
+    assert report1["leftovers"] == [] and report2["leftovers"] == []
+    assert report1["seeded_canonical"] is True
+    assert report2["seeded_canonical"] is True
+    # FK enumeration is purely descriptive — must be deterministic
+    # across runs against the same schema.
+    assert report1["fk_targets_companies_id"] == report2["fk_targets_companies_id"]
+    # Defaults already point at the canonical UUID, so neither run
+    # should issue ALTER ... SET DEFAULT statements.
+    assert report1["defaults_updated"] == []
+    assert report2["defaults_updated"] == []
+
+    # And the canonical row is still present and correctly enriched
+    # after both runs — no UPSERT-induced corruption.
+    row = (await db.execute(text(
+        "SELECT name, sector, plan, timezone FROM companies WHERE id = :id"
+    ), {"id": "00000000-0000-4000-a000-000000000001"})).one()
+    assert row.name == "Demo Company"
+    assert row.sector == "Tecnologia"
+    assert row.plan == "enterprise"
+    assert row.timezone == "America/Sao_Paulo"
+
+
 async def test_id_format_check_rejects_invalid_literals(db):
     """The CHECK constraint installed by migration 127 mirrors
     CompanyId.parse() — empty, 'default', and whitespace-bearing ids

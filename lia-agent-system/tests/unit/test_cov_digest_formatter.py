@@ -225,14 +225,14 @@ class TestTeamsDigestFormatter:
 
     def test_max_3_risk_jobs_shown(self):
         risk_jobs = [
-            {"title": f"Vaga {i}", "company": "Co", "reason": "risk", "severity": "attention"}
+            {"title": f"RiskJob{i}", "company": "Co", "reason": "risk", "severity": "attention"}
             for i in range(5)
         ]
         digest = {**MINIMAL_DIGEST, "vagas_em_risco": {"count": 5, "jobs": risk_jobs}}
         result = self.fmt.format(digest)
         body = result["attachments"][0]["content"]["body"]
-        job_blocks = [b for b in body if b["type"] == "TextBlock" and "Vaga" in b.get("text", "")]
-        # At most 3 risk job blocks
+        job_blocks = [b for b in body if b["type"] == "TextBlock" and "RiskJob" in b.get("text", "")]
+        # At most 3 risk job blocks (code uses risk_jobs[:3])
         assert len(job_blocks) <= 3
 
     def test_compliance_ok_shows_checkmark(self):
