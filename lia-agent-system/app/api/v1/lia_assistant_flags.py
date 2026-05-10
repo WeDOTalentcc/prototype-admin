@@ -361,6 +361,19 @@ class FeatureFlagToggleApprovalResponse(BaseModel):
     expires_at: str | None = None
 
 
+class FeatureFlagToggleRejectRequest(BaseModel):
+    """Body for POST /lia/feature-flags/reject/{request_id}.
+
+    Admin/DPO denies a pending toggle with an explanatory reason that
+    becomes part of the LGPD Art. 20 forensic trail. Reason is stored
+    on approval.rejection_reason and surfaced in the result email.
+    """
+    rejection_reason: str = Field(
+        ..., min_length=1,
+        description="Required explanation for the rejection (forensic trail)",
+    )
+
+
 def _build_approvals_repo(db: AsyncSession):
     """Lazy import + builder so the module-level imports don't pull
     approvals into every consumer of feature-flag endpoints."""
@@ -682,3 +695,175 @@ async def approve_feature_flag_toggle(
         requested_value=bool(requested_value),
         expires_at=approval.expires_at.isoformat() if approval.expires_at else None,
     )
+
+
+@router.post(
+    "/feature-flags/reject/{request_id}",
+    response_model=FeatureFlagToggleApprovalResponse,
+)
+async def reject_feature_flag_toggle(
+    request_id: str,
+    request: FeatureFlagToggleRejectRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo),
+    ff_svc: FeatureFlagService = Depends(get_feature_flag_service),
+) -> FeatureFlagToggleApprovalResponse:
+    """Phase B: admin rejects a pending feature flag toggle request.
+
+    Mirrors approve_feature_flag_toggle's guards:
+    1. Admin role required
+    2. Self-rejection blocked
+    3. Approval must be in pending state (else 409)
+
+    On reject: status flips to rejected, rejection_reason persisted,
+    audit log fires workflow_state=rejected, requester emailed (fail-soft).
+    ff_svc.set_flag is NEVER called.
+    """
+    if getattr(current_user, "role", None) != UserRole.admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="admin role required to reject feature flag toggles",
+        )
+
+    repo = _build_approvals_repo(db)
+    approval = await repo.get_by_id(request_id)
+    if approval is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="approval request not found",
+        )
+
+    if str(getattr(approval, "requester_id", "")) == str(getattr(current_user, "id", "")):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail=(
+                "self-rejection not allowed — the rejector must differ "
+                "from the requester (second-actor invariant)"
+            ),
+        )
+
+    if approval.status != "pending":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"approval is already {approval.status}; cannot reject",
+        )
+
+    from datetime import datetime as _dt
+
+    approval.status = "rejected"
+    approval.rejection_reason = request.rejection_reason
+    approval.resolved_at = _dt.utcnow()
+    approval.resolved_by = str(getattr(current_user, "id", "")) or None
+
+    await _send_approval_result_email(db=db, approval=approval, approved=False)
+
+    payload = approval.target_data or {}
+    flag_key = payload.get("flag_key")
+    try:
+        from app.shared.compliance.audit_service import AuditService
+        await AuditService().log_action(
+            trace_id=str(uuid_uuid4()),
+            company_id=str(approval.company_id),
+            action_type="feature_flag_change",
+            actor=str(getattr(current_user, "id", "admin")),
+            target_id=str(flag_key) if flag_key else None,
+            target_type="feature_flag",
+            metadata={
+                "workflow_state": "rejected",
+                "approval_request_id": str(approval.id),
+                "flag_key": flag_key,
+                "requested_value": payload.get("requested_value"),
+                "rejector_id": str(getattr(current_user, "id", "")),
+                "requester_id": str(getattr(approval, "requester_id", "")),
+                "rejection_reason": request.rejection_reason,
+            },
+        )
+    except Exception as audit_exc:
+        logger.warning(
+            "[FeatureFlagApproval] audit on reject failed (fail-soft): %s",
+            str(audit_exc)[:200],
+        )
+
+    return FeatureFlagToggleApprovalResponse(
+        request_id=str(approval.id),
+        status=approval.status,
+        flag_key=str(flag_key) if flag_key else "",
+        requested_value=bool(payload.get("requested_value", False)),
+        expires_at=approval.expires_at.isoformat() if approval.expires_at else None,
+    )
+
+
+async def sweep_expired_approvals(
+    *,
+    db: AsyncSession,
+    company_id: str,
+) -> int:
+    """Phase B B1: cancel pending feature_flag_toggle requests past expires_at.
+
+    Cron-friendly helper. Runs against ApprovalsRepository's
+    list_pending_by_company filtered by request_type='feature_flag_toggle'
+    (canonical filter added in the repo bug fix). Iterates pending rows,
+    flips status to 'cancelled' when expires_at < utcnow, leaves fresh
+    and no-expiry rows alone.
+
+    Returns the count of cancelled rows. Audit log entry per cancelled
+    row (workflow_state=expired). No email — auto-cancellation isn't a
+    human decision.
+
+    Multi-tenancy: company_id required from caller (cron job typically
+    iterates per-company).
+    """
+    from datetime import datetime as _dt
+    if not company_id:
+        return 0
+
+    repo = _build_approvals_repo(db)
+    pending = await repo.list_pending_by_company(
+        company_id=company_id,
+        request_type="feature_flag_toggle",
+    )
+    now = _dt.utcnow()
+    cancelled = 0
+    for approval in pending:
+        expires_at = getattr(approval, "expires_at", None)
+        if expires_at is None or expires_at >= now:
+            continue
+        approval.status = "cancelled"
+        approval.resolved_at = now
+        approval.resolved_by = "system:expiry_sweep"
+        cancelled += 1
+
+        # Forensic audit per cancellation (LGPD Art. 20 trail)
+        try:
+            from app.shared.compliance.audit_service import AuditService
+            payload = approval.target_data or {}
+            await AuditService().log_action(
+                trace_id=str(uuid_uuid4()),
+                company_id=str(company_id),
+                action_type="feature_flag_change",
+                actor="system:expiry_sweep",
+                target_id=str(payload.get("flag_key")) if payload.get("flag_key") else None,
+                target_type="feature_flag",
+                metadata={
+                    "workflow_state": "expired",
+                    "approval_request_id": str(approval.id),
+                    "flag_key": payload.get("flag_key"),
+                    "requested_value": payload.get("requested_value"),
+                    "expires_at": expires_at.isoformat(),
+                    "cancelled_at": now.isoformat(),
+                },
+            )
+        except Exception as audit_exc:
+            logger.warning(
+                "[FeatureFlagApproval] audit on expiry sweep failed "
+                "(fail-soft) approval=%s: %s",
+                approval.id, str(audit_exc)[:200],
+            )
+
+    if cancelled:
+        logger.info(
+            "[FeatureFlagApproval] expiry sweep cancelled %d row(s) for "
+            "company=%s",
+            cancelled, company_id,
+        )
+    return cancelled
