@@ -1,5 +1,24 @@
 from pathlib import Path
-"""Recruitment Campaign Domain - End-to-end workflow management."""
+"""Recruitment Campaign Domain - End-to-end workflow management.
+
+ARCHITECTURAL DECISION (P2-3, 2026-05-10):
+========================================
+recruitment_campaign é ORCHESTRATION WRAPPER — sem agent ReAct próprio
+por design (não over-engineering).
+
+Delega execução para domains downstream:
+  - create_campaign      → job_management.create_job + sourcing.start_pipeline
+  - advance_campaign     → cv_screening.process + interview_scheduling.schedule
+  - get_campaign_progress → analytics.report
+  - list_campaigns       → leitura via repositories já existentes
+
+Padrão canonical: KeywordIntentMatcher resolve intent (capabilities.yaml),
+execute_action chama tools de outros domains via DomainRegistry. Audit
+herda do ComplianceDomainPrompt base.
+
+NÃO criar agent próprio: campaigns são workflows multi-domain, não tools
+isoladas. Cada step é responsabilidade do domain especializado correspondente.
+"""
 import logging
 import yaml as _yaml_imp  # Fase 5
 from datetime import datetime
