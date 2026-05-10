@@ -99,6 +99,105 @@ class TestPreservesNonPii:
         assert _redact(text) == text
 
 
+# ── P1-8 — Extended BR PII coverage (post-Sprint-B audit) ───────────────────
+
+
+class TestRedactRG:
+    """Brazilian state ID (RG) — contextual regex (RG: XX.XXX.XXX-X).
+    Standalone RG numbers (without context keyword) are NOT redacted to
+    avoid false-positives on order numbers, batch IDs, etc. — too easy
+    to confuse.
+    """
+
+    def test_redact_rg_with_keyword_formatted(self):
+        out = _redact("RG 12.345.678-9 emitido em SP")
+        assert "12.345.678-9" not in out
+        assert "[RG]" in out
+
+    def test_redact_rg_with_keyword_unformatted(self):
+        out = _redact("RG: 123456789 emitido em SP")
+        assert "123456789" not in out
+        assert "[RG]" in out
+
+    def test_rg_without_keyword_preserved(self):
+        # Bare 9-digit number could be a process ID, batch number, etc.
+        # Without "RG" prefix we leave it alone (false-positive guard).
+        text = "Processo 123456789 em andamento"
+        assert _redact(text) == text
+
+
+class TestRedactCEP:
+    """Brazilian postal code (CEP) — neighborhood-level identifier.
+    Format XXXXX-XXX is specific enough to redact without context."""
+
+    def test_redact_cep_formatted(self):
+        out = _redact("Endereço: Rua X, 100, CEP 04567-890, São Paulo")
+        assert "04567-890" not in out
+        assert "[CEP]" in out
+
+    def test_redact_cep_with_keyword(self):
+        out = _redact("CEP 01234-567 deve ser confirmado")
+        assert "01234-567" not in out
+        assert "[CEP]" in out
+
+
+class TestRedactDOB:
+    """Date of birth — contextual regex only (Nascido em / DN / data
+    nascimento). Bare DD/MM/YYYY is preserved because JDs are full of
+    legitimate dates ('founded in 1990', 'project deadline 31/12/2025')."""
+
+    def test_redact_dob_with_keyword_nascido(self):
+        out = _redact("Nascido em 15/04/1990 — apto para a vaga")
+        assert "15/04/1990" not in out
+        assert "[DOB]" in out
+
+    def test_redact_dob_with_keyword_dn(self):
+        out = _redact("Candidato DN: 15/04/1990 sênior")
+        assert "15/04/1990" not in out
+        assert "[DOB]" in out
+
+    def test_redact_dob_with_keyword_data_de_nascimento(self):
+        out = _redact("Data de nascimento: 15/04/1990")
+        assert "15/04/1990" not in out
+        assert "[DOB]" in out
+
+    def test_dob_without_keyword_preserved(self):
+        # Bare date is legitimate JD content
+        text = "Empresa fundada em 15/04/1990, projeto começou em 01/01/2024"
+        assert _redact(text) == text
+
+
+# ── P1-13 — Edge cases (post-Sprint-B audit) ────────────────────────────────
+
+
+class TestRedactEdgeCases:
+    def test_email_at_start_of_string(self):
+        out = _redact("joao@x.com é o contato")
+        assert "joao@x.com" not in out
+        assert "[EMAIL]" in out
+
+    def test_email_at_end_of_string(self):
+        out = _redact("Contato: joao@x.com")
+        assert "joao@x.com" not in out
+        assert "[EMAIL]" in out
+
+    def test_cpf_at_start_of_string(self):
+        out = _redact("111.222.333-44 é o documento")
+        assert "111.222.333-44" not in out
+        assert "[CPF]" in out
+
+    def test_cpf_at_end_of_string(self):
+        out = _redact("Documento 111.222.333-44")
+        assert "111.222.333-44" not in out
+        assert "[CPF]" in out
+
+    def test_email_with_unicode(self):
+        # Python 3 \w includes unicode; this should redact.
+        out = _redact("Reportar para josé.silva@empresa.com.br")
+        assert "josé.silva@empresa.com.br" not in out
+        assert "[EMAIL]" in out
+
+
 class TestNestedStructures:
     def test_redact_inside_responsibilities_list(self):
         """_build_embedding_text should redact inside list elements."""

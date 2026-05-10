@@ -45,8 +45,8 @@ JD_EMBEDDING_DIM = 1536
 _CNPJ_RE = re.compile(r"\b\d{2}\.?\d{3}\.?\d{3}/\d{4}-?\d{2}\b")
 # Brazilian CPF formatted: XXX.XXX.XXX-XX
 _CPF_FORMATTED_RE = re.compile(r"\b\d{3}\.\d{3}\.\d{3}-\d{2}\b")
-# Email: standard, conservative
-_EMAIL_RE = re.compile(r"\b[\w._%+-]+@[\w.-]+\.[A-Za-z]{2,}\b")
+# Email: standard, conservative; \w in Python 3 is unicode-aware
+_EMAIL_RE = re.compile(r"[\w._%+-]+@[\w.-]+\.[A-Za-z]{2,}", flags=re.UNICODE)
 # Brazilian phones formatted: (DD) 9XXXX-XXXX, +55 DD 9XXXX-XXXX, DD 9XXXX-XXXX
 _PHONE_FORMATTED_RE = re.compile(
     r"(?:\+?55\s?)?"           # optional +55 country code
@@ -54,11 +54,33 @@ _PHONE_FORMATTED_RE = re.compile(
     r"9?\d{4}[-\s]\d{4}"        # 8 or 9 digits with required separator
 )
 
+# Brazilian postal code (CEP): XXXXX-XXX. Format-only redaction (the bare
+# 8-digit form would be too ambiguous with batch IDs / process numbers).
+_CEP_RE = re.compile(r"\b\d{5}-\d{3}\b")
+
+# Brazilian state ID (RG): 7-9 digits with optional formatting XX.XXX.XXX-X.
+# Contextual ONLY (keyword "rg") — bare 9-digit numbers are too easy to
+# confuse with order/process IDs.
+_RG_CONTEXTUAL_RE = re.compile(
+    r"(?:^|[^a-z])rg[\s:.\-]+(\d{1,2}\.?\d{3}\.?\d{3}-?\d|\d{7,9})\b",
+    flags=re.IGNORECASE,
+)
+
+# Date of birth — CONTEXTUAL ONLY (JDs are full of legitimate dates).
+# Triggers: nascido/nascida/dn/data de nascimento/date of birth/dob.
+# Allows optional preposition (em, de, on, at) between keyword and date.
+_DOB_CONTEXTUAL_RE = re.compile(
+    r"(?:nascido|nascida|dn|data\s+de\s+nascimento|date\s+of\s+birth|dob)"
+    r"(?:[\s:.\-]+(?:em|de|on|at|in)?[\s:.\-]*)"
+    r"(\d{1,2}/\d{1,2}/\d{4})\b",
+    flags=re.IGNORECASE,
+)
+
 # Context-aware unformatted patterns. Bare 11-digit sequences are ambiguous
 # (could be CPF or 9-digit cellphone with DDD), so we look at preceding
 # keywords to disambiguate. Non-greedy keyword + optional separator + digits.
 _CPF_CONTEXTUAL_RE = re.compile(
-    r"(?:cpf|documento|doc\.|rg)[\s:.\-]+(\d{11})\b",
+    r"(?:cpf|documento|doc\.)[\s:.\-]+(\d{11})\b",
     flags=re.IGNORECASE,
 )
 _PHONE_CONTEXTUAL_RE = re.compile(
@@ -74,29 +96,43 @@ _PHONE_BARE_RE = re.compile(r"(?<!\d)\d{10}(?!\d)")
 
 
 def _redact_pii(text: str) -> str:
-    """Replace CPF/CNPJ/email/phone in text with placeholder tokens.
+    """Replace BR PII in text with placeholder tokens.
 
-    Strategy (Sprint B Phase 1, gap C4):
-    1. Formatted patterns first (CNPJ → CPF → email → phone) — unambiguous.
-    2. Contextual unformatted: keyword-prefixed digits ("Telefone 11999991234"
-       → [TEL]; "CPF 11122233344" → [CPF]).
+    Strategy (Sprint B Phase 1 + post-audit P1-8/P1-13):
+    1. Formatted unambiguous patterns: CNPJ -> CPF -> CEP -> email -> phone.
+    2. Contextual patterns (keyword-prefixed): RG, DOB, CPF, phone.
+       Used when the format alone is too ambiguous (e.g., DOB DD/MM/YYYY
+       overlaps with legitimate JD dates; bare RG 9-digits overlaps with
+       order/process IDs).
     3. Bare 11-digit defaults to [CPF] (fail-safe: most sensitive class).
     4. Bare 10-digit defaults to [TEL] (BR landline pattern).
 
-    Non-PII numeric content (years 2024, version 3.11, "5+ anos", team sizes)
-    is preserved — patterns require specific digit counts (≥10 for phone,
-    exactly 11 for unformatted CPF).
+    Non-PII numeric content (years 2024, version 3.11, "5+ anos", team
+    sizes, bare process IDs, founding dates) is preserved.
+
+    Coverage:
+    - CNPJ formatted/unformatted
+    - CPF formatted + contextual + bare 11-digit fallback
+    - CEP formatted (XXXXX-XXX)
+    - RG contextual only ("RG: ...")
+    - Email (Unicode-aware via Python 3 \\w)
+    - Phone formatted + contextual + bare 10-digit fallback
+    - Date of birth contextual only ("nascido em ...", "DN: ...", "DOB: ...")
     """
     if not text:
         return text
+    # Strict-format patterns first (unambiguous)
     out = _CNPJ_RE.sub("[CNPJ]", text)
     out = _CPF_FORMATTED_RE.sub("[CPF]", out)
+    out = _CEP_RE.sub("[CEP]", out)
     out = _EMAIL_RE.sub("[EMAIL]", out)
     out = _PHONE_FORMATTED_RE.sub("[TEL]", out)
-    # Context-aware before bare-default fallback
-    out = _PHONE_CONTEXTUAL_RE.sub("[TEL]", out)
-    out = _CPF_CONTEXTUAL_RE.sub("[CPF]", out)
-    # Bare numeric defaults
+    # Contextual patterns — keep the keyword in the output, redact the digits
+    out = _DOB_CONTEXTUAL_RE.sub(lambda m: m.group(0).replace(m.group(1), "[DOB]"), out)
+    out = _RG_CONTEXTUAL_RE.sub(lambda m: m.group(0).replace(m.group(1), "[RG]"), out)
+    out = _PHONE_CONTEXTUAL_RE.sub(lambda m: m.group(0).replace(m.group(1), "[TEL]"), out)
+    out = _CPF_CONTEXTUAL_RE.sub(lambda m: m.group(0).replace(m.group(1), "[CPF]"), out)
+    # Bare numeric defaults (after all named patterns)
     out = _CPF_BARE_RE.sub("[CPF]", out)
     out = _PHONE_BARE_RE.sub("[TEL]", out)
     return out
