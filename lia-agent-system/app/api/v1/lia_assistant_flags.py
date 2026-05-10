@@ -13,12 +13,12 @@ from typing import Any
 # uses uuid_uuid4 alias to avoid colliding with any local 'uuid' name.
 uuid_uuid4 = uuid.uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.dependencies import get_current_user_or_demo
-from app.auth.models import User
+from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
+from app.auth.models import User, UserRole
 from app.core.database import get_db
 from app.shared.governance.feature_flag_service import FeatureFlagService, get_feature_flag_service
 
@@ -54,6 +54,58 @@ class FeatureFlagResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Multi-tenancy enforcement (Sprint B P0-1, post-audit hardening)
+# ---------------------------------------------------------------------------
+
+
+def _enforce_flag_tenant(
+    request_company_id: str | None,
+    current_user: User,
+) -> str | None:
+    """Resolve canonical company_id for a feature-flag mutation.
+
+    Closes the IDOR vulnerability identified by Sprint B post-implementation
+    audit: previously, set_feature_flag passed `request.company_id` straight
+    to ff_svc.set_flag, allowing an attacker in tenant A to flip flags in
+    tenant B by spoofing the body. Per CLAUDE.md non-negotiable rule #1,
+    company_id must always come from JWT/session, never trusted from the
+    payload.
+
+    Behavior:
+    - Admin (UserRole.admin): pass-through. Admins manage global flags
+      (company_id=None) and cross-tenant operations explicitly.
+    - Non-admin: payload must either be omitted (defaults to JWT) or
+      exactly match the JWT tenant; cross-tenant attempts raise 403.
+
+    Args:
+      request_company_id: company_id field from the request body.
+      current_user: authenticated user from get_current_user_or_demo.
+
+    Returns:
+      The company_id to actually use in ff_svc.set_flag (None for global
+      admin sets; otherwise a non-empty tenant string).
+
+    Raises:
+      HTTPException(403) when a non-admin sends a mismatched company_id.
+    """
+    # Admins keep their full powers (global flags + cross-tenant)
+    if getattr(current_user, "role", None) == UserRole.admin:
+        return str(request_company_id) if request_company_id else None
+
+    jwt_company = str(get_user_company_id(current_user))
+    # Non-admin: omitted body defaults to JWT
+    if request_company_id is None:
+        return jwt_company
+    requested = str(request_company_id)
+    if requested != jwt_company:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="company_id does not match authenticated tenant",
+        )
+    return jwt_company
+
+
+# ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
 
@@ -64,6 +116,11 @@ async def set_feature_flag(
     current_user: User = Depends(get_current_user_or_demo),
     ff_svc: FeatureFlagService = Depends(get_feature_flag_service),
 ) -> FeatureFlagResponse:
+    # P0-1: enforce tenant FIRST, before any DB mutation. Raises 403 on
+    # non-admin cross-tenant attempts; otherwise returns the canonical
+    # company_id (None allowed only for admins setting global flags).
+    enforced_company_id = _enforce_flag_tenant(request.company_id, current_user)
+
     try:
         expires = None
         if request.expires_at:
@@ -73,7 +130,7 @@ async def set_feature_flag(
             db=db,
             flag_key=request.flag_key,
             is_enabled=request.is_enabled,
-            company_id=request.company_id,
+            company_id=enforced_company_id,
             rollout_percentage=request.rollout_percentage,
             description=request.description,
             category=request.category,
@@ -89,6 +146,10 @@ async def set_feature_flag(
         # this. Fail-soft: a missing audit row should not flip the user's
         # toggle response to failure (matches AuditService.log_action's own
         # internal try/except behavior).
+        #
+        # P0-1: tenant_id derived from enforced_company_id (the same canonical
+        # value passed to ff_svc.set_flag), NEVER from request.company_id.
+        # The original payload value is preserved in metadata for forensics.
         if result.get("success"):
             try:
                 from app.shared.compliance.audit_service import AuditService
@@ -98,7 +159,7 @@ async def set_feature_flag(
                     or "unknown"
                 )
                 tenant_id = (
-                    request.company_id
+                    enforced_company_id
                     or getattr(current_user, "company_id", None)
                     or ""
                 )
@@ -116,6 +177,7 @@ async def set_feature_flag(
                             "rollout_percentage": request.rollout_percentage,
                             "category": request.category,
                             "company_id_payload": request.company_id,
+                            "company_id_enforced": enforced_company_id,
                         },
                     )
             except Exception as audit_exc:
