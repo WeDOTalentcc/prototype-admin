@@ -181,18 +181,29 @@ async def patch_config(
 
     await db.commit()
 
-    # Sprint B audit log: toggle changes are LGPD-critical (especially bigfive_dept)
+    # Sprint B audit log: toggle changes are LGPD-critical (especially
+    # bigfive_dept). P1-7 (post-Sprint-B audit): consolidate action_type
+    # to canonical 'feature_flag_change' so forensic queries don't need
+    # OR across two parallel taxonomies. The HTTP endpoint
+    # /feature-flags/set, policy_sync_service, and this learning_loops
+    # endpoint all emit the same action_type — single source of truth.
+    # The flag_namespace field tells the consumer this row is a
+    # learning_loops change specifically.
     try:
         from app.shared.compliance.audit_service import get_audit_service
         import uuid as _uuid
         await get_audit_service().log_action(
             trace_id=str(_uuid.uuid4()),
             company_id=company_id,
-            action_type="learning_loops_toggle",
+            action_type="feature_flag_change",
             actor="api:learning_loops_config",
             target_id=company_id,
             target_type="company",
-            metadata={"changes": patch},
+            metadata={
+                "changes": patch,
+                "source": "learning_loops_config",
+                "flag_namespace": "learning_loops",
+            },
         )
     except Exception as _audit_exc:
         logger.warning("[learning_loops] audit log failed: %s", str(_audit_exc)[:100])

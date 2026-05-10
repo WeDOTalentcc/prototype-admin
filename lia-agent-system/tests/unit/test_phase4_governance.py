@@ -230,6 +230,70 @@ def test_bias_snapshot_helper_exists_and_is_fail_soft():
     )
 
 
+# ── P1-3 — policy_sync_service audit log (post-Sprint-B audit) ─────────────
+
+
+def test_policy_sync_logs_audit_on_each_flag_set():
+    """P1-3 (post-Sprint-B audit): _sync_feature_flags in
+    app/shared/policy_sync_service.py used to call ff_svc.set_flag without
+    logging via AuditService, bypassing the LGPD Art. 20 trail that the
+    HTTP endpoint already enforces. Programmatic syncs must produce the
+    same audit row.
+
+    Sentinel: source-inspect _sync_feature_flags for the
+    AuditService.log_action call AND the action_type 'feature_flag_change'
+    string. Defends against regression that drops the audit hook from the
+    sync helper.
+    """
+    import inspect as _inspect
+    from app.shared import policy_sync_service
+
+    source = _inspect.getsource(policy_sync_service._sync_feature_flags)
+    assert "AuditService" in source and "log_action" in source, (
+        "_sync_feature_flags does not call AuditService.log_action. "
+        "Programmatic flag syncs must produce the same LGPD Art. 20 trail "
+        "as the HTTP endpoint set_feature_flag. Add a fail-soft block that "
+        "calls AuditService().log_action(action_type='feature_flag_change', "
+        "actor='policy-sync', ...) after each set_flag."
+    )
+    assert "feature_flag_change" in source, (
+        "audit log inside _sync_feature_flags must use action_type='feature_flag_change' "
+        "to match the HTTP endpoint and avoid creating a parallel taxonomy."
+    )
+
+
+# ── P1-7 — single canonical action_type for feature flag toggles ────────────
+
+
+def test_learning_loops_config_uses_canonical_feature_flag_change_action_type():
+    """P1-7 (post-Sprint-B audit): the audit log emitted by the
+    /companies/{id}/learning-loops-config endpoint must use the SAME
+    canonical action_type as /feature-flags/set ('feature_flag_change'),
+    not a parallel string ('learning_loops_toggle'). Forensic queries
+    over 'who toggled bigfive_department_history' should not need to OR
+    across two strings.
+
+    The flag_namespace field in metadata still distinguishes the row as
+    a learning_loops change.
+    """
+    import inspect as _inspect
+    from app.api.v1 import learning_loops_config
+
+    source = _inspect.getsource(learning_loops_config)
+    assert 'action_type="feature_flag_change"' in source or "action_type='feature_flag_change'" in source, (
+        "learning_loops_config no longer emits action_type='feature_flag_change'. "
+        "Restore the canonical action_type so the audit trail uses one taxonomy "
+        "across all flag toggle origins (HTTP endpoint, policy_sync, "
+        "learning_loops_config). Differentiate with metadata.flag_namespace, "
+        "not with a parallel action_type string."
+    )
+    assert "learning_loops_toggle" not in source, (
+        "Found 'learning_loops_toggle' string in learning_loops_config — this "
+        "is the deprecated parallel taxonomy. Remove it; use "
+        "action_type='feature_flag_change' with metadata.flag_namespace='learning_loops'."
+    )
+
+
 # ── C6 — context_aggregator multi-tenancy regression sentinel ───────────────
 
 

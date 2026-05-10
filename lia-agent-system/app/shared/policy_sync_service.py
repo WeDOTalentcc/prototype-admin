@@ -146,7 +146,7 @@ async def _sync_feature_flags(
                 is_enabled = presets.get(rule_key, False)
             
             flag_key = flag_config["flag_key_template"].format(company_id=company_id)
-            
+
             await feature_flag_service.set_flag(
                 db=db,
                 flag_key=flag_key,
@@ -156,7 +156,40 @@ async def _sync_feature_flags(
                 category=flag_config["category"],
                 created_by="policy-sync",
             )
-        
+
+            # P1-3 (post-Sprint-B audit): close the audit-log bypass.
+            # The /feature-flags/set HTTP endpoint logs every toggle via
+            # AuditService.log_action, but programmatic syncs through
+            # this helper were skipping the trail entirely. LGPD Art. 20
+            # requires the trail regardless of caller. Fail-soft so a
+            # missing audit row never breaks the policy sync.
+            try:
+                import uuid as _uuid
+                from app.shared.compliance.audit_service import AuditService
+
+                await AuditService().log_action(
+                    trace_id=str(_uuid.uuid4()),
+                    company_id=str(company_id),
+                    action_type="feature_flag_change",
+                    actor="policy-sync",
+                    target_id=flag_key,
+                    target_type="feature_flag",
+                    metadata={
+                        "flag_key": flag_key,
+                        "is_enabled": is_enabled,
+                        "category": flag_config["category"],
+                        "source": "policy_sync",
+                        "autonomy_level": autonomy_level,
+                        "rule_key": rule_key,
+                    },
+                )
+            except Exception as audit_exc:
+                logger.warning(
+                    "[PolicySync] audit log_action failed (fail-soft) "
+                    "flag=%s: %s",
+                    flag_key, str(audit_exc)[:200],
+                )
+
         logger.info(
             f"Feature flags synced for company {company_id}: "
             f"autonomy={autonomy_level}, rules={automation_rules}"
