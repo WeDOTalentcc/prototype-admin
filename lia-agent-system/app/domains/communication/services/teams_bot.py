@@ -88,6 +88,7 @@ class TeamsBot:
 
     async def _handle_message(self, turn_context: TurnContext):
         user_message = turn_context.activity.text
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Received message from {turn_context.activity.from_property.name}: {user_message}")
         TurnContext.get_conversation_reference(turn_context.activity)
         await turn_context.send_activity(

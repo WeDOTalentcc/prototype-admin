@@ -334,6 +334,7 @@ class CompensationAnalysisService:
                 self.logger.info(f"No matching policy found for {job_title} ({seniority})")
                 return None
             
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             self.logger.info(f"Found policy '{best_match.name}' with score {best_score}")
             
             return {

@@ -237,6 +237,7 @@ class ATSClient(ABC):
         """
         try:
             if ats_id:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"📤 Updating candidate {ats_id} in {self.name}")
                 result = await self.update_candidate(ats_id, data)
                 return SyncResult(
@@ -247,6 +248,7 @@ class ATSClient(ABC):
                     changes=list(data.keys())
                 )
             else:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"📤 Creating new candidate in {self.name}")
                 result = await self.create_candidate(data)
                 return SyncResult(
@@ -257,6 +259,7 @@ class ATSClient(ABC):
                     changes=list(data.keys())
                 )
         except Exception as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"❌ Failed to sync candidate to {self.name}: {e}")
             return SyncResult(
                 success=False,
@@ -278,6 +281,7 @@ class ATSClient(ABC):
         Returns:
             Normalized ATSCandidate or None if not found
         """
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"📥 Pulling candidate {ats_id} from {self.name}")
         return await self.get_candidate(ats_id)
     
@@ -298,6 +302,7 @@ class ATSClient(ABC):
         Returns:
             List of normalized ATSCandidate objects
         """
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"📥 Bulk pulling candidates from {self.name} (job={job_id}, limit={limit})")
         candidates = await self.list_candidates(job_id=job_id, limit=limit)
         
@@ -319,6 +324,7 @@ class ATSClient(ABC):
         Returns:
             Normalized ATSJob or None if not found
         """
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"📥 Pulling job {ats_id} from {self.name}")
         return await self.get_job(ats_id)
     
@@ -337,5 +343,6 @@ class ATSClient(ABC):
         Returns:
             List of normalized ATSJob objects
         """
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"📥 Bulk pulling jobs from {self.name} (status={status}, limit={limit})")
         return await self.list_jobs(status=status, limit=limit)

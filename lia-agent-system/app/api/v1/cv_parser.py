@@ -475,7 +475,7 @@ async def confirm_cv_and_create_candidate(
         )
         
         # pii-logs ok: PII (nome/email candidate ou recruiter) mascarado em runtime via PIIMaskingFilter (LGPD Art.46)
-        logger.info(f"Candidate created from CV: {candidate.id} - {candidate.name} (with {len(parsed_cv.experiences)} experiences)")
+        logger.info(f"Candidate created from CV: {candidate.id} - {candidate.id} (with {len(parsed_cv.experiences)} experiences)")
         
         return CVConfirmResponse(
             success=True,

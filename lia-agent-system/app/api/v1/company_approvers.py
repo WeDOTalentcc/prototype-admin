@@ -70,7 +70,7 @@ async def create_approver(
 
         approver = await approver_repo.create({"company_id": resolved_company_id, **data.model_dump()})
         # pii-logs ok: PII (nome/email candidate ou recruiter) mascarado em runtime via PIIMaskingFilter (LGPD Art.46)
-        logger.info(f"Created approver: {approver.user_name}")
+        logger.info(f"Created approver: {approver.id}")
         return approver
     except Exception as e:
         logger.error(f"Error creating approver: {e}")

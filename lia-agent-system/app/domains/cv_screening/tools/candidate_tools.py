@@ -118,6 +118,7 @@ async def update_candidate_stage(
             
             candidate_name = getattr(candidate, 'name', 'Candidato')
             
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"✅ Candidate {candidate_id} moved from {previous_stage} to {target_stage}")
             
             return {
@@ -256,6 +257,7 @@ async def add_candidate_to_vacancy(
             candidate_name = getattr(candidate, 'name', 'Candidato')
             job_title = getattr(job, 'title', 'Vaga')
             
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"✅ Created VacancyCandidate: {candidate_id} -> {job_title}")
             
             return {
@@ -691,6 +693,7 @@ async def add_to_list(
             
             candidate_name = getattr(candidate, 'name', 'Candidato')
             
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"✅ Added {candidate_id} to list {list_id}")
             
             return {

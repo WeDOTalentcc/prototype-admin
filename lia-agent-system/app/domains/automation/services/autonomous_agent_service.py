@@ -71,6 +71,7 @@ class AutonomousAgentService:
         Returns:
             Created BackgroundJob instance
         """
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         self.logger.info(f"Creating background job: {name} (type={job_type})")
         
         async with AsyncSessionLocal() as db:

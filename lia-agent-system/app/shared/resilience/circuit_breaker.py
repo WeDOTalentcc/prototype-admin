@@ -142,6 +142,7 @@ class CircuitBreaker:
                 self._state = CircuitState.HALF_OPEN
                 self._last_state_change = time.time()
                 self._stats.state_changes += 1
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"Circuit breaker '{self.name}' transitioning to HALF_OPEN")
         return self._state
     
@@ -193,6 +194,7 @@ class CircuitBreaker:
             if current_state == CircuitState.OPEN:
                 self._stats.rejected_calls += 1
                 retry_after = self._get_retry_after()
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.warning(f"Circuit breaker '{self.name}' is OPEN. Rejecting request.")
                 raise CircuitBreakerError(self.name, retry_after)
         
@@ -212,6 +214,7 @@ class CircuitBreaker:
             return result
             
         except TimeoutError:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"Circuit breaker '{self.name}': Request timed out after {self.config.timeout}s")
             await self.record_failure()
             raise
@@ -234,6 +237,7 @@ class CircuitBreaker:
             
             if self._state == CircuitState.HALF_OPEN:
                 self._success_count += 1
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.debug(f"Circuit breaker '{self.name}': Success in HALF_OPEN ({self._success_count}/{self.config.success_threshold})")
                 
                 if self._success_count >= self.config.success_threshold:
@@ -252,6 +256,7 @@ class CircuitBreaker:
                 self._transition_to_open()
             elif self._state == CircuitState.CLOSED:
                 self._failure_count += 1
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.debug(f"Circuit breaker '{self.name}': Failure count {self._failure_count}/{self.config.failure_threshold}")
                 
                 if self._failure_count >= self.config.failure_threshold:
@@ -263,6 +268,7 @@ class CircuitBreaker:
         self._last_state_change = time.time()
         self._success_count = 0
         self._stats.state_changes += 1
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"Circuit breaker '{self.name}' is now OPEN")
         # COMP-3: Notificação quando circuit abre (Bell + Teams, Redis dedup 1h/circuit)
         try:
@@ -286,6 +292,7 @@ class CircuitBreaker:
         self._failure_count = 0
         self._success_count = 0
         self._stats.state_changes += 1
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Circuit breaker '{self.name}' is now CLOSED")
         if _METRICS_AVAILABLE:
             _cb_state_metric.labels(service=self.name).set(_CB_STATE_VALUES["closed"])
@@ -297,6 +304,7 @@ class CircuitBreaker:
         self._success_count = 0
         self._last_failure_time = None
         self._last_state_change = time.time()
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Circuit breaker '{self.name}' manually reset to CLOSED")
     
     def get_stats(self) -> dict:

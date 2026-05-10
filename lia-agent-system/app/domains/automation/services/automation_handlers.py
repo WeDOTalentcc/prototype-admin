@@ -1058,7 +1058,7 @@ async def process_screening_queue(
                         f"({conversation.phone_number})"
                     )
                 except Exception as e:
-                    logger.error(f"[QUEUE] Failed to send WhatsApp invite to {candidate.name}: {e}")
+                    logger.error(f"[QUEUE] Failed to send WhatsApp invite to {candidate.id}: {e}")
                     invite_channel = "email"
 
             if invite_channel == "email" and candidate.email:
@@ -1088,7 +1088,7 @@ async def process_screening_queue(
                         f"(sent={invite_sent})"
                     )
                 except Exception as e:
-                    logger.error(f"[QUEUE] Failed to dispatch invite to {candidate.name}: {e}")
+                    logger.error(f"[QUEUE] Failed to dispatch invite to {candidate.id}: {e}")
 
             additional = dict(vc.additional_data or {})
             additional["promoted_from_queue_at"] = datetime.utcnow().isoformat()

@@ -108,6 +108,7 @@ class WebhookService:
             await db.commit()
             await db.refresh(webhook)
             
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"Webhook registered: {name} for events {events}")
             
             return {

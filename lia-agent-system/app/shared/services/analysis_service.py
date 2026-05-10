@@ -170,7 +170,7 @@ class AnalysisService:
             logger.error(f"Failed to parse Claude response: {e}")
             return self._create_fallback_result(candidate)
         except Exception as e:
-            logger.error(f"Error analyzing candidate {candidate.name}: {e}")
+            logger.error(f"Error analyzing candidate {candidate.id}: {e}")
             raise
     
     def _create_fallback_result(self, candidate: CandidateInput) -> CandidateAnalysisResult:

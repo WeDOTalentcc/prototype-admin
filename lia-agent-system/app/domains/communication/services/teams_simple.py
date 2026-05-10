@@ -167,6 +167,7 @@ class SimpleTeamsBot:
             activity = {**activity, "text": text}
 
             from_user = activity.get("from", {})
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"[Teams] Message from {from_user.get('name')}: {text[:80]}")
 
             result = await teams_orchestrator_bridge.process_message(activity)

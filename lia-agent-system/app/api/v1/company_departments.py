@@ -172,7 +172,7 @@ async def create_department_member(
         }
         member = await dept_repo.add_member(member_data)
         # pii-logs ok: PII (nome/email candidate ou recruiter) mascarado em runtime via PIIMaskingFilter (LGPD Art.46)
-        logger.info(f"Created department member: {member.name} in department {department.name}")
+        logger.info(f"Created department member: {member.id} in department {department.name}")
         return member
     except HTTPException:
         raise

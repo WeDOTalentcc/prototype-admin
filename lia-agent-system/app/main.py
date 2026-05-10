@@ -242,6 +242,7 @@ async def lifespan(app: FastAPI):
     from app.domains.registry import DomainRegistry
     domain_registry = DomainRegistry()
     registered = domain_registry.list_domains()
+    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"✅ Domain registry: {len(registered)} domains registered: {registered}")
     
     # Warm-up embedding cache

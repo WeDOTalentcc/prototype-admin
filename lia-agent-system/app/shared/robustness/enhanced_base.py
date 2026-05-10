@@ -78,6 +78,7 @@ class EnhancedBaseAgent(BaseAgent):
                     context={},
                     message=""
                 )
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.debug(f"{self.name}: Intent '{intent}' confidence = {confidence:.2f}")
                 return confidence
         
@@ -88,6 +89,7 @@ class EnhancedBaseAgent(BaseAgent):
             )
             if keyword_matches > 0:
                 base_confidence = min(0.6, 0.3 + keyword_matches * 0.1)
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.debug(f"{self.name}: Keyword match for '{intent}' confidence = {base_confidence:.2f}")
                 return base_confidence
         
@@ -162,6 +164,7 @@ class EnhancedBaseAgent(BaseAgent):
             
         except AgentError as e:
             self._metrics["failed_requests"] += 1
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.warning(f"{self.name}: AgentError - {e.code.value}: {e.user_message}")
             return AgentResponse(
                 success=False,
@@ -170,6 +173,7 @@ class EnhancedBaseAgent(BaseAgent):
             )
         except Exception as e:
             self._metrics["failed_requests"] += 1
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"{self.name}: Unexpected error - {str(e)}")
             error = create_user_friendly_error(
                 AgentErrorCode.INTERNAL_ERROR,

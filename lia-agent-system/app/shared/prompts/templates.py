@@ -111,6 +111,7 @@ class PromptTemplate(BaseModel):
         remaining = re.findall(r'\{(\w+)\}', result)
         for var in remaining:
             if var not in context:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.warning(f"Unresolved variable in template '{self.name}': {var}")
 
         return result

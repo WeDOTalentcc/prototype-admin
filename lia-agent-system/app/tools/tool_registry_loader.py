@@ -158,6 +158,7 @@ def validate_registry_against_yaml(
     if not ok:
         logger.warning(f"Tool registry YAML validation issues: {report}")
     else:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Tool registry YAML validation OK — {len(registered_names)} tools")
 
     return report
