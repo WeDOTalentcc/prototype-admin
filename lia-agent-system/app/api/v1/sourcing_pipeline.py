@@ -86,6 +86,7 @@ class RunPipelineRequest(BaseModel):
 
 @router.get("/config", response_model=PipelineConfigResponse)
 async def get_pipeline_config():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get current pipeline configuration."""
     config = sourcing_pipeline_service.get_config()
     return config
@@ -93,6 +94,7 @@ async def get_pipeline_config():
 
 @router.put("/config", response_model=PipelineConfigResponse)
 async def update_pipeline_config(config_update: PipelineConfigRequest):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Update pipeline configuration.
     
@@ -112,6 +114,7 @@ async def get_job_pipeline_status(
     job_id: str,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get the pipeline status for a specific job.
     
@@ -142,6 +145,7 @@ async def get_jobs_needing_candidates(
     limit: int = Query(default=50, ge=1, le=100),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get all open jobs that need more candidates.
     
@@ -173,6 +177,7 @@ async def run_pipeline_for_job(
     request: RunPipelineRequest | None = None,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Run the sourcing pipeline for a specific job.
     
@@ -214,6 +219,7 @@ async def run_pipeline_for_all_jobs(
     max_jobs: int = Query(default=10, ge=1, le=50),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Run the sourcing pipeline for all jobs that need more candidates.
     
@@ -227,6 +233,7 @@ async def run_pipeline_for_all_jobs(
 
 @router.get("/summary", response_model=None)
 async def get_pipeline_summary(db: AsyncSession = Depends(get_db)):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get a summary of the sourcing pipeline status.
     

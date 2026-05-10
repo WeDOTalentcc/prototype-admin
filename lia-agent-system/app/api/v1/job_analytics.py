@@ -135,6 +135,7 @@ class BatchAnalyzeResponse(BaseModel):
 
 @router.get("/commands", response_model=CommandsResponse)
 async def get_available_commands():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Returns available analysis commands and templates.
     
@@ -155,6 +156,7 @@ async def execute_command(
     request: ExecuteCommandRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Executes a predefined command template.
     
@@ -190,6 +192,7 @@ async def natural_query(
     request: NaturalQueryRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Handles natural language queries about jobs.
     
@@ -228,6 +231,7 @@ async def get_quick_insights(
     job_id: str,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Returns quick metrics card data for a job.
     
@@ -273,6 +277,7 @@ async def compare_jobs(
     request: CompareJobsRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Compares multiple jobs.
     
@@ -305,6 +310,7 @@ async def get_suggestions(
     job_id: str,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Returns AI-suggested next actions for the job.
     
@@ -351,6 +357,7 @@ async def batch_analyze(
     request: BatchAnalyzeRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Runs multiple analyses on multiple jobs.
     

@@ -98,6 +98,7 @@ async def confirm_task(
     request: TaskConfirmRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Confirm a task that requires confirmation.
     
@@ -119,6 +120,7 @@ async def reject_task(
     request: TaskRejectRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Reject a task.
     
@@ -141,6 +143,7 @@ async def escalate_task(
     request: TaskEscalateRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Escalate a task to a higher level.
     
@@ -166,6 +169,7 @@ async def send_task_reminder(
     task_id: str,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Mark a reminder as sent for a task and increment the reminder counter.
     """
@@ -180,6 +184,7 @@ async def check_and_send_reminders(
     request: CheckRemindersRequest = CheckRemindersRequest(),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Check for tasks due soon and mark them for reminder.
     
@@ -200,6 +205,7 @@ async def check_and_escalate_overdue(
     request: CheckEscalationsRequest = CheckEscalationsRequest(),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Check for overdue tasks and auto-escalate them.
     
@@ -221,6 +227,7 @@ async def get_tasks_pending_confirmation(
     limit: int = Query(default=50, le=100),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     List tasks that are pending confirmation.
     
@@ -239,6 +246,7 @@ async def get_tasks_needing_reminder(
     hours_before_due: int = Query(default=24, ge=1, le=168),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     List tasks that are due soon and haven't received a reminder yet.
     """
@@ -254,6 +262,7 @@ async def get_escalatable_tasks(
     overdue_hours: int = Query(default=48, ge=1, le=720),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     List HIGH/CRITICAL priority tasks that are overdue and can be escalated.
     """

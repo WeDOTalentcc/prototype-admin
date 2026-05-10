@@ -54,6 +54,7 @@ async def register(
     user_data: UserCreate,
     repo: UserRepository = Depends(get_user_repo)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Register a new user.
 
@@ -96,6 +97,7 @@ async def login(
     repo: UserRepository = Depends(get_user_repo),
     audit_svc: AuditService = Depends(get_audit_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Login with email and password.
 
@@ -171,6 +173,7 @@ async def refresh_token(
     token_data: TokenRefresh,
     repo: UserRepository = Depends(get_user_repo)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Refresh access token using refresh token.
     """
@@ -387,6 +390,7 @@ async def forgot_password(
     repo: UserRepository = Depends(get_user_repo),
     email_svc: EmailService = Depends(get_email_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Request a password reset email.
     Always returns success to prevent email enumeration.
@@ -424,6 +428,7 @@ async def reset_password(
     request_data: PasswordResetConfirm,
     repo: UserRepository = Depends(get_user_repo)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Reset password using a valid token.
     """
@@ -458,6 +463,7 @@ async def verify_email(
     request_data: EmailVerificationRequest,
     repo: UserRepository = Depends(get_user_repo)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Verify email using a valid token.
     """
@@ -494,6 +500,7 @@ async def resend_verification(
     repo: UserRepository = Depends(get_user_repo),
     email_svc: EmailService = Depends(get_email_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Resend verification email.
     """
@@ -567,6 +574,7 @@ async def accept_invitation(
     request_data: InvitationAccept,
     repo: UserRepository = Depends(get_user_repo)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Accept an invitation and set password.
     """

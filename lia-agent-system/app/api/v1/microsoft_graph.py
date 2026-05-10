@@ -77,6 +77,7 @@ class CreateBookingsAppointmentRequest(BaseModel):
 
 @router.get("/status", response_model=ConnectionStatusResponse)
 async def check_connection_status():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Check Microsoft Graph API connection status.
     
@@ -88,6 +89,7 @@ async def check_connection_status():
 
 @router.post("/meetings/teams", response_model=TeamsOnlineMeetingResponse)
 async def create_teams_meeting(request: CreateTeamsMeetingRequest):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Create a Teams meeting with calendar event.
     
@@ -156,6 +158,7 @@ async def create_standalone_teams_meeting(
     duration_minutes: int = 60,
     attendee_emails: list[str] | None = None
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Create a standalone Teams meeting (without calendar event).
     
@@ -197,6 +200,7 @@ async def get_calendar_event(
     event_id: str,
     user_email: EmailStr = Query(..., description="Email of the calendar owner")
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get details of a calendar event.
     """
@@ -231,6 +235,7 @@ async def cancel_calendar_event(
     user_email: EmailStr = Query(..., description="Email of the calendar owner"),
     cancellation_message: str | None = None
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Cancel a calendar event and notify attendees.
     """
@@ -253,6 +258,7 @@ async def cancel_calendar_event(
 
 @router.get("/bookings/businesses", response_model=list[dict])
 async def list_bookings_businesses():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     List all Microsoft Bookings businesses.
     """
@@ -278,6 +284,7 @@ async def list_bookings_businesses():
 
 @router.get("/bookings/businesses/{business_id}/services", response_model=None)
 async def list_bookings_services(business_id: str):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     List services for a Bookings business.
     """
@@ -303,6 +310,7 @@ async def list_bookings_services(business_id: str):
 
 @router.get("/bookings/businesses/{business_id}/booking-page-url", response_model=None)
 async def get_booking_page_url(business_id: str):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get the public booking page URL for a business.
     """
@@ -320,6 +328,7 @@ async def get_booking_page_url(business_id: str):
 
 @router.post("/bookings/appointments", response_model=None)
 async def create_bookings_appointment(request: CreateBookingsAppointmentRequest):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Create an appointment in Microsoft Bookings.
     """

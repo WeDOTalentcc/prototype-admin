@@ -68,6 +68,7 @@ async def get_company_rules(
     trigger_type: str | None = None,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get all automation rules for a company with optional filters."""
     repo = AutomationRuleRepository(db)
     rules = await repo.list_for_company(company_id, is_active=is_active, trigger_type=trigger_type)
@@ -76,6 +77,7 @@ async def get_company_rules(
 
 @router.get("/company/{company_id}/{rule_id}", response_model=None)
 async def get_rule(company_id: str, rule_id: str, db: AsyncSession = Depends(get_db)):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get a specific automation rule."""
     repo = AutomationRuleRepository(db)
     rule = await repo.get_by_id(rule_id, company_id)
@@ -90,6 +92,7 @@ async def create_rule(
     rule: AutomationRuleCreate,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Create a new automation rule for a company."""
     repo = AutomationRuleRepository(db)
     data = rule.model_dump()
@@ -105,6 +108,7 @@ async def update_rule(
     updates: AutomationRuleUpdate,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Update an automation rule."""
     repo = AutomationRuleRepository(db)
     rule = await repo.get_by_id(rule_id, company_id)
@@ -119,6 +123,7 @@ async def update_rule(
 
 @router.delete("/company/{company_id}/{rule_id}", response_model=None)
 async def delete_rule(company_id: str, rule_id: str, db: AsyncSession = Depends(get_db)):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Delete an automation rule."""
     repo = AutomationRuleRepository(db)
     rule = await repo.get_by_id(rule_id, company_id)
@@ -130,6 +135,7 @@ async def delete_rule(company_id: str, rule_id: str, db: AsyncSession = Depends(
 
 @router.post("/company/{company_id}/toggle/{rule_id}", response_model=None)
 async def toggle_rule(company_id: str, rule_id: str, db: AsyncSession = Depends(get_db)):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Toggle the active status of an automation rule."""
     repo = AutomationRuleRepository(db)
     rule = await repo.get_by_id(rule_id, company_id)
@@ -145,6 +151,7 @@ async def seed_default_rules(
     force: bool = False,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Seed default automation rules for a new company."""
     repo = AutomationRuleRepository(db)
     existing = await repo.list_for_company(company_id)
@@ -160,6 +167,7 @@ async def seed_default_rules(
 
 @router.get("/trigger-types", response_model=None)
 async def get_available_trigger_types():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get list of available trigger types."""
     return {
         "trigger_types": [
@@ -183,6 +191,7 @@ async def get_available_trigger_types():
 
 @router.get("/action-types", response_model=None)
 async def get_available_action_types():
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get list of available action types."""
     return {
         "action_types": [

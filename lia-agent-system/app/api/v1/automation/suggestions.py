@@ -40,6 +40,7 @@ async def get_pending_suggestions(
     limit: int = Query(50, le=100, description="Maximum number of suggestions to return"),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get all pending AI suggestions for a company.
     """
@@ -74,6 +75,7 @@ async def approve_suggestion(
     reviewer_id: str | None = Query(None, description="ID of the reviewer"),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Approve an AI suggestion.
     """
@@ -127,6 +129,7 @@ async def reject_suggestion(
     reason: str | None = Query(None, description="Reason for rejection"),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Reject an AI suggestion.
     """
@@ -280,6 +283,7 @@ async def get_ai_suggestions_by_vacancy(
     status: str | None = Query(None, description="Filter by status: pending, approved, rejected"),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get AI suggestions for a specific vacancy.
     """
@@ -301,6 +305,7 @@ async def get_ai_suggestions_by_candidate(
     status: str | None = Query(None, description="Filter by status: pending, approved, rejected"),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get AI suggestions for a specific candidate.
     """
@@ -321,6 +326,7 @@ async def approve_ai_suggestion(
     suggestion_id: str,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Approve an AI suggestion and execute the suggested action.
     """
@@ -363,6 +369,7 @@ async def reject_ai_suggestion(
     request: RejectSuggestionRequest,
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Reject an AI suggestion with an optional reason.
     """

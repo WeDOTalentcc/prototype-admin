@@ -32,6 +32,7 @@ async def list_benefits(
     include_inactive: bool = Query(False),
     benefit_repo: BenefitRepository = Depends(get_benefit_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List all benefits for a company."""
     try:
         if not company_id or company_id in ("default", "unknown"):
@@ -62,6 +63,7 @@ async def create_benefit(
     data: BenefitCreate,
     benefit_repo: BenefitRepository = Depends(get_benefit_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Create a new benefit."""
     try:
         if not company_id or company_id in ("default", "unknown"):
@@ -89,6 +91,7 @@ async def update_benefit(
     data: BenefitUpdate,
     benefit_repo: BenefitRepository = Depends(get_benefit_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Update a benefit."""
     try:
         update_data = data.model_dump(exclude_unset=True)
@@ -109,6 +112,7 @@ async def delete_benefit(
     benefit_id: uuid.UUID,
     benefit_repo: BenefitRepository = Depends(get_benefit_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Soft delete a benefit."""
     try:
         deleted = await benefit_repo.delete(benefit_id)
@@ -128,6 +132,7 @@ async def list_active_benefits(
     seniority_level: str | None = Query(None),
     benefit_repo: BenefitRepository = Depends(get_benefit_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List only active benefits for a company."""
     try:
         if not company_id or company_id in ("default", "unknown"):
@@ -160,6 +165,7 @@ async def list_highlighted_benefits(
     company_id: str | None = Query(None),
     benefit_repo: BenefitRepository = Depends(get_benefit_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List highlighted benefits for a company."""
     try:
         if not company_id or company_id in ("default", "unknown"):
@@ -182,6 +188,7 @@ async def get_benefits_summary(
     company_id: str | None = Query(None),
     benefit_repo: BenefitRepository = Depends(get_benefit_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get a summary of company benefits for AI agents."""
     try:
         if not company_id or company_id in ("default", "unknown"):

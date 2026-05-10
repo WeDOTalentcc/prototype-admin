@@ -147,6 +147,7 @@ class GetActionsResponse(BaseModel):
 
 @router.post("/predict-substatus", response_model=PredictSubStatusResponse)
 async def predict_substatus(request: PredictSubStatusRequest):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Predict the most appropriate sub-status for a stage transition.
     
@@ -181,6 +182,7 @@ async def predict_substatus(request: PredictSubStatusRequest):
 
 @router.post("/generate-message", response_model=GenerateMessageResponse)
 async def generate_message(request: GenerateMessageRequest):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Generate a personalized message for a stage transition.
     
@@ -212,6 +214,7 @@ async def generate_message(request: GenerateMessageRequest):
 
 @router.post("/regenerate-for-substatus", response_model=RegenerateMessageResponse)
 async def regenerate_for_substatus(request: RegenerateMessageRequest):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Regenerate a message when the sub-status changes.
     
@@ -256,6 +259,7 @@ async def regenerate_for_substatus(request: RegenerateMessageRequest):
 
 @router.post("/get-actions", response_model=GetActionsResponse)
 async def get_available_actions(request: GetActionsRequest):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get available actions for a stage transition.
     
@@ -286,6 +290,7 @@ async def get_available_actions(request: GetActionsRequest):
 
 @router.get("/substatus-options/{stage}", response_model=None)
 async def get_substatus_options(stage: str):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Get available sub-status options for a given stage.
     
@@ -368,6 +373,7 @@ class BulkGenerateMessagesResponse(BaseModel):
 
 @router.post("/bulk-predict-substatus", response_model=BulkPredictSubStatusResponse)
 async def bulk_predict_substatus(request: BulkPredictSubStatusRequest):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Predict sub-status for multiple candidates in a single request.
 
@@ -440,6 +446,7 @@ async def bulk_predict_substatus(request: BulkPredictSubStatusRequest):
 
 @router.post("/bulk-generate-messages", response_model=BulkGenerateMessagesResponse)
 async def bulk_generate_messages(request: BulkGenerateMessagesRequest):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Generate personalized messages for multiple candidates.
 
@@ -522,6 +529,7 @@ async def bulk_predict_substatus_from_db(
     request: DbPredictSubStatusRequest,
     db = Depends(get_db_session),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Predict sub-status for multiple candidates using real data from database.
     

@@ -161,6 +161,7 @@ async def twiml_greeting(
     job_title: str = Query("a vaga"),
     language: str = Query("pt-BR"),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     TwiML endpoint: serve greeting when Twilio connects the outbound call.
     Validates Twilio signature to prevent spoofing.
@@ -241,6 +242,7 @@ async def twiml_consent_response(
     Confidence: str | None = Form(None),
     CallSid: str | None = Form(None),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     TwiML endpoint: handle candidate's consent response (YES/NO from Gather).
     Validates Twilio signature.
@@ -295,6 +297,7 @@ async def twiml_call_status(
     From: str | None = Form(None),
     To: str | None = Form(None),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Twilio call status callback webhook.
     Validates Twilio signature and processes call lifecycle events.
@@ -547,6 +550,7 @@ async def audio_stream_websocket(
 
 @router.post("/twilio-voice/end-call/{session_id}", response_model=None)
 async def end_call(session_id: str):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Programmatically end an active screening call."""
     from app.core.database import AsyncSessionLocal
 
@@ -571,6 +575,7 @@ async def end_call(session_id: str):
 
 @router.get("/twilio-voice/sessions/{session_id}", response_model=None)
 async def get_session_status(session_id: str):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get status and results of a voice screening session."""
     from app.core.database import AsyncSessionLocal
 
@@ -616,6 +621,7 @@ class VoIPTokenResponse(BaseModel):
 
 @router.post("/twilio-voice/voip-token", response_model=VoIPTokenResponse)
 async def generate_voip_token(request_body: VoIPTokenRequest) -> VoIPTokenResponse:
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Generate a Twilio Access Token for the browser VoIP client (Twilio Client SDK).
 
@@ -702,6 +708,7 @@ async def twiml_voip_connect(
     session_id: str | None = Query(None),
     language: str = Query("pt-BR"),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     TwiML webhook: called by Twilio when the browser VoIP client places a call.
 

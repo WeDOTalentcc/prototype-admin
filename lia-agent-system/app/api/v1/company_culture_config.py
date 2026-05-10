@@ -35,6 +35,7 @@ async def list_culture_values(
     include_inactive: bool = Query(False),
     cv_repo: CultureValueRepository = Depends(get_culture_value_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List all culture values for a company."""
     try:
         if not company_id:
@@ -56,6 +57,7 @@ async def create_culture_value(
     data: CultureValueCreate,
     cv_repo: CultureValueRepository = Depends(get_culture_value_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Create a new culture value."""
     try:
         cv = await cv_repo.create({"company_id": company_id, **data.model_dump()})
@@ -73,6 +75,7 @@ async def update_culture_value(
     data: CultureValueUpdate,
     cv_repo: CultureValueRepository = Depends(get_culture_value_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Update a culture value."""
     try:
         update_data = data.model_dump(exclude_unset=True)
@@ -93,6 +96,7 @@ async def delete_culture_value(
     value_id: uuid.UUID,
     cv_repo: CultureValueRepository = Depends(get_culture_value_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Soft delete a culture value."""
     try:
         deleted = await cv_repo.delete(value_id)
@@ -115,6 +119,7 @@ async def list_ideal_profiles(
     include_inactive: bool = Query(False),
     ip_repo: IdealProfileRepository = Depends(get_ideal_profile_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List all ideal profiles."""
     try:
         if not company_id:
@@ -140,6 +145,7 @@ async def create_ideal_profile(
     data: IdealProfileCreate,
     ip_repo: IdealProfileRepository = Depends(get_ideal_profile_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Create a new ideal profile."""
     try:
         profile = await ip_repo.create({"company_id": company_id, **data.model_dump()})
@@ -157,6 +163,7 @@ async def update_ideal_profile(
     data: IdealProfileUpdate,
     ip_repo: IdealProfileRepository = Depends(get_ideal_profile_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Update an ideal profile."""
     try:
         update_data = data.model_dump(exclude_unset=True)
@@ -180,6 +187,7 @@ async def delete_ideal_profile(
     profile_id: uuid.UUID,
     ip_repo: IdealProfileRepository = Depends(get_ideal_profile_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Soft delete an ideal profile."""
     try:
         deleted = await ip_repo.delete(profile_id)

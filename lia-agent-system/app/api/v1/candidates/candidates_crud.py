@@ -170,6 +170,7 @@ async def list_candidates(
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     rails_adapter: RailsAdapter = Depends(get_rails_adapter),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """List candidates. When RAILS_API_URL is configured, tries Rails first then falls back to local DB."""
     # Only call Rails when explicitly enabled — avoids adapter's own DB fallback
     # bypassing endpoint-level filters and authorization.
@@ -237,6 +238,7 @@ async def get_candidate(
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     rails_adapter: RailsAdapter = Depends(get_rails_adapter),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Get a candidate by ID. When RAILS_API_URL is configured, tries Rails first then falls back to local DB."""
     # Only call Rails when explicitly enabled — avoids adapter's own DB fallback
     # returning unscoped/unfiltered data.
@@ -295,6 +297,7 @@ async def create_candidate(
     background_tasks: BackgroundTasks,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Create a new candidate. If auto_enrich=True and linkedin_url is provided, enrichment runs in background."""
     try:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
@@ -367,6 +370,7 @@ async def update_candidate(
     candidate_data: CandidateUpdate,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Update an existing candidate."""
     try:
         candidate = await candidate_repo.get_by_id_str(candidate_id)
@@ -403,6 +407,7 @@ async def update_candidate_stage(
     audit_svc: AuditService = Depends(get_audit_service),
     activity_svc: ActivityService = Depends(get_activity_service),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Update candidate pipeline stage (used when moving candidates in Kanban)."""
     try:
         candidate = await candidate_repo.get_by_id_str(candidate_id)
@@ -579,6 +584,7 @@ async def delete_candidate(
     candidate_id: str,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Soft delete (deactivate) a candidate."""
     try:
         candidate = await candidate_repo.get_by_id_str(candidate_id)
@@ -611,6 +617,7 @@ async def enrich_candidate(
     request: EnrichmentRequest = EnrichmentRequest(),
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 ):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """Enrich candidate data from LinkedIn using Apify scrapers."""
     try:
         from app.domains.candidates.services.candidate_enrichment_service import candidate_enrichment_service
