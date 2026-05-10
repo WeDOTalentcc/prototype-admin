@@ -11,6 +11,45 @@ import uuid
 from lia_config.database import Base
 
 
+class Company(Base):
+    """Tenant root row in ``companies`` (Task #969 / T-C).
+
+    This is the canonical SQLAlchemy mapping for the tenant-id table that
+    underlies every multi-tenant query — it was previously accessed only
+    via raw SQL plus ``ensure_default_company``, which is why
+    ``TenantContextService`` silently fell back to ``"sua empresa"``
+    for every tenant (``ImportError`` swallowed by its broad ``except``).
+
+    Migration ``127_enrich_companies_schema`` enriched the schema with
+    ``sector / industry_segment / plan / timezone / headcount_range /
+    lia_persona_override``; this model exposes those fields so the
+    persona prompt actually reflects per-tenant context.
+
+    ``id`` is intentionally ``String(255)`` (not ``UUID``) because
+    Demo Company uses a UUID v4 *string* and tenants may also use slugs
+    — both shapes are validated server-side by ``CompanyId.parse()``
+    and at the DB layer by ``ck_companies_id_format_canonical``.
+    """
+
+    __tablename__ = "companies"
+
+    id = Column(String(255), primary_key=True)
+    name = Column(String(255), nullable=False)
+    display_name = Column(String(255), nullable=True)
+    is_active = Column(Boolean, default=True)
+    is_demo = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    # Enriched persona-context columns (migration 127 / Task #969):
+    sector = Column(String(100), nullable=True)
+    industry_segment = Column(String(100), nullable=True)
+    plan = Column(String(50), nullable=True, default="standard")
+    timezone = Column(String(64), nullable=True, default="America/Sao_Paulo")
+    headcount_range = Column(String(50), nullable=True)
+    lia_persona_override = Column(Text, nullable=True)
+
+
 class CompanyProfile(Base):
     """
     Main company profile and general information.

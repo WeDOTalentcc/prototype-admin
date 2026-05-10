@@ -1,0 +1,138 @@
+"""Integration tests for Task #969 / T-C: TenantContextService now reads
+the enriched ``companies`` schema (sector/plan/timezone/persona) from the
+DB instead of falling back to defaults.
+
+Touches the real PostgreSQL container; uses a unique slug per test to
+stay isolated from the canonical Demo Company seed.
+"""
+from __future__ import annotations
+
+import os
+import uuid
+
+import pytest
+from sqlalchemy import text
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import sessionmaker
+
+from app.shared.services.tenant_context_service import TenantContextService
+
+pytestmark = pytest.mark.asyncio
+
+
+def _async_db_url() -> str:
+    url = os.environ.get("DATABASE_URL")
+    if not url:
+        pytest.skip("DATABASE_URL not set; integration test requires Postgres")
+    if url.startswith("postgresql://"):
+        url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    return url
+
+
+@pytest.fixture
+async def db() -> AsyncSession:
+    engine = create_async_engine(_async_db_url(), future=True)
+    Session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+    async with Session() as session:
+        yield session
+    await engine.dispose()
+
+
+@pytest.fixture
+async def enriched_tenant(db):
+    """Insert a temporary enriched tenant; clean up afterwards."""
+    slug = f"t969_{uuid.uuid4().hex[:8]}"
+    await db.execute(text(
+        """
+        INSERT INTO companies (
+            id, name, display_name, is_active, is_demo,
+            sector, industry_segment, plan, timezone,
+            headcount_range, lia_persona_override
+        ) VALUES (
+            :id, 'Acme Saude', 'Acme Saude S.A.', TRUE, FALSE,
+            'Saude', 'HealthTech', 'professional', 'America/Recife',
+            '200-500', 'Persona customizada da Acme.'
+        )
+        """
+    ), {"id": slug})
+    await db.commit()
+    try:
+        yield slug
+    finally:
+        await db.execute(text(
+            "DELETE FROM companies WHERE id = :id"
+        ), {"id": slug})
+        await db.commit()
+
+
+async def test_canonical_demo_company_returns_rich_context(db):
+    """Canonical Demo Company UUID must yield the seeded rich values,
+    NOT the legacy defaults (sector=geral, plan=standard).
+    """
+    svc = TenantContextService()
+    ctx = await svc.get_context(
+        company_id="00000000-0000-4000-a000-000000000001", db=db
+    )
+
+    assert ctx.company_name == "Demo Company"
+    assert ctx.sector == "Tecnologia"
+    assert ctx.plan == "enterprise"
+    assert ctx.timezone == "America/Sao_Paulo"
+    assert ctx.custom_persona is not None
+    assert "WeDo Talent" in (ctx.custom_persona or "")
+
+    snippet = ctx.to_prompt_snippet()
+    assert "Tecnologia" in snippet
+    assert "enterprise" in snippet
+    assert "geral" not in snippet  # the bug-symptom literal
+
+
+async def test_enriched_tenant_returns_db_values(db, enriched_tenant):
+    """Any enriched tenant gets DB values; defaults must not leak in."""
+    svc = TenantContextService()
+    ctx = await svc.get_context(company_id=enriched_tenant, db=db)
+
+    assert ctx.company_name == "Acme Saude"
+    assert ctx.sector == "Saude"
+    assert ctx.plan == "professional"
+    assert ctx.timezone == "America/Recife"
+    assert ctx.custom_persona == "Persona customizada da Acme."
+
+    snippet = ctx.to_prompt_snippet()
+    assert "Acme Saude" in snippet
+    assert "Saude" in snippet
+    assert "professional" in snippet
+    assert "America/Recife" in snippet
+
+
+async def test_unknown_company_falls_back_to_defaults(db):
+    """Service stays fail-safe for truly unknown ids."""
+    svc = TenantContextService()
+    unknown = f"t969_unknown_{uuid.uuid4().hex[:8]}"
+    ctx = await svc.get_context(company_id=unknown, db=db)
+
+    assert ctx.company_name == "sua empresa"
+    assert ctx.sector == "geral"
+    assert ctx.plan == "standard"
+
+
+async def test_id_format_check_rejects_invalid_literals(db):
+    """The CHECK constraint installed by migration 127 mirrors
+    CompanyId.parse() — empty, 'default', and whitespace-bearing ids
+    must all be rejected at insert time.
+    """
+    # The set below mixes regex-violating ids ("", "Has Spaces", "UPPER",
+    # "x") with reserved-literal ids ("default", "none", "null",
+    # "undefined", "system", "anonymous") — the latter list is locked
+    # in step with ``_FORBIDDEN_LITERALS`` in CompanyId.parse().
+    invalid_ids = [
+        "", "Has Spaces", "UPPER", "x",
+        "default", "none", "null", "undefined", "system", "anonymous",
+    ]
+    for bad in invalid_ids:
+        with pytest.raises(Exception):  # asyncpg/psycopg raises check_violation
+            await db.execute(text(
+                "INSERT INTO companies (id, name) VALUES (:id, 'x')"
+            ), {"id": bad})
+            await db.commit()
+        await db.rollback()

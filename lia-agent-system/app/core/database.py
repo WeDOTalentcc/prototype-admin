@@ -182,52 +182,53 @@ async def add_approval_workflow_columns():
 
 
 async def ensure_default_company():
+    """Ensure the canonical Demo Company row exists with rich metadata.
+
+    Task #969 / T-C: this used to inline `CREATE TABLE IF NOT EXISTS
+    companies` and INSERT a `demo_company` slug row on every boot
+    (canonical-fix anti-pattern #7 — schema-as-runtime). It re-created
+    the legacy slug row that Alembic migration 080 had just removed,
+    re-introducing the cross-row tenant split documented in #969.
+
+    The fix:
+    - The schema lives in Alembic (`127_enrich_companies_schema` plus
+      every prior migration that touches `companies`). If the table is
+      missing here, that is a deployment bug and we want to surface it,
+      not paper over it.
+    - The seed lives in `scripts/seeds/demo_company.py` (idempotent
+      UPSERT at the canonical UUID with concrete sector/plan/timezone).
+    - This function only invokes the seed; it never DDLs and never
+      touches the legacy slug literal.
     """
-    Ensure the companies table exists and the demo_company entry is created.
-    This provides a valid company_id for multi-tenancy in development/demo environments.
-    
-    The demo_company is used as the default tenant for:
-    - New users without a specific company assignment
-    - Legacy records that had company_id='default'
-    - Development and testing purposes
-    """
+    try:
+        from scripts.seeds.demo_company import (
+            seed_demo_company,
+            CANONICAL_DEMO_UUID,
+        )
+    except Exception as exc:  # pragma: no cover — import-time misconfiguration
+        # pii-logs ok: nome de modulo nao e PII per LGPD Art.5 V.
+        logger.warning(
+            "Could not import canonical Demo Company seed (%s); "
+            "skipping default-company bootstrap. Run "
+            "`scripts/migrate_demo_company_consolidation.py` manually.",
+            exc,
+        )
+        return
+
     async with engine.begin() as conn:
         try:
-            await conn.execute(text("""
-                CREATE TABLE IF NOT EXISTS companies (
-                    id VARCHAR(255) PRIMARY KEY,
-                    name VARCHAR(255) NOT NULL,
-                    display_name VARCHAR(255),
-                    is_active BOOLEAN DEFAULT TRUE,
-                    is_demo BOOLEAN DEFAULT FALSE,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                )
-            """))
-            logger.debug("Ensured companies table exists")
-        except Exception as e:
-            logger.warning(f"Could not create companies table: {e}")
-        
-        try:
-            await conn.execute(text("""
-                INSERT INTO companies (id, name, display_name, is_active, is_demo, created_at, updated_at)
-                VALUES (
-                    'demo_company',
-                    'Demo Company',
-                    'Demo Company - Development/Testing',
-                    TRUE,
-                    TRUE,
-                    CURRENT_TIMESTAMP,
-                    CURRENT_TIMESTAMP
-                )
-                ON CONFLICT (id) DO UPDATE SET
-                    updated_at = CURRENT_TIMESTAMP
-            """))
-            logger.debug("Ensured demo_company entry exists")
-        except Exception as e:
-            logger.warning(f"Could not create demo_company: {e}")
-    
-    logger.info("Default company (demo_company) verified/created successfully")
+            await seed_demo_company(conn)
+            # pii-logs ok: tenant id nao e PII per LGPD Art.5 V.
+            logger.info(
+                "Default company verified/created at canonical UUID %s",
+                CANONICAL_DEMO_UUID,
+            )
+        except Exception as exc:
+            # pii-logs ok: tenant id nao e PII per LGPD Art.5 V.
+            logger.warning(
+                "Could not upsert canonical Demo Company (id=%s): %s",
+                CANONICAL_DEMO_UUID, exc,
+            )
 
 
 async def migrate_default_company_ids():
@@ -239,20 +240,26 @@ async def migrate_default_company_ids():
     - users
     - job_vacancies
     - vacancy_candidates
+
+    Task #969 / T-C: target id is now the canonical Demo Company UUID
+    instead of the legacy `demo_company` slug literal — keeps this code
+    aligned with `ensure_default_company` and migration 080.
     """
+    from scripts.seeds.demo_company import CANONICAL_DEMO_UUID
+
     tables_to_update = ["users", "job_vacancies", "vacancy_candidates"]
-    
+
     async with engine.begin() as conn:
         for table_name in tables_to_update:
             try:
                 result = await conn.execute(text(f"""
-                    UPDATE {table_name} 
-                    SET company_id = 'demo_company'
+                    UPDATE {table_name}
+                    SET company_id = :canonical
                     WHERE company_id = 'default'
-                """))
+                """), {"canonical": CANONICAL_DEMO_UUID})
                 if result.rowcount > 0:
                     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-                    logger.info(f"Migrated {result.rowcount} records in {table_name} from 'default' to 'demo_company'")
+                    logger.info(f"Migrated {result.rowcount} records in {table_name} from 'default' to canonical Demo Company UUID")
                 else:
                     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                     logger.debug(f"No records to migrate in {table_name}")
