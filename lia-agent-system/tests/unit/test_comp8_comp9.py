@@ -40,7 +40,7 @@ class TestBypassGate1:
 
         with patch("app.shared.compliance.fairness_guard.FairnessGuard") as MockFG, \
              patch.object(agent, "_process_langgraph", new=AsyncMock(return_value=expected)), \
-             patch("app.services.hitl_service.hitl_service") as MockHITL:
+             patch("app.domains.cv_screening.services.hitl_service.hitl_service") as MockHITL:
 
             clean = MagicMock(is_blocked=False, soft_warnings=[])
             MockFG.return_value.check.return_value = clean
@@ -82,7 +82,7 @@ class TestBypassGate1:
 
         with patch("app.shared.compliance.fairness_guard.FairnessGuard") as MockFG, \
              patch.object(agent, "_process_langgraph", new=AsyncMock(return_value=expected)), \
-             patch("app.services.hitl_service.hitl_service") as MockHITL:
+             patch("app.domains.cv_screening.services.hitl_service.hitl_service") as MockHITL:
 
             clean = MagicMock(is_blocked=False, soft_warnings=[])
             MockFG.return_value.check.return_value = clean
@@ -117,7 +117,7 @@ class TestBypassGate1:
         )
 
         with patch("app.shared.compliance.fairness_guard.FairnessGuard") as MockFG, \
-             patch("app.services.hitl_service.hitl_service") as MockHITL, \
+             patch("app.domains.cv_screening.services.hitl_service.hitl_service") as MockHITL, \
              patch("app.shared.compliance.audit_service.audit_service") as MockAudit:
 
             clean = MagicMock(is_blocked=False, soft_warnings=[])

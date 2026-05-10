@@ -50,7 +50,7 @@ class TestPearchFallbackChain:
         mock_db.__aexit__ = AsyncMock(return_value=False)
 
         with patch(
-            "app.services.rag_pipeline_service.RAGPipelineService",
+            "app.domains.ai.services.rag_pipeline_service.RAGPipelineService",
             return_value=mock_rag_svc,
         ):
             with patch(
@@ -76,7 +76,7 @@ class TestPearchFallbackChain:
         mock_db.__aexit__ = AsyncMock(return_value=False)
 
         with patch(
-            "app.services.rag_pipeline_service.RAGPipelineService",
+            "app.domains.ai.services.rag_pipeline_service.RAGPipelineService",
             return_value=mock_rag_svc,
         ):
             with patch(
@@ -104,7 +104,7 @@ class TestPearchFallbackChain:
         mock_db.__aexit__ = AsyncMock(return_value=False)
 
         with patch(
-            "app.services.rag_pipeline_service.RAGPipelineService",
+            "app.domains.ai.services.rag_pipeline_service.RAGPipelineService",
             return_value=mock_rag_svc,
         ):
             with patch(
@@ -129,7 +129,7 @@ class TestPearchFallbackChain:
         mock_db.__aexit__ = AsyncMock(return_value=False)
 
         with patch(
-            "app.services.rag_pipeline_service.RAGPipelineService",
+            "app.domains.ai.services.rag_pipeline_service.RAGPipelineService",
             return_value=mock_rag_svc,
         ):
             with patch(
@@ -152,7 +152,7 @@ class TestPearchFallbackChain:
         req.limit = 10
 
         with patch(
-            "app.services.rag_pipeline_service.RAGPipelineService"
+            "app.domains.ai.services.rag_pipeline_service.RAGPipelineService"
         ) as mock_rag_cls:
             result = await _pearch_search_fallback(None, req, timeout=30)
 

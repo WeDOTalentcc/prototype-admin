@@ -32,7 +32,7 @@ class TestATSPIIFilter:
         mock_svc.check_purpose = AsyncMock(return_value=False)
 
         with patch(
-            "app.services.granular_consent_service.GranularConsentService",
+            "app.shared.services.granular_consent_service.GranularConsentService",
             return_value=mock_svc,
         ):
             result = await filter_sensitive_outbound(
@@ -61,7 +61,7 @@ class TestATSPIIFilter:
         mock_svc.check_purpose = AsyncMock(return_value=True)
 
         with patch(
-            "app.services.granular_consent_service.GranularConsentService",
+            "app.shared.services.granular_consent_service.GranularConsentService",
             return_value=mock_svc,
         ):
             result = await filter_sensitive_outbound(
@@ -86,7 +86,7 @@ class TestATSPIIFilter:
         mock_svc.check_purpose = AsyncMock(side_effect=RuntimeError("DB error"))
 
         with patch(
-            "app.services.granular_consent_service.GranularConsentService",
+            "app.shared.services.granular_consent_service.GranularConsentService",
             return_value=mock_svc,
         ):
             # fail-open: não levanta exceção, retorna payload completo (consent assumed True)
@@ -149,7 +149,7 @@ class TestATSPIIFilter:
         mock_svc.check_purpose = AsyncMock(return_value=True)
 
         with patch(
-            "app.services.granular_consent_service.GranularConsentService",
+            "app.shared.services.granular_consent_service.GranularConsentService",
             return_value=mock_svc,
         ):
             await filter_sensitive_outbound(
@@ -188,7 +188,7 @@ class TestRubricEvaluationConsentWiring:
         mock_consent_svc.check_purpose = AsyncMock(return_value=False)
 
         with patch(
-            "app.services.granular_consent_service.GranularConsentService",
+            "app.shared.services.granular_consent_service.GranularConsentService",
             return_value=mock_consent_svc,
         ):
             result = await svc.evaluate_and_create_activity(
@@ -220,7 +220,7 @@ class TestRubricEvaluationConsentWiring:
         mock_result.score = 75.0
 
         with patch(
-            "app.services.granular_consent_service.GranularConsentService",
+            "app.shared.services.granular_consent_service.GranularConsentService",
             return_value=mock_consent_svc,
         ), patch.object(svc, "evaluate_candidate", new_callable=AsyncMock, return_value=mock_result):
             result = await svc.evaluate_and_create_activity(
@@ -252,7 +252,7 @@ class TestRubricEvaluationConsentWiring:
         mock_result.score = 80.0
 
         with patch(
-            "app.services.granular_consent_service.GranularConsentService",
+            "app.shared.services.granular_consent_service.GranularConsentService",
             return_value=mock_consent_svc,
         ), patch.object(svc, "evaluate_candidate", new_callable=AsyncMock, return_value=mock_result):
             # Não deve levantar exceção — fail-open

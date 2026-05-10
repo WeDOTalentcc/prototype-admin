@@ -277,11 +277,19 @@ class TestValidateCanSend:
         from app.enums.communication import MessageChannel, MessageType
         mock_db = AsyncMock()
 
+        mock_consent_result = MagicMock()
+        mock_consent_result.allowed = True
+        mock_consent_result.reason = "granted"
+        mock_consent_result.consent_type = "EMAIL_TRANSACTIONAL"
+
         with patch.object(service, "_check_opt_out", new_callable=AsyncMock, return_value=(False, None)), \
              patch.object(service, "_check_quarantine", new_callable=AsyncMock, return_value=(False, None)), \
              patch.object(service, "_check_rate_limit", new_callable=AsyncMock, return_value=(True, 0)), \
              patch.object(service, "_is_within_sending_hours", return_value=True), \
-             patch("app.domains.communication.services.communication_service._get_db") as mock_get_db:
+             patch("app.domains.communication.services.communication_service._get_db") as mock_get_db, \
+             patch("app.domains.communication.services.consent_gate.CommunicationConsentGate") as mock_cg_cls:
+
+            mock_cg_cls.return_value.check = AsyncMock(return_value=mock_consent_result)
 
             # Mock the async context manager
             mock_ctx = AsyncMock()

@@ -100,7 +100,7 @@ class TestCascadedRouterSourcingDomains:
         from app.orchestrator.cascaded_router import AGENT_TYPE_TO_DOMAIN
         for domain in ("sourcing_planner", "sourcing_search", "sourcing_enrich", "sourcing_engagement"):
             assert domain in AGENT_TYPE_TO_DOMAIN, f"{domain} not in AGENT_TYPE_TO_DOMAIN"
-            assert AGENT_TYPE_TO_DOMAIN[domain] == domain
+            assert AGENT_TYPE_TO_DOMAIN[domain] == "sourcing"
 
     def test_original_sourcing_still_present(self):
         from app.orchestrator.cascaded_router import AGENT_TYPE_TO_DOMAIN

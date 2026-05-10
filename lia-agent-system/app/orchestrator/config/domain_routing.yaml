@@ -40,9 +40,10 @@ domains:
     - "benef[ií]cios"
     - "enrichment"
   wizard:
-    # Only explicit wizard UI triggers — generic "criar vaga" routes to job_management
+    # Wizard UI triggers + explicit job creation request
     - "\\bwizard\\b"
     - "job\\s+creation\\s+wizard"
+    - "criar.*\\bvaga\\b"
   sourcing:
     - "buscar?\\s+\\w*\\s*candidato"
     - "pesquisar?\\s+\\w*\\s*candidato"

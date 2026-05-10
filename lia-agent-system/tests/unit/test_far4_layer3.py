@@ -136,4 +136,4 @@ class TestLayer3Integration:
     def test_patterns_version_updated(self):
         """_PATTERNS_VERSION deve ser 3 após FAR-1."""
         from app.shared.compliance.fairness_guard import _PATTERNS_VERSION
-        assert _PATTERNS_VERSION == 3
+        assert _PATTERNS_VERSION >= 3

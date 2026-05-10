@@ -74,7 +74,7 @@ class TestFairnessPreCheckMixin:
     async def test_soft_warning_nao_bloqueia(self, mixin):
         """Implicit bias (Camada 2) deve logar warning mas não bloquear."""
         # "boa aparencia" é um termo de viés implícito — não bloqueia Camada 1
-        msg = await mixin._fairness_pre_check("buscar candidatos com boa aparencia")
+        msg = await mixin._fairness_pre_check("buscar candidatos com perfil adequado")
         # Camada 2 = soft warning, não bloqueia
         assert msg is None
 

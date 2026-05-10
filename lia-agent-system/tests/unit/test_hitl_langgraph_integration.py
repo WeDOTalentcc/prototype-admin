@@ -143,7 +143,7 @@ class TestJobWizardGraphHITL:
             "user_message": "confirmar",
         }
 
-        with patch("app.services.hitl_service.hitl_service") as mock_hitl:
+        with patch("app.domains.cv_screening.services.hitl_service.hitl_service") as mock_hitl:
             mock_hitl.request_approval = AsyncMock(return_value="pending-123")
             mock_hitl.store_resume_info = AsyncMock()
             result = await graph._invoke_langgraph(state)
@@ -201,7 +201,7 @@ class TestPipelineTransitionAgentHITL:
             user_id="user-1",
         )
 
-        with patch("app.services.hitl_service.hitl_service") as mock_hitl:
+        with patch("app.domains.cv_screening.services.hitl_service.hitl_service") as mock_hitl:
             mock_hitl.request_approval = AsyncMock(return_value="pending-pipeline-xyz")
             mock_hitl.store_resume_info = AsyncMock()
             output = await agent.process(agent_input)
@@ -322,6 +322,7 @@ class TestWSIInterviewGraphHITL:
             "wsi_data": {
                 "stage": "score_response",
                 "session_id": "wsi-s-001",
+                "company_id": "acme",
                 "wsi_final_score": 8.5,
                 "technical_score": 7.0,
                 "behavioral_score": 9.0,
@@ -338,7 +339,7 @@ class TestWSIInterviewGraphHITL:
         # hitl_approved não existe como atributo padrão → adicionamos manualmente
         state.__dict__["hitl_approved"] = False
 
-        with patch("app.services.hitl_service.hitl_service") as mock_hitl:
+        with patch("app.domains.cv_screening.services.hitl_service.hitl_service") as mock_hitl:
             mock_hitl.request_approval = AsyncMock(return_value="pending-wsi-abc")
             mock_hitl.store_resume_info = AsyncMock()
             result = await g._submit_response_langgraph(state, "minha resposta")
