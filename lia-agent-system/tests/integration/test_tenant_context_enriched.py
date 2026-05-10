@@ -20,18 +20,43 @@ from app.shared.services.tenant_context_service import TenantContextService
 pytestmark = pytest.mark.asyncio
 
 
-def _async_db_url() -> str:
+def _async_db_url_and_args() -> tuple[str, dict]:
+    """Translate the canonical libpq DSN into asyncpg-compatible form.
+
+    Replit/Neon DSNs ship with libpq-style query params (``sslmode=...``,
+    ``channel_binding=...``) that asyncpg's connect() rejects with
+    ``TypeError: connect() got an unexpected keyword argument 'sslmode'``
+    — so this fixture strips them out and converts ``sslmode=require``
+    into a SSL-enabled ``connect_args``. Local Postgres rejects SSL
+    upgrades, so when stripping yields no SSL we leave it off entirely.
+    """
+    import re
+
     url = os.environ.get("DATABASE_URL")
     if not url:
         pytest.skip("DATABASE_URL not set; integration test requires Postgres")
+
+    sslmode_match = re.search(r"[?&]sslmode=([^&]+)", url)
+    sslmode = sslmode_match.group(1) if sslmode_match else None
+
+    # Drop libpq-only params asyncpg doesn't accept.
+    for unsupported in ("sslmode", "channel_binding", "options"):
+        url = re.sub(rf"[?&]{unsupported}=[^&]+", "", url)
+    url = re.sub(r"\?&", "?", url).rstrip("?&")
+
     if url.startswith("postgresql://"):
         url = url.replace("postgresql://", "postgresql+asyncpg://", 1)
-    return url
+
+    connect_args: dict = {}
+    if sslmode and sslmode.lower() in {"require", "verify-ca", "verify-full"}:
+        connect_args["ssl"] = True
+    return url, connect_args
 
 
 @pytest.fixture
 async def db() -> AsyncSession:
-    engine = create_async_engine(_async_db_url(), future=True)
+    url, connect_args = _async_db_url_and_args()
+    engine = create_async_engine(url, future=True, connect_args=connect_args)
     Session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
     async with Session() as session:
         yield session
