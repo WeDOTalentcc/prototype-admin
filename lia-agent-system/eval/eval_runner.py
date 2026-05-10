@@ -719,6 +719,27 @@ def gate_check(
     for r in last_n:
         for agent, score in (r.get("by_agent") or {}).items():
             by_agent.setdefault(agent, []).append(float(score))
+    # Inventário canônico T-D (16 ReActAgents) — gate falha se a cobertura
+    # nas últimas N rodadas for menor que 80% (uma agente faltando pode
+    # mascarar regressão silenciosa).
+    expected_agents = {
+        "analytics", "ats_integration", "automation", "autonomous",
+        "candidate_self_service", "communication", "company_settings",
+        "cv_screening_pipeline", "hiring_policy", "jobs_management", "kanban",
+        "talent_funnel", "sourcing", "talent_pool", "pipeline_transition",
+        "wizard",
+    }
+    missing = expected_agents - by_agent.keys()
+    coverage_ratio = (len(expected_agents) - len(missing)) / len(expected_agents)
+    if coverage_ratio < 0.80:
+        print(f"[gate] FAIL: coverage {coverage_ratio:.0%} < 80% — missing agents in last {consecutive_runs} runs:")
+        for a in sorted(missing):
+            print(f"  • {a}")
+        return 1
+    if missing:
+        print(f"[gate] WARN: {len(missing)} agent(s) missing from last {consecutive_runs} runs (coverage {coverage_ratio:.0%}):")
+        for a in sorted(missing):
+            print(f"  • {a}")
     failed = [
         (a, scores)
         for a, scores in by_agent.items()
