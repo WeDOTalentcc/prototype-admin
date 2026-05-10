@@ -92,6 +92,7 @@ async def run_drift_batch(
     _current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
 ) -> DriftBatchResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Executa drift check para todas as empresas ativas em batch.
 

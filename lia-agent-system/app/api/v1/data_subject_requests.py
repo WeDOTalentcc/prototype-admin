@@ -243,6 +243,7 @@ async def get_request_stats(
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get aggregated statistics for data subject requests."""
     try:
         company_uuid = UUID(company_id)
@@ -285,6 +286,7 @@ async def list_data_subject_requests(
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List data subject requests with filters and pagination."""
     try:
         company_uuid = UUID(company_id)
@@ -319,6 +321,7 @@ async def get_data_subject_request(
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get detailed information about a specific data subject request."""
     try:
         company_uuid = UUID(company_id)
@@ -346,6 +349,7 @@ async def assign_request(
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Assign a data subject request to a user for handling."""
     try:
         company_uuid = UUID(company_id)
@@ -391,6 +395,7 @@ async def verify_identity(
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Verify the identity of the data subject making the request."""
     try:
         company_uuid = UUID(company_id)
@@ -446,6 +451,7 @@ async def start_processing(
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Start processing a data subject request."""
     try:
         company_uuid = UUID(company_id)
@@ -494,6 +500,7 @@ async def complete_request(
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Complete a data subject request with a response."""
     try:
         company_uuid = UUID(company_id)
@@ -568,6 +575,7 @@ async def reject_request(
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Reject a data subject request with a reason."""
     try:
         company_uuid = UUID(company_id)

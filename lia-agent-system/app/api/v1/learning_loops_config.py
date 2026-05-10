@@ -123,6 +123,7 @@ async def get_config(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> LearningLoopsConfigResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Retorna config dos learning loops da empresa.
 
     Se nao houver CompanyHiringPolicy, retorna defaults (source='default').
@@ -153,6 +154,7 @@ async def patch_config(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> LearningLoopsConfigResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     company_id = _enforce_tenant(company_id, current_user)
     """Update partial dos toggles.
 

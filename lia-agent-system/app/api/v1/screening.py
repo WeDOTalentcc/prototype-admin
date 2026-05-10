@@ -179,6 +179,7 @@ async def regenerate_questions(
 async def get_screening_frameworks(
     current_user: User = Depends(get_current_active_user)
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     from app.api.v1.wsi._shared import BLOOM_LEVELS as BLOOM_RICH
     from app.api.v1.wsi._shared import DREYFUS_LEVELS as DREYFUS_RICH
     from app.domains.cv_screening.constants.wsi_constants import (

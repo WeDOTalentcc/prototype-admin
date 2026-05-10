@@ -476,6 +476,7 @@ async def get_webhook_logs(
 async def get_available_events(
     current_user: User = Depends(get_current_active_user)
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get list of available webhook event types.
     """

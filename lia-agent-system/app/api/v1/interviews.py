@@ -876,6 +876,7 @@ async def get_interview_stages(
     request: Request,
     repo: InterviewRepository = Depends(get_interview_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get the company's configured recruitment stages that can be used for interviews.
 

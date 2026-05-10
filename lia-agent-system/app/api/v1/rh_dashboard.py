@@ -25,6 +25,7 @@ async def list_lgpd_requests(
     page_size: int = Query(20, ge=1, le=100),
     company_id: str = Depends(get_current_company_id),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Proxies to Rails GET /v1/candidate-portal/lgpd-requests.
 
     Returns LGPD Art. 20 right-to-explanation requests filed by candidates.
@@ -60,6 +61,7 @@ async def mark_lgpd_request_responded(
     request_id: str,
     company_id: str = Depends(get_current_company_id),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Proxies to Rails PATCH /v1/candidate-portal/lgpd-requests/:id/respond."""
     logger.info(
         "[RH Dashboard] mark-responded request_id=%s company_id=%s",

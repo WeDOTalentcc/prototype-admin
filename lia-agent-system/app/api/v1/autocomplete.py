@@ -39,6 +39,7 @@ async def get_premium_suggestions(
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get premium autocomplete suggestions based on company history.
 

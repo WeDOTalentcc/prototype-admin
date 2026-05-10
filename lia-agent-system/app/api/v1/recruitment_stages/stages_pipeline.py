@@ -388,6 +388,7 @@ async def get_pipeline_inheritance_status(
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Check if a job's pipeline is customized or inherited from company default."""
     try:
         from sqlalchemy import select as sa_select

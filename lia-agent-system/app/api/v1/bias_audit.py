@@ -91,6 +91,7 @@ async def get_bias_audit(
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
 ) -> BiasAuditReportResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Retorna auditoria de adverse impact para a vaga indicada.
 
@@ -120,6 +121,7 @@ async def get_bias_audit_history(
     limit: int = Query(10, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Retorna histórico de snapshots de auditoria de viés para a vaga.
 

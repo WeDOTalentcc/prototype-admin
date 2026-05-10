@@ -85,6 +85,7 @@ async def list_workforce_plans(
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List all workforce plans for the company."""
     try:
         client = await get_client(company_id, db)
@@ -124,6 +125,7 @@ async def get_workforce_plan(
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get a specific workforce plan by ID."""
     try:
         client = await get_client(company_id, db)
@@ -158,6 +160,7 @@ async def create_workforce_plan(
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new workforce plan."""
     try:
         client = await get_client(company_id, db)
@@ -206,6 +209,7 @@ async def update_workforce_plan(
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update an existing workforce plan."""
     try:
         client = await get_client(company_id, db)
@@ -262,6 +266,7 @@ async def delete_workforce_plan(
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Delete a workforce plan."""
     try:
         client = await get_client(company_id, db)
@@ -303,6 +308,7 @@ async def list_plan_departments(
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db)
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List all departments in a workforce plan."""
     try:
         client = await get_client(company_id, db)

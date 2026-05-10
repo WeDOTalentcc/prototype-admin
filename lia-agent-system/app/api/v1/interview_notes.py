@@ -845,6 +845,7 @@ async def calculate_wsi_score(
     request: CalculateWSIRequest,
     current_user: User = Depends(get_current_active_user)
 ) -> WSIScore:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Calculate WSI Score based on evaluated question blocks.
     

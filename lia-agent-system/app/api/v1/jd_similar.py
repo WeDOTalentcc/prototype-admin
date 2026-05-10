@@ -119,6 +119,7 @@ async def lookup_similar(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> JdSimilarLookupResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     company_id = _enforce_tenant(company_id, current_user)
     """Busca JDs similares no histórico da empresa.
 
@@ -162,6 +163,7 @@ async def record_jd(
     svc: JdSimilarService = Depends(_get_service),
     current_user: User = Depends(get_current_user),
 ) -> GenericResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Registra JD enriquecida no histórico (chamado após publish bem-sucedido)."""
     company_id = _enforce_tenant(body.company_id, current_user)
     try:
@@ -185,6 +187,7 @@ async def increment_reuse(
     svc: JdSimilarService = Depends(_get_service),
     current_user: User = Depends(get_current_user),
 ) -> GenericResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Incrementa contador de reuso quando recruiter usa JD do histórico como base."""
     company_id = _enforce_tenant(body.company_id, current_user)
     try:
@@ -200,6 +203,7 @@ async def mark_filled(
     svc: JdSimilarService = Depends(_get_service),
     current_user: User = Depends(get_current_user),
 ) -> GenericResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Marca JD como preenchida (vaga fechou)."""
     company_id = _enforce_tenant(body.company_id, current_user)
     try:

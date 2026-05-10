@@ -37,6 +37,7 @@ async def compare_candidates(
     db: AsyncSession = Depends(get_db),
     service: CandidateComparisonService = Depends(get_candidate_comparison_service),
 ) -> dict:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Compara 2 a 4 candidatos lado a lado (D9 — Análise Comparativa Visual).
 

@@ -122,6 +122,7 @@ async def schedule_interview(
     body: ScheduleInterviewRequest,
     db: AsyncSession = Depends(get_db),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Schedule an interview appointment.
     Creates calendar event and sends invitations to all attendees.

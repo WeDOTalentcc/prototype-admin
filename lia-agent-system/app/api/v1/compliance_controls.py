@@ -136,6 +136,7 @@ async def list_company_controls(
     company_id: str = Depends(get_verified_company_id),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List company's compliance controls with their status."""
     try:
         company_uuid = UUID(company_id)
@@ -173,6 +174,7 @@ async def create_company_control(
     company_id: str = Depends(get_verified_company_id),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a company compliance control mapping."""
     try:
         company_uuid = UUID(company_id)
@@ -210,6 +212,7 @@ async def update_company_control(
     company_id: str = Depends(get_verified_company_id),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update a company's compliance control status."""
     try:
         company_uuid = UUID(company_id)
@@ -246,6 +249,7 @@ async def upload_evidence(
     company_id: str = Depends(get_verified_company_id),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Upload evidence file for a control."""
     try:
         company_uuid = UUID(company_id)
@@ -283,6 +287,7 @@ async def list_audits(
     company_id: str = Depends(get_verified_company_id),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List compliance audits."""
     try:
         company_uuid = UUID(company_id)
@@ -312,6 +317,7 @@ async def create_audit(
     company_id: str = Depends(get_verified_company_id),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new compliance audit."""
     try:
         company_uuid = UUID(company_id)
@@ -339,6 +345,7 @@ async def get_compliance_dashboard(
     company_id: str = Depends(get_verified_company_id),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get comprehensive compliance dashboard across all frameworks."""
     try:
         company_uuid = UUID(company_id)
@@ -412,6 +419,7 @@ async def list_sox_controls(
     company_id: str = Depends(get_verified_company_id),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List SOX controls for a company."""
     try:
         company_uuid = UUID(company_id)
@@ -441,6 +449,7 @@ async def create_sox_control(
     company_id: str = Depends(get_verified_company_id),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new SOX control."""
     try:
         company_uuid = UUID(company_id)
@@ -470,6 +479,7 @@ async def update_sox_control(
     company_id: str = Depends(get_verified_company_id),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update a SOX control."""
     try:
         company_uuid = UUID(company_id)

@@ -425,6 +425,7 @@ async def import_departments(
     dept_repo: DepartmentRepository = Depends(get_department_repo),
     profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Import departments from Excel/CSV file with AI processing.
 
     company_id is resolved from the JWT token via get_verified_company_id.

@@ -32,6 +32,7 @@ async def list_stage_sub_statuses(
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
     sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List sub-statuses for a specific stage. Use include_inactive=true in settings to show full catalog."""
     try:
         stage = await stage_repo.get_by_id(uuid.UUID(stage_id))

@@ -63,6 +63,7 @@ async def get_granular_consents(
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
 ) -> GranularConsentSummaryResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Retorna resumo de todos os consentimentos LGPD granulares do candidato.
 
@@ -105,6 +106,7 @@ async def update_granular_consents(
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Atualiza múltiplos consentimentos LGPD em lote.
 

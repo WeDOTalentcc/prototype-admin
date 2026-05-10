@@ -23,6 +23,7 @@ async def get_cultural_fit(
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
 ) -> dict:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Retorna score de fit cultural integrado (WSI + entrevista + cultura empresa).
     Score em [0–100]. Fail-open: retorna 50.0 em caso de dados insuficientes.

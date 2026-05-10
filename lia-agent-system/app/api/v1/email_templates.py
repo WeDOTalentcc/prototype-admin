@@ -464,6 +464,7 @@ async def send_email(
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
     email_svc: EmailService = Depends(get_email_service),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Send an email using a template.
 

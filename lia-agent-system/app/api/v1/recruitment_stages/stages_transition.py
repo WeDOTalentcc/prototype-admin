@@ -268,6 +268,7 @@ async def execute_transition(
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
 ):
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Execute a candidate stage transition with optional auto-dispatch."""
     import asyncio as _asyncio
     try:

@@ -114,6 +114,7 @@ async def get_toon_card(
     company_id: str = Depends(_get_company_id),
     db: AsyncSession = Depends(get_db),
 ) -> TOONCardResponse:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Retrieve (or generate) a TOONCard for the given candidate.
 

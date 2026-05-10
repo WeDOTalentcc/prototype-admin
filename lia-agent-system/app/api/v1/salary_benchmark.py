@@ -21,6 +21,7 @@ async def get_salary_benchmark(
     location: str = Query("Brasil", description="Cidade ou 'Brasil' para nacional"),
     company_id: str = Depends(get_verified_company_id),
 ) -> dict:
+    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Retorna benchmark salarial real para o cargo/nível/localização.
     Fonte: Apify (Glassdoor/LinkedIn) com cache 7 dias. Fallback: dados setoriais.
