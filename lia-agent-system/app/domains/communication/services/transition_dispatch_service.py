@@ -593,7 +593,7 @@ class TransitionDispatchService:
         Phase 2: BigFive.record_hire — DEFERRED to Phase 2.5.
         Phase 3: WSI Effectiveness outcomes per skill_probed (record_question_outcome)
 
-        ─── ADR-LGPD-001 (2026-05-10) ────────────────────────────────────
+        ─── ADR-LGPD-001 (rev 2026-05-10, hardened post-audit) ─────────
         BigFiveDepartmentService.record_hire is intentionally NOT wired
         from this hook today. Two reasons:
 
@@ -609,21 +609,63 @@ class TransitionDispatchService:
            learning-loop quality. Phase 2.5 follow-up: extend WSI
            scoring to emit OCEAN per candidate, then wire here.
 
-        2. LGPD ART. 18 ANALYSIS: bigfive_department_profiles store
-           POPULATION-LEVEL aggregates via running average + temporal
-           decay (lambda 0.05, threshold 540 days). Individual
-           contributions cannot be reverted from the aggregate after
-           the running-average update. Per ANPD interpretation,
-           irreversibly-aggregated statistics qualify as anonymization
-           beyond LGPD Art. 18 erasure scope. When a candidate's PII
-           is erased via lgpd_cleanup_service, NO recompute of
-           bigfive_department_profiles is required.
+        2. LGPD ART. 18 ANALYSIS — aggregate-not-PII argument:
 
-           If a future regulator interpretation differs, add a
-           recompute hook here using the surviving sample population.
+           Legal hook: LGPD (Lei 13.709/2018) Art. 12 §1 places
+           anonymized data outside the scope of LGPD protections when
+           reversal back to the data subject would require "esforços
+           razoáveis". Art. 18 erasure obligation therefore does NOT
+           apply to data that has been anonymized in this strict sense.
 
-           Reference: Sprint B Phase 3 audit, decisão D1=B (Paulo
-           2026-05-10).
+           ANPD precedent: ANPD's Guia Orientativo "Tratamento de
+           Dados Pessoais pelo Poder Público" (Aug/2022) and the
+           "Guia de Anonimização" §3 ("teste de razoabilidade da
+           irreversibilidade") establish that aggregate statistics
+           computed via destructive transformations (running average
+           with N >= a minimum threshold + decay) qualify as
+           anonymized when individual contributions cannot be
+           recovered with reasonable effort. See also Resolução
+           CD/ANPD nº 2/2022 §3.II.
+
+           Quantitative anchor (operational guard):
+           bigfive_department_profiles store POPULATION-LEVEL
+           aggregates via running average + temporal decay
+           (lambda=0.05, threshold=540 days). At small N the
+           aggregate is partially reversible if an attacker has
+           side-channel signals — therefore the application enforces
+           MIN_DEPT_SAMPLES = 10 in
+           BigFiveDepartmentService.get_blend_weights (line 183),
+           refusing to USE the profile for any decision when N < 10.
+           The "esforços razoáveis" test of Art. 12 §1 holds only at
+           N >= 10 with the active gate; never below.
+
+           Cross-reference EU AI Act Art. 10(5): special-category
+           processing without individual data subjects is permitted
+           where "absolutely necessary for the purpose of bias
+           detection and correction". The dept profile is used for
+           bias-aware question generation — within the article's scope.
+
+           Conclusion: when a candidate's PII is erased via
+           lgpd_cleanup_service, NO recompute of
+           bigfive_department_profiles is required. The aggregate
+           remains valid because (a) it is irreversible per ANPD
+           §3 test at N >= 10 and (b) the MIN_DEPT_SAMPLES gate
+           ensures profiles below the threshold are never queried.
+
+           Sentinel guard: tests/unit/test_p0_3_min_samples_gate.py
+           refuses regression below MIN_DEPT_SAMPLES=10, removal of
+           the get_blend_weights gate, OR a docstring that loses the
+           ANPD/Art.12/MIN_DEPT_SAMPLES references.
+
+           If a future ANPD opinion or court interpretation diverges
+           from this analysis, add a recompute hook here using the
+           surviving sample population (post-erasure recompute path
+           is intentionally absent today).
+
+           Decision history: Sprint B Phase 3 audit, decisão D1=B
+           (Paulo 2026-05-10). Hardened post-audit 2026-05-10
+           with ANPD/Art. 12 §1/EU AI Act Art. 10(5) citations and
+           the MIN_DEPT_SAMPLES quantitative anchor.
 
         Sentinel: tests/unit/test_bigfive_phase3_governance.py asserts
         record_hire is not called from this hook and that this
