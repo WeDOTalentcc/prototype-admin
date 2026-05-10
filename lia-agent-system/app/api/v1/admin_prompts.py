@@ -57,6 +57,7 @@ def _to_response(entry: dict) -> PromptVersionResponse:
 # ---------------------------------------------------------------------------
 
 
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.get("/versions", response_model=PromptVersionListResponse)
 async def list_all_versions(
     current_user: User = Depends(require_admin),
@@ -73,6 +74,7 @@ async def list_all_versions(
     )
 
 
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.get("/versions/{name}", response_model=PromptVersionListResponse)
 async def list_versions_by_name(
     name: str,

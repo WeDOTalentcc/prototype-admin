@@ -12,6 +12,7 @@ from app.auth.dependencies import require_admin
 router = APIRouter(prefix="/bias-audit", tags=["Bias Audit - Admin"])
 
 
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.post("/job/{job_id}/run-baseline", response_model=None)
 async def run_bias_audit_baseline(
     job_id: str = Path(..., description="ID da vaga"),

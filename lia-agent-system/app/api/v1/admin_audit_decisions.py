@@ -42,6 +42,7 @@ router = APIRouter(
     "/by-user/{actor_user_id}",
     summary="List AI decisions triggered by a specific user",
 )
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 async def list_decisions_by_user(
     actor_user_id: _DualId,
     limit: int = Query(100, ge=1, le=500),

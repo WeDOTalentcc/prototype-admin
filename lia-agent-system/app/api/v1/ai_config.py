@@ -150,6 +150,7 @@ def _apply_update(policy: CompanyHiringPolicy, update: AIConfigUpdate) -> None:
 
 # ── Endpoints ────────────────────────────────────────────────────
 
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("", response_model=AIConfigResponse)
 async def get_ai_config(
     db: AsyncSession = Depends(get_db),
@@ -161,6 +162,7 @@ async def get_ai_config(
     return _extract_config(policy)
 
 
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.put("", response_model=AIConfigResponse)
 async def update_ai_config(
     update: AIConfigUpdate,

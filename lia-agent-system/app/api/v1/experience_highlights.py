@@ -152,6 +152,7 @@ def generate_fallback_highlight(data: GenerateHighlightRequest) -> str:
     return ". ".join(parts) + "."
 
 
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/{candidate_id}", response_model=None)
 async def get_experience_highlight(
     candidate_id: str,
@@ -182,6 +183,7 @@ async def get_experience_highlight(
     )
 
 
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/generate", response_model=None)
 async def generate_experience_highlight(
     request: GenerateHighlightRequest,
@@ -235,6 +237,7 @@ async def generate_experience_highlight(
     )
 
 
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.delete("/{candidate_id}", response_model=None)
 async def delete_experience_highlight(
     candidate_id: str,

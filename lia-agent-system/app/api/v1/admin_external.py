@@ -141,6 +141,7 @@ def _check_quota(limit: int, usage: int) -> dict[str, Any]:
     response_model=CompanyListResponse,
     summary="List all tenants with summary",
 )
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 async def list_companies(
     status_filter: str | None = Query(None, alias="status", description="Filter by status"),
     plan_filter: str | None = Query(None, alias="plan", description="Filter by plan"),
@@ -240,6 +241,7 @@ async def list_companies(
     response_model=CompanyOverviewResponse,
     summary="Consolidated tenant overview",
 )
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 async def get_company_overview(
     company_id: str,
     _admin: Any = Depends(require_admin),
@@ -351,6 +353,7 @@ async def get_company_overview(
     response_model=StudioAgentsResponse,
     summary="List studio agents for a tenant",
 )
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 async def list_studio_agents(
     company_id: str,
     _admin: Any = Depends(require_admin),
@@ -466,6 +469,7 @@ async def list_studio_agents(
     response_model=ConsumptionBreakdownResponse,
     summary="Core vs Studio consumption breakdown",
 )
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 async def get_studio_consumption(
     company_id: str,
     days: int = Query(30, ge=1, le=365),
@@ -551,6 +555,7 @@ async def get_studio_consumption(
     response_model=AgentQuotaResponse,
     summary="Get agent quotas for a tenant",
 )
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 async def get_agent_quota(
     company_id: str,
     _admin: Any = Depends(require_admin),
@@ -607,6 +612,7 @@ async def get_agent_quota(
     response_model=AgentQuotaResponse,
     summary="Adjust agent quotas for a tenant",
 )
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 async def update_agent_quota(
     company_id: str,
     body: AgentQuotaUpdateRequest,

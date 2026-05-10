@@ -305,6 +305,7 @@ class UsageDataWrapper(BaseModel):
     data: UsageData
 
 
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/status", summary="Get billing providers status", response_model=BillingStatusResponse)
 async def get_billing_status(
     _company_id_check: str = Depends(_require_company_id_header),
@@ -352,6 +353,7 @@ async def get_billing_status(
         )
 
 
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/subscriptions", summary="List subscriptions", response_model=SubscriptionListWrapper)
 async def list_subscriptions(
     status_filter: str | None = Query(None, alias="status", description="Filter by status"),

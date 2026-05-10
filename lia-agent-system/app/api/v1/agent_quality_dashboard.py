@@ -72,6 +72,7 @@ async def _get_drift_status(company_id: str, db: AsyncSession) -> dict[str, Any]
     return result
 
 
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/agent-quality-dashboard")
 async def get_agent_quality_dashboard(
     period: str = Query("7d", regex="^(7d|30d|90d)$"),

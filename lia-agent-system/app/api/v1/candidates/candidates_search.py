@@ -26,6 +26,7 @@ from ._shared import (
 router = APIRouter()
 
 
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/search/local", response_model=CandidateSearchResponse)
 async def search_candidates_local(
     request: CandidateSearchRequest,
@@ -188,6 +189,7 @@ async def search_by_job_description(
         raise HTTPException(status_code=500, detail="Job description search failed")
 
 
+# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/health", response_model=None)
 async def health_check():
     """Check if Pearch AI integration is properly configured."""

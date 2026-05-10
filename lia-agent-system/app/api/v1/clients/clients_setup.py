@@ -55,6 +55,7 @@ async def get_client_setup(
         raise HTTPException(status_code=500, detail=f"Failed to get client setup: {str(e)}")
 
 
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.put("/{client_id}/setup/{section_id}", summary="Update setup section progress", response_model=None)
 async def update_client_setup_section(
     client_id: str,

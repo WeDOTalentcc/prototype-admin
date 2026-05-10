@@ -950,6 +950,7 @@ async def get_job_report(
     )
 
 
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/work-model-analytics", response_model=None)
 async def get_work_model_analytics(
     period: str = Query("90d"),
@@ -1076,6 +1077,7 @@ STAGE_TO_MACRO = {
     "recusado": "contratacao",
 }
 
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/pipeline-pulse", response_model=PipelinePulseResponse)
 async def get_pipeline_pulse(
     current_user=Depends(get_current_user_or_demo),
@@ -1114,6 +1116,7 @@ async def get_pipeline_pulse(
     return PipelinePulseResponse(stages=stages, total=total)
 
 
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/pipeline-overview", response_model=PipelineOverviewResponse)
 async def get_pipeline_overview(
     candidates_per_stage: int = Query(default=100, ge=1, le=500, description="Max candidates to return per stage"),

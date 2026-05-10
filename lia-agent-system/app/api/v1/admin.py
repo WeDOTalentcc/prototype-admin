@@ -220,6 +220,7 @@ DEFAULT_ALERT_RULES = [
 ]
 
 
+# multi-tenancy: admin/platform-level (/admin) — role-based access required
 @router.post("/seed-data", response_model=None)
 async def seed_database(
     repo: AdminRepository = Depends(get_admin_repo),
@@ -258,6 +259,7 @@ async def seed_database(
         )
 
 
+# multi-tenancy: admin/platform-level (/admin) — role-based access required
 @router.post("/seed-data/task-templates", response_model=None)
 async def seed_task_templates_only(
     repo: AdminRepository = Depends(get_admin_repo),
@@ -286,6 +288,7 @@ async def seed_task_templates_only(
         )
 
 
+# multi-tenancy: admin/platform-level (/admin) — role-based access required
 @router.post("/seed-data/alert-rules", response_model=None)
 async def seed_alert_rules_only(
     repo: AdminRepository = Depends(get_admin_repo),
@@ -314,6 +317,7 @@ async def seed_alert_rules_only(
         )
 
 
+# multi-tenancy: admin/platform-level (/admin) — role-based access required
 @router.post("/seed-data/demo", response_model=None)
 async def seed_demo_data_endpoint(
     repo: AdminRepository = Depends(get_admin_repo),
@@ -361,6 +365,7 @@ async def seed_demo_data_endpoint(
         )
 
 
+# multi-tenancy: admin/platform-level (/admin) — role-based access required
 @router.delete("/seed-data/demo", response_model=None)
 async def clear_demo_data_endpoint(
     repo: AdminRepository = Depends(get_admin_repo),

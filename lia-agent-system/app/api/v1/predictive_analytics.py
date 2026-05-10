@@ -290,6 +290,7 @@ async def get_pipeline_forecast(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/health", response_model=None)
 async def analytics_health():
     """Health check for predictive analytics service."""

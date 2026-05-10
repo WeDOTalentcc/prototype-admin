@@ -275,6 +275,7 @@ async def _handle_jobs_management_query(
         return await llm_svc.generate(prompt)
 
 
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/expanded-prompt", response_model=ExpandedPromptResponse)
 async def process_expanded_prompt(
     request: ExpandedPromptRequest,

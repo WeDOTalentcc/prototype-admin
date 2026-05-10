@@ -110,6 +110,7 @@ class SecuritySettingUpdate(BaseModel):
     data_retention_days: int | None = None
 
 
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.get("/roles", response_model=None)
 async def list_roles(
     company_id: str = Query(..., description="Company ID"),
@@ -133,6 +134,7 @@ async def list_roles(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.post("/roles", response_model=None)
 async def create_role(
     data: RoleCreate,
@@ -159,6 +161,7 @@ async def create_role(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.put("/roles/{role_id}", response_model=None)
 async def update_role(
     role_id: str,
@@ -195,6 +198,7 @@ async def update_role(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.delete("/roles/{role_id}", response_model=None)
 async def delete_role(
     role_id: str,
@@ -224,6 +228,7 @@ async def delete_role(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.post("/roles/initialize", response_model=None)
 async def initialize_default_roles(
     company_id: str = Query(..., description="Company ID"),
@@ -244,6 +249,7 @@ async def initialize_default_roles(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.get("/user-roles", response_model=None)
 async def list_user_roles(
     company_id: str = Query(..., description="Company ID"),
@@ -268,6 +274,7 @@ async def list_user_roles(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.post("/user-roles", response_model=None)
 async def assign_role_to_user(
     data: UserRoleAssign,
@@ -311,6 +318,7 @@ async def assign_role_to_user(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.delete("/user-roles/{assignment_id}", response_model=None)
 async def remove_role_assignment(
     assignment_id: str,
@@ -337,6 +345,7 @@ async def remove_role_assignment(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.get("/notification-policies", response_model=None)
 async def list_notification_policies(
     company_id: str = Query(..., description="Company ID"),
@@ -361,6 +370,7 @@ async def list_notification_policies(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.post("/notification-policies", response_model=None)
 async def create_notification_policy(
     data: NotificationPolicyCreate,
@@ -391,6 +401,7 @@ async def create_notification_policy(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.put("/notification-policies/{policy_id}", response_model=None)
 async def update_notification_policy(
     policy_id: str,
@@ -428,6 +439,7 @@ async def update_notification_policy(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.delete("/notification-policies/{policy_id}", response_model=None)
 async def delete_notification_policy(
     policy_id: str,
@@ -454,6 +466,7 @@ async def delete_notification_policy(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.get("/security", response_model=None)
 async def get_security_settings(
     company_id: str = Query(..., description="Company ID"),
@@ -473,6 +486,7 @@ async def get_security_settings(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.put("/security", response_model=None)
 async def update_security_settings(
     data: SecuritySettingUpdate,
@@ -510,6 +524,7 @@ async def update_security_settings(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.get("/audit-logs", response_model=None)
 async def get_audit_logs(
     company_id: str = Query(..., description="Company ID"),
@@ -557,6 +572,7 @@ async def get_audit_logs(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.get("/permissions-matrix", response_model=None)
 async def get_permissions_matrix(_admin: User = Depends(require_admin)):
     """Get the available permissions matrix."""
@@ -569,6 +585,7 @@ async def get_permissions_matrix(_admin: User = Depends(require_admin)):
     }
 
 
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 @router.get("/notification-event-types", response_model=None)
 async def get_notification_event_types(_admin: User = Depends(require_admin)):
     """Get available notification event types."""

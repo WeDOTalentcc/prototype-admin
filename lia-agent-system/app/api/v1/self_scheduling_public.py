@@ -59,6 +59,7 @@ class ConfirmSlotRequest(BaseModel):
 
 # ─── Endpoints Públicos (sem auth) ────────────────────────────────────────────
 
+# multi-tenancy: public endpoint (public) — no tenant data
 @router.get("/link/{token}", include_in_schema=True, response_model=None)
 async def get_scheduling_link(
     token: str,
@@ -102,6 +103,7 @@ async def get_scheduling_link(
     }
 
 
+# multi-tenancy: public endpoint (public) — no tenant data
 @router.post("/link/{token}/confirm", include_in_schema=True, response_model=None)
 async def confirm_scheduling_slot(
     token: str,
@@ -140,6 +142,7 @@ async def confirm_scheduling_slot(
 
 # ─── Endpoints Autenticados (recrutador/agente) ───────────────────────────────
 
+# multi-tenancy: public endpoint (public) — no tenant data
 @router.post("/link", include_in_schema=True, response_model=None)
 async def create_scheduling_link(
     body: CreateSchedulingLinkRequest,

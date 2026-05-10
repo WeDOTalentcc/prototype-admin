@@ -42,6 +42,7 @@ class SessionResponse(BaseModel):
     score: Optional[float] = None
 
 
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/sessions", response_model=SessionResponse)
 async def create_voice_session(
     body: CreateSessionRequest,

@@ -65,6 +65,7 @@ class VacancyAdjustmentsResponse(BaseModel):
 # Endpoints
 # ---------------------------------------------------------------------------
 
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/vacancy-search", response_model=VacancySearchResponse)
 async def search_previous_vacancies(
     request: VacancySearchRequest,
@@ -100,6 +101,7 @@ async def search_previous_vacancies(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/vacancy-full/{vacancy_id}", response_model=None)
 async def get_vacancy_full_details(
     vacancy_id: UUID,
@@ -151,6 +153,7 @@ async def extract_vacancy_criteria(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/vacancy-adjustments", response_model=VacancyAdjustmentsResponse)
 async def extract_and_apply_adjustments(
     request: VacancyAdjustmentsRequest,

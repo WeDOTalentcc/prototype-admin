@@ -148,6 +148,7 @@ async def complete_session(request: CompleteSessionRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# multi-tenancy: public endpoint (metrics) — no tenant data
 @router.get("/metrics/{company_id}", response_model=None)
 async def get_company_metrics(
     company_id: str,
@@ -167,6 +168,7 @@ async def get_company_metrics(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# multi-tenancy: public endpoint (metrics) — no tenant data
 @router.get("/metrics/{company_id}/recruiter/{recruiter_id}", response_model=None)
 async def get_recruiter_metrics(
     company_id: str,

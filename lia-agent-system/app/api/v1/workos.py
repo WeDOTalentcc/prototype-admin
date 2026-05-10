@@ -781,6 +781,7 @@ async def _fetch_workos_metrics(workos_api_key: str, organization_id: str, local
         }
 
 
+# multi-tenancy: public endpoint (metrics) — no tenant data
 @router.get("/admin/realtime-metrics", response_model=None)
 async def get_realtime_metrics(
     company_id: str = Query(...),

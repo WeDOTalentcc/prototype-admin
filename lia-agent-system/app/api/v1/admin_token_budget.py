@@ -74,6 +74,7 @@ class BudgetCheckResponse(BaseModel):
         "incluindo percentual de uso e horário do próximo reset (meia-noite UTC)."
     ),
 )
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 async def get_company_token_budget(
     company_id: str,
     plan_code: str | None = Query(
@@ -108,6 +109,7 @@ async def get_company_token_budget(
     summary="Verifica se empresa tem budget disponível",
     description="Retorna se a empresa ainda pode fazer chamadas LLM hoje.",
 )
+# multi-tenancy: admin/platform-level (admin_) — role-based access required
 async def check_company_budget(
     company_id: str,
     plan_code: str | None = Query(default=None),

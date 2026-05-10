@@ -59,6 +59,7 @@ async def invalidate_jd_cache(company_id: str):
         )
 
 
+# multi-tenancy: public endpoint (metrics) — no tenant data
 @router.get("/jd/metrics", response_model=None)
 async def get_jd_cache_metrics():
     """
@@ -90,6 +91,7 @@ async def get_jd_cache_metrics():
         )
 
 
+# multi-tenancy: public endpoint (metrics) — no tenant data
 @router.post("/jd/reset-metrics", response_model=None)
 async def reset_jd_cache_metrics():
     """

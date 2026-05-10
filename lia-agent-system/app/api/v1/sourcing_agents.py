@@ -35,6 +35,7 @@ class FeedbackRequest(BaseModel):
     reason: str = Field(..., min_length=3, max_length=500)
 
 
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("")
 async def create_sourcing_agent(
     body: CreateSourcingAgentRequest,
@@ -58,6 +59,7 @@ async def create_sourcing_agent(
     return result
 
 
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("")
 async def list_sourcing_agents(
     job_id: Optional[str] = None,

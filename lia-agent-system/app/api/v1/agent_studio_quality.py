@@ -91,6 +91,7 @@ async def list_templates():
 
 # ── Quality Score endpoint ───────────────────────────────────────
 
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/{agent_id}/quality-score", response_model=QualityScoreResponse)
 async def get_quality_score(
     agent_id: str,

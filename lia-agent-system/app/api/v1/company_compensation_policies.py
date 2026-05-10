@@ -291,6 +291,7 @@ async def create_policy(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/{policy_id}", response_model=CompensationPolicyResponse)
 async def get_policy(
     policy_id: UUID,
@@ -312,6 +313,7 @@ async def get_policy(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.put("/{policy_id}", response_model=CompensationPolicyResponse)
 async def update_policy(
     policy_id: UUID,
@@ -346,6 +348,7 @@ async def update_policy(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.delete("/{policy_id}", response_model=None)
 async def delete_policy(
     policy_id: UUID,

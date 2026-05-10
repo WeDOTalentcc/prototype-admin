@@ -293,6 +293,7 @@ async def _check_broker() -> dict:
         }
 
 
+# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/health", response_model=None)
 async def system_health(db: AsyncSession = Depends(get_db)):
     """
@@ -404,6 +405,7 @@ async def system_health(db: AsyncSession = Depends(get_db)):
     )
 
 
+# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/health/ready", response_model=None)
 async def readiness_check(db: AsyncSession = Depends(get_db)):
     """
@@ -435,6 +437,7 @@ async def readiness_check(db: AsyncSession = Depends(get_db)):
     )
 
 
+# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/health/live", response_model=None)
 async def liveness_check():
     """
@@ -466,6 +469,7 @@ _RLS_CRITICAL_TABLES: tuple[str, ...] = (
 )
 
 
+# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/health/rls", response_model=None)
 async def health_rls(db: AsyncSession = Depends(get_db)):
     """
@@ -528,6 +532,7 @@ async def health_rls(db: AsyncSession = Depends(get_db)):
     return JSONResponse(status_code=200, content=payload)
 
 
+# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/performance", response_model=None)
 async def performance_metrics():
     """
@@ -563,6 +568,7 @@ _BYPASS_FLAGS_RUNTIME: dict[str, str] = {
 }
 
 
+# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/health/compliance/bypass-status", response_model=None)
 async def compliance_bypass_status():
     """
@@ -593,6 +599,7 @@ async def compliance_bypass_status():
 
 
 # ─── R-021: LLM provider fallback / circuit breaker metrics ─────────────────
+# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/health/llm-metrics")
 async def llm_provider_metrics():
     """
@@ -605,6 +612,7 @@ async def llm_provider_metrics():
     from app.shared.observability.llm_metrics import get_metrics
     return get_metrics()
 
+# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/health/dlq", response_model=None)
 async def dlq_health_status():
     """R-024 DLQ health summary for canary monitoring.
@@ -654,6 +662,7 @@ async def dlq_health_status():
 
 
 # ─── R-036: Cron sentinel health ────────────────────────────────────────────
+# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/health/crons")
 async def cron_sentinel_health():
     """R-036 — Verify all registered crons ran within expected cadence.

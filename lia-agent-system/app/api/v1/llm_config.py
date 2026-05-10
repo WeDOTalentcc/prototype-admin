@@ -77,6 +77,7 @@ class TestProviderResponse(BaseModel):
 
 @router.get("", response_model=LLMConfigResponse)
 # TODO(phase2): extract to repository — LLM config management
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 async def get_llm_config(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
@@ -129,6 +130,7 @@ async def get_llm_config(
         )
 
 
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.put("", response_model=None)
 async def update_llm_config(
     request: LLMConfigRequest,

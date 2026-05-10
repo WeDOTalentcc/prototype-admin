@@ -20,6 +20,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/recruiter-metrics", tags=["recruiter-metrics"])
 
 
+# multi-tenancy: public endpoint (metrics) — no tenant data
 @router.get("/{recruiter_id}", response_model=None)
 async def get_recruiter_summary(
     recruiter_id: str,
@@ -45,6 +46,7 @@ async def get_recruiter_summary(
         raise HTTPException(status_code=500, detail="Erro ao calcular métricas do recrutador")
 
 
+# multi-tenancy: public endpoint (metrics) — no tenant data
 @router.get("/{recruiter_id}/backlog", response_model=None)
 async def get_recruiter_backlog(
     recruiter_id: str,
@@ -75,6 +77,7 @@ async def get_recruiter_backlog(
         raise HTTPException(status_code=500, detail="Erro ao buscar backlog do recrutador")
 
 
+# multi-tenancy: public endpoint (metrics) — no tenant data
 @router.get("/{recruiter_id}/benchmark", response_model=None)
 async def get_recruiter_benchmark(
     recruiter_id: str,

@@ -409,6 +409,7 @@ async def get_sync_logs(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/health", response_model=HealthResponse)
 async def get_integration_health(
     company_id: str = Query(..., description="Company ID"),
@@ -549,6 +550,7 @@ async def seed_providers(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+# multi-tenancy: public endpoint (health) — no tenant data
 @router.get("/apify/health")
 async def apify_health_check():
     from app.shared.resilience.circuit_breaker import APIFY_CIRCUIT

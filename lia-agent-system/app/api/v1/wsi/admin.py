@@ -44,6 +44,7 @@ class PurgeResult(BaseModel):
     detail: str
 
 
+# multi-tenancy: admin/platform-level (/admin) — role-based access required
 @router.get("/layer2/cache/stats", response_model=Layer2CacheStats)
 async def layer2_cache_stats(_: None = Depends(require_admin_user)) -> Layer2CacheStats:
     """Retorna estatísticas do cache LRU da Camada 2 LLM.
@@ -65,6 +66,7 @@ async def layer2_cache_stats(_: None = Depends(require_admin_user)) -> Layer2Cac
     )
 
 
+# multi-tenancy: admin/platform-level (/admin) — role-based access required
 @router.post("/layer2/cache/purge", response_model=PurgeResult)
 async def layer2_cache_purge_entry(
     payload: PurgeEntryRequest,
@@ -88,6 +90,7 @@ async def layer2_cache_purge_entry(
     )
 
 
+# multi-tenancy: admin/platform-level (/admin) — role-based access required
 @router.post("/layer2/cache/purge-all", response_model=PurgeResult)
 async def layer2_cache_purge_all(_: None = Depends(require_admin_user)) -> PurgeResult:
     """Limpa o cache LRU inteiro. Use para DSR amplo, deploys ou

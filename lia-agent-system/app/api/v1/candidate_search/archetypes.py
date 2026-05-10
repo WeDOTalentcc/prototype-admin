@@ -257,6 +257,7 @@ async def create_archetype(
         raise HTTPException(status_code=500, detail=f"Failed to create archetype: {str(e)}")
 
 
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.post("/archetypes/from-search", response_model=ArchetypeFromSearchResponse)
 async def create_archetype_from_search(
     data: ArchetypeFromSearchCreate,

@@ -651,6 +651,7 @@ async def enrich_candidate(
     summary="LGPD Art.20 — Explain AI decision for a candidate",
     tags=["candidates", "lgpd", "explainability"],
 )
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 async def get_candidate_ai_explanation(
     candidate_id: str,
     job_vacancy_id: str = Query(..., description="Job vacancy ID for which to explain decisions"),

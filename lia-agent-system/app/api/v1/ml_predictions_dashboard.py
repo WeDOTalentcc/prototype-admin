@@ -37,6 +37,7 @@ _MARKET_DEFAULTS = {
 _MARKET_GLOBAL_AVG = 42  # days
 
 
+# multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
 @router.get("/ml-predictions")
 async def get_ml_predictions(
     current_user=Depends(get_current_user),
