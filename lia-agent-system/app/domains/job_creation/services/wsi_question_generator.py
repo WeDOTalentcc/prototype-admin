@@ -422,6 +422,16 @@ class WSIQuestionGenerator:
         for q in all_questions:
             q.weight = round(q.weight / total_weight, 3)
 
+        # Sprint B Phase 2 wiring (gap W1): tag every question with a
+        # taxonomy skill_id so wsi_question_effectiveness can aggregate
+        # outcomes per skill (not per literal question text). Modifies
+        # objects in-place; fail-soft via _classify_questions_with_taxonomy
+        # internal try/except. Use the behavioral LLM (lower temperature)
+        # for classification — it's a categorization task, not generation.
+        _classify_questions_with_taxonomy(
+            all_questions, llm=self._get_llm("behavioral"),
+        )
+
         logger.info("[WSI:F6] Generated %d questions (%d tech + %d behav)",
                     len(all_questions), n_tech, n_behav)
         return all_questions
