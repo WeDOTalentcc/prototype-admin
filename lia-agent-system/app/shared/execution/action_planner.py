@@ -98,6 +98,7 @@ class ActionPlanner(PlanExecutor):
                 await self._execute_task_with_backoff(task, plan, user_id, session_id, tenant_id, base_context)
 
                 if task.status == TaskStatus.FAILED and task.is_critical:
+                    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                     logger.warning(f"Critical task {task.task_id} failed. Initiating rollback for plan {plan.plan_id}.")
                     await self._rollback_completed_tasks(plan, user_id, session_id, tenant_id, base_context)
                     self._mark_remaining_as_blocked(plan, task.task_id)
@@ -133,16 +134,19 @@ class ActionPlanner(PlanExecutor):
             try:
                 await self._execute_task(task, plan, user_id, session_id, tenant_id, base_context)
             except Exception as e:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.error(f"Task {task.task_id} attempt {attempt} error: {e}")
                 task.status = TaskStatus.FAILED
                 task.error = str(e)
 
             if task.status == TaskStatus.COMPLETED:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"Task {task.task_id} completed on attempt {attempt}")
                 return
 
             if task.status == TaskStatus.FAILED and attempt < max_attempts:
                 delay = self.retry_policy.get_delay(attempt)
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"Task {task.task_id} failed (attempt {attempt}/{max_attempts}). "
                            f"Retrying in {delay:.1f}s...")
                 task.retry_count = attempt
@@ -158,6 +162,7 @@ class ActionPlanner(PlanExecutor):
         for task in completed_tasks:
             hook = self.rollback_hooks.get(task.task_id)
             if hook:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"Rolling back task {task.task_id}: {hook.description}")
                 try:
                     if self._domain_registry and self._domain_workflow:
@@ -174,8 +179,10 @@ class ActionPlanner(PlanExecutor):
                             await self._domain_workflow.process(domain, dc, query)
 
                     self._executed_rollbacks.append(task.task_id)
+                    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                     logger.info(f"Rollback completed for task {task.task_id}")
                 except Exception as e:
+                    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                     logger.error(f"Rollback failed for task {task.task_id}: {e}")
 
     def get_execution_report(self, plan: ExecutionPlan) -> dict[str, Any]:

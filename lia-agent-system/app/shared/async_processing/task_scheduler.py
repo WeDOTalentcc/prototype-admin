@@ -164,6 +164,7 @@ class TaskScheduler:
         schedule.run_count = (schedule.run_count or 0) + 1
         schedule.next_run_at = next_cron_time(schedule.cron_expression)
 
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Schedule '{schedule.name}' triggered task {task_id}")
 
     async def add_schedule(

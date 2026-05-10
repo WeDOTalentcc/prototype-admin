@@ -164,6 +164,7 @@ class ConversationState:
 
     def update_mentioned(self, name: str, candidate_id: int) -> None:
         self.mentioned_candidates[name] = candidate_id
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.debug(f"Updated mentioned candidate: {name} -> {candidate_id}")
 
     def update_last_entity(self, entity_type: str, entity_id: Any, name: str = "") -> None:

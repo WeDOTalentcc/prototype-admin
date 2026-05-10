@@ -154,6 +154,7 @@ class DomainTaskQueue:
 
         priority_key = -task.priority.value
         await self._queue.put((priority_key, task.created_at, task))
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.debug(f"Task {task.task_id} enqueued in {self.domain_id} queue (priority={task.priority.name})")
         return task.task_id
 
@@ -164,6 +165,7 @@ class DomainTaskQueue:
         for i in range(self._max_concurrent):
             worker = asyncio.create_task(self._worker_loop(f"worker-{i}"))
             self._workers.append(worker)
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"DomainTaskQueue '{self.domain_id}' started with {self._max_concurrent} workers")
 
     async def stop(self) -> None:
@@ -173,6 +175,7 @@ class DomainTaskQueue:
         if self._workers:
             await asyncio.gather(*self._workers, return_exceptions=True)
         self._workers.clear()
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"DomainTaskQueue '{self.domain_id}' stopped")
 
     async def drain(self) -> None:
@@ -192,6 +195,7 @@ class DomainTaskQueue:
             except asyncio.CancelledError:
                 break
             except Exception as e:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.error(f"Worker {worker_name} error: {e}", exc_info=True)
 
     async def _process_task(self, task: AsyncTask, worker_name: str) -> None:
@@ -212,9 +216,11 @@ class DomainTaskQueue:
             task.state = TaskState.COMPLETED
             task.completed_at = time.time()
             self._total_processed += 1
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.debug(f"Task {task.task_id} completed by {worker_name}")
 
         except Exception as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"Task {task.task_id} failed: {e}", exc_info=True)
 
             if task.retry_count < task.max_retries:
@@ -222,6 +228,7 @@ class DomainTaskQueue:
                 task.state = TaskState.RETRYING
                 task.started_at = None
                 await self.enqueue(task)
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"Task {task.task_id} retrying ({task.retry_count}/{task.max_retries})")
             else:
                 task.state = TaskState.FAILED

@@ -130,6 +130,7 @@ class PlanExecutor:
                     task.status = TaskStatus.SKIPPED
                     task.skip_reason = skip_reason
                     task.completed_at = datetime.utcnow()
+                    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                     logger.info(f"Task {task.task_id} skipped: {skip_reason}")
                     await self._emit(progress_callback, "step_skipped", {
                         "plan_id": plan.plan_id,
@@ -207,6 +208,7 @@ class PlanExecutor:
             return False, None
 
         except Exception as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.warning(f"Condition evaluation error for task {task.task_id}: {e}")
             # If condition can't be evaluated, don't skip (fail safe)
             return False, None
@@ -223,6 +225,7 @@ class PlanExecutor:
         task.status = TaskStatus.RUNNING
         task.started_at = datetime.utcnow()
 
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.debug(f"Executing task {task.task_id}: {task.domain_id}.{task.action_id}")
 
         resolved_params = dict(task.params)
@@ -296,11 +299,13 @@ class PlanExecutor:
                 )
 
         except Exception as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"Task {task.task_id} execution error: {e}", exc_info=True)
 
             if task.retry_count < task.max_retries:
                 task.retry_count += 1
                 task.status = TaskStatus.PENDING
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"Retrying task {task.task_id} (attempt {task.retry_count}/{task.max_retries})")
             else:
                 plan.update_task_result(

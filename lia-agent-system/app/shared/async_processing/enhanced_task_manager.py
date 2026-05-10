@@ -37,11 +37,13 @@ class _PersistentTaskQueue(DomainTaskQueue):
             task.state = TaskState.COMPLETED
             task.completed_at = time.time()
             self._total_processed += 1
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.debug(f"Task {task.task_id} completed by {worker_name}")
 
             await self._manager.on_task_completed(task.task_id, task.result)
 
         except Exception as e:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"Task {task.task_id} failed: {e}", exc_info=True)
 
             if task.retry_count < task.max_retries:
@@ -49,6 +51,7 @@ class _PersistentTaskQueue(DomainTaskQueue):
                 task.state = TaskState.RETRYING
                 task.started_at = None
                 await self.enqueue(task)
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
                 logger.info(f"Task {task.task_id} retrying ({task.retry_count}/{task.max_retries})")
                 await self._manager.on_task_failed(
                     task_id=task.task_id,
