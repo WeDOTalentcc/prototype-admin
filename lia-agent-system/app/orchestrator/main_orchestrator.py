@@ -331,14 +331,40 @@ class MainOrchestrator:
                 logger.debug("[MainOrchestrator] FairnessGuard implicit check skipped: %s", _fg_exc)
 
             # Enriquecer contexto com informações do tenant
-            try:
-                _job_id = ctx.entity_id if getattr(ctx, "entity_type", None) == "job" else None
-                _tenant_ctx = await self._tenant_context_service.get_context(
-                    company_id=str(ctx.company_id), db=db, job_id=_job_id,
-                )
-                ctx.tenant_context_snippet = _tenant_ctx.to_prompt_snippet()
-            except Exception as _tc_exc:
-                logger.debug("[MainOrchestrator] TenantContext skipped: %s", _tc_exc)
+            # R4 (Task T-F): idempotente + paridade com agent_chat_sse.py.
+            # Se um caller upstream (SSE/WS handler) já injetou o snippet,
+            # NÃO sobrescrevemos. Em caso de falha do get_context, caímos
+            # no build_authenticated_snippet para manter LIA ciente de que
+            # o usuário está autenticado (mesma rede de proteção do SSE
+            # handler, fechando 5ª causa raiz da auditoria T-F).
+            _existing_snippet = getattr(ctx, "tenant_context_snippet", "") or ""
+            if not (isinstance(_existing_snippet, str) and _existing_snippet.strip()):
+                _company_id_str = str(ctx.company_id) if ctx.company_id else ""
+                try:
+                    _job_id = (
+                        ctx.entity_id
+                        if getattr(ctx, "entity_type", None) == "job"
+                        else None
+                    )
+                    _tenant_ctx = await self._tenant_context_service.get_context(
+                        company_id=_company_id_str, db=db, job_id=_job_id,
+                    )
+                    _snippet = _tenant_ctx.to_prompt_snippet()
+                    if _company_id_str:
+                        _snippet += "\n" + TenantContextService.build_authenticated_snippet(
+                            _company_id_str
+                        )
+                    ctx.tenant_context_snippet = _snippet
+                except Exception as _tc_exc:
+                    logger.debug(
+                        "[MainOrchestrator] TenantContext skipped: %s", _tc_exc,
+                    )
+                    if _company_id_str:
+                        ctx.tenant_context_snippet = (
+                            TenantContextService.build_authenticated_snippet(
+                                _company_id_str
+                            )
+                        )
 
             # Enriquecer contexto com personalização do recrutador
             try:

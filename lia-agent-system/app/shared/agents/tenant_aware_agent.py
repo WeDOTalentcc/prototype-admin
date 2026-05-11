@@ -141,6 +141,91 @@ def reset_tenant_context_metrics() -> None:
 
 
 # ----------------------------------------------------------------------
+# Helper canônico para CALLSITES NON-REACT (Task T-F / R2+R3)
+# ----------------------------------------------------------------------
+# `FallbackReActService` (caminho de fallback do CascadedRouter) e
+# `app/orchestrator/orchestrator.py` invocam `SystemPromptBuilder.build()`
+# direto — sem passar pelo mixin acima. Sem este helper, esses dois
+# caminhos:
+#   - nao emitem `lia_agent_tenant_context_resolved_total`
+#   - nao levantam `MissingTenantContextError` em strict-mode
+#   - degradam silenciosamente para `tenant_context_snippet=""`
+#     -> LIA pergunta company_id no chat (3a recorrencia do bug).
+#
+# Esta funcao e o equivalente sync canonico das hooks do mixin para
+# codigo que NAO e um ReActAgent. Mesma telemetria, mesma decisao
+# fail-open/fail-closed.
+# ----------------------------------------------------------------------
+def resolve_tenant_snippet_for_non_react(
+    ctx: dict | None,
+    *,
+    agent_name: str,
+    company_id_raw: Any = None,
+) -> str:
+    """Resolve `tenant_context_snippet` em callsites que nao usam o mixin.
+
+    Reutiliza a mesma logica de telemetria + fail-open/closed do
+    `TenantAwareAgentMixin._get_system_prompt`, expondo um contrato sync
+    para servicos non-ReAct (FallbackReActService, Orchestrator V1).
+
+    Estrategia:
+      1. `ctx['tenant_context_snippet']` populado -> registra `hit`, retorna.
+      2. `ctx['tenant_context']` (TenantContext sync) -> renderiza snippet,
+         registra `miss`, retorna.
+      3. Sem snippet -> strict-mode levanta `MissingTenantContextError`,
+         senao registra `fail_open` e retorna `""`.
+    """
+    ctx = ctx or {}
+
+    snippet = ctx.get("tenant_context_snippet", "")
+    if isinstance(snippet, str) and snippet.strip():
+        _record_metric(agent_name, "hit")
+        return snippet
+
+    tenant_ctx = ctx.get("tenant_context")
+    if tenant_ctx is not None and hasattr(tenant_ctx, "to_prompt_snippet"):
+        try:
+            rendered = tenant_ctx.to_prompt_snippet() or ""
+        except Exception:  # pragma: no cover
+            rendered = ""
+        if rendered.strip():
+            ctx["tenant_context_snippet"] = rendered
+            _record_metric(agent_name, "miss")
+            return rendered
+
+    if is_tenant_strict_mode():
+        _record_metric(agent_name, "fail_closed")
+        logger.error(
+            "agent_tenant_context_missing",
+            extra={
+                "agent": agent_name,
+                "company_id_raw": repr(company_id_raw),
+                "tenant_source": "non_react_helper",
+            },
+        )
+        raise MissingTenantContextError(
+            f"Callsite '{agent_name}' invocado sem tenant context resolvivel",
+            details={
+                "agent": agent_name,
+                "company_id_raw": repr(company_id_raw),
+                "tenant_source": "non_react_helper",
+            },
+        )
+
+    _record_metric(agent_name, "fail_open")
+    logger.warning(
+        "agent_tenant_context_missing_fail_open",
+        extra={
+            "agent": agent_name,
+            "company_id_raw": repr(company_id_raw),
+            "tenant_source": "non_react_helper",
+            "hint": "Set LIA_AGENT_TENANT_STRICT=true to enforce fail-closed.",
+        },
+    )
+    return ""
+
+
+# ----------------------------------------------------------------------
 # Cache key helper
 # ----------------------------------------------------------------------
 def _cache_key(input: "AgentInput") -> tuple[str, str]:

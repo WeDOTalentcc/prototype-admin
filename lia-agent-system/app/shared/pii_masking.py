@@ -149,10 +149,25 @@ _LLM_PROMPT_PII_PATTERNS: list[tuple[Pattern, str]] = [
 ]
 
 
+# R1 (Task T-F): UUID v4 canônico — usado para proteger identificadores de tenant
+# (ex: company_id da Demo Company `00000000-0000-4000-a000-000000000001`) contra
+# o `PHONE_BR_PATTERN`, que casa `\d{4}[-\s]?\d{4}` e historicamente destruía
+# o UUID em `[TELEFONE REMOVIDO]-[TELEFONE REMOVIDO]-a000-00[TELEFONE REMOVIDO]`.
+# Origem do bug "LIA pergunta company_id no chat" (3ª recorrência). Fix canônico
+# via guard-token: substituímos UUIDs por placeholders únicos antes do strip e
+# restauramos depois — preserva a invariante "UUID v4 nunca é PII".
+_UUID_V4_PATTERN: Pattern = re.compile(
+    r'\b[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b',
+    re.IGNORECASE,
+)
+
+
 def strip_pii_for_llm_prompt(text: str) -> str:
     """Remove PII e quasi-identificadores de texto antes de enviar ao LLM.
 
     Aplica até 4 camadas:
+      - Layer 0 (R1/T-F): UUID v4 guard — protege identificadores de tenant/job
+        contra falso-positivo do PHONE_BR_PATTERN
       - Layer 1: Regex direto (CPF, email, telefone, RG, CNPJ)
       - Layer 3 basic: Quasi-identificadores (ano de formatura, idade explícita,
         referências de endereço)
@@ -169,12 +184,31 @@ def strip_pii_for_llm_prompt(text: str) -> str:
     """
     if not _LLM_PROMPT_PII_STRIPPING_ENABLED or not text:
         return text
-    result = text
+
+    # ── Layer 0 (R1/T-F): UUID guard via reversible placeholder ──
+    # Coleta UUIDs e substitui por sentinelas opacas que NÃO casam nenhum
+    # PII pattern. Restauramos no final para preservar fidelidade do prompt.
+    _uuid_map: dict[str, str] = {}
+
+    def _shield(match: re.Match) -> str:
+        uid = match.group(0)
+        # \x00 é seguro: nunca aparece em prompts reais e é "transparente"
+        # para todos os regexes de PII (que casam dígitos/pontuação ASCII).
+        token = f"\x00UUID{len(_uuid_map)}\x00"
+        _uuid_map[token] = uid
+        return token
+
+    result = _UUID_V4_PATTERN.sub(_shield, text)
+
     # Layer 1 + Layer 3: regex patterns
     for pattern, replacement in _LLM_PROMPT_PII_PATTERNS:
         result = pattern.sub(replacement, result)
     # Layer 4: Presidio NER (opt-in)
     result = _presidio_layer4_strip(result)
+
+    # ── Restaura UUIDs ──
+    for token, uid in _uuid_map.items():
+        result = result.replace(token, uid)
     return result
 
 

@@ -39,6 +39,7 @@ from typing import Any, Final
 
 from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
 from app.shared.constants.prompt_constants import SALARY_BENCHMARK_ADDENDUM
+from app.shared.agents.tenant_aware_agent import resolve_tenant_snippet_for_non_react
 
 logger = logging.getLogger(__name__)
 
@@ -168,10 +169,20 @@ class FallbackReActService:
         from langchain_core.prompts import ChatPromptTemplate
 
         # 1. Build system prompt with intent-specific addenda
+        # R2 (Task T-F): canonical tenant snippet resolver — emite
+        # telemetria `lia_agent_tenant_context_resolved_total{agent="fallback_react"}`
+        # e levanta MissingTenantContextError em strict-mode (mesmo contrato
+        # do TenantAwareAgentMixin, fechando o ponto cego do CascadedRouter
+        # fallback path que destruiu T-D/T-E).
         extra = self._structured_addenda.get(intent, "")
+        _tenant_snippet = resolve_tenant_snippet_for_non_react(
+            ctx,
+            agent_name="fallback_react",
+            company_id_raw=ctx.get("company_id"),
+        )
         system_prompt = SystemPromptBuilder.build(
             agent_type=AGENT_TYPE_LABEL,
-            tenant_context_snippet=ctx.get("tenant_context_snippet", ""),
+            tenant_context_snippet=_tenant_snippet,
             user_name=ctx.get("user_name", ""),
             user_role=ctx.get("user_role", ""),
             conversation_summary=ctx.get("conversation_summary", ""),

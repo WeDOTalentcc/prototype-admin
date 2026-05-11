@@ -411,9 +411,21 @@ class Orchestrator:
         try:
             from langchain_core.prompts import ChatPromptTemplate
             extra = self._STRUCTURED_INTENT_ADDENDA.get(intent, "")
+            # R3 (Task T-F): canonical tenant snippet resolver — emite
+            # telemetria + fail-closed em strict-mode (mesmo contrato do
+            # TenantAwareAgentMixin). Fecha o ponto cego do Orchestrator V1
+            # (legacy /api/orchestrator route ainda em uso) que destruiu T-D/T-E.
+            from app.shared.agents.tenant_aware_agent import (
+                resolve_tenant_snippet_for_non_react,
+            )
+            _tenant_snippet = resolve_tenant_snippet_for_non_react(
+                ctx,
+                agent_name="orchestrator_v1",
+                company_id_raw=ctx.get("company_id"),
+            )
             system_prompt = SystemPromptBuilder.build(
                 agent_type="orchestrator",
-                tenant_context_snippet=ctx.get("tenant_context_snippet", ""),
+                tenant_context_snippet=_tenant_snippet,
                 user_name=ctx.get("user_name", ""),
                 user_role=ctx.get("user_role", ""),
                 conversation_summary=ctx.get("conversation_summary", ""),
