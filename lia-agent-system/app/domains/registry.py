@@ -215,14 +215,25 @@ class _YamlDomainProxy:
         return self._system_prompt
 
     def get_system_prompt(self, **kwargs):
+        from app.shared.agents.tenant_aware_agent import (
+            resolve_tenant_snippet_for_non_react,
+        )
         from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
         domain_yaml_additions = self._parse_prompt()
         for key, value in kwargs.items():
             domain_yaml_additions = domain_yaml_additions.replace("{{" + key + "}}", str(value))
+        # Task #978 (T-G): YAML-defined domain proxies são NON-ReAct e devem
+        # passar pelo helper canônico para não regredirem o bug "LIA pergunta
+        # company_id no chat" (3a recorrência endereçada em T-F).
+        _tenant_snippet = resolve_tenant_snippet_for_non_react(
+            {"tenant_context_snippet": kwargs.get("tenant_context_snippet", "")},
+            agent_name=f"yaml_domain_proxy:{self.domain_id}",
+            company_id_raw=kwargs.get("company_id"),
+        )
         return SystemPromptBuilder.build(
             agent_type=self.domain_id,
             extra_instructions=domain_yaml_additions,
-            tenant_context_snippet=kwargs.get("tenant_context_snippet", ""),
+            tenant_context_snippet=_tenant_snippet,
             user_name=kwargs.get("user_name", ""),
             user_role=kwargs.get("user_role", ""),
         )

@@ -940,18 +940,35 @@ async def stream_message(
         for m in history_msgs
     ]
 
-    # Fetch tenant context (same pattern as MainOrchestrator)
-    _tenant_snippet = ""
+    # Fetch tenant context (same pattern as MainOrchestrator).
+    # Task #978 (T-G): inventário canônico de callsites NON-ReAct exige que
+    # SSE direto use ``resolve_tenant_snippet_for_non_react`` (mesma
+    # telemetria + fail-closed do mixin) — sem isso o anti-padrão da
+    # 3a recorrência do bug "LIA pergunta company_id" pode voltar por aqui.
+    from app.shared.agents.tenant_aware_agent import (
+        resolve_tenant_snippet_for_non_react,
+    )
+
     _company_id = str(getattr(current_user, "company_id", "")) or ""
+    _resolver_ctx: dict[str, Any] = {}
     if _company_id:
         try:
             from app.shared.services.tenant_context_service import TenantContextService
             _tenant_ctx = await TenantContextService().get_context(
                 company_id=_company_id, db=repo.db
             )
-            _tenant_snippet = _tenant_ctx.to_prompt_snippet()
+            _resolver_ctx["tenant_context"] = _tenant_ctx
         except Exception:
-            pass  # Fail-safe: proceed without tenant context
+            pass  # Fail-safe: helper aplica strict-mode/fail-open canônico abaixo
+    # Helper invocado SEMPRE (mesmo sem company_id) para preservar paridade
+    # de strict-mode: sem isso, requests com company_id ausente bypassam
+    # silenciosamente o fail-closed canônico — mesmo anti-padrão do bug
+    # endereçado em T-F.
+    _tenant_snippet = resolve_tenant_snippet_for_non_react(
+        _resolver_ctx,
+        agent_name="chat_sse_direct",
+        company_id_raw=_company_id,
+    )
 
 
     # LIA-P01: Compliance enforcement for SSE streaming path

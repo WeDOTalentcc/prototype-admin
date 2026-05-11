@@ -246,15 +246,27 @@ Solicitação: {request.message}"""
             _conv_user_name = current_user.name if hasattr(current_user, "name") else ""
         except Exception:
             pass
-        try:
-            _company_id = getattr(current_user, "company_id", None)
-            if _company_id:
+        # Task #978 (T-G): callsite NON-ReAct — usa helper canônico para
+        # herdar telemetria Prometheus + fail-closed em strict-mode.
+        from app.shared.agents.tenant_aware_agent import (
+            resolve_tenant_snippet_for_non_react,
+        )
+
+        _company_id = getattr(current_user, "company_id", None)
+        _resolver_ctx: dict[str, Any] = {}
+        if _company_id:
+            try:
                 from app.shared.services.tenant_context_service import TenantContextService
                 _tcs = TenantContextService()
                 _tc = await _tcs.get_context(company_id=str(_company_id), db=db)
-                _conv_tenant_snippet = _tc.to_prompt_snippet()
-        except Exception as _tc_exc:
-            logger.debug("Tenant context skipped in conversational: %s", _tc_exc)
+                _resolver_ctx["tenant_context"] = _tc
+            except Exception as _tc_exc:
+                logger.debug("Tenant context skipped in conversational: %s", _tc_exc)
+        _conv_tenant_snippet = resolve_tenant_snippet_for_non_react(
+            _resolver_ctx,
+            agent_name="lia_assistant_conversational",
+            company_id_raw=_company_id,
+        )
         prompt = _build_conversational_prompt(
             message=request.message,
             conversation_context=conversation_context_text,
