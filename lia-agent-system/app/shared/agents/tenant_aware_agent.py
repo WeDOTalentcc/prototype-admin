@@ -97,6 +97,99 @@ def is_tenant_strict_mode() -> bool:
 _OUTCOMES = ("hit", "miss", "fail_open", "fail_closed")
 _METRICS: dict[str, dict[str, int]] = {}
 
+# ----------------------------------------------------------------------
+# Rolling-window event log for canary alerting (Task #977)
+# ----------------------------------------------------------------------
+# `_METRICS` is a monotonic counter — fine pra detectar "alguma vez aconteceu",
+# mas o canary precisa de RATE em janela curta (ex: fail_closed > 5/min). Esta
+# deque guarda timestamps recentes dos outcomes que interessam (fail_open e
+# fail_closed) pra o endpoint `/health/tenant-context-canary` derivar status.
+# Eventos mais antigos que `_CANARY_RETENTION_SECONDS` são descartados em
+# leitura — sem timer, sem custo de I/O.
+import time as _time
+from collections import deque as _deque
+
+_CANARY_RETENTION_SECONDS = 600  # 10 min — cobre janela default 60s + folga
+_CANARY_EVENTS: "_deque[tuple[float, str, str]]" = _deque(maxlen=10_000)
+
+
+def _record_canary_event(agent: str, outcome: str) -> None:
+    if outcome not in ("fail_open", "fail_closed"):
+        return
+    _CANARY_EVENTS.append((_time.time(), agent, outcome))
+
+
+def get_tenant_context_canary_status(window_seconds: int = 60) -> dict[str, Any]:
+    """Status canary derivado da janela rolling de outcomes ruins.
+
+    Regras (espelham o spec da Task #977):
+      - ``critical`` quando ``fail_closed_per_min > 5`` na janela
+        (sinaliza JWT/tenant resolution quebrada — agentes recusando requests).
+      - ``warning`` quando ``fail_open_count > 0`` na janela
+        (em prod isso NUNCA deveria acontecer — degradação silenciosa).
+      - ``ok`` caso contrário.
+
+    Returns:
+        dict com ``status``, contadores na janela, threshold e timestamp.
+        Canary monitoring decide alerta pelo campo ``status``, não pelo HTTP
+        status code (paridade com `/health/compliance/bypass-status`).
+    """
+    now = _time.time()
+    cutoff = now - max(1, window_seconds)
+    # Drena eventos antigos da ponta esquerda (deque é FIFO ordenado por t).
+    while _CANARY_EVENTS and _CANARY_EVENTS[0][0] < now - _CANARY_RETENTION_SECONDS:
+        _CANARY_EVENTS.popleft()
+
+    fail_open = 0
+    fail_closed = 0
+    by_agent: dict[str, dict[str, int]] = {}
+    for ts, agent, outcome in _CANARY_EVENTS:
+        if ts < cutoff:
+            continue
+        bucket = by_agent.setdefault(agent, {"fail_open": 0, "fail_closed": 0})
+        bucket[outcome] = bucket.get(outcome, 0) + 1
+        if outcome == "fail_open":
+            fail_open += 1
+        elif outcome == "fail_closed":
+            fail_closed += 1
+
+    # Normaliza fail_closed pra rate por minuto (threshold é "5/min")
+    fail_closed_per_min = fail_closed * (60.0 / max(1, window_seconds))
+
+    if fail_closed_per_min > 5:
+        status = "critical"
+        reason = (
+            f"fail_closed rate {fail_closed_per_min:.1f}/min > 5/min — "
+            "tenant resolution quebrada (JWT inválido ou TenantContextService caindo)"
+        )
+    elif fail_open > 0:
+        status = "warning"
+        reason = (
+            f"fail_open={fail_open} na janela de {window_seconds}s — "
+            "em prod, agentes degradando para 'sua empresa'/'geral' "
+            "(LIA_AGENT_TENANT_STRICT deveria estar true)"
+        )
+    else:
+        status = "ok"
+        reason = "Sem fail_open/fail_closed na janela"
+
+    return {
+        "status": status,
+        "reason": reason,
+        "window_seconds": window_seconds,
+        "fail_open_count": fail_open,
+        "fail_closed_count": fail_closed,
+        "fail_closed_per_min": round(fail_closed_per_min, 2),
+        "threshold_fail_closed_per_min": 5,
+        "by_agent": by_agent,
+        "strict_mode": is_tenant_strict_mode(),
+    }
+
+
+def reset_tenant_context_canary_events() -> None:
+    """Reset usado por testes."""
+    _CANARY_EVENTS.clear()
+
 # Counter Prometheus opcional. ``prometheus_client`` é dep transitiva via
 # FastAPI/observability stack; se ausente, só atualizamos in-memory.
 try:  # pragma: no cover — exercitado via integração
@@ -128,6 +221,8 @@ def _record_metric(agent: str, outcome: str) -> None:
             _TENANT_CONTEXT_COUNTER.labels(agent=agent, outcome=outcome).inc()
         except Exception:  # pragma: no cover — defensive
             pass
+    # Task #977: rolling-window canary feed (apenas outcomes "ruins")
+    _record_canary_event(agent, outcome)
 
 
 def get_tenant_context_metrics() -> dict[str, dict[str, int]]:

@@ -640,6 +640,38 @@ async def compliance_bypass_status():
     return JSONResponse(status_code=200, content=payload)
 
 
+# ─── Task #977: tenant-context canary endpoint ───────────────────────────
+@router.get("/health/tenant-context-canary", response_model=None)
+async def tenant_context_canary(window_seconds: int = 60):
+    # multi-tenancy: public endpoint (health) — no tenant data
+    """Task #977 — Snapshot por-processo do canary do TenantAwareAgentMixin.
+
+    **NÃO autoritativo em produção multi-instância.** Este endpoint reflete
+    apenas a janela rolling do processo que respondeu o request — em
+    deployment com múltiplos pods/workers do `lia-backend`, ele subestima
+    fail_open/fail_closed agregados. Útil pra debug humano e smoke check de
+    deploy individual.
+
+    **Fonte autoritativa do alerta = Prometheus alert rules** em
+    ``deploy/observability/tenant_context_canary.rules.yaml`` — agregam
+    ``lia_agent_tenant_context_resolved_total`` por TODAS as instâncias via
+    ``sum(rate(...))``. As regras canônicas:
+
+    - ``LIATenantContextFailOpen`` (warning): fail_open > 0 em 1min
+    - ``LIATenantContextFailClosedRate`` (critical): fail_closed/min > 5
+    - ``LIATenantContextAgentSilent24h`` (info): inventário T-D drift
+
+    Status code é sempre 200 (canary é configuration drift, não liveness
+    failure — paridade com `/health/compliance/bypass-status`).
+    """
+    from app.shared.agents.tenant_aware_agent import (
+        get_tenant_context_canary_status,
+    )
+    snapshot = get_tenant_context_canary_status(window_seconds=window_seconds)
+    snapshot["timestamp"] = datetime.utcnow().isoformat()
+    return JSONResponse(status_code=200, content=snapshot)
+
+
 # ─── R-021: LLM provider fallback / circuit breaker metrics ─────────────────
 @router.get("/health/llm-metrics")
 async def llm_provider_metrics():

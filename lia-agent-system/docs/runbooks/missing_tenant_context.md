@@ -13,6 +13,10 @@ Um ou mais dos seguintes:
 - Prometheus: `lia_agent_tenant_context_resolved_total{outcome="fail_closed"}` cresce.
 - Endpoint de canary `/api/v1/health/compliance/bypass-status` retorna
   `tenant_aware_agent.metrics.<agent>.fail_closed > 0`.
+- Alerta Prometheus `LIATenantContextFailClosedRate` (severity=critical) ou
+  `LIATenantContextFailOpen` (severity=warning) — definidos em
+  `deploy/observability/tenant_context_canary.rules.yaml` (Task #977).
+  Snapshot por-processo opcional: `/api/v1/health/tenant-context-canary`.
 - Logs estruturados: `agent_tenant_context_missing` (level=ERROR) com
   `tenant_source` em `("agent_input", "system_prompt_hook")`.
 - Usuários reportam HTTP 500 ou erro genérico no chat / wizard / kanban.
