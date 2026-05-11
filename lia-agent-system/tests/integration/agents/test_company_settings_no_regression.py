@@ -418,9 +418,13 @@ def test_yaml_action_tools_resolvable_at_runtime():
 # ─── Contrato 5: golden dataset T6 existe e tem 18 cenários ───────────────
 
 
-def test_golden_dataset_exists_with_18_scenarios():
-    """Golden dataset T6 (#993): 18 cenários = 6 seções × 3 contratos
-    (positivo, anti-padrão, fairness). Roda via
+def test_golden_dataset_exists_with_21_scenarios():
+    """Golden dataset T6 (#993) + PR1 (#1001): 21 cenários = 7 seções × 3
+    contratos (positivo, anti-padrão, fairness). PR1 adicionou a seção
+    `basic` (Dados Básicos) cobrindo os 11 campos cadastrais de
+    `company_profiles` (name, cnpj, website, hr_email, hr_phone, address,
+    industry, company_size, employee_count, founded_year, linkedin_url) —
+    inacessíveis via chat antes do fix. Roda via
     `python -m eval.eval_runner --gate eval/golden/company_settings_prefill.jsonl`.
     """
     import json
@@ -435,12 +439,12 @@ def test_golden_dataset_exists_with_18_scenarios():
         f"Golden dataset T6 ausente em {golden} — eval gate não roda."
     )
     rows = [json.loads(l) for l in golden.read_text().splitlines() if l.strip()]
-    assert len(rows) == 18, (
-        f"Golden dataset T6 deve ter 18 cenários (6 seções × 3 contratos), "
+    assert len(rows) == 21, (
+        f"Golden dataset T6+PR1 deve ter 21 cenários (7 seções × 3 contratos), "
         f"encontrado {len(rows)}."
     )
 
-    sections = {"culture", "tech_stack", "benefits", "workforce", "policy", "compensation"}
+    sections = {"basic", "culture", "tech_stack", "benefits", "workforce", "policy", "compensation"}
     contracts = ("positive", "anti-pattern", "fairness")
     seen: set[tuple[str, str]] = set()
     for r in rows:

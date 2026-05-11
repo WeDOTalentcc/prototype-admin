@@ -13,6 +13,7 @@ export type SettingsActionId =
   | "prefill_section"
 
 export type PrefillSection =
+  | "basic"
   | "culture"
   | "tech_stack"
   | "benefits"
@@ -21,6 +22,7 @@ export type PrefillSection =
   | "compensation"
 
 const SECTION_LABELS: Record<PrefillSection, string> = {
+  basic: "Dados Básicos",
   culture: "Cultura & EVP",
   tech_stack: "Tech Stack",
   benefits: "Benefícios",

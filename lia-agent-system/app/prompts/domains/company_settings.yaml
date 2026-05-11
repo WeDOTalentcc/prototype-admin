@@ -46,9 +46,10 @@ structured_action_tags: |
       Foque APENAS na seção indicada. Faça perguntas uma de cada vez,
       restritas aos campos faltantes daquela seção. NÃO derive para outras
       seções nem para vagas/candidatos.
-      Valores válidos de <key>: culture | tech_stack | benefits | workforce
-      | policy | compensation.
+      Valores válidos de <key>: basic | culture | tech_stack | benefits |
+      workforce | policy | compensation.
       Mapeamento para tools (todas registradas no agente `company_settings`):
+        - basic             → save_company_field(section="profile", field=<one of: name|trading_name|cnpj|website|hr_email|hr_phone|address|industry|company_size|employee_count|founded_year|linkedin_url|logo_url>, value=...) ou save_company_section(section="profile", data={<vários desses campos>})
         - culture           → save_company_section(section="culture", data=...)
         - tech_stack        → save_company_field(section="culture", field="tech_stack", value=...)
         - benefits          → import_benefits_from_data(benefits=[...])

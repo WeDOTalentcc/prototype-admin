@@ -49,7 +49,8 @@ export function MinhaEmpresaHub() {
 
   const { triggerAction, triggerPrefillSection } = useSettingsConversational()
 
-  const BLOCK_TO_PREFILL: Record<string, "culture" | "tech_stack" | "benefits" | "workforce" | "policy" | "compensation" | undefined> = {
+  const BLOCK_TO_PREFILL: Record<string, "basic" | "culture" | "tech_stack" | "benefits" | "workforce" | "policy" | "compensation" | undefined> = {
+    basic: "basic",
     culture: "culture",
     tech: "tech_stack",
     benefits: "benefits",

@@ -11,12 +11,14 @@
  * (3) a resposta da LIA respeita o escopo da seção (não vaza vocabulário
  * de outras seções).
  *
- * Cobre as 6 seções (culture, tech_stack, benefits, workforce, policy,
+ * Cobre as 7 seções (basic, culture, tech_stack, benefits, workforce, policy,
  * compensation) — confirma que o hard-scope funciona em todas, conforme o
- * contrato T6/§ "Settings ↔ chat lateral" no replit.md. A matriz de
- * anti-keywords é 6x5 (vocabulário esperado de cada seção é proibido nas
- * outras 5), derivada automaticamente de SECTION_VOCAB para evitar que
- * adicionar uma 7ª seção quebre a cobertura silenciosamente.
+ * contrato T6/§ "Settings ↔ chat lateral" no replit.md + PR1 (#1001) que
+ * adicionou `basic` (Dados Básicos) cobrindo os 11 campos cadastrais de
+ * `company_profiles`. A matriz de anti-keywords é 7x6 (vocabulário esperado
+ * de cada seção é proibido nas outras 6), derivada automaticamente de
+ * SECTION_VOCAB para evitar que adicionar uma 8ª seção quebre a cobertura
+ * silenciosamente.
  *
  * Estratégia FAIL-LOUD em todos os 3 critérios. Pré-condições (backend de
  * pé, empresa demo com pendências nas 6 seções) são exigências e o spec
@@ -40,6 +42,7 @@ import { test, expect, type Page } from '../../fixtures/auth.fixture'
  * binding de UI; testar pela tag é o que valida o contrato com o agente.
  */
 type Section =
+  | 'basic'
   | 'culture'
   | 'tech_stack'
   | 'benefits'
@@ -61,6 +64,14 @@ interface SectionSpec {
 }
 
 const SECTIONS: SectionSpec[] = [
+  {
+    section: 'basic',
+    blockKey: 'basic',
+    expected: /\b(cnpj|website|rh|e-?mail|telefone|endere[cç]o|funcion[aá]rios|fundada|fundac|linkedin|logo|raz[aã]o\s+social|nome\s+fantasia)/i,
+    signature: [
+      /\b(cnpj|raz[aã]o\s+social|nome\s+fantasia|hr\s*email|email\s+do\s+rh|telefone\s+do\s+rh|endere[cç]o\s+da\s+sede|ano\s+de\s+funda|linkedin\s+da\s+empresa|logo\s+da\s+empresa)\b/i,
+    ],
+  },
   {
     section: 'culture',
     blockKey: 'culture',
@@ -272,18 +283,19 @@ async function runHandoffForSection(
 test.describe.configure({ retries: 1 })
 
 // Sentinela meta — falha LOUD se alguém remover/adicionar uma seção sem
-// revisar o spec. Contrato T6 são 6 seções (culture, tech_stack, benefits,
-// workforce, policy, compensation). Se virarem 7 (ex: ESG), atualizar
-// este número junto com SECTIONS — buildAntiKeywords já se ajusta sozinho.
-if (SECTIONS.length !== 6) {
+// revisar o spec. Contrato T6+PR1 (#1001) são 7 seções (basic, culture,
+// tech_stack, benefits, workforce, policy, compensation). Se virarem 8
+// (ex: ESG), atualizar este número junto com SECTIONS — buildAntiKeywords
+// já se ajusta sozinho.
+if (SECTIONS.length !== 7) {
   throw new Error(
-    `[meta] SECTIONS deve ter exatamente 6 entradas (contrato T6/#993), ` +
+    `[meta] SECTIONS deve ter exatamente 7 entradas (contrato T6/#993 + PR1/#1001), ` +
       `tem ${SECTIONS.length}. Se a mudança é intencional, atualizar este guard ` +
       `e PrefillSection em use-settings-conversational.ts.`,
   )
 }
 
-test.describe('Task #997/#998 — Settings ↔ chat handoff (prefill_section, 6 seções)', () => {
+test.describe('Task #997/#998/#1001 — Settings ↔ chat handoff (prefill_section, 7 seções)', () => {
   test.setTimeout(5 * 60_000) // 5min cada — inclui resposta real da LIA
 
   for (const spec of SECTIONS) {
