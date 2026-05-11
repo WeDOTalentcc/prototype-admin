@@ -192,12 +192,6 @@ SECURITY_PATTERNS: list[dict[str, Any]] = [
             re.compile(r"prefira?\s+(homens?|mulheres?|brancos?|negros?)\s*(candidatos?|candidatas?|para|\.)", re.IGNORECASE),
             re.compile(r"priorize?.{0,20}(mulheres?|homens?|g.{0,3}nero|sexo)", re.IGNORECASE | re.DOTALL),
             re.compile(r"(priorizar|dar\s+prefer.{0,5}ncia).{0,30}(g.{0,3}nero|sexo|ra.{0,3}a|cor)\b", re.IGNORECASE | re.DOTALL),
-            # bias-pt-fix 2026-05-11: ordem natural PT (verbo + candidato + atributo).
-            # Cobre: "ranquear candidatos homens", "selecionar candidatos masculinos",
-            # "priorizar candidatas mulheres", "remover candidatas femininas".
-            re.compile(r"(?:ranquear?|priorizar?|filtrar?|preferir?|excluir?|aceitar?|considerar?|contratar?|escolher?|selecionar?|remover?|rejeitar?|descartar?)\s+(?:apenas\s+)?(?:os?\s+|as?\s+)?(?:melhor(?:es)?\s+)?candidat[oa]s?\s+(?:do\s+sexo\s+)?(?:homens?|mulheres?|masculinos?|femininos?|femininas?)\b", re.IGNORECASE),
-            # Cobre: "filtrar candidatos por sexo/genero/raca/cor"
-            re.compile(r"filtrar?\s+(?:os?\s+)?candidat[oa]s?\s+por\s+(?:idade|sexo|g[êe]nero|ra[çc]a|cor|etnia|nacionalidade|religi[ãa]o|defici[êe]ncia|orienta[çc][ãa]o\s+sexual)", re.IGNORECASE),
         ],
     },
     # ── 9. BIAS ELICITATION — Nationality / ethnicity discrimination ─────────
@@ -213,12 +207,6 @@ SECURITY_PATTERNS: list[dict[str, Any]] = [
             re.compile(r"(classificar|priorizar|filtrar|preferir|excluir)\s+candidatos?\s+(por|com\s+base\s+em)\s+(nacionalidade|etnia|ra.{0,3}a|religi)", re.IGNORECASE | re.DOTALL),
             re.compile(r"only\s+(hire|consider|accept)\s+(brazilians?|foreigners?|whites?|blacks?)", re.IGNORECASE),
             re.compile(r"(contratar|considerar|aceitar)\s+apenas\s+(brasileiros?|estrangeiros?|brancos?|negros?)", re.IGNORECASE),
-            # bias-pt-fix 2026-05-11: ordem natural PT + verbos de exclusao.
-            # Cobre: "prefira candidatos brancos", "selecionar candidatos negros",
-            # "remover candidatos pardos", "rejeitar candidatos estrangeiros".
-            re.compile(r"(?:ranquear?|priorizar?|filtrar?|preferir?|prefira?|excluir?|aceitar?|considerar?|contratar?|escolher?|selecionar?|remover?|rejeitar?|descartar?)\s+(?:apenas\s+)?(?:os?\s+|as?\s+)?(?:melhor(?:es)?\s+)?candidat[oa]s?\s+(?:brancos?|brancas?|negros?|negras?|pretos?|pretas?|pardos?|pardas?|amarelos?|asi[áa]ticos?|orientais?|estrangeiros?|brasileiros?|imigrantes?|refugiados?|ind[íi]genas?)\b", re.IGNORECASE),
-            # Combinacoes: "so contratar homens brancos jovens"
-            re.compile(r"(?:s[óo]|apenas|somente)\s+(?:contratar?|aceitar?|considerar?|selecionar?)\s+(?:homens?|mulheres?|brancos?|negros?|pardos?|jovens?|idosos?|brasileiros?|estrangeiros?)", re.IGNORECASE),
         ],
     },
     # ── 10. SCORE MANIPULATION — "Set score to 10" ──────────────────────────
@@ -343,13 +331,6 @@ SECURITY_PATTERNS: list[dict[str, Any]] = [
             re.compile(r"(filtrar?|excluir?|remover?|rejeitar?)\s+candidatos?\s+(por|com\s+base\s+em)\s+(idade|g[êe]nero|ra[çc]a|religi[ãa]o|nacionalidade|defici[êe]ncia)", re.IGNORECASE),
             re.compile(r"(only\s+shortlist|shortlist\s+only)\s+(young|old|male|female|white|black)", re.IGNORECASE),
             re.compile(r"(selecionar?\s+apenas|apenas\s+selecionar?)\s+(jovens?|idosos?|homens?|mulheres?|brancos?|negros?)", re.IGNORECASE),
-            # bias-pt-fix 2026-05-11: idade / PCD / preferencia mascarada.
-            # Idade: "remover candidatos mais velhos", "excluir candidatos idosos",
-            # "preferir candidatos jovens".
-            re.compile(r"(?:remover?|excluir?|eliminar?|descartar?|rejeitar?)\s+(?:os?\s+)?candidat[oa]s?\s+(?:mais\s+)?(?:velhos?|jovens?|idosos?|antigos?)\b", re.IGNORECASE),
-            re.compile(r"(?:preferir?|prefira?|priorizar?|priorize?|favor[ée]cer?)\s+(?:os?\s+)?candidat[oa]s?\s+(?:mais\s+)?(?:jovens?|novos?|idosos?|velhos?)\b", re.IGNORECASE),
-            # PCD: "rejeitar candidatos com deficiencia"
-            re.compile(r"(?:rejeitar?|excluir?|remover?|descartar?|n[ãa]o\s+(?:considerar?|aceitar?|contratar?))\s+(?:os?\s+)?(?:candidat[oa]s?\s+)?(?:com\s+defici[êe]ncia|deficientes?|pcd)\b", re.IGNORECASE),
         ],
     },
     # ── 19. SYSTEM OVERRIDE — System prompt manipulation ─────────────────────
