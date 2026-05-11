@@ -315,12 +315,22 @@ def test_register_company_settings_tools_wired_in_initialize_tools():
 
 
 def test_yaml_action_tools_resolvable_at_runtime():
-    """PR0 (Task #1000) — extensão de defesa: cada tool nomeada no
-    bloco `structured_action_tags` do YAML deve ser resolvível em
-    runtime, seja via toolset local (`get_company_settings_tools()`),
-    seja via `tool_registry` global após `initialize_tools()`. Garante
-    que o YAML não promete uma tool que ninguém registra.
+    """PR0 (Task #1000) — defesa data-driven contra registry drift:
+    extrai automaticamente todos os nomes de tools mencionados em
+    blocos do YAML que descrevem chamadas de função
+    (`structured_action_tags`, `behavioral_rules`, `few_shot_examples`)
+    e valida que cada um seja resolvível em runtime — seja via toolset
+    do próprio `CompanySettingsReActAgent` (caminho LangGraph), seja
+    via `tool_registry` global após `initialize_tools()` (caminho
+    function-calling do orchestrator/recruiter_assistant).
+
+    Diferente de uma lista hardcoded, este teste falha automaticamente
+    se um futuro PR adicionar `foo_bar_tool(...)` no YAML sem registrar
+    a tool — fechando o gap de drift que motivou o PR0.
     """
+    from app.domains.company_settings.agents.company_react_agent import (
+        CompanySettingsReActAgent,
+    )
     from app.domains.company_settings.agents.company_tool_registry import (
         get_company_settings_tools,
     )
@@ -329,37 +339,79 @@ def test_yaml_action_tools_resolvable_at_runtime():
 
     initialize_tools()
 
-    data = yaml.safe_load(YAML_PATH.read_text(encoding="utf-8"))
-    tags_block = data.get("structured_action_tags", "")
-
-    # Tools nomeadas explicitamente no mapeamento target_section → tool
-    # do YAML (linhas 51-65 de company_settings.yaml).
-    tools_referenced_by_yaml = {
-        "save_company_section",
-        "save_company_field",
-        "import_benefits_from_data",
-        "import_workforce_plan",
-        "suggest_recruiting_policy",
-        "analyze_company_website",
-        "process_uploaded_document",
+    # Whitelist conhecida de identificadores que parecem chamada de tool
+    # mas NÃO são (kwargs Python, nomes de campos, palavras reservadas).
+    # Mantida pequena e documentada — qualquer falso-positivo novo deve
+    # ser entendido antes de adicionar aqui.
+    NOT_A_TOOL = {
+        # kwargs comuns em assinaturas mostradas no YAML
+        "section", "field", "value", "data", "benefits", "plan_data",
+        "department", "role", "quantity", "deadline", "seniority",
+        "sector", "company_size", "website_url", "document_type",
+        "default_salary_ranges",
+        # campos do schema response
+        "success", "category",
+        # palavras reservadas / builtins
+        "if", "for", "in", "and", "or", "not", "is", "lambda",
+        "print", "len", "str", "int", "list", "dict", "set", "tuple",
+        "range", "type", "isinstance",
     }
-    # Sanity-check: cada uma realmente aparece no texto YAML.
-    not_in_yaml = {t for t in tools_referenced_by_yaml if t not in tags_block}
-    assert not not_in_yaml, (
-        f"Esta sentinela está desatualizada — tools listadas como YAML-referenced "
-        f"mas ausentes do bloco structured_action_tags: {sorted(not_in_yaml)}. "
-        "Atualize `tools_referenced_by_yaml` ou o YAML."
+    # Padrão snake_case com pelo menos um underscore — filtro pragmático
+    # para reduzir ruído (palavras únicas como "benefits" não passam,
+    # mas ficam no NOT_A_TOOL acima como reforço).
+    TOOL_CALL_RE = re.compile(r"\b([a-z][a-z0-9_]*_[a-z0-9_]+)\s*\(")
+
+    data = yaml.safe_load(YAML_PATH.read_text(encoding="utf-8"))
+    scan_keys = ("structured_action_tags", "behavioral_rules", "few_shot_examples")
+
+    candidates: set[str] = set()
+    for key in scan_keys:
+        block = data.get(key, "")
+        # few_shot_examples é lista de dicts — concatenar valores string.
+        if isinstance(block, list):
+            text_parts: list[str] = []
+            for entry in block:
+                if isinstance(entry, dict):
+                    text_parts.extend(str(v) for v in entry.values())
+                else:
+                    text_parts.append(str(entry))
+            text = "\n".join(text_parts)
+        else:
+            text = str(block)
+        for match in TOOL_CALL_RE.findall(text):
+            if match not in NOT_A_TOOL:
+                candidates.add(match)
+
+    assert candidates, (
+        "Sentinela data-driven extraiu zero candidatos de tools do YAML. "
+        "Provável regressão no parser ou nas chaves `scan_keys`."
     )
 
-    local_names = {t.name for t in get_company_settings_tools()}
-    global_names = set(tool_registry.list_tools())
-    resolvable = local_names | global_names
+    # Toolset real do agente (caminho LangGraph) — é assim que o
+    # CompanySettingsReActAgent enxerga tools em runtime via
+    # _get_tools(). Usamos a função base get_company_settings_tools()
+    # para evitar precisar instanciar o agente (que requer DB).
+    agent_tool_names = {t.name for t in get_company_settings_tools()}
+    # Defesa: se o nome da função privada do agente mudar, este teste
+    # avisa explicitamente.
+    assert "_get_tools" in dir(CompanySettingsReActAgent), (
+        "CompanySettingsReActAgent perdeu `_get_tools` — reavaliar como "
+        "esta sentinela monta agent_tool_names."
+    )
 
-    unresolvable = tools_referenced_by_yaml - resolvable
+    global_tool_names = set(tool_registry.list_tools())
+    resolvable = agent_tool_names | global_tool_names
+
+    unresolvable = candidates - resolvable
     assert not unresolvable, (
         f"YAML company_settings.yaml referencia tools que NINGUÉM registra "
-        f"em runtime (nem toolset local nem tool_registry global): "
-        f"{sorted(unresolvable)}. LLM tentará chamar e receberá tool_not_found."
+        f"em runtime (nem toolset do agente, nem tool_registry global): "
+        f"{sorted(unresolvable)}.\n"
+        f"Candidatos extraídos do YAML: {sorted(candidates)}\n"
+        f"Tools do agente: {sorted(agent_tool_names)}\n"
+        f"Tools globais relevantes: "
+        f"{sorted(t for t in global_tool_names if 'compan' in t or 'benefit' in t or 'recruit' in t)}\n"
+        "LLM tentará chamar essas tools e receberá tool_not_found."
     )
 
 
