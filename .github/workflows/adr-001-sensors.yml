@@ -17,6 +17,7 @@ on:
     branches: [main, develop]
     paths:
       - "lia-agent-system/app/domains/**/services/**"
+      - "lia-agent-system/app/domains/**/agents/**"
       - "lia-agent-system/scripts/check_no_*.py"
       - ".github/workflows/adr-001-sensors.yml"
 
@@ -26,7 +27,7 @@ concurrency:
 
 jobs:
   sensors:
-    name: ADR-001 Sensors (raw SQL + select direct)
+    name: ADR-001 + Canonical Sensors (raw SQL + select direct + wizard domain dup)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -49,3 +50,11 @@ jobs:
           # Blocking by default since Sprint 8 batch 2 (commit 65b033556).
           # Use `--warn-only` if you legitimately need to bypass on a stale branch.
           python3 scripts/check_no_select_in_services.py
+
+      - name: Sensor 3 — canonical wizard domain (Onda 4.D4 PLAN_FIX_wizard_memory_loss)
+        run: |
+          # Blocking since Onda 4.D4. ADR-CANONICAL-001 documenta as
+          # exceptions legacy (job_management/agents/job_wizard_graph.py
+          # + wizard_step_service/service.py) com marker CANONICAL-EXEMPT.
+          # Use `--warn-only` se ratchet temporario for legitimo.
+          python3 scripts/check_no_duplicate_wizard_domain.py

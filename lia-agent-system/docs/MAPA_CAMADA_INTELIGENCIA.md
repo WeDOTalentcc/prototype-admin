@@ -2314,7 +2314,13 @@ class WizardReActAgent(EnhancedAgentMixin, BaseAgent):
     async def process(self, input: AgentInput) -> AgentOutput:
         config = ReActConfig(
             max_iterations=5,
-            system_prompt=build_system_prompt(stage_context, memory),
+            # Audit-final 2026-05-10: signature atual usa kwargs:
+            #   build_system_prompt(stage_context=..., memory_summary=...)
+            # Ver app/domains/job_management/agents/wizard_react_agent.py:93
+            system_prompt=build_system_prompt(
+                stage_context=ctx.get("stage_context", ""),
+                memory_summary=ctx.get("memory", ""),
+            ),
             available_tools=get_stage_tools(current_stage),
             domain="wizard",
             model_provider="claude",

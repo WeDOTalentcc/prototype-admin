@@ -134,7 +134,22 @@ class WizardSessionService:
                 )
                 return state
         except Exception as exc:
-            logger.debug("[WizardSession] Checkpointer read skipped: %s", exc)
+            # Audit-final (PLAN_FIX_wizard_memory_loss): promovido de DEBUG
+            # para WARNING. O bug V1.d (Onda 1) ficou escondido porque
+            # esse miss caia em logger.debug, invisivel em logs INFO+.
+            # WARNING + structured fields permite alerta + observabilidade
+            # do canary suite + canary detectar regressao silenciosa.
+            logger.warning(
+                "[WizardSession] Checkpointer read miss thread=%s "
+                "reason=%s — falling back to fresh session. Sensor canonical: "
+                "tests/integration/test_checkpointer_canonical.py.",
+                thread_id, type(exc).__name__,
+                extra={
+                    "event": "wizard_checkpointer_read_miss",
+                    "thread_id": thread_id,
+                    "reason": type(exc).__name__,
+                },
+            )
         return {}
 
     @staticmethod
