@@ -105,8 +105,12 @@ SECURITY_PATTERNS: list[dict[str, Any]] = [
             re.compile(r"do\s+anything\s+now", re.IGNORECASE),
             re.compile(r"developer\s+mode", re.IGNORECASE),
             re.compile(r"modo\s+desenvolvedor", re.IGNORECASE),
-            re.compile(r"sem\s+(restr[ií][çc][õo]es|limites?|filtros?)", re.IGNORECASE),
-            re.compile(r"without\s+(restrictions?|limits?|filters?)", re.IGNORECASE),
+            # fix-security-patterns 2026-05-11: exigir contexto adversarial explicito
+            # (eticas/seguranca/conteudo/moderacao/politica/sistema/guardrails).
+            # Antes bloqueava usage normal de recrutador ("sem filtros aplicados").
+            re.compile(r"sem\s+(?:restr[ií][çc][õo]es?|limites?|filtros?)\s+(?:[ée]ticas?|de\s+(?:seguran[çc]a|conte[úu]do|modera[çc][ãa]o|pol[íi]tica|guardrails?|safety)|do\s+sistema|impostas?\s+(?:pela|pelo|por)\s+(?:openai|anthropic|sistema|modelo))", re.IGNORECASE),
+            # fix-security-patterns 2026-05-11: equivalente EN do PT.
+            re.compile(r"without\s+(?:restrictions?|limits?|filters?)\s+(?:of\s+|on\s+)?(?:ethics?|safety|content|policy|moderation|guidelines?|guardrails?|the\s+(?:system|model))", re.IGNORECASE),
             re.compile(r"bypass\s+(safety\s+|security\s+)?(filter|restriction|guideline|safeguard)", re.IGNORECASE),
         ],
     },
@@ -133,10 +137,19 @@ SECURITY_PATTERNS: list[dict[str, Any]] = [
         "risk": RiskLevel.HIGH,
         "confidence": 0.85,
         "patterns": [
-            re.compile(r"(show|list|dump|display|print)\s+all\s+(candidates?|users?|companies?|data|records?)", re.IGNORECASE),
-            re.compile(r"(mostre|liste|imprima|exiba)\s+todos?\s+(os\s+)?(candidatos?|usu.{1,5}rios?|empresas?|dados?)", re.IGNORECASE | re.DOTALL),
-            re.compile(r"export\s+(all|every)\s+(candidate|user|data|record)", re.IGNORECASE),
-            re.compile(r"exporte?.{0,20}(candidatos?|dados?)", re.IGNORECASE | re.DOTALL),
+            # fix-security-patterns 2026-05-11: equivalente EN.
+            re.compile(r"(?:dump|exfiltrate|leak)\s+(?:all\s+)?(?:candidates?|users?|companies?|data|records?)", re.IGNORECASE),
+            re.compile(r"(?:show|list|display|print)\s+all\s+(?:candidates?|users?|companies?|data|records?)\s+(?:from\s+(?:other|all|every)\s+(?:companies?|tenants?|organizations?)|cross[-\s]?tenant|without\s+(?:tenant|company)\s+filter|across\s+tenants?)", re.IGNORECASE),
+            # fix-security-patterns 2026-05-11: pattern original bloqueava usage primario
+            # ("liste todos os candidatos da vaga"). RLS no Rails + multi-tenancy company_id
+            # ja garantem tenant isolation. Refinado para exigir cross-tenant ou dump explicito.
+            re.compile(r"(?:dump|exfiltr|leak|copia(?:r|ndo)?\s+todos?\s+os)\s+(?:candidatos?|usu[áa]rios?|empresas?|dados?|registros?)", re.IGNORECASE | re.DOTALL),
+            re.compile(r"(?:mostre|liste|imprima|exiba|exporte?)\s+todos?\s+(?:os\s+)?(?:candidatos?|usu[áa]rios?|empresas?|dados?)\s+(?:de\s+(?:outr(?:as?|os)|tod(?:as?|os))\s+(?:empresas?|companhias?|tenants?|organiza[çc][õo]es)|sem\s+(?:filtro\s+(?:de\s+)?)?(?:tenant|empresa|company)|cross[-\s]?tenant|ignorando\s+(?:o\s+)?(?:tenant|empresa))", re.IGNORECASE | re.DOTALL),
+            # fix-security-patterns 2026-05-11: equivalente EN.
+            re.compile(r"export\s+(?:all|every)\s+(?:candidates?|users?|data|records?)\s+(?:from\s+(?:other|all|every)\s+(?:companies?|tenants?)|cross[-\s]?tenant|without\s+(?:tenant|company)\s+filter)", re.IGNORECASE),
+            # fix-security-patterns 2026-05-11: exportar candidatos eh funcao primaria
+            # (botao "Exportar Excel/PDF" no UI). Refinado para exigir contexto cross-tenant.
+            re.compile(r"exporte?\s+(?:todos?\s+os\s+)?(?:candidatos?|dados?)\s+(?:de\s+(?:outr(?:as?|os)|tod(?:as?|os))\s+(?:empresas?|tenants?)|cross[-\s]?tenant|sem\s+(?:filtro\s+(?:de\s+)?)?(?:tenant|empresa))", re.IGNORECASE | re.DOTALL),
         ],
     },
     # ── 6. DATA EXFILTRATION — HTTP exfil / send to URL ─────────────────────
@@ -360,6 +373,10 @@ SECURITY_PATTERNS: list[dict[str, Any]] = [
             re.compile(r"finja\s+(ser|que).{0,30}sem\s+(restr|ética|regra)", re.IGNORECASE | re.DOTALL),
             re.compile(r"imagine\s+you\s+are\s+an?\s*(AI\s+)?(without|that\s+ignores?)\s*(restriction|rule|guideline)?", re.IGNORECASE),
             re.compile(r"imagine\s+(que\s+)?voc.{0,5}\s+(é|e)\s+uma?\s*(IA\s+)?sem\s+(restr|regra)", re.IGNORECASE | re.DOTALL),
+            # fix-security-patterns 2026-05-11: cobrir "assuma o papel de X sem Y",
+            # "atue como X sem Y", "aja como X sem Y" — equivalentes de "pretend to be".
+            re.compile(r"(?:assuma|adote|adopt(?:e)?|assume)\s+(?:o\s+)?papel\s+de.{0,40}sem\s+(?:restr|filtros?|limites?|regras?|[ée]tic|guidelines?)", re.IGNORECASE | re.DOTALL),
+            re.compile(r"(?:atue|aja)\s+como.{0,40}sem\s+(?:restr|filtros?|limites?|regras?|[ée]tic|guidelines?)", re.IGNORECASE | re.DOTALL),
         ],
     },
     # ── 22. DELIMITER INJECTION — Markdown / code block tricks ───────────────
