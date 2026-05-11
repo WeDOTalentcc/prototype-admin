@@ -4,6 +4,7 @@ import { useState } from "react"
 import { useTranslations } from "next-intl"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { InteractiveSurface } from "@/components/ui/interactive-surface"
 import { Palette, Sun, Moon, Monitor, Globe, Bot } from "lucide-react"
 
 export interface SettingsGeneralTabProps {
@@ -45,21 +46,23 @@ function PreferencesTab({ onSettingsChange }: { onSettingsChange: (changed: bool
                 { id: "dark", name: t("dark"), icon: Moon },
                 { id: "system", name: t("system"), icon: Monitor }
               ].map((themeOption) => (
-                <button
+                <InteractiveSurface
                   key={themeOption.id}
+                  variant="card-toggle"
+                  aria-pressed={theme === themeOption.id}
                   onClick={() => {
                     setTheme(themeOption.id)
                     onSettingsChange(true)
                   }}
-                  className={`p-3 rounded-md border text-center transition-colors motion-reduce:transition-none ${
+                  className={`p-3 rounded-md border !text-center ${
                     theme === themeOption.id
- ? 'border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary text-lia-text-primary'
+                      ? 'border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary text-lia-text-primary'
                       : 'border-lia-border-subtle dark:border-lia-border-subtle hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover'
                   }`}
                 >
                   <themeOption.icon className="w-5 h-5 mx-auto mb-1" />
                   <div className="text-sm font-medium">{themeOption.name}</div>
-                </button>
+                </InteractiveSurface>
               ))}
             </div>
           </div>
@@ -155,13 +158,15 @@ function LIATab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => 
                 { id: "concise", name: t("concise"), desc: t("conciseDesc") },
                 { id: "detailed", name: t("detailed"), desc: t("detailedDesc") }
               ].map((style) => (
-                <button
+                <InteractiveSurface
                   key={style.id}
+                  variant="card-toggle"
+                  aria-pressed={liaSettings.personality === style.id}
                   onClick={() => {
                     setLiaSettings(prev => ({ ...prev, personality: style.id }))
                     onSettingsChange(true)
                   }}
-                  className={`p-3 rounded-md border text-left transition-colors motion-reduce:transition-none ${
+                  className={`p-3 rounded-md border ${
                     liaSettings.personality === style.id
                       ? 'border-lia-btn-primary-bg dark:border-lia-border-subtle bg-wedo-cyan/10 dark:bg-wedo-cyan/20'
                       : 'border-lia-border-subtle dark:border-lia-border-subtle hover:bg-lia-bg-secondary dark:hover:bg-lia-btn-primary-hover'
@@ -169,7 +174,7 @@ function LIATab({ onSettingsChange }: { onSettingsChange: (changed: boolean) => 
                 >
                   <div className="font-medium text-sm">{style.name}</div>
                   <div className="text-xs text-lia-text-primary">{style.desc}</div>
-                </button>
+                </InteractiveSurface>
               ))}
             </div>
           </div>

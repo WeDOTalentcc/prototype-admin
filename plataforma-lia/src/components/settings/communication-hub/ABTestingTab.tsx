@@ -7,6 +7,7 @@ import { apiFetch } from "@/lib/api/api-fetch"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Button } from "@/components/ui/button"
+import { InteractiveSurface } from "@/components/ui/interactive-surface"
 
 interface ABVariant {
   variant_name: string
@@ -334,8 +335,10 @@ export function ABTestingTab() {
 
             return (
               <div key={test.test_name} className="border border-lia-border-subtle rounded-md overflow-hidden">
-                <button
-                  className="w-full flex items-center justify-between p-4 bg-lia-bg-primary hover:bg-lia-bg-secondary transition-colors text-left"
+                <InteractiveSurface
+                  variant="accordion"
+                  aria-expanded={isExpanded}
+                  className="p-4"
                   onClick={() => toggleExpand(test.test_name)}
                 >
                   <div className="flex items-center gap-3">
@@ -357,7 +360,7 @@ export function ABTestingTab() {
                       : <ChevronDown className="w-4 h-4 text-lia-text-tertiary" />
                     }
                   </div>
-                </button>
+                </InteractiveSurface>
 
                 {isExpanded && (
                   <div className="border-t border-lia-border-subtle p-4 bg-lia-bg-secondary space-y-4">
