@@ -93,6 +93,7 @@ def initialize_tools() -> None:
     """Initialize and register all tools."""
     from app.domains.analytics.tools.query_tools import register_query_tools
     from app.domains.communication.tools.communication_tools import register_communication_tools
+    from app.domains.company_settings.tools.import_tools import register_company_settings_tools
     from app.domains.cv_screening.tools.candidate_tools import register_candidate_tools
     from app.domains.cv_screening.tools.cv_match_tool import register_cv_match_tool
     from app.domains.cv_screening.tools.cv_upload_tool import register_cv_upload_tools
@@ -112,6 +113,14 @@ def initialize_tools() -> None:
     register_cv_match_tool()
     register_cv_upload_tools()
     register_talent_intelligence_tools()
+    # PR0 (Task #1000) — wiring canônico das 3 tools globais do company_settings
+    # (check_company_completeness, suggest_recruiting_policy, import_benefits_from_data).
+    # Antes deste call, register_company_settings_tools() era letra morta — o YAML
+    # do agente referenciava as tools, mas elas nunca chegavam ao tool_registry global,
+    # quebrando function-calling em recruiter_assistant/orchestrator/company_settings
+    # via tool_executor. Sentinela: tests/integration/agents/test_company_settings_no_regression.py
+    # (Contrato 4) valida que as 3 tools existem em tool_registry após initialize_tools().
+    register_company_settings_tools()
     
     import logging
     logger = logging.getLogger(__name__)

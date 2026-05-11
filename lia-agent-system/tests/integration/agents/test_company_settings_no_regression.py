@@ -260,6 +260,109 @@ def test_canonical_tools_are_registered():
         )
 
 
+# ─── Contrato 4b (PR0 / Task #1000): wiring runtime no tool_registry global ──
+
+
+def test_register_company_settings_tools_wired_in_initialize_tools():
+    """PR0 (Task #1000) — bug C0 do audit T1-T6: a função
+    `register_company_settings_tools()` em
+    `app/domains/company_settings/tools/import_tools.py` registra 3 tools
+    globais (`check_company_completeness`, `suggest_recruiting_policy`,
+    `import_benefits_from_data`) com `allowed_agents` incluindo
+    `company_settings`, `recruiter_assistant` e `orchestrator`. Antes do
+    fix PR0, ela NUNCA era invocada em runtime — letra morta. O LLM
+    "via" o nome no prompt YAML, decidia chamar via function-calling, e
+    `tool_executor` retornava `tool_not_found`.
+
+    Esta sentinela valida que `initialize_tools()` (chamada no lifespan
+    do FastAPI em `app/main.py:373`) realmente popula o `tool_registry`
+    global com as 3 tools e que `company_settings` está em
+    `allowed_agents` de cada uma. Se um futuro PR remover o callsite de
+    `register_company_settings_tools()` em `app/tools/__init__.py`,
+    este teste quebra antes do merge.
+    """
+    from app.tools import initialize_tools
+    from app.tools.registry import tool_registry
+
+    # initialize_tools() é idempotente em re-registro (loga warning + overwrite).
+    # Chamar aqui garante o estado pós-boot independente da ordem de testes.
+    initialize_tools()
+
+    required_global_tools = {
+        "check_company_completeness",
+        "suggest_recruiting_policy",
+        "import_benefits_from_data",
+    }
+    registered = set(tool_registry.list_tools())
+    missing = required_global_tools - registered
+    assert not missing, (
+        f"PR0 wiring quebrado: tools globais ausentes do tool_registry "
+        f"após initialize_tools(): {sorted(missing)}. "
+        "Verificar se `register_company_settings_tools()` continua sendo "
+        "invocado em app/tools/__init__.py::initialize_tools()."
+    )
+
+    # company_settings precisa estar autorizado em todas as 3 — caso
+    # contrário o agente não enxerga via tool_executor mesmo com a tool
+    # registrada.
+    for name in required_global_tools:
+        tool = tool_registry.get_tool(name)
+        assert tool is not None, f"Tool '{name}' sumiu de tool_registry."
+        assert "company_settings" in (tool.allowed_agents or []), (
+            f"Tool '{name}' registrada, mas `company_settings` não está em "
+            f"allowed_agents={tool.allowed_agents!r} — agente não consegue chamá-la."
+        )
+
+
+def test_yaml_action_tools_resolvable_at_runtime():
+    """PR0 (Task #1000) — extensão de defesa: cada tool nomeada no
+    bloco `structured_action_tags` do YAML deve ser resolvível em
+    runtime, seja via toolset local (`get_company_settings_tools()`),
+    seja via `tool_registry` global após `initialize_tools()`. Garante
+    que o YAML não promete uma tool que ninguém registra.
+    """
+    from app.domains.company_settings.agents.company_tool_registry import (
+        get_company_settings_tools,
+    )
+    from app.tools import initialize_tools
+    from app.tools.registry import tool_registry
+
+    initialize_tools()
+
+    data = yaml.safe_load(YAML_PATH.read_text(encoding="utf-8"))
+    tags_block = data.get("structured_action_tags", "")
+
+    # Tools nomeadas explicitamente no mapeamento target_section → tool
+    # do YAML (linhas 51-65 de company_settings.yaml).
+    tools_referenced_by_yaml = {
+        "save_company_section",
+        "save_company_field",
+        "import_benefits_from_data",
+        "import_workforce_plan",
+        "suggest_recruiting_policy",
+        "analyze_company_website",
+        "process_uploaded_document",
+    }
+    # Sanity-check: cada uma realmente aparece no texto YAML.
+    not_in_yaml = {t for t in tools_referenced_by_yaml if t not in tags_block}
+    assert not not_in_yaml, (
+        f"Esta sentinela está desatualizada — tools listadas como YAML-referenced "
+        f"mas ausentes do bloco structured_action_tags: {sorted(not_in_yaml)}. "
+        "Atualize `tools_referenced_by_yaml` ou o YAML."
+    )
+
+    local_names = {t.name for t in get_company_settings_tools()}
+    global_names = set(tool_registry.list_tools())
+    resolvable = local_names | global_names
+
+    unresolvable = tools_referenced_by_yaml - resolvable
+    assert not unresolvable, (
+        f"YAML company_settings.yaml referencia tools que NINGUÉM registra "
+        f"em runtime (nem toolset local nem tool_registry global): "
+        f"{sorted(unresolvable)}. LLM tentará chamar e receberá tool_not_found."
+    )
+
+
 # ─── Contrato 5: golden dataset T6 existe e tem 18 cenários ───────────────
 
 
