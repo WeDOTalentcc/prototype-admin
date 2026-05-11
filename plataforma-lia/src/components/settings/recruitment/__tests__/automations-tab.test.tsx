@@ -30,6 +30,25 @@ vi.mock("@/utils/license-manager", () => ({
   hasModuleAccess: () => true,
 }));
 
+// `automations-tab` chama `apiFetch` (wrapper de `fetch` com `credentials:
+// 'include'`). Como o módulo captura `fetch` no escopo da factory durante o
+// import, `vi.stubGlobal('fetch', …)` chamado em `beforeEach` não intercepta
+// — o componente continua usando o `fetch` original. Mockar `apiFetch`
+// diretamente é o vetor canônico, e como `apiFetch` delega para `fetch`,
+// preservamos a asserção `expect(fetch).toHaveBeenCalledWith(...)`
+// encaminhando os mesmos argumentos para o `fetch` global (que continua sendo
+// stubbed por `vi.stubGlobal`).
+vi.mock("@/lib/api/api-fetch", () => ({
+  apiFetch: (input: RequestInfo | URL, init?: RequestInit) => {
+    const f = globalThis.fetch as typeof fetch;
+    // Encaminha exatamente os argumentos recebidos (sem `init` quando ausente)
+    // para preservar a forma do call signature observado pelo `expect` —
+    // `toHaveBeenCalledWith(stringContaining(...))` exige match exato da lista
+    // de args, então um `undefined` extra quebraria a asserção.
+    return init === undefined ? f(input as RequestInfo) : f(input as RequestInfo, init);
+  },
+}));
+
 beforeAll(() => {
   if (typeof window !== "undefined" && !window.matchMedia) {
     Object.defineProperty(window, "matchMedia", {

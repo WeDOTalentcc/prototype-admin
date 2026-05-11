@@ -19,6 +19,7 @@
  */
 import React from "react"
 import { render, screen } from "@testing-library/react"
+import { NextIntlClientProvider } from "next-intl"
 import { vi, describe, it, expect, beforeEach } from "vitest"
 
 const mockUseWebhooks = vi.fn()
@@ -28,6 +29,57 @@ vi.mock("@/hooks/agents", () => ({
 }))
 
 import { WebhooksManager } from "@/components/settings/WebhooksManager"
+
+// Mensagens mínimas espelhando `messages/pt-BR.json → settings.webhooks`. Só
+// inclui as chaves usadas pelo componente — manter sincronizado se o JSON
+// canônico mudar nomes de chave (valores podem divergir; o teste só assere
+// strings exibidas no render aqui coberto).
+const WEBHOOKS_MESSAGES = {
+  settings: {
+    webhooks: {
+      title: "Webhooks externos",
+      newWebhook: "Novo webhook",
+      description: "desc",
+      loading: "Carregando...",
+      noneConfigured: "Nenhum webhook configurado",
+      noneHint: "hint",
+      active: "Ativo",
+      paused: "Pausado",
+      lastStatus: "Último: {code}",
+      deliveries: "{count} entrega(s)",
+      failures: "{count} falha(s)",
+      name: "Nome",
+      namePlaceholder: "ph",
+      urlLabel: "URL",
+      urlPlaceholder: "ph",
+      events: "Eventos",
+      cancel: "Cancelar",
+      creating: "Criando...",
+      create: "Criar",
+      createdTitle: "Criado",
+      saveSecretWarning: "warn",
+      secretWarningDesc: "desc",
+      secretLabel: "Secret",
+      understood: "Entendi",
+      eventLabels: {
+        agent_execution_completed: "Execução concluída",
+        agent_execution_failed: "Execução falhou",
+        agent_deployment_created: "Vínculo criado",
+        agent_deployment_paused: "Vínculo pausado",
+        agent_approval_requested: "Aprovação solicitada",
+        agent_approval_reviewed: "Aprovação revisada",
+      },
+    },
+  },
+} as const
+
+function renderWithIntl(ui: React.ReactElement) {
+  return render(
+    <NextIntlClientProvider locale="pt-BR" messages={WEBHOOKS_MESSAGES}>
+      {ui}
+    </NextIntlClientProvider>,
+  )
+}
 
 describe("WebhooksManager — Task #895", () => {
   beforeEach(() => {
@@ -43,7 +95,7 @@ describe("WebhooksManager — Task #895", () => {
       mutate: vi.fn(),
     })
 
-    render(<WebhooksManager />)
+    renderWithIntl(<WebhooksManager />)
 
     expect(screen.getByText("Webhooks externos")).toBeInTheDocument()
     expect(screen.getByText("Nenhum webhook configurado")).toBeInTheDocument()
@@ -77,7 +129,7 @@ describe("WebhooksManager — Task #895", () => {
       mutate: vi.fn(),
     })
 
-    render(<WebhooksManager />)
+    renderWithIntl(<WebhooksManager />)
 
     expect(screen.getByText("Slack notifications")).toBeInTheDocument()
     expect(
