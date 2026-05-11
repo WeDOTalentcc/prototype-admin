@@ -134,6 +134,28 @@ async def langgraph_health(
     else:
         overall = "error"
 
+    # P2-L (Onda 1, PLAN_FIX_wizard_memory_loss 2026-05-10): fail-closed sensor.
+    # Em production/staging, MemorySaver in-process e inadequado (wipa em
+    # restart). Retornar HTTP 503 para alertar load balancer / canary.
+    app_env = getattr(settings, "APP_ENV", "development")
+    is_production_like = app_env in {"production", "staging"}
+    memory_saver_names = {"MemorySaver", "MemorySaver(default)", "InMemorySaver"}
+    if is_production_like and cp_type in memory_saver_names:
+        logger.error(
+            "[health_langgraph] FAIL-CLOSED: MemorySaver detectado em APP_ENV=%r — "
+            "checkpoints nao persistem entre restarts. Investigar PostgresSaver/DATABASE_URL.",
+            app_env,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail={
+                "reason": "memory_saver_in_production",
+                "checkpointer_type": cp_type,
+                "app_env": app_env,
+                "action": "investigar PostgresSaver + DATABASE_URL; ver lia_agents_core.checkpointer",
+            },
+        )
+
     return LangGraphHealthResponse(
         checkpointer_type=cp_type,
         graphs=graphs,

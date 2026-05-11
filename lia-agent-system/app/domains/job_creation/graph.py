@@ -1564,14 +1564,11 @@ def evaluate_wizard_policy(
         )
 
 
-def _get_checkpointer():
-    try:
-        from lia_agents_core.checkpointer import get_checkpointer
-        return get_checkpointer()
-    except Exception as e:
-        logger.warning("[JobCreationGraph] Checkpointer unavailable: %s", e)
-        from langgraph.checkpoint.memory import MemorySaver
-        return MemorySaver()
+# P2-K (Onda 1, PLAN_FIX_wizard_memory_loss 2026-05-10): funcao local
+# _get_checkpointer() removida. Era duplicacao do fallback canonical em
+# lia_agents_core.checkpointer.get_checkpointer (que ja faz a mesma
+# defesa: PostgresSaver -> MemorySaver com WARNING em dev). Manter dois
+# pontos de fallback cria risco de regressao silenciosa.
 
 
 def create_job_creation_graph(checkpointer=None) -> StateGraph:
@@ -1691,8 +1688,9 @@ class JobCreationGraph:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
+            from lia_agents_core.checkpointer import get_checkpointer
             cls._graph = create_job_creation_graph(
-                checkpointer=_get_checkpointer()
+                checkpointer=get_checkpointer()
             )
         return cls._instance
 

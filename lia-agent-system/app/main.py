@@ -274,6 +274,39 @@ async def lifespan(app: FastAPI):
     else:
         logging.getLogger("lia.startup").info("LangSmith tracing enabled (lia.startup)")  # R-051
 
+    # ─── Onda 1.F (PLAN_FIX_wizard_memory_loss 2026-05-10) ──────────────────────
+    # Startup fail-closed: em production/staging, abortar boot se
+    # checkpointer for MemorySaver. Defense-in-depth contra regressao do
+    # bug V1.d (PostgresSaver.from_conn_string + ConnectionPool).
+    try:
+        from lia_agents_core.checkpointer import get_checkpointer
+        _cp = get_checkpointer()
+        _cp_type = type(_cp).__name__ if _cp is not None else "None"
+        _app_env = getattr(settings, "APP_ENV", "development")
+        _is_prod_like = _app_env in {"production", "staging"}
+        _memory_names = {"MemorySaver", "MemorySaver(default)", "InMemorySaver"}
+        if _is_prod_like and _cp_type in _memory_names:
+            _msg = (
+                f"[Onda1.F] FAIL-CLOSED boot: checkpointer={_cp_type!r} em "
+                f"APP_ENV={_app_env!r}. MemorySaver wipa em restart — "
+                f"checkpoints LangGraph nao persistiriam. Investigar "
+                f"PostgresSaver+DATABASE_URL antes de retomar."
+            )
+            logging.getLogger("lia.startup").critical(_msg)
+            raise SystemExit(2)
+        logging.getLogger("lia.startup").info(
+            "[Onda1.F] Checkpointer canonical OK: type=%s env=%s",
+            _cp_type, _app_env,
+        )
+    except SystemExit:
+        raise
+    except Exception as _cp_exc:
+        # Em dev, falha em construir o checkpointer NAO derruba boot —
+        # _memory_saver() de _fallback_ ainda permite o sistema subir.
+        logging.getLogger("lia.startup").warning(
+            "[Onda1.F] Checkpointer health-check soft-failed: %s", _cp_exc,
+        )
+
     # Initialize database
     try:
         await init_db()
