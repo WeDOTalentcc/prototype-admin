@@ -107,12 +107,16 @@ class TestServiceImports:
         except ImportError:
             pytest.skip("Module not importable")
 
-    def test_company_benefits_api(self):
-        try:
-            from app.api.v1 import company_benefits_api
-            assert company_benefits_api is not None
-        except ImportError:
-            pytest.skip("Module not importable")
+    def test_company_benefits_api_removed(self):
+        """Sentinel: legacy company_benefits_api.py was deleted in T2 (#989).
+
+        Endpoints `/active`, `/highlighted`, `/summary` were ported to the
+        canonical `company_benefits.py`. Re-introducing this module would
+        re-create the duplication between `BenefitRepository` and
+        `CompanyBenefitRepository`. Fail loudly if it comes back.
+        """
+        with pytest.raises(ImportError):
+            from app.api.v1 import company_benefits_api  # noqa: F401
 
     def test_email_template_model(self):
         try:

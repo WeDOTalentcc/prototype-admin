@@ -148,7 +148,13 @@ class CompanyBenefitResponse(BaseModel):
     description: str | None = None
     icon: str | None = None
     value: float | None = None
+    percentage_value: float | None = None
     value_type: str | None = None
+    value_details: str | None = None
+    applicable_to: str | None = None
+    seniority_levels: str | None = None
+    contract_types: str | None = None
+    departments: str | None = None
     is_active: bool = True
     is_highlighted: bool = False
     order: int = 0
@@ -168,7 +174,13 @@ def _to_response(b) -> CompanyBenefitResponse:
         description=b.description,
         icon=b.icon,
         value=b.value,
+        percentage_value=getattr(b, "percentage_value", None),
         value_type=b.value_type,
+        value_details=getattr(b, "value_details", None),
+        applicable_to=getattr(b, "applicable_to", None),
+        seniority_levels=getattr(b, "seniority_levels", None),
+        contract_types=getattr(b, "contract_types", None),
+        departments=getattr(b, "departments", None),
         is_active=b.is_active,
         is_highlighted=b.is_highlighted,
         order=b.order,
@@ -220,6 +232,163 @@ async def create_company_benefit(
     except Exception as e:
         await db.rollback()
         logger.error(f"Error creating company benefit: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/active", response_model=list[CompanyBenefitResponse])
+async def list_active_company_benefits(
+    company_id: str | None = Query(None),
+    seniority_level: str | None = Query(None),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo),
+):
+    """List only active benefits for a company.
+
+    Canonical replacement for the legacy `/company/benefits/active` endpoint
+    that lived in `company_benefits_api.py` (deleted in T2 / task #989).
+    Must stay registered BEFORE `/{benefit_id}` to avoid the path being
+    matched as a UUID lookup (regression bug B11).
+    """
+    try:
+        effective_company_id = company_id or get_user_company_id(current_user)
+        if not effective_company_id or effective_company_id in ("default", "unknown"):
+            return []
+        repo = CompanyBenefitRepository(db)
+        benefits = await repo.list_for_company(effective_company_id, active_only=True)
+        if seniority_level and seniority_level != "all":
+            benefits = [
+                b for b in benefits
+                if not b.seniority_levels
+                or "all" in (b.seniority_levels or "")
+                or seniority_level in (b.seniority_levels or "")
+            ]
+        return [_to_response(b) for b in benefits]
+    except Exception as e:
+        logger.error(f"Error listing active company benefits: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/highlighted", response_model=list[CompanyBenefitResponse])
+async def list_highlighted_company_benefits(
+    company_id: str | None = Query(None),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo),
+):
+    """List highlighted (and active) benefits for a company.
+
+    Canonical replacement for legacy `/company/benefits/highlighted`. Must
+    stay declared BEFORE `/{benefit_id}` (route order).
+    """
+    try:
+        effective_company_id = company_id or get_user_company_id(current_user)
+        if not effective_company_id or effective_company_id in ("default", "unknown"):
+            return []
+        repo = CompanyBenefitRepository(db)
+        benefits = await repo.list_for_company(effective_company_id, active_only=True)
+        return [_to_response(b) for b in benefits if b.is_highlighted]
+    except Exception as e:
+        logger.error(f"Error listing highlighted company benefits: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/summary", response_model=None)
+async def get_company_benefits_summary(
+    company_id: str | None = Query(None),
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user_or_demo),
+):
+    """Get an AI-agent-friendly summary of company benefits.
+
+    Canonical replacement for legacy `/company/benefits/summary` from
+    `company_benefits_api.py`. Returns counts, categories, formatted_text
+    and a flat benefits list (untyped dict — same shape as the legacy
+    `BenefitsSummaryResponse`). Must stay declared BEFORE `/{benefit_id}`.
+    """
+    empty = {
+        "total_count": 0,
+        "active_count": 0,
+        "highlighted_count": 0,
+        "categories": {},
+        "formatted_text": "",
+        "benefits": [],
+    }
+    try:
+        effective_company_id = company_id or get_user_company_id(current_user)
+        if not effective_company_id or effective_company_id in ("default", "unknown"):
+            logger.warning(
+                "get_company_benefits_summary called without valid company_id "
+                "— returning empty summary"
+            )
+            return empty
+        repo = CompanyBenefitRepository(db)
+        all_benefits = await repo.list_for_company(effective_company_id, active_only=False)
+        active_benefits = [b for b in all_benefits if b.is_active]
+        highlighted_benefits = [b for b in active_benefits if b.is_highlighted]
+
+        category_names = {
+            "health": "Saúde & Bem-estar",
+            "food": "Alimentação",
+            "transport": "Transporte",
+            "education": "Educação & Desenvolvimento",
+            "financial": "Financeiro",
+            "wellness": "Bem-estar",
+            "family": "Família",
+            "flexibility": "Flexibilidade",
+            "other": "Outros",
+        }
+        categories: dict = {}
+        for b in active_benefits:
+            cat = b.category or "other"
+            if cat not in categories:
+                categories[cat] = {"name": category_names.get(cat, cat), "count": 0, "benefits": []}
+            categories[cat]["count"] += 1
+            categories[cat]["benefits"].append({
+                "name": b.name,
+                "description": b.description,
+                "value_type": b.value_type,
+                "value": b.value,
+                "percentage_value": b.percentage_value,
+                "is_highlighted": b.is_highlighted,
+            })
+
+        formatted_lines = ["**Benefícios da Empresa:**"]
+        for cat_data in categories.values():
+            items = []
+            for b in cat_data["benefits"]:
+                if b["value_type"] == "monetary" and b["value"]:
+                    items.append(f'{b["name"]} (R$ {b["value"]:,.2f})')
+                elif b["value_type"] == "percentage" and b["percentage_value"]:
+                    items.append(f'{b["name"]} ({b["percentage_value"]}%)')
+                else:
+                    items.append(b["name"])
+            if items:
+                formatted_lines.append(f"- {cat_data['name']}: {', '.join(items)}")
+        formatted_text = (
+            "\n".join(formatted_lines) if len(formatted_lines) > 1 else "Nenhum benefício cadastrado."
+        )
+        benefits_list = [
+            {
+                "id": str(b.id),
+                "name": b.name,
+                "description": b.description,
+                "category": b.category,
+                "value_type": b.value_type,
+                "value": b.value,
+                "percentage_value": b.percentage_value,
+                "is_highlighted": b.is_highlighted,
+            }
+            for b in active_benefits
+        ]
+        return {
+            "total_count": len(all_benefits),
+            "active_count": len(active_benefits),
+            "highlighted_count": len(highlighted_benefits),
+            "categories": categories,
+            "formatted_text": formatted_text,
+            "benefits": benefits_list,
+        }
+    except Exception as e:
+        logger.error(f"Error getting company benefits summary: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
