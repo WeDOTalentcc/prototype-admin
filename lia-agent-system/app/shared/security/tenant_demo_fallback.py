@@ -155,7 +155,12 @@ def _capture_sentry(reason: str, endpoint: str, extra: dict[str, Any]) -> None:
         import sentry_sdk
 
         with sentry_sdk.push_scope() as scope:
-            scope.fingerprint = [SENTRY_FINGERPRINT, endpoint, reason]
+            # T4 #991 — fingerprint MUST be exactly the canonical
+            # constant (single-element list). Appending endpoint/reason
+            # would split issues per route and defeat the on-call
+            # contract of "one grouped Sentry issue per drift". Endpoint
+            # and reason live in tags/extras for filtering instead.
+            scope.fingerprint = [SENTRY_FINGERPRINT]
             scope.set_tag("event_key", SENTRY_FINGERPRINT)
             scope.set_tag("endpoint", endpoint)
             scope.set_tag("reason", reason)
