@@ -107,6 +107,41 @@ jobs:
           path: htmlcov/
           retention-days: 7
 
+  eval-gates:
+    # T-E + T6 (#993): canary eval gates. Each call reads
+    # eval/.gate_history.json (filtered by dataset) and exits 1 if the last
+    # 2 consecutive runs averaged below 0.85 OR if inventory coverage drops
+    # below 80%. Runs are appended by `python eval/eval_runner.py` against a
+    # live backend; here we only enforce the gate decision so a regression
+    # blocks the build the moment two bad runs land in history. The first
+    # call (tenant_context.jsonl) is the T-E reference gate; the second
+    # (company_settings_prefill.jsonl) is the T6 Settings ↔ chat lateral gate
+    # — same infra, same threshold (0.85), same consecutive-run rule (2).
+    name: Eval Gates (T-E + Settings prefill)
+    runs-on: ubuntu-latest
+    needs: test
+    defaults:
+      run:
+        working-directory: lia-agent-system
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install minimal eval deps
+        run: pip install pyyaml httpx pyjwt --quiet
+
+      - name: Gate — tenant_context.jsonl (T-E)
+        run: python -m eval.eval_runner --gate eval/golden/tenant_context.jsonl
+
+      - name: Gate — company_settings_prefill.jsonl (T6 #993)
+        run: python -m eval.eval_runner --gate eval/golden/company_settings_prefill.jsonl
+
   load-tests:
     name: Load Tests (non-blocking)
     runs-on: ubuntu-latest
