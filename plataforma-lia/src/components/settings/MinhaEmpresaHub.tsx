@@ -12,6 +12,7 @@ import { MinhaEmpresaCard } from "@/components/settings/MinhaEmpresaCard"
 import { textStyles } from "@/lib/design-tokens"
 import { Globe } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 const ICON_MAP: Record<string, LucideIcon> = {
   Building,
@@ -127,21 +128,18 @@ export function MinhaEmpresaHub() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="sm"
               onClick={handleAnalyzeWebsite}
               data-testid="analyze-website-cta"
-              className="
-                inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium
-                bg-lia-bg-secondary dark:bg-lia-bg-elevated
-                text-lia-text-primary border border-lia-border-subtle
-                hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none
-              "
               title={t("analyzeWebsiteTitle")}
+              className="[&_svg]:size-3.5"
             >
-              <Globe className="w-3.5 h-3.5 text-wedo-cyan" aria-hidden />
+              <Globe className="text-wedo-cyan" aria-hidden />
               {t("analyzeWebsite")}
-            </button>
+            </Button>
             <button
               onClick={refreshAll}
               className="p-1.5 rounded-md hover:bg-lia-bg-secondary transition-colors motion-reduce:transition-none"
