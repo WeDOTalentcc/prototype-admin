@@ -345,6 +345,7 @@ def test_canonical_tools_are_registered():
     required_global_callables = (
         "import_benefits_from_data",
         "suggest_recruiting_policy",
+        "save_hiring_policy",
     )
     for name in required_global_callables:
         assert hasattr(import_tools, name) and callable(
@@ -388,6 +389,7 @@ def test_register_company_settings_tools_wired_in_initialize_tools():
         "check_company_completeness",
         "suggest_recruiting_policy",
         "import_benefits_from_data",
+        "save_hiring_policy",
     }
     registered = set(tool_registry.list_tools())
     missing = required_global_tools - registered
@@ -535,8 +537,12 @@ def test_golden_dataset_exists_with_21_scenarios():
         f"Golden dataset T6 ausente em {golden} — eval gate não roda."
     )
     rows = [json.loads(l) for l in golden.read_text().splitlines() if l.strip()]
-    assert len(rows) == 21, (
-        f"Golden dataset T6+PR1 deve ter 21 cenários (7 seções × 3 contratos), "
+    # Matriz mínima: 7 seções × 3 contratos = 21. PRs subsequentes podem
+    # adicionar cenários EXTRAS (ex: PR2/Task #1002 adicionou
+    # CSP-policy-save-positive e CSP-policy-save-anti-pattern, totalizando 23).
+    # Por isso usamos >= 21 e validamos a matriz canônica separadamente.
+    assert len(rows) >= 21, (
+        f"Golden dataset T6+PR1 deve ter ao menos 21 cenários (matriz 7 seções × 3 contratos), "
         f"encontrado {len(rows)}."
     )
 
@@ -544,18 +550,19 @@ def test_golden_dataset_exists_with_21_scenarios():
     contracts = ("positive", "anti-pattern", "fairness")
     seen: set[tuple[str, str]] = set()
     for r in rows:
-        cid = r["id"]  # ex: CSP-culture-positive, CSP-tech_stack-anti-pattern
+        cid = r["id"]  # ex: CSP-culture-positive, CSP-tech_stack-anti-pattern, CSP-policy-save-positive
         assert cid.startswith("CSP-"), f"id fora do padrão CSP-*: {cid}"
         body = cid[len("CSP-"):]
         # contract pode conter hífen ('anti-pattern') — match por sufixo,
-        # não por rsplit('-', 1).
+        # não por rsplit('-', 1). Cenários extras (ex: CSP-policy-save-*)
+        # não precisam bater com a matriz canônica, mas seguem todos os
+        # demais contratos (agent, threshold, anti_patterns, success_criteria).
         match = next(
             ((s, c) for c in contracts for s in sections if body == f"{s}-{c}"),
             None,
         )
-        assert match is not None, f"id mal formado (esperado CSP-<section>-<contract>): {cid}"
-        section, contract = match
-        seen.add((section, contract))
+        if match is not None:
+            seen.add(match)
         assert r.get("agent") == "company_settings", (
             f"{cid}: agent deve ser 'company_settings'"
         )
@@ -568,5 +575,17 @@ def test_golden_dataset_exists_with_21_scenarios():
     expected = {(s, c) for s in sections for c in contracts}
     missing = expected - seen
     assert not missing, (
-        f"Golden dataset T6 incompleto — faltam combinações: {sorted(missing)}"
+        f"Golden dataset T6 incompleto — faltam combinações canônicas: {sorted(missing)}"
+    )
+
+    # PR2 (Task #1002) — exigir explicitamente os 2 cenários extras de
+    # save_hiring_policy. Se um futuro PR removê-los, o gate cai aqui
+    # ANTES de chegar no eval_runner.
+    extra_pr2 = {"CSP-policy-save-positive", "CSP-policy-save-anti-pattern"}
+    ids_present = {r["id"] for r in rows}
+    missing_pr2 = extra_pr2 - ids_present
+    assert not missing_pr2, (
+        f"PR2 (Task #1002) regressão: cenários de save_hiring_policy ausentes "
+        f"do golden: {sorted(missing_pr2)}. Sem eles, a persistência real "
+        "da política (bug C1 do audit) deixa de ser coberta pelo eval gate."
     )

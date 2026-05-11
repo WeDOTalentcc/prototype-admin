@@ -5,6 +5,7 @@ LIA-callable tools for company profile management:
   - check_company_completeness — verify which profile fields are empty
   - suggest_recruiting_policy — baseline policy suggestion with FairnessGuard validation
   - import_benefits_from_data — bulk upsert company benefits
+  - save_hiring_policy — persist hiring policy in company_hiring_policies (PR2 / Task #1002)
 
 All tools use ToolExecutionContext for multi-tenant isolation.
 suggest_recruiting_policy runs through FairnessGuard to prevent
@@ -12,6 +13,8 @@ discriminatory policies.
 """
 from __future__ import annotations
 
+import asyncio
+import json
 import logging
 from typing import TYPE_CHECKING, Any, Optional
 
@@ -306,7 +309,253 @@ async def suggest_recruiting_policy(
         "customization_notes": notes,
         "next_action_suggestion": (
             "Revise a política sugerida. Se quiser adotá-la, posso salvá-la "
-            "na tabela company_hiring_policies via save_company_section."
+            "na tabela company_hiring_policies via save_hiring_policy(rules=...)."
+        ),
+    }
+
+
+# ───────────────────────────────────────────────────────────────────
+# Tool 2b — save_hiring_policy (PR2 / Task #1002, fix C1)
+# ───────────────────────────────────────────────────────────────────
+
+# Whitelist canônica dos 5 blocos JSONB de `company_hiring_policies`.
+# Espelha a DDL em `app/core/database.py::create_company_hiring_policies_table`
+# e o `_VALID_POLICY_BLOCKS` em `hiring_policy/agents/policy_tool_registry.py`.
+_HIRING_POLICY_BLOCKS = frozenset({
+    "pipeline_rules",
+    "scheduling_rules",
+    "communication_rules",
+    "screening_rules",
+    "automation_rules",
+})
+
+# Açúcar sintático: o LLM costuma gerar campos atômicos (sem nesting). Mapeamos
+# para o bloco correto. Espelha as 5 famílias de regra do hub Políticas.
+_ATOMIC_FIELD_TO_BLOCK: dict[str, str] = {
+    # screening_rules
+    "min_interviews_before_offer": "screening_rules",
+    "auto_screening": "screening_rules",
+    "manager_approval_for_offer": "screening_rules",
+    # scheduling_rules
+    "allowed_days": "scheduling_rules",
+    "allowed_hours": "scheduling_rules",
+    # communication_rules
+    "auto_rejection_feedback": "communication_rules",
+    "lia_tone": "communication_rules",
+    # automation_rules
+    "autonomy_level": "automation_rules",
+}
+
+# Campos textuais sujeitos a FairnessGuard (PR3 vai endurecer com guard recursivo;
+# por ora cobrimos os campos free-text mais sensíveis).
+_TEXTUAL_POLICY_FIELDS = frozenset({"auto_rejection_feedback", "lia_tone"})
+
+
+async def save_hiring_policy(
+    rules: dict[str, Any],
+    **kwargs,
+) -> dict[str, Any]:
+    """
+    Persist (upsert) the company's hiring policy into `company_hiring_policies`.
+
+    Accepts either a flat dict of atomic fields (e.g.
+    {"min_interviews_before_offer": 3, "lia_tone": "amigável"}) or a structured
+    dict keyed by the 5 canonical blocks (pipeline_rules, scheduling_rules,
+    communication_rules, screening_rules, automation_rules), or a mix of both.
+    Atomic fields are routed to the correct block via `_ATOMIC_FIELD_TO_BLOCK`.
+
+    Tenant scoping is mandatory (company_id from `_context`). FairnessGuard runs
+    over textual fields (auto_rejection_feedback, lia_tone). Best-effort audit
+    log via try/except (PR4 will replace with the canonical wrapper).
+
+    Returns:
+        {success, fields_saved, blocks_touched, fairness_blocked, message}
+    """
+    context = _extract_context(kwargs)
+    company_id = context.company_id if context else None
+    user_id = context.user_id if context else None
+
+    if not company_id:
+        return {
+            "success": False,
+            "error": "company_id_required",
+            "message": "Tenant isolation compromised — company_id is required.",
+        }
+
+    if not rules or not isinstance(rules, dict):
+        return {
+            "success": False,
+            "error": "invalid_input",
+            "message": "`rules` must be a non-empty dict.",
+        }
+
+    # Normaliza: agrega tudo nos 5 blocos JSONB.
+    block_updates: dict[str, dict[str, Any]] = {}
+    rejected: list[str] = []
+
+    for key, value in rules.items():
+        if key in _HIRING_POLICY_BLOCKS:
+            if not isinstance(value, dict):
+                rejected.append(f"{key}: deve ser dict, recebeu {type(value).__name__}")
+                continue
+            block_updates.setdefault(key, {}).update(value)
+        elif key in _ATOMIC_FIELD_TO_BLOCK:
+            target_block = _ATOMIC_FIELD_TO_BLOCK[key]
+            block_updates.setdefault(target_block, {})[key] = value
+        else:
+            rejected.append(f"{key}: campo não reconhecido (fora da whitelist)")
+
+    if not block_updates:
+        return {
+            "success": False,
+            "error": "no_valid_fields",
+            "message": (
+                "Nenhum campo válido em `rules`. Aceitos: blocos "
+                f"{sorted(_HIRING_POLICY_BLOCKS)} ou campos atômicos "
+                f"{sorted(_ATOMIC_FIELD_TO_BLOCK)}."
+            ),
+            "rejected": rejected,
+        }
+
+    # FairnessGuard nos campos textuais (PR3 endurece com helper recursivo).
+    for block_name, block_data in block_updates.items():
+        for field_name, field_value in block_data.items():
+            if field_name in _TEXTUAL_POLICY_FIELDS and isinstance(field_value, str):
+                check = _fairness_guard.check(field_value)
+                if check.is_blocked:
+                    return {
+                        "success": False,
+                        "error": "fairness_blocked",
+                        "data": {
+                            "blocked_field": field_name,
+                            "block": block_name,
+                            "category": check.category,
+                        },
+                        "message": (
+                            f"Campo '{field_name}' bloqueado por compliance: "
+                            f"{check.educational_message}"
+                        ),
+                    }
+
+    # Upsert: lê o bloco atual, faz merge superficial, grava de volta.
+    fields_saved: list[str] = []
+    blocks_touched: list[str] = []
+    try:
+        async with AsyncSessionLocal() as db:
+            existing = await db.execute(
+                text(
+                    "SELECT pipeline_rules, scheduling_rules, communication_rules, "
+                    "screening_rules, automation_rules "
+                    "FROM company_hiring_policies WHERE company_id = :cid LIMIT 1"
+                ),
+                {"cid": company_id},
+            )
+            row = existing.mappings().first()
+
+            merged: dict[str, dict[str, Any]] = {}
+            for block_name in _HIRING_POLICY_BLOCKS:
+                current = (row[block_name] if row else None) or {}
+                if isinstance(current, str):
+                    try:
+                        current = json.loads(current)
+                    except (json.JSONDecodeError, TypeError):
+                        current = {}
+                if not isinstance(current, dict):
+                    current = {}
+                if block_name in block_updates:
+                    current = {**current, **block_updates[block_name]}
+                    blocks_touched.append(block_name)
+                    fields_saved.extend(block_updates[block_name].keys())
+                merged[block_name] = current
+
+            params = {
+                "cid": company_id,
+                "pipeline_rules": json.dumps(merged["pipeline_rules"], ensure_ascii=False),
+                "scheduling_rules": json.dumps(merged["scheduling_rules"], ensure_ascii=False),
+                "communication_rules": json.dumps(merged["communication_rules"], ensure_ascii=False),
+                "screening_rules": json.dumps(merged["screening_rules"], ensure_ascii=False),
+                "automation_rules": json.dumps(merged["automation_rules"], ensure_ascii=False),
+            }
+
+            if row:
+                await db.execute(
+                    text(
+                        "UPDATE company_hiring_policies SET "
+                        "pipeline_rules = :pipeline_rules::json, "
+                        "scheduling_rules = :scheduling_rules::json, "
+                        "communication_rules = :communication_rules::json, "
+                        "screening_rules = :screening_rules::json, "
+                        "automation_rules = :automation_rules::json, "
+                        "updated_at = NOW() "
+                        "WHERE company_id = :cid"
+                    ),
+                    params,
+                )
+            else:
+                await db.execute(
+                    text(
+                        "INSERT INTO company_hiring_policies "
+                        "(company_id, pipeline_rules, scheduling_rules, communication_rules, "
+                        "screening_rules, automation_rules, created_at, updated_at) "
+                        "VALUES (:cid, :pipeline_rules::json, :scheduling_rules::json, "
+                        ":communication_rules::json, :screening_rules::json, "
+                        ":automation_rules::json, NOW(), NOW())"
+                    ),
+                    params,
+                )
+            await db.commit()
+    except Exception as exc:
+        logger.error("save_hiring_policy failed: %s", exc, exc_info=True)
+        return {
+            "success": False,
+            "error": "db_error",
+            "message": f"Erro ao salvar política de recrutamento: {exc}",
+        }
+
+    # PR4 substitui pelo wrapper canônico _audit_company_change com Sentry capture.
+    try:
+        from app.shared.compliance.audit_service import AuditService
+        service = AuditService()
+        coro = service.log_decision(
+            company_id=str(company_id),
+            agent_name="company_settings_tools",
+            decision_type="company_settings_change",
+            action="save_hiring_policy",
+            decision="completed",
+            reasoning=[
+                f"blocks_touched={blocks_touched}",
+                f"fields_saved={fields_saved}",
+                f"user_id={user_id}",
+            ],
+            criteria_used=["hiring_policy_whitelist", "company_scoped", "fairness_guard_textual"],
+            job_vacancy_id=None,
+            confidence=1.0,
+            human_review_required=False,
+            criteria_ignored=None,
+        )
+        try:
+            loop = asyncio.get_event_loop()
+            loop.create_task(coro)
+        except Exception:
+            pass
+    except Exception as exc:
+        logger.debug("[save_hiring_policy] audit emission deferred: %s", exc)
+
+    logger.info(
+        "[save_hiring_policy] tenant=%s user=%s blocks=%s fields=%d rejected=%d",
+        company_id, user_id, blocks_touched, len(fields_saved), len(rejected),
+    )
+
+    return {
+        "success": True,
+        "data": {
+            "blocks_touched": blocks_touched,
+            "fields_saved": fields_saved,
+            "rejected": rejected,
+        },
+        "message": (
+            f"Política de recrutamento salva: {len(fields_saved)} campos em "
+            f"{len(blocks_touched)} blocos."
         ),
     }
 
@@ -542,7 +791,42 @@ def register_company_settings_tools() -> None:
         ],
     ))
 
+    tool_registry.register(ToolDefinition(
+        name="save_hiring_policy",
+        description=(
+            "Persiste (upsert) a política de recrutamento da empresa em "
+            "company_hiring_policies. Aceita dict com blocos canônicos "
+            "(pipeline_rules, scheduling_rules, communication_rules, "
+            "screening_rules, automation_rules) ou campos atômicos "
+            "(min_interviews_before_offer, manager_approval_for_offer, "
+            "allowed_days, allowed_hours, auto_rejection_feedback, lia_tone, "
+            "auto_screening, autonomy_level) — campos atômicos são roteados "
+            "para o bloco correto. Aplica FairnessGuard nos campos textuais. "
+            "Use APÓS confirmação humana (HITL) da política sugerida por "
+            "suggest_recruiting_policy."
+        ),
+        parameters_schema={
+            "type": "object",
+            "properties": {
+                "rules": {
+                    "type": "object",
+                    "description": (
+                        "Dict com blocos canônicos (pipeline_rules, "
+                        "scheduling_rules, communication_rules, screening_rules, "
+                        "automation_rules) e/ou campos atômicos."
+                    ),
+                },
+            },
+            "required": ["rules"],
+        },
+        handler=save_hiring_policy,
+        allowed_agents=[
+            "recruiter_assistant", "company_settings", "orchestrator",
+        ],
+    ))
+
     logger.info(
-        "✅ Registered 3 company_settings tools "
-        "(check_company_completeness, suggest_recruiting_policy, import_benefits_from_data)"
+        "✅ Registered 4 company_settings tools "
+        "(check_company_completeness, suggest_recruiting_policy, "
+        "import_benefits_from_data, save_hiring_policy)"
     )
