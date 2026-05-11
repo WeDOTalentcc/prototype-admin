@@ -164,6 +164,11 @@ export function detectPrefillSectionCommand(text: string): PrefillSection | null
   const isFillIntent =
     /\b(preenche|preencher|completa|completar|atualiza|atualizar)\b/.test(t)
   if (!isFillIntent) return null
+  // PR1 (#1001) — "dados básicos"/"perfil"/"cnpj" rota pra `basic`. Vem
+  // antes de benefits/culture/etc. para que termos cadastrais (cnpj,
+  // razão social, hr_email) não sejam capturados por outras seções.
+  if (/dados\s+b[aá]sicos|perfil\s+(da\s+)?empresa|cnpj|raz[aã]o\s+social|nome\s+fantasia|hr\s*email|email\s+do\s+rh/.test(t))
+    return "basic"
   if (/benef[ií]cios?/.test(t)) return "benefits"
   if (/cultura|evp|valores|miss[aã]o/.test(t)) return "culture"
   if (/tech\s*stack|stack|tecnolog/.test(t)) return "tech_stack"

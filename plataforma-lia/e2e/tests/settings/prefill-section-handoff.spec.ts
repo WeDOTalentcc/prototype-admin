@@ -27,7 +27,7 @@
  * versão anterior por usar `test.skip()` nesses cenários, mascarando
  * regressão real. O seed canônico de demo (`scripts/seeds/demo_company.py`)
  * deixa todos os campos editoriais vazios fora de sector/plan/headcount,
- * o que garante pendências nas 6 seções por padrão.
+ * o que garante pendências nas 7 seções por padrão.
  */
 
 import { test, expect, type Page } from '../../fixtures/auth.fixture'
