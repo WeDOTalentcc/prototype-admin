@@ -1,6 +1,7 @@
 /**
  * Task #997 — Validar a integração chat ↔ agente Configurações end-to-end.
- * Task #998 — Estender a cobertura para as 6 seções do hub Minha Empresa.
+ * Task #998 — Estender a cobertura para as seções do hub Minha Empresa
+ *             (originalmente 6; PR1/#1001 ampliou para 7 com `basic`).
  *
  * T6 (#993) cobre o contrato em três camadas (frontend autoSend, YAML do
  * agente, golden dataset offline). Este spec fecha o loop com uma checagem
@@ -21,7 +22,7 @@
  * silenciosamente.
  *
  * Estratégia FAIL-LOUD em todos os 3 critérios. Pré-condições (backend de
- * pé, empresa demo com pendências nas 6 seções) são exigências e o spec
+ * pé, empresa demo com pendências nas 7 seções) são exigências e o spec
  * FALHA ruidosamente quando ausentes — o reviewer (#997) rejeitou a
  * versão anterior por usar `test.skip()` nesses cenários, mascarando
  * regressão real. O seed canônico de demo (`scripts/seeds/demo_company.py`)
@@ -216,10 +217,10 @@ async function runHandoffForSection(
     btn,
     `[setup] Botão "Pedir ajuda à LIA" para bloco "${blockKey}" ` +
       `(target_section=${section}) não está visível. O contrato #998 ` +
-      `exige cobertura das 6 seções: o botão só renderiza quando há ` +
+      `exige cobertura das 7 seções: o botão só renderiza quando há ` +
       `campos pendentes (MinhaEmpresaHub.tsx → pendingSections). ` +
       `Rodar \`python -m scripts.seeds.demo_company\` no lia-agent-system ` +
-      `garante demo limpa com pendências nas 6 seções. NÃO usar test.skip.`,
+      `garante demo limpa com pendências nas 7 seções. NÃO usar test.skip.`,
   ).toBeVisible({ timeout: 15_000 })
 
   const tag = `[target_section:${section}]`
