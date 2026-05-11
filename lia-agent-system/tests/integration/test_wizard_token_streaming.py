@@ -273,6 +273,108 @@ class TestResumeWizardCanonicalStreaming:
         assert payload == {}
 
     @pytest.mark.asyncio
+    async def test_uuid_company_id_sse_wizard_does_not_ask_for_company(self, monkeypatch):
+        """Task #967 regression: SSE wizard path with UUID ``company_id``
+        (Demo Company canônica) must NEVER ask the recruiter for the
+        company name/ID in the chat. Reproduces the exact flow used by
+        ``app/api/v1/agent_chat_sse.py`` (lines 332-353): handler resolves
+        the tenant snippet and calls ``WizardSessionService.process_message``
+        with both the snippet and the JWT-verified UUID ``company_id``.
+
+        Three contracts in one test:
+          1. ``state["company_id"]`` chega ao grafo como UUID normalizado
+             (root cause #1 — ``CompanyId.parse`` aceita UUID v4).
+          2. ``state["tenant_context_snippet"]`` chega ao grafo
+             (root cause #2 — propagação via ``_CONTEXT_CARRY_KEYS``).
+          3. A primeira resposta da LIA NÃO contém frases-sintoma do bug
+             ("qual o ID da empresa?", "qual a empresa?", "informe a
+             empresa", "sua empresa,") — contrato user-facing canônico.
+        """
+        from app.domains.job_creation import graph as graph_mod
+        from app.domains.job_creation.services import wizard_session_service as wss_mod
+
+        monkeypatch.setenv("LIA_AGENT_TENANT_STRICT", "true")
+
+        DEMO_COMPANY_UUID = "00000000-0000-4000-a000-000000000001"
+        captured: dict[str, Any] = {}
+
+        class _FakeGraph:
+            async def stream_invoke(self, state, thread_id, on_token=None):
+                captured["state"] = state
+                # Resposta canônica: response builder lê de
+                # ws_stage_payload.data.message — devolve uma resposta
+                # SAUDÁVEL (mencionando a Demo Company), provando que com
+                # snippet propagado a LIA não precisa perguntar a empresa.
+                return (
+                    {
+                        "current_stage": "intake",
+                        "company_id": state.get("company_id"),
+                        "ws_stage_payload": {
+                            "data": {
+                                "message": (
+                                    "Perfeito! Vamos criar essa vaga "
+                                    "para a Demo Company."
+                                ),
+                            },
+                        },
+                    },
+                    0,
+                )
+
+        monkeypatch.setattr(graph_mod, "get_job_creation_graph", lambda: _FakeGraph())
+
+        async def _fake_prior_state(_cls, _thread_id):
+            return {}
+
+        monkeypatch.setattr(
+            wss_mod.WizardSessionService, "_get_prior_state",
+            classmethod(_fake_prior_state),
+        )
+
+        # Snippet é o mesmo formato injetado pelo handler SSE em
+        # agent_chat_sse.py:339-342 (TenantContext.to_prompt_snippet +
+        # build_authenticated_snippet).
+        snippet = (
+            "Empresa: Demo Company (Tecnologia)\n"
+            "Plano: enterprise\nTimezone: America/Sao_Paulo\n"
+            "Authenticated as company_id=00000000-0000-4000-a000-000000000001"
+        )
+
+        msg, _payload, _tokens = await wss_mod.WizardSessionService.process_message(
+            thread_id="wiz-sse-967",
+            user_message="Quero criar uma vaga de Engenheiro de Software",
+            user_id="recruiter-1",
+            company_id=DEMO_COMPANY_UUID,
+            session_id="sse-sess-967",
+            context={
+                "tenant_context_snippet": snippet,
+                "metadata": {"channel": "sse"},
+            },
+            on_token=None,
+        )
+
+        # Contrato 1: UUID company_id chega ao grafo normalizado
+        assert captured["state"]["company_id"] == DEMO_COMPANY_UUID
+        # Contrato 2: snippet propagado via _CONTEXT_CARRY_KEYS
+        assert captured["state"]["tenant_context_snippet"] == snippet
+        # Contrato 3 (user-facing): a LIA NUNCA pergunta a empresa
+        bug_phrases = [
+            "qual o id da empresa",
+            "qual a empresa",
+            "id da sua empresa",
+            "informe a empresa",
+            "informe o id da empresa",
+            "preciso saber a empresa",
+            "em qual empresa",
+        ]
+        msg_lower = (msg or "").lower()
+        for phrase in bug_phrases:
+            assert phrase not in msg_lower, (
+                f"Resposta do wizard contém frase-sintoma do bug Task #967: "
+                f"{phrase!r}\nResposta completa: {msg!r}"
+            )
+
+    @pytest.mark.asyncio
     async def test_handles_missing_prior_state_snapshot(self):
         """Checkpointer miss must not break resume — empty prior state is
         the safe degradation."""

@@ -228,3 +228,122 @@ def test_build_state_carries_context_keys():
     )
     assert state["right_panel_form"] == {"cargo": "Dev"}
     assert state["attached_file_text"] == "CV texto"
+
+
+# ── 8. Task #967 — Wizard tenant auto-detection regression ─────────────────
+#
+# Bug "LIA pergunta company_id no chat do wizard" caiu 3× — origem em 3 root
+# causes (CompanyId.parse rejeitando UUID, snippet não propagado pelo carry,
+# review_node sem fallback string para workspace_id=0). Os asserts abaixo
+# fixam o contrato dos 3 patches no nível do unit-test (complementam o
+# integration e2e em tests/integration/wizard/test_wizard_tenant_context_e2e.py).
+
+DEMO_COMPANY_UUID = "00000000-0000-4000-a000-000000000001"
+
+
+def test_context_carry_keys_includes_tenant_context_snippet():
+    """Sentinel: o snippet de tenant context DEVE estar em
+    ``_CONTEXT_CARRY_KEYS`` — sem isso o handler SSE/WS injeta o snippet
+    mas o ``_build_state`` o descarta no merge, e o wizard volta a perguntar
+    o ID da empresa no chat. Quebra build se alguém remover essa chave."""
+    from app.domains.job_creation.services.wizard_session_service import (
+        _CONTEXT_CARRY_KEYS,
+    )
+
+    assert "tenant_context_snippet" in _CONTEXT_CARRY_KEYS, (
+        "_CONTEXT_CARRY_KEYS deve conter 'tenant_context_snippet' — "
+        "do contrário o snippet injetado pelo handler SSE/WS é perdido "
+        "no merge e a LIA volta a perguntar 'qual o ID da empresa?'."
+    )
+
+
+def test_build_state_uuid_company_id_workspace_zero_and_carries_id(monkeypatch):
+    """Regressão Task #967 (root cause #1): para UUID company_id (Demo
+    Company canônica), ``workspace_id`` permanece 0 (UUID não é digit) e
+    ``company_id`` é normalizado em lowercase e propagado ao state — o
+    grafo usa ``company_id`` como fallback string em ``review_node`` quando
+    ``workspace_id == 0``."""
+    monkeypatch.setenv("LIA_AGENT_TENANT_STRICT", "true")
+    state = WizardSessionService._build_state(
+        thread_id="wiz-uuid",
+        user_message="criar vaga",
+        user_id="u1",
+        # UUID em uppercase → CompanyId.parse normaliza pra lowercase
+        company_id="00000000-0000-4000-A000-000000000001",
+        session_id="s",
+        context=None,
+        prior_state={},
+    )
+    assert state["workspace_id"] == 0, (
+        "UUID company_id não é numérico — workspace_id DEVE permanecer 0 "
+        "(review_node faz fallback string via 'workspace_id or company_id')"
+    )
+    assert state["company_id"] == DEMO_COMPANY_UUID, (
+        "company_id deve ser propagado normalizado (lowercase) ao state — "
+        "review_node usa essa string como lookup_id quando workspace_id=0"
+    )
+
+
+def test_build_state_propagates_tenant_context_snippet_to_state(monkeypatch):
+    """Regressão Task #967 (root cause #2): o snippet injetado pelo handler
+    SSE no ``context`` DEVE chegar ao ``state`` que vai para o grafo. Sem
+    isso, o agente do wizard renderiza o prompt sem tenant context e a LIA
+    pergunta o ID da empresa no chat."""
+    monkeypatch.setenv("LIA_AGENT_TENANT_STRICT", "true")
+    snippet = (
+        "Empresa: Demo Company (Tecnologia)\n"
+        "Plano: enterprise\nTimezone: America/Sao_Paulo"
+    )
+    state = WizardSessionService._build_state(
+        thread_id="wiz-snip",
+        user_message="criar vaga",
+        user_id="u1",
+        company_id=DEMO_COMPANY_UUID,
+        session_id="s",
+        context={"tenant_context_snippet": snippet, "metadata": {"channel": "sse"}},
+        prior_state={},
+    )
+    assert state.get("tenant_context_snippet") == snippet
+
+
+def test_review_node_uses_company_id_string_when_workspace_id_zero(monkeypatch):
+    """Regressão Task #967 (root cause #3): para tenants UUID
+    (``workspace_id == 0``), ``review_node`` DEVE fazer fallback para a
+    string ``company_id`` ao chamar ``api_client.get_company_defaults``.
+    Sem o fallback, defaults nunca são carregados e o wizard volta a
+    'esquecer' o contexto na etapa de revisão."""
+    from app.domains.job_creation import graph as graph_mod
+
+    captured = {"lookup_id": None}
+
+    class _FakeResp:
+        success = True
+        data = {
+            "default_screening_mode": "auto",
+            "default_platforms": ["linkedin"],
+            "default_eligibility": ["clt"],
+        }
+
+    class _FakeAPI:
+        def get_company_defaults(self, lookup_id):
+            captured["lookup_id"] = lookup_id
+            return _FakeResp()
+
+    monkeypatch.setattr(graph_mod, "_get_api_client", lambda _state: _FakeAPI())
+
+    state = {
+        "workspace_id": 0,
+        "company_id": DEMO_COMPANY_UUID,
+        "company_defaults_applied": [],
+        "stage_history": [],
+    }
+    out = graph_mod.review_node(state)
+
+    assert captured["lookup_id"] == DEMO_COMPANY_UUID, (
+        "review_node deve preferir company_id (UUID string) quando "
+        f"workspace_id=0 — recebeu {captured['lookup_id']!r}"
+    )
+    # Defaults aplicados ao state — prova end-to-end do fallback
+    assert "screening_mode" in out["company_defaults_applied"]
+    assert "publish_platforms" in out["company_defaults_applied"]
+    assert "eligibility_questions" in out["company_defaults_applied"]
