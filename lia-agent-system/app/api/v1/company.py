@@ -161,16 +161,39 @@ async def submit_onboarding(
     data: OnboardingData,
     profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
     cp_repo: CultureProfileRepository = Depends(get_culture_profile_repo),
+    current_user = Depends(get_current_user_or_demo),
 ):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Submit onboarding data from the wizard.
     Creates or updates company profile with the provided information.
+
+    T4 (#991): the legacy ``profile_repo.get_default()`` fallback was
+    removed — it was overwriting the Demo Company profile with data
+    from real-tenant onboardings (cross-tenant leak). New flow:
+
+    1. If the request carries a ``company_id``, look it up by UUID.
+    2. If not found AND the authenticated user has a ``company_id``,
+       look up by ``client_account_id``.
+    3. If still no profile, create a NEW one linked to the user's
+       ``company_id`` (or to the request id when no auth context).
+    4. Demo Company is *never* a write target unless the caller is
+       legitimately the Demo tenant.
     """
+    from app.shared.security.tenant_demo_fallback import (
+        DEMO_COMPANY_UUID,
+        is_demo_caller,
+        record_demo_fallback,
+    )
     try:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Received onboarding data for company: {data.company_name}")
 
+        user_company_id = (
+            str(current_user.company_id)
+            if (current_user and getattr(current_user, "company_id", None))
+            else None
+        )
         profile = None
 
         if data.company_id:
@@ -179,10 +202,88 @@ async def submit_onboarding(
                 profile = await profile_repo.get_by_id(company_uuid)
                 if profile:
                     logger.info(f"Found company profile by ID: {data.company_id}")
+                    # T4 #991 — IDOR guard: when an authenticated real
+                    # tenant submits onboarding referencing a profile by
+                    # UUID, the profile MUST belong to that tenant
+                    # (client_account_id match) OR the caller must be a
+                    # demo caller (Demo profile branch handled below).
+                    if user_company_id and not is_demo_caller(user_company_id):
+                        profile_owner = getattr(profile, "client_account_id", None)
+                        is_demo_profile_target = bool(
+                            getattr(profile, "is_default", False)
+                            or str(getattr(profile, "id", "")) == DEMO_COMPANY_UUID
+                        )
+                        if (
+                            not is_demo_profile_target
+                            and profile_owner is not None
+                            and str(profile_owner) != user_company_id
+                        ):
+                            record_demo_fallback(
+                                endpoint="submit_onboarding",
+                                reason="cross_tenant_company_profile_write_attempt",
+                                user_company_id=user_company_id,
+                                extra={
+                                    "target_profile_id": str(profile.id),
+                                    "target_owner": str(profile_owner),
+                                },
+                            )
+                            logger.warning(
+                                "submit_onboarding: cross-tenant write blocked "
+                                "user_company_id=%s target_profile_id=%s",
+                                user_company_id,
+                                str(profile.id),
+                            )
+                            raise HTTPException(
+                                status_code=403,
+                                detail={
+                                    "code": "CROSS_TENANT_PROFILE_WRITE_FORBIDDEN",
+                                    "message": "Profile does not belong to your tenant.",
+                                },
+                            )
             except ValueError:
                 logger.warning(f"Invalid company_id format: {data.company_id}")
 
-        if not profile:
+        if not profile and user_company_id:
+            try:
+                profile = await profile_repo.get_by_client_account(user_company_id)
+                if profile:
+                    logger.info(
+                        f"Found company profile by client_account_id={user_company_id}"
+                    )
+            except Exception:
+                profile = None
+
+        # T4 #991 — guard against silently overwriting Demo Company.
+        # If we resolved a profile and it's the Demo profile (is_default
+        # OR canonical UUID) but the caller is NOT a demo user, refuse
+        # the write and create a fresh profile linked to the real tenant.
+        if profile is not None:
+            is_demo_profile = bool(
+                getattr(profile, "is_default", False)
+                or str(getattr(profile, "id", "")) == DEMO_COMPANY_UUID
+            )
+            if is_demo_profile and user_company_id and not is_demo_caller(user_company_id):
+                record_demo_fallback(
+                    endpoint="submit_onboarding",
+                    reason="non_demo_user_targeting_demo_profile",
+                    user_company_id=user_company_id,
+                    extra={"demo_profile_id": str(profile.id)},
+                )
+                logger.warning(
+                    "submit_onboarding: refused to overwrite Demo Company "
+                    "from real tenant user_company_id=%s",
+                    user_company_id,
+                )
+                profile = None  # force create-new branch below
+
+        if not profile and not user_company_id:
+            # Genuine no-auth path (dev/local). Allow legacy Demo behavior
+            # but emit telemetry so prod traffic is visible.
+            record_demo_fallback(
+                endpoint="submit_onboarding",
+                reason="no_auth_context_dev_fallback",
+                user_company_id=None,
+            )
             profile = await profile_repo.get_default()
             if profile:
                 # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
@@ -227,6 +328,10 @@ async def submit_onboarding(
             # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"Updated existing company profile: {data.company_name}")
         else:
+            # T4 #991 — never mark new profiles as is_default; that flag
+            # is reserved for the canonical Demo Company seeded by
+            # scripts/seeds/demo_company.py. Link the new profile to
+            # the authenticated tenant when available.
             create_data = {
                 "name": data.company_name,
                 "trading_name": data.trade_name,
@@ -239,9 +344,11 @@ async def submit_onboarding(
                 "logo_url": data.logo_url,
                 "hr_email": data.responsible_email,
                 "hr_phone": data.responsible_phone,
-                "is_default": True,
+                "is_default": False,
                 "additional_data": onboarding_metadata,
             }
+            if user_company_id:
+                create_data["client_account_id"] = user_company_id
             profile = await profile_repo.create(create_data, set_default=False)
             # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"Created new company profile: {data.company_name}")
@@ -554,12 +661,44 @@ async def get_company_profile(
             except (ValueError, Exception):
                 pass
 
-            profile = await profile_repo.get_default()
-            if profile:
-                return profile
+            # T4 (#991) — Demo Company fallback was the root cause of the
+            # "salvou mas não persistiu" + cross-tenant leak symptom. We
+            # only fall back when the caller is *legitimately* the Demo
+            # tenant (dev/demo user). Real users get an explicit 404 with
+            # an actionable hint, not silent landing on Demo data.
+            from app.shared.security.tenant_demo_fallback import (
+                is_demo_caller,
+                record_demo_fallback,
+            )
+            if is_demo_caller(user_cid):
+                profile = await profile_repo.get_default()
+                if profile:
+                    return profile
+                # Even Demo callers fall through to 404 if no Demo
+                # profile is seeded — better than 500.
 
-            logger.warning(f"get_company_profile: no profile linked to user's company_id={current_user.company_id}")
-            raise HTTPException(status_code=404, detail="No company profile found for your tenant. Please complete company setup.")
+            record_demo_fallback(
+                endpoint="get_company_profile",
+                reason="missing_profile_for_real_tenant",
+                user_company_id=user_cid,
+            )
+            logger.warning(
+                "get_company_profile: no profile linked to user's "
+                "company_id=%s — refusing Demo fallback (tenant isolation)",
+                current_user.company_id,
+            )
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "code": "COMPANY_PROFILE_NOT_FOUND",
+                    "message": (
+                        "Nenhum perfil de empresa encontrado para o seu tenant. "
+                        "Complete o cadastro da sua empresa em "
+                        "/configuracoes/minha-empresa para começar."
+                    ),
+                    "hint_route": "/configuracoes/minha-empresa",
+                },
+            )
 
         if not effective_company_id:
             logger.warning("get_company_profile called without company_id and no auth context — rejecting")

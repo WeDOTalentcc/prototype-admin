@@ -319,6 +319,27 @@ export function useCompanySettingsCards() {
         setCompanyId(data.id || null)
         return data
       }
+      // T4 (#991) — backend now returns 404 (instead of silently
+      // falling back to Demo Company) when the authenticated tenant
+      // has no company profile yet. Surface that to the UI so the
+      // onboarding modal can be triggered, and never assume the
+      // returned id corresponds to the caller's tenant.
+      if (res.status === 404) {
+        setCompanyId(null)
+        try {
+          const body = await res.json()
+          if (body?.detail?.code === "COMPANY_PROFILE_NOT_FOUND" && typeof window !== "undefined") {
+            window.dispatchEvent(
+              new CustomEvent("lia:onboarding-required", {
+                detail: {
+                  hintRoute: body.detail.hint_route ?? "/configuracoes/minha-empresa",
+                  message: body.detail.message,
+                },
+              }),
+            )
+          }
+        } catch { /* non-JSON 404 — caller still gets null */ }
+      }
     } catch { /* handled by caller */ }
     return null
   }, [])

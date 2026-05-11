@@ -582,6 +582,29 @@ _BYPASS_FLAGS_RUNTIME: dict[str, str] = {
 # T-A canonical: flag inversa — bypass quando OFF em prod (TenantAwareAgentMixin
 # fail-OPEN em vez de fail-CLOSED, agentes degradam silenciosamente). Tratada
 # separadamente porque a semântica é "ativa quando ausente/falsa".
+def _get_tenant_demo_fallback_block() -> dict:
+    """T4 #991 — expose Demo fallback per-process counter on /health.
+
+    Mirrors ``tenant_aware_agent.metrics`` block: per-process snapshot
+    only (Prometheus is the authoritative source in multi-instance
+    deployments). Canary alert if ``total_count > 0`` in production.
+    """
+    try:
+        from app.shared.security.tenant_demo_fallback import (
+            SENTRY_FINGERPRINT,
+            get_demo_fallback_snapshot,
+        )
+        snapshot = get_demo_fallback_snapshot()
+        return {
+            "total_count": sum(snapshot.values()),
+            "by_endpoint_reason": snapshot,
+            "sentry_fingerprint": SENTRY_FINGERPRINT,
+            "prometheus_metric": "lia_tenant_demo_fallback_total",
+        }
+    except Exception as exc:
+        return {"error": str(exc)[:200]}
+
+
 _TENANT_STRICT_FLAG = "LIA_AGENT_TENANT_STRICT"
 _TENANT_STRICT_DESC = (
     "TenantAwareAgentMixin em fail-OPEN — agentes degradam para 'sua empresa'/'geral' "
@@ -635,6 +658,7 @@ async def compliance_bypass_status():
             "strict_mode": is_tenant_strict_mode(),
             "metrics": get_tenant_context_metrics(),
         },
+        "tenant_demo_fallback": _get_tenant_demo_fallback_block(),
         "timestamp": datetime.utcnow().isoformat(),
     }
     return JSONResponse(status_code=200, content=payload)
