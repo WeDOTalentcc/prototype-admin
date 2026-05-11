@@ -220,6 +220,12 @@ export function useWizardFlow(options: UseWizardFlowOptions = {}) {
     function handle(event: Event) {
       const payload = (event as CustomEvent).detail as WizardStagePayload | undefined
       if (!payload || payload.type !== "wizard_stage" || typeof payload.stage !== "string") return
+      // Onda 2 (PLAN_FIX_wizard_memory_loss 2026-05-10): if backend ships
+      // thread_id, persist it via SET_THREAD so HITL approval and refresh
+      // can recover the LangGraph checkpointer thread.
+      if (typeof payload.thread_id === "string" && payload.thread_id.length > 0) {
+        dispatch({ type: "SET_THREAD", threadId: payload.thread_id })
+      }
       dispatch({ type: "STAGE_UPDATE", payload })
     }
     window.addEventListener("lia:wizard-stage-payload", handle as EventListener)

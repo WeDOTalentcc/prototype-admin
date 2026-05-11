@@ -923,11 +923,15 @@ async def agent_chat_ws(
                     conversation_history.append({"role": "user", "content": content})
                     conversation_history.append({"role": "assistant", "content": _wiz_clean})
 
-                    # ws_stage_payload → panel update event
+                    # ws_stage_payload -> panel update event (Onda 2 PLAN_FIX_wizard_memory_loss
+                    # 2026-05-10: include thread_id explicitly so FE persists session)
+                    # original comment:
+                    # → panel update event
                     if _wiz_payload:
                         await ws_mgr.send_to_session(session_id, {
                             "type": "wizard_stage",
                             "session_id": session_id,
+                            "thread_id": _wiz_thread_id,
                             "stage": _wiz_payload.get("stage", "wizard"),
                             **_wiz_payload,
                         })

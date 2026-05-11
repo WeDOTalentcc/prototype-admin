@@ -277,10 +277,14 @@ export function useChatSocket({
         // wizard banner reflects what the backend actually sent.
         if (typeof window !== "undefined") {
           const wsEvent = event as unknown as Record<string, unknown>;
+          // Onda 2 (PLAN_FIX_wizard_memory_loss 2026-05-10): forward thread_id
+          // from the WS event so useWizardFlow can persist the LangGraph
+          // checkpointer thread and recover the session across refresh / HITL.
           window.dispatchEvent(
             new CustomEvent("lia:wizard-stage-payload", {
               detail: {
                 type: "wizard_stage",
+                thread_id: wsEvent.thread_id,
                 stage: wsEvent.stage,
                 data: (wsEvent.data as Record<string, unknown>) || {},
                 completeness: (wsEvent.completeness as number) ?? 0,

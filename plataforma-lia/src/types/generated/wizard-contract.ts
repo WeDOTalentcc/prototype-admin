@@ -94,6 +94,10 @@ export type Stage =
   | "handoff"
   | "done"
   | "scheduling";
+/**
+ * LangGraph checkpointer thread_id derivado de WizardSessionService.derive_thread_id(msg, session_id). Frontend persiste para continuidade entre turnos / refresh.
+ */
+export type ThreadId = string | null;
 export type Completeness = number;
 export type RequiresApproval = boolean;
 export type SessionId = string | null;
@@ -296,6 +300,7 @@ export interface CalibrationCandidateContract {
 export interface WizardStagePayloadContract {
   type?: Type;
   stage: Stage;
+  thread_id?: ThreadId;
   data?: Data;
   completeness: Completeness;
   requires_approval?: RequiresApproval;

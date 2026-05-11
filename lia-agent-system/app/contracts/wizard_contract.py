@@ -166,6 +166,18 @@ class WizardStagePayloadContract(_ContractModel):
 
     type: Literal["wizard_stage"] = "wizard_stage"
     stage: WizardStage
+    # Onda 2 (PLAN_FIX_wizard_memory_loss 2026-05-10): thread_id explicito
+    # para o FE persistir e reabrir sessao apos refresh/HITL. Optional ate
+    # rollout completo dos call sites do backend (defesa em profundidade
+    # do P0-C). agent_chat_ws.py:929 inclui no payload spread.
+    thread_id: Optional[str] = Field(
+        default=None,
+        description=(
+            "LangGraph checkpointer thread_id derivado de "
+            "WizardSessionService.derive_thread_id(msg, session_id). "
+            "Frontend persiste para continuidade entre turnos / refresh."
+        ),
+    )
     data: Dict[str, Any] = Field(
         default_factory=dict,
         description="Stage-specific payload (shape depends on stage).",
