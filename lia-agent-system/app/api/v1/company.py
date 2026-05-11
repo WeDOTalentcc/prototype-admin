@@ -689,6 +689,15 @@ async def get_company_profile(
                 record_demo_fallback,
             )
             if is_demo_caller(user_cid):
+                # T4 #991 — record telemetry on legitimate Demo fallback
+                # too. Counter must reflect every entry into the Demo
+                # path; review of metric value is what tells on-call if
+                # production traffic is unexpectedly hitting Demo.
+                record_demo_fallback(
+                    endpoint="get_company_profile",
+                    reason="demo_caller_legitimate_fallback",
+                    user_company_id=user_cid,
+                )
                 profile = await profile_repo.get_default()
                 if profile:
                     return profile
@@ -728,12 +737,46 @@ async def get_company_profile(
             raise HTTPException(status_code=400, detail=f"Invalid company_id format: {effective_company_id}")
 
         if current_user and hasattr(current_user, 'company_id') and current_user.company_id:
+            from app.shared.security.tenant_demo_fallback import (
+                DEMO_COMPANY_UUID,
+                is_demo_caller,
+                record_demo_fallback,
+            )
             user_company = str(current_user.company_id)
             profile = await profile_repo.get_by_id(company_uuid)
-            if profile and profile.client_account_id and str(profile.client_account_id) != user_company:
-                logger.warning(f"Cross-tenant access denied: user {current_user.id} (company={user_company}) tried to access profile {effective_company_id}")
-                raise HTTPException(status_code=403, detail="Access denied: this profile belongs to a different tenant")
             if profile:
+                # T4 #991 — explicit-ID Demo IDOR guard. Real tenants
+                # cannot read the Demo profile (is_default OR canonical
+                # UUID) by passing its UUID in the query — the seeded
+                # Demo profile typically has null ``client_account_id``,
+                # which would otherwise bypass the cross-tenant check
+                # below.
+                is_demo_profile = bool(
+                    getattr(profile, "is_default", False)
+                    or str(getattr(profile, "id", "")) == DEMO_COMPANY_UUID
+                )
+                if is_demo_profile and not is_demo_caller(user_company):
+                    record_demo_fallback(
+                        endpoint="get_company_profile",
+                        reason="cross_tenant_demo_profile_read_attempt",
+                        user_company_id=user_company,
+                        extra={"requested_company_id": effective_company_id},
+                    )
+                    logger.warning(
+                        "get_company_profile: cross-tenant Demo read blocked "
+                        "user_company_id=%s requested=%s",
+                        user_company, effective_company_id,
+                    )
+                    raise HTTPException(
+                        status_code=403,
+                        detail={
+                            "code": "CROSS_TENANT_DEMO_PROFILE_FORBIDDEN",
+                            "message": "Access denied: Demo profile is not accessible from your tenant.",
+                        },
+                    )
+                if profile.client_account_id and str(profile.client_account_id) != user_company:
+                    logger.warning(f"Cross-tenant access denied: user {current_user.id} (company={user_company}) tried to access profile {effective_company_id}")
+                    raise HTTPException(status_code=403, detail="Access denied: this profile belongs to a different tenant")
                 return profile
             raise HTTPException(status_code=404, detail=f"Company profile not found for id: {effective_company_id}")
 

@@ -203,8 +203,7 @@ def _gen_job_vacancies(target_count: int):
         })
     return vacancies
 
-JOB_VACANCIES = _gen_job_vacancies(80)
-VACANCY_IDS = [_seed_uuid(f"vacancy:{i}:{v['title']}") for i, v in enumerate(JOB_VACANCIES)]
+# JOB_VACANCIES gerado mais abaixo (depois de CITIES + TITLES_BY_AREA)
 
 DEPT_TECH_MAP = {
     "engineering": [
@@ -454,6 +453,10 @@ CITIES = [
     ("São José dos Campos", "SP", 6), ("Santos", "SP", 5),
 ]
 
+# JOB_VACANCIES + VACANCY_IDS — agora que CITIES + TITLES_BY_AREA + DEPT_WEIGHTS estao prontos
+JOB_VACANCIES = _gen_job_vacancies(80)
+VACANCY_IDS = [_seed_uuid(f"vacancy:{i}:{v['title']}") for i, v in enumerate(JOB_VACANCIES)]
+
 
 SEED_SOURCE = "seed_script"
 import random as _rng
@@ -600,7 +603,16 @@ async def seed_client_account(db: AsyncSession):
         {"id": SEED_COMPANY_ID},
     )
     if existing.fetchone():
-        logger.info("  ClientAccount already exists, skipping.")
+        # Expansao 2026-05-11: garantir nome canonical mesmo quando ja existe
+        await db.execute(text("""
+            UPDATE client_accounts SET name = :name, trade_name = :trade, updated_at = :now
+            WHERE id = :id
+        """), {
+            "name": "WeDOTalent Demo",
+            "trade": "WeDOTalent Demo — Ambiente de Demonstracao",
+            "now": NOW, "id": SEED_COMPANY_ID,
+        })
+        logger.info("  ClientAccount exists — renamed to 'WeDOTalent Demo'.")
         return
     await db.execute(text("""
         INSERT INTO client_accounts (id, name, trade_name, cnpj, primary_email, primary_phone, website, status, plan_id,
@@ -837,7 +849,7 @@ async def seed_candidates(db: AsyncSession):
         if existing.fetchone():
             continue
         await db.execute(text("""
-            INSERT INTO candidates (id, name, email, phone, location_city, location_state, location_country,
+            INSERT INTO candidates (id, company_id, name, email, phone, location_city, location_state, location_country,
                 current_company, current_title, seniority_level, years_of_experience,
                 technical_skills, soft_skills, languages, expertise, certifications,
                 source, current_salary, desired_salary_min, desired_salary_max,
@@ -846,7 +858,7 @@ async def seed_candidates(db: AsyncSession):
                 contract_type_preference, is_open_to_work, lia_score,
                 status, is_active, salary_currency,
                 created_at, updated_at)
-            VALUES (:id, :name, :email, :phone, :city, :state, 'Brasil',
+            VALUES (:id, :cid, :name, :email, :phone, :city, :state, 'Brasil',
                 :company, :title, :seniority, :yrs,
                 :tech, :soft, cast(:languages as json), :expertise, ARRAY[]::varchar[],
                 :source, :sal, :sal_min, :sal_max,
@@ -857,6 +869,7 @@ async def seed_candidates(db: AsyncSession):
                 :created, :now)
             ON CONFLICT (id) DO NOTHING
         """), {
+            "cid": SEED_COMPANY_ID_STR,
             "id": c["id"], "name": c["name"], "email": c["email"], "phone": c["phone"],
             "city": c["city"], "state": c["state"], "company": c["current_company"],
             "title": c["current_title"], "seniority": c["seniority"], "yrs": c["years_of_experience"],
@@ -1540,6 +1553,42 @@ async def clean_seed_data(db: AsyncSession):
     await db.execute(text("DELETE FROM vacancy_candidates WHERE company_id = :cid"), {"cid": SEED_COMPANY_ID_STR})
     logger.info("  vacancy_candidates cleaned.")
 
+    # Expansao 2026-05-11: limpar FK tables que apontam pra job_vacancies
+    # antes do DELETE FROM job_vacancies (auditado via pg_constraint).
+    _vacancy_fk_tables = [
+        "job_vacancy_audit_logs",
+        "job_requirements",
+        "job_vacancy_interview_stages",
+        "job_drafts",
+        "affirmative_audit_logs",
+        "candidate_affirmative_documents",
+        "data_requests",
+        "lia_opinions",
+        "rubric_evaluations",
+        "vacancy_data_request_configs",
+        "whatsapp_conversations",
+        "wsi_response_analyses",
+        "wsi_results",
+        "wsi_sessions",
+    ]
+    _fk_col_map = {
+        "job_drafts": "published_job_id",
+        "data_requests": "vacancy_id",
+        "affirmative_audit_logs": "vacancy_id",
+        "candidate_affirmative_documents": "vacancy_id",
+        "vacancy_data_request_configs": "vacancy_id",
+    }
+    for _t in _vacancy_fk_tables:
+        _col = _fk_col_map.get(_t, "job_vacancy_id")
+        try:
+            await db.execute(
+                text(f"DELETE FROM {_t} WHERE {_col} IN (SELECT id FROM job_vacancies WHERE company_id = :cid)"),
+                {"cid": SEED_COMPANY_ID_STR},
+            )
+        except Exception as exc:
+            logger.debug("  clean %s skipped (%s)", _t, exc)
+    logger.info("  job_vacancies FK tables cleaned.")
+
     await db.execute(text("DELETE FROM job_vacancies WHERE company_id = :cid"), {"cid": SEED_COMPANY_ID_STR})
     logger.info("  job_vacancies cleaned.")
 
@@ -1578,20 +1627,20 @@ async def clean_seed_data(db: AsyncSession):
     await db.execute(text("DELETE FROM departments WHERE company_id = :cid"), {"cid": SEED_COMPANY_PROFILE_ID})
     logger.info("  departments cleaned.")
 
-    remaining_users = await db.execute(
-        text("SELECT count(*) FROM client_users WHERE company_id = :cid"),
-        {"cid": SEED_COMPANY_ID},
-    )
-    user_count = remaining_users.scalar() or 0
-    if user_count > 0:
-        logger.info(f"  {user_count} preserved user(s) remain — skipping company_profiles/client_accounts deletion.")
-    else:
-        await db.execute(text("DELETE FROM company_profiles WHERE id = :id"), {"id": SEED_COMPANY_PROFILE_ID})
-        logger.info("  company_profiles cleaned.")
-        await db.execute(text("DELETE FROM client_accounts WHERE id = :id"), {"id": SEED_COMPANY_ID})
-        logger.info("  client_accounts cleaned.")
+    # Expansao 2026-05-11: client_accounts e company_profiles tem muitas FK
+    # (invoices, subscriptions, payment_history, etc.). Em vez de DELETE+INSERT,
+    # apenas UPDATE para refletir nome canonical. Idempotente.
+    await db.execute(text("""
+        UPDATE client_accounts SET name = :name, trade_name = :trade, updated_at = :now
+        WHERE id = :id
+    """), {
+        "name": "WeDOTalent Demo",
+        "trade": "WeDOTalent Demo — Ambiente de Demonstracao",
+        "now": NOW, "id": SEED_COMPANY_ID,
+    })
+    logger.info("  client_accounts renamed (UPDATE in-place, no FK churn).")
 
-    logger.info("All seed data cleaned.")
+    logger.info("All seed data cleaned (client_accounts/company_profiles preserved + renamed).")
 
 
 async def run_seed():

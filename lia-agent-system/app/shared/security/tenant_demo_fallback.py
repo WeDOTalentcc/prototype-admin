@@ -146,8 +146,10 @@ def _capture_sentry(reason: str, endpoint: str, extra: dict[str, Any]) -> None:
 
     Dev/staging logs CRITICAL but skips Sentry to avoid noise.
     """
+    # T4 #991 — canary capture covers prod + staging (mirrors the T-A
+    # ``_prod_like`` env list used by the bypass-status endpoint).
     env = os.getenv("APP_ENV", "development").lower()
-    if env not in ("production", "prod"):
+    if env not in ("production", "prod", "staging"):
         return
     try:
         import sentry_sdk

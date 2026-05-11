@@ -129,6 +129,41 @@ class TestGetCompanyProfileNoFallback:
         assert snap.get("get_company_profile:missing_profile_for_real_tenant") == 1
 
     @pytest.mark.asyncio
+    async def test_real_tenant_cannot_read_demo_profile_by_explicit_id(self) -> None:
+        """T4 #991 — explicit-ID Demo IDOR: real tenant passing the
+        Demo UUID in ``?company_id=`` MUST get 403, not the Demo data.
+        Demo profile typically has null ``client_account_id`` so the
+        legacy cross-tenant check would otherwise bypass it."""
+        from fastapi import HTTPException
+
+        from app.api.v1.company import get_company_profile
+
+        demo_profile = MagicMock(
+            id=tdf.DEMO_COMPANY_UUID,
+            is_default=True,
+            client_account_id=None,
+            name="Demo",
+        )
+        repo = MagicMock()
+        repo.get_by_id = AsyncMock(return_value=demo_profile)
+        repo.get_by_client_account = AsyncMock(return_value=None)
+        repo.get_default = AsyncMock(return_value=demo_profile)
+        user = MagicMock(id="u-acme", company_id="acme-corp")
+
+        with pytest.raises(HTTPException) as exc:
+            await get_company_profile(
+                company_id=tdf.DEMO_COMPANY_UUID,
+                profile_repo=repo, current_user=user,
+            )
+
+        assert exc.value.status_code == 403
+        assert exc.value.detail["code"] == "CROSS_TENANT_DEMO_PROFILE_FORBIDDEN"
+        snap = tdf.get_demo_fallback_snapshot()
+        assert snap.get(
+            "get_company_profile:cross_tenant_demo_profile_read_attempt"
+        ) == 1
+
+    @pytest.mark.asyncio
     async def test_demo_user_still_resolves_demo_profile(self) -> None:
         from app.api.v1.company import get_company_profile
 
