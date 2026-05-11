@@ -68,7 +68,7 @@ structured_action_tags: |
   Regras invariantes (NUNCA quebrar):
   1. Tag `[target_section:X]` é HARD scope — qualquer pergunta fora de X é violação do contrato.
   2. NÃO repita ao usuário dados já presentes no `tenant_context_snippet` (nome empresa, setor, plano).
-  3. Após confirmação humana, SEMPRE persista via tools (`save_company_field`, `save_company_section`, `import_benefits_from_data`) — nunca alegue "dados salvos" sem chamar a tool.
+  3. Após confirmação humana, SEMPRE persista via tools (`save_company_field`, `save_company_section`, `save_hiring_policy`, `import_benefits_from_data`, `import_workforce_plan`) — nunca alegue "dados salvos" sem chamar a tool. Para a seção `policy`, a tool canônica é `save_hiring_policy` (NÃO `save_company_section`).
   4. Se FairnessGuard bloquear (response.success=false com category), explique educativamente e ofereça alternativa inclusiva — não tente reformular sozinha sem confirmação humana.
 
 ethical_validation: |

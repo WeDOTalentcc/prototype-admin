@@ -128,6 +128,49 @@ def test_yaml_has_no_redundant_company_questions():
     )
 
 
+def test_yaml_structured_action_tags_maps_policy_to_save_hiring_policy():
+    """PR2 (Task #1002) — sentinela contra regressão do bug C1 do audit T1-T6:
+    o mapeamento  em 
+    do YAML é o ÚNICO contrato que dirige o LLM a persistir hiring policy
+    em . Antes do fix C1, o YAML apontava 
+    para , que rejeita silenciosamente (whitelist
+    {profile, culture}) — a IA confirmava o save mas nada chegava ao DB.
+
+    Esta sentinela trava 2 contratos:
+      1. O YAML cita  no bloco de policy.
+      2. O YAML NÃO mapeia mais  para /
+          (rota antiga, dead code para hiring policy).
+    """
+    data = yaml.safe_load(YAML_PATH.read_text(encoding="utf-8"))
+    tags_block = data.get("structured_action_tags", "")
+    assert isinstance(tags_block, str) and tags_block.strip(), (
+        "structured_action_tags ausente do YAML."
+    )
+    # Localiza a linha de policy no mapeamento.
+    policy_line_match = re.search(r"-\s*policy\s*(?:→|->)[^
+]+", tags_block)
+    assert policy_line_match, (
+        "PR2 regressão: linha de mapeamento  removida de "
+        "structured_action_tags. Sem ela o agente fica sem caminho "
+        "canônico para persistir hiring policy via chat."
+    )
+    policy_line = policy_line_match.group(0)
+    assert "save_hiring_policy" in policy_line, (
+        f"PR2 regressão: mapeamento  perdeu referência a "
+        f". Linha atual: {policy_line!r}. Sem essa "
+        "tool, o save de hiring policy via chat volta a ser dead code "
+        "(bug C1 do audit T1-T6)."
+    )
+    # Defesa explícita contra a rota antiga (que retornaria sucesso falso
+    # silencioso porque {profile,culture} não inclui policy).
+    for legacy in ("save_company_section", "save_company_field"):
+        assert legacy not in policy_line, (
+            f"PR2 regressão: mapeamento  voltou a citar a "
+            f"rota antiga . Essa rota não suporta a tabela "
+            "company_hiring_policies — usar save_hiring_policy."
+        )
+
+
 def test_yaml_structured_action_tags_lists_basic_section():
     """PR1 (Task #1001) — sentinela contra regressão do bug C2 do audit
     T1-T6: a seção `basic` (Dados Básicos) precisa permanecer listada
