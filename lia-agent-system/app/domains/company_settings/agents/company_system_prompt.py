@@ -44,6 +44,15 @@ def _get(key: str, fallback: str = "") -> str:
 COMPANY_DOMAIN_SPECIFIC = _get("system_prompt", "Especialista em Configuração Empresarial.")
 COMPANY_FEW_SHOT_EXAMPLES = _get("few_shot_examples", "")
 COMPANY_REASONING_PROMPT = _get("reasoning_prompt", "")
+# T6 (#993): regras comportamentais + contrato de tags estruturadas
+# precisam fluir para o prompt efetivo do agente. Sem isto, as regras #8/#9
+# (não perguntar dados do tenant_context_snippet) e o reconhecimento das
+# tags `[ACTION:prefill_section][target_section:X]` enviadas pelo chat
+# lateral (use-settings-conversational.ts) ficam só na documentação YAML
+# e nunca chegam à LLM.
+COMPANY_BEHAVIORAL_RULES = _get("behavioral_rules", "")
+COMPANY_STRUCTURED_ACTION_TAGS = _get("structured_action_tags", "")
+COMPANY_ETHICAL_VALIDATION = _get("ethical_validation", "")
 
 
 def get_company_system_prompt() -> str:
@@ -60,6 +69,15 @@ Voce esta ajudando um recrutador a configurar os dados da empresa.
 O chat e a interface principal. Este chat e EXCLUSIVAMENTE sobre dados da empresa.
 
 {COMPANY_DOMAIN_SPECIFIC}
+
+=== REGRAS COMPORTAMENTAIS ===
+{COMPANY_BEHAVIORAL_RULES}
+
+=== TAGS ESTRUTURADAS (CONTRATO COM CHAT LATERAL — T6 #993) ===
+{COMPANY_STRUCTURED_ACTION_TAGS}
+
+=== VALIDACAO ETICA ===
+{COMPANY_ETHICAL_VALIDATION}
 
 {COMPANY_FEW_SHOT_EXAMPLES}
 

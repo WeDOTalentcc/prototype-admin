@@ -105,7 +105,11 @@ export function useSettingsConversational() {
    * such as "preenche meus benefícios".
    */
   const triggerPrefillSection = useCallback(
-    (section: PrefillSection, missingLabels: string[] = []) => {
+    (
+      section: PrefillSection,
+      missingLabels: string[] = [],
+      opts?: { autoSend?: boolean },
+    ) => {
       const label = SECTION_LABELS[section]
       const missingClause = missingLabels.length
         ? `Os campos ainda pendentes são: ${missingLabels.slice(0, 12).join(", ")}.`
@@ -127,7 +131,11 @@ export function useSettingsConversational() {
         source: "ui",
       }
       dispatchAction(detail)
-      sendChatPrompt(prompt)
+      // T6 (#993): autoSend default true — alinha com analyzeWebsite e
+      // com contrato "ações do hub disparam ação real" (preferência
+      // replit.md "Chat é a interface principal"). Caller pode opt-out
+      // explicitamente passando { autoSend: false }.
+      sendChatPrompt(prompt, opts?.autoSend ?? true)
     },
     [dispatchAction, sendChatPrompt],
   )
