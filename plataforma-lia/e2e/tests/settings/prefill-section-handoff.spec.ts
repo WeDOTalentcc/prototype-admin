@@ -67,9 +67,17 @@ const SECTIONS: SectionSpec[] = [
   {
     section: 'basic',
     blockKey: 'basic',
-    expected: /\b(cnpj|website|rh|e-?mail|telefone|endere[cç]o|funcion[aá]rios|fundada|fundac|linkedin|logo|raz[aã]o\s+social|nome\s+fantasia)/i,
+    expected: /\b(nome|cnpj|website|rh|e-?mail|telefone|endere[cç]o|funcion[aá]rios|fundada|fundac|linkedin|logo|raz[aã]o\s+social|nome\s+fantasia)/i,
+    // Vocabulário canônico de "Dados Básicos" — proibido nas outras 6 seções.
+    // Inclui nome/cnpj/website/rh explicitamente (task #1001), além de
+    // razão social, telefone do RH, endereço da sede e LinkedIn da empresa
+    // — campos cadastrais únicos de company_profiles que NÃO aparecem em
+    // culture/tech_stack/benefits/workforce/policy/compensation.
     signature: [
-      /\b(cnpj|raz[aã]o\s+social|nome\s+fantasia|hr\s*email|email\s+do\s+rh|telefone\s+do\s+rh|endere[cç]o\s+da\s+sede|ano\s+de\s+funda|linkedin\s+da\s+empresa|logo\s+da\s+empresa)\b/i,
+      /\b(nome\s+da\s+empresa|raz[aã]o\s+social|nome\s+fantasia)\b/i,
+      /\b(cnpj)\b/i,
+      /\b(website\s+da\s+empresa|site\s+da\s+empresa|url\s+do\s+site|linkedin\s+da\s+empresa)\b/i,
+      /\b(email\s+do\s+rh|hr\s*email|telefone\s+do\s+rh|endere[cç]o\s+da\s+sede|ano\s+de\s+funda|logo\s+da\s+empresa)\b/i,
     ],
   },
   {

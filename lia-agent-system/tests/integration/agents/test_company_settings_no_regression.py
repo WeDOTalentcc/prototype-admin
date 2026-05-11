@@ -128,6 +128,102 @@ def test_yaml_has_no_redundant_company_questions():
     )
 
 
+def test_yaml_structured_action_tags_lists_basic_section():
+    """PR1 (Task #1001) — sentinela contra regressão do bug C2 do audit
+    T1-T6: a seção `basic` (Dados Básicos) precisa permanecer listada
+    como valor válido de `<key>` em `structured_action_tags` do YAML.
+    Se removida, o agente perde 11 campos cadastrais de
+    `company_profiles` (name, cnpj, website, hr_email, hr_phone,
+    address, industry, company_size, employee_count, founded_year,
+    linkedin_url) — voltaria ao estado pré-PR1, com cobertura efetiva
+    via chat caindo de 7 para 6 seções.
+    """
+    data = yaml.safe_load(YAML_PATH.read_text(encoding="utf-8"))
+    tags_block = data.get("structured_action_tags", "")
+    assert isinstance(tags_block, str), (
+        "structured_action_tags ausente ou não é string."
+    )
+    # 1) precisa estar na lista de "Valores válidos de <key>"
+    valid_values_match = re.search(
+        r"Valores\s+válidos\s+de\s+<key>\s*:\s*([^\n.]+)",
+        tags_block,
+        re.IGNORECASE,
+    )
+    assert valid_values_match, (
+        "structured_action_tags perdeu a frase 'Valores válidos de <key>: ...' "
+        "— contrato com o frontend (PrefillSection em "
+        "use-settings-conversational.ts) deixa de ser validável."
+    )
+    valid_values_text = valid_values_match.group(1).lower()
+    assert "basic" in valid_values_text, (
+        f"PR1 regressão: 'basic' sumiu da lista de valores válidos de "
+        f"<key> em structured_action_tags. Lista atual: "
+        f"{valid_values_match.group(1)!r}. O hub Minha Empresa fica sem "
+        "entrada conversacional para 11 campos de company_profiles."
+    )
+    # 2) precisa ter mapeamento explícito basic → save_company_field/save_company_section
+    assert re.search(
+        r"-\s*basic\s*(?:→|->)\s*save_company_(field|section)",
+        tags_block,
+    ), (
+        "PR1 regressão: mapeamento `basic → save_company_field/save_company_section` "
+        "removido de structured_action_tags. Sem ele o agente não sabe qual "
+        "tool chamar quando recebe [target_section:basic]."
+    )
+
+
+def test_frontend_section_labels_includes_basic():
+    """PR1 (Task #1001) — sentinela cross-stack: o hook frontend
+    `use-settings-conversational.ts` precisa manter `basic` em
+    `PrefillSection` E em `SECTION_LABELS`. Se um PR futuro reverter
+    qualquer uma das duas, o botão `pending-prefill-basic` some do hub
+    Minha Empresa e a tag `[ACTION:prefill_section][target_section:basic]`
+    deixa de ser disparada — frontend e backend (YAML) ficam
+    silenciosamente fora de sync.
+
+    A lógica é uma checagem textual via regex porque o teste roda em
+    Python (lia-agent-system) e o source-of-truth é TS
+    (plataforma-lia). Espelha a estratégia de "Contrato 2 — anti-padrão
+    no prompt" deste arquivo: failure mode = drift detectável
+    pré-merge.
+    """
+    hook_path = (
+        Path(__file__).resolve().parents[4]
+        / "plataforma-lia"
+        / "src"
+        / "hooks"
+        / "settings"
+        / "use-settings-conversational.ts"
+    )
+    if not hook_path.exists():  # pragma: no cover — defesa contra reorganização
+        pytest.skip(
+            f"Hook frontend não encontrado em {hook_path} — repo "
+            "reorganizado? Atualizar este teste."
+        )
+    src = hook_path.read_text(encoding="utf-8")
+    # PrefillSection union: linha do tipo `| "basic"` (ou primeira "basic" depois de PrefillSection =).
+    assert re.search(
+        r"PrefillSection\s*=[^;]*\|\s*\"basic\"",
+        src,
+        re.DOTALL,
+    ), (
+        "PR1 regressão: tipo `PrefillSection` em use-settings-conversational.ts "
+        "perdeu o membro \"basic\". O hub Minha Empresa fica sem entrada "
+        "conversacional para Dados Básicos (bug C2 do audit T1-T6)."
+    )
+    # SECTION_LABELS: linha `basic: "Dados Básicos"` (label exato — se
+    # o PM trocar o copy, este teste lembra de revisar o YAML também).
+    assert re.search(
+        r"basic\s*:\s*[\"']Dados\s+B[áa]sicos[\"']",
+        src,
+    ), (
+        "PR1 regressão: SECTION_LABELS em use-settings-conversational.ts "
+        "perdeu a entrada `basic: \"Dados Básicos\"`. Sem o label, "
+        "triggerPrefillSection() falha em runtime quando o usuário clica "
+        "no botão `pending-prefill-basic` do MinhaEmpresaHub."
+    )
+
+
 def test_yaml_documents_structured_action_tags():
     """Contrato T6: o prompt YAML deve documentar o reconhecimento das
     tags `[ACTION:*][target_section:*]` enviadas pelo frontend
