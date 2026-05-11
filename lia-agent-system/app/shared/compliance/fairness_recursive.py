@@ -17,18 +17,17 @@ str) chamando ``FairnessGuard.check`` em cada *string folha* e veta no primeiro
 flag, retornando contexto suficiente para a LIA verbalizar "esse trecho gerou
 um alerta de viés, prefere reescrever?".
 
-Contrato (mantido estável para os 5 wrappers que consomem):
+Contrato canônico (task #1003 spec — mantido estável para os 5 wrappers):
 
     result = validate_fairness_recursive(payload, guard=_fairness_guard)
     if result.is_blocked:
         return {
             "success": False,
-            "error": "fairness_blocked",
-            "data": {
-                "offending_field": result.offending_field,
-                "offending_signal": result.offending_signal,
-                "category": result.category,
-            },
+            "reason": "fairness_violation",
+            "offending_field": result.offending_field,
+            "offending_signal": result.offending_signal,
+            "category": result.category,
+            "blocked_terms": result.blocked_terms or [],
             "message": result.educational_message,
         }
 
@@ -68,7 +67,10 @@ _MAX_SIGNAL_LEN = 200
 # Os 5 wrappers chamam isso ANTES de qualquer DB call — um payload
 # patológico não deve poder consumir CPU sem teto. Os limites são
 # generosos para tenants reais (workforce com centenas de itens passa
-# tranquilo) mas cortam payloads adversariais.
+# tranquilo) mas cortam payloads adversariais. Quando ESTOURAM,
+# **fail-CLOSED**: retorna RecursiveFairnessResult bloqueado com
+# category="fairness_validation_limit" — quem decide o que é viés
+# (ou o que é abuso) é o guard, não o caller.
 _MAX_DEPTH = 32
 _MAX_NODES = 10_000
 
@@ -79,6 +81,22 @@ def _truncate(text: str) -> str:
     return text[: _MAX_SIGNAL_LEN - 1] + "…"
 
 
+def _limit_block(path: str, kind: str) -> RecursiveFairnessResult:
+    """Fail-CLOSED quando o orçamento de varredura estoura."""
+    return RecursiveFairnessResult(
+        is_blocked=True,
+        offending_field=path or "<root>",
+        offending_signal=f"<payload excedeu {kind}>",
+        category="fairness_validation_limit",
+        educational_message=(
+            "Payload muito grande/aninhado para validação de viés. "
+            "Reduza o volume de dados (envie em lotes menores) e tente "
+            "novamente — a validação de fairness é obrigatória."
+        ),
+        blocked_terms=[],
+    )
+
+
 def _walk(
     payload: Any,
     guard: FairnessGuard,
@@ -87,15 +105,13 @@ def _walk(
     depth: int,
     counter: list[int],
 ) -> Optional[RecursiveFairnessResult]:
-    # Defesa: corta silenciosamente quando estoura o orçamento.
-    # Retornar None aqui é fail-OPEN local mas o caller é tool de save
-    # com auditoria — payloads que estouram esses limites já indicam
-    # abuso e devem ser tratados acima (validação de schema, body size).
+    # Defesa fail-CLOSED: estourar o orçamento conta como bloqueio
+    # (não bypass silencioso). Crença #02 do WeDO + Inegociável #2.
     if depth > _MAX_DEPTH:
-        return None
+        return _limit_block(path, f"profundidade máxima ({_MAX_DEPTH})")
     counter[0] += 1
     if counter[0] > _MAX_NODES:
-        return None
+        return _limit_block(path, f"limite de nós ({_MAX_NODES})")
     if isinstance(payload, str):
         # FairnessGuard decide — sem threshold de tamanho local.
         check: FairnessCheckResult = guard.check(payload)
@@ -111,6 +127,21 @@ def _walk(
         return None
     if isinstance(payload, Mapping):
         for key, value in payload.items():
+            # Validar a CHAVE também — bypass clássico era usar o nome
+            # da chave como veículo de viés (ex.:
+            # `default_salary_ranges = {"Junior Homem": "5k"}`).
+            if isinstance(key, str):
+                key_path = f"{path}.<key:{key}>" if path else f"<key:{key}>"
+                key_check: FairnessCheckResult = guard.check(key)
+                if key_check.is_blocked:
+                    return RecursiveFairnessResult(
+                        is_blocked=True,
+                        offending_field=key_path,
+                        offending_signal=_truncate(key),
+                        category=key_check.category,
+                        educational_message=key_check.educational_message,
+                        blocked_terms=list(key_check.blocked_terms or []),
+                    )
             sub_path = f"{path}.{key}" if path else str(key)
             result = _walk(value, guard, sub_path, depth=depth + 1, counter=counter)
             if result is not None:

@@ -90,20 +90,20 @@ def test_fairness_blocked_in_textual_field():
     # Se estiver em modo permissivo (dev), o teste documenta o comportamento
     # e o PR3 endurece — por isso aceitamos ambos os caminhos, mas se
     # bloquear NÃO pode ter chegado ao DB.
-    if result.get("error") == "fairness_blocked":
-        # PR3 (Task #1003): contrato canônico passou de
-        # `{blocked_field, block, category}` para
-        # `{offending_field, offending_signal, category, blocked_terms}`,
-        # alinhado com a rule #4 do YAML company_settings (a LIA precisa
-        # citar o trecho exato e oferecer reformulação).
-        offending = result["data"]["offending_field"]
+    if result.get("reason") == "fairness_violation":
+        # PR3 (Task #1003): contrato canônico (flat) per task spec:
+        # `{success, reason: "fairness_violation", offending_field,
+        #   offending_signal, category, blocked_terms, message}`.
+        # Substituiu o contrato anterior de PR2 (`error: "fairness_blocked"`,
+        # data nested) — alinhado com rule #4 do YAML company_settings.
+        offending = result["offending_field"]
         # FairnessGuard recursivo reporta dot-notation: "rules.lia_tone".
         assert offending.endswith("lia_tone"), (
             f"offending_field deveria apontar para lia_tone, veio {offending!r}"
         )
-        assert result["data"].get("offending_signal"), (
+        assert result.get("offending_signal"), (
             "offending_signal vazio — a LIA não conseguirá citar o trecho "
             "para o recrutador (rule #4 do YAML quebra)."
         )
-        assert "category" in result["data"]
-        assert isinstance(result["data"].get("blocked_terms"), list)
+        assert "category" in result
+        assert isinstance(result.get("blocked_terms"), list)

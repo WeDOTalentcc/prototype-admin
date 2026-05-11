@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 _fairness_guard = FairnessGuard()
 
 
-def _fairness_block_response(
+def _fairness_violation_response(
     result: RecursiveFairnessResult,
     *,
     fallback_field: str | None = None,
@@ -46,13 +46,11 @@ def _fairness_block_response(
     )
     return {
         "success": False,
-        "error": "fairness_blocked",
-        "data": {
-            "offending_field": field_label,
-            "offending_signal": signal,
-            "category": result.category,
-            "blocked_terms": result.blocked_terms or [],
-        },
+        "reason": "fairness_violation",
+        "offending_field": field_label,
+        "offending_signal": signal,
+        "category": result.category,
+        "blocked_terms": result.blocked_terms or [],
         "message": (
             f"Bloqueio de compliance em '{field_label}': {base_msg} "
             f"Trecho sinalizado: «{signal}». Quer reescrever de forma inclusiva?"
@@ -176,7 +174,7 @@ async def _wrap_save_company_field(**kwargs: Any) -> dict[str, Any]:
         value, guard=_fairness_guard, root_label=field or "value"
     )
     if fairness.is_blocked:
-        return _fairness_block_response(fairness, fallback_field=field)
+        return _fairness_violation_response(fairness, fallback_field=field)
 
     async with AsyncSessionLocal() as session:
         if section == "profile":
@@ -236,7 +234,7 @@ async def _wrap_save_company_section(**kwargs: Any) -> dict[str, Any]:
         data, guard=_fairness_guard, root_label=section or "data"
     )
     if fairness.is_blocked:
-        return _fairness_block_response(fairness)
+        return _fairness_violation_response(fairness)
 
     saved_fields = []
     for field, value in data.items():
@@ -362,7 +360,7 @@ async def _wrap_import_workforce_plan(**kwargs: Any) -> dict[str, Any]:
         plan_data, guard=_fairness_guard, root_label="plan_data"
     )
     if fairness.is_blocked:
-        return _fairness_block_response(fairness)
+        return _fairness_violation_response(fairness)
 
     total_hires = sum(item.get("quantity", 0) for item in plan_data if isinstance(item, dict))
     departments = list(set(item.get("department", "N/A") for item in plan_data if isinstance(item, dict)))

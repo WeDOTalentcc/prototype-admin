@@ -37,7 +37,7 @@ logger = logging.getLogger(__name__)
 _fairness_guard = FairnessGuard()
 
 
-def _fairness_block_payload(
+def _fairness_violation_payload(
     result: RecursiveFairnessResult,
     *,
     fallback_field: str | None = None,
@@ -55,13 +55,11 @@ def _fairness_block_payload(
     )
     return {
         "success": False,
-        "error": "fairness_blocked",
-        "data": {
-            "offending_field": field_label,
-            "offending_signal": signal,
-            "category": result.category,
-            "blocked_terms": result.blocked_terms or [],
-        },
+        "reason": "fairness_violation",
+        "offending_field": field_label,
+        "offending_signal": signal,
+        "category": result.category,
+        "blocked_terms": result.blocked_terms or [],
         "message": (
             f"Bloqueio de compliance em '{field_label}': {base_msg} "
             f"Trecho sinalizado: «{signal}». Quer reescrever de forma inclusiva?"
@@ -462,7 +460,7 @@ async def save_hiring_policy(
         block_updates, guard=_fairness_guard, root_label="rules"
     )
     if fairness.is_blocked:
-        return _fairness_block_payload(fairness)
+        return _fairness_violation_payload(fairness)
 
     # Upsert: lê o bloco atual, faz merge superficial, grava de volta.
     fields_saved: list[str] = []
@@ -636,7 +634,7 @@ async def import_benefits_from_data(
         benefits, guard=_fairness_guard, root_label="benefits"
     )
     if fairness.is_blocked:
-        return _fairness_block_payload(fairness)
+        return _fairness_violation_payload(fairness)
 
     try:
         from lia_models.company_benefit import CompanyBenefit
