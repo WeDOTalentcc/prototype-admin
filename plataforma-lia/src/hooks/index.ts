@@ -1,7 +1,6 @@
 export * from './ai'
 export * from './candidates'
 export * from './chat'
-export * from './company'
 export * from './jobs'
 export * from './recruitment'
 export * from './search'

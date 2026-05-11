@@ -52,6 +52,7 @@ docs/
 | [architecture/c4-diagram.md](./architecture/c4-diagram.md) | Diagrama C4 |
 | [architecture/COMPLETE_SYSTEM_ARCHITECTURE.md](./architecture/COMPLETE_SYSTEM_ARCHITECTURE.md) | Arquitetura completa do sistema |
 | [architecture/id-boundary-policy.md](./architecture/id-boundary-policy.md) | ID Boundary Policy LIA × Rails (UUID vs bigint, naming, RailsAdapter) — derivado de [ADR 003](./adr/003-id-strategy-lia-vs-rails.md) |
+| [architecture/tenant-context-history.md](./architecture/tenant-context-history.md) | Histórico técnico das tasks T-A → T-F (`TenantAwareAgentMixin`, `CompanyId`, helper non-ReAct, golden dataset). Fonte da verdade do contrato anti-bug *"LIA pergunta company_id no chat"*. Runbook on-call associado: [`runbooks/missing_tenant_context.md`](./runbooks/missing_tenant_context.md). |
 
 ### LIA / Inteligência Artificial (Não Alterar)
 
