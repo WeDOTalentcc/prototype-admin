@@ -1,5 +1,6 @@
 /**
  * Task #997 — Validar a integração chat ↔ agente Configurações end-to-end.
+ * Task #998 — Estender a cobertura para as 6 seções do hub Minha Empresa.
  *
  * T6 (#993) cobre o contrato em três camadas (frontend autoSend, YAML do
  * agente, golden dataset offline). Este spec fecha o loop com uma checagem
@@ -10,17 +11,118 @@
  * (3) a resposta da LIA respeita o escopo da seção (não vaza vocabulário
  * de outras seções).
  *
- * Cobre 2 seções (culture + benefits) — confirma que o hard-scope funciona
- * em ambas, conforme o contrato T6/§ "Settings ↔ chat lateral" no replit.md.
+ * Cobre as 6 seções (culture, tech_stack, benefits, workforce, policy,
+ * compensation) — confirma que o hard-scope funciona em todas, conforme o
+ * contrato T6/§ "Settings ↔ chat lateral" no replit.md. A matriz de
+ * anti-keywords é 6x5 (vocabulário esperado de cada seção é proibido nas
+ * outras 5), derivada automaticamente de SECTION_VOCAB para evitar que
+ * adicionar uma 7ª seção quebre a cobertura silenciosamente.
  *
  * Estratégia FAIL-LOUD em todos os 3 critérios. Pré-condições (backend de
- * pé, empresa demo com pendências em culture+benefits) são exigências e o
- * spec FALHA ruidosamente quando ausentes — o reviewer (#997) rejeitou a
+ * pé, empresa demo com pendências nas 6 seções) são exigências e o spec
+ * FALHA ruidosamente quando ausentes — o reviewer (#997) rejeitou a
  * versão anterior por usar `test.skip()` nesses cenários, mascarando
- * regressão real.
+ * regressão real. O seed canônico de demo (`scripts/seeds/demo_company.py`)
+ * deixa todos os campos editoriais vazios fora de sector/plan/headcount,
+ * o que garante pendências nas 6 seções por padrão.
  */
 
 import { test, expect, type Page } from '../../fixtures/auth.fixture'
+
+/**
+ * Seções cobertas — a chave é o `target_section` que vai literal no
+ * prompt e nos asserts. Mapeamento `blockKey` é o sufixo do data-testid
+ * `pending-prefill-<blockKey>` no MinhaEmpresaHub (BLOCK_TO_PREFILL).
+ *
+ * IMPORTANTE: blockKey ≠ section quando o bloco do card foi renomeado
+ * sem renomear a chave de domínio (tech→tech_stack, documents→compensation).
+ * Não simplificar: testar pelo data-testid real do hub é o que valida o
+ * binding de UI; testar pela tag é o que valida o contrato com o agente.
+ */
+type Section =
+  | 'culture'
+  | 'tech_stack'
+  | 'benefits'
+  | 'workforce'
+  | 'policy'
+  | 'compensation'
+
+interface SectionSpec {
+  section: Section
+  blockKey: string
+  /** Padrão que DEVE aparecer na resposta (vocabulário canônico da seção). */
+  expected: RegExp
+  /**
+   * Padrões característicos da seção — usados para derivar anti-keywords
+   * das DEMAIS seções. Devem ser específicos o bastante para não causar
+   * cross-match com a própria seção alvo.
+   */
+  signature: RegExp[]
+}
+
+const SECTIONS: SectionSpec[] = [
+  {
+    section: 'culture',
+    blockKey: 'culture',
+    expected: /\b(cultura|EVP|miss[aã]o|vis[aã]o|valores|prop[oó]sito|comportament|DEI)/i,
+    signature: [
+      /\b(EVP|miss[aã]o|vis[aã]o|valores da empresa|cultura organizacional|prop[oó]sito|DEI)\b/i,
+    ],
+  },
+  {
+    section: 'tech_stack',
+    blockKey: 'tech',
+    expected: /\b(stack|linguagens?|frameworks?|tecnolog|engenharia|reposit[oó]rio)/i,
+    signature: [
+      /\b(linguagens? de programa|frameworks?|tech\s*stack|reposit[oó]rio|github|gitlab|cultura de engenharia)\b/i,
+    ],
+  },
+  {
+    section: 'benefits',
+    blockKey: 'benefits',
+    expected: /\b(benef[ií]cio|vale|plano|sa[uú]de|gympass|aux[ií]lio|seguro)/i,
+    signature: [
+      /\b(vale[ -](refei|alimenta)|plano de sa[uú]de|vale transporte|gympass|aux[ií]lio creche)\b/i,
+    ],
+  },
+  {
+    section: 'workforce',
+    blockKey: 'workforce',
+    expected: /\b(headcount|workforce|contrata[cç][aã]o|organograma|departamento|volume|ATS atual|desafios?)/i,
+    signature: [
+      /\b(headcount|organograma|workforce planning|volume de contrata|tipos? de vaga|ATS atual)\b/i,
+    ],
+  },
+  {
+    section: 'policy',
+    blockKey: 'policy',
+    expected: /\b(pol[ií]tic|pipeline|etapas?|aprova[cç][aã]o|agendamento|triagem|entrevistas?|autonom)/i,
+    signature: [
+      /\b(pol[ií]tica de recrutamento|min[ií]mo de entrevistas|aprova[cç][aã]o do gestor|auto[- ]agendamento|n[ií]vel de autonomia|triagem autom[aá]tica)\b/i,
+    ],
+  },
+  {
+    section: 'compensation',
+    blockKey: 'documents',
+    expected: /\b(remunera[cç][aã]o|sal[aá]ri|banda|cargos?|PRV|b[oô]nus|comiss[aã]o|onboarding)/i,
+    signature: [
+      /\b(banda salarial|cargos? e sal[aá]rios|PRV|remunera[cç][aã]o vari[aá]vel|comiss[aã]o|b[oô]nus|plano de remunera)\b/i,
+    ],
+  },
+]
+
+/**
+ * Matriz 6x5 derivada automaticamente: para cada seção, anti-keywords =
+ * união das `signature` das DEMAIS 5 seções. Se alguém adicionar uma 7ª
+ * seção (ex: ESG), a cobertura dela entra automaticamente, e o
+ * vocabulário dela passa a ser proibido nas outras 6 — sem mexer no
+ * spec.
+ */
+function buildAntiKeywords(target: Section): RegExp[] {
+  return SECTIONS
+    .filter((s) => s.section !== target)
+    .flatMap((s) => s.signature)
+}
 
 /** Coleta frames WS enviados durante o teste. */
 function attachWsSentCapture(page: Page): () => string[] {
@@ -74,26 +176,31 @@ interface PrefillRunResult {
  *   (LLM)  a resposta da LIA mantém escopo na seção alvo.
  *
  * Pré-condições FAIL-LOUD:
- *   - botão `pending-prefill-<section>` precisa existir (demo seedada);
+ *   - botão `pending-prefill-<blockKey>` precisa existir (demo seedada
+ *     com pendências em todas as seções);
  *   - LIA precisa responder em até 90s (backend de pé).
  */
 async function runHandoffForSection(
   page: Page,
   getSentFrames: () => string[],
-  section: 'culture' | 'benefits',
+  spec: SectionSpec,
   chatRoot: ReturnType<Page['locator']>,
 ): Promise<PrefillRunResult> {
+  const { section, blockKey } = spec
+
   // 0. pré-requisito: o botão da seção precisa estar presente. Se não
   //    estiver, é falta de seed da empresa demo — falha ruidosamente
-  //    com instrução para o operador seedar pendências em culture+benefits.
-  const btn = page.locator(`[data-testid="pending-prefill-${section}"]`)
+  //    com instrução para o operador seedar pendências em TODAS as
+  //    seções (o seed canônico já faz isso por default).
+  const btn = page.locator(`[data-testid="pending-prefill-${blockKey}"]`)
   await expect(
     btn,
-    `[setup] Botão "Pedir ajuda à LIA" para seção "${section}" não está ` +
-      `visível. O contrato #997 exige cobertura mínima das duas seções: o ` +
-      `botão só renderiza quando há campos pendentes (MinhaEmpresaHub.tsx → ` +
-      `pendingSections). Seedar a empresa demo deixando culture e benefits ` +
-      `incompletos antes do CI E2E — não pode ser test.skip.`,
+    `[setup] Botão "Pedir ajuda à LIA" para bloco "${blockKey}" ` +
+      `(target_section=${section}) não está visível. O contrato #998 ` +
+      `exige cobertura das 6 seções: o botão só renderiza quando há ` +
+      `campos pendentes (MinhaEmpresaHub.tsx → pendingSections). ` +
+      `Rodar \`python -m scripts.seeds.demo_company\` no lia-agent-system ` +
+      `garante demo limpa com pendências nas 6 seções. NÃO usar test.skip.`,
   ).toBeVisible({ timeout: 15_000 })
 
   const tag = `[target_section:${section}]`
@@ -109,7 +216,7 @@ async function runHandoffForSection(
   //    ao container do chat para evitar falso positivo.
   await expect(
     chatRoot.locator('p', { hasText: tag }).first(),
-    `[ui] Após click em pending-prefill-${section} a bolha de usuário com ` +
+    `[ui] Após click em pending-prefill-${blockKey} a bolha de usuário com ` +
       `o prompt (contendo "${tag}") não apareceu no chat lateral. Causa ` +
       `provável: useSettingsConversational.triggerPrefillSection deixou de ` +
       `passar autoSend:true OU o consumer de lia:prefill-message no chat ` +
@@ -124,7 +231,7 @@ async function runHandoffForSection(
         timeout: 10_000,
         message:
           `[ws] Nenhum frame WS contendo "${tag}" foi enviado após click ` +
-          `em pending-prefill-${section}. Possíveis causas: (a) autoSend ` +
+          `em pending-prefill-${blockKey}. Possíveis causas: (a) autoSend ` +
           `regrediu, (b) o chat caiu pro REST silenciosamente, (c) o ` +
           `prompt deixou de incluir [target_section:${section}].`,
       },
@@ -157,41 +264,31 @@ async function runHandoffForSection(
     .toBeGreaterThan(beforeLiaBubbles)
 
   const reply = await chatRoot.locator('.lia-markdown-content').last().textContent()
-  expect(reply, '[llm] resposta da LIA veio vazia').toBeTruthy()
+  expect(reply, `[llm] resposta da LIA veio vazia (seção ${section})`).toBeTruthy()
 
   return { rawFrame: raw, parsedContent: reply ?? '' }
 }
 
-/**
- * Anti-keywords das outras seções — usadas para detectar leak de escopo
- * na resposta da LIA. Listas pequenas e canônicas (alinha com o YAML do
- * CompanySettingsReActAgent).
- */
-const SECTION_ANTI_KEYWORDS: Record<'culture' | 'benefits', RegExp[]> = {
-  culture: [
-    /\b(vale[ -](refei|alimenta)|plano de sa[uú]de|vale transporte|gympass|PRV|remunera[cç][aã]o vari[aá]vel|b[oô]nus)\b/i,
-    /\b(linguagens? de programa|frameworks?|tech\s*stack|reposit[oó]rio|github|gitlab)\b/i,
-    /\b(headcount|organograma|departamento|workforce planning)\b/i,
-  ],
-  benefits: [
-    /\b(EVP|miss[aã]o|vis[aã]o|valores da empresa|cultura organizacional|prop[oó]sito)\b/i,
-    /\b(linguagens? de programa|frameworks?|tech\s*stack|reposit[oó]rio|github|gitlab)\b/i,
-    /\b(headcount|organograma|workforce planning)\b/i,
-  ],
-}
-
-const SECTION_EXPECTED_KEYWORDS: Record<'culture' | 'benefits', RegExp> = {
-  culture: /\b(cultura|EVP|miss[aã]o|valores|prop[oó]sito|comportament)/i,
-  benefits: /\b(benef[ií]cio|vale|plano|sa[uú]de|gympass|aux[ií]lio|seguro|PRV|remunera[cç][aã]o)/i,
-}
-
 test.describe.configure({ retries: 1 })
 
-test.describe('Task #997 — Settings ↔ chat handoff (prefill_section)', () => {
+// Sentinela meta — falha LOUD se alguém remover/adicionar uma seção sem
+// revisar o spec. Contrato T6 são 6 seções (culture, tech_stack, benefits,
+// workforce, policy, compensation). Se virarem 7 (ex: ESG), atualizar
+// este número junto com SECTIONS — buildAntiKeywords já se ajusta sozinho.
+if (SECTIONS.length !== 6) {
+  throw new Error(
+    `[meta] SECTIONS deve ter exatamente 6 entradas (contrato T6/#993), ` +
+      `tem ${SECTIONS.length}. Se a mudança é intencional, atualizar este guard ` +
+      `e PrefillSection em use-settings-conversational.ts.`,
+  )
+}
+
+test.describe('Task #997/#998 — Settings ↔ chat handoff (prefill_section, 6 seções)', () => {
   test.setTimeout(5 * 60_000) // 5min cada — inclui resposta real da LIA
 
-  for (const section of ['culture', 'benefits'] as const) {
-    test(`hub Minha Empresa → "Pedir ajuda à LIA" envia tag estruturada [${section}], aparece no chat e mantém escopo`, async ({
+  for (const spec of SECTIONS) {
+    const { section, blockKey } = spec
+    test(`hub Minha Empresa → "Pedir ajuda à LIA" envia tag estruturada [${section}] (block=${blockKey}), aparece no chat e mantém escopo`, async ({
       authenticatedPage: page,
     }, testInfo) => {
       const getSentFrames = attachWsSentCapture(page)
@@ -207,7 +304,7 @@ test.describe('Task #997 — Settings ↔ chat handoff (prefill_section)', () =>
       const chatRoot = page.locator('[data-testid="unified-chat"], [data-chat-root]').first()
       const scopedRoot = (await chatRoot.count()) > 0 ? chatRoot : page.locator('body')
 
-      const result = await runHandoffForSection(page, getSentFrames, section, scopedRoot)
+      const result = await runHandoffForSection(page, getSentFrames, spec, scopedRoot)
 
       await testInfo.attach(`ws-frame-${section}`, {
         body: result.rawFrame,
@@ -222,15 +319,24 @@ test.describe('Task #997 — Settings ↔ chat handoff (prefill_section)', () =>
         fullPage: true,
       })
 
-      // (LLM-scope) — a resposta MENCIONA vocabulário da seção alvo …
+      // (LLM-scope) — a resposta MENCIONA vocabulário esperado da seção alvo …
       expect(
         result.parsedContent,
         `[scope:${section}] Resposta da LIA não menciona vocabulário ` +
           `esperado da seção "${section}". Texto: "${result.parsedContent.slice(0, 240)}…"`,
-      ).toMatch(SECTION_EXPECTED_KEYWORDS[section])
+      ).toMatch(spec.expected)
 
-      // … e NÃO mistura vocabulário de outras seções (hard-scope T6).
-      for (const rx of SECTION_ANTI_KEYWORDS[section]) {
+      // … e NÃO mistura vocabulário das outras 5 seções (hard-scope T6).
+      // Matriz 6x5 derivada de SECTIONS — adicionar uma 7ª seção amplia
+      // a cobertura sem mexer no spec.
+      const antiKeywords = buildAntiKeywords(section)
+      expect(
+        antiKeywords.length,
+        `[meta] Matriz anti-keywords ficou vazia para "${section}" — ` +
+          `bug em buildAntiKeywords ou em SECTIONS.signature.`,
+      ).toBeGreaterThanOrEqual(5)
+
+      for (const rx of antiKeywords) {
         expect(
           result.parsedContent,
           `[scope-leak:${section}] Resposta da LIA mencionou padrão "${rx}" ` +
