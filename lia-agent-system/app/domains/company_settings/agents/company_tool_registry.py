@@ -17,12 +17,47 @@ from app.domains.company_settings.tools.import_tools import (
     save_hiring_policy as _save_hiring_policy_handler,
 )
 from app.shared.compliance.fairness_guard import FairnessGuard
+from app.shared.compliance.fairness_recursive import (
+    RecursiveFairnessResult,
+    validate_fairness_recursive,
+)
 from app.shared.tool_handler import tool_handler
 from types import SimpleNamespace
 
 logger = logging.getLogger(__name__)
 
 _fairness_guard = FairnessGuard()
+
+
+def _fairness_block_response(
+    result: RecursiveFairnessResult,
+    *,
+    fallback_field: str | None = None,
+) -> dict[str, Any]:
+    """PR3 (Task #1003) — formato canônico de resposta quando o
+    FairnessGuard recursivo veta um payload. Mantém o contrato consumido
+    pelo prompt YAML (rule #4 de structured_action_tags): a LIA verbaliza
+    `educational_message` + oferece reformulação inclusiva."""
+    field_label = result.offending_field or fallback_field or "<root>"
+    signal = result.offending_signal or ""
+    base_msg = (
+        result.educational_message
+        or "Trecho com sinal de viés detectado pelo FairnessGuard."
+    )
+    return {
+        "success": False,
+        "error": "fairness_blocked",
+        "data": {
+            "offending_field": field_label,
+            "offending_signal": signal,
+            "category": result.category,
+            "blocked_terms": result.blocked_terms or [],
+        },
+        "message": (
+            f"Bloqueio de compliance em '{field_label}': {base_msg} "
+            f"Trecho sinalizado: «{signal}». Quer reescrever de forma inclusiva?"
+        ),
+    }
 
 
 @tool_handler("company_settings")
@@ -135,14 +170,13 @@ async def _wrap_save_company_field(**kwargs: Any) -> dict[str, Any]:
     if section == "culture" and field not in valid_culture_fields:
         return {"success": False, "data": {}, "message": f"Campo '{field}' nao e valido para cultura."}
 
-    if isinstance(value, str) and len(value) > 10:
-        check = _fairness_guard.check(value)
-        if check.is_blocked:
-            return {
-                "success": False,
-                "data": {"blocked_field": field, "category": check.category},
-                "message": f"Campo '{field}' bloqueado por compliance: {check.educational_message}",
-            }
+    # PR3 (Task #1003) — FairnessGuard recursivo. Cobre str/list/dict/strings
+    # curtas; sem mais filtro `len > 10` (era bypass C3 do audit T1-T6).
+    fairness = validate_fairness_recursive(
+        value, guard=_fairness_guard, root_label=field or "value"
+    )
+    if fairness.is_blocked:
+        return _fairness_block_response(fairness, fallback_field=field)
 
     async with AsyncSessionLocal() as session:
         if section == "profile":
@@ -195,15 +229,14 @@ async def _wrap_save_company_section(**kwargs: Any) -> dict[str, Any]:
     if not data or not isinstance(data, dict):
         return {"success": False, "data": {}, "message": "Dados vazios ou invalidos."}
 
-    for field_name, field_value in data.items():
-        if isinstance(field_value, str) and len(field_value) > 10:
-            check = _fairness_guard.check(field_value)
-            if check.is_blocked:
-                return {
-                    "success": False,
-                    "data": {"blocked_field": field_name, "category": check.category},
-                    "message": f"Campo '{field_name}' bloqueado por compliance: {check.educational_message}",
-                }
+    # PR3 (Task #1003) — varre o dict inteiro recursivamente (cobre listas e
+    # nested dicts em campos como dei_initiatives, default_salary_ranges,
+    # seniority_levels). Substitui o filtro `len > 10` (bypass C3).
+    fairness = validate_fairness_recursive(
+        data, guard=_fairness_guard, root_label=section or "data"
+    )
+    if fairness.is_blocked:
+        return _fairness_block_response(fairness)
 
     saved_fields = []
     for field, value in data.items():
@@ -320,6 +353,16 @@ async def _wrap_import_workforce_plan(**kwargs: Any) -> dict[str, Any]:
             "data": {},
             "message": "Dados do plano de contratacoes vazios. Envie uma lista com departamento, cargo, quantidade e prazo.",
         }
+
+    # PR3 (Task #1003) — bug C3 do audit T1-T6: import_workforce_plan NUNCA
+    # passava pelo FairnessGuard. Agora cada item (department/role/seniority/
+    # observações) é varrido recursivamente. Cobre casos como
+    # `[{"role": "estagiário branco"}]` ou `[{"seniority": "homem júnior"}]`.
+    fairness = validate_fairness_recursive(
+        plan_data, guard=_fairness_guard, root_label="plan_data"
+    )
+    if fairness.is_blocked:
+        return _fairness_block_response(fairness)
 
     total_hires = sum(item.get("quantity", 0) for item in plan_data if isinstance(item, dict))
     departments = list(set(item.get("department", "N/A") for item in plan_data if isinstance(item, dict)))

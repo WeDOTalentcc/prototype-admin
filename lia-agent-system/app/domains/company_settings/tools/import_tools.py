@@ -24,6 +24,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import AsyncSessionLocal
 from app.tools.registry import ToolDefinition, tool_registry
 from app.shared.compliance.fairness_guard import FairnessGuard
+from app.shared.compliance.fairness_recursive import (
+    RecursiveFairnessResult,
+    validate_fairness_recursive,
+)
 
 if TYPE_CHECKING:
     from app.tools.executor import ToolExecutionContext
@@ -31,6 +35,38 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 _fairness_guard = FairnessGuard()
+
+
+def _fairness_block_payload(
+    result: RecursiveFairnessResult,
+    *,
+    fallback_field: str | None = None,
+) -> dict[str, Any]:
+    """PR3 (Task #1003) — formato canônico de resposta quando o
+    FairnessGuard recursivo veta um payload nesse módulo. Espelha o helper
+    em ``company_tool_registry.py``: a LIA verbaliza ``educational_message``
+    + oferece reformulação inclusiva (rule #4 do YAML).
+    """
+    field_label = result.offending_field or fallback_field or "<root>"
+    signal = result.offending_signal or ""
+    base_msg = (
+        result.educational_message
+        or "Trecho com sinal de viés detectado pelo FairnessGuard."
+    )
+    return {
+        "success": False,
+        "error": "fairness_blocked",
+        "data": {
+            "offending_field": field_label,
+            "offending_signal": signal,
+            "category": result.category,
+            "blocked_terms": result.blocked_terms or [],
+        },
+        "message": (
+            f"Bloqueio de compliance em '{field_label}': {base_msg} "
+            f"Trecho sinalizado: «{signal}». Quer reescrever de forma inclusiva?"
+        ),
+    }
 
 
 def _extract_context(kwargs: dict[str, Any]) -> Optional["ToolExecutionContext"]:
@@ -346,9 +382,10 @@ _ATOMIC_FIELD_TO_BLOCK: dict[str, str] = {
     "autonomy_level": "automation_rules",
 }
 
-# Campos textuais sujeitos a FairnessGuard (PR3 vai endurecer com guard recursivo;
-# por ora cobrimos os campos free-text mais sensíveis).
-_TEXTUAL_POLICY_FIELDS = frozenset({"auto_rejection_feedback", "lia_tone"})
+# PR3 (Task #1003): removido `_TEXTUAL_POLICY_FIELDS` — agora ``save_hiring_policy``
+# delega a validação ao ``validate_fairness_recursive`` que cobre TODOS os campos
+# textuais (incluindo strings curtas e nested em pipeline_rules/scheduling_rules
+# como `allowed_days = ["seg", "qua", "Sem mães solteiras"]`).
 
 
 async def save_hiring_policy(
@@ -417,25 +454,15 @@ async def save_hiring_policy(
             "rejected": rejected,
         }
 
-    # FairnessGuard nos campos textuais (PR3 endurece com helper recursivo).
-    for block_name, block_data in block_updates.items():
-        for field_name, field_value in block_data.items():
-            if field_name in _TEXTUAL_POLICY_FIELDS and isinstance(field_value, str):
-                check = _fairness_guard.check(field_value)
-                if check.is_blocked:
-                    return {
-                        "success": False,
-                        "error": "fairness_blocked",
-                        "data": {
-                            "blocked_field": field_name,
-                            "block": block_name,
-                            "category": check.category,
-                        },
-                        "message": (
-                            f"Campo '{field_name}' bloqueado por compliance: "
-                            f"{check.educational_message}"
-                        ),
-                    }
+    # PR3 (Task #1003) — FairnessGuard recursivo. Cobre TODOS os campos
+    # textuais (incluindo nested em pipeline_rules/scheduling_rules e strings
+    # curtas como `lia_tone="só homens"`). Substitui o filtro restrito
+    # `_TEXTUAL_POLICY_FIELDS` (bypass parcial do C3 do audit T1-T6).
+    fairness = validate_fairness_recursive(
+        block_updates, guard=_fairness_guard, root_label="rules"
+    )
+    if fairness.is_blocked:
+        return _fairness_block_payload(fairness)
 
     # Upsert: lê o bloco atual, faz merge superficial, grava de volta.
     fields_saved: list[str] = []
@@ -599,6 +626,17 @@ async def import_benefits_from_data(
             "error": "invalid_input",
             "message": "`benefits` must be a non-empty list of objects.",
         }
+
+    # PR3 (Task #1003) — bug C3 do audit T1-T6: import_benefits_from_data NUNCA
+    # passava pelo FairnessGuard. Agora cada item ({name, category, description})
+    # é varrido recursivamente. Cobre casos como
+    # `[{"name": "Vale-creche apenas para mães casadas"}]` ou descrições com
+    # exclusão por estado civil/religião/etc.
+    fairness = validate_fairness_recursive(
+        benefits, guard=_fairness_guard, root_label="benefits"
+    )
+    if fairness.is_blocked:
+        return _fairness_block_payload(fairness)
 
     try:
         from lia_models.company_benefit import CompanyBenefit

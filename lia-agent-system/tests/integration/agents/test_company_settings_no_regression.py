@@ -637,3 +637,116 @@ def test_golden_dataset_exists_with_21_scenarios():
         f"do golden: {sorted(missing_pr2)}. Sem eles, a persistência real "
         "da política (bug C1 do audit) deixa de ser coberta pelo eval gate."
     )
+
+    # PR3 (Task #1003) — exigir explicitamente os 3 cenários extras do
+    # FairnessGuard recursivo (lista, dict-nested, string curta). Se um
+    # futuro PR removê-los, o bypass C3 do audit T1-T6 deixa de ser
+    # coberto pelo eval gate.
+    extra_pr3 = {
+        "CSP-culture-fairness-list-pr3",
+        "CSP-compensation-fairness-dict-pr3",
+        "CSP-policy-fairness-short-pr3",
+    }
+    missing_pr3 = extra_pr3 - ids_present
+    assert not missing_pr3, (
+        f"PR3 (Task #1003) regressão: cenários do FairnessGuard recursivo "
+        f"ausentes do golden: {sorted(missing_pr3)}. Sem eles, o bypass C3 "
+        "(list/dict/short-string) volta a passar despercebido."
+    )
+
+
+# ─── Contrato 6: PR3 (Task #1003) — FairnessGuard recursivo aplicado ─────
+
+
+def test_pr3_fairness_recursive_helper_importable():
+    """PR3 (Task #1003) — sentinela contra remoção do helper canônico
+    `validate_fairness_recursive`. Se o módulo ou a função sumir, os 5
+    wrappers de save voltam ao bypass C3 (filtro `len > 10` + listas/dicts
+    ignorados) silenciosamente.
+    """
+    from app.shared.compliance import fairness_recursive
+
+    assert hasattr(fairness_recursive, "validate_fairness_recursive"), (
+        "PR3 regressão: app/shared/compliance/fairness_recursive.py perdeu "
+        "`validate_fairness_recursive` — bypass C3 do audit T1-T6 reabre."
+    )
+    assert hasattr(fairness_recursive, "RecursiveFairnessResult"), (
+        "PR3 regressão: dataclass `RecursiveFairnessResult` removida — "
+        "o contrato `{offending_field, offending_signal, category}` que a "
+        "rule #4 do YAML exige na resposta da tool deixa de existir."
+    )
+
+
+def test_pr3_save_tools_call_fairness_recursive():
+    """PR3 (Task #1003) — defesa AST contra regressão do bypass C3.
+
+    Inspeciona via `ast` que CADA UMA das 5 tools de save/import abaixo
+    chama `validate_fairness_recursive` no corpo da função. Se um futuro
+    PR remover a chamada (ou voltar para o filtro `len > 10` parcial),
+    este teste quebra antes do merge.
+    """
+    import ast
+
+    targets: list[tuple[Path, set[str]]] = [
+        (
+            Path(__file__).resolve().parents[3]
+            / "app"
+            / "domains"
+            / "company_settings"
+            / "agents"
+            / "company_tool_registry.py",
+            {
+                "_wrap_save_company_field",
+                "_wrap_save_company_section",
+                "_wrap_import_workforce_plan",
+            },
+        ),
+        (
+            Path(__file__).resolve().parents[3]
+            / "app"
+            / "domains"
+            / "company_settings"
+            / "tools"
+            / "import_tools.py",
+            {"save_hiring_policy", "import_benefits_from_data"},
+        ),
+    ]
+
+    for module_path, required_funcs in targets:
+        assert module_path.exists(), f"Arquivo esperado não existe: {module_path}"
+        tree = ast.parse(module_path.read_text(encoding="utf-8"))
+        # Mapeia nome de função -> set de nomes de calls (para Name e Attribute)
+        offenders: list[str] = []
+        for node in ast.walk(tree):
+            if not isinstance(node, (ast.AsyncFunctionDef, ast.FunctionDef)):
+                continue
+            if node.name not in required_funcs:
+                continue
+            calls: set[str] = set()
+            for sub in ast.walk(node):
+                if isinstance(sub, ast.Call):
+                    func = sub.func
+                    if isinstance(func, ast.Name):
+                        calls.add(func.id)
+                    elif isinstance(func, ast.Attribute):
+                        calls.add(func.attr)
+            if "validate_fairness_recursive" not in calls:
+                offenders.append(f"{module_path.name}::{node.name}")
+        assert not offenders, (
+            "PR3 regressão (bypass C3 reaberto): as funções abaixo NÃO chamam "
+            f"`validate_fairness_recursive`: {offenders}. Sem essa chamada, "
+            "FairnessGuard volta a deixar passar listas/dicts/strings curtas "
+            "(audit T1-T6, finding C3)."
+        )
+
+    # Defesa adicional: o filtro antigo `len(...) > 10` não pode mais
+    # aparecer em nenhum dos dois arquivos — era exatamente o gating
+    # bypass que o PR3 removeu.
+    legacy_pattern = re.compile(r"len\s*\(\s*[a-zA-Z_]+\s*\)\s*>\s*10")
+    for module_path, _ in targets:
+        src = module_path.read_text(encoding="utf-8")
+        assert not legacy_pattern.search(src), (
+            f"PR3 regressão: filtro legado `len(...) > 10` reapareceu em "
+            f"{module_path.name}. Esse era o bypass C3 — quem decide o que "
+            "é viés é o FairnessGuard, não o caller."
+        )
