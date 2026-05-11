@@ -36,6 +36,8 @@ from __future__ import annotations
 
 import logging
 import os
+import time
+from collections import deque
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -100,10 +102,25 @@ except Exception:  # pragma: no cover — defensive
 # multi-instance prod) but useful for smoke checks and dev.
 _LOCAL_SNAPSHOT: dict[str, int] = {}
 
+# T4 #991 — sliding window of event timestamps for the canonical
+# ``last_24h_count`` health field. Bounded deque; entries older than
+# 24h are evicted lazily on read/write.
+_TWENTY_FOUR_HOURS = 24 * 60 * 60
+_EVENT_TIMESTAMPS: "deque[float]" = deque(maxlen=10_000)
+
+
+def _evict_old_events(now: float | None = None) -> None:
+    cutoff = (now if now is not None else time.time()) - _TWENTY_FOUR_HOURS
+    while _EVENT_TIMESTAMPS and _EVENT_TIMESTAMPS[0] < cutoff:
+        _EVENT_TIMESTAMPS.popleft()
+
 
 def _record_local(reason: str, endpoint: str) -> None:
     key = f"{endpoint}:{reason}"
     _LOCAL_SNAPSHOT[key] = _LOCAL_SNAPSHOT.get(key, 0) + 1
+    now = time.time()
+    _EVENT_TIMESTAMPS.append(now)
+    _evict_old_events(now)
 
 
 def get_demo_fallback_snapshot() -> dict[str, int]:
@@ -111,9 +128,16 @@ def get_demo_fallback_snapshot() -> dict[str, int]:
     return dict(_LOCAL_SNAPSHOT)
 
 
+def get_last_24h_count() -> int:
+    """Number of fallback events in the last 24h (sliding window)."""
+    _evict_old_events()
+    return len(_EVENT_TIMESTAMPS)
+
+
 def reset_demo_fallback_snapshot() -> None:
     """Reset used by tests."""
     _LOCAL_SNAPSHOT.clear()
+    _EVENT_TIMESTAMPS.clear()
 
 
 # ── Sentry capture ────────────────────────────────────────────────────

@@ -593,10 +593,17 @@ def _get_tenant_demo_fallback_block() -> dict:
         from app.shared.security.tenant_demo_fallback import (
             SENTRY_FINGERPRINT,
             get_demo_fallback_snapshot,
+            get_last_24h_count,
         )
         snapshot = get_demo_fallback_snapshot()
+        # T4 #991 — ``last_24h_count`` is the canonical canary field
+        # consumed by the on-call alerting rules (sliding window). The
+        # ``total_count`` alias is preserved for backwards-compat with
+        # existing dashboards.
+        total = sum(snapshot.values())
         return {
-            "total_count": sum(snapshot.values()),
+            "last_24h_count": get_last_24h_count(),
+            "total_count": total,
             "by_endpoint_reason": snapshot,
             "sentry_fingerprint": SENTRY_FINGERPRINT,
             "prometheus_metric": "lia_tenant_demo_fallback_total",

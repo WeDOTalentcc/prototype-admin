@@ -50,36 +50,10 @@ def _uuid() -> uuid.UUID:
     return uuid.uuid4()
 
 
-# Areas com peso realista no mercado BR (% candidatos/vagas distribuicao)
-DEPT_WEIGHTS = {
-    "engineering": 18, "data": 6, "product": 5, "design": 4,
-    "sales": 12, "customer_experience": 5,
-    "operations": 8, "logistics": 4, "procurement": 3,
-    "finance": 6, "accounting_tax": 3,
-    "marketing": 5,
-    "hr": 5,
-    "legal": 2, "compliance_audit": 2,
-    "healthcare": 3,
-    "education": 2,
-    "manufacturing": 2,
-    "construction": 1, "agronegocio": 2,
-    "security": 1, "esg_sustainability": 1,
-}
-DEPT_IDS = {n: _seed_uuid(f"dept:{n}") for n in DEPT_WEIGHTS}
-DEPT_DISPLAY = {
-    "engineering": "Engenharia de Software", "data": "Dados & Analytics",
-    "product": "Produto", "design": "Design",
-    "sales": "Vendas", "customer_experience": "Atendimento & CX",
-    "operations": "Operacoes", "logistics": "Logistica & Supply Chain",
-    "procurement": "Compras", "finance": "Financas",
-    "accounting_tax": "Contabilidade & Tributario",
-    "marketing": "Marketing", "hr": "Recursos Humanos",
-    "legal": "Juridico", "compliance_audit": "Compliance & Auditoria",
-    "healthcare": "Saude", "education": "Educacao",
-    "manufacturing": "Manufatura", "construction": "Construcao & Engenharia",
-    "agronegocio": "Agronegocio", "security": "Seguranca",
-    "esg_sustainability": "ESG & Sustentabilidade",
-}
+DEPT_IDS = {n: _seed_uuid(f"dept:{n}") for n in [
+    "engineering", "product", "design", "data", "hr",
+    "finance", "sales", "marketing", "legal", "operations",
+]}
 
 STAGE_DEFS = [
     {"name": "sourcing",             "display_name": "Funil",             "order": 1,  "color": "#6366F1", "icon": "search",      "type": "active",   "is_initial": True,  "cat": "system",  "behavior": "intake"},
@@ -130,80 +104,21 @@ CLIENT_USERS = [
 
 USER_IDS = [_seed_uuid(f"user:{u['email']}") for u in CLIENT_USERS]
 
-# JOB_VACANCIES: gerado dinamicamente (~80 vagas) com pesos por area
-import random as _jv_rng_mod
-_JV_RNG = _jv_rng_mod.Random(7)
+JOB_VACANCIES = [
+    {"title": "Engenheiro(a) de Software Sênior",       "dept": "engineering",  "location": "São Paulo, SP",       "model": "híbrido",     "type": "CLT", "seniority": "Sênior",       "status": "Ativa",      "priority": "alta",    "salary_min": 18000, "salary_max": 25000},
+    {"title": "Product Manager",                        "dept": "product",      "location": "São Paulo, SP",       "model": "híbrido",     "type": "CLT", "seniority": "Pleno",        "status": "Ativa",      "priority": "alta",    "salary_min": 15000, "salary_max": 22000},
+    {"title": "UX/UI Designer Pleno",                   "dept": "design",       "location": "Remoto",              "model": "remoto",      "type": "CLT", "seniority": "Pleno",        "status": "Ativa",      "priority": "média",   "salary_min": 10000, "salary_max": 15000},
+    {"title": "Analista de Dados Sênior",               "dept": "data",         "location": "São Paulo, SP",       "model": "híbrido",     "type": "CLT", "seniority": "Sênior",       "status": "Ativa",      "priority": "média",   "salary_min": 14000, "salary_max": 20000},
+    {"title": "Tech Lead — Backend",                    "dept": "engineering",  "location": "São Paulo, SP",       "model": "presencial",  "type": "CLT", "seniority": "Especialista", "status": "Ativa",      "priority": "alta",    "salary_min": 22000, "salary_max": 32000},
+    {"title": "Analista de RH Pleno",                   "dept": "hr",           "location": "São Paulo, SP",       "model": "híbrido",     "type": "CLT", "seniority": "Pleno",        "status": "Ativa",      "priority": "média",   "salary_min": 7000,  "salary_max": 10000},
+    {"title": "DevOps Engineer",                        "dept": "engineering",  "location": "Remoto",              "model": "remoto",      "type": "PJ",  "seniority": "Sênior",       "status": "Ativa",      "priority": "alta",    "salary_min": 16000, "salary_max": 24000},
+    {"title": "Analista Financeiro Júnior",             "dept": "finance",      "location": "São Paulo, SP",       "model": "presencial",  "type": "CLT", "seniority": "Júnior",       "status": "Rascunho",   "priority": "baixa",   "salary_min": 4500,  "salary_max": 6500},
+    {"title": "Gerente de Marketing Digital",           "dept": "marketing",    "location": "São Paulo, SP",       "model": "híbrido",     "type": "CLT", "seniority": "Sênior",       "status": "Aprovada",   "priority": "média",   "salary_min": 14000, "salary_max": 20000},
+    {"title": "Engenheiro(a) de Machine Learning",      "dept": "data",         "location": "Remoto",              "model": "remoto",      "type": "CLT", "seniority": "Sênior",       "status": "Ativa",      "priority": "alta",    "salary_min": 20000, "salary_max": 30000},
+    {"title": "Vendedor(a) Enterprise",                 "dept": "sales",        "location": "São Paulo, SP",       "model": "híbrido",     "type": "CLT", "seniority": "Pleno",        "status": "Concluída",  "priority": "alta",    "salary_min": 8000,  "salary_max": 12000},
+    {"title": "Advogado(a) Trabalhista",                "dept": "legal",        "location": "São Paulo, SP",       "model": "presencial",  "type": "CLT", "seniority": "Sênior",       "status": "Ativa",      "priority": "média",   "salary_min": 12000, "salary_max": 18000},
+]
 
-_SENIORITY_LEVELS = ["Júnior", "Pleno", "Sênior", "Especialista"]
-_SENIORITY_WEIGHTS = [25, 40, 25, 10]
-_VAC_STATUS_WEIGHTS = [("Ativa", 60), ("Rascunho", 12), ("Aprovada", 15), ("Concluída", 13)]
-_VAC_MODELS = [("híbrido", 50), ("presencial", 30), ("remoto", 20)]
-_VAC_TYPES = [("CLT", 70), ("PJ", 22), ("Estágio", 5), ("Temporário", 3)]
-_VAC_PRIORITIES = [("alta", 25), ("média", 50), ("baixa", 25)]
-
-# Salary base por seniority (min, max) — multiplicado por fator de area
-_BASE_SALARY = {
-    "Júnior":       (3500, 6500),
-    "Pleno":        (7000, 13000),
-    "Sênior":       (13000, 22000),
-    "Especialista": (22000, 38000),
-}
-# Fator por area (engenharia mais alto, atendimento mais baixo)
-_AREA_SALARY_FACTOR = {
-    "engineering": 1.30, "data": 1.25, "product": 1.20, "design": 1.05,
-    "sales": 1.00, "customer_experience": 0.80,
-    "operations": 0.95, "logistics": 0.90, "procurement": 0.95,
-    "finance": 1.15, "accounting_tax": 1.05,
-    "marketing": 1.00, "hr": 0.95,
-    "legal": 1.20, "compliance_audit": 1.15,
-    "healthcare": 1.10, "education": 0.80,
-    "manufacturing": 0.95, "construction": 1.00,
-    "agronegocio": 1.00, "security": 0.95, "esg_sustainability": 1.05,
-}
-
-def _weighted(rng, items):
-    keys = [k for k, _ in items]
-    weights = [w for _, w in items]
-    return rng.choices(keys, weights=weights)[0]
-
-def _gen_job_vacancies(target_count: int):
-    rng = _JV_RNG
-    vacancies = []
-    cities_list = CITIES
-    dept_list = list(DEPT_WEIGHTS.keys())
-    dept_weights = list(DEPT_WEIGHTS.values())
-
-    for i in range(target_count):
-        dept = rng.choices(dept_list, weights=dept_weights)[0]
-        seniority = rng.choices(_SENIORITY_LEVELS, weights=_SENIORITY_WEIGHTS)[0]
-        title_pool = TITLES_BY_AREA.get(dept, [DEPT_DISPLAY.get(dept, dept).title()])
-        title_base = rng.choice(title_pool)
-        # Sufixar com seniority quando faz sentido
-        if seniority in {"Júnior", "Pleno", "Sênior"} and seniority not in title_base:
-            title = f"{title_base} {seniority}"
-        else:
-            title = title_base
-        city = rng.choices(cities_list, weights=[c[2] for c in cities_list])[0]
-        loc = f"{city[0]}, {city[1]}"
-        model = _weighted(rng, _VAC_MODELS)
-        # Vagas em cidades pequenas tendem a ser remotas/hibridas
-        if city[2] < 8 and rng.random() < 0.5:
-            model = rng.choice(["remoto", "híbrido"])
-        etype = _weighted(rng, _VAC_TYPES)
-        status = _weighted(rng, _VAC_STATUS_WEIGHTS)
-        priority = _weighted(rng, _VAC_PRIORITIES)
-        sal_min_base, sal_max_base = _BASE_SALARY[seniority]
-        factor = _AREA_SALARY_FACTOR.get(dept, 1.0)
-        sal_min = round(sal_min_base * factor / 100) * 100
-        sal_max = round(sal_max_base * factor / 100) * 100
-        vacancies.append({
-            "title": title, "dept": dept, "location": loc, "model": model,
-            "type": etype, "seniority": seniority, "status": status,
-            "priority": priority, "salary_min": sal_min, "salary_max": sal_max,
-        })
-    return vacancies
-
-JOB_VACANCIES = _gen_job_vacancies(80)
 VACANCY_IDS = [_seed_uuid(f"vacancy:{i}:{v['title']}") for i, v in enumerate(JOB_VACANCIES)]
 
 DEPT_TECH_MAP = {
@@ -262,94 +177,6 @@ SENIORITY_BEHAVIORAL_MAP = {
         {"competency": "Visão sistêmica", "description": "Compreensão holística de impactos e trade-offs", "weight": 0.2},
     ],
 }
-
-
-# ----------------------------------------------------------------------------
-# Expansao 2026-05-11 — areas / titulos / skills / idiomas
-# ----------------------------------------------------------------------------
-TITLES_BY_AREA = {
-    "engineering": ["Software Engineer", "Backend Developer", "Frontend Developer", "Full Stack Developer", "DevOps Engineer", "Site Reliability Engineer", "Tech Lead", "Engineering Manager", "Mobile Developer", "iOS Developer", "Android Developer"],
-    "data": ["Data Analyst", "Data Engineer", "Data Scientist", "Analytics Engineer", "Machine Learning Engineer", "BI Analyst", "Head of Data"],
-    "product": ["Product Manager", "Product Owner", "Product Analyst", "Group PM", "VP of Product"],
-    "design": ["UX Designer", "UI Designer", "Product Designer", "Design Lead", "UX Researcher", "Brand Designer", "Motion Designer"],
-    "sales": ["Sales Development Rep (SDR)", "Account Executive", "Enterprise AE", "Sales Manager", "Head of Sales", "Inside Sales", "Customer Account Manager"],
-    "customer_experience": ["Customer Success Manager", "Customer Support Specialist", "CX Analyst", "Head of CX", "Implementation Manager", "Onboarding Specialist"],
-    "operations": ["Analista de Operacoes", "Coordenador(a) de Operacoes", "Gerente de Operacoes", "Diretor(a) de Operacoes", "Operations Lead"],
-    "logistics": ["Analista de Logistica", "Coordenador(a) de Logistica", "Gerente de Supply Chain", "Analista de Distribuicao", "Coordenador(a) de Armazem"],
-    "procurement": ["Analista de Compras", "Comprador(a) Estrategico", "Gerente de Suprimentos", "Buyer", "Sourcing Specialist"],
-    "finance": ["Analista Financeiro", "Analista de FP&A", "Controller", "Gerente Financeiro", "CFO", "Tesoureiro(a)"],
-    "accounting_tax": ["Analista Contabil", "Analista Tributario", "Contador(a)", "Gerente Contabil", "Tax Manager", "Auxiliar Fiscal"],
-    "marketing": ["Analista de Marketing", "Coordenador(a) de Marketing", "Marketing Manager", "CMO", "Growth Marketer", "Social Media Manager", "Brand Manager"],
-    "hr": ["Analista de RH", "Coordenador(a) de RH", "HRBP", "Recrutador(a)", "Talent Acquisition", "Gerente de RH", "CHRO"],
-    "legal": ["Advogado(a) Trabalhista", "Advogado(a) Civel", "Advogado(a) Tributario", "Gerente Juridico", "General Counsel", "Paralegal"],
-    "compliance_audit": ["Analista de Compliance", "Auditor(a) Interno(a)", "Compliance Officer", "GRC Analyst", "Privacy Officer (DPO)"],
-    "healthcare": ["Medico(a)", "Enfermeiro(a)", "Tecnico(a) em Enfermagem", "Auditor(a) Medico(a)", "Coordenador(a) de Saude"],
-    "education": ["Professor(a)", "Coordenador(a) Pedagogico", "Diretor(a) Escolar", "Designer Instrucional", "Tutor(a) EAD"],
-    "manufacturing": ["Analista de PCP", "Supervisor(a) de Producao", "Engenheiro(a) de Producao", "Gerente Industrial", "Operador(a) de Maquina"],
-    "construction": ["Engenheiro(a) Civil", "Arquiteto(a)", "Engenheiro(a) de Obras", "Mestre de Obras", "Coordenador(a) de Projetos"],
-    "agronegocio": ["Engenheiro(a) Agronomo", "Tecnico(a) Agricola", "Gerente de Fazenda", "Analista AgTech", "Zootecnista"],
-    "security": ["Tecnico(a) de Seguranca do Trabalho", "Engenheiro(a) de Seguranca", "CISO", "Analista de Seguranca da Informacao", "Pentester"],
-    "esg_sustainability": ["Analista ESG", "Coordenador(a) de Sustentabilidade", "Carbon Manager", "ESG Reporting Specialist", "Analista Ambiental"],
-}
-
-SKILLS_BY_AREA = {
-    "engineering": ["Python", "JavaScript", "TypeScript", "React", "Node.js", "PostgreSQL", "AWS", "Docker", "Kubernetes", "Java", "Go", "GraphQL", "Redis", "Kafka", "Terraform", "CI/CD", "Git", "Linux", "FastAPI", "Django", "Next.js", "Vue.js"],
-    "data": ["Python", "SQL", "Spark", "Airflow", "dbt", "Snowflake", "BigQuery", "Pandas", "NumPy", "Scikit-learn", "TensorFlow", "PyTorch", "MLflow", "Power BI", "Tableau", "Looker", "Databricks"],
-    "product": ["Roadmap", "OKR", "Scrum", "Kanban", "Jira", "Figma", "Mixpanel", "Amplitude", "User Research", "A/B Testing", "Product Discovery", "JTBD"],
-    "design": ["Figma", "Sketch", "Adobe XD", "Photoshop", "Illustrator", "After Effects", "Webflow", "Design System", "Prototipacao", "Pesquisa UX"],
-    "sales": ["Salesforce", "HubSpot", "Pipedrive", "RD Station", "Outbound", "Inbound", "Cold Call", "Cold Mail", "Negociacao", "Forecast", "LinkedIn Sales Navigator"],
-    "customer_experience": ["Zendesk", "Salesforce Service", "Freshdesk", "Intercom", "NPS", "CSAT", "Service Cloud", "Customer Success", "Onboarding"],
-    "operations": ["Lean", "Six Sigma", "SAP", "Oracle", "Excel Avancado", "Power Query", "BPMN", "ISO 9001", "PDCA", "Kaizen"],
-    "logistics": ["SAP MM/WM", "Excel Avancado", "WMS", "TMS", "Roteirizacao", "Curva ABC", "Lean Logistics", "Gestao de Frota"],
-    "procurement": ["SAP Ariba", "Negociacao", "Sourcing", "Strategic Sourcing", "RFP", "RFQ", "Cotacao", "Gestao de Fornecedores"],
-    "finance": ["Excel Avancado", "Power BI", "SAP FI", "Oracle", "FP&A", "Tesouraria", "Fluxo de Caixa", "Budget", "Forecast", "DRE", "Modelagem Financeira"],
-    "accounting_tax": ["SAP", "SPED", "ECF", "ECD", "EFD", "Contabilidade Tributaria", "IRRF", "ICMS", "PIS/COFINS", "Bloco K", "Reinf"],
-    "marketing": ["Google Ads", "Meta Ads", "RD Station", "HubSpot Marketing", "Google Analytics 4", "GTM", "SEO", "Midia Programatica", "Content Marketing", "Brand", "ASO"],
-    "hr": ["Recrutamento e Selecao", "Folha de Pagamento", "Subsistemas RH", "DP", "Cargos e Salarios", "DISC", "MBTI", "T&D", "Onboarding", "HRBP", "Engagement"],
-    "legal": ["Direito do Trabalho", "Direito Civel", "Direito Tributario", "Contratos", "Compliance", "LGPD", "Jurisprudencia", "PJe", "Contencioso"],
-    "compliance_audit": ["SOX", "ISO 27001", "LGPD", "PCI-DSS", "ITGC", "Auditoria Interna", "COSO", "Controles Internos", "GRC", "FCPA"],
-    "healthcare": ["Tasy", "MV", "Soul MV", "Glosas", "TISS", "TUSS", "Faturamento Hospitalar", "Auditoria Medica", "Protocolos Clinicos"],
-    "education": ["Plataformas EAD", "Moodle", "Google Classroom", "Avaliacao Pedagogica", "Curriculo BNCC", "Gestao Escolar", "Tutoria Online"],
-    "manufacturing": ["Lean Manufacturing", "MES", "OEE", "PCP", "PCM", "TPM", "Kaizen", "5S", "Six Sigma", "Manutencao Preditiva"],
-    "construction": ["AutoCAD", "Revit", "MS Project", "Sienge", "Orcamento de Obras", "Cronograma Fisico-Financeiro", "NBR", "Norma Tecnica"],
-    "agronegocio": ["Agronegocio", "Manejo de Solo", "Defensivos", "Agricultura de Precisao", "AgTech", "Pecuaria", "SENAR"],
-    "security": ["NR-10", "NR-12", "NR-33", "NR-35", "CIPA", "SESMT", "Seguranca da Informacao", "ISO 27001", "Pentest", "SIEM"],
-    "esg_sustainability": ["GRI", "TCFD", "SASB", "CDP", "Inventario GEE", "ESG Reporting", "Pacto Global", "ISE B3", "Carbon Footprint"],
-}
-
-CEFR_LEVELS = ["Basico", "Intermediario", "Avancado", "Fluente"]
-WORK_MODELS = ["remoto", "hibrido", "presencial"]
-CONTRACT_PREFS = ["CLT", "PJ", "Freelance/PJ", "Indiferente"]
-EDUCATION_LEVELS_BY_AREA = {
-    "manufacturing": ["Tecnico", "Bacharelado"],
-    "construction": ["Tecnico", "Bacharelado"],
-    "agronegocio": ["Tecnico", "Bacharelado"],
-    "healthcare": ["Bacharelado", "Pos-graduacao", "Mestrado"],
-    "education": ["Licenciatura", "Pos-graduacao", "Mestrado"],
-}
-
-def _gen_languages(rng):
-    """PT nativo + EN (variado) + chance de outros idiomas."""
-    langs = [{"language": "Portugues", "level": "Nativo"}]
-    en_lvl = rng.choices(CEFR_LEVELS, weights=[15, 30, 35, 20])[0]
-    langs.append({"language": "Ingles", "level": en_lvl})
-    if rng.random() < 0.25:
-        es_lvl = rng.choices(CEFR_LEVELS, weights=[40, 35, 20, 5])[0]
-        langs.append({"language": "Espanhol", "level": es_lvl})
-    if rng.random() < 0.05:
-        extra = rng.choice(["Frances", "Alemao", "Italiano", "Mandarim"])
-        langs.append({"language": extra, "level": rng.choice(["Basico", "Intermediario"])})
-    return langs
-
-
-def _gen_headline(rng, dept, seniority, years):
-    title = rng.choice(TITLES_BY_AREA.get(dept, ["Profissional"]))
-    return f"{seniority} {title} - {years}+ anos de experiencia"
-
-
-def _avatar_url(seed_uuid):
-    """DiceBear personas — SVG humanizado, LGPD-safe, gratuito."""
-    return f"https://api.dicebear.com/9.x/personas/svg?seed={seed_uuid}"
 
 
 def _vacancy_tech_requirements(dept: str):
@@ -436,22 +263,11 @@ FIELDS_OF_STUDY = [
     "Marketing", "Gestão de RH", "Engenharia de Produção", "Matemática", "Estatística",
 ]
 
-# (cidade, UF, peso) — peso proxy de populacao + hub profissional
 CITIES = [
-    ("São Paulo", "SP", 100), ("Rio de Janeiro", "RJ", 60), ("Belo Horizonte", "MG", 40),
-    ("Curitiba", "PR", 30), ("Porto Alegre", "RS", 30), ("Brasília", "DF", 25),
-    ("Salvador", "BA", 22), ("Recife", "PE", 20), ("Fortaleza", "CE", 18),
-    ("Florianópolis", "SC", 18), ("Campinas", "SP", 15), ("Manaus", "AM", 10),
-    ("Goiânia", "GO", 10), ("Belém", "PA", 8), ("São Bernardo do Campo", "SP", 8),
-    ("Guarulhos", "SP", 8), ("Vitória", "ES", 8), ("São Luís", "MA", 6),
-    ("João Pessoa", "PB", 6), ("Maceió", "AL", 6), ("Natal", "RN", 6),
-    ("Teresina", "PI", 5), ("Cuiabá", "MT", 5), ("Campo Grande", "MS", 5),
-    ("Aracaju", "SE", 4), ("Boa Vista", "RR", 2), ("Rio Branco", "AC", 2),
-    ("Macapá", "AP", 2), ("Palmas", "TO", 2), ("Porto Velho", "RO", 2),
-    ("Joinville", "SC", 6), ("Londrina", "PR", 6), ("Ribeirão Preto", "SP", 6),
-    ("Sorocaba", "SP", 5), ("Caxias do Sul", "RS", 4), ("Niterói", "RJ", 6),
-    ("Uberlândia", "MG", 5), ("Juiz de Fora", "MG", 4), ("Feira de Santana", "BA", 4),
-    ("São José dos Campos", "SP", 6), ("Santos", "SP", 5),
+    ("São Paulo", "SP"), ("Rio de Janeiro", "RJ"), ("Belo Horizonte", "MG"),
+    ("Curitiba", "PR"), ("Porto Alegre", "RS"), ("Florianópolis", "SC"),
+    ("Brasília", "DF"), ("Recife", "PE"), ("Salvador", "BA"), ("Campinas", "SP"),
+    ("Goiânia", "GO"), ("Fortaleza", "CE"),
 ]
 
 
@@ -463,11 +279,6 @@ def _generate_candidates(count: int):
     rng = _CANDIDATE_RNG
     candidates = []
     used_names = set()
-    dept_list = list(DEPT_WEIGHTS.keys())
-    dept_weights = list(DEPT_WEIGHTS.values())
-    cities_weighted = [(c[0], c[1]) for c in CITIES]
-    city_weights = [c[2] for c in CITIES]
-
     for i in range(count):
         while True:
             fn = rng.choice(FIRST_NAMES)
@@ -476,120 +287,43 @@ def _generate_candidates(count: int):
             if name not in used_names:
                 used_names.add(name)
                 break
-
-        # Area canonical do candidato (peso realista do mercado BR)
-        dept = rng.choices(dept_list, weights=dept_weights)[0]
-
-        # Senioridade derivada do tempo de mercado (bell-ish)
-        yrs = rng.choices(
-            list(range(0, 30)),
-            weights=[3, 5, 8, 10, 12, 13, 12, 10, 8, 6, 5, 4, 3, 3, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        )[0]
-        if yrs <= 1:
-            seniority = "Estagiario" if rng.random() < 0.4 else "Junior"
-        elif yrs <= 3:
-            seniority = "Junior"
-        elif yrs <= 7:
-            seniority = "Pleno"
-        elif yrs <= 12:
-            seniority = "Senior"
-        else:
-            seniority = "Especialista"
-
-        city, state = rng.choices(cities_weighted, weights=city_weights)[0]
-
-        email_base = (
-            f"{fn.lower()}.{ln.lower()}"
-            .replace("á","a").replace("ã","a").replace("â","a")
-            .replace("é","e").replace("ê","e")
-            .replace("í","i").replace("ó","o").replace("ô","o").replace("õ","o")
-            .replace("ú","u").replace("ç","c")
-        )
-        email = f"{email_base}{rng.randint(1,999)}@email.com"
-
-        # Titulo por area
-        title_pool = TITLES_BY_AREA.get(dept, ["Profissional"])
-        title = rng.choice(title_pool)
-
-        # Skills por area (mais ricas)
-        skills_pool = SKILLS_BY_AREA.get(dept, TECH_SKILLS_POOL)
-        skills_count = min(rng.randint(5, 12), len(skills_pool))
-        technical_skills = rng.sample(skills_pool, skills_count)
-
-        # Soft skills (3-6)
-        soft_skills = rng.sample(SOFT_SKILLS, rng.randint(3, 6))
-
-        # Salary por seniority + area
-        sal_min_base, sal_max_base = _BASE_SALARY.get(seniority, _BASE_SALARY["Pleno"])
-        factor = _AREA_SALARY_FACTOR.get(dept, 1.0)
-        sal_current = round(sal_min_base * factor * rng.uniform(0.9, 1.15), 2)
-        sal_min = round(sal_current * rng.uniform(1.05, 1.15), 2)
-        sal_max = round(sal_min * rng.uniform(1.20, 1.45), 2)
-
-        # Mobility / work model preference
-        work_model_pref = rng.choices(WORK_MODELS, weights=[35, 45, 20])[0]
-        willing_to_relocate = rng.random() < 0.18
-        # mobility = abertura a mudar (boolean canonical na tabela)
-        mobility = willing_to_relocate or (work_model_pref == "remoto" and rng.random() < 0.3)
-        is_remote_pref = work_model_pref == "remoto"
-        contract_pref = rng.choices(CONTRACT_PREFS, weights=[55, 25, 10, 10])[0]
-
-        # LIA score — bell curve canonical
-        lia_score = max(20.0, min(99.0, rng.gauss(65, 14)))
-
-        # Languages, headline, expertise, certifications
-        languages = _gen_languages(rng)
-        headline = _gen_headline(rng, dept, seniority, yrs)
-        cand_uuid = _seed_uuid(f"candidate:{i}")
-        avatar_url = _avatar_url(cand_uuid)
-        expertise = [DEPT_DISPLAY.get(dept, dept).title()]
-
-        # Self-introduction breve
-        self_intro = (
-            f"Profissional {seniority} em {DEPT_DISPLAY.get(dept, dept).title()} "
-            f"com {yrs} anos de experiencia. Atualmente como {title}. "
-            f"Forte em {', '.join(technical_skills[:3])}."
-        )
-
-        is_open_to_work = rng.random() < 0.55  # 55% open to work
-
+        city, state = rng.choice(CITIES)
+        email_base = f"{fn.lower()}.{ln.lower()}".replace("á","a").replace("ã","a").replace("é","e").replace("ê","e").replace("í","i").replace("ó","o").replace("ô","o").replace("ú","u")
+        email = f"{email_base}{rng.randint(1,99)}@email.com"
+        yrs = rng.randint(1, 18)
+        seniority_map = {(1,3): "Júnior", (4,7): "Pleno", (8,12): "Sênior", (13,99): "Especialista"}
+        seniority = next(v for (lo,hi),v in seniority_map.items() if lo <= yrs <= hi)
+        skills_count = rng.randint(4, 10)
         candidates.append({
-            "id": cand_uuid,
+            "id": _seed_uuid(f"candidate:{i}"),
             "name": name,
             "email": email,
-            "phone": f"+55 {rng.choice([11,21,31,41,51,61,71,81])} 9{rng.randint(1000,9999)}-{rng.randint(1000,9999)}",
+            "phone": f"+55 11 9{rng.randint(1000,9999)}-{rng.randint(1000,9999)}",
             "city": city,
             "state": state,
             "current_company": rng.choice(COMPANIES_BR),
-            "current_title": title,
-            "headline": headline,
-            "self_introduction": self_intro,
-            "expertise": expertise,
+            "current_title": rng.choice([
+                "Software Engineer", "Analista de Sistemas", "Product Manager",
+                "UX Designer", "Data Analyst", "DevOps Engineer", "QA Engineer",
+                "Gerente de Projetos", "Tech Lead", "Analista de Dados",
+                "Desenvolvedor Full Stack", "Analista de BI", "Scrum Master",
+                "Analista Financeiro", "Consultor de RH", "Advogado(a)",
+            ]),
             "seniority": seniority,
             "years_of_experience": yrs,
-            "department_focus": dept,
-            "technical_skills": technical_skills,
-            "soft_skills": soft_skills,
-            "languages": languages,
-            "avatar_url": avatar_url,
+            "technical_skills": rng.sample(TECH_SKILLS_POOL, min(skills_count, len(TECH_SKILLS_POOL))),
+            "soft_skills": rng.sample(SOFT_SKILLS, rng.randint(2, 5)),
             "source": SEED_SOURCE,
-            "salary_current": sal_current,
-            "salary_min": sal_min,
-            "salary_max": sal_max,
-            "lia_score": round(lia_score, 1),
-            "mobility": mobility,
-            "willing_to_relocate": willing_to_relocate,
-            "is_remote": is_remote_pref,
-            "work_model_preference": work_model_pref,
-            "contract_type_preference": contract_pref,
-            "is_open_to_work": is_open_to_work,
-            "linkedin_url": f"https://linkedin.com/in/{email_base}-{rng.randint(100,999)}",
-            "created_at": _past(5, 240),
+            "salary_current": round(rng.uniform(5000, 30000), 2),
+            "salary_min": round(rng.uniform(6000, 25000), 2),
+            "salary_max": round(rng.uniform(15000, 35000), 2),
+            "linkedin_url": f"https://linkedin.com/in/{email_base}{rng.randint(1,99)}",
+            "created_at": _past(5, 120),
         })
     return candidates
 
 
-CANDIDATES = _generate_candidates(300)
+CANDIDATES = _generate_candidates(50)
 CANDIDATE_IDS = [c["id"] for c in CANDIDATES]
 
 
@@ -610,7 +344,7 @@ async def seed_client_account(db: AsyncSession):
             :start, :end, :user_limit, :job_limit, :credits, :industry, :size,
             :now, :now, false, true, false, false)
     """), {
-        "id": SEED_COMPANY_ID, "name": "WeDOTalent Demo", "trade_name": "WeDOTalent Demo — Ambiente de Demonstracao",
+        "id": SEED_COMPANY_ID, "name": "WeDo Talent", "trade_name": "WeDo Talent Tecnologia Ltda",
         "cnpj": "12.345.678/0001-90", "email": "contato@wedotalent.cc", "phone": "+55 11 3456-7890",
         "website": "https://wedotalent.cc", "status": "active", "plan": "enterprise",
         "start": NOW - timedelta(days=365), "end": NOW + timedelta(days=365),
@@ -839,21 +573,13 @@ async def seed_candidates(db: AsyncSession):
         await db.execute(text("""
             INSERT INTO candidates (id, name, email, phone, location_city, location_state, location_country,
                 current_company, current_title, seniority_level, years_of_experience,
-                technical_skills, soft_skills, languages, expertise, certifications,
-                source, current_salary, desired_salary_min, desired_salary_max,
-                linkedin_url, avatar_url, headline, self_introduction,
-                is_remote, willing_to_relocate, mobility, work_model_preference,
-                contract_type_preference, is_open_to_work, lia_score,
-                status, is_active, salary_currency,
+                technical_skills, soft_skills, source, current_salary, desired_salary_min, desired_salary_max,
+                linkedin_url, status, is_active, salary_currency,
                 created_at, updated_at)
             VALUES (:id, :name, :email, :phone, :city, :state, 'Brasil',
                 :company, :title, :seniority, :yrs,
-                :tech, :soft, cast(:languages as json), :expertise, ARRAY[]::varchar[],
-                :source, :sal, :sal_min, :sal_max,
-                :li, :avatar, :headline, :intro,
-                :is_remote, :willing_reloc, :mobility, :work_model,
-                :contract_pref, :open_to_work, :lia_score,
-                'active', true, 'BRL',
+                :tech, :soft, :source, :sal, :sal_min, :sal_max,
+                :li, 'active', true, 'BRL',
                 :created, :now)
             ON CONFLICT (id) DO NOTHING
         """), {
@@ -862,17 +588,9 @@ async def seed_candidates(db: AsyncSession):
             "title": c["current_title"], "seniority": c["seniority"], "yrs": c["years_of_experience"],
             "tech": c["technical_skills"],
             "soft": c["soft_skills"],
-            "languages": json.dumps(c["languages"]),
-            "expertise": c["expertise"],
             "source": c["source"], "sal": c["salary_current"],
             "sal_min": c["salary_min"], "sal_max": c["salary_max"],
-            "li": c["linkedin_url"], "avatar": c["avatar_url"],
-            "headline": c["headline"], "intro": c["self_introduction"],
-            "is_remote": c["is_remote"], "willing_reloc": c["willing_to_relocate"],
-            "mobility": c["mobility"], "work_model": c["work_model_preference"],
-            "contract_pref": c["contract_type_preference"], "open_to_work": c["is_open_to_work"],
-            "lia_score": c["lia_score"],
-            "created": c["created_at"], "now": NOW,
+            "li": c["linkedin_url"], "created": c["created_at"], "now": NOW,
         })
         count += 1
     logger.info(f"  {count} candidates seeded.")

@@ -61,6 +61,18 @@ class TestDemoFallbackHelper:
         snap = tdf.get_demo_fallback_snapshot()
         assert snap == {"get_company_profile:missing_profile_for_real_tenant": 1}
 
+    def test_last_24h_count_tracks_events(self) -> None:
+        assert tdf.get_last_24h_count() == 0
+        tdf.record_demo_fallback(
+            endpoint="get_company_profile",
+            reason="missing_profile_for_real_tenant",
+        )
+        tdf.record_demo_fallback(
+            endpoint="submit_onboarding",
+            reason="cross_tenant_company_profile_write_attempt",
+        )
+        assert tdf.get_last_24h_count() == 2
+
     def test_record_demo_fallback_increments_prometheus(self) -> None:
         if tdf._FALLBACK_COUNTER is None:
             pytest.skip("prometheus_client not installed in this env")
@@ -236,19 +248,62 @@ class TestSubmitOnboardingNoOverwrite:
                 data=data, profile_repo=repo, cp_repo=cp_repo, current_user=user,
             )
 
-        # The route may wrap unexpected errors in 500 — but a 403 from the
-        # IDOR guard MUST surface as-is (HTTPException re-raised by FastAPI).
-        # If wrapped, detail will still be a string containing the code.
-        if exc.value.status_code == 403:
-            assert exc.value.detail["code"] == "CROSS_TENANT_PROFILE_WRITE_FORBIDDEN"
-        else:
-            assert "CROSS_TENANT_PROFILE_WRITE_FORBIDDEN" in str(exc.value.detail)
+        # T4 #991 — HTTPException re-raise contract: 403 must surface
+        # as 403, NEVER wrapped into 500 by the generic handler.
+        assert exc.value.status_code == 403, (
+            f"403 was wrapped into {exc.value.status_code} — generic "
+            "except Exception block is swallowing structured errors."
+        )
+        assert exc.value.detail["code"] == "CROSS_TENANT_PROFILE_WRITE_FORBIDDEN"
         repo.update.assert_not_called()
         repo.create.assert_not_called()
         snap = tdf.get_demo_fallback_snapshot()
         assert snap.get(
             "submit_onboarding:cross_tenant_company_profile_write_attempt"
         ) == 1
+
+    @pytest.mark.asyncio
+    async def test_demo_caller_uses_demo_fallback_not_create(self) -> None:
+        """Demo dev caller (company_id='demo_company') must resolve the
+        seeded Demo profile, not attempt to create a new one with the
+        slug as ``client_account_id`` (which would fail UUID coercion)."""
+        from app.api.v1.company import submit_onboarding
+
+        demo_profile = MagicMock(
+            id=tdf.DEMO_COMPANY_UUID, is_default=True, name="Demo",
+            additional_data={},
+        )
+        repo = MagicMock()
+        repo.get_by_id = AsyncMock(return_value=None)
+        repo.get_by_client_account = AsyncMock(return_value=None)
+        repo.get_default = AsyncMock(return_value=demo_profile)
+        repo.create = AsyncMock()
+        repo.update = AsyncMock(return_value=demo_profile)
+        cp_repo = MagicMock()
+        user = MagicMock(company_id=tdf.DEMO_COMPANY_SLUG)
+
+        data = MagicMock(
+            company_name="Demo", trade_name=None, cnpj=None, address=None,
+            sector=None, employee_count=None, website=None, linkedin_url=None,
+            logo_url=None, responsible_email=None, responsible_phone=None,
+            company_id=None, culture_profile=None,
+            hiring_volume=None, job_types=None, current_ats=None,
+            main_challenges=None, main_priority=None,
+            platform_expectations=None, communication_channels=None,
+            allow_lia_contact=None, additional_notes=None,
+            responsible_name=None, responsible_position=None,
+            preferred_contact_time=None, work_model=None,
+        )
+
+        await submit_onboarding(
+            data=data, profile_repo=repo, cp_repo=cp_repo, current_user=user,
+        )
+
+        repo.get_default.assert_awaited_once()
+        repo.create.assert_not_called()
+        repo.update.assert_awaited_once()
+        snap = tdf.get_demo_fallback_snapshot()
+        assert snap.get("submit_onboarding:demo_caller_dev_fallback") == 1
 
 
 # ─── Source-grep sentinels ─────────────────────────────────────────────

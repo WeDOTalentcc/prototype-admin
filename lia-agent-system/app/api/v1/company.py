@@ -276,13 +276,21 @@ async def submit_onboarding(
                 )
                 profile = None  # force create-new branch below
 
-        if not profile and not user_company_id:
-            # Genuine no-auth path (dev/local). Allow legacy Demo behavior
-            # but emit telemetry so prod traffic is visible.
+        # T4 #991 — Demo dev fallback path. ``get_current_user_or_demo``
+        # supplies ``company_id="demo_company"`` for the seeded dev user
+        # AND for unauthenticated requests (dev mode). Both cases are
+        # legitimate Demo callers; resolve to the seeded Demo profile
+        # instead of leaking the slug into a UUID column or creating a
+        # second "demo" tenant.
+        if not profile and (user_company_id is None or is_demo_caller(user_company_id)):
             record_demo_fallback(
                 endpoint="submit_onboarding",
-                reason="no_auth_context_dev_fallback",
-                user_company_id=None,
+                reason=(
+                    "demo_caller_dev_fallback"
+                    if user_company_id
+                    else "no_auth_context_dev_fallback"
+                ),
+                user_company_id=user_company_id,
             )
             profile = await profile_repo.get_default()
             if profile:
@@ -347,7 +355,12 @@ async def submit_onboarding(
                 "is_default": False,
                 "additional_data": onboarding_metadata,
             }
-            if user_company_id:
+            # T4 #991 — only attach ``client_account_id`` when the
+            # caller is a real tenant. The Demo slug ``"demo_company"``
+            # is NOT a UUID and writing it into the UUID column would
+            # raise; demo callers should never reach this branch (the
+            # demo dev fallback above resolves the seeded profile).
+            if user_company_id and not is_demo_caller(user_company_id):
                 create_data["client_account_id"] = user_company_id
             profile = await profile_repo.create(create_data, set_default=False)
             # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
@@ -379,6 +392,11 @@ async def submit_onboarding(
             "company_id": str(profile.id),
             "company_name": profile.name
         }
+    except HTTPException:
+        # T4 #991 — never wrap structured 4xx (403 cross-tenant, 404
+        # not-found) into 500. Re-raise so the explicit authorization
+        # contract is preserved end-to-end.
+        raise
     except Exception as e:
         logger.error(f"Error processing onboarding data: {e}")
         raise HTTPException(status_code=500, detail=str(e))
