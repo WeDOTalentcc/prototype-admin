@@ -213,9 +213,31 @@ async def submit_onboarding(
                             getattr(profile, "is_default", False)
                             or str(getattr(profile, "id", "")) == DEMO_COMPANY_UUID
                         )
+                        # T4 #991 — explicit-target Demo write IDOR.
+                        # Non-Demo caller passing the Demo UUID in
+                        # ``data.company_id`` must get an explicit 403
+                        # — never silently degrade into create-new.
+                        if is_demo_profile_target:
+                            record_demo_fallback(
+                                endpoint="submit_onboarding",
+                                reason="cross_tenant_demo_profile_write_attempt",
+                                user_company_id=user_company_id,
+                                extra={"target_profile_id": str(profile.id)},
+                            )
+                            logger.warning(
+                                "submit_onboarding: explicit Demo write "
+                                "blocked user_company_id=%s target=%s",
+                                user_company_id, str(profile.id),
+                            )
+                            raise HTTPException(
+                                status_code=403,
+                                detail={
+                                    "code": "CROSS_TENANT_DEMO_PROFILE_FORBIDDEN",
+                                    "message": "Demo profile is not editable from your tenant.",
+                                },
+                            )
                         if (
-                            not is_demo_profile_target
-                            and profile_owner is not None
+                            profile_owner is not None
                             and str(profile_owner) != user_company_id
                         ):
                             record_demo_fallback(

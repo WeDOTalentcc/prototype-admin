@@ -298,6 +298,55 @@ class TestSubmitOnboardingNoOverwrite:
         ) == 1
 
     @pytest.mark.asyncio
+    async def test_real_tenant_explicit_demo_write_returns_403(self) -> None:
+        """T4 #991 — explicit Demo write IDOR. Real tenant POSTing
+        onboarding with ``data.company_id = DEMO_UUID`` MUST get 403
+        (not silently degrade into create-new)."""
+        from fastapi import HTTPException
+
+        from app.api.v1.company import submit_onboarding
+
+        demo_profile = MagicMock(
+            id=tdf.DEMO_COMPANY_UUID, is_default=True,
+            client_account_id=None, name="Demo",
+        )
+        repo = MagicMock()
+        repo.get_by_id = AsyncMock(return_value=demo_profile)
+        repo.get_by_client_account = AsyncMock(return_value=None)
+        repo.get_default = AsyncMock(return_value=demo_profile)
+        repo.create = AsyncMock()
+        repo.update = AsyncMock()
+        cp_repo = MagicMock()
+        user = MagicMock(id="u-acme", company_id="acme-corp")
+
+        data = MagicMock(
+            company_name="Acme", trade_name=None, cnpj=None, address=None,
+            sector=None, employee_count=None, website=None, linkedin_url=None,
+            logo_url=None, responsible_email=None, responsible_phone=None,
+            company_id=tdf.DEMO_COMPANY_UUID, culture_profile=None,
+            hiring_volume=None, job_types=None, current_ats=None,
+            main_challenges=None, main_priority=None,
+            platform_expectations=None, communication_channels=None,
+            allow_lia_contact=None, additional_notes=None,
+            responsible_name=None, responsible_position=None,
+            preferred_contact_time=None, work_model=None,
+        )
+
+        with pytest.raises(HTTPException) as exc:
+            await submit_onboarding(
+                data=data, profile_repo=repo, cp_repo=cp_repo, current_user=user,
+            )
+
+        assert exc.value.status_code == 403
+        assert exc.value.detail["code"] == "CROSS_TENANT_DEMO_PROFILE_FORBIDDEN"
+        repo.create.assert_not_called()
+        repo.update.assert_not_called()
+        snap = tdf.get_demo_fallback_snapshot()
+        assert snap.get(
+            "submit_onboarding:cross_tenant_demo_profile_write_attempt"
+        ) == 1
+
+    @pytest.mark.asyncio
     async def test_demo_caller_uses_demo_fallback_not_create(self) -> None:
         """Demo dev caller (company_id='demo_company') must resolve the
         seeded Demo profile, not attempt to create a new one with the
