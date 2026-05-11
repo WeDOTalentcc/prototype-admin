@@ -13,8 +13,12 @@ from lia_agents_core.tool_adapter import ToolOutput
 from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
+from app.domains.company_settings.tools.import_tools import (
+    save_hiring_policy as _save_hiring_policy_handler,
+)
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.tool_handler import tool_handler
+from types import SimpleNamespace
 
 logger = logging.getLogger(__name__)
 
@@ -364,6 +368,28 @@ async def _wrap_import_workforce_plan(**kwargs: Any) -> dict[str, Any]:
 
 
 @tool_handler("company_settings")
+async def _wrap_save_hiring_policy(**kwargs: Any) -> dict[str, Any]:
+    """PR2 (Task #1002) — local toolset wrapper for `save_hiring_policy`.
+
+    The `CompanySettingsReActAgent` binds tools via `get_company_settings_tools()`
+    (this file), not the global tool_registry. Without this wrapper the YAML
+    mapping `policy → save_hiring_policy` would resolve to `tool_not_found`
+    in the company_settings chat flow — re-creating bug C1 (audit T1-T6) at
+    the agent layer instead of the tool layer.
+
+    Delegates to the canonical `save_hiring_policy` handler in
+    `app/domains/company_settings/tools/import_tools.py`, reconstructing the
+    `_context` from the `company_id`/`user_id` already extracted by the local
+    toolset convention.
+    """
+    company_id = kwargs.get("company_id", "")
+    user_id = kwargs.get("user_id", "")
+    rules = kwargs.get("rules", {})
+    ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
+    return await _save_hiring_policy_handler(rules=rules, _context=ctx)
+
+
+@tool_handler("company_settings")
 async def _wrap_get_company_completion(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     result = await _wrap_get_company_profile(company_id=company_id)
@@ -509,6 +535,35 @@ def get_company_settings_tools() -> list[ToolDefinition]:
             },
             output_schema=ToolOutput,
             function=_wrap_import_workforce_plan,
+        ),
+        ToolDefinition(
+            name="save_hiring_policy",
+            description=(
+                "PR2/Task #1002 — Persiste (upsert) a política de recrutamento "
+                "em company_hiring_policies. Aceita dict com blocos canônicos "
+                "(pipeline_rules, scheduling_rules, communication_rules, "
+                "screening_rules, automation_rules) e/ou campos atômicos "
+                "(min_interviews_before_offer, manager_approval_for_offer, "
+                "allowed_days, allowed_hours, auto_rejection_feedback, lia_tone, "
+                "auto_screening, autonomy_level). Aplica FairnessGuard nos "
+                "campos textuais. Use APÓS confirmação humana (HITL) da "
+                "política sugerida por suggest_recruiting_policy — NUNCA use "
+                "save_company_section/save_company_field para policy."
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "rules": {
+                        "type": "object",
+                        "description": (
+                            "Dict com blocos canônicos e/ou campos atômicos."
+                        ),
+                    },
+                },
+                "required": ["rules"],
+            },
+            output_schema=ToolOutput,
+            function=_wrap_save_hiring_policy,
         ),
         ToolDefinition(
             name="get_company_completion",
