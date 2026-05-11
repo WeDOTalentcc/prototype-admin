@@ -4,6 +4,7 @@ import NextImage from "next/image"
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { renderSubStatusOptions } from './rejection-categories'
+import { useRejectionCategoryLabels } from './use-rejection-category-labels'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Button } from '@/components/ui/button'
 import {
@@ -52,6 +53,7 @@ export function BatchRejectionSection({
   setShowAllPerCandidate,
   handlePerCandidateSubStatusChange,
 }: BatchRejectionSectionProps) {
+  const rejectionCategoryLabels = useRejectionCategoryLabels()
   if (!isRejectedBatch || currentSubStatusOptions.length === 0) return null
 
   return (
@@ -130,7 +132,7 @@ export function BatchRejectionSection({
                         <SelectValue placeholder="Selecione..." />
                       </SelectTrigger>
                       <SelectContent>
-                        {renderSubStatusOptions(currentSubStatusOptions, 'text-xs')}
+                        {renderSubStatusOptions(currentSubStatusOptions, 'text-xs', rejectionCategoryLabels)}
                       </SelectContent>
                     </Select>
                   </div>

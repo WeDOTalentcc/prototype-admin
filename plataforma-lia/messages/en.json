@@ -1057,6 +1057,15 @@
     "screeningDeadline": "Screening deadline",
     "shortlistDeadline": "Shortlist deadline",
     "closing": "Closing",
+    "rejectionCategories": {
+      "business_decision": "Business decision",
+      "qualification": "Qualification",
+      "cultural": "Culture fit",
+      "logistics": "Logistics",
+      "compensation": "Compensation",
+      "process": "Process",
+      "other": "Other"
+    },
     "liaSuggestions": "{count, plural, one {# LIA suggestion} other {# LIA suggestions}}",
     "comingSoon": "Coming soon",
     "comingSoonStages": "Coming soon: Pipeline stage configuration",

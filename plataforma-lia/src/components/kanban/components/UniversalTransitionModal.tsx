@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { renderSubStatusOptions } from './rejection-categories'
+import { useRejectionCategoryLabels } from './use-rejection-category-labels'
 import {
   ArrowRight,
   Brain,
@@ -37,6 +38,8 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
     allowStageSelection,
     interviewAlert,
   } = props
+
+  const rejectionCategoryLabels = useRejectionCategoryLabels()
 
   const {
     subStatus,
@@ -271,7 +274,7 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
               <SelectContent className="z-modal" position="popper" sideOffset={4} side="top">
-                {renderSubStatusOptions(currentSubStatusOptions, 'text-xs')}
+                {renderSubStatusOptions(currentSubStatusOptions, 'text-xs', rejectionCategoryLabels)}
               </SelectContent>
             </Select>
             {interpretResult?.suggested_sub_status === subStatus && interpretResult?.ai_powered && (
