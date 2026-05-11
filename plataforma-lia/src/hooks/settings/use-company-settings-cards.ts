@@ -176,7 +176,7 @@ function buildBlocks(
   ]
 
   const techFields: CardField[] = [
-    { key: "tech_stack", label: "Stack Tecnologico", value: company.tech_stack, type: "list", editable: false, block: "tech" },
+    { key: "tech_stack", label: "Stack Tecnologico", value: company.tech_stack, type: "list", editable: true, block: "tech" },
     { key: "engineering_culture", label: "Cultura de Engenharia", value: company.engineering_culture, type: "text", editable: true, block: "tech" },
     { key: "default_languages", label: "Idiomas", value: company.default_languages, type: "list", editable: true, block: "tech" },
   ]
@@ -457,8 +457,19 @@ export function useCompanySettingsCards() {
     }
   }, [switchChatContext])
 
+  // Origin guard: when this hook itself dispatches "lia:settings-updated"
+  // after a save, we ALREADY call loadAll() inline. The listener exists only
+  // to refresh when LIA chat / other surfaces mutate settings out-of-band.
+  // Without the guard we double-load (own save + 1.5s timer reload). Track
+  // the last own-dispatch timestamp and skip the refetch within 2s.
+  const lastSelfDispatchRef = useRef<number>(0)
   useEffect(() => {
-    const handler = () => {
+    const handler = (ev: Event) => {
+      const detail = (ev as CustomEvent).detail as { source?: string } | undefined
+      // saveField below sets source="ui" for this hook's dispatches.
+      if (detail?.source === "ui" && Date.now() - lastSelfDispatchRef.current < 2000) {
+        return
+      }
       setTimeout(() => loadAll(), 1500)
     }
     window.addEventListener("lia:settings-updated", handler)
@@ -491,9 +502,26 @@ export function useCompanySettingsCards() {
     setTimeout(() => setError(null), 5000)
   }, [])
 
+  // T3 (#990): canonical saveField dispatcher. Each block routes to its
+  // canonical backend endpoint. Refactored from a monolithic if/else chain
+  // into per-block named dispatchers for maintainability and to make the
+  // "where does block X persist?" answer obvious in code review.
+  // - basic    → PUT  /api/backend-proxy/company/profile/{id}
+  // - culture  → PUT  /api/backend-proxy/company/culture-profile/{id}
+  // - tech     → POST /api/backend-proxy/skills-catalog/company/skills-catalog (tech_stack)
+  //              | PUT /culture-profile (engineering_culture, default_languages)
+  // - policy   → PATCH /api/backend-proxy/hiring-policy/block (proxy translates
+  //              to canonical /api/v1/company-hiring-policy/{id}/block)
+  // - benefits → not field-list editable; UI uses BenefitsListSection inline.
+  // - workforce → not field-list editable; UI uses WorkforceHubContent which
+  //              writes to /workforce/entries (canonical). Field-list branch
+  //              is dead code (guarded by MinhaEmpresaCard.tsx:328).
+  // - documents → PUT /api/backend-proxy/company/profile/{id} additional_data
+  //              for onboarding metadata; PRV (compensation_structure) is
+  //              read-only here, edited via CompensationPoliciesListSection.
   const saveField = useCallback(async (block: string, field: string, value: unknown) => {
     if (!companyId) {
-      showError("Nao foi possivel identificar a empresa. Recarregue a pagina e tente novamente.")
+      showError("Não foi possível identificar a empresa. Recarregue a página e tente novamente.")
       setEditingField(null)
       return
     }
@@ -503,7 +531,7 @@ export function useCompanySettingsCards() {
       let response: Response | null = null
       let fallbackErr = "Falha ao salvar campo"
 
-      if (block === "basic") {
+      const saveBasicField = async (): Promise<Response> => {
         const fieldMap: Record<string, string> = {
           name: "name",
           tradeName: "trading_name",
@@ -521,15 +549,27 @@ export function useCompanySettingsCards() {
         const apiField = fieldMap[field] || field
         let payload: Record<string, unknown> = { [apiField]: value }
         if (field === "headquarters" && typeof value === "string") {
-          const parts = value.split(",").map(s => s.trim())
-          payload = { headquarters_city: parts[0] || "", headquarters_state: parts[1] || "" }
+          // Robust parsing: split into ≤2 parts so cities containing commas
+          // (rare in BR but possible — e.g. "Brasília, Asa Sul, DF" should
+          // map city="Brasília, Asa Sul" / state="DF"). Empty UF → keep prior.
+          const trimmed = value.trim()
+          const lastComma = trimmed.lastIndexOf(",")
+          if (lastComma === -1) {
+            payload = { headquarters_city: trimmed }
+          } else {
+            const city = trimmed.slice(0, lastComma).trim()
+            const state = trimmed.slice(lastComma + 1).trim()
+            payload = { headquarters_city: city, headquarters_state: state }
+          }
         }
-        response = await fetch(`/api/backend-proxy/company/profile/${companyId}`, {
+        return fetch(`/api/backend-proxy/company/profile/${companyId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         })
-      } else if (block === "culture" || block === "tech") {
+      }
+
+      const saveCultureOrTechProfileField = async (): Promise<Response> => {
         const cultureFieldMap: Record<string, string> = {
           mission: "mission",
           vision: "vision",
@@ -546,43 +586,96 @@ export function useCompanySettingsCards() {
           default_languages: "default_languages",
         }
         const apiField = cultureFieldMap[field] || field
-        response = await fetch(`/api/backend-proxy/company/culture-profile/${encodeURIComponent(companyId)}`, {
+        return fetch(`/api/backend-proxy/company/culture-profile/${encodeURIComponent(companyId)}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ [apiField]: value }),
         })
-      } else if (block === "policy") {
+      }
+
+      const saveTechStackField = async (): Promise<Response> => {
+        // Canonical: POST /api/v1/skills-catalog/company/skills-catalog/sync
+        // accepts the FULL replacement list — the inline editor sends a
+        // comma-separated list, parsed already by InlineFieldEditor into
+        // string[]. We use the proxy at /api/backend-proxy/skills-catalog/...
+        const skills = Array.isArray(value)
+          ? (value as unknown[]).map((s) => String(s).trim()).filter(Boolean)
+          : typeof value === "string"
+            ? value.split(",").map((s) => s.trim()).filter(Boolean)
+            : []
+        return fetch("/api/backend-proxy/skills-catalog/company/skills-catalog/sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ company_id: companyId, skills }),
+        })
+      }
+
+      const savePolicyField = async (): Promise<Response> => {
         const subBlock = POLICY_FIELD_TO_BLOCK[field]
         if (!subBlock) {
-          throw new Error(`Campo de politica nao suportado para edicao manual: ${field}`)
+          throw new Error(`Campo de política não suportado para edição manual: ${field}`)
         }
         let parsedValue: unknown = value
-        if (field === "allowed_hours") {
-          if (typeof value === "string") {
-            const m = value.match(/^\s*(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})\s*$/)
-            if (!m) {
-              throw new Error("Horario invalido. Use o formato HH:MM - HH:MM (ex.: 09:00 - 18:00).")
-            }
-            parsedValue = { start: m[1], end: m[2] }
+        if (field === "allowed_hours" && typeof value === "string") {
+          const m = value.match(/^\s*(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})\s*$/)
+          if (!m) {
+            throw new Error("Horário inválido. Use o formato HH:MM - HH:MM (ex.: 09:00 - 18:00).")
           }
+          parsedValue = { start: m[1], end: m[2] }
         }
-        fallbackErr = "Falha ao salvar politica"
-        response = await fetch("/api/backend-proxy/hiring-policy/block", {
+        // Proxy hiring-policy/block translates to canonical
+        // PATCH /api/v1/company-hiring-policy/{companyId}/block.
+        return fetch("/api/backend-proxy/hiring-policy/block", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ block: subBlock, data: { [field]: parsedValue } }),
         })
-      } else if (block === "workforce" || block === "documents") {
+      }
+
+      const saveDocumentsField = async (): Promise<Response> => {
+        // Onboarding metadata fields (responsible_name, additional_notes, etc)
+        // live in company.additional_data — there is no dedicated endpoint
+        // and that is intentional (these are loose recruiter notes, not
+        // structured business data). PRV/compensation_structure is shown
+        // read-only and edited via CompensationPoliciesListSection.
         const currentAdditional = (companyData?.additional_data || {}) as Record<string, unknown>
         const nextAdditional = { ...currentAdditional, [field]: value }
-        fallbackErr = "Falha ao salvar campo do perfil"
-        response = await fetch(`/api/backend-proxy/company/profile/${companyId}`, {
+        return fetch(`/api/backend-proxy/company/profile/${companyId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ additional_data: nextAdditional }),
         })
+      }
+
+      if (block === "basic") {
+        response = await saveBasicField()
+      } else if (block === "culture") {
+        response = await saveCultureOrTechProfileField()
+      } else if (block === "tech") {
+        if (field === "tech_stack") {
+          fallbackErr = "Falha ao salvar stack tecnológica"
+          response = await saveTechStackField()
+        } else {
+          response = await saveCultureOrTechProfileField()
+        }
+      } else if (block === "policy") {
+        fallbackErr = "Falha ao salvar política"
+        response = await savePolicyField()
+      } else if (block === "documents") {
+        fallbackErr = "Falha ao salvar campo de remuneração / onboarding"
+        response = await saveDocumentsField()
+      } else if (block === "workforce") {
+        // Workforce field-list is hidden in MinhaEmpresaCard (block.key !==
+        // "workforce" guard) — edits go through WorkforceHubContent →
+        // /workforce/entries. If we ever reach here, surface a clear error
+        // instead of silently writing to the wrong store.
+        throw new Error(
+          "Edite o planejamento de workforce usando a tabela embutida no card (Workforce Planning)."
+        )
       } else if (block === "benefits") {
-        throw new Error("Use a lista de benefícios para adicionar ou editar itens.")
+        throw new Error(
+          "Use a lista de benefícios abaixo (botão + Adicionar benefício) para criar ou editar itens."
+        )
       } else {
         throw new Error(`Bloco desconhecido: ${block}`)
       }
@@ -619,6 +712,11 @@ export function useCompanySettingsCards() {
           source: "ui" as const,
           ts: Date.now(),
         }
+        // Mark this dispatch as originating from us so the listener installed
+        // above (lia:settings-updated) skips its own loadAll() — saveField
+        // already calls loadAll() inline below. Prevents the double-fetch
+        // (own save + listener 1.5s reload) that surfaced as flicker.
+        lastSelfDispatchRef.current = Date.now()
         window.dispatchEvent(new CustomEvent("lia:settings-success", { detail }))
         window.dispatchEvent(new CustomEvent("lia:settings-updated", { detail }))
       }
