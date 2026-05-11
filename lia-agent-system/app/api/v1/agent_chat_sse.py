@@ -370,7 +370,7 @@ async def sse_chat_stream(
                     await sse_queue.put(serialize_token(_safe))
 
                 _wiz_thread_id = WizardSessionService.derive_thread_id(
-                    context, session_id,
+                    context, session_id, company_id=company_id,
                 )
                 async def _run_wizard():
                     return await WizardSessionService.process_message(

@@ -902,7 +902,9 @@ async def agent_chat_ws(
                         except Exception:
                             pass  # fail-silent — streaming não bloqueia
 
-                    _wiz_thread_id = WizardSessionService.derive_thread_id(msg, session_id)
+                    _wiz_thread_id = WizardSessionService.derive_thread_id(
+                        msg, session_id, company_id=company_id,
+                    )
                     _wiz_message, _wiz_payload, _tokens_emitted = await WizardSessionService.process_message(
                         thread_id=_wiz_thread_id,
                         user_message=content,

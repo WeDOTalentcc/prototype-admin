@@ -55,19 +55,60 @@ class WizardSessionService:
     # ── Public helpers ────────────────────────────────────────────────────
 
     @staticmethod
-    def derive_thread_id(msg: dict, session_id: str) -> str:
+    def derive_thread_id(
+        msg: dict,
+        session_id: str,
+        company_id: str | None = None,
+    ) -> str:
         """Return stable thread_id for this wizard session.
 
         Priority:
           1. Client-supplied ``msg["thread_id"]`` — wizard panel sends this
              so the checkpointer key matches the frontend's HITL approval key.
-          2. ``f"wiz-{session_id}"`` — stable session-scoped fallback.
+          2. ``f"wiz-{company_token}-{session_id}"`` — when ``company_id`` is
+             provided AND parseable, encodes the tenant as a defense-in-depth
+             prefix (Onda 4.D3 PLAN_FIX_wizard_memory_loss 2026-05-10:
+             defense against UUID collision cross-tenant; primary tenant
+             guard remains in ``_build_state`` which forces workspace_id +
+             company_id from the JWT-verified param, never from prior_state).
+          3. ``f"wiz-{session_id}"`` — legacy session-scoped fallback when
+             ``company_id`` is missing or unparseable. Backward compatible
+             with threads created before this commit.
+
+        Multi-tenancy invariant (ADR-029 §3 / RuntimeContext canonical):
+            The tenant token is derived via ``CompanyId.parse`` — same
+            validator used in ``_build_state``. If parsing fails (legacy
+            mode), falls back to legacy format with a debug log instead of
+            crashing. Strict-mode tenant enforcement happens at the
+            ``_build_state`` boundary, not here.
 
         NOTE: thread_id must be consistent across ALL turns of the same
         wizard session (including approval_response messages). The frontend
         panel should send the same thread_id it received on the first turn.
         """
-        return (msg.get("thread_id") or f"wiz-{session_id}").strip() or f"wiz-{session_id}"
+        client_thread = (msg.get("thread_id") or "").strip()
+        if client_thread:
+            return client_thread
+
+        company_token: str | None = None
+        if company_id:
+            try:
+                from app.shared.value_objects.company_id import CompanyId
+                parsed = CompanyId.parse(company_id)
+                # Short prefix: hash slug + first 8 chars of normalized id
+                normalized = parsed.as_str()
+                company_token = normalized[:8] if normalized else None
+            except Exception as exc:
+                logger.debug(
+                    "[WizardSession] derive_thread_id: company_id %r unparseable "
+                    "(%s) — falling back to legacy session-only format.",
+                    company_id, type(exc).__name__,
+                )
+                company_token = None
+
+        if company_token:
+            return f"wiz-{company_token}-{session_id}"
+        return f"wiz-{session_id}"
 
     @staticmethod
     async def _get_prior_state(thread_id: str) -> dict:

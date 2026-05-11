@@ -5,6 +5,13 @@ Implements a directed graph where nodes are processing steps and
 edges define the flow between them. Supports conditional routing,
 streaming execution, and state persistence.
 """
+
+# CANONICAL-EXEMPT: legacy HITL resume — wizard de criacao de vaga canonical
+# vive em app/domains/job_creation/ (WizardSessionService + JobCreationGraph).
+# Este arquivo permanece DEPRECATED apenas para suportar HITL resume em
+# agent_chat_ws.py:558-561 durante a Fase 1 da migracao planejada em
+# .planning/adrs/ADR-CANONICAL-001-wizard-domain.md.
+
 import asyncio
 import logging
 from collections.abc import AsyncIterator, Callable
