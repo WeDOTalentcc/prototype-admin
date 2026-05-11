@@ -47,7 +47,7 @@ export interface UniversalTransitionModalProps {
   toStage: string
   toStageDisplayName: string
   actionBehavior: string
-  subStatusOptions: Array<{ code: string; display_name: string }>
+  subStatusOptions: Array<{ code: string; display_name: string; category?: string }>
   onConfirm: (data: UniversalTransitionConfirmData) => Promise<void>
   onOpenSpecializedModal?: (modalType: string, context: Record<string, unknown>) => void
   companyId?: string

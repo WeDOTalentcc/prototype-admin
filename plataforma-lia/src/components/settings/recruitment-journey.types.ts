@@ -22,6 +22,7 @@ export interface SubStatusOption {
   is_default?: boolean
   is_waiting?: boolean
   waiting_for?: string
+  category?: string
 }
 
 export interface StageDataField {

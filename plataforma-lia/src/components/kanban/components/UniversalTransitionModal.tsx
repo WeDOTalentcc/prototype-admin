@@ -3,7 +3,8 @@ import NextImage from "next/image"
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Select, SelectContent, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { renderSubStatusOptions } from './rejection-categories'
 import {
   ArrowRight,
   Brain,
@@ -270,11 +271,7 @@ export function UniversalTransitionModal(props: UniversalTransitionModalProps) {
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
               <SelectContent className="z-modal" position="popper" sideOffset={4} side="top">
-                {currentSubStatusOptions.map((opt) => (
-                  <SelectItem key={opt.code} value={opt.code} className="text-xs">
-                    {opt.display_name}
-                  </SelectItem>
-                ))}
+                {renderSubStatusOptions(currentSubStatusOptions, 'text-xs')}
               </SelectContent>
             </Select>
             {interpretResult?.suggested_sub_status === subStatus && interpretResult?.ai_powered && (

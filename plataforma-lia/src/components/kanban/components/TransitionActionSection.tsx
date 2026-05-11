@@ -2,7 +2,8 @@
 
 import NextImage from "next/image"
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Select, SelectContent, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { renderSubStatusOptions } from './rejection-categories'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Button } from '@/components/ui/button'
 import {
@@ -25,7 +26,7 @@ interface BehaviorConfig {
 interface BatchRejectionSectionProps {
   candidates: KanbanCandidate[]
   isRejectedBatch: boolean
-  currentSubStatusOptions: Array<{ code: string; display_name: string }>
+  currentSubStatusOptions: Array<{ code: string; display_name: string; category?: string }>
   isBulkPredicting: boolean
   predictedSubStatuses: Record<string, string>
   predictionReasonings: Record<string, string>
@@ -129,11 +130,7 @@ export function BatchRejectionSection({
                         <SelectValue placeholder="Selecione..." />
                       </SelectTrigger>
                       <SelectContent>
-                        {currentSubStatusOptions.map((opt) => (
-                          <SelectItem key={opt.code} value={opt.code} className="text-xs">
-                            {opt.display_name}
-                          </SelectItem>
-                        ))}
+                        {renderSubStatusOptions(currentSubStatusOptions, 'text-xs')}
                       </SelectContent>
                     </Select>
                   </div>

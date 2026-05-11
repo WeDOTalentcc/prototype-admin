@@ -8,7 +8,7 @@ interface TransitionModalState {
   toStage: string
   toStageDisplayName: string
   actionBehavior: string
-  subStatusOptions: Array<{ code: string; display_name: string }>
+  subStatusOptions: Array<{ code: string; display_name: string; category?: string }>
 }
 
 export function useUniversalTransition(dynamicStages: DynamicStage[]) {
@@ -33,7 +33,7 @@ export function useUniversalTransition(dynamicStages: DynamicStage[]) {
 
     // Prefer sub-statuses from company pipeline (DB); fall back to hardcoded list
     const subStatusOptions = targetStage?.subStatuses?.length
-      ? targetStage.subStatuses.map(ss => ({ code: ss.name, display_name: ss.display_name }))
+      ? targetStage.subStatuses.map(ss => ({ code: ss.name, display_name: ss.display_name, category: ss.category }))
       : getSubStatusOptionsForBehavior(actionBehavior, toStage)
 
     setModalState({
