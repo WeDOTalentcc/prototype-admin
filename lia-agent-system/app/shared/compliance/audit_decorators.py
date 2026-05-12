@@ -1,71 +1,17 @@
-"""PR4 (Task #1004) — Wrapper canônico de audit log para tools de
-``company_settings``.
+"""PR4 (Task #1004) — `audit_company_change`: fail-CLOSED audit wrapper
+for company_settings save/read tools (Inegociável #6 — SOX, ISO 27001,
+EU AI Act).
 
-Inegociável #6 da `lia-compliance` exige que TODA mutação por agente IA
-em config corporativa produza um registro durável em ``audit_logs``
-(SOX, ISO 27001, EU AI Act). Antes do PR4:
+Design: outbox intent (separate committed row) + atomic outcome
+(outcome row written in the SAME session as the body's business
+writes, committed together). Audit failure on outcome rolls back the
+business writes and raises. Intent failure aborts before the body
+runs.
 
-  * 5 das 6 tools de save em ``company_settings`` NÃO chamavam
-    ``AuditService.log_decision``.
-  * A única que chamava (``import_benefits_from_data``) usava
-    ``try/except: pass`` — fire-and-forget, anti-pattern canonical-fix #4.
-
-Este módulo expõe o context manager ``audit_company_change`` em modo
-**fail-CLOSED com pattern outbox de duas fases**:
-
-  1. ``__aenter__``: emite uma audit row de INTENT
-     (``decision="initiated"``). Se a infraestrutura de audit estiver
-     indisponível, o RuntimeError é levantado AQUI — antes do bloco
-     protegido executar — então a mutação de negócio nunca acontece.
-     Este é o "equivalente outbox/transactional pattern" pedido pelo
-     code review do PR4: armazenamento de audit indisponível ⇒ business
-     write não acontece.
-
-  2. ``__aexit__``: emite a audit row de OUTCOME
-     (``completed``/``failed``/``blocked_fairness``/``exception``/``read``)
-     com ``before``/``after``/``target_id`` capturados via setters. Se a
-     emissão de outcome falha, levantamos RuntimeError (fail-CLOSED para
-     o caller), com Sentry capture best-effort + log CRITICAL — operador
-     vê a inconsistência imediatamente.
-
-Trade-off conhecido (documentado): cada save canônico produz **2 audit
-rows** (intent + outcome). ISO 27001 / EU AI Act preferem over-audit a
-under-audit. As duas rows compartilham ``target_id`` e ``criteria_used``
-para facilitar correlação em queries forenses.
-
-Em emergência rollback (storm de erro do DB de audit), a flag
-``LIA_DISABLE_COMPANY_AUDIT=1`` desliga as duas emissões;
-``app/main.py`` loga CRITICAL + Sentry capture quando ON em
-prod/staging (espelha R-007).
-
-Uso canônico:
-
-    async with audit_company_change(
-        action="save_company_field",
-        company_id=company_id,
-        actor=user_id,
-        target_table="company_profiles",
-        target_id=f"{company_id}::{section}.{field}",
-        metadata={"section": section, "field": field},
-    ) as audit:
-        before = await _read_current(...)
-        audit.set_before(before)
-        result = await _do_the_save(...)
-        audit.set_after({"section": section, "field": field, "value": value})
-        audit.set_result(result)
-        return result
-
-Outcome derivado de ``result`` em ``__aexit__``:
-
-  * ``success: True`` → ``decision = "completed"``
-  * ``success: False, reason: "fairness_violation"`` → ``decision = "blocked_fairness"``
-  * ``success: False`` → ``decision = "failed"``
-  * Exceção propagada do bloco → ``decision = "exception"``
-
-Para tools read-only (``check_company_completeness``), passar
-``read_only=True``: pula a row de INTENT (não há mutação a proteger) e
-registra ``decision = "read"`` no exit (auditar acesso a dados
-corporativos é exigência LGPD Art. 37 / ISO 27001 A.12.4).
+Body uses ``audit.session`` for all writes and MUST NOT commit. Body
+populates ``set_before/set_after/set_target_id`` (canonical SOX
+payload). ``LIA_DISABLE_COMPANY_AUDIT=1`` bypasses both phases (R-007
+emergency rollback only).
 """
 from __future__ import annotations
 
@@ -77,19 +23,14 @@ from typing import Any, Optional
 
 logger = logging.getLogger(__name__)
 
-# Flag de emergência. Default OFF — fail-CLOSED.
 _DISABLE_FLAG = "LIA_DISABLE_COMPANY_AUDIT"
 
 
 def is_company_audit_disabled() -> bool:
-    """True quando ``LIA_DISABLE_COMPANY_AUDIT=1`` está ativo. Lido a
-    cada chamada (não cacheia) para que testes e on-call possam alternar
-    sem reboot."""
     return os.getenv(_DISABLE_FLAG, "0") == "1"
 
 
 def _derive_outcome(result: Any, *, read_only: bool) -> str:
-    """Mapeia o retorno da tool para o campo ``decision`` do AuditLog."""
     if read_only:
         return "read"
     if not isinstance(result, dict):
@@ -110,9 +51,6 @@ def _truncate_str(value: Any, limit: int = 200) -> str:
 
 
 def _serialize_payload(value: Any, limit: int = 1000) -> str:
-    """Serializa ``before``/``after`` como JSON compacto. Truncado para
-    proteger storage / evitar PII excessivo. Fallback para ``str(value)``
-    se não for serializável."""
     try:
         s = json.dumps(value, default=str, ensure_ascii=False, sort_keys=True)
     except Exception:
@@ -120,11 +58,17 @@ def _serialize_payload(value: Any, limit: int = 1000) -> str:
     return s if len(s) <= limit else f"{s[:limit]}…"
 
 
+def _sentry_capture(exc: BaseException) -> None:
+    try:
+        import sentry_sdk
+
+        sentry_sdk.capture_exception(exc)
+    except Exception:
+        pass
+
+
 class _AuditCtx:
-    """Context manager assíncrono outbox-de-duas-fases. Em
-    ``__aenter__`` emite uma row ``initiated`` (a falha aborta o bloco
-    inteiro). Em ``__aexit__`` emite a row de outcome com
-    ``before``/``after``/``target_id``."""
+    """Async CM with outbox intent + atomic outcome. See module docstring."""
 
     def __init__(
         self,
@@ -146,59 +90,51 @@ class _AuditCtx:
         self.metadata = dict(metadata or {})
         self.agent_name = agent_name
         self.read_only = read_only
+        self.trace_id = str(uuid.uuid4())
         self._result: Any = None
         self._before: Any = None
         self._before_set = False
         self._after: Any = None
         self._after_set = False
-        # Trace ID compartilhado entre intent e outcome — permite query
-        # forense que correlaciona o par.
-        self.trace_id = str(uuid.uuid4())
+        # Shared session for the body's business writes + atomic outcome row.
+        self.session = None  # type: ignore[assignment]
+        self._session_cm = None
 
-    # ── Setters chamados pelo bloco protegido ────────────────────────
+    # ── Setters (called by body) ─────────────────────────────────────
     def set_result(self, result: Any) -> None:
-        """Registra o retorno da tool para que ``__aexit__`` derive o
-        ``decision`` correto. Chamar ANTES do ``return`` em cada caminho
-        de saída."""
         self._result = result
 
     def set_before(self, before: Any) -> None:
-        """Snapshot do estado anterior à mutação (canonical payload do
-        audit). Pode ser ``None`` quando não aplicável."""
         self._before = before
         self._before_set = True
 
     def set_after(self, after: Any) -> None:
-        """Snapshot do estado pós-mutação (canonical payload do audit)."""
         self._after = after
         self._after_set = True
 
-    def set_target_id(self, target_id: str) -> None:
-        """Override do ``target_id`` se descoberto durante a execução
-        (ex.: depois de criar uma row e obter o PK)."""
+    def set_target_id(self, target_id: Optional[str]) -> None:
         self.target_id = str(target_id) if target_id else None
 
-    # ── Emissão de audit rows ────────────────────────────────────────
-    async def _emit(self, *, decision: str, exc: Optional[BaseException]) -> None:
-        """Persiste uma audit row. Levanta exceção do AuditService — o
-        caller (``__aenter__``/``__aexit__``) decide se converte em
-        RuntimeError ou loga + propaga original."""
-        reasoning: list[str] = [
+    # ── Internal payload builders ────────────────────────────────────
+    def _build_reasoning(self, decision: str, exc: Optional[BaseException]) -> list[str]:
+        r = [
             f"trace_id={self.trace_id}",
             f"actor={self.actor}",
             f"target_id={self.target_id or '∅'}",
             f"outcome={decision}",
         ]
         if self._before_set:
-            reasoning.append(f"before={_serialize_payload(self._before)}")
+            r.append(f"before={_serialize_payload(self._before)}")
         if self._after_set:
-            reasoning.append(f"after={_serialize_payload(self._after)}")
+            r.append(f"after={_serialize_payload(self._after)}")
         for k, v in self.metadata.items():
-            reasoning.append(f"{k}={_truncate_str(v)}")
+            r.append(f"{k}={_truncate_str(v)}")
         if exc is not None:
-            reasoning.append(f"exception={type(exc).__name__}: {_truncate_str(exc)}")
+            r.append(f"exception={type(exc).__name__}: {_truncate_str(exc)}")
+        return r
 
-        criteria = [
+    def _build_criteria(self) -> list[str]:
+        return [
             "company_scoped",
             f"target_table:{self.target_table}",
             f"target_id:{self.target_id or '∅'}",
@@ -207,8 +143,10 @@ class _AuditCtx:
             f"trace_id:{self.trace_id}",
         ]
 
-        # Import local para evitar ciclo (audit_service usa modelos
-        # SQLAlchemy que importam config compartilhada).
+    async def _emit_independent(self, decision: str, exc: Optional[BaseException]) -> None:
+        """Emit an audit row in its OWN session (commits independently).
+        Used for intent (must be durable before body runs) and for
+        exception/disabled outcomes where the body session is unusable."""
         from app.shared.compliance.audit_service import AuditService
 
         await AuditService().log_decision(
@@ -217,121 +155,179 @@ class _AuditCtx:
             decision_type="company_settings_change",
             action=self.action,
             decision=decision,
-            reasoning=reasoning,
-            criteria_used=criteria,
-            job_vacancy_id=None,
+            reasoning=self._build_reasoning(decision, exc),
+            criteria_used=self._build_criteria(),
             confidence=1.0,
             human_review_required=False,
-            criteria_ignored=None,
         )
+
+    async def _emit_in_session(self, decision: str, exc: Optional[BaseException]) -> None:
+        """Emit an audit row in the SHARED body session (no commit).
+        Caller commits to make business + outcome atomic."""
+        from app.shared.compliance.audit_service import AuditService
+
+        await AuditService().log_decision_in_session(
+            self.session,
+            company_id=self.company_id,
+            agent_name=self.agent_name,
+            decision_type="company_settings_change",
+            action=self.action,
+            decision=decision,
+            reasoning=self._build_reasoning(decision, exc),
+            criteria_used=self._build_criteria(),
+            confidence=1.0,
+            human_review_required=False,
+        )
+
+    async def _open_session(self) -> None:
+        from app.shared.compliance.audit_service import AsyncSessionLocal, _bind_tenant
+
+        self._session_cm = AsyncSessionLocal()
+        self.session = await self._session_cm.__aenter__()
+        if self.company_id:
+            try:
+                await _bind_tenant(self.session, self.company_id)
+            except Exception as e:
+                logger.warning(
+                    "[audit_company_change] _bind_tenant failed (continuing): %s", e
+                )
+
+    async def _close_session(self, exc_type) -> None:
+        if self._session_cm is not None:
+            try:
+                await self._session_cm.__aexit__(exc_type, None, None)
+            except Exception:
+                pass
+            self._session_cm = None
+            self.session = None
 
     # ── CM protocol ──────────────────────────────────────────────────
     async def __aenter__(self) -> "_AuditCtx":
-        # Bypass de emergência: pula intent + outcome.
         if is_company_audit_disabled():
+            await self._open_session()
             return self
 
-        # Read-only não muta estado → não há nada a "proteger" via
-        # outbox; a row de leitura é registrada no __aexit__.
         if self.read_only:
+            await self._open_session()
             return self
 
-        # Tenant ausente: AuditService falharia no RLS. Logar e seguir
-        # (a tool subjacente provavelmente também vai falhar e deixar
-        # rastro). Não levantamos para preservar mensagens de erro de
-        # negócio mais úteis.
         if not self.company_id:
             logger.error(
-                "[audit_company_change] company_id ausente em action=%s — "
-                "intent audit não emitido (RLS impede). Caller deve "
-                "garantir tenant.",
+                "[audit_company_change] missing company_id for action=%s — "
+                "intent skipped (RLS would block)",
                 self.action,
             )
+            await self._open_session()
             return self
 
-        # Outbox fase 1: emite "initiated". Se a infra de audit estiver
-        # indisponível, levantamos AQUI — bloco protegido nunca executa.
+        # Outbox phase 1: intent in independent session.
         try:
-            await self._emit(decision="initiated", exc=None)
+            await self._emit_independent("initiated", None)
         except Exception as audit_exc:
             logger.critical(
-                "[audit_company_change] FAIL-CLOSED (intent): AuditService "
-                "indisponível para action=%s company=%s — bloco abortado "
-                "antes de qualquer mutação de negócio: %s",
-                self.action,
-                self.company_id,
-                audit_exc,
-                exc_info=True,
+                "[audit_company_change] FAIL-CLOSED (intent) action=%s "
+                "company=%s: %s",
+                self.action, self.company_id, audit_exc, exc_info=True,
             )
-            try:
-                import sentry_sdk
-
-                sentry_sdk.capture_exception(audit_exc)
-            except Exception:
-                pass
+            _sentry_capture(audit_exc)
             raise RuntimeError(
-                f"audit_company_change: storage de audit indisponível "
-                f"(intent emit falhou) para action={self.action}; "
-                f"mutação de negócio abortada para preservar Inegociável "
-                f"#6 (defina LIA_DISABLE_COMPANY_AUDIT=1 só em rollback "
-                f"emergencial)"
+                f"audit_company_change: audit storage unavailable (intent emit "
+                f"failed) for action={self.action}; business mutation aborted "
+                f"to preserve Inegociável #6"
             ) from audit_exc
+
+        await self._open_session()
         return self
 
-    async def __aexit__(self, exc_type, exc, tb) -> bool:  # noqa: D401
-        # Bypass de emergência: warn estruturado + sair.
+    async def __aexit__(self, exc_type, exc, tb) -> bool:
+        # Body raised: rollback business writes, emit "exception" outcome
+        # in independent session (body session is poisoned).
+        if exc_type is not None:
+            if self.session is not None:
+                try:
+                    await self.session.rollback()
+                except Exception:
+                    pass
+            await self._close_session(exc_type)
+            if not is_company_audit_disabled() and self.company_id and not self.read_only:
+                try:
+                    await self._emit_independent("exception", exc)
+                except Exception as audit_exc:
+                    logger.critical(
+                        "[audit_company_change] outcome 'exception' emit failed "
+                        "for action=%s trace_id=%s: %s",
+                        self.action, self.trace_id, audit_exc, exc_info=True,
+                    )
+                    _sentry_capture(audit_exc)
+            return False  # never suppress
+
+        outcome = _derive_outcome(self._result, read_only=self.read_only)
+
+        # Bypass / no-tenant / read-only paths: no audit, just commit body
+        # session (if any business writes happened) and exit.
         if is_company_audit_disabled():
             logger.warning(
-                "[audit_company_change] BYPASSED (LIA_DISABLE_COMPANY_AUDIT=1) "
-                "action=%s company=%s actor=%s outcome=%s trace_id=%s",
-                self.action,
-                self.company_id,
-                self.actor,
-                "exception" if exc_type else _derive_outcome(self._result, read_only=self.read_only),
-                self.trace_id,
+                "[audit_company_change] BYPASSED action=%s company=%s outcome=%s",
+                self.action, self.company_id, outcome,
             )
-            return False  # NÃO suprime exceção do bloco protegido
-
-        if not self.company_id:
+            if self.session is not None and not self.read_only:
+                try:
+                    await self.session.commit()
+                except Exception:
+                    await self.session.rollback()
+                    raise
+            await self._close_session(None)
             return False
 
-        outcome = "exception" if exc_type else _derive_outcome(
-            self._result, read_only=self.read_only
-        )
+        if not self.company_id:
+            if self.session is not None and not self.read_only:
+                try:
+                    await self.session.commit()
+                except Exception:
+                    await self.session.rollback()
+                    raise
+            await self._close_session(None)
+            return False
 
-        try:
-            await self._emit(decision=outcome, exc=exc)
-        except Exception as audit_exc:
-            logger.critical(
-                "[audit_company_change] FAIL-CLOSED (outcome): AuditService "
-                "falhou para action=%s company=%s outcome=%s trace_id=%s — "
-                "intent row já existe (audit inconsistente): %s",
-                self.action,
-                self.company_id,
-                outcome,
-                self.trace_id,
-                audit_exc,
-                exc_info=True,
-            )
+        if self.read_only:
+            # Read-only: emit outcome in independent session (no business
+            # writes to commit atomically).
             try:
-                import sentry_sdk
+                await self._emit_independent(outcome, None)
+            except Exception as audit_exc:
+                logger.critical(
+                    "[audit_company_change] read outcome emit failed action=%s: %s",
+                    self.action, audit_exc, exc_info=True,
+                )
+                _sentry_capture(audit_exc)
+            await self._close_session(None)
+            return False
 
-                sentry_sdk.capture_exception(audit_exc)
+        # ── ATOMIC PATH: outcome row + business writes in one commit ─
+        try:
+            await self._emit_in_session(outcome, None)
+            await self.session.commit()
+        except Exception as audit_exc:
+            try:
+                await self.session.rollback()
             except Exception:
                 pass
-            # Bloco protegido completou sem exceção → converte falha de
-            # audit em RuntimeError. Bloco já estava propagando exceção
-            # → deixa a original propagar (audit_exc fica em logger).
-            if exc_type is None:
-                raise RuntimeError(
-                    f"audit_company_change: falha ao persistir audit row "
-                    f"de outcome para action={self.action} trace_id="
-                    f"{self.trace_id} (fail-CLOSED — defina "
-                    f"LIA_DISABLE_COMPANY_AUDIT=1 só em rollback "
-                    f"emergencial)"
-                ) from audit_exc
-
-        return False  # NUNCA suprime exceção do bloco protegido.
+            logger.critical(
+                "[audit_company_change] FAIL-CLOSED (outcome) action=%s "
+                "company=%s outcome=%s trace_id=%s — business writes ROLLED "
+                "BACK: %s",
+                self.action, self.company_id, outcome, self.trace_id,
+                audit_exc, exc_info=True,
+            )
+            _sentry_capture(audit_exc)
+            await self._close_session(None)
+            raise RuntimeError(
+                f"audit_company_change: outcome audit failed for action="
+                f"{self.action} trace_id={self.trace_id}; business writes "
+                f"rolled back (fail-CLOSED)"
+            ) from audit_exc
+        await self._close_session(None)
+        return False
 
 
 def audit_company_change(
@@ -345,10 +341,8 @@ def audit_company_change(
     agent_name: str = "company_settings_tools",
     read_only: bool = False,
 ) -> _AuditCtx:
-    """Async context manager que envolve uma tool de ``company_settings``
-    com audit log canônico (outbox de duas fases). Veja docstring do
-    módulo para uso, semântica do ``decision`` e payload canônico
-    (``before``/``after``/``target_id``)."""
+    """See module docstring. Body MUST use ``audit.session`` for writes
+    and MUST NOT commit; CM commits atomically with the outcome row."""
     return _AuditCtx(
         action=action,
         company_id=company_id,
@@ -361,7 +355,4 @@ def audit_company_change(
     )
 
 
-__all__ = [
-    "audit_company_change",
-    "is_company_audit_disabled",
-]
+__all__ = ["audit_company_change", "is_company_audit_disabled"]

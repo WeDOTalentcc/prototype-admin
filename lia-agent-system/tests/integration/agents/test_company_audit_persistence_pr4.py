@@ -184,7 +184,7 @@ async def test_pr4_intent_failure_aborts_business_no_outcome_row(
 
     business_executed = False
 
-    with pytest.raises(RuntimeError, match="storage de audit indisponível"):
+    with pytest.raises(RuntimeError, match="audit storage unavailable"):
         async with ad.audit_company_change(
             action="save_company_field",
             company_id="co-bravo",

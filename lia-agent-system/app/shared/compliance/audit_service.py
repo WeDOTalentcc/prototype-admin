@@ -171,6 +171,69 @@ class AuditService:
             )
             return audit_log
 
+    async def log_decision_in_session(
+        self,
+        session,
+        *,
+        company_id: str,
+        agent_name: str,
+        decision_type: str,
+        action: str,
+        decision: str,
+        reasoning: list[str],
+        criteria_used: list[str],
+        candidate_id: str | None = None,
+        job_vacancy_id: str | None = None,
+        score: float | None = None,
+        confidence: float | None = None,
+        human_review_required: bool = False,
+        criteria_ignored: list[str] | None = None,
+    ) -> AuditLog:
+        """PR4 (Task #1004) — Insert an AuditLog row USING the caller's
+        session, WITHOUT committing. Lets the caller commit business
+        writes + audit row atomically. Required by ``audit_company_change``
+        for the outcome row (fail-CLOSED transactional rollback).
+
+        Tenant binding is the caller's responsibility (already done by
+        ``audit_company_change`` when opening the shared session)."""
+        canonical_type = DECISION_TYPE_MAPPING.get(decision_type.lower())
+        if canonical_type is None:
+            try:
+                canonical_type = DecisionType(decision_type)
+            except ValueError:
+                logger.warning(
+                    f"Unknown decision_type '{decision_type}', defaulting to SCORE_CANDIDATE"
+                )
+                canonical_type = DecisionType.SCORE_CANDIDATE
+
+        final_ignored = set(PROTECTED_CRITERIA)
+        if criteria_ignored:
+            final_ignored.update(criteria_ignored)
+
+        retention_days = self.RETENTION_PERIODS.get(canonical_type.value, 730)
+        retention_until = datetime.utcnow() + timedelta(days=retention_days)
+
+        audit_log = AuditLog(
+            id=str(uuid.uuid4()),
+            company_id=company_id,
+            agent_name=agent_name,
+            decision_type=canonical_type.value,
+            action=action,
+            decision=decision,
+            reasoning=reasoning,
+            criteria_used=criteria_used,
+            criteria_ignored=list(final_ignored),
+            candidate_id=candidate_id,
+            job_vacancy_id=job_vacancy_id,
+            score=score,
+            confidence=confidence,
+            human_review_required=human_review_required,
+            retention_until=retention_until,
+        )
+        session.add(audit_log)
+        await session.flush()
+        return audit_log
+
     async def get_candidate_decisions(
         self, company_id: str, candidate_id: str, job_vacancy_id: str | None = None, limit: int = 50, offset: int = 0
     ) -> dict[str, Any]:

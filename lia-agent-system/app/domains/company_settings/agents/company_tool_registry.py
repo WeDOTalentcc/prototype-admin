@@ -150,7 +150,8 @@ async def _wrap_save_company_field(**kwargs: Any) -> dict[str, Any]:
     value = kwargs.get("value")
     user_id = kwargs.get("user_id")
 
-    # PR4 (Task #1004) — audit log SOX/ISO canônico fail-CLOSED.
+    # PR4 (Task #1004) — audit log SOX/ISO canônico fail-CLOSED com
+    # transação atômica: business writes + outcome row commitados juntos.
     async with audit_company_change(
         action="save_company_field",
         company_id=company_id,
@@ -158,22 +159,26 @@ async def _wrap_save_company_field(**kwargs: Any) -> dict[str, Any]:
         target_table=(
             "company_culture_profiles" if section == "culture" else "company_profiles"
         ),
+        target_id=f"{company_id}::{section}.{field}",
         metadata={"section": section, "field": field},
     ) as _audit:
         result = await _save_company_field_impl(
-            company_id=company_id, section=section, field=field, value=value
+            session=_audit.session,
+            company_id=company_id, section=section, field=field, value=value,
         )
+        # Canonical SOX payload: before/after capturados pelo impl.
+        _audit.set_before(result.pop("_before", None))
+        _audit.set_after(result.pop("_after", None))
         _audit.set_result(result)
         return result
 
 
 async def _save_company_field_impl(
-    *, company_id: str, section: str, field: str, value: Any
+    *, session, company_id: str, section: str, field: str, value: Any
 ) -> dict[str, Any]:
-    """PR4 (Task #1004) — corpo original de ``_wrap_save_company_field``
-    extraído para um helper plain-async para que o wrapper possa envolvê-lo
-    em ``audit_company_change`` SEM duplicar código. Não muda contrato.
-    """
+    """PR4 (Task #1004) — usa ``session`` injetada (compartilhada com
+    o wrapper de audit) e NÃO commita: o ``audit_company_change``
+    commita business writes + outcome row em transação atômica."""
     valid_profile_fields = {
         "name", "trading_name", "cnpj", "website", "hr_email", "hr_phone",
         "address", "industry", "company_size", "employee_count", "founded_year",
@@ -202,45 +207,51 @@ async def _save_company_field_impl(
     if fairness.is_blocked:
         return _fairness_violation_response(fairness, fallback_field=field)
 
-    async with AsyncSessionLocal() as session:
-        if section == "profile":
-            existing = await session.execute(
-                text("SELECT id FROM company_profiles WHERE id::text = :company_id LIMIT 1"),
-                {"company_id": company_id},
+    # PR4: usa session injetada (compartilhada com audit wrapper) e
+    # captura `before` (estado anterior) para o payload canônico SOX.
+    before_value: Any = None
+    if section == "profile":
+        existing = await session.execute(
+            text(f"SELECT id, {field} AS prev FROM company_profiles WHERE id::text = :company_id LIMIT 1"),
+            {"company_id": company_id},
+        )
+        prev_row = existing.mappings().first()
+        if prev_row:
+            before_value = prev_row.get("prev")
+            await session.execute(
+                text(f"UPDATE company_profiles SET {field} = :value, updated_at = NOW() WHERE id::text = :company_id"),
+                {"value": json.dumps(value) if isinstance(value, (list, dict)) else value, "company_id": company_id},
             )
-            if existing.mappings().first():
-                await session.execute(
-                    text(f"UPDATE company_profiles SET {field} = :value, updated_at = NOW() WHERE id::text = :company_id"),
-                    {"value": json.dumps(value) if isinstance(value, (list, dict)) else value, "company_id": company_id},
-                )
-            else:
-                await session.execute(
-                    text(f"INSERT INTO company_profiles (id, {field}, created_at, updated_at) VALUES (:company_id::uuid, :value, NOW(), NOW())"),
-                    {"company_id": company_id, "value": json.dumps(value) if isinstance(value, (list, dict)) else value},
-                )
-        elif section == "culture":
-            existing = await session.execute(
-                text("SELECT id FROM company_culture_profiles WHERE company_id = :company_id LIMIT 1"),
-                {"company_id": company_id},
+        else:
+            await session.execute(
+                text(f"INSERT INTO company_profiles (id, {field}, created_at, updated_at) VALUES (:company_id::uuid, :value, NOW(), NOW())"),
+                {"company_id": company_id, "value": json.dumps(value) if isinstance(value, (list, dict)) else value},
             )
-            val = json.dumps(value, ensure_ascii=False) if isinstance(value, (list, dict)) else value
-            if existing.mappings().first():
-                await session.execute(
-                    text(f"UPDATE company_culture_profiles SET {field} = :value, updated_at = NOW() WHERE company_id = :company_id"),
-                    {"value": val, "company_id": company_id},
-                )
-            else:
-                await session.execute(
-                    text(f"INSERT INTO company_culture_profiles (company_id, {field}, created_at, updated_at) VALUES (:company_id, :value, NOW(), NOW())"),
-                    {"company_id": company_id, "value": val},
-                )
-
-        await session.commit()
+    elif section == "culture":
+        existing = await session.execute(
+            text(f"SELECT id, {field} AS prev FROM company_culture_profiles WHERE company_id = :company_id LIMIT 1"),
+            {"company_id": company_id},
+        )
+        prev_row = existing.mappings().first()
+        val = json.dumps(value, ensure_ascii=False) if isinstance(value, (list, dict)) else value
+        if prev_row:
+            before_value = prev_row.get("prev")
+            await session.execute(
+                text(f"UPDATE company_culture_profiles SET {field} = :value, updated_at = NOW() WHERE company_id = :company_id"),
+                {"value": val, "company_id": company_id},
+            )
+        else:
+            await session.execute(
+                text(f"INSERT INTO company_culture_profiles (company_id, {field}, created_at, updated_at) VALUES (:company_id, :value, NOW(), NOW())"),
+                {"company_id": company_id, "value": val},
+            )
 
     return {
         "success": True,
         "data": {"section": section, "field": field, "value": value, "saved": True},
         "message": f"Dado salvo: {section}.{field}",
+        "_before": {"value": before_value},
+        "_after": {"value": value},
     }
 
 
@@ -251,9 +262,10 @@ async def _wrap_save_company_section(**kwargs: Any) -> dict[str, Any]:
     data = kwargs.get("data", {})
     user_id = kwargs.get("user_id")
 
-    # PR4 (Task #1004) — audit log SOX/ISO canônico fail-CLOSED. Os
-    # save_company_field internos emitem audit próprio; aqui registramos
-    # a chamada de seção (granularidade = lote).
+    # PR4 (Task #1004) — audit log SOX/ISO canônico fail-CLOSED. Granularidade
+    # de lote (cada save_company_field interno emite seu próprio par
+    # intent+outcome). Esta row registra a chamada agregada com lista de
+    # campos como `after` (canonical SOX payload).
     async with audit_company_change(
         action="save_company_section",
         company_id=company_id,
@@ -261,13 +273,17 @@ async def _wrap_save_company_section(**kwargs: Any) -> dict[str, Any]:
         target_table=(
             "company_culture_profiles" if section == "culture" else "company_profiles"
         ),
+        target_id=f"{company_id}::{section}",
         metadata={
             "section": section,
             "field_count": len(data) if isinstance(data, dict) else 0,
         },
     ) as _audit:
+        _audit.set_before({"section": section, "fields": sorted(list(data.keys())) if isinstance(data, dict) else []})
+
         if not data or not isinstance(data, dict):
             result = {"success": False, "data": {}, "message": "Dados vazios ou invalidos."}
+            _audit.set_after({"fields_saved": []})
             _audit.set_result(result)
             return result
 
@@ -279,6 +295,7 @@ async def _wrap_save_company_section(**kwargs: Any) -> dict[str, Any]:
         )
         if fairness.is_blocked:
             result = _fairness_violation_response(fairness)
+            _audit.set_after({"fields_saved": [], "fairness_blocked": True})
             _audit.set_result(result)
             return result
 
@@ -299,6 +316,7 @@ async def _wrap_save_company_section(**kwargs: Any) -> dict[str, Any]:
             "data": {"section": section, "fields_saved": saved_fields, "count": len(saved_fields)},
             "message": f"Secao '{section}' salva com {len(saved_fields)} campos.",
         }
+        _audit.set_after({"fields_saved": saved_fields, "count": len(saved_fields)})
         _audit.set_result(result)
         return result
 
@@ -403,22 +421,25 @@ async def _wrap_import_workforce_plan(**kwargs: Any) -> dict[str, Any]:
         company_id=company_id,
         actor=user_id,
         target_table="company_culture_profiles",
+        target_id=f"{company_id}::workforce_plan",
         metadata={
             "items_count": len(plan_data) if isinstance(plan_data, list) else 0,
         },
     ) as _audit:
         result = await _import_workforce_plan_impl(
-            company_id=company_id, plan_data=plan_data
+            session=_audit.session, company_id=company_id, plan_data=plan_data,
         )
+        _audit.set_before(result.pop("_before", None))
+        _audit.set_after(result.pop("_after", None))
         _audit.set_result(result)
         return result
 
 
 async def _import_workforce_plan_impl(
-    *, company_id: str, plan_data: Any
+    *, session, company_id: str, plan_data: Any
 ) -> dict[str, Any]:
-    """PR4 (Task #1004) — corpo original extraído para que o wrapper
-    possa envolvê-lo em ``audit_company_change``. Contrato preservado."""
+    """PR4 (Task #1004) — usa ``session`` injetada e NÃO commita
+    (transação atômica gerenciada pelo ``audit_company_change``)."""
     if not plan_data or not isinstance(plan_data, list):
         return {
             "success": False,
@@ -439,37 +460,48 @@ async def _import_workforce_plan_impl(
     total_hires = sum(item.get("quantity", 0) for item in plan_data if isinstance(item, dict))
     departments = list(set(item.get("department", "N/A") for item in plan_data if isinstance(item, dict)))
 
-    async with AsyncSessionLocal() as session:
-        existing = await session.execute(
-            text("SELECT id FROM company_culture_profiles WHERE company_id = :company_id LIMIT 1"),
-            {"company_id": company_id},
+    # PR4: usa session injetada; captura `before` (plano anterior) para
+    # payload canônico SOX.
+    existing = await session.execute(
+        text(
+            "SELECT id, COALESCE(additional_data->'workforce_plan', 'null'::jsonb) AS prev_plan "
+            "FROM company_culture_profiles WHERE company_id = :company_id LIMIT 1"
+        ),
+        {"company_id": company_id},
+    )
+    prev_row = existing.mappings().first()
+    before_plan: Any = None
+    if prev_row:
+        try:
+            raw = prev_row.get("prev_plan")
+            before_plan = json.loads(raw) if isinstance(raw, str) else raw
+        except (json.JSONDecodeError, TypeError):
+            before_plan = None
+
+    plan_json = json.dumps(plan_data, ensure_ascii=False)
+
+    if prev_row:
+        await session.execute(
+            text("""
+                UPDATE company_culture_profiles
+                SET additional_data = jsonb_set(
+                    COALESCE(additional_data, '{}'::jsonb),
+                    '{workforce_plan}',
+                    :plan_data::jsonb
+                ),
+                updated_at = NOW()
+                WHERE company_id = :company_id
+            """),
+            {"plan_data": plan_json, "company_id": company_id},
         )
-        plan_json = json.dumps(plan_data, ensure_ascii=False)
-
-        if existing.mappings().first():
-            await session.execute(
-                text("""
-                    UPDATE company_culture_profiles
-                    SET additional_data = jsonb_set(
-                        COALESCE(additional_data, '{}'::jsonb),
-                        '{workforce_plan}',
-                        :plan_data::jsonb
-                    ),
-                    updated_at = NOW()
-                    WHERE company_id = :company_id
-                """),
-                {"plan_data": plan_json, "company_id": company_id},
-            )
-        else:
-            await session.execute(
-                text("""
-                    INSERT INTO company_culture_profiles (company_id, additional_data, created_at, updated_at)
-                    VALUES (:company_id, jsonb_build_object('workforce_plan', :plan_data::jsonb), NOW(), NOW())
-                """),
-                {"company_id": company_id, "plan_data": plan_json},
-            )
-
-        await session.commit()
+    else:
+        await session.execute(
+            text("""
+                INSERT INTO company_culture_profiles (company_id, additional_data, created_at, updated_at)
+                VALUES (:company_id, jsonb_build_object('workforce_plan', :plan_data::jsonb), NOW(), NOW())
+            """),
+            {"company_id": company_id, "plan_data": plan_json},
+        )
 
     return {
         "success": True,
@@ -479,6 +511,8 @@ async def _import_workforce_plan_impl(
             "items_count": len(plan_data),
         },
         "message": f"Plano importado: {total_hires} contratacoes planejadas em {len(departments)} departamentos.",
+        "_before": {"workforce_plan": before_plan},
+        "_after": {"workforce_plan": plan_data, "total_hires": total_hires},
     }
 
 

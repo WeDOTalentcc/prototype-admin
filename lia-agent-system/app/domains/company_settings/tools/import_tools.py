@@ -121,19 +121,23 @@ async def check_company_completeness(**kwargs) -> dict[str, Any]:
         company_id=company_id,
         actor=user_id,
         target_table="company_profiles",
+        target_id=f"{company_id}::profile_completeness",
         metadata={},
         read_only=True,
     ) as _audit:
-        result = await _check_company_completeness_impl(company_id=company_id)
+        result = await _check_company_completeness_impl(
+            session=_audit.session, company_id=company_id,
+        )
         _audit.set_result(result)
         return result
 
 
-async def _check_company_completeness_impl(*, company_id: str) -> dict[str, Any]:
-    """PR4 (Task #1004) — corpo extraído para envolvimento por
-    ``audit_company_change``. Contrato preservado."""
+async def _check_company_completeness_impl(*, session, company_id: str) -> dict[str, Any]:
+    """PR4 (Task #1004) — read-only; usa session injetada (read_only=True
+    pula intent + commit; outcome row em sessão independente)."""
     try:
-        async with AsyncSessionLocal() as db:
+        if True:
+            db = session
             profile = await db.execute(
                 text("""
                     SELECT name, trading_name, cnpj, website, industry,
@@ -443,20 +447,23 @@ async def save_hiring_policy(
         company_id=company_id,
         actor=user_id,
         target_table="company_hiring_policies",
+        target_id=f"{company_id}::hiring_policy",
         metadata={"rule_keys": list(rules.keys()) if isinstance(rules, dict) else []},
     ) as _audit:
         result = await _save_hiring_policy_impl(
-            company_id=company_id, user_id=user_id, rules=rules
+            session=_audit.session, company_id=company_id, user_id=user_id, rules=rules,
         )
+        _audit.set_before(result.pop("_before", None))
+        _audit.set_after(result.pop("_after", None))
         _audit.set_result(result)
         return result
 
 
 async def _save_hiring_policy_impl(
-    *, company_id: str, user_id: Any, rules: dict[str, Any]
+    *, session, company_id: str, user_id: Any, rules: dict[str, Any]
 ) -> dict[str, Any]:
-    """PR4 (Task #1004) — corpo extraído para envolvimento por
-    ``audit_company_change``. Contrato preservado."""
+    """PR4 (Task #1004) — usa ``session`` injetada; NÃO commita
+    (transação atômica via ``audit_company_change``)."""
     if not rules or not isinstance(rules, dict):
         return {
             "success": False,
@@ -502,73 +509,76 @@ async def _save_hiring_policy_impl(
     if fairness.is_blocked:
         return _fairness_violation_payload(fairness)
 
-    # Upsert: lê o bloco atual, faz merge superficial, grava de volta.
+    # Upsert: lê os blocos atuais, faz merge superficial, grava de volta.
+    # PR4: usa session injetada; before = blocos antes do merge; after =
+    # blocos finais. Wrapper commita atomicamente com a outcome row.
     fields_saved: list[str] = []
     blocks_touched: list[str] = []
+    db = session
+    before_blocks: dict[str, Any] = {}
+    merged: dict[str, dict[str, Any]] = {}
     try:
-        async with AsyncSessionLocal() as db:
-            existing = await db.execute(
-                text(
-                    "SELECT pipeline_rules, scheduling_rules, communication_rules, "
-                    "screening_rules, automation_rules "
-                    "FROM company_hiring_policies WHERE company_id = :cid LIMIT 1"
-                ),
-                {"cid": company_id},
-            )
-            row = existing.mappings().first()
+        existing = await db.execute(
+            text(
+                "SELECT pipeline_rules, scheduling_rules, communication_rules, "
+                "screening_rules, automation_rules "
+                "FROM company_hiring_policies WHERE company_id = :cid LIMIT 1"
+            ),
+            {"cid": company_id},
+        )
+        row = existing.mappings().first()
 
-            merged: dict[str, dict[str, Any]] = {}
-            for block_name in _HIRING_POLICY_BLOCKS:
-                current = (row[block_name] if row else None) or {}
-                if isinstance(current, str):
-                    try:
-                        current = json.loads(current)
-                    except (json.JSONDecodeError, TypeError):
-                        current = {}
-                if not isinstance(current, dict):
+        for block_name in _HIRING_POLICY_BLOCKS:
+            current = (row[block_name] if row else None) or {}
+            if isinstance(current, str):
+                try:
+                    current = json.loads(current)
+                except (json.JSONDecodeError, TypeError):
                     current = {}
-                if block_name in block_updates:
-                    current = {**current, **block_updates[block_name]}
-                    blocks_touched.append(block_name)
-                    fields_saved.extend(block_updates[block_name].keys())
-                merged[block_name] = current
+            if not isinstance(current, dict):
+                current = {}
+            before_blocks[block_name] = dict(current)
+            if block_name in block_updates:
+                current = {**current, **block_updates[block_name]}
+                blocks_touched.append(block_name)
+                fields_saved.extend(block_updates[block_name].keys())
+            merged[block_name] = current
 
-            params = {
-                "cid": company_id,
-                "pipeline_rules": json.dumps(merged["pipeline_rules"], ensure_ascii=False),
-                "scheduling_rules": json.dumps(merged["scheduling_rules"], ensure_ascii=False),
-                "communication_rules": json.dumps(merged["communication_rules"], ensure_ascii=False),
-                "screening_rules": json.dumps(merged["screening_rules"], ensure_ascii=False),
-                "automation_rules": json.dumps(merged["automation_rules"], ensure_ascii=False),
-            }
+        params = {
+            "cid": company_id,
+            "pipeline_rules": json.dumps(merged["pipeline_rules"], ensure_ascii=False),
+            "scheduling_rules": json.dumps(merged["scheduling_rules"], ensure_ascii=False),
+            "communication_rules": json.dumps(merged["communication_rules"], ensure_ascii=False),
+            "screening_rules": json.dumps(merged["screening_rules"], ensure_ascii=False),
+            "automation_rules": json.dumps(merged["automation_rules"], ensure_ascii=False),
+        }
 
-            if row:
-                await db.execute(
-                    text(
-                        "UPDATE company_hiring_policies SET "
-                        "pipeline_rules = :pipeline_rules::json, "
-                        "scheduling_rules = :scheduling_rules::json, "
-                        "communication_rules = :communication_rules::json, "
-                        "screening_rules = :screening_rules::json, "
-                        "automation_rules = :automation_rules::json, "
-                        "updated_at = NOW() "
-                        "WHERE company_id = :cid"
-                    ),
-                    params,
-                )
-            else:
-                await db.execute(
-                    text(
-                        "INSERT INTO company_hiring_policies "
-                        "(company_id, pipeline_rules, scheduling_rules, communication_rules, "
-                        "screening_rules, automation_rules, created_at, updated_at) "
-                        "VALUES (:cid, :pipeline_rules::json, :scheduling_rules::json, "
-                        ":communication_rules::json, :screening_rules::json, "
-                        ":automation_rules::json, NOW(), NOW())"
-                    ),
-                    params,
-                )
-            await db.commit()
+        if row:
+            await db.execute(
+                text(
+                    "UPDATE company_hiring_policies SET "
+                    "pipeline_rules = :pipeline_rules::json, "
+                    "scheduling_rules = :scheduling_rules::json, "
+                    "communication_rules = :communication_rules::json, "
+                    "screening_rules = :screening_rules::json, "
+                    "automation_rules = :automation_rules::json, "
+                    "updated_at = NOW() "
+                    "WHERE company_id = :cid"
+                ),
+                params,
+            )
+        else:
+            await db.execute(
+                text(
+                    "INSERT INTO company_hiring_policies "
+                    "(company_id, pipeline_rules, scheduling_rules, communication_rules, "
+                    "screening_rules, automation_rules, created_at, updated_at) "
+                    "VALUES (:cid, :pipeline_rules::json, :scheduling_rules::json, "
+                    ":communication_rules::json, :screening_rules::json, "
+                    ":automation_rules::json, NOW(), NOW())"
+                ),
+                params,
+            )
     except Exception as exc:
         logger.error("save_hiring_policy failed: %s", exc, exc_info=True)
         return {
@@ -597,6 +607,8 @@ async def _save_hiring_policy_impl(
             f"Política de recrutamento salva: {len(fields_saved)} campos em "
             f"{len(blocks_touched)} blocos."
         ),
+        "_before": {b: before_blocks.get(b, {}) for b in blocks_touched},
+        "_after": {b: merged.get(b, {}) for b in blocks_touched},
     }
 
 
@@ -640,30 +652,35 @@ async def import_benefits_from_data(
         company_id=company_id,
         actor=user_id,
         target_table="company_benefits",
+        target_id=f"{company_id}::benefits",
         metadata={
             "items_count": len(benefits) if isinstance(benefits, list) else 0,
             "replace_existing": replace_existing,
         },
     ) as _audit:
         result = await _import_benefits_from_data_impl(
+            session=_audit.session,
             company_id=company_id,
             user_id=user_id,
             benefits=benefits,
             replace_existing=replace_existing,
         )
+        _audit.set_before(result.pop("_before", None))
+        _audit.set_after(result.pop("_after", None))
         _audit.set_result(result)
         return result
 
 
 async def _import_benefits_from_data_impl(
     *,
+    session,
     company_id: str,
     user_id: Any,
     benefits: list[dict[str, Any]],
     replace_existing: bool,
 ) -> dict[str, Any]:
-    """PR4 (Task #1004) — corpo extraído para envolvimento por
-    ``audit_company_change``. Contrato preservado."""
+    """PR4 (Task #1004) — usa ``session`` injetada; NÃO commita
+    (transação atômica via ``audit_company_change``)."""
     if not benefits or not isinstance(benefits, list):
         return {
             "success": False,
@@ -694,45 +711,50 @@ async def _import_benefits_from_data_impl(
     inserted = 0
     skipped = 0
     errors: list[str] = []
+    db = session
 
     try:
-        async with AsyncSessionLocal() as db:
-            if replace_existing:
-                await db.execute(
-                    text("UPDATE company_benefits SET is_active = false WHERE company_id::text = :cid"),
-                    {"cid": company_id},
+        # PR4: captura `before` (count de benefícios ativos) para payload
+        # canônico SOX. Wrapper commita atomicamente.
+        before_count_row = await db.execute(
+            text(
+                "SELECT COUNT(*) AS c FROM company_benefits "
+                "WHERE company_id::text = :cid AND is_active = true"
+            ),
+            {"cid": company_id},
+        )
+        before_active = (before_count_row.mappings().first() or {}).get("c", 0) or 0
+
+        if replace_existing:
+            await db.execute(
+                text("UPDATE company_benefits SET is_active = false WHERE company_id::text = :cid"),
+                {"cid": company_id},
+            )
+
+        for idx, b in enumerate(benefits):
+            if not isinstance(b, dict):
+                errors.append(f"item {idx}: not a dict")
+                skipped += 1
+                continue
+            name = b.get("name") or b.get("nome")
+            if not name:
+                errors.append(f"item {idx}: missing 'name'")
+                skipped += 1
+                continue
+            try:
+                record = CompanyBenefit(
+                    company_id=company_id,
+                    name=str(name)[:200],
+                    category=b.get("category", "other"),
+                    description=b.get("description", "")[:1000] if b.get("description") else None,
+                    is_highlight=bool(b.get("is_highlight", False)),
+                    is_active=True,
                 )
-
-            for idx, b in enumerate(benefits):
-                if not isinstance(b, dict):
-                    errors.append(f"item {idx}: not a dict")
-                    skipped += 1
-                    continue
-                name = b.get("name") or b.get("nome")
-                if not name:
-                    errors.append(f"item {idx}: missing 'name'")
-                    skipped += 1
-                    continue
-                try:
-                    record = CompanyBenefit(
-                        company_id=company_id,
-                        name=str(name)[:200],
-                        category=b.get("category", "other"),
-                        description=b.get("description", "")[:1000] if b.get("description") else None,
-                        is_highlight=bool(b.get("is_highlight", False)),
-                        is_active=True,
-                    )
-                    db.add(record)
-                    inserted += 1
-                except Exception as e:
-                    errors.append(f"item {idx} ('{name}'): {e}")
-                    skipped += 1
-
-            await db.commit()
-
-        # PR4 (Task #1004): audit log emitido pelo wrapper canônico
-        # ``audit_company_change`` (envolvendo este impl). O fire-and-forget
-        # try/except:pass anterior foi removido — agora é fail-CLOSED.
+                db.add(record)
+                inserted += 1
+            except Exception as e:
+                errors.append(f"item {idx} ('{name}'): {e}")
+                skipped += 1
 
         logger.info(
             "[import_benefits] tenant=%s user=%s inserted=%d skipped=%d",
@@ -744,6 +766,14 @@ async def _import_benefits_from_data_impl(
             "skipped_count": skipped,
             "errors": errors[:10],
             "message": f"Importados {inserted} benefícios ({skipped} ignorados).",
+            "_before": {"active_benefits_count": int(before_active)},
+            "_after": {
+                "active_benefits_count": (
+                    int(before_active) + inserted if not replace_existing else inserted
+                ),
+                "inserted": inserted,
+                "replace_existing": replace_existing,
+            },
         }
     except Exception as e:
         logger.error("import_benefits_from_data failed: %s", e, exc_info=True)
