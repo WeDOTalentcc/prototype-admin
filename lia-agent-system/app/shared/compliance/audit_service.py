@@ -83,6 +83,10 @@ class AuditService:
         "send_message": 1825,
         "schedule_interview": 365,
         "generate_feedback": 730,
+        # PR4 (Task #1004) — SOX exige 7 anos pra mudanças em config
+        # corporativa que afetam decisões de hiring (BARS, hiring policy,
+        # benefits). 2555 dias = 7 anos.
+        "company_settings_change": 2555,
     }
 
     async def log_decision(

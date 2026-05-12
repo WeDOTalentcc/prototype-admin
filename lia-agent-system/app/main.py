@@ -234,10 +234,13 @@ async def lifespan(app: FastAPI):
             len(_active_bypasses),
             "\n".join(f"  • {b}" for b in _active_bypasses),
         )
-        if os.getenv("APP_ENV", "development").lower() in ("production", "prod"):
+        # PR4 follow-up: incluir staging conforme R-001 / R-007 — staging
+        # também faz parte da postura prod-like (canary alerting depende).
+        if os.getenv("APP_ENV", "development").lower() in ("production", "prod", "staging"):
             try:
                 sentry_sdk.capture_message(
-                    f"COMPLIANCE BYPASS ATIVA em produção: {[f.split(':')[0] for f in _active_bypasses]}",
+                    f"COMPLIANCE BYPASS ATIVA em {os.getenv('APP_ENV')}: "
+                    f"{[f.split(':')[0] for f in _active_bypasses]}",
                     level="error",
                 )
             except Exception:

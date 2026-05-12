@@ -21,6 +21,13 @@ class DecisionType(str, enum.Enum):  # R-053: canonical DecisionType — single 
     SEND_MESSAGE = "send_message"
     SCHEDULE_INTERVIEW = "schedule_interview"
     GENERATE_FEEDBACK = "generate_feedback"
+    # PR4 (Task #1004) — categoria canônica para mutações em
+    # company_settings (save_company_field/section, save_hiring_policy,
+    # import_workforce_plan, import_benefits_from_data,
+    # check_company_completeness). Necessária pra que AuditService não
+    # caia no fallback SCORE_CANDIDATE e o decision_type persistido em
+    # `audit_logs` reflita a operação real (queries forenses).
+    COMPANY_SETTINGS_CHANGE = "company_settings_change"
 
 
 class AuditLog(Base):
