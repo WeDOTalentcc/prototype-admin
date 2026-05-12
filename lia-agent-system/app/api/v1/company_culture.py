@@ -2,20 +2,49 @@
 Company Culture Profile API endpoints.
 Manages automatic website analysis for extracting organizational culture profiles.
 Enhanced with multi-source extraction (Website + LinkedIn).
+
+Also hosts the legacy ``/company/*`` culture/EVP/enrichment endpoints
+(moved from ``app/api/v1/company.py`` in T2/#994 to restore module
+cohesion: ``company.py`` keeps only CRUD/profile, this module owns all
+culture-related surfaces). Public paths are preserved exactly via a
+second ``legacy_router`` mounted under the ``/company`` prefix.
 """
+import json
 import logging
 import uuid
 from datetime import datetime, timedelta
 
+import httpx
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
 
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
 
+from app.domains.company.dependencies import (
+    get_company_profile_repo,
+    get_culture_profile_repo,
+)
+from app.domains.company.repositories.company_profile_repository import (
+    CompanyProfileRepository,
+)
+from app.domains.company.repositories.culture_profile_repository import (
+    CultureProfileRepository,
+)
+from app.domains.company.services.company_scraper_service import company_scraper_service
 from app.domains.company_culture.dependencies import get_company_culture_repo
 from app.domains.company_culture.repositories.company_culture_repository import (
     CompanyCultureRepository,
 )
+from app.domains.ai.services.llm import llm_service
+from app.domains.sourcing.services.apify_service import apify_service
+from app.schemas.company import (
+    AutoEnrichResponse,
+    CompanyEnrichRequest,
+    CompanyEnrichResponse,
+    EVPAnalysisResponse,
+)
+from app.schemas.company import CultureAnalysisRequest as LegacyCultureAnalysisRequest
+from app.schemas.company import CultureAnalysisResponse as LegacyCultureAnalysisResponse
 from app.schemas.company_culture import (
     BigFiveOrgProfile,
     CompanyCultureProfileResponse,
@@ -26,7 +55,6 @@ from app.schemas.company_culture import (
     CultureAnalysisRequest,
     CultureAnalysisResult,
 )
-from app.domains.company.services.company_scraper_service import company_scraper_service
 from app.shared.services.culture_analyzer_service import culture_analyzer_service
 
 logger = logging.getLogger(__name__)
@@ -615,4 +643,518 @@ async def calculate_culture_match(
         raise
     except Exception as e:
         logger.error(f"Error calculating culture match: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Legacy ``/company`` router — culture/EVP/enrichment endpoints relocated
+# from ``app/api/v1/company.py`` (T2/#994). Public paths are preserved
+# byte-for-byte so the frontend / external callers see no change.
+# ─────────────────────────────────────────────────────────────────────────────
+
+legacy_router = APIRouter(prefix="/company", tags=["company-culture"])
+
+
+@legacy_router.post("/enrich", response_model=CompanyEnrichResponse)
+async def enrich_company_profile(
+    data: CompanyEnrichRequest,
+):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    """Enrich company profile with LinkedIn and Glassdoor data via Apify actors."""
+    errors = []
+    linkedin_data = {}
+    glassdoor_data = {}
+    enriched_culture = {}
+
+    if not data.linkedin_url and not data.glassdoor_company_name:
+        raise HTTPException(status_code=400, detail="At least one of linkedin_url or glassdoor_company_name must be provided")
+
+    try:
+        if data.linkedin_url:
+            logger.info(f"Enriching from LinkedIn: {data.linkedin_url}")
+            linkedin_data = await apify_service.scrape_linkedin_company(data.linkedin_url)
+            if not linkedin_data:
+                errors.append("Failed to fetch LinkedIn data or no data found")
+
+        if data.glassdoor_company_name:
+            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
+            logger.info(f"Enriching from Glassdoor: {data.glassdoor_company_name}")
+            glassdoor_data = await apify_service.scrape_glassdoor_company(data.glassdoor_company_name)
+            if not glassdoor_data:
+                errors.append("Failed to fetch Glassdoor data or no data found")
+
+        if linkedin_data.get("description"):
+            enriched_culture["company_description"] = linkedin_data["description"]
+        if linkedin_data.get("tagline"):
+            enriched_culture["tagline"] = linkedin_data["tagline"]
+        if linkedin_data.get("specialties"):
+            enriched_culture["specialties"] = linkedin_data["specialties"]
+        if glassdoor_data.get("mission"):
+            enriched_culture["mission"] = glassdoor_data["mission"]
+        if glassdoor_data.get("overview"):
+            enriched_culture["vision"] = glassdoor_data["overview"]
+        if glassdoor_data.get("employee_pros"):
+            enriched_culture["culture_highlights"] = glassdoor_data["employee_pros"]
+        if glassdoor_data.get("culture_rating"):
+            enriched_culture["culture_rating"] = glassdoor_data["culture_rating"]
+        if glassdoor_data.get("overall_rating"):
+            enriched_culture["overall_rating"] = glassdoor_data["overall_rating"]
+        if glassdoor_data.get("work_life_balance"):
+            enriched_culture["work_life_balance"] = glassdoor_data["work_life_balance"]
+
+        return CompanyEnrichResponse(
+            success=bool(linkedin_data or glassdoor_data),
+            linkedin_data=linkedin_data,
+            glassdoor_data=glassdoor_data,
+            enriched_culture=enriched_culture,
+            errors=errors,
+        )
+    except Exception as e:
+        logger.error(f"Error enriching company profile: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@legacy_router.post("/auto-enrich/{profile_id}", response_model=AutoEnrichResponse)
+async def auto_enrich_company(
+    profile_id: uuid.UUID,
+    profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
+    cp_repo: CultureProfileRepository = Depends(get_culture_profile_repo),
+):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    """Automatically enrich company profile after wizard submission."""
+    errors = []
+    fields_updated = []
+    apify_data = {}
+    inferred_data = {}
+
+    try:
+        profile = await profile_repo.get_by_id(profile_id)
+        if not profile:
+            raise HTTPException(status_code=404, detail="Company profile not found")
+
+        culture_profile = await cp_repo.get_for_company(profile_id)
+
+        linkedin_data = {}
+        glassdoor_data = {}
+
+        if profile.linkedin_url or (profile.additional_data and profile.additional_data.get("linkedin_url")):
+            linkedin_url = profile.linkedin_url or profile.additional_data.get("linkedin_url")
+            try:
+                logger.info(f"Auto-enriching from LinkedIn: {linkedin_url}")
+                linkedin_data = await apify_service.scrape_linkedin_company(linkedin_url)
+                apify_data["linkedin"] = linkedin_data
+            except Exception as e:
+                errors.append(f"LinkedIn enrichment failed: {str(e)}")
+
+        if profile.name:
+            try:
+                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
+                logger.info(f"Auto-enriching from Glassdoor: {profile.name}")
+                glassdoor_data = await apify_service.scrape_glassdoor_company(profile.name)
+                apify_data["glassdoor"] = glassdoor_data
+            except Exception as e:
+                errors.append(f"Glassdoor enrichment failed: {str(e)}")
+
+        profile_updates = {}
+
+        if linkedin_data:
+            if linkedin_data.get("headquarters") and not profile.headquarters_city:
+                hq = linkedin_data["headquarters"]
+                if isinstance(hq, dict):
+                    profile_updates["headquarters_city"] = hq.get("city", "")
+                    profile_updates["headquarters_state"] = hq.get("state", "")
+                    profile_updates["headquarters_country"] = hq.get("country", "Brasil")
+                elif isinstance(hq, str):
+                    parts = hq.split(",")
+                    if len(parts) >= 2:
+                        profile_updates["headquarters_city"] = parts[0].strip()
+                        profile_updates["headquarters_state"] = parts[1].strip()
+                fields_updated.append("headquarters")
+
+            if linkedin_data.get("founded") and not profile.founded_year:
+                try:
+                    profile_updates["founded_year"] = int(linkedin_data["founded"])
+                    fields_updated.append("founded_year")
+                except (ValueError, TypeError):
+                    pass
+
+            if linkedin_data.get("company_size") and not profile.employee_count:
+                size_str = linkedin_data["company_size"]
+                try:
+                    if "-" in str(size_str):
+                        nums = str(size_str).replace(",", "").replace("+", "").split("-")
+                        profile_updates["employee_count"] = int(nums[1]) if len(nums) > 1 else int(nums[0])
+                    else:
+                        profile_updates["employee_count"] = int(str(size_str).replace(",", "").replace("+", ""))
+                    fields_updated.append("employee_count")
+                except (ValueError, TypeError):
+                    pass
+
+            if linkedin_data.get("description"):
+                if not profile.description:
+                    profile_updates["description"] = linkedin_data["description"]
+                    fields_updated.append("description")
+                if culture_profile and not culture_profile.culture_description:
+                    culture_profile.culture_description = linkedin_data["description"]
+
+        company_context = {
+            "name": profile.name,
+            "industry": profile.industry,
+            "description": profile.description or linkedin_data.get("description", ""),
+            "size": profile.company_size,
+            "glassdoor_pros": glassdoor_data.get("employee_pros", []),
+            "glassdoor_cons": glassdoor_data.get("employee_cons", []),
+            "work_life_balance": glassdoor_data.get("work_life_balance", ""),
+            "culture_rating": glassdoor_data.get("culture_rating", ""),
+            "mission": culture_profile.mission if culture_profile else "",
+            "vision": culture_profile.vision if culture_profile else "",
+            "values": culture_profile.values if culture_profile else [],
+        }
+
+        if company_context.get("description") or company_context.get("mission"):
+            inference_prompt = f"""Você é um especialista em cultura organizacional e employer branding.
+Analise os dados da empresa abaixo e infira campos faltantes de forma consistente.
+
+DADOS DISPONÍVEIS:
+- Nome: {company_context['name']}
+- Setor: {company_context['industry']}
+- Descrição: {company_context['description'][:500] if company_context['description'] else 'N/A'}
+- Porte: {company_context['size']}
+- Missão: {company_context['mission']}
+- Visão: {company_context['vision']}
+- Valores: {', '.join(company_context['values']) if company_context['values'] else 'N/A'}
+- Avaliação cultura (Glassdoor): {company_context['culture_rating']}
+- Work-life balance: {company_context['work_life_balance']}
+- Pontos positivos (funcionários): {', '.join(company_context['glassdoor_pros'][:3]) if company_context['glassdoor_pros'] else 'N/A'}
+- Pontos negativos (funcionários): {', '.join(company_context['glassdoor_cons'][:2]) if company_context['glassdoor_cons'] else 'N/A'}
+
+GERE UM JSON COM OS CAMPOS ABAIXO (baseado nos dados disponíveis, use inferências razoáveis):
+{{
+  "work_model": "remoto|híbrido|presencial",
+  "growth_opportunities": "Descrição breve das oportunidades de crescimento",
+  "team_dynamics": "Descrição da dinâmica de trabalho em equipe",
+  "leadership_style": "Estilo de liderança predominante",
+  "core_competencies": ["competência1", "competência2", "competência3"],
+  "diversity_initiatives": "Iniciativas de diversidade e inclusão (se houver indicações)",
+  "sustainability": "Práticas de sustentabilidade (se houver indicações)",
+  "social_impact": "Impacto social da empresa (se houver indicações)",
+  "engineering_culture": "Cultura de engenharia/tecnologia (se aplicável ao setor)"
+}}
+
+REGRAS:
+1. Use APENAS informações que podem ser inferidas dos dados
+2. Se não houver base para inferir, use "Não especificado"
+3. Para core_competencies, liste 3-5 competências comportamentais típicas do setor
+4. Responda APENAS com o JSON, sem texto adicional"""
+
+            try:
+                llm_response = await llm_service.generate(inference_prompt, provider="gemini")
+                llm_response = llm_response.strip()
+                if llm_response.startswith("```json"):
+                    llm_response = llm_response[7:]
+                if llm_response.startswith("```"):
+                    llm_response = llm_response[3:]
+                if llm_response.endswith("```"):
+                    llm_response = llm_response[:-3]
+                llm_response = llm_response.strip()
+
+                inferred = json.loads(llm_response)
+                inferred_data = inferred
+
+                additional = dict(profile.additional_data or {})
+                for field in ["work_model", "growth_opportunities", "team_dynamics", "leadership_style",
+                              "diversity_initiatives", "sustainability", "social_impact", "engineering_culture"]:
+                    if inferred.get(field) and inferred[field] != "Não especificado":
+                        additional[field] = inferred[field]
+                        fields_updated.append(field)
+
+                profile_updates["additional_data"] = additional
+
+                if culture_profile and inferred.get("core_competencies"):
+                    if not culture_profile.core_competencies or len(culture_profile.core_competencies) == 0:
+                        culture_profile.core_competencies = inferred["core_competencies"]
+                        fields_updated.append("core_competencies")
+
+            except json.JSONDecodeError as e:
+                errors.append(f"Failed to parse LLM response: {str(e)}")
+            except Exception as e:
+                errors.append(f"LLM inference failed: {str(e)}")
+
+        profile_updates["updated_at"] = datetime.utcnow()
+        await profile_repo.update(profile_id, profile_updates)
+
+        if culture_profile:
+            await cp_repo.update(profile_id, {"updated_at": datetime.utcnow()})
+
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
+        logger.info(f"Auto-enriched company {profile.name}, updated fields: {fields_updated}")
+
+        return AutoEnrichResponse(
+            success=len(fields_updated) > 0,
+            fields_updated=fields_updated,
+            apify_data=apify_data,
+            inferred_data=inferred_data,
+            errors=errors,
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in auto-enrich: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@legacy_router.post("/profile/{profile_id}/generate-evp", response_model=EVPAnalysisResponse)
+async def generate_evp(
+    profile_id: uuid.UUID,
+    profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
+):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    """Generate EVP (Employee Value Proposition) analysis using LLM."""
+    try:
+        profile = await profile_repo.get_by_id(profile_id)
+        if not profile:
+            raise HTTPException(status_code=404, detail="Company profile not found")
+
+        additional_data = profile.additional_data or {}
+        company_info = {
+            "name": profile.name,
+            "description": profile.description or additional_data.get("company_description", ""),
+            "tagline": additional_data.get("tagline", ""),
+            "mission": additional_data.get("mission", ""),
+            "vision": additional_data.get("vision", ""),
+            "values": additional_data.get("values", ""),
+            "culture_highlights": additional_data.get("culture_highlights", []),
+            "industry": profile.industry or "",
+            "company_size": profile.company_size or "",
+            "specialties": additional_data.get("specialties", []),
+            "work_life_balance": additional_data.get("work_life_balance", ""),
+            "culture_rating": additional_data.get("culture_rating", ""),
+            "overall_rating": additional_data.get("overall_rating", ""),
+        }
+
+        sources = []
+        if company_info.get("description") or company_info.get("tagline"):
+            sources.append("linkedin")
+        if company_info.get("mission") or company_info.get("culture_highlights"):
+            sources.append("glassdoor")
+
+        prompt = f"""Você é um especialista em Employer Branding e Employee Value Proposition (EVP).
+Analise os dados da empresa abaixo e gere uma análise de EVP estruturada em português brasileiro.
+
+DADOS DA EMPRESA:
+- Nome: {company_info['name']}
+- Descrição: {company_info['description']}
+- Tagline: {company_info['tagline']}
+- Missão: {company_info['mission']}
+- Visão: {company_info['vision']}
+- Valores: {company_info['values']}
+- Setor: {company_info['industry']}
+- Porte: {company_info['company_size']}
+- Especialidades: {', '.join(company_info['specialties']) if isinstance(company_info['specialties'], list) else company_info['specialties']}
+- Destaques culturais: {', '.join(company_info['culture_highlights']) if isinstance(company_info['culture_highlights'], list) else company_info['culture_highlights']}
+- Rating de cultura: {company_info['culture_rating']}
+- Rating geral: {company_info['overall_rating']}
+- Work-life balance: {company_info['work_life_balance']}
+
+GERE UMA ANÁLISE EVP NO FORMATO JSON EXATO ABAIXO:
+{{
+  "statement": "Uma frase de 1-2 sentenças que resume a proposta de valor única da empresa para seus colaboradores",
+  "pillars": [
+    {{"name": "Nome do Pilar 1", "description": "Descrição detalhada", "evidence": "Evidência concreta"}},
+    {{"name": "Nome do Pilar 2", "description": "Descrição detalhada", "evidence": "Evidência concreta"}},
+    {{"name": "Nome do Pilar 3", "description": "Descrição detalhada", "evidence": "Evidência concreta"}}
+  ],
+  "tone_guidance": ["adjetivo1", "adjetivo2", "adjetivo3", "adjetivo4", "adjetivo5"],
+  "candidate_promise": "Uma frase clara sobre o que a empresa promete ao candidato"
+}}
+
+REGRAS:
+1. Baseie-se APENAS nos dados fornecidos
+2. Os pilares devem refletir os diferenciais reais da empresa
+3. O tone_guidance deve ter 5 adjetivos que guiem a comunicação com candidatos
+4. Use linguagem profissional mas acessível
+5. Responda APENAS com o JSON, sem texto adicional"""
+
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
+        logger.info(f"Generating EVP for company: {profile.name}")
+        evp_response = await llm_service.generate(prompt, provider="gemini")
+
+        try:
+            evp_response = evp_response.strip()
+            if evp_response.startswith("```json"):
+                evp_response = evp_response[7:]
+            if evp_response.startswith("```"):
+                evp_response = evp_response[3:]
+            if evp_response.endswith("```"):
+                evp_response = evp_response[:-3]
+            evp_data = json.loads(evp_response.strip())
+        except json.JSONDecodeError as e:
+            logger.error(f"Failed to parse EVP response: {e}")
+            return EVPAnalysisResponse(success=False, error=f"Falha ao processar resposta da IA: {str(e)}")
+
+        evp_analysis = {
+            "statement": evp_data.get("statement", ""),
+            "pillars": evp_data.get("pillars", []),
+            "tone_guidance": evp_data.get("tone_guidance", []),
+            "candidate_promise": evp_data.get("candidate_promise", ""),
+            "generated_at": datetime.utcnow().isoformat(),
+            "sources": sources,
+        }
+
+        updated_additional_data = {**(profile.additional_data or {}), "evp_analysis": evp_analysis}
+        await profile_repo.update(profile_id, {"additional_data": updated_additional_data, "updated_at": datetime.utcnow()})
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
+        logger.info(f"Generated EVP for company: {profile.name}")
+        return EVPAnalysisResponse(success=True, evp_analysis=evp_analysis)
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error generating EVP: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@legacy_router.post("/analyze-culture", response_model=LegacyCultureAnalysisResponse)
+async def analyze_company_culture(
+    data: LegacyCultureAnalysisRequest,
+):
+    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    """Analyze company website and extract culture information using AI."""
+    try:
+        sources_analyzed = []
+        website_content = ""
+
+        if data.website_url:
+            try:
+                async with httpx.AsyncClient(timeout=30.0) as client:
+                    response = await client.get(
+                        data.website_url,
+                        headers={"User-Agent": "Mozilla/5.0 (compatible; LIABot/1.0; +https://wedotalent.com)"},
+                        follow_redirects=True,
+                    )
+                    if response.status_code == 200:
+                        website_content = response.text[:50000]
+                        sources_analyzed.append(data.website_url)
+            except Exception as e:
+                logger.warning(f"Could not fetch website {data.website_url}: {e}")
+
+        analysis_prompt = f"""Você é um especialista em cultura organizacional. Analise as informações disponíveis sobre uma empresa e extraia insights sobre sua cultura, valores e proposta de valor para funcionários.
+
+INSTRUÇÕES:
+1. Analise cuidadosamente o conteúdo fornecido
+2. Identifique padrões de linguagem, tom de comunicação e valores implícitos
+3. Extraia ou infira: Visão, Missão, Valores, Tom de Comunicação e EVP
+4. Seja específico e baseie-se no conteúdo quando possível
+5. Se não houver informação suficiente, faça inferências razoáveis baseadas no setor
+
+CONTEÚDO DO WEBSITE:
+{website_content[:30000] if website_content else "Não foi possível acessar o website."}
+
+CONTEXTO ADICIONAL:
+{data.additional_context or "Nenhum contexto adicional fornecido."}
+
+Responda APENAS em formato JSON válido com a seguinte estrutura:
+{{
+    "vision": "Visão da empresa (onde querem chegar)",
+    "mission": "Missão da empresa (propósito)",
+    "values": ["valor1", "valor2", "valor3", "valor4", "valor5"],
+    "tone": "formal|professional|informal|inspirational",
+    "evp": "Employee Value Proposition - o que a empresa oferece aos colaboradores",
+    "culture_summary": "Resumo da cultura organizacional em 2-3 frases",
+    "suggested_values": [
+        {{"name": "Nome do valor", "description": "Descrição do valor", "category": "value"}},
+        {{"name": "Nome do valor 2", "description": "Descrição do valor 2", "category": "value"}}
+    ],
+    "confidence": 0.0
+}}
+"""
+
+        llm = llm_service.get_audited_model()
+        response = await llm.ainvoke(analysis_prompt)
+        response_text = response.content
+
+        analysis_result = None
+        parse_error = None
+
+        try:
+            if "```json" in response_text:
+                json_str = response_text.split("```json")[1].split("```")[0].strip()
+            elif "```" in response_text:
+                json_str = response_text.split("```")[1].split("```")[0].strip()
+            else:
+                json_str = response_text.strip()
+            analysis_result = json.loads(json_str)
+        except (json.JSONDecodeError, IndexError) as e:
+            parse_error = str(e)
+            logger.warning(f"First JSON parse attempt failed: {e}")
+
+        if analysis_result is None:
+            import re
+            try:
+                json_match = re.search(r'\{[\s\S]*\}', response_text)
+                if json_match:
+                    analysis_result = json.loads(json_match.group(0))
+            except json.JSONDecodeError as e:
+                parse_error = str(e)
+                logger.warning(f"Regex JSON parse attempt failed: {e}")
+
+        if analysis_result is None:
+            logger.error(f"Failed to parse AI response as JSON after all attempts: {parse_error}")
+            analysis_result = {
+                "vision": "", "mission": "", "values": [], "tone": "professional",
+                "evp": "", "culture_summary": "Não foi possível analisar o conteúdo fornecido.",
+                "suggested_values": [], "confidence": 0.2,
+            }
+
+        def normalize_values_to_strings(values_data) -> list:
+            if not values_data or not isinstance(values_data, list):
+                return []
+            result = []
+            for val in values_data:
+                if isinstance(val, str):
+                    cleaned = val.strip()
+                    if cleaned:
+                        result.append(cleaned)
+                elif isinstance(val, dict):
+                    name = val.get("name") or val.get("value") or val.get("title") or ""
+                    cleaned = str(name).strip()
+                    if cleaned:
+                        result.append(cleaned)
+                else:
+                    cleaned = str(val).strip()
+                    if cleaned:
+                        result.append(cleaned)
+            return result
+
+        normalized_values = normalize_values_to_strings(analysis_result.get("values", []))
+
+        suggested_values = []
+        for sv in analysis_result.get("suggested_values", []):
+            if isinstance(sv, dict):
+                suggested_values.append({
+                    "name": str(sv.get("name", "")).strip(),
+                    "description": str(sv.get("description", "")).strip(),
+                    "category": sv.get("category", "value"),
+                })
+            elif isinstance(sv, str):
+                suggested_values.append({"name": sv.strip(), "description": "", "category": "value"})
+
+        return LegacyCultureAnalysisResponse(
+            success=True,
+            analysis={
+                "vision": str(analysis_result.get("vision", "") or "").strip(),
+                "mission": str(analysis_result.get("mission", "") or "").strip(),
+                "values": normalized_values,
+                "tone": str(analysis_result.get("tone", "professional") or "professional").strip(),
+                "evp": str(analysis_result.get("evp", "") or "").strip(),
+                "culture_summary": str(analysis_result.get("culture_summary", "") or "").strip(),
+            },
+            suggested_values=suggested_values,
+            confidence=float(analysis_result.get("confidence", 0.5) or 0.5),
+            sources_analyzed=sources_analyzed,
+        )
+
+    except Exception as e:
+        logger.error(f"Error analyzing company culture: {e}")
         raise HTTPException(status_code=500, detail=str(e))

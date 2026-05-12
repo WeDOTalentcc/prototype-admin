@@ -392,6 +392,11 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(company_users.router, prefix="/api/v1", tags=["company"])
     app.include_router(lia_field_toggles.router, prefix="/api/v1", tags=["field-toggles"])
     app.include_router(company_culture.router, prefix="/api/v1", tags=["company-culture"])
+    # T2/#994 — legacy ``/company/{enrich,auto-enrich,profile/{id}/generate-evp,
+    # analyze-culture}`` routes were relocated from ``company.py`` into
+    # ``company_culture.py``. Public paths are preserved byte-for-byte
+    # via this second router so the frontend sees zero change.
+    app.include_router(company_culture.legacy_router, prefix="/api/v1", tags=["company-culture"])
     app.include_router(company_culture_config.router, prefix="/api/v1", tags=["company"])
     app.include_router(company_departments.router, prefix="/api/v1", tags=["company"])
     app.include_router(company_assessments.router, prefix="/api/v1", tags=["company"])
