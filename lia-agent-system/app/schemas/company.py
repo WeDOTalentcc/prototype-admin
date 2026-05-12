@@ -270,9 +270,15 @@ class CompanyProfileResponse(CompanyProfileBase):
     updated_at: datetime
     created_by: str | None = None
     
-    @field_validator('culture_analyzed', 'ats_history_analyzed', mode='before')
+    @field_validator('culture_analyzed', 'ats_history_analyzed', 'is_default', 'is_active', mode='before')
     @classmethod
     def convert_none_to_false(cls, v):
+        # Task #1017 — `is_default` e `is_active` foram declarados
+        # `Boolean` (sem `nullable=False`) no model `CompanyProfile`,
+        # então linhas legadas/seeded podem ter `NULL`. Sem este coerce
+        # o GET /profile responde 500 (Pydantic v2 rejeita None pra
+        # `bool`). O round-trip PATCH→GET com `is_default=NULL` é
+        # coberto por `tests/test_company_profile_roundtrip_t1017.py`.
         return v if v is not None else False
     
     class Config:
