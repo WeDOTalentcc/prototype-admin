@@ -373,6 +373,14 @@ _HARDCODED_DOMAIN_PATTERNS: dict[str, list[str]] = {
         r"progresso\s+\w*\s*campanha", r"workflow\s+rail",
     ],
 
+    # A2 (PR5 / Task #1005) — fallback para a tag estruturada do chat
+    # lateral de Configurações. Espelha a entrada `company_settings` no
+    # YAML (`domain_routing.yaml`); usado se YAML estiver indisponível
+    # (LIA_DISABLE_YAML_ROUTING=1 ou arquivo ausente).
+    "company_settings": [
+        r"\[action:prefill_section\]\[target_section:[a-z_]+\]",
+    ],
+
 }
 
 
@@ -570,6 +578,20 @@ class FastRouter:
 
         all_matches.sort(key=lambda r: r.confidence, reverse=True)
         best_match = all_matches[0]
+
+        # PR5 / A2 (Task #1005) — structured-tag hard priority.
+        # Mensagens do chat lateral começam com `[ACTION:<verb>][target_*:<key>]`.
+        # Esses tokens são intent-signals determinísticos do frontend (não
+        # texto livre do usuário). Bypass da penalidade de ambiguidade
+        # E early return: se o melhor match veio de um pattern de tag
+        # estruturada, devolve direto sem deixar o "vaga"/"campanha"
+        # citado no resto da frase competir.
+        if best_match.matched_text.startswith("[action:"):
+            logger.debug(
+                "FastRouter structured-tag short-circuit: '%s' → %s (conf=%.2f)",
+                message[:50], best_match.domain_id, best_match.confidence,
+            )
+            return best_match
 
         if len(all_matches) >= 2:
             confidence_gap = best_match.confidence - all_matches[1].confidence

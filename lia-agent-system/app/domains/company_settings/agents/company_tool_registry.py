@@ -25,9 +25,145 @@ from app.shared.compliance.fairness_recursive import (
 from app.shared.tool_handler import tool_handler
 from types import SimpleNamespace
 
+from app.domains.cv_screening.services.confidence_policy_service import (
+    ConfidenceAction,
+    confidence_policy_service,
+)
+
 logger = logging.getLogger(__name__)
 
 _fairness_guard = FairnessGuard()
+
+
+# ────────────────────────────────────────────────────────────────────────────
+# A1 (PR5 / Task #1005) — SQL parametrizado: queries pré-compostas em tempo
+# de import, indexadas por nome de campo (whitelist). Elimina f-string
+# em runtime path; reduz a superfície de SQLi se um futuro PR aceitar
+# `field` arbitrário (defesa em profundidade complementar à whitelist).
+# ────────────────────────────────────────────────────────────────────────────
+
+_PROFILE_FIELDS: frozenset[str] = frozenset({
+    "name", "trading_name", "cnpj", "website", "hr_email", "hr_phone",
+    "address", "industry", "company_size", "employee_count", "founded_year",
+    "linkedin_url", "logo_url",
+})
+
+_CULTURE_FIELDS: frozenset[str] = frozenset({
+    "mission", "vision", "values", "core_competencies", "evp_bullets",
+    "work_model", "hybrid_days_onsite", "employment_types",
+    "growth_opportunities", "team_dynamics", "leadership_style",
+    "dei_initiatives", "sustainability", "social_impact",
+    "tech_stack", "engineering_culture", "default_languages",
+    "seniority_levels", "default_behavioral_competencies",
+    "default_salary_ranges", "locations", "headquarters",
+})
+
+
+def _build_profile_queries() -> dict[str, tuple[str, str, str]]:
+    out: dict[str, tuple[str, str, str]] = {}
+    for f in _PROFILE_FIELDS:
+        select_q = (
+            f"SELECT id, {f} AS prev FROM company_profiles "
+            "WHERE id::text = :company_id LIMIT 1"
+        )
+        update_q = (
+            f"UPDATE company_profiles SET {f} = :value, updated_at = NOW() "
+            "WHERE id::text = :company_id"
+        )
+        insert_q = (
+            f"INSERT INTO company_profiles (id, {f}, created_at, updated_at) "
+            "VALUES (:company_id::uuid, :value, NOW(), NOW())"
+        )
+        out[f] = (select_q, update_q, insert_q)
+    return out
+
+
+def _build_culture_queries() -> dict[str, tuple[str, str, str]]:
+    out: dict[str, tuple[str, str, str]] = {}
+    for f in _CULTURE_FIELDS:
+        select_q = (
+            f"SELECT id, {f} AS prev FROM company_culture_profiles "
+            "WHERE company_id = :company_id LIMIT 1"
+        )
+        update_q = (
+            f"UPDATE company_culture_profiles SET {f} = :value, updated_at = NOW() "
+            "WHERE company_id = :company_id"
+        )
+        insert_q = (
+            "INSERT INTO company_culture_profiles "
+            f"(company_id, {f}, created_at, updated_at) "
+            "VALUES (:company_id, :value, NOW(), NOW())"
+        )
+        out[f] = (select_q, update_q, insert_q)
+    return out
+
+
+_PROFILE_FIELD_QUERIES: dict[str, tuple[str, str, str]] = _build_profile_queries()
+_CULTURE_FIELD_QUERIES: dict[str, tuple[str, str, str]] = _build_culture_queries()
+
+
+# ────────────────────────────────────────────────────────────────────────────
+# A6 (PR5 / Task #1005) — gate de ConfidencePolicy. Bloqueia auto-save
+# quando o caller declara `autonomous_intent=True` mas não atinge o
+# threshold APPLY_NOTIFY (>=0.70). Default fail-CLOSED para auto-save
+# sem score. Chamadas HITL (sem `autonomous_intent`) passam direto.
+# ────────────────────────────────────────────────────────────────────────────
+
+def _check_confidence_gate(kwargs: dict[str, Any]) -> dict[str, Any] | None:
+    """Retorna payload de bloqueio se o gate falhar, ou None se passar.
+
+    Contrato:
+      - Sem `autonomous_intent`: HITL convencional, gate desliga (None).
+      - Com `autonomous_intent=True` e sem `confidence`: FAIL-CLOSED.
+      - Com `autonomous_intent=True` e `confidence` numérico:
+        consulta `ConfidencePolicyService.get_action_for_confidence()`.
+        Libera para APPLY_SILENT/APPLY_NOTIFY; bloqueia para
+        ASK_USER/ALERT_CONFLICT.
+    """
+    # Estrito: só ativa para `autonomous_intent is True` (boolean real).
+    # Strings ("false", "0") seriam truthy e ativariam o gate por engano.
+    if kwargs.get("autonomous_intent") is not True:
+        return None
+
+    confidence = kwargs.get("confidence")
+    if confidence is None:
+        return {
+            "success": False,
+            "requires_human_approval": True,
+            "reason": "confidence_missing",
+            "message": (
+                "Save autônomo requer score de confidence. Peça confirmação "
+                "ao recrutador antes de persistir."
+            ),
+        }
+    try:
+        conf_value = float(confidence)
+    except (TypeError, ValueError):
+        return {
+            "success": False,
+            "requires_human_approval": True,
+            "reason": "confidence_invalid",
+            "message": (
+                f"Confidence inválido ({confidence!r}). Peça confirmação ao "
+                "recrutador antes de persistir."
+            ),
+        }
+
+    action = confidence_policy_service.get_action_for_confidence(conf_value)
+    if action in (ConfidenceAction.APPLY_SILENT, ConfidenceAction.APPLY_NOTIFY):
+        return None
+
+    return {
+        "success": False,
+        "requires_human_approval": True,
+        "reason": "low_confidence",
+        "confidence": conf_value,
+        "action": action.value,
+        "message": (
+            f"Confidence {conf_value:.2f} abaixo do threshold para auto-save "
+            "(0.70). Peça confirmação humana antes de persistir."
+        ),
+    }
 
 
 def _fairness_violation_response(
@@ -150,6 +286,13 @@ async def _wrap_save_company_field(**kwargs: Any) -> dict[str, Any]:
     value = kwargs.get("value")
     user_id = kwargs.get("user_id")
 
+    # A6 (PR5 / Task #1005) — gate de ConfidencePolicy. Curto-circuita
+    # ANTES da audit ctx para evitar emitir intent de mutação que nunca
+    # acontecerá (mantém audit trail honesto).
+    gate = _check_confidence_gate(kwargs)
+    if gate is not None:
+        return gate
+
     # PR4 (Task #1004) — audit log SOX/ISO canônico fail-CLOSED com
     # transação atômica: business writes + outcome row commitados juntos.
     async with audit_company_change(
@@ -178,26 +321,23 @@ async def _save_company_field_impl(
 ) -> dict[str, Any]:
     """PR4 (Task #1004) — usa ``session`` injetada (compartilhada com
     o wrapper de audit) e NÃO commita: o ``audit_company_change``
-    commita business writes + outcome row em transação atômica."""
-    valid_profile_fields = {
-        "name", "trading_name", "cnpj", "website", "hr_email", "hr_phone",
-        "address", "industry", "company_size", "employee_count", "founded_year",
-        "linkedin_url", "logo_url",
-    }
-    valid_culture_fields = {
-        "mission", "vision", "values", "core_competencies", "evp_bullets",
-        "work_model", "hybrid_days_onsite", "employment_types",
-        "growth_opportunities", "team_dynamics", "leadership_style",
-        "dei_initiatives", "sustainability", "social_impact",
-        "tech_stack", "engineering_culture", "default_languages",
-        "seniority_levels", "default_behavioral_competencies",
-        "default_salary_ranges", "locations", "headquarters",
-    }
+    commita business writes + outcome row em transação atômica.
 
-    if section == "profile" and field not in valid_profile_fields:
-        return {"success": False, "data": {}, "message": f"Campo '{field}' nao e valido para perfil."}
-    if section == "culture" and field not in valid_culture_fields:
-        return {"success": False, "data": {}, "message": f"Campo '{field}' nao e valido para cultura."}
+    A1 (PR5 / Task #1005) — queries pré-compostas em
+    ``_PROFILE_FIELD_QUERIES`` / ``_CULTURE_FIELD_QUERIES`` (no topo do
+    módulo). Lookup por whitelist; ZERO f-string em runtime."""
+    if section == "profile":
+        queries = _PROFILE_FIELD_QUERIES.get(field)
+        if queries is None:
+            return {"success": False, "data": {}, "message": f"Campo '{field}' nao e valido para perfil."}
+    elif section == "culture":
+        queries = _CULTURE_FIELD_QUERIES.get(field)
+        if queries is None:
+            return {"success": False, "data": {}, "message": f"Campo '{field}' nao e valido para cultura."}
+    else:
+        return {"success": False, "data": {}, "message": f"Secao '{section}' nao e valida."}
+
+    select_q, update_q, insert_q = queries
 
     # PR3 (Task #1003) — FairnessGuard recursivo. Cobre str/list/dict/strings
     # curtas; sem mais filtro `len > 10` (era bypass C3 do audit T1-T6).
@@ -209,42 +349,25 @@ async def _save_company_field_impl(
 
     # PR4: usa session injetada (compartilhada com audit wrapper) e
     # captura `before` (estado anterior) para o payload canônico SOX.
+    serialized_value: Any = (
+        json.dumps(value, ensure_ascii=False) if isinstance(value, (list, dict)) else value
+    )
     before_value: Any = None
-    if section == "profile":
-        existing = await session.execute(
-            text(f"SELECT id, {field} AS prev FROM company_profiles WHERE id::text = :company_id LIMIT 1"),
-            {"company_id": company_id},
+    existing = await session.execute(
+        text(select_q), {"company_id": company_id},
+    )
+    prev_row = existing.mappings().first()
+    if prev_row:
+        before_value = prev_row.get("prev")
+        await session.execute(
+            text(update_q),
+            {"value": serialized_value, "company_id": company_id},
         )
-        prev_row = existing.mappings().first()
-        if prev_row:
-            before_value = prev_row.get("prev")
-            await session.execute(
-                text(f"UPDATE company_profiles SET {field} = :value, updated_at = NOW() WHERE id::text = :company_id"),
-                {"value": json.dumps(value) if isinstance(value, (list, dict)) else value, "company_id": company_id},
-            )
-        else:
-            await session.execute(
-                text(f"INSERT INTO company_profiles (id, {field}, created_at, updated_at) VALUES (:company_id::uuid, :value, NOW(), NOW())"),
-                {"company_id": company_id, "value": json.dumps(value) if isinstance(value, (list, dict)) else value},
-            )
-    elif section == "culture":
-        existing = await session.execute(
-            text(f"SELECT id, {field} AS prev FROM company_culture_profiles WHERE company_id = :company_id LIMIT 1"),
-            {"company_id": company_id},
+    else:
+        await session.execute(
+            text(insert_q),
+            {"company_id": company_id, "value": serialized_value},
         )
-        prev_row = existing.mappings().first()
-        val = json.dumps(value, ensure_ascii=False) if isinstance(value, (list, dict)) else value
-        if prev_row:
-            before_value = prev_row.get("prev")
-            await session.execute(
-                text(f"UPDATE company_culture_profiles SET {field} = :value, updated_at = NOW() WHERE company_id = :company_id"),
-                {"value": val, "company_id": company_id},
-            )
-        else:
-            await session.execute(
-                text(f"INSERT INTO company_culture_profiles (company_id, {field}, created_at, updated_at) VALUES (:company_id, :value, NOW(), NOW())"),
-                {"company_id": company_id, "value": val},
-            )
 
     return {
         "success": True,
@@ -261,6 +384,11 @@ async def _wrap_save_company_section(**kwargs: Any) -> dict[str, Any]:
     section = kwargs.get("section", "profile")
     data = kwargs.get("data", {})
     user_id = kwargs.get("user_id")
+
+    # A6 (PR5 / Task #1005) — gate de ConfidencePolicy.
+    gate = _check_confidence_gate(kwargs)
+    if gate is not None:
+        return gate
 
     # PR4 (Task #1004) — audit log SOX/ISO canônico fail-CLOSED. Granularidade
     # de lote (cada save_company_field interno emite seu próprio par
@@ -541,6 +669,13 @@ async def _wrap_save_hiring_policy(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     user_id = kwargs.get("user_id", "")
     rules = kwargs.get("rules", {})
+
+    # A6 (PR5 / Task #1005) — gate de ConfidencePolicy. Curto-circuita
+    # antes de delegar ao handler canônico (que abre audit ctx).
+    gate = _check_confidence_gate(kwargs)
+    if gate is not None:
+        return gate
+
     ctx = SimpleNamespace(company_id=company_id, user_id=user_id)
     return await _save_hiring_policy_handler(rules=rules, _context=ctx)
 

@@ -332,6 +332,12 @@ domains:
     - "progresso\\s+\\w*\\s*campanha"
     - "workflow\\s+rail"
   company_settings:
+    # A2 (PR5 / Task #1005) — tag estruturada do chat lateral de Configurações
+    # (use-settings-conversational.ts). Roteamento determinístico para o
+    # CompanySettingsReActAgent ANTES da cascata LLM. Specificity longa
+    # (~50 chars) eleva confidence ao teto (0.95) — vence ambiguidade
+    # contra wizard/job_management mesmo se o prompt do usuário citar "vaga".
+    - "\\[action:prefill_section\\]\\[target_section:[a-z_]+\\]"
     - "logo\\s+d[ae]\\s+(empresa|companhia)"
     - "mudar\\s+\\w*\\s*logo"
     - "atualizar?\\s+\\w*\\s*logo"

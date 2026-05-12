@@ -29,6 +29,10 @@ from app.shared.compliance.fairness_recursive import (
     RecursiveFairnessResult,
     validate_fairness_recursive,
 )
+from app.domains.cv_screening.services.confidence_policy_service import (
+    ConfidenceAction,
+    confidence_policy_service,
+)
 
 if TYPE_CHECKING:
     from app.tools.executor import ToolExecutionContext
@@ -70,6 +74,62 @@ def _fairness_violation_payload(
 
 def _extract_context(kwargs: dict[str, Any]) -> Optional["ToolExecutionContext"]:
     return kwargs.pop("_context", None)
+
+
+# ────────────────────────────────────────────────────────────────────────────
+# A6 (PR5 / Task #1005) — gate de ConfidencePolicy na camada canônica.
+# Espelha o helper em ``company_tool_registry.py``. Defesa em
+# profundidade: o orchestrator pode chamar ``save_hiring_policy`` direto
+# (allowed_agents inclui ``orchestrator``), bypassando o wrapper local
+# ``_wrap_save_hiring_policy``. O gate aqui garante que mesmo nessa rota
+# o auto-save sem confidence suficiente é bloqueado fail-CLOSED.
+# ────────────────────────────────────────────────────────────────────────────
+
+def _check_confidence_gate(kwargs: dict[str, Any]) -> dict[str, Any] | None:
+    """Idêntico ao helper em company_tool_registry. Vide docstring lá."""
+    # Estrito: só ativa para `autonomous_intent is True` (boolean real).
+    if kwargs.get("autonomous_intent") is not True:
+        return None
+
+    confidence = kwargs.get("confidence")
+    if confidence is None:
+        return {
+            "success": False,
+            "requires_human_approval": True,
+            "reason": "confidence_missing",
+            "message": (
+                "Save autônomo requer score de confidence. Peça confirmação "
+                "ao recrutador antes de persistir."
+            ),
+        }
+    try:
+        conf_value = float(confidence)
+    except (TypeError, ValueError):
+        return {
+            "success": False,
+            "requires_human_approval": True,
+            "reason": "confidence_invalid",
+            "message": (
+                f"Confidence inválido ({confidence!r}). Peça confirmação ao "
+                "recrutador antes de persistir."
+            ),
+        }
+
+    action = confidence_policy_service.get_action_for_confidence(conf_value)
+    if action in (ConfidenceAction.APPLY_SILENT, ConfidenceAction.APPLY_NOTIFY):
+        return None
+
+    return {
+        "success": False,
+        "requires_human_approval": True,
+        "reason": "low_confidence",
+        "confidence": conf_value,
+        "action": action.value,
+        "message": (
+            f"Confidence {conf_value:.2f} abaixo do threshold para auto-save "
+            "(0.70). Peça confirmação humana antes de persistir."
+        ),
+    }
 
 
 COMPANY_CORE_FIELDS = [
@@ -428,6 +488,14 @@ async def save_hiring_policy(
     Returns:
         {success, fields_saved, blocks_touched, fairness_blocked, message}
     """
+    # A6 (PR5 / Task #1005) — gate de ConfidencePolicy ANTES de extrair
+    # contexto/abrir audit ctx. Importante: ``_check_confidence_gate``
+    # NÃO deve consumir `_context`; lê apenas `autonomous_intent` /
+    # `confidence` em kwargs.
+    gate = _check_confidence_gate(kwargs)
+    if gate is not None:
+        return gate
+
     context = _extract_context(kwargs)
     company_id = context.company_id if context else None
     user_id = context.user_id if context else None

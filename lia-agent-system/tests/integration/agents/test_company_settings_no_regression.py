@@ -882,3 +882,222 @@ def test_pr4_bypass_flag_registered_in_main_and_health():
         "_BYPASS_FLAGS_RUNTIME — endpoint /health/compliance/bypass-status "
         "não vai expor a flag pro canary on-call."
     )
+
+
+# ─── Contrato 8: PR5 (Task #1005) — endurecimento company_settings ────────
+
+
+def test_pr5_a1_save_company_field_impl_uses_precompiled_queries():
+    """PR5 / A1 (Task #1005) — defesa AST: ``_save_company_field_impl``
+    NÃO pode mais formatar SQL via f-string com ``{field}``. As queries
+    são pré-compostas em tempo de import e indexadas por whitelist.
+    Se um futuro PR voltar a interpolar `field` em runtime, a superfície
+    de SQLi reabre — este teste quebra antes do merge.
+    """
+    import ast
+
+    module_path = (
+        Path(__file__).resolve().parents[3]
+        / "app" / "domains" / "company_settings"
+        / "agents" / "company_tool_registry.py"
+    )
+    src = module_path.read_text(encoding="utf-8")
+
+    # Nenhuma f-string SQL contendo `{field}` em runtime. Mensagens de
+    # log/erro como f"Dado salvo: {section}.{field}" são inofensivas;
+    # o que reabre SQLi é interpolar `{field}` em SELECT/UPDATE/INSERT.
+    # As queries SQL pré-compostas usam `{f}` em `_build_*_queries`
+    # (tempo de import, varrendo a frozenset whitelisted).
+    forbidden = re.compile(
+        r"f\"[^\"]*(?:SELECT|UPDATE|INSERT|DELETE|FROM|WHERE)[^\"]*\{field\}[^\"]*\"",
+        re.IGNORECASE,
+    )
+    matches = forbidden.findall(src)
+    assert not matches, (
+        "PR5 / A1 regressão: `_save_company_field_impl` (ou outra função "
+        "do registry) voltou a interpolar `{field}` em f-string SQL: "
+        f"{matches}. Use `_PROFILE_FIELD_QUERIES[field]` / "
+        "`_CULTURE_FIELD_QUERIES[field]` (queries pré-compostas em tempo "
+        "de import)."
+    )
+
+    # Defesa positiva: as estruturas pré-compostas existem.
+    tree = ast.parse(src)
+    module_assigns: set[str] = set()
+    for node in tree.body:
+        if isinstance(node, ast.Assign):
+            for target in node.targets:
+                if isinstance(target, ast.Name):
+                    module_assigns.add(target.id)
+        elif isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+            module_assigns.add(node.target.id)
+    # `_PROFILE_FIELD_QUERIES = _build_profile_queries()` etc.
+    for required in ("_PROFILE_FIELD_QUERIES", "_CULTURE_FIELD_QUERIES"):
+        assert required in module_assigns, (
+            f"PR5 / A1 regressão: variável `{required}` removida do "
+            "company_tool_registry — A1 não pode operar sem a tabela "
+            "pré-compilada de queries."
+        )
+
+
+def test_pr5_a2_fast_router_routes_prefill_section_tag():
+    """PR5 / A2 (Task #1005) — sentinela contra regressão do roteamento
+    determinístico. A tag `[ACTION:prefill_section][target_section:<key>]`
+    enviada pelo chat lateral de Configurações DEVE rotear para
+    `company_settings` no FastRouter (sem cair na cascata LLM).
+
+    Trava 2 contratos:
+      1. YAML `domain_routing.yaml` lista o pattern em `company_settings`.
+      2. `_HARDCODED_DOMAIN_PATTERNS` (fallback se YAML indisponível) também.
+    """
+    yaml_path = (
+        Path(__file__).resolve().parents[3]
+        / "app" / "orchestrator" / "config" / "domain_routing.yaml"
+    )
+    yaml_data = yaml.safe_load(yaml_path.read_text(encoding="utf-8"))
+    company_patterns = yaml_data.get("domains", {}).get("company_settings", [])
+    expected_pattern_substr = "prefill_section"
+    assert any(expected_pattern_substr in p for p in company_patterns), (
+        "PR5 / A2 regressão: pattern `prefill_section` removido de "
+        "`company_settings` em domain_routing.yaml — chat lateral de "
+        "Configurações volta a depender da cascata LLM (latência + "
+        "ambiguidade)."
+    )
+
+    # Hardcoded fallback (defense in depth).
+    from app.orchestrator import fast_router as fr_mod
+
+    hardcoded = fr_mod._HARDCODED_DOMAIN_PATTERNS.get("company_settings", [])
+    assert any("prefill_section" in p for p in hardcoded), (
+        "PR5 / A2 regressão: fallback hardcoded em "
+        "`_HARDCODED_DOMAIN_PATTERNS['company_settings']` perdeu o "
+        "pattern `prefill_section`. Se LIA_DISABLE_YAML_ROUTING=1 ou o "
+        "YAML sumir, o roteamento determinístico cai."
+    )
+
+    # Fim-a-fim: instancia FastRouter e confirma que uma mensagem com a
+    # tag estruturada é classificada como `company_settings`.
+    fr = fr_mod.FastRouter()
+    sample = "[ACTION:prefill_section][target_section:basic] preencher dados básicos"
+    matches = []
+    for domain_id, patterns in fr_mod._COMPILED_PATTERNS.items():
+        for pat in patterns:
+            if pat.search(sample.lower()):
+                matches.append(domain_id)
+                break
+    assert "company_settings" in matches, (
+        f"PR5 / A2 regressão: FastRouter não casa a tag estruturada com "
+        f"`company_settings`. Matches reais: {matches}."
+    )
+
+
+def test_pr5_a6_confidence_gate_wired_in_three_save_tools():
+    """PR5 / A6 (Task #1005) — defesa AST contra regressão do gate de
+    ConfidencePolicy. As 3 wrappers de save em `company_settings` DEVEM
+    consultar `_check_confidence_gate` antes de mutar estado.
+
+    Cobertura:
+      - `_wrap_save_company_field` (registry.py)
+      - `_wrap_save_company_section` (registry.py)
+      - `save_hiring_policy` (canônico em import_tools.py — ambos os
+        wrappers convergem aqui)
+
+    Se um futuro PR remover qualquer chamada, este teste quebra antes
+    do merge — auto-saves voltam a passar sem checar threshold.
+    """
+    import ast
+
+    targets: list[tuple[Path, set[str]]] = [
+        (
+            Path(__file__).resolve().parents[3]
+            / "app" / "domains" / "company_settings"
+            / "agents" / "company_tool_registry.py",
+            {"_wrap_save_company_field", "_wrap_save_company_section"},
+        ),
+        (
+            Path(__file__).resolve().parents[3]
+            / "app" / "domains" / "company_settings"
+            / "tools" / "import_tools.py",
+            {"save_hiring_policy"},
+        ),
+    ]
+
+    offenders: list[str] = []
+    for module_path, required_funcs in targets:
+        assert module_path.exists(), f"Arquivo esperado não existe: {module_path}"
+        tree = ast.parse(module_path.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            if not isinstance(node, (ast.AsyncFunctionDef, ast.FunctionDef)):
+                continue
+            if node.name not in required_funcs:
+                continue
+            calls: set[str] = set()
+            for sub in ast.walk(node):
+                if isinstance(sub, ast.Call):
+                    func = sub.func
+                    if isinstance(func, ast.Name):
+                        calls.add(func.id)
+                    elif isinstance(func, ast.Attribute):
+                        calls.add(func.attr)
+            if "_check_confidence_gate" not in calls:
+                offenders.append(f"{module_path.name}::{node.name}")
+
+    assert not offenders, (
+        "PR5 / A6 regressão: as funções abaixo NÃO consultam "
+        f"`_check_confidence_gate`: {offenders}. Sem o gate, callers "
+        "auto-save (autonomous_intent=True) podem persistir mesmo com "
+        "confidence abaixo de 0.70 (APPLY_NOTIFY)."
+    )
+
+
+def test_pr5_a6_confidence_gate_helper_blocks_low_confidence():
+    """PR5 / A6 (Task #1005) — comportamento do helper `_check_confidence_gate`.
+
+    Contrato:
+      - Sem `autonomous_intent`: passa (HITL convencional).
+      - `autonomous_intent=True` sem `confidence`: bloqueia (fail-CLOSED).
+      - `confidence` >= 0.70 (APPLY_NOTIFY): passa.
+      - `confidence` < 0.70: bloqueia com `requires_human_approval=True`.
+
+    Cobre as DUAS cópias do helper (registry + import_tools) — devem ter
+    comportamento idêntico (defense in depth + simetria de contrato).
+    """
+    from app.domains.company_settings.agents import (
+        company_tool_registry as reg,
+    )
+    from app.domains.company_settings.tools import import_tools as it
+
+    for helper, label in (
+        (reg._check_confidence_gate, "registry"),
+        (it._check_confidence_gate, "import_tools"),
+    ):
+        # 1. HITL convencional → passa (None)
+        assert helper({}) is None, f"{label}: HITL sem autonomous_intent deve passar"
+
+        # 2. Autonomous sem confidence → bloqueia
+        blocked = helper({"autonomous_intent": True})
+        assert blocked is not None and blocked["success"] is False, (
+            f"{label}: autonomous_intent sem confidence deve bloquear"
+        )
+        assert blocked["reason"] == "confidence_missing"
+        assert blocked["requires_human_approval"] is True
+
+        # 3. Confidence alto → passa
+        assert helper({"autonomous_intent": True, "confidence": 0.92}) is None, (
+            f"{label}: confidence >= 0.70 deve passar"
+        )
+        assert helper({"autonomous_intent": True, "confidence": 0.71}) is None, (
+            f"{label}: confidence apenas acima do threshold deve passar"
+        )
+
+        # 4. Confidence baixo → bloqueia
+        low = helper({"autonomous_intent": True, "confidence": 0.30})
+        assert low is not None and low["success"] is False, (
+            f"{label}: confidence baixo deve bloquear"
+        )
+        assert low["reason"] == "low_confidence"
+        assert low["requires_human_approval"] is True
+
+        # 5. Confidence inválido → bloqueia
+        invalid = helper({"autonomous_intent": True, "confidence": "talvez"})
+        assert invalid is not None and invalid["reason"] == "confidence_invalid"
