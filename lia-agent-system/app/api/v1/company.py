@@ -431,16 +431,30 @@ async def get_company_profile(
                 profile = await profile_repo.get_by_client_account(user_cid)
                 if profile:
                     return profile
-            except Exception:
-                pass
+            except Exception as e:
+                # PR-D (Task #1016) — bare except antes mascarava bugs
+                # de DB (foi o que escondeu o is_default NULL por dias);
+                # logar diagnostico e continuar pro fallback.
+                logger.warning(
+                    "[get_company_profile] get_by_client_account(%s) falhou: %s",
+                    user_cid, e,
+                )
 
             try:
                 cid_uuid = uuid.UUID(user_cid)
                 profile = await profile_repo.get_by_id(cid_uuid)
                 if profile:
                     return profile
-            except (ValueError, Exception):
+            except ValueError:
+                # user_cid não é UUID válido — pula get_by_id silenciosamente
+                # (esperado quando tenant é slug).
                 pass
+            except Exception as e:
+                # PR-D (Task #1016) — log diagnostico, não engole.
+                logger.warning(
+                    "[get_company_profile] get_by_id(%s) falhou: %s",
+                    user_cid, e,
+                )
 
             # T4 (#991) — Demo Company fallback was the root cause of the
             # "salvou mas não persistiu" + cross-tenant leak symptom. We

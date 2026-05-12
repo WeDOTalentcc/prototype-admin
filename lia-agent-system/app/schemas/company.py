@@ -258,7 +258,13 @@ class CompanyProfileUpdate(BaseModel):
 class CompanyProfileResponse(CompanyProfileBase):
     id: UUID
     is_active: bool
-    is_default: bool
+    # PR-B (Task #1016) — default defensivo `False` para tolerar rows
+    # legados em que `company_profiles.is_default` ficou NULL antes da
+    # migration `128_company_profile_is_default_not_null`. NÃO virar
+    # `Optional[bool]`: o contrato do domínio diz "todo profile sabe se
+    # é o default ou não". O default só protege a leitura enquanto o
+    # backfill da migration não roda em todos os ambientes.
+    is_default: bool = False
     culture_analyzed: bool | None = False
     culture_analysis_date: datetime | None = None
     culture_insights: dict[str, Any] | None = None
@@ -273,12 +279,16 @@ class CompanyProfileResponse(CompanyProfileBase):
     @field_validator('culture_analyzed', 'ats_history_analyzed', 'is_default', 'is_active', mode='before')
     @classmethod
     def convert_none_to_false(cls, v):
-        # Task #1017 — `is_default` e `is_active` foram declarados
-        # `Boolean` (sem `nullable=False`) no model `CompanyProfile`,
-        # então linhas legadas/seeded podem ter `NULL`. Sem este coerce
-        # o GET /profile responde 500 (Pydantic v2 rejeita None pra
-        # `bool`). O round-trip PATCH→GET com `is_default=NULL` é
+        # Task #1016 (PR-B) + Task #1017 — `is_default` e `is_active`
+        # foram declarados `Boolean` (sem `nullable=False`) no model
+        # `CompanyProfile`, então linhas legadas/seeded podem ter
+        # `NULL`. Sem este coerce o GET /profile responde 500 (Pydantic
+        # v2 rejeita None pra `bool`) e o frontend interpreta como
+        # "save falhou". O round-trip PATCH→GET com `is_default=NULL` é
         # coberto por `tests/test_company_profile_roundtrip_t1017.py`.
+        # A migration `128_company_profile_is_default_not_null` faz o
+        # backfill no DB; este validator protege o rollout misto até
+        # a migration rodar em todos os ambientes.
         return v if v is not None else False
     
     class Config:

@@ -139,7 +139,8 @@ class AuditService:
             final_ignored.update(criteria_ignored)
 
         retention_days = self.RETENTION_PERIODS.get(canonical_type.value, 730)
-        retention_until = datetime.utcnow() + timedelta(days=retention_days)
+        now = datetime.utcnow()
+        retention_until = now + timedelta(days=retention_days)
 
         async with AsyncSessionLocal() as session:
             await _bind_tenant(session, company_id)
@@ -159,11 +160,25 @@ class AuditService:
                 confidence=confidence,
                 human_review_required=human_review_required,
                 retention_until=retention_until,
+                # PR-A (Task #1016) — populamos created_at em Python para
+                # NÃO precisar de session.refresh() após o COMMIT. O refresh
+                # falhava com InvalidRequestError em sessões RLS-bound
+                # ("Could not refresh instance"), o que disparava o
+                # fail-CLOSED do wrapper audit_company_change e bloqueava
+                # 100% das tools de company_settings (chat lateral / hub
+                # Minha Empresa). O server_default=func.now() do schema
+                # continua disponível como fallback no caso (improvável)
+                # de o caller pular este caminho.
+                created_at=now,
             )
 
             session.add(audit_log)
             await session.commit()
-            await session.refresh(audit_log)
+            # NÃO chamar session.refresh(audit_log) aqui — todos os campos
+            # relevantes (id, created_at, retention_until) já estão
+            # populados em Python. O refresh em sessão RLS-bound após
+            # COMMIT levanta InvalidRequestError e foi a causa-raiz do
+            # bloqueio de tools de company_settings (auditoria #1015).
 
             logger.info(
                 f"✅ Audit log created: {agent_name} - {decision_type} -> {decision} "

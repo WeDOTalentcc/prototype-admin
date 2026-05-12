@@ -4,6 +4,7 @@ Company Setup models for platform configuration.
 from datetime import datetime
 from typing import Optional, List
 from sqlalchemy import Column, String, Integer, DateTime, Text, JSON, Boolean, Float, ForeignKey
+from sqlalchemy import text as sa_text
 from sqlalchemy.dialects.postgresql import UUID, ARRAY, JSONB
 from sqlalchemy.orm import relationship
 import uuid
@@ -91,7 +92,19 @@ class CompanyProfile(Base):
     revenue_range = Column(String(100), nullable=True)
     
     is_active = Column(Boolean, default=True)
-    is_default = Column(Boolean, default=False)
+    # PR-B (Task #1016) — `is_default` precisa ser NOT NULL com default
+    # `false`. Em produção alguns rows legados nasceram com NULL
+    # (pré-default), o que quebrava `GET /api/v1/company/profile` com
+    # `ResponseValidationError` (response model declara `bool`
+    # não-nullable) e o frontend interpretava como "save falhou".
+    # Migration `128_company_profile_is_default_not_null.py` faz o
+    # backfill + ALTER COLUMN no DB.
+    is_default = Column(
+        Boolean,
+        nullable=False,
+        default=False,
+        server_default=sa_text("false"),
+    )
     
     culture_analyzed = Column(Boolean, default=False)
     culture_analysis_date = Column(DateTime, nullable=True)
