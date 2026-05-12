@@ -113,7 +113,7 @@ async def login(
             await audit_svc.log_decision(
                 company_id=None,
                 agent_name="auth_module",
-                decision_type="reject_candidate",
+                decision_type="auth_event",
                 action="auth_failed",
                 decision="rejected",
                 reasoning=["Authentication failed: invalid credentials", "Method: password", f"Source IP: {_masked_ip}"],
@@ -148,7 +148,7 @@ async def login(
         await audit_svc.log_decision(
             company_id=str(_company) if _company else None,
             agent_name="auth_module",
-            decision_type="move_stage",
+            decision_type="auth_event",
             action="authenticated",
             decision="approved",
             reasoning=["User authenticated successfully", "Method: password", f"Role: {user.role.value}", f"Source IP: {_masked_ip}"],

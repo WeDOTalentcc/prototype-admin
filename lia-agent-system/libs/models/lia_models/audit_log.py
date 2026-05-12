@@ -28,6 +28,11 @@ class DecisionType(str, enum.Enum):  # R-053: canonical DecisionType — single 
     # caia no fallback SCORE_CANDIDATE e o decision_type persistido em
     # `audit_logs` reflita a operação real (queries forenses).
     COMPANY_SETTINGS_CHANGE = "company_settings_change"
+    # Task #1018 — categoria canônica para eventos de autenticação
+    # (login bem-sucedido/falho, logout, refresh). Antes, login sucesso
+    # era logado como MOVE_STAGE e falha como REJECT_CANDIDATE, poluindo
+    # dashboards de compliance SOX e o triage de incidentes de auth.
+    AUTH_EVENT = "auth_event"
 
 
 class AuditLog(Base):
