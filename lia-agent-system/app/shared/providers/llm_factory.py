@@ -526,6 +526,56 @@ async def get_provider_for_tenant_from_db(
     return registry.get_container(tenant_id=tenant_id)
 
 
+def _resolve_provider_api_key(provider: str) -> str:
+    """Resolve API key for a provider from env vars (with AI_INTEGRATIONS_* fallback)."""
+    if provider == "gemini":
+        return (
+            os.environ.get("GEMINI_API_KEY")
+            or os.environ.get("GOOGLE_API_KEY")
+            or os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY", "")
+        )
+    if provider == "claude":
+        return (
+            os.environ.get("ANTHROPIC_API_KEY")
+            or os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY", "")
+        )
+    if provider == "openai":
+        return (
+            os.environ.get("OPENAI_API_KEY")
+            or os.environ.get("AI_INTEGRATIONS_OPENAI_API_KEY", "")
+        )
+    return ""
+
+
+def _resolve_provider_chain(
+    tenant_id: str | None,
+) -> tuple[str, list[str], dict[str, str]]:
+    """Resolve (primary, fallback_order, tenant_api_keys) via ProviderContainer.
+
+    Falls back to LLM_DEFAULT_PROVIDER env var + global FALLBACK_ORDER if the
+    container lookup fails for any reason. Tenant-scoped API keys (loaded from
+    DB by ``TenantProviderRegistry.load_from_db``) take precedence over env
+    vars when present.
+    """
+    try:
+        container = TenantProviderRegistry.get_instance().get_container(tenant_id)
+        tenant_keys = {
+            name: key for name, key in container._api_keys.items() if key
+        }
+        return container.primary_provider, container.fallback_order, tenant_keys
+    except Exception as exc:
+        logger.debug(
+            "[create_tracked_llm] ProviderContainer lookup failed for tenant=%s: %s",
+            tenant_id, exc,
+        )
+        primary = os.environ.get("LLM_DEFAULT_PROVIDER", "gemini")
+        return (
+            primary,
+            [primary] + [p for p in FALLBACK_ORDER if p != primary],
+            {},
+        )
+
+
 def create_tracked_llm(
     temperature: float = 0.3,
     service_name: str = "",
@@ -533,7 +583,17 @@ def create_tracked_llm(
     max_output_tokens: int | None = None,
     tenant_id: str | None = None,
 ):
-    provider = os.environ.get("LLM_DEFAULT_PROVIDER", "gemini")
+    """Build a LangChain chat LLM honoring per-tenant provider config.
+
+    Resolution order:
+      1. ProviderContainer for tenant_id → primary + fallback_order.
+      2. Walk the chain and pick the first provider that has credentials
+         available (env var). This avoids falling back to Gemini's
+         Application Default Credentials (ADC) when GEMINI_API_KEY is
+         missing — which crashed the canonical wizard graph.
+      3. Raise a clear error if none of the providers have credentials.
+    """
+    primary, fallback_chain, tenant_keys = _resolve_provider_chain(tenant_id)
 
     try:
         from app.core.config import settings as _s
@@ -542,9 +602,12 @@ def create_tracked_llm(
             "claude": getattr(_s, "ANTHROPIC_MODEL", "claude-sonnet-4-20250514"),
             "openai": getattr(_s, "OPENAI_MODEL", "gpt-4o"),
         }
-        model_name = model_map.get(provider, model_map["gemini"])
     except Exception:
-        model_name = "gemini-2.0-flash"
+        model_map = {
+            "gemini": "gemini-2.0-flash",
+            "claude": "claude-sonnet-4-20250514",
+            "openai": "gpt-4o",
+        }
 
     kwargs: dict = {"temperature": temperature, "streaming": True}
     if max_output_tokens:
@@ -556,46 +619,47 @@ def create_tracked_llm(
     if operation:
         metadata["operation"] = operation
 
-    try:
-        # F3-2 fix (2026-05-10): fallback for Replit AI Integration prefix (AI_INTEGRATIONS_*)
-        # Pattern alinhado com Anthropic em llm_bootstrap.py:117 (já tem fallback)
-        if provider == "gemini":
-            from langchain_google_genai import ChatGoogleGenerativeAI
-            api_key = (
-                os.environ.get("GEMINI_API_KEY")
-                or os.environ.get("GOOGLE_API_KEY")
-                or os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY", "")
+    tried: list[str] = []
+    for provider in fallback_chain:
+        if provider not in model_map:
+            continue
+        api_key = tenant_keys.get(provider) or _resolve_provider_api_key(provider)
+        if not api_key:
+            tried.append(f"{provider}(no-key)")
+            continue
+        model_name = model_map[provider]
+        try:
+            if provider == "gemini":
+                from langchain_google_genai import ChatGoogleGenerativeAI
+                llm = ChatGoogleGenerativeAI(
+                    model=model_name, google_api_key=api_key, **kwargs,
+                )
+            elif provider == "claude":
+                from langchain_anthropic import ChatAnthropic
+                llm = ChatAnthropic(model=model_name, api_key=api_key, **kwargs)
+            else:  # openai
+                from langchain_openai import ChatOpenAI
+                llm = ChatOpenAI(model=model_name, api_key=api_key, **kwargs)
+        except Exception as exc:
+            tried.append(f"{provider}({type(exc).__name__})")
+            logger.warning(
+                "[create_tracked_llm] provider=%s instantiation failed: %s",
+                provider, exc,
             )
-            return ChatGoogleGenerativeAI(
-                model=model_name, google_api_key=api_key, **kwargs,
+            continue
+
+        if provider != primary:
+            logger.warning(
+                "[create_tracked_llm] tenant=%s primary=%s missing credentials; "
+                "falling back to provider=%s",
+                tenant_id, primary, provider,
             )
-        elif provider == "claude":
-            from langchain_anthropic import ChatAnthropic
-            api_key = (
-                os.environ.get("ANTHROPIC_API_KEY")
-                or os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY", "")
-            )
-            return ChatAnthropic(model=model_name, api_key=api_key, **kwargs)
-        elif provider == "openai":
-            from langchain_openai import ChatOpenAI
-            api_key = (
-                os.environ.get("OPENAI_API_KEY")
-                or os.environ.get("AI_INTEGRATIONS_OPENAI_API_KEY", "")
-            )
-            return ChatOpenAI(model=model_name, api_key=api_key, **kwargs)
-        else:
-            from langchain_google_genai import ChatGoogleGenerativeAI
-            api_key = (
-                os.environ.get("GEMINI_API_KEY")
-                or os.environ.get("GOOGLE_API_KEY")
-                or os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY", "")
-            )
-            return ChatGoogleGenerativeAI(
-                model=model_name, google_api_key=api_key, **kwargs,
-            )
-    except Exception as exc:
-        logger.error("[create_tracked_llm] Failed to create LLM (%s/%s): %s", provider, model_name, exc)
-        raise
+        return llm
+
+    raise RuntimeError(
+        f"create_tracked_llm: no LLM provider has credentials available "
+        f"(tenant={tenant_id}, tried={tried})"
+    )
 
 
 # ---------------------------------------------------------------------------
