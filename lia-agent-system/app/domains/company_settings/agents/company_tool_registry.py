@@ -136,20 +136,36 @@ def _build_profile_additional_data_queries() -> dict[str, tuple[str, str, str]]:
             "SELECT id, additional_data->>'" + f + "' AS prev "
             "FROM company_profiles WHERE id::text = :company_id LIMIT 1"
         )
+        # NOTE (Task #1012): usar `CAST(:value AS text)` em vez de
+        # `:value::text`. SQLAlchemy text() detecta bind params com a
+        # regex `(?<![:\w]):(\w+)(?!:)` — o lookahead `(?!:)` REJEITA o
+        # match quando o próximo caractere é `:`, então `:value::text`
+        # NUNCA era reconhecido como bind. Com asyncpg (driver de prod),
+        # a query chegava ao Postgres com o literal `:value::text` e
+        # estourava `syntax error at or near ":"`. Com psycopg2 o bug
+        # passava despercebido porque o driver não interpreta `:name`.
+        # `CAST(... AS text)` é equivalente semântico e binda corretamente.
+        # NOTE (Task #1012, parte 2): cast explícito `additional_data::jsonb`
+        # dentro do COALESCE. A coluna `company_profiles.additional_data`
+        # é declarada como `json` (não `jsonb`) e Postgres não unifica
+        # `json` com `'{}'::jsonb` no COALESCE — falha com
+        # `CannotCoerceError: COALESCE could not convert type jsonb to json`.
+        # Escrita continua portátil pra envs onde a coluna já foi
+        # migrada pra jsonb.
         update_q = (
             "UPDATE company_profiles "
             "SET additional_data = jsonb_set("
-            "COALESCE(additional_data, '{}'::jsonb), "
+            "COALESCE(additional_data::jsonb, '{}'::jsonb), "
             f"'{path}', "
-            "to_jsonb(:value::text), true), "
+            "to_jsonb(CAST(:value AS text)), true), "
             "updated_at = NOW() "
             "WHERE id::text = :company_id"
         )
         insert_q = (
             "INSERT INTO company_profiles "
             "(id, additional_data, created_at, updated_at) "
-            "VALUES (:company_id::uuid, "
-            "jsonb_build_object('" + f + "', to_jsonb(:value::text)), "
+            "VALUES (CAST(:company_id AS uuid), "
+            "jsonb_build_object('" + f + "', to_jsonb(CAST(:value AS text))), "
             "NOW(), NOW())"
         )
         out[f] = (select_q, update_q, insert_q)
