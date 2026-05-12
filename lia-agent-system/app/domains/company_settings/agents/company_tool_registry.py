@@ -319,7 +319,17 @@ async def _wrap_get_company_profile(**kwargs: Any) -> dict[str, Any]:
 
         filled = sum(1 for v in profile_data.values() if v not in (None, "", [], {}))
         filled += sum(1 for v in culture_data.values() if v not in (None, "", [], {}))
-        total = len(profile_data) + len(culture_data) if culture_data else len(profile_data) + 20
+        # M5 (PR8 / Task #1008) — substitui o `+ 20` mágico (audit M5) pelo
+        # cardinal real da whitelist `_CULTURE_FIELDS`. Quando `culture_row`
+        # é vazio, o denominador da % de completude reflete os campos
+        # canônicos esperados (mesma lista que dirige _build_culture_queries
+        # e o whitelist do save_company_field), não um chute fixo de 20.
+        _expected_culture_count = len(_CULTURE_FIELDS)
+        total = (
+            len(profile_data) + len(culture_data)
+            if culture_data
+            else len(profile_data) + _expected_culture_count
+        )
 
         return {
             "success": True,
@@ -499,7 +509,13 @@ async def _wrap_save_company_section(**kwargs: Any) -> dict[str, Any]:
         # commitam atômicamente. Antes (chamando `_wrap_save_company_field`),
         # cada inner field abria sua própria session/audit ctx e commitava
         # independentemente, quebrando o fail-CLOSED transacional do outer.
-        saved_fields = []
+        # M2 (PR8 / Task #1008) — fail-LOUD em falhas parciais: campos que
+        # voltam `success=false` (whitelist miss, fairness block, DB error)
+        # NÃO são mais descartados silenciosamente; o agente recebe a lista
+        # `failed_fields` e a verbaliza ao recrutador (anti-pattern
+        # canonical-fix #3 — fallback silencioso eliminado).
+        saved_fields: list[str] = []
+        failed_fields: list[dict[str, Any]] = []
         for field, value in data.items():
             inner = await _save_company_field_impl(
                 session=_audit.session,
@@ -512,13 +528,37 @@ async def _wrap_save_company_section(**kwargs: Any) -> dict[str, Any]:
             inner.pop("_after", None)
             if inner.get("success"):
                 saved_fields.append(field)
+            else:
+                failed_fields.append({
+                    "field": field,
+                    "reason": inner.get("reason") or "save_failed",
+                    "message": inner.get("message", ""),
+                })
 
+        all_ok = not failed_fields
+        if all_ok:
+            msg = f"Secao '{section}' salva com {len(saved_fields)} campos."
+        else:
+            msg = (
+                f"Secao '{section}' salva parcialmente: "
+                f"{len(saved_fields)} ok, {len(failed_fields)} falharam — "
+                f"verifique `failed_fields` antes de confirmar ao recrutador."
+            )
         result = {
-            "success": True,
-            "data": {"section": section, "fields_saved": saved_fields, "count": len(saved_fields)},
-            "message": f"Secao '{section}' salva com {len(saved_fields)} campos.",
+            "success": all_ok,
+            "data": {
+                "section": section,
+                "fields_saved": saved_fields,
+                "failed_fields": failed_fields,
+                "count": len(saved_fields),
+            },
+            "message": msg,
         }
-        _audit.set_after({"fields_saved": saved_fields, "count": len(saved_fields)})
+        _audit.set_after({
+            "fields_saved": saved_fields,
+            "failed_fields": [f["field"] for f in failed_fields],
+            "count": len(saved_fields),
+        })
         _audit.set_result(result)
         return result
 
@@ -534,7 +574,17 @@ async def _wrap_analyze_company_website(**kwargs: Any) -> dict[str, Any]:
 
     try:
         import httpx
-        backend_url = "http://127.0.0.1:8001"
+        # M1 (PR8 / Task #1008) — fix hardcoded loopback. Resolve from env
+        # (LIA_INTERNAL_BACKEND_URL) → settings.APP_BASE_URL → loopback default
+        # (preserva comportamento dev). Permite deploy em containers separados
+        # sem patch de código.
+        import os
+        from libs.config.lia_config.config import settings as _app_settings
+        backend_url = (
+            os.getenv("LIA_INTERNAL_BACKEND_URL")
+            or (_app_settings.APP_BASE_URL or "").rstrip("/")
+            or f"http://127.0.0.1:{_app_settings.API_PORT or 8001}"
+        )
         async with httpx.AsyncClient(timeout=120.0) as client:
             response = await client.post(
                 f"{backend_url}/api/v1/company/culture-profile/analyze-direct",

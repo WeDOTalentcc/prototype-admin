@@ -81,6 +81,7 @@ class _AuditCtx:
         metadata: Optional[dict[str, Any]],
         agent_name: str,
         read_only: bool,
+        human_review_required: bool = False,
     ) -> None:
         self.action = action
         self.company_id = str(company_id) if company_id else ""
@@ -90,6 +91,12 @@ class _AuditCtx:
         self.metadata = dict(metadata or {})
         self.agent_name = agent_name
         self.read_only = read_only
+        # B1 (PR8 / Task #1008) — EU AI Act Art. 14 (human oversight): quando
+        # uma sugestão da IA altera config corporativa que afeta múltiplos
+        # candidatos (ex.: import_benefits_from_data), o audit log precisa
+        # marcar `human_review_required=true`. Default permanece False
+        # (compatibilidade com saves field-by-field já confirmados em UI).
+        self.human_review_required = bool(human_review_required)
         self.trace_id = str(uuid.uuid4())
         self._result: Any = None
         self._before: Any = None
@@ -158,7 +165,7 @@ class _AuditCtx:
             reasoning=self._build_reasoning(decision, exc),
             criteria_used=self._build_criteria(),
             confidence=1.0,
-            human_review_required=False,
+            human_review_required=self.human_review_required,
         )
 
     async def _emit_in_session(self, decision: str, exc: Optional[BaseException]) -> None:
@@ -349,9 +356,16 @@ def audit_company_change(
     metadata: Optional[dict[str, Any]] = None,
     agent_name: str = "company_settings_tools",
     read_only: bool = False,
+    human_review_required: bool = False,
 ) -> _AuditCtx:
     """See module docstring. Body MUST use ``audit.session`` for writes
-    and MUST NOT commit; CM commits atomically with the outcome row."""
+    and MUST NOT commit; CM commits atomically with the outcome row.
+
+    ``human_review_required`` (B1 / PR8): set ``True`` when an AI suggestion
+    mutates company-wide config that affects future candidates (EU AI Act
+    Art. 14 — human oversight). Default ``False`` for field-level saves
+    already confirmed by the recruiter via UI.
+    """
     return _AuditCtx(
         action=action,
         company_id=company_id,
@@ -361,6 +375,7 @@ def audit_company_change(
         metadata=metadata,
         agent_name=agent_name,
         read_only=read_only,
+        human_review_required=human_review_required,
     )
 
 

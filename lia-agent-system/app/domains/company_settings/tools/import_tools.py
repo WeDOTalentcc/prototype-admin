@@ -724,6 +724,12 @@ async def import_benefits_from_data(
             "items_count": len(benefits) if isinstance(benefits, list) else 0,
             "replace_existing": replace_existing,
         },
+        # B1 (PR8 / Task #1008) — EU AI Act Art. 14: bulk import de
+        # benefícios sugerido pela IA muta config corporativa que afeta
+        # todos os candidatos futuros. Marca human_review_required=True
+        # no audit log para o relatório de governança poder gerar fila de
+        # revisão humana (MEDIUM finding B1 do audit T1-T6).
+        human_review_required=True,
     ) as _audit:
         result = await _import_benefits_from_data_impl(
             session=_audit.session,

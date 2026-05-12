@@ -1189,3 +1189,133 @@ def test_pr5_a6_confidence_gate_helper_blocks_low_confidence():
         # 5. Confidence inválido → bloqueia
         invalid = helper({"autonomous_intent": True, "confidence": "talvez"})
         assert invalid is not None and invalid["reason"] == "confidence_invalid"
+
+
+# ─── Contrato 7 (PR8 / Task #1008): backlog técnico M1/M2/M5/B1/B2 ───────
+
+
+def test_pr8_m1_analyze_website_no_hardcoded_backend_url():
+    """M1 (PR8) — `_wrap_analyze_company_website` não pode mais conter
+    o literal `http://127.0.0.1:8001` hardcoded. A URL deve vir de
+    `LIA_INTERNAL_BACKEND_URL` / `settings.APP_BASE_URL` / fallback
+    parametrizado por `API_PORT`. Sentinela estática contra regressão."""
+    src = (
+        Path(__file__).resolve().parents[3]
+        / "app" / "domains" / "company_settings" / "agents"
+        / "company_tool_registry.py"
+    ).read_text(encoding="utf-8")
+    # localizar bloco da função analyze_company_website
+    func_idx = src.find("_wrap_analyze_company_website")
+    assert func_idx >= 0, "função _wrap_analyze_company_website removida?"
+    func_block = src[func_idx:func_idx + 3000]
+    assert "http://127.0.0.1:8001" not in func_block, (
+        "M1 regressão: URL hardcoded `http://127.0.0.1:8001` voltou em "
+        "`_wrap_analyze_company_website`. Use LIA_INTERNAL_BACKEND_URL ou "
+        "settings.APP_BASE_URL/API_PORT (PR8 Task #1008)."
+    )
+    assert "LIA_INTERNAL_BACKEND_URL" in func_block, (
+        "M1 regressão: env var `LIA_INTERNAL_BACKEND_URL` deixou de ser "
+        "consultada — backend URL volta a depender de magic literal."
+    )
+
+
+def test_pr8_m2_save_company_section_returns_failed_fields():
+    """M2 (PR8) — `_wrap_save_company_section` agora expõe
+    `failed_fields` no payload de retorno. Antes, campos que voltavam
+    `success=False` eram descartados silenciosamente (anti-pattern
+    canonical-fix #3). Sentinela estática contra regressão."""
+    src = (
+        Path(__file__).resolve().parents[3]
+        / "app" / "domains" / "company_settings" / "agents"
+        / "company_tool_registry.py"
+    ).read_text(encoding="utf-8")
+    func_idx = src.find("_wrap_save_company_section")
+    assert func_idx >= 0
+    func_block = src[func_idx:func_idx + 5000]
+    assert "failed_fields" in func_block, (
+        "M2 regressão: `failed_fields` removido de "
+        "`_wrap_save_company_section`. Falhas parciais voltam a ser "
+        "descartadas silenciosamente — agente confirma 'salvo' ao "
+        "recrutador sem ter persistido."
+    )
+
+
+def test_pr8_m5_get_company_profile_no_magic_20():
+    """M5 (PR8) — completion total não pode mais usar `+ 20` mágico.
+    Substituído por `len(_CULTURE_FIELDS)` (cardinal real da whitelist).
+    Sentinela estática contra regressão."""
+    src = (
+        Path(__file__).resolve().parents[3]
+        / "app" / "domains" / "company_settings" / "agents"
+        / "company_tool_registry.py"
+    ).read_text(encoding="utf-8")
+    func_idx = src.find("_wrap_get_company_profile")
+    assert func_idx >= 0
+    func_block = src[func_idx:func_idx + 4000]
+    assert "len(profile_data) + 20" not in func_block, (
+        "M5 regressão: `len(profile_data) + 20` (magic number) voltou em "
+        "`_wrap_get_company_profile`. Usar `len(_CULTURE_FIELDS)` para o "
+        "cardinal canônico da whitelist (PR8 Task #1008)."
+    )
+    assert "_CULTURE_FIELDS" in func_block, (
+        "M5 regressão: `_CULTURE_FIELDS` deixou de dirigir o denominador "
+        "de completion — total volta a ser chute fixo."
+    )
+
+
+def test_pr8_b1_import_benefits_marks_human_review_required():
+    """B1 (PR8) — `import_benefits_from_data` muta config corporativa
+    sugerida pela IA → EU AI Act Art. 14 exige `human_review_required=True`
+    no audit log. Sentinela estática garante que o flag continua sendo
+    passado ao wrapper `audit_company_change`."""
+    src = (
+        Path(__file__).resolve().parents[3]
+        / "app" / "domains" / "company_settings" / "tools"
+        / "import_tools.py"
+    ).read_text(encoding="utf-8")
+    # achar bloco "async def import_benefits_from_data"
+    func_idx = src.find("async def import_benefits_from_data")
+    assert func_idx >= 0
+    # avançar até o `audit_company_change(` mais próximo
+    audit_idx = src.find("audit_company_change(", func_idx)
+    assert audit_idx >= 0, (
+        "B1 regressão: `audit_company_change` removido de "
+        "`import_benefits_from_data` — wrapper canônico SOX/EU AI Act perdido."
+    )
+    # bloco do CM até `) as _audit:`
+    end_idx = src.find(") as _audit:", audit_idx)
+    audit_block = src[audit_idx:end_idx]
+    assert re.search(
+        r"human_review_required\s*=\s*True", audit_block
+    ), (
+        "B1 regressão: `human_review_required=True` removido do callsite "
+        "`audit_company_change` em `import_benefits_from_data`. EU AI Act "
+        "Art. 14 violado — audit log volta a marcar False (PR8 Task #1008)."
+    )
+
+
+def test_pr8_b2_ethical_validation_block_reaches_rendered_prompt():
+    """B2 (PR8) — o bloco `ethical_validation` do YAML existe (linha 74)
+    e é carregado em `COMPANY_ETHICAL_VALIDATION`, mas precisa chegar ao
+    prompt renderizado por `get_company_system_prompt()`. Antes do PR8
+    o wiring estava implícito (sem sentinela). Esta sentinela trava o
+    contrato: se algum PR futuro remover o bloco `=== VALIDACAO ETICA ===`
+    do template, o teste quebra antes do merge."""
+    rendered = get_company_system_prompt()
+    assert "VALIDACAO ETICA" in rendered or "ethical_validation" in rendered, (
+        "B2 regressão: bloco `=== VALIDACAO ETICA ===` removido de "
+        "`get_company_system_prompt()` — `ethical_validation` do YAML vira "
+        "letra morta (PR8 Task #1008)."
+    )
+    # marcadores canônicos do bloco YAML (linhas 74-87): se o bloco existir
+    # mas estiver vazio, este check pega.
+    required_markers = [
+        "discriminat",  # "discriminatórios"
+        "inclusiv",     # "alternativas inclusivas"
+    ]
+    for marker in required_markers:
+        assert marker in rendered.lower(), (
+            f"B2 regressão: marcador `{marker}` ausente do prompt renderizado "
+            "— bloco `ethical_validation` do YAML não está mais sendo "
+            "injetado em `get_company_system_prompt()`."
+        )
