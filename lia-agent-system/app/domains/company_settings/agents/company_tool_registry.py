@@ -407,7 +407,13 @@ async def _wrap_save_company_field(**kwargs: Any) -> dict[str, Any]:
 
 
 async def _save_company_field_impl(
-    *, session, company_id: str, section: str, field: str, value: Any
+    *,
+    session,
+    company_id: str,
+    section: str,
+    field: str,
+    value: Any,
+    skip_fairness: bool = False,
 ) -> dict[str, Any]:
     """PR4 (Task #1004) — usa ``session`` injetada (compartilhada com
     o wrapper de audit) e NÃO commita: o ``audit_company_change``
@@ -440,12 +446,18 @@ async def _save_company_field_impl(
     # curtas; sem mais filtro `len > 10` (era bypass C3 do audit T1-T6).
     # Task #1010 — propaga tool_name + tenant_id para o warning estruturado
     # caso o pre-check tenha sido pulado e os limites estourem aqui.
-    fairness = validate_fairness_recursive(
-        value, guard=_fairness_guard, root_label=field or "value",
-        tool_name="save_company_field", tenant_id=company_id,
-    )
-    if fairness.is_blocked:
-        return _fairness_violation_response(fairness, fallback_field=field)
+    # Task #1011: quando chamado a partir de ``_wrap_save_company_section``,
+    # a varredura recursiva já foi feita uma vez sobre o payload inteiro —
+    # ``skip_fairness=True`` evita revalidar campo a campo (duplica trabalho
+    # de FairnessGuard em seções grandes). Callers diretos (single-field
+    # save) seguem com a varredura habilitada.
+    if not skip_fairness:
+        fairness = validate_fairness_recursive(
+            value, guard=_fairness_guard, root_label=field or "value",
+            tool_name="save_company_field", tenant_id=company_id,
+        )
+        if fairness.is_blocked:
+            return _fairness_violation_response(fairness, fallback_field=field)
 
     # PR4: usa session injetada (compartilhada com audit wrapper) e
     # captura `before` (estado anterior) para o payload canônico SOX.
@@ -555,6 +567,12 @@ async def _wrap_save_company_section(**kwargs: Any) -> dict[str, Any]:
                 section=section,
                 field=field,
                 value=value,
+                # Task #1011: a varredura recursiva de FairnessGuard já
+                # foi feita acima sobre o `data` inteiro (cobre str/list/
+                # dict aninhados). Revalidar campo a campo aqui duplica
+                # trabalho sem ganho — qualquer flag teria abortado o
+                # bloco antes de chegar neste loop.
+                skip_fairness=True,
             )
             inner.pop("_before", None)
             inner.pop("_after", None)
