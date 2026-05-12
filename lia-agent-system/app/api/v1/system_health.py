@@ -577,6 +577,8 @@ _BYPASS_FLAGS_RUNTIME: dict[str, str] = {
     "LIA_ALLOW_NON_COMPLIANT_AGENTS": "Bypass LangGraphReActBase compliance em agents",
     "LIA_DISABLE_C3B": "KILL SWITCH camada C3b inteira (PII strip + Fairness L3 + FactCheck + Audit)",
     "LIA_ALLOW_REGISTRY_DRIFT": "Permite class_path inválido em registry (R-004 rollback)",
+    # PR4 (Task #1004) — bypass do audit canônico em company_settings.
+    "LIA_DISABLE_COMPANY_AUDIT": "Desliga audit log canônico em company_settings save tools (viola Inegociável #6)",
 }
 
 # T-A canonical: flag inversa — bypass quando OFF em prod (TenantAwareAgentMixin

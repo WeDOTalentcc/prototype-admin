@@ -100,6 +100,7 @@ Gerar key: `python -c "from cryptography.fernet import Fernet; print(Fernet.gene
 | `LIA_DISABLE_C3B=1` | **KILL SWITCH** da camada C3b inteira (PII strip + FairnessGuard L3 + FactCheck + Audit) — passthrough total |
 | `LIA_ALLOW_REGISTRY_DRIFT=1` | Permite class_path inválido em agents_registry (R-004 emergency rollback only) |
 | `LIA_AGENT_TENANT_STRICT=false` | **(inversa)** Default: `true` em prod/staging, `false` em dev. Quando `false` em prod, `TenantAwareAgentMixin` opera em fail-OPEN — agentes voltam a degradar silenciosamente. Origem do bug "LIA pergunta company_id no chat". Em prod, deixar `true` (ou ausente). |
+| `LIA_DISABLE_COMPANY_AUDIT=1` | **(PR4 / Task #1004)** Desliga o wrapper `audit_company_change` em todas as save tools de `company_settings` (`save_company_field`, `save_company_section`, `import_workforce_plan`, `save_hiring_policy`, `import_benefits_from_data`, `check_company_completeness`). Default: OFF (fail-CLOSED — falha do `AuditService.log_decision` aborta o save). Quando ON, viola Inegociável #6 (auditabilidade SOX/ISO 27001 / EU AI Act) e os saves passam a ser invisíveis ao trail de audit corporativo. Usar APENAS em rollback emergencial se o storage de `audit_logs` estiver bloqueando saves. |
 
 **Em produção:** apenas para rollback emergencial. Quando ON:
 - `app/main.py` lifespan loga **CRITICAL** no startup com lista agregada das flags ativas;

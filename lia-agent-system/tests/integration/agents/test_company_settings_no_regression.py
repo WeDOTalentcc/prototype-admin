@@ -696,9 +696,14 @@ def test_pr3_save_tools_call_fairness_recursive():
             / "agents"
             / "company_tool_registry.py",
             {
-                "_wrap_save_company_field",
+                # PR4 (Task #1004) extraiu o corpo dos wrappers `_wrap_*`
+                # para helpers `_*_impl` (envolvidos por audit_company_change).
+                # A validação de fairness ficou nos helpers — onde o trabalho
+                # real acontece. `_wrap_save_company_section` permaneceu
+                # monolítico porque já era curto.
+                "_save_company_field_impl",
                 "_wrap_save_company_section",
-                "_wrap_import_workforce_plan",
+                "_import_workforce_plan_impl",
             },
         ),
         (
@@ -708,7 +713,9 @@ def test_pr3_save_tools_call_fairness_recursive():
             / "company_settings"
             / "tools"
             / "import_tools.py",
-            {"save_hiring_policy", "import_benefits_from_data"},
+            # PR4 (Task #1004) também extraiu corpos para `_*_impl` em
+            # import_tools.py (save_hiring_policy / import_benefits_from_data).
+            {"_save_hiring_policy_impl", "_import_benefits_from_data_impl"},
         ),
     ]
 
@@ -750,3 +757,128 @@ def test_pr3_save_tools_call_fairness_recursive():
             f"{module_path.name}. Esse era o bypass C3 — quem decide o que "
             "é viés é o FairnessGuard, não o caller."
         )
+
+
+# ─── Contrato 7: PR4 (Task #1004) — audit log canônico SOX/ISO ────────────
+
+
+def test_pr4_audit_decorator_helper_importable():
+    """PR4 (Task #1004) — sentinela contra remoção do wrapper canônico
+    ``audit_company_change``. Se o módulo ou a função sumir, todas as 6
+    save/read tools de company_settings voltam a ficar invisíveis ao
+    audit trail (bug C4 do audit T1-T6, viola Inegociável #6 SOX/EU AI Act).
+    """
+    from app.shared.compliance import audit_decorators
+
+    assert hasattr(audit_decorators, "audit_company_change"), (
+        "PR4 regressão: app/shared/compliance/audit_decorators.py perdeu "
+        "`audit_company_change` — bug C4 do audit T1-T6 reabre."
+    )
+    assert hasattr(audit_decorators, "is_company_audit_disabled"), (
+        "PR4 regressão: helper `is_company_audit_disabled` removido — "
+        "wrapper deixa de respeitar `LIA_DISABLE_COMPANY_AUDIT`."
+    )
+
+
+def test_pr4_save_tools_call_audit_company_change():
+    """PR4 (Task #1004) — defesa AST contra regressão do bug C4.
+
+    Inspeciona via ``ast`` que CADA UMA das 6 tools (5 save + 1 read)
+    de ``company_settings`` chama ``audit_company_change`` no corpo da
+    função. Se um futuro PR remover a chamada (ou voltar para o
+    fire-and-forget try/except:pass), este teste quebra antes do merge.
+    """
+    import ast
+
+    targets: list[tuple[Path, set[str]]] = [
+        (
+            Path(__file__).resolve().parents[3]
+            / "app"
+            / "domains"
+            / "company_settings"
+            / "agents"
+            / "company_tool_registry.py",
+            {
+                "_wrap_save_company_field",
+                "_wrap_save_company_section",
+                "_wrap_import_workforce_plan",
+            },
+        ),
+        (
+            Path(__file__).resolve().parents[3]
+            / "app"
+            / "domains"
+            / "company_settings"
+            / "tools"
+            / "import_tools.py",
+            {
+                "save_hiring_policy",
+                "import_benefits_from_data",
+                "check_company_completeness",
+            },
+        ),
+    ]
+
+    for module_path, required_funcs in targets:
+        assert module_path.exists(), f"Arquivo esperado não existe: {module_path}"
+        tree = ast.parse(module_path.read_text(encoding="utf-8"))
+        offenders: list[str] = []
+        for node in ast.walk(tree):
+            if not isinstance(node, (ast.AsyncFunctionDef, ast.FunctionDef)):
+                continue
+            if node.name not in required_funcs:
+                continue
+            calls: set[str] = set()
+            for sub in ast.walk(node):
+                if isinstance(sub, ast.Call):
+                    func = sub.func
+                    if isinstance(func, ast.Name):
+                        calls.add(func.id)
+                    elif isinstance(func, ast.Attribute):
+                        calls.add(func.attr)
+            if "audit_company_change" not in calls:
+                offenders.append(f"{module_path.name}::{node.name}")
+        assert not offenders, (
+            "PR4 regressão (bug C4 do audit T1-T6 reaberto): as funções "
+            f"abaixo NÃO chamam `audit_company_change`: {offenders}. "
+            "Sem o wrapper canônico, mutações de company_settings ficam "
+            "invisíveis ao audit trail SOX/ISO 27001 / EU AI Act "
+            "(viola Inegociável #6)."
+        )
+
+    # Defesa adicional: o anti-padrão fire-and-forget
+    # `loop.create_task(coro)` (em try/except:pass) NÃO pode mais
+    # aparecer em import_tools.py — era exatamente o que o PR4 removeu.
+    legacy_pattern = re.compile(r"loop\.create_task\(\s*coro\s*\)")
+    import_tools_path = (
+        Path(__file__).resolve().parents[3]
+        / "app" / "domains" / "company_settings" / "tools" / "import_tools.py"
+    )
+    src = import_tools_path.read_text(encoding="utf-8")
+    assert not legacy_pattern.search(src), (
+        "PR4 regressão: padrão fire-and-forget `loop.create_task(coro)` "
+        "reapareceu em import_tools.py. O wrapper canônico é fail-CLOSED — "
+        "audit deve ser awaited, não disparado e esquecido."
+    )
+
+
+def test_pr4_bypass_flag_registered_in_main_and_health():
+    """PR4 (Task #1004) — paridade R-007: a flag
+    ``LIA_DISABLE_COMPANY_AUDIT`` precisa estar registrada nos DOIS
+    inventários (startup logger em ``app/main.py`` e endpoint
+    ``/health/compliance/bypass-status`` em ``app/api/v1/system_health.py``)
+    para o canary on-call detectar quando alguém esquecer ela ON em prod.
+    """
+    base = Path(__file__).resolve().parents[3] / "app"
+    main_src = (base / "main.py").read_text(encoding="utf-8")
+    health_src = (base / "api" / "v1" / "system_health.py").read_text(encoding="utf-8")
+    flag = "LIA_DISABLE_COMPANY_AUDIT"
+    assert flag in main_src, (
+        f"PR4 regressão: {flag} não está em app/main.py::_BYPASS_FLAGS — "
+        "startup logger não vai alertar CRITICAL quando ON."
+    )
+    assert flag in health_src, (
+        f"PR4 regressão: {flag} não está em app/api/v1/system_health.py::"
+        "_BYPASS_FLAGS_RUNTIME — endpoint /health/compliance/bypass-status "
+        "não vai expor a flag pro canary on-call."
+    )

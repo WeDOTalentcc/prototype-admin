@@ -197,6 +197,12 @@ async def lifespan(app: FastAPI):
         "LIA_ALLOW_NON_COMPLIANT_AGENTS": "Bypass de LangGraphReActBase compliance em agents",
         "LIA_DISABLE_C3B": "KILL SWITCH da camada C3b inteira (PII strip + Fairness L3 + FactCheck + Audit) — passthrough total",
         "LIA_ALLOW_REGISTRY_DRIFT": "Permite class_path inválido em agents_registry (R-004 emergency rollback only)",
+        # PR4 (Task #1004) — desliga audit log canônico em todas as save tools
+        # de company_settings. Default OFF; quando ON, viola Inegociável #6
+        # (auditabilidade SOX/EU AI Act). Use APENAS para rollback emergencial
+        # se o storage de audit_logs estiver indisponível e o serviço estiver
+        # bloqueando saves de configuração corporativa.
+        "LIA_DISABLE_COMPANY_AUDIT": "Desliga audit log canônico em company_settings save tools (PR4 / Task #1004) — viola Inegociável #6",
     }
     _active_bypasses = [
         f"{flag}: {desc}"

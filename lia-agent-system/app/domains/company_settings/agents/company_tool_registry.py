@@ -16,6 +16,7 @@ from app.core.database import AsyncSessionLocal
 from app.domains.company_settings.tools.import_tools import (
     save_hiring_policy as _save_hiring_policy_handler,
 )
+from app.shared.compliance.audit_decorators import audit_company_change
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.compliance.fairness_recursive import (
     RecursiveFairnessResult,
@@ -147,7 +148,32 @@ async def _wrap_save_company_field(**kwargs: Any) -> dict[str, Any]:
     section = kwargs.get("section", "profile")
     field = kwargs.get("field", "")
     value = kwargs.get("value")
+    user_id = kwargs.get("user_id")
 
+    # PR4 (Task #1004) — audit log SOX/ISO canônico fail-CLOSED.
+    async with audit_company_change(
+        action="save_company_field",
+        company_id=company_id,
+        actor=user_id,
+        target_table=(
+            "company_culture_profiles" if section == "culture" else "company_profiles"
+        ),
+        metadata={"section": section, "field": field},
+    ) as _audit:
+        result = await _save_company_field_impl(
+            company_id=company_id, section=section, field=field, value=value
+        )
+        _audit.set_result(result)
+        return result
+
+
+async def _save_company_field_impl(
+    *, company_id: str, section: str, field: str, value: Any
+) -> dict[str, Any]:
+    """PR4 (Task #1004) — corpo original de ``_wrap_save_company_field``
+    extraído para um helper plain-async para que o wrapper possa envolvê-lo
+    em ``audit_company_change`` SEM duplicar código. Não muda contrato.
+    """
     valid_profile_fields = {
         "name", "trading_name", "cnpj", "website", "hr_email", "hr_phone",
         "address", "industry", "company_size", "employee_count", "founded_year",
@@ -223,32 +249,58 @@ async def _wrap_save_company_section(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     section = kwargs.get("section", "profile")
     data = kwargs.get("data", {})
+    user_id = kwargs.get("user_id")
 
-    if not data or not isinstance(data, dict):
-        return {"success": False, "data": {}, "message": "Dados vazios ou invalidos."}
+    # PR4 (Task #1004) — audit log SOX/ISO canônico fail-CLOSED. Os
+    # save_company_field internos emitem audit próprio; aqui registramos
+    # a chamada de seção (granularidade = lote).
+    async with audit_company_change(
+        action="save_company_section",
+        company_id=company_id,
+        actor=user_id,
+        target_table=(
+            "company_culture_profiles" if section == "culture" else "company_profiles"
+        ),
+        metadata={
+            "section": section,
+            "field_count": len(data) if isinstance(data, dict) else 0,
+        },
+    ) as _audit:
+        if not data or not isinstance(data, dict):
+            result = {"success": False, "data": {}, "message": "Dados vazios ou invalidos."}
+            _audit.set_result(result)
+            return result
 
-    # PR3 (Task #1003) — varre o dict inteiro recursivamente (cobre listas e
-    # nested dicts em campos como dei_initiatives, default_salary_ranges,
-    # seniority_levels). Substitui o filtro `len > 10` (bypass C3).
-    fairness = validate_fairness_recursive(
-        data, guard=_fairness_guard, root_label=section or "data"
-    )
-    if fairness.is_blocked:
-        return _fairness_violation_response(fairness)
-
-    saved_fields = []
-    for field, value in data.items():
-        result = await _wrap_save_company_field(
-            company_id=company_id, section=section, field=field, value=value
+        # PR3 (Task #1003) — varre o dict inteiro recursivamente (cobre listas e
+        # nested dicts em campos como dei_initiatives, default_salary_ranges,
+        # seniority_levels). Substitui o filtro `len > 10` (bypass C3).
+        fairness = validate_fairness_recursive(
+            data, guard=_fairness_guard, root_label=section or "data"
         )
-        if result["success"]:
-            saved_fields.append(field)
+        if fairness.is_blocked:
+            result = _fairness_violation_response(fairness)
+            _audit.set_result(result)
+            return result
 
-    return {
-        "success": True,
-        "data": {"section": section, "fields_saved": saved_fields, "count": len(saved_fields)},
-        "message": f"Secao '{section}' salva com {len(saved_fields)} campos.",
-    }
+        saved_fields = []
+        for field, value in data.items():
+            inner = await _wrap_save_company_field(
+                company_id=company_id,
+                section=section,
+                field=field,
+                value=value,
+                user_id=user_id,
+            )
+            if inner["success"]:
+                saved_fields.append(field)
+
+        result = {
+            "success": True,
+            "data": {"section": section, "fields_saved": saved_fields, "count": len(saved_fields)},
+            "message": f"Secao '{section}' salva com {len(saved_fields)} campos.",
+        }
+        _audit.set_result(result)
+        return result
 
 
 @tool_handler("company_settings")
@@ -344,7 +396,29 @@ async def _wrap_process_uploaded_document(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_import_workforce_plan(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     plan_data = kwargs.get("plan_data", [])
+    user_id = kwargs.get("user_id")
 
+    async with audit_company_change(
+        action="import_workforce_plan",
+        company_id=company_id,
+        actor=user_id,
+        target_table="company_culture_profiles",
+        metadata={
+            "items_count": len(plan_data) if isinstance(plan_data, list) else 0,
+        },
+    ) as _audit:
+        result = await _import_workforce_plan_impl(
+            company_id=company_id, plan_data=plan_data
+        )
+        _audit.set_result(result)
+        return result
+
+
+async def _import_workforce_plan_impl(
+    *, company_id: str, plan_data: Any
+) -> dict[str, Any]:
+    """PR4 (Task #1004) — corpo original extraído para que o wrapper
+    possa envolvê-lo em ``audit_company_change``. Contrato preservado."""
     if not plan_data or not isinstance(plan_data, list):
         return {
             "success": False,

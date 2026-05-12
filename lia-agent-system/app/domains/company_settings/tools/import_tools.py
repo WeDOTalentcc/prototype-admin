@@ -23,6 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import AsyncSessionLocal
 from app.tools.registry import ToolDefinition, tool_registry
+from app.shared.compliance.audit_decorators import audit_company_change
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.compliance.fairness_recursive import (
     RecursiveFairnessResult,
@@ -105,6 +106,7 @@ async def check_company_completeness(**kwargs) -> dict[str, Any]:
     """
     context = _extract_context(kwargs)
     company_id = context.company_id if context else None
+    user_id = context.user_id if context else None
 
     if not company_id:
         return {
@@ -113,6 +115,23 @@ async def check_company_completeness(**kwargs) -> dict[str, Any]:
             "message": "Tenant isolation compromised — company_id is required.",
         }
 
+    # PR4 (Task #1004) — audit log de leitura (LGPD Art. 37 / ISO 27001 A.12.4).
+    async with audit_company_change(
+        action="check_company_completeness",
+        company_id=company_id,
+        actor=user_id,
+        target_table="company_profiles",
+        metadata={},
+        read_only=True,
+    ) as _audit:
+        result = await _check_company_completeness_impl(company_id=company_id)
+        _audit.set_result(result)
+        return result
+
+
+async def _check_company_completeness_impl(*, company_id: str) -> dict[str, Any]:
+    """PR4 (Task #1004) — corpo extraído para envolvimento por
+    ``audit_company_change``. Contrato preservado."""
     try:
         async with AsyncSessionLocal() as db:
             profile = await db.execute(
@@ -417,6 +436,27 @@ async def save_hiring_policy(
             "message": "Tenant isolation compromised — company_id is required.",
         }
 
+    # PR4 (Task #1004) — audit log SOX/ISO canônico fail-CLOSED. Substitui
+    # o try/except:pass fire-and-forget anterior (anti-pattern canonical-fix #4).
+    async with audit_company_change(
+        action="save_hiring_policy",
+        company_id=company_id,
+        actor=user_id,
+        target_table="company_hiring_policies",
+        metadata={"rule_keys": list(rules.keys()) if isinstance(rules, dict) else []},
+    ) as _audit:
+        result = await _save_hiring_policy_impl(
+            company_id=company_id, user_id=user_id, rules=rules
+        )
+        _audit.set_result(result)
+        return result
+
+
+async def _save_hiring_policy_impl(
+    *, company_id: str, user_id: Any, rules: dict[str, Any]
+) -> dict[str, Any]:
+    """PR4 (Task #1004) — corpo extraído para envolvimento por
+    ``audit_company_change``. Contrato preservado."""
     if not rules or not isinstance(rules, dict):
         return {
             "success": False,
@@ -537,34 +577,9 @@ async def save_hiring_policy(
             "message": f"Erro ao salvar política de recrutamento: {exc}",
         }
 
-    # PR4 substitui pelo wrapper canônico _audit_company_change com Sentry capture.
-    try:
-        from app.shared.compliance.audit_service import AuditService
-        service = AuditService()
-        coro = service.log_decision(
-            company_id=str(company_id),
-            agent_name="company_settings_tools",
-            decision_type="company_settings_change",
-            action="save_hiring_policy",
-            decision="completed",
-            reasoning=[
-                f"blocks_touched={blocks_touched}",
-                f"fields_saved={fields_saved}",
-                f"user_id={user_id}",
-            ],
-            criteria_used=["hiring_policy_whitelist", "company_scoped", "fairness_guard_textual"],
-            job_vacancy_id=None,
-            confidence=1.0,
-            human_review_required=False,
-            criteria_ignored=None,
-        )
-        try:
-            loop = asyncio.get_event_loop()
-            loop.create_task(coro)
-        except Exception:
-            pass
-    except Exception as exc:
-        logger.debug("[save_hiring_policy] audit emission deferred: %s", exc)
+    # PR4 (Task #1004): audit log emitido pelo wrapper canônico
+    # ``audit_company_change`` (envolvendo este impl). O fire-and-forget
+    # try/except:pass anterior foi removido — agora é fail-CLOSED.
 
     logger.info(
         "[save_hiring_policy] tenant=%s user=%s blocks=%s fields=%d rejected=%d",
@@ -618,6 +633,37 @@ async def import_benefits_from_data(
             "message": "Tenant isolation compromised — company_id is required.",
         }
 
+    # PR4 (Task #1004) — audit log SOX/ISO canônico fail-CLOSED. Substitui
+    # o try/except:pass fire-and-forget anterior (anti-pattern canonical-fix #4).
+    async with audit_company_change(
+        action="import_benefits_from_data",
+        company_id=company_id,
+        actor=user_id,
+        target_table="company_benefits",
+        metadata={
+            "items_count": len(benefits) if isinstance(benefits, list) else 0,
+            "replace_existing": replace_existing,
+        },
+    ) as _audit:
+        result = await _import_benefits_from_data_impl(
+            company_id=company_id,
+            user_id=user_id,
+            benefits=benefits,
+            replace_existing=replace_existing,
+        )
+        _audit.set_result(result)
+        return result
+
+
+async def _import_benefits_from_data_impl(
+    *,
+    company_id: str,
+    user_id: Any,
+    benefits: list[dict[str, Any]],
+    replace_existing: bool,
+) -> dict[str, Any]:
+    """PR4 (Task #1004) — corpo extraído para envolvimento por
+    ``audit_company_change``. Contrato preservado."""
     if not benefits or not isinstance(benefits, list):
         return {
             "success": False,
@@ -684,39 +730,9 @@ async def import_benefits_from_data(
 
             await db.commit()
 
-        # P2-4 fix (2026-05-10): audit log para SOX/ISO 27001 compliance
-        # NB: benefits = CONFIG da empresa (entidade jurídica), NÃO PII de pessoa natural.
-        # Consent LGPD não aplica (Art.5 V — titular = pessoa natural).
-        # Audit é tracking de ALTERAÇÕES DE CONFIG corporativa, não de dados pessoais.
-        try:
-            from app.shared.compliance.audit_service import AuditService
-            import asyncio
-            service = AuditService()
-            coro = service.log_decision(
-                company_id=str(company_id),
-                agent_name="company_settings_tools",
-                decision_type="company_settings_change",
-                action="import_benefits_from_data",
-                decision="completed",
-                reasoning=[
-                    f"inserted_count={inserted}",
-                    f"skipped_count={skipped}",
-                    f"replace_existing={replace_existing}",
-                    f"user_id={user_id}",
-                ],
-                criteria_used=["benefit_validation", "company_scoped"],
-                job_vacancy_id=None,
-                confidence=1.0,
-                human_review_required=False,
-                criteria_ignored=None,
-            )
-            try:
-                loop = asyncio.get_event_loop()
-                loop.create_task(coro)
-            except Exception:
-                pass
-        except Exception as exc:
-            logger.debug("[import_benefits] audit emission deferred: %s", exc)
+        # PR4 (Task #1004): audit log emitido pelo wrapper canônico
+        # ``audit_company_change`` (envolvendo este impl). O fire-and-forget
+        # try/except:pass anterior foi removido — agora é fail-CLOSED.
 
         logger.info(
             "[import_benefits] tenant=%s user=%s inserted=%d skipped=%d",
