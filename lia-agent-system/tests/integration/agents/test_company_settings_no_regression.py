@@ -1293,6 +1293,38 @@ def test_pr8_b1_import_benefits_marks_human_review_required():
         "Art. 14 violado — audit log volta a marcar False (PR8 Task #1008)."
     )
 
+    # B1 deep-fix (code review #1): o flag precisa ser propagado AMBAS as
+    # rotas de emissão do _AuditCtx — _emit_independent (intent + exception
+    # + read outcome) E _emit_in_session (write outcome atômico). A primeira
+    # iteração do PR8 só threadava em _emit_independent; o outcome row do
+    # write commit (rota dominante para writes) ainda hardcodava False,
+    # furando o flag silenciosamente. Esta sentinela trava AMBAS.
+    audit_dec_src = (
+        Path(__file__).resolve().parents[3]
+        / "app" / "shared" / "compliance" / "audit_decorators.py"
+    ).read_text(encoding="utf-8")
+    for fn_name in ("_emit_independent", "_emit_in_session"):
+        fn_idx = audit_dec_src.find(f"async def {fn_name}")
+        assert fn_idx >= 0, f"B1 regressão: função `{fn_name}` removida."
+        # bloco até a próxima def ou fim
+        next_def = audit_dec_src.find("\n    async def ", fn_idx + 1)
+        if next_def < 0:
+            next_def = audit_dec_src.find("\n    def ", fn_idx + 1)
+        if next_def < 0:
+            next_def = len(audit_dec_src)
+        fn_block = audit_dec_src[fn_idx:next_def]
+        assert "human_review_required=self.human_review_required" in fn_block, (
+            f"B1 regressão (deep): `{fn_name}` voltou a hardcodar "
+            "`human_review_required=False` em vez de propagar "
+            "`self.human_review_required`. Outcome row de "
+            "import_benefits_from_data passa a marcar False mesmo com "
+            "o callsite passando True — EU AI Act Art. 14 furado."
+        )
+        assert "human_review_required=False" not in fn_block, (
+            f"B1 regressão (deep): literal `human_review_required=False` "
+            f"voltou em `{fn_name}` — flag do callsite é ignorado."
+        )
+
 
 def test_pr8_b2_ethical_validation_block_reaches_rendered_prompt():
     """B2 (PR8) — o bloco `ethical_validation` do YAML existe (linha 74)

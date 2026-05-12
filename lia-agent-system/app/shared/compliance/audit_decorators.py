@@ -183,7 +183,7 @@ class _AuditCtx:
             reasoning=self._build_reasoning(decision, exc),
             criteria_used=self._build_criteria(),
             confidence=1.0,
-            human_review_required=False,
+            human_review_required=self.human_review_required,
         )
 
     async def _open_session(self) -> None:
