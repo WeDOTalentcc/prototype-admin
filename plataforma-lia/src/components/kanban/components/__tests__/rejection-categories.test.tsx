@@ -101,6 +101,31 @@ describe("groupOptionsByCategory", () => {
   it("returns an empty array for an empty input (no headings, no flicker)", () => {
     expect(groupOptionsByCategory([])).toEqual([])
   })
+
+  it("omits the __other__ bucket entirely when every option is canonical", () => {
+    const groups = groupOptionsByCategory([
+      opt("a", "A", "qualification"),
+      opt("b", "B", "cultural"),
+    ])
+    expect(groups.find((g) => g.key === "__other__")).toBeUndefined()
+  })
+
+  it("preserves canonical category ordering even when input is shuffled and some categories are missing", () => {
+    // Input deliberately out of order and skipping `qualification` + `compensation`.
+    const groups = groupOptionsByCategory([
+      opt("p1", "Processo lento", "process"),
+      opt("l1", "Mudança", "logistics"),
+      opt("b1", "Vaga congelada", "business_decision"),
+      opt("c1", "Sem fit", "cultural"),
+    ])
+    // Hidden categories (qualification, compensation) must not appear as empty headings.
+    expect(groups.map((g) => g.key)).toEqual([
+      "business_decision",
+      "cultural",
+      "logistics",
+      "process",
+    ])
+  })
 })
 
 describe("shouldGroupByCategory", () => {
