@@ -24,6 +24,7 @@ Causa raiz endereçada (auditoria T-F + T-G — Task #978):
 """
 from __future__ import annotations
 
+import ast
 import os
 import re
 
@@ -141,28 +142,16 @@ def _read_source(rel_path: str) -> str:
         return fh.read()
 
 
-def test_fallback_react_service_uses_canonical_helper():
-    src = _read_source("app/orchestrator/services/fallback_react_service.py")
-    assert "resolve_tenant_snippet_for_non_react" in src, (
-        "FallbackReActService DEVE usar resolve_tenant_snippet_for_non_react. "
-        "Origem: 3a recorrência do bug 'LIA pergunta company_id no chat' (T-F)."
-    )
-
-
-def test_orchestrator_v1_uses_canonical_helper():
-    src = _read_source("app/orchestrator/orchestrator.py")
-    assert "resolve_tenant_snippet_for_non_react" in src, (
-        "Orchestrator V1 DEVE usar resolve_tenant_snippet_for_non_react. "
-        "Origem: 3a recorrência do bug 'LIA pergunta company_id no chat' (T-F)."
-    )
-
-
 # ----------------------------------------------------------------------
 # T-G (Task #978) — Inventário canônico de callsites NON-ReAct
 # ----------------------------------------------------------------------
-# DEVEM usar ``resolve_tenant_snippet_for_non_react``. Se o módulo deixa
-# de importar/usar o helper, ``test_must_use_helper_modules_import_helper``
-# quebra. Se um módulo NOVO chamar ``SystemPromptBuilder.build`` com
+# DEVEM usar ``resolve_tenant_snippet_for_non_react``. A sentinela AST
+# ``test_must_use_helper_modules_pass_tenant_arg_from_resolver`` (Task #979)
+# prova **estruturalmente** que cada chamada de ``SystemPromptBuilder.build``
+# nesses módulos passa ``tenant_context_snippet=`` derivado do helper canônico
+# — substituindo a antiga sentinela por substring, que dava tanto falso
+# positivo (nome em comentário) quanto falso negativo (refactors com aliases).
+# Se um módulo NOVO chamar ``SystemPromptBuilder.build`` com
 # ``tenant_context_snippet`` sem aparecer aqui nem em
 # ``OUT_OF_SCOPE_DOCUMENTED``, ``test_no_unaudited_system_prompt_builder_callsite``
 # quebra — forçando o autor do PR a classificar.
@@ -209,18 +198,432 @@ OUT_OF_SCOPE_DOCUMENTED: dict[str, str] = {
 }
 
 
-def test_must_use_helper_modules_import_helper():
-    """Cada módulo em ``MUST_USE_HELPER`` DEVE importar/chamar o helper."""
+# ----------------------------------------------------------------------
+# AST-based validation (Task #979) — supersedes substring sentinels
+# ----------------------------------------------------------------------
+# Por que AST e não substring:
+#   * Substring dá FALSO POSITIVO: o nome do helper aparecendo num
+#     comentário ou import sem uso real "passa" o teste.
+#   * Substring dá FALSO NEGATIVO em refactors estruturais legítimos
+#     (ex.: renomear o symbol importado via ``as`` ou splitar funções).
+# A análise estática garante que o argumento ``tenant_context_snippet=``
+# de cada chamada a ``SystemPromptBuilder.build(...)`` provém
+# **estruturalmente** do retorno de ``resolve_tenant_snippet_for_non_react(...)``
+# — diretamente (assignment local) ou indiretamente (parâmetro de função
+# helper cujos call-sites passam o resultado do resolver).
+_RESOLVER_NAME = "resolve_tenant_snippet_for_non_react"
+
+
+def _is_resolver_call(expr: ast.AST) -> bool:
+    if not isinstance(expr, ast.Call):
+        return False
+    func = expr.func
+    if isinstance(func, ast.Name) and func.id == _RESOLVER_NAME:
+        return True
+    if isinstance(func, ast.Attribute) and func.attr == _RESOLVER_NAME:
+        return True
+    return False
+
+
+def _enclosing_func(tree: ast.AST, target: ast.AST) -> ast.AST | None:
+    """Smallest FunctionDef/AsyncFunctionDef containing ``target`` by lineno."""
+    candidates: list[tuple[int, ast.AST]] = []
+    target_line = getattr(target, "lineno", None)
+    if target_line is None:
+        return None
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            start = node.lineno
+            end = getattr(node, "end_lineno", None) or node.lineno
+            if start <= target_line <= end:
+                candidates.append((end - start, node))
+    if not candidates:
+        return None
+    candidates.sort(key=lambda x: x[0])
+    return candidates[0][1]
+
+
+def _iter_scope_statements(func_node: ast.AST):
+    """Yield statements that share ``func_node``'s scope.
+
+    Walks into control-flow containers (``If``/``For``/``While``/``Try``/``With``
+    etc.) but **stops at scope boundaries** — nested ``FunctionDef``,
+    ``AsyncFunctionDef``, ``Lambda``, ``ClassDef`` and comprehensions are
+    skipped. This avoids picking variable bindings from a nested helper as if
+    they applied to the enclosing function.
+    """
+    SCOPE_BOUNDARY = (
+        ast.FunctionDef,
+        ast.AsyncFunctionDef,
+        ast.Lambda,
+        ast.ClassDef,
+        ast.ListComp,
+        ast.SetComp,
+        ast.DictComp,
+        ast.GeneratorExp,
+    )
+
+    def _walk(node):
+        for child in ast.iter_child_nodes(node):
+            if isinstance(child, SCOPE_BOUNDARY):
+                # Do not descend — different scope.
+                continue
+            yield child
+            yield from _walk(child)
+
+    yield from _walk(func_node)
+
+
+def _nearest_prior_assignment_source(
+    func_node: ast.AST, name: str, before_lineno: int
+) -> ast.AST | None:
+    """Most recent RHS expression assigned to ``name`` in ``func_node``'s scope
+    that occurs *before* ``before_lineno`` (callsite-relative).
+
+    Scope-aware (does not descend into nested functions/lambdas/classes/
+    comprehensions) and order-aware (only considers assignments with
+    ``lineno < before_lineno``). This prevents two failure modes flagged in
+    code review:
+      * picking up an assignment that occurs **after** the
+        ``SystemPromptBuilder.build(...)`` call,
+      * picking up an assignment from a nested function body.
+    """
+    source: ast.AST | None = None
+    source_lineno = -1
+    for node in _iter_scope_statements(func_node):
+        node_lineno = getattr(node, "lineno", None)
+        if node_lineno is None or node_lineno >= before_lineno:
+            continue
+        if isinstance(node, ast.Assign):
+            assigned = False
+            for tgt in node.targets:
+                if isinstance(tgt, ast.Name) and tgt.id == name:
+                    assigned = True
+                elif isinstance(tgt, (ast.Tuple, ast.List)):
+                    for elt in tgt.elts:
+                        if isinstance(elt, ast.Name) and elt.id == name:
+                            assigned = True
+            if assigned and node_lineno > source_lineno:
+                source = node.value
+                source_lineno = node_lineno
+        elif isinstance(node, ast.AnnAssign):
+            if (
+                isinstance(node.target, ast.Name)
+                and node.target.id == name
+                and node.value is not None
+                and node_lineno > source_lineno
+            ):
+                source = node.value
+                source_lineno = node_lineno
+    return source
+
+
+def _is_param_of(func_node: ast.AST, name: str) -> bool:
+    args = func_node.args
+    all_args = list(args.args) + list(args.kwonlyargs) + list(args.posonlyargs)
+    if args.vararg:
+        all_args.append(args.vararg)
+    if args.kwarg:
+        all_args.append(args.kwarg)
+    return any(a.arg == name for a in all_args)
+
+
+def _find_callers(tree: ast.AST, func_name: str, exclude: ast.AST) -> list[ast.Call]:
+    out: list[ast.Call] = []
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Call) and node is not exclude:
+            f = node.func
+            fname = None
+            if isinstance(f, ast.Name):
+                fname = f.id
+            elif isinstance(f, ast.Attribute):
+                fname = f.attr
+            if fname == func_name:
+                out.append(node)
+    return out
+
+
+def _validate_tenant_arg(
+    tree: ast.AST,
+    call_node: ast.Call,
+    value_node: ast.AST,
+    seen: set[str] | None = None,
+) -> tuple[bool, str]:
+    """Recursively prove ``value_node`` originates from ``_RESOLVER_NAME(...)``.
+
+    Two structural shapes are accepted:
+      1. ``X = resolve_tenant_snippet_for_non_react(...)`` then
+         ``SystemPromptBuilder.build(..., tenant_context_snippet=X, ...)``
+         within the same enclosing function.
+      2. ``tenant_context_snippet=PARAM`` where ``PARAM`` is a parameter of
+         the enclosing helper function. In that case, every call-site of the
+         helper inside the same module must pass that parameter from a
+         resolver call (recursive check).
+    """
+    if seen is None:
+        seen = set()
+
+    if not isinstance(value_node, ast.Name):
+        kind = type(value_node).__name__
+        return False, (
+            "tenant_context_snippet deve ser um Name ligado a "
+            f"{_RESOLVER_NAME}(...) — recebido: {kind}"
+        )
+
+    name = value_node.id
+    func = _enclosing_func(tree, call_node)
+    if func is None:
+        return False, (
+            f"chamada a SystemPromptBuilder.build na linha {call_node.lineno} "
+            f"está fora de uma função — não foi possível validar '{name}'"
+        )
+
+    src_expr = _nearest_prior_assignment_source(
+        func, name, before_lineno=call_node.lineno
+    )
+    if src_expr is not None and _is_resolver_call(src_expr):
+        return True, ""
+
+    if _is_param_of(func, name):
+        key = f"{func.name}@{func.lineno}"
+        if key in seen:
+            return True, ""
+        seen.add(key)
+        callers = _find_callers(tree, func.name, exclude=call_node)
+        if not callers:
+            return False, (
+                f"função '{func.name}' recebe '{name}' como parâmetro mas não "
+                "tem call-sites no mesmo módulo — não é possível provar que o "
+                f"upstream chama {_RESOLVER_NAME}(...)"
+            )
+        for caller in callers:
+            kw = next((k for k in caller.keywords if k.arg == name), None)
+            if kw is None:
+                return False, (
+                    f"call-site de '{func.name}' na linha {caller.lineno} não "
+                    f"passa '{name}=' explicitamente — não é possível provar "
+                    f"que o upstream chama {_RESOLVER_NAME}(...)"
+                )
+            ok, reason = _validate_tenant_arg(tree, caller, kw.value, seen)
+            if not ok:
+                return False, (
+                    f"call-site de '{func.name}' na linha {caller.lineno}: {reason}"
+                )
+        return True, ""
+
+    if src_expr is not None:
+        return False, (
+            f"'{name}' em '{func.name}' é atribuído de "
+            f"{ast.dump(src_expr)[:120]}... — esperado {_RESOLVER_NAME}(...)"
+        )
+    return False, (
+        f"'{name}' em '{func.name}' não é atribuído de {_RESOLVER_NAME}(...) "
+        "nem é parâmetro do enclosing helper — origem não auditável"
+    )
+
+
+def _ast_validate_module(rel_path: str) -> list[str]:
+    """Return a list of human-readable failures for ``rel_path``."""
+    src = _read_source(rel_path)
+    tree = ast.parse(src, filename=rel_path)
     failures: list[str] = []
-    for rel_path, motivo in MUST_USE_HELPER.items():
-        src = _read_source(rel_path)
-        if "resolve_tenant_snippet_for_non_react" not in src:
-            failures.append(f"{rel_path}: {motivo}")
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        f = node.func
+        if not (
+            isinstance(f, ast.Attribute)
+            and f.attr == "build"
+            and isinstance(f.value, ast.Name)
+            and f.value.id == "SystemPromptBuilder"
+        ):
+            continue
+        tcs_kw = next(
+            (k for k in node.keywords if k.arg == "tenant_context_snippet"),
+            None,
+        )
+        if tcs_kw is None:
+            continue
+        ok, reason = _validate_tenant_arg(tree, node, tcs_kw.value)
+        if not ok:
+            failures.append(f"{rel_path}:{node.lineno} — {reason}")
+    return failures
+
+
+def _must_use_helper_paths() -> list[str]:
+    return sorted(MUST_USE_HELPER.keys())
+
+
+def _validate_inline_source(src: str) -> list[str]:
+    """Run the AST validator against an inline source string (for unit tests)."""
+    tree = ast.parse(src, filename="<inline>")
+    failures: list[str] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        f = node.func
+        if not (
+            isinstance(f, ast.Attribute)
+            and f.attr == "build"
+            and isinstance(f.value, ast.Name)
+            and f.value.id == "SystemPromptBuilder"
+        ):
+            continue
+        tcs_kw = next(
+            (k for k in node.keywords if k.arg == "tenant_context_snippet"),
+            None,
+        )
+        if tcs_kw is None:
+            continue
+        ok, reason = _validate_tenant_arg(tree, node, tcs_kw.value)
+        if not ok:
+            failures.append(f"line {node.lineno}: {reason}")
+    return failures
+
+
+def test_ast_sentinel_accepts_direct_resolver_assignment():
+    """Caso bom: snippet vem de assignment direto do helper."""
+    src = (
+        "def f(ctx):\n"
+        "    snippet = resolve_tenant_snippet_for_non_react(ctx, agent_name='x')\n"
+        "    return SystemPromptBuilder.build(tenant_context_snippet=snippet)\n"
+    )
+    assert _validate_inline_source(src) == []
+
+
+def test_ast_sentinel_accepts_param_with_resolver_upstream():
+    """Caso bom: snippet vem de parâmetro cujo call-site usa o helper."""
+    src = (
+        "def helper(*, tenant_context_snippet=''):\n"
+        "    return SystemPromptBuilder.build(tenant_context_snippet=tenant_context_snippet)\n"
+        "\n"
+        "def caller(ctx):\n"
+        "    s = resolve_tenant_snippet_for_non_react(ctx, agent_name='x')\n"
+        "    return helper(tenant_context_snippet=s)\n"
+    )
+    assert _validate_inline_source(src) == []
+
+
+def test_ast_sentinel_rejects_dict_get_anti_pattern():
+    """Caso ruim: anti-padrão clássico ``ctx.get('tenant_context_snippet', '')``."""
+    src = (
+        "def f(ctx):\n"
+        "    return SystemPromptBuilder.build(\n"
+        "        tenant_context_snippet=ctx.get('tenant_context_snippet', '')\n"
+        "    )\n"
+    )
+    failures = _validate_inline_source(src)
+    assert failures, "AST sentinel should reject ctx.get(...) anti-pattern"
+
+
+def test_ast_sentinel_rejects_string_literal():
+    """Caso ruim: string literal hardcoded — origem não auditável."""
+    src = (
+        "def f():\n"
+        "    return SystemPromptBuilder.build(tenant_context_snippet='hardcoded')\n"
+    )
+    failures = _validate_inline_source(src)
+    assert failures
+
+
+def test_ast_sentinel_rejects_unrelated_assignment():
+    """Caso ruim: variável atribuída de outra função — não do helper canônico."""
+    src = (
+        "def f(ctx):\n"
+        "    snippet = some_other_function(ctx)\n"
+        "    return SystemPromptBuilder.build(tenant_context_snippet=snippet)\n"
+    )
+    failures = _validate_inline_source(src)
+    assert failures
+
+
+def test_ast_sentinel_rejects_param_with_unrelated_caller():
+    """Caso ruim: param passado por caller que NÃO chama o helper canônico."""
+    src = (
+        "def helper(*, tenant_context_snippet=''):\n"
+        "    return SystemPromptBuilder.build(tenant_context_snippet=tenant_context_snippet)\n"
+        "\n"
+        "def caller():\n"
+        "    return helper(tenant_context_snippet='oops')\n"
+    )
+    failures = _validate_inline_source(src)
+    assert failures
+
+
+def test_ast_sentinel_rejects_assignment_after_call():
+    """Caso ruim (callsite-relative): assignment do helper só ocorre DEPOIS
+    da chamada de ``build`` — ``ast.walk`` ingênuo aceitaria por engano."""
+    src = (
+        "def f(ctx):\n"
+        "    return SystemPromptBuilder.build(tenant_context_snippet=snippet)\n"
+        "    snippet = resolve_tenant_snippet_for_non_react(ctx, agent_name='x')\n"
+    )
+    failures = _validate_inline_source(src)
+    assert failures, "AST sentinel must require assignment to precede the call"
+
+
+def test_ast_sentinel_rejects_nested_function_assignment():
+    """Caso ruim (scope-aware): assignment do helper está numa função aninhada,
+    enquanto o snippet do enclosing vem de um anti-padrão. ``ast.walk`` ingênuo
+    cruzaria o boundary de escopo e aceitaria por engano."""
+    src = (
+        "def f(ctx):\n"
+        "    def inner():\n"
+        "        snippet = resolve_tenant_snippet_for_non_react(ctx, agent_name='x')\n"
+        "        return snippet\n"
+        "    snippet = ctx.get('tenant_context_snippet', '')\n"
+        "    return SystemPromptBuilder.build(tenant_context_snippet=snippet)\n"
+    )
+    failures = _validate_inline_source(src)
+    assert failures, "AST sentinel must not cross nested-function scope boundary"
+
+
+def test_ast_sentinel_uses_nearest_prior_assignment():
+    """Caso bom: múltiplas atribuições — a última anterior à chamada vem do
+    helper canônico, então a sentinela aceita."""
+    src = (
+        "def f(ctx):\n"
+        "    snippet = ctx.get('x', '')\n"
+        "    snippet = resolve_tenant_snippet_for_non_react(ctx, agent_name='x')\n"
+        "    return SystemPromptBuilder.build(tenant_context_snippet=snippet)\n"
+    )
+    assert _validate_inline_source(src) == []
+
+
+def test_ast_sentinel_rejects_resolver_only_in_comment():
+    """Caso ruim: nome do helper só aparece em comentário/docstring (era o
+    falso positivo da sentinela substring)."""
+    src = (
+        "def f(ctx):\n"
+        "    # resolve_tenant_snippet_for_non_react is the canonical helper\n"
+        "    '''resolve_tenant_snippet_for_non_react docstring mention.'''\n"
+        "    return SystemPromptBuilder.build(\n"
+        "        tenant_context_snippet=ctx['tenant_context_snippet']\n"
+        "    )\n"
+    )
+    failures = _validate_inline_source(src)
+    assert failures, "AST sentinel deve ignorar menções em comentário/docstring"
+
+
+@pytest.mark.parametrize("rel_path", _must_use_helper_paths())
+def test_must_use_helper_modules_pass_tenant_arg_from_resolver(rel_path):
+    """AST sentinel (Task #979): cada call de ``SystemPromptBuilder.build(...)``
+    em módulos de ``MUST_USE_HELPER`` deve passar ``tenant_context_snippet``
+    estruturalmente derivado de ``resolve_tenant_snippet_for_non_react(...)``.
+
+    Substitui as sentinelas por substring (``test_fallback_react_service_uses_canonical_helper``
+    e ``test_orchestrator_v1_uses_canonical_helper``), eliminando falsos
+    positivos (nome em comentário/import sem uso) e falsos negativos
+    (refactors com aliases ou helpers intermediários).
+    """
+    failures = _ast_validate_module(rel_path)
     assert not failures, (
-        "Os módulos abaixo estão em MUST_USE_HELPER mas NÃO chamam "
-        "resolve_tenant_snippet_for_non_react. Origem: 3a recorrência do bug "
-        "'LIA pergunta company_id no chat'. Migrar para o helper canônico ou "
-        "mover para OUT_OF_SCOPE_DOCUMENTED com motivo escrito.\n\n"
+        "Validação AST falhou — uma chamada de SystemPromptBuilder.build "
+        "passa tenant_context_snippet sem origem auditável em "
+        f"resolve_tenant_snippet_for_non_react(...).\n\n"
+        "Origem: bug 'LIA pergunta company_id no chat' caiu 3x (T-A, T-D, "
+        "T-F). Sentinela AST (Task #979) impede que substring miss/false-"
+        "positive disfarce a 4a recorrência.\n\n"
         + "\n".join(failures)
     )
 
