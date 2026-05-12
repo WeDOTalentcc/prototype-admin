@@ -21,6 +21,7 @@ import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest"
 
 import {
+  SETTINGS_PERSIST_TOOLS,
   maybeDispatchSettingsUpdated,
   type TransportEvent,
 } from "../useChatTransport"
@@ -30,13 +31,9 @@ const SRC = readFileSync(
   "utf8",
 )
 
-const CANONICAL_TOOLS = [
-  "save_company_field",
-  "save_company_section",
-  "save_hiring_policy",
-  "import_benefits_from_data",
-  "import_workforce_plan",
-] as const
+// Canonical source of truth — imported from the production module to prevent
+// whitelist drift between tests and runtime (PR6 review feedback).
+const CANONICAL_TOOLS = Array.from(SETTINGS_PERSIST_TOOLS) as readonly string[]
 
 describe("PR6 FE — IA→UI bridge (lia:settings-updated)", () => {
   let listener: ReturnType<typeof vi.fn>

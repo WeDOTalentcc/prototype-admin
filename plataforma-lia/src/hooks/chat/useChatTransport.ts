@@ -38,8 +38,10 @@ export interface TransportEvent {
 }
 
 // PR6 (Task #1006) — Bridge IA→UI: canonical save tools whose successful
-// execution by the agent must trigger a settings hub refresh.
-const SETTINGS_PERSIST_TOOLS = new Set<string>([
+// execution by the agent must trigger a settings hub refresh. Exported as
+// the single source of truth — sentinel tests import this constant rather
+// than re-declaring the list (prevents whitelist drift).
+export const SETTINGS_PERSIST_TOOLS: ReadonlySet<string> = new Set<string>([
   "save_company_field",
   "save_company_section",
   "save_hiring_policy",
