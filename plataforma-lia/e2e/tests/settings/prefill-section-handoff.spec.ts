@@ -440,20 +440,33 @@ test.describe('Task #997/#998/#1001/#1007 — Settings ↔ chat handoff (prefill
       //            em ≤10s (refetch do hub). Aqui a bridge JÁ ativou o
       //            loop de persistência; se o card persistir, é regressão
       //            real (PR6 bridge OU refetch quebrado).
-      const events = await page.evaluate(
-        ({ key }) =>
-          ((window as unknown) as { __liaSettingsEvents?: Array<{ key: string }> })
-            .__liaSettingsEvents?.filter((e) => !key || e.key === key) ?? [],
-        { key: '' },
+      // Filtra eventos por section/blockKey para reduzir falso-positivo:
+      // só consideramos a bridge "disparada para esta seção" se o
+      // detail.key bater com a seção alvo OU com o blockKey (ambos são
+      // chaves possíveis emitidas pelos tools em SETTINGS_PERSIST_TOOLS,
+      // dependendo de qual save canônico foi usado). Eventos vazios
+      // (key="") também contam — algumas tools emitem broadcast sem key.
+      const allowedKeys = [section, blockKey, '']
+      const eventsBefore = await page.evaluate(
+        (keys) =>
+          (
+            (window as unknown) as {
+              __liaSettingsEvents?: Array<{ key: string }>
+            }
+          ).__liaSettingsEvents?.filter((e) => keys.includes(e.key)).length ?? 0,
+        allowedKeys,
       )
-      const eventsBefore = events.length
       const bridgeDeadline = Date.now() + 20_000
       let bridgeFired = false
       while (Date.now() < bridgeDeadline) {
         const total = await page.evaluate(
-          () =>
-            ((window as unknown) as { __liaSettingsEvents?: unknown[] })
-              .__liaSettingsEvents?.length ?? 0,
+          (keys) =>
+            (
+              (window as unknown) as {
+                __liaSettingsEvents?: Array<{ key: string }>
+              }
+            ).__liaSettingsEvents?.filter((e) => keys.includes(e.key)).length ?? 0,
+          allowedKeys,
         )
         if (total > eventsBefore) { bridgeFired = true; break }
         await page.waitForTimeout(500)
