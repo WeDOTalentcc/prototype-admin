@@ -630,15 +630,21 @@ async def _save_hiring_policy_impl(
             "automation_rules": json.dumps(merged["automation_rules"], ensure_ascii=False),
         }
 
+        # NOTA (Task #1009): usamos `CAST(:bind AS json)` em vez do açúcar
+        # Postgres `:bind::json`. SQLAlchemy `text()` trata `:nome:` (bind
+        # seguido de `:`) como literal, então `:pipeline_rules::json`
+        # NÃO é parametrizado — chega no asyncpg como `$1, :pipeline_rules::json`
+        # e o PG retorna `syntax error at or near ":"`. Coberto por
+        # `tests/integration/domains/company_settings/test_save_hiring_policy_db.py`.
         if row:
             await db.execute(
                 text(
                     "UPDATE company_hiring_policies SET "
-                    "pipeline_rules = :pipeline_rules::json, "
-                    "scheduling_rules = :scheduling_rules::json, "
-                    "communication_rules = :communication_rules::json, "
-                    "screening_rules = :screening_rules::json, "
-                    "automation_rules = :automation_rules::json, "
+                    "pipeline_rules = CAST(:pipeline_rules AS json), "
+                    "scheduling_rules = CAST(:scheduling_rules AS json), "
+                    "communication_rules = CAST(:communication_rules AS json), "
+                    "screening_rules = CAST(:screening_rules AS json), "
+                    "automation_rules = CAST(:automation_rules AS json), "
                     "updated_at = NOW() "
                     "WHERE company_id = :cid"
                 ),
@@ -650,9 +656,10 @@ async def _save_hiring_policy_impl(
                     "INSERT INTO company_hiring_policies "
                     "(company_id, pipeline_rules, scheduling_rules, communication_rules, "
                     "screening_rules, automation_rules, created_at, updated_at) "
-                    "VALUES (:cid, :pipeline_rules::json, :scheduling_rules::json, "
-                    ":communication_rules::json, :screening_rules::json, "
-                    ":automation_rules::json, NOW(), NOW())"
+                    "VALUES (:cid, CAST(:pipeline_rules AS json), "
+                    "CAST(:scheduling_rules AS json), CAST(:communication_rules AS json), "
+                    "CAST(:screening_rules AS json), CAST(:automation_rules AS json), "
+                    "NOW(), NOW())"
                 ),
                 params,
             )
