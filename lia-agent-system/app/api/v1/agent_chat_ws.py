@@ -1082,6 +1082,12 @@ async def agent_chat_ws(
                     navigation=output.navigation.dict() if output.navigation else None,
                     state_updates=output.state_updates or None,
                     fairness_warnings=_fairness_warnings or None,
+                    # PR6 (Task #1006) — Bridge IA→UI: forward tool execution
+                    # metadata so the FE WS consumer can dispatch the
+                    # `lia:settings-updated` CustomEvent (origin="agent") for
+                    # canonical save tools, refreshing settings cards without
+                    # full-page reload.
+                    tool_results=output.tool_results or None,
                 ))
 
             except TimeoutError:

@@ -140,6 +140,7 @@ def serialize_message(
     fairness_warnings: list | None = None,
     execution_plan: dict | None = None,
     conversation_id: str | None = None,
+    tool_results: list | None = None,
 ) -> MessageEvent:
     payload = serialize_event(
         "message",
@@ -160,6 +161,12 @@ def serialize_message(
         payload["execution_plan"] = execution_plan
     if conversation_id:
         payload["conversation_id"] = conversation_id
+    # PR6 (Task #1006) — Bridge IA→UI: surface tool execution metadata
+    # (tool_name, success, section?) so the frontend WS consumer can dispatch
+    # `lia:settings-updated` CustomEvent for canonical save tools without
+    # introducing a new frame type. Additive field; existing consumers ignore.
+    if tool_results:
+        payload["tool_results"] = tool_results
     return payload  # type: ignore[return-value]
 
 

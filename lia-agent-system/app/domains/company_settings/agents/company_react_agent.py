@@ -114,10 +114,49 @@ class CompanySettingsReActAgent(TenantAwareAgentMixin, LangGraphReActBase, Enhan
             response = "Desculpe, nao consegui processar sua solicitacao."
 
         actions = []
+        # PR6 (Task #1006) — Bridge IA→UI: pair AIMessage.tool_calls with the
+        # subsequent ToolMessage by tool_call_id so we can surface
+        # {tool_name, success, section?, field?} to the WS frame. The frontend
+        # `useChatTransport` interceptor reads this list and dispatches
+        # `lia:settings-updated` for canonical save tools (origin="agent").
+        tool_call_index: dict[str, dict] = {}
         for m in messages:
             for tc in (getattr(m, "tool_calls", None) or []):
-                name = tc.get("name", "") if isinstance(tc, dict) else getattr(tc, "name", "")
+                if isinstance(tc, dict):
+                    name = tc.get("name", "")
+                    tc_id = tc.get("id", "")
+                    args = tc.get("args") or {}
+                else:
+                    name = getattr(tc, "name", "")
+                    tc_id = getattr(tc, "id", "")
+                    args = getattr(tc, "args", None) or {}
                 actions.append(AgentAction(action_type="call_tool", params={"tool": name}))
+                if tc_id:
+                    tool_call_index[tc_id] = {
+                        "tool_name": name,
+                        "section": (args or {}).get("section"),
+                        "field": (args or {}).get("field"),
+                    }
+
+        tool_results: list[dict] = []
+        for m in messages:
+            tc_id = getattr(m, "tool_call_id", None) or (
+                m.get("tool_call_id") if isinstance(m, dict) else None
+            )
+            if not tc_id or tc_id not in tool_call_index:
+                continue
+            raw = getattr(m, "content", None) or (m.get("content", "") if isinstance(m, dict) else "")
+            success = True
+            try:
+                import json as _json
+                parsed = _json.loads(raw) if isinstance(raw, str) else raw
+                if isinstance(parsed, dict) and "success" in parsed:
+                    success = bool(parsed["success"])
+            except (ValueError, TypeError):
+                pass
+            entry = dict(tool_call_index[tc_id])
+            entry["success"] = success
+            tool_results.append(entry)
 
         _confidence = 0.75
         if actions:
@@ -129,6 +168,7 @@ class CompanySettingsReActAgent(TenantAwareAgentMixin, LangGraphReActBase, Enhan
         return AgentOutput(
             message=response,
             actions=actions,
+            tool_results=tool_results,
             confidence=_confidence,
             metadata={
                 "source": "langgraph_native",

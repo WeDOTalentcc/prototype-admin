@@ -27,7 +27,61 @@ export interface TransportEvent {
   description?: string
   data?: Record<string, unknown>
   fairness_warnings?: string[]
+  tool_results?: Array<{
+    tool_name?: string
+    success?: boolean
+    section?: string | null
+    field?: string | null
+    [key: string]: unknown
+  }>
   [key: string]: unknown
+}
+
+// PR6 (Task #1006) — Bridge IA→UI: canonical save tools whose successful
+// execution by the agent must trigger a settings hub refresh.
+const SETTINGS_PERSIST_TOOLS = new Set<string>([
+  "save_company_field",
+  "save_company_section",
+  "save_hiring_policy",
+  "import_benefits_from_data",
+  "import_workforce_plan",
+])
+
+const TOOL_TO_SECTION: Record<string, string> = {
+  save_hiring_policy: "hiring_policies",
+  import_benefits_from_data: "benefits",
+  import_workforce_plan: "workforce",
+}
+
+export function maybeDispatchSettingsUpdated(event: TransportEvent): void {
+  if (typeof window === "undefined") return
+  if (event.type !== "message") return
+  const results = event.tool_results
+  if (!Array.isArray(results) || results.length === 0) return
+
+  for (const r of results) {
+    if (!r || typeof r !== "object") continue
+    const toolName = typeof r.tool_name === "string" ? r.tool_name : ""
+    if (!SETTINGS_PERSIST_TOOLS.has(toolName)) continue
+    if (r.success === false) continue
+    const section =
+      (typeof r.section === "string" && r.section) ||
+      TOOL_TO_SECTION[toolName] ||
+      "profile"
+    const detail = {
+      origin: "agent" as const,
+      source: "agent" as const,
+      section,
+      field: typeof r.field === "string" ? r.field : undefined,
+      tool_name: toolName,
+      ts: Date.now(),
+    }
+    try {
+      window.dispatchEvent(new CustomEvent("lia:settings-updated", { detail }))
+    } catch {
+      // fail-silent — bridge must never break chat transport
+    }
+  }
 }
 
 export interface UseChatTransportOptions {
@@ -141,6 +195,14 @@ export function useChatTransport(
 
   const handleParsedEvent = useCallback((event: TransportEvent) => {
     onEventRef.current?.(event)
+
+    // PR6 (Task #1006) — Bridge IA→UI: when the agent persists settings via
+    // canonical save tools, the backend ships a `tool_results` array on the
+    // message frame. Dispatch the `lia:settings-updated` CustomEvent with
+    // `origin: "agent"` so settings hub cards refresh without a page reload.
+    // Out-of-band: never fires for UI-originated saves (those carry
+    // `source: "ui"` and are handled by the existing origin guard).
+    maybeDispatchSettingsUpdated(event)
 
     switch (event.type) {
       case "thinking":
