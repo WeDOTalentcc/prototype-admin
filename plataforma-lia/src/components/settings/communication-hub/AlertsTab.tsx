@@ -4,6 +4,7 @@ import { Edit, Save, Bell, Clock, Calendar, RefreshCw, Brain, Loader2, AlertCirc
 import { useTranslations } from "next-intl"
 import { textStyles, actionButtonStyles } from '@/lib/design-tokens'
 import type { AlertConfig } from './CommunicationHub.types'
+import { InteractiveSurface } from "@/components/ui/interactive-surface"
 
 interface AlertsTabProps {
   successMessage: string | null
@@ -143,18 +144,20 @@ export function AlertsTab({
               { key: 'weekly' as const, label: t("alertsSection.briefingWeekly"), desc: t("alertsSection.briefingWeeklyDesc"), icon: Calendar },
               { key: 'monthly' as const, label: t("alertsSection.briefingMonthly"), desc: t("alertsSection.briefingMonthlyDesc"), icon: Calendar },
             ] as const).map(({ key, label, desc, icon: Icon }) => (
-              <button
+              <InteractiveSurface
                 key={key}
+                variant="card-toggle"
                 onClick={() => setBriefingFrequency(key)}
                 disabled={!isEditingAlerts}
-                className={`p-2.5 rounded-md border-2 transition-colors motion-reduce:transition-none text-left ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''} ${briefingFrequency === key ? 'border-lia-text-secondary bg-lia-bg-secondary' : 'border-lia-border-subtle'}`}
+                aria-pressed={briefingFrequency === key}
+                className={`p-2.5 rounded-md border-2 ${!isEditingAlerts ? 'opacity-60 cursor-not-allowed' : ''} ${briefingFrequency === key ? 'border-lia-text-secondary bg-lia-bg-secondary' : 'border-lia-border-subtle'}`}
               >
                 <div className="flex items-center gap-1.5 mb-0.5">
                   <Icon className={`w-3.5 h-3.5 ${briefingFrequency === key ? 'text-lia-text-secondary' : ''}`} />
                   <span className="text-xs font-medium">{label}</span>
                 </div>
                 <p className="text-xs text-lia-text-secondary">{desc}</p>
-              </button>
+              </InteractiveSurface>
             ))}
           </div>
 

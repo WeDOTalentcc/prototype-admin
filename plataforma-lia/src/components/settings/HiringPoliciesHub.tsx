@@ -10,6 +10,7 @@ import {
 import { useHiringPolicies } from "@/hooks/company/use-hiring-policies"
 import { FIELD_LABELS, POLICY_BLOCKS, FIELD_CONFIGS, formatFieldValue } from "@/lib/hiring-policy-utils"
 import { LiaChatMessage, LiaChatInput, LiaLoadingIndicator } from "@/components/ui/lia-expanded-panel"
+import { InteractiveSurface } from "@/components/ui/interactive-surface"
 import { textStyles } from "@/lib/design-tokens"
 import type { LucideIcon } from "lucide-react"
 import { LearningLoopsPanel } from "@/components/settings/LearningLoopsPanel"
@@ -357,9 +358,10 @@ export function HiringPoliciesHub() {
                 className="bg-lia-bg-primary dark:bg-lia-bg-secondary overflow-hidden rounded-xl"
                
               >
-                <button
+                <InteractiveSurface
+                  variant="accordion"
                   onClick={() => toggleBlock(block.key)}
-                  className="w-full flex items-center justify-between px-4 py-3 hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none duration-150"
+                  className="px-4 py-3 hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse duration-150"
                   aria-expanded={isExpanded}
                   aria-label={`${block.title} - ${isCompleted ? 'Configurado' : 'Pendente'}`}
                 >
@@ -385,7 +387,7 @@ export function HiringPoliciesHub() {
                       <ChevronDown className="w-4 h-4 text-lia-text-tertiary" />
                     )}
                   </div>
-                </button>
+                </InteractiveSurface>
 
                 {(isExpanded && !!blockData) && (
                   <CardContent className="px-4 py-3">

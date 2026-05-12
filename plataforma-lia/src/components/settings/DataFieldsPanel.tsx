@@ -3,6 +3,7 @@
 import React from "react"
 import { useTranslations } from "next-intl"
 import { ChevronDown, ChevronRight } from "lucide-react"
+import { InteractiveSurface } from "@/components/ui/interactive-surface"
 import { ALL_DATA_FIELDS, FIELD_CATEGORY_LABELS } from "./StageCardHelpers"
 import type { RecruitmentStage, StageDataField } from "./recruitment-journey.types"
 
@@ -55,16 +56,16 @@ export function DataFieldsPanel({ stage, isEditMode, onUpdate }: DataFieldsPanel
 
   return (
     <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle mt-3 pt-2">
-      <button
+      <InteractiveSurface
+        variant="accordion"
         onClick={() => setExpanded(v => !v)}
-        className="flex items-center gap-1.5 text-xs text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none w-full"
+        className="flex items-center gap-1.5 justify-start text-xs text-lia-text-secondary hover:text-lia-text-primary !bg-transparent hover:!bg-transparent"
         aria-expanded={expanded}
-        type="button"
       >
         {expanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
         <span className="font-medium">{t("collapseLabel")}</span>
         <span className="text-lia-text-tertiary">({t("fieldCount", { count: enabledCount })})</span>
-      </button>
+      </InteractiveSurface>
 
       {expanded && (
         <div className="mt-2 space-y-3">

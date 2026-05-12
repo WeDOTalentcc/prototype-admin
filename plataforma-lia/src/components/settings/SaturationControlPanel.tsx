@@ -4,6 +4,7 @@ import React from "react"
 import { useTranslations } from "next-intl"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
+import { InteractiveSurface } from "@/components/ui/interactive-surface"
 import { ChevronDown, ChevronRight, Loader2, Gauge } from "lucide-react"
 import type { RecruitmentStage } from "./recruitment-journey.types"
 import { apiFetch } from "@/lib/api/api-fetch"
@@ -79,16 +80,16 @@ export function SaturationControlPanel({ stage, isEditMode }: { stage: Recruitme
 
   return (
     <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle mt-3 pt-2">
-      <button
+      <InteractiveSurface
+        variant="accordion"
         onClick={handleExpand}
-        className="flex items-center gap-1.5 text-xs text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none w-full"
+        className="flex items-center gap-1.5 justify-start text-xs text-lia-text-secondary hover:text-lia-text-primary !bg-transparent hover:!bg-transparent"
         aria-expanded={expanded}
-        type="button"
       >
         {expanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
         <Gauge className="h-3.5 w-3.5" />
         <span className="font-medium">{t("title")}</span>
-      </button>
+      </InteractiveSurface>
 
       {expanded && (
         <div className="mt-2 space-y-3" role="status" aria-live="polite" aria-label={t("loading")}>

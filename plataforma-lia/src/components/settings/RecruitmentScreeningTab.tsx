@@ -19,6 +19,7 @@ import {
 import { useTranslations } from "next-intl"
 import { textStyles, actionButtonStyles } from '@/lib/design-tokens'
 import { useRecruitmentHub, type NewQuestionForm } from './useRecruitmentHub'
+import { InteractiveSurface } from "@/components/ui/interactive-surface"
 
 export function RecruitmentScreeningTab() {
   const t = useTranslations("settings")
@@ -236,9 +237,10 @@ function QuestionBankSection({
 
           return (
             <div key={category} className="border border-lia-border-subtle rounded-xl overflow-hidden">
-              <button
+              <InteractiveSurface
+                variant="accordion"
                 onClick={() => onToggleCategory(category)}
-                className="w-full flex items-center justify-between p-2.5 bg-lia-bg-secondary hover:bg-lia-bg-tertiary transition-colors motion-reduce:transition-none"
+                className="p-2.5 !bg-lia-bg-secondary hover:!bg-lia-bg-tertiary"
               >
                 <div className="flex items-center gap-2">
                   <span className="text-sm">{categoryInfo.icon}</span>
@@ -246,7 +248,7 @@ function QuestionBankSection({
                   <Chip variant="neutral" className="text-micro py-0 px-1.5">{categoryQuestions.length}</Chip>
                 </div>
                 {isExpanded ? <ChevronUp className="w-3.5 h-3.5 text-lia-text-tertiary" /> : <ChevronDown className="w-3.5 h-3.5 text-lia-text-tertiary" />}
-              </button>
+              </InteractiveSurface>
 
               {isExpanded && (
                 <div className="p-2 space-y-1.5 bg-lia-bg-primary">

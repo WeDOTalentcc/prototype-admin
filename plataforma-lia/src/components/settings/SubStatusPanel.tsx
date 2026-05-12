@@ -2,6 +2,7 @@
 
 import React from "react"
 import { Switch } from "@/components/ui/switch"
+import { InteractiveSurface } from "@/components/ui/interactive-surface"
 import { ChevronDown, ChevronRight, Star, Loader2 } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { useSubStatusPanel } from "@/hooks/recruitment/use-sub-status-panel"
@@ -30,13 +31,13 @@ export function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStat
 
   return (
     <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle mt-3 pt-2">
-      <button
+      <InteractiveSurface
+        variant="accordion"
         onClick={handleExpand}
-        className="flex items-center gap-1.5 text-xs text-lia-text-secondary hover:text-lia-text-primary transition-colors motion-reduce:transition-none w-full"
+        className="flex items-center gap-1.5 justify-start text-xs text-lia-text-secondary hover:text-lia-text-primary !bg-transparent hover:!bg-transparent"
         aria-expanded={expanded}
         aria-label={t("toggleAria", { action: expanded ? t("collapse") : t("expand"), name: stageName })}
         data-testid={`sub-status-panel-${stage.id}`}
-        type="button"
       >
         {expanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
         <span className="font-medium">{t("subStatusesLabel")}</span>
@@ -44,7 +45,7 @@ export function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStat
         {!isRealId(stage.id) && isEditMode && (
           <span className="ml-auto text-micro text-status-warning">{t("saveStageFirst")}</span>
         )}
-      </button>
+      </InteractiveSurface>
 
       {expanded && (
         <div className="mt-2 space-y-1.5" role="status" aria-live="polite" aria-label={t("loading")}>

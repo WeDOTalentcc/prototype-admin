@@ -14,6 +14,7 @@ import type { CompanyBenefit } from "@/types/benefits"
 import { WorkforceHubContent } from "./WorkforceHubContent"
 import { CompensationPoliciesListSection } from "./compensation-policies/CompensationPoliciesListSection"
 import { SectionUploadDropZone, type TargetSection } from "./SectionUploadDropZone"
+import { InteractiveSurface } from "@/components/ui/interactive-surface"
 
 interface SectionUploadConfig {
   targetSection: TargetSection
@@ -239,9 +240,10 @@ export function MinhaEmpresaCard({
       className="bg-lia-bg-primary dark:bg-lia-bg-secondary overflow-hidden rounded-xl"
       data-block-anchor={block.key}
     >
-      <button
+      <InteractiveSurface
+        variant="accordion"
         onClick={onToggle}
-        className="w-full flex items-center justify-between px-4 py-3 hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse transition-colors motion-reduce:transition-none duration-150"
+        className="px-4 py-3 hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse duration-150"
         aria-expanded={isExpanded}
         aria-label={`${block.title} - ${statusStyle.label}`}
       >
@@ -277,7 +279,7 @@ export function MinhaEmpresaCard({
             <ChevronDown className="w-4 h-4 text-lia-text-tertiary" />
           )}
         </div>
-      </button>
+      </InteractiveSurface>
 
       {isExpanded && (
         <CardContent className="px-4 py-3 border-t border-lia-border-subtle space-y-3">
