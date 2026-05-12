@@ -77,3 +77,39 @@ def test_record_gate_run_caps_history_at_50(hist_path):
         _record_full_run(hist_path, 0.90)
     data = json.loads(Path(hist_path).read_text())
     assert len(data["runs"]) == 50
+
+
+# ─── Task #999: dataset-aware inventory ────────────────────────────────────
+# The Settings golden (company_settings_prefill.jsonl) only covers the
+# `company_settings` ReActAgent. Before #999 the gate hardcoded the 16-agent
+# T-D inventory for every dataset, so the Settings gate would FAIL the 80%
+# coverage rule the moment it had real data. Lock in the fix: single-agent
+# datasets must derive expected agents from the JSONL itself and pass when
+# their lone agent scores above threshold for N consecutive runs.
+
+CSP_DATASET = "eval/golden/company_settings_prefill.jsonl"
+
+
+def test_settings_gate_passes_with_single_agent_above_threshold(hist_path):
+    record_gate_run(CSP_DATASET, {"company_settings": 0.95}, hist_path)
+    record_gate_run(CSP_DATASET, {"company_settings": 0.97}, hist_path)
+    assert gate_check(
+        CSP_DATASET, threshold=0.85, consecutive_runs=2, history_path=hist_path
+    ) == 0
+
+
+def test_settings_gate_fails_when_company_settings_regresses(hist_path):
+    record_gate_run(CSP_DATASET, {"company_settings": 0.50}, hist_path)
+    record_gate_run(CSP_DATASET, {"company_settings": 0.60}, hist_path)
+    assert gate_check(
+        CSP_DATASET, threshold=0.85, consecutive_runs=2, history_path=hist_path
+    ) == 1
+
+
+def test_tenant_context_gate_still_requires_full_inventory(hist_path):
+    # Sentinela: o dataset T-D canônico mantém a regra de 16 agentes.
+    record_gate_run(DATASET, {"company_settings": 0.95}, hist_path)
+    record_gate_run(DATASET, {"company_settings": 0.95}, hist_path)
+    assert gate_check(
+        DATASET, threshold=0.85, consecutive_runs=2, history_path=hist_path
+    ) == 1

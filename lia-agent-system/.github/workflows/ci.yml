@@ -5,10 +5,20 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main]
+  schedule:
+    # Nightly run that feeds eval/.gate_history.json with real backend scores
+    # so the eval-gates job (T-E + T6 #993) stops sitting at "warming up" and
+    # actually blocks regression after two consecutive bad nights. Pinned to
+    # 05:17 UTC to land outside business hours.
+    - cron: "17 5 * * *"
+  workflow_dispatch: {}
 
 jobs:
   test:
     name: Test Suite
+    # Skip on the nightly schedule — that trigger only exists to feed
+    # eval/.gate_history.json via eval-nightly. Re-runs on push/PR/dispatch.
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
 
     services:
@@ -142,12 +152,148 @@ jobs:
       - name: Gate — company_settings_prefill.jsonl (T6 #993)
         run: python -m eval.eval_runner --gate eval/golden/company_settings_prefill.jsonl
 
+  eval-nightly:
+    # Task #999: feeds eval/.gate_history.json with REAL backend scores for
+    # the canary golden datasets (T-E tenant_context + T6 #993 Settings
+    # prefill). Without this job, eval-gates above only ever sees the
+    # bootstrapped history and stays at "pass — warming up" forever, so a
+    # regression in the Settings ↔ chat lateral flow (or in any of the 16
+    # ReActAgents) ships unblocked. Runs nightly + on-demand only — never on
+    # PRs (no live LLM budget burn per push).
+    #
+    # Flow: boot Postgres + Redis as service containers, install deps, start
+    # uvicorn in the background, wait for /health, run eval_runner against
+    # each golden dataset, then commit the updated .gate_history.json back
+    # to the branch with [skip ci] so the next CI run reads it. After two
+    # green nights the gate has real data and stops being a no-op; after
+    # two red nights it blocks the next merge to main.
+    name: Eval Nightly (record gate history)
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    defaults:
+      run:
+        working-directory: lia-agent-system
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: lia
+          POSTGRES_PASSWORD: lia
+          POSTGRES_DB: lia_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql+asyncpg://lia:lia@localhost:5432/lia_test
+      REDIS_URL: redis://localhost:6379
+      ENVIRONMENT: test
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      # eval_runner._make_eval_token() signs JWTs with app.core.config.settings.SECRET_KEY.
+      # Pin a stable test key so the token survives the uvicorn boot in this
+      # job. NEVER use this value in prod.
+      SECRET_KEY: ${{ secrets.EVAL_BACKEND_SECRET_KEY || 'eval-nightly-secret-key-do-not-use-in-prod' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Need full history + a writeable token so we can push the updated
+          # .gate_history.json back to the branch without losing context.
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -e ".[dev]" || pip install -e . || pip install -r requirements.txt
+          pip install httpx pyjwt pyyaml --quiet
+
+      - name: Boot uvicorn in the background
+        run: |
+          nohup python -m uvicorn app.main:app --host 0.0.0.0 --port 8001 > /tmp/lia-backend.log 2>&1 &
+          echo $! > /tmp/lia-backend.pid
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:8001/health >/dev/null 2>&1; then
+              echo "backend ready after ${i}s"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::backend did not become healthy in 120s"
+          tail -200 /tmp/lia-backend.log
+          exit 1
+
+      - name: Run Settings prefill battery (T6 #993 — 18+ scenarios)
+        run: python -m eval.eval_runner --dataset eval/golden/company_settings_prefill.jsonl --url http://localhost:8001
+
+      - name: Run tenant_context battery (T-E — 16 ReActAgents)
+        # Non-blocking: a flaky run shouldn't hide a clean Settings recording.
+        # The gate-check job below decides pass/fail using the persisted history.
+        continue-on-error: true
+        run: python -m eval.eval_runner --dataset eval/golden/tenant_context.jsonl --url http://localhost:8001
+
+      - name: Stop backend
+        if: always()
+        run: |
+          if [ -f /tmp/lia-backend.pid ]; then
+            kill "$(cat /tmp/lia-backend.pid)" 2>/dev/null || true
+          fi
+
+      - name: Upload backend log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lia-backend-log
+          path: /tmp/lia-backend.log
+          retention-days: 7
+
+      - name: Commit updated gate history
+        run: |
+          if git diff --quiet eval/.gate_history.json; then
+            echo "no gate-history changes — nothing to commit"
+            exit 0
+          fi
+          git config user.name 'lia-eval-bot'
+          git config user.email 'lia-eval-bot@users.noreply.github.com'
+          git add eval/.gate_history.json
+          # [skip ci] avoids a feedback loop with the on:push trigger above.
+          git commit -m "chore(eval): record nightly gate history [skip ci]"
+          # Push back to the branch the workflow ran on (main on schedule,
+          # whatever the user picked on workflow_dispatch).
+          git push origin HEAD:"${GITHUB_REF#refs/heads/}"
+
   load-tests:
     name: Load Tests (non-blocking)
     runs-on: ubuntu-latest
     needs: test
     continue-on-error: true
-    if: github.ref == 'refs/heads/main'
+    # Skip on nightly schedule (eval-nightly is the only intended schedule job).
+    if: github.event_name != 'schedule' && github.ref == 'refs/heads/main'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -173,6 +319,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     continue-on-error: true
+    # Skip on nightly schedule (eval-nightly is the only intended schedule job).
+    if: github.event_name != 'schedule'
     env:
       ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -198,6 +346,8 @@ jobs:
 
   lint:
     name: Lint
+    # Skip on nightly schedule (eval-nightly is the only intended schedule job).
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

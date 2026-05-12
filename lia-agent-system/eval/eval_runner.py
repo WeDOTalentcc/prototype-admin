@@ -68,7 +68,7 @@ def load_cases(filter_categories: list[str] | None = None, filter_id: str | None
 def build_request_body(case: dict) -> dict:
     ctx = case.get("context", {})
     return {
-        "content": case["prompt"],
+        "content": case.get("prompt") or case.get("user_query", ""),
         "context": {
             "scope": ctx.get("scope", "global"),
             "page": ctx.get("page", "home"),
@@ -77,6 +77,38 @@ def build_request_body(case: dict) -> dict:
             "test_case_id": case["id"],
         },
     }
+
+
+def load_golden_jsonl(path: Path) -> list[dict]:
+    """Load a JSONL golden dataset (e.g. eval/golden/company_settings_prefill.jsonl).
+
+    Each row is a dict with keys: id, agent, user_query, tenant_snippet,
+    anti_patterns, success_criteria, fail_threshold_avg. Translates to the
+    case shape consumed by ``score_heuristic`` / ``build_request_body``:
+    fills ``prompt`` from ``user_query`` and infers ``category``/``severity``
+    so the per-category/critical breakdown still works. Keeps ``agent`` so
+    ``record_gate_run`` groups by canonical T-D agent name.
+    """
+    cases: list[dict] = []
+    for line in path.read_text().splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        row = json.loads(line)
+        cases.append({
+            "id": row["id"],
+            "agent": row.get("agent", "unknown"),
+            "category": row.get("agent", "unknown"),
+            "severity": row.get("severity", "high"),
+            "title": row.get("title", row["id"]),
+            "prompt": row.get("user_query", ""),
+            "context": row.get("context", {}),
+            "expected_tools": row.get("expected_tools", []),
+            "canonical_files": row.get("canonical_files", []),
+            "success_criteria": row.get("success_criteria", []),
+            "anti_patterns": row.get("anti_patterns", []),
+        })
+    return cases
 
 
 async def call_lia(
@@ -547,8 +579,24 @@ async def run(args: argparse.Namespace) -> None:
         print("ERROR: Provide --token or set LIA_TEST_TOKEN env var")
         sys.exit(1)
 
-    filter_cats = args.categories.split(",") if args.categories else None
-    cases = load_cases(filter_cats, args.id)
+    dataset_arg: str
+    if getattr(args, "dataset", ""):
+        dataset_path = Path(args.dataset)
+        if not dataset_path.is_absolute():
+            # Resolve relative to lia-agent-system root (parent of eval/).
+            dataset_path = BASE_DIR.parent / args.dataset
+        if not dataset_path.exists():
+            print(f"ERROR: dataset not found at {dataset_path}")
+            sys.exit(1)
+        cases = load_golden_jsonl(dataset_path)
+        # Normalize the recorded dataset key so gate_check can find it. The
+        # gate-check CLI uses the path as-typed (e.g. "eval/golden/foo.jsonl"),
+        # so we mirror the original arg here.
+        dataset_arg = args.dataset
+    else:
+        filter_cats = args.categories.split(",") if args.categories else None
+        cases = load_cases(filter_cats, args.id)
+        dataset_arg = "eval/cases.jsonl"
     if not cases:
         print("No cases matched the filter.")
         sys.exit(1)
@@ -635,7 +683,6 @@ async def run(args: argparse.Namespace) -> None:
     # consecutive-run threshold. by_agent uses normalized 0..1 scores
     # (raw judge score is 0..2; divide by 2).
     try:
-        dataset_arg = getattr(args, "dataset", "") or "eval/cases.jsonl"
         by_agent_scores: dict[str, list[float]] = {}
         for r in results:
             agent = r.get("agent") or r.get("category") or "unknown"
@@ -672,6 +719,53 @@ def record_gate_run(dataset: str, by_agent: dict[str, float], history_path: str 
     data["runs"] = data["runs"][-50:]
     hist.write_text(json.dumps(data, indent=2))
     return hist
+
+
+# Inventário canônico T-D (16 ReActAgents). Usado como expected set para
+# datasets que cobrem o sistema inteiro (tenant_context.jsonl). Datasets de
+# escopo restrito derivam o expected set do próprio JSONL — ver
+# `_expected_agents_for_dataset`.
+_T_D_INVENTORY: set[str] = {
+    "analytics", "ats_integration", "automation", "autonomous",
+    "candidate_self_service", "communication", "company_settings",
+    "cv_screening_pipeline", "hiring_policy", "jobs_management", "kanban",
+    "talent_funnel", "sourcing", "talent_pool", "pipeline_transition",
+    "wizard",
+}
+
+
+def _expected_agents_for_dataset(dataset_path: str) -> set[str]:
+    """Resolve o conjunto de agentes esperado para o gate de ``dataset_path``.
+
+    Regras (Task #999):
+      • ``tenant_context.jsonl`` → inventário canônico T-D (16 ReActAgents).
+        Falta de qualquer agente nas N últimas rodadas mascara regressão.
+      • Outros datasets → derivado do JSONL (campo ``agent`` por linha).
+        Cai para o inventário T-D se o arquivo não existir / não for legível
+        (preserva o comportamento antigo para callers que registraram um
+        dataset arbitrário).
+    """
+    if dataset_path.endswith("tenant_context.jsonl"):
+        return set(_T_D_INVENTORY)
+    base = Path(__file__).resolve().parent
+    candidate = Path(dataset_path)
+    if not candidate.is_absolute():
+        candidate = base.parent / dataset_path
+    if not candidate.exists():
+        return set(_T_D_INVENTORY)
+    try:
+        agents: set[str] = set()
+        for line in candidate.read_text().splitlines():
+            line = line.strip()
+            if not line:
+                continue
+            row = json.loads(line)
+            agent = row.get("agent")
+            if agent:
+                agents.add(agent)
+        return agents or set(_T_D_INVENTORY)
+    except Exception:
+        return set(_T_D_INVENTORY)
 
 
 def gate_check(
@@ -719,16 +813,14 @@ def gate_check(
     for r in last_n:
         for agent, score in (r.get("by_agent") or {}).items():
             by_agent.setdefault(agent, []).append(float(score))
-    # Inventário canônico T-D (16 ReActAgents) — gate falha se a cobertura
-    # nas últimas N rodadas for menor que 80% (uma agente faltando pode
-    # mascarar regressão silenciosa).
-    expected_agents = {
-        "analytics", "ats_integration", "automation", "autonomous",
-        "candidate_self_service", "communication", "company_settings",
-        "cv_screening_pipeline", "hiring_policy", "jobs_management", "kanban",
-        "talent_funnel", "sourcing", "talent_pool", "pipeline_transition",
-        "wizard",
-    }
+    # Inventário esperado: para o dataset T-D canônico (tenant_context.jsonl)
+    # exigimos os 16 ReActAgents inteiros — qualquer agente faltando nas N
+    # últimas rodadas pode mascarar regressão silenciosa. Para datasets de
+    # escopo restrito (ex.: company_settings_prefill.jsonl, que só cobre o
+    # CompanySettingsReActAgent), derivamos o inventário esperado do próprio
+    # JSONL (campo `agent` por linha) — caso contrário a verificação de 80%
+    # de cobertura jamais passaria mesmo com notas perfeitas. Task #999.
+    expected_agents = _expected_agents_for_dataset(dataset_path)
     missing = expected_agents - by_agent.keys()
     coverage_ratio = (len(expected_agents) - len(missing)) / len(expected_agents)
     if coverage_ratio < 0.80:
@@ -769,6 +861,15 @@ def main() -> None:
     )
     parser.add_argument("--gate-threshold", type=float, default=0.85, help="Gate min avg score (0..1)")
     parser.add_argument("--gate-consecutive", type=int, default=2, help="Consecutive failing runs to trip gate")
+    parser.add_argument(
+        "--dataset",
+        default="",
+        help="JSONL golden dataset to run against the live backend (e.g. "
+             "eval/golden/company_settings_prefill.jsonl). When set, replaces "
+             "the default eval_cases.yaml battery and records the run in "
+             "eval/.gate_history.json keyed by this path so `--gate <same path>` "
+             "enforces the consecutive-run threshold.",
+    )
     args = parser.parse_args()
     if args.gate:
         sys.exit(gate_check(args.gate, args.gate_threshold, args.gate_consecutive))
