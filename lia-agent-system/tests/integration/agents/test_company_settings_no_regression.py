@@ -655,6 +655,94 @@ def test_golden_dataset_exists_with_21_scenarios():
     )
 
 
+# ─── Contrato 5b: PR7 (Task #1007) — A5 compensation JSONB save path ─────
+
+
+def test_pr7_a5_profile_additional_data_save_path_exposed():
+    """PR7 (Task #1007) — gap A5 do audit T1-T6: o card "Remuneração &
+    Onboarding" do hub Minha Empresa expõe `additional_notes`,
+    `responsible_name` e `responsible_position` como editáveis, mas eles
+    vivem em `company_profiles.additional_data` (JSONB) — antes do PR7
+    NÃO havia rota de save via chat (caíam no `else` de
+    `_save_company_field_impl` com a mensagem
+    "Campo '<x>' nao e valido para perfil"), apesar de o frontend e o
+    YAML mapearem `[target_section:compensation]` para o agente.
+
+    Trava 3 contratos:
+      1. A whitelist `_PROFILE_ADDITIONAL_DATA_FIELDS` continua exposta
+         no módulo (pública para sentinela e para futuras extensões).
+      2. As 3 chaves canônicas estão presentes — remover qualquer uma
+         re-quebra o save da seção compensation no chat lateral.
+      3. O builder gera o trio de queries (select/update/insert) com
+         `jsonb_set` para CADA campo whitelisted — defesa contra um PR
+         futuro que apague o builder mantendo a whitelist (silent
+         regression).
+    """
+    from app.domains.company_settings.agents.company_tool_registry import (
+        _PROFILE_ADDITIONAL_DATA_FIELDS,
+        _PROFILE_ADDITIONAL_DATA_QUERIES,
+    )
+
+    required = {"additional_notes", "responsible_name", "responsible_position"}
+    missing = required - set(_PROFILE_ADDITIONAL_DATA_FIELDS)
+    assert not missing, (
+        f"PR7/A5 regressão: campos canônicos do bloco compensation "
+        f"ausentes de _PROFILE_ADDITIONAL_DATA_FIELDS: {sorted(missing)}. "
+        "Sem eles o save via chat para Notas/Responsável volta a falhar "
+        "silenciosamente — gap A5 do audit T1-T6 reabre."
+    )
+
+    for field in required:
+        trio = _PROFILE_ADDITIONAL_DATA_QUERIES.get(field)
+        assert trio is not None, (
+            f"PR7/A5 regressão: builder _build_profile_additional_data_queries() "
+            f"não gerou queries para '{field}' — _save_company_field_impl "
+            "vai cair no `else` e o save morre silenciosamente."
+        )
+        select_q, update_q, insert_q = trio
+        assert "additional_data" in update_q and "jsonb_set" in update_q, (
+            f"PR7/A5 regressão: query de UPDATE para '{field}' deixou de "
+            f"usar `jsonb_set` em `additional_data`. Atual: {update_q!r}."
+        )
+        assert "additional_data" in insert_q and "jsonb_build_object" in insert_q, (
+            f"PR7/A5 regressão: query de INSERT para '{field}' deixou de "
+            f"montar `additional_data` via `jsonb_build_object`. Atual: {insert_q!r}."
+        )
+
+
+def test_pr7_a5_yaml_compensation_lists_profile_additional_fields():
+    """PR7 (Task #1007) — sentinela cross-stack: o mapeamento da seção
+    `compensation` em `structured_action_tags` do YAML precisa citar
+    `save_company_field(section="profile", field=<additional_notes|...>)`
+    para fechar o loop A5. Se um PR futuro reverter o mapeamento para só
+    `save_company_section(section="culture", ...)`, a LIA volta a ter
+    apenas o caminho `default_salary_ranges`/`seniority_levels` — Notas
+    e Responsável ficam órfãos novamente.
+    """
+    data = yaml.safe_load(YAML_PATH.read_text(encoding="utf-8"))
+    tags_block = data.get("structured_action_tags", "")
+    comp_line_match = re.search(
+        r"-\s*compensation\s*(?:→|->)[^\n]+", tags_block
+    )
+    assert comp_line_match, (
+        "PR7/A5 regressão: linha de mapeamento `- compensation -> ...` "
+        "removida de structured_action_tags."
+    )
+    line = comp_line_match.group(0)
+    for token in (
+        "save_company_field",
+        "additional_notes",
+        "responsible_name",
+        "responsible_position",
+    ):
+        assert token in line, (
+            f"PR7/A5 regressão: mapeamento `compensation` perdeu referência a "
+            f"`{token}`. Linha atual: {line!r}. Sem essa rota o save de "
+            "Notas/Responsável via chat volta a ser dead code (gap A5 do "
+            "audit T1-T6)."
+        )
+
+
 # ─── Contrato 6: PR3 (Task #1003) — FairnessGuard recursivo aplicado ─────
 
 

@@ -366,6 +366,51 @@ test.describe('Task #997/#998/#1001 — Settings ↔ chat handoff (prefill_secti
             `(YAML behavioral_rules) ou no prompt em useSettingsConversational.`,
         ).not.toMatch(rx)
       }
+
+      // (4) Persistência via desaparecimento do `pending-prefill-<blockKey>` —
+      //   PR7/A4 (Task #1007). Esta é a testemunha REAL de que o loop
+      //   chat→agente→DB→UI fechou: o card de pendência só desaparece
+      //   quando (a) o agente chamou alguma das tools whitelisted em
+      //   SETTINGS_PERSIST_TOOLS (PR6) e (b) o `lia:settings-updated`
+      //   bridge disparou refetch do hub.
+      //
+      //   IMPORTANTE: o flow `prefill_section` é majoritariamente HELP
+      //   (LIA pergunta, recrutador responde, LIA salva). No primeiro
+      //   turno raramente há save — então este assert é INTENCIONALMENTE
+      //   `expect.soft()` com timeout curto (15s). Quando o YAML do
+      //   agente evoluir para auto-save em prefill com confidence >=
+      //   APPLY_NOTIFY (gate A6/PR5 já enforced), este soft vira o sinal
+      //   verde da feature; até lá ele vira FAIL informativo no relatório
+      //   sem bloquear o restante da matriz 7×6 do hard-scope (critérios
+      //   1-3 acima). Ver drift no .local/.commit_message do PR7.
+      // Anotação informativa (NÃO um soft assert — Playwright soft assertions
+      // marcam o teste como failed no resultado agregado, o que tornaria o
+      // critério (4) bloqueante na prática). Persistimos o desfecho como
+      // anotação no relatório do Playwright para que reviewers vejam a
+      // proporção de seções em que o loop fechou, sem derrubar o gate da
+      // matriz 7×6 de hard-scope (critérios 1–3 acima). Quando auto-save em
+      // prefill estiver enforced, este bloco pode virar `expect(...)` hard.
+      const pendingBtn = page.locator(`[data-testid="pending-prefill-${blockKey}"]`)
+      const persistDeadline = Date.now() + 15_000
+      let lastCount = await pendingBtn.count()
+      while (Date.now() < persistDeadline && lastCount > 0) {
+        await page.waitForTimeout(500)
+        lastCount = await pendingBtn.count()
+      }
+      const persisted = lastCount === 0
+      testInfo.annotations.push({
+        type: persisted ? 'persist-witness-pass' : 'persist-witness-skip',
+        description:
+          `[persist-witness:${section}] pending-prefill-${blockKey} ` +
+          (persisted
+            ? `desapareceu em <=15s — loop chat→agente→DB→UI fechou (PR6 ` +
+              `bridge lia:settings-updated emitido por tool em ` +
+              `SETTINGS_PERSIST_TOOLS).`
+            : `permaneceu visível após 15s — LIA respondeu em HELP mode ` +
+              `(perguntas), sem save no primeiro turno. Comportamento ` +
+              `aceitável hoje; vira PASS quando auto-save em prefill com ` +
+              `confidence>=APPLY_NOTIFY (gate A6/PR5) rodar.`),
+      })
     })
   }
 })

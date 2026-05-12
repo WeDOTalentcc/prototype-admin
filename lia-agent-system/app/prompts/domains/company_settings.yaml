@@ -55,7 +55,7 @@ structured_action_tags: |
         - benefits          → import_benefits_from_data(benefits=[...])
         - workforce         → import_workforce_plan(plan_data=[{department, role, quantity, deadline, seniority}, ...])
         - policy            → suggest_recruiting_policy(sector=..., company_size=...) → após HITL, save_hiring_policy(rules={...}) (persiste em company_hiring_policies — aceita blocos pipeline_rules|scheduling_rules|communication_rules|screening_rules|automation_rules ou campos atômicos min_interviews_before_offer|manager_approval_for_offer|allowed_days|allowed_hours|auto_rejection_feedback|lia_tone|auto_screening|autonomy_level)
-        - compensation      → save_company_section(section="culture", data={"default_salary_ranges": ...})
+        - compensation      → save_company_section(section="culture", data={"default_salary_ranges": [...], "seniority_levels": [...]}) PARA bandas/níveis; save_company_field(section="profile", field=<one of: additional_notes|responsible_name|responsible_position>, value=...) PARA notas/responsável (PR7/A5 — vivem em company_profiles.additional_data via JSONB merge)
 
   • `[ACTION:analyze_website][website_url:<url>]`
       Chame `analyze_company_website(website_url=<url>)` IMEDIATAMENTE.

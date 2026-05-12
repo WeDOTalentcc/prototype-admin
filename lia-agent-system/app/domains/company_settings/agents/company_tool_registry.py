@@ -58,6 +58,19 @@ _CULTURE_FIELDS: frozenset[str] = frozenset({
     "default_salary_ranges", "locations", "headquarters",
 })
 
+# A5 (PR7 / Task #1007) — campos do hub Minha Empresa > "Remuneração &
+# Onboarding" que vivem em `company_profiles.additional_data` (JSONB), e
+# NÃO em colunas top-level. Antes do PR7 caíam silenciosamente no caso
+# `else` de `_save_company_field_impl` ("Campo '<x>' nao e valido para
+# perfil") — gap A5 do audit T1-T6: o frontend expõe `additional_notes`,
+# `responsible_name`, `responsible_position` na UI mas NÃO havia rota de
+# save via chat. `compensation_structure` é DERIVADO de
+# `default_salary_ranges` (ver use-company-settings-cards.ts:246) e
+# portanto NÃO precisa de save próprio — é read-only no card.
+_PROFILE_ADDITIONAL_DATA_FIELDS: frozenset[str] = frozenset({
+    "additional_notes", "responsible_name", "responsible_position",
+})
+
 
 def _build_profile_queries() -> dict[str, tuple[str, str, str]]:
     out: dict[str, tuple[str, str, str]] = {}
@@ -98,8 +111,55 @@ def _build_culture_queries() -> dict[str, tuple[str, str, str]]:
     return out
 
 
+def _build_profile_additional_data_queries() -> dict[str, tuple[str, str, str]]:
+    """A5 (PR7 / Task #1007) — JSONB-merge queries para campos de
+    `company_profiles.additional_data`. Mesma forma trio
+    (select/update/insert) que `_build_profile_queries`, mas operando
+    com `jsonb_set` parametrizado por chave (whitelist em
+    `_PROFILE_ADDITIONAL_DATA_FIELDS`). Padrão idêntico ao
+    `_wrap_import_workforce_plan` (que escreve em
+    `company_culture_profiles.additional_data->workforce_plan`).
+
+    O `select_q` retorna `additional_data->>field` AS prev (texto), o que
+    casa com `_save_company_field_impl` que serializa qualquer
+    list/dict para JSON antes de gravar — `before_value` continua sendo
+    string JSON ou texto cru, consistente com colunas top-level.
+    """
+    out: dict[str, tuple[str, str, str]] = {}
+    for f in _PROFILE_ADDITIONAL_DATA_FIELDS:
+        # Path JSONB literal — `f` está hard-whitelisted no frozenset acima
+        # (mesma defesa em profundidade do A1). Aspas duplas do path JSON
+        # são seguras pois `f` casa com [a-z_]+ por construção.
+        path = "{" + f + "}"
+        select_q = (
+            "SELECT id, additional_data->>'" + f + "' AS prev "
+            "FROM company_profiles WHERE id::text = :company_id LIMIT 1"
+        )
+        update_q = (
+            "UPDATE company_profiles "
+            "SET additional_data = jsonb_set("
+            "COALESCE(additional_data, '{}'::jsonb), "
+            f"'{path}', "
+            "to_jsonb(:value::text), true), "
+            "updated_at = NOW() "
+            "WHERE id::text = :company_id"
+        )
+        insert_q = (
+            "INSERT INTO company_profiles "
+            "(id, additional_data, created_at, updated_at) "
+            "VALUES (:company_id::uuid, "
+            "jsonb_build_object('" + f + "', to_jsonb(:value::text)), "
+            "NOW(), NOW())"
+        )
+        out[f] = (select_q, update_q, insert_q)
+    return out
+
+
 _PROFILE_FIELD_QUERIES: dict[str, tuple[str, str, str]] = _build_profile_queries()
 _CULTURE_FIELD_QUERIES: dict[str, tuple[str, str, str]] = _build_culture_queries()
+_PROFILE_ADDITIONAL_DATA_QUERIES: dict[str, tuple[str, str, str]] = (
+    _build_profile_additional_data_queries()
+)
 
 
 # ────────────────────────────────────────────────────────────────────────────
@@ -328,6 +388,13 @@ async def _save_company_field_impl(
     módulo). Lookup por whitelist; ZERO f-string em runtime."""
     if section == "profile":
         queries = _PROFILE_FIELD_QUERIES.get(field)
+        if queries is None:
+            # A5 (PR7 / Task #1007) — fallback JSONB para campos do bloco
+            # "Remuneração & Onboarding" (additional_notes,
+            # responsible_name, responsible_position) que vivem em
+            # `company_profiles.additional_data`. Antes do PR7 caíam no
+            # `else` e o save morria silenciosamente — gap A5 do audit.
+            queries = _PROFILE_ADDITIONAL_DATA_QUERIES.get(field)
         if queries is None:
             return {"success": False, "data": {}, "message": f"Campo '{field}' nao e valido para perfil."}
     elif section == "culture":
