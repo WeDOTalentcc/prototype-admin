@@ -301,6 +301,12 @@ async def _wrap_get_company_profile(**kwargs: Any) -> dict[str, Any]:
         benefits_rows = benefits.mappings().all()
 
         if not profile_row:
+            # M5 (PR8 / Task #1008 — code review #2): também substitui o
+            # literal `20` mágico no branch "perfil inexistente" pelo
+            # cardinal real da união de whitelists `_PROFILE_FIELDS ∪
+            # _CULTURE_FIELDS`. Mantém o denominador consistente com o
+            # branch principal abaixo (filled = profile_data + culture_data).
+            _empty_total = len(_PROFILE_FIELDS) + len(_CULTURE_FIELDS)
             return {
                 "success": True,
                 "data": {
@@ -308,7 +314,11 @@ async def _wrap_get_company_profile(**kwargs: Any) -> dict[str, Any]:
                     "profile": {},
                     "culture": {},
                     "benefits": [],
-                    "completion": {"filled": 0, "total": 20, "percentage": 0},
+                    "completion": {
+                        "filled": 0,
+                        "total": _empty_total,
+                        "percentage": 0,
+                    },
                 },
                 "message": "Nenhum perfil encontrado. Vamos comecar do zero!",
             }
