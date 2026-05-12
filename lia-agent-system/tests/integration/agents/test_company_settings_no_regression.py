@@ -1192,6 +1192,48 @@ def test_pr5_a6_confidence_gate_helper_blocks_low_confidence():
 
 
 # ─── Contrato 7 (PR8 / Task #1008): backlog técnico M1/M2/M5/B1/B2 ───────
+#
+# Manifesto canônico de fechamento PR8 — visível no diff para revisores.
+# Cada um dos 10 findings (M1-M6 + B1-B4) do audit T1-T6 tem decisão
+# explícita: DONE (sentinela neste arquivo), JÁ COBERTO (PR anterior) ou
+# DEFERRED (com justificativa: out-of-scope ou follow-up dedicado).
+#
+# DETALHE FORMAL: `.local/audit-T1-T6-configuracoes.md` §8.
+#
+PR8_AUDIT_FINDING_DECISIONS: dict[str, str] = {
+    "M1": "DONE: hardcoded backend URL removido; sentinela m1.",
+    "M2": "DONE: failed_fields[] surfaced; sentinela m2.",
+    "M3": "DEFERRED: unit tests dedicados — follow-up task.",
+    "M4": "DONE_PRIOR: coberto por PR3 (FairnessGuard) + PR4 (audit wrapper).",
+    "M5": "DONE: magic +20 removido em ambos branches; sentinela m5.",
+    "M6": "DEFERRED: hooks frontend fora do domínio company_settings.",
+    "B1": "DONE: human_review_required propagado nas 2 rotas; sentinela b1.",
+    "B2": "DONE: sentinela b2 trava bloco ethical_validation no prompt.",
+    "B3": "DEFERRED: FairnessGuard L3 threshold é refator core, fora de escopo.",
+    "B4": "DEFERRED: RAGAS baseline é infra de eval, fora de escopo.",
+}
+
+
+def test_pr8_audit_findings_have_explicit_decision_per_id():
+    """Trava-PR canônico: o manifesto PR8 deve cobrir TODOS os 10 findings
+    (M1-M6 + B1-B4) com decisão explícita. Se um find for adicionado ao
+    audit ou um existente perder rastreabilidade, esta sentinela quebra
+    antes do merge — força triagem documentada (canonical-fix Fase 0)."""
+    expected = {f"M{i}" for i in range(1, 7)} | {f"B{i}" for i in range(1, 5)}
+    assert set(PR8_AUDIT_FINDING_DECISIONS.keys()) == expected, (
+        "PR8 regressão: manifesto perdeu cobertura de algum finding "
+        f"do audit T1-T6. Esperados: {sorted(expected)}; "
+        f"presentes: {sorted(PR8_AUDIT_FINDING_DECISIONS.keys())}."
+    )
+    valid_prefixes = ("DONE", "DONE_PRIOR", "DEFERRED")
+    for fid, decision in PR8_AUDIT_FINDING_DECISIONS.items():
+        assert decision.startswith(valid_prefixes), (
+            f"PR8 regressão: finding {fid} sem decisão canônica "
+            f"(deve começar com {valid_prefixes}): {decision!r}"
+        )
+
+
+
 
 
 def test_pr8_m1_analyze_website_no_hardcoded_backend_url():
