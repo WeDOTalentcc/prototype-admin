@@ -655,12 +655,83 @@ async def calculate_culture_match(
 legacy_router = APIRouter(prefix="/company", tags=["company-culture"])
 
 
+def _require_company_id(current_user: User) -> str:
+    """Explicit tenant gate for the relocated legacy ``/company/*`` endpoints.
+
+    Task #1029 — JWT auth + Postgres RLS alone left these handlers one bug
+    away from cross-tenant exposure. This helper enforces, at the handler
+    boundary, that:
+
+    1. the request is authenticated (``current_user`` present); and
+    2. the authenticated principal carries a ``company_id`` claim.
+
+    Returns the JWT company_id as a string. Raises ``HTTPException`` with
+    401 on missing user, 403 on missing company claim — matching the
+    existing pattern used elsewhere in this module (see
+    ``get_culture_profile`` / ``update_culture_profile``).
+    """
+    if current_user is None:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    company_id = getattr(current_user, "company_id", None)
+    if not company_id:
+        raise HTTPException(status_code=403, detail="company_id missing from token")
+    return str(company_id)
+
+
+async def _require_profile_in_tenant(
+    profile_id: uuid.UUID,
+    current_user: User,
+    profile_repo: CompanyProfileRepository,
+):
+    """Resolve a ``CompanyProfile`` by id and assert it belongs to the caller.
+
+    Task #1029 — used by the profile-bound legacy endpoints
+    (``auto-enrich/{profile_id}``, ``profile/{profile_id}/generate-evp``).
+
+    Returns the profile. Raises 404 if the profile does not exist OR if it
+    exists but is owned by a different tenant (opaque 404 prevents id
+    enumeration, matching the pattern used by ``get_culture_profile``).
+    Demo callers may resolve the seeded Demo profile.
+    """
+    from app.shared.security.tenant_demo_fallback import (
+        DEMO_COMPANY_UUID,
+        is_demo_caller,
+    )
+
+    jwt_company_id = _require_company_id(current_user)
+    profile = await profile_repo.get_by_id(profile_id)
+    if not profile:
+        raise HTTPException(status_code=404, detail="Company profile not found")
+
+    profile_owner = getattr(profile, "client_account_id", None)
+    is_demo_profile = bool(
+        getattr(profile, "is_default", False)
+        or str(getattr(profile, "id", "")) == DEMO_COMPANY_UUID
+    )
+
+    if is_demo_profile:
+        if not is_demo_caller(jwt_company_id):
+            raise HTTPException(status_code=404, detail="Company profile not found")
+        return profile
+
+    if profile_owner is None or str(profile_owner) != jwt_company_id:
+        raise HTTPException(status_code=404, detail="Company profile not found")
+    return profile
+
+
 @legacy_router.post("/enrich", response_model=CompanyEnrichResponse)
 async def enrich_company_profile(
     data: CompanyEnrichRequest,
+    current_user: User = Depends(get_current_user_or_demo),
 ):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
-    """Enrich company profile with LinkedIn and Glassdoor data via Apify actors."""
+    """Enrich company profile with LinkedIn and Glassdoor data via Apify actors.
+
+    Task #1029 — explicit tenant gate via ``_require_company_id``. The
+    handler does not bind to a specific profile row, but we still require
+    the caller to be authenticated with a resolvable ``company_id`` so
+    that anonymous traffic cannot trigger paid Apify actor calls.
+    """
+    _require_company_id(current_user)
     errors = []
     linkedin_data = {}
     glassdoor_data = {}
@@ -719,18 +790,24 @@ async def auto_enrich_company(
     profile_id: uuid.UUID,
     profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
     cp_repo: CultureProfileRepository = Depends(get_culture_profile_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
-    """Automatically enrich company profile after wizard submission."""
+    """Automatically enrich company profile after wizard submission.
+
+    Task #1029 — explicit tenant gate via ``_require_profile_in_tenant``:
+    the ``profile_id`` in the URL MUST resolve to a CompanyProfile owned
+    by the caller's tenant (or be the Demo profile, for demo callers).
+    Cross-tenant attempts get an opaque 404 to prevent id enumeration.
+    """
     errors = []
     fields_updated = []
     apify_data = {}
     inferred_data = {}
 
     try:
-        profile = await profile_repo.get_by_id(profile_id)
-        if not profile:
-            raise HTTPException(status_code=404, detail="Company profile not found")
+        profile = await _require_profile_in_tenant(
+            profile_id, current_user, profile_repo
+        )
 
         culture_profile = await cp_repo.get_for_company(profile_id)
 
@@ -908,13 +985,18 @@ REGRAS:
 async def generate_evp(
     profile_id: uuid.UUID,
     profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
+    current_user: User = Depends(get_current_user_or_demo),
 ):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
-    """Generate EVP (Employee Value Proposition) analysis using LLM."""
+    """Generate EVP (Employee Value Proposition) analysis using LLM.
+
+    Task #1029 — explicit tenant gate via ``_require_profile_in_tenant``:
+    cross-tenant access to a profile id returns an opaque 404 instead of
+    falling through to RLS.
+    """
     try:
-        profile = await profile_repo.get_by_id(profile_id)
-        if not profile:
-            raise HTTPException(status_code=404, detail="Company profile not found")
+        profile = await _require_profile_in_tenant(
+            profile_id, current_user, profile_repo
+        )
 
         additional_data = profile.additional_data or {}
         company_info = {
@@ -1018,9 +1100,16 @@ REGRAS:
 @legacy_router.post("/analyze-culture", response_model=LegacyCultureAnalysisResponse)
 async def analyze_company_culture(
     data: LegacyCultureAnalysisRequest,
+    current_user: User = Depends(get_current_user_or_demo),
 ):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
-    """Analyze company website and extract culture information using AI."""
+    """Analyze company website and extract culture information using AI.
+
+    Task #1029 — explicit tenant gate via ``_require_company_id``. Even
+    though no DB row is bound to the request, the handler triggers paid
+    LLM analysis and outbound HTTP fetches; require an authenticated
+    tenant identity before doing the work.
+    """
+    _require_company_id(current_user)
     try:
         sources_analyzed = []
         website_content = ""
