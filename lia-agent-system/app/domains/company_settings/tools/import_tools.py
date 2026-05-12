@@ -27,6 +27,7 @@ from app.shared.compliance.audit_decorators import audit_company_change
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.compliance.fairness_recursive import (
     RecursiveFairnessResult,
+    check_payload_limits,
     validate_fairness_recursive,
 )
 from app.domains.cv_screening.services.confidence_policy_service import (
@@ -507,6 +508,14 @@ async def save_hiring_policy(
             "message": "Tenant isolation compromised — company_id is required.",
         }
 
+    # Task #1010 — pre-check de tamanho de payload (DoS guard com warning
+    # estruturado tool_name+tenant_id antes de qualquer DB call).
+    too_large = check_payload_limits(
+        rules, tool_name="save_hiring_policy", tenant_id=company_id,
+    )
+    if too_large is not None:
+        return too_large
+
     # PR4 (Task #1004) — audit log SOX/ISO canônico fail-CLOSED. Substitui
     # o try/except:pass fire-and-forget anterior (anti-pattern canonical-fix #4).
     async with audit_company_change(
@@ -571,7 +580,8 @@ async def _save_hiring_policy_impl(
     # curtas como `lia_tone="só homens"`). Substitui o filtro restrito
     # `_TEXTUAL_POLICY_FIELDS` (bypass parcial do C3 do audit T1-T6).
     fairness = validate_fairness_recursive(
-        block_updates, guard=_fairness_guard, root_label="rules"
+        block_updates, guard=_fairness_guard, root_label="rules",
+        tool_name="save_hiring_policy", tenant_id=company_id,
     )
     if fairness.is_blocked:
         return _fairness_violation_payload(fairness)
@@ -712,6 +722,13 @@ async def import_benefits_from_data(
             "message": "Tenant isolation compromised — company_id is required.",
         }
 
+    # Task #1010 — pre-check de tamanho da lista de benefícios.
+    too_large = check_payload_limits(
+        benefits, tool_name="import_benefits_from_data", tenant_id=company_id,
+    )
+    if too_large is not None:
+        return too_large
+
     # PR4 (Task #1004) — audit log SOX/ISO canônico fail-CLOSED. Substitui
     # o try/except:pass fire-and-forget anterior (anti-pattern canonical-fix #4).
     async with audit_company_change(
@@ -767,7 +784,8 @@ async def _import_benefits_from_data_impl(
     # `[{"name": "Vale-creche apenas para mães casadas"}]` ou descrições com
     # exclusão por estado civil/religião/etc.
     fairness = validate_fairness_recursive(
-        benefits, guard=_fairness_guard, root_label="benefits"
+        benefits, guard=_fairness_guard, root_label="benefits",
+        tool_name="import_benefits_from_data", tenant_id=company_id,
     )
     if fairness.is_blocked:
         return _fairness_violation_payload(fairness)

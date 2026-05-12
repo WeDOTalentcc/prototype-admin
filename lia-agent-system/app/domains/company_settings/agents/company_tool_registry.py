@@ -20,6 +20,7 @@ from app.shared.compliance.audit_decorators import audit_company_change
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.compliance.fairness_recursive import (
     RecursiveFairnessResult,
+    check_payload_limits,
     validate_fairness_recursive,
 )
 from app.shared.tool_handler import tool_handler
@@ -373,6 +374,15 @@ async def _wrap_save_company_field(**kwargs: Any) -> dict[str, Any]:
     if gate is not None:
         return gate
 
+    # Task #1010 — pre-check de tamanho de payload. Rejeita payloads
+    # patológicos com 4xx claro ANTES de abrir audit ctx ou tocar DB,
+    # e emite warning estruturado (tool_name + tenant_id) para SRE.
+    too_large = check_payload_limits(
+        value, tool_name="save_company_field", tenant_id=company_id,
+    )
+    if too_large is not None:
+        return too_large
+
     # PR4 (Task #1004) — audit log SOX/ISO canônico fail-CLOSED com
     # transação atômica: business writes + outcome row commitados juntos.
     async with audit_company_change(
@@ -428,8 +438,11 @@ async def _save_company_field_impl(
 
     # PR3 (Task #1003) — FairnessGuard recursivo. Cobre str/list/dict/strings
     # curtas; sem mais filtro `len > 10` (era bypass C3 do audit T1-T6).
+    # Task #1010 — propaga tool_name + tenant_id para o warning estruturado
+    # caso o pre-check tenha sido pulado e os limites estourem aqui.
     fairness = validate_fairness_recursive(
-        value, guard=_fairness_guard, root_label=field or "value"
+        value, guard=_fairness_guard, root_label=field or "value",
+        tool_name="save_company_field", tenant_id=company_id,
     )
     if fairness.is_blocked:
         return _fairness_violation_response(fairness, fallback_field=field)
@@ -477,6 +490,13 @@ async def _wrap_save_company_section(**kwargs: Any) -> dict[str, Any]:
     if gate is not None:
         return gate
 
+    # Task #1010 — pre-check de tamanho do dict completo da seção.
+    too_large = check_payload_limits(
+        data, tool_name="save_company_section", tenant_id=company_id,
+    )
+    if too_large is not None:
+        return too_large
+
     # PR4 (Task #1004) — audit log SOX/ISO canônico fail-CLOSED. Granularidade
     # de lote (cada save_company_field interno emite seu próprio par
     # intent+outcome). Esta row registra a chamada agregada com lista de
@@ -505,8 +525,10 @@ async def _wrap_save_company_section(**kwargs: Any) -> dict[str, Any]:
         # PR3 (Task #1003) — varre o dict inteiro recursivamente (cobre listas e
         # nested dicts em campos como dei_initiatives, default_salary_ranges,
         # seniority_levels). Substitui o filtro `len > 10` (bypass C3).
+        # Task #1010 — propaga tool_name + tenant_id (defesa em profundidade).
         fairness = validate_fairness_recursive(
-            data, guard=_fairness_guard, root_label=section or "data"
+            data, guard=_fairness_guard, root_label=section or "data",
+            tool_name="save_company_section", tenant_id=company_id,
         )
         if fairness.is_blocked:
             result = _fairness_violation_response(fairness)
@@ -678,6 +700,13 @@ async def _wrap_import_workforce_plan(**kwargs: Any) -> dict[str, Any]:
     plan_data = kwargs.get("plan_data", [])
     user_id = kwargs.get("user_id")
 
+    # Task #1010 — pre-check de tamanho do plano antes de abrir audit ctx.
+    too_large = check_payload_limits(
+        plan_data, tool_name="import_workforce_plan", tenant_id=company_id,
+    )
+    if too_large is not None:
+        return too_large
+
     async with audit_company_change(
         action="import_workforce_plan",
         company_id=company_id,
@@ -714,7 +743,8 @@ async def _import_workforce_plan_impl(
     # observações) é varrido recursivamente. Cobre casos como
     # `[{"role": "estagiário branco"}]` ou `[{"seniority": "homem júnior"}]`.
     fairness = validate_fairness_recursive(
-        plan_data, guard=_fairness_guard, root_label="plan_data"
+        plan_data, guard=_fairness_guard, root_label="plan_data",
+        tool_name="import_workforce_plan", tenant_id=company_id,
     )
     if fairness.is_blocked:
         return _fairness_violation_response(fairness)

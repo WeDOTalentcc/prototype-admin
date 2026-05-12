@@ -18,9 +18,12 @@ from __future__ import annotations
 from types import SimpleNamespace
 from typing import Any
 
+import logging
+
 from app.shared.compliance import fairness_recursive
 from app.shared.compliance.fairness_recursive import (
     RecursiveFairnessResult,
+    check_payload_limits,
     validate_fairness_recursive,
 )
 
@@ -133,34 +136,45 @@ def test_dict_key_with_bias_is_blocked():
     assert result.offending_signal == "Junior Homem"
 
 
-# ─── (f) fail-CLOSED em estouro de limite ──────────────────────────────
+# ─── (f) fail-OPEN local em estouro de limite (Task #1010) ────────────
 
 
-def test_depth_limit_fails_closed(monkeypatch):
-    """Code review (PR3): estourar `_MAX_DEPTH` NÃO pode passar
-    silenciosamente — precisa retornar bloqueado com category
-    `fairness_validation_limit`."""
-    # Limite minúsculo só pra forçar o caminho.
+def test_depth_limit_fails_open_with_warning(monkeypatch, caplog):
+    """Task #1010 — quando o walk recursivo estoura `_MAX_DEPTH`, o
+    contrato é fail-OPEN local: retorna **não-bloqueado** (a save tool
+    segue para auditoria) E emite warning estruturado para SRE. A
+    rejeição preventiva por abuso é responsabilidade do
+    ``check_payload_limits`` no caller."""
     monkeypatch.setattr(fairness_recursive, "_MAX_DEPTH", 3)
     guard = _FakeGuard()
-    # Profundidade > 3
     deep: Any = "valor inocente"
     for _ in range(8):
         deep = {"k": deep}
-    result = validate_fairness_recursive(deep, guard=guard, root_label="root")
-    assert result.is_blocked is True, "fail-CLOSED quebrado: payload profundo passou"
+    with caplog.at_level(logging.WARNING, logger="app.shared.compliance.fairness_recursive"):
+        result = validate_fairness_recursive(deep, guard=guard, root_label="root")
+    assert result.is_blocked is False, "walk deve ser fail-OPEN local (Task #1010)"
     assert result.category == "fairness_validation_limit"
     assert isinstance(result.educational_message, str)
+    # Warning estruturado precisa ter sido emitido — é o sinal SRE.
+    assert any(
+        getattr(r, "fairness_recursive_stage", None) == "recursive_walk"
+        for r in caplog.records
+    ), "estouro silencioso no walk: warning não emitido"
 
 
-def test_node_limit_fails_closed(monkeypatch):
-    """Code review (PR3): estourar `_MAX_NODES` também precisa fail-CLOSED."""
+def test_node_limit_fails_open_with_warning(monkeypatch, caplog):
+    """Task #1010 — mesmo contrato fail-OPEN+warn para `_MAX_NODES`."""
     monkeypatch.setattr(fairness_recursive, "_MAX_NODES", 5)
     guard = _FakeGuard()
     payload = ["a", "b", "c", "d", "e", "f", "g", "h"]
-    result = validate_fairness_recursive(payload, guard=guard, root_label="big_list")
-    assert result.is_blocked is True
+    with caplog.at_level(logging.WARNING, logger="app.shared.compliance.fairness_recursive"):
+        result = validate_fairness_recursive(payload, guard=guard, root_label="big_list")
+    assert result.is_blocked is False
     assert result.category == "fairness_validation_limit"
+    assert any(
+        getattr(r, "fairness_recursive_stage", None) == "recursive_walk"
+        for r in caplog.records
+    )
 
 
 # ─── Sanity: payload limpo passa ───────────────────────────────────────
@@ -177,6 +191,98 @@ def test_clean_payload_passes():
     assert result.offending_field is None
     # Confirma que o walk visitou strings (smoke do percurso)
     assert any("Vale-refeição" in c for c in guard.calls)
+
+
+# ─── Task #1010 — pre-check de tamanho + warning estruturado ──────────
+
+
+def test_check_payload_limits_passes_for_clean_payload():
+    """Payload pequeno: pre-check devolve None (sem rejeição)."""
+    assert check_payload_limits(
+        {"values": ["a", "b"]},
+        tool_name="save_company_field",
+        tenant_id="tenant-x",
+    ) is None
+
+
+def test_check_payload_limits_rejects_deep_payload(monkeypatch, caplog):
+    """Estouro de profundidade: caller recebe rejeição 4xx-equivalente
+    (`reason="payload_too_large"`) e o warning estruturado carrega
+    `tool_name` + `tenant_id` para SRE rastrear abuso/bug."""
+    monkeypatch.setattr(fairness_recursive, "_MAX_DEPTH", 3)
+
+    deep: Any = "ok"
+    for _ in range(8):
+        deep = {"k": deep}
+
+    with caplog.at_level(logging.WARNING, logger="app.shared.compliance.fairness_recursive"):
+        result = check_payload_limits(
+            deep, tool_name="save_company_section", tenant_id="tenant-abc",
+        )
+
+    assert result is not None
+    assert result["success"] is False
+    assert result["reason"] == "payload_too_large"
+    assert result["limit_kind"] == "depth"
+    assert "lotes menores" in result["message"].lower() or "menores" in result["message"].lower()
+
+    warnings = [r for r in caplog.records if r.levelno == logging.WARNING]
+    assert warnings, "esperava warning estruturado de pre_check"
+    rec = warnings[-1]
+    assert rec.fairness_recursive_tool == "save_company_section"
+    assert rec.fairness_recursive_tenant_id == "tenant-abc"
+    assert rec.fairness_recursive_stage == "pre_check"
+    assert rec.fairness_recursive_limit_kind == "depth"
+
+
+def test_check_payload_limits_rejects_wide_payload(monkeypatch, caplog):
+    """Estouro de quantidade de nós: mesma rejeição + warning estruturado."""
+    monkeypatch.setattr(fairness_recursive, "_MAX_NODES", 5)
+
+    with caplog.at_level(logging.WARNING, logger="app.shared.compliance.fairness_recursive"):
+        result = check_payload_limits(
+            ["a", "b", "c", "d", "e", "f", "g", "h"],
+            tool_name="import_workforce_plan",
+            tenant_id="tenant-42",
+        )
+
+    assert result is not None
+    assert result["limit_kind"] == "nodes"
+    assert any(
+        getattr(r, "fairness_recursive_tool", None) == "import_workforce_plan"
+        and getattr(r, "fairness_recursive_stage", None) == "pre_check"
+        for r in caplog.records
+    )
+
+
+def test_recursive_walk_emits_structured_warning_when_limit_hit(monkeypatch, caplog):
+    """Defesa em profundidade: se um caller pular o pre-check e os limites
+    estourarem dentro do walk, o warning estruturado dispara igual (com
+    `stage="recursive_walk"`) — para SRE detectar o caller que esqueceu."""
+    monkeypatch.setattr(fairness_recursive, "_MAX_DEPTH", 2)
+    guard = _FakeGuard()
+
+    deep: Any = "ok"
+    for _ in range(6):
+        deep = {"k": deep}
+
+    with caplog.at_level(logging.WARNING, logger="app.shared.compliance.fairness_recursive"):
+        result = validate_fairness_recursive(
+            deep, guard=guard, root_label="root",
+            tool_name="save_company_field", tenant_id="tenant-xyz",
+        )
+
+    # Task #1010 — walk é fail-OPEN local: NÃO bloqueia, mas emite warning.
+    assert result.is_blocked is False
+    assert result.category == "fairness_validation_limit"
+
+    matching = [
+        r for r in caplog.records
+        if getattr(r, "fairness_recursive_tool", None) == "save_company_field"
+        and getattr(r, "fairness_recursive_tenant_id", None) == "tenant-xyz"
+        and getattr(r, "fairness_recursive_stage", None) == "recursive_walk"
+    ]
+    assert matching, "warning estruturado deveria ter sido emitido pelo walk"
 
 
 def test_returns_dataclass_instance():
