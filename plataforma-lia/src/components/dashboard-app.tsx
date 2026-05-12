@@ -28,21 +28,41 @@ import { DashboardChatPanel } from "@/components/unified-chat"
 import { GlobalSearchModal } from "@/components/global-search-modal"
 import { PipelineOverviewPage } from "@/components/pages/pipeline-overview-page"
 import { ModulesPage } from "@/components/pages/modules-page"
+import {
+  pathFromLabel,
+  isDashboardPageLabel,
+  type DashboardPageLabel,
+} from "@/lib/navigation/routes"
 
-// Mapping of sidebar labels to App Router URLs. handleNavigate(label) calls
-// router.push(PAGE_ROUTES[label]) when an entry exists, keeping URL and SPA
-// state in sync. "Funil de Talentos" is included so the sidebar click navigates
-// to /funil-de-talentos (which renders the canonical 719L CandidatesPage via
-// (dashboard)/funil-de-talentos/page.tsx). The renderCurrentPage() switch
-// keeps "Funil de Talentos" as a fallback case for the root SPA render path.
-const PAGE_ROUTES: Record<string, string> = {
-  "Conversar": "/chat",
-  "Vagas": "/jobs",
-  "Recrutar": "/recrutar",
-  "Decidir": "/tasks",
-  "Configurações": "/configuracoes",
-  "Estúdio de Agentes": "/agent-studio",
-  "Funil de Talentos": "/funil-de-talentos",
+type CurrentPage = DashboardPageLabel | `upgrade-${string}`
+
+/**
+ * Normalize legacy/ad-hoc page labels emitted by older callers
+ * ("Painel de Controle", "Chat LIA", "Tarefas", "Visão do Funil") to the
+ * canonical `DashboardPageLabel` union. Unknown labels fall back to
+ * "Conversar" so we never put `currentPage` in a state the switch can't
+ * render.
+ */
+const LEGACY_LABEL_MAP: Record<string, DashboardPageLabel> = {
+  "Painel de Controle": "Decidir",
+  "Chat LIA": "Conversar",
+  "Tarefas": "Decidir",
+  "Visão do Funil": "Recrutar",
+}
+
+function normalizePageLabel(raw: string): CurrentPage {
+  if (raw.startsWith("upgrade-")) return raw as `upgrade-${string}`
+  const mapped = LEGACY_LABEL_MAP[raw] ?? raw
+  if (isDashboardPageLabel(mapped)) return mapped
+  if (process.env.NODE_ENV !== "production") {
+    // Surface accidental label drift early — silent fallback to "Conversar"
+    // in prod is intentional, but in dev/test we want the regression visible.
+    console.warn(
+      `[dashboard-app] normalizePageLabel: unknown page label "${raw}" — falling back to "Conversar". ` +
+      `Add it to PAGE_PATHS or SPA_ONLY_PAGE_LABELS in src/lib/navigation/routes.ts.`,
+    )
+  }
+  return "Conversar"
 }
 
 interface DashboardAppProps {
@@ -51,7 +71,7 @@ interface DashboardAppProps {
 }
 
 export function DashboardApp({ initialPage = "Conversar", children }: DashboardAppProps) {
-  const [currentPage, setCurrentPage] = useState(initialPage === "Painel de Controle" ? "Decidir" : initialPage)
+  const [currentPage, setCurrentPage] = useState<CurrentPage>(normalizePageLabel(initialPage))
   const [showGlobalSearch, setShowGlobalSearch] = useState(false)
   const [pendingChatOpen, setPendingChatOpen] = useState<{ mode: 'general' | 'job-creation' } | null>(null)
   const [pendingChatConversationId, setPendingChatConversationId] = useState<string | null>(null)
@@ -78,15 +98,14 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
 
   useEffect(() => {
     if (splitView.active && splitView.page) {
-      const normalized = splitView.page === "Painel de Controle" ? "Decidir" : splitView.page
-      setCurrentPage(normalized)
+      setCurrentPage(normalizePageLabel(splitView.page))
     }
   }, [splitView.active, splitView.page])
 
   // BUG-09: ao sair do modo fullscreen do chat, voltar para a página onde o
   // usuário estava antes — não mais "Decidir" hardcoded. Guardamos a última
   // página não-"Conversar" em um ref para restaurar ao fechar o fullscreen.
-  const previousPageBeforeChatRef = useRef<string>("Decidir")
+  const previousPageBeforeChatRef = useRef<CurrentPage>("Decidir")
   useEffect(() => {
     if (currentPage !== "Conversar") {
       previousPageBeforeChatRef.current = currentPage
@@ -130,9 +149,7 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
     const handler = (e: Event) => {
       const { page } = (e as CustomEvent<{ page: string; hint: string }>).detail
       if (page) {
-        const legacyMapped = page === "Chat LIA" ? "Conversar" : page === "Tarefas" ? "Decidir" : page === "Visão do Funil" ? "Recrutar" : page
-        const normalized = legacyMapped === "Painel de Controle" ? "Decidir" : legacyMapped
-        setCurrentPage(normalized)
+        setCurrentPage(normalizePageLabel(page))
         // Open sidebar if not already open
         openFloat()
       }
@@ -142,20 +159,15 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
   }, [openFloat])
 
   const handleNavigate = (page: string) => {
-    if (page === "Ajuda") {
-      router.push(`/${locale}/ajuda`)
-      return
-    }
     if (page === "Sair") {
       logout()
       router.push(`/${locale}/login`)
       return
     }
-    const legacyMapped = page === "Chat LIA" ? "Conversar" : page === "Tarefas" ? "Decidir" : page === "Visão do Funil" ? "Recrutar" : page
-    const normalized = legacyMapped === "Painel de Controle" ? "Decidir" : legacyMapped
+    const normalized = normalizePageLabel(page)
     setCurrentPage(normalized)
 
-    const route = PAGE_ROUTES[normalized]
+    const route = pathFromLabel(normalized)
     if (route) {
       router.push(`/${locale}${route}`)
     }
@@ -295,7 +307,7 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
           </div>
           {splitView.active && (
             <LiaSplitPanel onNavigate={page => {
-              setCurrentPage(page)
+              setCurrentPage(normalizePageLabel(page))
             }} />
           )}
           {/* UnifiedChat sidebar — inline flex child, pushes content (Replit-style) */}

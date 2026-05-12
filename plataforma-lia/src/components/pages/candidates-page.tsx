@@ -23,8 +23,9 @@
  *       qualquer "alternativa". Edite ESTE arquivo.
  *    2. A rota `/funil-de-talentos/page.tsx` deve renderizar
  *       `<CandidatesPage />` direto — nunca `redirect()`.
- *    3. `dashboard-app.tsx` PAGE_ROUTES deve conter
- *       `"Funil de Talentos": "/funil-de-talentos"`.
+ *    3. `src/lib/navigation/routes.ts` PAGE_PATHS deve conter
+ *       `"Funil de Talentos": "/funil-de-talentos"` (fonte única consumida
+ *       por dashboard-app.tsx e DashboardLayoutClient.tsx).
  *    4. `sidebar.tsx` item "Funil de Talentos" deve ter `navigateOnClick: true`.
  *    5. Em cherry-picks de bundles externos, NUNCA usar `--theirs` em massa
  *       em arquivos do Funil — revisar cada conflito manualmente.

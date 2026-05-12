@@ -10,10 +10,11 @@ export const metadata: Metadata = {
 // Funil de Talentos as a real App Router page so /pt/funil-de-talentos opens
 // the canvas on direct access and survives F5. The (dashboard) layout wraps
 // us in DashboardApp; when initialPage === currentPage === "Funil de Talentos"
-// (computed by DashboardLayoutClient::ROUTE_TO_PAGE), DashboardApp renders
+// (computed by DashboardLayoutClient via `labelFromPath`), DashboardApp renders
 // `children` — i.e. this CandidatesPage — instead of the renderCurrentPage()
-// switch. PAGE_ROUTES["Funil de Talentos"] = "/funil-de-talentos" keeps the
-// URL in sync when the sidebar item is clicked from another canvas.
+// switch. The `"Funil de Talentos" → "/funil-de-talentos"` entry in
+// `src/lib/navigation/routes.ts` (PAGE_PATHS) keeps the URL in sync when the
+// sidebar item is clicked from another canvas.
 export default function FunilDeTalentosRoute() {
   return (
     <ErrorBoundarySection>
