@@ -299,16 +299,23 @@ async def _wrap_save_company_section(**kwargs: Any) -> dict[str, Any]:
             _audit.set_result(result)
             return result
 
+        # PR4 (rev #3): chama o IMPL diretamente com a session compartilhada
+        # do audit (NÃO o wrapper) — garante que toda a seção + outcome row
+        # commitam atômicamente. Antes (chamando `_wrap_save_company_field`),
+        # cada inner field abria sua própria session/audit ctx e commitava
+        # independentemente, quebrando o fail-CLOSED transacional do outer.
         saved_fields = []
         for field, value in data.items():
-            inner = await _wrap_save_company_field(
+            inner = await _save_company_field_impl(
+                session=_audit.session,
                 company_id=company_id,
                 section=section,
                 field=field,
                 value=value,
-                user_id=user_id,
             )
-            if inner["success"]:
+            inner.pop("_before", None)
+            inner.pop("_after", None)
+            if inner.get("success"):
                 saved_fields.append(field)
 
         result = {

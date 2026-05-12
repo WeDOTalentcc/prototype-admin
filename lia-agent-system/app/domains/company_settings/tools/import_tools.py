@@ -135,88 +135,87 @@ async def check_company_completeness(**kwargs) -> dict[str, Any]:
 async def _check_company_completeness_impl(*, session, company_id: str) -> dict[str, Any]:
     """PR4 (Task #1004) — read-only; usa session injetada (read_only=True
     pula intent + commit; outcome row em sessão independente)."""
+    db = session
     try:
-        if True:
-            db = session
-            profile = await db.execute(
-                text("""
-                    SELECT name, trading_name, cnpj, website, industry,
-                           company_size, employee_count, linkedin_url
-                    FROM company_profiles
-                    WHERE id::text = :cid
-                    LIMIT 1
-                """),
-                {"cid": company_id},
+        profile = await db.execute(
+            text("""
+                SELECT name, trading_name, cnpj, website, industry,
+                       company_size, employee_count, linkedin_url
+                FROM company_profiles
+                WHERE id::text = :cid
+                LIMIT 1
+            """),
+            {"cid": company_id},
+        )
+        prof_row = profile.mappings().first()
+
+        culture = await db.execute(
+            text("""
+                SELECT mission, vision, values, work_model, growth_opportunities
+                FROM company_culture_profiles
+                WHERE company_id::text = :cid
+                LIMIT 1
+            """),
+            {"cid": company_id},
+        )
+        cult_row = culture.mappings().first()
+
+        missing_profile = []
+        if prof_row:
+            for f in COMPANY_CORE_FIELDS:
+                v = prof_row.get(f)
+                if v is None or v == "":
+                    missing_profile.append(f)
+        else:
+            missing_profile = list(COMPANY_CORE_FIELDS)
+
+        missing_culture = []
+        if cult_row:
+            for f in COMPANY_CULTURE_FIELDS:
+                v = cult_row.get(f)
+                if v is None or v == "" or (isinstance(v, list) and not v):
+                    missing_culture.append(f)
+        else:
+            missing_culture = list(COMPANY_CULTURE_FIELDS)
+
+        profile_pct = round(1.0 - len(missing_profile) / len(COMPANY_CORE_FIELDS), 2)
+        culture_pct = round(1.0 - len(missing_culture) / len(COMPANY_CULTURE_FIELDS), 2)
+        overall = round((profile_pct + culture_pct) / 2, 2)
+
+        has_website = bool(prof_row and prof_row.get("website"))
+
+        if overall >= 0.9:
+            reco = "Perfil completo — pronto para buscas e triagens refinadas."
+        elif has_website and len(missing_profile) + len(missing_culture) > 3:
+            reco = (
+                "Perfil incompleto mas você tem website cadastrado. "
+                "Posso usar analyze_company_website para preencher automaticamente "
+                "nome/setor/cultura/benefícios via scraping."
             )
-            prof_row = profile.mappings().first()
-
-            culture = await db.execute(
-                text("""
-                    SELECT mission, vision, values, work_model, growth_opportunities
-                    FROM company_culture_profiles
-                    WHERE company_id::text = :cid
-                    LIMIT 1
-                """),
-                {"cid": company_id},
+        elif not has_website:
+            reco = (
+                f"Perfil {overall*100:.0f}% completo e sem website cadastrado. "
+                "Peça a URL da empresa ao recrutador para permitir auto-preenchimento. "
+                "Caminho: Menu → Configurações → Dados Básicos."
             )
-            cult_row = culture.mappings().first()
+        else:
+            reco = (
+                f"Perfil {overall*100:.0f}% completo. "
+                "Navegar para Configurações para completar manualmente."
+            )
 
-            missing_profile = []
-            if prof_row:
-                for f in COMPANY_CORE_FIELDS:
-                    v = prof_row.get(f)
-                    if v is None or v == "":
-                        missing_profile.append(f)
-            else:
-                missing_profile = list(COMPANY_CORE_FIELDS)
-
-            missing_culture = []
-            if cult_row:
-                for f in COMPANY_CULTURE_FIELDS:
-                    v = cult_row.get(f)
-                    if v is None or v == "" or (isinstance(v, list) and not v):
-                        missing_culture.append(f)
-            else:
-                missing_culture = list(COMPANY_CULTURE_FIELDS)
-
-            profile_pct = round(1.0 - len(missing_profile) / len(COMPANY_CORE_FIELDS), 2)
-            culture_pct = round(1.0 - len(missing_culture) / len(COMPANY_CULTURE_FIELDS), 2)
-            overall = round((profile_pct + culture_pct) / 2, 2)
-
-            has_website = bool(prof_row and prof_row.get("website"))
-
-            if overall >= 0.9:
-                reco = "Perfil completo — pronto para buscas e triagens refinadas."
-            elif has_website and len(missing_profile) + len(missing_culture) > 3:
-                reco = (
-                    "Perfil incompleto mas você tem website cadastrado. "
-                    "Posso usar analyze_company_website para preencher automaticamente "
-                    "nome/setor/cultura/benefícios via scraping."
-                )
-            elif not has_website:
-                reco = (
-                    f"Perfil {overall*100:.0f}% completo e sem website cadastrado. "
-                    "Peça a URL da empresa ao recrutador para permitir auto-preenchimento. "
-                    "Caminho: Menu → Configurações → Dados Básicos."
-                )
-            else:
-                reco = (
-                    f"Perfil {overall*100:.0f}% completo. "
-                    "Navegar para Configurações para completar manualmente."
-                )
-
-            return {
-                "success": True,
-                "company_id": company_id,
-                "profile_completeness_pct": profile_pct,
-                "culture_completeness_pct": culture_pct,
-                "overall_pct": overall,
-                "missing_profile_fields": missing_profile,
-                "missing_culture_fields": missing_culture,
-                "has_website": has_website,
-                "website": prof_row.get("website") if prof_row else None,
-                "recommendation": reco,
-            }
+        return {
+            "success": True,
+            "company_id": company_id,
+            "profile_completeness_pct": profile_pct,
+            "culture_completeness_pct": culture_pct,
+            "overall_pct": overall,
+            "missing_profile_fields": missing_profile,
+            "missing_culture_fields": missing_culture,
+            "has_website": has_website,
+            "website": prof_row.get("website") if prof_row else None,
+            "recommendation": reco,
+        }
     except Exception as e:
         logger.error("check_company_completeness failed: %s", e, exc_info=True)
         return {

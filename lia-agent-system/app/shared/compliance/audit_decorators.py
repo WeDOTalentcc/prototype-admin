@@ -290,16 +290,25 @@ class _AuditCtx:
             return False
 
         if self.read_only:
-            # Read-only: emit outcome in independent session (no business
-            # writes to commit atomically).
+            # Read-only: emit outcome in independent session. Fail-CLOSED
+            # consistente com writes (LGPD Art. 37 / ISO 27001 A.12.4
+            # exigem trilha de acesso a config corporativa).
             try:
                 await self._emit_independent(outcome, None)
             except Exception as audit_exc:
                 logger.critical(
-                    "[audit_company_change] read outcome emit failed action=%s: %s",
-                    self.action, audit_exc, exc_info=True,
+                    "[audit_company_change] FAIL-CLOSED (read outcome) "
+                    "action=%s company=%s trace_id=%s: %s",
+                    self.action, self.company_id, self.trace_id,
+                    audit_exc, exc_info=True,
                 )
                 _sentry_capture(audit_exc)
+                await self._close_session(None)
+                raise RuntimeError(
+                    f"audit_company_change: read outcome audit failed for "
+                    f"action={self.action} trace_id={self.trace_id} "
+                    f"(fail-CLOSED)"
+                ) from audit_exc
             await self._close_session(None)
             return False
 
