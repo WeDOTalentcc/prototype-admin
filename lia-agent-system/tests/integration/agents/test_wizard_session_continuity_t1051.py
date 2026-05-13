@@ -1,6 +1,6 @@
 """Task #1051 — sentinelas anti-recorrência do wizard de criação de vaga.
 
-4 contratos AST + comportamentais que travam regressão dos bugs:
+Sentinelas AST + comportamentais que travam regressão dos 4 bugs:
 
     S1 — Auto-heal de demo user legado (B1)
         ``app.auth.dependencies._heal_legacy_demo_company_id`` existe E é
@@ -10,26 +10,29 @@
         rollout do CANONICAL_DEMO_UUID quebra ``CompanyId.parse`` e a LIA
         volta a perguntar empresa no chat (T-E recorrência #4).
 
-    S2 — Helper canônico de continuidade de sessão wizard (B2/B3/B4)
+    S2 — Helper canônico de continuidade de sessão (B2/B3/B4)
         ``WizardSessionService.is_session_active(session_id, company_id)``
-        existe como método ``async`` e é fail-open (retorna False em
-        exceção). Cobre TANTO o thread_id legado (`wiz-{session_id}`)
-        QUANTO o tenant-prefixed (`wiz-{token}-{session_id}`) — paridade
-        com ``derive_thread_id``.
+        existe como classmethod ``async`` e é fail-open. Cobre TANTO os
+        thread_ids heurísticos (legacy + tenant-prefixed) QUANTO o
+        ``thread_id`` custom (via Redis marker ``_read_session_thread``)
+        — paridade com TODAS as 3 prioridades de ``derive_thread_id``.
 
-    S3 — Pin de domínio antes do router no WS (B2/B3/B4)
-        ``app/api/v1/agent_chat_ws.py`` invoca
-        ``WizardSessionService.is_session_active`` ANTES do bloco
-        ``if active_domain in ("auto", "recruiter_assistant", "")`` que
-        roda o ``CascadedRouter``. Sem isso, o turno 2 do wizard
-        ("Demo Company, 5 anos…") é reclassificado e perde checkpointer.
+    S3 — Pin de domínio na CAMADA CANÔNICA (router, não no WS)
+        ``CascadedRouter.route`` invoca ``is_session_active`` e — quando
+        retorna True — devolve ``RouteResult(domain_id="wizard",
+        source="wizard_session_pin")`` curto-circuitando os tiers
+        clássicos. Reviewer feedback v1: "domain pinning was implemented
+        in the wrong layer". O pin precisa estar no router para cobrir
+        TODOS os transports (WS, SSE, REST orchestrator,
+        autonomous_react_agent) sem duplicação.
 
-    S4 — Comportamental: sessão completed NÃO é pinada
-        Stub do checkpointer com ``current_stage="completed"`` faz
-        ``is_session_active`` devolver False — wizard finalizado libera
-        o router para outras intenções.
+    S4 — Comportamental: open/completed/empty
+        Stub do ``_get_prior_state`` cobre 3 cenários: stage=intake +
+        msgs (ativa), stage=completed (libera router), state vazio
+        (false negative). Adicionalmente, ``process_message`` mantém o
+        marker Redis: persistido em turno aberto, deletado no completed.
 
-Origem: 4 bugs simultâneos reportados pelo usuário em 2026-05-13:
+Origem: 4 bugs simultâneos reportados em 2026-05-13:
     B1 = "LIA pergunta company_id"
     B2 = "esquece título da vaga entre turnos"
     B3 = "não consigo acessar histórico"
@@ -54,7 +57,7 @@ _WIZ_SVC = (
     / "services"
     / "wizard_session_service.py"
 )
-_WS_HANDLER = _REPO_ROOT / "app" / "api" / "v1" / "agent_chat_ws.py"
+_ROUTER = _REPO_ROOT / "app" / "orchestrator" / "cascaded_router.py"
 
 
 def _parse(path: Path) -> ast.Module:
@@ -68,6 +71,17 @@ def _functions(module: ast.Module) -> dict[str, ast.AST]:
         if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             out[node.name] = node
     return out
+
+
+def _class_methods(module: ast.Module, class_name: str) -> dict[str, ast.AST]:
+    for node in module.body:
+        if isinstance(node, ast.ClassDef) and node.name == class_name:
+            return {
+                m.name: m
+                for m in node.body
+                if isinstance(m, (ast.FunctionDef, ast.AsyncFunctionDef))
+            }
+    return {}
 
 
 def _calls_named(node: ast.AST, name: str) -> bool:
@@ -109,57 +123,110 @@ def test_s1_heal_called_in_ensure_demo_user_and_get_current_user_or_demo():
 # S2 — helper canônico de continuidade
 # ─────────────────────────────────────────────────────────────────────────────
 def test_s2_is_session_active_exists_and_is_async():
-    mod = _parse(_WIZ_SVC)
-    classes = {n.name: n for n in mod.body if isinstance(n, ast.ClassDef)}
-    assert "WizardSessionService" in classes, "S2 fail: classe canônica sumiu"
-    methods = {
-        n.name: n
-        for n in classes["WizardSessionService"].body
-        if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))
-    }
+    methods = _class_methods(_parse(_WIZ_SVC), "WizardSessionService")
+    assert methods, "S2 fail: classe canônica WizardSessionService sumiu"
     assert "is_session_active" in methods, (
-        "S2 fail: ``is_session_active`` ausente — sem ele, o WS não tem "
-        "como pinar wizard antes do router (B2/B3/B4)."
+        "S2 fail: ``is_session_active`` ausente — sem ele o router não tem "
+        "como pinar wizard antes de classificar (B2/B3/B4)."
     )
     assert isinstance(methods["is_session_active"], ast.AsyncFunctionDef), (
-        "S2 fail: ``is_session_active`` precisa ser ``async`` (lê checkpointer)."
+        "S2 fail: ``is_session_active`` precisa ser ``async`` (lê checkpointer + Redis)."
     )
-    # Cobertura de fail-open — método precisa ter try/except interno.
+    # Cobertura de fail-open — método precisa ter try/except.
     assert any(
         isinstance(n, ast.Try) for n in ast.walk(methods["is_session_active"])
     ), "S2 fail: ``is_session_active`` precisa ser fail-open (try/except)."
 
 
-# ─────────────────────────────────────────────────────────────────────────────
-# S3 — pin de domínio antes do router
-# ─────────────────────────────────────────────────────────────────────────────
-def test_s3_ws_pins_wizard_before_router():
-    src = _WS_HANDLER.read_text(encoding="utf-8")
-    pin_idx = src.find("is_session_active")
-    router_idx = src.find('if active_domain in ("auto", "recruiter_assistant", ""):')
-    # `find` returns the FIRST occurrence — `if active_domain in (...)` aparece
-    # 2× (pin + router). Pegamos o segundo (router) explicitamente.
-    second_router_idx = src.find(
-        'if active_domain in ("auto", "recruiter_assistant", ""):',
-        router_idx + 1,
+def test_s2_is_session_active_covers_all_three_thread_id_strategies():
+    """Reviewer v1: ``is_session_active`` ignorava ``msg["thread_id"]``
+    custom (priority 1 de ``derive_thread_id``). Agora consulta TANTO o
+    Redis marker (custom) QUANTO os candidate ids (heurísticos)."""
+    methods = _class_methods(_parse(_WIZ_SVC), "WizardSessionService")
+    fn = methods["is_session_active"]
+    assert _calls_named(fn, "_read_session_thread"), (
+        "S2 fail: ``is_session_active`` não consulta Redis marker — "
+        "thread_ids custom (msg.thread_id) não serão detectados."
     )
-    assert pin_idx > 0, (
-        "S3 fail: agent_chat_ws.py não chama ``is_session_active`` — "
-        "sem pin de wizard, B2/B3/B4 voltam."
+    assert _calls_named(fn, "_candidate_thread_ids"), (
+        "S2 fail: ``is_session_active`` precisa cobrir os candidates "
+        "heurísticos (legacy + tenant-prefixed) como fallback."
     )
-    assert second_router_idx > 0, (
-        "S3 fail: bloco do CascadedRouter ``if active_domain in (auto, "
-        "recruiter_assistant, '')`` sumiu — pino órfão."
+    # process_message precisa popular E limpar o marker.
+    assert "process_message" in methods, "S2 fail: process_message sumiu"
+    pm = methods["process_message"]
+    assert _calls_named(pm, "_mark_session_thread"), (
+        "S2 fail: process_message não persiste marker Redis — "
+        "is_session_active não detectaria sessões com thread_id custom."
     )
-    assert pin_idx < second_router_idx, (
-        "S3 fail: pin de wizard precisa rodar ANTES do bloco do "
-        "CascadedRouter — ordem invertida quebra B2/B3/B4."
+    assert _calls_named(pm, "_clear_session_thread"), (
+        "S2 fail: process_message não limpa marker no completed — "
+        "router pinaria wizard infinitamente após publish."
     )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# S4 — sessão completed não é pinada (comportamental, não AST)
+# S3 — pin canônico DENTRO do CascadedRouter
 # ─────────────────────────────────────────────────────────────────────────────
+def test_s3_router_pins_wizard_via_is_session_active():
+    """AST: ``CascadedRouter.route`` invoca ``is_session_active`` E retorna
+    um RouteResult com ``domain_id="wizard"`` quando ativa."""
+    methods = _class_methods(_parse(_ROUTER), "CascadedRouter")
+    assert "route" in methods, "S3 fail: CascadedRouter.route sumiu"
+    route_fn = methods["route"]
+    assert isinstance(route_fn, ast.AsyncFunctionDef), (
+        "S3 fail: CascadedRouter.route precisa ser ``async``."
+    )
+    assert _calls_named(route_fn, "is_session_active"), (
+        "S3 fail: CascadedRouter.route NÃO invoca is_session_active — "
+        "pin de wizard ausente da camada canônica. Reviewer v1: "
+        "'domain pinning was implemented in the wrong layer'."
+    )
+    # Garantir que existe um RouteResult(domain_id="wizard", source=...) na função.
+    found_pin_return = False
+    for node in ast.walk(route_fn):
+        if not (isinstance(node, ast.Call) and isinstance(node.func, ast.Name)
+                and node.func.id == "RouteResult"):
+            continue
+        kw = {k.arg: k.value for k in node.keywords}
+        domain_v = kw.get("domain_id")
+        source_v = kw.get("source")
+        if (
+            isinstance(domain_v, ast.Constant) and domain_v.value == "wizard"
+            and isinstance(source_v, ast.Constant)
+            and source_v.value == "wizard_session_pin"
+        ):
+            found_pin_return = True
+            break
+    assert found_pin_return, (
+        "S3 fail: route() não devolve RouteResult(domain_id='wizard', "
+        "source='wizard_session_pin') — pin não curto-circuita o router."
+    )
+
+
+def test_s3_ws_handler_does_not_duplicate_pin():
+    """Defesa contra drift: o pin precisa estar APENAS no router, não no
+    WS handler. Duplicação leva a (a) divergência de comportamento e (b)
+    overhead duplo de checkpointer reads."""
+    ws_path = _REPO_ROOT / "app" / "api" / "v1" / "agent_chat_ws.py"
+    src = ws_path.read_text(encoding="utf-8")
+    # O bloco "if active_domain in (...)" + chamada a is_session_active
+    # caracteriza o pin antigo. Garantimos que NÃO co-existem.
+    has_call = "is_session_active" in src
+    assert not has_call, (
+        "S3 fail: agent_chat_ws.py ainda chama ``is_session_active`` — pin "
+        "duplicado. A lógica precisa ficar exclusivamente em CascadedRouter "
+        "(reviewer v1, Task #1051)."
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# S4 — comportamental (com monkeypatch de checkpointer + Redis)
+# ─────────────────────────────────────────────────────────────────────────────
+async def _stub_no_redis(*args, **kwargs):
+    return None
+
+
 @pytest.mark.asyncio
 async def test_s4_completed_session_does_not_pin(monkeypatch):
     from app.domains.job_creation.services.wizard_session_service import (
@@ -174,6 +241,9 @@ async def test_s4_completed_session_does_not_pin(monkeypatch):
 
     monkeypatch.setattr(
         WizardSessionService, "_get_prior_state", staticmethod(fake_prior_completed)
+    )
+    monkeypatch.setattr(
+        WizardSessionService, "_read_session_thread", classmethod(_stub_no_redis)
     )
     active = await WizardSessionService.is_session_active(
         session_id="sess-xyz", company_id=None
@@ -201,6 +271,9 @@ async def test_s4_open_session_does_pin(monkeypatch):
     monkeypatch.setattr(
         WizardSessionService, "_get_prior_state", staticmethod(fake_prior_open)
     )
+    monkeypatch.setattr(
+        WizardSessionService, "_read_session_thread", classmethod(_stub_no_redis)
+    )
     active = await WizardSessionService.is_session_active(
         session_id="sess-xyz", company_id=None
     )
@@ -222,9 +295,48 @@ async def test_s4_no_session_returns_false(monkeypatch):
     monkeypatch.setattr(
         WizardSessionService, "_get_prior_state", staticmethod(fake_prior_empty)
     )
+    monkeypatch.setattr(
+        WizardSessionService, "_read_session_thread", classmethod(_stub_no_redis)
+    )
     active = await WizardSessionService.is_session_active(
         session_id="sess-novo", company_id=None
     )
     assert active is False, (
         "S4 fail: sem checkpoint algum, helper não pode pinar — false positive."
+    )
+
+
+@pytest.mark.asyncio
+async def test_s4_redis_marker_finds_custom_thread_id(monkeypatch):
+    """Cenário do reviewer v1: FE iniciou wizard com ``msg.thread_id``
+    custom; ``_candidate_thread_ids`` heurístico não consegue reproduzir
+    esse formato, então quem detecta a sessão é o Redis marker."""
+    from app.domains.job_creation.services.wizard_session_service import (
+        WizardSessionService,
+    )
+
+    async def fake_marker(cls, session_id: str) -> str:  # noqa: ARG001
+        return "custom-fe-thread-deadbeef"
+
+    async def fake_prior(thread_id: str) -> dict:
+        if thread_id == "custom-fe-thread-deadbeef":
+            return {
+                "current_stage": "wsi_questions",
+                "conversation_messages": [{"role": "user", "content": "x"}],
+            }
+        return {}  # heurísticos não encontram nada
+
+    monkeypatch.setattr(
+        WizardSessionService, "_read_session_thread", classmethod(fake_marker)
+    )
+    monkeypatch.setattr(
+        WizardSessionService, "_get_prior_state", staticmethod(fake_prior)
+    )
+    active = await WizardSessionService.is_session_active(
+        session_id="sess-fe-custom", company_id=None
+    )
+    assert active is True, (
+        "S4 fail: Redis marker apontando para thread_id custom não foi "
+        "consultado — sessões iniciadas com msg.thread_id custom seriam "
+        "perdidas (reviewer v1)."
     )

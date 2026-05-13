@@ -228,6 +228,55 @@ class CascadedRouter:
             except Exception as _hint_exc:
                 logger.debug("[CascadedRouter] rail_a_hint check skipped: %s", _hint_exc)
 
+        # ── Tier 0.5 — Wizard session-pin (Task #1051 canonical) ──────────
+        # Canonical fix for B2/B3/B4: when a recruiter has an OPEN wizard
+        # session (LangGraph checkpointer non-empty AND stage != completed),
+        # any follow-up message in the same session must stay in the wizard
+        # domain — even when the FE forgets to forward ``msg.domain="wizard"``
+        # AND no ``rail_a_hint`` metadata is present. Without this pin the
+        # router previously reclassified inputs like *"Demo Company, 5 anos"*
+        # into ``company_settings``/fallback → bypassed
+        # ``WizardSessionService.process_message`` → checkpointer never
+        # restored ``conversation_messages``.
+        #
+        # Placed AFTER ``rail_a_hint``: explicit FE intent (structured
+        # metadata) always wins, so the pin only fires on ambiguous turns.
+        # Placed in CascadedRouter (not the WS handler) so ALL transports
+        # benefit — WS, SSE, REST orchestrator, autonomous_react_agent —
+        # without each one duplicating the check (reviewer feedback on
+        # Task #1051 v1: "domain pinning was implemented in the wrong layer").
+        # Fail-open: any exception falls through to normal routing.
+        if session_id:
+            try:
+                from app.domains.job_creation.services.wizard_session_service import (
+                    WizardSessionService as _WizSvcPin,
+                )
+                _pin_company = (context or {}).get("company_id")
+                _pin_active = await _WizSvcPin.is_session_active(
+                    session_id=session_id, company_id=_pin_company,
+                )
+                if _pin_active:
+                    logger.info(
+                        "[CascadedRouter] wizard_session_pin: session=%s company=%s "
+                        "→ wizard (Task #1051)",
+                        session_id, _pin_company,
+                    )
+                    if _hit_counter:
+                        try:
+                            _hit_counter.labels(tier="wizard_session_pin").inc()
+                        except Exception:
+                            pass
+                    return RouteResult(
+                        domain_id="wizard",
+                        confidence=1.0,
+                        source="wizard_session_pin",
+                        matched_pattern="active_wizard_session",
+                    )
+            except Exception as _pin_exc:
+                logger.debug(
+                    "[CascadedRouter] wizard_session_pin skipped: %s", _pin_exc,
+                )
+
         # Tier 0 — Resolver pronomes/referências via WorkingMemory antes de rotear
         if session_id:
             async with _tracer.start_span("router.tier0_memory_resolve", attributes={

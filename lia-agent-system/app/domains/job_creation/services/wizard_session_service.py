@@ -110,6 +110,96 @@ class WizardSessionService:
             return f"wiz-{company_token}-{session_id}"
         return f"wiz-{session_id}"
 
+    # Redis marker for session→thread_id mapping. Lets ``is_session_active``
+    # detect wizard sessions whose ``thread_id`` was supplied by the FE
+    # (``msg["thread_id"]`` — priority 1 in ``derive_thread_id``) and would
+    # therefore NOT be one of the ``_candidate_thread_ids`` heuristics.
+    # Reviewer feedback on Task #1051 v1: "is_session_active ignores
+    # client-supplied custom thread_id paths that derive_thread_id supports".
+    _REDIS_MARKER_KEY_FMT = "lia:wizard:active:{session_id}"
+    _REDIS_MARKER_TTL_SECONDS = 7200  # 2h — long enough for any wizard run
+
+    @classmethod
+    async def _redis_marker_client(cls):
+        """Return an aioredis client or None (fail-open). Same pattern as
+        ``app/shared/memory/candidate_list_store.py``.
+        """
+        try:
+            import redis.asyncio as aioredis
+            from libs.config.lia_config.config import settings
+            return aioredis.from_url(settings.REDIS_URL, decode_responses=True)
+        except Exception as exc:
+            logger.debug("[WizardSession] redis marker client unavailable: %s", exc)
+            return None
+
+    @classmethod
+    async def _mark_session_thread(cls, session_id: str, thread_id: str) -> None:
+        """Persist ``session_id → thread_id`` so ``is_session_active`` can
+        find sessions started with a client-supplied custom ``thread_id``.
+
+        Fail-open: any error logs DEBUG and returns. Marker is best-effort —
+        absence falls back to the heuristic candidates.
+        """
+        if not session_id or not thread_id:
+            return
+        client = await cls._redis_marker_client()
+        if client is None:
+            return
+        try:
+            await client.setex(
+                cls._REDIS_MARKER_KEY_FMT.format(session_id=session_id),
+                cls._REDIS_MARKER_TTL_SECONDS,
+                thread_id,
+            )
+        except Exception as exc:
+            logger.debug("[WizardSession] mark_session_thread failed: %s", exc)
+        finally:
+            try:
+                await client.aclose()
+            except Exception:
+                pass
+
+    @classmethod
+    async def _clear_session_thread(cls, session_id: str) -> None:
+        """Clear the marker after wizard completion so the router stops
+        pinning ``wizard`` and the next message ("buscar candidatos") flows
+        to the normal classifier.
+        """
+        if not session_id:
+            return
+        client = await cls._redis_marker_client()
+        if client is None:
+            return
+        try:
+            await client.delete(cls._REDIS_MARKER_KEY_FMT.format(session_id=session_id))
+        except Exception as exc:
+            logger.debug("[WizardSession] clear_session_thread failed: %s", exc)
+        finally:
+            try:
+                await client.aclose()
+            except Exception:
+                pass
+
+    @classmethod
+    async def _read_session_thread(cls, session_id: str) -> str | None:
+        """Read the persisted ``thread_id`` for this session, or None."""
+        if not session_id:
+            return None
+        client = await cls._redis_marker_client()
+        if client is None:
+            return None
+        try:
+            value = await client.get(cls._REDIS_MARKER_KEY_FMT.format(session_id=session_id))
+            return value if isinstance(value, str) and value.strip() else None
+        except Exception as exc:
+            logger.debug("[WizardSession] read_session_thread failed: %s", exc)
+            return None
+        finally:
+            try:
+                await client.aclose()
+            except Exception:
+                pass
+
     @classmethod
     async def is_session_active(
         cls,
@@ -118,43 +208,63 @@ class WizardSessionService:
     ) -> bool:
         """Task #1051 — Detect an open (non-completed) wizard session.
 
-        Used by ``agent_chat_ws.py`` to PIN ``active_domain="wizard"`` BEFORE
-        the CascadedRouter runs, fixing bugs B2/B3/B4: when the FE forgets
-        to forward ``msg.domain="wizard"`` on subsequent turns, the router
-        previously reclassified inputs like *"Demo Company, 5 anos"* into
-        ``company_settings``/fallback — losing the LangGraph checkpointer
-        thread (B2 = forgets job title, B3 = "no history") and dropping
-        tenant context (B4 = salary tool re-asks empresa).
+        Used by ``CascadedRouter.route()`` (Tier 0.5) to short-circuit the
+        router with ``domain_id="wizard"`` whenever the recruiter has an
+        open wizard checkpoint — fixes B2/B3/B4 (forgets job title, no
+        history, salary tool re-asks empresa).
 
-        Returns True iff a checkpointed wizard state exists for either the
-        company-scoped thread_id (preferred) or the legacy session-only one
-        AND the wizard has NOT reached the ``completed`` stage. The
-        non-completed check is critical — a finished wizard MUST allow the
-        next message ("hi LIA, search candidates") to be routed elsewhere.
+        Detection strategy (in order — first hit wins):
+          1. Redis marker ``lia:wizard:active:{session_id}`` — populated by
+             ``process_message`` on every successful turn. Resolves the
+             reviewer concern that ``derive_thread_id`` accepts a
+             client-supplied ``msg["thread_id"]`` that the heuristic
+             candidate list cannot reproduce.
+          2. Heuristic candidates — ``wiz-{token}-{session_id}`` (tenant
+             prefixed) and ``wiz-{session_id}`` (legacy).
 
-        Fail-open: any exception returns False so a checkpointer outage
-        cannot block the chat.
+        A session counts as active iff the resolved thread has a
+        checkpointed state with ``current_stage != "completed"``. A finished
+        wizard MUST allow the next message to be routed elsewhere.
+
+        Fail-open: any exception returns False so a checkpointer/Redis
+        outage cannot block the chat.
         """
         if not session_id:
             return False
         try:
+            checked: set[str] = set()
+            # 1) Redis marker — covers FE-supplied custom thread_ids.
+            marker_thread = await cls._read_session_thread(session_id)
+            if marker_thread:
+                checked.add(marker_thread)
+                if cls._is_active_state(await cls._get_prior_state(marker_thread)):
+                    return True
+            # 2) Heuristic fallbacks — covers the legacy + tenant-prefixed cases.
             for thread_id in cls._candidate_thread_ids(session_id, company_id):
-                prior = await cls._get_prior_state(thread_id)
-                if not prior:
+                if thread_id in checked:
                     continue
-                stage = (prior.get("current_stage") or "").lower()
-                if stage == "completed":
-                    continue
-                # Treat any prior state with conversation history as active.
-                if prior.get("conversation_messages") or stage:
+                checked.add(thread_id)
+                if cls._is_active_state(await cls._get_prior_state(thread_id)):
                     return True
             return False
         except Exception:  # pragma: no cover — fail-open
             return False
 
     @staticmethod
+    def _is_active_state(prior: dict | None) -> bool:
+        if not prior:
+            return False
+        stage = (prior.get("current_stage") or "").lower()
+        if stage == "completed":
+            return False
+        return bool(prior.get("conversation_messages") or stage)
+
+    @staticmethod
     def _candidate_thread_ids(session_id: str, company_id: str | None) -> list[str]:
-        """Return the thread_ids that ``derive_thread_id`` may have produced."""
+        """Return the thread_ids that ``derive_thread_id`` may have produced
+        WITHOUT a client-supplied ``msg["thread_id"]``. The custom-thread
+        case is covered by the Redis marker in ``is_session_active``.
+        """
         candidates: list[str] = []
         if company_id:
             try:
@@ -510,6 +620,19 @@ class WizardSessionService:
         stage_payload = result.get("ws_stage_payload") or {}
         stage_data = stage_payload.get("data") or {}
         current_stage = result.get("current_stage", "") or ""
+
+        # ── Task #1051 — persist session→thread_id Redis marker ───────────
+        # Lets ``CascadedRouter.route()`` Tier 0.5 detect this session as
+        # active even when the FE supplies a custom ``msg["thread_id"]``
+        # that the heuristic candidate list cannot reproduce. Fail-open.
+        try:
+            if (current_stage or "").lower() == "completed":
+                await cls._clear_session_thread(session_id)
+            else:
+                await cls._mark_session_thread(session_id, thread_id)
+        except Exception as _mk_exc:
+            logger.debug("[WizardSession] session marker upkeep skipped: %s", _mk_exc)
+
         message = (
             stage_data.get("message")
             or stage_data.get("response_text")
