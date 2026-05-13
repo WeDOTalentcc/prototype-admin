@@ -535,11 +535,37 @@ class TenantAwareAgentMixin:
             try:
                 snippet = tenant_ctx.to_prompt_snippet()
                 if snippet and snippet.strip():
+                    # T-1043 / PR-C: snippet recém-renderizado também passa pelo
+                    # filtro de degradação. ``TenantContextService`` retorna
+                    # ``company_name="sua empresa"`` quando a row de companies
+                    # não resolve — em strict-mode isso é fail-LOUD.
+                    if self._is_snippet_degraded(snippet) and self._is_strict():
+                        _record_metric(agent, "fail_closed")
+                        logger.error(
+                            "agent_tenant_context_degraded",
+                            extra={
+                                "agent": agent,
+                                "company_id_raw": repr(input.company_id),
+                                "tenant_source": "freshly_rendered_degraded",
+                            },
+                        )
+                        raise MissingTenantContextError(
+                            f"Agente '{agent}' renderizou tenant snippet degradado "
+                            f"(fallback 'sua empresa') a partir de tenant_ctx — "
+                            f"fail-LOUD em strict-mode (T-1043 PR-C).",
+                            details={
+                                "agent": agent,
+                                "company_id_raw": repr(input.company_id),
+                                "tenant_source": "freshly_rendered_degraded",
+                            },
+                        )
                     # Persiste pro próximo turn dentro da mesma request
                     if input.context is not None:
                         input.context["tenant_context_snippet"] = snippet
                     _record_metric(agent, "miss")
                     return snippet
+            except MissingTenantContextError:
+                raise
             except Exception as exc:  # pragma: no cover — defensive
                 logger.warning(
                     "agent_tenant_context_snippet_render_failed",
