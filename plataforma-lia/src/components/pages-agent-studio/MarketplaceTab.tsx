@@ -179,7 +179,7 @@ function BrowseMarketplace() {
           <Loader2 className="w-6 h-6 animate-spin text-lia-text-disabled" />
         </div>
       ) : listings.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 rounded-xl border border-dashed border-lia-border-subtle bg-lia-bg-secondary/50">
+        <div className="flex flex-col items-center justify-center py-12 rounded-md border border-dashed border-lia-border-subtle bg-lia-bg-secondary/50">
           <Store className="w-10 h-10 text-lia-text-disabled mb-3" />
           <p className="text-sm font-medium text-lia-text-secondary">{t('noAgentsAvailable')}</p>
           <p className="text-xs text-lia-text-disabled mt-1">
@@ -191,7 +191,7 @@ function BrowseMarketplace() {
           {listings.map(listing => (
             <div
               key={listing.id}
-              className="rounded-xl border border-lia-border-subtle bg-lia-bg-secondary hover:border-violet-300 dark:hover:border-violet-700 hover:shadow-md transition-all duration-200"
+              className="rounded-md border border-lia-border-subtle bg-lia-bg-secondary hover:border-violet-300 dark:hover:border-violet-700 hover:shadow-md transition-all duration-200"
             >
               <div className="p-4">
                 <div className="flex items-start justify-between mb-3">
@@ -303,7 +303,7 @@ function InstalledAgents() {
 
   if (installations.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 rounded-xl border border-dashed border-lia-border-subtle bg-lia-bg-secondary/50">
+      <div className="flex flex-col items-center justify-center py-12 rounded-md border border-dashed border-lia-border-subtle bg-lia-bg-secondary/50">
         <Package className="w-10 h-10 text-lia-text-disabled mb-3" />
         <p className="text-sm font-medium text-lia-text-secondary">{t('noInstalledAgents')}</p>
         <p className="text-xs text-lia-text-disabled mt-1">
@@ -318,7 +318,7 @@ function InstalledAgents() {
       {installations.map(inst => (
         <div
           key={inst.id}
-          className="flex items-center justify-between p-4 rounded-xl border border-lia-border-subtle bg-lia-bg-secondary"
+          className="flex items-center justify-between p-4 rounded-md border border-lia-border-subtle bg-lia-bg-secondary"
         >
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-950/20 flex items-center justify-center">
@@ -382,11 +382,11 @@ function BillingView() {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
-        <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-4">
+        <div className="rounded-md border border-lia-border-subtle bg-lia-bg-secondary p-4">
           <p className="text-xs text-lia-text-secondary mb-1">{t('totalCredits')}</p>
           <p className="text-2xl font-semibold text-lia-text-primary">{totalCredits.toLocaleString()}</p>
         </div>
-        <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-4">
+        <div className="rounded-md border border-lia-border-subtle bg-lia-bg-secondary p-4">
           <p className="text-xs text-lia-text-secondary mb-1">{t('totalExecutions')}</p>
           <p className="text-2xl font-semibold text-lia-text-primary">{totalExecs.toLocaleString()}</p>
         </div>
@@ -398,7 +398,7 @@ function BillingView() {
           <p className="text-sm">{t('noUsageRecorded')}</p>
         </div>
       ) : (
-        <div className="rounded-xl border border-lia-border-subtle overflow-hidden">
+        <div className="rounded-md border border-lia-border-subtle overflow-hidden">
           <table className="w-full text-sm">
             <thead>
               <tr className="bg-lia-bg-secondary">

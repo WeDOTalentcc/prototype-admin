@@ -129,7 +129,7 @@ export default function CustomAgentsTab() {
       </div>
 
       {agents.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 rounded-xl border border-dashed border-lia-border-subtle bg-lia-bg-secondary/50">
+        <div className="flex flex-col items-center justify-center py-12 rounded-md border border-dashed border-lia-border-subtle bg-lia-bg-secondary/50">
           <div className="w-14 h-14 rounded-2xl bg-lia-bg-tertiary flex items-center justify-center mb-3">
             <Wand2 className="w-7 h-7 text-lia-text-disabled" />
           </div>
@@ -154,7 +154,7 @@ export default function CustomAgentsTab() {
               <div
                 key={agent.id}
                 className={cn(
-                  "group relative rounded-xl border border-lia-border-subtle bg-lia-bg-secondary",
+                  "group relative rounded-md border border-lia-border-subtle bg-lia-bg-secondary",
                   "hover:border-lia-border-medium hover:shadow-md transition-all duration-200"
                 )}
               >
