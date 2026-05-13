@@ -218,6 +218,14 @@ def _is_dev_environment() -> bool:
 async def _heal_legacy_demo_company_id(user, db) -> None:
     """Task #1051 — Auto-heal demo users created before CANONICAL_DEMO_UUID rollout.
 
+    Scope (review v2): heals ANY non-canonical demo ``company_id`` — not
+    only the literal ``"demo_company"`` string. Demo users that ever ended
+    up with a malformed/legacy/empty value (any state that ``CompanyId.parse``
+    cannot consume) are reconciled in-place to ``CANONICAL_DEMO_UUID``.
+    Broader-than-named scope is INTENTIONAL: a demo user is platform
+    hygiene, not real tenant data — any invalid state should converge
+    silently rather than block the chat.
+
     Legacy demo users persisted with ``company_id="demo_company"`` (or other
     string values) trigger the recurring T-E bug ("LIA pergunta company_id no
     chat") because ``CompanyId.parse`` rejects the value and the wizard mixin
