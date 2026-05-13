@@ -1780,7 +1780,20 @@
       "twins": {
         "cloneReasoning": "Clone o raciocínio dos seus melhores avaliadores",
         "cloneDesc": "Capture como um especialista da equipe avalia candidatos. O Digital Twin aprende os critérios e funciona como uma \"segunda opinião\" automática na triagem.",
-        "label": "Gêmeos Digitais"
+        "label": "Gêmeos Digitais",
+        "headerTitle": "Clone o raciocínio dos seus melhores avaliadores",
+        "headerDesc": "Capture como um especialista da equipe avalia candidatos. O Digital Twin aprende os critérios e funciona como uma \"segunda opinião\" automática na triagem.",
+        "onboarding": {
+          "stepLabel": "Passo {number}",
+          "step1Title": "Selecione um avaliador",
+          "step1Desc": "Escolha um recrutador ou hiring manager que toma boas decisões.",
+          "step2Title": "Importe decisões passadas",
+          "step2Desc": "Faça upload de aprovações/rejeições históricas com a justificativa.",
+          "step3Title": "LIA aprende o padrão",
+          "step3Desc": "O modelo identifica os critérios implícitos por trás das decisões.",
+          "step4Title": "Use como segunda opinião",
+          "step4Desc": "Aplique o twin em novos candidatos para validar a triagem."
+        }
       },
       "search": {
         "multiStrategy": "Busca Multi-Estratégia",

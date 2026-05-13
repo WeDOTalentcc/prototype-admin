@@ -3,7 +3,7 @@
 import React, { useState } from"react"
 import { useTranslations } from "next-intl"
 import {
-  Search, Zap, CheckCircle, Loader2, AlertCircle,
+  Search, CheckCircle, Loader2, AlertCircle,
   Users, ArrowRight, Plus, Database, Briefcase, Heart
 } from"lucide-react"
 import { Card, CardContent } from"@/components/ui/card"
@@ -109,21 +109,19 @@ export default function MultiStrategySearchPanel({
     })
   }
 
+  const inputClasses = "border border-lia-border-subtle rounded-md px-3 py-2 text-sm bg-lia-bg-primary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20"
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <Card className={cardStyles.default}>
         <CardContent className="p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Zap className="w-5 h-5 text-yellow-500" />
-            <h3 className={textStyles.h4}>{t('title')}</h3>
-          </div>
           <div className="flex gap-3">
             <input
               type="text"
               value={jobTitle}
               onChange={e => setJobTitle(e.target.value)}
               placeholder={t('jobTitlePlaceholder')}
-              className="flex-1 border border-lia-border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+              className={`flex-1 ${inputClasses}`}
               onKeyDown={e => e.key ==="Enter" && handleSearch()}
             />
             <input
@@ -131,14 +129,14 @@ export default function MultiStrategySearchPanel({
               value={skills}
               onChange={e => setSkills(e.target.value)}
               placeholder={t('skillsPlaceholder')}
-              className="w-48 border border-lia-border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+              className={`w-48 ${inputClasses}`}
             />
             <input
               type="text"
               value={location}
               onChange={e => setLocation(e.target.value)}
               placeholder={t('locationPlaceholder')}
-              className="w-36 border border-lia-border-default rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-gray-400"
+              className={`w-36 ${inputClasses}`}
             />
             <Button className={buttonStyles.primary} onClick={handleSearch} disabled={isSearching || !jobTitle.trim()}>
               <Search className="w-4 h-4 mr-1" />

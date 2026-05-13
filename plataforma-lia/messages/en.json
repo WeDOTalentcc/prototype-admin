@@ -1780,7 +1780,20 @@
       "twins": {
         "cloneReasoning": "Clone the reasoning of your best evaluators",
         "cloneDesc": "Capture how a team specialist evaluates candidates. The Digital Twin learns the criteria and works as an automatic 'second opinion' in screening.",
-        "label": "Digital Twins"
+        "label": "Digital Twins",
+        "headerTitle": "Clone the reasoning of your best evaluators",
+        "headerDesc": "Capture how a team specialist evaluates candidates. The Digital Twin learns the criteria and acts as an automatic \"second opinion\" during screening.",
+        "onboarding": {
+          "stepLabel": "Step {number}",
+          "step1Title": "Select an evaluator",
+          "step1Desc": "Pick a recruiter or hiring manager who makes good decisions.",
+          "step2Title": "Import past decisions",
+          "step2Desc": "Upload historical approvals/rejections with rationale.",
+          "step3Title": "LIA learns the pattern",
+          "step3Desc": "The model identifies the implicit criteria behind the decisions.",
+          "step4Title": "Use as a second opinion",
+          "step4Desc": "Apply the twin to new candidates to validate the screening."
+        }
       },
       "search": {
         "multiStrategy": "Multi-Strategy Search",

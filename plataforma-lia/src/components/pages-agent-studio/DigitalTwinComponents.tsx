@@ -48,6 +48,21 @@ const HOW_IT_WORKS_ICONS = [UserCheck, BookOpen, Brain, Lightbulb] as const
 
 export function DigitalTwinHeader() {
   const t = useTranslations("agents.studio.twins")
+
+  return (
+    <div>
+      <h2 className="text-sm font-semibold text-lia-text-primary">
+        {t("headerTitle")}
+      </h2>
+      <p className="text-xs text-lia-text-secondary mt-0.5">
+        {t("headerDesc")}
+      </p>
+    </div>
+  )
+}
+
+export function DigitalTwinOnboarding() {
+  const t = useTranslations("agents.studio.twins")
   const tOnboarding = useTranslations("agents.studio.twins.onboarding")
 
   const steps = [
@@ -74,23 +89,23 @@ export function DigitalTwinHeader() {
           {t("headerDesc")}
         </p>
 
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
           {steps.map((step, i) => {
             const Icon = step.icon
             return (
-              <div key={i} className="flex items-start gap-3">
+              <div key={i} className="flex items-start gap-3 min-w-0">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-cyan-50 dark:bg-cyan-950/30">
                   <Icon className="w-5 h-5 text-wedo-cyan" />
                 </div>
-                <div className="min-w-0">
+                <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-1.5 mb-0.5">
-                    <span className="text-[10px] font-bold text-lia-text-disabled uppercase">
+                    <span className="text-[10px] font-bold text-lia-text-disabled uppercase whitespace-nowrap">
                       {tOnboarding("stepLabel", { number: i + 1 })}
                     </span>
-                    {i < steps.length - 1 && <ArrowRight className="w-3 h-3 text-lia-text-disabled hidden md:block" />}
+                    {i < steps.length - 1 && <ArrowRight className="w-3 h-3 text-lia-text-disabled hidden xl:block" />}
                   </div>
-                  <p className="text-xs font-semibold text-lia-text-primary">{step.title}</p>
-                  <p className="text-[11px] text-lia-text-secondary leading-relaxed">{step.desc}</p>
+                  <p className="text-xs font-semibold text-lia-text-primary break-words">{step.title}</p>
+                  <p className="text-[11px] text-lia-text-secondary leading-relaxed break-words">{step.desc}</p>
                 </div>
               </div>
             )
@@ -110,7 +125,7 @@ export function DigitalTwinEmptyState({ onCreateTwin }: DigitalTwinEmptyStatePro
 
   return (
     <div className="flex flex-col items-center py-12 px-6">
-      <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-cyan-50 dark:bg-cyan-950/30 mb-4">
+      <div className="flex items-center justify-center w-12 h-12 rounded-md bg-cyan-50 dark:bg-cyan-950/30 mb-4">
         <Brain className="w-6 h-6 text-wedo-cyan" />
       </div>
       <h3 className={`${textStyles.h3} text-center mb-1`}>{t("title")}</h3>
@@ -612,11 +627,16 @@ export function TwinsList({ onEvaluate, onCreateTwin, refreshKey = 0 }: TwinsLis
 
   if (isLoading) return <p className={textStyles.caption}>{t("loadingTwins")}</p>
   if (twins.length === 0) {
-    return <DigitalTwinEmptyState onCreateTwin={onCreateTwin} />
+    return (
+      <div className="space-y-6">
+        <DigitalTwinOnboarding />
+        <DigitalTwinEmptyState onCreateTwin={onCreateTwin} />
+      </div>
+    )
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <p className={textStyles.caption}>
           {t("twinCount", { count: twins.length })}

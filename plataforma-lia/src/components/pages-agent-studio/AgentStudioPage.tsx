@@ -579,14 +579,12 @@ export default function AgentStudioPage({
         )}
 
         {activeTab === "twins" && (
-          <div className="space-y-4">
-            <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-5 mb-4">
-              <div className="flex items-center gap-2 mb-1">
-                <Users className="w-4 h-4 text-wedo-cyan" />
-                <span className="text-xs font-semibold uppercase tracking-wider text-wedo-cyan">{t("studio.twins.label")}</span>
-              </div>
-              <h2 className="text-base font-semibold text-lia-text-primary mb-1">{t("studio.twins.cloneReasoning")}</h2>
-              <p className="text-sm text-lia-text-secondary max-w-2xl">
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-sm font-semibold text-lia-text-primary">
+                {t("studio.twins.cloneReasoning")}
+              </h2>
+              <p className="text-xs text-lia-text-secondary mt-0.5">
                 {t("studio.twins.cloneDesc")}
               </p>
             </div>
@@ -595,14 +593,12 @@ export default function AgentStudioPage({
         )}
 
         {activeTab === "search" && (
-          <div className="space-y-4">
-            <div className="rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-5 mb-4">
-              <div className="flex items-center gap-2 mb-1">
-                <Search className="w-4 h-4 text-wedo-cyan" />
-                <span className="text-xs font-semibold uppercase tracking-wider text-wedo-cyan">{t("studio.search.multiStrategy")}</span>
-              </div>
-              <h2 className="text-base font-semibold text-lia-text-primary mb-1">{t("studio.search.fourStrategies")}</h2>
-              <p className="text-sm text-lia-text-secondary max-w-2xl">
+          <div className="space-y-6">
+            <div>
+              <h2 className="text-sm font-semibold text-lia-text-primary">
+                {t("studio.search.fourStrategies")}
+              </h2>
+              <p className="text-xs text-lia-text-secondary mt-0.5">
                 {t("studio.search.searchDesc")}
               </p>
             </div>

@@ -208,19 +208,19 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
       style={{width: panelWidth}}
     >
       <div 
-        className="rounded-xl overflow-hidden border border-lia-border-subtle dark:border-lia-border-subtle bg-[var(--lia-bg-primary)]"
+        className="rounded-md overflow-hidden border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary"
       >
         {/* Mode tabs - Estilo pill/tag elegante */}
         <div 
-          className="flex items-center gap-2 px-4 py-3 overflow-x-auto bg-[var(--lia-bg-primary)]"
+          className="flex items-center gap-2 px-4 py-3 overflow-x-auto bg-lia-bg-primary"
         >
           {modes.map((m) => (
             <button
               key={m.key}
               onClick={() => setMode(m.key)}
-              className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors border",
+              className={cn("flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium whitespace-nowrap transition-colors border",
                 mode === m.key 
-                  ?"border-lia-text-primary bg-lia-text-primary text-white dark:border-lia-text-primary dark:bg-lia-text-primary" 
+                  ?"border-lia-btn-primary-bg bg-lia-btn-primary-bg text-lia-btn-primary-text" 
                   :"border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary dark:hover:bg-lia-btn-primary-hover"
               )}
             >
