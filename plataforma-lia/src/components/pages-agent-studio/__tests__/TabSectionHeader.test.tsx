@@ -58,6 +58,27 @@ describe("TabSectionHeader (Task #1048)", () => {
     expect(h2?.className).toContain("text-lia-text-primary")
   })
 
+  it("renderiza apenas título + count, sem subtítulo nem actions (variante 'Meus Agentes')", () => {
+    // Cobre o uso em AgentStudioPage (aba Captação) e na subseção interna da
+    // aba Personalizados, onde só o título + badge de contagem aparecem.
+    const { container } = render(
+      <TabSectionHeader title="Meus Agentes" count={5} />,
+    )
+    expect(container.firstChild).toMatchSnapshot()
+  })
+
+  it("renderiza com ícone, sem subtítulo nem actions (variante 'Como funciona')", () => {
+    // Cobre a seção "Como funciona" do AgentStudioPage que mostra apenas o
+    // ícone Brain + título.
+    const { container } = render(
+      <TabSectionHeader
+        title="Como funciona"
+        icon={<span data-testid="brain-icon">🧠</span>}
+      />,
+    )
+    expect(container.firstChild).toMatchSnapshot()
+  })
+
   it("subtítulo sempre usa text-xs text-lia-text-secondary mt-0.5", () => {
     const { container } = render(
       <TabSectionHeader title="X" subtitle="Subtitulo" />,

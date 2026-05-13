@@ -394,16 +394,11 @@ export default function AgentStudioPage({
 
             {/* Active Agents */}
             <section>
-              <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-semibold text-lia-text-primary">
-                  {t("studio.myAgents")}
-                  {agents.length > 0 && (
-                    <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-lia-interactive-active text-lia-text-primary">
-                      {agents.length}
-                    </span>
-                  )}
-                </h2>
-              </div>
+              <TabSectionHeader
+                className="mb-3"
+                title={t("studio.myAgents")}
+                count={agents.length}
+              />
 
               {isLoading ? (
                 <div className="flex items-center justify-center py-16">
@@ -459,10 +454,11 @@ export default function AgentStudioPage({
             {/* How it works — compact version when agents exist */}
             {agents.length > 0 && (
               <section className="rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-5">
-                <div className="flex items-center gap-2 mb-4">
-                  <Brain className="w-4 h-4 text-wedo-cyan" />
-                  <h2 className="text-sm font-semibold text-lia-text-primary">{t("studio.howItWorks")}</h2>
-                </div>
+                <TabSectionHeader
+                  className="mb-4"
+                  title={t("studio.howItWorks")}
+                  icon={<Brain className="w-4 h-4 text-wedo-cyan" />}
+                />
                 {/* BUG-10: passa para grid responsivo — em telas apertadas (chat
                     lateral aberto) fica em 2 colunas sem truncar textos; em telas
                     largas mantém a visual horizontal com setas. */}
@@ -498,9 +494,11 @@ export default function AgentStudioPage({
 
             {/* My Agents */}
             <section>
-              <h3 className="text-sm font-semibold text-lia-text-primary mb-3">
-                {t("studio.myAgents")} {customAgents.length > 0 && `(${customAgents.length})`}
-              </h3>
+              <TabSectionHeader
+                className="mb-3"
+                title={t("studio.myAgents")}
+                count={customAgents.length}
+              />
               {customAgents.length === 0 ? (
                 <div className="text-center py-8">
                   <Bot className="w-8 h-8 text-lia-text-disabled mx-auto mb-2" />

@@ -1,5 +1,26 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
+exports[`TabSectionHeader (Task #1048) > renderiza apenas título + count, sem subtítulo nem actions (variante 'Meus Agentes') 1`] = `
+<div
+  class=""
+>
+  <div>
+    <h2
+      class="text-sm font-semibold text-lia-text-primary flex items-center gap-2"
+    >
+      <span>
+        Meus Agentes
+      </span>
+      <span
+        class="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-lia-interactive-active text-lia-text-primary"
+      >
+        5
+      </span>
+    </h2>
+  </div>
+</div>
+`;
+
 exports[`TabSectionHeader (Task #1048) > renderiza apenas título + subtítulo (variante mínima) 1`] = `
 <div
   class=""
@@ -83,6 +104,27 @@ exports[`TabSectionHeader (Task #1048) > renderiza com ícone + actions (variant
     >
       Ver tudo
     </button>
+  </div>
+</div>
+`;
+
+exports[`TabSectionHeader (Task #1048) > renderiza com ícone, sem subtítulo nem actions (variante 'Como funciona') 1`] = `
+<div
+  class=""
+>
+  <div>
+    <h2
+      class="text-sm font-semibold text-lia-text-primary flex items-center gap-2"
+    >
+      <span
+        data-testid="brain-icon"
+      >
+        🧠
+      </span>
+      <span>
+        Como funciona
+      </span>
+    </h2>
   </div>
 </div>
 `;
