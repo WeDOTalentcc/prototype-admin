@@ -65,10 +65,10 @@ def load_cases(filter_categories: list[str] | None = None, filter_id: str | None
     return cases
 
 
-def build_request_body(case: dict) -> dict:
+def build_request_body(case: dict, content: str | None = None, conversation_id: str | None = None) -> dict:
     ctx = case.get("context", {})
-    return {
-        "content": case.get("prompt") or case.get("user_query", ""),
+    body: dict[str, Any] = {
+        "content": content if content is not None else (case.get("prompt") or case.get("user_query", "")),
         "context": {
             "scope": ctx.get("scope", "global"),
             "page": ctx.get("page", "home"),
@@ -77,6 +77,9 @@ def build_request_body(case: dict) -> dict:
             "test_case_id": case["id"],
         },
     }
+    if conversation_id:
+        body["conversation_id"] = conversation_id
+    return body
 
 
 def load_golden_jsonl(path: Path) -> list[dict]:
@@ -102,11 +105,14 @@ def load_golden_jsonl(path: Path) -> list[dict]:
             "severity": row.get("severity", "high"),
             "title": row.get("title", row["id"]),
             "prompt": row.get("user_query", ""),
+            "turns": row.get("turns", []),
             "context": row.get("context", {}),
             "expected_tools": row.get("expected_tools", []),
             "canonical_files": row.get("canonical_files", []),
             "success_criteria": row.get("success_criteria", []),
             "anti_patterns": row.get("anti_patterns", []),
+            "tenant_snippet": row.get("tenant_snippet", ""),
+            "expected_snippet_markers": row.get("expected_snippet_markers", []),
         })
     return cases
 
@@ -137,6 +143,14 @@ async def call_lia(
             latency_ms = round((time.monotonic() - t0) * 1000)
             if resp.status_code == 200:
                 data = resp.json()
+                _msg = data.get("message") or {}
+                _conv = data.get("conversation") or {}
+                _conv_id = (
+                    _conv.get("id")
+                    or _msg.get("conversation_id")
+                    or data.get("conversation_id")
+                    or ""
+                )
                 return {
                     "ok": True,
                     "status_code": 200,
@@ -144,10 +158,11 @@ async def call_lia(
                     "response": (
                         data.get("response")
                         or data.get("content")
-                        or data.get("message", {}).get("content", "")
+                        or _msg.get("content", "")
                         or (data.get("data") or {}).get("message", {}).get("content", "")
                         or str(data)[:500]
                     ),
+                    "conversation_id": str(_conv_id) if _conv_id else "",
                     "raw": data,
                 }
             return {
@@ -499,6 +514,7 @@ def score_heuristic(case: dict, response: str) -> dict[str, Any]:
 
     # Anti-pattern detection
     import re as _re
+    _REGEX_HINT = _re.compile(r"\\s|\\d|\\w|\\b|\\.|\\+|\\*|\\?|\[|\]|\(|\)|\||\\\\|\^|\$")
     anti_hits: list[str] = []
     for ap in case.get("anti_patterns", []):
         ap_lower = ap.lower()
@@ -520,6 +536,15 @@ def score_heuristic(case: dict, response: str) -> dict[str, Any]:
                     if any(w in resp_lower for w in tool_evidence):
                         continue
                 anti_hits.append(ap)
+        elif _REGEX_HINT.search(ap):
+            # Bare regex pattern (no quoted phrase) — anti_patterns in golden
+            # JSONL datasets are typically RE2-style strings (e.g. wizard_no_tenant_leak,
+            # wizard_tenant_no_regression, company_settings_prefill). Apply it directly.
+            try:
+                if _re.search(ap, response, _re.IGNORECASE | _re.DOTALL):
+                    anti_hits.append(ap)
+            except _re.error:
+                pass  # malformed regex — silently skip rather than crash the gate
         else:
             # Fallback: keyword check using words > 5 chars (stricter threshold)
             keywords = [w for w in ap_lower.split() if len(w) > 5]
@@ -527,6 +552,25 @@ def score_heuristic(case: dict, response: str) -> dict[str, Any]:
                 anti_hits.append(ap)
     if anti_hits:
         flags.append(f"ANTI_PATTERN: {anti_hits[0]}")
+
+    # Tenant snippet marker check: when the case advertises markers (e.g.
+    # "Demo Company", "Tecnologia", "Backend"), the assistant response is
+    # expected to echo at least one — evidence that tenant_context_snippet
+    # was honored rather than degraded to "sua empresa"/"geral", and
+    # (for B2/B3/B4) that the wizard kept the job context across turns.
+    # Missing ALL markers is treated as a hard contract violation by the
+    # gate: the case is recorded with score=0 (FAIL), exactly like an
+    # anti-pattern hit. This is required by Task #1052 — without
+    # enforcement, regressions of B2 ("forgets job title") could pass.
+    markers = [m for m in case.get("expected_snippet_markers", []) if isinstance(m, str) and m.strip()]
+    marker_missing = False
+    if markers:
+        marker_hits = [m for m in markers if m.lower() in resp_lower]
+        if marker_hits:
+            flags.append(f"TENANT_MARKER_OK: {marker_hits[0]}")
+        else:
+            flags.append("TENANT_MARKER_MISSING")
+            marker_missing = True
 
     # Success criteria detection
     criteria_hits = 0
@@ -538,6 +582,10 @@ def score_heuristic(case: dict, response: str) -> dict[str, Any]:
 
     # Basic score logic
     if anti_hits:
+        score = 0
+    elif marker_missing:
+        # Missing tenant snippet markers is a hard contract violation
+        # (Task #1052): equates to anti-pattern hit so the gate fails the case.
         score = 0
     elif criteria_hits == 0:
         score = 1  # responded but didn't meet criteria
@@ -608,11 +656,58 @@ async def run(args: argparse.Namespace) -> None:
     results: list[dict] = []
     async with httpx.AsyncClient() as client:
         for idx, case in enumerate(cases, 1):
-            body = build_request_body(case)
-            api_result = await call_lia(client, args.url, token, body, timeout=args.timeout)
+            # Multi-turn support: when the case carries a `turns` array, replay
+            # each turn sequentially over a SINGLE backend conversation so the
+            # checkpointer / wizard session pin gets the same continuity that
+            # the production chat would. The final assistant response is what
+            # gets scored — earlier turns are recorded for debugging only.
+            turns = case.get("turns") or []
+            transcripts: list[dict[str, Any]] = []
+            conv_id: str = ""
+            api_result: dict[str, Any]
+            if turns:
+                last_api: dict[str, Any] | None = None
+                latency_total = 0
+                for t_idx, turn_content in enumerate(turns, 1):
+                    body = build_request_body(case, content=turn_content, conversation_id=conv_id or None)
+                    last_api = await call_lia(client, args.url, token, body, timeout=args.timeout)
+                    latency_total += max(0, last_api.get("latency_ms", 0))
+                    transcripts.append({
+                        "turn": t_idx,
+                        "user": turn_content,
+                        "assistant": last_api.get("response", ""),
+                        "ok": last_api.get("ok", False),
+                        "http_status": last_api.get("status_code", 0),
+                    })
+                    if last_api.get("ok") and last_api.get("conversation_id"):
+                        conv_id = last_api["conversation_id"]
+                    if not last_api.get("ok"):
+                        break  # stop replay on first failure — score will reflect it
+                    await asyncio.sleep(0.3)
+                api_result = last_api or {"ok": False, "status_code": 0, "latency_ms": -1, "response": "", "error": "NO_TURNS"}
+                api_result = {**api_result, "latency_ms": latency_total}
+            else:
+                body = build_request_body(case)
+                api_result = await call_lia(client, args.url, token, body, timeout=args.timeout)
 
             if api_result["ok"]:
                 scoring = score_heuristic(case, api_result["response"])
+                # Multi-turn hard-fail: B1 (company_id leak), B2 (asks job
+                # title), B4 (salary tool re-asks company) can manifest in
+                # ANY assistant turn — not just the last one. Re-score each
+                # intermediate turn and demote to FAIL if any anti-pattern
+                # fires earlier in the conversation. Marker checks are
+                # skipped here (markers like "Backend" naturally appear
+                # only after the recruiter has provided context).
+                if turns and len(transcripts) > 1:
+                    case_no_markers = {**case, "expected_snippet_markers": []}
+                    for t in transcripts[:-1]:
+                        intermediate = score_heuristic(case_no_markers, t.get("assistant", ""))
+                        ap_flags = [f for f in intermediate["flags"] if f.startswith("ANTI_PATTERN")]
+                        if ap_flags:
+                            scoring["score"] = 0
+                            scoring["flags"].append(f"INTERMEDIATE_TURN_{t['turn']}_{ap_flags[0]}")
+                            break
             else:
                 # HTTP 400/422 may be the CORRECT response for injection/security tests
                 if api_result["status_code"] in (400, 422) and case.get("category") in ("EX", "SC"):
@@ -624,15 +719,20 @@ async def run(args: argparse.Namespace) -> None:
 
             result = {
                 "id": case["id"],
+                "agent": case.get("agent", case.get("category", "unknown")),
                 "category": case["category"],
                 "severity": case["severity"],
                 "title": case["title"],
                 "prompt": case["prompt"],
+                "turns": turns,
+                "transcript": transcripts,
                 "context": case.get("context", {}),
                 "expected_tools": case.get("expected_tools", []),
                 "canonical_files": case.get("canonical_files", []),
                 "success_criteria": case.get("success_criteria", []),
                 "anti_patterns": case.get("anti_patterns", []),
+                "tenant_snippet": case.get("tenant_snippet", ""),
+                "expected_snippet_markers": case.get("expected_snippet_markers", []),
                 "api_ok": api_result["ok"],
                 "http_status": api_result["status_code"],
                 "latency_ms": api_result["latency_ms"],
