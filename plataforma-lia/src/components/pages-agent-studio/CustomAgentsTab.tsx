@@ -9,6 +9,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { TabSectionHeader } from "@/components/pages-agent-studio/TabSectionHeader"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
   DialogDescription, DialogFooter,
@@ -104,29 +105,21 @@ export default function CustomAgentsTab() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-sm font-semibold text-lia-text-primary">
-            {t('customAgentsTitle')}
-            {total > 0 && (
-              <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-bold bg-lia-interactive-active text-lia-text-primary">
-                {total}
-              </span>
-            )}
-          </h2>
-          <p className="text-xs text-lia-text-secondary mt-0.5">
-            {t('customAgentsSubtitle')}
-          </p>
-        </div>
-        <Button
-          size="sm"
-          onClick={() => { setEditingAgent(null); setShowCreateModal(true) }}
-          className="gap-2 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
-        >
-          <Plus className="w-4 h-4" />
-          {t('newCustomAgent')}
-        </Button>
-      </div>
+      <TabSectionHeader
+        title={t('customAgentsTitle')}
+        subtitle={t('customAgentsSubtitle')}
+        count={total}
+        actions={
+          <Button
+            size="sm"
+            onClick={() => { setEditingAgent(null); setShowCreateModal(true) }}
+            className="gap-2 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
+          >
+            <Plus className="w-4 h-4" />
+            {t('newCustomAgent')}
+          </Button>
+        }
+      />
 
       {agents.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 rounded-md border border-dashed border-lia-border-subtle bg-lia-bg-secondary/50">

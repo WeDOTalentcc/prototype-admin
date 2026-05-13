@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button"
 import { BetaBadge } from "@/components/ui/beta-badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { PageTabNavigation } from "@/components/ui/page-tab-navigation"
+import { TabSectionHeader } from "@/components/pages-agent-studio/TabSectionHeader"
 import { useTranslations } from "next-intl"
 
 interface SourcingAgent {
@@ -342,16 +343,11 @@ export default function AgentStudioPage({
 
             {/* Templates */}
             <section>
-              <div className="flex items-center justify-between mb-3">
-                <div>
-                  <h2 className="text-sm font-semibold text-lia-text-primary">
-                    {agents.length === 0 ? t("studio.templates.startChoosing") : t("studio.templates.createNew")}
-                  </h2>
-                  <p className="text-xs text-lia-text-secondary mt-0.5">
-                    {t("studio.templates.preConfigured")}
-                  </p>
-                </div>
-              </div>
+              <TabSectionHeader
+                className="mb-3"
+                title={agents.length === 0 ? t("studio.templates.startChoosing") : t("studio.templates.createNew")}
+                subtitle={t("studio.templates.preConfigured")}
+              />
 
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 {templates.map(t => {
@@ -580,28 +576,20 @@ export default function AgentStudioPage({
 
         {activeTab === "twins" && (
           <div className="space-y-6">
-            <div>
-              <h2 className="text-sm font-semibold text-lia-text-primary">
-                {t("studio.twins.cloneReasoning")}
-              </h2>
-              <p className="text-xs text-lia-text-secondary mt-0.5">
-                {t("studio.twins.cloneDesc")}
-              </p>
-            </div>
+            <TabSectionHeader
+              title={t("studio.twins.cloneReasoning")}
+              subtitle={t("studio.twins.cloneDesc")}
+            />
             <TwinsList onEvaluate={(id) => setEvaluatingTwinId(id)} />
           </div>
         )}
 
         {activeTab === "search" && (
           <div className="space-y-6">
-            <div>
-              <h2 className="text-sm font-semibold text-lia-text-primary">
-                {t("studio.search.fourStrategies")}
-              </h2>
-              <p className="text-xs text-lia-text-secondary mt-0.5">
-                {t("studio.search.searchDesc")}
-              </p>
-            </div>
+            <TabSectionHeader
+              title={t("studio.search.fourStrategies")}
+              subtitle={t("studio.search.searchDesc")}
+            />
             <MultiStrategySearchPanel />
           </div>
         )}

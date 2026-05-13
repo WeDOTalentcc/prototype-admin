@@ -9,6 +9,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { TabSectionHeader } from "@/components/pages-agent-studio/TabSectionHeader"
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
   DialogDescription, DialogFooter,
@@ -52,22 +53,17 @@ export default function MarketplaceTab() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
-            <Store className="w-4 h-4 text-violet-500" />
-            {t('title')}
-          </h2>
-          <p className="text-xs text-lia-text-secondary mt-0.5">
-            {t('subtitle')}
-          </p>
-        </div>
-        <div className="flex gap-1 p-1 bg-lia-bg-secondary rounded-lg">
-          {[
-            { id: "browse" as const, label: t('browse'), icon: Search },
-            { id: "installed" as const, label: t('installed'), icon: Package },
-            { id: "billing" as const, label: t('billing'), icon: CreditCard },
-          ].map(tab => (
+      <TabSectionHeader
+        title={t('title')}
+        subtitle={t('subtitle')}
+        icon={<Store className="w-4 h-4 text-violet-500" />}
+        actions={
+          <div className="flex gap-1 p-1 bg-lia-bg-secondary rounded-lg">
+            {[
+              { id: "browse" as const, label: t('browse'), icon: Search },
+              { id: "installed" as const, label: t('installed'), icon: Package },
+              { id: "billing" as const, label: t('billing'), icon: CreditCard },
+            ].map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveView(tab.id)}
@@ -81,9 +77,10 @@ export default function MarketplaceTab() {
               <tab.icon className="w-3.5 h-3.5" />
               {tab.label}
             </button>
-          ))}
-        </div>
-      </div>
+            ))}
+          </div>
+        }
+      />
 
       {activeView === "browse" && <BrowseMarketplace />}
       {activeView === "installed" && <InstalledAgents />}

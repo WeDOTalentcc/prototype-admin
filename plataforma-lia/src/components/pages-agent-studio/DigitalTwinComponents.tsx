@@ -18,6 +18,7 @@ import {
   textStyles, cardStyles, badgeStyles, buttonStyles, inputStyles, formStyles
 } from "@/lib/design-tokens"
 import { toast } from "@/lib/toast"
+import { TabSectionHeader } from "@/components/pages-agent-studio/TabSectionHeader"
 
 interface DigitalTwin {
   id: string
@@ -50,14 +51,10 @@ export function DigitalTwinHeader() {
   const t = useTranslations("agents.studio.twins")
 
   return (
-    <div>
-      <h2 className="text-sm font-semibold text-lia-text-primary">
-        {t("headerTitle")}
-      </h2>
-      <p className="text-xs text-lia-text-secondary mt-0.5">
-        {t("headerDesc")}
-      </p>
-    </div>
+    <TabSectionHeader
+      title={t("headerTitle")}
+      subtitle={t("headerDesc")}
+    />
   )
 }
 
