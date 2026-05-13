@@ -309,9 +309,9 @@ export default function AgentStudioPage({
                       {t("studio.whatIsAgent")}
                     </span>
                   </div>
-                  <h2 className="text-base font-semibold text-lia-text-primary mb-2">
+                  <p className="text-base font-semibold text-lia-text-primary mb-2" role="heading" aria-level={2}>
                     {t("studio.virtualRecruiter")}
-                  </h2>
+                  </p>
                   <p className="text-sm text-lia-text-secondary mb-6 max-w-2xl">
                     {t("studio.virtualRecruiterDesc")}
                   </p>

@@ -193,7 +193,7 @@ function BrowseMarketplace() {
               <div className="p-4">
                 <div className="flex items-start justify-between mb-3">
                   <div>
-                    <h3 className="text-sm font-semibold text-lia-text-primary">{listing.title}</h3>
+                    <p className="text-sm font-semibold text-lia-text-primary" role="heading" aria-level={3}>{listing.title}</p>
                     {listing.agent_role && (
                       <p className="text-[10px] text-lia-text-secondary mt-0.5">{listing.agent_role}</p>
                     )}
