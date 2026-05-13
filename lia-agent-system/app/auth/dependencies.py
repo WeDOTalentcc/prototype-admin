@@ -215,6 +215,54 @@ def _is_dev_environment() -> bool:
     return getattr(_app_settings, "ENVIRONMENT", "development") == "development"
 
 
+async def _heal_legacy_demo_company_id(user, db) -> None:
+    """Task #1051 — Auto-heal demo users created before CANONICAL_DEMO_UUID rollout.
+
+    Legacy demo users persisted with ``company_id="demo_company"`` (or other
+    string values) trigger the recurring T-E bug ("LIA pergunta company_id no
+    chat") because ``CompanyId.parse`` rejects the value and the wizard mixin
+    fails-closed. New users are seeded with ``CANONICAL_DEMO_UUID``
+    (``00000000-0000-4000-a000-000000000001``), but this helper reconciles
+    any pre-existing legacy row in-place.
+
+    Idempotent + fail-open: any DB error is logged but never raises — the
+    fallback is degradation back to the bug, not a hard 500 on login.
+
+    LGPD: log carries only ``user_id`` (UUID) + the literal legacy value;
+    NEVER the demo email or any other PII.
+    """
+    from scripts.seeds.demo_company import CANONICAL_DEMO_UUID
+
+    current = str(getattr(user, "company_id", "") or "")
+    if current == CANONICAL_DEMO_UUID:
+        return
+    try:
+        legacy_value = current
+        user.company_id = CANONICAL_DEMO_UUID
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
+        logger.warning(
+            "demo_user_company_id_healed",
+            extra={
+                "event": "demo_user_company_id_healed",
+                "user_id": str(getattr(user, "id", "")),
+                "legacy_company_id": legacy_value or "<empty>",
+                "canonical_company_id": CANONICAL_DEMO_UUID,
+                "task": "#1051",
+            },
+        )
+    except Exception as exc:  # pragma: no cover — fail-open
+        logger.error(
+            "demo_user_company_id_heal_failed",
+            extra={
+                "event": "demo_user_company_id_heal_failed",
+                "user_id": str(getattr(user, "id", "")),
+                "error": type(exc).__name__,
+            },
+        )
+
+
 async def ensure_demo_user(db):
     """Ensure a demo user exists; repairs placeholder password hashes.
 
@@ -247,6 +295,8 @@ async def ensure_demo_user(db):
             from app.auth.security import get_password_hash
             demo_user.password_hash = get_password_hash("demo123")
             await db.commit()
+        # Task #1051 — auto-heal legacy company_id (B1 fix)
+        await _heal_legacy_demo_company_id(demo_user, db)
         return demo_user
 
     # Create demo user with a proper bcrypt hash
@@ -324,6 +374,8 @@ async def get_current_user_or_demo(
     demo_user = result.scalar_one_or_none()
     
     if demo_user:
+        # Task #1051 — auto-heal legacy company_id (B1 fix)
+        await _heal_legacy_demo_company_id(demo_user, db)
         return demo_user
     
     from uuid import uuid4

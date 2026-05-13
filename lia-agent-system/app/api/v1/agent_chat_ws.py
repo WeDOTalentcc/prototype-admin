@@ -710,6 +710,44 @@ async def agent_chat_ws(
                     context["metadata"] = _msg_metadata
             active_domain = msg.get("domain", domain)
 
+            # ── Task #1051 — Wizard session-pin (B2/B3/B4 fix) ─────────────
+            # When the FE forgets to forward ``domain="wizard"`` on a
+            # follow-up turn, ``active_domain`` falls back to ``"auto"`` and
+            # the CascadedRouter below reclassifies the message into
+            # ``company_settings``/fallback. That:
+            #   • bypasses ``WizardSessionService.process_message`` →
+            #     LangGraph checkpointer never restores conversation_messages
+            #     (= B2 "forgets job title", B3 "no history").
+            #   • routes the LLM through ``FallbackReActService`` whose
+            #     tenant snippet, even when populated, lacks the wizard
+            #     stage context → re-asks "qual empresa?" before tools
+            #     (= B4 salary tool re-asks empresa).
+            # Canonical fix: BEFORE the router runs, peek the LangGraph
+            # checkpointer for an open (non-completed) wizard thread for
+            # this session_id. If one exists, force ``active_domain="wizard"``
+            # — the wizard graph itself is the source of truth for stage
+            # transition and will hand off to ``completed`` when done.
+            # Fail-open: ``is_session_active`` swallows exceptions.
+            if active_domain in ("auto", "recruiter_assistant", ""):
+                try:
+                    from app.domains.job_creation.services.wizard_session_service import (
+                        WizardSessionService as _WizSvcPin,
+                    )
+                    _wiz_active = await _WizSvcPin.is_session_active(
+                        session_id=session_id, company_id=company_id,
+                    )
+                    if _wiz_active:
+                        logger.info(
+                            "[AgentChatWS] wizard_session_pin: session=%s → wizard "
+                            "(domain hint='%s' overridden) — Task #1051",
+                            session_id, active_domain,
+                        )
+                        active_domain = "wizard"
+                except Exception as _pin_exc:
+                    logger.debug(
+                        "[AgentChatWS] wizard_session_pin skipped: %s", _pin_exc,
+                    )
+
             _c3b_result = await pre_compliance(content, company_id, active_domain)
             if _c3b_result.fairness_blocked:
                 await ws_mgr.send_to_session(session_id, {"type": "error", "code": "fairness_block", "message": _c3b_result.block_reason})

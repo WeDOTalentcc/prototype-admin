@@ -110,6 +110,64 @@ class WizardSessionService:
             return f"wiz-{company_token}-{session_id}"
         return f"wiz-{session_id}"
 
+    @classmethod
+    async def is_session_active(
+        cls,
+        session_id: str,
+        company_id: str | None = None,
+    ) -> bool:
+        """Task #1051 — Detect an open (non-completed) wizard session.
+
+        Used by ``agent_chat_ws.py`` to PIN ``active_domain="wizard"`` BEFORE
+        the CascadedRouter runs, fixing bugs B2/B3/B4: when the FE forgets
+        to forward ``msg.domain="wizard"`` on subsequent turns, the router
+        previously reclassified inputs like *"Demo Company, 5 anos"* into
+        ``company_settings``/fallback — losing the LangGraph checkpointer
+        thread (B2 = forgets job title, B3 = "no history") and dropping
+        tenant context (B4 = salary tool re-asks empresa).
+
+        Returns True iff a checkpointed wizard state exists for either the
+        company-scoped thread_id (preferred) or the legacy session-only one
+        AND the wizard has NOT reached the ``completed`` stage. The
+        non-completed check is critical — a finished wizard MUST allow the
+        next message ("hi LIA, search candidates") to be routed elsewhere.
+
+        Fail-open: any exception returns False so a checkpointer outage
+        cannot block the chat.
+        """
+        if not session_id:
+            return False
+        try:
+            for thread_id in cls._candidate_thread_ids(session_id, company_id):
+                prior = await cls._get_prior_state(thread_id)
+                if not prior:
+                    continue
+                stage = (prior.get("current_stage") or "").lower()
+                if stage == "completed":
+                    continue
+                # Treat any prior state with conversation history as active.
+                if prior.get("conversation_messages") or stage:
+                    return True
+            return False
+        except Exception:  # pragma: no cover — fail-open
+            return False
+
+    @staticmethod
+    def _candidate_thread_ids(session_id: str, company_id: str | None) -> list[str]:
+        """Return the thread_ids that ``derive_thread_id`` may have produced."""
+        candidates: list[str] = []
+        if company_id:
+            try:
+                from app.shared.value_objects.company_id import CompanyId
+                normalized = CompanyId.parse(company_id).as_str()
+                token = normalized[:8] if normalized else None
+                if token:
+                    candidates.append(f"wiz-{token}-{session_id}")
+            except Exception:
+                pass
+        candidates.append(f"wiz-{session_id}")
+        return candidates
+
     @staticmethod
     async def _get_prior_state(thread_id: str) -> dict:
         """Read checkpointed wizard state without raising.
