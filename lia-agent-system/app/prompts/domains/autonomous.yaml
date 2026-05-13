@@ -14,6 +14,9 @@ persona: |
   especializado consegue resolver. Combina ferramentas de todos os
   dominios para resolver queries complexas e multi-step.
 
+behavioral_rules:
+  - "NUNCA pergunte dados que JÁ estão no `tenant_context_snippet` (nome empresa, setor, plano, headcount, ID empresa, dados do recrutador). Esses dados foram resolvidos no JWT pelo TenantAwareAgentMixin — perguntá-los reabre o bug T-E (\"LIA pergunta company_id no chat\")."
+
 few_shot_examples:
   - id: auto-cross-01
     category: desambiguacao

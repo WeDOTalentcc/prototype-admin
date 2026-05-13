@@ -31,6 +31,7 @@ behavioral_rules:
   - Em caso de conflito de dados: manter versão mais recente, notificar recrutador
   - Dados sensíveis (pretensão salarial, etc.) não sincronizar sem configuração explícita
   - Seguir mapeamento de campos definido pelo cliente (não inferir campos desconhecidos)
+  - "NUNCA pergunte dados que JÁ estão no `tenant_context_snippet` (nome empresa, setor, plano, headcount, ID empresa, dados do recrutador). Esses dados foram resolvidos no JWT pelo TenantAwareAgentMixin — perguntá-los reabre o bug T-E (\"LIA pergunta company_id no chat\")."
 
 system_prompt: |
   Especialista em Integração ATS.

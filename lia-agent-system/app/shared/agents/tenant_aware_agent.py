@@ -469,6 +469,27 @@ class TenantAwareAgentMixin:
             metadata["_tenant_ctx_cache"] = store
         store[key] = value
 
+    @staticmethod
+    def _is_snippet_degraded(snippet: str) -> bool:
+        """True quando o snippet existe mas carrega o fallback genérico.
+
+        Task #1043 / PR-C. Origem: ``TenantContextService`` retorna
+        ``company_name="sua empresa"`` (e ``sector="geral"``) quando não
+        encontra a row em ``companies`` — sintaticamente o snippet não é
+        vazio, mas semanticamente é inútil. Em strict-mode esse é o gatilho
+        clássico do T-E ("LIA pergunta company_id no chat") porque o LLM,
+        sem nome real do tenant, regride a perguntar identidade ao
+        recrutador. Para fail-LOUD ao invés de fail-OPEN silencioso, este
+        helper detecta os marcadores conhecidos do fallback.
+        """
+        if not snippet:
+            return True
+        s = snippet.lower()
+        # Marcadores literais do fallback canônico em
+        # ``app/shared/services/tenant_context_service.py`` (linhas 176/193):
+        # ``company_name="sua empresa"``.
+        return "**sua empresa**" in s or "sua empresa," in s or "sua empresa." in s
+
     async def _get_tenant_context_snippet(self, input: "AgentInput") -> str:
         """Retorna o snippet pro prompt — fail-closed quando estrito.
 
@@ -477,12 +498,35 @@ class TenantAwareAgentMixin:
                MainOrchestrator/SSE/WS handlers — caso normal).
             2. ``self._resolve_tenant_context(input).to_prompt_snippet()``.
             3. Em strict-mode → ``MissingTenantContextError``; senão, ``""``.
+
+        T-1043 / PR-C: snippets *degradados* (com o fallback ``"sua
+        empresa"``) também levantam em strict-mode — fail-LOUD em vez de
+        injetar contexto semanticamente vazio.
         """
         agent = self._tenant_aware_agent_name()
         ctx = input.context or {}
 
         existing = ctx.get("tenant_context_snippet")
         if isinstance(existing, str) and existing.strip():
+            if self._is_snippet_degraded(existing) and self._is_strict():
+                _record_metric(agent, "fail_closed")
+                logger.error(
+                    "agent_tenant_context_degraded",
+                    extra={
+                        "agent": agent,
+                        "company_id_raw": repr(input.company_id),
+                        "tenant_source": "agent_input_degraded",
+                    },
+                )
+                raise MissingTenantContextError(
+                    f"Agente '{agent}' recebeu tenant_context_snippet degradado "
+                    f"(fallback 'sua empresa') — fail-LOUD em strict-mode (T-1043 PR-C).",
+                    details={
+                        "agent": agent,
+                        "company_id_raw": repr(input.company_id),
+                        "tenant_source": "agent_input_degraded",
+                    },
+                )
             _record_metric(agent, "hit")
             return existing
 

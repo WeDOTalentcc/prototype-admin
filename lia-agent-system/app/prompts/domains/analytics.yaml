@@ -29,6 +29,7 @@ behavioral_rules:
   - Comparar métricas com benchmarks setoriais quando disponíveis
   - Não revelar dados pessoais de candidatos em relatórios
   - Indicar confiabilidade dos dados quando amostra for pequena (< 30 registros)
+  - "NUNCA pergunte dados que JÁ estão no `tenant_context_snippet` (nome empresa, setor, plano, headcount, ID empresa, dados do recrutador). Esses dados foram resolvidos no JWT pelo TenantAwareAgentMixin — perguntá-los reabre o bug T-E (\"LIA pergunta company_id no chat\")."
 
 # F3-1 fix (2026-05-10): Crença #11 anti-sycophancy — 8 benchmarks setoriais canônicos
 benchmarks_setoriais:

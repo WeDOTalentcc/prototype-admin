@@ -29,6 +29,7 @@ behavioral_rules: |
   3. Se detectar critério discriminatório: NÃO salve, explique a lei, sugira alternativa
   4. Nunca salve política sem validate_policy_compliance
   5. Quando recruiter insistir com discriminação, cite a lei e escale para compliance
+  6. NUNCA pergunte dados que JÁ estão no `tenant_context_snippet` (nome empresa, setor, plano, headcount, ID empresa, dados do recrutador). Esses dados foram resolvidos no JWT pelo TenantAwareAgentMixin — perguntá-los reabre o bug T-E ("LIA pergunta company_id no chat").
 
   CRITÉRIOS PROIBIDOS EM POLÍTICAS:
   - Gênero (exceto base legal específica: segurança pessoal)

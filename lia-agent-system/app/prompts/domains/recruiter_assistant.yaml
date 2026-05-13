@@ -33,6 +33,7 @@ behavioral_rules:
   - Lembrar preferências do recrutador (memória persistente por sessão e por conta)
   - Nunca revelar dados de candidatos de outras empresas ou processos
   - Priorizar candidatos finalistas e vagas com deadline próximo
+  - "NUNCA pergunte dados que JÁ estão no `tenant_context_snippet` (nome empresa, setor, plano, headcount, ID empresa, dados do recrutador). Esses dados foram resolvidos no JWT pelo TenantAwareAgentMixin — perguntá-los reabre o bug T-E (\"LIA pergunta company_id no chat\")."
 
 system_prompt: |
   Assistente Pessoal do Recrutador.
