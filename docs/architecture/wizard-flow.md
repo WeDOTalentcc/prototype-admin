@@ -17,6 +17,337 @@ A LIA tem **dois wizards convivendo** durante a migração canônica
 
 ---
 
+## 0. Como o wizard funciona, do ponto de vista do recrutador
+
+Esta seção é uma **simulação narrada** de uma criação de vaga real. Cada
+turno mostra três coisas:
+
+- **👤 O que você (recrutador) digita** no chat;
+- **🔧 O que acontece por trás** — quais nós do grafo rodam, qual *intent*
+  o LLM classifica, quais *tools* são chamadas, e em que *stage* o wizard
+  está;
+- **💬 O que a LIA responde** — texto realista, em PT-BR, no estilo
+  chat-first.
+
+> Pré-requisitos: você já está logada (ou usando o usuário demo). A LIA
+> **já sabe** o nome da empresa, setor, plano, headcount e seu cargo —
+> esses dados vêm do JWT via `tenant_context_snippet` (Task #1043) e a
+> LIA tem ordem explícita nos prompts para **não** perguntá-los de novo.
+
+### Stage `input-evaluation` — a vaga nasce
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ TURNO 1 — você abre o wizard                                        │
+├─────────────────────────────────────────────────────────────────────┤
+│ 👤 Você digita:                                                     │
+│    "Preciso contratar um engenheiro backend pleno em Python."       │
+├─────────────────────────────────────────────────────────────────────┤
+│ 🔧 O que acontece por trás (stage = input-evaluation):              │
+│    1. intent_classifier  → intent = PROVIDE_INFO                    │
+│    2. field_extractor    → {title: "Engenheiro Backend",            │
+│                              seniority: "Pleno",                    │
+│                              skills_hint: ["Python"]}               │
+│    3. tool_router        → 1 tool call: save_job_basics             │
+│    4. tool_executor      → grava rascunho no estado                 │
+│    5. response_generator → injeta tenant_context_snippet            │
+│                            ("Demo Company, setor Tecnologia…") +    │
+│                            stage_context da input-evaluation        │
+│    6. stage_transition   → required_fields=[title, department];     │
+│                            falta department → fica na mesma stage   │
+├─────────────────────────────────────────────────────────────────────┤
+│ 💬 LIA responde:                                                    │
+│    "Boa! Anotei aqui: Engenheiro Backend Pleno, com Python.        │
+│     Em qual área da Demo Company essa vaga vai ficar — Engenharia, │
+│     Dados, Plataforma? E é remoto, híbrido ou presencial?"         │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────┐
+│ TURNO 2 — você completa os dados básicos                            │
+├─────────────────────────────────────────────────────────────────────┤
+│ 👤 Você digita:                                                     │
+│    "Engenharia de Plataforma, híbrido em SP, CLT."                  │
+├─────────────────────────────────────────────────────────────────────┤
+│ 🔧 O que acontece por trás:                                         │
+│    1. intent_classifier  → PROVIDE_INFO                             │
+│    2. field_extractor    → {department: "Engenharia de Plataforma",│
+│                              work_model: "hybrid",                  │
+│                              location: "São Paulo",                 │
+│                              contract_type: "CLT"}                  │
+│    3. tool_router        → save_job_basics (atualiza rascunho)      │
+│    4. response_generator → resume e PERGUNTA se pode avançar        │
+│    5. stage_transition   → required_fields ✅ → marca avanço para  │
+│                            jd-enrichment, mas espera confirmação    │
+│                            (interrupt_before pausa o grafo aqui)    │
+├─────────────────────────────────────────────────────────────────────┤
+│ 💬 LIA responde:                                                    │
+│    "Fechado. Resumo da vaga até aqui:                              │
+│     • Engenheiro Backend Pleno — Python                             │
+│     • Engenharia de Plataforma · Híbrido em SP · CLT                │
+│     Posso avançar para enriquecer a descrição com sugestões de      │
+│     responsabilidades e benefícios?"                                │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────┐
+│ TURNO 3 — você confirma o avanço de stage                           │
+├─────────────────────────────────────────────────────────────────────┤
+│ 👤 Você digita:                                                     │
+│    "Pode avançar."                                                  │
+├─────────────────────────────────────────────────────────────────────┤
+│ 🔧 O que acontece por trás:                                         │
+│    1. intent_classifier  → CONFIRM (entende "pode avançar",        │
+│       "vamos", "sim", "bora", "ok"… via _CONFIRMATION_WORDS)        │
+│    2. router atalha direto para stage_transition                    │
+│    3. stage_transition   → libera o interrupt_before, troca         │
+│                            current_stage = "jd-enrichment"          │
+│    4. should_continue=True → loop volta para intent_classifier      │
+│       já no novo stage                                              │
+├─────────────────────────────────────────────────────────────────────┤
+│ 💬 LIA responde:                                                    │
+│    (resposta combinada com o turno 4 abaixo, pois o grafo loopa)   │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Stage `jd-enrichment` — a LIA enriquece a descrição
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ TURNO 4 — a LIA traz sugestões de mercado (sem você pedir nada)    │
+├─────────────────────────────────────────────────────────────────────┤
+│ 🔧 O que acontece por trás (stage = jd-enrichment):                 │
+│    1. intent_classifier  → ASK_QUESTION (atalho — não tem mensagem  │
+│       sua nova; o grafo entrou na nova stage)                       │
+│    2. tool_router        → enrich_responsibilities + enrich_        │
+│                            benefits + suggest_description           │
+│    3. tool_executor      → consulta benchmarks setoriais (8         │
+│                            fontes canônicas) + histórico da Demo    │
+│                            Company + catálogo de skills             │
+│    4. response_generator → renderiza sugestões em formato editável  │
+├─────────────────────────────────────────────────────────────────────┤
+│ 💬 LIA responde:                                                    │
+│    "Com base em vagas parecidas no mercado e no que a Demo Company │
+│     já contratou, sugiro:                                           │
+│                                                                     │
+│     📋 Responsabilidades                                            │
+│      1. Desenhar e manter APIs Python (FastAPI/Django)              │
+│      2. Cuidar de performance, observabilidade e SLOs               │
+│      3. Mentorar juniores em revisão de código                      │
+│                                                                     │
+│     🎁 Benefícios (alinhados ao plano da Demo Company)              │
+│      • VR + VA · Plano de saúde Bradesco Top                        │
+│      • Home office stipend · 30 dias de férias                      │
+│                                                                     │
+│     Quer que eu ajuste algo, ou sigo para a faixa salarial?"       │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────┐
+│ TURNO 5 — você ajusta uma sugestão                                  │
+├─────────────────────────────────────────────────────────────────────┤
+│ 👤 Você digita:                                                     │
+│    "Tira mentoria de junior. Adiciona experiência com AWS."        │
+├─────────────────────────────────────────────────────────────────────┤
+│ 🔧 O que acontece por trás:                                         │
+│    1. intent_classifier  → MODIFY                                   │
+│    2. field_extractor    → diff: remove "mentorar juniores",       │
+│                            adiciona "experiência com AWS"           │
+│    3. tool_router        → save_job_basics (merge no draft)         │
+│    4. response_generator → reapresenta lista com a edição           │
+├─────────────────────────────────────────────────────────────────────┤
+│ 💬 LIA responde:                                                    │
+│    "Atualizei. Lista final de responsabilidades:                   │
+│      1. Desenhar e manter APIs Python (FastAPI/Django)              │
+│      2. Cuidar de performance, observabilidade e SLOs               │
+│      3. Experiência sólida com AWS (EC2, RDS, Lambda)               │
+│     Pode seguir para salário?"                                      │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Stage `salary` — a LIA traz benchmarks
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ TURNO 6 — você confirma e a LIA puxa benchmark salarial             │
+├─────────────────────────────────────────────────────────────────────┤
+│ 👤 Você digita: "Vamos."                                            │
+├─────────────────────────────────────────────────────────────────────┤
+│ 🔧 O que acontece por trás (stage = salary):                        │
+│    1. intent_classifier  → CONFIRM → stage_transition avança        │
+│    2. (loop) intent_classifier → ASK_QUESTION                       │
+│    3. tool_router        → fetch_salary_benchmark                   │
+│    4. tool_executor      → consulta Parecer + 8 benchmarks          │
+│                            (ABRH, Robert Half, Catho, etc.)         │
+│    5. response_generator → exibe faixa com p25/p50/p75              │
+├─────────────────────────────────────────────────────────────────────┤
+│ 💬 LIA responde:                                                    │
+│    "Para Backend Pleno em Python, híbrido em SP (CLT), o mercado  │
+│     paga (n=312 vagas, últimos 90 dias):                            │
+│        p25  R$ 9.500   |  p50  R$ 12.000   |  p75  R$ 14.500       │
+│     A Demo Company costuma pagar entre p50 e p60 nesse nível.       │
+│     Quer fixar entre R$ 11.000 e R$ 13.500, ou prefere outra       │
+│     faixa?"                                                         │
+└─────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────┐
+│ TURNO 7 — você define a faixa                                       │
+├─────────────────────────────────────────────────────────────────────┤
+│ 👤 Você digita: "Pode ser 11 a 13.500."                            │
+├─────────────────────────────────────────────────────────────────────┤
+│ 🔧 Por trás:                                                        │
+│    1. intent_classifier  → PROVIDE_INFO                             │
+│    2. field_extractor    → {salary_min: 11000, salary_max: 13500,  │
+│                              salary_currency: "BRL"}                │
+│    3. tool_router        → validate_salary_range                    │
+│       (checa se está dentro do p10–p90 do mercado para evitar       │
+│        viés econômico — Inegociável #4 / FairnessGuard)             │
+│    4. tool_executor      → ✅ válida                                │
+│    5. stage_transition   → required ✅ → propõe avanço             │
+├─────────────────────────────────────────────────────────────────────┤
+│ 💬 LIA responde:                                                    │
+│    "Salvo: R$ 11.000 a R$ 13.500. Tá dentro do mercado e da       │
+│     política da Demo Company. Vamos para as competências?"         │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Stage `competencies` — skills técnicas e comportamentais
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ TURNO 8 — a LIA sugere skills (após você confirmar o avanço)        │
+├─────────────────────────────────────────────────────────────────────┤
+│ 🔧 Por trás (stage = competencies):                                 │
+│    1. tool_router        → suggest_skills + suggest_behavioral_     │
+│                            competencies                             │
+│    2. tool_executor      → cruza title+seniority+department com o   │
+│                            Skills Ontology Engine                   │
+├─────────────────────────────────────────────────────────────────────┤
+│ 💬 LIA responde:                                                    │
+│    "Com base no perfil, sugiro:                                    │
+│                                                                     │
+│     🛠 Skills técnicas (selecione/edite)                            │
+│      [✓] Python · FastAPI · PostgreSQL · Docker · AWS · Git         │
+│      [ ] Kafka · Redis · Terraform                                  │
+│                                                                     │
+│     🤝 Soft skills                                                  │
+│      [✓] Comunicação assíncrona · Autonomia · Resolução de         │
+│           problemas                                                 │
+│                                                                     │
+│     Quer adicionar/remover algo, ou seguimos para as perguntas de  │
+│     triagem?"                                                       │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Stage `wsi-questions` — perguntas de triagem WSI
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ TURNO 9 — a LIA gera as 6 perguntas WSI                             │
+├─────────────────────────────────────────────────────────────────────┤
+│ 🔧 Por trás (stage = wsi-questions):                                │
+│    1. tool_router        → generate_wsi_questions                   │
+│    2. tool_executor      → gera 6 blocos do WSI (técnico,           │
+│                            comportamental, motivacional, fit        │
+│                            cultural, situacional, anti-bias)        │
+│    3. response_generator → renderiza editável                       │
+├─────────────────────────────────────────────────────────────────────┤
+│ 💬 LIA responde:                                                    │
+│    "Gerei 6 perguntas de triagem (você pode editar qualquer uma):  │
+│      1. [Técnica] Conte uma situação em que você precisou           │
+│         escalar uma API Python sob carga…                           │
+│      2. [Comportamental] Como você lida com débito técnico…        │
+│      3. [Motivacional] O que te atrai numa vaga híbrida…           │
+│      4. [Fit cultural] Como você prefere receber feedback…         │
+│      5. [Situacional] Imagine um incidente em produção às 2h…       │
+│      6. [Anti-bias] Conte um projeto de impacto além do código…    │
+│                                                                     │
+│     Aprovado? Posso publicar a vaga?"                               │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### Stage `review/publish` — HITL antes de publicar
+
+```
+┌─────────────────────────────────────────────────────────────────────┐
+│ TURNO 10 — você aprova a publicação                                 │
+├─────────────────────────────────────────────────────────────────────┤
+│ 👤 Você digita: "Aprovado, publica."                                │
+├─────────────────────────────────────────────────────────────────────┤
+│ 🔧 Por trás:                                                        │
+│    1. intent_classifier  → CONFIRM                                  │
+│    2. ⚠ interrupt_before=["stage_transition"] PAUSA o grafo aqui   │
+│       — esse é o ponto HITL antes de qualquer mutação destrutiva    │
+│    3. backend libera o interrupt apenas porque o intent é CONFIRM   │
+│    4. tool_router        → validate_job_compliance + publish_job    │
+│    5. tool_executor      →                                          │
+│        a) FairnessGuard L3 audita descrição e perguntas             │
+│        b) FactChecker valida benchmarks citados                     │
+│        c) ComplianceDomainPrompt grava audit log (SOX 7 anos)       │
+│        d) INSERT na tabela job_vacancies (RLS por company_id)       │
+│        e) emite evento para o pipeline de Sourcing                  │
+│    6. stage_transition   → should_continue=False → END              │
+├─────────────────────────────────────────────────────────────────────┤
+│ 💬 LIA responde:                                                    │
+│    "Pronto! Vaga publicada como #VG-1287.                          │
+│     • Pipeline padrão (7 stages) já aplicado                        │
+│     • Triagem WSI ativa para novos candidatos                       │
+│     • Monitoramento de fairness ligado                              │
+│     Quer que eu já comece a sourcing ou prefere revisar antes?"    │
+└─────────────────────────────────────────────────────────────────────┘
+```
+
+### O que a LIA **não faz** em momento algum
+
+Por ordem explícita nos prompts (regra #8 dos `behavioral_rules`,
+adicionada em 8 YAMLs pela Task #1043):
+
+- ❌ Não pergunta seu nome, cargo, e-mail ou telefone (vem do JWT).
+- ❌ Não pergunta o nome, setor, plano ou headcount da empresa (vem do
+  `tenant_context_snippet`).
+- ❌ Não pergunta o `company_id` em momento algum.
+- ❌ Não publica a vaga sem o intent `CONFIRM` explícito (HITL via
+  `interrupt_before`).
+- ❌ Não salva uma faixa salarial fora do mercado sem validar com
+  `validate_salary_range`.
+
+### Resumo visual stage-a-stage
+
+```
+input-evaluation  ──┐
+                    │  você descreve a vaga em linguagem natural
+                    │  LIA extrai title, dept, modelo, contrato
+                    ▼
+jd-enrichment     ──┐
+                    │  LIA puxa benchmarks de mercado + histórico
+                    │  da empresa e propõe responsabilidades/benefícios
+                    ▼
+salary            ──┐
+                    │  LIA traz p25/p50/p75; você fixa a faixa
+                    │  validate_salary_range protege contra viés
+                    ▼
+competencies      ──┐
+                    │  LIA sugere skills via Skills Ontology Engine
+                    │  você aceita/edita
+                    ▼
+wsi-questions     ──┐
+                    │  LIA gera 6 perguntas (6 blocos WSI)
+                    │  você revisa e aprova
+                    ▼
+review/publish    ──┐
+                    │  HITL: interrupt_before pausa o grafo
+                    │  CONFIRM → publica + audit + Fairness L3
+                    ▼
+                  END (vaga viva no pipeline de sourcing)
+```
+
+> **Como cada turno acima mapeia no grafo:** todo o fluxo passa pelos
+> mesmos 6 nós (`intent_classifier → field_extractor → tool_router →
+> tool_executor → response_generator → stage_transition`) — o que muda
+> entre stages é **qual conjunto de tools** o `tool_router` libera (via
+> `get_stage_tools(stage)`) e **quais campos** o `field_extractor`
+> tenta capturar (via `STAGE_DEFINITIONS[stage].required_fields`). A
+> seção 2 abaixo descreve esse mecanismo em detalhe.
+
+---
+
 ## 1. Entrada HTTP — wizard A (`/smart-orchestrate`)
 
 ```
