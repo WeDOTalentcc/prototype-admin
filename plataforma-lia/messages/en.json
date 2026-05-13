@@ -1783,6 +1783,38 @@
         "label": "Digital Twins",
         "headerTitle": "Clone the reasoning of your best evaluators",
         "headerDesc": "Capture how a team specialist evaluates candidates. The Digital Twin learns the criteria and acts as an automatic \"second opinion\" during screening.",
+        "emptyState": {
+          "title": "You don't have any Digital Twin yet",
+          "description": "Create your first Digital Twin to clone the evaluation reasoning of a team specialist and get an automatic second opinion during screening.",
+          "createFirst": "Create my first Digital Twin",
+          "noExperience": "No technical background? No problem — LIA walks you through it step by step."
+        },
+        "createModal": {
+          "title": "Create Digital Twin",
+          "subtitle": "Configure the specialist whose reasoning will be cloned to support screening.",
+          "nameLabel": "Twin name",
+          "namePlaceholder": "e.g. Ana's Twin — Senior Tech Recruiter",
+          "nameHelp": "Use the team specialist's name or the role being cloned.",
+          "specialtyLabel": "Specialty",
+          "specialtyPlaceholder": "e.g. Technical screening for backend roles",
+          "specialtyHelp": "What kind of evaluation this Twin is best at.",
+          "descLabel": "Description (optional)",
+          "descPlaceholder": "Main criteria the specialist uses, red flags, ideal profiles…",
+          "descHelp": "The more context, the better the Twin learns the pattern.",
+          "decisionsLabel": "Past decisions (optional)",
+          "decisionsUploadCta": "Click to upload a CSV file with decisions",
+          "decisionsFormats": "CSV up to 5 MB · expected columns: candidate, decision, rationale",
+          "decisionsHelp": "More past decisions means the Twin starts more accurate.",
+          "fileTooLargeTitle": "File too large",
+          "fileTooLargeDesc": "The decisions CSV must be 5 MB or smaller.",
+          "successTitle": "Digital Twin created",
+          "successDesc": "Ready to start supporting your screenings.",
+          "errorTitle": "Couldn't create the Twin",
+          "errorDesc": "Please try again in a moment — if it persists, contact support.",
+          "cancel": "Cancel",
+          "creating": "Creating…",
+          "create": "Create Digital Twin"
+        },
         "onboarding": {
           "stepLabel": "Step {number}",
           "step1Title": "Select an evaluator",
@@ -2486,7 +2518,9 @@
       "fairnessGuardOk": "FairnessGuard OK",
       "piiStripOk": "PII Strip OK",
       "auditLogOk": "Audit Log OK",
-      "agentFallback": "Agent"
+      "agentFallback": "Agent",
+      "defaultAgentName": "New Agent",
+      "toolsLabel": "Tools"
     },
     "digitalTwin": {
       "active": "Active",
@@ -2513,7 +2547,9 @@
       "evaluateCandidate": "Evaluate candidate",
       "manage": "Manage",
       "digitalTwinEvaluation": "Digital Twin Evaluation",
-      "reevaluate": "Re-evaluate"
+      "reevaluate": "Re-evaluate",
+      "createNew": "New Digital Twin",
+      "twinCount": "{count, plural, =0 {No twins} =1 {1 twin} other {# twins}}"
     },
     "candidateOrigin": {
       "origins": {

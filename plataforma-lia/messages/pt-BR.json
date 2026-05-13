@@ -1783,6 +1783,38 @@
         "label": "Gêmeos Digitais",
         "headerTitle": "Clone o raciocínio dos seus melhores avaliadores",
         "headerDesc": "Capture como um especialista da equipe avalia candidatos. O Digital Twin aprende os critérios e funciona como uma \"segunda opinião\" automática na triagem.",
+        "emptyState": {
+          "title": "Você ainda não tem nenhum Gêmeo Digital",
+          "description": "Crie seu primeiro Digital Twin para clonar o raciocínio de avaliação de um especialista da equipe e receber uma segunda opinião automática na triagem.",
+          "createFirst": "Criar meu primeiro Gêmeo Digital",
+          "noExperience": "Sem experiência técnica? Tudo bem — a LIA te guia passo a passo."
+        },
+        "createModal": {
+          "title": "Criar Gêmeo Digital",
+          "subtitle": "Configure o especialista cujo raciocínio será clonado para apoiar a triagem.",
+          "nameLabel": "Nome do Gêmeo",
+          "namePlaceholder": "Ex.: Twin da Ana — Recrutadora Tech Sênior",
+          "nameHelp": "Use o nome do especialista da equipe ou do papel que está sendo clonado.",
+          "specialtyLabel": "Especialidade",
+          "specialtyPlaceholder": "Ex.: Triagem técnica para vagas de backend",
+          "specialtyHelp": "Em que tipo de avaliação esse Gêmeo é mais útil.",
+          "descLabel": "Descrição (opcional)",
+          "descPlaceholder": "Critérios principais usados pelo especialista, sinais de alerta, perfis ideais…",
+          "descHelp": "Quanto mais contexto, melhor o Gêmeo aprende o padrão.",
+          "decisionsLabel": "Decisões passadas (opcional)",
+          "decisionsUploadCta": "Clique para enviar um arquivo CSV com decisões",
+          "decisionsFormats": "CSV até 5 MB · colunas esperadas: candidato, decisão, justificativa",
+          "decisionsHelp": "Quanto mais decisões passadas, mais preciso o Gêmeo fica desde o início.",
+          "fileTooLargeTitle": "Arquivo muito grande",
+          "fileTooLargeDesc": "O CSV de decisões precisa ter no máximo 5 MB.",
+          "successTitle": "Gêmeo Digital criado",
+          "successDesc": "Pronto para começar a apoiar suas triagens.",
+          "errorTitle": "Não foi possível criar o Gêmeo",
+          "errorDesc": "Tente novamente em instantes — se persistir, fale com o suporte.",
+          "cancel": "Cancelar",
+          "creating": "Criando…",
+          "create": "Criar Gêmeo Digital"
+        },
         "onboarding": {
           "stepLabel": "Passo {number}",
           "step1Title": "Selecione um avaliador",
@@ -2486,7 +2518,9 @@
       "fairnessGuardOk": "FairnessGuard OK",
       "piiStripOk": "Remoção PII OK",
       "auditLogOk": "Log de Auditoria OK",
-      "agentFallback": "Agente"
+      "agentFallback": "Agente",
+      "defaultAgentName": "Novo Agente",
+      "toolsLabel": "Ferramentas"
     },
     "digitalTwin": {
       "active": "Ativo",
@@ -2513,7 +2547,9 @@
       "evaluateCandidate": "Avaliar candidato",
       "manage": "Gerenciar",
       "digitalTwinEvaluation": "Avaliação Digital Twin",
-      "reevaluate": "Reavaliar"
+      "reevaluate": "Reavaliar",
+      "createNew": "Novo Gêmeo Digital",
+      "twinCount": "{count, plural, =0 {Nenhum gêmeo} =1 {1 gêmeo} other {# gêmeos}}"
     },
     "candidateOrigin": {
       "origins": {
