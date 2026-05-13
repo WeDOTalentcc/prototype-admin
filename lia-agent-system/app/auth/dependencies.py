@@ -252,13 +252,14 @@ async def ensure_demo_user(db):
     # Create demo user with a proper bcrypt hash
     from uuid import uuid4
     from app.auth.security import get_password_hash as _gph
+    from scripts.seeds.demo_company import CANONICAL_DEMO_UUID
     demo_user = User(
         id=uuid4(),
         email=_demo_email,
         name="Demo User",
         password_hash=_gph("demo123"),
         role=UserRole.recruiter,
-        company_id="demo_company",
+        company_id=CANONICAL_DEMO_UUID,
         is_active=True,
     )
     db.add(demo_user)
@@ -326,13 +327,14 @@ async def get_current_user_or_demo(
         return demo_user
     
     from uuid import uuid4
+    from scripts.seeds.demo_company import CANONICAL_DEMO_UUID
     demo_user = User(
         id=uuid4(),
         email="demo@wedotalent.com",
         name="Demo User",
         password_hash="demo_not_for_login",
         role=UserRole.recruiter,
-        company_id="demo_company",
+        company_id=CANONICAL_DEMO_UUID,
         is_active=True
     )
     db.add(demo_user)
