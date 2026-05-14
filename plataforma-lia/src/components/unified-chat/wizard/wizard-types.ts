@@ -50,6 +50,23 @@ export type WizardStage =
 export type ScreeningMode = "compact" | "full"
 
 /**
+ * Task #1070 — snapshot agregado de degradacao da IA emitido pelo backend
+ * (`WizardFallbackTracker`). `scope="session"` quando a mesma sessao de wizard
+ * acumulou >=3 fallbacks; `scope="tenant"` quando a empresa toda acumulou
+ * >=5 fallbacks na ultima hora. `reason_breakdown` mostra a contagem por
+ * causa (`timeout`/`provider_error`/`exception`).
+ */
+export interface AiDegradedMode {
+  active: boolean
+  scope: "session" | "tenant"
+  count: number
+  threshold: number
+  window_seconds: number
+  since: string
+  reason_breakdown: Record<string, number>
+}
+
+/**
  * WebSocket message payload for wizard stages — alias of
  * `WizardStagePayloadContract` (generated). Kept as a type alias so
  * existing imports `import { WizardStagePayload }` keep working.
@@ -79,6 +96,8 @@ export interface JdEnrichmentData {
    * exibir copy específica e oferecer "Tentar novamente" quando aplicável.
    */
   jd_enrichment_fallback_reason?: string | null
+  /** Task #1070 — modo degradado agregado (sessao/tenant). */
+  ai_degraded_mode?: AiDegradedMode | null
 }
 
 export interface EnrichedJobDescription {
@@ -129,6 +148,8 @@ export interface BigFiveData {
   bigfive_used_fallback?: boolean
   /** Task #1067 — root-cause label do fallback. */
   bigfive_fallback_reason?: string | null
+  /** Task #1070 — modo degradado agregado (sessao/tenant). */
+  ai_degraded_mode?: AiDegradedMode | null
 }
 
 /**
@@ -146,6 +167,8 @@ export interface SalaryData {
   salary_used_fallback?: boolean
   /** Task #1067 — root-cause label do fallback. */
   salary_fallback_reason?: string | null
+  /** Task #1070 — modo degradado agregado (sessao/tenant). */
+  ai_degraded_mode?: AiDegradedMode | null
 }
 
 export interface CompetencyData {
@@ -173,6 +196,8 @@ export interface WsiQuestionsData {
   wsi_questions_used_fallback?: boolean
   /** Task #1067 — root-cause label do fallback. */
   wsi_questions_fallback_reason?: string | null
+  /** Task #1070 — modo degradado agregado (sessao/tenant). */
+  ai_degraded_mode?: AiDegradedMode | null
 }
 
 export interface ScreeningQuestion {

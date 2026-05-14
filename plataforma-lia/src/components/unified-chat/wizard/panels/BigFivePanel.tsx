@@ -4,6 +4,7 @@ import React from "react"
 import { Brain } from "lucide-react"
 import type { BigFiveData } from "../wizard-types"
 import { FallbackBanner } from "./FallbackBanner"
+import { AiDegradedModeBanner } from "./AiDegradedModeBanner"
 
 interface Props {
   data: Record<string, unknown>
@@ -47,6 +48,8 @@ export function BigFivePanel({ data }: Props) {
 
   return (
     <div className="p-4 space-y-4">
+      {/* Task #1070 — banner de modo degradado agregado (sessao/tenant). */}
+      <AiDegradedModeBanner state={d.ai_degraded_mode ?? null} />
       {/* Task #1065 — banner de fallback determinístico (timeout do LLM
           → traços neutros 0.5). FallbackBanner usa `mx-4 mt-3` mas o
           wrapper aqui já tem `p-4`, então usamos `-mx-4 -mt-4 mb-0`

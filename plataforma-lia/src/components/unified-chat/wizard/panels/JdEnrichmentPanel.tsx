@@ -5,6 +5,7 @@ import { cn } from"@/lib/utils"
 import { CheckCircle, AlertTriangle, XCircle, Brain, Shield } from"lucide-react"
 import type { JdEnrichmentData } from"../wizard-types"
 import { FallbackBanner } from "./FallbackBanner"
+import { AiDegradedModeBanner } from "./AiDegradedModeBanner"
 
 interface Props {
   data: Record<string, unknown>
@@ -35,6 +36,8 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
 
   return (
     <div className="flex flex-col">
+      {/* Task #1070 — banner de modo degradado agregado (sessao/tenant). */}
+      <AiDegradedModeBanner state={d.ai_degraded_mode ?? null} />
       {/* Task #1065/#1067 — banner de fallback determinístico com root-cause. */}
       {d.jd_enrichment_used_fallback && (
         <FallbackBanner

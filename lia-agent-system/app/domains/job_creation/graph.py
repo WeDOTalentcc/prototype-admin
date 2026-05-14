@@ -49,6 +49,42 @@ def _get_wsi_generator() -> WSIQuestionGenerator:
     return _wsi_generator
 
 
+def _emit_fallback_telemetry(
+    state: dict, stage: str, reason):
+    """Task #1070 — registra um evento de fallback no tracker e devolve o
+    snapshot ai_degraded_mode (sessão ou tenant) para ser propagado pelo
+    ws_stage_payload. Quando o threshold é cruzado, o tracker emite log
+    estruturado + sentry_sdk.capture_message para o time de plataforma.
+
+    Sempre invoca get_state para que stages que não caíram em fallback
+    no turno atual ainda surfacem o aviso enquanto a janela está ativa.
+    """
+    try:
+        from app.shared.observability.wizard_fallback_tracker import (
+            get_wizard_fallback_tracker,
+        )
+
+        sid = (
+            str(state.get("session_id") or state.get("thread_id") or "")
+            or None
+        )
+        cid = (
+            str(state.get("workspace_id") or state.get("company_id") or "")
+            or None
+        )
+        tracker = get_wizard_fallback_tracker()
+        if reason:
+            tracker.record_fallback(
+                session_id=sid, company_id=cid, stage=stage, reason=reason,
+            )
+        return tracker.get_state(session_id=sid, company_id=cid)
+    except Exception as exc:  # noqa: BLE001 — telemetria nunca quebra o wizard
+        logger.warning(
+            "[JobCreation:%s] wizard fallback tracker failed: %s", stage, exc,
+        )
+        return None
+
+
 def _get_api_client(state: dict) -> JobCreationAPIClient:
     """Get API client with auth context from state."""
     global _api_client
@@ -686,6 +722,12 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
                 "jd_enrichment_fallback_reason": locals().get(
                     "jd_enrichment_fallback_reason", None
                 ),
+                # Task #1070 — snapshot agregado de degradação (sessão/tenant).
+                "ai_degraded_mode": _emit_fallback_telemetry(
+                    state,
+                    "jd_enrichment",
+                    locals().get("jd_enrichment_fallback_reason", None),
+                ),
                 # Task #1055 — re-emite o pipeline_template no turno de
                 # jd_enrichment (após o frontend re-render) usando o título
                 # padronizado pelo enriquecimento se disponível, senão o
@@ -923,6 +965,12 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
                 "bigfive_fallback_reason": locals().get(
                     "bigfive_fallback_reason", None
                 ),
+                # Task #1070 — snapshot agregado de degradação (sessão/tenant).
+                "ai_degraded_mode": _emit_fallback_telemetry(
+                    state,
+                    "bigfive",
+                    locals().get("bigfive_fallback_reason", None),
+                ),
                 **_pd_data,
             },
             "completeness": calculate_completeness("bigfive"),
@@ -1103,6 +1151,10 @@ def salary_node(state: JobCreationState) -> JobCreationState:
                 "salary_used_fallback": salary_used_fallback,
                 # Task #1067 — root-cause label.
                 "salary_fallback_reason": salary_fallback_reason,
+                # Task #1070 — snapshot agregado de degradação (sessão/tenant).
+                "ai_degraded_mode": _emit_fallback_telemetry(
+                    state, "salary", salary_fallback_reason,
+                ),
             },
             "completeness": calculate_completeness("salary"),
             "requires_approval": False,
@@ -1445,6 +1497,12 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
         # Task #1067 — root-cause label.
         "wsi_questions_fallback_reason": locals().get(
             "wsi_questions_fallback_reason", None
+        ),
+        # Task #1070 — snapshot agregado de degradação (sessão/tenant).
+        "ai_degraded_mode": _emit_fallback_telemetry(
+            state,
+            "wsi_questions",
+            locals().get("wsi_questions_fallback_reason", None),
         ),
     }
     if _wsi_dropped:

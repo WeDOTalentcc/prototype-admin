@@ -4,6 +4,7 @@ import React, { useState } from "react"
 import { DollarSign, Gift } from "lucide-react"
 import type { SalaryData } from "../wizard-types"
 import { FallbackBanner } from "./FallbackBanner"
+import { AiDegradedModeBanner } from "./AiDegradedModeBanner"
 
 interface Props {
   data: Record<string, unknown>
@@ -34,6 +35,8 @@ export function SalaryPanel({ data, onUpdate }: Props) {
 
   return (
     <div className="px-4 py-3 space-y-4">
+      {/* Task #1070 — banner de modo degradado agregado (sessao/tenant). */}
+      <AiDegradedModeBanner state={d.ai_degraded_mode ?? null} />
       {/* Task #1065 — banner de fallback (timeout do benchmark fetch). */}
       {d.salary_used_fallback && (
         <div className="-mx-4 -mt-3 [&>div]:mx-0 [&>div]:mt-0 [&>div]:rounded-none [&>div]:border-x-0 [&>div]:border-t-0">
