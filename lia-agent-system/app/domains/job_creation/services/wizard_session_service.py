@@ -54,151 +54,39 @@ class WizardSessionService:
 
     # ── Public helpers ────────────────────────────────────────────────────
 
+    # Task #1080 canonical refactor: the legacy 4-priority ``derive_thread_id``
+    # (msg.thread_id custom > company-prefixed > legacy) and the Redis
+    # marker bookkeeping (``lia:wizard:active:*``) have been removed. The
+    # canonical pure function lives in ``app.shared.sessions.thread_id``
+    # and is the SINGLE source of truth across WS / SSE / REST orchestrator.
+    # The two thin staticmethods below are delegating wrappers kept for
+    # backward compatibility with existing call-sites and tests that mock
+    # ``WizardSessionService.derive_thread_id`` / ``.is_session_active``.
+
     @staticmethod
     def derive_thread_id(
-        msg: dict,
-        session_id: str,
+        msg_or_company_id: dict | str | None = None,
+        session_id: str = "",
         company_id: str | None = None,
     ) -> str:
-        """Return stable thread_id for this wizard session.
+        """Delegating wrapper around the canonical
+        ``app.shared.sessions.derive_thread_id``.
 
-        Priority:
-          1. Client-supplied ``msg["thread_id"]`` — wizard panel sends this
-             so the checkpointer key matches the frontend's HITL approval key.
-          2. ``f"wiz-{company_token}-{session_id}"`` — when ``company_id`` is
-             provided AND parseable, encodes the tenant as a defense-in-depth
-             prefix (Onda 4.D3 PLAN_FIX_wizard_memory_loss 2026-05-10:
-             defense against UUID collision cross-tenant; primary tenant
-             guard remains in ``_build_state`` which forces workspace_id +
-             company_id from the JWT-verified param, never from prior_state).
-          3. ``f"wiz-{session_id}"`` — legacy session-scoped fallback when
-             ``company_id`` is missing or unparseable. Backward compatible
-             with threads created before this commit.
-
-        Multi-tenancy invariant (ADR-029 §3 / RuntimeContext canonical):
-            The tenant token is derived via ``CompanyId.parse`` — same
-            validator used in ``_build_state``. If parsing fails (legacy
-            mode), falls back to legacy format with a debug log instead of
-            crashing. Strict-mode tenant enforcement happens at the
-            ``_build_state`` boundary, not here.
-
-        NOTE: thread_id must be consistent across ALL turns of the same
-        wizard session (including approval_response messages). The frontend
-        panel should send the same thread_id it received on the first turn.
+        Accepts both the legacy signature ``(msg, session_id, company_id=...)``
+        AND the canonical ``(company_id, session_id)`` so existing call-sites
+        and tests continue to type-check during the migration. The legacy
+        ``msg["thread_id"]`` custom honor is INTENTIONALLY ignored — Task
+        #1080 collapses the multiple sources of truth into one. New callers
+        SHOULD import ``derive_thread_id`` directly from
+        ``app.shared.sessions``.
         """
-        client_thread = (msg.get("thread_id") or "").strip()
-        if client_thread:
-            return client_thread
+        from app.shared.sessions import derive_thread_id as _canonical
 
-        company_token: str | None = None
-        if company_id:
-            try:
-                from app.shared.value_objects.company_id import CompanyId
-                parsed = CompanyId.parse(company_id)
-                # Short prefix: hash slug + first 8 chars of normalized id
-                normalized = parsed.as_str()
-                company_token = normalized[:8] if normalized else None
-            except Exception as exc:
-                logger.debug(
-                    "[WizardSession] derive_thread_id: company_id %r unparseable "
-                    "(%s) — falling back to legacy session-only format.",
-                    company_id, type(exc).__name__,
-                )
-                company_token = None
-
-        if company_token:
-            return f"wiz-{company_token}-{session_id}"
-        return f"wiz-{session_id}"
-
-    # Redis marker for session→thread_id mapping. Lets ``is_session_active``
-    # detect wizard sessions whose ``thread_id`` was supplied by the FE
-    # (``msg["thread_id"]`` — priority 1 in ``derive_thread_id``) and would
-    # therefore NOT be one of the ``_candidate_thread_ids`` heuristics.
-    # Reviewer feedback on Task #1051 v1: "is_session_active ignores
-    # client-supplied custom thread_id paths that derive_thread_id supports".
-    _REDIS_MARKER_KEY_FMT = "lia:wizard:active:{session_id}"
-    _REDIS_MARKER_TTL_SECONDS = 7200  # 2h — long enough for any wizard run
-
-    @classmethod
-    async def _redis_marker_client(cls):
-        """Return an aioredis client or None (fail-open). Same pattern as
-        ``app/shared/memory/candidate_list_store.py``.
-        """
-        try:
-            import redis.asyncio as aioredis
-            from libs.config.lia_config.config import settings
-            return aioredis.from_url(settings.REDIS_URL, decode_responses=True)
-        except Exception as exc:
-            logger.debug("[WizardSession] redis marker client unavailable: %s", exc)
-            return None
-
-    @classmethod
-    async def _mark_session_thread(cls, session_id: str, thread_id: str) -> None:
-        """Persist ``session_id → thread_id`` so ``is_session_active`` can
-        find sessions started with a client-supplied custom ``thread_id``.
-
-        Fail-open: any error logs DEBUG and returns. Marker is best-effort —
-        absence falls back to the heuristic candidates.
-        """
-        if not session_id or not thread_id:
-            return
-        client = await cls._redis_marker_client()
-        if client is None:
-            return
-        try:
-            await client.setex(
-                cls._REDIS_MARKER_KEY_FMT.format(session_id=session_id),
-                cls._REDIS_MARKER_TTL_SECONDS,
-                thread_id,
-            )
-        except Exception as exc:
-            logger.debug("[WizardSession] mark_session_thread failed: %s", exc)
-        finally:
-            try:
-                await client.aclose()
-            except Exception:
-                pass
-
-    @classmethod
-    async def _clear_session_thread(cls, session_id: str) -> None:
-        """Clear the marker after wizard completion so the router stops
-        pinning ``wizard`` and the next message ("buscar candidatos") flows
-        to the normal classifier.
-        """
-        if not session_id:
-            return
-        client = await cls._redis_marker_client()
-        if client is None:
-            return
-        try:
-            await client.delete(cls._REDIS_MARKER_KEY_FMT.format(session_id=session_id))
-        except Exception as exc:
-            logger.debug("[WizardSession] clear_session_thread failed: %s", exc)
-        finally:
-            try:
-                await client.aclose()
-            except Exception:
-                pass
-
-    @classmethod
-    async def _read_session_thread(cls, session_id: str) -> str | None:
-        """Read the persisted ``thread_id`` for this session, or None."""
-        if not session_id:
-            return None
-        client = await cls._redis_marker_client()
-        if client is None:
-            return None
-        try:
-            value = await client.get(cls._REDIS_MARKER_KEY_FMT.format(session_id=session_id))
-            return value if isinstance(value, str) and value.strip() else None
-        except Exception as exc:
-            logger.debug("[WizardSession] read_session_thread failed: %s", exc)
-            return None
-        finally:
-            try:
-                await client.aclose()
-            except Exception:
-                pass
+        # Legacy signature: first arg is a dict (the WS msg) — discard it.
+        if isinstance(msg_or_company_id, dict):
+            return _canonical(company_id, session_id)
+        # Canonical signature: first arg is the company_id string (or None).
+        return _canonical(msg_or_company_id, session_id)
 
     @classmethod
     async def is_session_active(
@@ -206,77 +94,18 @@ class WizardSessionService:
         session_id: str,
         company_id: str | None = None,
     ) -> bool:
-        """Task #1051 — Detect an open (non-completed) wizard session.
+        """Delegating wrapper around the canonical
+        ``app.shared.sessions.is_wizard_session_active``.
 
-        Used by ``CascadedRouter.route()`` (Tier 0.5) to short-circuit the
-        router with ``domain_id="wizard"`` whenever the recruiter has an
-        open wizard checkpoint — fixes B2/B3/B4 (forgets job title, no
-        history, salary tool re-asks empresa).
-
-        Detection strategy (in order — first hit wins):
-          1. Redis marker ``lia:wizard:active:{session_id}`` — populated by
-             ``process_message`` on every successful turn. Resolves the
-             reviewer concern that ``derive_thread_id`` accepts a
-             client-supplied ``msg["thread_id"]`` that the heuristic
-             candidate list cannot reproduce.
-          2. Heuristic candidates — ``wiz-{token}-{session_id}`` (tenant
-             prefixed) and ``wiz-{session_id}`` (legacy).
-
-        A session counts as active iff the resolved thread has a
-        checkpointed state with ``current_stage != "completed"``. A finished
-        wizard MUST allow the next message to be routed elsewhere.
-
-        Fail-open: any exception returns False so a checkpointer/Redis
-        outage cannot block the chat.
+        Task #1080: the implementation now reads the LangGraph checkpoint
+        for the SINGLE deterministic thread_id derived from
+        ``(company_id, session_id)`` — no Redis marker, no candidate list,
+        no client-supplied thread_id honor. A session counts as active iff
+        a checkpoint exists AND ``current_stage != "completed"``.
         """
-        if not session_id:
-            return False
-        try:
-            checked: set[str] = set()
-            # 1) Redis marker — covers FE-supplied custom thread_ids.
-            marker_thread = await cls._read_session_thread(session_id)
-            if marker_thread:
-                checked.add(marker_thread)
-                if cls._is_active_state(await cls._get_prior_state(marker_thread)):
-                    return True
-            # 2) Heuristic fallbacks — covers the legacy + tenant-prefixed cases.
-            for thread_id in cls._candidate_thread_ids(session_id, company_id):
-                if thread_id in checked:
-                    continue
-                checked.add(thread_id)
-                if cls._is_active_state(await cls._get_prior_state(thread_id)):
-                    return True
-            return False
-        except Exception:  # pragma: no cover — fail-open
-            return False
+        from app.shared.sessions import is_wizard_session_active as _canonical
 
-    @staticmethod
-    def _is_active_state(prior: dict | None) -> bool:
-        if not prior:
-            return False
-        stage = (prior.get("current_stage") or "").lower()
-        if stage == "completed":
-            return False
-        return bool(prior.get("conversation_messages") or stage)
-
-    @staticmethod
-    def _candidate_thread_ids(session_id: str, company_id: str | None) -> list[str]:
-        """Return the thread_ids that ``derive_thread_id`` may have produced
-        WITHOUT a client-supplied ``msg["thread_id"]``. The custom-thread
-        case is covered by the Redis marker in ``is_session_active``.
-        """
-        candidates: list[str] = []
-        if company_id:
-            try:
-                from app.shared.value_objects.company_id import CompanyId
-                normalized = CompanyId.parse(company_id).as_str()
-                token = normalized[:8] if normalized else None
-                if token:
-                    candidates.append(f"wiz-{token}-{session_id}")
-            except Exception:
-                pass
-        candidates.append(f"wiz-{session_id}")
-        return candidates
+        return await _canonical(company_id, session_id)
 
     @staticmethod
     async def _get_prior_state(thread_id: str) -> dict:
@@ -621,17 +450,10 @@ class WizardSessionService:
         stage_data = stage_payload.get("data") or {}
         current_stage = result.get("current_stage", "") or ""
 
-        # ── Task #1051 — persist session→thread_id Redis marker ───────────
-        # Lets ``CascadedRouter.route()`` Tier 0.5 detect this session as
-        # active even when the FE supplies a custom ``msg["thread_id"]``
-        # that the heuristic candidate list cannot reproduce. Fail-open.
-        try:
-            if (current_stage or "").lower() == "completed":
-                await cls._clear_session_thread(session_id)
-            else:
-                await cls._mark_session_thread(session_id, thread_id)
-        except Exception as _mk_exc:
-            logger.debug("[WizardSession] session marker upkeep skipped: %s", _mk_exc)
+        # Task #1080: Redis session marker upkeep removed. The canonical
+        # ``is_wizard_session_active`` reads the checkpointer directly, so
+        # there is nothing to mark/clear on each turn. Wizard "doneness" is
+        # detected from ``current_stage == "completed"`` in the checkpoint.
 
         message = (
             stage_data.get("message")

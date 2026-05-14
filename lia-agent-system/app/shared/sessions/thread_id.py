@@ -1,0 +1,140 @@
+"""
+Canonical wizard session thread_id derivation (Task #1080).
+
+Single source of truth that maps ``(company_id, session_id)`` to a stable
+LangGraph checkpoint thread_id. ALL transports (WS, SSE, REST orchestrator)
+import from here — there is no other valid place to compute the wizard
+thread_id in the codebase.
+
+Design contract (canonical-fix):
+  - Pure function of ``(company_id, session_id)``. No I/O, no Redis, no
+    ``msg["thread_id"]`` honor, no heuristic fallback list.
+  - Two companies that share a ``session_id`` MUST produce different
+    thread_ids (multi-tenant isolation invariant).
+  - Same ``(company_id, session_id)`` pair MUST always produce the same
+    thread_id, across processes and restarts (LangGraph checkpointer key
+    stability — required for resuming a wizard after page reload).
+  - Missing/unparseable ``company_id`` falls back to a stable ``"anon"``
+    token. Strict tenant mode at the call-site is responsible for refusing
+    to pin against an anonymous thread.
+
+Why this replaces the legacy 4-priority logic in WizardSessionService:
+  The previous design had 5 concurrent sources of truth for "this
+  conversation belongs to the wizard" (msg.thread_id custom + Redis marker
+  ``lia:wizard:active:*`` + checkpointer + Tier 0.5 router pin + heuristic
+  ``wiz-{token}-{sid}`` candidates). Every page reload mid-wizard lost the
+  custom thread_id, the Redis marker eventually expired (TTL 2h), and the
+  router's Tier 0.5 was the wrong layer (transport-specific concern in a
+  domain-agnostic router). Collapsing to one deterministic function +
+  checkpointer-only "is active" check eliminates the entire class of
+  resume bugs (B2/B3/B4 from Task #1051 and the pw-cenario-D2 reload bug).
+"""
+from __future__ import annotations
+
+import asyncio
+import hashlib
+import logging
+
+logger = logging.getLogger(__name__)
+
+_WIZ_PREFIX = "wiz"
+_ANON_TOKEN = "anon"
+# 16 hex chars = 64 bits of entropy from SHA-256(normalized_company_id).
+# Replaces the previous "first 8 chars of company_id" scheme which was only
+# 32 bits for UUIDs and prone to prefix collisions for slug-based ids.
+# Birthday-bound: ~2^32 distinct tenants before 50% collision risk.
+_COMPANY_TOKEN_LEN = 16
+
+
+def _company_token(company_id: str) -> str:
+    """Stable 16-hex-char token of normalized ``company_id`` (SHA-256 prefix)."""
+    digest = hashlib.sha256(company_id.encode("utf-8")).hexdigest()
+    return digest[:_COMPANY_TOKEN_LEN]
+
+
+def derive_thread_id(company_id: str | None, session_id: str) -> str:
+    """Deterministic wizard thread_id for ``(company_id, session_id)``.
+
+    Format: ``wiz-{company_token}-{session_id}`` where ``company_token``
+    is a 16-char SHA-256 hex prefix of ``CompanyId.parse(company_id).as_str()``
+    or the literal ``"anon"`` when ``company_id`` is missing/unparseable.
+
+    Why hash and not the raw id prefix: a raw 8-char UUID prefix only carried
+    32 bits of entropy and slug ids could collide on shared prefixes
+    (e.g. ``"acme-br"`` / ``"acme-us"``). SHA-256 truncated to 64 bits gives
+    cross-tenant isolation that is collision-safe for any realistic tenant
+    count (~2^32 distinct tenants before 50% birthday risk).
+
+    Raises:
+        ValueError: when ``session_id`` is empty — wizard sessions always
+            require a session id; no silent default.
+    """
+    if not session_id:
+        raise ValueError("derive_thread_id requires a non-empty session_id")
+
+    company_token = _ANON_TOKEN
+    if company_id:
+        try:
+            from app.shared.value_objects.company_id import CompanyId
+
+            normalized = CompanyId.parse(company_id).as_str()
+            if normalized:
+                company_token = _company_token(normalized)
+        except Exception as exc:  # pragma: no cover — defensive
+            logger.warning(
+                "[derive_thread_id] company_id=%r unparseable (%s) — "
+                "falling back to '%s' token. Strict tenant mode should "
+                "prevent this branch in production.",
+                company_id,
+                type(exc).__name__,
+                _ANON_TOKEN,
+            )
+
+    return f"{_WIZ_PREFIX}-{company_token}-{session_id}"
+
+
+async def is_wizard_session_active(
+    company_id: str | None, session_id: str
+) -> bool:
+    """Return True iff the LangGraph checkpoint for this session is OPEN.
+
+    "Open" means: a checkpoint exists AND ``current_stage != "completed"``.
+    A finished wizard MUST allow follow-up messages to be routed elsewhere.
+
+    Reads the canonical checkpoint directly via JobCreationGraph's compiled
+    graph — single thread_id derived from ``(company_id, session_id)``.
+    No Redis marker, no candidate fallbacks.
+
+    Fail-open: any exception (checkpointer outage, graph not initialized)
+    returns False so chat routing never blocks on infra failures.
+    """
+    if not session_id:
+        return False
+    try:
+        thread_id = derive_thread_id(company_id, session_id)
+    except ValueError:
+        return False
+
+    try:
+        from app.domains.job_creation.graph import get_job_creation_graph
+
+        wiz_g = get_job_creation_graph()
+        config = {"configurable": {"thread_id": thread_id}}
+        snapshot = await asyncio.to_thread(wiz_g._graph.get_state, config)
+    except Exception as exc:  # pragma: no cover — fail-open
+        logger.debug(
+            "[is_wizard_session_active] checkpointer read failed for "
+            "thread=%s (%s) — treating as inactive.",
+            thread_id,
+            type(exc).__name__,
+        )
+        return False
+
+    if snapshot is None or not snapshot.values:
+        return False
+    values = snapshot.values
+    stage = (values.get("current_stage") or "").lower()
+    if stage == "completed":
+        return False
+    # Active iff there is conversational state OR a non-terminal stage.
+    return bool(values.get("conversation_messages") or stage)

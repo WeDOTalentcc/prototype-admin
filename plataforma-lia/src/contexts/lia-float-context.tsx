@@ -211,6 +211,25 @@ function generateSessionId(): string {
   return `lia-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+const SESSION_STORAGE_KEY = "lia.wizard.session_id";
+
+function loadOrCreateSessionId(): string {
+  if (typeof window === "undefined") {
+    return generateSessionId();
+  }
+  try {
+    const existing = window.sessionStorage.getItem(SESSION_STORAGE_KEY);
+    if (existing && existing.length > 0) {
+      return existing;
+    }
+    const fresh = generateSessionId();
+    window.sessionStorage.setItem(SESSION_STORAGE_KEY, fresh);
+    return fresh;
+  } catch {
+    return generateSessionId();
+  }
+}
+
 export function LiaFloatProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<LiaFloatState>({
     isOpen: false,
@@ -244,7 +263,7 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     new Map(),
   );
 
-  const [sessionId] = useState(() => generateSessionId());
+  const [sessionId] = useState(() => loadOrCreateSessionId());
 
   const { dispatchOrEmit: dispatchUIAction } = useUIAction();
 

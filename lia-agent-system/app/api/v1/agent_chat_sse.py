@@ -291,6 +291,18 @@ async def sse_chat_stream(
         async def _route_domain_async():
             if active_domain not in ("auto", "recruiter_assistant", ""):
                 return active_domain
+            # Task #1080: wizard session pin BEFORE router (canonical layer
+            # for "this conversation is the wizard"). Mirrors agent_chat_ws.
+            try:
+                from app.shared.sessions import is_wizard_session_active
+                if await is_wizard_session_active(company_id, session_id):
+                    logger.info(
+                        "[SSEChat] wizard_session_pin: session=%s company=%s "
+                        "→ wizard (Task #1080)", session_id, company_id,
+                    )
+                    return "wizard"
+            except Exception as _pin_exc:
+                logger.debug("[SSEChat] wizard_session_pin skipped: %s", _pin_exc)
             try:
                 from app.orchestrator.cascaded_router import CascadedRouter
                 _router = CascadedRouter()
@@ -369,9 +381,9 @@ async def sse_chat_stream(
                     _safe = mask_pii(_chunk) if isinstance(_chunk, str) else _chunk
                     await sse_queue.put(serialize_token(_safe))
 
-                _wiz_thread_id = WizardSessionService.derive_thread_id(
-                    context, session_id, company_id=company_id,
-                )
+                # Task #1080: canonical pure derive (no context dict honor).
+                from app.shared.sessions import derive_thread_id as _derive_tid
+                _wiz_thread_id = _derive_tid(company_id, session_id)
                 async def _run_wizard():
                     return await WizardSessionService.process_message(
                         thread_id=_wiz_thread_id,

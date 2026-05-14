@@ -1100,9 +1100,11 @@ class MainOrchestrator:
             return None
 
         # ── Delegação canônica para WizardSessionService ──
-        thread_id = WizardSessionService.derive_thread_id(
-            {}, session_id, company_id=company_id,
-        )
+        # Task #1080: thread_id derivado pelo helper canônico puro
+        # (app.shared.sessions.derive_thread_id), única fonte de verdade
+        # cross-transport (WS / SSE / REST orchestrator).
+        from app.shared.sessions import derive_thread_id
+        thread_id = derive_thread_id(company_id, session_id)
 
         # context dict espelha o que agent_chat_ws.py monta — mantém paridade
         # com o caminho WS para que ``_build_state`` funcione idêntico.

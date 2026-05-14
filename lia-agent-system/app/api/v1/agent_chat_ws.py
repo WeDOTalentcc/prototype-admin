@@ -841,6 +841,29 @@ async def agent_chat_ws(
             if _plan_handled:
                 continue
 
+            # ── Wizard session pin (Task #1080 canonical) ──────────────────
+            # Single source of truth for "this conversation belongs to the
+            # wizard": the LangGraph checkpoint for the canonical thread_id
+            # derived from (company_id, session_id). Pin lives here in the
+            # transport handler — NOT in CascadedRouter — so the router stays
+            # domain-agnostic. Fires only when the FE has not already
+            # specified an explicit domain (mirrors the legacy Tier 0.5
+            # placement: explicit FE intent always wins). Fail-open.
+            if active_domain in ("auto", "recruiter_assistant", ""):
+                try:
+                    from app.shared.sessions import is_wizard_session_active
+                    if await is_wizard_session_active(company_id, session_id):
+                        logger.info(
+                            "[AgentChatWS] wizard_session_pin: session=%s "
+                            "company=%s → wizard (Task #1080)",
+                            session_id, company_id,
+                        )
+                        active_domain = "wizard"
+                except Exception as _pin_exc:
+                    logger.debug(
+                        "[AgentChatWS] wizard_session_pin skipped: %s", _pin_exc,
+                    )
+
             # Roteamento via CascadedRouter (Fase 2 — Gap #2)
             # Verifica se o domínio precisa de clarificação antes de invocar agente
             if active_domain in ("auto", "recruiter_assistant", ""):
@@ -908,9 +931,9 @@ async def agent_chat_ws(
                         except Exception:
                             pass  # fail-silent — streaming não bloqueia
 
-                    _wiz_thread_id = WizardSessionService.derive_thread_id(
-                        msg, session_id, company_id=company_id,
-                    )
+                    # Task #1080: canonical pure derive — no msg["thread_id"] honor.
+                    from app.shared.sessions import derive_thread_id as _derive_tid
+                    _wiz_thread_id = _derive_tid(company_id, session_id)
                     _wiz_message, _wiz_payload, _tokens_emitted = await WizardSessionService.process_message(
                         thread_id=_wiz_thread_id,
                         user_message=content,

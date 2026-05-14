@@ -2,7 +2,7 @@
 Sensor: WizardSessionService — Sprint A.1 Bug 6 regression tests.
 
 Validates:
-1. derive_thread_id — client-supplied > session fallback
+1. derive_thread_id wrapper — delegates to canonical (Task #1080)
 2. _get_prior_state — non-raising on checkpointer miss
 3. _build_state — fresh session builds correct initial_state
 4. _build_state — continuing session accumulates conversation_messages
@@ -11,36 +11,54 @@ Validates:
 7. Multi-turn accumulation (Turn 1 → Turn 2 → Turn 3)
 
 Skill canônica: harness-engineering [sensor computacional] + lia-testing TDD.
+
+Task #1080: a lógica do thread_id agora é puramente delegada para
+``app.shared.sessions.derive_thread_id``. Os testes do contrato canônico
+vivem em ``tests/integration/agents/test_wizard_session_continuity_t1080.py``.
+Os testes abaixo só verificam que o wrapper de back-compat continua se
+comportando como esperado pelos call-sites legados.
 """
 import pytest
 
 from app.domains.job_creation.services.wizard_session_service import WizardSessionService
 
 
-# ── 1. derive_thread_id ─────────────────────────────────────────────────────
+# ── 1. derive_thread_id wrapper (Task #1080 — delegating) ───────────────────
 
-def test_derive_thread_id_uses_client_supplied():
-    """Client-supplied thread_id takes priority."""
-    msg = {"thread_id": "wiz-abc123", "content": "criar vaga"}
-    assert WizardSessionService.derive_thread_id(msg, "sess-001") == "wiz-abc123"
+_CID = "00000000-0000-4000-a000-000000000001"
 
 
-def test_derive_thread_id_falls_back_to_session():
-    """No thread_id in msg → stable f'wiz-{session_id}'."""
-    msg = {"content": "criar vaga"}
-    assert WizardSessionService.derive_thread_id(msg, "sess-001") == "wiz-sess-001"
+def test_derive_thread_id_wrapper_legacy_signature_ignores_custom_thread_id():
+    """Wrapper aceita ``(msg, session_id, company_id=...)`` mas NÃO honra
+    ``msg["thread_id"]`` — Task #1080 colapsa as fontes de verdade."""
+    msg = {"thread_id": "wiz-CUSTOM-XYZ", "content": "criar vaga"}
+    tid = WizardSessionService.derive_thread_id(msg, "sess-001", company_id=_CID)
+    assert "CUSTOM" not in tid
+    assert tid.endswith("sess-001")
 
 
-def test_derive_thread_id_empty_string_falls_back():
-    """Empty string thread_id treated as absent."""
-    msg = {"thread_id": "", "content": "criar vaga"}
-    assert WizardSessionService.derive_thread_id(msg, "sess-001") == "wiz-sess-001"
+def test_derive_thread_id_wrapper_canonical_signature():
+    """Wrapper aceita também a assinatura canônica ``(company_id, session_id)``.
+
+    Token = SHA-256(normalized_cid)[:16] (Task #1080: hash colisão-safe).
+    """
+    import hashlib
+
+    tid = WizardSessionService.derive_thread_id(_CID, "sess-001")
+    expected_token = hashlib.sha256(_CID.encode("utf-8")).hexdigest()[:16]
+    assert tid == f"wiz-{expected_token}-sess-001"
 
 
-def test_derive_thread_id_whitespace_falls_back():
-    """Whitespace-only thread_id treated as absent."""
-    msg = {"thread_id": "   ", "content": "criar vaga"}
-    assert WizardSessionService.derive_thread_id(msg, "sess-001") == "wiz-sess-001"
+def test_derive_thread_id_wrapper_no_company_falls_back_to_anon():
+    """Sem company_id, wrapper retorna ``wiz-anon-{session_id}``."""
+    tid = WizardSessionService.derive_thread_id(None, "sess-001")
+    assert tid == "wiz-anon-sess-001"
+
+
+def test_derive_thread_id_wrapper_legacy_signature_no_company():
+    """Assinatura legada com msg dict + company_id=None → 'anon' token."""
+    tid = WizardSessionService.derive_thread_id({"content": "x"}, "sess-001")
+    assert tid == "wiz-anon-sess-001"
 
 
 # ── 2. _get_prior_state — non-raising ───────────────────────────────────────
