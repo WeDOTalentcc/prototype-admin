@@ -229,7 +229,8 @@ async def call_lia_ws(
     the open socket and a stable ``session_id`` there so multi-turn cases
     share continuity (the WS handler keeps ``conversation_history`` in
     scope per connection, so reusing the socket is what lets B2/B3/B4
-    actually exercise checkpointer + ``wizard_session_pin``).
+    actually exercise the LangGraph checkpointer + the handler-level wizard
+    pin — see Task #1080 ``app.shared.sessions``).
     """
     if websockets is None:
         return {
@@ -891,7 +892,7 @@ async def run(args: argparse.Namespace) -> None:
         for idx, case in enumerate(cases, 1):
             # WebSocket transport bag — one socket per case so multi-turn
             # cases share the in-handler ``conversation_history`` and the
-            # ``wizard_session_pin`` Tier 0.5 sees a stable session_id.
+            # handler-level wizard pin (Task #1080) sees a stable session_id.
             ws_state: dict | None = {} if transport == "ws" else None
             # Multi-turn support: when the case carries a `turns` array, replay
             # each turn sequentially over a SINGLE backend conversation so the

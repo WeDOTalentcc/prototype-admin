@@ -27,7 +27,8 @@ Why this replaces the legacy 4-priority logic in WizardSessionService:
   router's Tier 0.5 was the wrong layer (transport-specific concern in a
   domain-agnostic router). Collapsing to one deterministic function +
   checkpointer-only "is active" check eliminates the entire class of
-  resume bugs (B2/B3/B4 from Task #1051 and the pw-cenario-D2 reload bug).
+  resume bugs B2/B3/B4 (originally observed under Task #1051's design) and
+  the pw-cenario-D2 reload bug. Canonical refactor: Task #1080.
 """
 from __future__ import annotations
 

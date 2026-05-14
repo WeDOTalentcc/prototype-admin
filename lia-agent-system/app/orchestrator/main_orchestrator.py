@@ -469,7 +469,7 @@ class MainOrchestrator:
             # ``WizardPipelineTemplateCard``) jamais era emitido em REST.
             #
             # Disparo:
-            #   • turnos ≥2 — ``CascadedRouter.wizard_session_pin`` Tier 0.5
+            #   • turnos ≥2 — handler-level wizard pin (Task #1080)
             #     identifica sessão LangGraph aberta (#1051/#1052 contract).
             #   • turno 1 — heurística de start patterns (``criar vaga``, etc.)
             #     espelhando ``JobCreationDomain.process_intent``. Bootstrap
@@ -1051,8 +1051,9 @@ class MainOrchestrator:
 
         Decisão de disparo:
           1. **Continuação (turno ≥2):** consulta ``WizardSessionService.is_session_active``
-             (mesmo predicado usado pelo ``CascadedRouter.wizard_session_pin``
-             Tier 0.5 — Task #1051). Se há sessão LangGraph aberta, delega.
+             (wrapper delegante para ``app.shared.sessions.is_wizard_session_active``,
+             mesmo predicado usado pelo wizard pin dos handlers WS/SSE — Task #1080).
+             Se há sessão LangGraph aberta, delega.
           2. **Bootstrap (turno 1):** se a mensagem casa com ``_WIZARD_START_PATTERNS``
              (mesma fonte canônica de ``JobCreationDomain.process_intent``),
              delega — isso marca a sessão para o pin assumir nos turnos seguintes.

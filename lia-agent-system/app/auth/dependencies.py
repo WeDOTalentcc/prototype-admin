@@ -216,11 +216,19 @@ def _is_dev_environment() -> bool:
 
 
 async def _heal_legacy_demo_company_id(user, db) -> None:
-    """Task #1051 — Auto-heal demo users created before CANONICAL_DEMO_UUID rollout.
+    """Tenant healing for the demo account — fixes B1 (LIA pergunta company_id).
 
-    Scope (review v2): heals ANY non-canonical demo ``company_id`` — not
-    only the literal ``"demo_company"`` string. Demo users that ever ended
-    up with a malformed/legacy/empty value (any state that ``CompanyId.parse``
+    Scope: this helper covers ONLY the **tenant identity** of the demo user.
+    It is NOT the wizard session-continuity layer (B2/B3/B4) — those are
+    handled by the canonical ``app.shared.sessions.derive_thread_id`` +
+    LangGraph checkpointer + handler-level pin (Task #1080). The two layers
+    were briefly conflated under "Task #1051" in the codebase; this helper
+    is the only artifact of that work that survives, because the demo
+    tenant id problem is genuinely orthogonal to session continuity.
+
+    Behavior: heals ANY non-canonical demo ``company_id`` — not only the
+    literal ``"demo_company"`` string. Demo users that ever ended up with
+    a malformed/legacy/empty value (any state that ``CompanyId.parse``
     cannot consume) are reconciled in-place to ``CANONICAL_DEMO_UUID``.
     Broader-than-named scope is INTENTIONAL: a demo user is platform
     hygiene, not real tenant data — any invalid state should converge
@@ -257,7 +265,7 @@ async def _heal_legacy_demo_company_id(user, db) -> None:
                 "user_id": str(getattr(user, "id", "")),
                 "legacy_company_id": legacy_value or "<empty>",
                 "canonical_company_id": CANONICAL_DEMO_UUID,
-                "task": "#1051",
+                "task": "#1081",
             },
         )
     except Exception as exc:  # pragma: no cover — fail-open
@@ -303,7 +311,8 @@ async def ensure_demo_user(db):
             from app.auth.security import get_password_hash
             demo_user.password_hash = get_password_hash("demo123")
             await db.commit()
-        # Task #1051 — auto-heal legacy company_id (B1 fix)
+        # B1 (tenant identity) — auto-heal legacy company_id of the demo user.
+        # Orthogonal to wizard session continuity (B2/B3/B4 → Task #1080).
         await _heal_legacy_demo_company_id(demo_user, db)
         return demo_user
 
@@ -382,7 +391,8 @@ async def get_current_user_or_demo(
     demo_user = result.scalar_one_or_none()
     
     if demo_user:
-        # Task #1051 — auto-heal legacy company_id (B1 fix)
+        # B1 (tenant identity) — auto-heal legacy company_id of the demo user.
+        # Orthogonal to wizard session continuity (B2/B3/B4 → Task #1080).
         await _heal_legacy_demo_company_id(demo_user, db)
         return demo_user
     

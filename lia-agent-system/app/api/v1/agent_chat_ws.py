@@ -710,8 +710,9 @@ async def agent_chat_ws(
                     context["metadata"] = _msg_metadata
             active_domain = msg.get("domain", domain)
 
-            # NOTE (Task #1051): Wizard session-pin previously lived here.
-            # Moved to ``CascadedRouter.route()`` (Tier 0.5, canonical layer)
+            # NOTE (Task #1080): Wizard session-pin previously lived inside
+            # ``CascadedRouter`` as a "Tier 0.5" pre-route step. It now lives
+            # at the transport boundary (this handler + ``agent_chat_sse.py``)
             # so all router consumers — WS, SSE, REST orchestrator,
             # autonomous_react_agent — get the pin without duplication.
             # See ``app/orchestrator/cascaded_router.py`` "wizard_session_pin".
@@ -847,7 +848,7 @@ async def agent_chat_ws(
             # derived from (company_id, session_id). Pin lives here in the
             # transport handler — NOT in CascadedRouter — so the router stays
             # domain-agnostic. Fires only when the FE has not already
-            # specified an explicit domain (mirrors the legacy Tier 0.5
+            # specified an explicit domain (replaces the previous router-level
             # placement: explicit FE intent always wins). Fail-open.
             if active_domain in ("auto", "recruiter_assistant", ""):
                 try:
