@@ -23,7 +23,15 @@ from typing import Any
 
 import httpx
 import re as _re
+import uuid
 import yaml
+
+try:
+    import websockets  # type: ignore
+    from websockets.exceptions import ConnectionClosed as _WSClosed  # type: ignore
+except Exception:  # pragma: no cover — optional dep, only required for --transport ws
+    websockets = None  # type: ignore
+    _WSClosed = Exception  # type: ignore
 
 BASE_DIR = Path(__file__).parent
 DEFAULT_URL = os.getenv("LIA_BACKEND_URL", "http://localhost:8001")
@@ -184,6 +192,226 @@ async def call_lia(
         except Exception as exc:
             return {"ok": False, "status_code": 0, "latency_ms": -1, "response": "", "error": str(exc)}
     return {"ok": False, "status_code": 0, "latency_ms": -1, "response": "", "error": str(last_exc)}
+
+def _ws_url_from_base(base_url: str) -> str:
+    """Convert ``http(s)://host:port`` → ``ws(s)://host:port``."""
+    if base_url.startswith("https://"):
+        return "wss://" + base_url[len("https://"):]
+    if base_url.startswith("http://"):
+        return "ws://" + base_url[len("http://"):]
+    return base_url
+
+
+# Frame types we silently ignore while waiting for a wizard turn to settle.
+_WS_NOISE_TYPES = {"connected", "ping", "pong", "thinking", "token", "token_done", "background_task_update"}
+
+
+async def call_lia_ws(
+    base_url: str,
+    token: str,
+    body: dict,
+    timeout: float = 60.0,
+    ws_state: dict | None = None,
+) -> dict[str, Any]:
+    """Send one chat turn over the WebSocket transport and aggregate the
+    streamed payload (Task #1064 — D7 fix).
+
+    The REST ``/api/v1/chat`` endpoint only returns the terse HITL prompt
+    that the wizard speaks; the rich frames (``message``, ``wizard_stage``,
+    ``panel_update``) carry ``parsed_title`` and ``pipeline_template`` and
+    are only emitted on the WS channel. This helper opens (or reuses) one
+    WS per case, sends the user message, and concatenates the final
+    assistant ``content`` plus a JSON dump of the auxiliary payloads into
+    ``response`` so the existing scorer regex/keyword matching sees the
+    same evidence the FE sees.
+
+    ``ws_state`` is the per-case bag passed through from ``run()``; we keep
+    the open socket and a stable ``session_id`` there so multi-turn cases
+    share continuity (the WS handler keeps ``conversation_history`` in
+    scope per connection, so reusing the socket is what lets B2/B3/B4
+    actually exercise checkpointer + ``wizard_session_pin``).
+    """
+    if websockets is None:
+        return {
+            "ok": False,
+            "status_code": 0,
+            "latency_ms": -1,
+            "response": "",
+            "error": "websockets package not installed (pip install websockets)",
+        }
+
+    state = ws_state if ws_state is not None else {}
+    session_id: str = state.get("session_id") or f"eval-{uuid.uuid4().hex[:12]}"
+    state["session_id"] = session_id
+    ws_url = f"{_ws_url_from_base(base_url)}/api/v1/ws/chat/{session_id}"
+
+    async def _ensure_socket():
+        sock = state.get("socket")
+        if sock is not None:
+            return sock
+        # Open + first-message auth (UC-P0-19 path)
+        sock = await websockets.connect(ws_url, max_size=2 ** 22)
+        await sock.send(json.dumps({"type": "auth", "token": token}))
+        # Wait for the `connected` frame so we know auth was accepted before
+        # we start sending message turns.
+        deadline = time.monotonic() + 10.0
+        while True:
+            remaining = deadline - time.monotonic()
+            if remaining <= 0:
+                raise TimeoutError("WS auth never produced a connected frame")
+            raw = await asyncio.wait_for(sock.recv(), timeout=remaining)
+            try:
+                evt = json.loads(raw)
+            except json.JSONDecodeError:
+                continue
+            if evt.get("type") == "connected":
+                break
+            if evt.get("type") == "error":
+                raise RuntimeError(f"WS auth error: {evt.get('message')}")
+        state["socket"] = sock
+        return sock
+
+    t0 = time.monotonic()
+    try:
+        sock = await _ensure_socket()
+        # Forward the same fields the REST runner sends so WS-gated cases
+        # that rely on `context` (scope/page/entity_id) or an explicit
+        # `conversation_id` keep transport parity with the REST path.
+        ws_msg: dict[str, Any] = {"type": "message", "content": body.get("content", "")}
+        if body.get("context"):
+            ws_msg["context"] = body["context"]
+        if body.get("conversation_id"):
+            ws_msg["conversation_id"] = body["conversation_id"]
+        await sock.send(json.dumps(ws_msg))
+
+        final_msg: str = ""
+        aux_payloads: list[dict] = []
+        last_event_at = time.monotonic()
+        # Quiet-period: after we've seen the terminal `message` frame, wait
+        # this much extra wall-time for trailing `wizard_stage` /
+        # `panel_update` frames before returning. Empirically the wizard
+        # emits stage payload right after the message; 2s is plenty.
+        quiet_period = 2.5
+        got_message = False
+        hard_deadline = time.monotonic() + max(timeout, 5.0)
+        clarification_payload: dict | None = None
+
+        while True:
+            now = time.monotonic()
+            if now >= hard_deadline:
+                break
+            if got_message and (now - last_event_at) >= quiet_period:
+                break
+            wait_for = min(hard_deadline - now, quiet_period)
+            try:
+                raw = await asyncio.wait_for(sock.recv(), timeout=wait_for)
+            except asyncio.TimeoutError:
+                if got_message:
+                    break
+                continue
+            except _WSClosed as exc:
+                state["socket"] = None
+                if got_message:
+                    break
+                return {
+                    "ok": False, "status_code": 0,
+                    "latency_ms": round((time.monotonic() - t0) * 1000),
+                    "response": "", "error": f"WS closed: {exc}",
+                }
+
+            last_event_at = time.monotonic()
+            try:
+                evt = json.loads(raw)
+            except json.JSONDecodeError:
+                continue
+
+            etype = evt.get("type", "")
+            if etype in _WS_NOISE_TYPES:
+                continue
+            if etype == "message":
+                final_msg = evt.get("content", "") or final_msg
+                got_message = True
+                continue
+            if etype in ("wizard_stage", "panel_update"):
+                aux_payloads.append(evt)
+                continue
+            if etype == "clarification":
+                clarification_payload = evt
+                got_message = True  # router asked back — turn is over
+                continue
+            if etype == "error":
+                err_msg = evt.get("message", "WS error")
+                return {
+                    "ok": False, "status_code": 0,
+                    "latency_ms": round((time.monotonic() - t0) * 1000),
+                    "response": final_msg or "",
+                    "error": err_msg,
+                }
+
+        latency_ms = round((time.monotonic() - t0) * 1000)
+        # Compose the scoreable response: assistant content + a stable JSON
+        # dump of every auxiliary payload (one per line). The scorer is
+        # regex/keyword based, so embedding `pipeline_template`,
+        # `parsed_title`, `Backend`, etc. as JSON text is enough for it
+        # to match `expected_snippet_markers` and detect anti-patterns
+        # the same way the REST scorer does.
+        composed_parts: list[str] = []
+        if final_msg:
+            composed_parts.append(final_msg)
+        if clarification_payload:
+            composed_parts.append(
+                json.dumps(clarification_payload, ensure_ascii=False, sort_keys=True)
+            )
+        for aux in aux_payloads:
+            composed_parts.append(json.dumps(aux, ensure_ascii=False, sort_keys=True))
+        composed = "\n".join(composed_parts)
+
+        if not composed:
+            return {
+                "ok": False, "status_code": 0, "latency_ms": latency_ms,
+                "response": "", "error": "no assistant frame received",
+            }
+
+        return {
+            "ok": True,
+            "status_code": 200,
+            "latency_ms": latency_ms,
+            "response": composed,
+            "conversation_id": session_id,  # WS uses session_id for continuity
+            "raw": {
+                "final_message": final_msg,
+                "clarification": clarification_payload,
+                "aux_payloads": aux_payloads,
+            },
+        }
+    except Exception as exc:
+        # On any error, drop the socket so the next turn reconnects clean.
+        try:
+            sock = state.get("socket")
+            if sock is not None:
+                await sock.close()
+        except Exception:
+            pass
+        state["socket"] = None
+        return {
+            "ok": False, "status_code": 0,
+            "latency_ms": round((time.monotonic() - t0) * 1000),
+            "response": "", "error": str(exc),
+        }
+
+
+async def _close_ws_state(state: dict | None) -> None:
+    if not state:
+        return
+    sock = state.get("socket")
+    if sock is None:
+        return
+    try:
+        await sock.close()
+    except Exception:
+        pass
+    state["socket"] = None
+
 
 def _criterion_met(criterion: str, response: str, resp_lower: str) -> bool:
     """Check if a single success criterion is met - Portuguese-aware."""
@@ -653,9 +881,18 @@ async def run(args: argparse.Namespace) -> None:
     print(f"  LIA Eval Runner  —  {len(cases)} cases  —  {args.url}")
     print(f"{'─'*60}\n")
 
+    transport = (getattr(args, "transport", "rest") or "rest").lower()
+    if transport == "ws" and websockets is None:
+        print("ERROR: --transport ws requires the `websockets` package (pip install websockets)")
+        sys.exit(1)
+
     results: list[dict] = []
     async with httpx.AsyncClient() as client:
         for idx, case in enumerate(cases, 1):
+            # WebSocket transport bag — one socket per case so multi-turn
+            # cases share the in-handler ``conversation_history`` and the
+            # ``wizard_session_pin`` Tier 0.5 sees a stable session_id.
+            ws_state: dict | None = {} if transport == "ws" else None
             # Multi-turn support: when the case carries a `turns` array, replay
             # each turn sequentially over a SINGLE backend conversation so the
             # checkpointer / wizard session pin gets the same continuity that
@@ -670,7 +907,10 @@ async def run(args: argparse.Namespace) -> None:
                 latency_total = 0
                 for t_idx, turn_content in enumerate(turns, 1):
                     body = build_request_body(case, content=turn_content, conversation_id=conv_id or None)
-                    last_api = await call_lia(client, args.url, token, body, timeout=args.timeout)
+                    if transport == "ws":
+                        last_api = await call_lia_ws(args.url, token, body, timeout=args.timeout, ws_state=ws_state)
+                    else:
+                        last_api = await call_lia(client, args.url, token, body, timeout=args.timeout)
                     latency_total += max(0, last_api.get("latency_ms", 0))
                     transcripts.append({
                         "turn": t_idx,
@@ -688,7 +928,10 @@ async def run(args: argparse.Namespace) -> None:
                 api_result = {**api_result, "latency_ms": latency_total}
             else:
                 body = build_request_body(case)
-                api_result = await call_lia(client, args.url, token, body, timeout=args.timeout)
+                if transport == "ws":
+                    api_result = await call_lia_ws(args.url, token, body, timeout=args.timeout, ws_state=ws_state)
+                else:
+                    api_result = await call_lia(client, args.url, token, body, timeout=args.timeout)
 
             if api_result["ok"]:
                 scoring = score_heuristic(case, api_result["response"])
@@ -744,6 +987,11 @@ async def run(args: argparse.Namespace) -> None:
             }
             results.append(result)
             print_progress(idx, len(cases), case["id"], scoring["score"], api_result["latency_ms"])
+
+            # Close per-case WS so the next case starts on a fresh socket
+            # (and a fresh ``conversation_history`` in the WS handler scope).
+            if ws_state is not None:
+                await _close_ws_state(ws_state)
 
             # Small delay to avoid rate limiting
             await asyncio.sleep(0.5)
@@ -961,6 +1209,15 @@ def main() -> None:
     )
     parser.add_argument("--gate-threshold", type=float, default=0.85, help="Gate min avg score (0..1)")
     parser.add_argument("--gate-consecutive", type=int, default=2, help="Consecutive failing runs to trip gate")
+    parser.add_argument(
+        "--transport",
+        default="rest",
+        choices=("rest", "ws"),
+        help="Transport to talk to the backend. 'rest' (default) hits /api/v1/chat. "
+             "'ws' opens /api/v1/ws/chat/{session_id} per case and aggregates "
+             "message + wizard_stage + panel_update frames into the scoreable "
+             "response — required for the wizard gates (Task #1064 / D7).",
+    )
     parser.add_argument(
         "--dataset",
         default="",

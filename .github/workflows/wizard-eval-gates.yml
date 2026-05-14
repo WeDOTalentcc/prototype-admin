@@ -22,17 +22,15 @@ name: Wizard Eval Gates (no-tenant-leak + pipeline-template)
 # `wizard eval gates`) bloqueie merges com regressão nos 4 bugs originais
 # (B1/B2/B3/B4) ou no contrato `pipeline_template`.
 #
-# Drift conhecido (D7 da auditoria docs/audits/wizard-job-creation-2026-05.md):
-# o `eval_runner` é REST-only e não captura o payload WebSocket onde o wizard
-# streama `parsed_title` / `pipeline_template`. Enquanto D7 não for fechado
-# (follow-up #1064), os 2 gates rodam RED por questão de transport e não por
-# regressão real. Para evitar travar o `main` nesse intervalo:
-#   - O `workflow_dispatch` aceita `enforce=false` para rodar diagnóstico
-#     manualmente sem derrubar o job.
-#   - Em runs de `push`, o gate é sempre fail-CLOSED. Se D7 ainda estiver
-#     aberto na hora de marcar esse workflow como required-check no `main`,
-#     ou bem se resolve D7 antes (caminho preferido), ou bem se desativa o
-#     trigger `push` temporariamente — NÃO se desliga o gating no YAML.
+# D7 (auditoria docs/audits/wizard-job-creation-2026-05.md) — RESOLVIDO via
+# Task #1064: o `eval_runner` agora aceita `--transport ws`, abre o WebSocket
+# `/api/v1/ws/chat/{session_id}` por caso e agrega `message` +
+# `wizard_stage` + `panel_update` no campo scoreado. Os 2 gates passam a
+# rodar contra o mesmo transport que o frontend consome — sem isso o REST
+# entregava só o prompt HITL terse (~56 chars), sem `parsed_title` /
+# `pipeline_template`. O `workflow_dispatch` ainda aceita `enforce=false`
+# para diagnóstico manual pontual, mas o default é fail-CLOSED em qualquer
+# trigger.
 #
 # Trigger:
 #   - workflow_dispatch (on-demand, com input para escolher quais gates rodar)
@@ -50,7 +48,7 @@ on:
         required: false
         default: "leak,template"
       enforce:
-        description: "Falhar o job quando o gate falha (default true; usar 'false' só para diagnóstico manual enquanto D7 estiver aberto)"
+        description: "Falhar o job quando o gate falha (default true; usar 'false' só para diagnóstico manual em casos pontuais)"
         required: false
         default: "true"
         type: choice
@@ -207,6 +205,7 @@ jobs:
         run: |
           python -m eval.eval_runner \
             --dataset eval/golden/wizard_no_tenant_leak.jsonl \
+            --transport ws \
             --url "$LIA_BACKEND_URL"
 
       - name: "Gate 1 — wizard_no_tenant_leak (gate check)"
@@ -228,6 +227,7 @@ jobs:
         run: |
           python -m eval.eval_runner \
             --dataset eval/golden/wizard_pipeline_template.jsonl \
+            --transport ws \
             --url "$LIA_BACKEND_URL"
 
       - name: "Gate 2 — wizard_pipeline_template (gate check)"
@@ -293,7 +293,6 @@ jobs:
             fi
             echo "::warning::Wizard eval gates FAILED but enforce=false — job stays green."
             echo "::warning::Veja o artifact wizard-eval-gates-${{ github.run_id }} para diagnóstico."
-            echo "::warning::Drift D7 (audit wizard-job-creation-2026-05) ainda aberto: REST runner não captura payload WS."
           else
             echo "All wizard eval gates passed."
           fi
