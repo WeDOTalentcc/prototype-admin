@@ -66,7 +66,13 @@ export default defineConfig({
     webServer: {
       command: 'npm run dev',
       url: 'http://localhost:5000',
-      reuseExistingServer: !process.env.CI,
+      // Task #1079 — opt-out explícito (PW_REUSE_SERVER=0) em vez da
+      // heurística antiga `!process.env.CI`. Replit setta CI=true, então
+      // `!CI` virava `false` e cada cenário tentava spawnar seu próprio
+      // webServer na 5000 → EADDRINUSE colidindo com o `dev-server` do
+      // workflow já em pé. Default agora é REUSAR; só se ofusca quando
+      // o operador explicitamente quer um webServer fresco.
+      reuseExistingServer: process.env.PW_REUSE_SERVER !== '0',
       timeout: 120000,
     },
   }),

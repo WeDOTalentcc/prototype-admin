@@ -108,3 +108,19 @@ Gerar key: `python -c "from cryptography.fernet import Fernet; print(Fernet.gene
 - Endpoint `/api/v1/health/compliance/bypass-status` exposes em runtime (canary deve alertar quando `warning_count > 0`).
 
 **Default:** tudo OFF. Ver `.env.example` seção *"COMPLIANCE / EMERGENCY FLAGS"*. Origem: R-007 do plano de remediação, finding F-053.
+
+## Ambiente E2E (Task #1079)
+
+A suíte Playwright (`pw-cenario-A → D`) reusa o `dev-server` já em pé — nenhum cenário spawna seu próprio webServer.
+
+| Variável | Default | Efeito |
+|---|---|---|
+| `PW_REUSE_SERVER` | `1` (reusa) | Quando `0`, força `playwright.config.ts` a iniciar `npm run dev` próprio em :5000. Em Replit, com `dev-server` rodando como workflow, deixar default — caso contrário causa `EADDRINUSE :5000`. |
+
+**Bootstrap único** (devs locais e CI): `./scripts/dev-up.sh` sobe Redis + `lia-backend` (FastAPI :8001) + `dev-server` (Next.js :5000) em ordem com healthcheck entre cada etapa. Idempotente: pula serviços já saudáveis. Use `--no-fe` quando o workflow `dev-server` do Replit já gerencia o frontend.
+
+**Wrappers de cenário** em `plataforma-lia/scripts/run-pw-cenario-{a,b,c}.sh` invocam o canônico `run-pw-cenario.sh <label> <spec>`, que: (1) espera o frontend responder em 120s antes de chamar `pnpm playwright test`; (2) faz warmup de `/pt` e `/pt/chat` para evitar cold-compile do Next/Turbopack; (3) exporta `PW_REUSE_SERVER=1`. Os workflows `pw-cenario-A/B/C` apontam para esses wrappers; `pw-cenario-D` mantém seu próprio bootstrap inline (precisa subir o backend com `LIA_JD_ENRICHMENT_TIMEOUT_S=0.001`).
+
+**Bootstrap do `lia-backend`** (canônico em `scripts/dev-up.sh`): aguarda `fuser 8001/tcp` esvaziar (até 10s) antes de bindar, eliminando a race com `fuser -k` que causava `EADDRINUSE :8001` em restarts rápidos.
+
+> **Aviso operacional (Task #1079):** os workflows do Replit `lia-backend`, `pw-cenario-A/B/C` ainda contêm os comandos *antigos* (race-prone). A reconfiguração programática via `configureWorkflow` está bloqueada pelo bug do contador de workflow-limit (os 4 `mockup-sandbox: Component Preview Server` managed-by-artifact contam dobrado, levando o counter a `11/10`). Como mitigação: os comandos **canônicos** estão em `scripts/dev-up.sh` e `plataforma-lia/scripts/run-pw-cenario-{a,b,c}.sh`; rode-os via `bash` que o comportamento é o desejado. Quando a plataforma corrigir o counter (ou um operador remover manualmente um mockup-sandbox no painel), o próximo agente pode `configureWorkflow` cada um dos quatro nomes para apontar para o respectivo wrapper. Workflow `pw-cenario-A` foi removido durante a tentativa de re-add e não pôde ser restaurado pelo mesmo bug — invocar via `bash plataforma-lia/scripts/run-pw-cenario-a.sh`.
