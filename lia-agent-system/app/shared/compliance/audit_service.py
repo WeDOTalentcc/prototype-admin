@@ -56,6 +56,10 @@ DECISION_TYPE_MAPPING = {
     "approved": DecisionType.APPROVE_CANDIDATE,
     "generate_jd": DecisionType.GENERATE_FEEDBACK,
     "generate_wsi_questions": DecisionType.GENERATE_FEEDBACK,
+    # Task #1061 — wizard step completion audit (EU AI Act Art.13).
+    # Cada node decisório do JobCreationGraph (bigfive, wsi_questions,
+    # competency, eligibility) emite um audit row ao concluir.
+    "wizard_step_completed": DecisionType.GENERATE_FEEDBACK,
 }
 
 PROTECTED_CRITERIA = [

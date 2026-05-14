@@ -137,6 +137,89 @@ def _suggest_pipeline_template(
         return None
 
 
+# ---------------------------------------------------------------------------
+# Wizard step audit helper (Task #1061 — EU AI Act Art.13 / SOX)
+# ---------------------------------------------------------------------------
+# Cada node decisório (`bigfive`, `wsi_questions`, `competency`,
+# `eligibility`) emite uma audit row com `decision_type=wizard_step_completed`
+# ao concluir. Espelha o padrão de `audit_company_change` em
+# `company_settings`: `before/after/target_id/trace_id` ficam em `reasoning`.
+# Fail-open por design — falha de audit NUNCA bloqueia o wizard, mas a
+# sentinela offline garante que o call site existe.
+def _emit_wizard_step_audit(
+    *,
+    stage: str,
+    state: dict,
+    before: Any,
+    after: Any,
+    reasoning_extra: Optional[list[str]] = None,
+    criteria_used: Optional[list[str]] = None,
+    human_review_required: bool = False,
+) -> None:
+    """Emit `wizard_step_completed` audit row for a JobCreationGraph node."""
+    try:
+        import asyncio as _asyncio
+        import json as _json
+        import uuid as _uuid
+
+        from app.shared.compliance.audit_service import AuditService
+
+        company_id = str(
+            state.get("workspace_id") or state.get("company_id") or ""
+        )
+        if not company_id:
+            logger.warning(
+                "[JobCreation:%s] audit skipped — missing company_id", stage,
+            )
+            return
+
+        target_id = str(
+            state.get("job_id") or state.get("session_id") or ""
+        ) or "∅"
+        trace_id = str(_uuid.uuid4())
+
+        def _ser(v: Any) -> str:
+            try:
+                s = _json.dumps(v, default=str, ensure_ascii=False, sort_keys=True)
+            except Exception:
+                s = str(v)
+            return s if len(s) <= 1000 else f"{s[:1000]}…"
+
+        reasoning: list[str] = [
+            f"trace_id={trace_id}",
+            f"stage={stage}",
+            f"target_id={target_id}",
+            f"before={_ser(before)}",
+            f"after={_ser(after)}",
+        ]
+        if reasoning_extra:
+            reasoning.extend(reasoning_extra)
+
+        criteria = list(criteria_used or []) + [
+            "wizard_step",
+            f"stage:{stage}",
+            f"trace_id:{trace_id}",
+            f"target_id:{target_id}",
+        ]
+
+        _asyncio.run(AuditService().log_decision(
+            company_id=company_id,
+            agent_name=f"job_creation:{stage}",
+            decision_type="wizard_step_completed",
+            action=f"complete_{stage}",
+            decision="completed",
+            reasoning=reasoning,
+            criteria_used=criteria,
+            job_vacancy_id=state.get("job_id"),
+            human_review_required=human_review_required,
+        ))
+    except Exception as _audit_exc:  # noqa: BLE001 — fail-open
+        logger.warning(
+            "[JobCreation:%s] wizard_step_completed audit failed (fail-open): %s",
+            stage, _audit_exc,
+        )
+
+
 def intake_node(state: JobCreationState) -> JobCreationState:
     """Pre-F1: Parse user input via IntakeExtractor (LLM + regex fallback).
 
@@ -621,6 +704,26 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
         },
     }
 
+    # ── Task #1061: wizard_step_completed audit (EU AI Act Art.13) ──
+    _emit_wizard_step_audit(
+        stage="bigfive",
+        state=state,
+        before={
+            "bigfive_profile": state.get("bigfive_profile"),
+            "trait_rankings": state.get("trait_rankings"),
+        },
+        after={
+            "bigfive_profile": bigfive_profile,
+            "trait_rankings_count": len(trait_rankings or []),
+        },
+        reasoning_extra=[
+            f"seniority={state.get('seniority_resolved') or state.get('parsed_seniority')}",
+            f"pending_hitl={_pending_hitl}",
+        ],
+        criteria_used=["jd_enriched", "seniority", "trait_rankings"],
+        human_review_required=_pending_hitl,
+    )
+
     elapsed = (time.time() - t0) * 1000
     logger.info("[JobCreation:bigfive] %0.fms", elapsed)
     return {**state, **updates}
@@ -805,6 +908,28 @@ def competency_node(state: JobCreationState) -> JobCreationState:
             "requires_approval": False,
         },
     }
+
+    # ── Task #1061: wizard_step_completed audit (EU AI Act Art.13) ──
+    _emit_wizard_step_audit(
+        stage="competency",
+        state=state,
+        before={
+            "seniority_resolved": state.get("seniority_resolved"),
+            "competency_tree_count": len(state.get("competency_tree") or []),
+        },
+        after={
+            "seniority": seniority,
+            "screening_mode": screening_mode,
+            "distribution": distribution,
+            "competency_tree_count": len(competency_tree),
+        },
+        reasoning_extra=[
+            f"seniority_confidence={seniority_result.confidence}",
+            f"signals_used={seniority_result.signals_used}",
+        ],
+        criteria_used=["parsed_seniority", "skills_obrigatorias", "salary_min",
+                       "screening_mode"],
+    )
 
     elapsed = (time.time() - t0) * 1000
     logger.info("[JobCreation:competency] seniority=%s mode=%s | %0.fms", seniority, screening_mode, elapsed)
@@ -1019,6 +1144,25 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
             "[JobCreation:wsi_questions] audit log failed (fail-open): %s", _audit_exc,
         )
 
+    # ── Task #1061: wizard_step_completed audit (EU AI Act Art.13) ──
+    _emit_wizard_step_audit(
+        stage="wsi_questions",
+        state=state,
+        before={"questions_count": len(state.get("wsi_questions") or [])},
+        after={
+            "questions_count": len(questions_data),
+            "dropped_count": len(_wsi_dropped),
+        },
+        reasoning_extra=[
+            f"distribution={state.get('question_distribution')}",
+            f"seniority={state.get('seniority_resolved')}",
+            f"dropped_by_fairness={len(_wsi_dropped)}",
+        ],
+        criteria_used=["distribution", "trait_rankings", "competency_tree",
+                       "fairness_layer4"],
+        human_review_required=True,
+    )
+
     elapsed = (time.time() - t0) * 1000
     logger.info("[JobCreation:wsi_questions] %d questions | %0.fms", len(questions_data), elapsed)
     return {**state, **updates}
@@ -1044,6 +1188,16 @@ def eligibility_node(state: JobCreationState) -> JobCreationState:
             "requires_approval": False,
         },
     }
+
+    # ── Task #1061: wizard_step_completed audit (EU AI Act Art.13) ──
+    _emit_wizard_step_audit(
+        stage="eligibility",
+        state=state,
+        before={"questions_count": len(state.get("eligibility_questions") or [])},
+        after={"questions_count": len(questions)},
+        reasoning_extra=[f"questions={[q.get('text') if isinstance(q, dict) else str(q) for q in questions[:5]]}"],
+        criteria_used=["recruiter_configured_questions"],
+    )
 
     elapsed = (time.time() - t0) * 1000
     logger.info("[JobCreation:eligibility] %d questions | %0.fms", len(questions), elapsed)
