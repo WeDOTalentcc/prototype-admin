@@ -1,19 +1,25 @@
-name: Wizard E2E — Cenário A (daily)
+name: Wizard E2E — Cenário A (daily + PR)
 
-# Task #1054 — roda diariamente o `pw-cenario-A` (e2e Playwright do fluxo
-# completo de criação de vaga técnica) contra um stack efêmero (Postgres +
-# Redis + lia-agent-system + plataforma-lia). Sentinela CI das Tasks #1051
-# (fix canônico do wizard tenant-context leak) + #1052 (eval gate online) +
+# Task #1054 — roda o `pw-cenario-A` (e2e Playwright do fluxo completo de
+# criação de vaga técnica) contra um stack efêmero (Postgres + Redis +
+# lia-agent-system + plataforma-lia). Sentinela CI das Tasks #1051 (fix
+# canônico do wizard tenant-context leak) + #1052 (eval gate online) +
 # #1053 (fixture de auth Playwright independente de LIA_DEV_AUTO_LOGIN).
 #
 # Por que existe esse workflow separado:
 #   - O cenário A executa o wizard end-to-end com LLM real (Claude/Gemini),
-#     leva ~10-15min e consome quota; não pode rodar em todo PR.
+#     leva ~10-15min e consome quota; por isso NÃO roda em todo PR — só em
+#     PRs que tocam arquivos do wizard (FE/BE/agentes/specs e2e), além do
+#     cron diário.
 #   - Diário às 05:30 UTC garante feedback rápido se algum agente, prompt
-#     ou rota frontend regredir o "fluxo linear até publicação".
+#     ou rota frontend regredir o "fluxo linear até publicação", mesmo que
+#     o PR culpado não tenha tocado em arquivos do wizard explicitamente.
+#   - on PR (paths filter) pega regressões ANTES do merge, evitando que o
+#     bug pouse em main e quebre o cron diário (gate seguinte = release).
 #   - workflow_dispatch permite rodar on-demand antes de releases.
 #
-# Trigger: cron diário 05:30 UTC (~02:30 BRT) + workflow_dispatch manual.
+# Trigger: cron diário 05:30 UTC (~02:30 BRT) + on pull_request (paths
+# filter abaixo) + workflow_dispatch manual.
 
 on:
   schedule:
@@ -21,6 +27,39 @@ on:
     # para escalonar carga nos servers de LLM e ter contexto separado se algum
     # falhar.
     - cron: "30 5 * * *"
+  pull_request:
+    # Só dispara em PRs que mexem com arquivos do wizard / fixture de auth /
+    # agentes envolvidos / o próprio workflow. Mantém o gate enxuto para não
+    # estourar quota de LLM em PRs que mudam só docs ou outros domínios.
+    # Se um arquivo crítico ficar de fora deste filtro, o cron diário pega
+    # no dia seguinte (defesa em profundidade).
+    paths:
+      # Specs e fixture e2e do wizard (incl. helpers compartilhados)
+      - "plataforma-lia/e2e/tests/wizard/**"
+      - "plataforma-lia/e2e/fixtures/auth.fixture.ts"
+      - "plataforma-lia/e2e/helpers/**"
+      - "plataforma-lia/playwright.config.ts"
+      # Frontend do wizard de criação de vaga
+      - "plataforma-lia/src/components/wizard/**"
+      - "plataforma-lia/src/components/jobs/**"
+      - "plataforma-lia/src/app/**/criar-vaga/**"
+      - "plataforma-lia/src/app/**/vagas/**"
+      - "plataforma-lia/src/hooks/wizard/**"
+      # Backend: agente do wizard, classificador, intake e tenant-aware mixin
+      - "lia-agent-system/app/domains/wizard/**"
+      - "lia-agent-system/app/domains/jobs/**"
+      - "lia-agent-system/app/agents/tenant_aware/**"
+      - "lia-agent-system/app/auth/dependencies.py"
+      - "lia-agent-system/app/api/v1/wizard*.py"
+      - "lia-agent-system/app/api/v1/jobs*.py"
+      - "lia-agent-system/app/services/wizard*.py"
+      - "lia-agent-system/app/services/jd_enrichment*.py"
+      - "lia-agent-system/app/router/**"
+      # Auth/fixture cross-cutting
+      - "lia-agent-system/app/api/v1/auth*.py"
+      # Próprio workflow + wrapper
+      - ".github/workflows/wizard-e2e-cenario-a.yml"
+      - "plataforma-lia/scripts/run-pw-cenario-a.sh"
   workflow_dispatch:
     inputs:
       spec:
