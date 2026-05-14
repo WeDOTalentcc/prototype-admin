@@ -1,0 +1,180 @@
+"""Sentinela offline — Task #1062.
+
+Garante que os 3 nós LLM-bound do graph `JobCreation` (`bigfive`, `salary`,
+`wsi_questions`) honram timeouts configuráveis via env e caem em fallback
+determinístico quando o LLM/serviço externo demora demais. Espelha o padrão
+canônico de `LIA_JD_ENRICHMENT_TIMEOUT_S` (D4 da auditoria #1058).
+
+Estratégia: monkeypatcha os helpers (`_get_wsi_generator`, módulos internos
+do `salary_node`) para simular um LLM lento (sleep > timeout). O fallback
+determinístico precisa preencher o estado mesmo com timeout 0.001s.
+"""
+from __future__ import annotations
+
+import time
+
+import pytest
+
+from app.domains.job_creation import graph as graph_mod
+from app.domains.job_creation.graph import (
+    bigfive_node,
+    salary_node,
+    wsi_questions_node,
+)
+from app.domains.job_creation.schemas import (
+    BigFiveExtraction,
+    EnrichedJobDescription,
+    GeneratedQuestion,
+)
+
+
+def _enriched_dict() -> dict:
+    return EnrichedJobDescription(
+        titulo_padronizado="Engenheiro Backend Pleno",
+        senioridade_confirmada="pleno",
+        about_role="Construir APIs REST resilientes em Python.",
+        responsabilidades=["Desenvolver endpoints", "Revisar PRs"],
+        skills_obrigatorias=[],
+        competencias_comportamentais=[],
+    ).model_dump()
+
+
+class _SlowGenerator:
+    """Stub que simula LLM lento — sempre dorme > qualquer timeout sensato."""
+
+    def extract_bigfive(self, _enriched):
+        time.sleep(2.0)
+        return BigFiveExtraction(
+            openness=0.99, conscientiousness=0.99, extraversion=0.99,
+            agreeableness=0.99, stability=0.99,
+        )
+
+    def rank_traits(self, bigfive, seniority, *_a, **_kw):
+        return [{"trait": "openness", "score": bigfive.openness, "rank": 1, "weight": 1.0}]
+
+    def generate_questions(self, *, enriched, seniority, distribution, trait_rankings):
+        time.sleep(2.0)
+        return [GeneratedQuestion(
+            question="should-not-appear",
+            ideal_answer="-",
+            framework="CBI",
+            block="technical",
+            competency="technical",
+            skill="x",
+            weight=1.0,
+        )]
+
+    def _fallback_questions(self, block, count):
+        # Re-usa a fallback real do generator canônico para realismo do trait
+        from app.domains.job_creation.services.wsi_question_generator import (
+            WSIQuestionGenerator,
+        )
+        return WSIQuestionGenerator._fallback_questions(self, block, count)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# bigfive_node
+# ─────────────────────────────────────────────────────────────────────────────
+
+def test_bigfive_node_timeout_falls_back_to_defaults(monkeypatch):
+    """Em timeout, `BigFiveExtraction()` defaults (0.5 across traits) é usado."""
+    monkeypatch.setenv("LIA_BIGFIVE_TIMEOUT_S", "0.05")
+    monkeypatch.setattr(graph_mod, "_get_wsi_generator", lambda: _SlowGenerator())
+    # Bypass policy gate
+    monkeypatch.setattr(
+        graph_mod, "evaluate_wizard_policy",
+        lambda *_a, **_kw: type("R", (), {
+            "decision": __import__(
+                "app.domains.job_creation.policy_gate", fromlist=["PolicyDecision"]
+            ).PolicyDecision.ALLOW,
+            "rationale": "ok",
+        })(),
+    )
+    state = {
+        "jd_enriched": _enriched_dict(),
+        "parsed_seniority": "pleno",
+    }
+    out = bigfive_node(state)
+    profile = out.get("bigfive_profile") or {}
+    # Defaults of BigFiveExtraction() são 0.5 — confirma fallback (não 0.99 do stub)
+    assert profile.get("openness") == 0.5
+    assert profile.get("conscientiousness") == 0.5
+    # Trait ranking ainda é determinístico — deve existir
+    assert out.get("trait_rankings"), "rank_traits deveria rodar mesmo no fallback"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# salary_node
+# ─────────────────────────────────────────────────────────────────────────────
+
+def test_salary_node_timeout_skips_benchmark_gracefully(monkeypatch):
+    """Em timeout, `salary_benchmark` fica `None` e nó completa sem travar."""
+    monkeypatch.setenv("LIA_SALARY_TIMEOUT_S", "0.05")
+
+    # Forja um asyncio.run lento — qualquer call de _fetch_benchmark dorme 2s
+    import asyncio as _stdlib_asyncio
+    real_run = _stdlib_asyncio.run
+
+    def _slow_run(coro, *a, **kw):
+        # Drena o coroutine pra evitar warning "never awaited"
+        try:
+            coro.close()
+        except Exception:
+            pass
+        time.sleep(2.0)
+        return {"source": "should-not-appear", "confidence": 0.99}
+
+    monkeypatch.setattr(_stdlib_asyncio, "run", _slow_run)
+    try:
+        state = {
+            "parsed_title": "Engenheiro Backend",
+            "parsed_seniority": "pleno",
+            "company_id": "00000000-0000-4000-a000-000000000001",
+        }
+        t0 = time.time()
+        out = salary_node(state)
+        elapsed = time.time() - t0
+    finally:
+        monkeypatch.setattr(_stdlib_asyncio, "run", real_run)
+
+    # Deve retornar bem rápido (timeout 0.05s + overhead) — NUNCA esperar 2s
+    assert elapsed < 1.5, f"salary_node demorou {elapsed:.2f}s (timeout não respeitado)"
+    assert out.get("current_stage") == "salary"
+    # Benchmark não foi populado (graceful skip)
+    assert not out.get("salary_benchmark")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# wsi_questions_node
+# ─────────────────────────────────────────────────────────────────────────────
+
+def test_wsi_questions_node_timeout_uses_deterministic_fallback(monkeypatch):
+    """Em timeout, perguntas vêm de `_fallback_questions` (CBI mínimo)."""
+    monkeypatch.setenv("LIA_WSI_QUESTIONS_TIMEOUT_S", "0.05")
+    monkeypatch.setattr(graph_mod, "_get_wsi_generator", lambda: _SlowGenerator())
+    monkeypatch.setattr(
+        graph_mod, "evaluate_wizard_policy",
+        lambda *_a, **_kw: type("R", (), {
+            "decision": __import__(
+                "app.domains.job_creation.policy_gate", fromlist=["PolicyDecision"]
+            ).PolicyDecision.ALLOW,
+            "rationale": "ok",
+        })(),
+    )
+    state = {
+        "jd_enriched": _enriched_dict(),
+        "question_distribution": {"technical": 2, "behavioral": 1},
+        "seniority_resolved": "pleno",
+        "trait_rankings": [],
+    }
+    out = wsi_questions_node(state)
+    questions = out.get("wsi_questions") or []
+    # Fallback gera 1 pergunta por bloco (count é só para o weight)
+    assert len(questions) >= 2, f"esperava ≥2 perguntas fallback, veio {len(questions)}"
+    # Nenhuma pergunta veio do stub lento
+    for q in questions:
+        assert q.get("question") != "should-not-appear", (
+            "fallback deveria substituir totalmente as perguntas do LLM lento"
+        )
+    # Frameworks são CBI (regra absoluta WSI)
+    assert all(q.get("framework") == "CBI" for q in questions)

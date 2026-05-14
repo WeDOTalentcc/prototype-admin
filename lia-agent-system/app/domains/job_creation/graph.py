@@ -662,11 +662,34 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
     _pending_hitl = (_policy_result.decision == PolicyDecision.HITL_REQUIRED)
 
     if enriched:
-        # F2: Extract Big Five via LLM
-        bigfive_obj = generator.extract_bigfive(enriched)
+        # F2: Extract Big Five via LLM — Task #1062: timeout determinístico
+        # com fallback (`BigFiveExtraction()` defaults 0.5 across traits).
+        # Espelha o padrão de `LIA_JD_ENRICHMENT_TIMEOUT_S` (D4 da auditoria
+        # #1058). `rank_traits` é determinístico — não precisa timeout.
+        import concurrent.futures as _cf_bf
+        from app.domains.job_creation.schemas import BigFiveExtraction as _BFE
+        _BF_LLM_TIMEOUT_S = float(__import__("os").environ.get(
+            "LIA_BIGFIVE_TIMEOUT_S", "10"
+        ))
+        # NOTE: não usar `with ThreadPoolExecutor(...)` — o `__exit__` chama
+        # `shutdown(wait=True)` e bloqueia até o LLM lento terminar (anula o
+        # timeout). `shutdown(wait=False)` deixa a thread morrer em paz.
+        _ex_bf = _cf_bf.ThreadPoolExecutor(max_workers=1)
+        try:
+            try:
+                _fut_bf = _ex_bf.submit(generator.extract_bigfive, enriched)
+                bigfive_obj = _fut_bf.result(timeout=_BF_LLM_TIMEOUT_S)
+            except _cf_bf.TimeoutError:
+                logger.warning(
+                    "[JobCreation:bigfive] LLM timeout after %.1fs — "
+                    "deterministic fallback (Task #1062)", _BF_LLM_TIMEOUT_S,
+                )
+                bigfive_obj = _BFE()  # defaults to 0.5 across all traits
+        finally:
+            _ex_bf.shutdown(wait=False)
         bigfive_profile = bigfive_obj.model_dump()
 
-        # F3: Rank traits (deterministic)
+        # F3: Rank traits (deterministic — no LLM, no timeout needed)
         seniority = state.get("seniority_resolved") or state.get("parsed_seniority") or "pleno"
         trait_rankings = generator.rank_traits(bigfive_obj, seniority)
     else:
@@ -739,9 +762,16 @@ def salary_node(state: JobCreationState) -> JobCreationState:
     logger.info("[JobCreation:salary] Starting salary validation")
 
     # ── Fetch benchmark if not already in state ──
+    # Task #1062: timeout determinístico (D4 da auditoria #1058). Em timeout
+    # o nó pula benchmark gracefully (`salary_benchmark=None`) — recrutador
+    # pode preencher manualmente sem travar o wizard.
+    _SALARY_TIMEOUT_S = float(__import__("os").environ.get(
+        "LIA_SALARY_TIMEOUT_S", "10"
+    ))
     if not state.get("salary_benchmark"):
         try:
             import asyncio as _asyncio
+            import concurrent.futures as _cf_sl
 
             async def _fetch_benchmark():
                 from app.core.database import AsyncSessionLocal
@@ -799,7 +829,25 @@ def salary_node(state: JobCreationState) -> JobCreationState:
 
                 return combined
 
-            _benchmark = _asyncio.run(_fetch_benchmark())
+            def _run_fetch():
+                return _asyncio.run(_fetch_benchmark())
+
+            # NOTE: shutdown(wait=False) — ver comentário em bigfive_node.
+            _ex_sl = _cf_sl.ThreadPoolExecutor(max_workers=1)
+            try:
+                try:
+                    _benchmark = _ex_sl.submit(_run_fetch).result(
+                        timeout=_SALARY_TIMEOUT_S
+                    )
+                except _cf_sl.TimeoutError:
+                    logger.warning(
+                        "[JobCreation:salary] benchmark fetch timeout after %.1fs — "
+                        "skipping benchmark gracefully (Task #1062)",
+                        _SALARY_TIMEOUT_S,
+                    )
+                    _benchmark = None
+            finally:
+                _ex_sl.shutdown(wait=False)
             if _benchmark:
                 state = {**state, "salary_benchmark": _benchmark}
                 logger.info(
@@ -1031,12 +1079,47 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
 
             if enriched:
                 generator = _get_wsi_generator()
-                question_objs = generator.generate_questions(
-                    enriched=enriched,
-                    seniority=seniority,
-                    distribution=distribution,
-                    trait_rankings=trait_rankings,
-                )
+                # Task #1062: timeout determinístico (D4 da auditoria #1058).
+                # Em timeout cai no `_fallback_questions(block, count)` por
+                # bloco — mantém o wizard avançando com perguntas mínimas
+                # CBI-conformes para revisão humana (HITL #2 ainda exigido).
+                import concurrent.futures as _cf_wq
+                _WSI_LLM_TIMEOUT_S = float(__import__("os").environ.get(
+                    "LIA_WSI_QUESTIONS_TIMEOUT_S", "20"
+                ))
+                # NOTE: shutdown(wait=False) — ver comentário em bigfive_node.
+                _ex_wq = _cf_wq.ThreadPoolExecutor(max_workers=1)
+                try:
+                    try:
+                        _fut_wq = _ex_wq.submit(
+                            generator.generate_questions,
+                            enriched=enriched,
+                            seniority=seniority,
+                            distribution=distribution,
+                            trait_rankings=trait_rankings,
+                        )
+                        question_objs = _fut_wq.result(
+                            timeout=_WSI_LLM_TIMEOUT_S
+                        )
+                    except _cf_wq.TimeoutError:
+                        logger.warning(
+                            "[JobCreation:wsi_questions] LLM timeout after %.1fs — "
+                            "deterministic fallback (Task #1062)",
+                            _WSI_LLM_TIMEOUT_S,
+                        )
+                        n_tech = distribution.get("technical", 5)
+                        n_behav = distribution.get("behavioral", 2)
+                        question_objs = []
+                        if n_tech > 0:
+                            question_objs.extend(
+                                generator._fallback_questions("technical", n_tech)
+                            )
+                        if n_behav > 0:
+                            question_objs.extend(
+                                generator._fallback_questions("behavioral", n_behav)
+                            )
+                finally:
+                    _ex_wq.shutdown(wait=False)
                 questions_data = [q.model_dump() for q in question_objs]
             else:
                 questions_data = []
