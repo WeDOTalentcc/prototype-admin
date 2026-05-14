@@ -220,6 +220,124 @@ def _emit_wizard_step_audit(
         )
 
 
+# ---------------------------------------------------------------------------
+# Wizard fallback observability (Task #1068)
+# ---------------------------------------------------------------------------
+# Cada um dos 4 nodes com fallback determinístico (jd_enrichment, bigfive,
+# salary, wsi_questions — Tasks #1062 + #1065) chama este helper quando cai
+# para o caminho fallback. Emite:
+#   1. Log estruturado WARNING com `metric=wizard_fallback` + extras
+#      (node, tenant_id, reason, timeout_s, elapsed_ms) — consumido pelo
+#      `JSONFormatter` em `app/shared/structured_logging.py`, ficando como
+#      campos de primeira classe no log JSON para que ELK/CloudWatch/Datadog
+#      filtrem por `data.metric:wizard_fallback` e agrupem por
+#      `data.node` + `data.tenant_id`.
+#   2. Sentry breadcrumb (categoria `wizard.fallback`) + `capture_message`
+#      WARNING com tags `wizard.node`, `wizard.fallback_reason`, `tenant_id`
+#      — habilita gráficos de "fallback rate por node por dia" e alertas
+#      `count_unique(message:"wizard fallback") > X em 1h` no Sentry.
+# Fail-open por design — falha de telemetria NUNCA bloqueia o wizard.
+_WIZARD_FALLBACK_NODES: tuple[str, ...] = (
+    "jd_enrichment", "bigfive", "salary", "wsi_questions",
+)
+
+
+def _emit_wizard_fallback_metric(
+    *,
+    node: str,
+    state: dict,
+    reason: str,
+    timeout_s: Optional[float] = None,
+    elapsed_ms: Optional[float] = None,
+) -> None:
+    """Emit observability signal when a wizard node falls back.
+
+    Args:
+        node: One of `_WIZARD_FALLBACK_NODES`.
+        state: LangGraph state — used to extract tenant id (workspace_id /
+            company_id) and session id without leaking PII.
+        reason: Short machine token, e.g. `"llm_timeout"`, `"llm_exception"`,
+            `"benchmark_timeout"`. Becomes a Sentry tag — keep it low-cardinality.
+        timeout_s: Configured timeout (when applicable) so dashboards can
+            justify raising it.
+        elapsed_ms: Wall-clock spent before the fallback fired (when known).
+    """
+    try:
+        if node not in _WIZARD_FALLBACK_NODES:
+            # Prevent silent taxonomy drift — a typo here would split the
+            # dashboard into two buckets and hide the regression.
+            logger.warning(
+                "[JobCreation] _emit_wizard_fallback_metric got unknown node=%r "
+                "(allowed=%s) — telemetry skipped",
+                node, _WIZARD_FALLBACK_NODES,
+            )
+            return
+        tenant_id = str(
+            state.get("workspace_id") or state.get("company_id") or ""
+        ) or "unknown"
+        session_id = str(state.get("session_id") or "") or None
+        job_id = state.get("job_id")
+
+        # ── 1. Structured log (picked up by JSONFormatter) ──
+        extra: Dict[str, Any] = {
+            "extra_data": {
+                "metric": "wizard_fallback",
+                "node": node,
+                "tenant_id": tenant_id,
+                "reason": reason,
+                "timeout_s": timeout_s,
+                "elapsed_ms": elapsed_ms,
+                "session_id": session_id,
+                "job_id": str(job_id) if job_id else None,
+            },
+            "tenant_id": tenant_id,
+        }
+        logger.warning(
+            "[JobCreation:%s] wizard fallback fired (reason=%s)",
+            node, reason, extra=extra,
+        )
+
+        # ── 2. Sentry breadcrumb + capture_message ──
+        try:
+            import sentry_sdk as _sentry  # noqa: WPS433 — lazy import
+        except Exception:  # noqa: BLE001 — sentry optional
+            return
+        try:
+            _sentry.add_breadcrumb(
+                category="wizard.fallback",
+                level="warning",
+                message=f"wizard:{node} fallback ({reason})",
+                data={
+                    "node": node,
+                    "reason": reason,
+                    "tenant_id": tenant_id,
+                    "timeout_s": timeout_s,
+                    "elapsed_ms": elapsed_ms,
+                },
+            )
+            with _sentry.push_scope() as _scope:
+                _scope.set_tag("wizard.node", node)
+                _scope.set_tag("wizard.fallback_reason", reason)
+                _scope.set_tag("tenant_id", tenant_id)
+                _scope.set_extra("timeout_s", timeout_s)
+                _scope.set_extra("elapsed_ms", elapsed_ms)
+                _scope.set_extra("session_id", session_id)
+                _sentry.capture_message(
+                    f"wizard fallback: {node} ({reason})",
+                    level="warning",
+                )
+        except Exception as _sentry_exc:  # noqa: BLE001 — fail-open
+            logger.debug(
+                "[JobCreation:%s] sentry capture failed (fail-open): %s",
+                node, _sentry_exc,
+            )
+    except Exception as _metric_exc:  # noqa: BLE001 — fail-open
+        logger.debug(
+            "[JobCreation:%s] wizard fallback metric emit failed (fail-open): %s",
+            node, _metric_exc,
+        )
+
+
 def intake_node(state: JobCreationState) -> JobCreationState:
     """Pre-F1: Parse user input via IntakeExtractor (LLM + regex fallback).
 
@@ -454,6 +572,11 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
             jd_quality_score, jd_quality_warnings = _calc_q(enriched_obj)
             jd_enrichment_used_fallback = True
             jd_enrichment_fallback_reason = "timeout"
+            _emit_wizard_fallback_metric(
+                node="jd_enrichment", state=state, reason="llm_timeout",
+                timeout_s=_JD_LLM_TIMEOUT_S,
+                elapsed_ms=(time.time() - t0) * 1000,
+            )
         except Exception as _enrich_exc:  # noqa: BLE001 — fail-open com fallback
             logger.warning(
                 "[JobCreation:jd_enrichment] LLM call failed (%s) — fallback",
@@ -476,6 +599,12 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
                 jd_enrichment_fallback_reason = "provider_error"
             else:
                 jd_enrichment_fallback_reason = "exception"
+            _emit_wizard_fallback_metric(
+                node="jd_enrichment", state=state,
+                reason=f"llm_{jd_enrichment_fallback_reason}",
+                timeout_s=_JD_LLM_TIMEOUT_S,
+                elapsed_ms=(time.time() - t0) * 1000,
+            )
         jd_enriched_dict = enriched_obj.model_dump()
 
         # ── Layer 3: output fairness check (AFTER LLM) ──
@@ -724,6 +853,11 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
                 bigfive_obj = _BFE()  # defaults to 0.5 across all traits
                 bigfive_used_fallback = True
                 bigfive_fallback_reason = "timeout"
+                _emit_wizard_fallback_metric(
+                    node="bigfive", state=state, reason="llm_timeout",
+                    timeout_s=_BF_LLM_TIMEOUT_S,
+                    elapsed_ms=(time.time() - t0) * 1000,
+                )
             except Exception as _bf_exc:  # noqa: BLE001 — fail-open
                 logger.warning(
                     "[JobCreation:bigfive] LLM call failed (%s) — fallback",
@@ -739,6 +873,12 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
                     bigfive_fallback_reason = "provider_error"
                 else:
                     bigfive_fallback_reason = "exception"
+                _emit_wizard_fallback_metric(
+                    node="bigfive", state=state,
+                    reason=f"llm_{bigfive_fallback_reason}",
+                    timeout_s=_BF_LLM_TIMEOUT_S,
+                    elapsed_ms=(time.time() - t0) * 1000,
+                )
         finally:
             _ex_bf.shutdown(wait=False)
         bigfive_profile = bigfive_obj.model_dump()
@@ -916,6 +1056,11 @@ def salary_node(state: JobCreationState) -> JobCreationState:
                     _benchmark = None
                     salary_used_fallback = True
                     salary_fallback_reason = "timeout"
+                    _emit_wizard_fallback_metric(
+                        node="salary", state=state, reason="benchmark_timeout",
+                        timeout_s=_SALARY_TIMEOUT_S,
+                        elapsed_ms=(time.time() - t0) * 1000,
+                    )
             finally:
                 _ex_sl.shutdown(wait=False)
             if _benchmark:
@@ -1210,6 +1355,11 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
                             )
                         wsi_questions_used_fallback = True
                         wsi_questions_fallback_reason = "timeout"
+                        _emit_wizard_fallback_metric(
+                            node="wsi_questions", state=state, reason="llm_timeout",
+                            timeout_s=_WSI_LLM_TIMEOUT_S,
+                            elapsed_ms=(time.time() - t0) * 1000,
+                        )
                     except Exception as _wq_exc:  # noqa: BLE001 — fail-open
                         logger.warning(
                             "[JobCreation:wsi_questions] LLM call failed (%s) — fallback",
@@ -1235,6 +1385,12 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
                             wsi_questions_fallback_reason = "provider_error"
                         else:
                             wsi_questions_fallback_reason = "exception"
+                        _emit_wizard_fallback_metric(
+                            node="wsi_questions", state=state,
+                            reason=f"llm_{wsi_questions_fallback_reason}",
+                            timeout_s=_WSI_LLM_TIMEOUT_S,
+                            elapsed_ms=(time.time() - t0) * 1000,
+                        )
                 finally:
                     _ex_wq.shutdown(wait=False)
                 questions_data = [q.model_dump() for q in question_objs]
