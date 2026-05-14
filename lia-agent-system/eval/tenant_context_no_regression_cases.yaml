@@ -11,15 +11,23 @@
 # coisas ("qual vaga?", "qual candidato?") — o que NÃO PODE é pedir/citar a
 # empresa, porque o snippet de tenant já chega injetado pelo backend.
 #
-# Cobertura mínima: 12 cenários — wizard (3) + 9 agentes principais (1 cada).
+# Cobertura canônica: 18 cenários cobrindo os 16 ReActAgents do inventário
+# sentinela (`tests/integration/agents/test_tenant_aware_rollout_t_d.py`) —
+# wizard (3) + 15 demais agentes (1 cada). Expansão Task #1042 fechou os
+# gaps de automation, autonomous, company_settings, cv_screening_pipeline,
+# sourcing e pipeline_transition sobre a base original (Task #977).
 # Escopo dos prompts é intencionalmente diverso: criação de vaga, busca de
 # candidatos, kanban, KPIs, comunicação, sourcing, política de contratação,
-# pool de talentos e self-service de candidato.
+# pool de talentos, self-service de candidato, automação, autônomo, settings
+# da empresa, triagem de CV e transição de pipeline.
 
 meta:
-  version: "1.0.0"
+  version: "1.1.0"
   task: "#977"
-  total_cases: 12
+  # Task #1042: cobertura ampliada para os 16 ReActAgents canônicos.
+  # Antes 12 cenários; +6 para fechar gap de automation, autonomous,
+  # company_settings, cv_screening_pipeline, sourcing e pipeline_transition.
+  total_cases: 18
   forbidden_phrases:
     # frases-sintoma case-insensitive — qualquer match → FAIL
     - "sua empresa"
@@ -144,3 +152,57 @@ cases:
     context:
       scope: "Candidato"
       page: "candidato/processos"
+
+  # ── AUTOMATION (Task #1042) ────────────────────────────────────
+  - id: TCNR-AU-001
+    agent: automation
+    severity: medium
+    prompt: "configura uma automação para mover candidatos aprovados na triagem para o teste técnico"
+    context:
+      scope: "Automação"
+      page: "configuracoes/automacoes"
+
+  # ── AUTONOMOUS (Task #1042) ────────────────────────────────────
+  - id: TCNR-AT-001
+    agent: autonomous
+    severity: high
+    prompt: "executa o plano autônomo de prospecção de candidatos para a vaga de Engenheiro Backend"
+    context:
+      scope: "Autônomo"
+      page: "home"
+
+  # ── COMPANY SETTINGS (Task #1042) ──────────────────────────────
+  - id: TCNR-CS-001
+    agent: company_settings
+    severity: critical
+    prompt: "atualiza o setor de atuação e o headcount da empresa nas configurações"
+    context:
+      scope: "Configurações"
+      page: "configuracoes"
+
+  # ── CV SCREENING PIPELINE (Task #1042) ─────────────────────────
+  - id: TCNR-CV-001
+    agent: cv_screening_pipeline
+    severity: high
+    prompt: "processa os currículos recebidos hoje e classifica por aderência à vaga"
+    context:
+      scope: "Triagem"
+      page: "candidates"
+
+  # ── SOURCING (Task #1042) ──────────────────────────────────────
+  - id: TCNR-SR-001
+    agent: sourcing
+    severity: high
+    prompt: "faz uma rodada de sourcing externo no LinkedIn para a vaga de Product Manager"
+    context:
+      scope: "Sourcing"
+      page: "funil-de-talentos"
+
+  # ── PIPELINE TRANSITION (Task #1042) ───────────────────────────
+  - id: TCNR-PT-001
+    agent: pipeline_transition
+    severity: high
+    prompt: "move o candidato João Silva da etapa de entrevista RH para entrevista técnica"
+    context:
+      scope: "Kanban"
+      page: "kanban"
