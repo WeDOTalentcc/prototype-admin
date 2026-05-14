@@ -215,6 +215,17 @@ export function useChatMessages({
               missing_params?: string[];
               collected_params?: Record<string, unknown>;
             };
+            // Task #1055 — Phase 1.4 Wizard Canonical Executor (REST path).
+            // Espelha o evento WS canonical (useChatSocket.ts:272) — mesmo
+            // shape, mesmo nome de event, mesma reducer no useWizardFlow.
+            ws_stage_payload?: {
+              type?: string;
+              thread_id?: string;
+              stage?: string;
+              data?: Record<string, unknown>;
+              completeness?: number;
+              requires_approval?: boolean;
+            };
           };
         };
         let data: ChatResponse;
@@ -260,6 +271,26 @@ export function useChatMessages({
             isClarification: true,
           });
           return;
+        }
+
+        // Task #1055 — Bridge REST → wizard window event.
+        // Espelha 1:1 useChatSocket.ts:272 (caminho WS canonical). Sem isso o
+        // WizardPipelineTemplateCard não renderiza no fluxo REST porque o
+        // useWizardFlow só assina ``lia:wizard-stage-payload``.
+        const _wsStagePayload = data.message_metadata?.ws_stage_payload;
+        if (_wsStagePayload && typeof window !== "undefined") {
+          window.dispatchEvent(
+            new CustomEvent("lia:wizard-stage-payload", {
+              detail: {
+                type: "wizard_stage",
+                thread_id: _wsStagePayload.thread_id,
+                stage: _wsStagePayload.stage,
+                data: _wsStagePayload.data || {},
+                completeness: _wsStagePayload.completeness ?? 0,
+                requires_approval: Boolean(_wsStagePayload.requires_approval),
+              },
+            }),
+          );
         }
 
         if (data.content) {

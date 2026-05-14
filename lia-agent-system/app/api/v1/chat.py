@@ -385,6 +385,14 @@ async def send_message(
         _meta = msg_metadata.copy()
         if context_data:
             _meta["context_data"] = context_data
+        # Task #1055 — propaga ws_stage_payload (emitido pela Phase 1.4 Wizard
+        # Canonical Executor do MainOrchestrator) até o FE via message_metadata.
+        # FE (sendViaRest) dispara ``lia:wizard-stage-payload`` espelhando o
+        # caminho WS canonical (useChatSocket.ts:272). Sem isso, o
+        # WizardPipelineTemplateCard não renderiza no fluxo REST.
+        _ws_stage_payload = workflow_data.get("ws_stage_payload")
+        if _ws_stage_payload:
+            _meta["ws_stage_payload"] = _ws_stage_payload
 
         # Update snapshot with orchestrator results
         _conv_snapshot["title"] = _conv_snapshot["title"] or message_data.content[:100]

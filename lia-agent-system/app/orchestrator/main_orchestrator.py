@@ -461,6 +461,36 @@ class MainOrchestrator:
                     action_response.fairness_warnings = _soft_warnings
                 return action_response
 
+            # ── Phase 1.4: Wizard Canonical Executor (Task #1055) ──────────
+            # Canonical REST/SSE delegation to WizardSessionService — espelha
+            # agent_chat_ws.py:914 (WS canonical path). Sem este intercept, o
+            # turno do wizard era engolido pela Phase 1.5 Agentic Loop e o
+            # ``ws_stage_payload`` (que carrega ``pipeline_template`` para o
+            # ``WizardPipelineTemplateCard``) jamais era emitido em REST.
+            #
+            # Disparo:
+            #   • turnos ≥2 — ``CascadedRouter.wizard_session_pin`` Tier 0.5
+            #     identifica sessão LangGraph aberta (#1051/#1052 contract).
+            #   • turno 1 — heurística de start patterns (``criar vaga``, etc.)
+            #     espelhando ``JobCreationDomain.process_intent``. Bootstrap
+            #     necessário porque o pin só fira após a 1ª invocação do
+            #     ``WizardSessionService.process_message`` marcar a sessão.
+            #
+            # Fail-open: qualquer exceção cai para Phase 1.5 (legado).
+            try:
+                _wiz_resp = await self._try_wizard_canonical(
+                    ctx, conv_id, conv, db,
+                )
+                if _wiz_resp is not None:
+                    if _soft_warnings and not _wiz_resp.fairness_warnings:
+                        _wiz_resp.fairness_warnings = _soft_warnings
+                    return _wiz_resp
+            except Exception as _wiz_exc:
+                logger.warning(
+                    "[MainOrchestrator] Wizard canonical executor crashed; "
+                    "falling through to Phase 1.5: %s", _wiz_exc, exc_info=True,
+                )
+
             # ── Phase 1.3: Plan & Execute (LIA-P&E / UC-P3-14) ─────────────────
             # Feature-flagged: LIA_V2_USE_PLAN_SERVICE=true
             # Sits between ActionExecutor (closed actions) and AgenticLoop (open LLM).
@@ -997,6 +1027,150 @@ class MainOrchestrator:
             )
             return None
 
+    # Phase 1.4 — Wizard Canonical Executor (Task #1055)
+    # ------------------------------------------------------------------
+
+    # Start patterns para bootstrap do TURNO 1 (sessão wizard ainda não
+    # marcada). Espelha ``JobCreationDomain.process_intent`` (linha 253) —
+    # mesma fonte de verdade canônica. Mantido como tuple module-level
+    # para reutilização pela sentinela offline.
+    _WIZARD_START_PATTERNS: tuple[str, ...] = (
+        "criar vaga", "nova vaga", "abrir vaga", "contratar",
+        "preciso de", "quero criar", "vamos criar", "criar uma vaga",
+        "abrir uma vaga", "nova posição", "nova posicao",
+    )
+
+    async def _try_wizard_canonical(
+        self,
+        ctx: UniversalContext,
+        conv_id: str,
+        conv: Any,
+        db: Any,
+    ) -> ChatResponse | None:
+        """Canonical wizard executor para REST/SSE — espelha agent_chat_ws.py:914.
+
+        Decisão de disparo:
+          1. **Continuação (turno ≥2):** consulta ``WizardSessionService.is_session_active``
+             (mesmo predicado usado pelo ``CascadedRouter.wizard_session_pin``
+             Tier 0.5 — Task #1051). Se há sessão LangGraph aberta, delega.
+          2. **Bootstrap (turno 1):** se a mensagem casa com ``_WIZARD_START_PATTERNS``
+             (mesma fonte canônica de ``JobCreationDomain.process_intent``),
+             delega — isso marca a sessão para o pin assumir nos turnos seguintes.
+
+        Retorna ``None`` se não for wizard (caller cai para Phase 1.5).
+
+        Empacota ``ws_stage_payload`` em ``structured_data["ws_stage_payload"]``
+        — ``ChatAdapter._convert_response`` mapeia para ``workflow_data`` →
+        ``chat.py`` propaga para ``message_metadata.ws_stage_payload`` → FE
+        ``sendViaRest`` dispara ``lia:wizard-stage-payload`` (espelha
+        ``useChatSocket.ts:272`` do caminho WS).
+        """
+        from app.domains.job_creation.services.wizard_session_service import (
+            WizardSessionService,
+        )
+
+        message_text = (ctx.message or "").strip()
+        if not message_text:
+            return None
+
+        company_id = str(ctx.company_id) if ctx.company_id else None
+        session_id = conv_id or str(uuid.uuid4())
+
+        # ── Decisão de disparo ──
+        is_wizard_turn = False
+        try:
+            is_wizard_turn = await WizardSessionService.is_session_active(
+                session_id=session_id, company_id=company_id,
+            )
+        except Exception as _pin_exc:
+            logger.debug(
+                "[MainOrchestrator] is_session_active skipped: %s", _pin_exc,
+            )
+
+        if not is_wizard_turn:
+            _msg_lower = message_text.lower()
+            if any(p in _msg_lower for p in self._WIZARD_START_PATTERNS):
+                is_wizard_turn = True
+                logger.info(
+                    "[MainOrchestrator] Wizard bootstrap (turno 1): pattern match "
+                    "session=%s company=%s", session_id, company_id,
+                )
+
+        if not is_wizard_turn:
+            return None
+
+        # ── Delegação canônica para WizardSessionService ──
+        thread_id = WizardSessionService.derive_thread_id(
+            {}, session_id, company_id=company_id,
+        )
+
+        # context dict espelha o que agent_chat_ws.py monta — mantém paridade
+        # com o caminho WS para que ``_build_state`` funcione idêntico.
+        wiz_context: dict[str, Any] = dict(ctx.extra or {})
+        wiz_context.setdefault("user_id", ctx.user_id)
+        wiz_context.setdefault("company_id", company_id)
+        wiz_context.setdefault("session_id", session_id)
+        if getattr(ctx, "tenant_context_snippet", ""):
+            wiz_context.setdefault(
+                "tenant_context_snippet", ctx.tenant_context_snippet
+            )
+
+        recruiter_msg, ws_stage_payload, _tokens = await WizardSessionService.process_message(
+            thread_id=thread_id,
+            user_message=message_text,
+            user_id=ctx.user_id,
+            company_id=company_id,
+            session_id=session_id,
+            context=wiz_context,
+            on_token=None,  # REST não faz streaming token-by-token
+        )
+
+        recruiter_msg = recruiter_msg or "Vaga em criação — vamos seguir."
+
+        # Persist response to conversation memory (espelha Phase 0/1)
+        if conv and not ctx.skip_memory_persist:
+            try:
+                await self._persist_response(
+                    ctx, conv_id, conv, {"response": recruiter_msg}, db,
+                )
+            except Exception as _exc:
+                logger.warning(
+                    "[MainOrchestrator] wizard canonical _persist_response "
+                    "failed (non-blocking) conv_id=%s: %s",
+                    conv_id, _exc,
+                )
+
+        _structured: dict[str, Any] = {}
+        if ws_stage_payload:
+            # Empacota com type=wizard_stage para o FE replicar 1:1 o evento WS
+            # (useChatSocket.ts:272). thread_id é injetado para o WizardProvider
+            # persistir o checkpointer LangGraph entre refreshes.
+            _structured["ws_stage_payload"] = {
+                "type": "wizard_stage",
+                "thread_id": thread_id,
+                "stage": ws_stage_payload.get("stage", "wizard"),
+                **ws_stage_payload,
+            }
+
+        logger.info(
+            "[MainOrchestrator] Wizard canonical executor: session=%s thread=%s "
+            "stage=%s payload=%s",
+            session_id, thread_id,
+            (ws_stage_payload or {}).get("stage", "?"),
+            "yes" if ws_stage_payload else "no",
+        )
+
+        return ChatResponse(
+            success=True,
+            content=recruiter_msg,
+            agent_used="wizard_session_canonical",
+            confidence=0.95,
+            intent_detected="wizard",
+            conversation_id=conv_id,
+            structured_data=_structured or None,
+        )
+
+    # ------------------------------------------------------------------
     # Phase 2 — Pipeline consolidado (sem delegação intermediária)
     # ------------------------------------------------------------------
 

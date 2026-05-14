@@ -323,13 +323,56 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
     else:
         # Call JdEnrichmentService (F1.C LLM enrichment)
         # IMPORTANT — pass jd_raw_safe (PII-stripped), NOT jd_raw original.
-        service = _get_jd_service()
-        enriched_obj, jd_quality_score, jd_quality_warnings = service.enrich(
-            jd_raw=jd_raw_safe,
-            title=state.get("parsed_title", ""),
-            seniority=state.get("parsed_seniority", ""),
-            department=state.get("parsed_department", ""),
+        # Task #1055 — timeout determinístico (fail-loud, fallback) para
+        # evitar que Gemini lento/429 ou /api/v1/company/culture-stack 500
+        # bloqueiem o turno do chat REST por minutos. Espelha o requisito
+        # canonical: "fallback determinístico se Gemini 429". O serviço já
+        # expõe `_fallback_enrichment` + `calculate_quality_score`.
+        import concurrent.futures as _cf
+        from app.domains.job_creation.services.jd_enrichment import (
+            calculate_quality_score as _calc_q,
         )
+        service = _get_jd_service()
+        _JD_LLM_TIMEOUT_S = float(__import__("os").environ.get(
+            "LIA_JD_ENRICHMENT_TIMEOUT_S", "12"
+        ))
+        try:
+            with _cf.ThreadPoolExecutor(max_workers=1) as _ex:
+                _fut = _ex.submit(
+                    service.enrich,
+                    jd_raw=jd_raw_safe,
+                    title=state.get("parsed_title", ""),
+                    seniority=state.get("parsed_seniority", ""),
+                    department=state.get("parsed_department", ""),
+                )
+                enriched_obj, jd_quality_score, jd_quality_warnings = _fut.result(
+                    timeout=_JD_LLM_TIMEOUT_S
+                )
+        except _cf.TimeoutError:
+            logger.warning(
+                "[JobCreation:jd_enrichment] LLM timeout after %.1fs — "
+                "deterministic fallback (Task #1055)", _JD_LLM_TIMEOUT_S,
+            )
+            enriched_obj = service._fallback_enrichment(
+                jd_raw_safe,
+                state.get("parsed_title", ""),
+                state.get("parsed_seniority", ""),
+            )
+            enriched_obj.wsi_quality_warnings.append(
+                "Enriquecimento via LLM em fallback determinístico (timeout)"
+            )
+            jd_quality_score, jd_quality_warnings = _calc_q(enriched_obj)
+        except Exception as _enrich_exc:  # noqa: BLE001 — fail-open com fallback
+            logger.warning(
+                "[JobCreation:jd_enrichment] LLM call failed (%s) — fallback",
+                _enrich_exc,
+            )
+            enriched_obj = service._fallback_enrichment(
+                jd_raw_safe,
+                state.get("parsed_title", ""),
+                state.get("parsed_seniority", ""),
+            )
+            jd_quality_score, jd_quality_warnings = _calc_q(enriched_obj)
         jd_enriched_dict = enriched_obj.model_dump()
 
         # ── Layer 3: output fairness check (AFTER LLM) ──
