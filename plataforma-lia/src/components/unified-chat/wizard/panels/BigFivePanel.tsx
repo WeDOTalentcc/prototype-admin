@@ -53,7 +53,16 @@ export function BigFivePanel({ data }: Props) {
           para anular as margens herdadas e encostar no topo do card. */}
       {d?.bigfive_used_fallback && (
         <div className="-mx-4 -mt-4 [&>div]:mt-0 [&>div]:mx-0 [&>div]:rounded-none [&>div]:border-x-0 [&>div]:border-t-0">
-          <FallbackBanner message="Perfil estimado em modo mínimo (timeout). Revise os traços antes de seguir." />
+          <FallbackBanner
+            reason={d.bigfive_fallback_reason ?? "timeout"}
+            onRetry={() =>
+              window.dispatchEvent(
+                new CustomEvent("lia:wizard-retry-stage", {
+                  detail: { stage: "bigfive" },
+                }),
+              )
+            }
+          />
         </div>
       )}
       {/* Header */}

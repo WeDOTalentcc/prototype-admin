@@ -119,6 +119,10 @@ def test_jd_enrichment_node_timeout_flags_fallback(monkeypatch):
     assert payload_data.get("jd_enrichment_used_fallback") is True, (
         "jd_enrichment fallback deveria ser sinalizado para o painel"
     )
+    # Task #1067 — root-cause label propagado ao painel
+    assert payload_data.get("jd_enrichment_fallback_reason") == "timeout", (
+        "jd_enrichment fallback_reason='timeout' deveria ser propagado"
+    )
     # Conteúdo do fallback (não o stub lento) deve ter chegado ao state
     assert out.get("jd_enriched"), "fallback deveria popular jd_enriched"
 
@@ -156,6 +160,10 @@ def test_bigfive_node_timeout_falls_back_to_defaults(monkeypatch):
     payload_data = (out.get("ws_stage_payload") or {}).get("data") or {}
     assert payload_data.get("bigfive_used_fallback") is True, (
         "bigfive fallback deveria ser sinalizado para o painel"
+    )
+    # Task #1067 — root-cause label propagado ao painel
+    assert payload_data.get("bigfive_fallback_reason") == "timeout", (
+        "bigfive fallback_reason='timeout' deveria ser propagado"
     )
 
 
@@ -203,6 +211,10 @@ def test_salary_node_timeout_skips_benchmark_gracefully(monkeypatch):
     assert payload_data.get("salary_used_fallback") is True, (
         "salary fallback deveria ser sinalizado para o painel"
     )
+    # Task #1067 — root-cause label propagado ao painel
+    assert payload_data.get("salary_fallback_reason") == "timeout", (
+        "salary fallback_reason='timeout' deveria ser propagado"
+    )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -243,4 +255,8 @@ def test_wsi_questions_node_timeout_uses_deterministic_fallback(monkeypatch):
     payload_data = (out.get("ws_stage_payload") or {}).get("data") or {}
     assert payload_data.get("wsi_questions_used_fallback") is True, (
         "wsi_questions fallback deveria ser sinalizado para o painel"
+    )
+    # Task #1067 — root-cause label propagado ao painel
+    assert payload_data.get("wsi_questions_fallback_reason") == "timeout", (
+        "wsi_questions fallback_reason='timeout' deveria ser propagado"
     )

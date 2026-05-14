@@ -87,7 +87,16 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject 
       {/* Task #1065 — banner de fallback determinístico (timeout do LLM
           → CBI mínimo). HITL #2 ainda obrigatório, banner só dá contexto. */}
       {d.wsi_questions_used_fallback && (
-        <FallbackBanner message="Perguntas em modo mínimo (timeout). Revise antes de aprovar a triagem." />
+        <FallbackBanner
+          reason={d.wsi_questions_fallback_reason ?? "timeout"}
+          onRetry={() =>
+            window.dispatchEvent(
+              new CustomEvent("lia:wizard-retry-stage", {
+                detail: { stage: "wsi_questions" },
+              }),
+            )
+          }
+        />
       )}
       {/* Summary header */}
       <div className="px-4 py-3">

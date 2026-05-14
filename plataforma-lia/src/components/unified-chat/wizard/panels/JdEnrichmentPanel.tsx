@@ -35,8 +35,19 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
 
   return (
     <div className="flex flex-col">
-      {/* Task #1065 — banner de fallback determinístico (timeout do LLM). */}
-      {d.jd_enrichment_used_fallback && <FallbackBanner />}
+      {/* Task #1065/#1067 — banner de fallback determinístico com root-cause. */}
+      {d.jd_enrichment_used_fallback && (
+        <FallbackBanner
+          reason={d.jd_enrichment_fallback_reason ?? undefined}
+          onRetry={() =>
+            window.dispatchEvent(
+              new CustomEvent("lia:wizard-retry-stage", {
+                detail: { stage: "jd_enrichment" },
+              }),
+            )
+          }
+        />
+      )}
       {/* Quality score badge */}
       <div className="px-4 py-3">
         <div className="flex items-center gap-2">

@@ -423,6 +423,9 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
         # determinístico (timeout do LLM ou exception). O painel renderiza
         # um banner discreto pedindo revisão extra antes da aprovação HITL.
         jd_enrichment_used_fallback = False
+        # Task #1067 — root-cause label propagado pro painel para o
+        # recrutador decidir entre tentar de novo ou aceitar o mínimo.
+        jd_enrichment_fallback_reason: Optional[str] = None
         try:
             with _cf.ThreadPoolExecutor(max_workers=1) as _ex:
                 _fut = _ex.submit(
@@ -450,6 +453,7 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
             )
             jd_quality_score, jd_quality_warnings = _calc_q(enriched_obj)
             jd_enrichment_used_fallback = True
+            jd_enrichment_fallback_reason = "timeout"
         except Exception as _enrich_exc:  # noqa: BLE001 — fail-open com fallback
             logger.warning(
                 "[JobCreation:jd_enrichment] LLM call failed (%s) — fallback",
@@ -462,6 +466,16 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
             )
             jd_quality_score, jd_quality_warnings = _calc_q(enriched_obj)
             jd_enrichment_used_fallback = True
+            # Heurística leve: erros HTTP/quota do provedor LLM costumam
+            # carregar termos como "rate", "quota", "429", "503", "provider".
+            _exc_str = str(_enrich_exc).lower()
+            if any(t in _exc_str for t in (
+                "rate", "quota", "429", "503", "provider", "api",
+                "unauthorized", "forbidden", "401", "403",
+            )):
+                jd_enrichment_fallback_reason = "provider_error"
+            else:
+                jd_enrichment_fallback_reason = "exception"
         jd_enriched_dict = enriched_obj.model_dump()
 
         # ── Layer 3: output fairness check (AFTER LLM) ──
@@ -537,6 +551,11 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
                 # resume path (já aprovado) é correto: o recrutador já viu.
                 "jd_enrichment_used_fallback": locals().get(
                     "jd_enrichment_used_fallback", False
+                ),
+                # Task #1067 — root-cause label ("timeout"/"exception"/
+                # "provider_error"). `None` no resume path (já aprovado).
+                "jd_enrichment_fallback_reason": locals().get(
+                    "jd_enrichment_fallback_reason", None
                 ),
                 # Task #1055 — re-emite o pipeline_template no turno de
                 # jd_enrichment (após o frontend re-render) usando o título
@@ -690,6 +709,8 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
         # `BigFiveExtraction()` neutro 0.5). Painel renderiza banner
         # discreto pedindo revisão antes do recrutador confiar nas pistas.
         bigfive_used_fallback = False
+        # Task #1067 — root-cause label propagado pro painel.
+        bigfive_fallback_reason: Optional[str] = None
         _ex_bf = _cf_bf.ThreadPoolExecutor(max_workers=1)
         try:
             try:
@@ -702,6 +723,22 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
                 )
                 bigfive_obj = _BFE()  # defaults to 0.5 across all traits
                 bigfive_used_fallback = True
+                bigfive_fallback_reason = "timeout"
+            except Exception as _bf_exc:  # noqa: BLE001 — fail-open
+                logger.warning(
+                    "[JobCreation:bigfive] LLM call failed (%s) — fallback",
+                    _bf_exc,
+                )
+                bigfive_obj = _BFE()
+                bigfive_used_fallback = True
+                _exc_str = str(_bf_exc).lower()
+                if any(t in _exc_str for t in (
+                    "rate", "quota", "429", "503", "provider", "api",
+                    "unauthorized", "forbidden", "401", "403",
+                )):
+                    bigfive_fallback_reason = "provider_error"
+                else:
+                    bigfive_fallback_reason = "exception"
         finally:
             _ex_bf.shutdown(wait=False)
         bigfive_profile = bigfive_obj.model_dump()
@@ -741,6 +778,10 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
                 # painel renderizar o banner "Sugestão mínima — revise".
                 "bigfive_used_fallback": locals().get(
                     "bigfive_used_fallback", False
+                ),
+                # Task #1067 — root-cause label.
+                "bigfive_fallback_reason": locals().get(
+                    "bigfive_fallback_reason", None
                 ),
                 **_pd_data,
             },
@@ -793,6 +834,8 @@ def salary_node(state: JobCreationState) -> JobCreationState:
     # Task #1065 — flag de fallback (timeout do benchmark fetch ou
     # exception). Painel renderiza banner pedindo revisão manual da faixa.
     salary_used_fallback = False
+    # Task #1067 — root-cause label propagado pro painel.
+    salary_fallback_reason: Optional[str] = None
     if not state.get("salary_benchmark"):
         try:
             import asyncio as _asyncio
@@ -872,6 +915,7 @@ def salary_node(state: JobCreationState) -> JobCreationState:
                     )
                     _benchmark = None
                     salary_used_fallback = True
+                    salary_fallback_reason = "timeout"
             finally:
                 _ex_sl.shutdown(wait=False)
             if _benchmark:
@@ -885,6 +929,15 @@ def salary_node(state: JobCreationState) -> JobCreationState:
             logger.warning(
                 "[JobCreation:salary] benchmark fetch failed (fail-open): %s", _bench_exc,
             )
+            salary_used_fallback = True
+            _exc_str = str(_bench_exc).lower()
+            if any(t in _exc_str for t in (
+                "rate", "quota", "429", "503", "provider", "api",
+                "unauthorized", "forbidden", "401", "403",
+            )):
+                salary_fallback_reason = "provider_error"
+            else:
+                salary_fallback_reason = "exception"
 
     updates: Dict[str, Any] = {
         "current_stage": "salary",
@@ -903,6 +956,8 @@ def salary_node(state: JobCreationState) -> JobCreationState:
                 # Task #1065 — flag de fallback (timeout do benchmark fetch).
                 # Painel renderiza banner pedindo revisão manual da faixa.
                 "salary_used_fallback": salary_used_fallback,
+                # Task #1067 — root-cause label.
+                "salary_fallback_reason": salary_fallback_reason,
             },
             "completeness": calculate_completeness("salary"),
             "requires_approval": False,
@@ -1120,6 +1175,8 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
                 # → `_fallback_questions`). Painel renderiza banner pedindo
                 # revisão extra antes da aprovação HITL.
                 wsi_questions_used_fallback = False
+                # Task #1067 — root-cause label propagado pro painel.
+                wsi_questions_fallback_reason: Optional[str] = None
                 # NOTE: shutdown(wait=False) — ver comentário em bigfive_node.
                 _ex_wq = _cf_wq.ThreadPoolExecutor(max_workers=1)
                 try:
@@ -1152,6 +1209,32 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
                                 generator._fallback_questions("behavioral", n_behav)
                             )
                         wsi_questions_used_fallback = True
+                        wsi_questions_fallback_reason = "timeout"
+                    except Exception as _wq_exc:  # noqa: BLE001 — fail-open
+                        logger.warning(
+                            "[JobCreation:wsi_questions] LLM call failed (%s) — fallback",
+                            _wq_exc,
+                        )
+                        n_tech = distribution.get("technical", 5)
+                        n_behav = distribution.get("behavioral", 2)
+                        question_objs = []
+                        if n_tech > 0:
+                            question_objs.extend(
+                                generator._fallback_questions("technical", n_tech)
+                            )
+                        if n_behav > 0:
+                            question_objs.extend(
+                                generator._fallback_questions("behavioral", n_behav)
+                            )
+                        wsi_questions_used_fallback = True
+                        _exc_str = str(_wq_exc).lower()
+                        if any(t in _exc_str for t in (
+                            "rate", "quota", "429", "503", "provider", "api",
+                            "unauthorized", "forbidden", "401", "403",
+                        )):
+                            wsi_questions_fallback_reason = "provider_error"
+                        else:
+                            wsi_questions_fallback_reason = "exception"
                 finally:
                     _ex_wq.shutdown(wait=False)
                 questions_data = [q.model_dump() for q in question_objs]
@@ -1202,6 +1285,10 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
         # renderizar o banner "Sugestão mínima — revise".
         "wsi_questions_used_fallback": locals().get(
             "wsi_questions_used_fallback", False
+        ),
+        # Task #1067 — root-cause label.
+        "wsi_questions_fallback_reason": locals().get(
+            "wsi_questions_fallback_reason", None
         ),
     }
     if _wsi_dropped:

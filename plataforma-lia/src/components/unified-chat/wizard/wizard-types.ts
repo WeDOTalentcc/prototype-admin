@@ -73,6 +73,12 @@ export interface JdEnrichmentData {
    * pedindo revisão extra antes da aprovação HITL.
    */
   jd_enrichment_used_fallback?: boolean
+  /**
+   * Task #1067 — root-cause label do fallback (`"timeout"`,
+   * `"provider_error"`, `"exception"` ou `null`). Permite ao painel
+   * exibir copy específica e oferecer "Tentar novamente" quando aplicável.
+   */
+  jd_enrichment_fallback_reason?: string | null
 }
 
 export interface EnrichedJobDescription {
@@ -121,6 +127,8 @@ export interface BigFiveData {
   trait_rankings: TraitRanking[]
   /** Task #1065 — `true` quando o nó caiu no fallback (timeout LLM → 0.5 neutro). */
   bigfive_used_fallback?: boolean
+  /** Task #1067 — root-cause label do fallback. */
+  bigfive_fallback_reason?: string | null
 }
 
 /**
@@ -136,6 +144,8 @@ export interface SalaryData {
   benchmark: Record<string, unknown> | null
   /** Task #1065 — `true` quando o benchmark fetch caiu em fallback (timeout). */
   salary_used_fallback?: boolean
+  /** Task #1067 — root-cause label do fallback. */
+  salary_fallback_reason?: string | null
 }
 
 export interface CompetencyData {
@@ -161,6 +171,8 @@ export interface WsiQuestionsData {
   distribution: { technical: number; behavioral: number } | null
   /** Task #1065 — `true` quando o nó caiu no fallback (timeout LLM → CBI mínimo). */
   wsi_questions_used_fallback?: boolean
+  /** Task #1067 — root-cause label do fallback. */
+  wsi_questions_fallback_reason?: string | null
 }
 
 export interface ScreeningQuestion {

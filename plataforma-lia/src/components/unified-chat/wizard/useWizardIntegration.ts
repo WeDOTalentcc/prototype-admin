@@ -173,11 +173,31 @@ export function useWizardIntegration({
       sendMessage(`Reordenar pergunta ${fromIndex + 1} para posicao ${toIndex + 1}`)
     }
 
+    // Task #1067 — "Tentar novamente" no banner de fallback do wizard.
+    // FallbackBanner (em JdEnrichment/BigFive/Salary/WsiQuestions panels)
+    // dispara este evento com `{ stage: "jd_enrichment" | "bigfive" |
+    // "salary" | "wsi_questions" }`. Reenviamos como mensagem de chat
+    // pra que o WizardReActAgent reexecute o nó correspondente sem o
+    // recrutador precisar digitar.
+    function handleRetryStage(e: CustomEvent) {
+      const { stage } = e.detail || {}
+      if (typeof stage !== "string" || !stage) return
+      const labelByStage: Record<string, string> = {
+        jd_enrichment: "enriquecimento da descrição",
+        bigfive: "perfil Big Five",
+        salary: "benchmark de salário",
+        wsi_questions: "perguntas WSI",
+      }
+      const label = labelByStage[stage] ?? stage
+      sendMessage(`Tentar novamente: ${label}`)
+    }
+
     const c1 = onCustomEvent("lia:wizard-edit-question", handleEditQuestion)
     const c2 = onCustomEvent("lia:wizard-regenerate-question", handleRegenerateQuestion)
     const c3 = onCustomEvent("lia:wizard-remove-question", handleRemoveQuestion)
     const c4 = onCustomEvent("lia:wizard-reorder-questions", handleReorderQuestions)
-    return () => { c1(); c2(); c3(); c4() }
+    const c5 = onCustomEvent("lia:wizard-retry-stage", handleRetryStage)
+    return () => { c1(); c2(); c3(); c4(); c5() }
   }, [isWizardActive, sendMessage])
 
   // Prefill message listener (used by DonePanel "Criar outra vaga")

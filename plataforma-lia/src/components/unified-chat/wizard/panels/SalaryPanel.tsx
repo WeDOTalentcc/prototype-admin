@@ -37,7 +37,21 @@ export function SalaryPanel({ data, onUpdate }: Props) {
       {/* Task #1065 — banner de fallback (timeout do benchmark fetch). */}
       {d.salary_used_fallback && (
         <div className="-mx-4 -mt-3 [&>div]:mx-0 [&>div]:mt-0 [&>div]:rounded-none [&>div]:border-x-0 [&>div]:border-t-0">
-          <FallbackBanner message="Benchmark de mercado indisponível agora — preencha a faixa manualmente." />
+          <FallbackBanner
+            reason={d.salary_fallback_reason ?? "timeout"}
+            message={
+              d.salary_fallback_reason
+                ? undefined
+                : "Benchmark de mercado indisponível agora — preencha a faixa manualmente."
+            }
+            onRetry={() =>
+              window.dispatchEvent(
+                new CustomEvent("lia:wizard-retry-stage", {
+                  detail: { stage: "salary" },
+                }),
+              )
+            }
+          />
         </div>
       )}
       <div>
