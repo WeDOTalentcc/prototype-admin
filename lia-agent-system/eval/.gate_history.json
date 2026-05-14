@@ -575,6 +575,27 @@
         "CX": 1.25,
         "EX": 1.2142857142857142
       }
+    },
+    {
+      "ts": "2026-05-14T11:31:54.347954",
+      "dataset": "eval/golden/wizard_no_tenant_leak.jsonl",
+      "by_agent": {
+        "wizard": 0.0
+      }
+    },
+    {
+      "ts": "2026-05-14T11:31:58.988245",
+      "dataset": "eval/golden/wizard_no_tenant_leak.jsonl",
+      "by_agent": {
+        "wizard": 0.0
+      }
+    },
+    {
+      "ts": "2026-05-14T11:33:07.144612",
+      "dataset": "eval/golden/wizard_pipeline_template.jsonl",
+      "by_agent": {
+        "wizard": 0.0
+      }
     }
   ]
 }

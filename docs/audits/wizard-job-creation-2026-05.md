@@ -132,7 +132,7 @@ Nenhum drift detectado em T-A → T-F. ✅
 - 12 cenários (B1×3 single-turn + B2/B3/B4×3 multi-turn de 3 turnos cada).
 - Threshold 0.85, scorer com `re.search` IGNORECASE/DOTALL sobre `anti_patterns` + ≥1 marker em `expected_snippet_markers`.
 - Comando: `python -m eval.eval_runner --dataset eval/golden/wizard_no_tenant_leak.jsonl && python -m eval.eval_runner --gate eval/golden/wizard_no_tenant_leak.jsonl`.
-- **Status nesta auditoria:** **NÃO RODADO LIVE** — backend `lia-backend` instável em runs longos (issue #1060). Sentinelas offline cobrem todos os contratos. Live re-run depende de #1060 ou execução em CI.
+- **Status live nesta auditoria (2026-05-14, backend up em :8001):** **🔴 RED 0/12 (0%)**. Evidência em `lia-agent-system/eval/eval_results_20260514_113158.json`. **Causa raiz:** o endpoint REST `/api/v1/chat` devolve apenas a mensagem conversacional terse de HITL #1 do wizard (`"Descrição da vaga enriquecida — preciso da sua aprovação."`, 56 chars) — o conteúdo rico (JD, parsed_title, panel/ws_stage_payload com `pipeline_template`) só é entregue via eventos WebSocket que o `eval_runner` REST-only **não captura**. **Não é regressão do wizard:** a sentinela offline `test_wizard_session_continuity_t1051.py` continua verde, `test_wizard_pipeline_template_emission_t1055.py` continua verde, e o `pw-cenario-*` Playwright (que consome WS) continua verde. **É drift do scorer / transport:** o `eval_runner` precisa virar WS-aware (ou os cenários precisam ser reescritos para validar o que o REST devolve, não o que o WS streama). Drift D7 abaixo + follow-up dedicado.
 
 ### 5.2 `wizard_pipeline_template.jsonl` (NOVO — esta task)
 - **7 cenários** cobrindo os 4 ramos críticos:
@@ -145,10 +145,10 @@ Nenhum drift detectado em T-A → T-F. ✅
 - Threshold 0.85, mesmo scorer da `wizard_no_tenant_leak.jsonl` (heurístico + Portuguese-aware).
 - Cada cenário inclui `tenant_snippet` (Demo Company canonical) e `anti_patterns` que reproduzem B1 (no_company_id_question), B2 (no_title_reset, no multi-turn) e o defaultar para `"sua empresa"/"geral"/"default"`.
 - Comando: `python -m eval.eval_runner --dataset eval/golden/wizard_pipeline_template.jsonl && python -m eval.eval_runner --gate eval/golden/wizard_pipeline_template.jsonl`.
-- **Status nesta auditoria:** **NÃO RODADO LIVE** — mesma dependência de #1060. Cobertura offline garantida pelo `test_wizard_pipeline_template_emission_t1055.py` para `_suggest_pipeline_template` em isolamento.
+- **Status live nesta auditoria (2026-05-14, backend up em :8001):** **🔴 RED 0/7 (0%)**. Evidência em `lia-agent-system/eval/eval_results_20260514_113307.json`. **Mesma causa raiz da §5.1**: REST devolve só o prompt HITL terse, scorer não vê o `parsed_title`/`pipeline_template` que ficam no payload WS. O dataset em si está correto (formato validado contra `load_golden_jsonl` + `score_heuristic`, 7 cenários cobrindo os 4 ramos pedidos pela task) — o gate só será verde quando o transport do `eval_runner` for corrigido (D7 / follow-up).
 
 ### 5.3 Sentinelas offline (todas pytest, sem backend)
-Listadas em §2. Devem rodar em qualquer mudança no wizard.
+Listadas em §2. Devem rodar em qualquer mudança no wizard. **São a fonte de verdade canônica enquanto os gates live estiverem RED por D7.**
 
 ---
 
@@ -162,6 +162,7 @@ Listadas em §2. Devem rodar em qualquer mudança no wizard.
 | **D4** | Média | Apenas `jd_enrichment` tem timeout via env (`LIA_JD_ENRICHMENT_TIMEOUT_S`). `bigfive`, `wsi_questions`, `salary` confiam no timeout default do LLM client. | Padronizar `LIA_<NODE>_TIMEOUT_S` por nó, com defaults seguros. | Task de hardening. |
 | **D5** | Baixa | Live eval gates (`wizard_no_tenant_leak.jsonl`, `wizard_pipeline_template.jsonl`) não roteados em CI. Hoje rodam manualmente quando backend está up. | Adicionar workflow_dispatch no GitHub Actions que sobe `lia-backend` + roda os 2 gates. Bloqueia merge no main quando falha. | Depende de #1060 (estabilidade do `lia-backend` em runs longos). |
 | **D6** | Baixa | `_suggest_pipeline_template` retorna `templates: list(_PIPELINE_TEMPLATE_IDS)` (lista completa) junto com `suggested_type`. Frontend pode mostrar opções A/B/C/D/E mesmo quando o sugerido é "intern" — pode confundir. | Validar no FE se a UI realmente lista todos os 5 templates ou só o suggested. Se lista todos, OK por design (recrutador escolhe). Documentar contrato. | Task de UX, não-crítica. |
+| **D7** | **Alta** | `eval_runner` (REST-only) **não consegue avaliar wizard end-to-end**: o `/api/v1/chat` devolve só o prompt HITL terse (~56 chars) — `parsed_title`, `pipeline_template`, JD enriquecida ficam no payload WS / ws_stage_payload que o runner não captura. **Ambos os gates rodaram RED 0/12 e 0/7 nesta auditoria** mesmo sem regressão real (sentinelas offline + Playwright continuam verdes). | Tornar o `eval_runner` WS-aware (abrir WS, agregar `panel_update`/`message_complete`/`ws_stage_payload` no `response` antes do scorer) OU reescrever os cenários wizard para validar APENAS o que o REST devolve (prompt HITL + ausência de anti-patterns), descartando `expected_snippet_markers` para o domínio wizard. | Follow-up dedicado (ver §8). |
 
 **Sem duplicação canonical detectada.** Não há `WizardReActAgent` paralelo, não há graph duplicado, não há outro `_suggest_pipeline_template`. ✅
 
