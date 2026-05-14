@@ -220,6 +220,26 @@ test.describe('Cenário D — Edge cases (cancelar / retomar / fallback)', () =>
         'LIA deve avançar após must-haves mesmo em fallback de enrichment'
       ).toBeGreaterThan(beforeMustHaves)
 
+      // Asserto de DETERMINISMO de fallback — só quando o gate pw-cenario-D
+      // (Replit ou GH Actions matrix D) injetou o timeout agressivo. Sem
+      // ele, o caminho live é OK e este asserto é skipado. Com ele, o FE
+      // recebe `quality_warnings` contendo "fallback determinístico (timeout)"
+      // (graph.py L361) e renderiza no painel — comprovando que o caminho
+      // de fallback foi REALMENTE exercitado, não só "não-crash".
+      const forcedFallback = process.env.LIA_JD_ENRICHMENT_TIMEOUT_S === '0.001'
+      if (forcedFallback) {
+        await expect
+          .poll(async () => {
+            const body = (await page.locator('body').innerText()).toLowerCase()
+            return /fallback determin[ií]stico|timeout/.test(body)
+          }, {
+            timeout: 30_000,
+            message:
+              'LIA_JD_ENRICHMENT_TIMEOUT_S=0.001 setado mas nenhum sinal de fallback (warning "fallback determinístico (timeout)") apareceu no DOM',
+          })
+          .toBe(true)
+      }
+
       await assertNoAiSlop(page)
     } finally {
       await sensors.attach()

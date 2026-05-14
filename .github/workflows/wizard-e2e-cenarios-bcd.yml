@@ -21,6 +21,11 @@ on:
   schedule:
     - cron: "30 6 * * *"
   workflow_dispatch:
+    inputs:
+      cenarios:
+        description: "Cenários a rodar (CSV — ex.: 'B,C,D' ou 'D' para triagem rápida). Default: todos."
+        required: false
+        default: "B,C,D"
 
 concurrency:
   group: wizard-e2e-cenarios-bcd-${{ github.ref }}
@@ -212,8 +217,25 @@ jobs:
           tail -n 200 plataforma-lia/.ci-logs/frontend.log || true
           exit 1
 
+      - name: Skip if cenário não requisitado (workflow_dispatch)
+        id: gate
+        run: |
+          REQUESTED="${{ github.event.inputs.cenarios || 'B,C,D' }}"
+          if echo ",${REQUESTED}," | grep -q ",${{ matrix.cenario }},"; then
+            echo "run=true" >> $GITHUB_OUTPUT
+          else
+            echo "run=false" >> $GITHUB_OUTPUT
+            echo "::notice::Cenário ${{ matrix.cenario }} pulado (não está em '${REQUESTED}')"
+          fi
+
       - name: Run pw-cenario-${{ matrix.cenario }}
+        if: steps.gate.outputs.run == 'true'
         working-directory: plataforma-lia
+        env:
+          # Propaga a env extra do cenário para o processo do Playwright
+          # também — D3 do spec asserta o sinal de fallback determinístico
+          # no DOM apenas quando essa env está setada (process.env check).
+          LIA_JD_ENRICHMENT_TIMEOUT_S: ${{ matrix.cenario == 'D' && '0.001' || '' }}
         run: |
           APP_ENV=development pnpm playwright test "${{ matrix.spec }}" \
             --project=desktop-chrome --reporter=list
