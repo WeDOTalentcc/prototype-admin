@@ -230,12 +230,16 @@ test.describe('Cenário D — Edge cases (cancelar / retomar / fallback)', () =>
       if (forcedFallback) {
         await expect
           .poll(async () => {
+            // Regex AJUSTADA — exige a frase canônica completa que o
+            // graph.py L361 emite ("fallback determinístico (timeout)"),
+            // não substring solta como "timeout" que poderia bater em
+            // texto de UI não-relacionado (ex.: tooltip de outro campo).
             const body = (await page.locator('body').innerText()).toLowerCase()
-            return /fallback determin[ií]stico|timeout/.test(body)
+            return /fallback determin[ií]stico\s*\(timeout\)/.test(body)
           }, {
             timeout: 30_000,
             message:
-              'LIA_JD_ENRICHMENT_TIMEOUT_S=0.001 setado mas nenhum sinal de fallback (warning "fallback determinístico (timeout)") apareceu no DOM',
+              'LIA_JD_ENRICHMENT_TIMEOUT_S=0.001 setado mas o warning canônico "fallback determinístico (timeout)" (graph.py L361) não apareceu no DOM',
           })
           .toBe(true)
       }

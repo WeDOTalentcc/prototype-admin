@@ -75,6 +75,21 @@ test.describe('Cenário C — HITL com correção em texto livre', () => {
         'LIA deve responder à correção de quantidade (sem reset de sessão)'
       ).toBeGreaterThan(beforeCorrection)
 
+      // 4.b Invariante de CONTEÚDO da correção — a(s) bubble(s) NOVA(s)
+      //     pós-correção precisam refletir o número novo (3 / três) em
+      //     algum lugar. Sem isso, a LIA poderia ter "respondido" mas
+      //     ignorado o ajuste — falso positivo do count puro.
+      const newBubblesAfterCorrection = (
+        await page.locator(SEL.liaMarkdown).allTextContents()
+      )
+        .slice(beforeCorrection)
+        .join('\n')
+        .toLowerCase()
+      expect(
+        /\b3\b|\btr[eê]s\b/.test(newBubblesAfterCorrection),
+        `LIA deve refletir a correção (3 vagas) na resposta nova (got: "${newBubblesAfterCorrection.slice(0, 400)}")`
+      ).toBe(true)
+
       // 5. Invariante estrutural #2 — template card eventualmente aparece
       //    (a correção pode atrasar 1 turno — daí timeout generoso). FAIL-LOUD.
       await expect(
