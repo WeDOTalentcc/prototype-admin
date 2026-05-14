@@ -406,7 +406,18 @@ async def lifespan(app: FastAPI):
     try:
         from app.domains.recruiter_assistant.services.monitoring_loop import monitoring_loop
         await monitoring_loop.start()
-        logger.info("✅ MonitoringLoop started (proactive pipeline checks every hour)")
+        # Task #1060: start() is a no-op quando MONITORING_LOOP_INTERVAL_SECONDS=0;
+        # logamos o estado real (running × disabled) pra deixar evidente em dev.
+        if monitoring_loop.is_running:
+            logger.info(
+                "✅ MonitoringLoop started (proactive pipeline checks every %ds)",
+                monitoring_loop._check_interval,
+            )
+        else:
+            logger.info(
+                "ℹ️  MonitoringLoop não iniciado (MONITORING_LOOP_INTERVAL_SECONDS=0) — "
+                "alertas proativos desligados nesta instância (Task #1060 — dev/Playwright)."
+            )
     except Exception as e:
         logger.warning("⚠️  MonitoringLoop não iniciou: %s — alertas proativos inativos", e)
 

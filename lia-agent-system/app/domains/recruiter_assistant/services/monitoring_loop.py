@@ -12,6 +12,7 @@ chat notifications, and stakeholder escalations.
 """
 import asyncio
 import logging
+import os
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
@@ -19,6 +20,31 @@ from enum import StrEnum
 from typing import Any
 
 logger = logging.getLogger(__name__)
+
+
+def _resolve_check_interval_from_env(default: int) -> int:
+    """Task #1060: allow ops to tune (or disable) the proactive poll cadence
+    without redeploying. Setting MONITORING_LOOP_INTERVAL_SECONDS=0 turns
+    the loop into a no-op (used in dev to keep `lia-backend` quiet during
+    long Playwright runs)."""
+    raw = os.environ.get("MONITORING_LOOP_INTERVAL_SECONDS")
+    if raw is None or raw.strip() == "":
+        return default
+    try:
+        value = int(raw)
+    except ValueError:
+        logger.warning(
+            "MONITORING_LOOP_INTERVAL_SECONDS=%r is not an int — using default %ds",
+            raw, default,
+        )
+        return default
+    if value < 0:
+        logger.warning(
+            "MONITORING_LOOP_INTERVAL_SECONDS=%d is negative — using default %ds",
+            value, default,
+        )
+        return default
+    return value
 
 
 class AlertSeverity(StrEnum):
@@ -94,10 +120,16 @@ class MonitoringLoop:
             cls._instance = cls()
         return cls._instance
 
-    def __init__(self, check_interval: int = DEFAULT_CHECK_INTERVAL_SECONDS):
+    def __init__(self, check_interval: int | None = None):
         self._running = False
         self._task: asyncio.Task | None = None
-        self._check_interval = check_interval
+        # Task #1060: env override (MONITORING_LOOP_INTERVAL_SECONDS); 0 disables the loop entirely.
+        self._check_interval = (
+            _resolve_check_interval_from_env(DEFAULT_CHECK_INTERVAL_SECONDS)
+            if check_interval is None
+            else check_interval
+        )
+        self._idle_backoff_count = 0
         self._alert_store: dict[str, list[ProactiveAlert]] = {}
         self._last_run: dict[str, datetime] = {}
 
@@ -107,6 +139,14 @@ class MonitoringLoop:
 
     async def start(self) -> None:
         if self._running:
+            return
+        # Task #1060: when interval=0 we treat the loop as disabled (used in
+        # dev to keep `lia-backend` quiet during long Playwright runs).
+        if self._check_interval == 0:
+            logger.info(
+                "MonitoringLoop disabled (MONITORING_LOOP_INTERVAL_SECONDS=0) — "
+                "proactive pipeline checks will not run."
+            )
             return
         self._running = True
         self._task = asyncio.create_task(self._loop())
@@ -124,19 +164,32 @@ class MonitoringLoop:
         logger.info("MonitoringLoop stopped")
 
     async def _loop(self) -> None:
+        # Task #1060: idle backoff. Quando uma iteração não encontra tenants
+        # ativos (cenário típico em dev / Replit fresh DB), não faz sentido
+        # voltar a varrer em 1h — multiplica o sleep até 8× pra reduzir
+        # carga em logs e DB sem sumir com o loop completamente.
         while self._running:
+            iteration_did_work = False
             try:
-                await self._run_all_tenants()
+                iteration_did_work = await self._run_all_tenants()
             except asyncio.CancelledError:
                 break
             except Exception as exc:
                 logger.error("MonitoringLoop iteration failed: %s", exc, exc_info=True)
+            if iteration_did_work:
+                self._idle_backoff_count = 0
+            else:
+                self._idle_backoff_count = min(self._idle_backoff_count + 1, 3)
+            sleep_for = self._check_interval * (2 ** self._idle_backoff_count)
             try:
-                await asyncio.sleep(self._check_interval)
+                await asyncio.sleep(sleep_for)
             except asyncio.CancelledError:
                 break
 
-    async def _run_all_tenants(self) -> None:
+    async def _run_all_tenants(self) -> bool:
+        """Returns True if at least one tenant was processed (signals
+        the polling loop to keep its base cadence; False triggers idle
+        backoff in `_loop`)."""
         from lia_config.database import AsyncSessionLocal
         from sqlalchemy import text
 
@@ -150,11 +203,15 @@ class MonitoringLoop:
             except Exception:
                 tenant_ids = []
 
+        if not tenant_ids:
+            return False
+
         for tenant_id in tenant_ids:
             try:
                 await self.run_checks(tenant_id)
             except Exception as exc:
                 logger.error("MonitoringLoop check failed for tenant %s: %s", tenant_id, exc)
+        return True
 
     async def run_checks(self, company_id: str) -> list[ProactiveAlert]:
         logger.info("MonitoringLoop running checks for company %s", company_id)

@@ -55,8 +55,19 @@ engine = create_async_engine(
     max_overflow=settings.DATABASE_MAX_OVERFLOW,
     pool_pre_ping=True,
     pool_recycle=3600,
-    echo=settings.DEBUG,
+    # Task #1060: opt-in via DATABASE_ECHO (default OFF). Antes era
+    # `settings.DEBUG`, o que ligava echo automaticamente em dev e gerava
+    # storm de logs SQL durante runs de Playwright (workflow `lia-backend`
+    # morria por OOM/log flooding após alguns minutos).
+    echo=settings.DATABASE_ECHO,
 )
+
+# Defense-in-depth: mesmo se algum import legado virar `echo` ON,
+# manter o handler de SQLAlchemy em WARNING+ por padrão. Quem quiser ver
+# SQL precisa setar tanto DATABASE_ECHO=1 quanto SQLALCHEMY_LOG_LEVEL=INFO.
+_sqla_level = os.environ.get("SQLALCHEMY_LOG_LEVEL", "WARNING").upper()
+for _name in ("sqlalchemy.engine", "sqlalchemy.pool", "sqlalchemy.dialects"):
+    logging.getLogger(_name).setLevel(getattr(logging, _sqla_level, logging.WARNING))
 
 # Session factory
 AsyncSessionLocal = async_sessionmaker(

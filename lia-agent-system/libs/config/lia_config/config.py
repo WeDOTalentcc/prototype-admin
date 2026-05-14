@@ -27,6 +27,13 @@ class DatabaseSettings(BaseSettings):
     DATABASE_URL: str = "postgresql+asyncpg://lia_user:lia_password@localhost:5432/lia_db"
     DATABASE_POOL_SIZE: int = 20
     DATABASE_MAX_OVERFLOW: int = 10
+    # Task #1060: SQLAlchemy `echo` was previously bound to `DEBUG`, so dev
+    # (DEBUG=True default) emitted every statement at INFO level. During long
+    # Playwright runs this storm of SQL log lines was enough to OOM/derrubar o
+    # workflow `lia-backend` no Replit. Echo is now opt-in via this dedicated
+    # flag (default OFF, even em dev). Set DATABASE_ECHO=1 only quando estiver
+    # ativamente debugando query plans.
+    DATABASE_ECHO: bool = False
     ELASTICSEARCH_URL: str | None = None
     # Search backend selector: "postgres" (padrão) | "elasticsearch" (alto volume)
     SEARCH_BACKEND: str = "postgres"
