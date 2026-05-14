@@ -419,6 +419,10 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
         _JD_LLM_TIMEOUT_S = float(__import__("os").environ.get(
             "LIA_JD_ENRICHMENT_TIMEOUT_S", "12"
         ))
+        # Task #1065 — sinaliza ao frontend quando caímos em fallback
+        # determinístico (timeout do LLM ou exception). O painel renderiza
+        # um banner discreto pedindo revisão extra antes da aprovação HITL.
+        jd_enrichment_used_fallback = False
         try:
             with _cf.ThreadPoolExecutor(max_workers=1) as _ex:
                 _fut = _ex.submit(
@@ -445,6 +449,7 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
                 "Enriquecimento via LLM em fallback determinístico (timeout)"
             )
             jd_quality_score, jd_quality_warnings = _calc_q(enriched_obj)
+            jd_enrichment_used_fallback = True
         except Exception as _enrich_exc:  # noqa: BLE001 — fail-open com fallback
             logger.warning(
                 "[JobCreation:jd_enrichment] LLM call failed (%s) — fallback",
@@ -456,6 +461,7 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
                 state.get("parsed_seniority", ""),
             )
             jd_quality_score, jd_quality_warnings = _calc_q(enriched_obj)
+            jd_enrichment_used_fallback = True
         jd_enriched_dict = enriched_obj.model_dump()
 
         # ── Layer 3: output fairness check (AFTER LLM) ──
@@ -526,6 +532,12 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
                 "jd_enriched": jd_enriched_dict,
                 "quality_score": jd_quality_score,
                 "quality_warnings": jd_quality_warnings,
+                # Task #1065 — flag de fallback determinístico para o painel
+                # renderizar o banner "Sugestão mínima — revise". `False` no
+                # resume path (já aprovado) é correto: o recrutador já viu.
+                "jd_enrichment_used_fallback": locals().get(
+                    "jd_enrichment_used_fallback", False
+                ),
                 # Task #1055 — re-emite o pipeline_template no turno de
                 # jd_enrichment (após o frontend re-render) usando o título
                 # padronizado pelo enriquecimento se disponível, senão o
@@ -674,6 +686,10 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
         # NOTE: não usar `with ThreadPoolExecutor(...)` — o `__exit__` chama
         # `shutdown(wait=True)` e bloqueia até o LLM lento terminar (anula o
         # timeout). `shutdown(wait=False)` deixa a thread morrer em paz.
+        # Task #1065 — flag de fallback determinístico (timeout LLM →
+        # `BigFiveExtraction()` neutro 0.5). Painel renderiza banner
+        # discreto pedindo revisão antes do recrutador confiar nas pistas.
+        bigfive_used_fallback = False
         _ex_bf = _cf_bf.ThreadPoolExecutor(max_workers=1)
         try:
             try:
@@ -685,6 +701,7 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
                     "deterministic fallback (Task #1062)", _BF_LLM_TIMEOUT_S,
                 )
                 bigfive_obj = _BFE()  # defaults to 0.5 across all traits
+                bigfive_used_fallback = True
         finally:
             _ex_bf.shutdown(wait=False)
         bigfive_profile = bigfive_obj.model_dump()
@@ -720,6 +737,11 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
             "data": {
                 "bigfive_profile": bigfive_profile,
                 "trait_rankings": trait_rankings,
+                # Task #1065 — flag de fallback determinístico para o
+                # painel renderizar o banner "Sugestão mínima — revise".
+                "bigfive_used_fallback": locals().get(
+                    "bigfive_used_fallback", False
+                ),
                 **_pd_data,
             },
             "completeness": calculate_completeness("bigfive"),
@@ -768,6 +790,9 @@ def salary_node(state: JobCreationState) -> JobCreationState:
     _SALARY_TIMEOUT_S = float(__import__("os").environ.get(
         "LIA_SALARY_TIMEOUT_S", "10"
     ))
+    # Task #1065 — flag de fallback (timeout do benchmark fetch ou
+    # exception). Painel renderiza banner pedindo revisão manual da faixa.
+    salary_used_fallback = False
     if not state.get("salary_benchmark"):
         try:
             import asyncio as _asyncio
@@ -846,6 +871,7 @@ def salary_node(state: JobCreationState) -> JobCreationState:
                         _SALARY_TIMEOUT_S,
                     )
                     _benchmark = None
+                    salary_used_fallback = True
             finally:
                 _ex_sl.shutdown(wait=False)
             if _benchmark:
@@ -874,6 +900,9 @@ def salary_node(state: JobCreationState) -> JobCreationState:
                 "salary_currency": state.get("salary_currency", "BRL"),
                 "benefits": state.get("benefits", []),
                 "benchmark": state.get("salary_benchmark"),
+                # Task #1065 — flag de fallback (timeout do benchmark fetch).
+                # Painel renderiza banner pedindo revisão manual da faixa.
+                "salary_used_fallback": salary_used_fallback,
             },
             "completeness": calculate_completeness("salary"),
             "requires_approval": False,
@@ -1087,6 +1116,10 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
                 _WSI_LLM_TIMEOUT_S = float(__import__("os").environ.get(
                     "LIA_WSI_QUESTIONS_TIMEOUT_S", "20"
                 ))
+                # Task #1065 — flag de fallback determinístico (timeout LLM
+                # → `_fallback_questions`). Painel renderiza banner pedindo
+                # revisão extra antes da aprovação HITL.
+                wsi_questions_used_fallback = False
                 # NOTE: shutdown(wait=False) — ver comentário em bigfive_node.
                 _ex_wq = _cf_wq.ThreadPoolExecutor(max_workers=1)
                 try:
@@ -1118,6 +1151,7 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
                             question_objs.extend(
                                 generator._fallback_questions("behavioral", n_behav)
                             )
+                        wsi_questions_used_fallback = True
                 finally:
                     _ex_wq.shutdown(wait=False)
                 questions_data = [q.model_dump() for q in question_objs]
@@ -1164,6 +1198,11 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
         "questions": questions_data,
         "screening_mode": state.get("screening_mode"),
         "distribution": state.get("question_distribution"),
+        # Task #1065 — flag de fallback determinístico para o painel
+        # renderizar o banner "Sugestão mínima — revise".
+        "wsi_questions_used_fallback": locals().get(
+            "wsi_questions_used_fallback", False
+        ),
     }
     if _wsi_dropped:
         _wsi_stage_data["fairness_warning"] = {

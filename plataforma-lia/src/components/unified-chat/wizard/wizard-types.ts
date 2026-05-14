@@ -67,6 +67,12 @@ export interface JdEnrichmentData {
   jd_enriched: EnrichedJobDescription | null
   quality_score: number
   quality_warnings: string[]
+  /**
+   * Task #1065 — `true` quando o nó caiu no fallback determinístico
+   * (timeout do LLM ou exception). Painel renderiza banner discreto
+   * pedindo revisão extra antes da aprovação HITL.
+   */
+  jd_enrichment_used_fallback?: boolean
 }
 
 export interface EnrichedJobDescription {
@@ -113,6 +119,8 @@ export type BigFiveProfile = BigFiveProfileContract
 export interface BigFiveData {
   bigfive_profile: BigFiveProfile | null
   trait_rankings: TraitRanking[]
+  /** Task #1065 — `true` quando o nó caiu no fallback (timeout LLM → 0.5 neutro). */
+  bigfive_used_fallback?: boolean
 }
 
 /**
@@ -126,6 +134,8 @@ export interface SalaryData {
   salary_currency: string
   benefits: string[]
   benchmark: Record<string, unknown> | null
+  /** Task #1065 — `true` quando o benchmark fetch caiu em fallback (timeout). */
+  salary_used_fallback?: boolean
 }
 
 export interface CompetencyData {
@@ -149,6 +159,8 @@ export interface WsiQuestionsData {
   questions: ScreeningQuestion[]
   screening_mode: ScreeningMode | null
   distribution: { technical: number; behavioral: number } | null
+  /** Task #1065 — `true` quando o nó caiu no fallback (timeout LLM → CBI mínimo). */
+  wsi_questions_used_fallback?: boolean
 }
 
 export interface ScreeningQuestion {

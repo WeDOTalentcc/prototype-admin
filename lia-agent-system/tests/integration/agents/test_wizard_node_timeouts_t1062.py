@@ -18,6 +18,7 @@ import pytest
 from app.domains.job_creation import graph as graph_mod
 from app.domains.job_creation.graph import (
     bigfive_node,
+    jd_enrichment_node,
     salary_node,
     wsi_questions_node,
 )
@@ -73,6 +74,56 @@ class _SlowGenerator:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# jd_enrichment_node — Task #1065 fallback flag (timeout surfaces to UI)
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+class _SlowJdService:
+    """Stub que simula JdEnrichmentService.enrich() lento."""
+
+    def enrich(self, *_a, **_kw):
+        time.sleep(2.0)
+        return (
+            EnrichedJobDescription(
+                titulo_padronizado="should-not-appear",
+                senioridade_confirmada="pleno",
+                about_role="-",
+                responsabilidades=[],
+                skills_obrigatorias=[],
+                competencias_comportamentais=[],
+            ),
+            99.0,
+            [],
+        )
+
+    def _fallback_enrichment(self, jd_raw, title, seniority):
+        from app.domains.job_creation.services.jd_enrichment import (
+            JdEnrichmentService,
+        )
+        return JdEnrichmentService._fallback_enrichment(
+            self, jd_raw, title, seniority,
+        )
+
+
+def test_jd_enrichment_node_timeout_flags_fallback(monkeypatch):
+    """Em timeout do LLM, payload sinaliza `jd_enrichment_used_fallback=True`."""
+    monkeypatch.setenv("LIA_JD_ENRICHMENT_TIMEOUT_S", "0.05")
+    monkeypatch.setattr(graph_mod, "_get_jd_service", lambda: _SlowJdService())
+    state = {
+        "raw_input": "Engenheiro Backend Pleno em Python",
+        "parsed_title": "Engenheiro Backend",
+        "parsed_seniority": "pleno",
+    }
+    out = jd_enrichment_node(state)
+    payload_data = (out.get("ws_stage_payload") or {}).get("data") or {}
+    assert payload_data.get("jd_enrichment_used_fallback") is True, (
+        "jd_enrichment fallback deveria ser sinalizado para o painel"
+    )
+    # Conteúdo do fallback (não o stub lento) deve ter chegado ao state
+    assert out.get("jd_enriched"), "fallback deveria popular jd_enriched"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # bigfive_node
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -101,6 +152,11 @@ def test_bigfive_node_timeout_falls_back_to_defaults(monkeypatch):
     assert profile.get("conscientiousness") == 0.5
     # Trait ranking ainda é determinístico — deve existir
     assert out.get("trait_rankings"), "rank_traits deveria rodar mesmo no fallback"
+    # Task #1065 — flag de fallback propagada no ws_stage_payload.data
+    payload_data = (out.get("ws_stage_payload") or {}).get("data") or {}
+    assert payload_data.get("bigfive_used_fallback") is True, (
+        "bigfive fallback deveria ser sinalizado para o painel"
+    )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -142,6 +198,11 @@ def test_salary_node_timeout_skips_benchmark_gracefully(monkeypatch):
     assert out.get("current_stage") == "salary"
     # Benchmark não foi populado (graceful skip)
     assert not out.get("salary_benchmark")
+    # Task #1065 — flag de fallback propagada no ws_stage_payload.data
+    payload_data = (out.get("ws_stage_payload") or {}).get("data") or {}
+    assert payload_data.get("salary_used_fallback") is True, (
+        "salary fallback deveria ser sinalizado para o painel"
+    )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -178,3 +239,8 @@ def test_wsi_questions_node_timeout_uses_deterministic_fallback(monkeypatch):
         )
     # Frameworks são CBI (regra absoluta WSI)
     assert all(q.get("framework") == "CBI" for q in questions)
+    # Task #1065 — flag de fallback propagada no ws_stage_payload.data
+    payload_data = (out.get("ws_stage_payload") or {}).get("data") or {}
+    assert payload_data.get("wsi_questions_used_fallback") is True, (
+        "wsi_questions fallback deveria ser sinalizado para o painel"
+    )

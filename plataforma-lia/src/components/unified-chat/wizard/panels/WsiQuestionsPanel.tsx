@@ -4,6 +4,7 @@ import React, { useRef, useState } from "react"
 import { cn } from "@/lib/utils"
 import { Check, Edit2, GripVertical, RefreshCw, Trash2, ChevronDown, ChevronUp } from "lucide-react"
 import type { WsiQuestionsData, ScreeningQuestion } from "../wizard-types"
+import { FallbackBanner } from "./FallbackBanner"
 
 interface Props {
   data: Record<string, unknown>
@@ -83,6 +84,11 @@ export function WsiQuestionsPanel({ data, requiresApproval, onApprove, onReject 
 
   return (
     <div className="flex flex-col">
+      {/* Task #1065 — banner de fallback determinístico (timeout do LLM
+          → CBI mínimo). HITL #2 ainda obrigatório, banner só dá contexto. */}
+      {d.wsi_questions_used_fallback && (
+        <FallbackBanner message="Perguntas em modo mínimo (timeout). Revise antes de aprovar a triagem." />
+      )}
       {/* Summary header */}
       <div className="px-4 py-3">
         <div className="flex items-center gap-3 text-xs">

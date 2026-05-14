@@ -4,6 +4,7 @@ import React, { useState, useEffect } from"react"
 import { cn } from"@/lib/utils"
 import { CheckCircle, AlertTriangle, XCircle, Brain, Shield } from"lucide-react"
 import type { JdEnrichmentData } from"../wizard-types"
+import { FallbackBanner } from "./FallbackBanner"
 
 interface Props {
   data: Record<string, unknown>
@@ -34,6 +35,8 @@ export function JdEnrichmentPanel({ data, requiresApproval, onApprove, onReject 
 
   return (
     <div className="flex flex-col">
+      {/* Task #1065 — banner de fallback determinístico (timeout do LLM). */}
+      {d.jd_enrichment_used_fallback && <FallbackBanner />}
       {/* Quality score badge */}
       <div className="px-4 py-3">
         <div className="flex items-center gap-2">

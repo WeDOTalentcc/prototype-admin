@@ -3,6 +3,7 @@
 import React from "react"
 import { Brain } from "lucide-react"
 import type { BigFiveData } from "../wizard-types"
+import { FallbackBanner } from "./FallbackBanner"
 
 interface Props {
   data: Record<string, unknown>
@@ -46,6 +47,15 @@ export function BigFivePanel({ data }: Props) {
 
   return (
     <div className="p-4 space-y-4">
+      {/* Task #1065 — banner de fallback determinístico (timeout do LLM
+          → traços neutros 0.5). FallbackBanner usa `mx-4 mt-3` mas o
+          wrapper aqui já tem `p-4`, então usamos `-mx-4 -mt-4 mb-0`
+          para anular as margens herdadas e encostar no topo do card. */}
+      {d?.bigfive_used_fallback && (
+        <div className="-mx-4 -mt-4 [&>div]:mt-0 [&>div]:mx-0 [&>div]:rounded-none [&>div]:border-x-0 [&>div]:border-t-0">
+          <FallbackBanner message="Perfil estimado em modo mínimo (timeout). Revise os traços antes de seguir." />
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center gap-2">
         <Brain className="w-4 h-4 text-wedo-cyan" />

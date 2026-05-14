@@ -3,6 +3,7 @@
 import React, { useState } from "react"
 import { DollarSign, Gift } from "lucide-react"
 import type { SalaryData } from "../wizard-types"
+import { FallbackBanner } from "./FallbackBanner"
 
 interface Props {
   data: Record<string, unknown>
@@ -33,6 +34,12 @@ export function SalaryPanel({ data, onUpdate }: Props) {
 
   return (
     <div className="px-4 py-3 space-y-4">
+      {/* Task #1065 — banner de fallback (timeout do benchmark fetch). */}
+      {d.salary_used_fallback && (
+        <div className="-mx-4 -mt-3 [&>div]:mx-0 [&>div]:mt-0 [&>div]:rounded-none [&>div]:border-x-0 [&>div]:border-t-0">
+          <FallbackBanner message="Benchmark de mercado indisponível agora — preencha a faixa manualmente." />
+        </div>
+      )}
       <div>
         <div className="flex items-center gap-1.5 mb-2">
           <DollarSign className="w-4 h-4 text-wedo-cyan" />
