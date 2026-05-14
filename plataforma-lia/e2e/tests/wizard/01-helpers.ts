@@ -340,7 +340,11 @@ export async function expectPanelOpens(
 // ---------------------------------------------------------------------------
 
 export async function goToChatHome(page: Page): Promise<void> {
-  await page.goto('/pt', { waitUntil: 'domcontentloaded', timeout: 30_000 })
+  // Task #1054 — bumped 30s → 90s para tolerar cold-compile do Next/Turbopack
+  // no Replit (primeira request de /pt pode levar 40-70s pra render). O wrapper
+  // run-pw-cenario-a.sh faz warmup via curl antes do test, mas a margem aqui
+  // é a rede de segurança quando o warmup é skipado (CI fresh container, etc).
+  await page.goto('/pt', { waitUntil: 'domcontentloaded', timeout: 90_000 })
   // Bubble flutuante é o âncora estável (UnifiedChatBubble)
   const bubble = page.locator(SEL.liaBubble)
   if (await bubble.isVisible({ timeout: 5_000 }).catch(() => false)) {

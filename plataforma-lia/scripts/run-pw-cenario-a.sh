@@ -39,4 +39,20 @@ echo "[pw-cenario-A] PLAYWRIGHT_BASE_URL=$PLAYWRIGHT_BASE_URL"
 echo "[pw-cenario-A] LIA_BACKEND_URL=$LIA_BACKEND_URL"
 echo "[pw-cenario-A] project=$PROJECT spec=$SPEC"
 
+# Task #1054 — warmup do Next/Turbopack.
+# Cold-compile de /pt no Replit leva 40-70s na primeira request, e o
+# `page.goto('/pt')` do helper estourava 30s antes do fix. Pré-aquecemos
+# /pt e /pt/chat com curl (timeouts generosos: connect 10s + max 120s)
+# para que o teste já encontre a rota compilada. Se o frontend não estiver
+# de pé, o curl falha silencioso (|| true) — o test próprio reportará
+# baseURL inacessível com erro mais claro.
+echo "[pw-cenario-A] warming up Next.js routes..."
+for path in "/pt" "/pt/chat"; do
+  echo "[pw-cenario-A]   GET $PLAYWRIGHT_BASE_URL$path"
+  curl -fsS --connect-timeout 10 --max-time 120 \
+    -o /dev/null -w "    -> HTTP %{http_code} in %{time_total}s\n" \
+    "$PLAYWRIGHT_BASE_URL$path" || \
+    echo "    -> warmup falhou (frontend pode estar offline; teste vai falhar com mensagem clara)"
+done
+
 exec pnpm playwright test "$SPEC" --project="$PROJECT" --reporter=list
