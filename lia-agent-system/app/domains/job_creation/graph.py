@@ -69,6 +69,74 @@ def _get_api_client(state: dict) -> JobCreationAPIClient:
 # Node implementations
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Pipeline template suggestion (Task #1055)
+# ---------------------------------------------------------------------------
+# Determinístico, sem LLM e sem DB. Espelha a heurística de
+# `app/api/v1/recruitment_journey.py:ai_suggest_template` (keyword-based) para
+# garantir que o frontend renderize o `WizardPipelineTemplateCard`
+# (`[data-testid="wizard-template-card"]`) já no primeiro turno do wizard,
+# mesmo se Gemini estiver em 429 ou `/api/v1/company/culture-stack` em 500.
+#
+# Contrato consumido em `plataforma-lia/.../wizard-plan-card.ts::buildPipelineTemplateCard`:
+#   data.suggestions_data.pipeline_template = {
+#       "suggested_type": <"technical"|"executive"|"operational"|"mass_hiring"|"intern">,
+#       "templates": [<id>, ...]   # ordem canônica dos 5 presets
+#   }
+_PIPELINE_TEMPLATE_IDS: tuple[str, ...] = (
+    "technical", "executive", "operational", "mass_hiring", "intern",
+)
+_EXECUTIVE_KEYWORDS = (
+    "director", "diretor", "vp", "vice", "cto", "cfo", "ceo", "head",
+    "gerente geral", "c-level", "chief",
+)
+_TECHNICAL_KEYWORDS = (
+    "developer", "desenvolvedor", "engineer", "engenheiro", "programador",
+    "software", "data", "devops", "sre", "backend", "frontend", "fullstack",
+    "full-stack", "tech lead", "arquiteto",
+)
+_OPERATIONAL_KEYWORDS = (
+    "operador", "auxiliar", "assistente", "atendente", "vendedor",
+    "recepcionista", "caixa", "estoquista",
+)
+_INTERN_KEYWORDS = (
+    # `estagi` cobre "estágio", "estagio", "estagiário", "estagiaria".
+    "estagi", "trainee", "jovem aprendiz", "intern",
+)
+
+
+def _suggest_pipeline_template(
+    parsed_title: Optional[str],
+    parsed_seniority: Optional[str] = None,
+) -> Optional[Dict[str, Any]]:
+    """Sugestão determinística de template de pipeline a partir do título.
+
+    Retorna `None` quando ainda não há sinal suficiente (sem título), para o
+    frontend pular a injeção do card. Nunca levanta — fail-open."""
+    try:
+        title = (parsed_title or "").strip().lower()
+        if not title:
+            return None
+        seniority = (parsed_seniority or "").strip().lower()
+
+        if any(kw in title for kw in _INTERN_KEYWORDS) or seniority in {"estagiário", "estagiario", "trainee"}:
+            suggested = "intern"
+        elif any(kw in title for kw in _EXECUTIVE_KEYWORDS) or seniority in {"diretor", "vp", "c-level", "executive"}:
+            suggested = "executive"
+        elif any(kw in title for kw in _TECHNICAL_KEYWORDS):
+            suggested = "technical"
+        elif any(kw in title for kw in _OPERATIONAL_KEYWORDS):
+            suggested = "operational"
+        else:
+            suggested = "technical"  # default seguro — frontend ainda mostra todos
+        return {
+            "suggested_type": suggested,
+            "templates": list(_PIPELINE_TEMPLATE_IDS),
+        }
+    except Exception:  # noqa: BLE001 — fail-open por design
+        return None
+
+
 def intake_node(state: JobCreationState) -> JobCreationState:
     """Pre-F1: Parse user input via IntakeExtractor (LLM + regex fallback).
 
@@ -144,6 +212,14 @@ def intake_node(state: JobCreationState) -> JobCreationState:
                 "parsed_model": parsed_model,
                 "intake_confidence": intake_confidence,
                 "intake_source": intake_source,
+                # Task #1055 — emite o pipeline_template determinístico já no
+                # turno de intake para que o WizardPipelineTemplateCard apareça
+                # mesmo se a chamada de culture-stack ou Gemini falhar depois.
+                "suggestions_data": {
+                    "pipeline_template": _suggest_pipeline_template(
+                        parsed_title, parsed_seniority,
+                    ),
+                },
             },
             "completeness": calculate_completeness("intake"),
             "requires_approval": False,
@@ -324,6 +400,18 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
                 "jd_enriched": jd_enriched_dict,
                 "quality_score": jd_quality_score,
                 "quality_warnings": jd_quality_warnings,
+                # Task #1055 — re-emite o pipeline_template no turno de
+                # jd_enrichment (após o frontend re-render) usando o título
+                # padronizado pelo enriquecimento se disponível, senão o
+                # parsed_title do intake. Garante liveness do card mesmo se
+                # o intake_node não rodar nesse turno (resume path).
+                "suggestions_data": {
+                    "pipeline_template": _suggest_pipeline_template(
+                        (jd_enriched_dict or {}).get("titulo_padronizado")
+                        or state.get("parsed_title"),
+                        state.get("parsed_seniority"),
+                    ),
+                },
             },
             "completeness": calculate_completeness("jd_enrichment"),
             "requires_approval": True,
