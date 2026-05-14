@@ -110,16 +110,18 @@ jobs:
       - name: Install backend internal libs
         working-directory: lia-agent-system
         run: |
+          # Lista canônica de libs/* — bate com `find lia-agent-system/libs -maxdepth 1 -type d`.
+          # Mantenha alinhado se uma lib for adicionada/removida (libs/contexts e libs/auth
+          # existiram no passado e foram refatoradas para dentro de app/).
           pip install --no-cache-dir \
             -e libs/config \
             -e libs/utils \
             -e libs/audit \
             -e libs/messaging \
             -e libs/models \
+            -e libs/schemas \
             -e libs/agents-core \
-            -e libs/services \
-            -e libs/contexts \
-            -e libs/auth
+            -e libs/services
 
       - name: Apply database migrations (alembic)
         working-directory: lia-agent-system
