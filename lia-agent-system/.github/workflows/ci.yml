@@ -152,6 +152,15 @@ jobs:
       - name: Gate — company_settings_prefill.jsonl (T6 #993)
         run: python -m eval.eval_runner --gate eval/golden/company_settings_prefill.jsonl
 
+      - name: Gate — wizard_calibration_handoff.jsonl (Task #1111)
+        # Garante que a etapa de calibração não regrida silenciosamente para
+        # respostas vazias ("nenhum candidato encontrado") quando o tenant
+        # tem pool. Anti-patterns regex bloqueiam "Carreguei 0 candidato",
+        # "0/N aprovados", "nenhum candidato"; success_criteria exigem
+        # contagem numérica de candidatos carregados e de aprovados/threshold
+        # na resposta final do node de calibração.
+        run: python -m eval.eval_runner --gate eval/golden/wizard_calibration_handoff.jsonl
+
   eval-nightly:
     # Task #999: feeds eval/.gate_history.json with REAL backend scores for
     # the canary golden datasets (T-E tenant_context + T6 #993 Settings
@@ -256,6 +265,12 @@ jobs:
         # The gate-check job below decides pass/fail using the persisted history.
         continue-on-error: true
         run: python -m eval.eval_runner --dataset eval/golden/tenant_context.jsonl --url http://localhost:8001
+
+      - name: Run wizard_calibration_handoff battery (Task #1111)
+        # Non-blocking nightly recording for the calibration gate. The
+        # gate-check (eval-gates job) consumes the persisted history.
+        continue-on-error: true
+        run: python -m eval.eval_runner --dataset eval/golden/wizard_calibration_handoff.jsonl --url http://localhost:8001
 
       - name: Stop backend
         if: always()

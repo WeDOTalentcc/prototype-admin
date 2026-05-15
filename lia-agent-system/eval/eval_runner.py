@@ -119,6 +119,7 @@ def load_golden_jsonl(path: Path) -> list[dict]:
             "canonical_files": row.get("canonical_files", []),
             "success_criteria": row.get("success_criteria", []),
             "anti_patterns": row.get("anti_patterns", []),
+            "required_patterns": row.get("required_patterns", []),
             "tenant_snippet": row.get("tenant_snippet", ""),
             "expected_snippet_markers": row.get("expected_snippet_markers", []),
         })
@@ -782,6 +783,23 @@ def score_heuristic(case: dict, response: str) -> dict[str, Any]:
     if anti_hits:
         flags.append(f"ANTI_PATTERN: {anti_hits[0]}")
 
+    # Required-pattern detection (Task #1111): regex list that MUST all match
+    # the response. Used by the wizard_calibration_handoff gate to enforce
+    # positive numeric structure ("Carreguei N candidatos", "X/Y aprovados",
+    # per-candidate match_score evidence) — anti_patterns alone can't prove a
+    # response is structurally correct, only that it isn't structurally wrong.
+    # Missing ANY required pattern = score 0 (same severity as anti-pattern).
+    required_misses: list[str] = []
+    for rp in case.get("required_patterns", []) or []:
+        try:
+            if not _re.search(rp, response, _re.IGNORECASE | _re.DOTALL):
+                required_misses.append(rp)
+        except _re.error:
+            # Malformed regex in dataset — skip rather than crash the gate.
+            continue
+    if required_misses:
+        flags.append(f"REQUIRED_PATTERN_MISSING: {required_misses[0]}")
+
     # Tenant snippet marker check: when the case advertises markers (e.g.
     # "Demo Company", "Tecnologia", "Backend"), the assistant response is
     # expected to echo at least one — evidence that tenant_context_snippet
@@ -811,6 +829,12 @@ def score_heuristic(case: dict, response: str) -> dict[str, Any]:
 
     # Basic score logic
     if anti_hits:
+        score = 0
+    elif required_misses:
+        # Task #1111: missing required regex pattern is a hard contract
+        # violation (positive structural assertion — e.g. "Carreguei N
+        # candidatos", "X/Y aprovados", per-candidate match_score) and
+        # carries the same severity as an anti-pattern hit.
         score = 0
     elif marker_missing:
         # Missing tenant snippet markers is a hard contract violation
