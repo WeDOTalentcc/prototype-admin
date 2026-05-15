@@ -267,6 +267,31 @@ class WizardGateEngineT2(unittest.TestCase):
         self.assertIsNone(result.get("jd_approved"))
         self.assertEqual(graph_mod.route_after_gate(result), "end")
 
+    # ---------------- S7g (regression: code review #6 comment) ----------------
+    def test_S7g_initial_pass_after_enrichment_does_not_classify(self):
+        """T2 fix #8 — primeiro pass após enrichment (mesma invocação,
+        ``user_query == raw_input``) NÃO pode disparar classifier. Sem
+        este guard, o gate roda LLM sobre a própria JD e classifica como
+        ``provide_new_content`` → re-enrichment loop + custo desnecessário."""
+        clf = classifier_mod.get_wizard_gate_classifier()
+        with mock.patch.object(
+            clf, "classify",
+            new=mock.AsyncMock(side_effect=AssertionError("classify NÃO deveria ser chamado no initial pass")),
+        ):
+            with mock.patch.object(graph_mod, "_emit_jd_gate_audit", lambda *a, **k: None):
+                state = {
+                    "jd_enriched": {"titulo_padronizado": "Engenheiro Backend"},
+                    "jd_approved": None,  # primeira vez no gate
+                    "raw_input": "Engenheiro Backend Sr Python AWS remoto",
+                    "user_query": "Engenheiro Backend Sr Python AWS remoto",  # == raw
+                    "jd_quality_score": 65.0,
+                }
+                result = graph_mod.jd_gate_node(state)
+        # Cleanup branch: aguarda HITL real (próximo turno do recrutador).
+        self.assertIsNone(result.get("gate_last_intent"))
+        self.assertIsNone(result.get("jd_approved"))
+        self.assertEqual(graph_mod.route_after_gate(result), "end")
+
     # ---------------- S7d (regression: code review #4) ----------------
     def test_S7d_ws_session_service_prefers_gate_clarify_message(self):
         """T2 fix #5 — `WizardSessionService.process_message` DEVE usar

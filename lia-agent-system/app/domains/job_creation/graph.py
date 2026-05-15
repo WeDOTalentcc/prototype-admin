@@ -2173,8 +2173,19 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
         _not_approved_yet = state.get("jd_approved") is not True
         _uq = (state.get("user_query") or "").strip()
         _seen = (state.get("gate_seen_user_query") or "").strip()
+        _raw = (state.get("raw_input") or "").strip()
         _is_fresh_turn = bool(_uq) and _uq != _seen
-        if _has_enriched and _not_approved_yet and _is_fresh_turn:
+        # T2 fix #8 (code review #6 comment): NÃO auto-classificar no
+        # primeiro pass após enrichment — quando ``user_query == raw_input``
+        # estamos na invocação inicial (recrutador acabou de mandar a JD;
+        # intake+jd_enrichment populou ``jd_enriched`` na MESMA invocação).
+        # Sem este guard, o gate roda LLM classifier sobre a própria JD
+        # (que classifica como ``provide_new_content`` → re-enrichment loop)
+        # e ainda incorre custo desnecessário. Resume real só acontece no
+        # turno SEGUINTE, quando ``user_query`` é a resposta do recrutador
+        # ao HITL — nesse ponto ``user_query != raw_input``.
+        _is_initial_pass = bool(_raw) and _uq == _raw
+        if _has_enriched and _not_approved_yet and _is_fresh_turn and not _is_initial_pass:
             msg = _uq
             logger.info(
                 "[JobCreation:jd_gate] WS resume detected (jd_enriched + fresh user_query, jd_approved=%s) — classify",
