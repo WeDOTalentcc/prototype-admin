@@ -318,6 +318,18 @@ Sempre informe qual e a proxima etapa e o que precisa ser feito."""
 
         # HITL: Questions approval
         if stage == "wsi_questions":
+            # T5 (Task #1087) — quando o flag LIA_WIZARD_LLM_GATES está ON,
+            # toda mensagem do recrutador no stage wsi_questions é dispatched
+            # para o wsi_questions_gate_node LLM-based, que substitui esses
+            # heurísticos brittle ("aprov"/"regener"/"refaz").
+            from app.domains.job_creation.graph import _llm_gates_enabled
+            if _llm_gates_enabled():
+                return {
+                    "action_id": "gate_wsi_questions",
+                    "params": {"user_query": query},
+                    "confidence": 0.95,
+                    "source": "llm_gate",
+                }
             if any(w in q_lower for w in ("aprov", "aceito", "ok", "sim", "fica")):
                 return {"action_id": "approve_questions", "params": {"approved": True, "user_query": query}, "confidence": 0.95}
             if any(w in q_lower for w in ("regener", "refaz", "outra")):
@@ -374,6 +386,8 @@ Sempre informe qual e a proxima etapa e o que precisa ser feito."""
                 return self._handle_gate_jd(params, context, thread_id)
             if action_id == "gate_competency":
                 return self._handle_gate_competency(params, context, thread_id)
+            if action_id == "gate_wsi_questions":
+                return self._handle_gate_wsi_questions(params, context, thread_id)
 
             if action_id == "set_salary":
                 return self._handle_salary(params, context, thread_id)
@@ -586,6 +600,66 @@ Sempre informe qual e a proxima etapa e o que precisa ser feito."""
                 "gate_intent": intent,
                 "gate_confidence": result.get("gate_last_confidence"),
                 "screening_mode": screening_mode,
+            },
+            metadata={"current_stage": result.get("current_stage")},
+        )
+
+    def _handle_gate_wsi_questions(
+        self, params: Dict[str, Any], context: DomainContext, thread_id: str
+    ) -> DomainResponse:
+        """T5 (Task #1087) — gate LLM-based para HITL #2 (wsi_questions).
+
+        Resume o graph com ``gate_resume_message=<user_query>``. O nó
+        ``wsi_questions_gate_node`` classifica o intent via Haiku
+        (allowlist ``approve_all|regenerate_all|edit_specific_question|
+        add_question|remove_question|ask_question``), muta state
+        determinísticamente, e ``route_after_wsi_questions_gate`` decide
+        entre ``eligibility`` / ``wsi_questions`` (regen) / END.
+
+        A mensagem ao recrutador vem de ``gate_clarify_message``
+        (preenchido pelo classifier) ou de fallbacks determinísticos
+        por intent.
+        """
+        prior = context.metadata.get("wizard_state", {})
+        user_query = params.get("user_query", "")
+
+        result = self.graph.resume(thread_id, prior, {
+            "gate_resume_message": user_query,
+            "user_query": user_query,
+        })
+
+        clarify = result.get("gate_clarify_message")
+        intent = result.get("gate_last_intent")
+        approved = result.get("questions_approved")
+
+        if clarify:
+            message = clarify
+        elif intent == "approve_all" and approved is True:
+            message = (
+                "Aprovado! Vou seguir para configurar as perguntas de elegibilidade."
+            )
+        elif intent == "regenerate_all":
+            message = "Sem problema, vou regenerar o pacote inteiro agora."
+        elif intent == "edit_specific_question":
+            message = "Beleza, vou ajustar a pergunta indicada."
+        elif intent == "add_question":
+            message = "Show, vou acrescentar a pergunta nova ao pacote."
+        elif intent == "remove_question":
+            message = "Pergunta removida. Me confirma se posso seguir."
+        else:
+            message = (
+                "Você quer aprovar o pacote, regenerar tudo, editar/adicionar/remover alguma pergunta?"
+            )
+
+        return DomainResponse(
+            success=True,
+            message=message,
+            data={
+                "wizard_state": result,
+                "ws_payload": result.get("ws_stage_payload", {}),
+                "gate_intent": intent,
+                "gate_confidence": result.get("gate_last_confidence"),
+                "questions_approved": approved,
             },
             metadata={"current_stage": result.get("current_stage")},
         )

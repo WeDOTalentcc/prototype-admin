@@ -183,6 +183,82 @@ Diferenciais: experiência com data mesh e dbt cloud.`;
     expect(last).toMatch(/7\s*pergunt|12\s*pergunt|compacto|completo/);
   });
 
+  test('C7 — wsi_questions: "tá bom, manda ver" aprova pacote sem repetir canned', async ({ page }) => {
+    // T5 (Task #1087) — wizard avança até wsi_questions e o gate LLM-based
+    // interpreta "tá bom, manda ver" como `approve_all` → questions_approved=true.
+    const chatInput = page.getByTestId('chat-input').or(page.locator('textarea').first());
+    await chatInput.fill('quero criar uma vaga de Engenheiro Backend Pleno remoto, faixa 12-18k. Stack: Python, AWS, Postgres.');
+    await chatInput.press('Enter');
+    await expect(
+      page.locator('[data-testid*="wizard-jd"], [data-wizard-stage="jd_enrichment"]').first(),
+    ).toBeVisible({ timeout: 60_000 });
+    await chatInput.fill('manda bala');
+    await chatInput.press('Enter');
+    await expect(
+      page.locator('[data-wizard-stage="competency"], [data-testid*="competency"], [data-testid*="screening-mode"]').first(),
+    ).toBeVisible({ timeout: 60_000 });
+    await chatInput.fill('vamos com o compacto');
+    await chatInput.press('Enter');
+    await expect(
+      page.locator('[data-wizard-stage="wsi_questions"], [data-testid*="wsi-questions"]').first(),
+    ).toBeVisible({ timeout: 90_000 });
+
+    const initialCount = await page.locator('[data-testid="chat-message"], [role="article"]').count();
+    await chatInput.fill('tá bom, manda ver');
+    await chatInput.press('Enter');
+    await page.waitForTimeout(8_000);
+
+    const messages = await page.locator('[data-testid="chat-message"], [role="article"]').allTextContents();
+    const after = messages.slice(initialCount).join(' | ').toLowerCase();
+
+    // Anti-padrão #1: NÃO repete o canned "preciso de aprovação" 4× — bug HITL #2.
+    const cannedRepeats = (after.match(/preciso de aprova[cç][aã]o/g) || []).length;
+    expect(cannedRepeats).toBeLessThanOrEqual(1);
+    // Anti-padrão #2: NÃO regenera (bug seria entender "manda" como regenerate).
+    expect(after).not.toMatch(/regenerando|gerando.*novo.*pacote/);
+    // Sinal positivo: confirma aprovação OU já avançou para elegibilidade.
+    const hasElig = await page.locator('[data-wizard-stage="eligibility"], [data-testid*="eligibility"]').count();
+    const acked = after.includes('aprovado') || after.includes('elegibilidade');
+    expect(hasElig > 0 || acked).toBeTruthy();
+  });
+
+  test('C8 — wsi_questions: "mexe na pergunta 3" identifica edit cirúrgico', async ({ page }) => {
+    // T5 (Task #1087) — pedido de edição de pergunta específica é classificado
+    // como `edit_specific_question` com question_index=3, sem confundir com
+    // aprovação ou regeneração total.
+    const chatInput = page.getByTestId('chat-input').or(page.locator('textarea').first());
+    await chatInput.fill('quero criar uma vaga de Analista de Dados Pleno remoto, faixa 10-15k. SQL, Python, dbt.');
+    await chatInput.press('Enter');
+    await expect(
+      page.locator('[data-testid*="wizard-jd"], [data-wizard-stage="jd_enrichment"]').first(),
+    ).toBeVisible({ timeout: 60_000 });
+    await chatInput.fill('manda bala');
+    await chatInput.press('Enter');
+    await expect(
+      page.locator('[data-wizard-stage="competency"], [data-testid*="competency"], [data-testid*="screening-mode"]').first(),
+    ).toBeVisible({ timeout: 60_000 });
+    await chatInput.fill('vamos com o compacto');
+    await chatInput.press('Enter');
+    await expect(
+      page.locator('[data-wizard-stage="wsi_questions"], [data-testid*="wsi-questions"]').first(),
+    ).toBeVisible({ timeout: 90_000 });
+
+    const initialCount = await page.locator('[data-testid="chat-message"], [role="article"]').count();
+    await chatInput.fill('mexe na pergunta 3, deixa mais técnica');
+    await chatInput.press('Enter');
+    await page.waitForTimeout(8_000);
+
+    const messages = await page.locator('[data-testid="chat-message"], [role="article"]').allTextContents();
+    const after = messages.slice(initialCount).join(' | ').toLowerCase();
+
+    // Anti-padrão #1: NÃO trata como aprovação.
+    const hasElig = await page.locator('[data-wizard-stage="eligibility"], [data-testid*="eligibility"]').count();
+    expect(hasElig).toBe(0);
+    expect(after).not.toMatch(/aprovado!.*elegibilidade/);
+    // Sinal positivo: reconheceu o pedido de edição na pergunta 3.
+    expect(after).toMatch(/(pergunta\s*3|ajustar|t[eé]cnica|editar)/);
+  });
+
   test('C3 — pergunta sobre salário não é confundida com aprovação', async ({ page }) => {
     const chatInput = page.getByTestId('chat-input').or(page.locator('textarea').first());
     await chatInput.fill('vaga de Coordenador de Marketing remoto');

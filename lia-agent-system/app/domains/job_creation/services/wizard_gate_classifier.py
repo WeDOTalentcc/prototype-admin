@@ -54,6 +54,16 @@ STAGE_ALLOWLISTS: dict[str, frozenset[str]] = {
         "ask_question",
         "undecided",
     }),
+    # T5 (Task #1087) — HITL #2 (perguntas WSI geradas). Allowlist 6 intents.
+    # ``ask_question`` é compartilhado com os outros gates.
+    "wsi_questions": frozenset({
+        "approve_all",
+        "regenerate_all",
+        "edit_specific_question",
+        "add_question",
+        "remove_question",
+        "ask_question",
+    }),
 }
 
 # Backward-compat alias — o código pré-T4 e a sentinela T2 referem-se a
@@ -104,6 +114,12 @@ try:
             "select_compact",
             "select_full",
             "undecided",
+            # wsi_questions (T5 / Task #1087)
+            "approve_all",
+            "regenerate_all",
+            "edit_specific_question",
+            "add_question",
+            "remove_question",
         ]
         extracted_data: dict[str, Any] = Field(default_factory=dict)
         conversational_reply: str = ""
@@ -157,6 +173,8 @@ class WizardGateClassifier:
     STAGE_PROMPT_PATHS: dict[str, str] = {
         "jd_enrichment": "prompts/job_creation/gate_classifier.yaml",
         "competency": "prompts/job_creation/gate_competency.yaml",
+        # T5 (Task #1087)
+        "wsi_questions": "prompts/job_creation/gate_wsi_questions.yaml",
     }
 
     def __init__(self, model: str | None = None) -> None:

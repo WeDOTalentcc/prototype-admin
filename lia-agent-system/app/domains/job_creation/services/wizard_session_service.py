@@ -28,7 +28,11 @@ _CONTEXT_CARRY_KEYS = ("right_panel_form", "attached_file_text", "tenant_context
 _STAGE_DEFAULTS: dict[str, str] = {
     "intake": "Captei a vaga. Vou seguir para o próximo passo.",
     "jd_enrichment": "Descrição da vaga enriquecida — preciso da sua aprovação.",
-    "wsi_questions": "Perguntas de triagem WSI sugeridas — preciso da sua aprovação.",
+    # T5 (Task #1087) — `wsi_questions` removido em favor do
+    # `gate_clarify_message` produzido pelo `wsi_questions_gate_node`
+    # LLM-based. Default canned ("Perguntas de triagem WSI sugeridas
+    # — preciso da sua aprovação.") era um dos vetores do bug
+    # original (canned-repeat 4× em HITL #2).
     "completed": "Vaga criada com sucesso.",
 }
 

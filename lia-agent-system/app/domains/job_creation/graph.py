@@ -1360,8 +1360,14 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
 
     from app.domains.job_creation.schemas import EnrichedJobDescription
 
-    # If already approved, skip re-generation (resume path)
-    if state.get("questions_approved") is not None and state.get("wsi_questions"):
+    # If already approved, skip re-generation (resume path).
+    # T5 (Task #1087): respeitar `wsi_regenerate_pending` — quando o gate
+    # LLM-based decide regenerar/editar/adicionar, ele seta esse marker
+    # transitório no state pra forçar o node a re-rodar o generator
+    # mesmo que `questions_approved` ou `wsi_questions` ainda estejam
+    # populados de um turno anterior. O marker é limpo no fim do node.
+    _force_regen = bool(state.get("wsi_regenerate_pending"))
+    if (not _force_regen) and state.get("questions_approved") is not None and state.get("wsi_questions"):
         questions_data = state["wsi_questions"]
     else:
         jd_enriched_dict = state.get("jd_enriched", {})
@@ -2786,6 +2792,368 @@ def route_after_competency(state: JobCreationState) -> str:
     return "wsi_questions"
 
 
+def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
+    """T5 (Task #1087) — gate LLM-based para HITL #2 (wsi_questions).
+
+    Substitui a heurística keyword-based em ``domain.py::_route_by_stage``
+    (linhas 'aprov'/'aceito'/'regener'/'refaz') quando o flag
+    ``LIA_WIZARD_LLM_GATES`` está ON. Allowlist específica do stage
+    (definida em ``STAGE_ALLOWLISTS["wsi_questions"]``):
+
+      - ``approve_all``             → ``questions_approved=True`` (→ eligibility)
+      - ``regenerate_all``          → ``questions_approved=False`` +
+                                      ``wsi_questions=[]`` +
+                                      ``wsi_regenerate_pending=True``
+                                      (→ wsi_questions full regen)
+      - ``edit_specific_question``  → ``wsi_questions_pending_edit=
+                                      {index, instruction}`` +
+                                      ``wsi_regenerate_pending=True`` +
+                                      ``questions_approved=False`` +
+                                      ``wsi_questions=[]``
+                                      (→ wsi_questions regen advisory)
+      - ``add_question``            → ``wsi_questions_pending_add=
+                                      {topic}`` +
+                                      ``wsi_regenerate_pending=True`` +
+                                      ``questions_approved=False`` +
+                                      ``wsi_questions=[]``
+                                      (→ wsi_questions regen advisory)
+      - ``remove_question``         → splice in-state por question_index
+                                      (1-based) + ``questions_approved=
+                                      None`` (→ END, aguarda aprovação
+                                      do pacote reduzido no próximo turno)
+      - ``ask_question``            → state inalterado;
+                                      ``gate_clarify_message=...``
+
+    NOTA T5/cirurgia: ``edit_specific_question`` e ``add_question``
+    persistem markers (``wsi_questions_pending_edit`` /
+    ``wsi_questions_pending_add``) no state mas ATUALMENTE disparam
+    full regen via ``wsi_regenerate_pending``. A geração cirúrgica
+    (one-question replace/append usando os markers como hint) está
+    deixada como follow-up Task #1089 — o contrato de state está
+    estável e o classifier já produz o schema correto.
+
+    Confidence < 0.7 → re-pergunta natural sem mutar pacote.
+    Resume detection mirroring competency_gate_node: ``current_stage=
+    "wsi_questions"`` + ``wsi_questions`` truthy + user_query fresh.
+    """
+    msg = (state.get("gate_resume_message") or "").strip()
+    if not msg:
+        _at_wsi = (
+            state.get("current_stage") == "wsi_questions"
+            and bool(state.get("wsi_questions"))
+        )
+        _no_decision_yet = state.get("questions_approved") is None
+        _uq = (state.get("user_query") or "").strip()
+        _seen = (state.get("gate_seen_user_query") or "").strip()
+        _is_fresh_turn = bool(_uq) and _uq != _seen
+        if _at_wsi and _no_decision_yet and _is_fresh_turn:
+            msg = _uq
+            logger.info(
+                "[JobCreation:wsi_questions_gate] WS resume detected (wsi_questions + fresh user_query, awaiting decision) — classify",
+            )
+    if not msg:
+        _last_intent = state.get("gate_last_intent")
+        _is_transitional = _last_intent in ("ask_question",)
+        clean_state = {**state, "current_stage": "wsi_questions"}
+        if _is_transitional:
+            clean_state["gate_last_intent"] = None
+        logger.info(
+            "[JobCreation:wsi_questions_gate] no resume message — END (waiting for user, prior_intent=%s, cleared=%s)",
+            _last_intent, _is_transitional,
+        )
+        return clean_state
+
+    # FairnessGuard L1 sobre a mensagem do gate (defesa em profundidade).
+    try:
+        from app.shared.compliance.fairness_guard import FairnessGuard
+        _fg = FairnessGuard().check(msg)
+        if _fg.is_blocked:
+            logger.warning(
+                "[JobCreation:wsi_questions_gate] FairnessGuard L1 BLOCK on resume message: cat=%s, terms=%s",
+                _fg.category, _fg.blocked_terms,
+            )
+            return {
+                **state,
+                "gate_resume_message": "",
+                "gate_clarify_message": _fg.educational_message,
+                "fairness_blocked": True,
+                "fairness_block_reason": _fg.educational_message,
+                "current_stage": "wsi_questions",
+            }
+    except Exception as exc:
+        logger.debug("[JobCreation:wsi_questions_gate] FairnessGuard check failed (fail-open): %s", exc)
+
+    # LLM classifier (per-stage allowlist + prompt).
+    from app.domains.job_creation.services.wizard_gate_classifier import (
+        get_wizard_gate_classifier, _make_fallback,
+    )
+    classifier = get_wizard_gate_classifier()
+
+    import asyncio as _asyncio
+    output = None
+    try:
+        try:
+            running_loop = _asyncio.get_event_loop()
+        except RuntimeError:
+            running_loop = None
+        _company_id = state.get("workspace_id") or state.get("company_id")
+        _user_id = state.get("user_id") or state.get("recruiter_id")
+        coro_factory = lambda: classifier.classify(  # noqa: E731
+            user_message=msg,
+            stage="wsi_questions",
+            ws_stage_payload=state.get("ws_stage_payload"),
+            tenant_context_snippet=str(state.get("tenant_context_snippet") or ""),
+            hiring_policy_summary=str(state.get("hiring_policy_summary") or ""),
+            company_id=str(_company_id) if _company_id else None,
+            user_id=str(_user_id) if _user_id else None,
+        )
+        if running_loop is not None and running_loop.is_running():
+            import concurrent.futures as _cf
+            with _cf.ThreadPoolExecutor(max_workers=1) as _ex:
+                _fut = _ex.submit(lambda: _asyncio.run(coro_factory()))
+                output = _fut.result(timeout=30.0)
+        else:
+            output = _asyncio.run(coro_factory())
+    except Exception as exc:
+        logger.warning("[JobCreation:wsi_questions_gate] classify failed (fallback): %s", exc)
+        output = _make_fallback()
+
+    # Audit row (best-effort).
+    try:
+        _emit_wsi_questions_gate_audit(state, msg, output)
+    except Exception as exc:
+        logger.debug("[JobCreation:wsi_questions_gate] audit emit failed: %s", exc)
+
+    current_questions = list(state.get("wsi_questions") or [])
+    total_q = len(current_questions)
+
+    # Confidence floor — clarify sem mutar pacote.
+    if (output.confidence or 0.0) < 0.7:
+        logger.info(
+            "[JobCreation:wsi_questions_gate] confidence=%.2f < 0.7 → clarify (intent=%s)",
+            output.confidence, output.intent,
+        )
+        return {
+            **state,
+            "gate_resume_message": "",
+            "gate_clarify_message": (
+                output.conversational_reply
+                or "Você quer aprovar o pacote, regenerar tudo, editar/adicionar/remover alguma pergunta específica?"
+            ),
+            "gate_last_intent": output.intent,
+            "gate_last_confidence": output.confidence,
+            "current_stage": "wsi_questions",
+            "gate_seen_user_query": msg,
+        }
+
+    intent = output.intent
+    extracted = output.extracted_data or {}
+
+    # Validação determinística de question_index 1-based vs len(wsi_questions).
+    def _valid_index(raw) -> int | None:
+        try:
+            idx = int(raw)
+        except (TypeError, ValueError):
+            return None
+        if total_q <= 0:
+            return None
+        if idx < 1 or idx > total_q:
+            return None
+        return idx
+
+    next_state: dict = {
+        **state,
+        "gate_resume_message": "",
+        "gate_clarify_message": None,
+        "gate_last_intent": intent,
+        "gate_last_confidence": output.confidence,
+        "current_stage": "wsi_questions",
+        "gate_seen_user_query": msg,
+    }
+
+    if intent == "approve_all":
+        next_state["questions_approved"] = True
+        next_state["wsi_regenerate_pending"] = False
+        next_state["wsi_questions_pending_edit"] = None
+        next_state["wsi_questions_pending_add"] = None
+        next_state["gate_clarify_message"] = (
+            output.conversational_reply
+            or "Aprovado! Vou seguir para configurar as perguntas de elegibilidade."
+        )
+
+    elif intent == "regenerate_all":
+        next_state["questions_approved"] = False
+        next_state["wsi_questions"] = []
+        next_state["wsi_regenerate_pending"] = True
+        next_state["wsi_questions_pending_edit"] = None
+        next_state["wsi_questions_pending_add"] = None
+        next_state["gate_clarify_message"] = (
+            output.conversational_reply
+            or "Sem problema, vou regenerar o pacote inteiro agora."
+        )
+
+    elif intent == "edit_specific_question":
+        idx = _valid_index(extracted.get("question_index"))
+        instruction = str(extracted.get("instruction") or "").strip()[:500]
+        if idx is None or not instruction:
+            # Schema inválido → clarify sem mutar pacote.
+            logger.info(
+                "[JobCreation:wsi_questions_gate] edit_specific_question schema inválido (idx=%r, instr_len=%d) → clarify",
+                extracted.get("question_index"), len(instruction),
+            )
+            next_state["gate_clarify_message"] = (
+                f"Qual pergunta você quer editar (1 a {total_q}) e o que mudar nela?"
+            )
+        else:
+            next_state["wsi_questions_pending_edit"] = {
+                "question_index": idx,
+                "instruction": instruction,
+            }
+            next_state["wsi_regenerate_pending"] = True
+            next_state["questions_approved"] = False
+            # Limpa pacote para forçar regen completa (Task #1089: cirúrgico).
+            next_state["wsi_questions"] = []
+            next_state["gate_clarify_message"] = (
+                output.conversational_reply
+                or f"Beleza, vou ajustar a pergunta {idx} ({instruction[:60]})."
+            )
+
+    elif intent == "add_question":
+        topic = str(extracted.get("topic") or "").strip()[:200]
+        if not topic:
+            logger.info(
+                "[JobCreation:wsi_questions_gate] add_question sem topic → clarify",
+            )
+            next_state["gate_clarify_message"] = (
+                "Sobre que tópico você quer a pergunta nova?"
+            )
+        else:
+            next_state["wsi_questions_pending_add"] = {"topic": topic}
+            next_state["wsi_regenerate_pending"] = True
+            next_state["questions_approved"] = False
+            next_state["wsi_questions"] = []
+            next_state["gate_clarify_message"] = (
+                output.conversational_reply
+                or f"Show, vou acrescentar uma pergunta sobre {topic}."
+            )
+
+    elif intent == "remove_question":
+        idx = _valid_index(extracted.get("question_index"))
+        if idx is None:
+            logger.info(
+                "[JobCreation:wsi_questions_gate] remove_question índice inválido (%r, total=%d) → clarify",
+                extracted.get("question_index"), total_q,
+            )
+            next_state["gate_clarify_message"] = (
+                f"Qual pergunta você quer remover (1 a {total_q})?"
+            )
+        else:
+            new_questions = current_questions[: idx - 1] + current_questions[idx:]
+            next_state["wsi_questions"] = new_questions
+            # Não aprova nem regenera — aguarda aprovação do pacote reduzido.
+            next_state["questions_approved"] = None
+            next_state["wsi_regenerate_pending"] = False
+            next_state["gate_clarify_message"] = (
+                output.conversational_reply
+                or f"Removida a pergunta {idx}. O pacote ficou com {len(new_questions)} perguntas — me confirma se posso seguir."
+            )
+
+    elif intent == "ask_question":
+        next_state["gate_clarify_message"] = (
+            output.conversational_reply
+            or "Posso explicar a metodologia WSI ou o pacote atual. O que você quer saber?"
+        )
+
+    else:
+        logger.warning("[JobCreation:wsi_questions_gate] unhandled intent=%r → clarify", intent)
+        next_state["gate_clarify_message"] = (
+            "Você quer aprovar, regenerar, editar, adicionar ou remover alguma pergunta?"
+        )
+
+    return next_state
+
+
+def _emit_wsi_questions_gate_audit(
+    state: JobCreationState, user_message: str, output,
+) -> None:
+    """Emite audit row (decision_type=wizard_step_completed) para o
+    wsi_questions gate. Best-effort: falha NÃO bloqueia o resume.
+    EU AI Act Art. 13."""
+    import asyncio as _asyncio
+    company_id = str(state.get("workspace_id") or state.get("company_id") or "")
+    if not company_id:
+        return
+    try:
+        from app.shared.compliance.audit_service import audit_service
+    except Exception:
+        return
+
+    _intent = str(output.intent)
+    _before = {
+        "questions_approved": state.get("questions_approved"),
+        "wsi_questions_count": len(state.get("wsi_questions") or []),
+        "gate_last_intent": state.get("gate_last_intent"),
+    }
+    _after_approved = _before["questions_approved"]
+    if _intent == "approve_all":
+        _after_approved = True
+    elif _intent in ("regenerate_all", "edit_specific_question", "add_question"):
+        _after_approved = False
+    _after = {
+        "questions_approved": _after_approved,
+        "gate_last_intent": _intent,
+    }
+    coro = audit_service.log_decision(
+        company_id=company_id,
+        agent_name="wizard_wsi_questions_gate_classifier",
+        decision_type="wizard_step_completed",
+        action="wsi_questions_gate_classify",
+        decision=_intent,
+        reasoning=[
+            f"intent={_intent}",
+            f"confidence={float(output.confidence or 0.0):.2f}",
+            f"thread_id={state.get('session_id') or ''}",
+            f"user_msg_preview={user_message[:120]}",
+            f"reply_preview={(output.conversational_reply or '')[:120]}",
+            f"state_before={_before}",
+            f"state_after={_after}",
+            f"extracted_data_keys={sorted((output.extracted_data or {}).keys())}",
+        ],
+        criteria_used=["llm_intent_classifier", "wizard_wsi_questions"],
+        confidence=float(output.confidence or 0.0),
+    )
+    try:
+        loop = _asyncio.get_event_loop()
+        if loop.is_running():
+            loop.create_task(coro)
+            return
+    except RuntimeError:
+        pass
+    try:
+        _asyncio.run(coro)
+    except Exception as exc:
+        logger.debug("[JobCreation:wsi_questions_gate] audit run failed: %s", exc)
+
+
+def route_after_wsi_questions_gate(state: JobCreationState) -> str:
+    """Routing após wsi_questions_gate_node LLM. Determinístico baseado
+    em mutações aplicadas pelo gate."""
+    if state.get("fairness_blocked") is True:
+        logger.info("[JobCreation:route] wsi_questions_gate -> END (fairness blocked)")
+        return "end"
+    if state.get("questions_approved") is True:
+        logger.info("[JobCreation:route] wsi_questions_gate -> eligibility (approved)")
+        return "eligibility"
+    if state.get("wsi_regenerate_pending") is True:
+        logger.info("[JobCreation:route] wsi_questions_gate -> wsi_questions (regen pending)")
+        return "wsi_questions"
+    intent = state.get("gate_last_intent")
+    logger.info(
+        "[JobCreation:route] wsi_questions_gate -> END (intent=%s, awaiting next turn)", intent,
+    )
+    return "end"
+
+
 def route_after_questions(state: JobCreationState) -> str:
     """After WSI questions: HITL point 2 — recruiter must approve all questions."""
     approved = state.get("questions_approved")
@@ -2988,6 +3356,8 @@ def create_job_creation_graph(
     if use_llm_gates:
         builder.add_node("competency_gate", competency_gate_node)
     builder.add_node("wsi_questions", wsi_questions_node)
+    if use_llm_gates:
+        builder.add_node("wsi_questions_gate", wsi_questions_gate_node)
     builder.add_node("eligibility", eligibility_node)
     builder.add_node("review", review_node)
     builder.add_node("publish", publish_node)
@@ -3054,15 +3424,31 @@ def create_job_creation_graph(
         )
 
     # HITL point 2: WSI questions
-    builder.add_conditional_edges(
-        "wsi_questions",
-        route_after_questions,
-        {
-            "eligibility": "eligibility",
-            "wsi_questions": "wsi_questions",
-            "end": END,
-        },
-    )
+    if use_llm_gates:
+        # T5 — wsi_questions escapa direto para o gate_node, que classifica
+        # o intent do recrutador via LLM (allowlist approve_all|regenerate_all|
+        # edit_specific_question|add_question|remove_question|ask_question)
+        # e decide o roteamento determinístico.
+        builder.add_edge("wsi_questions", "wsi_questions_gate")
+        builder.add_conditional_edges(
+            "wsi_questions_gate",
+            route_after_wsi_questions_gate,
+            {
+                "eligibility": "eligibility",
+                "wsi_questions": "wsi_questions",
+                "end": END,
+            },
+        )
+    else:
+        builder.add_conditional_edges(
+            "wsi_questions",
+            route_after_questions,
+            {
+                "eligibility": "eligibility",
+                "wsi_questions": "wsi_questions",
+                "end": END,
+            },
+        )
 
     # Eligibility -> Review
     builder.add_edge("eligibility", "review")
