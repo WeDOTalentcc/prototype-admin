@@ -535,13 +535,20 @@ Sempre informe qual e a proxima etapa e o que precisa ser feito."""
         A mensagem ao recrutador vem de ``gate_clarify_message`` (preenchido
         pelo classifier) ou de fallbacks determinísticos por intent.
         """
-        prior = context.metadata.get("wizard_state", {})
         user_query = params.get("user_query", "")
 
-        result = self.graph.resume(thread_id, prior, {
-            "gate_resume_message": user_query,
-            "user_query": user_query,
-        })
+        # Task #1094 — canônico: Command(resume=<msg>) via wrapper.
+        # O gate em interrupt() recebe ``user_query`` direto como resume value.
+        # Fallback para resume() legacy se o checkpoint não estiver pausado
+        # (cobertura defensiva: testes/REST clients antigos sem interrupt).
+        if self.graph.is_interrupted(thread_id):
+            result = self.graph.resume_with_message(thread_id, user_query)
+        else:
+            prior = context.metadata.get("wizard_state", {})
+            result = self.graph.resume(thread_id, prior, {
+                "gate_resume_message": user_query,
+                "user_query": user_query,
+            })
 
         clarify = result.get("gate_clarify_message")
         intent = result.get("gate_last_intent")
@@ -586,13 +593,17 @@ Sempre informe qual e a proxima etapa e o que precisa ser feito."""
         pelo classifier — recomendação por seniority em ask_question /
         undecided, confirmação em select_*) ou de fallbacks determinísticos.
         """
-        prior = context.metadata.get("wizard_state", {})
         user_query = params.get("user_query", "")
 
-        result = self.graph.resume(thread_id, prior, {
-            "gate_resume_message": user_query,
-            "user_query": user_query,
-        })
+        # Task #1094 — canônico: Command(resume=<msg>) via wrapper.
+        if self.graph.is_interrupted(thread_id):
+            result = self.graph.resume_with_message(thread_id, user_query)
+        else:
+            prior = context.metadata.get("wizard_state", {})
+            result = self.graph.resume(thread_id, prior, {
+                "gate_resume_message": user_query,
+                "user_query": user_query,
+            })
 
         clarify = result.get("gate_clarify_message")
         intent = result.get("gate_last_intent")
@@ -636,13 +647,17 @@ Sempre informe qual e a proxima etapa e o que precisa ser feito."""
         (preenchido pelo classifier) ou de fallbacks determinísticos
         por intent.
         """
-        prior = context.metadata.get("wizard_state", {})
         user_query = params.get("user_query", "")
 
-        result = self.graph.resume(thread_id, prior, {
-            "gate_resume_message": user_query,
-            "user_query": user_query,
-        })
+        # Task #1094 — canônico: Command(resume=<msg>) via wrapper.
+        if self.graph.is_interrupted(thread_id):
+            result = self.graph.resume_with_message(thread_id, user_query)
+        else:
+            prior = context.metadata.get("wizard_state", {})
+            result = self.graph.resume(thread_id, prior, {
+                "gate_resume_message": user_query,
+                "user_query": user_query,
+            })
 
         clarify = result.get("gate_clarify_message")
         intent = result.get("gate_last_intent")
@@ -702,13 +717,17 @@ Sempre informe qual e a proxima etapa e o que precisa ser feito."""
         confirmação de ajuste, listagem de destinos válidos, etc.) ou
         de fallbacks determinísticos por intent.
         """
-        prior = context.metadata.get("wizard_state", {})
         user_query = params.get("user_query", "")
 
-        result = self.graph.resume(thread_id, prior, {
-            "gate_resume_message": user_query,
-            "user_query": user_query,
-        })
+        # Task #1094 — canônico: Command(resume=<msg>) via wrapper.
+        if self.graph.is_interrupted(thread_id):
+            result = self.graph.resume_with_message(thread_id, user_query)
+        else:
+            prior = context.metadata.get("wizard_state", {})
+            result = self.graph.resume(thread_id, prior, {
+                "gate_resume_message": user_query,
+                "user_query": user_query,
+            })
 
         clarify = result.get("gate_clarify_message")
         intent = result.get("gate_last_intent")

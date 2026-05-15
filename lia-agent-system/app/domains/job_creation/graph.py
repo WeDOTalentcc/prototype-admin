@@ -35,6 +35,25 @@ from typing import Any, Dict, Optional
 from langgraph.graph import StateGraph, END
 
 
+def _in_graph_runtime() -> bool:
+    """True iff currently executing inside a LangGraph node (Pregel runtime).
+
+    Task #1094 — used by gate_nodes to guard ``langgraph.types.interrupt()``
+    calls so they remain test-safe when the gate function is invoked as a
+    plain Python callable (offline sentinels: T2/T4/T5/T6) rather than via
+    ``graph.invoke()``. In runtime, ``get_config()`` returns the active
+    Pregel config; outside runtime it raises (RuntimeError or LookupError
+    depending on the langgraph version). Either way we report False and the
+    gate falls back to the legacy END no-op semantics.
+    """
+    try:
+        from langgraph.config import get_config
+        get_config()
+        return True
+    except Exception:
+        return False
+
+
 def _llm_gates_enabled() -> bool:
     """Task #1085 (T2) — feature flag ``LIA_WIZARD_LLM_GATES``.
 
@@ -2475,6 +2494,26 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
                 "[JobCreation:jd_gate] WS resume detected (jd_enriched + fresh user_query, jd_approved=%s) — classify",
                 state.get("jd_approved"),
             )
+    if not msg and _in_graph_runtime():
+        # Task #1094 — pausa canônica via langgraph.types.interrupt().
+        # Quando o caller usa ``Command(resume=<msg>)`` (process_message ou
+        # JobCreationGraph.resume_with_message), interrupt() retorna a
+        # mensagem do recrutador e o gate prossegue para classificar abaixo.
+        # Em primeira entrada (HITL freshly reached), interrupt() levanta
+        # GraphInterrupt — capturada pelo Pregel runtime para checkpointar
+        # o state e devolver o controle ao caller. Caminho legacy END
+        # no-op (offline / domain.py REST com gate_resume_message) é
+        # preservado pelo guard ``_in_graph_runtime()``.
+        from langgraph.types import interrupt
+        _resume = interrupt({
+            "type": "approval",
+            "stage": "jd_enrichment",
+            "data": {
+                "jd_enriched": state.get("jd_enriched"),
+                "jd_quality_score": state.get("jd_quality_score"),
+            },
+        })
+        msg = (str(_resume) if _resume is not None else "").strip()
     if not msg:
         # Primeira passagem (após enrichment) OU re-entrada após
         # ``provide_new_content`` ter rodado intake+jd_enrichment_node. Sem
@@ -2763,6 +2802,18 @@ def competency_gate_node(state: JobCreationState) -> JobCreationState:
             logger.info(
                 "[JobCreation:competency_gate] WS resume detected (competency + fresh user_query, no mode yet) — classify",
             )
+    if not msg and _in_graph_runtime():
+        # Task #1094 — pausa canônica via interrupt() (HITL #2 — competency).
+        from langgraph.types import interrupt
+        _resume = interrupt({
+            "type": "approval",
+            "stage": "competency",
+            "data": {
+                "seniority_resolved": state.get("seniority_resolved"),
+                "competency_recommendation": state.get("competency_recommendation"),
+            },
+        })
+        msg = (str(_resume) if _resume is not None else "").strip()
     if not msg:
         # Sem mensagem nova — cleanup de intent transitório (mirror jd_gate
         # T2 fix #4) e END via route_after_competency_gate.
@@ -3119,6 +3170,18 @@ def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
             logger.info(
                 "[JobCreation:wsi_questions_gate] WS resume detected (wsi_questions + fresh user_query, awaiting decision) — classify",
             )
+    if not msg and _in_graph_runtime():
+        # Task #1094 — pausa canônica via interrupt() (HITL #2 — WSI questions).
+        from langgraph.types import interrupt
+        _resume = interrupt({
+            "type": "approval",
+            "stage": "wsi_questions",
+            "data": {
+                "wsi_questions": state.get("wsi_questions"),
+                "screening_mode": state.get("screening_mode"),
+            },
+        })
+        msg = (str(_resume) if _resume is not None else "").strip()
     if not msg:
         _last_intent = state.get("gate_last_intent")
         _is_transitional = _last_intent in ("ask_question",)
@@ -3587,6 +3650,18 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
             logger.info(
                 "[JobCreation:review_gate] WS resume detected (review + fresh user_query) — classify",
             )
+    if not msg and _in_graph_runtime():
+        # Task #1094 — pausa canônica via interrupt() (HITL #3 — review/publish).
+        from langgraph.types import interrupt
+        _resume = interrupt({
+            "type": "approval",
+            "stage": "review",
+            "data": {
+                "readiness_check": state.get("readiness_check"),
+                "ws_stage_payload": state.get("ws_stage_payload"),
+            },
+        })
+        msg = (str(_resume) if _resume is not None else "").strip()
     if not msg:
         _last_intent = state.get("gate_last_intent")
         _is_transitional = _last_intent in ("ask_clarification",)
@@ -4440,16 +4515,69 @@ class JobCreationGraph:
     ) -> JobCreationState:
         """Resume a wizard session after HITL approval.
 
-        The caller (domain.py) is responsible for passing the prior_state
-        from the last invocation. We merge the recruiter's updates and
-        re-invoke the graph. The checkpointer handles thread continuity.
-
-        This follows the same pattern as scheduling: caller accumulates
-        state, graph is re-invoked with merged state.
+        Task #1094 — shim que prefere o canônico LangGraph
+        ``Command(resume=...)`` quando o checkpoint está pausado em
+        ``interrupt()``. Caso contrário (caminho legacy: gates não-HITL como
+        salary/screening_mode/eligibility/publish/calibration que mutam state
+        diretamente), re-invoca com state mergeado como antes.
         """
+        if self.is_interrupted(thread_id):
+            user_msg = (
+                updates.get("gate_resume_message")
+                or updates.get("user_query")
+                or ""
+            )
+            return self.resume_with_message(thread_id, str(user_msg))
         merged = {**prior_state, **updates}
         config = {"configurable": {"thread_id": thread_id}}
         return self._graph.invoke(merged, config=config)
+
+    def is_interrupted(self, thread_id: str) -> bool:
+        """Task #1094 — True se o graph para esse thread está pausado em
+        ``interrupt()`` (existe pelo menos uma task pending com interrupts).
+
+        Fail-OPEN (False) em outage do checkpointer — preserva a semântica
+        de ``is_wizard_session_active``.
+        """
+        try:
+            config = {"configurable": {"thread_id": thread_id}}
+            snapshot = self._graph.get_state(config)
+            if snapshot is None:
+                return False
+            return any(
+                getattr(t, "interrupts", None)
+                for t in (snapshot.tasks or [])
+            )
+        except Exception:
+            return False
+
+    def resume_with_message(
+        self, thread_id: str, user_message: str
+    ) -> JobCreationState:
+        """Task #1094 — resume canônico via ``Command(resume=<msg>)``.
+
+        O graph deve estar pausado em ``interrupt()`` no thread; caso
+        contrário o LangGraph ignora o resume value e re-invoca como
+        startup (semântica idêntica ao ``invoke({})``). Caller é
+        responsável por checar ``is_interrupted`` quando o caminho de
+        fallback importar.
+        """
+        from langgraph.types import Command
+        config = {"configurable": {"thread_id": thread_id}}
+        return self._graph.invoke(
+            Command(resume=str(user_message or "")), config=config
+        )
+
+    async def aresume_with_message(
+        self, thread_id: str, user_message: str
+    ) -> JobCreationState:
+        """Task #1094 — versão async de ``resume_with_message`` para o
+        caminho WS (``WizardSessionService.process_message``)."""
+        from langgraph.types import Command
+        config = {"configurable": {"thread_id": thread_id}}
+        return await self._graph.ainvoke(
+            Command(resume=str(user_message or "")), config=config
+        )
 
 
 def get_job_creation_graph() -> JobCreationGraph:

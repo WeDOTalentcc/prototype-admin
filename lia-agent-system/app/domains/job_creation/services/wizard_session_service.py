@@ -555,6 +555,44 @@ class WizardSessionService:
         wiz_g = get_job_creation_graph()
 
         prior_state = await cls._get_prior_state(thread_id)
+
+        # Task #1094 — caminho canônico de resume: se o checkpoint está
+        # pausado em ``langgraph.types.interrupt()`` (HITL gate ativo),
+        # resumimos via ``Command(resume=<msg>)`` SEM rebuilder/enrichment
+        # de state. As enrichments (manager_preferences, hiring_policy_summary,
+        # tenant_context_snippet) já vivem no checkpoint desde a invocação
+        # inicial do wizard — re-injetar seria desperdício e arrisca
+        # sobrescrever mutações que o gate fez no turno anterior.
+        if await asyncio.to_thread(wiz_g.is_interrupted, thread_id):
+            try:
+                result = await wiz_g.aresume_with_message(thread_id, user_message)
+            except Exception as inv_exc:  # noqa: BLE001
+                _emit_silent_fallback(
+                    stage=None,
+                    company_id=company_id,
+                    session_id=session_id,
+                    thread_id=thread_id,
+                    conversation_tail=(prior_state or {}).get("conversation_messages"),
+                    cause=f"resume_exception:{type(inv_exc).__name__}",
+                )
+                fallback_msg = await _generate_fallback_reply(
+                    stage=None,
+                    conversation_tail=(prior_state or {}).get("conversation_messages"),
+                    tenant_snippet=(prior_state or {}).get("tenant_context_snippet"),
+                )
+                return (fallback_msg, {}, 0)
+            state = prior_state or {}
+            tokens_emitted = 0
+            return await cls._post_process_result(
+                result=result,
+                state=state,
+                prior_state=prior_state,
+                company_id=company_id,
+                session_id=session_id,
+                thread_id=thread_id,
+                tokens_emitted=tokens_emitted,
+            )
+
         state = cls._build_state(
             thread_id=thread_id,
             user_message=user_message,
@@ -663,6 +701,34 @@ class WizardSessionService:
             )
             return (fallback_msg, {}, tokens_emitted)
 
+        return await cls._post_process_result(
+            result=result,
+            state=state,
+            prior_state=prior_state,
+            company_id=company_id,
+            session_id=session_id,
+            thread_id=thread_id,
+            tokens_emitted=tokens_emitted,
+        )
+
+    @classmethod
+    async def _post_process_result(
+        cls,
+        *,
+        result: Any,
+        state: dict,
+        prior_state: dict | None,
+        company_id: str | None,
+        session_id: str,
+        thread_id: str,
+        tokens_emitted: int,
+    ) -> tuple[str, dict, int]:
+        """Task #1094 — pós-processamento compartilhado entre o caminho fresh
+        invoke e o caminho ``Command(resume=...)`` (interrupt). Antes da
+        Task #1094 esta lógica vivia inline em ``process_message`` no único
+        caminho ``stream_invoke`` — agora é compartilhada para garantir que
+        gate_clarify_message / wizard_stage sync / manager_preferences
+        recording sejam idênticos em ambos os paths."""
         if not isinstance(result, dict):
             # Task #1089 — fail-loud: graph devolveu tipo inesperado.
             _emit_silent_fallback(

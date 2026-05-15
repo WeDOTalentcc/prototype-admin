@@ -131,7 +131,21 @@ async def is_wizard_session_active(
         )
         return False
 
-    if snapshot is None or not snapshot.values:
+    if snapshot is None:
+        return False
+
+    # Task #1094 — sessão pausada em ``langgraph.types.interrupt()`` conta
+    # como ATIVA mesmo que o values esteja vazio (raro: ocorreria se um
+    # interrupt fosse o primeiro step, antes de qualquer state.update).
+    # Em prática os gates wizard são alcançados após intake/jd_enrichment
+    # já terem populado state, mas a checagem é defensiva e barata.
+    has_pending_interrupt = any(
+        getattr(t, "interrupts", None) for t in (snapshot.tasks or [])
+    )
+    if has_pending_interrupt:
+        return True
+
+    if not snapshot.values:
         return False
     values = snapshot.values
     stage = (values.get("current_stage") or "").lower()
