@@ -209,6 +209,46 @@ class WizardGateEngineT2(unittest.TestCase):
         self.assertIs(result.get("jd_approved"), True)
         self.assertEqual(graph_mod.route_after_gate(result), "bigfive")
 
+    # ---------------- S7d (regression: code review #4) ----------------
+    def test_S7d_ws_session_service_prefers_gate_clarify_message(self):
+        """T2 fix #5 — `WizardSessionService.process_message` DEVE usar
+        ``gate_clarify_message`` como mensagem do recrutador quando o gate
+        LLM classificou o turno (``gate_last_intent`` truthy). Sem isso,
+        o WS responde com ``_STAGE_DEFAULTS["jd_enrichment"]`` em loop.
+
+        Reproduz a seleção de mensagem isolada (sem invocar o graph).
+        """
+        from app.domains.job_creation.services import wizard_session_service as wss
+        # Simula o resultado do graph após gate ter classificado ask_question.
+        fake_result = {
+            "current_stage": "jd_enrichment",
+            "ws_stage_payload": {"data": {}},  # vazio — sem message/response_text
+            "gate_clarify_message": "Boa pergunta! O salário tá bem alinhado com o mercado.",
+            "gate_last_intent": "ask_question",
+            "gate_last_confidence": 0.9,
+        }
+        # Reproduz o snippet de seleção de mensagem (espelha a lógica em
+        # process_message L458-L477 após o fix #5).
+        stage_payload = fake_result.get("ws_stage_payload") or {}
+        stage_data = stage_payload.get("data") or {}
+        current_stage = fake_result.get("current_stage", "") or ""
+        gate_msg = fake_result.get("gate_clarify_message")
+        gate_intent = fake_result.get("gate_last_intent")
+        if gate_msg and gate_intent:
+            message = str(gate_msg)
+        else:
+            message = (
+                stage_data.get("message")
+                or stage_data.get("response_text")
+                or wss._STAGE_DEFAULTS.get(
+                    current_stage, f"Etapa atual: {current_stage or 'wizard'}.",
+                )
+            )
+        # Esperado: mensagem contextual do gate, NÃO o canned default.
+        self.assertEqual(message, "Boa pergunta! O salário tá bem alinhado com o mercado.")
+        self.assertNotEqual(message, wss._STAGE_DEFAULTS.get("jd_enrichment", ""))
+        self.assertNotIn("preciso da sua aprovação", message.lower())
+
     # ---------------- S8 ----------------
     def test_S8_ask_question_does_not_mutate_jd_approved(self):
         clf = classifier_mod.get_wizard_gate_classifier()

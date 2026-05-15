@@ -455,9 +455,24 @@ class WizardSessionService:
         # there is nothing to mark/clear on each turn. Wizard "doneness" is
         # detected from ``current_stage == "completed"`` in the checkpoint.
 
-        message = (
-            stage_data.get("message")
-            or stage_data.get("response_text")
-            or _STAGE_DEFAULTS.get(current_stage, f"Etapa atual: {current_stage or 'wizard'}.")
-        )
+        # T2 fix #5 (code review #4): quando o LLM gate (jd_gate_node) acabou
+        # de classificar o turno do recrutador, a resposta contextual está em
+        # ``state["gate_clarify_message"]``. Sem esta linha, o WS responde
+        # com ``_STAGE_DEFAULTS["jd_enrichment"]`` ("Descrição da vaga
+        # enriquecida — preciso da sua aprovação.") em LOOP — exatamente o
+        # bug original que a Task #1085 promete corrigir. Preferência:
+        # gate_clarify_message > stage_data.message > stage_data.response_text
+        # > _STAGE_DEFAULTS. Aplicável APENAS quando o gate registrou um
+        # intent neste turno (``gate_last_intent`` truthy) — fora do flow
+        # do gate o comportamento legado é preservado.
+        gate_msg = result.get("gate_clarify_message") if isinstance(result, dict) else None
+        gate_intent = result.get("gate_last_intent") if isinstance(result, dict) else None
+        if gate_msg and gate_intent:
+            message = str(gate_msg)
+        else:
+            message = (
+                stage_data.get("message")
+                or stage_data.get("response_text")
+                or _STAGE_DEFAULTS.get(current_stage, f"Etapa atual: {current_stage or 'wizard'}.")
+            )
         return (message, stage_payload, tokens_emitted)
