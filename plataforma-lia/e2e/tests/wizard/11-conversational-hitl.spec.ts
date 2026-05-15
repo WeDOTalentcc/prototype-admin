@@ -119,6 +119,70 @@ Diferenciais: experiência com data mesh e dbt cloud.`;
     expect(afterPaste).toMatch(/snowflake|dbt|spark|engenheir[ao] de dados|re-?enriqu/);
   });
 
+  test('C5 — competency: "vamos com o compacto" seleciona modo sem re-perguntar', async ({ page }) => {
+    // T4 (Task #1086) — wizard avança rápido até o stage `competency`
+    // (escolha do modo de triagem WSI) e o gate LLM-based interpreta
+    // "vamos com o compacto" como `select_compact` → screening_mode="compact".
+    const chatInput = page.getByTestId('chat-input').or(page.locator('textarea').first());
+    // Caminho rápido até competency: JD → approve → bigfive → salary → competency.
+    await chatInput.fill('quero criar uma vaga de Analista de Dados Pleno em SP, remoto, faixa 10-15k. Stack: SQL, Python, dbt.');
+    await chatInput.press('Enter');
+    await expect(
+      page.locator('[data-testid*="wizard-jd"], [data-wizard-stage="jd_enrichment"]').first(),
+    ).toBeVisible({ timeout: 60_000 });
+    await chatInput.fill('manda bala');
+    await chatInput.press('Enter');
+    // Aguarda chegar em competency (até 60s — passa por bigfive/salary).
+    await expect(
+      page.locator('[data-wizard-stage="competency"], [data-testid*="competency"], [data-testid*="screening-mode"]').first(),
+    ).toBeVisible({ timeout: 60_000 });
+
+    await chatInput.fill('vamos com o compacto');
+    await chatInput.press('Enter');
+    await page.waitForTimeout(8_000);
+
+    const messages = await page.locator('[data-testid="chat-message"], [role="article"]').allTextContents();
+    const lastFew = messages.slice(-4).join(' | ').toLowerCase();
+    // Anti-padrão: NÃO repete pergunta do modo após escolha clara.
+    expect(lastFew).not.toMatch(/compacto.*ou.*completo.*compacto.*ou.*completo/);
+    // Sinal positivo: confirma compact (ou avança para wsi_questions).
+    const hasWsi = await page.locator('[data-wizard-stage="wsi_questions"], [data-testid*="wsi-questions"]').count();
+    const acked = lastFew.includes('compacto') || lastFew.includes('7 perguntas');
+    expect(hasWsi > 0 || acked).toBeTruthy();
+  });
+
+  test('C6 — competency: "qual a diferença?" responde sem mutar screening_mode', async ({ page }) => {
+    // T4 (Task #1086) — pergunta natural no stage competency é classificada
+    // como `ask_question`; gate responde com explicação 7q/12q SEM avançar
+    // para wsi_questions.
+    const chatInput = page.getByTestId('chat-input').or(page.locator('textarea').first());
+    await chatInput.fill('quero criar uma vaga de Engenheiro de Software Pleno remoto, faixa 14-20k. Python, AWS.');
+    await chatInput.press('Enter');
+    await expect(
+      page.locator('[data-testid*="wizard-jd"], [data-wizard-stage="jd_enrichment"]').first(),
+    ).toBeVisible({ timeout: 60_000 });
+    await chatInput.fill('manda bala');
+    await chatInput.press('Enter');
+    await expect(
+      page.locator('[data-wizard-stage="competency"], [data-testid*="competency"], [data-testid*="screening-mode"]').first(),
+    ).toBeVisible({ timeout: 60_000 });
+
+    await chatInput.fill('qual a diferença entre os dois?');
+    await chatInput.press('Enter');
+    await page.waitForTimeout(8_000);
+
+    const messages = await page.locator('[data-testid="chat-message"], [role="article"]').allTextContents();
+    const last = (messages[messages.length - 1] || '').toLowerCase();
+
+    // Anti-padrão #1: NÃO avançou para wsi_questions sem escolha explícita.
+    const hasWsi = await page.locator('[data-wizard-stage="wsi_questions"], [data-testid*="wsi-questions"]').count();
+    expect(hasWsi).toBe(0);
+    // Anti-padrão #2: NÃO confirmou seleção de modo.
+    expect(last).not.toMatch(/modo (compacto|completo) selecionado/);
+    // Sinal positivo: explicou diferença (cita 7 vs 12 perguntas OU os dois nomes).
+    expect(last).toMatch(/7\s*pergunt|12\s*pergunt|compacto|completo/);
+  });
+
   test('C3 — pergunta sobre salário não é confundida com aprovação', async ({ page }) => {
     const chatInput = page.getByTestId('chat-input').or(page.locator('textarea').first());
     await chatInput.fill('vaga de Coordenador de Marketing remoto');

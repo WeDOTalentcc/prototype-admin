@@ -29,18 +29,41 @@ from typing import Any, Literal
 
 logger = logging.getLogger(__name__)
 
-# Allowlist canônica — intents fora desta lista são rejeitados fail-loud
-# pelo schema Pydantic Literal e caem no fallback. Adicionar novo intent
-# requer (a) update aqui, (b) update no Literal, (c) update no
-# ``jd_gate_node`` para mapear o novo intent → mutação determinística,
-# (d) update no prompt YAML, (e) sentinela atualizada.
-ALLOWED_INTENTS: frozenset[str] = frozenset({
-    "approve",
-    "reject_with_feedback",
-    "provide_new_content",
-    "ask_question",
-    "off_topic",
-})
+# Allowlist canônica POR STAGE — intents fora da lista do stage corrente
+# são rejeitados fail-loud (post-hoc check em ``classify``) e caem no
+# fallback determinístico. Adicionar novo intent requer (a) update no
+# STAGE_ALLOWLISTS, (b) ampliar o ``Literal`` do schema Pydantic se for
+# um novo nome (defesa-em-profundidade), (c) update no gate_node
+# correspondente para mapear o intent → mutação determinística, (d)
+# update no prompt YAML, (e) sentinela atualizada.
+#
+# T4 (Task #1086): adicionados ``select_compact``, ``select_full``,
+# ``undecided`` para o stage ``competency`` (escolha de modo de triagem
+# WSI). ``ask_question`` é compartilhado entre todos os gates.
+STAGE_ALLOWLISTS: dict[str, frozenset[str]] = {
+    "jd_enrichment": frozenset({
+        "approve",
+        "reject_with_feedback",
+        "provide_new_content",
+        "ask_question",
+        "off_topic",
+    }),
+    "competency": frozenset({
+        "select_compact",
+        "select_full",
+        "ask_question",
+        "undecided",
+    }),
+}
+
+# Backward-compat alias — o código pré-T4 e a sentinela T2 referem-se a
+# ``ALLOWED_INTENTS`` como sinônimo do allowlist do stage jd_enrichment.
+ALLOWED_INTENTS: frozenset[str] = STAGE_ALLOWLISTS["jd_enrichment"]
+
+
+def get_allowed_intents(stage: str) -> frozenset[str]:
+    """Devolve o allowlist canônico do stage. Default: jd_enrichment (T2)."""
+    return STAGE_ALLOWLISTS.get(stage, STAGE_ALLOWLISTS["jd_enrichment"])
 
 _DEFAULT_MODEL = os.environ.get(
     "LIA_WIZARD_GATE_CLASSIFIER_MODEL", "claude-3-5-haiku-20241022"
@@ -59,14 +82,28 @@ try:
     from pydantic import BaseModel, Field, field_validator
 
     class GateClassifierOutput(BaseModel):
-        """Schema rígido do output do classifier — defesa contra prompt injection."""
+        """Schema rígido do output do classifier — defesa contra prompt injection.
+
+        T4 (Task #1086): o ``Literal`` foi expandido para incluir os intents
+        de competency (``select_compact``, ``select_full``, ``undecided``).
+        A defesa-em-profundidade canônica continua sendo o post-hoc check
+        contra ``STAGE_ALLOWLISTS[stage]`` no método ``classify`` — o
+        Literal aqui é só a primeira camada (rejeita lixo total do LLM).
+        Adicionar novo intent globalmente requer atualizar este Literal
+        E o ``STAGE_ALLOWLISTS`` correspondente.
+        """
 
         intent: Literal[
+            # jd_enrichment (T2)
             "approve",
             "reject_with_feedback",
             "provide_new_content",
             "ask_question",
             "off_topic",
+            # competency (T4)
+            "select_compact",
+            "select_full",
+            "undecided",
         ]
         extracted_data: dict[str, Any] = Field(default_factory=dict)
         conversational_reply: str = ""
@@ -115,35 +152,46 @@ class WizardGateClassifier:
     """
 
     PROMPT_REL_PATH = "prompts/job_creation/gate_classifier.yaml"
+    # T4 (Task #1086): mapeamento stage → YAML específico. Stages ausentes
+    # caem no genérico de jd_enrichment (T2).
+    STAGE_PROMPT_PATHS: dict[str, str] = {
+        "jd_enrichment": "prompts/job_creation/gate_classifier.yaml",
+        "competency": "prompts/job_creation/gate_competency.yaml",
+    }
 
     def __init__(self, model: str | None = None) -> None:
         self._model = model or _DEFAULT_MODEL
-        self._prompt_cache: dict[str, Any] | None = None
+        # Cache por path — T4 permite vários YAMLs (jd, competency, ...)
+        # carregados na mesma instância sem re-IO em cada call.
+        self._prompt_cache: dict[str, dict[str, Any]] = {}
 
     # ------------------------------------------------------------------
-    # Prompt loading (cached)
+    # Prompt loading (cached por path)
     # ------------------------------------------------------------------
-    def _load_prompt(self) -> dict[str, Any]:
-        if self._prompt_cache is not None:
-            return self._prompt_cache
+    def _load_prompt(self, rel_path: str | None = None) -> dict[str, Any]:
+        path_key = rel_path or self.PROMPT_REL_PATH
+        cached = self._prompt_cache.get(path_key)
+        if cached is not None:
+            return cached
         try:
             import yaml  # type: ignore
         except ImportError:
             logger.warning("[WizardGateClassifier] PyYAML missing — using inline default prompt")
-            self._prompt_cache = {"system_prompt": _INLINE_FALLBACK_PROMPT}
-            return self._prompt_cache
+            data = {"system_prompt": _INLINE_FALLBACK_PROMPT}
+            self._prompt_cache[path_key] = data
+            return data
         # app/ root is two levels up from this file (services/ → job_creation/ → domains/ → app/)
         app_root = Path(__file__).resolve().parents[3]
-        prompt_path = app_root / self.PROMPT_REL_PATH
+        prompt_path = app_root / path_key
         try:
             data = yaml.safe_load(prompt_path.read_text(encoding="utf-8")) or {}
         except FileNotFoundError:
             logger.warning("[WizardGateClassifier] prompt YAML not found at %s — inline default", prompt_path)
             data = {"system_prompt": _INLINE_FALLBACK_PROMPT}
         except Exception as exc:
-            logger.warning("[WizardGateClassifier] prompt YAML load failed: %s — inline default", exc)
+            logger.warning("[WizardGateClassifier] prompt YAML load failed (%s): %s — inline default", path_key, exc)
             data = {"system_prompt": _INLINE_FALLBACK_PROMPT}
-        self._prompt_cache = data
+        self._prompt_cache[path_key] = data
         return data
 
     # ------------------------------------------------------------------
@@ -159,8 +207,17 @@ class WizardGateClassifier:
         hiring_policy_summary: str = "",
         company_id: str | None = None,
         user_id: str | None = None,
+        allowed_intents: frozenset[str] | None = None,
+        prompt_rel_path: str | None = None,
     ) -> GateClassifierOutput:
         """Classifica o intent do usuário no contexto do gate atual.
+
+        T4 (Task #1086): ``allowed_intents`` e ``prompt_rel_path`` permitem
+        reuso por gate (jd_enrichment, competency, ...). Quando ausentes,
+        o classifier resolve automaticamente via ``stage`` consultando
+        ``STAGE_ALLOWLISTS`` e ``STAGE_PROMPT_PATHS``. Default final
+        (stage desconhecido) é o allowlist + prompt do jd_enrichment para
+        retrocompat com calls T2.
 
         Returns:
             ``GateClassifierOutput`` SEMPRE — falha cai no fallback determinístico
@@ -171,7 +228,13 @@ class WizardGateClassifier:
         if not msg:
             return _make_fallback()
 
-        prompt_cfg = self._load_prompt()
+        # Resolve allowlist / prompt por stage com override explícito.
+        effective_allowlist = allowed_intents or get_allowed_intents(stage)
+        effective_prompt_path = (
+            prompt_rel_path or self.STAGE_PROMPT_PATHS.get(stage, self.PROMPT_REL_PATH)
+        )
+
+        prompt_cfg = self._load_prompt(effective_prompt_path)
         system_prompt: str = prompt_cfg.get("system_prompt") or _INLINE_FALLBACK_PROMPT
 
         schema = {
@@ -180,8 +243,8 @@ class WizardGateClassifier:
             "properties": {
                 "intent": {
                     "type": "string",
-                    "enum": sorted(ALLOWED_INTENTS),
-                    "description": "Intent classificado, OBRIGATORIAMENTE da allowlist.",
+                    "enum": sorted(effective_allowlist),
+                    "description": "Intent classificado, OBRIGATORIAMENTE da allowlist do stage.",
                 },
                 "extracted_data": {
                     "type": "object",
@@ -247,13 +310,15 @@ class WizardGateClassifier:
             self._record_metric(stage, "invalid_shape", 0.0)
             return _make_fallback()
 
-        # Defesa em profundidade: a allowlist do enum Pydantic já blinda,
-        # mas verificamos antes para emitir log dedicado quando o LLM
-        # tenta injetar um intent fora da lista (potencial prompt injection).
-        if raw.get("intent") not in ALLOWED_INTENTS:
+        # Defesa em profundidade: o ``Literal`` do Pydantic blinda contra
+        # intents totalmente fora do universo conhecido; aqui aplicamos o
+        # allowlist ESPECÍFICO do stage (T4) — um intent válido em outro
+        # gate (ex.: ``approve`` em competency, ou ``select_compact`` em
+        # jd_enrichment) é tratado como off-allowlist e cai no fallback.
+        if raw.get("intent") not in effective_allowlist:
             logger.warning(
-                "[WizardGateClassifier] off-allowlist intent (stage=%s, intent=%r) — fallback",
-                stage, raw.get("intent"),
+                "[WizardGateClassifier] off-allowlist intent (stage=%s, intent=%r, allowed=%s) — fallback",
+                stage, raw.get("intent"), sorted(effective_allowlist),
             )
             self._record_metric(stage, "off_allowlist", 0.0)
             return _make_fallback()

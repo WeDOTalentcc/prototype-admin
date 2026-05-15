@@ -2452,6 +2452,269 @@ def _emit_jd_gate_audit(
         logger.debug("[JobCreation:jd_gate] audit run failed: %s", exc)
 
 
+def competency_gate_node(state: JobCreationState) -> JobCreationState:
+    """T4 (Task #1086) — gate LLM-based para HITL #2 (competency / screening_mode).
+
+    Substitui a heurística keyword-based em ``domain.py::_route_by_stage``
+    (linhas 'compact'/'compacto'/'7q'/'full'/'12q'/'completo') quando o
+    flag ``LIA_WIZARD_LLM_GATES`` está ON. Allowlist específica do stage
+    (definida em ``STAGE_ALLOWLISTS["competency"]``):
+
+      - ``select_compact``  → ``screening_mode="compact"``
+      - ``select_full``     → ``screening_mode="full"``
+      - ``ask_question``    → state inalterado; ``gate_clarify_message=...``
+                              (recomendação por seniority)
+      - ``undecided``       → state inalterado; ``gate_clarify_message=...``
+                              (recomendação leve por seniority)
+
+    Confidence < 0.7 → re-pergunta natural sem mutar ``screening_mode``.
+    Resume detection mirroring jd_gate_node: ``current_stage="competency"``
+    + ``seniority_resolved`` truthy + ``screening_mode`` falsy +
+    user_query fresh (não processado nesta invocação).
+    """
+    msg = (state.get("gate_resume_message") or "").strip()
+    if not msg:
+        # WS resume detection — caminho canônico via process_message não
+        # seta gate_resume_message; detectamos via state nativo.
+        _at_competency = (
+            state.get("current_stage") == "competency"
+            or bool(state.get("seniority_resolved"))
+        )
+        _no_mode_yet = not state.get("screening_mode")
+        _uq = (state.get("user_query") or "").strip()
+        _seen = (state.get("gate_seen_user_query") or "").strip()
+        _is_fresh_turn = bool(_uq) and _uq != _seen
+        if _at_competency and _no_mode_yet and _is_fresh_turn:
+            msg = _uq
+            logger.info(
+                "[JobCreation:competency_gate] WS resume detected (competency + fresh user_query, no mode yet) — classify",
+            )
+    if not msg:
+        # Sem mensagem nova — cleanup de intent transitório (mirror jd_gate
+        # T2 fix #4) e END via route_after_competency_gate.
+        _last_intent = state.get("gate_last_intent")
+        _is_transitional = _last_intent in ("ask_question", "undecided")
+        clean_state = {**state, "current_stage": "competency"}
+        if _is_transitional:
+            clean_state["gate_last_intent"] = None
+        logger.info(
+            "[JobCreation:competency_gate] no resume message — END (waiting for user, prior_intent=%s, cleared=%s)",
+            _last_intent, _is_transitional,
+        )
+        return clean_state
+
+    # FairnessGuard L1 sobre a mensagem do gate (defesa em profundidade).
+    try:
+        from app.shared.compliance.fairness_guard import FairnessGuard
+        _fg = FairnessGuard().check(msg)
+        if _fg.is_blocked:
+            logger.warning(
+                "[JobCreation:competency_gate] FairnessGuard L1 BLOCK on resume message: cat=%s, terms=%s",
+                _fg.category, _fg.blocked_terms,
+            )
+            return {
+                **state,
+                "gate_resume_message": "",
+                "gate_clarify_message": _fg.educational_message,
+                "fairness_blocked": True,
+                "fairness_block_reason": _fg.educational_message,
+                "current_stage": "competency",
+            }
+    except Exception as exc:
+        logger.debug("[JobCreation:competency_gate] FairnessGuard check failed (fail-open): %s", exc)
+
+    # LLM classifier (per-stage allowlist + prompt).
+    from app.domains.job_creation.services.wizard_gate_classifier import (
+        get_wizard_gate_classifier, _make_fallback,
+    )
+    classifier = get_wizard_gate_classifier()
+
+    import asyncio as _asyncio
+    output = None
+    try:
+        try:
+            running_loop = _asyncio.get_event_loop()
+        except RuntimeError:
+            running_loop = None
+        _company_id = state.get("workspace_id") or state.get("company_id")
+        _user_id = state.get("user_id") or state.get("recruiter_id")
+        coro_factory = lambda: classifier.classify(  # noqa: E731
+            user_message=msg,
+            stage="competency",
+            ws_stage_payload=state.get("ws_stage_payload"),
+            tenant_context_snippet=str(state.get("tenant_context_snippet") or ""),
+            hiring_policy_summary=str(state.get("hiring_policy_summary") or ""),
+            company_id=str(_company_id) if _company_id else None,
+            user_id=str(_user_id) if _user_id else None,
+        )
+        if running_loop is not None and running_loop.is_running():
+            import concurrent.futures as _cf
+            with _cf.ThreadPoolExecutor(max_workers=1) as _ex:
+                _fut = _ex.submit(lambda: _asyncio.run(coro_factory()))
+                output = _fut.result(timeout=30.0)
+        else:
+            output = _asyncio.run(coro_factory())
+    except Exception as exc:
+        logger.warning("[JobCreation:competency_gate] classify failed (fallback): %s", exc)
+        output = _make_fallback()
+
+    # Audit row (best-effort).
+    try:
+        _emit_competency_gate_audit(state, msg, output)
+    except Exception as exc:
+        logger.debug("[JobCreation:competency_gate] audit emit failed: %s", exc)
+
+    # Resolve seniority recommendation (helper para ask_question / undecided).
+    seniority = (state.get("seniority_resolved") or state.get("seniority") or "").lower()
+    if seniority in ("estagio", "estágio", "junior", "júnior", "pleno"):
+        recommended = "Compacto (7 perguntas)"
+    elif seniority in ("senior", "sênior", "lead", "principal", "staff", "diretor"):
+        recommended = "Completo (12 perguntas)"
+    else:
+        recommended = "Compacto (7 perguntas)"
+
+    # Confidence floor — clarify sem mutar screening_mode.
+    if (output.confidence or 0.0) < 0.7:
+        logger.info(
+            "[JobCreation:competency_gate] confidence=%.2f < 0.7 → clarify (intent=%s)",
+            output.confidence, output.intent,
+        )
+        return {
+            **state,
+            "gate_resume_message": "",
+            "gate_clarify_message": (
+                output.conversational_reply
+                or f"Compacto (7 perguntas) ou Completo (12 perguntas)? Pra esta vaga eu sugiro {recommended}."
+            ),
+            "gate_last_intent": output.intent,
+            "gate_last_confidence": output.confidence,
+            "current_stage": "competency",
+            "gate_seen_user_query": msg,
+        }
+
+    intent = output.intent
+    next_state: dict = {
+        **state,
+        "gate_resume_message": "",
+        "gate_clarify_message": None,
+        "gate_last_intent": intent,
+        "gate_last_confidence": output.confidence,
+        "current_stage": "competency",
+        "gate_seen_user_query": msg,
+    }
+
+    if intent == "select_compact":
+        next_state["screening_mode"] = "compact"
+        next_state["gate_clarify_message"] = (
+            output.conversational_reply
+            or "Modo Compacto (7 perguntas) selecionado. Vou gerar as perguntas WSI agora."
+        )
+    elif intent == "select_full":
+        next_state["screening_mode"] = "full"
+        next_state["gate_clarify_message"] = (
+            output.conversational_reply
+            or "Modo Completo (12 perguntas) selecionado. Vou gerar as perguntas WSI agora."
+        )
+    elif intent == "ask_question":
+        # Não muta screening_mode — recrutador fez pergunta, segue aguardando.
+        next_state["gate_clarify_message"] = (
+            output.conversational_reply
+            or f"Compacto tem 7 perguntas (mais ágil) e Completo tem 12 (mais evidência). Pra esta vaga eu sugiro {recommended}."
+        )
+    elif intent == "undecided":
+        next_state["gate_clarify_message"] = (
+            output.conversational_reply
+            or f"Sem problema. Pra esta vaga eu sugiro {recommended}; me confirma quando puder pra eu seguir."
+        )
+    else:
+        # Defesa em profundidade.
+        logger.warning("[JobCreation:competency_gate] unhandled intent=%r → clarify", intent)
+        next_state["gate_clarify_message"] = (
+            f"Compacto (7 perguntas) ou Completo (12 perguntas)? Pra esta vaga eu sugiro {recommended}."
+        )
+
+    return next_state
+
+
+def _emit_competency_gate_audit(
+    state: JobCreationState, user_message: str, output,
+) -> None:
+    """Emite audit row (decision_type=wizard_step_completed) para o competency gate.
+
+    Best-effort: falha NÃO bloqueia o resume. EU AI Act Art. 13.
+    """
+    import asyncio as _asyncio
+    company_id = str(state.get("workspace_id") or state.get("company_id") or "")
+    if not company_id:
+        return
+    try:
+        from app.shared.compliance.audit_service import audit_service
+    except Exception:
+        return
+
+    _intent = str(output.intent)
+    _before = {
+        "screening_mode": state.get("screening_mode"),
+        "gate_last_intent": state.get("gate_last_intent"),
+        "seniority_resolved": state.get("seniority_resolved"),
+    }
+    _after_mode = _before["screening_mode"]
+    if _intent == "select_compact":
+        _after_mode = "compact"
+    elif _intent == "select_full":
+        _after_mode = "full"
+    _after = {
+        "screening_mode": _after_mode,
+        "gate_last_intent": _intent,
+        "seniority_resolved": _before["seniority_resolved"],
+    }
+    coro = audit_service.log_decision(
+        company_id=company_id,
+        agent_name="wizard_competency_gate_classifier",
+        decision_type="wizard_step_completed",
+        action="competency_gate_classify",
+        decision=_intent,
+        reasoning=[
+            f"intent={_intent}",
+            f"confidence={float(output.confidence or 0.0):.2f}",
+            f"thread_id={state.get('session_id') or ''}",
+            f"user_msg_preview={user_message[:120]}",
+            f"reply_preview={(output.conversational_reply or '')[:120]}",
+            f"state_before={_before}",
+            f"state_after={_after}",
+        ],
+        criteria_used=["llm_intent_classifier", "wizard_competency"],
+        confidence=float(output.confidence or 0.0),
+    )
+    try:
+        loop = _asyncio.get_event_loop()
+        if loop.is_running():
+            loop.create_task(coro)
+            return
+    except RuntimeError:
+        pass
+    try:
+        _asyncio.run(coro)
+    except Exception as exc:
+        logger.debug("[JobCreation:competency_gate] audit run failed: %s", exc)
+
+
+def route_after_competency_gate(state: JobCreationState) -> str:
+    """Routing após competency_gate_node LLM. Determinístico baseado em
+    mutações aplicadas pelo gate."""
+    if state.get("fairness_blocked") is True:
+        logger.info("[JobCreation:route] competency_gate -> END (fairness blocked)")
+        return "end"
+    mode = state.get("screening_mode")
+    if mode in ("compact", "full"):
+        logger.info("[JobCreation:route] competency_gate -> wsi_questions (mode=%s)", mode)
+        return "wsi_questions"
+    # ask_question / undecided / pending → aguarda novo turno
+    intent = state.get("gate_last_intent")
+    logger.info("[JobCreation:route] competency_gate -> END (intent=%s, awaiting next turn)", intent)
+    return "end"
+
+
 def route_after_gate(state: JobCreationState) -> str:
     """Routing após gate_node LLM. Determinístico baseado em mutações
     aplicadas por ``jd_gate_node``."""
@@ -2722,6 +2985,8 @@ def create_job_creation_graph(
     builder.add_node("bigfive", bigfive_node)
     builder.add_node("salary", salary_node)
     builder.add_node("competency", competency_node)
+    if use_llm_gates:
+        builder.add_node("competency_gate", competency_gate_node)
     builder.add_node("wsi_questions", wsi_questions_node)
     builder.add_node("eligibility", eligibility_node)
     builder.add_node("review", review_node)
@@ -2765,14 +3030,28 @@ def create_job_creation_graph(
     builder.add_edge("salary", "competency")
 
     # F4+F5: needs screening mode
-    builder.add_conditional_edges(
-        "competency",
-        route_after_competency,
-        {
-            "wsi_questions": "wsi_questions",
-            "end": END,
-        },
-    )
+    if use_llm_gates:
+        # T4 — competency escapa direto para o gate_node, que classifica o
+        # intent do recrutador via LLM (allowlist select_compact|select_full|
+        # ask_question|undecided) e decide o roteamento determinístico.
+        builder.add_edge("competency", "competency_gate")
+        builder.add_conditional_edges(
+            "competency_gate",
+            route_after_competency_gate,
+            {
+                "wsi_questions": "wsi_questions",
+                "end": END,
+            },
+        )
+    else:
+        builder.add_conditional_edges(
+            "competency",
+            route_after_competency,
+            {
+                "wsi_questions": "wsi_questions",
+                "end": END,
+            },
+        )
 
     # HITL point 2: WSI questions
     builder.add_conditional_edges(

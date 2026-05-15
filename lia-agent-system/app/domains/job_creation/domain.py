@@ -299,6 +299,18 @@ Sempre informe qual e a proxima etapa e o que precisa ser feito."""
 
         # Competency: screening mode selection
         if stage == "competency":
+            # T4 (Task #1086) — quando o flag LIA_WIZARD_LLM_GATES está ON,
+            # toda mensagem do recrutador no stage competency é dispatched
+            # para o competency_gate_node LLM-based, que substitui esses
+            # heurísticos brittle ("compact"/"compacto"/"7q"/"full"/"12q").
+            from app.domains.job_creation.graph import _llm_gates_enabled
+            if _llm_gates_enabled():
+                return {
+                    "action_id": "gate_competency",
+                    "params": {"user_query": query},
+                    "confidence": 0.95,
+                    "source": "llm_gate",
+                }
             if any(w in q_lower for w in ("compact", "compacto", "7 pergunta", "7q")):
                 return {"action_id": "set_screening_mode", "params": {"mode": "compact"}, "confidence": 0.95}
             if any(w in q_lower for w in ("full", "completo", "12 pergunta", "12q")):
@@ -360,6 +372,8 @@ Sempre informe qual e a proxima etapa e o que precisa ser feito."""
 
             if action_id == "gate_jd":
                 return self._handle_gate_jd(params, context, thread_id)
+            if action_id == "gate_competency":
+                return self._handle_gate_competency(params, context, thread_id)
 
             if action_id == "set_salary":
                 return self._handle_salary(params, context, thread_id)
@@ -522,6 +536,56 @@ Sempre informe qual e a proxima etapa e o que precisa ser feito."""
                 "ws_payload": result.get("ws_stage_payload", {}),
                 "gate_intent": intent,
                 "gate_confidence": result.get("gate_last_confidence"),
+            },
+            metadata={"current_stage": result.get("current_stage")},
+        )
+
+    def _handle_gate_competency(
+        self, params: Dict[str, Any], context: DomainContext, thread_id: str
+    ) -> DomainResponse:
+        """T4 (Task #1086) — gate LLM-based para HITL #2 (competency).
+
+        Resume o graph com ``gate_resume_message=<user_query>``. O nó
+        ``competency_gate_node`` classifica o intent via Haiku (allowlist
+        ``select_compact|select_full|ask_question|undecided``), muta state
+        determinísticamente (apenas ``screening_mode`` em select_*), e
+        ``route_after_competency_gate`` decide entre ``wsi_questions`` /
+        ``competency`` (re-pergunta) / END.
+
+        A mensagem ao recrutador vem de ``gate_clarify_message`` (preenchido
+        pelo classifier — recomendação por seniority em ask_question /
+        undecided, confirmação em select_*) ou de fallbacks determinísticos.
+        """
+        prior = context.metadata.get("wizard_state", {})
+        user_query = params.get("user_query", "")
+
+        result = self.graph.resume(thread_id, prior, {
+            "gate_resume_message": user_query,
+            "user_query": user_query,
+        })
+
+        clarify = result.get("gate_clarify_message")
+        intent = result.get("gate_last_intent")
+        screening_mode = result.get("screening_mode")
+
+        if clarify:
+            message = clarify
+        elif intent == "select_compact" and screening_mode == "compact":
+            message = "Modo Compacto (7 perguntas) selecionado. Vou gerar as perguntas WSI agora."
+        elif intent == "select_full" and screening_mode == "full":
+            message = "Modo Completo (12 perguntas) selecionado. Vou gerar as perguntas WSI agora."
+        else:
+            message = "Compacto (7 perguntas) ou Completo (12 perguntas)?"
+
+        return DomainResponse(
+            success=True,
+            message=message,
+            data={
+                "wizard_state": result,
+                "ws_payload": result.get("ws_stage_payload", {}),
+                "gate_intent": intent,
+                "gate_confidence": result.get("gate_last_confidence"),
+                "screening_mode": screening_mode,
             },
             metadata={"current_stage": result.get("current_stage")},
         )
