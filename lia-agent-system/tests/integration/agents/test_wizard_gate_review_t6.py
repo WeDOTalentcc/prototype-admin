@@ -468,6 +468,105 @@ class WizardReviewGateT6(unittest.TestCase):
             {"site_carreiras", "gupy", "pandape", "linkedin"},
         )
 
+    # ---------------- S28 (post-review fix #1: stale pending lifecycle) ----------------
+    def test_S28_stale_review_request_changes_pending_cleared_on_entry(self):
+        """T6 post-review #1 — pending field SOBRA do turno anterior NÃO pode
+        causar reroute em chamadas subsequentes ao review_gate_node sem msg
+        fresca. Garante que entry-clear acontece mesmo no early-return path."""
+        state = _base_review_state(
+            gate_resume_message="",
+            review_request_changes_pending={"target_section": "title", "instruction": "stale"},
+        )
+        # Sem msg fresca e sem user_query nova → early return sem classify.
+        result = graph_mod.review_gate_node(state)
+        self.assertIsNone(result["review_request_changes_pending"])
+        # Routing após entrada no-op DEVE ser END (não pode rotear pra
+        # jd_enrichment baseado em pending stale).
+        self.assertEqual(graph_mod.route_after_review_gate(result), "end")
+
+    def test_S28b_pending_always_reset_on_fresh_turn(self):
+        """T6 post-review #1 — em qualquer turno fresh, next_state nasce com
+        review_request_changes_pending=None; SÓ as branches request_changes
+        title/description/questions/salary/pipeline/destinations setam novo."""
+        clf = classifier_mod.get_wizard_gate_classifier()
+        out = _make_output("ask_clarification", 0.92, "?")
+        with mock.patch.object(clf, "classify", new=mock.AsyncMock(return_value=out)):
+            with mock.patch.object(
+                graph_mod, "_emit_review_gate_audit", lambda *a, **k: None,
+            ):
+                state = _base_review_state(
+                    gate_resume_message="é o pipeline padrão?",
+                    review_request_changes_pending={"target_section": "title", "instruction": "stale"},
+                )
+                result = graph_mod.review_gate_node(state)
+        # ask_clarification NÃO seta nova pending → deve ficar None.
+        self.assertIsNone(result["review_request_changes_pending"])
+        self.assertEqual(graph_mod.route_after_review_gate(result), "end")
+
+    # ---------------- S29 (post-review fix #2: jd_enriched invalidation) ----------------
+    def test_S29_request_changes_title_invalidates_jd_enriched(self):
+        """T6 post-review #2 — request_changes target=title DEVE invalidar
+        jd_enriched (None), senão jd_enrichment_node pula re-geração e o
+        ajuste cirúrgico nunca é aplicado. Mesma regra para description."""
+        clf = classifier_mod.get_wizard_gate_classifier()
+        out = _make_output(
+            "request_changes", 0.92, "ok",
+            extracted={"target_section": "title", "instruction": "Software Engineer Pleno"},
+        )
+        with mock.patch.object(clf, "classify", new=mock.AsyncMock(return_value=out)):
+            with mock.patch.object(
+                graph_mod, "_emit_review_gate_audit", lambda *a, **k: None,
+            ):
+                state = _base_review_state(
+                    gate_resume_message="muda o título pra Software Engineer Pleno",
+                    jd_enriched={"titulo_padronizado": "Engenheiro Backend Pleno"},
+                    jd_quality_score=88.0,
+                    jd_quality_warnings=["minor"],
+                )
+                result = graph_mod.review_gate_node(state)
+        self.assertIsNone(result["jd_approved"])
+        self.assertIsNone(result["jd_enriched"])
+        self.assertIsNone(result["jd_quality_score"])
+        self.assertEqual(result["jd_quality_warnings"], [])
+        # E a instruction fica disponível para o destino consultar.
+        self.assertEqual(
+            result["review_request_changes_pending"]["instruction"],
+            "Software Engineer Pleno",
+        )
+        self.assertEqual(graph_mod.route_after_review_gate(result), "jd_enrichment")
+
+    # ---------------- S30 (post-review fix #3: deterministic publish summary) ----------------
+    def test_S30_publish_first_turn_deterministic_summary(self):
+        """T6 post-review #3 — gate_clarify_message do publish_now 1º turno
+        DEVE conter sumário determinístico (título, salário, # questões,
+        canais), não apenas eco do conversational_reply do LLM."""
+        clf = classifier_mod.get_wizard_gate_classifier()
+        # LLM responde com algo vago — deterministic summary ignora.
+        out = _make_output("publish_now", 0.95, "Confirma?")
+        with mock.patch.object(clf, "classify", new=mock.AsyncMock(return_value=out)):
+            with mock.patch.object(
+                graph_mod, "_emit_review_gate_audit", lambda *a, **k: None,
+            ):
+                state = _base_review_state(
+                    gate_resume_message="publica agora",
+                    jd_enriched={"titulo_padronizado": "Engenheiro Backend Pleno"},
+                    salary_min=12000,
+                    salary_max=18000,
+                    salary_currency="BRL",
+                    wsi_questions=[{"id": "q1"}, {"id": "q2"}, {"id": "q3"}],
+                    publish_platforms=["linkedin", "site_carreiras"],
+                )
+                result = graph_mod.review_gate_node(state)
+        msg = result["gate_clarify_message"]
+        self.assertIn("Engenheiro Backend Pleno", msg)
+        self.assertIn("BRL", msg)
+        self.assertIn("12.000", msg)
+        self.assertIn("18.000", msg)
+        self.assertIn("3", msg)  # # de questões WSI
+        self.assertIn("linkedin", msg)
+        self.assertIn("site_carreiras", msg)
+        self.assertIn("Confirma", msg)
+
     # ---------------- S24 ----------------
     def test_S24_stage_prompt_paths_review_wired(self):
         """T6 — gate_review.yaml DEVE estar registrado em STAGE_PROMPT_PATHS["review"]

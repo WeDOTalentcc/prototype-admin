@@ -3299,6 +3299,21 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
     em ``criteria_used`` (SOX 7 anos retention via decision_type=
     ``wizard_step_completed``).
     """
+    # T6 (post-review fix #1) — ``review_request_changes_pending`` é
+    # transiente por definição: setado pelo gate, consumido por
+    # ``route_after_review_gate`` UMA vez, e a partir daí é estale. Se o
+    # graph retornar a este nó (próximo turno do recrutador, ou um
+    # passthrough sem mensagem), garantimos que NUNCA reroteamos com base
+    # em estado antigo — limpamos no ENTRY. Sem isso, qualquer no-op
+    # entrada em review_gate_node (sem msg fresca) ainda routava para o
+    # destino mapeado, criando reroute loops.
+    _stale_pending = state.get("review_request_changes_pending")
+    if _stale_pending:
+        logger.debug(
+            "[JobCreation:review_gate] clearing stale review_request_changes_pending on entry: %r",
+            _stale_pending,
+        )
+
     msg = (state.get("gate_resume_message") or "").strip()
     if not msg:
         # WS resume detection — caminho canônico via process_message não
@@ -3315,7 +3330,12 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
     if not msg:
         _last_intent = state.get("gate_last_intent")
         _is_transitional = _last_intent in ("ask_clarification",)
-        clean_state = {**state, "current_stage": "review"}
+        clean_state = {
+            **state,
+            "current_stage": "review",
+            # Garante limpeza mesmo no early-return.
+            "review_request_changes_pending": None,
+        }
         if _is_transitional:
             clean_state["gate_last_intent"] = None
         logger.info(
@@ -3413,6 +3433,9 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
         "gate_last_confidence": output.confidence,
         "current_stage": "review",
         "gate_seen_user_query": msg,
+        # T6 (post-review fix #1) — sempre nasce limpo neste turno.
+        # Quem precisar (request_changes não-destinations) seta logo abaixo.
+        "review_request_changes_pending": None,
     }
     confirmation_method = "chat"
 
@@ -3440,13 +3463,38 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
             )
         else:
             # 1ª confirmação (ou expirada) → SETA pending + pede confirmação.
+            # T6 (post-review fix #3) — mensagem DETERMINÍSTICA com sumário
+            # do pacote (título, faixa salarial, # de questões WSI, destinos).
+            # Não delega ao conversational_reply do LLM (que pode omitir
+            # campos críticos). Auditável e estável para evals.
             next_state["pending_publish_confirmation"] = True
             next_state["publish_confirmation_ts"] = _now
             next_state["policy_confirmed_publish"] = False
-            destinations_summary = ", ".join(state.get("publish_platforms") or []) or "os canais configurados"
+            _jd = state.get("jd_enriched") or {}
+            _title = (
+                _jd.get("titulo_padronizado")
+                or state.get("parsed_title")
+                or "(sem título)"
+            )
+            _smin = state.get("salary_min")
+            _smax = state.get("salary_max")
+            _scur = state.get("salary_currency") or "BRL"
+            if _smin and _smax:
+                _salary = f"{_scur} {_smin:,}–{_smax:,}".replace(",", ".")
+            elif _smin:
+                _salary = f"{_scur} a partir de {_smin:,}".replace(",", ".")
+            else:
+                _salary = "faixa salarial não definida"
+            _q_total = len(state.get("wsi_questions") or [])
+            _dests = state.get("publish_platforms") or []
+            _dests_str = ", ".join(_dests) if _dests else "os canais configurados"
             next_state["gate_clarify_message"] = (
-                output.conversational_reply
-                or f"Vou publicar em: {destinations_summary}. Confirma para publicar agora?"
+                f"Pronto pra publicar:\n"
+                f"• Vaga: {_title}\n"
+                f"• Salário: {_salary}\n"
+                f"• Questões WSI: {_q_total}\n"
+                f"• Canais: {_dests_str}\n"
+                f"Confirma para publicar agora?"
             )
             confirmation_method = "chat"
             logger.info(
@@ -3490,8 +3538,17 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
             }
             # Limpa flag de aprovação da seção correspondente para forçar
             # re-execução do nó destino na próxima invocação do graph.
+            # T6 (post-review fix #2) — para title/description também
+            # invalidamos jd_enriched, senão jd_enrichment_node pula a
+            # re-geração (linha 607: ``if state.get("jd_enriched"): pula``)
+            # e o ajuste cirúrgico nunca é aplicado. A instruction fica
+            # disponível em ``review_request_changes_pending["instruction"]``
+            # para o nó destino consultar (read-only hint cirúrgico).
             if target in ("title", "description"):
                 next_state["jd_approved"] = None
+                next_state["jd_enriched"] = None
+                next_state["jd_quality_score"] = None
+                next_state["jd_quality_warnings"] = []
             elif target == "questions":
                 next_state["questions_approved"] = None
                 next_state["wsi_regenerate_pending"] = True
