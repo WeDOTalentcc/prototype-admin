@@ -38,7 +38,17 @@ def _llm_gates_enabled() -> bool:
     if raw in ("0", "false", "no", "off"):
         return False
     # Inferência por ambiente: dev → on, prod/staging → off.
-    env = (os.environ.get("LIA_ENV") or os.environ.get("ENVIRONMENT") or "").lower()
+    # T2 fix #12 (code review #10 comment 2): incluir ``APP_ENV`` (convenção
+    # canônica do plataforma-lia / scripts/dev-up.sh / playwright workflows)
+    # ALÉM de ``LIA_ENV``/``ENVIRONMENT``. Sem isso, ambientes dev que só
+    # exportam ``APP_ENV=development`` (a maioria) caíam no default OFF, e
+    # o gate só era exercitado quando o flag era setado explicitamente.
+    env = (
+        os.environ.get("LIA_ENV")
+        or os.environ.get("APP_ENV")
+        or os.environ.get("ENVIRONMENT")
+        or ""
+    ).lower()
     return env in ("dev", "development", "local", "test")
 
 from app.domains.job_creation.state import (
