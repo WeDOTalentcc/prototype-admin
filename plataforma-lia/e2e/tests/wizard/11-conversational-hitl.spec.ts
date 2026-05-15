@@ -75,6 +75,50 @@ test.describe('Wizard HITL conversacional (T2)', () => {
     expect(last).toMatch(/skills|ajust|revis|mudar|refazer/);
   });
 
+  test('C4 — "ainda não te passei a descrição" + paste invalida cache e re-enriquece', async ({ page }) => {
+    // Reproduz o bug exato relatado: recrutador inicia com pedido vago,
+    // wizard tenta enriquecer com pouca info, recrutador então cola a JD
+    // real. Esperado: provide_new_content → jd_enriched=null → re-enrichment
+    // com o conteúdo novo (NÃO repete o prompt de aprovação canned).
+    const chatInput = page.getByTestId('chat-input').or(page.locator('textarea').first());
+    await chatInput.fill('queria abrir uma vaga nova');
+    await chatInput.press('Enter');
+    await expect(
+      page.locator('[data-testid*="wizard-jd"], [data-wizard-stage="jd_enrichment"]').first(),
+    ).toBeVisible({ timeout: 60_000 });
+
+    // Snapshot inicial das mensagens para comparar.
+    const initialCount = await page.locator('[data-testid="chat-message"], [role="article"]').count();
+
+    // Recrutador admite que não passou a JD e cola o conteúdo real.
+    const realJD = `ainda não te passei a descrição certinha, segue:
+
+Engenheira de Dados Sênior — Stack: Python, Spark, AWS, Snowflake, dbt.
+Atuação: squad de produto, mentoria a juniores, OKRs trimestrais.
+Modelo: Remoto BR. Faixa: 18-25k CLT.
+Diferenciais: experiência com data mesh e dbt cloud.`;
+    await chatInput.fill(realJD);
+    await chatInput.press('Enter');
+
+    // Aguarda re-enrichment (até 30s — Gemini call real).
+    await page.waitForTimeout(15_000);
+
+    const messages = await page.locator('[data-testid="chat-message"], [role="article"]').allTextContents();
+    const afterPaste = messages.slice(initialCount).join(' | ').toLowerCase();
+
+    // Anti-padrão #1: NÃO repete o canned "preciso de aprovação" que era
+    // o bug original.
+    const cannedRepeats = (afterPaste.match(/preciso de aprova[cç][aã]o/g) || []).length;
+    expect(cannedRepeats).toBeLessThanOrEqual(1);
+
+    // Anti-padrão #2: NÃO trata como aprovação prematura.
+    expect(afterPaste).not.toMatch(/aprovado!.*big five/);
+
+    // Sinal positivo: reconheceu o conteúdo novo (palavras-chave da JD
+    // colada devem aparecer no enrichment ou na resposta).
+    expect(afterPaste).toMatch(/snowflake|dbt|spark|engenheir[ao] de dados|re-?enriqu/);
+  });
+
   test('C3 — pergunta sobre salário não é confundida com aprovação', async ({ page }) => {
     const chatInput = page.getByTestId('chat-input').or(page.locator('textarea').first());
     await chatInput.fill('vaga de Coordenador de Marketing remoto');

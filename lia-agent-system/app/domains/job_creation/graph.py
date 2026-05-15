@@ -408,6 +408,16 @@ def intake_node(state: JobCreationState) -> JobCreationState:
     query = state.get("user_query", "") or state.get("raw_input", "")
     logger.info("[JobCreation:intake] query=%s", query[:80])
 
+    # T2 (Task #1085) — resume short-circuit: quando estamos resumindo o
+    # graph para o gate LLM (`gate_resume_message` presente) e o intake JÁ
+    # extraiu `parsed_title` em um turno anterior, NÃO re-rodar o
+    # IntakeExtractor (LLM + regex). Sem isso, cada turno do recrutador no
+    # HITL #1 paga ~1-3s + tokens à toa para extrair os mesmos campos.
+    # Preserva todo o state e atualiza apenas `current_stage` para que o
+    # roteamento downstream continue funcionando.
+    if state.get("gate_resume_message") and state.get("parsed_title"):
+        return {**state, "current_stage": "intake"}
+
     # ── F3-1: IntakeExtractor (LLM + regex fallback) ──
     parsed_title = state.get("parsed_title")
     parsed_seniority = state.get("parsed_seniority")
@@ -575,8 +585,18 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
         except Exception:  # noqa: BLE001 — fail-open
             pass
 
-    # If already enriched and approved, skip re-enrichment (resume path)
-    if state.get("jd_approved") is not None and state.get("jd_enriched"):
+    # If already enriched and approved, skip re-enrichment (resume path).
+    # T2 (Task #1085) — também short-circuit quando estamos resumindo para o
+    # gate LLM (`gate_resume_message` presente) e já temos `jd_enriched`. Sem
+    # isso, cada turno do recrutador no HITL re-roda o JdEnrichmentService
+    # (Gemini, ~5-12s, ~2-4k tokens), violando o target de ≤700ms p95 do
+    # gate. O caminho `provide_new_content` invalida `jd_enriched=None` no
+    # `jd_gate_node`, então o re-enrichment SÓ acontece quando o recrutador
+    # de fato enviou texto novo — comportamento correto.
+    if state.get("jd_enriched") and (
+        state.get("jd_approved") is not None
+        or state.get("gate_resume_message")
+    ):
         jd_enriched_dict = state["jd_enriched"]
         jd_quality_score = state.get("jd_quality_score", 0.0)
         jd_quality_warnings = state.get("jd_quality_warnings", [])

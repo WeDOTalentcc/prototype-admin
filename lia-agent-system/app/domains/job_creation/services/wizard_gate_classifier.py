@@ -157,6 +157,8 @@ class WizardGateClassifier:
         ws_stage_payload: dict[str, Any] | None = None,
         tenant_context_snippet: str = "",
         hiring_policy_summary: str = "",
+        company_id: str | None = None,
+        user_id: str | None = None,
     ) -> GateClassifierOutput:
         """Classifica o intent do usuário no contexto do gate atual.
 
@@ -218,7 +220,10 @@ class WizardGateClassifier:
         timeout_s = _get_timeout_s()
         try:
             raw = await asyncio.wait_for(
-                self._invoke_llm(system_prompt, context_block, schema),
+                self._invoke_llm(
+                    system_prompt, context_block, schema,
+                    company_id=company_id, user_id=user_id, stage=stage,
+                ),
                 timeout=timeout_s,
             )
         except asyncio.TimeoutError:
@@ -295,6 +300,10 @@ class WizardGateClassifier:
         system_prompt: str,
         user_block: str,
         schema: dict[str, Any],
+        *,
+        company_id: str | None = None,
+        user_id: str | None = None,
+        stage: str = "",
     ) -> dict[str, Any]:
         """Chama Claude Haiku com tool-use forçado. Retorna dict do tool input."""
         try:
@@ -332,20 +341,31 @@ class WizardGateClassifier:
                 tool_choice={"type": "tool", "name": "classify"},
             )
 
+        import time as _time
+        _t0 = _time.time()
         response = await asyncio.to_thread(_call_sync)
+        _elapsed_ms = int((_time.time() - _t0) * 1000)
 
-        # Track token cost — best-effort (não bloqueia)
+        # T2 fix #2 (code review) — registrar custo por tenant no
+        # `external_api_consumption` ledger (ConsumptionTrackingService).
+        # Best-effort: nunca bloqueia o classifier nem propaga exceção.
         try:
             usage = getattr(response, "usage", None)
-            if usage is not None:
-                logger.debug(
-                    "[WizardGateClassifier] tokens in=%s out=%s model=%s",
-                    getattr(usage, "input_tokens", "?"),
-                    getattr(usage, "output_tokens", "?"),
-                    self._model,
+            tokens_in = int(getattr(usage, "input_tokens", 0) or 0) if usage else 0
+            tokens_out = int(getattr(usage, "output_tokens", 0) or 0) if usage else 0
+            logger.debug(
+                "[WizardGateClassifier] tokens in=%s out=%s model=%s elapsed=%dms",
+                tokens_in, tokens_out, self._model, _elapsed_ms,
+            )
+            if company_id and (tokens_in or tokens_out):
+                await self._track_cost(
+                    company_id=company_id, user_id=user_id,
+                    tokens_in=tokens_in, tokens_out=tokens_out,
+                    elapsed_ms=_elapsed_ms,
                 )
-        except Exception:
-            pass
+            self._record_latency(stage, _elapsed_ms)
+        except Exception as _track_exc:  # noqa: BLE001
+            logger.debug("[WizardGateClassifier] cost tracking skipped: %s", _track_exc)
 
         for block in getattr(response, "content", []) or []:
             if (
@@ -356,6 +376,63 @@ class WizardGateClassifier:
                 if isinstance(inp, dict):
                     return inp
         return {}
+
+    async def _track_cost(
+        self,
+        *,
+        company_id: str,
+        user_id: str | None,
+        tokens_in: int,
+        tokens_out: int,
+        elapsed_ms: int,
+    ) -> None:
+        """Hook into `ConsumptionTrackingService.record_llm_call` per tenant.
+
+        Best-effort. Failure (DB down, schema mismatch, etc) is logged at
+        debug level and never blocks the gate classifier.
+        """
+        try:
+            from app.domains.billing.services.consumption_tracking_service import (
+                ConsumptionTrackingService,
+            )
+            from lia_config.database import AsyncSessionLocal  # type: ignore
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("[WizardGateClassifier] cost tracker imports failed: %s", exc)
+            return
+        try:
+            async with AsyncSessionLocal() as db:
+                await ConsumptionTrackingService.record_llm_call(
+                    db=db,
+                    company_id=company_id,
+                    user_id=user_id,
+                    model_name=self._model,
+                    tokens_input=tokens_in,
+                    tokens_output=tokens_out,
+                    success=True,
+                    response_time_ms=elapsed_ms,
+                )
+                await db.commit()
+        except Exception as exc:  # noqa: BLE001
+            logger.debug("[WizardGateClassifier] record_llm_call failed: %s", exc)
+
+    @staticmethod
+    def _record_latency(stage: str, elapsed_ms: int) -> None:
+        """Prometheus histogram — best-effort, nunca propaga exceção."""
+        try:
+            from prometheus_client import Histogram  # type: ignore
+            global _GATE_LATENCY  # noqa: PLW0603
+            try:
+                _GATE_LATENCY  # type: ignore[used-before-def]
+            except NameError:
+                _GATE_LATENCY = Histogram(  # type: ignore[assignment]
+                    "lia_wizard_gate_classifier_latency_ms",
+                    "Wizard gate LLM classifier latency by stage (ms)",
+                    ["stage"],
+                    buckets=(50, 100, 250, 500, 700, 1000, 2000, 5000),
+                )
+            _GATE_LATENCY.labels(stage=stage).observe(elapsed_ms)  # type: ignore[name-defined]
+        except Exception:
+            pass
 
     @staticmethod
     def _record_metric(stage: str, intent: str, confidence: float) -> None:
