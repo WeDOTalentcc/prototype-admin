@@ -484,14 +484,35 @@ def intake_node(state: JobCreationState) -> JobCreationState:
             )
         else:
             extraction = extractor.extract(query)
-        # Fill ONLY fields that aren't already explicit in state
-        parsed_title = parsed_title or extraction.parsed_title
-        parsed_seniority = parsed_seniority or extraction.parsed_seniority
-        parsed_department = parsed_department or extraction.parsed_department
-        parsed_location = parsed_location or extraction.parsed_location
-        parsed_model = parsed_model or extraction.parsed_model
-        intake_confidence = extraction.confidence
-        intake_source = extraction.source
+        # Fill ONLY fields that aren't already explicit in state.
+        # ``extraction`` is a ``JobIntakePayload`` (canonical schema —
+        # `intake_extractor.py:97`). Each field is an ``IntakeField`` with
+        # ``.value`` and ``.source``. Reading raw attributes (``.parsed_title``)
+        # would AttributeError silently and was the root cause of Task #1096
+        # input-thin guard always firing — see audit
+        # ``docs/audits/wizard-job-creation-2026-05.md`` and
+        # ``docs/architecture/wizard-flow.md``.
+        def _val(field_name: str):
+            f = getattr(extraction, field_name, None)
+            if f is None:
+                return None
+            v = getattr(f, "value", None)
+            if v in (None, "", []):
+                return None
+            return v
+
+        parsed_title = parsed_title or _val("title")
+        parsed_seniority = parsed_seniority or _val("seniority")
+        parsed_department = parsed_department or _val("department")
+        parsed_location = parsed_location or _val("location")
+        # NB: schema field is ``work_model`` (remoto/hibrido/presencial),
+        # exposed downstream as ``parsed_model`` for state continuity.
+        parsed_model = parsed_model or _val("work_model")
+        intake_confidence = extraction.overall_confidence
+        _title_field = getattr(extraction, "title", None)
+        intake_source = (
+            getattr(_title_field, "source", None) or "regex"
+        )
         logger.info(
             "[JobCreation:intake] F3-1 extraction: source=%s, conf=%.2f, "
             "title=%s, seniority=%s, location=%s, model=%s",

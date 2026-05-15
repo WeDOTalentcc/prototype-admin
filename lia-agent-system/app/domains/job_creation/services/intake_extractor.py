@@ -357,15 +357,57 @@ class IntakeExtractor:
 
     # ---- LLM client (lazy) -------------------------------------------------
     def _get_llm(self) -> Any:
+        """Resolve a Claude chat model for intake extraction.
+
+        Canonical resolution order (canonical-fix Phase 4 — Task wizard
+        audit 2026-05):
+          1. Tenant-specific Claude key via
+             ``app.shared.tenant_llm_context.get_claude_model_for_tenant``.
+             (Previous code imported a non-existent
+             ``app.shared.services.tenant_llm_context.get_llm_for_current_tenant``
+             — the import always raised ``ModuleNotFoundError`` and the
+             extractor silently fell back to the regex parser, which
+             could not extract from short colloquial inputs like
+             "desenvolvedor python senior". That cascaded into the
+             input-thin guard always firing — see
+             ``docs/architecture/wizard-flow.md`` §"Bugs históricos".)
+          2. Global default ``ChatAnthropic`` from ``app.core.config``
+             when the tenant has no custom key. This restores the
+             original intent: intake LLM always available; regex is the
+             final-resort fallback only when even the global model is
+             unreachable.
+        """
         if self._llm is not None:
             return self._llm
         try:
-            # Tenant-aware LLM context. Falls back to default provider.
-            from app.shared.services.tenant_llm_context import get_llm_for_current_tenant
-            self._llm = get_llm_for_current_tenant()
+            from app.shared.tenant_llm_context import get_claude_model_for_tenant
+            self._llm = get_claude_model_for_tenant()
         except Exception as exc:  # pragma: no cover — defensive
-            logger.info("[IntakeExtractor] tenant LLM unavailable, using fallback: %s", exc)
+            logger.info("[IntakeExtractor] tenant LLM lookup failed: %s", exc)
             self._llm = None
+        if self._llm is None:
+            try:
+                from langchain_anthropic import ChatAnthropic
+
+                from app.core.config import settings
+
+                self._llm = ChatAnthropic(
+                    model_name=settings.LLM_PRIMARY_MODEL,
+                    temperature=settings.LLM_DEFAULT_TEMPERATURE,
+                    max_tokens=settings.LLM_MAX_TOKENS,
+                    timeout=settings.LLM_TIMEOUT_SECONDS,
+                )
+                logger.info(
+                    "[IntakeExtractor] Using default global Claude model "
+                    "(no tenant-specific key configured)"
+                )
+            except Exception as exc:
+                logger.warning(
+                    "[IntakeExtractor] Default Claude unavailable, will fall "
+                    "back to regex extraction: %s",
+                    exc,
+                )
+                self._llm = None
         return self._llm
 
     # ---- Public API --------------------------------------------------------

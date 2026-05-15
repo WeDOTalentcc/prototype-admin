@@ -1,604 +1,302 @@
 # Fluxo do Wizard de Criação de Vagas
 
-> Mapa completo do wizard de criação de vagas da Plataforma LIA, com nós do
-> LangGraph, decisões de roteamento, stages, integração com `TenantAwareAgentMixin`
-> (Task #1043) e índice de arquivos de referência.
+> Mapa canônico do wizard de criação de vagas da Plataforma LIA, com nós
+> reais do `JobCreationGraph` (LangGraph), gates HITL, integração com
+> `TenantAwareAgentMixin`, classificador conversacional LLM e bugs
+> históricos. **Source of truth atualizado em 2026-05-15** após auditoria
+> profunda + canonical-fix do `IntakeExtractor`.
 
-A LIA tem **dois wizards convivendo** durante a migração canônica
-(`.planning/adrs/ADR-CANONICAL-001-wizard-domain.md`):
-
-| | Wizard A (legacy) | Wizard B (canônico) |
-|---|---|---|
-| Entry point | `POST /api/v1/wizard/smart-orchestrate` | Chat principal → `MainOrchestrator` → `WizardReActAgent` |
-| Implementação | `JobWizardGraph` (StateGraph custom) | `LangGraphReActBase.create_react_agent` |
-| Status | CANONICAL-EXEMPT (mantido só para HITL resume) | Piloto canônico do `TenantAwareAgentMixin` (T-B) |
-| Persistência | `PostgresSaver` (LangGraph nativo) | `PostgresSaver` |
-| Arquivo principal | `app/domains/job_management/agents/job_wizard_graph.py` | `app/domains/job_management/agents/wizard_react_agent.py` |
-
----
-
-## 0. Como o wizard funciona, do ponto de vista do recrutador
-
-Esta seção é uma **simulação narrada** de uma criação de vaga real. Cada
-turno mostra três coisas:
-
-- **👤 O que você (recrutador) digita** no chat;
-- **🔧 O que acontece por trás** — quais nós do grafo rodam, qual *intent*
-  o LLM classifica, quais *tools* são chamadas, e em que *stage* o wizard
-  está;
-- **💬 O que a LIA responde** — texto realista, em PT-BR, no estilo
-  chat-first.
-
-> Pré-requisitos: você já está logada (ou usando o usuário demo). A LIA
-> **já sabe** o nome da empresa, setor, plano, headcount e seu cargo —
-> esses dados vêm do JWT via `tenant_context_snippet` (Task #1043) e a
-> LIA tem ordem explícita nos prompts para **não** perguntá-los de novo.
-
-### Stage `input-evaluation` — a vaga nasce
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│ TURNO 1 — você abre o wizard                                        │
-├─────────────────────────────────────────────────────────────────────┤
-│ 👤 Você digita:                                                     │
-│    "Preciso contratar um engenheiro backend pleno em Python."       │
-├─────────────────────────────────────────────────────────────────────┤
-│ 🔧 O que acontece por trás (stage = input-evaluation):              │
-│    1. intent_classifier  → intent = PROVIDE_INFO                    │
-│    2. field_extractor    → {title: "Engenheiro Backend",            │
-│                              seniority: "Pleno",                    │
-│                              skills_hint: ["Python"]}               │
-│    3. tool_router        → 1 tool call: save_job_basics             │
-│    4. tool_executor      → grava rascunho no estado                 │
-│    5. response_generator → injeta tenant_context_snippet            │
-│                            ("Demo Company, setor Tecnologia…") +    │
-│                            stage_context da input-evaluation        │
-│    6. stage_transition   → required_fields=[title, department];     │
-│                            falta department → fica na mesma stage   │
-├─────────────────────────────────────────────────────────────────────┤
-│ 💬 LIA responde:                                                    │
-│    "Boa! Anotei aqui: Engenheiro Backend Pleno, com Python.        │
-│     Em qual área da Demo Company essa vaga vai ficar — Engenharia, │
-│     Dados, Plataforma? E é remoto, híbrido ou presencial?"         │
-└─────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────┐
-│ TURNO 2 — você completa os dados básicos                            │
-├─────────────────────────────────────────────────────────────────────┤
-│ 👤 Você digita:                                                     │
-│    "Engenharia de Plataforma, híbrido em SP, CLT."                  │
-├─────────────────────────────────────────────────────────────────────┤
-│ 🔧 O que acontece por trás:                                         │
-│    1. intent_classifier  → PROVIDE_INFO                             │
-│    2. field_extractor    → {department: "Engenharia de Plataforma",│
-│                              work_model: "hybrid",                  │
-│                              location: "São Paulo",                 │
-│                              contract_type: "CLT"}                  │
-│    3. tool_router        → save_job_basics (atualiza rascunho)      │
-│    4. response_generator → resume e PERGUNTA se pode avançar        │
-│    5. stage_transition   → required_fields ✅ → marca avanço para  │
-│                            jd-enrichment, mas espera confirmação    │
-│                            (interrupt_before pausa o grafo aqui)    │
-├─────────────────────────────────────────────────────────────────────┤
-│ 💬 LIA responde:                                                    │
-│    "Fechado. Resumo da vaga até aqui:                              │
-│     • Engenheiro Backend Pleno — Python                             │
-│     • Engenharia de Plataforma · Híbrido em SP · CLT                │
-│     Posso avançar para enriquecer a descrição com sugestões de      │
-│     responsabilidades e benefícios?"                                │
-└─────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────┐
-│ TURNO 3 — você confirma o avanço de stage                           │
-├─────────────────────────────────────────────────────────────────────┤
-│ 👤 Você digita:                                                     │
-│    "Pode avançar."                                                  │
-├─────────────────────────────────────────────────────────────────────┤
-│ 🔧 O que acontece por trás:                                         │
-│    1. intent_classifier  → CONFIRM (entende "pode avançar",        │
-│       "vamos", "sim", "bora", "ok"… via _CONFIRMATION_WORDS)        │
-│    2. router atalha direto para stage_transition                    │
-│    3. stage_transition   → libera o interrupt_before, troca         │
-│                            current_stage = "jd-enrichment"          │
-│    4. should_continue=True → loop volta para intent_classifier      │
-│       já no novo stage                                              │
-├─────────────────────────────────────────────────────────────────────┤
-│ 💬 LIA responde:                                                    │
-│    (resposta combinada com o turno 4 abaixo, pois o grafo loopa)   │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-### Stage `jd-enrichment` — a LIA enriquece a descrição
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│ TURNO 4 — a LIA traz sugestões de mercado (sem você pedir nada)    │
-├─────────────────────────────────────────────────────────────────────┤
-│ 🔧 O que acontece por trás (stage = jd-enrichment):                 │
-│    1. intent_classifier  → ASK_QUESTION (atalho — não tem mensagem  │
-│       sua nova; o grafo entrou na nova stage)                       │
-│    2. tool_router        → enrich_responsibilities + enrich_        │
-│                            benefits + suggest_description           │
-│    3. tool_executor      → consulta benchmarks setoriais (8         │
-│                            fontes canônicas) + histórico da Demo    │
-│                            Company + catálogo de skills             │
-│    4. response_generator → renderiza sugestões em formato editável  │
-├─────────────────────────────────────────────────────────────────────┤
-│ 💬 LIA responde:                                                    │
-│    "Com base em vagas parecidas no mercado e no que a Demo Company │
-│     já contratou, sugiro:                                           │
-│                                                                     │
-│     📋 Responsabilidades                                            │
-│      1. Desenhar e manter APIs Python (FastAPI/Django)              │
-│      2. Cuidar de performance, observabilidade e SLOs               │
-│      3. Mentorar juniores em revisão de código                      │
-│                                                                     │
-│     🎁 Benefícios (alinhados ao plano da Demo Company)              │
-│      • VR + VA · Plano de saúde Bradesco Top                        │
-│      • Home office stipend · 30 dias de férias                      │
-│                                                                     │
-│     Quer que eu ajuste algo, ou sigo para a faixa salarial?"       │
-└─────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────┐
-│ TURNO 5 — você ajusta uma sugestão                                  │
-├─────────────────────────────────────────────────────────────────────┤
-│ 👤 Você digita:                                                     │
-│    "Tira mentoria de junior. Adiciona experiência com AWS."        │
-├─────────────────────────────────────────────────────────────────────┤
-│ 🔧 O que acontece por trás:                                         │
-│    1. intent_classifier  → MODIFY                                   │
-│    2. field_extractor    → diff: remove "mentorar juniores",       │
-│                            adiciona "experiência com AWS"           │
-│    3. tool_router        → save_job_basics (merge no draft)         │
-│    4. response_generator → reapresenta lista com a edição           │
-├─────────────────────────────────────────────────────────────────────┤
-│ 💬 LIA responde:                                                    │
-│    "Atualizei. Lista final de responsabilidades:                   │
-│      1. Desenhar e manter APIs Python (FastAPI/Django)              │
-│      2. Cuidar de performance, observabilidade e SLOs               │
-│      3. Experiência sólida com AWS (EC2, RDS, Lambda)               │
-│     Pode seguir para salário?"                                      │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-### Stage `salary` — a LIA traz benchmarks
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│ TURNO 6 — você confirma e a LIA puxa benchmark salarial             │
-├─────────────────────────────────────────────────────────────────────┤
-│ 👤 Você digita: "Vamos."                                            │
-├─────────────────────────────────────────────────────────────────────┤
-│ 🔧 O que acontece por trás (stage = salary):                        │
-│    1. intent_classifier  → CONFIRM → stage_transition avança        │
-│    2. (loop) intent_classifier → ASK_QUESTION                       │
-│    3. tool_router        → fetch_salary_benchmark                   │
-│    4. tool_executor      → consulta Parecer + 8 benchmarks          │
-│                            (ABRH, Robert Half, Catho, etc.)         │
-│    5. response_generator → exibe faixa com p25/p50/p75              │
-├─────────────────────────────────────────────────────────────────────┤
-│ 💬 LIA responde:                                                    │
-│    "Para Backend Pleno em Python, híbrido em SP (CLT), o mercado  │
-│     paga (n=312 vagas, últimos 90 dias):                            │
-│        p25  R$ 9.500   |  p50  R$ 12.000   |  p75  R$ 14.500       │
-│     A Demo Company costuma pagar entre p50 e p60 nesse nível.       │
-│     Quer fixar entre R$ 11.000 e R$ 13.500, ou prefere outra       │
-│     faixa?"                                                         │
-└─────────────────────────────────────────────────────────────────────┘
-
-┌─────────────────────────────────────────────────────────────────────┐
-│ TURNO 7 — você define a faixa                                       │
-├─────────────────────────────────────────────────────────────────────┤
-│ 👤 Você digita: "Pode ser 11 a 13.500."                            │
-├─────────────────────────────────────────────────────────────────────┤
-│ 🔧 Por trás:                                                        │
-│    1. intent_classifier  → PROVIDE_INFO                             │
-│    2. field_extractor    → {salary_min: 11000, salary_max: 13500,  │
-│                              salary_currency: "BRL"}                │
-│    3. tool_router        → validate_salary_range                    │
-│       (checa se está dentro do p10–p90 do mercado para evitar       │
-│        viés econômico — Inegociável #4 / FairnessGuard)             │
-│    4. tool_executor      → ✅ válida                                │
-│    5. stage_transition   → required ✅ → propõe avanço             │
-├─────────────────────────────────────────────────────────────────────┤
-│ 💬 LIA responde:                                                    │
-│    "Salvo: R$ 11.000 a R$ 13.500. Tá dentro do mercado e da       │
-│     política da Demo Company. Vamos para as competências?"         │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-### Stage `competencies` — skills técnicas e comportamentais
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│ TURNO 8 — a LIA sugere skills (após você confirmar o avanço)        │
-├─────────────────────────────────────────────────────────────────────┤
-│ 🔧 Por trás (stage = competencies):                                 │
-│    1. tool_router        → suggest_skills + suggest_behavioral_     │
-│                            competencies                             │
-│    2. tool_executor      → cruza title+seniority+department com o   │
-│                            Skills Ontology Engine                   │
-├─────────────────────────────────────────────────────────────────────┤
-│ 💬 LIA responde:                                                    │
-│    "Com base no perfil, sugiro:                                    │
-│                                                                     │
-│     🛠 Skills técnicas (selecione/edite)                            │
-│      [✓] Python · FastAPI · PostgreSQL · Docker · AWS · Git         │
-│      [ ] Kafka · Redis · Terraform                                  │
-│                                                                     │
-│     🤝 Soft skills                                                  │
-│      [✓] Comunicação assíncrona · Autonomia · Resolução de         │
-│           problemas                                                 │
-│                                                                     │
-│     Quer adicionar/remover algo, ou seguimos para as perguntas de  │
-│     triagem?"                                                       │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-### Stage `wsi-questions` — perguntas de triagem WSI
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│ TURNO 9 — a LIA gera as 6 perguntas WSI                             │
-├─────────────────────────────────────────────────────────────────────┤
-│ 🔧 Por trás (stage = wsi-questions):                                │
-│    1. tool_router        → generate_wsi_questions                   │
-│    2. tool_executor      → gera 6 blocos do WSI (técnico,           │
-│                            comportamental, motivacional, fit        │
-│                            cultural, situacional, anti-bias)        │
-│    3. response_generator → renderiza editável                       │
-├─────────────────────────────────────────────────────────────────────┤
-│ 💬 LIA responde:                                                    │
-│    "Gerei 6 perguntas de triagem (você pode editar qualquer uma):  │
-│      1. [Técnica] Conte uma situação em que você precisou           │
-│         escalar uma API Python sob carga…                           │
-│      2. [Comportamental] Como você lida com débito técnico…        │
-│      3. [Motivacional] O que te atrai numa vaga híbrida…           │
-│      4. [Fit cultural] Como você prefere receber feedback…         │
-│      5. [Situacional] Imagine um incidente em produção às 2h…       │
-│      6. [Anti-bias] Conte um projeto de impacto além do código…    │
-│                                                                     │
-│     Aprovado? Posso publicar a vaga?"                               │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-### Stage `review/publish` — HITL antes de publicar
-
-```
-┌─────────────────────────────────────────────────────────────────────┐
-│ TURNO 10 — você aprova a publicação                                 │
-├─────────────────────────────────────────────────────────────────────┤
-│ 👤 Você digita: "Aprovado, publica."                                │
-├─────────────────────────────────────────────────────────────────────┤
-│ 🔧 Por trás:                                                        │
-│    1. intent_classifier  → CONFIRM                                  │
-│    2. ⚠ interrupt_before=["stage_transition"] PAUSA o grafo aqui   │
-│       — esse é o ponto HITL antes de qualquer mutação destrutiva    │
-│    3. backend libera o interrupt apenas porque o intent é CONFIRM   │
-│    4. tool_router        → validate_job_compliance + publish_job    │
-│    5. tool_executor      →                                          │
-│        a) FairnessGuard L3 audita descrição e perguntas             │
-│        b) FactChecker valida benchmarks citados                     │
-│        c) ComplianceDomainPrompt grava audit log (SOX 7 anos)       │
-│        d) INSERT na tabela job_vacancies (RLS por company_id)       │
-│        e) emite evento para o pipeline de Sourcing                  │
-│    6. stage_transition   → should_continue=False → END              │
-├─────────────────────────────────────────────────────────────────────┤
-│ 💬 LIA responde:                                                    │
-│    "Pronto! Vaga publicada como #VG-1287.                          │
-│     • Pipeline padrão (7 stages) já aplicado                        │
-│     • Triagem WSI ativa para novos candidatos                       │
-│     • Monitoramento de fairness ligado                              │
-│     Quer que eu já comece a sourcing ou prefere revisar antes?"    │
-└─────────────────────────────────────────────────────────────────────┘
-```
-
-### O que a LIA **não faz** em momento algum
-
-Por ordem explícita nos prompts (regra #8 dos `behavioral_rules`,
-adicionada em 8 YAMLs pela Task #1043):
-
-- ❌ Não pergunta seu nome, cargo, e-mail ou telefone (vem do JWT).
-- ❌ Não pergunta o nome, setor, plano ou headcount da empresa (vem do
-  `tenant_context_snippet`).
-- ❌ Não pergunta o `company_id` em momento algum.
-- ❌ Não publica a vaga sem o intent `CONFIRM` explícito (HITL via
-  `interrupt_before`).
-- ❌ Não salva uma faixa salarial fora do mercado sem validar com
-  `validate_salary_range`.
-
-### Resumo visual stage-a-stage
-
-```
-input-evaluation  ──┐
-                    │  você descreve a vaga em linguagem natural
-                    │  LIA extrai title, dept, modelo, contrato
-                    ▼
-jd-enrichment     ──┐
-                    │  LIA puxa benchmarks de mercado + histórico
-                    │  da empresa e propõe responsabilidades/benefícios
-                    ▼
-salary            ──┐
-                    │  LIA traz p25/p50/p75; você fixa a faixa
-                    │  validate_salary_range protege contra viés
-                    ▼
-competencies      ──┐
-                    │  LIA sugere skills via Skills Ontology Engine
-                    │  você aceita/edita
-                    ▼
-wsi-questions     ──┐
-                    │  LIA gera 6 perguntas (6 blocos WSI)
-                    │  você revisa e aprova
-                    ▼
-review/publish    ──┐
-                    │  HITL: interrupt_before pausa o grafo
-                    │  CONFIRM → publica + audit + Fairness L3
-                    ▼
-                  END (vaga viva no pipeline de sourcing)
-```
-
-> **Como cada turno acima mapeia no grafo:** todo o fluxo passa pelos
-> mesmos 6 nós (`intent_classifier → field_extractor → tool_router →
-> tool_executor → response_generator → stage_transition`) — o que muda
-> entre stages é **qual conjunto de tools** o `tool_router` libera (via
-> `get_stage_tools(stage)`) e **quais campos** o `field_extractor`
-> tenta capturar (via `STAGE_DEFINITIONS[stage].required_fields`). A
-> seção 2 abaixo descreve esse mecanismo em detalhe.
+> ⚠ Este documento substitui versões anteriores que descreviam dois
+> wizards convivendo (`JobWizardGraph` legacy + `WizardReActAgent`) e um
+> grafo fictício de 6 nós (`intent_classifier → field_extractor → tool_router
+> → tool_executor → response_generator → stage_transition`). Nenhuma dessas
+> peças corresponde ao código real. **`JobWizardGraph` está deprecated**
+> (Task #1084 / D8 da auditoria 2026-05-14). O fluxo ativo hoje é
+> exclusivamente o `JobCreationGraph` linear de 11 nós descrito abaixo.
 
 ---
 
-## 1. Entrada HTTP — wizard A (`/smart-orchestrate`)
+## 1. Visão geral
 
-```
-┌────────────────────────────────────────────────────────────────────────────┐
-│  Frontend (chat-first, plataforma-lia/Next.js)                             │
-│  POST /api/v1/wizard/smart-orchestrate                                     │
-│  body: { message, current_stage, collected_data, conversation_history,     │
-│          conversation_id?, company_id?, user_id? }                         │
-└────────────────┬───────────────────────────────────────────────────────────┘
-                 │  Authorization: Bearer <jwt>?  (opcional → dev fallback)
-                 ▼
-┌────────────────────────────────────────────────────────────────────────────┐
-│  app/api/v1/wizard_smart_orchestrator.py:151  smart_orchestrate()          │
-│  ─ Depends(get_current_user_or_demo)  ◄── PR-A: sempre amarra usuário ao   │
-│                                            CANONICAL_DEMO_UUID em dev      │
-│  ─ session_id = conv_id or create_session_id(user.company_id)              │
-│  ─ company_id = req.company_id or get_user_company_id(user)                │
-│  ─ backend_stage = map_frontend_to_backend_stage(stage)                    │
-│  ─ initial_state: JobWizardState  (TypedDict do lia-agents-core)           │
-└────────────────┬───────────────────────────────────────────────────────────┘
-                 │  await job_wizard_graph.invoke(initial_state)
-                 ▼
-                ┌──────────────────────────────────────────┐
-                │  JobWizardGraph._invoke_langgraph(state) │
-                │  (cria StateGraph na 1ª chamada, lazy)   │
-                └────────────────┬─────────────────────────┘
-                                 │
-                                 ▼
-```
-
-## 2. StateGraph — nós, edges e roteadores
-
-`app/domains/job_management/agents/job_wizard_graph.py:181  _build_langgraph()`
-
-```
-                              ┌─────────────────────────┐
-                              │   set_entry_point       │
-                              │ "intent_classifier"     │
-                              └────────────┬────────────┘
-                                           │
-                                           ▼
-                  ┌──────────────────────────────────────────┐
-                  │  NODE: intent_classifier                 │
-                  │  → classifica WizardIntent (LLM)         │
-                  │  app/agents/nodes.py                     │
-                  │  Intents possíveis (lia_agents_core):    │
-                  │   - START_FROM_SCRATCH / USE_EXISTING /  │
-                  │     USE_TEMPLATE                         │
-                  │   - HELP / ASK_QUESTION                  │
-                  │   - PROVIDE_INFO / MODIFY                │
-                  │   - SKIP / GO_BACK / CONFIRM             │
-                  └────────────┬─────────────────────────────┘
-                               │
-              add_conditional_edges("intent_classifier",
-                                    route_intent_classifier)
-                               │
-        ┌──────────────────────┼──────────────────────────┐
-        │                      │                          │
-        │ START/USE/HELP/ASK   │ PROVIDE_INFO / MODIFY    │ SKIP/GO_BACK/CONFIRM
-        ▼                      ▼                          ▼
-┌──────────────────┐  ┌─────────────────────┐  ┌──────────────────────┐
-│ response_        │  │ NODE: field_        │  │ NODE: stage_         │
-│   generator      │  │   extractor         │  │   transition         │
-│ (atalho —        │  │ (LLM extrai dados   │  │ (avança/volta etapa) │
-│  sem extrair)    │  │  do user_message)   │  │                      │
-└────────┬─────────┘  └──────────┬──────────┘  └──────────┬───────────┘
-         │                       │                        │
-         │           add_edge("field_extractor",          │
-         │                    "tool_router")              │
-         │                       ▼                        │
-         │            ┌───────────────────────┐           │
-         │            │ NODE: tool_router     │           │
-         │            │ (decide se chama tool │           │
-         │            │  baseado em stage +   │           │
-         │            │  campos coletados)    │           │
-         │            └──────────┬────────────┘           │
-         │                       │                        │
-         │       add_conditional_edges("tool_router",     │
-         │                              route_tool_router)│
-         │                       │                        │
-         │       ┌───────────────┴────────────────┐       │
-         │       │ tool_calls > 0  │  tool_calls = 0      │
-         │       ▼                 ▼                      │
-         │  ┌─────────────┐  (fall through)               │
-         │  │ NODE: tool_ │                               │
-         │  │  executor   │ ◄── chama get_stage_tools()   │
-         │  │             │     wizard_tool_registry.py   │
-         │  └──────┬──────┘                               │
-         │         │  add_edge("tool_executor",           │
-         │         │           "response_generator")      │
-         │         ▼                                      │
-         └───►┌──────────────────────────────┐            │
-              │ NODE: response_generator     │            │
-              │ (LIA gera mensagem PT-BR     │            │
-              │  com tenant_context_snippet  │            │
-              │  + stage_context + memory)   │            │
-              └──────────────┬───────────────┘            │
-                             │                            │
-                  add_edge("response_generator",          │
-                           "stage_transition")            │
-                             ▼                            ▼
-                    ┌──────────────────────────────────────┐
-                    │ NODE: stage_transition               │
-                    │ (avalia transition_criteria do       │
-                    │  STAGE_DEFINITIONS, define           │
-                    │  state["should_continue"])           │
-                    │                                      │
-                    │  ⚠ interrupt_before=["stage_         │
-                    │     transition"]  ◄── HITL: pausa    │
-                    │     antes de criar a vaga (CONFIRM)  │
-                    └──────────────┬───────────────────────┘
-                                   │
-                  add_conditional_edges("stage_transition",
-                                        route_stage_transition)
-                                   │
-                  ┌────────────────┴────────────────┐
-                  │ should_continue = False         │ should_continue = True
-                  ▼                                 ▼
-                ┌─────┐                  ┌─────────────────────┐
-                │ END │                  │ intent_classifier   │
-                └─────┘                  │ (loop — multi-turn) │
-                                         └─────────────────────┘
-```
-
-## 3. Decisões dos roteadores (linhas exatas)
-
-`job_wizard_graph.py:203-225`
-
-```
-route_intent_classifier(state) → str        route_tool_router(state) → str
-─────────────────────────────────────        ─────────────────────────────────
-intent ∈ {START_FROM_SCRATCH,                len(tool_calls) > 0
-          USE_EXISTING, USE_TEMPLATE,           → "tool_executor"
-          HELP, ASK_QUESTION}                else
-   → "response_generator"                       → "response_generator"
-intent ∈ {SKIP, GO_BACK, CONFIRM}
-   → "stage_transition"                     route_stage_transition(state) → str
-default (PROVIDE_INFO, MODIFY)               ─────────────────────────────────
-   → "field_extractor"                       not should_continue → "end" (END)
-                                             else                → "continue"
-                                                                   (loop intent_classifier)
-```
-
-## 4. Stages do wizard (`stage_context.py:STAGE_DEFINITIONS`)
-
-```
-┌──────────────────┬───────────────────────────┬──────────────────────────────┐
-│ Stage            │ required_fields           │ transition_criteria          │
-├──────────────────┼───────────────────────────┼──────────────────────────────┤
-│ input-evaluation │ title, department         │ ambos preenchidos            │
-│ jd-enrichment    │ title                     │ usuário confirmou sugestões  │
-│ salary           │ salary_min, salary_max    │ faixa definida               │
-│ competencies     │ skills                    │ ≥ 3 skills                   │
-│ wsi-questions    │ screening_questions       │ recrutador aprovou perguntas │
-│ review/publish   │ todos os anteriores       │ CONFIRM intent → cria vaga   │
-└──────────────────┴───────────────────────────┴──────────────────────────────┘
-                          ↓ ordem definida em STAGE_DEFINITIONS["next_stage"]
-   input-evaluation → jd-enrichment → salary → competencies → wsi-questions → publish
-```
-
-## 5. Onde o tenant context entra (fix da Task #1043)
-
-```
-get_current_user_or_demo (auth/dependencies.py:271)
-        │  PR-A: company_id = CANONICAL_DEMO_UUID  ◄── era "demo_company"
-        ▼
-WizardReActAgent.__init__   (TenantAwareAgentMixin, tenant_strict_override=True)
-        │
-        ▼
-_get_tenant_context_snippet (shared/agents/tenant_aware_agent.py:514)
-        │  PR-C: se snippet pré-existente OU recém-renderizado contém
-        │        "sua empresa" → MissingTenantContextError (fail-LOUD)
-        ▼
-PromptComposer injeta {tenant_context_snippet} no system prompt
-        │  PR-B: 8 YAMLs proíbem LLM de re-perguntar dados do snippet
-        ▼
-LLM responde sobre a vaga, NÃO sobre identidade da empresa/recrutador
-```
-
-## 6. Wizard B canônico (chat principal) — fluxo paralelo
-
-```
-WebSocket /chat ─→ MainOrchestrator ─→ CascadedRouter
-                                              │
-                                              ▼ intent=create_job
-                                    ┌─────────────────────┐
-                                    │ WizardReActAgent    │
-                                    │  (LangGraph React)  │
-                                    └──────────┬──────────┘
-                                               │
-              create_react_agent(LLM, tools, checkpointer=PostgresSaver)
-                                               │
-                                ┌──────────────┴──────────────┐
-                                ▼                             ▼
-                        ┌──────────────┐              ┌──────────────┐
-                        │ agent_node   │  ←─────────  │  tools_node  │
-                        │ (LLM thinks) │              │ (executes)   │
-                        └──────┬───────┘              └──────────────┘
-                               │
-                               ▼ tools_condition: continue | end
-                            ┌─────┐
-                            │ END │
-                            └─────┘
-```
-
-## 7. Arquivos de referência (todos relativos a `lia-agent-system/`)
-
-| Arquivo | Papel |
+| Conceito | Implementação canônica |
 |---|---|
-| `app/api/v1/wizard_smart_orchestrator.py` | Endpoint REST (wizard A) |
-| `app/domains/job_management/agents/job_wizard_graph.py` | StateGraph custom (wizard A) |
-| `app/agents/nodes.py` | Implementação dos 6 nós (wizard A) |
-| `app/domains/job_management/agents/stage_context.py` | `STAGE_DEFINITIONS` + `get_stage_context()` |
-| `app/domains/job_management/agents/wizard_system_prompt.py` | `build_system_prompt(stage_context, memory)` |
-| `app/domains/job_management/agents/wizard_tool_registry.py` | 14 tools `@tool_handler("wizard")` |
-| `app/domains/job_management/agents/wizard_react_agent.py` | Wizard canônico B (ReAct) |
-| `app/domains/job_creation/graph.py` | `JobCreationGraph` (futuro substituto, ADR-CANONICAL-001 fase 2) |
-| `app/domains/job_creation/services/` | `WizardSessionService` (canônico) |
-| `app/shared/agents/tenant_aware_agent.py` | Mixin com `_get_tenant_context_snippet` (PR-C) |
-| `app/auth/dependencies.py` | `get_current_user_or_demo` (PR-A) |
-| `app/auth/models.py` | `User.company_id` + `@validates` (PR-D) |
-| `app/prompts/domains/job_management.yaml` | Prompt do wizard B com regra anti-T-E (PR-B) |
-| `lia_agents_core.state_machine.JobWizardState` | TypedDict do estado |
-| `lia_agents_core.checkpointer.get_checkpointer()` | `PostgresSaver` compartilhado |
-| `.planning/adrs/ADR-CANONICAL-001-wizard-domain.md` | Plano de migração A → B |
+| Entry point HTTP | `POST /api/v1/chat` (REST) **ou** `WS /api/v1/ws/chat/{session_id}` (WebSocket) |
+| Pin de sessão wizard | `wizard_session_pin` Tier 0.5 do `CascadedRouter` (force `active_domain="wizard"` se há checkpoint aberto) |
+| Orquestrador | `app/orchestrator/main_orchestrator.py` (Phase 1.4 — wizard_session_pin único) |
+| Serviço de sessão | `app/domains/job_creation/services/wizard_session_service.py::WizardSessionService` |
+| Grafo principal | `app/domains/job_creation/graph.py::create_job_creation_graph` (11 nós lineares) |
+| Agente ReAct (T-D piloto) | `app/domains/job_management/agents/wizard_react_agent.py::WizardReActAgent` (`tenant_strict_override=True`) |
+| Persistência de estado | `lia_agents_core.checkpointer.get_checkpointer` (PostgresSaver → MemorySaver fallback dev) |
+| Gates HITL canônicos | `app/domains/job_creation/services/wizard_gate_service.py::WizardGateService` (Task #1084) |
+| Classificador conversacional HITL | `wizard_gate_classifier` (Task #1085, ON em dev/test, OFF em prod até GA — feature flag `LIA_WIZARD_LLM_GATES`) |
+| Bridge FE | `plataforma-lia/src/components/unified-chat/wizard/*` consumindo `ws_stage_payload.data.*` |
 
-## 8. Cheat-sheet das 14 tools do wizard
-
-`wizard_tool_registry.py` — todas decoradas `@tool_handler("wizard")`, filtradas
-por stage via `get_stage_tools(stage)`:
+### 1.1 Como uma turn chega ao grafo
 
 ```
-input-evaluation  → search_existing_jobs, suggest_job_template, save_job_basics
-jd-enrichment     → enrich_responsibilities, enrich_benefits, suggest_description
-salary            → fetch_salary_benchmark, validate_salary_range
-competencies      → suggest_skills, suggest_behavioral_competencies
-wsi-questions     → generate_wsi_questions, customize_wsi_question
-review/publish    → validate_job_compliance, publish_job
+Browser (chat input)
+   │
+   ▼
+WS /api/v1/ws/chat/{session_id}  ──►  agent_chat_ws.py
+   │                                       │ (pin handler-level Task #1080)
+   │                                       │ if active_domain∈{auto,recruiter_assistant,""}
+   │                                       │   AND is_wizard_session_active(company_id, session_id):
+   │                                       │     active_domain = "wizard"
+   ▼
+WizardSessionService.process_message(session_id, message, ...)
+   │ 1. derive_thread_id(company_id, session_id) → "wiz-{token8}-{session_id}"
+   │ 2. _build_state(...)  →  CompanyId.parse  →  fail-closed em strict
+   │ 3. ManagerPreferencesService.apply_to_state()  ←  LL-2 (NÃO em intake_node)
+   ▼
+JobCreationGraph.compile(checkpointer).ainvoke(state, config={"thread_id":...})
+   │
+   ▼
+intake → jd_enrichment → bigfive → salary → competency → wsi_questions
+       → eligibility → review → publish → calibration → handoff → END
 ```
 
-## TL;DR do que acontece em uma mensagem
+---
 
-1. Frontend manda `POST /smart-orchestrate` com a frase do recrutador.
-2. `get_current_user_or_demo` resolve o usuário (e desde Task #1043 o
-   `company_id` é UUID válido).
-3. `JobWizardGraph.invoke()` entra no `intent_classifier` → LLM rotula o intent.
-4. Roteador despacha para `field_extractor` (extrai dados) → `tool_router`
-   (decide se chama tool) → opcionalmente `tool_executor` → `response_generator`
-   (LIA escreve a resposta com `tenant_context_snippet` injetado).
-5. `stage_transition` avalia se os `transition_criteria` da stage atual foram
-   batidos. Se sim, marca avanço. **`interrupt_before=["stage_transition"]`** dá
-   HITL antes de qualquer mutação destrutiva (publicar vaga).
-6. Se `should_continue=True`, loopa para `intent_classifier`; senão termina e
-   devolve `SmartOrchestrateResponse` para o frontend.
+## 2. Os 11 nós do `JobCreationGraph`
+
+Source: `lia-agent-system/app/domains/job_creation/graph.py` (4600 linhas).
+Linhas exatas conferidas em 2026-05-15.
+
+| # | Nó | Linha | Função | HITL | Compliance |
+|---|---|---|---|---|---|
+| 1 | `intake_node` | 444 | Parse de `user_query` via `IntakeExtractor` (LLM Claude → regex fallback). Emite `parsed_title/seniority/department/location/model` + `pipeline_template` determinístico (`_suggest_pipeline_template`). | — | — |
+| 2 | `jd_enrichment_node` | 561 | Enriquecimento da JD via LLM. **L1** `FairnessGuard.check(raw_input)`; **L2** `strip_pii_for_llm_prompt`; **L3** `FairnessGuard.check(enriched_text)`. Fallback determinístico `_fallback_enrichment` por timeout (`LIA_JD_ENRICHMENT_TIMEOUT_S`). Inclui o **input-thin guard** (Task #1096 — ver §4.1). | **#1** | FG L1+L2+L3 + audit EU AI Act |
+| 3 | `bigfive_node` | ≈700 | Big Five mapeado da JD. FG pre + PII strip. Timeout `LIA_BIGFIVE_TIMEOUT_S`. | — | FG pre + PII |
+| 4 | `salary_node` | ≈830 | Faixa salarial via mercado. Re-pergunta de empresa **NÃO** acontece (regressão B4 protegida pelo pin). Timeout `LIA_SALARY_TIMEOUT_S`. | — | — |
+| 5 | `competency_node` | ≈940 | Competências (rota condicional para `wsi_questions` ou pula). | — | — |
+| 6 | `wsi_questions_node` | ≈1050 | Geração das 6 perguntas WSI. FG pre (L4 question guard) + PII strip. Timeout `LIA_WSI_QUESTIONS_TIMEOUT_S`. | **#2** | FG L4 + PII |
+| 7 | `eligibility_node` | ≈1230 | Critérios não invasivos por LGPD. | — | — |
+| 8 | `review_node` | ≈1330 | Consolida pacote para revisão antes do publish. | **#3** | — |
+| 9 | `publish_node` | ≈1410 | Cria a vaga via `JobCreationAPIClient` (Rails). Idempotente. | **#4** | Audit EU AI Act |
+| 10 | `calibration_node` | ≈1640 | Calibração pós-publish (weights por tenant). | — | — |
+| 11 | `handoff_node` | ≈1750 | Encerra sessão, libera checkpoint. | — | — |
+
+### 2.1 Edges (`create_job_creation_graph`, ≈L1900)
+
+```
+START → intake → jd_enrichment
+              ↳ route_after_jd: bigfive | intake | END
+bigfive → salary → competency
+              ↳ route_after_competency: wsi_questions | eligibility
+wsi_questions
+              ↳ route_after_questions: eligibility
+eligibility → review
+              ↳ route_after_review: publish | review
+publish
+              ↳ route_after_publish: calibration | END
+calibration
+              ↳ route_after_calibration: handoff | END
+handoff → END
+```
+
+Entry point: `intake`. Checkpointer: `get_checkpointer()` (Postgres → Memory fallback em dev).
+
+---
+
+## 3. Gates HITL e classificador conversacional
+
+Os 4 pontos HITL (`#1 jd_enrichment`, `#2 wsi_questions`, `#3 review`, `#4 publish`) foram unificados sob **um único entry point canônico**:
+
+```
+WizardGateService.resume_gate(thread_id, pending_id, decision, ...)
+                                                       ↑
+                                                       │
+   ┌───────────────────────────────────────────────────┴─┐
+   │                                                     │
+WS  agent_chat_ws.py (resume_domain=="wizard")    REST  /api/v1/wizard/hitl/*
+```
+
+- **Task #1084 (D8 fix):** `WizardGateService` com idempotência CAS Redis (`wizard:gate:resolved:{gate_id}`, TTL 24h). Chamar `resume_gate` 2× com mesmo `gate_id` retorna `cached=True` na 2ª, 1× engine, **1** audit row. Timeout NÃO cacheia (permite retry).
+- **Task #1085 (T2):** `wizard_gate_classifier` LLM-based substitui o classifier brittle keyword-based em `jd_enrichment`. Usa Claude Haiku (`temp=0`, allowlist `approve | reject_with_feedback | provide_new_content | ask_question | off_topic`), Pydantic-validated. Mutação determinística — `intent` ∈ allowlist mapeia para fields fixos do state. **`conversational_reply` do LLM nunca é usado como controle de fluxo.** FG L1 roda antes do classifier. Audit row por gate. Feature flag: `LIA_WIZARD_LLM_GATES` (ON dev/test, OFF prod até GA).
+- **Sentinela:** `tests/integration/agents/test_wizard_gate_engine_t2.py`. Eval gate: `eval/golden/wizard_conversational_hitl.jsonl` (5 cenários). E2E: `plataforma-lia/e2e/tests/wizard/11-conversational-hitl.spec.ts`.
+
+### 3.1 Fallback determinístico
+
+`WizardSessionService._generate_fallback_reply` chama Claude Haiku quando o estado fica inconsistente — **sem** dict canned (Task #1089 / T3 removeu `_STAGE_DEFAULTS`). Falhas geram audit `decision_type=wizard_fallback_invoked` + Prometheus counter via `WizardFallbackTracker`. Sentinela arquitetural: `tests/integration/agents/test_wizard_no_canned_fallback_t3.py` (veta a reintrodução de literais canned).
+
+---
+
+## 4. Continuidade de sessão e pin (Task #1080)
+
+`thread_id` é derivado por uma **única função pura**:
+
+```python
+app.shared.sessions.derive_thread_id(company_id, session_id) -> "wiz-{token8}-{session_id}"
+```
+
+- Sem honor de `msg["thread_id"]` custom.
+- Sem Redis marker (`lia:wizard:active:*` foi extinto).
+- Sem heurística `_candidate_thread_ids`.
+- Sem Tier 0.5 hardcoded no `CascadedRouter`.
+
+"Esta sessão é wizard?" é detectado por `app.shared.sessions.is_wizard_session_active(company_id, session_id)`, que lê o checkpoint LangGraph e retorna True iff existe estado E `current_stage != "completed"` (fail-open em outage).
+
+O **pin** vive nos handlers de transport (`agent_chat_ws.py` e `agent_chat_sse.py`) **antes** da chamada ao `CascadedRouter`. Quando o FE não enviou `domain` explícito (`active_domain ∈ {"auto","recruiter_assistant",""}`) e a sessão tem checkpoint aberto, força `active_domain="wizard"` e pula o roteamento normal. O `main_orchestrator` (REST) opera com a mesma checagem via `WizardSessionService.is_session_active`.
+
+**Sentinelas:** `tests/integration/agents/test_wizard_session_continuity_t1080.py` (S1 pureza, S2 anti-honor msg.thread_id, S3 fail-open, S4 AST router-clean, S5 wrappers delegam, S6 handlers donos do pin). E2E: `plataforma-lia/e2e/tests/wizard/10-session-continuity.spec.ts`.
+
+---
+
+## 5. Bugs históricos e correções canônicas
+
+### 5.1 Bug do "template repetido 4×" (corrigido 2026-05-15)
+
+**Sintoma observado pelo usuário:** ao escrever no chat:
+1. "vamos abrir uma vaga"
+2. "onde esta o painel a direita?"
+3. "desenvolvedor python senior"
+4. "o que voce precisa?"
+
+A LIA respondeu **o mesmo template canned** nas 4 mensagens:
+> "Para começar a criação da vaga, preciso de mais contexto. Você pode (a) colar a descrição da vaga (JD) aqui no chat, (b) anexar um arquivo no painel à direita, ou (c) começar respondendo no painel — me diga título do cargo, senioridade e principais responsabilidades."
+
+**Diagnóstico — DOIS bugs encadeados:**
+
+#### Bug A — `IntakeExtractor` quebrado em duplo
+
+`lia-agent-system/app/domains/job_creation/services/intake_extractor.py`
+
+1. **Sub-bug A1 (import path errado + função inexistente):** `_get_llm` importava `from app.shared.services.tenant_llm_context import get_llm_for_current_tenant`. Path **errado** (correto: `app.shared.tenant_llm_context`, sem `.services`) **e** função **inexistente** (renomeada para `get_claude_model_for_tenant` em refactor passado). O `try/except` engolia o `ModuleNotFoundError` como warning e caía sempre no regex fallback.
+2. **Sub-bug A2 (schema drift):** `graph.py:488-494::intake_node` lia `extraction.parsed_title`, `.parsed_seniority`, `.confidence`, `.source` direto. O `IntakeExtractor.extract()` retorna um `JobIntakePayload` (canônico em `intake_extractor.py:97`) cuja interface real é `.title.value`, `.title.source`, `.overall_confidence`. `AttributeError` engolido pelo `try/except` fail-open. **`parsed_title` nunca era setado no state**, mesmo para inputs triviais como "Desenvolvedor Python Senior".
+
+**Fix canônico (canonical-fix Phase 4 — sem wrapper, na fonte):**
+- `intake_extractor.py:362-414` — restaura a intenção original: tenta `get_claude_model_for_tenant()` (tenant-specific Claude), cai para `ChatAnthropic` global se tenant não tem custom key, regex só como último recurso.
+- `graph.py:488-518` — lê corretamente do `JobIntakePayload` via helper `_val(field_name)` que retorna `field.value` ou `None`. `intake_source` lê `extraction.title.source` (`"llm"` / `"regex"` / `"user_text"` / etc.).
+
+#### Bug B — `input-thin guard` dependente de Bug A
+
+`lia-agent-system/app/domains/job_creation/graph.py:616-672` (Task #1096 — guarda introduzida para evitar enriquecer "lixo" com LLM).
+
+A guarda dispara quando **TODAS** estas são `True`:
+```
+not jd_enriched ∧ not right_panel_form ∧ not attached_file_text
+∧ not parsed_title ∧ raw_input_len < 100
+```
+
+Como Bug A garantia `parsed_title=None` para sempre, a guarda disparava em **toda** turn curta, **inclusive** quando o input era um título de cargo válido (`"desenvolvedor python senior"` = 27 chars, sem regex match `vaga|posição|cargo`).
+
+**Fix canônico:** já consertado no Bug A — com o `IntakeExtractor` voltando a chamar o LLM, `parsed_title` é extraído corretamente para inputs colloquial e a guarda só dispara para inputs que **realmente** são intent-puro sem material aproveitável (ex: "vamos abrir uma vaga" sozinho).
+
+### 5.2 Limitações conhecidas e dívidas remanescentes
+
+| Item | Severidade | Origem | Plano |
+|---|---|---|---|
+| **Guard estática vs intent classifier** | Médio | Task #1096 | A guarda input-thin é IF/ELSE estático sobre `len(raw_input)`. Não distingue "intent de abertura" ("vamos abrir uma vaga"), "pergunta meta sobre UI" ("onde está o painel?"), "pedido de ajuda" ("o que você precisa?") — tudo cai no mesmo template. Solução de longo prazo: adicionar classificador LLM (similar ao `wizard_gate_classifier` da Task #1085) **antes** do guard. **Vira Project Task de arquitetura conversacional.** |
+| **Template menciona "painel à direita" inexistente** | Médio | Task #1096 | A `data.message` da guarda assume painel renderizado; se o FE não monta o painel, recrutador fica perdido (caso real do print de 2026-05-15). Solução: tornar a mensagem condicional ao `right_panel_form` schema disponível, ou mover a sugestão para botões/chips que o FE renderiza. |
+| **D6 — `_suggest_pipeline_template` retorna lista completa** | Baixa | Auditoria 2026-05-14 | Frontend pode mostrar opções A-E mesmo quando o sugerido é "intern" — validar UX. |
+| **D2 — domain split confuso** | Baixa | Auditoria 2026-05-14 | Graph vive em `app/domains/job_creation/`, agente em `app/domains/job_management/`. Funciona; é dívida de naming. |
+
+---
+
+## 6. Verificação T-A → T-F
+
+| Task | Aplicação | Status |
+|---|---|---|
+| **T-A** | `WizardSessionService._build_state` valida `company_id` via `CompanyId.parse`. `_heal_legacy_demo_company_id` reconcilia legacy demo IDs. | ✅ |
+| **T-B (#970)** | `WizardReActAgent` é o piloto canônico do `TenantAwareAgentMixin` com `tenant_strict_override=True` (linha 71). | ✅ |
+| **T-C (#969)** | Snippet `tenant_context_snippet` consumido pelo wizard contém `sector/industry_segment/plan/timezone/headcount_range/lia_persona_override`. CHECK `ck_companies_id_format_canonical` espelha `CompanyId.parse`. | ✅ |
+| **T-D (#971)** | Wizard incluso no inventário de 16 ReActAgents canônicos. | ✅ |
+| **T-E (#972)** | `wizard_no_tenant_leak.jsonl` (12 cenários B1/B2/B3/B4 — Task #1052). Threshold 0.85. Espelha T-E. | ✅ |
+| **T-F** | `WizardSessionService.process_message` propaga `tenant_context_snippet` (idempotente, R4 da T-F). | ✅ |
+
+---
+
+## 7. Eval gates e sentinelas
+
+### 7.1 Eval gates online (live, contra backend up)
+
+| Gate | Cenários | Threshold | Comando |
+|---|---|---|---|
+| `eval/golden/wizard_no_tenant_leak.jsonl` (Task #1052) | 12 (B1×3 single + B2/B3/B4×3 multi) | 0.85 | `python -m eval.eval_runner --transport ws --dataset eval/golden/wizard_no_tenant_leak.jsonl && python -m eval.eval_runner --gate eval/golden/wizard_no_tenant_leak.jsonl` |
+| `eval/golden/wizard_pipeline_template.jsonl` (Task #1058) | 7 (4 ramos + retomada + fallback) | 0.85 | mesma sintaxe com este dataset |
+| `eval/golden/wizard_conversational_hitl.jsonl` (Task #1085) | 5 (HITL conversacional) | 0.85 | mesma sintaxe |
+
+CI: `.github/workflows/wizard-eval-gates.yml` (Task #1063 + #1064) sobe Postgres + Redis + lia-backend, semeia Demo Company + demo user, e roda `--transport ws` (WS-aware desde Task #1064 / D7). **Fail-CLOSED** em `push`; required-check no `main`.
+
+### 7.2 Sentinelas offline (pytest, sem backend)
+
+- `test_wizard_session_continuity_t1080.py` — pin handler-level + thread_id puro
+- `test_tenant_aware_rollout_t_d.py` — inventário 16 ReActAgents
+- `test_wizard_pipeline_template_emission_t1055.py` — emissão `pipeline_template`
+- `test_wizard_step_audit_t1061.py` — audit por step (D3 fix)
+- `test_wizard_node_timeouts_t1062.py` — timeouts por env (D4 fix)
+- `test_wizard_hitl_unified_contract.py` — `WizardGateService` (D8 fix)
+- `test_wizard_gate_engine_t2.py` — classifier LLM Task #1085
+- `test_wizard_no_canned_fallback_t3.py` — anti-canned fallback Task #1089
+
+### 7.3 E2E Playwright (`plataforma-lia/e2e/tests/wizard/`)
+
+- `01-vaga-tecnica.spec.ts` (cenário A) — Backend Pleno técnico
+- `03-vaga-executiva.spec.ts` (cenário B) — Diretor de Marketing
+- `08-hitl-correcao.spec.ts` (cenário C) — correção HITL
+- `09-edge-cases.spec.ts` (cenário D) — fallback timeout + cancel mid-wizard
+- `10-session-continuity.spec.ts` — reload mid-wizard + anti-pergunta de empresa
+- `11-conversational-hitl.spec.ts` — Task #1085 conversational HITL
+
+---
+
+## 8. Bridge frontend (`plataforma-lia/src/components/unified-chat/wizard/`)
+
+Cada nó emite um `ws_stage_payload` no formato:
+
+```json
+{
+  "type": "wizard_stage",
+  "stage": "<node_name>",
+  "data": {
+    "message": "<obrigatório, Task #1099>",
+    "...": "campos específicos do nó"
+  },
+  "completeness": <0-1 do calculate_completeness>,
+  "requires_approval": <bool — true em HITL>
+}
+```
+
+Componentes principais:
+- `WizardPipelineTemplateCard.tsx` — consome `data.suggestions_data.pipeline_template` (`data-testid="wizard-template-card"`).
+- `useWizardChatCards.ts` — orquestra cards.
+- `useSettingsConversational.ts` — bridge chat ↔ settings (Task T6 #993).
+
+---
+
+## 9. Operação
+
+### 9.1 Feature flags relevantes
+
+| Flag | Default | Efeito |
+|---|---|---|
+| `LIA_AGENT_TENANT_STRICT` | `true` em prod/staging, `false` em dev | Quando `false`, mixin opera em fail-OPEN. **Wizard ignora** essa flag (`tenant_strict_override=True` hardcoded). |
+| `LIA_WIZARD_LLM_GATES` | ON dev/test, OFF prod/staging | Liga o classifier LLM em `jd_enrichment` HITL #1 (Task #1085). |
+| `LIA_WIZARD_FALLBACK_LLM_DISABLED` | OFF | Desliga LLM cheap em `_generate_fallback_reply` (testes offline). |
+| `LIA_JD_ENRICHMENT_TIMEOUT_S` | 12s (0.001 em pw-cenario-D) | Timeout do enriquecimento JD. |
+| `LIA_BIGFIVE_TIMEOUT_S` | 10s | Timeout do bigfive. |
+| `LIA_WSI_QUESTIONS_TIMEOUT_S` | 20s | Timeout WSI. |
+| `LIA_SALARY_TIMEOUT_S` | 10s | Timeout salary. |
+| `LIA_DISABLE_COMPANY_AUDIT` | OFF | Emergency rollback de audit (Task #1004). |
+
+### 9.2 Runbooks
+
+- `docs/runbooks/missing_tenant_context.md` — on-call para o bug "LIA pergunta company_id".
+- `docs/architecture/tenant-context-history.md` — histórico T-A → T-F.
+
+### 9.3 Onde olhar quando o wizard falha
+
+1. **Logs `lia-backend`:** procurar `[JobCreation:intake]`, `[JobCreation:jd_enrichment]`, `[IntakeExtractor]`, `[WizardSession]`.
+2. **Sintomas comuns:**
+   - `[JobCreation:jd_enrichment] input-thin guard fired` repetido com `has_title=False` → suspeitar de Bug A regression (intake não setando `parsed_title`).
+   - `[IntakeExtractor] tenant LLM ... unavailable` → checar import path em `_get_llm` e exports de `app.shared.tenant_llm_context`.
+   - `[JobCreation:intake] F3-1 extraction failed (fail-open): 'X' object has no attribute 'Y'` → schema drift entre `IntakeExtractor` e `intake_node` consumer (Bug A2 pattern).
+3. **Reproduzir offline:** rodar uma das sentinelas pytest listadas em §7.2 antes de tocar em código.
+
+---
+
+## 10. Histórico recente do documento
+
+- **2026-05-15** — reescrita completa após auditoria + canonical-fix do Bug A (intake import + schema drift). Removida narrativa fictícia dos 6 nós (`intent_classifier`/`field_extractor`/etc.) que nunca existiram. Removida menção ao `JobWizardGraph` legacy (deprecated desde Task #1084). Adicionada §5 "Bugs históricos" com diagnóstico do template-repetido-4× e §9.3 "Onde olhar quando o wizard falha".
+- **2026-05-14** — auditoria profunda em `docs/audits/wizard-job-creation-2026-05.md` (Task #1058) — base desta reescrita.
+- **Anterior** — versões descrevendo dois wizards convivendo (`JobWizardGraph` + `WizardReActAgent`). Obsoleto.
