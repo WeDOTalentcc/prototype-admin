@@ -13,10 +13,33 @@ HITL points:
 """
 
 import logging
+import os
 import time
 from typing import Any, Dict, Optional
 
 from langgraph.graph import StateGraph, END
+
+
+def _llm_gates_enabled() -> bool:
+    """Task #1085 (T2) — feature flag ``LIA_WIZARD_LLM_GATES``.
+
+    Default ``false`` em prod (preserva comportamento legado de ``route_after_jd``).
+    Default ``true`` em dev para exercitar o gate_node em toda PR.
+    Lido a cada chamada ao builder para que testes possam alternar o flag
+    via ``monkeypatch.setenv`` sem reset do módulo.
+
+    REMOVE: 2026-07-01 após T2 GA + migração de gates competency/wsi/review
+    (Tasks #4/#5/#6) — momento em que o caminho legado ``route_after_jd``
+    deixa de ser necessário.
+    """
+    raw = os.environ.get("LIA_WIZARD_LLM_GATES", "").strip().lower()
+    if raw in ("1", "true", "yes", "on"):
+        return True
+    if raw in ("0", "false", "no", "off"):
+        return False
+    # Inferência por ambiente: dev → on, prod/staging → off.
+    env = (os.environ.get("LIA_ENV") or os.environ.get("ENVIRONMENT") or "").lower()
+    return env in ("dev", "development", "local", "test")
 
 from app.domains.job_creation.state import (
     JobCreationState,
@@ -2065,6 +2088,260 @@ def handoff_node(state: JobCreationState) -> JobCreationState:
 
 
 # ---------------------------------------------------------------------------
+# T2 (Task #1085) — LLM-based gate node for HITL #1 (jd_enrichment)
+# ---------------------------------------------------------------------------
+#
+# Substitui o classifier brittle keyword-based de
+# ``app/domains/job_creation/domain.py::_route_by_stage`` por uma camada LLM
+# (Claude Haiku, temp=0) com schema Pydantic obrigatório, allowlist enforced
+# e mutação de state DETERMINÍSTICA baseada em ``intent`` ∈ ALLOWED_INTENTS.
+#
+# **Vetor de prompt injection:** o output do LLM é validado por Pydantic +
+# allowlist no classifier. Aqui apenas mapeamos ``intent`` → mutação fixa.
+# NUNCA invocamos ``eval()``/``exec()`` sobre o output, e ``conversational_reply``
+# nunca é usado como controle de fluxo (apenas devolvido como mensagem).
+#
+# **Compatibilidade com pattern de resume END-then-resume da codebase:** a
+# codebase NÃO usa ``langgraph.types.interrupt`` em lugar nenhum (verificado).
+# Em vez de introduzir interrupt() de Once, que exigiria mudar todos os
+# callers (``domain.py``, ``graph_runner``, testes), o gate_node opera no
+# mesmo pattern dos demais HITLs: quando ``state['gate_resume_message']``
+# está vazio, retorna state como está e ``route_after_gate`` devolve ``end``
+# (semanticamente equivalente a ``interrupt``); quando o caller faz
+# ``graph.resume(thread_id, prior_state, {'gate_resume_message': msg})``,
+# o nó classifica o intent e roteia. Isso preserva ``pw-cenario-A/B/C/D``,
+# ``T-A → T-F`` e o ``wizard_session_pin`` Tier 0.5 do CascadedRouter.
+def jd_gate_node(state: JobCreationState) -> JobCreationState:
+    """T2 — gate LLM-based para HITL #1 (jd_enrichment).
+
+    Quando ``state['gate_resume_message']`` está presente, classifica o intent
+    do recrutador via LLM (Haiku/Flash temp=0), valida via Pydantic + allowlist,
+    e muta state determinísticamente. Sem mensagem de resume → no-op (END
+    via ``route_after_gate``).
+
+    Mutações por intent:
+      - ``approve``              → ``jd_approved=True``
+      - ``reject_with_feedback`` → ``jd_approved=False``, ``jd_rejection_feedback=...``
+      - ``provide_new_content``  → ``jd_approved=False``, ``raw_input=<novo>``,
+                                   ``jd_enriched=None`` (invalida cache),
+                                   roteia para ``intake`` para re-enriquecer
+      - ``ask_question``         → state inalterado; ``gate_clarify_message=...``
+      - ``off_topic``            → state inalterado; ``gate_clarify_message=...``
+
+    Confidence < 0.7 → re-pergunta natural sem mutar ``jd_approved``.
+    """
+    msg = (state.get("gate_resume_message") or "").strip()
+    if not msg:
+        # Primeira passagem (após enrichment). Sem mensagem do recrutador para
+        # interpretar — apenas marca o stage e END (o caller aguarda resposta).
+        logger.info("[JobCreation:jd_gate] no resume message — END (waiting for user)")
+        return {**state, "current_stage": "jd_enrichment"}
+
+    # Layer 1 fairness on the user's *resume* message (a discriminação pode
+    # entrar via "manda bala mas só candidatos masculinos"). FairnessGuard L1
+    # também roda em ``jd_enrichment_node`` sobre ``raw_input`` — aqui é defesa
+    # adicional sobre a mensagem do gate.
+    try:
+        from app.shared.compliance.fairness_guard import FairnessGuard
+        _fg = FairnessGuard().check(msg)
+        if _fg.is_blocked:
+            logger.warning(
+                "[JobCreation:jd_gate] FairnessGuard L1 BLOCK on resume message: cat=%s, terms=%s",
+                _fg.category, _fg.blocked_terms,
+            )
+            return {
+                **state,
+                "gate_resume_message": "",
+                "gate_clarify_message": _fg.educational_message,
+                "fairness_blocked": True,
+                "jd_fairness_blocked": True,
+                "fairness_block_reason": _fg.educational_message,
+                "current_stage": "jd_enrichment",
+            }
+    except Exception as exc:
+        # Fail-open: bug do guard não deve travar o wizard.
+        logger.debug("[JobCreation:jd_gate] FairnessGuard check failed (fail-open): %s", exc)
+
+    # LLM classifier — async chamado em sync context (graph nodes são sync).
+    from app.domains.job_creation.services.wizard_gate_classifier import (
+        get_wizard_gate_classifier, _make_fallback,
+    )
+    classifier = get_wizard_gate_classifier()
+
+    import asyncio as _asyncio
+    output = None
+    try:
+        try:
+            running_loop = _asyncio.get_event_loop()
+        except RuntimeError:
+            running_loop = None
+        coro_factory = lambda: classifier.classify(  # noqa: E731
+            user_message=msg,
+            stage="jd_enrichment",
+            ws_stage_payload=state.get("ws_stage_payload"),
+            tenant_context_snippet=str(state.get("tenant_context_snippet") or ""),
+            hiring_policy_summary=str(state.get("hiring_policy_summary") or ""),
+        )
+        if running_loop is not None and running_loop.is_running():
+            # Dentro de loop ativo (ex.: chamado de WS handler async). Offload
+            # para thread isolada com seu próprio event loop.
+            import concurrent.futures as _cf
+            with _cf.ThreadPoolExecutor(max_workers=1) as _ex:
+                _fut = _ex.submit(lambda: _asyncio.run(coro_factory()))
+                output = _fut.result(timeout=30.0)
+        else:
+            output = _asyncio.run(coro_factory())
+    except Exception as exc:
+        logger.warning("[JobCreation:jd_gate] classify failed (fallback): %s", exc)
+        output = _make_fallback()
+
+    # Audit row (best-effort) — EU AI Act Art. 13: decisão LLM rastreável.
+    try:
+        _emit_jd_gate_audit(state, msg, output)
+    except Exception as exc:
+        logger.debug("[JobCreation:jd_gate] audit emit failed: %s", exc)
+
+    # Confidence floor — re-pergunta natural sem mutar jd_approved.
+    if (output.confidence or 0.0) < 0.7:
+        logger.info(
+            "[JobCreation:jd_gate] confidence=%.2f < 0.7 → clarify (intent=%s)",
+            output.confidence, output.intent,
+        )
+        return {
+            **state,
+            "gate_resume_message": "",
+            "gate_clarify_message": output.conversational_reply,
+            "gate_last_intent": output.intent,
+            "gate_last_confidence": output.confidence,
+            "current_stage": "jd_enrichment",
+        }
+
+    intent = output.intent
+    next_state: dict = {
+        **state,
+        "gate_resume_message": "",
+        "gate_clarify_message": None,
+        "gate_last_intent": intent,
+        "gate_last_confidence": output.confidence,
+        "current_stage": "jd_enrichment",
+    }
+
+    extracted = output.extracted_data if isinstance(output.extracted_data, dict) else {}
+
+    if intent == "approve":
+        next_state["jd_approved"] = True
+        next_state["gate_clarify_message"] = output.conversational_reply or None
+    elif intent == "reject_with_feedback":
+        next_state["jd_approved"] = False
+        feedback = (extracted.get("feedback") or output.conversational_reply or msg)
+        next_state["jd_rejection_feedback"] = str(feedback)[:1000]
+        next_state["gate_clarify_message"] = output.conversational_reply or None
+    elif intent == "provide_new_content":
+        new_content = extracted.get("new_content") or msg
+        next_state["jd_approved"] = False
+        next_state["raw_input"] = str(new_content)[:8000]
+        next_state["jd_enriched"] = None  # invalida cache → jd_enrichment_node re-roda
+        next_state["jd_quality_score"] = 0.0
+        next_state["gate_clarify_message"] = (
+            output.conversational_reply
+            or "Recebi a descrição nova. Vou re-enriquecer agora."
+        )
+    elif intent == "ask_question":
+        # Não muta jd_approved — recrutador fez pergunta, segue aguardando.
+        next_state["gate_clarify_message"] = output.conversational_reply
+    elif intent == "off_topic":
+        next_state["gate_clarify_message"] = (
+            output.conversational_reply
+            or "Vamos focar na descrição da vaga? Você quer aprovar ou ajustar algo?"
+        )
+    else:
+        # Defesa em profundidade — Pydantic Literal já blinda, mas se algo
+        # vazar (ex.: bug futuro no schema) caímos no fallback de pergunta.
+        logger.warning("[JobCreation:jd_gate] unhandled intent=%r → clarify", intent)
+        next_state["gate_clarify_message"] = (
+            "Não consegui interpretar sua resposta. Pode me dizer se aprovou "
+            "a descrição enriquecida ou se quer ajustar alguma coisa?"
+        )
+
+    return next_state
+
+
+def _emit_jd_gate_audit(
+    state: JobCreationState, user_message: str, output,
+) -> None:
+    """Emite audit row (decision_type=wizard_step_completed) para o gate LLM.
+
+    Best-effort: falha NÃO bloqueia o resume. Inclui ``intent``,
+    ``confidence``, ``thread_id`` e preview do reply para correlação no
+    trail. Mantém EU AI Act Art. 13 (decisões automatizadas rastreáveis).
+    """
+    import asyncio as _asyncio
+    company_id = str(
+        state.get("workspace_id") or state.get("company_id") or ""
+    )
+    if not company_id:
+        return
+    try:
+        from app.shared.compliance.audit_service import audit_service
+    except Exception:
+        return
+
+    coro = audit_service.log_decision(
+        company_id=company_id,
+        agent_name="wizard_jd_gate_classifier",
+        decision_type="wizard_step_completed",
+        action="jd_gate_classify",
+        decision=str(output.intent),
+        reasoning=[
+            f"intent={output.intent}",
+            f"confidence={float(output.confidence or 0.0):.2f}",
+            f"thread_id={state.get('session_id') or ''}",
+            f"user_msg_preview={user_message[:120]}",
+            f"reply_preview={(output.conversational_reply or '')[:120]}",
+        ],
+        criteria_used=["llm_intent_classifier", "wizard_jd_enrichment"],
+        confidence=float(output.confidence or 0.0),
+    )
+    try:
+        loop = _asyncio.get_event_loop()
+        if loop.is_running():
+            loop.create_task(coro)
+            return
+    except RuntimeError:
+        pass
+    try:
+        _asyncio.run(coro)
+    except Exception as exc:
+        logger.debug("[JobCreation:jd_gate] audit run failed: %s", exc)
+
+
+def route_after_gate(state: JobCreationState) -> str:
+    """Routing após gate_node LLM. Determinístico baseado em mutações
+    aplicadas por ``jd_gate_node``."""
+    if state.get("jd_fairness_blocked") is True:
+        logger.info("[JobCreation:route] jd_gate -> END (fairness blocked)")
+        return "end"
+
+    intent = state.get("gate_last_intent")
+    if intent == "provide_new_content" and state.get("jd_approved") is False:
+        logger.info("[JobCreation:route] jd_gate -> intake (new content provided)")
+        return "intake"
+
+    approved = state.get("jd_approved")
+    if approved is True:
+        quality = state.get("jd_quality_score", 0.0) or 0.0
+        if quality < 30:
+            logger.info("[JobCreation:route] jd_gate -> END (quality %.1f < 30)", quality)
+            return "end"
+        logger.info("[JobCreation:route] jd_gate -> bigfive (approved)")
+        return "bigfive"
+
+    # ask_question / off_topic / pending → aguarda novo turno
+    logger.info("[JobCreation:route] jd_gate -> END (intent=%s, awaiting next turn)", intent)
+    return "end"
+
+
+# ---------------------------------------------------------------------------
 # Routing functions
 # ---------------------------------------------------------------------------
 
@@ -2279,18 +2556,32 @@ def evaluate_wizard_policy(
 # pontos de fallback cria risco de regressao silenciosa.
 
 
-def create_job_creation_graph(checkpointer=None) -> StateGraph:
+def create_job_creation_graph(
+    checkpointer=None,
+    use_llm_gates: bool | None = None,
+) -> StateGraph:
     """Build the job creation wizard graph.
 
-    Flow: intake -> jd_enrichment --(HITL)--> bigfive -> salary -> competency
-          -> wsi_questions --(HITL)--> eligibility -> review -> publish
-          -> calibration -> handoff -> END
+    Flow legacy (use_llm_gates=False):
+      intake -> jd_enrichment --(HITL via route_after_jd)--> bigfive -> ...
+
+    Flow T2 (use_llm_gates=True):
+      intake -> jd_enrichment -> jd_gate --(LLM intent classifier)--> bigfive | intake | END
+      ... demais gates (competency/wsi/review) seguem caminho legacy até
+      Tasks #4/#5/#6 migrarem.
+
+    O flag ``LIA_WIZARD_LLM_GATES`` controla o default; ``use_llm_gates``
+    sobrepõe explicitamente (usado por testes).
     """
+    if use_llm_gates is None:
+        use_llm_gates = _llm_gates_enabled()
     builder = StateGraph(JobCreationState)
 
     # Add all nodes
     builder.add_node("intake", intake_node)
     builder.add_node("jd_enrichment", jd_enrichment_node)
+    if use_llm_gates:
+        builder.add_node("jd_gate", jd_gate_node)
     builder.add_node("bigfive", bigfive_node)
     builder.add_node("salary", salary_node)
     builder.add_node("competency", competency_node)
@@ -2308,15 +2599,29 @@ def create_job_creation_graph(checkpointer=None) -> StateGraph:
     builder.add_edge("intake", "jd_enrichment")
 
     # HITL point 1: JD enrichment
-    builder.add_conditional_edges(
-        "jd_enrichment",
-        route_after_jd,
-        {
-            "bigfive": "bigfive",
-            "intake": "intake",
-            "end": END,
-        },
-    )
+    if use_llm_gates:
+        # T2 — jd_enrichment escapa direto para o gate_node, que classifica
+        # o intent do recrutador via LLM e decide o roteamento.
+        builder.add_edge("jd_enrichment", "jd_gate")
+        builder.add_conditional_edges(
+            "jd_gate",
+            route_after_gate,
+            {
+                "bigfive": "bigfive",
+                "intake": "intake",
+                "end": END,
+            },
+        )
+    else:
+        builder.add_conditional_edges(
+            "jd_enrichment",
+            route_after_jd,
+            {
+                "bigfive": "bigfive",
+                "intake": "intake",
+                "end": END,
+            },
+        )
 
     # F2+F3 -> salary -> F4+F5
     builder.add_edge("bigfive", "salary")

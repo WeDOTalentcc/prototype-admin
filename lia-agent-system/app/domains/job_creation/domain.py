@@ -277,6 +277,17 @@ Sempre informe qual e a proxima etapa e o que precisa ser feito."""
 
         # HITL: JD approval
         if stage == "jd_enrichment":
+            # T2 (Task #1085) — quando o flag LIA_WIZARD_LLM_GATES está ON,
+            # toda mensagem do recrutador no stage jd_enrichment é dispatched
+            # para o gate_node LLM-based, que substitui esses heurísticos.
+            from app.domains.job_creation.graph import _llm_gates_enabled
+            if _llm_gates_enabled():
+                return {
+                    "action_id": "gate_jd",
+                    "params": {"user_query": query},
+                    "confidence": 0.95,
+                    "source": "llm_gate",
+                }
             if any(w in q_lower for w in ("aprov", "aceito", "fica bom", "ok", "sim")):
                 return {"action_id": "approve_jd", "params": {"approved": True, "user_query": query}, "confidence": 0.95}
             if any(w in q_lower for w in ("rejeit", "nao", "editar", "mudar")):
@@ -346,6 +357,9 @@ Sempre informe qual e a proxima etapa e o que precisa ser feito."""
 
             if action_id == "approve_jd":
                 return self._handle_jd_approval(params, context, thread_id)
+
+            if action_id == "gate_jd":
+                return self._handle_gate_jd(params, context, thread_id)
 
             if action_id == "set_salary":
                 return self._handle_salary(params, context, thread_id)
@@ -460,6 +474,54 @@ Sempre informe qual e a proxima etapa e o que precisa ser feito."""
             data={
                 "wizard_state": result,
                 "ws_payload": result.get("ws_stage_payload", {}),
+            },
+            metadata={"current_stage": result.get("current_stage")},
+        )
+
+    def _handle_gate_jd(
+        self, params: Dict[str, Any], context: DomainContext, thread_id: str
+    ) -> DomainResponse:
+        """T2 (Task #1085) — gate LLM-based para HITL #1 (jd_enrichment).
+
+        Resume o graph com ``gate_resume_message=<user_query>``. O nó
+        ``jd_gate_node`` classifica o intent via Haiku, muta state
+        determinísticamente, e ``route_after_gate`` decide entre
+        ``bigfive`` / ``intake`` / END.
+
+        A mensagem ao recrutador vem de ``gate_clarify_message`` (preenchido
+        pelo classifier) ou de fallbacks determinísticos por intent.
+        """
+        prior = context.metadata.get("wizard_state", {})
+        user_query = params.get("user_query", "")
+
+        result = self.graph.resume(thread_id, prior, {
+            "gate_resume_message": user_query,
+            "user_query": user_query,
+        })
+
+        clarify = result.get("gate_clarify_message")
+        intent = result.get("gate_last_intent")
+        approved = result.get("jd_approved")
+
+        if clarify:
+            message = clarify
+        elif approved is True:
+            message = "Aprovado. Vamos para o próximo bloco do WSI (Big Five)."
+        elif approved is False and intent == "provide_new_content":
+            message = "Recebi a descrição nova. Vou re-enriquecer agora."
+        elif approved is False:
+            message = "Entendi, vou ajustar. O que mais você quer mudar?"
+        else:
+            message = "Posso continuar?"
+
+        return DomainResponse(
+            success=True,
+            message=message,
+            data={
+                "wizard_state": result,
+                "ws_payload": result.get("ws_stage_payload", {}),
+                "gate_intent": intent,
+                "gate_confidence": result.get("gate_last_confidence"),
             },
             metadata={"current_stage": result.get("current_stage")},
         )
