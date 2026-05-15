@@ -261,9 +261,19 @@ class WizardSessionService:
                 "workspace_id": safe_workspace_id,
                 "company_id": normalized_cid,
                 "user_id": str(user_id) if user_id else prior_state.get("user_id", ""),
-                # Update query fields with new message
+                # Update query fields with new message.
+                # T2 fix #10 (code review #8): NÃO sobrescrever raw_input
+                # em sessões continuing. raw_input é a JD original (fonte
+                # de jd_enrichment); sobrescrever a cada turno deixa
+                # ``user_query == raw_input`` SEMPRE, neutralizando o
+                # initial-pass guard do jd_gate_node (que usa
+                # ``user_query != raw_input`` como sinal de "este turno é
+                # resposta do recrutador, não a JD inicial"). Sem isso,
+                # WS resume nunca dispara → bug original Task #1085 volta.
+                # ``provide_new_content`` ainda atualiza raw_input
+                # explicitamente dentro do gate (mid-invoke), preservando
+                # a semântica de "nova JD trocou a anterior".
                 "user_query": user_message,
-                "raw_input": user_message,
                 "conversation_messages": conv,
                 # Reset approval flags — this is NOT an approval resume
                 "hitl_approved": False,

@@ -267,6 +267,65 @@ class WizardGateEngineT2(unittest.TestCase):
         self.assertIsNone(result.get("jd_approved"))
         self.assertEqual(graph_mod.route_after_gate(result), "end")
 
+    # ---------------- S7h (regression: code review #8) ----------------
+    def test_S7h_build_state_does_not_overwrite_raw_input_on_continuation(self):
+        """T2 fix #10 — `WizardSessionService._build_state()` em sessões
+        continuing NÃO pode sobrescrever ``raw_input``. Sem isso,
+        ``user_query == raw_input`` SEMPRE em WS turns subsequentes,
+        neutralizando o initial-pass guard do jd_gate_node e travando
+        o gate em no-op END (bug original de Task #1085 volta).
+
+        Cenário: turn 1 = JD inicial; turn 2 = "manda bala". Esperado:
+        após turn 2, raw_input ainda é a JD original e user_query é
+        "manda bala" — daí jd_gate_node consegue distinguir.
+        """
+        from app.domains.job_creation.services.wizard_session_service import (
+            WizardSessionService,
+        )
+        from unittest.mock import patch
+        # Bypass tenant strict-mode (test env can be either).
+        with patch(
+            "app.shared.agents.tenant_aware_agent.is_tenant_strict_mode",
+            return_value=False,
+        ):
+            jd_msg = "Engenheiro Backend Sr Python AWS remoto"
+            # Turn 1 — fresh session.
+            state_t1 = WizardSessionService._build_state(
+                thread_id="wiz-test",
+                user_message=jd_msg,
+                user_id="user-1",
+                company_id="00000000-0000-4000-a000-000000000001",
+                session_id="sess-1",
+                context={},
+                prior_state={},
+            )
+            self.assertEqual(state_t1["raw_input"], jd_msg)
+            self.assertEqual(state_t1["user_query"], jd_msg)
+
+            # Simula que jd_enrichment populou jd_enriched no checkpoint.
+            prior = {
+                **state_t1,
+                "jd_enriched": {"titulo_padronizado": "Engenheiro Backend"},
+                "current_stage": "jd_enrichment",
+                "ws_stage_payload": {"data": {"requires_approval": True}},
+            }
+            # Turn 2 — recrutador responde ao HITL.
+            state_t2 = WizardSessionService._build_state(
+                thread_id="wiz-test",
+                user_message="manda bala",
+                user_id="user-1",
+                company_id="00000000-0000-4000-a000-000000000001",
+                session_id="sess-1",
+                context={},
+                prior_state=prior,
+            )
+        # CONTRATO crítico: raw_input preservado, user_query atualizado.
+        self.assertEqual(state_t2["raw_input"], jd_msg, "raw_input foi sobrescrito — bug Task #1085 volta")
+        self.assertEqual(state_t2["user_query"], "manda bala")
+        self.assertNotEqual(state_t2["user_query"], state_t2["raw_input"])
+        # jd_enriched preservado para o gate.
+        self.assertTrue(state_t2.get("jd_enriched"))
+
     # ---------------- S7g (regression: code review #6 comment) ----------------
     def test_S7g_initial_pass_after_enrichment_does_not_classify(self):
         """T2 fix #8 — primeiro pass após enrichment (mesma invocação,
