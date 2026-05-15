@@ -526,7 +526,53 @@ async def agent_chat_ws(
                     if resume_info:
                         resume_domain = resume_info.get("domain", "")
                         resume_input_dict = resume_info.get("agent_input", {})
-                        if ws_approved and resume_domain and resume_input_dict:
+                        # Wizard: APPROVED e REJECTED ambos roteiam pelo service
+                        # canônico (Task #1084 / T1 — entry point único, CAS
+                        # idempotente, audit row 1×). Esta branch precisa vir
+                        # ANTES do `if ws_approved` para capturar AMBOS os casos
+                        # do wizard antes do branch legacy de rejeição genérica.
+                        if resume_domain == "wizard":
+                            from app.domains.job_creation.services.wizard_gate_service import (
+                                wizard_gate_service,
+                            )
+                            try:
+                                _gate_result = await wizard_gate_service.resume_gate(
+                                    thread_id=ws_thread_id,
+                                    pending_id=ws_pending_id,
+                                    decision="approved" if ws_approved else "rejected",
+                                    ws_session_id=session_id,
+                                    company_id=str(company_id or ""),
+                                    user_id=str(user_id or ""),
+                                    comment=ws_comment,
+                                    resume_domain="wizard",
+                                    agent_timeout=_AGENT_TIMEOUT,
+                                )
+                                _wiz_msg = _strip_react_json(_gate_result.get("message", ""))
+                                _wiz_source = (
+                                    "hitl_resume" if ws_approved else "hitl_rejected"
+                                )
+                                await ws_mgr.send_to_session(session_id, serialize_message(
+                                    content=_wiz_msg,
+                                    confidence=0.95,
+                                    domain="wizard",
+                                    source=_wiz_source,
+                                ))
+                                conversation_history.append({"role": "assistant", "content": _wiz_msg})
+                            except ValueError as _val_exc:
+                                logger.error(
+                                    "[AgentChatWS] wizard gate ValueError: %s", _val_exc
+                                )
+                                await ws_mgr.send_to_session(session_id, serialize_error(
+                                    "Pedido de aprovação inválido.",
+                                ))
+                            except Exception as _wiz_exc:
+                                logger.error(
+                                    "[AgentChatWS] wizard gate erro: %s", _wiz_exc, exc_info=True
+                                )
+                                await ws_mgr.send_to_session(session_id, serialize_error(
+                                    "Erro ao processar a aprovação do wizard.",
+                                ))
+                        elif ws_approved and resume_domain and resume_input_dict:
                             # Re-invocar agente com hitl_approved=True no context
                             resume_context = resume_input_dict.get("context", {})
                             resume_context["hitl_approved"] = True
@@ -553,23 +599,31 @@ async def agent_chat_ws(
                                         source="hitl_resume",
                                     ))
                                     conversation_history.append({"role": "assistant", "content": _wsi_msg})
-                                # wizard (JobWizardGraph) usa ainvoke(None) direto — grafo pausado
+                                # wizard: contrato canônico unificado (Task #1084 / T1).
+                                # WizardGateService.resume_gate é o único entry point —
+                                # idempotente por gate_id, audit row único por gate.
+                                # Mesmo contrato será consumido pelo classifier LLM de chat
+                                # livre na Task #1085 (T2). NÃO instanciar JobWizardGraph
+                                # aqui diretamente — quebra o contrato.
                                 elif resume_domain == "wizard":
-                                    from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
-                                    wiz_g = JobWizardGraph()
-                                    if wiz_g._compiled_lg is None:
-                                        wiz_g._compiled_lg = wiz_g._build_langgraph()
-                                    _wiz_config = {"configurable": {"thread_id": ws_thread_id}}
-                                    _wiz_result = await asyncio.wait_for(
-                                        wiz_g._compiled_lg.ainvoke(None, config=_wiz_config),
-                                        timeout=_AGENT_TIMEOUT,
+                                    from app.domains.job_creation.services.wizard_gate_service import (
+                                        wizard_gate_service,
                                     )
-                                    _wiz_msg = (
-                                        _wiz_result.get("response", "") or
-                                        _wiz_result.get("user_message", "Vaga criada com sucesso.")
-                                        if isinstance(_wiz_result, dict) else "Vaga criada com sucesso."
+                                    # NÃO repassar gate_id do cliente — derivação canônica
+                                    # via (thread_id, pending_id) é a única fonte de verdade
+                                    # (anti-tampering, ver D8 / Task #1084).
+                                    _gate_result = await wizard_gate_service.resume_gate(
+                                        thread_id=ws_thread_id,
+                                        pending_id=ws_pending_id,
+                                        decision="approved" if ws_approved else "rejected",
+                                        ws_session_id=session_id,
+                                        company_id=str(company_id or ""),
+                                        user_id=str(user_id or ""),
+                                        comment=ws_comment,
+                                        resume_domain="wizard",
+                                        agent_timeout=_AGENT_TIMEOUT,
                                     )
-                                    _wiz_msg = _strip_react_json(_wiz_msg)
+                                    _wiz_msg = _strip_react_json(_gate_result.get("message", ""))
                                     await ws_mgr.send_to_session(session_id, serialize_message(
                                         content=_wiz_msg,
                                         confidence=0.95,

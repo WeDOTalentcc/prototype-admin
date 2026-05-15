@@ -56,6 +56,17 @@ class EdgeCondition:
     priority: int = 0
 
 
+# DEPRECATED (Task #1084 / T1):
+# Esta classe permanece como engine LEGACY de resume HITL do wizard. NOVOS
+# call-sites de transport (WS/SSE/REST) DEVEM usar
+# ``app.domains.job_creation.services.wizard_gate_service.WizardGateService``
+# que encapsula o resume com idempotência por gate_id e audit row único
+# (SOX/EU AI Act). Os únicos call-sites legítimos remanescentes são:
+#   - ``app/shared/agents/crew_examples.py`` (forward-path, fora do escopo de T1)
+#   - ``WizardGateService._resume_engine`` (delegação interna)
+#   - testes ``tests/e2e/test_*.py`` e ``tests/integration/test_checkpointer*.py``
+# Task #1085 (T2) substitui o engine interno por ``JobCreationGraph`` com
+# ``interrupt()`` LangGraph nativo e remove esta classe inteira.
 class JobWizardGraph:
     """
     LangGraph-style state machine for job wizard.
