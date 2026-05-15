@@ -341,6 +341,20 @@ Sempre informe qual e a proxima etapa e o que precisa ser feito."""
 
         # Publish config
         if stage == "review" or stage == "publish":
+            # T6 (Task #1088) — quando o flag LIA_WIZARD_LLM_GATES está ON,
+            # toda mensagem do recrutador no stage review é dispatched para
+            # o review_gate_node LLM-based, que substitui esses heurísticos
+            # brittle ("public"/"manda"/"publica") e adiciona dupla
+            # confirmação para publish_now + validação de target_section
+            # (request_changes) e destinations.
+            from app.domains.job_creation.graph import _llm_gates_enabled
+            if stage == "review" and _llm_gates_enabled():
+                return {
+                    "action_id": "gate_review",
+                    "params": {"user_query": query},
+                    "confidence": 0.95,
+                    "source": "llm_gate",
+                }
             if any(w in q_lower for w in ("public", "manda", "publica")):
                 return {"action_id": "publish_job", "params": {"user_query": query}, "confidence": 0.95}
             return {"action_id": "configure_publish", "params": {"user_query": query}, "confidence": 0.8}
@@ -388,6 +402,8 @@ Sempre informe qual e a proxima etapa e o que precisa ser feito."""
                 return self._handle_gate_competency(params, context, thread_id)
             if action_id == "gate_wsi_questions":
                 return self._handle_gate_wsi_questions(params, context, thread_id)
+            if action_id == "gate_review":
+                return self._handle_gate_review(params, context, thread_id)
 
             if action_id == "set_salary":
                 return self._handle_salary(params, context, thread_id)
@@ -660,6 +676,72 @@ Sempre informe qual e a proxima etapa e o que precisa ser feito."""
                 "gate_intent": intent,
                 "gate_confidence": result.get("gate_last_confidence"),
                 "questions_approved": approved,
+            },
+            metadata={"current_stage": result.get("current_stage")},
+        )
+
+    def _handle_gate_review(
+        self, params: Dict[str, Any], context: DomainContext, thread_id: str
+    ) -> DomainResponse:
+        """T6 (Task #1088) — gate LLM-based para HITL #3 (review/publish).
+
+        Resume o graph com ``gate_resume_message=<user_query>``. O nó
+        ``review_gate_node`` classifica o intent via Haiku (allowlist
+        ``publish_now|request_changes|ask_clarification|
+        configure_destinations``), aplica DUPLA CONFIRMAÇÃO de chat
+        para ``publish_now`` (state ``pending_publish_confirmation`` +
+        TTL 5min), valida ``target_section`` ∈ {title, description,
+        questions, salary, pipeline, destinations} e ``destinations``
+        contra a allowlist canônica, muta state determinísticamente, e
+        ``route_after_review_gate`` decide entre ``publish`` /
+        ``jd_enrichment`` / ``salary`` / ``wsi_questions`` /
+        ``eligibility`` / ``review`` / END.
+
+        A mensagem ao recrutador vem de ``gate_clarify_message``
+        (preenchido pelo gate_node — confirmação de publicação,
+        confirmação de ajuste, listagem de destinos válidos, etc.) ou
+        de fallbacks determinísticos por intent.
+        """
+        prior = context.metadata.get("wizard_state", {})
+        user_query = params.get("user_query", "")
+
+        result = self.graph.resume(thread_id, prior, {
+            "gate_resume_message": user_query,
+            "user_query": user_query,
+        })
+
+        clarify = result.get("gate_clarify_message")
+        intent = result.get("gate_last_intent")
+        confirmed_publish = result.get("policy_confirmed_publish")
+        pending_publish = result.get("pending_publish_confirmation")
+
+        if clarify:
+            message = clarify
+        elif intent == "publish_now" and confirmed_publish is True:
+            message = "Confirmado! Publicando a vaga agora nos canais selecionados."
+        elif intent == "publish_now" and pending_publish is True:
+            message = "Vou publicar nos canais configurados. Confirma para mandar pro ar?"
+        elif intent == "request_changes":
+            message = "Beleza, vou ajustar a seção indicada."
+        elif intent == "configure_destinations":
+            platforms = result.get("publish_platforms") or []
+            message = (
+                f"Configurando publicação em: {', '.join(platforms)}." if platforms
+                else "Quais canais você quer publicar?"
+            )
+        else:
+            message = "Você quer publicar agora, ajustar alguma seção ou tirar uma dúvida?"
+
+        return DomainResponse(
+            success=True,
+            message=message,
+            data={
+                "wizard_state": result,
+                "ws_payload": result.get("ws_stage_payload", {}),
+                "gate_intent": intent,
+                "gate_confidence": result.get("gate_last_confidence"),
+                "policy_confirmed_publish": confirmed_publish,
+                "pending_publish_confirmation": pending_publish,
             },
             metadata={"current_stage": result.get("current_stage")},
         )

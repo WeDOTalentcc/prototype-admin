@@ -173,6 +173,18 @@ class JobCreationState(TypedDict, total=False):
     screening_pipeline_id: Optional[str]
     auto_screen_enabled: bool
 
+    # --- T6 (Task #1088) review gate dual-confirmation ---
+    # ``pending_publish_confirmation`` é setado por ``review_gate_node``
+    # no PRIMEIRO ``publish_now`` (chat). Segundo ``publish_now`` dentro
+    # da janela TTL (default 300s) seta ``policy_confirmed_publish=True``
+    # — que destrava o ``publish_node`` PolicyGate (HITL_REQUIRED).
+    # ``publish_confirmation_ts`` é epoch seconds; expirado → reseta.
+    # ``review_request_changes_pending`` carrega o último target_section
+    # + instruction do recrutador (extracted_data validado pelo gate).
+    pending_publish_confirmation: bool
+    publish_confirmation_ts: Optional[float]
+    review_request_changes_pending: Optional[Dict[str, Any]]
+
     # --- Calibration ---
     calibration_candidates: List[CalibrationCandidate]
     calibration_threshold: int  # default 3

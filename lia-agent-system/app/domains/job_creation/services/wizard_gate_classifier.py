@@ -64,6 +64,19 @@ STAGE_ALLOWLISTS: dict[str, frozenset[str]] = {
         "remove_question",
         "ask_question",
     }),
+    # T6 (Task #1088) — HITL #3 (review/publish). Allowlist 4 intents.
+    # ``publish_now`` exige dupla confirmação chat (state
+    # ``pending_publish_confirmation`` + TTL 5min); ``request_changes``
+    # exige ``target_section`` ∈ {title, description, questions, salary,
+    # pipeline, destinations}; ``configure_destinations`` exige
+    # ``destinations`` validado contra ATS allowlist;
+    # ``ask_clarification`` é o equivalente review-stage de ask_question.
+    "review": frozenset({
+        "publish_now",
+        "request_changes",
+        "ask_clarification",
+        "configure_destinations",
+    }),
 }
 
 # Backward-compat alias — o código pré-T4 e a sentinela T2 referem-se a
@@ -120,6 +133,11 @@ try:
             "edit_specific_question",
             "add_question",
             "remove_question",
+            # review (T6 / Task #1088)
+            "publish_now",
+            "request_changes",
+            "ask_clarification",
+            "configure_destinations",
         ]
         extracted_data: dict[str, Any] = Field(default_factory=dict)
         conversational_reply: str = ""

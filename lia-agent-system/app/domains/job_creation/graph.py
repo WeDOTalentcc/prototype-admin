@@ -3181,6 +3181,432 @@ def route_after_review(state: JobCreationState) -> str:
     return "end"
 
 
+# ---------------------------------------------------------------------------
+# T6 (Task #1088) — review gate (LLM-based, HITL #3)
+# ---------------------------------------------------------------------------
+
+# Allowlist canônica de canais ATS aceitos por ``configure_destinations``.
+# Mantém-se sincronizada com ``Literal[...]`` no system_prompt YAML
+# (gate_review.yaml). Adicionar novo canal requer (a) update aqui, (b)
+# update no YAML, (c) update na sentinela.
+_REVIEW_DESTINATIONS_ALLOWLIST: frozenset[str] = frozenset({
+    "site_carreiras", "gupy", "pandape", "linkedin",
+})
+
+# Mapeia ``target_section`` (do request_changes) → nó destino do graph.
+# Usado por ``route_after_review_gate`` quando o recrutador pede ajuste.
+_REVIEW_TARGET_SECTION_TO_NODE: dict[str, str] = {
+    "title": "jd_enrichment",
+    "description": "jd_enrichment",
+    "questions": "wsi_questions",
+    "salary": "salary",
+    "pipeline": "eligibility",
+    "destinations": "review",
+}
+
+# TTL (segundos) entre o 1º ``publish_now`` (que SETA pending) e o 2º
+# (que destrava ``policy_confirmed_publish``). Após o TTL expirar, o 2º
+# publish_now é tratado como NOVO 1º (volta a pedir confirmação).
+_PUBLISH_DUAL_CONFIRMATION_TTL_S: float = 300.0
+
+
+def review_gate_node(state: JobCreationState) -> JobCreationState:
+    """T6 (Task #1088) — gate LLM-based para HITL #3 (review/publish).
+
+    Substitui a heurística keyword-based de ``domain.py::_route_by_stage``
+    para o stage ``review``/``publish`` (linhas 'public'/'manda'/'publica')
+    quando o flag ``LIA_WIZARD_LLM_GATES`` está ON. Allowlist específica
+    do stage (``STAGE_ALLOWLISTS["review"]``):
+
+      - ``publish_now``           → DUPLA CONFIRMAÇÃO via chat:
+                                    1ª chamada: seta ``pending_publish_confirmation=True``
+                                    + ``publish_confirmation_ts=now()``; route=END,
+                                    pede confirmação na clarify message.
+                                    2ª chamada (mesmo intent) DENTRO do TTL
+                                    (300s) com flag set: seta
+                                    ``policy_confirmed_publish=True`` (que
+                                    destrava o publish_node PolicyGate);
+                                    route=publish.
+      - ``request_changes``       → mapeia ``target_section`` → nó destino
+                                    via ``_REVIEW_TARGET_SECTION_TO_NODE``;
+                                    limpa flag de aprovação correspondente
+                                    (jd_approved/questions_approved/etc) e
+                                    persiste ``review_request_changes_pending``.
+      - ``configure_destinations`` → valida ``destinations`` contra
+                                    ``_REVIEW_DESTINATIONS_ALLOWLIST``;
+                                    seta ``publish_platforms=destinations``;
+                                    route=END (espera publish_now).
+      - ``ask_clarification``     → state inalterado; ``gate_clarify_message=...``
+                                    route=END.
+
+    Confidence < 0.7 → re-pergunta natural sem mutar pacote.
+    Resume detection mirroring wsi_questions_gate_node: ``current_stage="review"``
+    + user_query fresh (não processado nesta invocação).
+
+    Audit row registra ``confirmation_method`` ∈ {chat, button, dual}
+    em ``criteria_used`` (SOX 7 anos retention via decision_type=
+    ``wizard_step_completed``).
+    """
+    msg = (state.get("gate_resume_message") or "").strip()
+    if not msg:
+        # WS resume detection — caminho canônico via process_message não
+        # seta gate_resume_message; detectamos via state nativo.
+        _at_review = state.get("current_stage") == "review"
+        _uq = (state.get("user_query") or "").strip()
+        _seen = (state.get("gate_seen_user_query") or "").strip()
+        _is_fresh_turn = bool(_uq) and _uq != _seen
+        if _at_review and _is_fresh_turn:
+            msg = _uq
+            logger.info(
+                "[JobCreation:review_gate] WS resume detected (review + fresh user_query) — classify",
+            )
+    if not msg:
+        _last_intent = state.get("gate_last_intent")
+        _is_transitional = _last_intent in ("ask_clarification",)
+        clean_state = {**state, "current_stage": "review"}
+        if _is_transitional:
+            clean_state["gate_last_intent"] = None
+        logger.info(
+            "[JobCreation:review_gate] no resume message — END (waiting for user, prior_intent=%s, cleared=%s)",
+            _last_intent, _is_transitional,
+        )
+        return clean_state
+
+    # FairnessGuard L1 sobre a mensagem do gate (defesa em profundidade).
+    try:
+        from app.shared.compliance.fairness_guard import FairnessGuard
+        _fg = FairnessGuard().check(msg)
+        if _fg.is_blocked:
+            logger.warning(
+                "[JobCreation:review_gate] FairnessGuard L1 BLOCK on resume message: cat=%s, terms=%s",
+                _fg.category, _fg.blocked_terms,
+            )
+            return {
+                **state,
+                "gate_resume_message": "",
+                "gate_clarify_message": _fg.educational_message,
+                "fairness_blocked": True,
+                "fairness_block_reason": _fg.educational_message,
+                "current_stage": "review",
+            }
+    except Exception as exc:
+        logger.debug("[JobCreation:review_gate] FairnessGuard check failed (fail-open): %s", exc)
+
+    from app.domains.job_creation.services.wizard_gate_classifier import (
+        get_wizard_gate_classifier, _make_fallback,
+    )
+    classifier = get_wizard_gate_classifier()
+
+    import asyncio as _asyncio
+    output = None
+    try:
+        try:
+            running_loop = _asyncio.get_event_loop()
+        except RuntimeError:
+            running_loop = None
+        _company_id = state.get("workspace_id") or state.get("company_id")
+        _user_id = state.get("user_id") or state.get("recruiter_id")
+        coro_factory = lambda: classifier.classify(  # noqa: E731
+            user_message=msg,
+            stage="review",
+            ws_stage_payload=state.get("ws_stage_payload"),
+            tenant_context_snippet=str(state.get("tenant_context_snippet") or ""),
+            hiring_policy_summary=str(state.get("hiring_policy_summary") or ""),
+            company_id=str(_company_id) if _company_id else None,
+            user_id=str(_user_id) if _user_id else None,
+        )
+        if running_loop is not None and running_loop.is_running():
+            import concurrent.futures as _cf
+            with _cf.ThreadPoolExecutor(max_workers=1) as _ex:
+                _fut = _ex.submit(lambda: _asyncio.run(coro_factory()))
+                output = _fut.result(timeout=30.0)
+        else:
+            output = _asyncio.run(coro_factory())
+    except Exception as exc:
+        logger.warning("[JobCreation:review_gate] classify failed (fallback): %s", exc)
+        output = _make_fallback()
+
+    # Confidence floor — clarify sem mutar pacote.
+    if (output.confidence or 0.0) < 0.7:
+        logger.info(
+            "[JobCreation:review_gate] confidence=%.2f < 0.7 → clarify (intent=%s)",
+            output.confidence, output.intent,
+        )
+        clarify_state = {
+            **state,
+            "gate_resume_message": "",
+            "gate_clarify_message": (
+                output.conversational_reply
+                or "Você quer publicar agora, ajustar alguma seção do resumo, configurar destinos ou tirar uma dúvida?"
+            ),
+            "gate_last_intent": output.intent,
+            "gate_last_confidence": output.confidence,
+            "current_stage": "review",
+            "gate_seen_user_query": msg,
+        }
+        try:
+            _emit_review_gate_audit(state, msg, output, confirmation_method="chat")
+        except Exception as exc:
+            logger.debug("[JobCreation:review_gate] audit emit failed: %s", exc)
+        return clarify_state
+
+    intent = output.intent
+    extracted = output.extracted_data or {}
+
+    next_state: dict = {
+        **state,
+        "gate_resume_message": "",
+        "gate_clarify_message": None,
+        "gate_last_intent": intent,
+        "gate_last_confidence": output.confidence,
+        "current_stage": "review",
+        "gate_seen_user_query": msg,
+    }
+    confirmation_method = "chat"
+
+    if intent == "publish_now":
+        import time as _time
+        _now = _time.time()
+        _pending = bool(state.get("pending_publish_confirmation"))
+        _ts = state.get("publish_confirmation_ts") or 0.0
+        _within_ttl = _pending and (_now - float(_ts)) <= _PUBLISH_DUAL_CONFIRMATION_TTL_S
+        if _within_ttl:
+            # 2ª confirmação dentro da janela → destrava publish_node.
+            next_state["policy_confirmed_publish"] = True
+            next_state["pending_publish_confirmation"] = False
+            next_state["publish_confirmation_ts"] = None
+            next_state["gate_clarify_message"] = (
+                output.conversational_reply
+                or "Confirmado. Publicando a vaga agora nos canais selecionados."
+            )
+            confirmation_method = "dual"
+            logger.info(
+                "[JobCreation:review_gate] publish_now SECOND turn within TTL — confirmed (route=publish)",
+            )
+        else:
+            # 1ª confirmação (ou expirada) → SETA pending + pede confirmação.
+            next_state["pending_publish_confirmation"] = True
+            next_state["publish_confirmation_ts"] = _now
+            next_state["policy_confirmed_publish"] = False
+            destinations_summary = ", ".join(state.get("publish_platforms") or []) or "os canais configurados"
+            next_state["gate_clarify_message"] = (
+                output.conversational_reply
+                or f"Vou publicar em: {destinations_summary}. Confirma para publicar agora?"
+            )
+            confirmation_method = "chat"
+            logger.info(
+                "[JobCreation:review_gate] publish_now FIRST turn — pending confirmation (TTL=%.0fs)",
+                _PUBLISH_DUAL_CONFIRMATION_TTL_S,
+            )
+
+    elif intent == "request_changes":
+        target = str(extracted.get("target_section") or "").strip().lower()
+        instruction = str(extracted.get("instruction") or "").strip()[:500]
+        if target not in _REVIEW_TARGET_SECTION_TO_NODE or not instruction:
+            logger.info(
+                "[JobCreation:review_gate] request_changes schema inválido (target=%r, instr_len=%d) → clarify",
+                target, len(instruction),
+            )
+            valid_sections = ", ".join(sorted(_REVIEW_TARGET_SECTION_TO_NODE.keys()))
+            next_state["gate_clarify_message"] = (
+                f"Qual seção você quer ajustar ({valid_sections}) e o que mudar nela?"
+            )
+        else:
+            next_state["review_request_changes_pending"] = {
+                "target_section": target,
+                "instruction": instruction,
+            }
+            # Limpa flag de aprovação da seção correspondente para forçar
+            # re-execução do nó destino na próxima invocação do graph.
+            if target in ("title", "description"):
+                next_state["jd_approved"] = None
+            elif target == "questions":
+                next_state["questions_approved"] = None
+                next_state["wsi_regenerate_pending"] = True
+                next_state["wsi_questions"] = []
+            elif target == "salary":
+                next_state["salary_min"] = None
+                next_state["salary_max"] = None
+            # pipeline / destinations: sem flag global a limpar — o nó
+            # destino lê ``review_request_changes_pending`` para aplicar
+            # a instrução cirúrgica.
+            next_state["gate_clarify_message"] = (
+                output.conversational_reply
+                or f"Beleza, vou voltar em {target} pra ajustar ({instruction[:60]})."
+            )
+            # Reseta dual-confirmation se houver — recrutador pediu mudança.
+            next_state["pending_publish_confirmation"] = False
+            next_state["publish_confirmation_ts"] = None
+
+    elif intent == "configure_destinations":
+        raw_dests = extracted.get("destinations") or []
+        if not isinstance(raw_dests, list):
+            raw_dests = []
+        valid = [
+            str(d).strip().lower() for d in raw_dests
+            if str(d).strip().lower() in _REVIEW_DESTINATIONS_ALLOWLIST
+        ]
+        # Dedup preservando ordem.
+        seen = set()
+        valid_dedup = []
+        for d in valid:
+            if d not in seen:
+                seen.add(d)
+                valid_dedup.append(d)
+        if not valid_dedup:
+            allowed_str = ", ".join(sorted(_REVIEW_DESTINATIONS_ALLOWLIST))
+            next_state["gate_clarify_message"] = (
+                f"Quais canais você quer publicar? Disponíveis: {allowed_str}."
+            )
+        else:
+            next_state["publish_platforms"] = valid_dedup
+            next_state["gate_clarify_message"] = (
+                output.conversational_reply
+                or f"Configurando publicação em: {', '.join(valid_dedup)}. Quando quiser, me confirma pra publicar."
+            )
+            # Reseta dual-confirmation — destinos mudaram.
+            next_state["pending_publish_confirmation"] = False
+            next_state["publish_confirmation_ts"] = None
+
+    elif intent == "ask_clarification":
+        next_state["gate_clarify_message"] = (
+            output.conversational_reply
+            or "Posso explicar qualquer parte do resumo. O que você quer saber?"
+        )
+
+    else:
+        logger.warning("[JobCreation:review_gate] unhandled intent=%r → clarify", intent)
+        next_state["gate_clarify_message"] = (
+            "Você quer publicar agora, ajustar alguma seção, escolher destinos ou tirar uma dúvida?"
+        )
+
+    # Audit row (best-effort) — confirmation_method é o discriminador SOX
+    # entre "chat single turn", "dual chat confirmation" e "button"
+    # (button é setado externamente via _handle_gate_review quando o FE
+    # emite um sinal explícito de botão).
+    try:
+        _emit_review_gate_audit(state, msg, output, confirmation_method=confirmation_method)
+    except Exception as exc:
+        logger.debug("[JobCreation:review_gate] audit emit failed: %s", exc)
+
+    return next_state
+
+
+def _emit_review_gate_audit(
+    state: JobCreationState,
+    user_message: str,
+    output,
+    *,
+    confirmation_method: str = "chat",
+) -> None:
+    """Emite audit row (decision_type=wizard_step_completed) para o
+    review gate. Best-effort: falha NÃO bloqueia o resume.
+
+    SOX 7 anos retention: ``confirmation_method`` ∈ {chat, button, dual}
+    é registrado em ``criteria_used`` para auditar o caminho exato pelo
+    qual a decisão de publicação foi tomada (rastreabilidade EU AI Act
+    Art. 13 + ISO 27001 control trail).
+    """
+    import asyncio as _asyncio
+    company_id = str(state.get("workspace_id") or state.get("company_id") or "")
+    if not company_id:
+        return
+    try:
+        from app.shared.compliance.audit_service import audit_service
+    except Exception:
+        return
+
+    _intent = str(output.intent)
+    _before = {
+        "policy_confirmed_publish": bool(state.get("policy_confirmed_publish")),
+        "pending_publish_confirmation": bool(state.get("pending_publish_confirmation")),
+        "publish_platforms": list(state.get("publish_platforms") or []),
+        "gate_last_intent": state.get("gate_last_intent"),
+    }
+    _after_confirmed = _before["policy_confirmed_publish"]
+    _after_pending = _before["pending_publish_confirmation"]
+    if _intent == "publish_now":
+        if confirmation_method == "dual":
+            _after_confirmed = True
+            _after_pending = False
+        else:
+            _after_pending = True
+    _after = {
+        "policy_confirmed_publish": _after_confirmed,
+        "pending_publish_confirmation": _after_pending,
+        "gate_last_intent": _intent,
+    }
+    coro = audit_service.log_decision(
+        company_id=company_id,
+        agent_name="wizard_review_gate_classifier",
+        decision_type="wizard_step_completed",
+        action="review_gate_classify",
+        decision=_intent,
+        reasoning=[
+            f"intent={_intent}",
+            f"confidence={float(output.confidence or 0.0):.2f}",
+            f"thread_id={state.get('session_id') or ''}",
+            f"user_msg_preview={user_message[:120]}",
+            f"reply_preview={(output.conversational_reply or '')[:120]}",
+            f"state_before={_before}",
+            f"state_after={_after}",
+            f"extracted_data_keys={sorted((output.extracted_data or {}).keys())}",
+        ],
+        criteria_used=[
+            "llm_intent_classifier",
+            "wizard_review",
+            f"confirmation_method:{confirmation_method}",
+        ],
+        confidence=float(output.confidence or 0.0),
+    )
+    try:
+        loop = _asyncio.get_event_loop()
+        if loop.is_running():
+            loop.create_task(coro)
+            return
+    except RuntimeError:
+        pass
+    try:
+        _asyncio.run(coro)
+    except Exception as exc:
+        logger.debug("[JobCreation:review_gate] audit run failed: %s", exc)
+
+
+def route_after_review_gate(state: JobCreationState) -> str:
+    """Routing após review_gate_node LLM. Determinístico baseado em
+    mutações aplicadas pelo gate.
+
+    Prioridade:
+      1. fairness_blocked → END.
+      2. policy_confirmed_publish=True (2ª confirmação dual) → publish.
+      3. review_request_changes_pending.target_section → nó mapeado.
+      4. caso contrário (publish_now 1ª chamada, configure_destinations,
+         ask_clarification, schema inválido) → END (aguarda próximo
+         turno do recrutador).
+    """
+    if state.get("fairness_blocked") is True:
+        logger.info("[JobCreation:route] review_gate -> END (fairness blocked)")
+        return "end"
+    if state.get("policy_confirmed_publish") is True:
+        logger.info("[JobCreation:route] review_gate -> publish (dual-confirmation)")
+        return "publish"
+    pending = state.get("review_request_changes_pending") or {}
+    if isinstance(pending, dict):
+        target = str(pending.get("target_section") or "").strip().lower()
+        node = _REVIEW_TARGET_SECTION_TO_NODE.get(target)
+        if node and node != "review":
+            logger.info(
+                "[JobCreation:route] review_gate -> %s (request_changes target=%s)",
+                node, target,
+            )
+            return node
+    intent = state.get("gate_last_intent")
+    logger.info(
+        "[JobCreation:route] review_gate -> END (intent=%s, awaiting next turn)", intent,
+    )
+    return "end"
+
+
 def route_after_publish(state: JobCreationState) -> str:
     """After publish: go to calibration if job was published."""
     if state.get("job_id"):
@@ -3360,6 +3786,8 @@ def create_job_creation_graph(
         builder.add_node("wsi_questions_gate", wsi_questions_gate_node)
     builder.add_node("eligibility", eligibility_node)
     builder.add_node("review", review_node)
+    if use_llm_gates:
+        builder.add_node("review_gate", review_gate_node)
     builder.add_node("publish", publish_node)
     builder.add_node("calibration", calibration_node)
     builder.add_node("handoff", handoff_node)
@@ -3453,15 +3881,36 @@ def create_job_creation_graph(
     # Eligibility -> Review
     builder.add_edge("eligibility", "review")
 
-    # Review: check readiness
-    builder.add_conditional_edges(
-        "review",
-        route_after_review,
-        {
-            "publish": "publish",
-            "end": END,
-        },
-    )
+    # HITL point 3: Review/publish
+    if use_llm_gates:
+        # T6 (Task #1088) — review escapa direto para o gate_node, que
+        # classifica o intent do recrutador via LLM (allowlist
+        # publish_now|request_changes|ask_clarification|configure_destinations)
+        # e decide o roteamento determinístico (incluindo dupla
+        # confirmação de chat para publish_now).
+        builder.add_edge("review", "review_gate")
+        builder.add_conditional_edges(
+            "review_gate",
+            route_after_review_gate,
+            {
+                "publish": "publish",
+                "jd_enrichment": "jd_enrichment",
+                "salary": "salary",
+                "wsi_questions": "wsi_questions",
+                "eligibility": "eligibility",
+                "review": "review",
+                "end": END,
+            },
+        )
+    else:
+        builder.add_conditional_edges(
+            "review",
+            route_after_review,
+            {
+                "publish": "publish",
+                "end": END,
+            },
+        )
 
     # Publish -> Calibration
     builder.add_conditional_edges(

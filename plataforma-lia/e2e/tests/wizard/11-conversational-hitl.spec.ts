@@ -259,6 +259,89 @@ Diferenciais: experiência com data mesh e dbt cloud.`;
     expect(after).toMatch(/(pergunta\s*3|ajustar|t[eé]cnica|editar)/);
   });
 
+  test('C4 — review/publish exige dupla confirmação de chat (T6)', async ({ page }) => {
+    // Cenário canônico T6 — Task #1088. Após chegar ao stage `review`,
+    // o primeiro `publica agora` NÃO deve disparar publicação imediata —
+    // a LIA precisa pedir confirmação. O segundo `publica agora` dentro
+    // do TTL (5min) destrava `policy_confirmed_publish` e o publish_node.
+    const chatInput = page.getByTestId('chat-input').or(page.locator('textarea').first());
+    await chatInput.fill('vaga de Analista de Dados Pleno remoto');
+    await chatInput.press('Enter');
+    await expect(
+      page.locator('[data-wizard-stage="jd_enrichment"], [data-testid*="wizard-jd"]').first(),
+    ).toBeVisible({ timeout: 60_000 });
+
+    // Avança forçado pelo chat até review (sequência canônica conversacional).
+    for (const turn of ['aprova', 'compacto', 'manda ver', 'aprova as elegibilidades']) {
+      await chatInput.fill(turn);
+      await chatInput.press('Enter');
+      await page.waitForTimeout(8_000);
+    }
+
+    // Aguarda o painel de review aparecer.
+    await expect(
+      page.locator('[data-wizard-stage="review"], [data-testid*="wizard-review"]').first(),
+    ).toBeVisible({ timeout: 90_000 });
+
+    // 1ª confirmação — deve PEDIR confirmação, NÃO publicar ainda.
+    const before1 = await page.locator('[data-testid="chat-message"], [role="article"]').count();
+    await chatInput.fill('publica agora');
+    await chatInput.press('Enter');
+    await page.waitForTimeout(8_000);
+
+    const messages1 = await page.locator('[data-testid="chat-message"], [role="article"]').allTextContents();
+    const after1 = messages1.slice(before1).join(' | ').toLowerCase();
+    // Sinal positivo: pediu confirmação.
+    expect(after1).toMatch(/(confirma|tem certeza|publicar.*\?)/);
+    // Anti-padrão: NÃO deve ter ido para publish/calibration sem 2ª confirmação.
+    const publishedYet = await page.locator('[data-wizard-stage="publish"], [data-wizard-stage="calibration"]').count();
+    expect(publishedYet).toBe(0);
+
+    // 2ª confirmação — destrava publish.
+    await chatInput.fill('confirmo, manda');
+    await chatInput.press('Enter');
+    await page.waitForTimeout(15_000);
+
+    // Sinal positivo: chegou ao publish (ou já avançou para calibration).
+    const publishedNow = await page.locator(
+      '[data-wizard-stage="publish"], [data-wizard-stage="calibration"], [data-testid*="share-link"]',
+    ).count();
+    expect(publishedNow).toBeGreaterThan(0);
+  });
+
+  test('C5 — request_changes em review volta para a seção indicada (T6)', async ({ page }) => {
+    // Verifica que `muda o título` no review NÃO é confundido com publicação
+    // e roteia de volta ao jd_enrichment.
+    const chatInput = page.getByTestId('chat-input').or(page.locator('textarea').first());
+    await chatInput.fill('vaga de Coordenador de Vendas remoto');
+    await chatInput.press('Enter');
+    await expect(
+      page.locator('[data-wizard-stage="jd_enrichment"], [data-testid*="wizard-jd"]').first(),
+    ).toBeVisible({ timeout: 60_000 });
+
+    for (const turn of ['aprova', 'compacto', 'manda ver', 'aprova as elegibilidades']) {
+      await chatInput.fill(turn);
+      await chatInput.press('Enter');
+      await page.waitForTimeout(8_000);
+    }
+    await expect(
+      page.locator('[data-wizard-stage="review"], [data-testid*="wizard-review"]').first(),
+    ).toBeVisible({ timeout: 90_000 });
+
+    const before = await page.locator('[data-testid="chat-message"], [role="article"]').count();
+    await chatInput.fill('muda o título pra Sales Lead Pleno');
+    await chatInput.press('Enter');
+    await page.waitForTimeout(10_000);
+
+    const messages = await page.locator('[data-testid="chat-message"], [role="article"]').allTextContents();
+    const after = messages.slice(before).join(' | ').toLowerCase();
+    // Sinal positivo: reconheceu pedido de ajuste no título.
+    expect(after).toMatch(/(t[íi]tulo|ajustar|sales lead)/);
+    // Anti-padrão: NÃO foi pra publish.
+    const publishedYet = await page.locator('[data-wizard-stage="publish"]').count();
+    expect(publishedYet).toBe(0);
+  });
+
   test('C3 — pergunta sobre salário não é confundida com aprovação', async ({ page }) => {
     const chatInput = page.getByTestId('chat-input').or(page.locator('textarea').first());
     await chatInput.fill('vaga de Coordenador de Marketing remoto');
