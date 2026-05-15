@@ -463,6 +463,11 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
         nextId = contextConversationMapRef.current.get(newType) ?? null;
       }
 
+      // Task #1103 — keep sessionStorage in sync when the chat context
+      // switches. Otherwise the persisted `lia.chat.conversation_id` would
+      // still point at the previous context's conversation and a reload
+      // would hydrate the wrong history.
+      persistConversationId(nextId);
       connection.setConversationId(nextId);
       chatConversationIdRef.current = nextId;
       chatContextTypeRef.current = newType;
