@@ -651,19 +651,97 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
     _has_attached = bool((state.get("attached_file_text") or "").strip())
     _has_parsed_title = bool((state.get("parsed_title") or "").strip())
     _raw_len = len((raw_input or "").strip())
-    if (
+    _guard_eligible = (
         not state.get("jd_enriched")  # nunca short-circuit em resume
         and not _has_panel_form
         and not _has_attached
         and not _has_parsed_title
         and _raw_len < 100
-    ):
+    )
+
+    # ── Task #1098 — LLM intent classifier ANTES do guard estático ──
+    # O guard de Task #1096 trata QUALQUER mensagem curta como "intent_only".
+    # O classifier (Claude Haiku, sync, Pydantic-validado) refina em 4 buckets
+    # canônicos: provides_jd_intent | meta_question | intent_only | off_topic.
+    # Fail-OPEN: qualquer falha (flag OFF, sem API key, timeout, schema
+    # inválido, off-allowlist) devolve None e caímos no guard original
+    # (preserva safety net). NUNCA usamos `conversational_reply` do LLM
+    # como controle de fluxo — só como texto exibido. Mutação de state
+    # é determinística por intent. Ver
+    # ``services/intake_intent_classifier.py``.
+    _intent_intake = None
+    if _guard_eligible:
+        try:
+            from app.domains.job_creation.services.intake_intent_classifier import (
+                get_intake_intent_classifier,
+            )
+            _intent_intake = get_intake_intent_classifier().classify_sync(
+                user_message=raw_input,
+                has_panel_form=_has_panel_form,
+                has_attached_file=_has_attached,
+            )
+        except Exception as _intent_exc:
+            logger.info(
+                "[JobCreation:jd_enrichment] intent classifier failed (fail-open): %s",
+                _intent_exc,
+            )
+            _intent_intake = None
+
+    if _intent_intake is not None and _intent_intake.confidence >= 0.7:
+        _intent = _intent_intake.intent
+        _reply = (
+            _intent_intake.conversational_reply
+            or "Pode me passar o título do cargo para começar?"
+        )
+        # Branch determinístico por intent ∈ ALLOWED_INTAKE_INTENTS.
+        if _intent == "provides_jd_intent":
+            # Não dispara o guard — segue para LLM enrichment com o que tem.
+            logger.info(
+                "[JobCreation:jd_enrichment] intent=provides_jd_intent (conf=%.2f) — skipping guard",
+                _intent_intake.confidence,
+            )
+            # Continua o fluxo normal abaixo (Layer 2 PII strip + LLM).
+            _guard_eligible = False
+        elif _intent in ("meta_question", "off_topic"):
+            logger.info(
+                "[JobCreation:jd_enrichment] intent=%s (conf=%.2f) — short-circuit with helpful reply",
+                _intent, _intent_intake.confidence,
+            )
+            return {
+                **state,
+                "current_stage": "jd_enrichment",
+                "jd_enriched": None,
+                "jd_quality_score": 0.0,
+                "jd_quality_warnings": [],
+                "jd_fairness_blocked": False,
+                "requires_approval": False,
+                "stage_history": (state.get("stage_history") or [])
+                + [f"jd_enrichment_intent_{_intent}"],
+                "ws_stage_payload": {
+                    "type": "wizard_stage",
+                    "stage": "jd_enrichment",
+                    "data": {
+                        "awaiting_jd_input": True,
+                        "intent_classified": _intent,
+                        "message": _reply,
+                    },
+                    "requires_approval": False,
+                },
+            }
+        # intent == "intent_only" → cai no guard estático abaixo.
+
+    if _guard_eligible:
+        # Task #1097 — mensagem UI-neutra. Versões anteriores prometiam
+        # "painel à direita" e "responder no painel", mas o painel lateral
+        # nem sempre está montado (ex.: viewport mobile, layout reduzido,
+        # release-flag desligada). Aqui falamos só de ações universais
+        # (chat e anexo) e deixamos a alternativa textual como "me diga".
         _ask_jd_msg = (
             "Para começar a criação da vaga, preciso de mais contexto. "
             "Você pode (a) colar a descrição da vaga (JD) aqui no chat, "
-            "(b) anexar um arquivo no painel à direita, ou "
-            "(c) começar respondendo no painel — me diga título do cargo, "
-            "senioridade e principais responsabilidades."
+            "ou (b) anexar um arquivo (PDF, DOCX ou TXT). "
+            "Se preferir, me diga em uma frase o título do cargo, a "
+            "senioridade e as principais responsabilidades."
         )
         logger.info(
             "[JobCreation:jd_enrichment] input-thin guard fired "
