@@ -11,8 +11,9 @@ Python-side ``default=[]`` / ``default=50`` only — no ``server_default`` and
 no ``NOT NULL``. Rows written via raw SQL, legacy seed scripts or future
 migrations could therefore land with ``NULL`` silently. Task #1098 worked
 around the symptom by coercing ``NULL`` → default at response-validation
-time (``_coerce_culture_none_defaults`` in ``app/schemas/company_culture.py``),
-but the source of truth — the database — kept accepting garbage.
+time in ``app/schemas/company_culture.py`` (since removed in Task #1106
+once this migration was confirmed applied across all environments), but
+the source of truth — the database — kept accepting garbage.
 
 This migration moves the contract to the database (mirrors the pattern
 already used by 128_company_profile_is_default_not_null):
