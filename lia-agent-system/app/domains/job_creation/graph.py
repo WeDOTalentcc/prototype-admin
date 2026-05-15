@@ -10,6 +10,21 @@ checkpointer for session persistence, singleton access.
 HITL points:
   - jd_enrichment (F1): recruiter approves enriched JD
   - wsi_questions (F6): recruiter approves generated questions
+
+Invariant — data.message obrigatório (Task #1099, generaliza Task #1096):
+  Todo node deste graph que retorna ``current_stage`` setado DEVE incluir
+  ``ws_stage_payload.data["message"]`` truthy. Sem essa mensagem, o
+  ``WizardSessionService`` (path canônico WS/SSE) não encontra uma frase
+  natural para devolver ao chat, cai em ``_emit_silent_fallback`` (Task
+  #1089) e o recrutador vê o fail-loud
+  ``[ATENÇÃO: estado inconsistente — contate suporte]``. Em paths normais
+  os ``*_gate_node`` populam ``gate_clarify_message``, que tem precedência
+  no consumer; mas em paths de erro/retry/policy DENY/FairnessGuard PRE-BLOCK
+  o gate não roda e a mensagem do node é o ÚNICO fallback. A sentinela
+  arquitetural ``tests/integration/agents/test_wizard_node_messages_t1099.py``
+  exercita os 9 nodes (``bigfive``, ``salary``, ``competency``,
+  ``wsi_questions``, ``eligibility``, ``review``, ``publish``, ``calibration``,
+  ``handoff``) — adicionar um 10º node sem ``data.message`` quebra o build.
 """
 
 import logging
@@ -485,6 +500,12 @@ def intake_node(state: JobCreationState) -> JobCreationState:
             "type": "wizard_stage",
             "stage": "intake",
             "data": {
+                # Task #1099 — invariant: data.message obrigatório.
+                "message": (
+                    f"Captei: {parsed_title}."
+                    if parsed_title
+                    else "Pode me passar o título da vaga ou colar a JD?"
+                ),
                 "raw_input": query,
                 "parsed_title": parsed_title,
                 "parsed_seniority": parsed_seniority,
@@ -944,7 +965,30 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
                     "[JobCreation:bigfive] FairnessGuard PRE-BLOCK: category=%s — skipping LLM",
                     _bf_fg_result.category,
                 )
-                return {**state, "current_stage": "bigfive"}
+                # Task #1099 — invariant: todo retorno com current_stage
+                # setado DEVE incluir ws_stage_payload.data.message truthy.
+                # Sem isso o WizardSessionService cai em
+                # _emit_silent_fallback (Task #1089).
+                _bf_block_msg = (
+                    "Detectei linguagem que pode ser discriminatória na "
+                    "descrição enriquecida — vou pausar o mapeamento Big "
+                    "Five para esta vaga. Revise a JD e me peça para retomar."
+                )
+                return {
+                    **state,
+                    "current_stage": "bigfive",
+                    "ws_stage_payload": {
+                        "type": "wizard_stage",
+                        "stage": "bigfive",
+                        "data": {
+                            "message": _bf_block_msg,
+                            "fairness_blocked": True,
+                            "fairness_category": _bf_fg_result.category,
+                        },
+                        "completeness": 0,
+                        "requires_approval": False,
+                    },
+                }
         except Exception as _bf_fg_exc:
             logger.warning("[JobCreation:bigfive] FairnessGuard pre-check failed (fail-open): %s", _bf_fg_exc)
 
@@ -990,6 +1034,11 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
                 "type": "wizard_stage",
                 "stage": "bigfive",
                 "data": {
+                    # Task #1099 — invariant: data.message obrigatório.
+                    "message": (
+                        "Não consigo gerar o perfil Big Five — política da "
+                        f"empresa bloqueou: {_policy_result.rationale}"
+                    ),
                     "policy_blocked": True,
                     "policy_decision": _pd_dict,
                 },
@@ -1090,6 +1139,22 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
             "type": "wizard_stage",
             "stage": "bigfive",
             "data": {
+                # Task #1099 — invariant: data.message obrigatório em todo
+                # retorno com current_stage setado. Sem isso o
+                # WizardSessionService cai em _emit_silent_fallback
+                # (Task #1089). Mensagem parametrizada por título + flag de
+                # fallback, espelhando o padrão do jd_enrichment_node (Task
+                # #1096).
+                "message": (
+                    "Mapeei o perfil Big Five para "
+                    f"{(state.get('parsed_title') or 'esta vaga')}"
+                    + (
+                        " (sugestão mínima — revise antes de seguir)."
+                        if locals().get("bigfive_used_fallback", False)
+                        else "."
+                    )
+                    + " Quer ajustar algum traço ou seguir para a faixa salarial?"
+                ),
                 "bigfive_profile": bigfive_profile,
                 "trait_rankings": trait_rankings,
                 # Task #1065 — flag de fallback determinístico para o
@@ -1277,6 +1342,16 @@ def salary_node(state: JobCreationState) -> JobCreationState:
             "type": "wizard_stage",
             "stage": "salary",
             "data": {
+                # Task #1099 — invariant: data.message obrigatório.
+                "message": (
+                    "Faixa salarial e benefícios prontos"
+                    + (
+                        " (benchmark indisponível — revise manualmente)."
+                        if salary_used_fallback
+                        else "."
+                    )
+                    + " Quer ajustar algo ou seguir para competências?"
+                ),
                 "salary_min": state.get("salary_min"),
                 "salary_max": state.get("salary_max"),
                 "salary_currency": state.get("salary_currency", "BRL"),
@@ -1361,6 +1436,17 @@ def competency_node(state: JobCreationState) -> JobCreationState:
             "type": "wizard_stage",
             "stage": "competency",
             "data": {
+                # Task #1099 — invariant: data.message obrigatório.
+                "message": (
+                    f"Resolvi a senioridade ({seniority_result.display_name}) "
+                    "e a distribuição de perguntas WSI"
+                    + (
+                        f" (modo {screening_mode})."
+                        if screening_mode
+                        else " — escolha entre modo compacto (7q) ou completo (12q)."
+                    )
+                    + " Quer ajustar ou seguir para gerar as perguntas?"
+                ),
                 "seniority": seniority,
                 "seniority_display": seniority_result.display_name,
                 "seniority_confidence": seniority_result.confidence,
@@ -1436,7 +1522,15 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
             "ws_stage_payload": {
                 "type": "wizard_stage",
                 "stage": "wsi_questions",
-                "data": {"policy_blocked": True, "policy_decision": _wsi_pd_dict},
+                "data": {
+                    # Task #1099 — invariant: data.message obrigatório.
+                    "message": (
+                        "Não consigo gerar as perguntas WSI — política da "
+                        f"empresa bloqueou: {_wsi_policy.rationale}"
+                    ),
+                    "policy_blocked": True,
+                    "policy_decision": _wsi_pd_dict,
+                },
                 "completeness": 0,
                 "requires_approval": False,
             },
@@ -1628,6 +1722,25 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
 
     # Build ws_stage_payload data — include fairness_warning when questions were dropped
     _wsi_stage_data: Dict[str, Any] = {
+        # Task #1099 — invariant: data.message obrigatório (parametrizada
+        # pelo número de perguntas geradas + flag de fallback + dropped
+        # count). Sem isso o WizardSessionService cai em
+        # _emit_silent_fallback (Task #1089).
+        "message": (
+            f"Gerei {len(questions_data)} perguntas WSI"
+            + (
+                " (sugestão mínima — revise)."
+                if locals().get("wsi_questions_used_fallback", False)
+                else "."
+            )
+            + (
+                f" Bloqueei {len(_wsi_dropped)} pergunta(s) por linguagem "
+                "potencialmente discriminatória."
+                if _wsi_dropped
+                else ""
+            )
+            + " Pode revisar — preciso da sua aprovação antes de seguir."
+        ),
         "questions": questions_data,
         "screening_mode": state.get("screening_mode"),
         "distribution": state.get("question_distribution"),
@@ -1748,7 +1861,17 @@ def eligibility_node(state: JobCreationState) -> JobCreationState:
         "ws_stage_payload": {
             "type": "wizard_stage",
             "stage": "eligibility",
-            "data": {"questions": questions},
+            "data": {
+                # Task #1099 — invariant: data.message obrigatório.
+                "message": (
+                    f"Configurei {len(questions)} pergunta(s) eliminatória(s) "
+                    "para a triagem inicial."
+                    if questions
+                    else "Nenhuma pergunta eliminatória configurada — quer "
+                    "adicionar alguma ou seguir direto para a revisão final?"
+                ),
+                "questions": questions,
+            },
             "completeness": calculate_completeness("eligibility"),
             "requires_approval": False,
         },
@@ -1813,6 +1936,17 @@ def review_node(state: JobCreationState) -> JobCreationState:
             "type": "wizard_stage",
             "stage": "review",
             "data": {
+                # Task #1099 — invariant: data.message obrigatório.
+                "message": (
+                    "Tudo pronto para publicar. Quer revisar algo ou "
+                    "publicar a vaga agora?"
+                    if readiness.get("ready")
+                    else (
+                        "Antes de publicar, ainda faltam alguns campos: "
+                        + ", ".join(readiness.get("missing", []) or ["informações"])
+                        + ". Quer ajustar?"
+                    )
+                ),
                 "readiness": readiness,
                 "defaults_applied": defaults_applied,
             },
@@ -1868,7 +2002,15 @@ def publish_node(state: JobCreationState) -> JobCreationState:
             "requires_approval": False,
             "ws_stage_payload": {
                 "type": "wizard_stage", "stage": "publish",
-                "data": {"policy_blocked": True, "policy_decision": _pub_pd_dict},
+                "data": {
+                    # Task #1099 — invariant: data.message obrigatório.
+                    "message": (
+                        "Não consigo publicar a vaga — "
+                        f"{_pub_policy.rationale}"
+                    ),
+                    "policy_blocked": True,
+                    "policy_decision": _pub_pd_dict,
+                },
                 "completeness": 0, "requires_approval": False,
             },
         }
@@ -1885,6 +2027,11 @@ def publish_node(state: JobCreationState) -> JobCreationState:
             "ws_stage_payload": {
                 "type": "wizard_stage", "stage": "publish",
                 "data": {
+                    # Task #1099 — invariant: data.message obrigatório.
+                    "message": (
+                        "Antes de publicar, preciso da sua confirmação "
+                        f"explícita: {_pub_policy.rationale}"
+                    ),
                     "policy_decision": _pub_pd_dict,
                     "policy_pending_confirmation": True,
                 },
@@ -1968,6 +2115,17 @@ def publish_node(state: JobCreationState) -> JobCreationState:
             "type": "wizard_stage",
             "stage": "publish",
             "data": {
+                # Task #1099 — invariant: data.message obrigatório.
+                "message": (
+                    f"Tive um problema ao publicar a vaga: {error}. "
+                    "Posso tentar de novo?"
+                    if error
+                    else (
+                        "Vaga publicada com sucesso! "
+                        + (f"Link de divulgação: {share_link}. " if share_link else "")
+                        + "Quer seguir para a calibração de candidatos?"
+                    )
+                ),
                 "job_id": job_id,
                 "platforms": state.get("publish_platforms", []),
                 "sourcing_mode": state.get("sourcing_mode"),
@@ -2096,6 +2254,17 @@ def calibration_node(state: JobCreationState) -> JobCreationState:
             "type": "wizard_stage",
             "stage": "calibration",
             "data": {
+                # Task #1099 — invariant: data.message obrigatório.
+                "message": (
+                    f"Calibração concluída — {approved_count}/{threshold} "
+                    "candidatos aprovados. Posso encerrar a configuração da vaga?"
+                    if complete
+                    else (
+                        f"Carreguei {len(candidates)} candidato(s) para "
+                        f"calibração ({approved_count}/{threshold} aprovados). "
+                        "Continue avaliando para liberar a publicação completa."
+                    )
+                ),
                 "candidates": candidates,
                 "threshold": threshold,
                 "approved_count": approved_count,
@@ -2184,6 +2353,12 @@ def handoff_node(state: JobCreationState) -> JobCreationState:
             "type": "wizard_stage",
             "stage": "handoff",
             "data": {
+                # Task #1099 — invariant: data.message obrigatório.
+                "message": (
+                    "Vaga pronta! Vou levar você para a página da vaga"
+                    + (f" ({handoff_url})." if handoff_url else ".")
+                    + (f" Link de divulgação: {share_link}." if share_link else "")
+                ),
                 "job_id": job_id,
                 "handoff_url": handoff_url,
                 "share_link": share_link,
