@@ -3440,6 +3440,44 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
     confirmation_method = "chat"
 
     if intent == "publish_now":
+        # T6 (post-review #2 fix) — HARD readiness gate. Antes de qualquer
+        # dual-confirmation, validar que o pacote está pronto. Se não, NÃO
+        # avança para pending; emite ask_clarification determinístico que
+        # cita exatamente o que falta (readiness_check.missing). Sem isso,
+        # o recrutador poderia destravar publish mesmo com pacote incompleto
+        # — viola Inegociável de governança da plataforma (consequential
+        # decision gate em hiring flow).
+        _readiness = state.get("readiness_check") or {}
+        if not _readiness.get("ready"):
+            _missing = _readiness.get("missing") or []
+            _missing_pt = {
+                "jd_approved": "aprovação da descrição",
+                "questions_approved": "aprovação das questões WSI",
+                "has_questions": "questões WSI geradas",
+                "has_seniority": "senioridade definida",
+                "quality_score_ok": "qualidade da descrição (score ≥ 50)",
+            }
+            _missing_str = ", ".join(_missing_pt.get(k, k) for k in _missing) or "configurações pendentes"
+            next_state["pending_publish_confirmation"] = False
+            next_state["publish_confirmation_ts"] = None
+            next_state["policy_confirmed_publish"] = False
+            # Reclassifica como ask_clarification para o audit trail
+            # (intent original publish_now ficou em gate_last_intent acima).
+            next_state["gate_clarify_message"] = (
+                f"Antes de publicar preciso fechar: {_missing_str}. "
+                "Quando esses pontos estiverem ok, é só me dizer 'publica' que sigo."
+            )
+            confirmation_method = "chat"
+            logger.info(
+                "[JobCreation:review_gate] publish_now BLOCKED — readiness not ready, missing=%s",
+                _missing,
+            )
+            try:
+                _emit_review_gate_audit(state, msg, output, confirmation_method=confirmation_method)
+            except Exception as exc:
+                logger.debug("[JobCreation:review_gate] audit emit failed: %s", exc)
+            return next_state
+
         import time as _time
         _now = _time.time()
         _pending = bool(state.get("pending_publish_confirmation"))
@@ -3736,7 +3774,18 @@ def route_after_review_gate(state: JobCreationState) -> str:
         logger.info("[JobCreation:route] review_gate -> END (fairness blocked)")
         return "end"
     if state.get("policy_confirmed_publish") is True:
-        logger.info("[JobCreation:route] review_gate -> publish (dual-confirmation)")
+        # T6 (post-review #2 fix) — defesa em profundidade: mesmo que algum
+        # caller seta policy_confirmed_publish externamente, exigimos
+        # readiness.ready=True antes de rotear para publish. Espelha o
+        # invariant histórico do route_after_review.
+        _readiness = state.get("readiness_check") or {}
+        if not _readiness.get("ready"):
+            logger.warning(
+                "[JobCreation:route] review_gate -> END (policy_confirmed_publish=True but readiness NOT ready, missing=%s)",
+                _readiness.get("missing"),
+            )
+            return "end"
+        logger.info("[JobCreation:route] review_gate -> publish (dual-confirmation + ready)")
         return "publish"
     pending = state.get("review_request_changes_pending") or {}
     if isinstance(pending, dict):

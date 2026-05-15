@@ -468,6 +468,52 @@ class WizardReviewGateT6(unittest.TestCase):
             {"site_carreiras", "gupy", "pandape", "linkedin"},
         )
 
+    # ---------------- S31 (post-review #2: hard readiness gate) ----------------
+    def test_S31_publish_now_blocked_when_not_ready(self):
+        """T6 post-review2 — publish_now NÃO pode entrar em pending nem
+        rotear para publish quando readiness_check.ready=False. Emite
+        clarify determinístico citando exatamente o que falta."""
+        clf = classifier_mod.get_wizard_gate_classifier()
+        out = _make_output("publish_now", 0.97, "Vamos publicar?")
+        with mock.patch.object(clf, "classify", new=mock.AsyncMock(return_value=out)):
+            with mock.patch.object(
+                graph_mod, "_emit_review_gate_audit", lambda *a, **k: None,
+            ):
+                state = _base_review_state(
+                    gate_resume_message="publica agora",
+                    readiness_check={
+                        "ready": False,
+                        "missing": ["jd_approved", "questions_approved"],
+                        "checks": {},
+                    },
+                )
+                result = graph_mod.review_gate_node(state)
+        # NÃO entra em pending — bloqueado fail-loud.
+        self.assertFalse(result.get("pending_publish_confirmation"))
+        self.assertIsNone(result.get("publish_confirmation_ts"))
+        self.assertFalse(result.get("policy_confirmed_publish"))
+        clarify = result["gate_clarify_message"]
+        self.assertIn("aprovação da descrição", clarify)
+        self.assertIn("aprovação das questões WSI", clarify)
+        # E rota é END (não publish).
+        self.assertEqual(graph_mod.route_after_review_gate(result), "end")
+
+    def test_S31b_route_blocks_publish_when_confirmed_but_not_ready(self):
+        """T6 post-review2 — defesa em profundidade: mesmo que
+        policy_confirmed_publish=True chegue por outro caminho, o router
+        ainda bloqueia publish se readiness não está ok."""
+        state = _base_review_state(
+            policy_confirmed_publish=True,
+            readiness_check={"ready": False, "missing": ["has_seniority"], "checks": {}},
+        )
+        self.assertEqual(graph_mod.route_after_review_gate(state), "end")
+        # Sanidade: com ready=True, sim publica.
+        state2 = _base_review_state(
+            policy_confirmed_publish=True,
+            readiness_check={"ready": True, "missing": [], "checks": {}},
+        )
+        self.assertEqual(graph_mod.route_after_review_gate(state2), "publish")
+
     # ---------------- S28 (post-review fix #1: stale pending lifecycle) ----------------
     def test_S28_stale_review_request_changes_pending_cleared_on_entry(self):
         """T6 post-review #1 — pending field SOBRA do turno anterior NÃO pode
