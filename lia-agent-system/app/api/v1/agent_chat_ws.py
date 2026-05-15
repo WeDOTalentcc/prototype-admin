@@ -545,6 +545,68 @@ async def agent_chat_ws(
                 "[AgentChatWS] wizard_resume_resync skipped: %s", _resume_exc,
             )
 
+        # ── HITL pending resync (Task #1110) ──────────────────────────────
+        # When a recruiter opens a SECOND tab while the first tab already
+        # received an `approval_required` frame, the second tab missed the
+        # broadcast (it wasn't connected yet). Re-emit the most recent
+        # pending HITL request scoped to this user/company so the new tab
+        # renders the HITLConfirmCard within ~connect RTT, instead of
+        # forcing an F5. Fail-open: any DB/Redis error is logged and
+        # skipped — a broken HITL store never blocks the chat handshake.
+        try:
+            from app.domains.cv_screening.services.hitl_service import (
+                hitl_service as _resync_hitl_service,
+            )
+
+            _pending_list = await _resync_hitl_service.get_all_pending_by_company(
+                company_id or ""
+            )
+            # Filter to pendings owned by THIS recruiter when the payload
+            # records it (request_approval persists `user_id` via the DB
+            # row's resolved_by/created_by audit; in-flight items use the
+            # `agent_input.user_id` snapshot). Items without a user_id are
+            # treated as visible — same-company recruiters share visibility
+            # of HITL approvals (consistent with /api/v1/hitl/pending).
+            def _owned_by(item: dict) -> bool:
+                if not user_id or user_id == "anonymous":
+                    return True
+                _agent_input = item.get("agent_input") or {}
+                _owner = (
+                    item.get("user_id")
+                    or item.get("resolved_by")
+                    or _agent_input.get("user_id")
+                    or ""
+                )
+                return not _owner or str(_owner) == str(user_id)
+
+            _replay_candidates = [p for p in _pending_list if _owned_by(p)]
+            if _replay_candidates:
+                # Most recent first — already sorted by request_approval()
+                # callers (DB ORDER BY created_at DESC). Replay just the
+                # latest to avoid stacking obsolete cards on the new tab.
+                _latest = _replay_candidates[0]
+                await ws_mgr.send_to_session(session_id, {
+                    "type": "approval_required",
+                    "thread_id": _latest.get("thread_id", ""),
+                    "pending_id": _latest.get("pending_id", ""),
+                    "action": _latest.get("action", ""),
+                    "description": _latest.get("description", ""),
+                    "data": _latest.get("data", {}),
+                    "domain": _latest.get("domain", ""),
+                    "resumed": True,
+                })
+                logger.info(
+                    "[AgentChatWS] hitl_resync: session=%s replayed pending=%s "
+                    "thread=%s (Task #1110)",
+                    session_id,
+                    _latest.get("pending_id", ""),
+                    _latest.get("thread_id", ""),
+                )
+        except Exception as _hitl_resync_exc:  # pragma: no cover — fail-open
+            logger.debug(
+                "[AgentChatWS] hitl_resync skipped: %s", _hitl_resync_exc,
+            )
+
         while True:
             try:
                 raw = await asyncio.wait_for(websocket.receive_text(), timeout=300.0)
@@ -582,11 +644,29 @@ async def agent_chat_ws(
                         approved=ws_approved,
                         comment=ws_comment,
                     )
-                    await ws_mgr.send_to_session(session_id, {
+                    _confirmed_frame = {
                         "type": "approval_confirmed",
                         "thread_id": ws_thread_id,
                         "pending_id": ws_pending_id,
-                    })
+                    }
+                    await ws_mgr.send_to_session(session_id, _confirmed_frame)
+                    # Task #1110 — fan-out the resolution to the recruiter's
+                    # OTHER open tabs so the HITL card disappears everywhere
+                    # instead of leaving stale "pendente" cards on the tabs
+                    # that didn't click. Best-effort: failure to broadcast
+                    # never blocks the originating tab's resume flow.
+                    if user_id and user_id != "anonymous":
+                        try:
+                            await ws_mgr.broadcast_to_user(
+                                user_id,
+                                _confirmed_frame,
+                                exclude_session_id=session_id,
+                            )
+                        except Exception as _bcast_exc:
+                            logger.debug(
+                                "[AgentChatWS] broadcast_to_user approval_confirmed falhou: %s",
+                                _bcast_exc,
+                            )
 
                     # ── Resume grafo após aprovação ───────────────────────────
                     resume_info = await hitl_service.get_resume_info(ws_thread_id)

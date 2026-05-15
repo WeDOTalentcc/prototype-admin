@@ -262,6 +262,23 @@ export function useChatSocket({
       }
 
       case "approval_confirmed":
+        // Task #1110 — clear the HITL card explicitly so tabs receiving
+        // the cross-tab broadcast (`broadcast_to_user` from
+        // agent_chat_ws.py) hide the stale "pendente" card without
+        // waiting for an F5. CRITICAL: only clear when the resolved
+        // pending_id matches the local one — otherwise an
+        // `approval_confirmed` broadcast from a DIFFERENT conversation
+        // (same recruiter, two unrelated chats open) would wipe a
+        // legitimate local pending. The originating tab still clears via
+        // the subsequent `message` (hitl_resume) event regardless, so
+        // this guard is purely a safety net for the broadcast path.
+        if (
+          event.pending_id &&
+          hitlRef.current?.pendingId === event.pending_id
+        ) {
+          hitlRef.current = null;
+          setHitlPending(null);
+        }
         window.dispatchEvent(
           new CustomEvent("hitl:approval_resolved", {
             detail: { pending_id: event.pending_id },

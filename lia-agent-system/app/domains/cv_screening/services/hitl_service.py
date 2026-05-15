@@ -277,14 +277,39 @@ class HITLService:
 
             try:
                 from app.shared.websocket.ws_manager import ws_manager
-                await ws_manager.send_to_session(ws_session_id, {
+                approval_frame = {
                     "type": "approval_required",
                     "thread_id": thread_id,
                     "pending_id": pending_id,
                     "action": action,
                     "description": description,
                     "data": data,
-                })
+                    "domain": domain,
+                }
+                await ws_manager.send_to_session(ws_session_id, approval_frame)
+
+                # Task #1110 — fan-out to the recruiter's OTHER open tabs so
+                # the HITL card appears everywhere within ~WS RTT instead of
+                # requiring an F5 on the second tab. The originating tab is
+                # excluded (it just received the frame above). user_id is
+                # taken from the explicit kwarg when available, otherwise
+                # resolved from the WS session ownership map — covers the
+                # wizard graph path that doesn't propagate user_id.
+                resolved_user_id = user_id or (
+                    ws_manager.get_user_for_session(ws_session_id) or ""
+                )
+                if resolved_user_id and resolved_user_id != "anonymous":
+                    try:
+                        await ws_manager.broadcast_to_user(
+                            resolved_user_id,
+                            approval_frame,
+                            exclude_session_id=ws_session_id,
+                        )
+                    except Exception as _bcast_exc:
+                        logger.warning(
+                            "[HITL] broadcast_to_user approval_required falhou: %s",
+                            _bcast_exc,
+                        )
             except Exception as exc:
                 logger.warning("[HITL] Falha ao enviar WS approval_required: %s", exc)
 
