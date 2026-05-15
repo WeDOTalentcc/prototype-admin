@@ -8,14 +8,18 @@ from pydantic import BaseModel, Field, model_validator
 
 
 # Field-name -> default value used to coerce legacy NULL values from the DB.
-# Several columns on company_culture_profiles use Python-side ``default=[]`` /
-# ``default=50`` only — there is no ``server_default`` and no ``NOT NULL``
-# constraint, so rows written before a default existed (or via raw SQL) can
-# contain NULL. Pydantic's ``list[str]`` / ``int`` types do not coerce ``None``
-# to the schema default and would raise ``ResponseValidationError`` on GET,
-# breaking the wizard's culture-profile step. We coerce here at validation
-# time so the API contract returned to the client stays stable (``[]`` and
-# 50, matching the model defaults).
+#
+# Belt-and-suspenders since Task #1100 / alembic 130_culture_profile_defaults_not_null:
+# the database now enforces NOT NULL + ``server_default`` (``ARRAY[]::text[]``
+# for the array columns, ``50`` for the Big Five scores) on every field
+# below, so freshly-written rows can no longer carry NULL. We keep the
+# coercion as a defensive guard for any pre-migration row that might still
+# be cached in a long-lived ORM session, and to keep the response contract
+# (``[]`` and ``50``) deterministic if the migration is rolled back via
+# ``downgrade()`` (which leaves the DEFAULT in place but drops NOT NULL).
+#
+# Original symptom: ``GET /culture-profile`` raised ``ResponseValidationError``
+# when reading a legacy row with NULL in any non-Optional field.
 _CULTURE_BASE_NONE_DEFAULTS: dict[str, object] = {
     "values": list,
     "evp_bullets": list,

@@ -22,21 +22,22 @@ class CompanyCultureProfile(Base):
     
     mission = Column(Text, nullable=True)
     vision = Column(Text, nullable=True)
-    values = Column(ARRAY(String), default=[])
-    evp_bullets = Column(ARRAY(String), default=[])
-    core_competencies = Column(ARRAY(String), default=[])  # Behavioral competencies extracted from website
+    # NOT NULL + server_default enforced by alembic 130_culture_profile_defaults_not_null
+    values = Column(ARRAY(String), nullable=False, server_default="{}", default=list)
+    evp_bullets = Column(ARRAY(String), nullable=False, server_default="{}", default=list)
+    core_competencies = Column(ARRAY(String), nullable=False, server_default="{}", default=list)  # Behavioral competencies extracted from website
     culture_description = Column(Text, nullable=True)
     
     website_url = Column(String(500), nullable=False)
     linkedin_url = Column(String(500), nullable=True)
-    analyzed_pages = Column(ARRAY(String), default=[])
+    analyzed_pages = Column(ARRAY(String), nullable=False, server_default="{}", default=list)
     
     # Company info from LinkedIn/website
     industry = Column(String(200), nullable=True)
     employee_count = Column(String(50), nullable=True)  # e.g., "501-1000"
     company_size = Column(String(50), nullable=True)  # e.g., "Medium", "Large"
     headquarters = Column(String(300), nullable=True)
-    locations = Column(ARRAY(String), default=[])
+    locations = Column(ARRAY(String), nullable=False, server_default="{}", default=list)
     founded_year = Column(Integer, nullable=True)
     
     # Work culture details
@@ -51,17 +52,17 @@ class CompanyCultureProfile(Base):
     social_impact = Column(Text, nullable=True)
     
     # Tech culture (for tech companies)
-    tech_stack = Column(ARRAY(String), default=[])
+    tech_stack = Column(ARRAY(String), nullable=False, server_default="{}", default=list)
     engineering_culture = Column(Text, nullable=True)
     
     # Default languages for job vacancies
-    default_languages = Column(ARRAY(String), default=[])
+    default_languages = Column(ARRAY(String), nullable=False, server_default="{}", default=list)
     
-    openness_score = Column(Integer, default=50)
-    conscientiousness_score = Column(Integer, default=50)
-    extraversion_score = Column(Integer, default=50)
-    agreeableness_score = Column(Integer, default=50)
-    stability_score = Column(Integer, default=50)
+    openness_score = Column(Integer, nullable=False, server_default="50", default=50)
+    conscientiousness_score = Column(Integer, nullable=False, server_default="50", default=50)
+    extraversion_score = Column(Integer, nullable=False, server_default="50", default=50)
+    agreeableness_score = Column(Integer, nullable=False, server_default="50", default=50)
+    stability_score = Column(Integer, nullable=False, server_default="50", default=50)
     
     source = Column(String(20), default="auto")
     confidence_score = Column(Float, default=0.0)
