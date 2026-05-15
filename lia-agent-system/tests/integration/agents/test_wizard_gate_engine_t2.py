@@ -209,6 +209,64 @@ class WizardGateEngineT2(unittest.TestCase):
         self.assertIs(result.get("jd_approved"), True)
         self.assertEqual(graph_mod.route_after_gate(result), "bigfive")
 
+    # ---------------- S7e (regression: code review #5) ----------------
+    def test_S7e_post_reject_user_turn_is_classified_not_dropped(self):
+        """T2 fix #6 — depois de ``reject_with_feedback`` (turn N) ter
+        deixado ``jd_approved=False``, o PRÓXIMO turno do recrutador (N+1)
+        DEVE ser classificado pelo gate. Antes do fix, ``_not_approved``
+        exigia ``jd_approved is None`` → o turno N+1 caía direto no no-op
+        cleanup, ignorando a resposta do recrutador uma vez."""
+        clf = classifier_mod.get_wizard_gate_classifier()
+        out = _make_output(
+            "approve", 0.95, "Beleza, vamos seguir.",
+        )
+        with mock.patch.object(clf, "classify", new=mock.AsyncMock(return_value=out)):
+            with mock.patch.object(graph_mod, "_emit_jd_gate_audit", lambda *a, **k: None):
+                # Estado pós-reject (turn N): jd_approved=False, gate_last_intent=reject,
+                # seen=msg anterior do reject.
+                state = {
+                    "jd_enriched": {"titulo_padronizado": "Engenheiro Backend"},
+                    "jd_approved": False,
+                    "gate_last_intent": "reject_with_feedback",
+                    "gate_seen_user_query": "calma, refaz só skills",
+                    "user_query": "ok agora tá bom, manda bala",  # turn N+1
+                    "jd_quality_score": 65.0,
+                }
+                result = graph_mod.jd_gate_node(state)
+        # gate classificou (não caiu em no-op): jd_approved virou True (approve).
+        self.assertIs(result.get("jd_approved"), True)
+        self.assertEqual(result.get("gate_last_intent"), "approve")
+        # marker atualizado para a mensagem nova.
+        self.assertEqual(result.get("gate_seen_user_query"), "ok agora tá bom, manda bala")
+        # rota: bigfive (quality 65 ≥ 30 + approved).
+        self.assertEqual(graph_mod.route_after_gate(result), "bigfive")
+
+    def test_S7f_same_user_query_within_invoke_does_not_reclassify(self):
+        """T2 fix #6 — após ``provide_new_content`` rotear para intake →
+        jd_enrichment → jd_gate (segunda visita), o gate NÃO pode
+        re-classificar a MESMA mensagem. Marker ``gate_seen_user_query``
+        garante: se ``user_query == seen``, cai no no-op cleanup."""
+        clf = classifier_mod.get_wizard_gate_classifier()
+        # Se chamasse classify, daria provide_new_content de novo → loop.
+        with mock.patch.object(
+            clf, "classify",
+            new=mock.AsyncMock(side_effect=AssertionError("classify NÃO deveria ser chamado")),
+        ):
+            with mock.patch.object(graph_mod, "_emit_jd_gate_audit", lambda *a, **k: None):
+                state = {
+                    "jd_enriched": {"titulo_padronizado": "Engenheira de Dados"},  # re-enrichment já populou
+                    "jd_approved": False,
+                    "gate_last_intent": "provide_new_content",
+                    "gate_seen_user_query": "olha, na verdade segue a JD certinha: ...",
+                    "user_query": "olha, na verdade segue a JD certinha: ...",  # MESMA msg
+                    "jd_quality_score": 70.0,
+                }
+                result = graph_mod.jd_gate_node(state)
+        # Cleanup rodou: gate_last_intent limpo, jd_approved=None, route=end.
+        self.assertIsNone(result.get("gate_last_intent"))
+        self.assertIsNone(result.get("jd_approved"))
+        self.assertEqual(graph_mod.route_after_gate(result), "end")
+
     # ---------------- S7d (regression: code review #4) ----------------
     def test_S7d_ws_session_service_prefers_gate_clarify_message(self):
         """T2 fix #5 — `WizardSessionService.process_message` DEVE usar

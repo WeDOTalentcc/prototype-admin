@@ -365,6 +365,55 @@ class WizardSessionService:
             except Exception as mp_exc:
                 logger.warning("[WizardSession] manager_preferences injection failed (fail-open): %s", mp_exc)
 
+        # ── Hiring policy summary injection (T2 fix #7 — code review #5) ─
+        # O ``wizard_gate_classifier`` recebe ``hiring_policy_summary`` para
+        # calibrar a classificação de intent (ex.: tenants com
+        # ``manager_approval_for_offer=true`` exigem aprovação explícita;
+        # tenants com automação alta podem aceitar "ok" como approve).
+        # Sem essa injeção, o classifier opera sem contexto organizacional
+        # — requisito da Task #1085. Best-effort lazy load + cache no state.
+        if company_id and not state.get("hiring_policy_summary"):
+            try:
+                from app.core.database import AsyncSessionLocal
+                from sqlalchemy import text as _sql_text
+                async with AsyncSessionLocal() as _hp_db:
+                    row = (await _hp_db.execute(
+                        _sql_text(
+                            "SELECT pipeline_rules, screening_rules, automation_rules "
+                            "FROM company_hiring_policies "
+                            "WHERE company_id = CAST(:cid AS uuid) "
+                            "LIMIT 1"
+                        ),
+                        {"cid": str(company_id)},
+                    )).first()
+                if row:
+                    pr, sr, ar = row[0] or {}, row[1] or {}, row[2] or {}
+                    parts: list[str] = []
+                    if pr.get("manager_approval_for_offer") is not None:
+                        parts.append(
+                            f"aprovação_gestor_oferta={pr['manager_approval_for_offer']}"
+                        )
+                    if sr.get("min_quality_score") is not None:
+                        parts.append(f"qualidade_min_jd={sr['min_quality_score']}")
+                    if ar.get("auto_approve_threshold") is not None:
+                        parts.append(
+                            f"auto_approve_threshold={ar['auto_approve_threshold']}"
+                        )
+                    if ar.get("automation_level"):
+                        parts.append(f"automação={ar['automation_level']}")
+                    if parts:
+                        state["hiring_policy_summary"] = " | ".join(parts)[:500]
+                        logger.info(
+                            "[WizardSession] hiring_policy_summary injected (%d fields)",
+                            len(parts),
+                        )
+            except Exception as _hp_exc:
+                # Fail-open: classifier opera com summary vazio, mantém allowlist intacta.
+                logger.debug(
+                    "[WizardSession] hiring_policy_summary lazy-load failed (fail-open): %s",
+                    _hp_exc,
+                )
+
         tokens_emitted = 0
         if hasattr(wiz_g, "stream_invoke"):
             result, tokens_emitted = await wiz_g.stream_invoke(

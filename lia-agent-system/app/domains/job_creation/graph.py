@@ -2160,13 +2160,25 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
     # semântica explícita do path action-based e dos testes existentes.
     msg = (state.get("gate_resume_message") or "").strip()
     if not msg:
+        # T2 fix #6 (code review #5): WS resume também precisa cobrir
+        # POST-REJECT (jd_approved=False após reject_with_feedback). Antes
+        # checávamos só ``jd_approved is None``, então o turno seguinte do
+        # recrutador era ignorado uma vez (cleanup limpava jd_approved=None
+        # SEM classificar). Agora aceitamos qualquer estado != True
+        # (None ou False), e usamos um marcador ``gate_seen_user_query``
+        # para evitar re-classificar a MESMA mensagem na mesma invocação
+        # (ex.: provide_new_content → intake → jd_enrichment → jd_gate
+        # re-entra com user_query inalterado).
         _has_enriched = bool(state.get("jd_enriched"))
-        _not_approved = state.get("jd_approved") is None
+        _not_approved_yet = state.get("jd_approved") is not True
         _uq = (state.get("user_query") or "").strip()
-        if _has_enriched and _not_approved and _uq:
+        _seen = (state.get("gate_seen_user_query") or "").strip()
+        _is_fresh_turn = bool(_uq) and _uq != _seen
+        if _has_enriched and _not_approved_yet and _is_fresh_turn:
             msg = _uq
             logger.info(
-                "[JobCreation:jd_gate] WS resume detected (jd_enriched + user_query, no approval yet) — classify"
+                "[JobCreation:jd_gate] WS resume detected (jd_enriched + fresh user_query, jd_approved=%s) — classify",
+                state.get("jd_approved"),
             )
     if not msg:
         # Primeira passagem (após enrichment) OU re-entrada após
@@ -2287,6 +2299,7 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
             "gate_last_intent": output.intent,
             "gate_last_confidence": output.confidence,
             "current_stage": "jd_enrichment",
+            "gate_seen_user_query": msg,
         }
 
     intent = output.intent
@@ -2297,6 +2310,10 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
         "gate_last_intent": intent,
         "gate_last_confidence": output.confidence,
         "current_stage": "jd_enrichment",
+        # T2 fix #6: marca a mensagem como já classificada nesta invocação,
+        # para evitar re-classificação no segundo visit do gate (após
+        # provide_new_content → intake → jd_enrichment → jd_gate).
+        "gate_seen_user_query": msg,
     }
 
     extracted = output.extracted_data if isinstance(output.extracted_data, dict) else {}
