@@ -358,8 +358,9 @@ class WizardGateEngineT2(unittest.TestCase):
         LLM classificou o turno (``gate_last_intent`` truthy). Sem isso,
         o WS caía no path canned em loop (bug original).
 
-        Task #1089 (T3): _STAGE_DEFAULTS foi removido — o else-branch agora
-        é fail-loud (_emit_silent_fallback + _generate_fallback_reply).
+        Task #1089 (T3): o dict canned por stage foi removido — o
+        else-branch agora é fail-loud (_emit_silent_fallback +
+        _generate_fallback_reply).
         Este teste valida apenas a preferência por ``gate_clarify_message``
         quando ele está presente.
         """

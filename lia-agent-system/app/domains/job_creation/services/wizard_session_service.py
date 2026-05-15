@@ -25,15 +25,16 @@ logger = logging.getLogger(__name__)
 # Keys carried forward from context into wizard state
 _CONTEXT_CARRY_KEYS = ("right_panel_form", "attached_file_text", "tenant_context_snippet")
 
-# Task #1089 (T3) — _STAGE_DEFAULTS REMOVIDO. Era um dict canned por stage
-# que mascarava estado inválido do graph (mensagem repetida 4× em HITL,
-# bug original do screenshot). Sentinela arquitetural em
+# Task #1089 (T3) — o dict canned por stage que mascarava estado inválido
+# do graph (mensagem repetida 4× em HITL, bug original do screenshot) foi
+# REMOVIDO. Sentinela arquitetural em
 # tests/integration/agents/test_wizard_no_canned_fallback_t3.py veta a
 # reintrodução. Path canônico de fallback agora é fail-loud:
 # log error + Sentry + audit row (decision_type=wizard_fallback_invoked) +
-# Prometheus counter via WizardFallbackTracker + mensagem contextual
-# gerada via LLM (Haiku) ou, em último caso, mensagem hard-prefixada
-# (NÃO confundível com produto). Ver _emit_silent_fallback abaixo.
+# Prometheus counter (lia_wizard_silent_fallback_total) + tracker
+# rolling-window + mensagem contextual gerada via LLM (Haiku) ou, em
+# último caso, mensagem hard-prefixada (NÃO confundível com produto).
+# Ver _emit_silent_fallback abaixo.
 
 # Hard-prefix sinaliza estado inconsistente — UX vê isso e contata suporte
 # em vez de seguir achando que é resposta válida da LIA.
@@ -148,10 +149,23 @@ def _emit_silent_fallback(
     cid = str(company_id) if company_id else None
     stage_label = stage or "unknown"
 
+    # Sanitized bounded tail snapshot p/ diagnosticabilidade (R-013 / code
+    # review #2): mantém apenas role + 200 chars do content dos últimos 3
+    # turnos. PII leakage mitigado pelo truncate; log nunca explode.
+    tail_snapshot: list[dict] = []
+    for _msg in (conversation_tail or [])[-3:]:
+        if not isinstance(_msg, dict):
+            continue
+        _role = str(_msg.get("role") or "")[:24]
+        _content = str(_msg.get("content") or "").strip()[:200]
+        if _content:
+            tail_snapshot.append({"role": _role, "content_excerpt": _content})
+
     logger.error(
         "[WizardSession] silent fallback invoked stage=%s session=%s thread=%s "
-        "company=%s cause=%s tail_len=%s — graph returned no message",
-        stage_label, session_id, thread_id, cid, cause, len(conversation_tail or []),
+        "company=%s cause=%s tail_len=%s tail=%s — graph returned no message",
+        stage_label, session_id, thread_id, cid, cause,
+        len(conversation_tail or []), tail_snapshot,
     )
 
     # (b) Sentry
@@ -630,8 +644,8 @@ class WizardSessionService:
                 result = await asyncio.to_thread(wiz_g.invoke, state, thread_id)
         except Exception as inv_exc:  # noqa: BLE001
             # Task #1089 (T3) — fail-LOUD em invocação do graph. Antes da
-            # remoção do _STAGE_DEFAULTS este path PROPAGAVA a exceção e
-            # o WS handler caía em outra mensagem canned. Agora: emite
+            # remoção do dict canned este path PROPAGAVA a exceção e o
+            # WS handler caía em outra mensagem canned. Agora: emite
             # telemetria completa + devolve fallback contextual em vez
             # de quebrar o turno (e o cliente WS recebe payload válido).
             _emit_silent_fallback(
@@ -777,7 +791,7 @@ class WizardSessionService:
                 # Task #1089 (T3) — fail-LOUD em vez de canned por stage.
                 # O graph chegou aqui sem produzir mensagem nem
                 # gate_clarify_message — estado anômalo que ANTES era
-                # mascarado pelo dict _STAGE_DEFAULTS (anti-pattern Caso
+                # mascarado pelo dict canned removido (anti-pattern Caso
                 # #3/#4 do canonical-fix). Agora: log error + Sentry +
                 # audit (wizard_fallback_invoked) + Prometheus counter,
                 # e devolve resposta contextual via LLM (ou hard-prefix

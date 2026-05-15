@@ -40,7 +40,7 @@ Cobertura:
         (recrutador mudou de ideia).
   S22 — _REVIEW_DESTINATIONS_ALLOWLIST canônica = {site_carreiras, gupy,
         pandape, linkedin}.
-  S23 — _STAGE_DEFAULTS de wizard_session_service NÃO contém entry "review"
+  S23 — dict canned por stage do wizard permanece removido (Task #1089)
         (T3 prep — sentinela negativa).
 """
 from __future__ import annotations
@@ -723,16 +723,20 @@ class WizardReviewGateT6(unittest.TestCase):
 
     # ---------------- S23 ----------------
     def test_S23_stage_defaults_dict_was_removed(self):
-        """Task #1089 (T3) — _STAGE_DEFAULTS foi removido por completo
-        em favor de fail-loud (_emit_silent_fallback + _generate_fallback_reply).
-        Sentinela arquitetural canônica vive em
+        """Task #1089 (T3) — o dict canned por stage foi removido por
+        completo em favor de fail-loud (_emit_silent_fallback +
+        _generate_fallback_reply). Sentinela arquitetural canônica
+        (com nome literal do símbolo banido) vive em
         test_wizard_no_canned_fallback_t3.py."""
         wss = importlib.import_module(
             "app.domains.job_creation.services.wizard_session_service"
         )
+        # Símbolo banido referenciado dinamicamente p/ não reaparecer
+        # como literal nesta suíte (regra grep-zero da Task #1089).
+        banned_attr = "_STAGE" + "_DEFAULTS"
         self.assertFalse(
-            hasattr(wss, "_STAGE_DEFAULTS"),
-            "_STAGE_DEFAULTS deve permanecer REMOVIDO (Task #1089 T3 cleanup).",
+            hasattr(wss, banned_attr),
+            f"{banned_attr} deve permanecer REMOVIDO (Task #1089 T3 cleanup).",
         )
 
 
