@@ -96,6 +96,34 @@ def _column_is_nullable(conn, table: str, column: str) -> bool | None:
     return str(row).upper() == "YES"
 
 
+def _column_data_type(conn, table: str, column: str) -> str | None:
+    """Return the canonical Postgres ``data_type`` (e.g. ``ARRAY``, ``jsonb``).
+
+    The live schema has drifted from the SQLAlchemy model for some array
+    columns (e.g. ``default_languages`` landed as ``jsonb`` in production
+    while the model declares ``ARRAY(String)``). Picking the wrong default
+    literal raises ``DatatypeMismatchError``, so we introspect per column.
+    """
+    row = conn.execute(sa.text(
+        "SELECT data_type FROM information_schema.columns "
+        "WHERE table_schema='public' AND table_name=:t AND column_name=:c"
+    ), {"t": table, "c": column}).scalar()
+    if row is None:
+        return None
+    return str(row).lower()
+
+
+def _array_default_for(conn, column: str) -> str:
+    """Pick a NULL-replacement literal compatible with the live column type."""
+    dtype = _column_data_type(conn, "company_culture_profiles", column)
+    # Postgres reports JSONB as ``jsonb`` and JSON as ``json``.
+    if dtype in {"jsonb", "json"}:
+        return "'[]'::jsonb" if dtype == "jsonb" else "'[]'::json"
+    # Default to text[] for ARRAY columns and any unexpected type — matches
+    # the model declaration ``Column(ARRAY(String), ...)``.
+    return "ARRAY[]::text[]"
+
+
 def _harden(conn, column: str, default_sql: str) -> None:
     if not _column_exists(conn, "company_culture_profiles", column):
         return
@@ -127,7 +155,7 @@ def upgrade() -> None:
         return
 
     for col in _ARRAY_COLUMNS:
-        _harden(conn, col, "ARRAY[]::text[]")
+        _harden(conn, col, _array_default_for(conn, col))
 
     for col in _SCORE_COLUMNS:
         _harden(conn, col, "50")
