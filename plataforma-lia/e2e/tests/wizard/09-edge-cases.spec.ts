@@ -242,6 +242,47 @@ test.describe('Cenário D — Edge cases (cancelar / retomar / fallback)', () =>
               'LIA_JD_ENRICHMENT_TIMEOUT_S=0.001 setado mas o warning canônico "fallback determinístico (timeout)" (graph.py L361) não apareceu no DOM',
           })
           .toBe(true)
+
+        // Task #1112 — a ProgressBar precisa marcar a etapa jd_enrichment
+        // como degradada (chip "IA degradada" sobre o ponto da etapa). Sem
+        // isso, o recrutador aprova um JD enriquecido só com regex achando
+        // que veio do LLM. O badge persiste até o fim do wizard.
+        await expect(
+          page.locator('[data-testid="wizard-progress-degraded-jd_enrichment"]'),
+          'badge "IA degradada" deveria aparecer na etapa jd_enrichment quando *_used_fallback=True (Task #1112)'
+        ).toBeVisible({ timeout: 30_000 })
+        await expect(
+          page.locator('[data-testid="wizard-progress-degraded-summary"]')
+            .or(page.locator('[data-testid="wizard-progress-degraded-count"]')),
+          'resumo "X etapa(s) rodaram em modo degradado" deveria aparecer na ProgressBar (Task #1112)'
+        ).toBeVisible({ timeout: 5_000 })
+
+        // Task #1112 (hidden-stage gate) — `salary` é uma das 4 nodes que
+        // emite *_used_fallback (graph.py L1325/L1345), mas NÃO está em
+        // PLAN_VISIBLE_STAGES (não tem dot na ProgressBar). Quando o gate
+        // pw-cenario-D injetar TAMBÉM `LIA_SALARY_TIMEOUT_S=0.001`, a
+        // etapa precisa aparecer no LIST do summary (sem isso, o
+        // recrutador aprova um benchmark de salário fallback achando
+        // que veio do Pearch/Mercado).
+        const forcedSalaryFallback =
+          process.env.LIA_SALARY_TIMEOUT_S === '0.001'
+        if (forcedSalaryFallback) {
+          // Avança o wizard até passar pela etapa salary. Os turnos
+          // exatos variam com o orquestrador, mas o sentinel é o list
+          // item — pollar até aparecer ou estourar timeout.
+          await sendMessageAndWait(page, 'Git, Docker, AWS')
+          await sendMessageAndWait(page, 'pode avançar')
+          await sendMessageAndWait(
+            page,
+            'A faixa salarial é de R$ 15.000 a R$ 22.000 CLT'
+          )
+          await expect(
+            page.locator(
+              '[data-testid="wizard-progress-degraded-list-salary"]'
+            ),
+            'etapa salary (oculta dos pontos) deveria aparecer no resumo de etapas degradadas quando LIA_SALARY_TIMEOUT_S=0.001 (Task #1112)'
+          ).toBeVisible({ timeout: 60_000 })
+        }
       }
 
       await assertNoAiSlop(page)

@@ -212,6 +212,7 @@ export function UnifiedChat({
     stageData: wizardStageData,
     completeness: wizardCompleteness,
     stageHistory: wizardHistory,
+    degradedStages: wizardDegradedStages,
   } = wizard;
   const wizardActive =
     wizardStage !== null && wizardStage !== "done" && wizardStage !== "handoff";
@@ -642,6 +643,7 @@ export function UnifiedChat({
               currentStage={wizardStage}
               completeness={wizardCompleteness}
               stageHistory={wizardHistory}
+              degradedStages={wizardDegradedStages}
               compact={effectiveMode === "floating"}
             />
           </div>

@@ -23,6 +23,34 @@ import type {
 
 // --- State ---
 
+/**
+ * Task #1112 — mapa estável `WizardStage → flag *_used_fallback` no
+ * payload do node correspondente. Se o backend adicionar um 5º node com
+ * fallback determinístico, basta acrescentar uma entrada aqui (e a
+ * sentinela em `panels/AiDegradedModeBanner.test.tsx`).
+ *
+ * Espelha `_WIZARD_FALLBACK_NODES` em
+ * `lia-agent-system/app/domains/job_creation/graph.py` — qualquer
+ * divergência significa que o backend marcou um stage como degradado e
+ * o painel não exibirá o aviso "IA degradada nessa etapa".
+ */
+export const FALLBACK_FLAG_BY_STAGE: Partial<Record<WizardStage, string>> = {
+  jd_enrichment: "jd_enrichment_used_fallback",
+  bigfive: "bigfive_used_fallback",
+  salary: "salary_used_fallback",
+  wsi_questions: "wsi_questions_used_fallback",
+}
+
+const FALLBACK_REASON_KEY_BY_STAGE: Partial<Record<WizardStage, string>> = {
+  jd_enrichment: "jd_enrichment_fallback_reason",
+  bigfive: "bigfive_fallback_reason",
+  salary: "salary_fallback_reason",
+  wsi_questions: "wsi_questions_fallback_reason",
+}
+
+/** Per-stage degraded marker: `true` = generic degraded, string = root-cause label. */
+export type DegradedStageEntry = string | true
+
 interface WizardState {
   active: boolean
   currentStage: WizardStage | null
@@ -30,6 +58,14 @@ interface WizardState {
   completeness: number
   requiresApproval: boolean
   stageHistory: WizardStage[]
+  /**
+   * Task #1112 — quais stages do wizard rodaram em modo degradado
+   * (i.e. caíram no fallback determinístico no backend). Persiste entre
+   * STAGE_UPDATE: uma vez marcado, o badge fica visível na ProgressBar
+   * mesmo após o wizard avançar de stage, para o recrutador notar ao
+   * revisar.
+   */
+  degradedStages: Partial<Record<WizardStage, DegradedStageEntry>>
   threadId: string | null
   error: string | null
 }
@@ -41,8 +77,25 @@ const initialState: WizardState = {
   completeness: 0,
   requiresApproval: false,
   stageHistory: [],
+  degradedStages: {},
   threadId: null,
   error: null,
+}
+
+/**
+ * Task #1112 — extrai `*_used_fallback` do payload (se existir) e devolve
+ * o reason quando disponível. Pure helper, exportado para os testes.
+ */
+export function extractDegradedStage(
+  stage: WizardStage,
+  data: Record<string, unknown> | null | undefined,
+): DegradedStageEntry | null {
+  const flagKey = FALLBACK_FLAG_BY_STAGE[stage]
+  if (!flagKey || !data) return null
+  if (data[flagKey] !== true) return null
+  const reasonKey = FALLBACK_REASON_KEY_BY_STAGE[stage]
+  const reason = reasonKey ? data[reasonKey] : null
+  return typeof reason === "string" && reason.length > 0 ? reason : true
 }
 
 // --- Actions ---
@@ -76,6 +129,10 @@ function wizardReducer(state: WizardState, action: WizardAction): WizardState {
   switch (action.type) {
     case "STAGE_UPDATE": {
       const { stage, data, completeness, requires_approval } = action.payload
+      const degraded = extractDegradedStage(stage, data)
+      const nextDegraded = degraded
+        ? { ...state.degradedStages, [stage]: degraded }
+        : state.degradedStages
       return {
         ...state,
         active: true,
@@ -84,6 +141,7 @@ function wizardReducer(state: WizardState, action: WizardAction): WizardState {
         completeness,
         requiresApproval: requires_approval,
         stageHistory: buildHistory(state.currentStage, stage, state.stageHistory),
+        degradedStages: nextDegraded,
         error: null,
       }
     }
@@ -285,6 +343,7 @@ export function useWizardFlow(options: UseWizardFlowOptions = {}) {
     completeness: state.completeness,
     requiresApproval: state.requiresApproval,
     stageHistory: state.stageHistory,
+    degradedStages: state.degradedStages,
     threadId: state.threadId,
     error: state.error,
 
