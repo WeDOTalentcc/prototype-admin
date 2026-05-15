@@ -408,14 +408,15 @@ def intake_node(state: JobCreationState) -> JobCreationState:
     query = state.get("user_query", "") or state.get("raw_input", "")
     logger.info("[JobCreation:intake] query=%s", query[:80])
 
-    # T2 (Task #1085) — resume short-circuit: quando estamos resumindo o
-    # graph para o gate LLM (`gate_resume_message` presente) e o intake JÁ
-    # extraiu `parsed_title` em um turno anterior, NÃO re-rodar o
-    # IntakeExtractor (LLM + regex). Sem isso, cada turno do recrutador no
-    # HITL #1 paga ~1-3s + tokens à toa para extrair os mesmos campos.
-    # Preserva todo o state e atualiza apenas `current_stage` para que o
-    # roteamento downstream continue funcionando.
-    if state.get("gate_resume_message") and state.get("parsed_title"):
+    # T2 (Task #1085) — resume short-circuit em DOIS sinais (cobre WS canônico
+    # E action-based): (a) ``gate_resume_message`` setado pelo path
+    # ``domain.py::_handle_gate_jd``; OU (b) ``jd_enriched`` já populado
+    # vindo do checkpoint (path canônico WS via ``WizardSessionService``).
+    # Em ambos os casos, ``parsed_title`` já foi extraído em turno anterior
+    # e re-rodar IntakeExtractor (~1-3s + tokens) é desperdício puro.
+    if state.get("parsed_title") and (
+        state.get("gate_resume_message") or state.get("jd_enriched")
+    ):
         return {**state, "current_stage": "intake"}
 
     # ── F3-1: IntakeExtractor (LLM + regex fallback) ──
@@ -585,18 +586,15 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
         except Exception:  # noqa: BLE001 — fail-open
             pass
 
-    # If already enriched and approved, skip re-enrichment (resume path).
-    # T2 (Task #1085) — também short-circuit quando estamos resumindo para o
-    # gate LLM (`gate_resume_message` presente) e já temos `jd_enriched`. Sem
-    # isso, cada turno do recrutador no HITL re-roda o JdEnrichmentService
-    # (Gemini, ~5-12s, ~2-4k tokens), violando o target de ≤700ms p95 do
-    # gate. O caminho `provide_new_content` invalida `jd_enriched=None` no
-    # `jd_gate_node`, então o re-enrichment SÓ acontece quando o recrutador
-    # de fato enviou texto novo — comportamento correto.
-    if state.get("jd_enriched") and (
-        state.get("jd_approved") is not None
-        or state.get("gate_resume_message")
-    ):
+    # If already enriched, skip re-enrichment. Cobre os 3 paths:
+    # (a) HITL aprovado (jd_approved=True) — já saímos do gate;
+    # (b) action-based resume (gate_resume_message presente);
+    # (c) canônico WS — jd_enriched veio do checkpoint, recrutador está
+    #     respondendo ao gate. O único caminho que invalida o cache e força
+    #     re-enrichment é ``provide_new_content`` no jd_gate_node, que seta
+    #     ``jd_enriched=None`` explicitamente — então este guard cobrir
+    #     "tem jd_enriched ⇒ pula" é correto e seguro.
+    if state.get("jd_enriched"):
         jd_enriched_dict = state["jd_enriched"]
         jd_quality_score = state.get("jd_quality_score", 0.0)
         jd_quality_warnings = state.get("jd_quality_warnings", [])
@@ -2150,7 +2148,26 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
 
     Confidence < 0.7 → re-pergunta natural sem mutar ``jd_approved``.
     """
+    # T2 fix #2 (code review #2): no caminho canônico WS via
+    # ``WizardSessionService.process_message`` → ``graph.invoke`` direto, o
+    # campo ``gate_resume_message`` NÃO é setado externamente — só o caminho
+    # action-based em ``domain.py::_handle_gate_jd`` o seta. Para o gate ser
+    # alcançado em produção (que é o objetivo da task), detectamos o resume
+    # turn por sinal de state nativo: ``jd_enriched`` já populado +
+    # ``jd_approved`` ainda None ⇒ recrutador está respondendo ao HITL #1.
+    # Nesse caso, ``user_query`` é a resposta dele. Mantemos
+    # ``gate_resume_message`` como fonte preferencial para preservar a
+    # semântica explícita do path action-based e dos testes existentes.
     msg = (state.get("gate_resume_message") or "").strip()
+    if not msg:
+        _has_enriched = bool(state.get("jd_enriched"))
+        _not_approved = state.get("jd_approved") is None
+        _uq = (state.get("user_query") or "").strip()
+        if _has_enriched and _not_approved and _uq:
+            msg = _uq
+            logger.info(
+                "[JobCreation:jd_gate] WS resume detected (jd_enriched + user_query, no approval yet) — classify"
+            )
     if not msg:
         # Primeira passagem (após enrichment). Sem mensagem do recrutador para
         # interpretar — apenas marca o stage e END (o caller aguarda resposta).
@@ -2195,12 +2212,22 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
             running_loop = _asyncio.get_event_loop()
         except RuntimeError:
             running_loop = None
+        # T2 fix #3 (code review #2): plumb company_id/user_id do state para
+        # o classifier registrar custo no ledger ``external_api_consumption``
+        # (ConsumptionTrackingService.record_llm_call) por tenant. Sem isso,
+        # o cost tracker fica configurado mas nunca dispara em produção.
+        _company_id = (
+            state.get("workspace_id") or state.get("company_id")
+        )
+        _user_id = state.get("user_id") or state.get("recruiter_id")
         coro_factory = lambda: classifier.classify(  # noqa: E731
             user_message=msg,
             stage="jd_enrichment",
             ws_stage_payload=state.get("ws_stage_payload"),
             tenant_context_snippet=str(state.get("tenant_context_snippet") or ""),
             hiring_policy_summary=str(state.get("hiring_policy_summary") or ""),
+            company_id=str(_company_id) if _company_id else None,
+            user_id=str(_user_id) if _user_id else None,
         )
         if running_loop is not None and running_loop.is_running():
             # Dentro de loop ativo (ex.: chamado de WS handler async). Offload
