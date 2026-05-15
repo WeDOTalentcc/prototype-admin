@@ -167,6 +167,17 @@ class JobCreationState(TypedDict, total=False):
     job_id: Optional[int]  # Rails job ID after creation
     job_uid: Optional[str]
     publish_platforms: List[str]  # ["linkedin", "indeed", "website"]
+
+    # T6 (Task #1088) — tenant ATS integrations habilitadas (intersect com
+    # _REVIEW_DESTINATIONS_ALLOWLIST canônica em review_gate_node). Quando
+    # vazio/ausente, gate cai para a allowlist canônica completa
+    # (fail-soft em dev, mas review_gate_node loga warning).
+    tenant_enabled_ats: List[str]
+
+    # T6 (Task #1088) — confirmation_method da decisão de publish
+    # (chat | dual | button) propagado do review_gate_node para o
+    # publish_node final audit (rastreabilidade SOX 7y).
+    publish_confirmation_method: str
     sourcing_mode: Optional[Literal["local", "global", "hybrid"]]
     contact_channels: List[str]  # ["email", "whatsapp", "phone"]
     share_link: Optional[str]

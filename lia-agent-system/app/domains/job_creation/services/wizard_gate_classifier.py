@@ -193,6 +193,8 @@ class WizardGateClassifier:
         "competency": "prompts/job_creation/gate_competency.yaml",
         # T5 (Task #1087)
         "wsi_questions": "prompts/job_creation/gate_wsi_questions.yaml",
+        # T6 (Task #1088)
+        "review": "prompts/job_creation/gate_review.yaml",
     }
 
     def __init__(self, model: str | None = None) -> None:

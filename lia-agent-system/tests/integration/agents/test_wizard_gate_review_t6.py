@@ -468,6 +468,114 @@ class WizardReviewGateT6(unittest.TestCase):
             {"site_carreiras", "gupy", "pandape", "linkedin"},
         )
 
+    # ---------------- S24 ----------------
+    def test_S24_stage_prompt_paths_review_wired(self):
+        """T6 — gate_review.yaml DEVE estar registrado em STAGE_PROMPT_PATHS["review"]
+        para que classify(stage="review") use o prompt específico em vez de cair
+        no genérico de jd_enrichment. Regressão direta do code review T6."""
+        path = classifier_mod.WizardGateClassifier.STAGE_PROMPT_PATHS.get("review")
+        self.assertEqual(path, "prompts/job_creation/gate_review.yaml")
+        # E o arquivo precisa existir.
+        from pathlib import Path
+        # Classifier resolve via app_root = parents[3] de wizard_gate_classifier.py,
+        # que aponta para lia-agent-system/app/. Mesma convenção aqui.
+        app_root = Path(__file__).resolve().parents[3] / "app"
+        self.assertTrue(
+            (app_root / path).exists(),
+            f"gate_review.yaml não encontrado em {app_root / path}",
+        )
+
+    # ---------------- S25 ----------------
+    def test_S25_tenant_aware_destinations_blocks_non_enabled_channel(self):
+        """T6 — quando tenant_enabled_ats=['site_carreiras', 'linkedin'] e o
+        recrutador pede 'gupy' (que NÃO está habilitado pelo tenant), o gate
+        deve REJEITAR com clarify fail-loud, não silently aceitar."""
+        clf = classifier_mod.get_wizard_gate_classifier()
+        out = _make_output(
+            "configure_destinations", 0.93, "ok",
+            extracted={"destinations": ["gupy"]},
+        )
+        with mock.patch.object(clf, "classify", new=mock.AsyncMock(return_value=out)):
+            with mock.patch.object(
+                graph_mod, "_emit_review_gate_audit", lambda *a, **k: None,
+            ):
+                state = _base_review_state(
+                    gate_resume_message="manda pro Gupy",
+                    tenant_enabled_ats=["site_carreiras", "linkedin"],
+                )
+                result = graph_mod.review_gate_node(state)
+        # publish_platforms NÃO mudou.
+        self.assertEqual(result["publish_platforms"], ["site_carreiras", "linkedin"])
+        clarify = result["gate_clarify_message"].lower()
+        # Sinal de fail-loud: explica que não está habilitado pelo tenant.
+        self.assertIn("tenant", clarify)
+        self.assertIn("gupy", clarify)
+        # E lista APENAS canais do tenant (não "gupy", não "pandape").
+        self.assertNotIn("gupy", clarify.split("habilitados pelo seu tenant:")[1])
+
+    def test_S25b_tenant_aware_destinations_accepts_enabled_channel(self):
+        """T6 — Mirror positivo de S25: linkedin habilitado no tenant é aceito."""
+        clf = classifier_mod.get_wizard_gate_classifier()
+        out = _make_output(
+            "configure_destinations", 0.93, "ok",
+            extracted={"destinations": ["linkedin"]},
+        )
+        with mock.patch.object(clf, "classify", new=mock.AsyncMock(return_value=out)):
+            with mock.patch.object(
+                graph_mod, "_emit_review_gate_audit", lambda *a, **k: None,
+            ):
+                state = _base_review_state(
+                    gate_resume_message="só LinkedIn",
+                    tenant_enabled_ats=["site_carreiras", "linkedin"],
+                )
+                result = graph_mod.review_gate_node(state)
+        self.assertEqual(result["publish_platforms"], ["linkedin"])
+
+    # ---------------- S26 ----------------
+    def test_S26_publish_confirmation_method_propagated_to_state(self):
+        """T6 — o 2º publish_now (dentro do TTL) deve setar
+        publish_confirmation_method='dual' no state, para que publish_node
+        registre no audit final (rastreabilidade SOX 7y)."""
+        clf = classifier_mod.get_wizard_gate_classifier()
+        out = _make_output("publish_now", 0.95, "Confirmado.")
+        with mock.patch.object(clf, "classify", new=mock.AsyncMock(return_value=out)):
+            with mock.patch.object(
+                graph_mod, "_emit_review_gate_audit", lambda *a, **k: None,
+            ):
+                state = _base_review_state(
+                    gate_resume_message="confirmo",
+                    pending_publish_confirmation=True,
+                    publish_confirmation_ts=time.time() - 30.0,
+                )
+                result = graph_mod.review_gate_node(state)
+        self.assertEqual(result["publish_confirmation_method"], "dual")
+
+    # ---------------- S27 ----------------
+    def test_S27_request_changes_destinations_handled_inline(self):
+        """T6 — request_changes target=destinations NÃO roteia para "review"
+        (suprimido); handler inline emite clarify pedindo a lista de canais
+        e route=END (próximo turno cai em configure_destinations)."""
+        clf = classifier_mod.get_wizard_gate_classifier()
+        out = _make_output(
+            "request_changes", 0.92, "ok",
+            extracted={"target_section": "destinations", "instruction": "muda os canais"},
+        )
+        with mock.patch.object(clf, "classify", new=mock.AsyncMock(return_value=out)):
+            with mock.patch.object(
+                graph_mod, "_emit_review_gate_audit", lambda *a, **k: None,
+            ):
+                state = _base_review_state(
+                    gate_resume_message="muda os destinos",
+                )
+                result = graph_mod.review_gate_node(state)
+        self.assertEqual(graph_mod.route_after_review_gate(result), "end")
+        clarify = result["gate_clarify_message"].lower()
+        self.assertIn("canais", clarify)
+        # request_changes_pending registrado para audit/observabilidade.
+        self.assertEqual(
+            result["review_request_changes_pending"]["target_section"], "destinations",
+        )
+
     # ---------------- S23 ----------------
     def test_S23_stage_defaults_does_not_contain_review(self):
         wss = importlib.import_module(

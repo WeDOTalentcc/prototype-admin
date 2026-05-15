@@ -1912,9 +1912,17 @@ def publish_node(state: JobCreationState) -> JobCreationState:
                 reasoning=[
                     f"platforms={state.get('publish_platforms', [])}",
                     f"sourcing_mode={state.get('sourcing_mode')}",
+                    # T6 (Task #1088) — confirmation_method propagado pelo
+                    # review_gate_node (chat | dual | button). Default "button"
+                    # preserva o caminho legacy (UI button → policy_confirmed_publish
+                    # direto, sem passar pelo gate LLM).
+                    f"confirmation_method={state.get('publish_confirmation_method') or 'button'}",
                     *([f"error={error}"] if error else []),
                 ],
-                criteria_used=["job_data", "screening_config", "publish_platforms"],
+                criteria_used=[
+                    "job_data", "screening_config", "publish_platforms",
+                    f"confirmation_method:{state.get('publish_confirmation_method') or 'button'}",
+                ],
                 job_vacancy_id=job_id,
                 human_review_required=False,
             ))
@@ -3195,14 +3203,58 @@ _REVIEW_DESTINATIONS_ALLOWLIST: frozenset[str] = frozenset({
 
 # Mapeia ``target_section`` (do request_changes) → nó destino do graph.
 # Usado por ``route_after_review_gate`` quando o recrutador pede ajuste.
+# Para ``destinations`` o roteamento é determinístico END (não há nó
+# dedicado): o gate emite ``gate_clarify_message`` pedindo os canais
+# desejados, e o próximo turno do recrutador é classificado como
+# ``configure_destinations`` (handler dedicado no mesmo gate). Isso
+# evita o anti-padrão "route → review (suprimido) → END" criticado no
+# code review.
 _REVIEW_TARGET_SECTION_TO_NODE: dict[str, str] = {
     "title": "jd_enrichment",
     "description": "jd_enrichment",
     "questions": "wsi_questions",
     "salary": "salary",
     "pipeline": "eligibility",
-    "destinations": "review",
+    # NOTE: "destinations" propositalmente AUSENTE — handled inline.
 }
+
+# T6: target_sections válidos para ``request_changes`` (inclui
+# "destinations" mesmo que não tenha nó destino — handled inline).
+_REVIEW_VALID_TARGET_SECTIONS: frozenset[str] = frozenset({
+    "title", "description", "questions", "salary", "pipeline", "destinations",
+})
+
+
+def _resolve_effective_destinations_allowlist(state: JobCreationState) -> tuple[frozenset[str], bool]:
+    """T6 — resolve allowlist EFETIVA de destinos para o tenant.
+
+    Retorna ``(allowlist, is_tenant_constrained)``. Quando o state contém
+    ``tenant_enabled_ats`` populado por upstream (TenantAwareAgentMixin /
+    settings hub), o gate INTERSECTA com ``_REVIEW_DESTINATIONS_ALLOWLIST``
+    canônica e usa essa intersecção como gate de validação. Quando vazio,
+    fail-soft para a allowlist canônica completa (com warning) — preserva
+    UX em dev/onboarding sem ATS configurado.
+
+    Crítico para o code review T6: pedir um canal NÃO habilitado pelo
+    tenant agora produz clarify fail-loud, não um silent allow.
+    """
+    raw = state.get("tenant_enabled_ats") or []
+    if not isinstance(raw, list) or not raw:
+        return _REVIEW_DESTINATIONS_ALLOWLIST, False
+    tenant_set = frozenset(
+        str(d).strip().lower() for d in raw
+        if str(d).strip().lower() in _REVIEW_DESTINATIONS_ALLOWLIST
+    )
+    if not tenant_set:
+        # tenant_enabled_ats existe mas nada cai na canônica — fail-soft
+        # para canônica completa (provavelmente config inválido upstream).
+        logger.warning(
+            "[JobCreation:review_gate] tenant_enabled_ats=%r não intersecta "
+            "com allowlist canônica — caindo na canônica completa",
+            raw,
+        )
+        return _REVIEW_DESTINATIONS_ALLOWLIST, False
+    return tenant_set, True
 
 # TTL (segundos) entre o 1º ``publish_now`` (que SETA pending) e o 2º
 # (que destrava ``policy_confirmed_publish``). Após o TTL expirar, o 2º
@@ -3375,6 +3427,9 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
             next_state["policy_confirmed_publish"] = True
             next_state["pending_publish_confirmation"] = False
             next_state["publish_confirmation_ts"] = None
+            # T6 — propaga confirmation_method para o publish_node final
+            # audit (rastreabilidade SOX 7y).
+            next_state["publish_confirmation_method"] = "dual"
             next_state["gate_clarify_message"] = (
                 output.conversational_reply
                 or "Confirmado. Publicando a vaga agora nos canais selecionados."
@@ -3402,15 +3457,32 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
     elif intent == "request_changes":
         target = str(extracted.get("target_section") or "").strip().lower()
         instruction = str(extracted.get("instruction") or "").strip()[:500]
-        if target not in _REVIEW_TARGET_SECTION_TO_NODE or not instruction:
+        if target not in _REVIEW_VALID_TARGET_SECTIONS or not instruction:
             logger.info(
                 "[JobCreation:review_gate] request_changes schema inválido (target=%r, instr_len=%d) → clarify",
                 target, len(instruction),
             )
-            valid_sections = ", ".join(sorted(_REVIEW_TARGET_SECTION_TO_NODE.keys()))
+            valid_sections = ", ".join(sorted(_REVIEW_VALID_TARGET_SECTIONS))
             next_state["gate_clarify_message"] = (
                 f"Qual seção você quer ajustar ({valid_sections}) e o que mudar nela?"
             )
+        elif target == "destinations":
+            # Inline-handled: NÃO há nó destino para "destinations" — pedimos
+            # imediatamente a lista de canais (próximo turno cai em
+            # ``configure_destinations``). Resolvemos a allowlist tenant-aware
+            # para listar SOMENTE canais que o tenant tem habilitados.
+            allow_eff, is_tenant = _resolve_effective_destinations_allowlist(state)
+            allow_str = ", ".join(sorted(allow_eff))
+            scope = "habilitados pelo seu tenant" if is_tenant else "disponíveis"
+            next_state["review_request_changes_pending"] = {
+                "target_section": "destinations",
+                "instruction": instruction,
+            }
+            next_state["gate_clarify_message"] = (
+                f"Quais canais você quer publicar? {scope.capitalize()}: {allow_str}."
+            )
+            next_state["pending_publish_confirmation"] = False
+            next_state["publish_confirmation_ts"] = None
         else:
             next_state["review_request_changes_pending"] = {
                 "target_section": target,
@@ -3427,9 +3499,8 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
             elif target == "salary":
                 next_state["salary_min"] = None
                 next_state["salary_max"] = None
-            # pipeline / destinations: sem flag global a limpar — o nó
-            # destino lê ``review_request_changes_pending`` para aplicar
-            # a instrução cirúrgica.
+            # pipeline: sem flag global a limpar — o nó eligibility lê
+            # ``review_request_changes_pending`` como hint cirúrgico.
             next_state["gate_clarify_message"] = (
                 output.conversational_reply
                 or f"Beleza, vou voltar em {target} pra ajustar ({instruction[:60]})."
@@ -3442,10 +3513,11 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
         raw_dests = extracted.get("destinations") or []
         if not isinstance(raw_dests, list):
             raw_dests = []
-        valid = [
-            str(d).strip().lower() for d in raw_dests
-            if str(d).strip().lower() in _REVIEW_DESTINATIONS_ALLOWLIST
-        ]
+        # T6 — tenant-aware validation: intersect com canônica + ATS habilitados.
+        allow_eff, is_tenant_constrained = _resolve_effective_destinations_allowlist(state)
+        normalized = [str(d).strip().lower() for d in raw_dests]
+        valid = [d for d in normalized if d in allow_eff]
+        rejected = [d for d in normalized if d and d not in allow_eff]
         # Dedup preservando ordem.
         seen = set()
         valid_dedup = []
@@ -3454,16 +3526,35 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
                 seen.add(d)
                 valid_dedup.append(d)
         if not valid_dedup:
-            allowed_str = ", ".join(sorted(_REVIEW_DESTINATIONS_ALLOWLIST))
-            next_state["gate_clarify_message"] = (
-                f"Quais canais você quer publicar? Disponíveis: {allowed_str}."
-            )
+            allowed_str = ", ".join(sorted(allow_eff))
+            scope = "habilitados pelo seu tenant" if is_tenant_constrained else "disponíveis"
+            if rejected:
+                rej_str = ", ".join(sorted(set(rejected)))
+                next_state["gate_clarify_message"] = (
+                    f"Os canais {rej_str} não estão {scope} pra essa empresa. "
+                    f"Quais você quer publicar? {scope.capitalize()}: {allowed_str}."
+                )
+            else:
+                next_state["gate_clarify_message"] = (
+                    f"Quais canais você quer publicar? {scope.capitalize()}: {allowed_str}."
+                )
         else:
             next_state["publish_platforms"] = valid_dedup
-            next_state["gate_clarify_message"] = (
-                output.conversational_reply
-                or f"Configurando publicação em: {', '.join(valid_dedup)}. Quando quiser, me confirma pra publicar."
-            )
+            # Limpa o request_changes pending — destinos foram resolvidos.
+            next_state["review_request_changes_pending"] = None
+            if rejected:
+                rej_str = ", ".join(sorted(set(rejected)))
+                scope = "habilitados pelo seu tenant" if is_tenant_constrained else "disponíveis"
+                next_state["gate_clarify_message"] = (
+                    f"Configurando publicação em: {', '.join(valid_dedup)} "
+                    f"(ignorei {rej_str} — não estão {scope}). "
+                    "Quando quiser, me confirma pra publicar."
+                )
+            else:
+                next_state["gate_clarify_message"] = (
+                    output.conversational_reply
+                    or f"Configurando publicação em: {', '.join(valid_dedup)}. Quando quiser, me confirma pra publicar."
+                )
             # Reseta dual-confirmation — destinos mudaram.
             next_state["pending_publish_confirmation"] = False
             next_state["publish_confirmation_ts"] = None
