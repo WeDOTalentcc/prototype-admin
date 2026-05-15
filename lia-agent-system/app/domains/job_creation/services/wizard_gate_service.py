@@ -369,6 +369,7 @@ class WizardGateService:
         decision: str,
         comment: str | None,
         resume_domain: str,
+        actor_user_id: str | None = None,
     ) -> None:
         """Emite **um** audit row em ``audit_logs`` por gate resolvido.
 
@@ -396,6 +397,9 @@ class WizardGateService:
                 ],
                 criteria_used=["wizard_hitl_unified_contract", resume_domain],
                 human_review_required=False,
+                # Task #1092 — propaga aprovador para permitir verificação
+                # de idempotência via /admin/audit-decisions/by-user/{id}.
+                actor_user_id=actor_user_id or None,
             )
         except Exception as exc:
             logger.warning("[WizardGateService] audit emit falhou (best-effort): %s", exc)
@@ -547,6 +551,7 @@ class WizardGateService:
                     decision="rejected",
                     comment=comment,
                     resume_domain=resume_domain,
+                    actor_user_id=user_id or None,
                 )
                 payload = {
                     "status": "rejected",
@@ -585,6 +590,7 @@ class WizardGateService:
                     decision="approved",
                     comment=comment,
                     resume_domain=resume_domain,
+                    actor_user_id=user_id or None,
                 )
 
             payload = {

@@ -113,6 +113,7 @@ class AuditService:
         confidence: float | None = None,
         human_review_required: bool = False,
         criteria_ignored: list[str] | None = None,
+        actor_user_id: str | None = None,
     ) -> AuditLog:
         """
         Log an AI decision with full context for auditability.
@@ -169,6 +170,14 @@ class AuditService:
                 confidence=confidence,
                 human_review_required=human_review_required,
                 retention_until=retention_until,
+                # Task #366 column-promotion workaround — `actor_user_id`
+                # ainda não tem coluna dedicada; reusamos `session_id`
+                # para casar com `audit_service.get_decisions_by_user`
+                # (a query usa `AuditLog.session_id == actor_user_id`).
+                # Surfaceado em Task #1092 para permitir verificação
+                # de idempotência do `wizard_gate_service` via
+                # `/admin/audit-decisions/by-user/{actor_user_id}`.
+                session_id=actor_user_id,
                 # PR-A (Task #1016) — populamos created_at em Python para
                 # NÃO precisar de session.refresh() após o COMMIT. O refresh
                 # falhava com InvalidRequestError em sessões RLS-bound
