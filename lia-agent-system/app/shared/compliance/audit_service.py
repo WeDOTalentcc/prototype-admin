@@ -60,6 +60,11 @@ DECISION_TYPE_MAPPING = {
     # Cada node decisório do JobCreationGraph (bigfive, wsi_questions,
     # competency, eligibility) emite um audit row ao concluir.
     "wizard_step_completed": DecisionType.GENERATE_FEEDBACK,
+    # Task #1089 (T3) — fail-loud em fallback do WizardSessionService.
+    # Quando o graph não devolve mensagem, em vez de cair em string canned
+    # (anti-pattern Caso #3/#4 do canonical-fix), emite-se este audit row
+    # com `human_review_required=True` para EU AI Act trail + investigação.
+    "wizard_fallback_invoked": DecisionType.GENERATE_FEEDBACK,
 }
 
 PROTECTED_CRITERIA = [

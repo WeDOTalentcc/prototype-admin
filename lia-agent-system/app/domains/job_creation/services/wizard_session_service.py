@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import os
 from typing import Any
 
 logger = logging.getLogger(__name__)
@@ -24,17 +25,174 @@ logger = logging.getLogger(__name__)
 # Keys carried forward from context into wizard state
 _CONTEXT_CARRY_KEYS = ("right_panel_form", "attached_file_text", "tenant_context_snippet")
 
-# Stage-aware default responses (avoids empty string responses)
-_STAGE_DEFAULTS: dict[str, str] = {
-    "intake": "Captei a vaga. Vou seguir para o próximo passo.",
-    "jd_enrichment": "Descrição da vaga enriquecida — preciso da sua aprovação.",
-    # T5 (Task #1087) — `wsi_questions` removido em favor do
-    # `gate_clarify_message` produzido pelo `wsi_questions_gate_node`
-    # LLM-based. Default canned ("Perguntas de triagem WSI sugeridas
-    # — preciso da sua aprovação.") era um dos vetores do bug
-    # original (canned-repeat 4× em HITL #2).
-    "completed": "Vaga criada com sucesso.",
-}
+# Task #1089 (T3) — _STAGE_DEFAULTS REMOVIDO. Era um dict canned por stage
+# que mascarava estado inválido do graph (mensagem repetida 4× em HITL,
+# bug original do screenshot). Sentinela arquitetural em
+# tests/integration/agents/test_wizard_no_canned_fallback_t3.py veta a
+# reintrodução. Path canônico de fallback agora é fail-loud:
+# log error + Sentry + audit row (decision_type=wizard_fallback_invoked) +
+# Prometheus counter via WizardFallbackTracker + mensagem contextual
+# gerada via LLM (Haiku) ou, em último caso, mensagem hard-prefixada
+# (NÃO confundível com produto). Ver _emit_silent_fallback abaixo.
+
+# Hard-prefix sinaliza estado inconsistente — UX vê isso e contata suporte
+# em vez de seguir achando que é resposta válida da LIA.
+_FALLBACK_HARD_PREFIX = "[ATENÇÃO: estado inconsistente — contate suporte]"
+
+
+def _build_hard_fallback_message(stage: str | None) -> str:
+    """Mensagem de último recurso (LLM indisponível). Prefixada para NUNCA
+    ser confundida com mensagem de produto da LIA."""
+    stage_label = stage or "wizard"
+    return (
+        f"{_FALLBACK_HARD_PREFIX} Não consegui interpretar o turno atual "
+        f"(etapa: {stage_label}). Você quer (1) tentar novamente, "
+        f"(2) revisar o que já registramos ou (3) pedir ajuda?"
+    )
+
+
+async def _generate_fallback_reply(
+    *,
+    stage: str | None,
+    conversation_tail: list[dict] | None,
+    tenant_snippet: str | None,
+) -> str:
+    """LLM-based contextual fallback. Cheap model (Haiku), 3s timeout, safe
+    fallback to hard-prefixed message on any failure. Disabled in tests via
+    LIA_WIZARD_FALLBACK_LLM_DISABLED=1."""
+    if os.environ.get("LIA_WIZARD_FALLBACK_LLM_DISABLED", "").strip() in {"1", "true", "yes"}:
+        return _build_hard_fallback_message(stage)
+    try:
+        from langchain_anthropic import ChatAnthropic  # type: ignore
+        from langchain_core.messages import HumanMessage, SystemMessage  # type: ignore
+
+        model_name = os.environ.get(
+            "LIA_WIZARD_FALLBACK_MODEL", "claude-3-5-haiku-20241022",
+        )
+        timeout_s = float(os.environ.get("LIA_WIZARD_FALLBACK_TIMEOUT_S", "3"))
+        llm = ChatAnthropic(model=model_name, temperature=0, timeout=timeout_s, max_tokens=200)
+
+        tail_lines: list[str] = []
+        for msg in (conversation_tail or [])[-4:]:
+            role = (msg.get("role") or "").lower()
+            content = str(msg.get("content") or "").strip()[:300]
+            if content:
+                tail_lines.append(f"- {role or 'msg'}: {content}")
+        tail_text = "\n".join(tail_lines) or "(sem histórico)"
+        sys = (
+            "Você é a LIA, assistente de recrutamento. O wizard está em estado "
+            f"inconsistente na etapa '{stage or 'wizard'}'. Gere UMA resposta curta "
+            "(1-2 frases) em PT-BR, natural, perguntando o que o recrutador quer "
+            "fazer (tentar de novo, revisar o registrado, ou pedir ajuda). NÃO "
+            "invente conteúdo da vaga. NÃO repita prompts canned como 'preciso da "
+            "sua aprovação'."
+        )
+        if tenant_snippet:
+            sys += f"\n\nContexto do tenant: {tenant_snippet[:400]}"
+        user = f"Últimos turnos:\n{tail_text}"
+        result = await asyncio.wait_for(
+            llm.ainvoke([SystemMessage(content=sys), HumanMessage(content=user)]),
+            timeout=timeout_s,
+        )
+        text = (getattr(result, "content", "") or "").strip()
+        if text and "preciso da sua aprovação" not in text.lower():
+            return text[:500]
+    except Exception as exc:  # noqa: BLE001 — fallback é fail-open p/ hard prefix
+        logger.warning(
+            "[WizardSession] fallback LLM falhou (stage=%s): %s — usando hard prefix",
+            stage, exc,
+        )
+    return _build_hard_fallback_message(stage)
+
+
+def _emit_silent_fallback(
+    *,
+    stage: str | None,
+    company_id: Any,
+    session_id: str | None,
+    thread_id: str | None,
+    conversation_tail: list[dict] | None,
+    cause: str,
+) -> None:
+    """Task #1089 (T3) — fail-LOUD path quando o graph não devolve mensagem.
+    Combina:
+      (a) ``logger.error`` com contexto completo;
+      (b) Sentry ``capture_message`` (level=error) em prod;
+      (c) audit row ``decision_type=wizard_fallback_invoked`` (EU AI Act);
+      (d) Prometheus counter via :func:`WizardFallbackTracker.record_fallback`
+          (label ``stage``, escopo session+tenant, threshold de alerta).
+    Todas as 4 sub-chamadas são fail-open individualmente — telemetria nunca
+    derruba o turno do recrutador."""
+    cid = str(company_id) if company_id else None
+    stage_label = stage or "unknown"
+
+    logger.error(
+        "[WizardSession] silent fallback invoked stage=%s session=%s thread=%s "
+        "company=%s cause=%s tail_len=%s — graph returned no message",
+        stage_label, session_id, thread_id, cid, cause, len(conversation_tail or []),
+    )
+
+    # (b) Sentry
+    try:  # pragma: no cover — Sentry opcional em testes
+        import sentry_sdk
+        sentry_sdk.capture_message(
+            f"Wizard silent fallback invoked (stage={stage_label})",
+            level="error",
+            extras={
+                "stage": stage_label,
+                "session_id": session_id,
+                "thread_id": thread_id,
+                "company_id": cid,
+                "cause": cause,
+            },
+        )
+    except Exception:
+        pass
+
+    # (c) Audit row
+    try:
+        from app.shared.compliance.audit_service import AuditService
+
+        if cid:
+            asyncio.create_task(AuditService().log_decision(
+                company_id=cid,
+                agent_name=f"wizard_session:{stage_label}",
+                decision_type="wizard_fallback_invoked",
+                action=f"silent_fallback_{stage_label}",
+                decision="fallback_emitted",
+                reasoning=[
+                    f"stage={stage_label}",
+                    f"cause={cause}",
+                    f"session_id={session_id or '∅'}",
+                    f"thread_id={thread_id or '∅'}",
+                ],
+                criteria_used=[
+                    "wizard_fallback",
+                    f"stage:{stage_label}",
+                    f"cause:{cause}",
+                ],
+                human_review_required=True,
+            ))
+    except Exception as audit_exc:  # noqa: BLE001
+        logger.warning(
+            "[WizardSession] fallback audit emission failed (fail-open): %s",
+            audit_exc,
+        )
+
+    # (d) Prometheus counter via tracker
+    try:
+        from app.shared.observability.wizard_fallback_tracker import (
+            get_wizard_fallback_tracker,
+        )
+        get_wizard_fallback_tracker().record_fallback(
+            session_id=session_id, company_id=cid,
+            stage=stage_label, reason=f"silent_{cause}",
+        )
+    except Exception as tr_exc:  # noqa: BLE001
+        logger.warning(
+            "[WizardSession] fallback tracker emission failed (fail-open): %s",
+            tr_exc,
+        )
 
 
 class WizardSessionService:
@@ -437,7 +595,21 @@ class WizardSessionService:
             result = await asyncio.to_thread(wiz_g.invoke, state, thread_id)
 
         if not isinstance(result, dict):
-            return ("Vaga em criação — vamos seguir.", {}, tokens_emitted)
+            # Task #1089 — fail-loud: graph devolveu tipo inesperado.
+            _emit_silent_fallback(
+                stage=None,
+                company_id=company_id,
+                session_id=session_id,
+                thread_id=thread_id,
+                conversation_tail=state.get("conversation_messages") if isinstance(state, dict) else None,
+                cause=f"non_dict_result:{type(result).__name__}",
+            )
+            fallback_msg = await _generate_fallback_reply(
+                stage=None,
+                conversation_tail=state.get("conversation_messages") if isinstance(state, dict) else None,
+                tenant_snippet=state.get("tenant_context_snippet") if isinstance(state, dict) else None,
+            )
+            return (fallback_msg, {}, tokens_emitted)
 
         # ── Learning loop: record manager preferences on handoff ──────
         # Called here (async context) instead of inside handoff_node (sync).
@@ -520,14 +692,12 @@ class WizardSessionService:
 
         # T2 fix #5 (code review #4): quando o LLM gate (jd_gate_node) acabou
         # de classificar o turno do recrutador, a resposta contextual está em
-        # ``state["gate_clarify_message"]``. Sem esta linha, o WS responde
-        # com ``_STAGE_DEFAULTS["jd_enrichment"]`` ("Descrição da vaga
-        # enriquecida — preciso da sua aprovação.") em LOOP — exatamente o
-        # bug original que a Task #1085 promete corrigir. Preferência:
-        # gate_clarify_message > stage_data.message > stage_data.response_text
-        # > _STAGE_DEFAULTS. Aplicável APENAS quando o gate registrou um
-        # intent neste turno (``gate_last_intent`` truthy) — fora do flow
-        # do gate o comportamento legado é preservado.
+        # ``state["gate_clarify_message"]``. Sem esta linha, o WS caía no
+        # path canned em LOOP (bug original do screenshot, Task #1085).
+        # Preferência: gate_clarify_message > stage_data.message >
+        # stage_data.response_text > fail-loud (_emit_silent_fallback +
+        # _generate_fallback_reply). Aplicável APENAS quando o gate
+        # registrou um intent neste turno (``gate_last_intent`` truthy).
         gate_msg = result.get("gate_clarify_message") if isinstance(result, dict) else None
         gate_intent = result.get("gate_last_intent") if isinstance(result, dict) else None
         # T2 fix #11 (code review #9 comment 2): fairness-block path no
@@ -547,6 +717,28 @@ class WizardSessionService:
             message = (
                 stage_data.get("message")
                 or stage_data.get("response_text")
-                or _STAGE_DEFAULTS.get(current_stage, f"Etapa atual: {current_stage or 'wizard'}.")
             )
+            if not message:
+                # Task #1089 (T3) — fail-LOUD em vez de canned por stage.
+                # O graph chegou aqui sem produzir mensagem nem
+                # gate_clarify_message — estado anômalo que ANTES era
+                # mascarado pelo dict _STAGE_DEFAULTS (anti-pattern Caso
+                # #3/#4 do canonical-fix). Agora: log error + Sentry +
+                # audit (wizard_fallback_invoked) + Prometheus counter,
+                # e devolve resposta contextual via LLM (ou hard-prefix
+                # quando LLM falha).
+                _emit_silent_fallback(
+                    stage=current_stage,
+                    company_id=company_id,
+                    session_id=session_id,
+                    thread_id=thread_id,
+                    conversation_tail=result.get("conversation_messages"),
+                    cause="empty_message",
+                )
+                message = await _generate_fallback_reply(
+                    stage=current_stage,
+                    conversation_tail=result.get("conversation_messages"),
+                    tenant_snippet=result.get("tenant_context_snippet")
+                    or (state.get("tenant_context_snippet") if isinstance(state, dict) else None),
+                )
         return (message, stage_payload, tokens_emitted)

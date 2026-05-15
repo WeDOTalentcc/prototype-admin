@@ -722,15 +722,17 @@ class WizardReviewGateT6(unittest.TestCase):
         )
 
     # ---------------- S23 ----------------
-    def test_S23_stage_defaults_does_not_contain_review(self):
+    def test_S23_stage_defaults_dict_was_removed(self):
+        """Task #1089 (T3) — _STAGE_DEFAULTS foi removido por completo
+        em favor de fail-loud (_emit_silent_fallback + _generate_fallback_reply).
+        Sentinela arquitetural canônica vive em
+        test_wizard_no_canned_fallback_t3.py."""
         wss = importlib.import_module(
             "app.domains.job_creation.services.wizard_session_service"
         )
-        defaults = getattr(wss, "_STAGE_DEFAULTS", {})
-        self.assertNotIn(
-            "review", defaults,
-            "_STAGE_DEFAULTS NÃO deve ter entry 'review' (T3 prep — review é "
-            "calculado, não default).",
+        self.assertFalse(
+            hasattr(wss, "_STAGE_DEFAULTS"),
+            "_STAGE_DEFAULTS deve permanecer REMOVIDO (Task #1089 T3 cleanup).",
         )
 
 
