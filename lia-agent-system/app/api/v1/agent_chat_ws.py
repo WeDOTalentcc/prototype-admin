@@ -599,38 +599,10 @@ async def agent_chat_ws(
                                         source="hitl_resume",
                                     ))
                                     conversation_history.append({"role": "assistant", "content": _wsi_msg})
-                                # wizard: contrato canônico unificado (Task #1084 / T1).
-                                # WizardGateService.resume_gate é o único entry point —
-                                # idempotente por gate_id, audit row único por gate.
-                                # Mesmo contrato será consumido pelo classifier LLM de chat
-                                # livre na Task #1085 (T2). NÃO instanciar JobWizardGraph
-                                # aqui diretamente — quebra o contrato.
-                                elif resume_domain == "wizard":
-                                    from app.domains.job_creation.services.wizard_gate_service import (
-                                        wizard_gate_service,
-                                    )
-                                    # NÃO repassar gate_id do cliente — derivação canônica
-                                    # via (thread_id, pending_id) é a única fonte de verdade
-                                    # (anti-tampering, ver D8 / Task #1084).
-                                    _gate_result = await wizard_gate_service.resume_gate(
-                                        thread_id=ws_thread_id,
-                                        pending_id=ws_pending_id,
-                                        decision="approved" if ws_approved else "rejected",
-                                        ws_session_id=session_id,
-                                        company_id=str(company_id or ""),
-                                        user_id=str(user_id or ""),
-                                        comment=ws_comment,
-                                        resume_domain="wizard",
-                                        agent_timeout=_AGENT_TIMEOUT,
-                                    )
-                                    _wiz_msg = _strip_react_json(_gate_result.get("message", ""))
-                                    await ws_mgr.send_to_session(session_id, serialize_message(
-                                        content=_wiz_msg,
-                                        confidence=0.95,
-                                        domain="wizard",
-                                        source="hitl_resume",
-                                    ))
-                                    conversation_history.append({"role": "assistant", "content": _wiz_msg})
+                                # NOTE: wizard (approved E rejected) é tratado pela
+                                # branch top-level `if resume_domain == "wizard"`
+                                # acima — entry point único via `wizard_gate_service.resume_gate`.
+                                # Não há `elif resume_domain == "wizard"` aqui de propósito.
                                 else:
                                     resume_agent = _get_agent(resume_domain)
                                     if resume_agent:
