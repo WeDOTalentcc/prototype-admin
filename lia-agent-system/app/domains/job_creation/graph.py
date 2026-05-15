@@ -2169,10 +2169,36 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
                 "[JobCreation:jd_gate] WS resume detected (jd_enriched + user_query, no approval yet) — classify"
             )
     if not msg:
-        # Primeira passagem (após enrichment). Sem mensagem do recrutador para
-        # interpretar — apenas marca o stage e END (o caller aguarda resposta).
-        logger.info("[JobCreation:jd_gate] no resume message — END (waiting for user)")
-        return {**state, "current_stage": "jd_enrichment"}
+        # Primeira passagem (após enrichment) OU re-entrada após
+        # ``provide_new_content`` ter rodado intake+jd_enrichment_node. Sem
+        # mensagem nova do recrutador para classificar.
+        #
+        # T2 fix #4 (code review #3): LIMPAR ``gate_last_intent`` e resetar
+        # ``jd_approved`` quando re-entrando depois de um intent transitório
+        # (provide_new_content / reject_with_feedback / ask_question /
+        # off_topic). Sem isso, o ``route_after_gate`` ainda enxerga
+        # ``provide_new_content + jd_approved=False`` desta visita anterior
+        # e re-roteia para ``intake`` em loop até estourar
+        # ``GraphRecursionError``. ``approve`` (jd_approved=True) NÃO é
+        # transitório — preservamos. ``fairness_blocked`` também é terminal.
+        _last_intent = state.get("gate_last_intent")
+        _is_transitional = _last_intent in (
+            "provide_new_content", "reject_with_feedback",
+            "ask_question", "off_topic",
+        )
+        clean_state = {**state, "current_stage": "jd_enrichment"}
+        if _is_transitional and not state.get("jd_fairness_blocked"):
+            clean_state["gate_last_intent"] = None
+            # jd_approved foi setado a False por essas mutações — reseta para
+            # None ("aguardando aprovação") para o route cair no branch END
+            # padrão e aguardar o próximo turno do recrutador.
+            if state.get("jd_approved") is False:
+                clean_state["jd_approved"] = None
+        logger.info(
+            "[JobCreation:jd_gate] no resume message — END (waiting for user, prior_intent=%s, cleared=%s)",
+            _last_intent, _is_transitional,
+        )
+        return clean_state
 
     # Layer 1 fairness on the user's *resume* message (a discriminação pode
     # entrar via "manda bala mas só candidatos masculinos"). FairnessGuard L1

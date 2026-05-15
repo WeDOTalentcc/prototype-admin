@@ -154,6 +154,61 @@ class WizardGateEngineT2(unittest.TestCase):
         self.assertIn("Backend", result["raw_input"])
         self.assertEqual(graph_mod.route_after_gate(result), "intake")
 
+    # ---------------- S7b (regression: code review #3) ----------------
+    def test_S7b_provide_new_content_loop_breaks_after_re_enrichment(self):
+        """T2 fix #4 — após `provide_new_content` rotear para intake e o
+        graph re-rodar intake+jd_enrichment, o gate é re-visitado SEM
+        ``gate_resume_message`` (recrutador ainda não respondeu de novo).
+        ``route_after_gate`` DEVE devolver ``end`` em vez de re-rotear para
+        intake (o que causava loop até ``GraphRecursionError``).
+
+        Reproduz a transição: jd_gate(provide_new_content) → intake →
+        jd_enrichment → jd_gate(no msg) → END.
+        """
+        # Estado pós-re-enrichment: jd_enriched populado, jd_approved=False
+        # (deixado por provide_new_content), gate_last_intent ainda
+        # "provide_new_content", gate_resume_message="" (foi consumido).
+        # user_query é o MESMO da rodada anterior (recrutador ainda não
+        # mandou nada novo) — simulamos vazio para garantir que não há
+        # detecção espúria de resume.
+        post_reenrichment_state = {
+            "gate_resume_message": "",
+            "user_query": "",
+            "jd_enriched": {"titulo_padronizado": "Engenheiro Backend"},
+            "jd_approved": False,
+            "gate_last_intent": "provide_new_content",
+            "gate_last_confidence": 0.95,
+            "raw_input": "novo conteudo da JD",
+            "jd_quality_score": 65.0,
+        }
+        with mock.patch.object(graph_mod, "_emit_jd_gate_audit", lambda *a, **k: None):
+            result = graph_mod.jd_gate_node(post_reenrichment_state)
+        # Loop fix: gate limpou gate_last_intent E resetou jd_approved=None.
+        self.assertIsNone(result.get("gate_last_intent"))
+        self.assertIsNone(result.get("jd_approved"))
+        # Routing agora cai no branch END default — não mais "intake".
+        self.assertEqual(graph_mod.route_after_gate(result), "end")
+
+    def test_S7c_approve_intent_is_preserved_across_no_op_revisit(self):
+        """Garantia complementar: ``approve`` (jd_approved=True) NÃO é
+        considerado intent transitório — não pode ser limpo no no-op,
+        senão o graph nunca avança para bigfive."""
+        post_approve_state = {
+            "gate_resume_message": "",
+            "user_query": "",
+            "jd_enriched": {"titulo_padronizado": "Engenheiro Backend"},
+            "jd_approved": True,
+            "gate_last_intent": "approve",
+            "gate_last_confidence": 0.95,
+            "jd_quality_score": 65.0,
+        }
+        with mock.patch.object(graph_mod, "_emit_jd_gate_audit", lambda *a, **k: None):
+            result = graph_mod.jd_gate_node(post_approve_state)
+        # approve preservado; rota → bigfive (quality 65 ≥ 30).
+        self.assertEqual(result.get("gate_last_intent"), "approve")
+        self.assertIs(result.get("jd_approved"), True)
+        self.assertEqual(graph_mod.route_after_gate(result), "bigfive")
+
     # ---------------- S8 ----------------
     def test_S8_ask_question_does_not_mutate_jd_approved(self):
         clf = classifier_mod.get_wizard_gate_classifier()
