@@ -53,6 +53,135 @@ _UUID3 = UUID("550e8400-e29b-41d4-a716-446655440002")
 _UUID4 = UUID("550e8400-e29b-41d4-a716-446655440003")
 
 
+class TestCompanyCultureProfileLegacyNullCoercion:
+    """Task #1098 — guarantee legacy DB rows with NULL columns don't 500.
+
+    The SQLAlchemy model uses Python-side ``default=[]`` / ``default=50`` and
+    no ``server_default`` / ``NOT NULL`` for the array and score columns, so
+    rows written before those defaults existed (or via raw SQL) carry NULL.
+    The response schema now coerces those NULLs to the documented defaults so
+    the wizard's culture-profile step doesn't fail with ``ResponseValidationError``.
+    """
+
+    def _legacy_row(self) -> dict:
+        return {
+            "website_url": "https://legacy.example.com",
+            "values": None,
+            "evp_bullets": None,
+            "core_competencies": None,
+            "analyzed_pages": None,
+            "locations": None,
+            "tech_stack": None,
+            "default_languages": None,
+            "openness_score": None,
+            "conscientiousness_score": None,
+            "extraversion_score": None,
+            "agreeableness_score": None,
+            "stability_score": None,
+        }
+
+    def test_base_coerces_null_arrays_and_scores(self):
+        m = CompanyCultureProfileBase(**self._legacy_row())
+        assert m.values == []
+        assert m.evp_bullets == []
+        assert m.core_competencies == []
+        assert m.analyzed_pages == []
+        assert m.locations == []
+        assert m.tech_stack == []
+        assert m.default_languages == []
+        assert m.openness_score == 50
+        assert m.conscientiousness_score == 50
+        assert m.extraversion_score == 50
+        assert m.agreeableness_score == 50
+        assert m.stability_score == 50
+
+    def test_response_validates_full_legacy_row(self):
+        from datetime import datetime as _dt
+
+        payload = {
+            **self._legacy_row(),
+            "id": _UUID1,
+            "company_id": _UUID2,
+            "source": "auto",
+            "confidence_score": 0.5,
+            "last_analysis_at": _dt(2024, 1, 1, 12, 0, 0),
+            "created_at": _dt(2024, 1, 1, 12, 0, 0),
+            "updated_at": _dt(2024, 1, 1, 12, 0, 0),
+        }
+        m = CompanyCultureProfileResponse(**payload)
+        assert m.values == []
+        assert m.openness_score == 50
+        assert m.website_url == "https://legacy.example.com"
+
+    def test_populated_values_pass_through_unchanged(self):
+        row = self._legacy_row()
+        row["values"] = ["transparency"]
+        row["openness_score"] = 73
+        m = CompanyCultureProfileBase(**row)
+        assert m.values == ["transparency"]
+        assert m.openness_score == 73
+        assert m.evp_bullets == []  # still coerced
+
+    def test_response_from_attributes_orm_path(self):
+        """Production path: FastAPI calls ``model_validate(orm_row)`` with
+        ``from_attributes=True``. The validator must coerce NULLs read off
+        the ORM object's attributes, not just dict keys."""
+        from datetime import datetime as _dt
+
+        class _OrmRow:
+            pass
+
+        # simulate a SQLAlchemy ``CompanyCultureProfile`` row whose
+        # array/score columns were never populated (legacy NULLs)
+        row = _OrmRow()
+        row.id = _UUID1
+        row.company_id = _UUID2
+        row.website_url = "https://legacy.example.com"
+        row.linkedin_url = None
+        row.mission = None
+        row.vision = None
+        row.culture_description = None
+        row.values = None
+        row.evp_bullets = None
+        row.core_competencies = None
+        row.analyzed_pages = None
+        row.locations = None
+        row.tech_stack = None
+        row.default_languages = None
+        row.openness_score = None
+        row.conscientiousness_score = None
+        row.extraversion_score = None
+        row.agreeableness_score = None
+        row.stability_score = None
+        row.industry = None
+        row.employee_count = None
+        row.company_size = None
+        row.headquarters = None
+        row.founded_year = None
+        row.work_model = None
+        row.growth_opportunities = None
+        row.team_dynamics = None
+        row.leadership_style = None
+        row.dei_initiatives = None
+        row.sustainability = None
+        row.social_impact = None
+        row.engineering_culture = None
+        row.source = "auto"
+        row.confidence_score = 0.5
+        row.last_analysis_at = _dt(2024, 1, 1, 12, 0, 0)
+        row.created_at = _dt(2024, 1, 1, 12, 0, 0)
+        row.updated_at = _dt(2024, 1, 1, 12, 0, 0)
+
+        m = CompanyCultureProfileResponse.model_validate(row, from_attributes=True)
+        assert m.values == []
+        assert m.evp_bullets == []
+        assert m.tech_stack == []
+        assert m.default_languages == []
+        assert m.openness_score == 50
+        assert m.stability_score == 50
+        assert m.website_url == "https://legacy.example.com"
+
+
 class TestCompanyCultureProfileCreate:
     def test_basic(self):
         m = CompanyCultureProfileCreate(
