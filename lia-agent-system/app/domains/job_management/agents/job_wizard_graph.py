@@ -8,9 +8,14 @@ streaming execution, and state persistence.
 
 # CANONICAL-EXEMPT: legacy HITL resume — wizard de criacao de vaga canonical
 # vive em app/domains/job_creation/ (WizardSessionService + JobCreationGraph).
-# Este arquivo permanece DEPRECATED apenas para suportar HITL resume em
-# agent_chat_ws.py:558-561 durante a Fase 1 da migracao planejada em
-# .planning/adrs/ADR-CANONICAL-001-wizard-domain.md.
+#
+# Task #1090 / T2 (#1085) APOSENTOU este motor do caminho de resume HITL:
+# `WizardGateService._resume_engine` agora delega para
+# `JobCreationGraph.aresume_with_message(...)` (langgraph.types.interrupt() +
+# Command(resume=...)). Este arquivo permanece apenas para call-sites
+# secundários (langgraph.json wizard_graph entry, crew_examples e suítes
+# E2E/checkpointer) e será removido em uma task seguinte que cubra esses
+# consumidores. NÃO reintroduzir em paths quentes do wizard.
 
 import asyncio
 import logging

@@ -277,6 +277,102 @@ async def test_s5_resume_gate_timeout_does_not_persist_cas_or_audit():
 # ----------------------------------------------------------------------
 
 
+def test_resume_engine_uses_job_creation_graph_not_legacy_wizard():
+    """Sentinela Task #1085 / T2: ``WizardGateService._resume_engine`` DEVE
+    delegar para ``JobCreationGraph.aresume_with_message`` (motor canônico
+    baseado em ``langgraph.types.interrupt()``) e NÃO mais para o legacy
+    ``JobWizardGraph.ainvoke(None)``.
+
+    O motor legacy perdia a resposta do recrutador entre turnos, fazendo
+    o wizard repetir a mesma pergunta em loop ("preciso da sua aprovação"
+    4× ignorando "manda bala"/"tá liberado"). O motor canônico pausa em
+    ``interrupt()`` e retoma via ``Command(resume=<msg>)`` exatamente no
+    ponto da pergunta, com a resposta como input estruturado.
+    """
+    import ast
+    import inspect
+    import textwrap
+
+    from app.domains.job_creation.services.wizard_gate_service import (
+        WizardGateService,
+    )
+
+    raw_src = textwrap.dedent(inspect.getsource(WizardGateService._resume_engine))
+    # Strip the docstring before checking — historical references to legacy
+    # patterns ("JobWizardGraph", "ainvoke(None)") são esperadas no docstring
+    # como parte da explicação do "porquê" da migração e não constituem
+    # regressão. Só importa o código executável.
+    tree = ast.parse(raw_src)
+    fn = tree.body[0]
+    if (
+        fn.body
+        and isinstance(fn.body[0], ast.Expr)
+        and isinstance(fn.body[0].value, ast.Constant)
+        and isinstance(fn.body[0].value.value, str)
+    ):
+        fn.body = fn.body[1:]
+    src = ast.unparse(fn)
+
+    assert "JobCreationGraph" in src, (
+        "_resume_engine DEVE referenciar JobCreationGraph (Task #1085 / T2). "
+        "Encontrado source sem essa classe — provavelmente regrediu para "
+        "o motor legacy JobWizardGraph."
+    )
+    assert "aresume_with_message" in src, (
+        "_resume_engine DEVE chamar aresume_with_message (resume canônico "
+        "via langgraph.types.interrupt() + Command(resume=...))."
+    )
+    forbidden_usages = [
+        "import JobWizardGraph",
+        "JobWizardGraph()",
+        "JobWizardGraph(",
+    ]
+    leaked = [pat for pat in forbidden_usages if pat in src]
+    assert not leaked, (
+        f"_resume_engine NÃO pode mais importar/instanciar JobWizardGraph "
+        f"(legacy DEPRECATED). Use JobCreationGraph como motor único. "
+        f"Padrões proibidos encontrados: {leaked}"
+    )
+    assert "ainvoke(None" not in src.replace(" ", ""), (
+        "_resume_engine NÃO pode mais usar ainvoke(None) — esse padrão "
+        "perde a resposta do recrutador entre turnos. Use "
+        "aresume_with_message para entregar a decisão ao interrupt() pausado."
+    )
+
+
+@pytest.mark.asyncio
+async def test_resume_engine_forwards_comment_as_resume_message():
+    """Quando o aprovador deixa um comentário livre na decisão, o
+    ``_resume_engine`` DEVE entregá-lo como ``resume_message`` para o
+    ``interrupt()`` pausado — sem isso, o nó do wizard recebe sempre
+    o mesmo placeholder ``"approved"`` e perde o conteúdo da decisão
+    (regressão do bug original)."""
+    svc = WizardGateService()
+    fake_engine = AsyncMock(return_value="ok")
+    fake_audit = AsyncMock()
+
+    with patch.object(svc, "_resume_engine", fake_engine), \
+         patch.object(svc, "_emit_gate_audit", fake_audit):
+        await svc.resume_gate(
+            thread_id="wiz-fwd-comment",
+            pending_id="pid-fwd",
+            decision="approved",
+            ws_session_id="sf",
+            company_id="00000000-0000-4000-a000-000000000001",
+            user_id="user-fwd",
+            comment="aprovo, mas troca o título para Engenheiro Backend Pleno",
+        )
+
+    assert fake_engine.await_count == 1
+    kwargs = fake_engine.await_args.kwargs
+    assert kwargs.get("resume_message") == (
+        "aprovo, mas troca o título para Engenheiro Backend Pleno"
+    ), (
+        "comentário do aprovador DEVE ser propagado como resume_message — "
+        "default 'approved' só vale quando comment está vazio."
+    )
+
+
 def test_wizard_gate_service_singleton_exposed():
     """O módulo deve expor ``wizard_gate_service`` como singleton — é o
     contrato pelo qual handlers de transport devem importar a service."""

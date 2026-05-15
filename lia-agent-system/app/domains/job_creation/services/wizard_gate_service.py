@@ -40,14 +40,17 @@ subsequentes para o mesmo ``gate_id`` retornam o resultado cacheado e NÃO
 emitem novo audit row — o que protege contra duplo-clique no botão e contra
 o usuário aprovar via chat depois de já ter aprovado via botão (e vice-versa).
 
-**Por que ``JobWizardGraph`` ainda é o engine de resume aqui (não ``JobCreationGraph``):**
-``JobWizardGraph`` é hoje o ÚNICO grafo que (a) emite ``hitl_service.request_approval``
-no caminho do wizard, (b) tem ``interrupt_before=["stage_transition"]`` configurado,
-e (c) sabe consumir ``ainvoke(None)`` para retomar a partir do checkpoint
-LangGraph. T1 NÃO migra essa responsabilidade — apenas cria o seam. **Task #1085
-(T2)** é quem troca a implementação de ``_resume_engine`` para usar
-``JobCreationGraph`` com ``interrupt()`` LangGraph nativo, sem mudar o contrato
-público desta classe.
+**Engine de resume (Task #1085 / T2):**
+``_resume_engine`` agora delega para ``JobCreationGraph.aresume_with_message``
+— o grafo canônico do wizard, baseado em ``langgraph.types.interrupt()``.
+Quando o checkpoint está pausado em um ``interrupt()`` (HITL gate canônico:
+intake / jd_enrichment / wsi / review), o resume injeta a decisão do
+aprovador via ``Command(resume=<msg>)`` e o nó pausado retoma exatamente
+no ponto da pergunta com a resposta como input estruturado, eliminando o
+loop "wizard repete a mesma pergunta 4× ignorando o que o recrutador
+respondeu" originalmente causado pelo path legacy ``JobWizardGraph.ainvoke(None)``.
+O contrato público ``resume_gate(...)`` permanece inalterado — apenas o
+engine interno trocou.
 
 Constraints arquiteturais herdadas:
   - NÃO mexer no MRO ``TenantAwareAgentMixin → LangGraphReActBase → EnhancedAgentMixin``.
@@ -414,25 +417,43 @@ class WizardGateService:
         thread_id: str,
         resume_domain: str,
         agent_timeout: float,
+        resume_message: str = "approved",
     ) -> str:
         """Retoma o grafo LangGraph pausado e devolve a mensagem final.
 
-        T1: delega para ``JobWizardGraph.ainvoke(None)`` — mesmo comportamento
-        que o handler WS fazia inline antes desta task. T2 (#1085) substitui
-        por ``JobCreationGraph`` com ``interrupt()`` nativo.
+        T2 (Task #1085): delega para ``JobCreationGraph.aresume_with_message``
+        — o grafo canônico do wizard, que pausa em ``langgraph.types.interrupt()``
+        nos HITL gates e retoma via ``Command(resume=<msg>)`` no ponto exato
+        da pergunta. Esse contrato substitui o legacy ``JobWizardGraph.ainvoke(None)``,
+        que perdia a resposta do recrutador entre turnos e fazia o wizard
+        repetir a mesma pergunta em loop.
+
+        Args:
+            thread_id: thread LangGraph (canonical via ``derive_thread_id``).
+            resume_domain: domínio do gate (``"wizard"`` etc) — preservado
+                para audit/observability; só wizard é coberto hoje.
+            agent_timeout: timeout do ``ainvoke`` (segundos).
+            resume_message: payload textual entregue ao ``interrupt()`` que
+                pausou o grafo. Default ``"approved"`` cobre o fluxo de
+                aprovação via botão (sem comentário). Quando o aprovador
+                deixou um comentário livre, o caller passa o comentário
+                como ``resume_message`` para que o nó pausado consiga
+                interpretar o conteúdo da decisão.
         """
-        from app.domains.job_management.agents.job_wizard_graph import JobWizardGraph
-        wiz_g = JobWizardGraph()
-        if wiz_g._compiled_lg is None:
-            wiz_g._compiled_lg = wiz_g._build_langgraph()
-        config = {"configurable": {"thread_id": thread_id}}
+        from app.domains.job_creation.graph import JobCreationGraph
+        graph = JobCreationGraph()
         result = await asyncio.wait_for(
-            wiz_g._compiled_lg.ainvoke(None, config=config),
+            graph.aresume_with_message(thread_id, resume_message),
             timeout=agent_timeout,
         )
         if isinstance(result, dict):
+            stage_payload = result.get("ws_stage_payload") or {}
+            stage_data = stage_payload.get("data") or {}
             return (
-                result.get("response", "")
+                result.get("gate_clarify_message", "")
+                or stage_data.get("message", "")
+                or stage_data.get("response_text", "")
+                or result.get("response", "")
                 or result.get("user_message", "")
                 or "Vaga criada com sucesso."
             )
@@ -569,6 +590,7 @@ class WizardGateService:
                     thread_id=thread_id,
                     resume_domain=resume_domain,
                     agent_timeout=agent_timeout,
+                    resume_message=(comment or "approved"),
                 )
                 status = "ok"
             except asyncio.TimeoutError:
