@@ -213,6 +213,37 @@ function generateSessionId(): string {
 
 const SESSION_STORAGE_KEY = "lia.wizard.session_id";
 
+// Task #1097 — persist the current chat conversation id across reloads so the
+// frontend can replay history (`/conversations/{id}`) after the user refreshes
+// mid-wizard. Without this, the right-side wizard panel would be hydrated from
+// the backend resume payload but the chat surface would appear blank until the
+// next user turn. Stored in sessionStorage (same lifecycle as `session_id`) so
+// closing the tab still resets the chat — only refresh / soft-nav restores it.
+const CHAT_CONVERSATION_STORAGE_KEY = "lia.chat.conversation_id";
+
+function loadStoredConversationId(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const stored = window.sessionStorage.getItem(CHAT_CONVERSATION_STORAGE_KEY);
+    return stored && stored.length > 0 ? stored : null;
+  } catch {
+    return null;
+  }
+}
+
+function persistConversationId(id: string | null): void {
+  if (typeof window === "undefined") return;
+  try {
+    if (id && id.length > 0) {
+      window.sessionStorage.setItem(CHAT_CONVERSATION_STORAGE_KEY, id);
+    } else {
+      window.sessionStorage.removeItem(CHAT_CONVERSATION_STORAGE_KEY);
+    }
+  } catch {
+    /* sessionStorage unavailable — degrade silently */
+  }
+}
+
 function loadOrCreateSessionId(): string {
   if (typeof window === "undefined") {
     return generateSessionId();
@@ -333,10 +364,42 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
   const setChatConversationId = useCallback(
     (id: string | null) => {
       chatConversationIdRef.current = id;
+      persistConversationId(id);
       connection.setConversationId(id);
     },
     [connection],
   );
+
+  // Task #1097 — restore the persisted conversation id once after mount and
+  // pull its history. Runs only when (a) sessionStorage has a value from the
+  // previous tab lifetime AND (b) the connection has not already learned a
+  // conversation id from the WS handshake. Guarded by a ref so it never
+  // double-fires across React 18 StrictMode mounts.
+  const didRestoreConversationRef = useRef(false);
+  useEffect(() => {
+    if (didRestoreConversationRef.current) return;
+    if (chatConversationId) return; // WS already supplied one — nothing to restore
+    const stored = loadStoredConversationId();
+    if (!stored) return;
+    didRestoreConversationRef.current = true;
+    chatConversationIdRef.current = stored;
+    connection.setConversationId(stored);
+    void connection.loadHistory(stored).then((history) => {
+      if (history.length > 0) {
+        setChatMessages(history);
+      }
+    });
+  }, [chatConversationId, connection]);
+
+  // Mirror WS-derived conversation id into sessionStorage so it survives
+  // refresh. The setChatConversationId callback covers explicit FE writes;
+  // this effect catches the WS-driven path (`connection.conversationId`
+  // populated by the `message` event in useChatSocket).
+  useEffect(() => {
+    if (chatConversationId) {
+      persistConversationId(chatConversationId);
+    }
+  }, [chatConversationId]);
 
   const addChatMessage = useCallback((msg: LiaChatMessage) => {
     setChatMessages((prev) => [...prev, msg]);

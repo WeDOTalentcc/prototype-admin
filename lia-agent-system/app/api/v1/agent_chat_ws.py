@@ -478,6 +478,73 @@ async def agent_chat_ws(
             "domain": domain,
         })
 
+        # ── Wizard resume resync (Task #1097) ─────────────────────────────
+        # When the browser reloads mid-wizard, the LangGraph checkpoint is
+        # preserved (Task #1080) but the FE loses the in-memory `wizard_stage`
+        # payload that drives the right-side panel + `useWizardFlow` state.
+        # If localStorage was also cleared (incognito, clean profile, LGPD
+        # purge), the panel and chat fall out of sync until the user types.
+        # Re-emit the persisted ws_stage_payload right after `connected` so
+        # the FE rehydrates panel + wizard hook deterministically from the
+        # backend source of truth. Fail-open: any error is logged and skipped
+        # so a broken checkpointer never blocks the chat handshake.
+        try:
+            from app.shared.sessions import (
+                derive_thread_id as _resume_derive_tid,
+                is_wizard_session_active as _resume_is_active,
+            )
+
+            if await _resume_is_active(company_id, session_id):
+                _resume_thread_id = _resume_derive_tid(company_id, session_id)
+                from app.domains.job_creation.graph import (
+                    get_job_creation_graph as _resume_get_graph,
+                )
+
+                _resume_graph = _resume_get_graph()
+                _resume_snapshot = await asyncio.to_thread(
+                    _resume_graph._graph.get_state,
+                    {"configurable": {"thread_id": _resume_thread_id}},
+                )
+                _resume_values = (
+                    getattr(_resume_snapshot, "values", None) or {}
+                )
+                _resume_payload = _resume_values.get("ws_stage_payload") or {}
+                _resume_stage = (
+                    _resume_payload.get("stage")
+                    or _resume_values.get("current_stage")
+                    or "wizard"
+                )
+                if _resume_payload or _resume_stage:
+                    await ws_mgr.send_to_session(session_id, {
+                        "type": "wizard_stage",
+                        "session_id": session_id,
+                        "thread_id": _resume_thread_id,
+                        "stage": _resume_stage,
+                        "data": _resume_payload.get(
+                            "data", _resume_values.get("right_panel_form") or {},
+                        ),
+                        "completeness": _resume_payload.get(
+                            "completeness",
+                            _resume_values.get("completeness", 0.0),
+                        ),
+                        "requires_approval": bool(
+                            _resume_payload.get(
+                                "requires_approval",
+                                _resume_values.get("requires_approval", False),
+                            ),
+                        ),
+                        "resumed": True,
+                    })
+                    logger.info(
+                        "[AgentChatWS] wizard_resume_resync: session=%s "
+                        "stage=%s (Task #1097)",
+                        session_id, _resume_stage,
+                    )
+        except Exception as _resume_exc:  # pragma: no cover — fail-open
+            logger.debug(
+                "[AgentChatWS] wizard_resume_resync skipped: %s", _resume_exc,
+            )
+
         while True:
             try:
                 raw = await asyncio.wait_for(websocket.receive_text(), timeout=300.0)
