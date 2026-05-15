@@ -2387,18 +2387,44 @@ def _emit_jd_gate_audit(
     except Exception:
         return
 
+    # T2 fix #9 (code review #6 comment 3): EU AI Act Art. 13 — incluir
+    # snapshot before/after compacto do state mutado pelo gate. Sem isso, o
+    # audit row registra a decisão (intent/confidence) mas não a mutação,
+    # quebrando rastreabilidade de "qual decisão automatizada alterou o
+    # quê". Snapshot mínimo: jd_approved + gate_last_intent (campos
+    # determinísticos da intent map) + jd_quality_score.
+    _intent = str(output.intent)
+    _before = {
+        "jd_approved": state.get("jd_approved"),
+        "gate_last_intent": state.get("gate_last_intent"),
+        "jd_quality_score": state.get("jd_quality_score"),
+        "jd_enriched_present": bool(state.get("jd_enriched")),
+    }
+    _after_jd_approved = _before["jd_approved"]
+    if _intent == "approve":
+        _after_jd_approved = True
+    elif _intent in ("reject_with_feedback", "provide_new_content"):
+        _after_jd_approved = False
+    _after = {
+        "jd_approved": _after_jd_approved,
+        "gate_last_intent": _intent,
+        "jd_quality_score": 0.0 if _intent == "provide_new_content" else _before["jd_quality_score"],
+        "jd_enriched_present": False if _intent == "provide_new_content" else _before["jd_enriched_present"],
+    }
     coro = audit_service.log_decision(
         company_id=company_id,
         agent_name="wizard_jd_gate_classifier",
         decision_type="wizard_step_completed",
         action="jd_gate_classify",
-        decision=str(output.intent),
+        decision=_intent,
         reasoning=[
-            f"intent={output.intent}",
+            f"intent={_intent}",
             f"confidence={float(output.confidence or 0.0):.2f}",
             f"thread_id={state.get('session_id') or ''}",
             f"user_msg_preview={user_message[:120]}",
             f"reply_preview={(output.conversational_reply or '')[:120]}",
+            f"state_before={_before}",
+            f"state_after={_after}",
         ],
         criteria_used=["llm_intent_classifier", "wizard_jd_enrichment"],
         confidence=float(output.confidence or 0.0),
