@@ -573,6 +573,63 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
             _fg_l1_exc,
         )
 
+    # ── Input-thin guard (Task #1096 / canonical-fix) ──
+    # Quando o recrutador escreve apenas uma mensagem de intenção (ex.:
+    # "vamos abrir uma vaga", "quero criar vaga"), sem JD anexada, sem
+    # texto colado e sem right_panel_form preenchido, NÃO faz sentido
+    # gastar tokens enriquecendo lixo. O LLM produziria uma JD inventada
+    # e o painel renderizaria conteúdo fictício. Este guard pede ao
+    # recrutador o material mínimo (JD colada, upload, ou continuar
+    # respondendo no painel) e devolve uma ``data.message`` contextual
+    # — fechando a lacuna que disparava ``[ATENÇÃO: estado inconsistente]``
+    # via ``WizardSessionService._emit_silent_fallback`` (Task #1089 T3).
+    # Threshold escolhido empiricamente: JDs reais têm ≥120 caracteres;
+    # mensagens de intenção (intake-only) ficam <80. Margem de segurança
+    # de 100 evita falsos positivos em JDs muito curtas.
+    _has_panel_form = bool(state.get("right_panel_form"))
+    _has_attached = bool((state.get("attached_file_text") or "").strip())
+    _has_parsed_title = bool((state.get("parsed_title") or "").strip())
+    _raw_len = len((raw_input or "").strip())
+    if (
+        not state.get("jd_enriched")  # nunca short-circuit em resume
+        and not _has_panel_form
+        and not _has_attached
+        and not _has_parsed_title
+        and _raw_len < 100
+    ):
+        _ask_jd_msg = (
+            "Para começar a criação da vaga, preciso de mais contexto. "
+            "Você pode (a) colar a descrição da vaga (JD) aqui no chat, "
+            "(b) anexar um arquivo no painel à direita, ou "
+            "(c) começar respondendo no painel — me diga título do cargo, "
+            "senioridade e principais responsabilidades."
+        )
+        logger.info(
+            "[JobCreation:jd_enrichment] input-thin guard fired "
+            "(raw_len=%d, has_panel=%s, has_attached=%s, has_title=%s) — "
+            "asking recruiter for JD material instead of LLM-enriching noise.",
+            _raw_len, _has_panel_form, _has_attached, _has_parsed_title,
+        )
+        return {
+            **state,
+            "current_stage": "jd_enrichment",
+            "jd_enriched": None,
+            "jd_quality_score": 0.0,
+            "jd_quality_warnings": [],
+            "jd_fairness_blocked": False,
+            "requires_approval": False,
+            "stage_history": (state.get("stage_history") or []) + ["jd_enrichment_awaiting_input"],
+            "ws_stage_payload": {
+                "type": "wizard_stage",
+                "stage": "jd_enrichment",
+                "data": {
+                    "awaiting_jd_input": True,
+                    "message": _ask_jd_msg,
+                },
+                "requires_approval": False,
+            },
+        }
+
     # ── Layer 2: PII strip (BEFORE LLM) ──
     # LGPD Art. 12 + EU AI Act Art. 13: minimização de dados pessoais.
     # Phase 4I P0 fix — previously computed raw_input_safe was NOT being used
@@ -744,6 +801,33 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
                 _fg_l3_exc,
             )
 
+    # ── Mensagem contextual para o chat (Task #1096 / canonical-fix) ──
+    # Sem este campo o ``WizardSessionService`` cai em ``_emit_silent_fallback``
+    # (Task #1089 T3) e o usuário vê ``[ATENÇÃO: estado inconsistente]``.
+    # A mensagem é parametrizada (título + score + flag de fallback) — não é
+    # canned literal, varia por turno e por enriquecimento.
+    _enriched_title = (
+        (jd_enriched_dict or {}).get("titulo_padronizado")
+        or state.get("parsed_title")
+        or "a vaga"
+    )
+    _used_fallback = locals().get("jd_enrichment_used_fallback", False)
+    _q_int = int(round(jd_quality_score or 0.0))
+    if _used_fallback:
+        _stage_message = (
+            f"Recebi a descrição de **{_enriched_title}**. O serviço de IA está "
+            f"degradado neste momento, então gerei um enriquecimento mínimo "
+            f"(qualidade estimada: {_q_int}%). Revise no painel à direita: "
+            f"se estiver ok, me confirme aqui no chat (ex.: \"pode seguir\"); "
+            f"se quiser ajustar, me diga o que mudar; ou cole uma versão nova."
+        )
+    else:
+        _stage_message = (
+            f"Recebi a descrição de **{_enriched_title}** e enriqueci no painel "
+            f"à direita (qualidade: {_q_int}%). Quer que eu siga para o próximo "
+            f"passo, ajustar algum ponto, ou prefere substituir o texto?"
+        )
+
     updates: Dict[str, Any] = {
         "current_stage": "jd_enrichment",
         "jd_raw": raw_input,
@@ -758,6 +842,7 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
             "type": "wizard_stage",
             "stage": "jd_enrichment",
             "data": {
+                "message": _stage_message,
                 "jd_raw": raw_input,
                 "jd_enriched": jd_enriched_dict,
                 "quality_score": jd_quality_score,
