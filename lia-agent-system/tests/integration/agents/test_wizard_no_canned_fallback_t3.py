@@ -161,6 +161,34 @@ class WizardNoCannedFallbackT3(unittest.TestCase):
         self.assertEqual(sess_window.events[0].reason, "silent_empty_message")
         tracker.reset()
 
+    # ---------------- S3b ----------------
+    def test_S3b_prometheus_counter_increments(self):
+        """Counter explícito ``lia_wizard_silent_fallback_total`` deve subir
+        a cada chamada a ``_emit_silent_fallback`` (Task #1089 follow-up #2).
+        """
+        wss = importlib.import_module(
+            "app.domains.job_creation.services.wizard_session_service"
+        )
+        if wss._SILENT_FALLBACK_COUNTER is None:
+            self.skipTest("prometheus_client não disponível neste ambiente")
+        labels = {
+            "stage": "jd_enrichment",
+            "company_id": "00000000-0000-4000-a000-000000000001",
+            "cause": "empty_message",
+        }
+        before = wss._SILENT_FALLBACK_COUNTER.labels(**labels)._value.get()
+        with patch.object(wss.asyncio, "create_task", lambda *a, **k: None):
+            wss._emit_silent_fallback(
+                stage="jd_enrichment",
+                company_id="00000000-0000-4000-a000-000000000001",
+                session_id="sess-counter",
+                thread_id="wiz-cccc1111-sess-counter",
+                conversation_tail=None,
+                cause="empty_message",
+            )
+        after = wss._SILENT_FALLBACK_COUNTER.labels(**labels)._value.get()
+        self.assertEqual(after - before, 1.0)
+
     # ---------------- S4 ----------------
     def test_S4_generate_fallback_reply_returns_hard_prefixed_when_llm_disabled(self):
         wss = importlib.import_module(
@@ -180,6 +208,129 @@ class WizardNoCannedFallbackT3(unittest.TestCase):
         # NUNCA igual aos canned proibidos.
         for canned in _FORBIDDEN_CANNED_LITERALS:
             self.assertNotIn(canned, reply)
+
+
+class WizardProcessMessageFailLoudT3(unittest.IsolatedAsyncioTestCase):
+    """End-to-end (architect follow-up #1 + #3) — exercita
+    ``WizardSessionService.process_message`` para confirmar que ambos os
+    paths fail-loud (invoke_exception + empty stage_data) emitem
+    log error + Prometheus counter + audit + retornam fallback contextual
+    em vez de propagar exceção ou devolver canned."""
+
+    async def asyncSetUp(self):
+        os.environ["LIA_WIZARD_FALLBACK_LLM_DISABLED"] = "1"
+        self._wss = importlib.import_module(
+            "app.domains.job_creation.services.wizard_session_service"
+        )
+        # tracker reset entre cenários
+        from app.shared.observability.wizard_fallback_tracker import (
+            get_wizard_fallback_tracker,
+        )
+        get_wizard_fallback_tracker().reset()
+
+    async def asyncTearDown(self):
+        del os.environ["LIA_WIZARD_FALLBACK_LLM_DISABLED"]
+
+    def _counter_value(self, *, stage, cause):
+        if self._wss._SILENT_FALLBACK_COUNTER is None:
+            return None
+        return self._wss._SILENT_FALLBACK_COUNTER.labels(
+            stage=stage,
+            company_id="00000000-0000-4000-a000-000000000001",
+            cause=cause,
+        )._value.get()
+
+    async def _run(self, *, fake_graph, expected_cause_substr):
+        wss = self._wss
+        cls = wss.WizardSessionService
+
+        # Stubs para evitar DB/checkpointer reais.
+        async def _no_prior_state(_thread_id):
+            return None
+
+        captured_audit_calls: list[object] = []
+
+        def _capture_create_task(coro):
+            captured_audit_calls.append(coro)
+            try:
+                coro.close()
+            except Exception:
+                pass
+            return None
+
+        # ``get_job_creation_graph`` é importado lazy dentro de
+        # ``process_message`` — patchar no módulo de origem.
+        graph_mod = importlib.import_module("app.domains.job_creation.graph")
+        with patch.object(cls, "_get_prior_state", new=_no_prior_state), \
+                patch.object(
+                    graph_mod, "get_job_creation_graph", lambda: fake_graph,
+                ), \
+                patch.object(wss.asyncio, "create_task", _capture_create_task), \
+                self.assertLogs(wss.__name__, level=logging.ERROR) as cap:
+            msg, payload, tokens = await cls.process_message(
+                thread_id="wiz-deadbeef-sess-e2e",
+                user_message="manda bala",
+                user_id="user-x",
+                company_id="00000000-0000-4000-a000-000000000001",
+                session_id="sess-e2e",
+                context=None,
+            )
+
+        log_blob = "\n".join(cap.output)
+        self.assertIn("silent fallback invoked", log_blob)
+        self.assertIn(expected_cause_substr, log_blob)
+        # Audit row foi agendado
+        self.assertGreaterEqual(len(captured_audit_calls), 1)
+        # Hard prefix retornado (LLM disabled)
+        self.assertIn(wss._FALLBACK_HARD_PREFIX, msg)
+        # Não validamos payload exato — invoke_exception devolve {}, empty
+        # message path devolve o ws_stage_payload do graph result.
+        self.assertIsInstance(payload, dict)
+        return tokens
+
+    # ---------------- S5 ----------------
+    async def test_S5_process_message_handles_invoke_exception_fail_loud(self):
+        """Architect follow-up #1: graph.stream_invoke raise → fail-loud,
+        NÃO propaga, devolve mensagem hard-prefixada."""
+        before = self._counter_value(stage="unknown", cause="invoke_exception:RuntimeError")
+
+        class _RaisingGraph:
+            async def stream_invoke(self, state, thread_id, on_token=None):
+                raise RuntimeError("boom from graph")
+
+        await self._run(
+            fake_graph=_RaisingGraph(),
+            expected_cause_substr="invoke_exception:RuntimeError",
+        )
+        after = self._counter_value(stage="unknown", cause="invoke_exception:RuntimeError")
+        if before is not None and after is not None:
+            self.assertEqual(after - before, 1.0)
+
+    # ---------------- S6 ----------------
+    async def test_S6_process_message_handles_empty_message_fail_loud(self):
+        """Architect follow-up #3: graph devolve dict sem message nem
+        gate_clarify_message → fail-loud + LLM/hard-prefix em vez de canned."""
+        before = self._counter_value(stage="jd_enrichment", cause="empty_message")
+
+        class _EmptyGraph:
+            async def stream_invoke(self, state, thread_id, on_token=None):
+                return (
+                    {
+                        "current_stage": "jd_enrichment",
+                        "ws_stage_payload": {"data": {}},
+                        # nenhum gate_clarify_message, nenhum message,
+                        # nenhum response_text → vai cair no fail-loud.
+                    },
+                    0,
+                )
+
+        await self._run(
+            fake_graph=_EmptyGraph(),
+            expected_cause_substr="cause=empty_message",
+        )
+        after = self._counter_value(stage="jd_enrichment", cause="empty_message")
+        if before is not None and after is not None:
+            self.assertEqual(after - before, 1.0)
 
 
 if __name__ == "__main__":

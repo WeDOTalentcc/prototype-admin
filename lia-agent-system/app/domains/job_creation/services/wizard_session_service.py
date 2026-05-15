@@ -39,6 +39,28 @@ _CONTEXT_CARRY_KEYS = ("right_panel_form", "attached_file_text", "tenant_context
 # em vez de seguir achando que é resposta válida da LIA.
 _FALLBACK_HARD_PREFIX = "[ATENÇÃO: estado inconsistente — contate suporte]"
 
+# Prometheus counter explícito (Task #1089 / code review #2 follow-up).
+# Idempotente entre reimports — espelha pattern de tenant_aware_agent.py.
+try:  # pragma: no cover — exercitado via integração
+    from prometheus_client import Counter as _PromCounter  # type: ignore
+    from prometheus_client import REGISTRY as _PROM_REGISTRY  # type: ignore
+
+    _existing = getattr(_PROM_REGISTRY, "_names_to_collectors", {}).get(
+        "lia_wizard_silent_fallback_total"
+    )
+    if _existing is not None:
+        _SILENT_FALLBACK_COUNTER = _existing
+    else:
+        _SILENT_FALLBACK_COUNTER = _PromCounter(
+            "lia_wizard_silent_fallback_total",
+            "Total de fail-loud fallbacks emitidos por WizardSessionService "
+            "(Task #1089). Cada incremento indica estado anômalo do graph e "
+            "deve disparar investigação.",
+            labelnames=("stage", "company_id", "cause"),
+        )
+except Exception:  # pragma: no cover — fail-OPEN se prometheus indisponível
+    _SILENT_FALLBACK_COUNTER = None
+
 
 def _build_hard_fallback_message(stage: str | None) -> str:
     """Mensagem de último recurso (LLM indisponível). Prefixada para NUNCA
@@ -179,7 +201,19 @@ def _emit_silent_fallback(
             audit_exc,
         )
 
-    # (d) Prometheus counter via tracker
+    # (d) Prometheus counter explícito (Task #1089 / code review #2 follow-up)
+    if _SILENT_FALLBACK_COUNTER is not None:
+        try:
+            _SILENT_FALLBACK_COUNTER.labels(
+                stage=stage_label, company_id=(cid or "∅"), cause=cause,
+            ).inc()
+        except Exception as pm_exc:  # noqa: BLE001
+            logger.warning(
+                "[WizardSession] prometheus counter inc failed (fail-open): %s",
+                pm_exc,
+            )
+
+    # (e) Fallback tracker (rolling-window threshold + alerta agregado)
     try:
         from app.shared.observability.wizard_fallback_tracker import (
             get_wizard_fallback_tracker,
@@ -587,12 +621,33 @@ class WizardSessionService:
                 )
 
         tokens_emitted = 0
-        if hasattr(wiz_g, "stream_invoke"):
-            result, tokens_emitted = await wiz_g.stream_invoke(
-                state, thread_id, on_token=on_token,
+        try:
+            if hasattr(wiz_g, "stream_invoke"):
+                result, tokens_emitted = await wiz_g.stream_invoke(
+                    state, thread_id, on_token=on_token,
+                )
+            else:  # pragma: no cover — defensive: older deploy without stream_invoke
+                result = await asyncio.to_thread(wiz_g.invoke, state, thread_id)
+        except Exception as inv_exc:  # noqa: BLE001
+            # Task #1089 (T3) — fail-LOUD em invocação do graph. Antes da
+            # remoção do _STAGE_DEFAULTS este path PROPAGAVA a exceção e
+            # o WS handler caía em outra mensagem canned. Agora: emite
+            # telemetria completa + devolve fallback contextual em vez
+            # de quebrar o turno (e o cliente WS recebe payload válido).
+            _emit_silent_fallback(
+                stage=None,
+                company_id=company_id,
+                session_id=session_id,
+                thread_id=thread_id,
+                conversation_tail=state.get("conversation_messages") if isinstance(state, dict) else None,
+                cause=f"invoke_exception:{type(inv_exc).__name__}",
             )
-        else:  # pragma: no cover — defensive: older deploy without stream_invoke
-            result = await asyncio.to_thread(wiz_g.invoke, state, thread_id)
+            fallback_msg = await _generate_fallback_reply(
+                stage=None,
+                conversation_tail=state.get("conversation_messages") if isinstance(state, dict) else None,
+                tenant_snippet=state.get("tenant_context_snippet") if isinstance(state, dict) else None,
+            )
+            return (fallback_msg, {}, tokens_emitted)
 
         if not isinstance(result, dict):
             # Task #1089 — fail-loud: graph devolveu tipo inesperado.
