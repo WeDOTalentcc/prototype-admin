@@ -526,7 +526,18 @@ class WizardSessionService:
         # do gate o comportamento legado é preservado.
         gate_msg = result.get("gate_clarify_message") if isinstance(result, dict) else None
         gate_intent = result.get("gate_last_intent") if isinstance(result, dict) else None
-        if gate_msg and gate_intent:
+        # T2 fix #11 (code review #9 comment 2): fairness-block path no
+        # ``jd_gate_node`` (FairnessGuard L1) seta ``gate_clarify_message``
+        # com a mensagem educacional MAS NÃO seta ``gate_last_intent``
+        # (não houve classificação — bloqueio precede o classifier). Se
+        # exigíssemos ambos, a mensagem educacional de fairness seria
+        # suprimida no WS canônico e o recrutador veria o canned default
+        # legado em vez da explicação de fairness. Honrar também quando
+        # ``jd_fairness_blocked is True``.
+        gate_fairness_blocked = (
+            result.get("jd_fairness_blocked") is True if isinstance(result, dict) else False
+        )
+        if gate_msg and (gate_intent or gate_fairness_blocked):
             message = str(gate_msg)
         else:
             message = (
