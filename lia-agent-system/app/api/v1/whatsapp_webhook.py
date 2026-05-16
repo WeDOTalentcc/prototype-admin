@@ -125,12 +125,20 @@ async def whatsapp_message_webhook(request: Request, ):
     body = await request.form()
     params = dict(body)
 
-    # Verify Twilio signature
-    signature = request.headers.get("X-Twilio-Signature", "")
-    request_url = str(request.url)
-    if not verify_twilio_signature(request_url, params, signature):
-        logger.warning("[WhatsApp] Invalid Twilio signature — rejecting")
-        raise HTTPException(status_code=403, detail="Invalid signature")
+    # Task #1146 — tenant-first single helper invocation. Twilio signs
+    # with URL + sorted "key+value" concat (NOT the raw body). Resolve
+    # tenant via phone → session.account_id BEFORE signature
+    # verification; emit ONE canonical audit row per request.
+    from app.shared.security.webhook_ownership import (
+        WebhookOwnershipError,
+        emit_ownership_audit,
+        verify_webhook_owner,
+    )
+
+    twilio_canonical = str(request.url) + "".join(
+        f"{k}{params[k]}" for k in sorted(params.keys())
+    )
+    twilio_signature = request.headers.get("X-Twilio-Signature", "")
 
     from_number = params.get("From", "").replace("whatsapp:", "")
     message_body = params.get("Body", "")
@@ -139,13 +147,43 @@ async def whatsapp_message_webhook(request: Request, ):
     logger.info(f"[WhatsApp] Incoming from {from_number}: {message_body[:50]}...")
 
     if not from_number or not message_body:
-        return Response(status_code=200)
+        await emit_ownership_audit(
+            provider="whatsapp",
+            decision="malformed_payload",
+            company_id=None,
+        )
+        raise HTTPException(
+            status_code=400,
+            detail="missing From/Body",
+        )
 
-    # Find session
+    # Find session (tenant resolution) BEFORE signature verification.
     session = await _find_session_by_phone(from_number)
     if not session:
-        logger.info(f"[WhatsApp] Unknown number: {from_number}")
-        return Response(status_code=200)
+        await emit_ownership_audit(
+            provider="whatsapp",
+            decision="unresolved_tenant",
+            company_id=None,
+        )
+        logger.warning(f"[WhatsApp] Unknown number: {from_number} — rejecting 403 (Task #1146)")
+        raise HTTPException(
+            status_code=403,
+            detail="webhook payload could not be bound to a tenant",
+        )
+
+    try:
+        await verify_webhook_owner(
+            provider="whatsapp",
+            raw_body=b"",
+            signature=twilio_signature,
+            signature_payload=twilio_canonical.encode("utf-8"),
+            declared_company_id=str(session.account_id),
+            session_id=getattr(session, "session_id", None),
+            enforce_ownership=False,
+        )
+    except WebhookOwnershipError as exc:
+        logger.warning("[WhatsApp] Ownership/signature rejected: %s", exc)
+        raise HTTPException(status_code=exc.status_code, detail=str(exc))
 
     # Route to orchestrator
     orchestrator, wa_client = await _get_orchestrator()

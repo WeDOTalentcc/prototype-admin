@@ -27,6 +27,10 @@ from app.domains.communication.services.teams_auth import bot_auth
 from app.domains.communication.services.teams_simple import simple_teams_bot
 from app.models.teams import TeamsActionAuditLog, TeamsConversation, TeamsMessage
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.security.webhook_ownership import (
+    WebhookOwnershipError,
+    verify_webhook_owner,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -439,36 +443,124 @@ company_id: str = Depends(require_company_id)):
     ```
     """
     raw_body = await request.body()
-    
-    # Security check: verify webhook signature
-    try:
-        if not _verify_teams_webhook_signature(raw_body, x_teams_signature):
-            logger.warning("[TEAMS WEBHOOK] Invalid signature")
-            await _log_teams_action_audit(
-                action="unknown",
-                result="auth_failed",
-                details={"error": "Invalid signature"},
-                db=db
-            )
-            raise HTTPException(status_code=401, detail="Invalid signature")
-    except HTTPException:
-        # Re-raise HTTP exceptions (403 for missing secret in production, 401 for invalid signature)
-        raise
-    
+
+    # Legacy ``_verify_teams_webhook_signature`` (global TEAMS_WEBHOOK_SECRET)
+    # has been removed from this endpoint as part of Task #1146 — ownership
+    # validation is now done by ``verify_webhook_owner`` after JSON parse so
+    # that the X-Company-ID header / payload.company_id are cross-checked
+    # against the candidate/vacancy AND the signature is validated against
+    # the per-tenant secret (with global fallback during the 90d window).
+
     try:
         payload_data = json.loads(raw_body)
         payload = TeamsWebhookPayload(**payload_data)
         
         if x_company_id and not payload.company_id:
             payload.company_id = x_company_id
-        
+
+        # Task #1146 — strict JWT-vs-payload reconciliation. The endpoint
+        # already enforces ``require_company_id`` (JWT-resolved tenant).
+        # Reject when X-Company-ID or payload.company_id contradicts the
+        # authenticated tenant — that's the canonical cross-tenant spoof
+        # attempt the threat model singles out for Teams. The helper below
+        # then validates HMAC and cross-checks candidate/vacancy.
+        if x_company_id and str(x_company_id) != str(company_id):
+            from app.shared.security.webhook_ownership import emit_ownership_audit
+            await emit_ownership_audit(
+                provider="teams",
+                decision="tenant_mismatch_header_vs_jwt",
+                company_id=str(company_id),
+                error=f"header={x_company_id}",
+            )
+            await _log_teams_action_audit(
+                action="unknown",
+                result="auth_failed",
+                company_id=company_id,
+                details={
+                    "error": "tenant_mismatch_header_vs_jwt",
+                    "jwt_tenant": str(company_id),
+                    "header_tenant": str(x_company_id),
+                },
+                db=db,
+            )
+            raise HTTPException(
+                status_code=403,
+                detail="X-Company-ID does not match authenticated tenant",
+            )
+        if payload.company_id and str(payload.company_id) != str(company_id):
+            from app.shared.security.webhook_ownership import emit_ownership_audit
+            await emit_ownership_audit(
+                provider="teams",
+                decision="tenant_mismatch_payload_vs_jwt",
+                company_id=str(company_id),
+                candidate_id=payload.candidate_id,
+                job_id=payload.vacancy_id,
+                error=f"payload={payload.company_id}",
+            )
+            await _log_teams_action_audit(
+                action=payload.action if payload else "unknown",
+                result="auth_failed",
+                company_id=company_id,
+                details={
+                    "error": "tenant_mismatch_payload_vs_jwt",
+                    "jwt_tenant": str(company_id),
+                    "payload_tenant": str(payload.company_id),
+                },
+                db=db,
+            )
+            raise HTTPException(
+                status_code=403,
+                detail="payload.company_id does not match authenticated tenant",
+            )
+        # Canonicalize on the JWT-resolved tenant for all downstream calls
+        payload.company_id = str(company_id)
+
+    except HTTPException:
+        raise
     except json.JSONDecodeError as e:
-        logger.error(f"[TEAMS WEBHOOK] Invalid JSON: {e}")
-        raise HTTPException(status_code=400, detail="Invalid JSON payload")
+        from app.shared.security.webhook_ownership import emit_ownership_audit as _eoa
+        await _eoa(
+            provider="teams",
+            decision="malformed_payload",
+            company_id=str(company_id) if company_id else None,
+            error="invalid JSON body",
+        )
+        raise HTTPException(status_code=400, detail="Invalid JSON payload") from e
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"[TEAMS WEBHOOK] Payload validation error: {e}")
-        raise HTTPException(status_code=400, detail=f"Invalid payload: {str(e)}")
-    
+        from app.shared.security.webhook_ownership import emit_ownership_audit as _eoa
+        await _eoa(
+            provider="teams",
+            decision="malformed_payload",
+            company_id=str(company_id) if company_id else None,
+            error=f"payload validation failed: {e}",
+        )
+        raise HTTPException(status_code=400, detail=f"Invalid payload: {str(e)}") from e
+
+    # Task #1146 — per-tenant ownership validator. Closes the cross-tenant gap
+    # where ``X-Company-ID`` could be spoofed to a competitor's tenant: the
+    # helper cross-checks ``candidate_id`` / ``vacancy_id`` against the
+    # declared tenant (RLS-protected) and rejects with 403 + audit row.
+    try:
+        await verify_webhook_owner(
+            provider="teams",
+            raw_body=raw_body,
+            signature=x_teams_signature,
+            declared_company_id=payload.company_id,
+            candidate_id=payload.candidate_id,
+            job_id=payload.vacancy_id,
+        )
+    except WebhookOwnershipError as exc:
+        await _log_teams_action_audit(
+            action=payload.action,
+            result="auth_failed",
+            company_id=payload.company_id,
+            details={"error": str(exc), "outcome": exc.outcome},
+            db=db,
+        )
+        raise HTTPException(status_code=exc.status_code, detail=str(exc))
+
     logger.info(f"[TEAMS WEBHOOK] Received action={payload.action} for candidate={payload.candidate_id}")
     
     action = payload.action.lower()

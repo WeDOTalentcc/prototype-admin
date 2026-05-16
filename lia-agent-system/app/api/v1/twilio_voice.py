@@ -303,8 +303,77 @@ async def twiml_call_status(
     form_data = await request.form()
     params = dict(form_data)
 
-    if not _verify_twilio_signature(request, params):
-        raise HTTPException(status_code=403, detail="Invalid Twilio signature")
+    # Task #1146 — canonical ownership/signature validator. Twilio's signing
+    # input is the request URL concatenated with sorted ``key+value`` of all
+    # form params (NOT the raw body). The status callback payload carries no
+    # tenant id, so we resolve it lazily via call_sid → session below and
+    # use ``allow_anonymous_global=True`` during the 90-day dual-validate
+    # window. ``_verify_twilio_signature`` (legacy path) is now subsumed.
+    from app.shared.security.webhook_ownership import (
+        WebhookOwnershipError,
+        verify_webhook_owner,
+    )
+
+    twilio_canonical = str(request.url) + "".join(
+        f"{k}{params[k]}" for k in sorted(params.keys())
+    )
+    twilio_signature = request.headers.get("X-Twilio-Signature", "")
+
+    # Task #1146 — tenant-first single helper invocation. Resolve tenant
+    # via wsi_sessions.call_id BEFORE signature verification; emit exactly
+    # one canonical audit row per request (one of: unresolved_tenant, ok,
+    # signature_invalid). D+90 deprecation works because we ALWAYS pass
+    # the per-tenant ``declared_company_id`` once resolved.
+    from app.shared.security.webhook_ownership import emit_ownership_audit
+
+    resolved_company_id: str | None = None
+    try:
+        from app.core.database import AsyncSessionLocal as _ASL_lookup
+        from sqlalchemy import text as _sa_text
+
+        async with _ASL_lookup() as _db_lookup:
+            _res = await _db_lookup.execute(
+                _sa_text(
+                    "SELECT company_id FROM wsi_sessions WHERE call_id = :sid LIMIT 1"
+                ),
+                {"sid": CallSid},
+            )
+            _row = _res.fetchone()
+            if _row and _row[0]:
+                resolved_company_id = str(_row[0])
+    except Exception as _exc:
+        logger.warning("[TWILIO VOICE] Tenant resolution failed: %s", _exc)
+
+    if not resolved_company_id:
+        await emit_ownership_audit(
+            provider="twilio",
+            decision="unresolved_tenant",
+            company_id=None,
+            session_id=CallSid,
+        )
+        logger.warning(
+            "[TWILIO VOICE] CallSid=%s could not be bound to a tenant — "
+            "rejecting 403 (Task #1146)",
+            CallSid,
+        )
+        raise HTTPException(
+            status_code=403,
+            detail="webhook callback could not be bound to a tenant",
+        )
+
+    try:
+        await verify_webhook_owner(
+            provider="twilio",
+            raw_body=b"",
+            signature=twilio_signature,
+            signature_payload=twilio_canonical.encode("utf-8"),
+            declared_company_id=resolved_company_id,
+            session_id=CallSid,
+            enforce_ownership=False,
+        )
+    except WebhookOwnershipError as exc:
+        logger.warning("[TWILIO VOICE] Ownership/signature rejected: %s", exc)
+        raise HTTPException(status_code=exc.status_code, detail=str(exc))
 
     logger.info(
         "[TWILIO VOICE] Call status: sid=%s status=%s duration=%s",

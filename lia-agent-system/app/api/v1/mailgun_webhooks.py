@@ -83,17 +83,17 @@ async def mailgun_webhook(
       }
     }
     """
-    signing_key = os.getenv("MAILGUN_WEBHOOK_SIGNING_KEY", "")
-    if not signing_key:
-        logger.error("[MailgunWebhook] MAILGUN_WEBHOOK_SIGNING_KEY not configured")
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Webhook signing key not configured",
-        )
-
+    # Task #1146 — legacy upfront 503-on-missing-MAILGUN_WEBHOOK_SIGNING_KEY
+    # gate removed. The canonical ``verify_webhook_owner`` helper enforces
+    # tenant-first per-tenant secret resolution with a global fallback
+    # during the 90-day rollout window; once D+90 expires and global is
+    # removed, per-tenant secrets in ``company_webhook_secrets`` take over.
     try:
         body = await request.json()
     except Exception:
+        # Task #1146 — even malformed payloads emit ONE canonical audit row.
+        from app.shared.security.webhook_ownership import emit_ownership_audit as _eoa
+        await _eoa(provider="mailgun", decision="malformed_payload", company_id=None)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid JSON body",
@@ -104,32 +104,49 @@ async def mailgun_webhook(
     token = sig_data.get("token", "")
     sig = sig_data.get("signature", "")
 
+    from app.shared.security.webhook_ownership import emit_ownership_audit as _eoa
     try:
         ts_int = int(ts)
         if abs(time.time() - ts_int) > MAX_TIMESTAMP_AGE_SECONDS:
+            await _eoa(provider="mailgun", decision="timestamp_expired", company_id=None)
             logger.warning("[MailgunWebhook] Timestamp too old/future — rejecting (replay protection)")
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
                 detail="Webhook timestamp expired",
             )
     except (ValueError, TypeError):
+        await _eoa(provider="mailgun", decision="malformed_payload", company_id=None)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid timestamp",
         )
 
-    if not _verify_mailgun_signature(ts, token, sig, signing_key):
-        logger.warning("[MailgunWebhook] Invalid signature — rejecting payload")
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Invalid webhook signature",
-        )
+    # Task #1146 — tenant-first single helper invocation. We extract
+    # message_id from the payload, resolve the tenant via CommunicationLog
+    # BEFORE signature verification, then call ``verify_webhook_owner``
+    # exactly once. This guarantees: (a) one canonical audit row per
+    # request, (b) the per-tenant secret path is exercised on every
+    # request whose tenant we can resolve, (c) the D+90 deprecation works
+    # because we never short-circuit to global-only.
+    from app.shared.security.webhook_ownership import (
+        WebhookOwnershipError,
+        emit_ownership_audit,
+        verify_webhook_owner,
+    )
 
+    sig_payload = f"{ts}{token}".encode("utf-8")
     event_data = body.get("event-data", {})
     event_type = event_data.get("event", "").lower()
 
     mapping = MAILGUN_EVENT_MAP.get(event_type)
     if mapping is None:
+        # Task #1146 — emit canonical ownership audit (decision='skipped')
+        # so EVERY received webhook produces exactly one audit row.
+        await emit_ownership_audit(
+            provider="mailgun",
+            decision="skipped",
+            company_id=None,
+        )
         logger.debug("[MailgunWebhook] Ignoring event type: %s", event_type)
         return {"status": "ignored", "event": event_type}
 
@@ -139,10 +156,64 @@ async def mailgun_webhook(
         event_data.get("message", {}).get("headers", {}).get("message-id", "")
     )
     if not message_id:
+        await emit_ownership_audit(
+            provider="mailgun",
+            decision="skipped",
+            company_id=None,
+        )
         logger.warning("[MailgunWebhook] No message-id in event — skipping")
         return {"status": "skipped", "reason": "no_message_id"}
 
     message_id = message_id.strip("<>")
+
+    # Tenant resolution via CommunicationLog (Task #1146).
+    try:
+        from sqlalchemy import select  # local import — keep top-level clean
+        from app.models.communication_log import CommunicationLog  # type: ignore
+
+        res = await repo.db.execute(
+            select(CommunicationLog.company_id)
+            .where(CommunicationLog.provider_message_id == message_id)
+            .limit(1)
+        )
+        row = res.first()
+        resolved_company_id: str | None = str(row[0]) if row else None
+    except Exception:
+        resolved_company_id = None
+
+    if not resolved_company_id:
+        # Task #1146 — reject with 403 + canonical audit row when we
+        # cannot bind the webhook to a tenant. Acceptance criterion
+        # explicitly requires rejection (NOT ACK) before any state work.
+        await emit_ownership_audit(
+            provider="mailgun",
+            decision="unresolved_tenant",
+            company_id=None,
+        )
+        logger.warning(
+            "[MailgunWebhook] message_id=%s could not be bound to a tenant — "
+            "rejecting 403 (Task #1146)",
+            message_id,
+        )
+        raise HTTPException(
+            status_code=403,
+            detail="webhook payload could not be bound to a tenant",
+        )
+
+    # Single canonical helper invocation — per-tenant secret with global
+    # fallback during the 90-day window. Emits exactly one audit row.
+    try:
+        await verify_webhook_owner(
+            provider="mailgun",
+            raw_body=b"",
+            signature=sig,
+            signature_payload=sig_payload,
+            declared_company_id=resolved_company_id,
+            enforce_ownership=False,  # ownership = resolution itself
+        )
+    except WebhookOwnershipError as exc:
+        logger.warning("[MailgunWebhook] Ownership/signature rejected: %s", exc)
+        raise HTTPException(status_code=exc.status_code, detail=str(exc))
 
     event_ts_raw = event_data.get("timestamp")
     event_ts = (

@@ -12,6 +12,10 @@ from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Request
 from pydantic import BaseModel, ValidationError
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
+from app.shared.security.webhook_ownership import (
+    WebhookOwnershipError,
+    verify_webhook_owner,
+)
 
 router = APIRouter(prefix="/webhooks/merge", tags=["merge-webhooks"])
 logger = logging.getLogger(__name__)
@@ -52,23 +56,54 @@ async def handle_merge_webhook(
     Events: Candidate.created, Candidate.updated, Application.changed_stage, etc.
     """
     body = await request.body()
-    
-    if x_merge_signature:
-        if not verify_merge_signature(body, x_merge_signature):
-            raise HTTPException(status_code=401, detail="Invalid signature")
-    
+
+    # Legacy `verify_merge_signature` was the only gate before Task #1146.
+    # It is now subsumed by ``verify_webhook_owner`` (below) which performs
+    # per-tenant HMAC validation with a 90-day dual-validate fallback to the
+    # global secret. The legacy helper is kept as a private utility for
+    # backfill scripts only and is NOT called here anymore.
+
+    from app.shared.security.webhook_ownership import emit_ownership_audit as _eoa
     try:
         raw_data = await request.json()
     except Exception:
+        await _eoa(provider="merge", decision="malformed_payload", company_id=None)
         raise HTTPException(status_code=400, detail="Invalid JSON payload")
 
     try:
         event = MergeWebhookEvent.model_validate(raw_data)
     except ValidationError as exc:
+        await _eoa(provider="merge", decision="malformed_payload", company_id=None)
         logger.warning("[MERGE] Invalid payload schema: %s", exc)
         raise HTTPException(status_code=422, detail=exc.errors())
 
     event_type = event.hook.get("event")
+
+    # Task #1146 — per-tenant ownership validator (audit + cross-check).
+    # Dual-validate accepts global signature during the 90-day window; the
+    # cross-check rejects payloads whose candidate/job belong to another tenant.
+    declared = event.linked_account.get("end_user_origin_id")
+    first_record = event.data[0] if event.data else {}
+    try:
+        # Task #1146 — DO NOT pass candidate/job from the Merge payload to
+        # the helper's ownership cross-check. Merge ships its OWN external
+        # ids (e.g. "abc-123-merge") in those fields — not local UUIDs from
+        # ``candidates`` / ``job_vacancies`` — so the local repo lookup
+        # would always 404 and reject legitimate events as
+        # ``owner_mismatch``. Signature + declared_company_id are still
+        # enforced; cross-check of the external id → local row binding
+        # happens further downstream in ``handle_candidate_*`` where the
+        # external id is first resolved to a local row.
+        await verify_webhook_owner(
+            provider="merge",
+            raw_body=body,
+            signature=x_merge_signature,
+            declared_company_id=declared,
+            candidate_id=None,  # external Merge id — not a local UUID; see comment above
+            job_id=None,        # external Merge id — not a local UUID; see comment above
+        )
+    except WebhookOwnershipError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=str(exc))
 
     logger.info("[MERGE] Received webhook: %s", event_type)
 

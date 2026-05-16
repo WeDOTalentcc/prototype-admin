@@ -43,6 +43,10 @@ from app.shared.pii_masking import mask_pii
 from app.services.voice.openmic_service import OpenMicSignatureError, openmic_service
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
+from app.shared.security.webhook_ownership import (
+    WebhookOwnershipError,
+    verify_webhook_owner,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -137,47 +141,20 @@ async def openmic_webhook(
     """
     raw_body = await request.body()
 
-    # --- Signature validation — fail-closed by default ---
-    webhook_secret = os.getenv("OPENMIC_WEBHOOK_SECRET", "")
-    allow_unsigned = os.getenv("OPENMIC_ALLOW_UNSIGNED_WEBHOOK", "false").lower() == "true"
-
-    if not webhook_secret:
-        if not allow_unsigned:
-            # Fail-closed in production: reject all requests without a configured secret
-            logger.error(
-                "[OpenMic Webhook] OPENMIC_WEBHOOK_SECRET is not set and "
-                "OPENMIC_ALLOW_UNSIGNED_WEBHOOK is not true — rejecting request. "
-                "Set OPENMIC_WEBHOOK_SECRET in production."
-            )
-            raise HTTPException(
-                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                detail=(
-                    "Webhook signature verification is not configured. "
-                    "Set OPENMIC_WEBHOOK_SECRET to enable this endpoint."
-                ),
-            )
-        else:
-            logger.warning(
-                "[OpenMic Webhook] OPENMIC_WEBHOOK_SECRET unset — signature check bypassed "
-                "(OPENMIC_ALLOW_UNSIGNED_WEBHOOK=true). This must NOT be set in production."
-            )
-    else:
-        try:
-            openmic_service.validate_webhook_signature(
-                payload=raw_body,
-                signature_header=x_openmic_signature or "",
-            )
-        except OpenMicSignatureError as exc:
-            logger.warning("[OpenMic Webhook] Signature validation failed: %s", exc)
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid webhook signature.",
-            )
+    # Signature validation is delegated to ``verify_webhook_owner`` (Task
+    # #1146) below — it covers both the per-tenant secret AND the legacy
+    # global ``OPENMIC_WEBHOOK_SECRET`` during the 90-day dual-validate
+    # window. We MUST still parse the body before we can resolve the
+    # ``metadata.company_id``, so the helper is invoked AFTER JSON parse
+    # and AFTER metadata extraction (see block further down).
 
     # --- Parse JSON payload ---
     try:
         payload: dict = json.loads(raw_body)
     except Exception as exc:
+        # Task #1146 — even malformed payloads emit ONE canonical audit row.
+        from app.shared.security.webhook_ownership import emit_ownership_audit as _eoa
+        await _eoa(provider="openmic", decision="malformed_payload", company_id=None)
         logger.error("[OpenMic Webhook] Failed to parse JSON body: %s", exc)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -195,8 +172,17 @@ async def openmic_webhook(
         call_status,
     )
 
-    # Only process completed calls — acknowledge others without processing
+    # Only process completed calls — acknowledge others without processing.
+    # Task #1146 — emit canonical ownership audit row (decision='skipped')
+    # so EVERY received webhook produces exactly one ownership audit row.
     if event != "call_completed" or call_status not in ("completed",):
+        from app.shared.security.webhook_ownership import emit_ownership_audit
+        await emit_ownership_audit(
+            provider="openmic",
+            decision="skipped",
+            company_id=(payload.get("metadata") or {}).get("company_id"),
+            session_id=call_id,
+        )
         logger.info(
             "[OpenMic Webhook] Skipping non-completed event: event=%s status=%s call_id=%s",
             event,
@@ -226,6 +212,15 @@ async def openmic_webhook(
         audio_url = ""  # Drop invalid URL; pipeline proceeds with transcript only
 
     if not candidate_id or not job_id or not company_id:
+        from app.shared.security.webhook_ownership import emit_ownership_audit as _eoa
+        await _eoa(
+            provider="openmic",
+            decision="malformed_payload",
+            company_id=company_id,
+            candidate_id=candidate_id,
+            job_id=job_id,
+            session_id=call_id,
+        )
         logger.error(
             "[OpenMic Webhook] Missing required metadata fields — "
             "call_id=%s candidate_id=%s job_id=%s company_id=%s",
@@ -238,6 +233,22 @@ async def openmic_webhook(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Webhook payload missing required metadata: candidate_id, job_id, company_id.",
         )
+
+    # Task #1146 — per-tenant ownership validator (audit + cross-check). Rejects
+    # payloads whose candidate/job belong to a different tenant than the
+    # ``metadata.company_id`` claimed in the OpenMic body.
+    try:
+        await verify_webhook_owner(
+            provider="openmic",
+            raw_body=raw_body,
+            signature=x_openmic_signature,
+            declared_company_id=company_id,
+            candidate_id=candidate_id,
+            job_id=job_id,
+            session_id=call_id,
+        )
+    except WebhookOwnershipError as exc:
+        raise HTTPException(status_code=exc.status_code, detail=str(exc))
 
     logger.info(
         "[OpenMic Webhook] Processing completed call — call_id=%s candidate_id=%s job_id=%s duration=%ds",
