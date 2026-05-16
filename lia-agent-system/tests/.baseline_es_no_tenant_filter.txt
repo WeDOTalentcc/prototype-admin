@@ -1,0 +1,3 @@
+# T-1129 ratchet baseline — ES search without with_tenant_filter wrapper.
+# Import-aware + alias-aware (Elasticsearch / AsyncElasticsearch / OpenSearch ctors).
+

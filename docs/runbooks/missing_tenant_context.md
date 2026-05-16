@@ -13,6 +13,9 @@ serving the caller's real tenant.
 | `LIA_AGENT_TENANT_STRICT_BYPASS` | `app/main.py` lifespan | `LIA_AGENT_TENANT_STRICT=false` was set in prod. ReAct agents can degrade to "sua empresa"/"geral". (T-A) |
 | `TENANT_DEMO_FALLBACK_PROD` | `app/shared/security/tenant_demo_fallback.py` | A real-tenant request hit the legacy Demo Company fallback in `GET /company/profile` or `POST /company/onboarding`. (T4 #991) |
 | `CROSS_TENANT_BYPASS_SPIKE` | `app/shared/admin/cross_tenant_session.py` | Rate of legitimate cross-tenant RLS bypasses (`lia_cross_tenant_session_bypass_total`) exceeds `baseline + 3σ`. Either a runaway admin batch job or — worse — a compromised superadmin account hitting many tenants in succession. (Task #1148) |
+| `WEBHOOK_OWNERSHIP_MISMATCH` | `app/shared/security/webhook_ownership.py::verify_webhook_owner` | An external webhook (Teams / OpenMic / Merge / Twilio / WhatsApp / Mailgun) carries a `company_id` (header, payload, or `linked_account.end_user_origin_id`) that does NOT match the tenant that owns the signing secret. Either a misconfigured integration or a cross-tenant forgery attempt. (Task #1129e) |
+| `CELERY_MISSING_TENANT` | `app/jobs/tenant_aware_task.py::TenantAwareTask.before_start` | A Celery task was enqueued without `company_id` in `kwargs` (or with a reserved literal like `"default"`/`"none"`). In strict-mode this raises before the worker runs any SQL. Severity-2 during the retrocompat window, promoted to severity-1 after. (Task #1129d) |
+| `CACHE_TENANT_NAMESPACE_VIOLATION` | `app/orchestrator/semantic_cache.py` + `app/shared/{cache_strategy,memory_resolver,...}.py` | A Redis `SET`/`SETEX`/`GET` was issued with a key that does NOT include the `company_id` namespace. Means two tenants can share a cached response (router decision, semantic cache, rate-limit bucket). (Task #1129c) |
 
 ## 1. Confirm the alert
 
@@ -95,6 +98,65 @@ Triage (≤ 5 min):
 
 Do **NOT** roll back the helper to silence the alert — bypass is *supposed* to
 be auditable. The whole point of Task #1148 is that we now know who did it.
+
+## 4c. `WEBHOOK_OWNERSHIP_MISMATCH` (Task #1129e)
+
+Triage (≤ 5 min):
+
+1. Identify the provider from the fingerprint tag (`provider=teams|openmic|merge|twilio|whatsapp|mailgun`).
+2. Pull the audit row:
+   ```sql
+   SELECT created_at, criteria_used
+   FROM audit_logs
+   WHERE decision_type = 'webhook_ownership_verified'
+     AND criteria_used->>'outcome' = 'mismatch'
+     AND created_at > now() - interval '30 minutes'
+   ORDER BY created_at DESC;
+   ```
+3. **Same provider + same tenant pair in a tight loop:** a customer
+   rotated webhook secrets without updating LIA. Coordinate with CS to
+   re-import the per-tenant secret in `/configuracoes/integracoes`.
+4. **Many tenants firing at once:** rotate the *global* fallback secret
+   (`{PROVIDER}_WEBHOOK_SECRET`) — it has likely leaked.
+5. Do NOT disable `verify_webhook_owner` to silence — the whole point
+   of #1129e is that cross-tenant forgery is auditable.
+
+## 4d. `CELERY_MISSING_TENANT` (Task #1129d)
+
+Triage (≤ 5 min):
+
+1. Pull the Sentry event — it includes `task_name` and the offending
+   call site stack.
+2. **Single task, single caller:** an `apply_async` lost `company_id`
+   in a refactor. Patch the caller; redeploy.
+3. **Many tasks from `scheduler`/`beat`:** a periodic task's signature
+   wasn't migrated. Check `app/jobs/scheduled_reports.py`.
+4. During the retrocompat window (sev-2), the task **was rejected
+   before enqueue**; no data was touched. After window flip (sev-1),
+   alert + investigate normally.
+5. Do NOT flip `LIA_CELERY_TENANT_STRICT=false` — same anti-pattern as
+   `LIA_AGENT_TENANT_STRICT=false`. Use a targeted patch.
+
+## 4e. `CACHE_TENANT_NAMESPACE_VIOLATION` (Task #1129c)
+
+Triage (≤ 5 min):
+
+1. Sentry event includes the `module` label (which file emitted the
+   key without a namespace).
+2. **Quick mitigation:** flush the offending key prefix in Redis:
+   ```bash
+   redis-cli --scan --pattern '<prefix>:*' | xargs -L 100 redis-cli DEL
+   ```
+   (this discards any potentially poisoned entries.)
+3. Patch the call site to use
+   `app.shared.cache.tenant_namespaced_key(company_id, ...)` or to
+   include `company_id` directly in the key literal.
+4. Re-run sentinela (b) locally:
+   `pytest tests/integration/security/test_multi_tenant_ownership_inventory_t_1129.py::test_no_redis_key_without_tenant_namespace`.
+5. If the spike persists after the patch deploys, check
+   `lia_redis_tenant_namespace_violation_total` in Grafana panel
+   "Multi-tenant Ownership" — the counter resets on rebuild, so
+   non-zero means new emissions, not historic.
 
 ## 5. Long-term remediation
 

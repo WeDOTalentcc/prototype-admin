@@ -1,61 +1,38 @@
-# Public endpoint allowlist — Task #1143 (require_company_id sweep).
+# Task #1149 (T-1129 sealing) — allowlist canônica de endpoints que
+# legitimamente NÃO devem declarar `Depends(_require_company_id)`.
 #
-# These endpoints intentionally DO NOT carry `Depends(require_company_id)`:
-# they are reachable without a JWT (health checks, registration, auth flows,
-# webhook receive paths before HMAC validation resolves the tenant, etc.).
+# Formato: um path por linha (relativo ao repo, do estilo
+# `app/api/v1/health.py`). Comentários começam com `#`.
 #
-# Keep this list in sync with PUBLIC_PATHS / PUBLIC_PREFIXES in
-# app/middleware/auth_enforcement.py.
+# Categorias permitidas:
+#   - Health / readiness / liveness (sem auth)
+#   - Auth flows (login / refresh / logout / WorkOS callback)
+#   - Password reset / setup tokens (próprio fluxo ainda não tem tenant)
+#   - Public job board / public apply / public WSI chat
+#   - Webhooks externos (usam `verify_webhook_owner` em vez do gate
+#     padrão — provedor manda assinatura, não JWT)
+#   - Setup / admin bootstrap routes
 #
-# Format: one path glob per line. Comments start with `#`.
-
-# Health / docs
-/health
-/api/v1/health
-/api/v1/health/*
-/api/v1/rails/health
-/api/v1/performance
-/favicon.ico
-/openapi.json
-/docs
-/docs/*
-
-# Auth (pre-JWT)
-/api/v1/auth/login
-/api/v1/auth/dev-login
-/api/v1/auth/register
-/api/v1/auth/public-register
-/api/v1/auth/refresh
-/api/v1/auth/forgot-password
-/api/v1/auth/reset-password
-/api/v1/auth/verify-email
-/api/v1/auth/resend-verification
-/api/v1/auth/check-sso-domain
-/api/v1/auth/workos-callback
-/api/v1/auth/workos/callback
-/api/v1/auth/invitation-info/*
-
-# Public LGPD / data subject requests
-/api/v1/data-request
-
-# Webhook receive — tenant resolved post-HMAC, NOT via JWT.
-# Ownership cross-check moves to Task S5 (webhook validators).
-/api/v1/webhooks/whatsapp
-/api/v1/webhooks/twilio-voice
-/api/v1/webhooks/mailgun
-/api/v1/teams/webhook
-/api/v1/teams/messages
-/api/v1/openmic/webhook
-/api/v1/webhooks/merge/*
-/api/v1/webhooks/external/*
-
-# OAuth callbacks (state-signed, no Bearer token)
-/api/v1/calendar/google/callback
-/api/v1/calendar/microsoft/callback
-
-# Public candidate / WSI flows
-/api/v1/wsi/async/*
-/api/public/*
-
-# Navigation hint / first-paint helpers
-/api/v1/navigation-intent
+# Sentinela: `tests/integration/security/test_multi_tenant_ownership_inventory_t_1129.py`
+# (test_no_endpoint_missing_require_company_id_gate).
+app/api/v1/health.py
+app/api/v1/health_compliance.py
+app/api/v1/auth.py
+app/api/v1/auth_workos.py
+app/api/v1/auth_dev.py
+app/api/v1/password_reset.py
+app/api/v1/setup.py
+app/api/v1/onboarding.py
+app/api/v1/registration.py
+app/api/public/jobs.py
+app/api/public/apply.py
+app/api/public/wsi_chat.py
+app/api/public/tracking.py
+app/api/v1/webhooks.py
+app/api/v1/external_webhooks.py
+app/api/v1/teams.py
+app/api/v1/twilio_voice.py
+app/api/v1/openmic_webhook.py
+app/api/v1/merge_webhooks.py
+app/api/v1/whatsapp_webhook.py
+app/api/v1/mailgun_webhooks.py
