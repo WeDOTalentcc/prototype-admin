@@ -11,10 +11,14 @@ import {
   lookupGlossaryTerm,
 } from "@/services/lia-api/glossary-api";
 import { useAuthStore } from "@/stores/auth-store";
+import { useChatStateStore } from "@/stores/chat-state-store";
+import { useRecentItemsStore } from "@/stores/recent-items-store";
 import { Maximize2, X } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { toast } from "sonner";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { deleteChatConversation } from "./deleteChatConversation";
 import { UnifiedChatEmptyState } from "./UnifiedChatEmptyState";
 import { UnifiedChatHeader } from "./UnifiedChatHeader";
 import { UnifiedChatInput } from "./UnifiedChatInput";
@@ -404,6 +408,34 @@ export function UnifiedChat({
     setAttachedFile(null);
   }, [switchChatContext, setChatMessages]);
 
+  const removeRecentItem = useRecentItemsStore((s) => s.removeItem);
+  const removeStoredConversationId = useChatStateStore(
+    (s) => s.removeConversationId,
+  );
+  const tChatHeader = useTranslations("chat.header");
+
+  const handleDeleteConversation = useCallback(async () => {
+    await deleteChatConversation({
+      conversationId: chatConversationId,
+      removeRecentItem,
+      removeStoredConversationId,
+      resetChat: handleNewChat,
+      onError: (err) => {
+        // eslint-disable-next-line no-console
+        console.error("[UnifiedChat] failed to delete conversation", err);
+        toast.error(tChatHeader("deleteError"), {
+          description: tChatHeader("deleteErrorDescription"),
+        });
+      },
+    });
+  }, [
+    chatConversationId,
+    handleNewChat,
+    removeRecentItem,
+    removeStoredConversationId,
+    tChatHeader,
+  ]);
+
   // Switch to a different conversation
   const handleSelectSession = useCallback(
     async (sessionId: string) => {
@@ -615,6 +647,7 @@ export function UnifiedChat({
           isConnected={chatIsConnected}
           transportMode={chatTransportMode}
           isReconnecting={chatIsReconnecting}
+          onDelete={handleDeleteConversation}
           activeTaskLabel={activeTaskLabel}
           autoSaveLabel={wizardSavedLabel}
           showOpenJobButton={

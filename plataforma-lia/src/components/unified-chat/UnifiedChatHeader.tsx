@@ -11,6 +11,17 @@ import { useTranslations } from 'next-intl'
 import type { ChatMode } from "./unified-chat-types"
 import type { TransportMode } from "@/hooks/chat/lia-chat-connection-types"
 import { TransportModeIndicator } from "./TransportModeIndicator"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import { buttonVariants } from "@/components/ui/button"
 
 interface Props {
   mode: ChatMode
@@ -65,6 +76,8 @@ export function UnifiedChatHeader({
   const [showOptionsMenu, setShowOptionsMenu] = useState(false)
   const [isRenaming, setIsRenaming] = useState(false)
   const [renameValue, setRenameValue] = useState("")
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const renameInputRef = useRef<HTMLInputElement>(null)
 
   const MODE_OPTIONS: { mode: ChatMode; icon: React.ElementType; label: string }[] = [
@@ -109,8 +122,20 @@ export function UnifiedChatHeader({
 
   const handleDelete = () => {
     setShowOptionsMenu(false)
-    if (window.confirm(t('deleteConfirm'))) {
-      onDelete?.()
+    setShowDeleteDialog(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!onDelete) {
+      setShowDeleteDialog(false)
+      return
+    }
+    try {
+      setIsDeleting(true)
+      await onDelete()
+    } finally {
+      setIsDeleting(false)
+      setShowDeleteDialog(false)
     }
   }
 
@@ -332,6 +357,39 @@ export function UnifiedChatHeader({
           )}
         </div>
       </div>
+
+      <AlertDialog
+        open={showDeleteDialog}
+        onOpenChange={(open) => {
+          if (isDeleting) return
+          setShowDeleteDialog(open)
+        }}
+      >
+        <AlertDialogContent data-testid="delete-conversation-dialog">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('deleteTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('deleteDescription')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>
+              {t('deleteCancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={(e) => {
+                e.preventDefault()
+                void handleConfirmDelete()
+              }}
+              disabled={isDeleting}
+              data-testid="delete-conversation-confirm"
+              className={cn(buttonVariants({ variant: "destructive" }))}
+            >
+              {t('deleteAction')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

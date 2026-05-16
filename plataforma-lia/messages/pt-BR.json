@@ -680,6 +680,8 @@
       "deleteDescription": "Esta ação não pode ser desfeita. A conversa e todas as mensagens serão removidas permanentemente.",
       "deleteCancel": "Cancelar",
       "deleteAction": "Excluir",
+      "deleteError": "Não foi possível excluir a conversa",
+      "deleteErrorDescription": "Tente novamente em alguns instantes.",
       "modeSidebar": "Lateral",
       "modeFloating": "Flutuante",
       "modeFullscreen": "Tela cheia",

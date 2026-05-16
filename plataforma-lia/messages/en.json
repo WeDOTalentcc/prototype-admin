@@ -680,6 +680,8 @@
       "deleteDescription": "This action cannot be undone. The conversation and all messages will be permanently removed.",
       "deleteCancel": "Cancel",
       "deleteAction": "Delete",
+      "deleteError": "Could not delete the conversation",
+      "deleteErrorDescription": "Please try again in a moment.",
       "modeSidebar": "Sidebar",
       "modeFloating": "Floating",
       "modeFullscreen": "Full screen",
