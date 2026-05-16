@@ -196,11 +196,6 @@ PUBLIC_PREFIXES = (
     "/api/v1/teams/",
     "/api/v1/auth/invitation-info/",
     "/api/v1/wsi/async/",
-    # T-1157: candidato self-scheduling (token opaco single-use).
-    # Apenas GET /link/{token} e POST /link/{token}/confirm são públicos;
-    # POST /link (criação) mantém Depends(require_company_id) — middleware
-    # libera o prefixo, mas o gate de Depends ainda roda na rota autenticada.
-    "/api/v1/scheduling/link/",
     "/api/public/",
     "/docs/",
     "/static/",
@@ -208,6 +203,24 @@ PUBLIC_PREFIXES = (
     "/ws/",
     "/teams-icons/",
 )
+
+# T-1157: padrões públicos EXPLÍCITOS — substituem o prefixo amplo
+# `/api/v1/scheduling/link/` para evitar que sub-rotas futuras (ex.:
+# `/api/v1/scheduling/link/admin/X`) fiquem acidentalmente sem auth.
+# Apenas o token endpoint e o confirm endpoint são públicos; qualquer
+# adição AQUI exige revisão de segurança explícita.
+import re as _re
+
+PUBLIC_REGEX_PATHS: tuple[_re.Pattern[str], ...] = (
+    # GET /api/v1/scheduling/link/{token}
+    _re.compile(r"^/api/v1/scheduling/link/[A-Za-z0-9_\-]{16,128}$"),
+    # POST /api/v1/scheduling/link/{token}/confirm
+    _re.compile(r"^/api/v1/scheduling/link/[A-Za-z0-9_\-]{16,128}/confirm$"),
+)
+
+
+def _path_matches_public_regex(path: str) -> bool:
+    return any(p.match(path) for p in PUBLIC_REGEX_PATHS)
 
 
 class AuthEnforcementMiddleware(BaseHTTPMiddleware):
@@ -235,7 +248,11 @@ class AuthEnforcementMiddleware(BaseHTTPMiddleware):
         path = request.url.path
 
         # Allow public routes
-        if path in PUBLIC_PATHS or path.startswith(PUBLIC_PREFIXES):
+        if (
+            path in PUBLIC_PATHS
+            or path.startswith(PUBLIC_PREFIXES)
+            or _path_matches_public_regex(path)  # T-1157
+        ):
             return await call_next(request)
 
         # Allow OPTIONS (CORS preflight)

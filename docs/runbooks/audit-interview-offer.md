@@ -120,10 +120,39 @@ cd lia-agent-system && pytest \
   tests/integration/security/test_multi_tenant_ownership_inventory_t_1129.py \
   tests/integration/security/test_audit_required_interview_offer_t_1157.py \
   tests/integration/security/test_ownership_xvalidation_interview_offer_t_1157.py \
+  tests/integration/security/test_self_scheduling_public_properties_t_1157.py \
   -q
 ```
 
-As 3 sentinelas rodam em **<2s** (são AST puros, sem DB).
+As 2 sentinelas AST rodam em **<2s** (sem DB). Os property tests
+do self-scheduling público são hermeticos (mockam o service) e
+cobrem **9 propriedades**:
+
+* 404 quando token não existe (GET + POST/confirm)
+* 410 quando `status="used"` (replay defense, GET)
+* 410 quando `expires_at < now` (TTL defense, GET)
+* 410 em `confirm/replay` e `confirm/expired` (replay no mutation path)
+* GET **não** vaza `candidate_email`, `candidate_phone`, `company_id`,
+  `candidate_id`, `interviewer_emails` (PII non-disclosure)
+* POST `/link` (recrutador) sobrescreve `body.company_id` pelo claim
+  do JWT (anti-spoofing)
+* Middleware regex casa SÓ os 2 paths intencionais (rejeita
+  `/link/admin/X`, `/link/{token}/cancel`, prefixo bare, tokens curtos)
+
+## 5.1 Middleware: regex explícita vs prefixo amplo
+
+O arquivo `app/middleware/auth_enforcement.py` mantém duas listas:
+
+* `PUBLIC_PREFIXES` (tuple de strings) — match por `startswith()`. Uso
+  amplo justificado para `/api/public/`, `/docs/`, etc.
+* `PUBLIC_REGEX_PATHS` (tuple de `re.Pattern`) — match exato por
+  regex. **OBRIGATÓRIO** para qualquer surface pública sob um prefixo
+  que também hospeda endpoints autenticados (caso do
+  `/api/v1/scheduling/link/...`).
+
+A sentinela `test_middleware_no_longer_uses_broad_scheduling_prefix`
+impede que alguém reintroduza `/api/v1/scheduling/link/` em
+`PUBLIC_PREFIXES` (cobertura cega sub-rotas futuras).
 
 ## 6. Rollback / emergência
 
