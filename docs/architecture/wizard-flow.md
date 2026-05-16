@@ -400,6 +400,6 @@ A partir de Task #1127 todo turno do wizard passa por um **supervisor pre-graph*
 - T1.3 deprecação `WizardReActAgent` com sentinela
 - T3.1–T3.4 migração dos 3 gates restantes (competency/wsi/review) para LLM classifier + GA da flag `LIA_WIZARD_LLM_GATES`
 - T4.1 env hygiene Anthropic 401 (`AI_INTEGRATIONS_ANTHROPIC_BASE_URL` audit)
-- T4.2 runbook Grafana wizard-supervisor + wizard-gates
-- T5.1 5 specs Playwright (`16-20-*.spec.ts`)
+- ~~T4.2 runbook Grafana wizard-supervisor + wizard-gates~~ ✅ **entregue Task #1131** — dashboard `ops/grafana/lia-wizard-dashboard.json` (8 painéis, UID `lia-wizard-observability`) + runbook `docs/runbooks/wizard-observability.md` (4 alertas especificados: gate latency p95>2s, gate error rate>5%, silent fallback spike, supervisor fallback>5%). Alertas AlertManager ainda não wireados.
+- ~~T5.1 5 specs Playwright (`16-20-*.spec.ts`)~~ ✅ **entregue Task #1131** — 1 spec por intent do `WizardSupervisorClassifier`: `16-vaga-nova-do-zero` (create_new), `17-retomada-draft` (resume_draft), `18-edicao-publicada` (edit_published, defensiva), `19-meta-question-global` (meta_question short-circuit, 3 perguntas), `20-exit-wizard-clean` (exit_wizard preserva draft). Validados via `tsc --noEmit`; validação live Playwright pendente (dev-server falhando neste ciclo).
 - T5.2 segundo eval gate `wizard_meta_question_global.jsonl`
