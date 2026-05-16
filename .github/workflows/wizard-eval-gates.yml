@@ -44,9 +44,9 @@ on:
   workflow_dispatch:
     inputs:
       gates:
-        description: "Gates a rodar (CSV — 'leak,template,hitl,resilience' ou subconjunto)"
+        description: "Gates a rodar (CSV — 'leak,template,hitl,resilience,supervisor,meta' ou subconjunto)"
         required: false
-        default: "leak,template,hitl,resilience"
+        default: "leak,template,hitl,resilience,supervisor,meta"
       enforce:
         description: "Falhar o job quando o gate falha (default true; usar 'false' só para diagnóstico manual em casos pontuais)"
         required: false
@@ -62,10 +62,13 @@ on:
       - "lia-agent-system/eval/golden/wizard_pipeline_template.jsonl"
       - "lia-agent-system/eval/golden/wizard_conversational_hitl.jsonl"
       - "lia-agent-system/eval/golden/wizard_conversational_resilience.jsonl"
+      - "lia-agent-system/eval/golden/wizard_supervisor_routing.jsonl"
+      - "lia-agent-system/eval/golden/wizard_meta_question_global.jsonl"
       - "lia-agent-system/app/shared/llm_models.py"
       - "lia-agent-system/app/domains/job_creation/services/wizard_meta_question_helper.py"
       - "lia-agent-system/app/domains/job_creation/services/intake_intent_classifier.py"
       - "lia-agent-system/app/domains/job_creation/services/wizard_gate_classifier.py"
+      - "lia-agent-system/app/domains/job_creation/services/wizard_supervisor_classifier.py"
       - "lia-agent-system/app/prompts/job_creation/gate_classifier.yaml"
       - "lia-agent-system/app/domains/job_creation/**"
       - "lia-agent-system/app/domains/job_management/agents/wizard_react_agent.py"
@@ -301,6 +304,62 @@ jobs:
           python -m eval.eval_runner --gate eval/golden/wizard_conversational_resilience.jsonl
 
       # ──────────────────────────────────────────────────────────────────
+      # Gate 5 — wizard_supervisor_routing.jsonl (Task #1131 / T5.2)
+      # ──────────────────────────────────────────────────────────────────
+      # Sentinela CI do WizardSupervisorClassifier (Task #1127): 10 cenários
+      # cobrindo os 6 intents (continue_current / meta_question / exit_wizard
+      # / create_new / resume_draft / edit_published) × stages mistos. Pareia
+      # com o workflow `wizard-e2e-supervisor.yml` (5 specs 16-20).
+      - name: "Gate 5 — wizard_supervisor_routing (dataset run)"
+        id: sup_run
+        if: ${{ contains(github.event.inputs.gates || 'leak,template,hitl,resilience,supervisor,meta', 'supervisor') }}
+        continue-on-error: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.enforce == 'false' }}
+        working-directory: lia-agent-system
+        env:
+          LIA_WIZARD_SUPERVISOR_CLASSIFIER: "true"
+        run: |
+          python -m eval.eval_runner \
+            --dataset eval/golden/wizard_supervisor_routing.jsonl \
+            --transport ws \
+            --url "$LIA_BACKEND_URL"
+
+      - name: "Gate 5 — wizard_supervisor_routing (gate check)"
+        id: sup_gate
+        if: ${{ contains(github.event.inputs.gates || 'leak,template,hitl,resilience,supervisor,meta', 'supervisor') }}
+        continue-on-error: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.enforce == 'false' }}
+        working-directory: lia-agent-system
+        run: |
+          python -m eval.eval_runner --gate eval/golden/wizard_supervisor_routing.jsonl
+
+      # ──────────────────────────────────────────────────────────────────
+      # Gate 6 — wizard_meta_question_global.jsonl (Task #1131 / T5.2)
+      # ──────────────────────────────────────────────────────────────────
+      # Sentinela CI do meta-question helper rodando em stages NÃO-gate
+      # (intake/bigfive/salary/eligibility/calibration/handoff/publish):
+      # garante que o supervisor short-circuita perguntas info em qualquer
+      # nó do graph sem confundir com aprovação ou avanço.
+      - name: "Gate 6 — wizard_meta_question_global (dataset run)"
+        id: meta_run
+        if: ${{ contains(github.event.inputs.gates || 'leak,template,hitl,resilience,supervisor,meta', 'meta') }}
+        continue-on-error: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.enforce == 'false' }}
+        working-directory: lia-agent-system
+        env:
+          LIA_WIZARD_SUPERVISOR_CLASSIFIER: "true"
+        run: |
+          python -m eval.eval_runner \
+            --dataset eval/golden/wizard_meta_question_global.jsonl \
+            --transport ws \
+            --url "$LIA_BACKEND_URL"
+
+      - name: "Gate 6 — wizard_meta_question_global (gate check)"
+        id: meta_gate
+        if: ${{ contains(github.event.inputs.gates || 'leak,template,hitl,resilience,supervisor,meta', 'meta') }}
+        continue-on-error: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.enforce == 'false' }}
+        working-directory: lia-agent-system
+        run: |
+          python -m eval.eval_runner --gate eval/golden/wizard_meta_question_global.jsonl
+
+      # ──────────────────────────────────────────────────────────────────
       # Cleanup + artifacts
       # ──────────────────────────────────────────────────────────────────
       - name: Stop backend
@@ -340,15 +399,21 @@ jobs:
           HITL_GATE="${{ steps.hitl_gate.outcome }}"
           RES_RUN="${{ steps.resilience_run.outcome }}"
           RES_GATE="${{ steps.resilience_gate.outcome }}"
+          SUP_RUN="${{ steps.sup_run.outcome }}"
+          SUP_GATE="${{ steps.sup_gate.outcome }}"
+          META_RUN="${{ steps.meta_run.outcome }}"
+          META_GATE="${{ steps.meta_gate.outcome }}"
 
           echo "Gate outcomes:"
           echo "  wizard_no_tenant_leak             run=${LEAK_RUN}  gate=${LEAK_GATE}"
           echo "  wizard_pipeline_template          run=${TMPL_RUN}  gate=${TMPL_GATE}"
           echo "  wizard_conversational_hitl        run=${HITL_RUN}  gate=${HITL_GATE}"
           echo "  wizard_conversational_resilience  run=${RES_RUN}   gate=${RES_GATE}"
+          echo "  wizard_supervisor_routing         run=${SUP_RUN}   gate=${SUP_GATE}"
+          echo "  wizard_meta_question_global       run=${META_RUN}  gate=${META_GATE}"
 
           FAILED=0
-          for outcome in "$LEAK_RUN" "$LEAK_GATE" "$TMPL_RUN" "$TMPL_GATE" "$HITL_RUN" "$HITL_GATE" "$RES_RUN" "$RES_GATE"; do
+          for outcome in "$LEAK_RUN" "$LEAK_GATE" "$TMPL_RUN" "$TMPL_GATE" "$HITL_RUN" "$HITL_GATE" "$RES_RUN" "$RES_GATE" "$SUP_RUN" "$SUP_GATE" "$META_RUN" "$META_GATE"; do
             if [ "$outcome" = "failure" ]; then
               FAILED=1
             fi
