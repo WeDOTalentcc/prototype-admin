@@ -3,13 +3,14 @@ import asyncio
 import re
 from datetime import UTC
 
+from app.jobs.tenant_aware_task import TenantAwareTask
 from app.jobs.tasks._utils import (
     celery_app, logger,
     _celery_span, _finish_celery_success, _finish_celery_failure,
     _emit_celery_retry, _emit_dlq_push,
 )
 
-@celery_app.task(name="feedback.generate_and_send", bind=True, max_retries=2)
+@celery_app.task(base=TenantAwareTask, name="feedback.generate_and_send", bind=True, max_retries=2)
 def feedback_generate_and_send_task(
     self, candidate_id: str, job_id: str, reason: str, company_id: str = None
 ) -> dict:
@@ -100,7 +101,7 @@ def feedback_generate_and_send_task(
             _emit_dlq_push("feedback.generate_and_send", exc)
         raise self.retry(exc=exc, countdown=60)
 
-@celery_app.task(name="feedback.auto_send", bind=True, max_retries=3)
+@celery_app.task(base=TenantAwareTask, name="feedback.auto_send", bind=True, max_retries=3)
 def feedback_auto_send_task(self, feedback_id: str, company_id: str) -> dict:
     """
     Auto-send approved/edited rejection feedback via email/WhatsApp.
@@ -293,7 +294,7 @@ def feedback_auto_send_task(self, feedback_id: str, company_id: str) -> dict:
             _emit_dlq_push("feedback.auto_send", exc)
         raise self.retry(exc=exc, countdown=60)
 
-@celery_app.task(name="feedback.process_pending_sends", bind=True, max_retries=2)
+@celery_app.task(base=TenantAwareTask, name="feedback.process_pending_sends", bind=True, max_retries=2)
 def feedback_process_pending_sends_task(self) -> dict:
     """
     Batch process: finds approved feedback records not yet sent and dispatches auto_send.

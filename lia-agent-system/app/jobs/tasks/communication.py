@@ -3,13 +3,14 @@ import asyncio
 import re
 from datetime import UTC
 
+from app.jobs.tenant_aware_task import TenantAwareTask
 from app.jobs.tasks._utils import (
     celery_app, logger,
     _celery_span, _finish_celery_success, _finish_celery_failure,
     _emit_celery_retry, _emit_dlq_push,
 )
 
-@celery_app.task(name="communication.email.send_bulk", bind=True, max_retries=5)
+@celery_app.task(base=TenantAwareTask, name="communication.email.send_bulk", bind=True, max_retries=5)
 def send_bulk_email_task(self, email_data: dict, company_id: str) -> dict:
     """
     Envio de email em massa com controle de rate limiting e retry.
@@ -76,7 +77,7 @@ def send_bulk_email_task(self, email_data: dict, company_id: str) -> dict:
             _emit_dlq_push("communication.email.send_bulk", exc)
         raise self.retry(exc=exc, countdown=countdown)
 
-@celery_app.task(name="briefing.send_daily", bind=True, max_retries=2)
+@celery_app.task(base=TenantAwareTask, name="briefing.send_daily", bind=True, max_retries=2)
 def send_daily_briefing_task(self) -> dict:
     """
     Gera e envia briefing diário para todos os recrutadores ativos.
@@ -178,7 +179,7 @@ def send_daily_briefing_task(self) -> dict:
             _emit_dlq_push("briefing.send_daily", exc)
         raise self.retry(exc=exc, countdown=300)
 
-@celery_app.task(name="digest.send_weekly", bind=True, max_retries=2)
+@celery_app.task(base=TenantAwareTask, name="digest.send_weekly", bind=True, max_retries=2)
 def send_weekly_digest_task(self) -> dict:
     """
     Envia weekly digest consolidado a todos os recrutadores ativos.

@@ -3,13 +3,14 @@ import asyncio
 import re
 from datetime import UTC
 
+from app.jobs.tenant_aware_task import TenantAwareTask
 from app.jobs.tasks._utils import (
     celery_app, logger,
     _celery_span, _finish_celery_success, _finish_celery_failure,
     _emit_celery_retry, _emit_dlq_push,
 )
 
-@celery_app.task(name="drift.run_batch", bind=True, max_retries=3)
+@celery_app.task(base=TenantAwareTask, name="drift.run_batch", bind=True, max_retries=3)
 def run_drift_batch_task(self, notify_user_id: str | None = None) -> dict:
     """
     Executa drift check para todas as empresas ativas.
@@ -49,7 +50,7 @@ def run_drift_batch_task(self, notify_user_id: str | None = None) -> dict:
             _emit_dlq_push("drift.run_batch", exc)
         raise self.retry(exc=exc, countdown=60)
 
-@celery_app.task(name="agents.wsi_interview.start", bind=True, max_retries=3)
+@celery_app.task(base=TenantAwareTask, name="agents.wsi_interview.start", bind=True, max_retries=3)
 def start_wsi_interview_task(self, request_data: dict, company_id: str) -> dict:
     """
     Inicia entrevista WSI em background.
@@ -95,7 +96,7 @@ def start_wsi_interview_task(self, request_data: dict, company_id: str) -> dict:
             _emit_dlq_push("agents.wsi_interview.start", exc)
         raise self.retry(exc=exc, countdown=30)
 
-@celery_app.task(name="agents.triagem.run", bind=True, max_retries=3)
+@celery_app.task(base=TenantAwareTask, name="agents.triagem.run", bind=True, max_retries=3)
 def run_triagem_task(self, candidate_ids: list, job_id: str, company_id: str) -> dict:
     """
     Triagem curricular em lote — processa N candidatos em paralelo.
@@ -137,7 +138,7 @@ def run_triagem_task(self, candidate_ids: list, job_id: str, company_id: str) ->
             _emit_dlq_push("agents.triagem.run", exc)
         raise self.retry(exc=exc, countdown=60)
 
-@celery_app.task(name="agents.sourcing.search", bind=True, max_retries=3)
+@celery_app.task(base=TenantAwareTask, name="agents.sourcing.search", bind=True, max_retries=3)
 def run_sourcing_task(self, criteria: dict, job_id: str, company_id: str) -> dict:
     """
     Busca de candidatos via Pearch AI e banco interno.

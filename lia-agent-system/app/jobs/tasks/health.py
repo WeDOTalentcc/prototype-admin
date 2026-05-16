@@ -1,5 +1,6 @@
 """Celery tasks: DLQ health check (R-024)."""
 
+from app.jobs.tenant_aware_task import TenantAwareTask
 from app.jobs.tasks._utils import (
     celery_app, logger,
     _celery_span, _finish_celery_success, _finish_celery_failure,
@@ -10,7 +11,7 @@ _DLQ_ALERT_TOTAL = 100      # alert if total DLQ entries exceed this
 _DLQ_ALERT_PER_QUEUE = 30   # alert if any single queue exceeds this
 
 
-@celery_app.task(name="health.check_dlq_health", bind=True, max_retries=1)
+@celery_app.task(base=TenantAwareTask, name="health.check_dlq_health", bind=True, max_retries=1)
 def check_dlq_health_task(self) -> dict:
     """
     Inspect DLQ summary and emit alerts if thresholds exceeded.

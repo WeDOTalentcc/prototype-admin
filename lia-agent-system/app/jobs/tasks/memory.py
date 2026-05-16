@@ -3,13 +3,14 @@ import asyncio
 import re
 from datetime import UTC
 
+from app.jobs.tenant_aware_task import TenantAwareTask
 from app.jobs.tasks._utils import (
     celery_app, logger,
     _celery_span, _finish_celery_success, _finish_celery_failure,
     _emit_celery_retry, _emit_dlq_push,
 )
 
-@celery_app.task(name="memory.compress_old_episodes", bind=True, max_retries=2)
+@celery_app.task(base=TenantAwareTask, name="memory.compress_old_episodes", bind=True, max_retries=2)
 def compress_old_episodes_task(self, company_id: str, domain: str = None, age_days: int = 30) -> dict:
     """
     Z4-02: Comprime episódios LTM > age_days para economizar armazenamento.

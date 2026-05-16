@@ -3,13 +3,14 @@ import asyncio
 import re
 from datetime import UTC
 
+from app.jobs.tenant_aware_task import TenantAwareTask
 from app.jobs.tasks._utils import (
     celery_app, logger,
     _celery_span, _finish_celery_success, _finish_celery_failure,
     _emit_celery_retry, _emit_dlq_push,
 )
 
-@celery_app.task(name="agents.wizard.process_async", bind=True, max_retries=2, queue="vagas_normal")
+@celery_app.task(base=TenantAwareTask, name="agents.wizard.process_async", bind=True, max_retries=2, queue="vagas_normal")
 def wizard_process_async_task(self, message: str, context: dict, session_id: str, company_id: str, user_id: str) -> dict:
     """
     Processa mensagem do Wizard em background para operações longas.
@@ -74,7 +75,7 @@ def wizard_process_async_task(self, message: str, context: dict, session_id: str
             _emit_dlq_push("agents.wizard.process_async", exc)
         raise self.retry(exc=exc, countdown=30)
 
-@celery_app.task(name="agents.pipeline.transition_async", bind=True, max_retries=2, queue="vagas_normal")
+@celery_app.task(base=TenantAwareTask, name="agents.pipeline.transition_async", bind=True, max_retries=2, queue="vagas_normal")
 def pipeline_transition_async_task(self, transition_data: dict, session_id: str, company_id: str, user_id: str) -> dict:
     """
     Processa transição de pipeline em background.
@@ -147,7 +148,7 @@ async def _publish_response(session_id: str, reply_to: str, output_dict: dict, d
     except Exception as exc:
         logger.warning("_publish_response failed session=%s: %s", session_id, exc)
 
-@celery_app.task(name="agents.wizard.execute", bind=True, max_retries=2, queue="vagas_normal")
+@celery_app.task(base=TenantAwareTask, name="agents.wizard.execute", bind=True, max_retries=2, queue="vagas_normal")
 def execute_wizard_task(self, agent_input_dict: dict, session_id: str, company_id: str, domain: str = "wizard", reply_to: str = "") -> dict:
     """Executa WizardReActAgent em background (vaga, templates, JD)."""
     span = _celery_span("celery.task_start", "agents.wizard.execute")
@@ -176,7 +177,7 @@ def execute_wizard_task(self, agent_input_dict: dict, session_id: str, company_i
             _emit_dlq_push("agents.wizard.execute", exc)
         raise self.retry(exc=exc, countdown=30)
 
-@celery_app.task(name="agents.pipeline.execute", bind=True, max_retries=2, queue="evaluation_normal")
+@celery_app.task(base=TenantAwareTask, name="agents.pipeline.execute", bind=True, max_retries=2, queue="evaluation_normal")
 def execute_pipeline_task(self, agent_input_dict: dict, session_id: str, company_id: str, domain: str = "pipeline", reply_to: str = "") -> dict:
     """Executa PipelineReActAgent em background (pipeline, kanban, triagem)."""
     span = _celery_span("celery.task_start", "agents.pipeline.execute")
@@ -205,7 +206,7 @@ def execute_pipeline_task(self, agent_input_dict: dict, session_id: str, company
             _emit_dlq_push("agents.pipeline.execute", exc)
         raise self.retry(exc=exc, countdown=30)
 
-@celery_app.task(name="agents.sourcing.execute", bind=True, max_retries=2, queue="sourcing_high")
+@celery_app.task(base=TenantAwareTask, name="agents.sourcing.execute", bind=True, max_retries=2, queue="sourcing_high")
 def execute_sourcing_task(self, agent_input_dict: dict, session_id: str, company_id: str, domain: str = "sourcing", reply_to: str = "") -> dict:
     """Executa SourcingReActAgent em background (busca Pearch, 30-120s)."""
     span = _celery_span("celery.task_start", "agents.sourcing.execute")
@@ -234,7 +235,7 @@ def execute_sourcing_task(self, agent_input_dict: dict, session_id: str, company
             _emit_dlq_push("agents.sourcing.execute", exc)
         raise self.retry(exc=exc, countdown=45)
 
-@celery_app.task(name="agents.screening.execute", bind=True, max_retries=2, queue="evaluation_normal")
+@celery_app.task(base=TenantAwareTask, name="agents.screening.execute", bind=True, max_retries=2, queue="evaluation_normal")
 def execute_screening_task(self, agent_input_dict: dict, session_id: str, company_id: str, domain: str = "cv_screening", reply_to: str = "") -> dict:
     """Executa triagem curricular / WSI em background."""
     span = _celery_span("celery.task_start", "agents.screening.execute")
@@ -263,7 +264,7 @@ def execute_screening_task(self, agent_input_dict: dict, session_id: str, compan
             _emit_dlq_push("agents.screening.execute", exc)
         raise self.retry(exc=exc, countdown=60)
 
-@celery_app.task(name="agents.kanban.execute", bind=True, max_retries=2, queue="vagas_normal")
+@celery_app.task(base=TenantAwareTask, name="agents.kanban.execute", bind=True, max_retries=2, queue="vagas_normal")
 def execute_kanban_task(self, agent_input_dict: dict, session_id: str, company_id: str, domain: str = "kanban", reply_to: str = "") -> dict:
     """Executa KanbanReActAgent / TalentReActAgent em background."""
     span = _celery_span("celery.task_start", "agents.kanban.execute")
@@ -292,7 +293,7 @@ def execute_kanban_task(self, agent_input_dict: dict, session_id: str, company_i
             _emit_dlq_push("agents.kanban.execute", exc)
         raise self.retry(exc=exc, countdown=30)
 
-@celery_app.task(name="agents.policy.execute", bind=True, max_retries=2, queue="onboarding_low")
+@celery_app.task(base=TenantAwareTask, name="agents.policy.execute", bind=True, max_retries=2, queue="onboarding_low")
 def execute_policy_task(self, agent_input_dict: dict, session_id: str, company_id: str, domain: str = "policy", reply_to: str = "") -> dict:
     """Executa PolicyReActAgent em background (compliance, políticas)."""
     span = _celery_span("celery.task_start", "agents.policy.execute")
@@ -321,7 +322,7 @@ def execute_policy_task(self, agent_input_dict: dict, session_id: str, company_i
             _emit_dlq_push("agents.policy.execute", exc)
         raise self.retry(exc=exc, countdown=30)
 
-@celery_app.task(name="agents.automation.execute", bind=True, max_retries=2, queue="vagas_normal")
+@celery_app.task(base=TenantAwareTask, name="agents.automation.execute", bind=True, max_retries=2, queue="vagas_normal")
 def execute_automation_task(self, agent_input_dict: dict, session_id: str, company_id: str, domain: str = "automation", reply_to: str = "") -> dict:
     """Executa AutomationReActAgent em background (decomposição de tarefas)."""
     span = _celery_span("celery.task_start", "agents.automation.execute")

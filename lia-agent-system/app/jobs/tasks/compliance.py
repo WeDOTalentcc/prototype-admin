@@ -3,13 +3,14 @@ import asyncio
 import re
 from datetime import UTC
 
+from app.jobs.tenant_aware_task import TenantAwareTask
 from app.jobs.tasks._utils import (
     celery_app, logger,
     _celery_span, _finish_celery_success, _finish_celery_failure,
     _emit_celery_retry, _emit_dlq_push,
 )
 
-@celery_app.task(name="audit.apply_lifecycle_policy", bind=True, max_retries=3)
+@celery_app.task(base=TenantAwareTask, name="audit.apply_lifecycle_policy", bind=True, max_retries=3)
 def apply_audit_lifecycle_policy(self) -> dict:
     """
     Aplica política de retenção S3 no bucket de auditoria.
@@ -40,7 +41,7 @@ def apply_audit_lifecycle_policy(self) -> dict:
             _emit_dlq_push("audit.apply_lifecycle_policy", exc)
         raise self.retry(exc=exc, countdown=3600)
 
-@celery_app.task(name="lgpd.run_cleanup_daily", bind=True, max_retries=3)
+@celery_app.task(base=TenantAwareTask, name="lgpd.run_cleanup_daily", bind=True, max_retries=3)
 def run_lgpd_cleanup_task(self, dry_run: bool = False) -> dict:
     """
     Executa limpeza de dados LGPD para todas as empresas.
@@ -86,7 +87,7 @@ def run_lgpd_cleanup_task(self, dry_run: bool = False) -> dict:
             _emit_dlq_push("lgpd.run_cleanup_daily", exc)
         raise self.retry(exc=exc, countdown=300)
 
-@celery_app.task(name="conversation.ttl_cleanup", bind=True, max_retries=3)
+@celery_app.task(base=TenantAwareTask, name="conversation.ttl_cleanup", bind=True, max_retries=3)
 def conversation_ttl_cleanup_task(self, dry_run: bool = False) -> dict:
     """
     Job Celery Beat dedicado para TTL de dados de conversa.
@@ -128,7 +129,7 @@ def conversation_ttl_cleanup_task(self, dry_run: bool = False) -> dict:
             _emit_dlq_push("conversation.ttl_cleanup", exc)
         raise self.retry(exc=exc, countdown=300)  # retry em 5 min
 
-@celery_app.task(name="pii.backfill_encrypt_existing", bind=True, max_retries=2)
+@celery_app.task(base=TenantAwareTask, name="pii.backfill_encrypt_existing", bind=True, max_retries=2)
 def pii_backfill_encrypt_existing_task(
     self,
     batch_size: int = 500,
@@ -296,7 +297,7 @@ def pii_backfill_encrypt_existing_task(
             _emit_dlq_push("pii.backfill_encrypt_existing", exc)
         raise self.retry(exc=exc, countdown=600)  # retry em 10 min
 
-@celery_app.task(
+@celery_app.task(base=TenantAwareTask, 
     name="data.retention.run",
     bind=True,
     max_retries=3,
@@ -421,7 +422,7 @@ async def _run_retention_cleanup_async() -> dict:
 
 
 
-@celery_app.task(name="agent_working_memory.cleanup", bind=True, max_retries=3)
+@celery_app.task(base=TenantAwareTask, name="agent_working_memory.cleanup", bind=True, max_retries=3)
 def cleanup_expired_working_memory(self) -> dict:
     """
     Delete AgentWorkingMemory rows where expires_at < now().
@@ -473,7 +474,7 @@ def cleanup_expired_working_memory(self) -> dict:
             _emit_dlq_push("agent_working_memory.cleanup", exc)
         raise self.retry(exc=exc, countdown=3600)
 
-@celery_app.task(name="rls.health_check", bind=True, max_retries=2)
+@celery_app.task(base=TenantAwareTask, name="rls.health_check", bind=True, max_retries=2)
 def rls_health_check(self) -> dict:
     """
     R-002 — Sensor diário de RLS Postgres em tabelas críticas (cron 04h UTC).

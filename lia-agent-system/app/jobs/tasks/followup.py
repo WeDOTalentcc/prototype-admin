@@ -3,13 +3,14 @@ import asyncio
 import re
 from datetime import UTC
 
+from app.jobs.tenant_aware_task import TenantAwareTask
 from app.jobs.tasks._utils import (
     celery_app, logger,
     _celery_span, _finish_celery_success, _finish_celery_failure,
     _emit_celery_retry, _emit_dlq_push,
 )
 
-@celery_app.task(name="followup.process_pending", bind=True, max_retries=2)
+@celery_app.task(base=TenantAwareTask, name="followup.process_pending", bind=True, max_retries=2)
 def followup_process_pending_task(self) -> dict:
     """
     Reenvia convites WSI não abertos.
@@ -43,7 +44,7 @@ def followup_process_pending_task(self) -> dict:
             _emit_dlq_push("followup.process_pending", exc)
         raise self.retry(exc=exc, countdown=120)
 
-@celery_app.task(name="wsi.check_abandoned", bind=True, max_retries=2)
+@celery_app.task(base=TenantAwareTask, name="wsi.check_abandoned", bind=True, max_retries=2)
 def wsi_check_abandoned_task(self) -> dict:
     """
     Detecta sessões WSI abandonadas e envia lembretes.

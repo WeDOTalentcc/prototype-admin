@@ -3,13 +3,14 @@ import asyncio
 import re
 from datetime import UTC
 
+from app.jobs.tenant_aware_task import TenantAwareTask
 from app.jobs.tasks._utils import (
     celery_app, logger,
     _celery_span, _finish_celery_success, _finish_celery_failure,
     _emit_celery_retry, _emit_dlq_push,
 )
 
-@celery_app.task(name="voice.openmic.wsi_pipeline", bind=True, max_retries=3, queue="evaluation_normal")
+@celery_app.task(base=TenantAwareTask, name="voice.openmic.wsi_pipeline", bind=True, max_retries=3, queue="evaluation_normal")
 def run_openmic_wsi_pipeline_task(self, task_data: dict) -> dict:
     """
     Process OpenMic voice screening result through the WSI scoring pipeline.

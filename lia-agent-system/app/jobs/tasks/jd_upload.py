@@ -37,6 +37,7 @@ from datetime import datetime, timedelta
 from typing import Any
 from uuid import UUID
 
+from app.jobs.tenant_aware_task import TenantAwareTask
 from app.jobs.tasks._utils import celery_app
 
 logger = logging.getLogger(__name__)
@@ -388,7 +389,7 @@ async def _process_file_async(
 # --------------------------------------------------------------------------- #
 
 
-@celery_app.task(
+@celery_app.task(base=TenantAwareTask, 
     name="vagas.jd_upload.process_file",
     bind=True,
     soft_time_limit=25,

@@ -4,13 +4,14 @@ import os
 import re
 from datetime import UTC
 
+from app.jobs.tenant_aware_task import TenantAwareTask
 from app.jobs.tasks._utils import (
     celery_app, logger,
     _celery_span, _finish_celery_success, _finish_celery_failure,
     _emit_celery_retry, _emit_dlq_push,
 )
 
-@celery_app.task(name="ragas.evaluate_batch", bind=True, max_retries=1, queue="evaluation_normal")
+@celery_app.task(base=TenantAwareTask, name="ragas.evaluate_batch", bind=True, max_retries=1, queue="evaluation_normal")
 def run_ragas_evaluate_batch(self, domain: str = "all", days_back: int = 1) -> dict:
     """
     Avaliação RAGAS em lote das respostas dos agentes — ACH-027.
@@ -106,7 +107,7 @@ def run_ragas_evaluate_batch(self, domain: str = "all", days_back: int = 1) -> d
             _emit_dlq_push("ragas.evaluate_batch", exc)
         raise self.retry(exc=exc, countdown=300)
 
-@celery_app.task(name="rag.rebuild_domain_index")
+@celery_app.task(base=TenantAwareTask, name="rag.rebuild_domain_index")
 def rebuild_domain_index_task(domain: str, company_id: str):
     """Celery task to rebuild RAG domain embeddings."""
     import asyncio
@@ -131,7 +132,7 @@ def rebuild_domain_index_task(domain: str, company_id: str):
         logger.warning("[Celery] rag.rebuild_domain_index failed: %s", exc)
         return 0
 
-@celery_app.task(name="routing.recompute_adjustments")
+@celery_app.task(base=TenantAwareTask, name="routing.recompute_adjustments")
 def recompute_routing_adjustments(company_id: str) -> dict:
     """Recompute adaptive routing adjustments for a company.
 
@@ -168,7 +169,7 @@ def recompute_routing_adjustments(company_id: str) -> dict:
         logger.warning("[Celery] routing.recompute_adjustments failed: %s", exc)
         return {}
 
-@celery_app.task(name="ml.feedback.process_weights", bind=True, max_retries=2)
+@celery_app.task(base=TenantAwareTask, name="ml.feedback.process_weights", bind=True, max_retries=2)
 def process_ml_feedback_weights_task(self, company_id: str, job_id: str) -> dict:
     """
     Computa pesos adaptativos ML para uma vaga específica (D6 — Feedback Loop).
@@ -216,7 +217,7 @@ def process_ml_feedback_weights_task(self, company_id: str, job_id: str) -> dict
             _emit_dlq_push("ml.feedback.process_weights", exc)
         raise self.retry(exc=exc, countdown=120)
 
-@celery_app.task(name="golden_drift.run_check", bind=True, max_retries=1, queue="evaluation_normal")
+@celery_app.task(base=TenantAwareTask, name="golden_drift.run_check", bind=True, max_retries=1, queue="evaluation_normal")
 def run_golden_drift_check(self) -> dict:
     """
     Qualitative drift detection via golden scenarios — P37-073 (item 11.3).
@@ -249,7 +250,7 @@ def run_golden_drift_check(self) -> dict:
         raise self.retry(exc=exc, countdown=600)
 
 
-@celery_app.task(name="insights.aggregate_all", bind=True, max_retries=1, queue="evaluation_normal")
+@celery_app.task(base=TenantAwareTask, name="insights.aggregate_all", bind=True, max_retries=1, queue="evaluation_normal")
 def aggregate_global_insights(self) -> dict:
     """Aggregate anonymous cross-tenant insights for all domains.
 
@@ -269,7 +270,7 @@ def aggregate_global_insights(self) -> dict:
         raise self.retry(exc=exc, countdown=600)
 
 
-@celery_app.task(name="fewshot.evolve", bind=True, max_retries=1, queue="evaluation_normal")
+@celery_app.task(base=TenantAwareTask, name="fewshot.evolve", bind=True, max_retries=1, queue="evaluation_normal")
 def evolve_few_shots(self) -> dict:
     """Auto-evolving few-shot pipeline — selects excellent interactions and inserts into YAML.
 
@@ -292,7 +293,7 @@ def evolve_few_shots(self) -> dict:
         raise self.retry(exc=exc, countdown=600)
 
 
-@celery_app.task(name="agents.registry.check_reload")
+@celery_app.task(base=TenantAwareTask, name="agents.registry.check_reload")
 def check_agent_registry_reload():
     """Verifica se agents_registry.yaml foi modificado e recarrega o registry.
 
@@ -316,7 +317,7 @@ def check_agent_registry_reload():
         logger.warning("[Celery] agents.registry.check_reload failed (fail-open): %s", exc)
         return {"reloaded": []}
 
-@celery_app.task(name="rag.rebuild_all_domains")
+@celery_app.task(base=TenantAwareTask, name="rag.rebuild_all_domains")
 def rebuild_all_domains_task():
     """Dispara rebuild de embeddings para todos os domínios RAG conhecidos.
 
@@ -337,7 +338,7 @@ def rebuild_all_domains_task():
     logger.info("[Celery] rag.rebuild_all_domains dispatched %d/%d domains", dispatched, len(_DOMAINS))
     return {"dispatched": dispatched, "domains": _DOMAINS}
 
-@celery_app.task(name="ml.feedback.recompute_active_jobs")
+@celery_app.task(base=TenantAwareTask, name="ml.feedback.recompute_active_jobs")
 def recompute_active_ml_jobs_task():
     """Recomputa pesos ML adaptativos para vagas com feedback nas últimas 48h.
 

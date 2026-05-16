@@ -269,8 +269,23 @@ def resolve_tenant_snippet_for_non_react(
          registra `miss`, retorna.
       3. Sem snippet -> strict-mode levanta `MissingTenantContextError`,
          senao registra `fail_open` e retorna `""`.
+
+    Task #1145: quando ``company_id_raw`` chega ``None``/``""`` E o callsite
+    esta executando dentro de uma Celery TenantAwareTask, herda o tenant do
+    worker ContextVar — assim codigo legado invocado de dentro de uma task
+    nao precisa propagar ``company_id`` explicito ate aqui.
     """
     ctx = ctx or {}
+
+    if company_id_raw in (None, ""):
+        try:
+            from app.jobs.tenant_aware_task import get_celery_company_id
+
+            _cid_ctx = get_celery_company_id()
+        except Exception:  # pragma: no cover — defensive
+            _cid_ctx = ""
+        if _cid_ctx:
+            company_id_raw = _cid_ctx
 
     snippet = ctx.get("tenant_context_snippet", "")
     if isinstance(snippet, str) and snippet.strip():
