@@ -44,9 +44,9 @@ on:
   workflow_dispatch:
     inputs:
       gates:
-        description: "Gates a rodar (CSV — 'leak,template,hitl' ou subconjunto)"
+        description: "Gates a rodar (CSV — 'leak,template,hitl,resilience' ou subconjunto)"
         required: false
-        default: "leak,template,hitl"
+        default: "leak,template,hitl,resilience"
       enforce:
         description: "Falhar o job quando o gate falha (default true; usar 'false' só para diagnóstico manual em casos pontuais)"
         required: false
@@ -61,6 +61,10 @@ on:
       - "lia-agent-system/eval/golden/wizard_no_tenant_leak.jsonl"
       - "lia-agent-system/eval/golden/wizard_pipeline_template.jsonl"
       - "lia-agent-system/eval/golden/wizard_conversational_hitl.jsonl"
+      - "lia-agent-system/eval/golden/wizard_conversational_resilience.jsonl"
+      - "lia-agent-system/app/shared/llm_models.py"
+      - "lia-agent-system/app/domains/job_creation/services/wizard_meta_question_helper.py"
+      - "lia-agent-system/app/domains/job_creation/services/intake_intent_classifier.py"
       - "lia-agent-system/app/domains/job_creation/services/wizard_gate_classifier.py"
       - "lia-agent-system/app/prompts/job_creation/gate_classifier.yaml"
       - "lia-agent-system/app/domains/job_creation/**"
@@ -270,6 +274,33 @@ jobs:
           python -m eval.eval_runner --gate eval/golden/wizard_conversational_hitl.jsonl
 
       # ──────────────────────────────────────────────────────────────────
+      # Gate 4 — wizard_conversational_resilience.jsonl (Task #1123)
+      # ──────────────────────────────────────────────────────────────────
+      # Sentinela CI da auditoria D-2026-05: wizard responde a perguntas
+      # meta / off-topic / clarification SEM travar, mantém tenant
+      # context (Demo Company / Tecnologia) e NUNCA reintroduz B1
+      # (pergunta company_id em texto livre). 11 cenários cobrindo
+      # jd_enrichment / competency / wsi_questions / review.
+      - name: "Gate 4 — wizard_conversational_resilience (dataset run)"
+        id: resilience_run
+        if: ${{ contains(github.event.inputs.gates || 'leak,template,hitl,resilience', 'resilience') }}
+        continue-on-error: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.enforce == 'false' }}
+        working-directory: lia-agent-system
+        run: |
+          python -m eval.eval_runner \
+            --dataset eval/golden/wizard_conversational_resilience.jsonl \
+            --transport ws \
+            --url "$LIA_BACKEND_URL"
+
+      - name: "Gate 4 — wizard_conversational_resilience (gate check)"
+        id: resilience_gate
+        if: ${{ contains(github.event.inputs.gates || 'leak,template,hitl,resilience', 'resilience') }}
+        continue-on-error: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.enforce == 'false' }}
+        working-directory: lia-agent-system
+        run: |
+          python -m eval.eval_runner --gate eval/golden/wizard_conversational_resilience.jsonl
+
+      # ──────────────────────────────────────────────────────────────────
       # Cleanup + artifacts
       # ──────────────────────────────────────────────────────────────────
       - name: Stop backend
@@ -307,14 +338,17 @@ jobs:
           TMPL_GATE="${{ steps.tmpl_gate.outcome }}"
           HITL_RUN="${{ steps.hitl_run.outcome }}"
           HITL_GATE="${{ steps.hitl_gate.outcome }}"
+          RES_RUN="${{ steps.resilience_run.outcome }}"
+          RES_GATE="${{ steps.resilience_gate.outcome }}"
 
           echo "Gate outcomes:"
-          echo "  wizard_no_tenant_leak       run=${LEAK_RUN}  gate=${LEAK_GATE}"
-          echo "  wizard_pipeline_template    run=${TMPL_RUN}  gate=${TMPL_GATE}"
-          echo "  wizard_conversational_hitl  run=${HITL_RUN}  gate=${HITL_GATE}"
+          echo "  wizard_no_tenant_leak             run=${LEAK_RUN}  gate=${LEAK_GATE}"
+          echo "  wizard_pipeline_template          run=${TMPL_RUN}  gate=${TMPL_GATE}"
+          echo "  wizard_conversational_hitl        run=${HITL_RUN}  gate=${HITL_GATE}"
+          echo "  wizard_conversational_resilience  run=${RES_RUN}   gate=${RES_GATE}"
 
           FAILED=0
-          for outcome in "$LEAK_RUN" "$LEAK_GATE" "$TMPL_RUN" "$TMPL_GATE" "$HITL_RUN" "$HITL_GATE"; do
+          for outcome in "$LEAK_RUN" "$LEAK_GATE" "$TMPL_RUN" "$TMPL_GATE" "$HITL_RUN" "$HITL_GATE" "$RES_RUN" "$RES_GATE"; do
             if [ "$outcome" = "failure" ]; then
               FAILED=1
             fi

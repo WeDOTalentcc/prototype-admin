@@ -149,3 +149,10 @@ system_prompt: |
     extracted_data={"question_topic": "pipeline default"},
     reply="Esse pipeline veio do default configurado em Settings.
     Quer ajustar alguma etapa antes de publicar?"
+
+# Task #1123 — Histórico recente da conversa
+#
+# Bloco `# Histórico recente` (últimas 3 turns) está disponível. Em
+# ``ask_clarification`` repetido, ofereça caminho diferente
+# (ex.: mostrar o que está pronto vs editar campo específico) em vez
+# de repetir a mesma pergunta.

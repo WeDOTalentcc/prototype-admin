@@ -98,16 +98,17 @@ def _get_timeout_s() -> float:
         return 5.0
 
 
+from app.shared.llm_models import CANONICAL_HAIKU_MODEL
+
+# Task #1123 — canonical default delegado a app.shared.llm_models. O
+# literal "claude-3-5-haiku-20241022" usado por 15+ callsites retornava
+# UNSUPPORTED_MODEL do modelfarm proxy local
+# (localhost:1106/modelfarm/anthropic), fazendo o classifier fail-OPEN
+# silenciosamente em todo turno e deixando o guard estático firing
+# para sempre. Override por env var preservado.
 _DEFAULT_MODEL = os.environ.get(
     "LIA_WIZARD_INTAKE_CLASSIFIER_MODEL",
-    # Canonical Haiku model name for the local modelfarm proxy
-    # (localhost:1106/modelfarm/anthropic). Used by 15+ callsites:
-    # agents_registry.yaml, agent_model_config.py, fairness_guard.py,
-    # intake_extractor.py. The original "claude-3-5-haiku-20241022"
-    # default returns UNSUPPORTED_MODEL from the modelfarm proxy in
-    # dev/staging, causing the classifier to silently fail-OPEN every
-    # turn and the static guard to fire forever.
-    "claude-haiku-4-5-20251001",
+    CANONICAL_HAIKU_MODEL,
 )
 
 
@@ -214,6 +215,7 @@ class IntakeIntentClassifier:
         user_message: str,
         has_panel_form: bool = False,
         has_attached_file: bool = False,
+        last_turns: list[str] | None = None,
     ) -> IntakeIntentOutput | None:
         """Classifica o intent do primeiro turno. Sync por contrato.
 
@@ -290,8 +292,20 @@ class IntakeIntentClassifier:
             ctx_bits.append("arquivo-anexado=sim")
         ctx = ", ".join(ctx_bits) if ctx_bits else "(sem contexto extra)"
 
+        # Task #1123 — últimas 3 turns para que o classifier saiba se o
+        # recrutador acabou de fazer a mesma pergunta meta (evita loop).
+        turns_block = "(sem histórico)"
+        if last_turns:
+            _lines: list[str] = []
+            for _t in [str(t or "").strip() for t in last_turns if t][-3:]:
+                if _t:
+                    _lines.append(f"- {_t[:300]}")
+            if _lines:
+                turns_block = "\n".join(_lines)[:1200]
+
         user_block = (
             f"# Contexto da sessão\n{ctx}\n\n"
+            f"# Histórico recente da conversa\n{turns_block}\n\n"
             f"# Mensagem do recrutador\n{msg[:1500]}\n\n"
             "Classifique o intent chamando a tool 'classify_intake'."
         )

@@ -88,8 +88,14 @@ def get_allowed_intents(stage: str) -> frozenset[str]:
     """Devolve o allowlist canônico do stage. Default: jd_enrichment (T2)."""
     return STAGE_ALLOWLISTS.get(stage, STAGE_ALLOWLISTS["jd_enrichment"])
 
+from app.shared.llm_models import CANONICAL_HAIKU_MODEL
+
+# Task #1123 — defaults vêm de app.shared.llm_models para evitar drift do
+# literal "claude-3-5-haiku-20241022" (que retorna UNSUPPORTED_MODEL no
+# modelfarm proxy em dev/staging e fazia o classifier silenciosamente
+# fail-OPEN em todo turno). Override por env var fica preservado.
 _DEFAULT_MODEL = os.environ.get(
-    "LIA_WIZARD_GATE_CLASSIFIER_MODEL", "claude-3-5-haiku-20241022"
+    "LIA_WIZARD_GATE_CLASSIFIER_MODEL", CANONICAL_HAIKU_MODEL
 )
 
 
@@ -247,6 +253,7 @@ class WizardGateClassifier:
         user_id: str | None = None,
         allowed_intents: frozenset[str] | None = None,
         prompt_rel_path: str | None = None,
+        last_turns: list[str] | None = None,
     ) -> GateClassifierOutput:
         """Classifica o intent do usuário no contexto do gate atual.
 
@@ -309,9 +316,21 @@ class WizardGateClassifier:
         }
 
         stage_summary = self._summarize_stage_payload(ws_stage_payload)
+        # Task #1123 — últimas 3 turns (recruiter+LIA) para evitar que o
+        # classifier "esqueça" que o recrutador acabou de perguntar a mesma
+        # coisa. Cada turno truncado a 300 chars; bloco inteiro a 1200.
+        turns_block = "(sem histórico)"
+        if last_turns:
+            _lines: list[str] = []
+            for _t in [str(t or "").strip() for t in last_turns if t][-3:]:
+                if _t:
+                    _lines.append(f"- {_t[:300]}")
+            if _lines:
+                turns_block = "\n".join(_lines)[:1200]
         context_block = (
             f"# Stage atual\n{stage}\n\n"
             f"# Resumo do que a LIA propôs no último turno\n{stage_summary}\n\n"
+            f"# Histórico recente da conversa (últimos turnos)\n{turns_block}\n\n"
             f"# Contexto da empresa (tenant)\n{(tenant_context_snippet or '(não disponível)')[:500]}\n\n"
             f"# Política de hiring (resumo)\n{(hiring_policy_summary or '(default)')[:300]}\n\n"
             f"# Mensagem do recrutador\n{msg[:2000]}\n\n"

@@ -104,3 +104,12 @@ system_prompt: |
   - "deixa em aberto por enquanto" → intent=undecided, confidence=0.85,
     reply="Sem problema. Pra esta vaga eu sugiro Compacto (7 perguntas);
     me confirma quando puder pra eu seguir."
+
+# Task #1123 — Histórico recente da conversa
+#
+# Mesmo contrato do gate_classifier: bloco `# Histórico recente`
+# (últimas 3 turns) está disponível. Se o recrutador já fez a mesma
+# pergunta sobre Compacto vs Completo no turno anterior, classifique
+# como ``ask_question`` e a resposta deve trazer outro ângulo (ex.:
+# tempo médio de resposta, distribuição technical/behavioral) em vez
+# de repetir a mesma explicação.

@@ -35,6 +35,62 @@ from typing import Any, Dict, Optional
 from langgraph.graph import StateGraph, END
 
 
+def _extract_last_turns(state: Any, n: int = 3) -> list[str]:
+    """Task #1123 — extrai últimas N turns de ``state['conversation_messages']``.
+
+    Formato canônico: ``[{"role": "user"|"assistant", "content": "..."}, ...]``.
+    Devolve lista de strings ``"<role>: <content>"`` para alimentar prompts dos
+    classifiers e do meta-question helper. Tail bounded (default 3 turnos);
+    content truncado a 300 chars por turno. Fail-open: state malformado
+    devolve lista vazia (caller trata como "sem histórico").
+    """
+    try:
+        msgs = state.get("conversation_messages") or []
+    except Exception:
+        return []
+    out: list[str] = []
+    for m in list(msgs)[-(n * 2):]:
+        if not isinstance(m, dict):
+            continue
+        role = str(m.get("role") or "").strip().lower() or "msg"
+        content = str(m.get("content") or "").strip()
+        if not content:
+            continue
+        out.append(f"{role}: {content[:300]}")
+    return out[-n:]
+
+
+def _try_meta_helper(
+    *,
+    state: Any,
+    stage: str,
+    user_message: str,
+    stage_description: str,
+) -> str | None:
+    """Task #1123 — wrapper sync para ``wizard_meta_question_helper``.
+
+    Captura qualquer exceção (incluindo ``ImportError`` em testes offline
+    onde o módulo não está presente) e devolve ``None`` — caller cai no
+    ``output.conversational_reply`` do classifier. Mantém o gate
+    determinístico do ponto de vista de fluxo (helper só altera o TEXTO
+    da resposta, não o roteamento).
+    """
+    try:
+        from app.domains.job_creation.services.wizard_meta_question_helper import (
+            generate_meta_response_sync,
+        )
+        return generate_meta_response_sync(
+            stage=stage,
+            user_message=user_message,
+            tenant_context_snippet=str(state.get("tenant_context_snippet") or ""),
+            last_turns=_extract_last_turns(state, n=3),
+            stage_description=stage_description,
+        )
+    except Exception as _exc:
+        logger.info("[JobCreation:meta_helper] failed (fail-open): %s", _exc)
+        return None
+
+
 def _in_graph_runtime() -> bool:
     """True iff currently executing inside a LangGraph node (Pregel runtime).
 
@@ -651,26 +707,40 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
     _has_attached = bool((state.get("attached_file_text") or "").strip())
     _has_parsed_title = bool((state.get("parsed_title") or "").strip())
     _raw_len = len((raw_input or "").strip())
-    _guard_eligible = (
+
+    # Task #1123 — classifier-first refactor.
+    # Anterior: `_guard_eligible` (com raw_len<100) gateava o classifier;
+    # mensagens ≥100 chars que eram perguntas meta nunca passavam pelo LLM
+    # e gastavam 2K tokens enriquecendo lixo (causa raiz #3 da auditoria).
+    # Agora: `_classifier_eligible` NÃO depende de comprimento — o LLM
+    # decide o intent em todos os turnos iniciais sem JD válida. O guard
+    # estático (template "preciso de mais contexto") vira ÚLTIMO recurso:
+    # só dispara se o classifier devolveu None/baixa conf E a mensagem é
+    # genuinamente magra (raw_len<100). Mantém safety net contra
+    # disponibilidade do LLM sem reintroduzir o non-determinismo de
+    # length-gated routing.
+    _classifier_eligible = (
         not state.get("jd_enriched")  # nunca short-circuit em resume
         and not _has_panel_form
         and not _has_attached
         and not _has_parsed_title
-        and _raw_len < 100
     )
 
-    # ── Task #1098 — LLM intent classifier ANTES do guard estático ──
+    # ── Task #1098 + Task #1123 — LLM intent classifier SEMPRE roda ──
     # O guard de Task #1096 trata QUALQUER mensagem curta como "intent_only".
     # O classifier (Claude Haiku, sync, Pydantic-validado) refina em 4 buckets
     # canônicos: provides_jd_intent | meta_question | intent_only | off_topic.
     # Fail-OPEN: qualquer falha (flag OFF, sem API key, timeout, schema
-    # inválido, off-allowlist) devolve None e caímos no guard original
+    # inválido, off-allowlist) devolve None e caímos no guard estático
     # (preserva safety net). NUNCA usamos `conversational_reply` do LLM
     # como controle de fluxo — só como texto exibido. Mutação de state
     # é determinística por intent. Ver
     # ``services/intake_intent_classifier.py``.
     _intent_intake = None
-    if _guard_eligible:
+    if _classifier_eligible:
+        # Task #1123 — últimas 3 turns do checkpoint para o classifier
+        # saber que o recrutador acabou de repetir a mesma pergunta meta.
+        _last_turns = _extract_last_turns(state, n=3)
         try:
             from app.domains.job_creation.services.intake_intent_classifier import (
                 get_intake_intent_classifier,
@@ -679,6 +749,7 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
                 user_message=raw_input,
                 has_panel_form=_has_panel_form,
                 has_attached_file=_has_attached,
+                last_turns=_last_turns,
             )
         except Exception as _intent_exc:
             logger.info(
@@ -686,6 +757,14 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
                 _intent_exc,
             )
             _intent_intake = None
+
+    # Static guard só dispara se classifier não resolveu E a mensagem é
+    # genuinamente magra. Última linha de defesa, não primeira.
+    _guard_eligible = (
+        _classifier_eligible
+        and (_intent_intake is None or _intent_intake.confidence < 0.7)
+        and _raw_len < 100
+    )
 
     if _intent_intake is not None and _intent_intake.confidence >= 0.7:
         _intent = _intent_intake.intent
@@ -707,6 +786,30 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
                 "[JobCreation:jd_enrichment] intent=%s (conf=%.2f) — short-circuit with helpful reply",
                 _intent, _intent_intake.confidence,
             )
+            # Task #1123 — enriquecer reply via helper Sonnet (tenant +
+            # last_turns + stage description). Best-effort: cai no
+            # conversational_reply do classifier se Sonnet falhar.
+            try:
+                from app.domains.job_creation.services.wizard_meta_question_helper import (
+                    generate_meta_response_sync,
+                )
+                _sonnet_reply = generate_meta_response_sync(
+                    stage="jd_enrichment",
+                    user_message=raw_input,
+                    tenant_context_snippet=str(state.get("tenant_context_snippet") or ""),
+                    last_turns=_extract_last_turns(state, n=3),
+                    stage_description=(
+                        "início do wizard: precisamos do título do cargo "
+                        "ou da descrição da vaga (JD) para começar."
+                    ),
+                )
+                if _sonnet_reply:
+                    _reply = _sonnet_reply
+            except Exception as _meta_exc:
+                logger.info(
+                    "[JobCreation:jd_enrichment] meta helper failed (fail-open): %s",
+                    _meta_exc,
+                )
             return {
                 **state,
                 "current_stage": "jd_enrichment",
@@ -728,7 +831,15 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
                     "requires_approval": False,
                 },
             }
-        # intent == "intent_only" → cai no guard estático abaixo.
+        elif _intent == "intent_only":
+            # Task #1123 — "quero abrir uma vaga" / similar: intenção clara
+            # mas SEM conteúdo de JD. Força guard estático (ask for JD/title)
+            # independente de raw_len. NUNCA cai em enrichment.
+            logger.info(
+                "[JobCreation:jd_enrichment] intent=intent_only (conf=%.2f) — firing guard",
+                _intent_intake.confidence,
+            )
+            _guard_eligible = True
 
     if _guard_eligible:
         # Task #1097 — mensagem UI-neutra. Versões anteriores prometiam
@@ -2699,6 +2810,7 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
             hiring_policy_summary=str(state.get("hiring_policy_summary") or ""),
             company_id=str(_company_id) if _company_id else None,
             user_id=str(_user_id) if _user_id else None,
+            last_turns=_extract_last_turns(state, n=3),  # Task #1123
         )
         if running_loop is not None and running_loop.is_running():
             # Dentro de loop ativo (ex.: chamado de WS handler async). Offload
@@ -2770,11 +2882,33 @@ def jd_gate_node(state: JobCreationState) -> JobCreationState:
             or "Recebi a descrição nova. Vou re-enriquecer agora."
         )
     elif intent == "ask_question":
-        # Não muta jd_approved — recrutador fez pergunta, segue aguardando.
-        next_state["gate_clarify_message"] = output.conversational_reply
-    elif intent == "off_topic":
+        # Task #1123 — resposta rica via Sonnet (tenant + history-aware).
+        # Fail-OPEN para o reply do classifier se Sonnet falhar.
+        _sonnet_reply = _try_meta_helper(
+            state=state,
+            stage="jd_enrichment",
+            user_message=msg,
+            stage_description=(
+                "HITL #1: revisão da descrição enriquecida da vaga (JD). "
+                "O recrutador pode aprovar, rejeitar, ou enviar nova JD."
+            ),
+        )
         next_state["gate_clarify_message"] = (
-            output.conversational_reply
+            _sonnet_reply or output.conversational_reply
+        )
+    elif intent == "off_topic":
+        _sonnet_reply = _try_meta_helper(
+            state=state,
+            stage="jd_enrichment",
+            user_message=msg,
+            stage_description=(
+                "HITL #1: revisão da descrição enriquecida da vaga (JD). "
+                "Recrutador desviou — trazer de volta para aprovação."
+            ),
+        )
+        next_state["gate_clarify_message"] = (
+            _sonnet_reply
+            or output.conversational_reply
             or "Vamos focar na descrição da vaga? Você quer aprovar ou ajustar algo?"
         )
     else:
@@ -2970,6 +3104,7 @@ def competency_gate_node(state: JobCreationState) -> JobCreationState:
             hiring_policy_summary=str(state.get("hiring_policy_summary") or ""),
             company_id=str(_company_id) if _company_id else None,
             user_id=str(_user_id) if _user_id else None,
+            last_turns=_extract_last_turns(state, n=3),  # Task #1123
         )
         if running_loop is not None and running_loop.is_running():
             import concurrent.futures as _cf
@@ -3040,9 +3175,19 @@ def competency_gate_node(state: JobCreationState) -> JobCreationState:
             or "Modo Completo (12 perguntas) selecionado. Vou gerar as perguntas WSI agora."
         )
     elif intent == "ask_question":
-        # Não muta screening_mode — recrutador fez pergunta, segue aguardando.
+        # Task #1123 — resposta rica via Sonnet (tenant + history-aware).
+        _sonnet_reply = _try_meta_helper(
+            state=state,
+            stage="competency",
+            user_message=msg,
+            stage_description=(
+                f"HITL #2: escolha do modo de triagem WSI (Compacto 7 perguntas "
+                f"ou Completo 12 perguntas). Recomendação para este nível: {recommended}."
+            ),
+        )
         next_state["gate_clarify_message"] = (
-            output.conversational_reply
+            _sonnet_reply
+            or output.conversational_reply
             or f"Compacto tem 7 perguntas (mais ágil) e Completo tem 12 (mais evidência). Pra esta vaga eu sugiro {recommended}."
         )
     elif intent == "undecided":
@@ -3336,6 +3481,7 @@ def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
             hiring_policy_summary=str(state.get("hiring_policy_summary") or ""),
             company_id=str(_company_id) if _company_id else None,
             user_id=str(_user_id) if _user_id else None,
+            last_turns=_extract_last_turns(state, n=3),  # Task #1123
         )
         if running_loop is not None and running_loop.is_running():
             import concurrent.futures as _cf
@@ -3489,8 +3635,19 @@ def wsi_questions_gate_node(state: JobCreationState) -> JobCreationState:
             )
 
     elif intent == "ask_question":
+        # Task #1123 — resposta rica via Sonnet (tenant + history-aware).
+        _sonnet_reply = _try_meta_helper(
+            state=state,
+            stage="wsi_questions",
+            user_message=msg,
+            stage_description=(
+                f"HITL #3: revisão do pacote WSI gerado ({total_q} perguntas). "
+                "Recrutador pode aprovar, regenerar tudo, editar/adicionar/remover uma."
+            ),
+        )
         next_state["gate_clarify_message"] = (
-            output.conversational_reply
+            _sonnet_reply
+            or output.conversational_reply
             or "Posso explicar a metodologia WSI ou o pacote atual. O que você quer saber?"
         )
 
@@ -3820,6 +3977,7 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
             hiring_policy_summary=str(state.get("hiring_policy_summary") or ""),
             company_id=str(_company_id) if _company_id else None,
             user_id=str(_user_id) if _user_id else None,
+            last_turns=_extract_last_turns(state, n=3),  # Task #1123
         )
         if running_loop is not None and running_loop.is_running():
             import concurrent.futures as _cf
@@ -4089,8 +4247,21 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
             next_state["publish_confirmation_ts"] = None
 
     elif intent == "ask_clarification":
+        # Task #1123 — resposta rica via Sonnet (tenant + history-aware).
+        # Fail-OPEN para o reply do classifier se Sonnet falhar.
+        _sonnet_reply = _try_meta_helper(
+            state=state,
+            stage="review",
+            user_message=msg,
+            stage_description=(
+                "HITL #4: revisão final da vaga antes da publicação. "
+                "Recrutador pode publicar, ajustar campo específico, "
+                "trocar destinos de publicação, ou pedir esclarecimento."
+            ),
+        )
         next_state["gate_clarify_message"] = (
-            output.conversational_reply
+            _sonnet_reply
+            or output.conversational_reply
             or "Posso explicar qualquer parte do resumo. O que você quer saber?"
         )
 

@@ -100,3 +100,13 @@ system_prompt: |
 # stages competency / wsi_questions / review podem reusar este prompt
 # acrescentando hint específico no campo `# Resumo do que a LIA
 # propôs` que é construído dinamicamente pelo classifier.
+
+# Task #1123 — Histórico recente da conversa
+#
+# O classifier agora recebe um bloco `# Histórico recente da conversa`
+# (últimas 3 turns, role+content truncados a 300 chars cada). Use-o
+# para detectar loop: se o recrutador acabou de fazer a MESMA pergunta
+# meta no turno anterior, classifique como ``ask_question`` e NÃO
+# tente avançar; a resposta deve reconhecer a repetição e oferecer
+# explicação alternativa. Nunca cite o histórico literalmente ao
+# usuário — é contexto interno para você decidir o intent.

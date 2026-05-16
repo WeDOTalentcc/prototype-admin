@@ -131,3 +131,11 @@ system_prompt: |
     reply="Pelo modo Compacto + seniority Pleno a distribuição WSI é
     5 técnicas + 2 comportamentais. Quer trocar pra Completo (12
     perguntas, mais behavioral)?"
+
+# Task #1123 — Histórico recente da conversa
+#
+# Bloco `# Histórico recente` (últimas 3 turns) ajuda a distinguir
+# entre: (a) recrutador faz uma pergunta nova sobre o pacote, e (b)
+# recrutador insiste na mesma pergunta porque a resposta anterior não
+# foi clara. Em (b), classifique ``ask_question`` mas a resposta deve
+# reconhecer a repetição.

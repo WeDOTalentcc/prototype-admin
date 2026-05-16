@@ -186,7 +186,7 @@ Como Bug A garantia `parsed_title=None` para sempre, a guarda disparava em **tod
 
 | Item | Severidade | Origem | Plano |
 |---|---|---|---|
-| **Guard estática vs intent classifier** | Médio | Task #1096 | A guarda input-thin é IF/ELSE estático sobre `len(raw_input)`. Não distingue "intent de abertura" ("vamos abrir uma vaga"), "pergunta meta sobre UI" ("onde está o painel?"), "pedido de ajuda" ("o que você precisa?") — tudo cai no mesmo template. Solução de longo prazo: adicionar classificador LLM (similar ao `wizard_gate_classifier` da Task #1085) **antes** do guard. **Vira Project Task de arquitetura conversacional.** |
+| **Guard estática vs intent classifier** | ~~Médio~~ **RESOLVIDO** | Task #1096 → Task #1098 → Task #1123 | **#1098 resolveu:** `IntakeIntentClassifier` (Haiku) roda no primeiro turno do `intake_node`. **#1123 estendeu para `jd_enrichment_node`:** classifier roda ANTES do guard estático, em qualquer comprimento de mensagem (`_classifier_eligible` removeu dependência de `raw_len<100`). Guard estático é now **last-resort** (`_guard_eligible`: dispara só quando classifier devolve `None` ou conf<0.7 E `raw_len<100`). Cobertura: `test_jd_enrichment_classifier_first.py` (6 cenários) + `wizard_conversational_resilience.jsonl` (11 cenários). |
 | **Template menciona "painel à direita" inexistente** | Médio | Task #1096 | A `data.message` da guarda assume painel renderizado; se o FE não monta o painel, recrutador fica perdido (caso real do print de 2026-05-15). Solução: tornar a mensagem condicional ao `right_panel_form` schema disponível, ou mover a sugestão para botões/chips que o FE renderiza. |
 | **D6 — `_suggest_pipeline_template` retorna lista completa** | Baixa | Auditoria 2026-05-14 | Frontend pode mostrar opções A-E mesmo quando o sugerido é "intern" — validar UX. |
 | **D2 — domain split confuso** | Baixa | Auditoria 2026-05-14 | Graph vive em `app/domains/job_creation/`, agente em `app/domains/job_management/`. Funciona; é dívida de naming. |
@@ -215,8 +215,9 @@ Como Bug A garantia `parsed_title=None` para sempre, a guarda disparava em **tod
 | `eval/golden/wizard_no_tenant_leak.jsonl` (Task #1052) | 12 (B1×3 single + B2/B3/B4×3 multi) | 0.85 | `python -m eval.eval_runner --transport ws --dataset eval/golden/wizard_no_tenant_leak.jsonl && python -m eval.eval_runner --gate eval/golden/wizard_no_tenant_leak.jsonl` |
 | `eval/golden/wizard_pipeline_template.jsonl` (Task #1058) | 7 (4 ramos + retomada + fallback) | 0.85 | mesma sintaxe com este dataset |
 | `eval/golden/wizard_conversational_hitl.jsonl` (Task #1085) | 5 (HITL conversacional) | 0.85 | mesma sintaxe |
+| `eval/golden/wizard_conversational_resilience.jsonl` (Task #1123) | 11 (meta-questions, off-topic, ask_clarification — jd/competency/wsi/review) | 0.85 | mesma sintaxe |
 
-CI: `.github/workflows/wizard-eval-gates.yml` (Task #1063 + #1064) sobe Postgres + Redis + lia-backend, semeia Demo Company + demo user, e roda `--transport ws` (WS-aware desde Task #1064 / D7). **Fail-CLOSED** em `push`; required-check no `main`.
+CI: `.github/workflows/wizard-eval-gates.yml` (Task #1063 + #1064 + #1123) sobe Postgres + Redis + lia-backend, semeia Demo Company + demo user, e roda `--transport ws` (WS-aware desde Task #1064 / D7). **Fail-CLOSED** em `push`; required-check no `main`. Input default: `gates=leak,template,hitl,resilience`.
 
 ### 7.2 Sentinelas offline (pytest, sem backend)
 
@@ -228,6 +229,9 @@ CI: `.github/workflows/wizard-eval-gates.yml` (Task #1063 + #1064) sobe Postgres
 - `test_wizard_hitl_unified_contract.py` — `WizardGateService` (D8 fix)
 - `test_wizard_gate_engine_t2.py` — classifier LLM Task #1085
 - `test_wizard_no_canned_fallback_t3.py` — anti-canned fallback Task #1089
+- `test_no_hardcoded_haiku_model_t1123.py` — proíbe literal Haiku fora de `app/shared/llm_models.py` (canonical Haiku/Sonnet module)
+- `test_jd_enrichment_classifier_first.py` — 6 cenários garantindo que `jd_enrichment_node` é classifier-first (independente de `raw_len`)
+- `test_wizard_meta_question_resilience.py` — gates HITL respondem meta/off-topic via Sonnet helper; fail-OPEN para classifier reply
 
 ### 7.3 E2E Playwright (`plataforma-lia/e2e/tests/wizard/`)
 
@@ -237,6 +241,7 @@ CI: `.github/workflows/wizard-eval-gates.yml` (Task #1063 + #1064) sobe Postgres
 - `09-edge-cases.spec.ts` (cenário D) — fallback timeout + cancel mid-wizard
 - `10-session-continuity.spec.ts` — reload mid-wizard + anti-pergunta de empresa
 - `11-conversational-hitl.spec.ts` — Task #1085 conversational HITL
+- `15-conversational-resilience.spec.ts` — Task #1123 meta-questions (curta + longa ≥100 chars) + off-topic redirect
 
 ---
 
@@ -264,6 +269,57 @@ Componentes principais:
 
 ---
 
+## 11. Filosofia conversacional (Task #1123)
+
+A LIA é **conversacional por design** — o wizard NÃO é um formulário
+com validação de campos, é uma sessão de trabalho com o recrutador. As
+três invariantes que estruturam essa filosofia:
+
+1. **Classifier-first em TODA boundary de entrada.** Tanto o `intake_node`
+   (Task #1098) quanto o `jd_enrichment_node` (Task #1123) chamam o
+   `IntakeIntentClassifier` (Haiku) **antes** de qualquer guard estático
+   ou de qualquer LLM caro (Layer 2 enrichment). Os 4 gates HITL
+   (jd_gate, competency_gate, wsi_questions_gate, review_gate) chamam o
+   `WizardGateClassifier` (Haiku, Task #1085). Guard estático
+   (`_guard_eligible`) é **last-resort** — só dispara quando o
+   classifier devolveu `None` ou conf<0.7 E mensagem é curta (<100 chars).
+   **O classifier NÃO é gateado por `raw_len`** — pergunta meta longa
+   também passa por ele (bug raiz Task #1123).
+
+2. **Resposta tenant-aware + history-aware em paths "meta".** Para
+   `ask_question` / `off_topic` / `ask_clarification`, o gate tenta
+   primeiro o `wizard_meta_question_helper` (Sonnet, sync, fail-OPEN),
+   que recebe `tenant_context_snippet` + `last_turns` (últimas 3) +
+   `stage_description` e devolve resposta rica em 2-4 frases terminada
+   em pergunta de continuidade. Falhou? Cai no `output.conversational_reply`
+   do classifier. Falhou de novo? Cai no canned do gate. **Em nenhum
+   path o state de aprovação muta** — helper é só geração de texto.
+
+3. **Modelos LLM centralizados.** `CANONICAL_HAIKU_MODEL` e
+   `CANONICAL_SONNET_MODEL` vivem em `app/shared/llm_models.py`. Literal
+   antigo (`claude-3-5-haiku-20241022`) retorna `UNSUPPORTED_MODEL` no
+   modelfarm proxy local — qualquer reintrodução faz classifiers
+   fail-OPEN silenciosamente. Sentinela CI:
+   `test_no_hardcoded_haiku_model_t1123.py` veta o literal fora do
+   módulo canônico.
+
+### Anti-patterns que esta filosofia previne
+
+- LIA pergunta `company_id` / nome / setor / plano em texto livre
+  (regressão B1 — coberta por `wizard_no_tenant_leak.jsonl` + Task #1123
+  cenários).
+- LIA enriquece uma pergunta meta longa como se fosse JD (bug raiz
+  Task #1123 — coberto por `test_jd_enrichment_classifier_first.py`
+  cenário 2).
+- LIA repete a mesma resposta canned ("preciso de aprovação", "deseja
+  aprovar?") quando recrutador acabou de pedir outra coisa (cobertura:
+  `wizard_conversational_hitl.jsonl` + `wizard_conversational_resilience.jsonl`).
+- LIA trava em loop quando recrutador insiste na mesma pergunta (cobertura:
+  `WCR-09-loop-detection-meta-repeated` — `last_turns` permite ao
+  Sonnet helper oferecer ângulo diferente).
+
+---
+
 ## 9. Operação
 
 ### 9.1 Feature flags relevantes
@@ -278,6 +334,14 @@ Componentes principais:
 | `LIA_WSI_QUESTIONS_TIMEOUT_S` | 20s | Timeout WSI. |
 | `LIA_SALARY_TIMEOUT_S` | 10s | Timeout salary. |
 | `LIA_DISABLE_COMPANY_AUDIT` | OFF | Emergency rollback de audit (Task #1004). |
+| `LIA_WIZARD_INTAKE_CLASSIFIER_ENABLED` | ON | Liga o `IntakeIntentClassifier` (Task #1098) — usado em `intake_node` e `jd_enrichment_node` (Task #1123). |
+| `LIA_WIZARD_META_HELPER_MODEL` | `CANONICAL_SONNET_MODEL` | Override do modelo do `wizard_meta_question_helper` (Task #1123). |
+| `LIA_WIZARD_META_HELPER_TIMEOUT_S` | 6s | Timeout sync do Sonnet helper meta. Falha → fail-OPEN para classifier reply. |
+
+**Modelos LLM canônicos** (Task #1123): NUNCA hardcode literal de modelo
+fora de `lia-agent-system/app/shared/llm_models.py`. Importe
+`CANONICAL_HAIKU_MODEL` / `CANONICAL_SONNET_MODEL`. Sentinela:
+`test_no_hardcoded_haiku_model_t1123.py` (CI fail).
 
 ### 9.2 Runbooks
 
@@ -297,6 +361,7 @@ Componentes principais:
 
 ## 10. Histórico recente do documento
 
+- **2026-05-15 (Task #1123)** — wizard conversational resilience. (1) Canonical Haiku/Sonnet module + sentinela. (2) `jd_enrichment_node` classifier-first (guard estático vira last-resort). (3) `wizard_meta_question_helper` (Sonnet sync, fail-OPEN) plugado em ask_question/off_topic/ask_clarification dos 4 gates HITL. (4) `last_turns` plumbed em ambos classifiers + 4 YAMLs. (5) Eval gate `wizard_conversational_resilience.jsonl` (11 cenários, threshold 0.85) wired em `.github/workflows/wizard-eval-gates.yml`. (6) E2E `15-conversational-resilience.spec.ts` (3 cenários: meta curta, meta longa ≥100 chars, off-topic). Nova §11 "Filosofia conversacional".
 - **2026-05-15** — reescrita completa após auditoria + canonical-fix do Bug A (intake import + schema drift). Removida narrativa fictícia dos 6 nós (`intent_classifier`/`field_extractor`/etc.) que nunca existiram. Removida menção ao `JobWizardGraph` legacy (deprecated desde Task #1084). Adicionada §5 "Bugs históricos" com diagnóstico do template-repetido-4× e §9.3 "Onde olhar quando o wizard falha".
 - **2026-05-14** — auditoria profunda em `docs/audits/wizard-job-creation-2026-05.md` (Task #1058) — base desta reescrita.
 - **Anterior** — versões descrevendo dois wizards convivendo (`JobWizardGraph` + `WizardReActAgent`). Obsoleto.

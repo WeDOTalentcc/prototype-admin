@@ -89,8 +89,9 @@ async def _generate_fallback_reply(
         from langchain_anthropic import ChatAnthropic  # type: ignore
         from langchain_core.messages import HumanMessage, SystemMessage  # type: ignore
 
+        from app.shared.llm_models import CANONICAL_HAIKU_MODEL
         model_name = os.environ.get(
-            "LIA_WIZARD_FALLBACK_MODEL", "claude-3-5-haiku-20241022",
+            "LIA_WIZARD_FALLBACK_MODEL", CANONICAL_HAIKU_MODEL,
         )
         timeout_s = float(os.environ.get("LIA_WIZARD_FALLBACK_TIMEOUT_S", "3"))
         llm = ChatAnthropic(model=model_name, temperature=0, timeout=timeout_s, max_tokens=200)
