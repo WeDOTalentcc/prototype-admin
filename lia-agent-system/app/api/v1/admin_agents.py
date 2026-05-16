@@ -18,6 +18,7 @@ from app.core.agent_registry_watcher import (
     agent_registry_watcher,
     reload_agents_registry,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ router = APIRouter(prefix="/admin/agents", tags=["Admin - Agents"])
 async def reload_agent_registry(
     x_company_id: str = Header(..., alias="X-Company-ID"),
     _user: Any = Depends(require_admin),
-) -> dict[str, Any]:
+company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Trigger hot-reload of the agent YAML registry.
 

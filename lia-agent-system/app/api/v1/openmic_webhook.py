@@ -41,6 +41,8 @@ from fastapi.responses import JSONResponse
 
 from app.shared.pii_masking import mask_pii
 from app.services.voice.openmic_service import OpenMicSignatureError, openmic_service
+from fastapi import Depends
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +126,6 @@ async def openmic_webhook(
     background_tasks: BackgroundTasks,
     x_openmic_signature: str | None = Header(None, alias="X-OpenMic-Signature"),
 ):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Receive and process OpenMic.ai call completion webhook.
 

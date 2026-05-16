@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
 from app.core.database import get_db
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +42,7 @@ _MARKET_GLOBAL_AVG = 42  # days
 async def get_ml_predictions(
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-) -> dict[str, Any]:
+company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Time-to-fill predictions for open vacancies.

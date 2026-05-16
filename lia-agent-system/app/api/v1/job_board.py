@@ -17,6 +17,7 @@ from app.core.database import get_db
 from app.domains.communication.services.email_service import EmailService, get_email_service
 from app.domains.job_management.services.job_board_service import job_board_service
 from app.models.job_vacancy import JobVacancy
+from app.shared.security.require_company_id import require_company_id
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
 # Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
@@ -315,8 +316,8 @@ class UnpublishResponse(BaseModel):
 async def publish_to_linkedin(
     job_id: UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
-):
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
     """
     Publish a job to LinkedIn.
     
@@ -358,8 +359,8 @@ async def publish_to_linkedin(
 async def publish_to_indeed(
     job_id: UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
-):
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
     """
     Publish a job to Indeed.
     
@@ -399,9 +400,9 @@ async def publish_to_indeed(
 @router.get("/feed/indeed.xml", response_model=None)
 async def get_indeed_xml_feed(
     company_id: str | None = None,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get Indeed-compatible XML feed of all active jobs.
     
@@ -433,8 +434,8 @@ async def get_indeed_xml_feed(
 async def get_publishing_status(
     job_id: UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
-):
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
     """
     Get publishing status for a job across all platforms.
     
@@ -463,8 +464,8 @@ async def unpublish_from_platform(
     job_id: UUID,
     platform: str,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
-):
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
     """
     Remove a job from a specific platform.
     
@@ -509,8 +510,8 @@ async def publish_to_multiple_platforms(
     job_ids: list[str],
     platforms: list[str],
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
-):
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
     """
     Publish multiple jobs to multiple platforms.
     
@@ -613,7 +614,7 @@ async def unpublish_jobs_complete(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_active_user),
     email_svc: EmailService = Depends(get_email_service),
-):
+company_id: str = Depends(require_company_id)):
     """
     Complete unpublish workflow with optional freeze, notifications, and cleanup.
     

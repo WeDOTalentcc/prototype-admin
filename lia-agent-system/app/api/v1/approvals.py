@@ -25,6 +25,7 @@ from app.domains.communication.services.email_service import EmailService, get_e
 from app.models.approval import ApprovalRequest
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = get_masked_logger(__name__)
 
@@ -118,8 +119,8 @@ async def create_approval_request(
     requester_id: str | None = Query(None, description="Requester user ID"),
     repo: ApprovalsRepository = Depends(get_approvals_repo),
     email_svc: EmailService = Depends(get_email_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Create a new approval request and send notification email to approver."""
     try:
         approval = ApprovalRequest(
@@ -174,9 +175,9 @@ async def list_approval_requests(
     requester_email: str | None = Query(None, description="Filter by requester email"),
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
-    repo: ApprovalsRepository = Depends(get_approvals_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: ApprovalsRepository = Depends(get_approvals_repo), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List approval requests for a company with optional filters."""
     try:
         try:
@@ -209,9 +210,9 @@ async def list_approval_requests(
 async def list_pending_approvals(
     company_id: str = Query(..., description="Company ID"),
     approver_email: str | None = Query(None, description="Filter by approver email"),
-    repo: ApprovalsRepository = Depends(get_approvals_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: ApprovalsRepository = Depends(get_approvals_repo), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List pending approval requests for a company."""
     try:
         approvals = await repo.list_pending_by_company(
@@ -228,9 +229,9 @@ async def list_pending_approvals(
 @router.get("/{approval_id}", response_model=ApprovalRequestResponse)
 async def get_approval_request(
     approval_id: str,
-    repo: ApprovalsRepository = Depends(get_approvals_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: ApprovalsRepository = Depends(get_approvals_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get a specific approval request by ID."""
     try:
         approval = await repo.get_by_id(UUID(approval_id))
@@ -256,7 +257,7 @@ async def approve_request(
     repo: ApprovalsRepository = Depends(get_approvals_repo),
     audit_svc: AuditService = Depends(get_audit_service),
     email_svc: EmailService = Depends(get_email_service),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Approve an approval request."""
     try:
@@ -340,7 +341,7 @@ async def reject_request(
     repo: ApprovalsRepository = Depends(get_approvals_repo),
     audit_svc: AuditService = Depends(get_audit_service),
     email_svc: EmailService = Depends(get_email_service),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Reject an approval request."""
     try:
@@ -420,8 +421,8 @@ async def cancel_request(
     approval_id: str,
     company_id: str = Query(..., description="Company ID"),
     cancelled_by: str = Query(..., description="Email of the canceller"),
-    repo: ApprovalsRepository = Depends(get_approvals_repo)
-):
+    repo: ApprovalsRepository = Depends(get_approvals_repo), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Cancel an approval request (by the requester)."""
     try:

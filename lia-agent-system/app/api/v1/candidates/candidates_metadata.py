@@ -28,6 +28,7 @@ from ._shared import (
     logger,
     User,
 )
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 
@@ -53,8 +54,8 @@ async def mark_candidate_viewed(
     candidate_id: str,
     body: ViewedCandidateCreate = None,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Mark a candidate as viewed by the current user."""
     try:
         user_id = "default_user"
@@ -84,8 +85,8 @@ async def list_viewed_candidates(
     skip: int = 0,
     limit: int = 100,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List all candidates viewed by the current user."""
     try:
         user_id = "default_user"
@@ -113,8 +114,8 @@ async def list_viewed_candidates(
 async def unmark_candidate_viewed(
     candidate_id: str,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Remove viewed status from a candidate for the current user."""
     try:
         user_id = "default_user"
@@ -150,7 +151,7 @@ async def toggle_favorite(
     body: FavoriteCreate = None,
     current_user: User = Depends(get_current_user_or_demo),
     favorites_repo: CandidateFavoritesRepository = Depends(get_candidate_favorites_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Toggle favorite status for a candidate."""
     try:
@@ -195,8 +196,8 @@ async def update_favorite(
     candidate_id: str,
     body: FavoriteUpdate,
     favorites_repo: CandidateFavoritesRepository = Depends(get_candidate_favorites_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update favorite note or pinned status."""
     try:
         user_id = "default_user"
@@ -228,8 +229,8 @@ async def list_favorites(
     skip: int = 0,
     limit: int = 100,
     favorites_repo: CandidateFavoritesRepository = Depends(get_candidate_favorites_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List all favorited candidates for the current user."""
     try:
         user_id = "default_user"
@@ -256,8 +257,8 @@ async def list_favorites(
 async def remove_favorite(
     candidate_id: str,
     favorites_repo: CandidateFavoritesRepository = Depends(get_candidate_favorites_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Remove a candidate from favorites."""
     try:
         user_id = "default_user"
@@ -288,7 +289,7 @@ async def toggle_hidden(
     body: HiddenCreate = None,
     current_user: User = Depends(get_current_user_or_demo),
     hidden_repo: CandidateHiddenRepository = Depends(get_candidate_hidden_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Toggle hidden status for a candidate."""
     try:
@@ -331,8 +332,8 @@ async def list_hidden(
     skip: int = 0,
     limit: int = 100,
     hidden_repo: CandidateHiddenRepository = Depends(get_candidate_hidden_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List all hidden candidates for the current user."""
     try:
         user_id = "default_user"
@@ -358,8 +359,8 @@ async def list_hidden(
 async def remove_hidden(
     candidate_id: str,
     hidden_repo: CandidateHiddenRepository = Depends(get_candidate_hidden_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Remove a candidate from the hidden list (make visible)."""
     try:
         user_id = "default_user"
@@ -387,8 +388,8 @@ async def screening_decision(
     vc_repo: VacancyCandidateRepository = Depends(get_vacancy_candidate_repo),
     audit_svc: AuditService = Depends(get_audit_service),
     activity_svc: ActivityService = Depends(get_activity_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Record screening decision for a candidate (approve or reject)."""
     try:
         if request.decision not in ["approved", "rejected"]:

@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.shared.policy_middleware import get_policy_for_company
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +28,8 @@ async def validate_transition(
     candidate_id: str = Query(...),
     target_stage: str = Query(...),
     db: AsyncSession = Depends(get_db),
-) -> dict[str, Any]:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))) -> dict[str, Any]:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Validate whether a pipeline transition is allowed based on company policy.
     
@@ -106,8 +107,8 @@ async def validate_transition(
 async def get_pipeline_templates(
     company_id: str,
     db: AsyncSession = Depends(get_db),
-) -> dict[str, Any]:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))) -> dict[str, Any]:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get available pipeline templates for a company.
     

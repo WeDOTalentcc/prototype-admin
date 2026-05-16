@@ -27,6 +27,7 @@ from app.models.data_request import (
     DataRequestStatus,
     TriggerType,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -298,8 +299,8 @@ async def list_data_requests(
     candidate_id: UUID | None = Query(None, description="Filter by candidate ID"),
     status: str | None = Query(None, description="Filter by status"),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     List data requests with optional filters.
     
@@ -348,8 +349,8 @@ async def list_data_requests(
 async def create_data_request(
     request: CreateDataRequestRequest,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Create a new data request for a candidate.
     
@@ -399,8 +400,8 @@ async def create_data_request(
 @router.get("/config", response_model=ConfigResponse)
 async def get_config(
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get company data request configuration.
     
@@ -420,8 +421,8 @@ async def get_config(
 async def update_config(
     request: UpdateConfigRequest,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Update company data request configuration.
     
@@ -446,8 +447,8 @@ async def update_config(
 async def update_collection_settings(
     request: CollectionSettingsRequest,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Update collection settings including LGPD and WhatsApp configuration.
     
@@ -492,8 +493,8 @@ async def update_collection_settings(
 @router.get("/config/collection-settings", response_model=CollectionSettingsResponse)
 async def get_collection_settings(
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get current collection settings including LGPD and WhatsApp configuration.
     """
@@ -521,7 +522,7 @@ async def get_collection_settings(
 async def list_templates(
     include_inactive: bool = Query(False, description="Include inactive templates"),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     List data request templates for the company.
@@ -562,7 +563,7 @@ async def list_templates(
 async def create_template(
     request: CreateTemplateRequest,
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Create a new data request template.
@@ -620,7 +621,7 @@ async def update_template(
     template_id: UUID,
     request: UpdateTemplateRequest,
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Update an existing data request template.
@@ -668,8 +669,8 @@ async def update_template(
 async def delete_template(
     template_id: UUID,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Delete (deactivate) a data request template.
     
@@ -689,8 +690,8 @@ async def delete_template(
 async def list_fields(
     include_defaults: bool = Query(True, description="Include default fields"),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     List available data request fields.
     
@@ -710,8 +711,8 @@ async def list_fields(
 async def create_field(
     request: CreateFieldRequest,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Create a custom data request field.
     
@@ -772,8 +773,8 @@ async def create_field(
 
 
 @router.get("/stage-field-mappings", response_model=None)
-async def get_stage_field_mappings():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_stage_field_mappings(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get default field mappings for each recruitment stage.
     
@@ -816,8 +817,8 @@ class UpdateVacancyTriggersRequest(BaseModel):
 async def get_vacancy_triggers(
     vacancy_id: UUID,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get data request trigger configuration for a vacancy.
     
@@ -849,8 +850,8 @@ async def update_vacancy_triggers(
     vacancy_id: UUID,
     request: UpdateVacancyTriggersRequest,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Update data request trigger configuration for a vacancy.
     
@@ -889,8 +890,8 @@ async def get_stage_trigger(
     vacancy_id: UUID,
     stage_name: str,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get trigger configuration for a specific stage.
     
@@ -934,8 +935,8 @@ async def get_stage_trigger(
 async def get_data_request(
     data_request_id: UUID,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get details of a specific data request.
     
@@ -960,8 +961,8 @@ async def get_data_request(
 async def cancel_data_request(
     data_request_id: UUID,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Cancel a data request.
     
@@ -983,8 +984,8 @@ async def resend_notification(
     data_request_id: UUID,
     request: ResendNotificationRequest,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Resend notification for a data request.
     
@@ -1007,8 +1008,8 @@ async def resend_notification(
 async def check_status(
     data_request_id: UUID,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Check and update the completion status of a data request.
     
@@ -1060,8 +1061,8 @@ async def start_whatsapp_collection(
     data_request_id: UUID,
     request: WhatsAppStartRequest,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Start WhatsApp data collection flow.
     
@@ -1112,8 +1113,8 @@ async def process_whatsapp_message(
     data_request_id: UUID,
     request: WhatsAppProcessMessageRequest,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Process incoming WhatsApp message from candidate.
     
@@ -1154,8 +1155,8 @@ async def process_whatsapp_message(
 async def get_whatsapp_status(
     data_request_id: UUID,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get current WhatsApp conversation status.
     

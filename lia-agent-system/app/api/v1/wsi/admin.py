@@ -14,6 +14,7 @@ from app.domains.cv_screening.services.wsi_service.layer2_extractor import (
     purge_layer2_cache_all,
     purge_layer2_cache_entry,
 )
+from app.shared.security.require_company_id import require_company_id
 
 try:
     from app.auth.dependencies import require_admin as require_admin_user  # type: ignore[import-not-found]
@@ -45,7 +46,7 @@ class PurgeResult(BaseModel):
 
 
 @router.get("/layer2/cache/stats", response_model=Layer2CacheStats)
-async def layer2_cache_stats(_: None = Depends(require_admin_user)) -> Layer2CacheStats:
+async def layer2_cache_stats(_: None = Depends(require_admin_user), company_id: str = Depends(require_company_id)) -> Layer2CacheStats:
     # multi-tenancy: admin/platform-level (/admin) — role-based access required
     """Retorna estatísticas do cache LRU da Camada 2 LLM.
 
@@ -70,7 +71,7 @@ async def layer2_cache_stats(_: None = Depends(require_admin_user)) -> Layer2Cac
 async def layer2_cache_purge_entry(
     payload: PurgeEntryRequest,
     _: None = Depends(require_admin_user),
-) -> PurgeResult:
+company_id: str = Depends(require_company_id)) -> PurgeResult:
     # multi-tenancy: admin/platform-level (/admin) — role-based access required
     """Remove uma entrada específica do cache (DSR — LGPD Art. 18).
 
@@ -91,7 +92,7 @@ async def layer2_cache_purge_entry(
 
 
 @router.post("/layer2/cache/purge-all", response_model=PurgeResult)
-async def layer2_cache_purge_all(_: None = Depends(require_admin_user)) -> PurgeResult:
+async def layer2_cache_purge_all(_: None = Depends(require_admin_user), company_id: str = Depends(require_company_id)) -> PurgeResult:
     # multi-tenancy: admin/platform-level (/admin) — role-based access required
     """Limpa o cache LRU inteiro. Use para DSR amplo, deploys ou
     troubleshooting. Não afeta dados persistidos no banco."""

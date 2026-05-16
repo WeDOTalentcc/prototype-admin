@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.recruiter_assistant.services.conversation_memory import conversation_memory
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -105,8 +106,8 @@ async def list_conversations(
     limit: int = Query(10, ge=1, le=100),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     List conversations for a user.
     
@@ -156,8 +157,8 @@ async def get_conversation(
     include_summaries: bool = Query(True, description="Include conversation summaries"),
     message_limit: int = Query(50, ge=1, le=200),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get a conversation by ID with its messages and summaries.
     
@@ -231,8 +232,8 @@ async def get_conversation(
 async def create_conversation(
     request: CreateConversationRequest,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Create a new conversation.
     """
@@ -273,8 +274,8 @@ async def add_message(
     conversation_id: str,
     request: AddMessageRequest,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Add a message to a conversation.
     """
@@ -313,8 +314,8 @@ async def update_summary(
     conversation_id: str,
     request: UpdateSummaryRequest = UpdateSummaryRequest(),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Generate or update conversation summary.
     """
@@ -343,8 +344,8 @@ async def rename_conversation(
     conversation_id: str,
     request: RenameConversationRequest,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     from lia_models.conversation import Conversation
     from sqlalchemy import select
     result = await db.execute(select(Conversation).where(Conversation.id == conversation_id))
@@ -373,8 +374,8 @@ async def rename_conversation(
 async def delete_conversation(
     conversation_id: str,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Delete a conversation and all its messages.
     """
@@ -401,8 +402,8 @@ async def delete_conversation(
 async def archive_conversation(
     conversation_id: str,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Archive a conversation (soft delete).
     """
@@ -429,8 +430,8 @@ async def archive_conversation(
 async def clear_conversation(
     conversation_id: str,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Clear all messages from a conversation (reset).
     """
@@ -458,8 +459,8 @@ async def get_conversation_context(
     conversation_id: str,
     max_messages: int = Query(20, ge=1, le=50),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get conversation context formatted for LLM usage.
     

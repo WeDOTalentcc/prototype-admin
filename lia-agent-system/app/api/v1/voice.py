@@ -10,6 +10,8 @@ from fastapi import APIRouter, File, Form, HTTPException, UploadFile
 from fastapi.responses import JSONResponse
 
 from app.shared.services.gemini_voice_service import get_voice_service
+from fastapi import Depends
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +44,7 @@ def detect_mime_type(filename: str, content_type: str | None) -> str:
 
 
 @router.get("/voice/health", response_model=None)
-async def voice_health_check():
+async def voice_health_check(company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
     """Check if Gemini Voice service is configured."""
     try:
@@ -69,9 +71,9 @@ async def voice_health_check():
 async def transcribe_audio(
     audio: UploadFile = File(..., description="Audio file to transcribe"),
     language: str = Form("pt-BR", description="Target language (default: pt-BR)"),
-    prompt: str | None = Form(None, description="Custom transcription prompt")
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    prompt: str | None = Form(None, description="Custom transcription prompt"), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Transcreve arquivo de áudio para texto.
     
@@ -123,9 +125,9 @@ async def transcribe_audio(
 @router.post("/voice/analyze", response_model=None)
 async def analyze_audio(
     audio: UploadFile = File(..., description="Audio file to analyze"),
-    analysis_type: str = Form("full", description="Analysis type: full, sentiment, topics, summary")
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    analysis_type: str = Form("full", description="Analysis type: full, sentiment, topics, summary"), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Analisa áudio além de transcrição (sentimento, tópicos, insights).
     
@@ -179,9 +181,9 @@ async def analyze_audio(
 async def analyze_interview(
     audio: UploadFile = File(..., description="Interview audio file"),
     job_title: str | None = Form(None, description="Job title for context"),
-    questions: str | None = Form(None, description="Expected questions (comma-separated)")
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    questions: str | None = Form(None, description="Expected questions (comma-separated)"), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Transcreve e analisa entrevista de candidato com scoring.
     

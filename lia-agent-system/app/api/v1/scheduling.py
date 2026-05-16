@@ -22,6 +22,7 @@ from app.domains.interview_scheduling.repositories.scheduling_repository import 
 from app.domains.interview_scheduling.services.scheduling_service import scheduling_service
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger
+from app.shared.security.require_company_id import require_company_id
 
 logger = get_masked_logger(__name__)
 
@@ -129,8 +130,8 @@ async def create_interview(
     request: CreateInterviewRequest,
     repo: SchedulingRepository = Depends(get_scheduling_repo),
     audit_svc: AuditService = Depends(get_audit_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Create a new interview appointment.
 
@@ -215,8 +216,8 @@ class InterviewWithTeamsResponse(BaseModel):
 @router.post("/interviews/with-teams", response_model=InterviewWithTeamsResponse)
 async def create_interview_with_teams(
     request: CreateInterviewWithTeamsRequest,
-    repo: SchedulingRepository = Depends(get_scheduling_repo)
-):
+    repo: SchedulingRepository = Depends(get_scheduling_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Create an interview with Microsoft Teams meeting.
@@ -273,9 +274,9 @@ async def list_interviews(
     to_date: datetime | None = Query(None, description="Filter to this date"),
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
-    repo: SchedulingRepository = Depends(get_scheduling_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: SchedulingRepository = Depends(get_scheduling_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     List interviews with optional filters.
     """
@@ -305,9 +306,9 @@ async def list_interviews(
 @router.get("/interviews/{interview_id}", response_model=InterviewResponse)
 async def get_interview(
     interview_id: str,
-    repo: SchedulingRepository = Depends(get_scheduling_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: SchedulingRepository = Depends(get_scheduling_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get a specific interview by ID.
     """
@@ -330,9 +331,9 @@ async def get_interview(
 async def update_interview(
     interview_id: str,
     request: UpdateInterviewRequest,
-    repo: SchedulingRepository = Depends(get_scheduling_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: SchedulingRepository = Depends(get_scheduling_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Update an existing interview.
 
@@ -360,9 +361,9 @@ async def update_interview(
 async def cancel_interview(
     interview_id: str,
     reason: str | None = Query(None, description="Cancellation reason"),
-    repo: SchedulingRepository = Depends(get_scheduling_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: SchedulingRepository = Depends(get_scheduling_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Cancel an interview.
 
@@ -393,9 +394,9 @@ async def cancel_interview(
 @router.get("/interviews/{interview_id}/ics", response_model=None)
 async def download_interview_ics(
     interview_id: str,
-    repo: SchedulingRepository = Depends(get_scheduling_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: SchedulingRepository = Depends(get_scheduling_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Download ICS calendar file for an interview.
 
@@ -427,8 +428,8 @@ async def download_interview_ics(
 
 
 @router.get("/status", response_model=None)
-async def get_scheduling_status():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_scheduling_status(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get the current status of the scheduling system.
     """
@@ -463,8 +464,8 @@ class SendInterviewInviteResponse(BaseModel):
 @router.post("/interviews/send-invite", response_model=SendInterviewInviteResponse)
 async def send_interview_invite(
     request: SendInterviewInviteRequest,
-    repo: SchedulingRepository = Depends(get_scheduling_repo)
-):
+    repo: SchedulingRepository = Depends(get_scheduling_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Send an interview invite email with a Bookings link.
@@ -536,8 +537,8 @@ class SendInterviewConfirmationRequest(BaseModel):
 @router.post("/interviews/send-confirmation", response_model=SendInterviewInviteResponse)
 async def send_interview_confirmation(
     request: SendInterviewConfirmationRequest,
-    repo: SchedulingRepository = Depends(get_scheduling_repo)
-):
+    repo: SchedulingRepository = Depends(get_scheduling_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Send an interview confirmation email with meeting link.

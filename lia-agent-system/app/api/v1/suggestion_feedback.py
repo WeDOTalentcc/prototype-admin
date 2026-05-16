@@ -18,6 +18,7 @@ from app.core.database import get_db
 from app.models.feedback_learning import SuggestionFeedback
 from app.domains.cv_screening.repositories.suggestion_feedback_repository import SuggestionFeedbackRepository
 from app.domains.analytics.services.feedback_learning_service import feedback_learning_service as _feedback_service
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 router = APIRouter(prefix="/suggestion-feedback", tags=["Suggestion Feedback"])
 logger = logging.getLogger(__name__)
@@ -73,7 +74,7 @@ class AdjustmentResponse(BaseModel):
 async def record_suggestion_feedback(
     request: SuggestionFeedbackRequest,
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         _repo = SuggestionFeedbackRepository(db)
@@ -106,8 +107,8 @@ async def record_suggestion_feedback(
 async def get_suggestion_stats(
     company_id: str,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     try:
         _repo = SuggestionFeedbackRepository(db)
         total, accepted_total = await _repo.get_total_and_accepted(company_id)
@@ -143,8 +144,8 @@ async def get_learned_adjustments(
     role: str | None = Query(default=None),
     seniority: str | None = Query(default=None),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     try:
         sample_suggestion = {"salary_range": {"min": 0, "max": 0, "currency": "BRL"}}
         result = await _feedback_service.apply_learning(

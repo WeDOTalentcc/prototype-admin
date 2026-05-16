@@ -37,6 +37,7 @@ from ._shared import (
     get_anthropic_client,
     parse_json_response,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -64,8 +65,8 @@ async def generate_questions(
     db: AsyncSession = Depends(get_db),
     sqs_svc: ScreeningQuestionSetService = Depends(get_screening_question_set_service),
     wsi_svc: WSIService = Depends(get_wsi_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Generate WSI screening questions using the canonical F6 pipeline
     (CBI + Bloom + Dreyfus + BigFive via WSIService).
@@ -152,8 +153,8 @@ async def generate_questions(
 
 
 @router.post("/suggest-question", response_model=None)
-async def suggest_question(request: SuggestQuestionRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def suggest_question(request: SuggestQuestionRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Generate a single screening question from a recruiter prompt using LLM."""
     client = await get_anthropic_client()
 
@@ -230,8 +231,8 @@ async def save_questions(
     request: SaveQuestionsRequest,
     db: AsyncSession = Depends(get_db),
     sqs_svc: ScreeningQuestionSetService = Depends(get_screening_question_set_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Save screening questions for a job vacancy."""
     try:
         for q in request.questions:
@@ -324,8 +325,8 @@ async def get_active_question_set(
     job_id: str,
     db: AsyncSession = Depends(get_db),
     sqs_svc: ScreeningQuestionSetService = Depends(get_screening_question_set_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     try:
         qs = await sqs_svc.get_active_version(db, job_id)
         if not qs:
@@ -350,8 +351,8 @@ async def list_question_set_versions(
     job_id: str,
     db: AsyncSession = Depends(get_db),
     sqs_svc: ScreeningQuestionSetService = Depends(get_screening_question_set_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     try:
         versions = await sqs_svc.list_versions(db, job_id)
         return {"success": True, "versions": versions, "total": len(versions)}
@@ -366,8 +367,8 @@ async def get_question_set_by_version(
     version: int,
     db: AsyncSession = Depends(get_db),
     sqs_svc: ScreeningQuestionSetService = Depends(get_screening_question_set_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     try:
         qs = await sqs_svc.get_by_version(db, job_id, version)
         if not qs:
@@ -393,8 +394,8 @@ async def check_question_set_consistency(
     job_id: str,
     db: AsyncSession = Depends(get_db),
     sqs_svc: ScreeningQuestionSetService = Depends(get_screening_question_set_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     try:
         result = await sqs_svc.check_version_consistency(db, job_id)
         return {"success": True, **result}

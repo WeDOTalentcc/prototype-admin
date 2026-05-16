@@ -1,0 +1,61 @@
+# Public endpoint allowlist — Task #1143 (require_company_id sweep).
+#
+# These endpoints intentionally DO NOT carry `Depends(require_company_id)`:
+# they are reachable without a JWT (health checks, registration, auth flows,
+# webhook receive paths before HMAC validation resolves the tenant, etc.).
+#
+# Keep this list in sync with PUBLIC_PATHS / PUBLIC_PREFIXES in
+# app/middleware/auth_enforcement.py.
+#
+# Format: one path glob per line. Comments start with `#`.
+
+# Health / docs
+/health
+/api/v1/health
+/api/v1/health/*
+/api/v1/rails/health
+/api/v1/performance
+/favicon.ico
+/openapi.json
+/docs
+/docs/*
+
+# Auth (pre-JWT)
+/api/v1/auth/login
+/api/v1/auth/dev-login
+/api/v1/auth/register
+/api/v1/auth/public-register
+/api/v1/auth/refresh
+/api/v1/auth/forgot-password
+/api/v1/auth/reset-password
+/api/v1/auth/verify-email
+/api/v1/auth/resend-verification
+/api/v1/auth/check-sso-domain
+/api/v1/auth/workos-callback
+/api/v1/auth/workos/callback
+/api/v1/auth/invitation-info/*
+
+# Public LGPD / data subject requests
+/api/v1/data-request
+
+# Webhook receive — tenant resolved post-HMAC, NOT via JWT.
+# Ownership cross-check moves to Task S5 (webhook validators).
+/api/v1/webhooks/whatsapp
+/api/v1/webhooks/twilio-voice
+/api/v1/webhooks/mailgun
+/api/v1/teams/webhook
+/api/v1/teams/messages
+/api/v1/openmic/webhook
+/api/v1/webhooks/merge/*
+/api/v1/webhooks/external/*
+
+# OAuth callbacks (state-signed, no Bearer token)
+/api/v1/calendar/google/callback
+/api/v1/calendar/microsoft/callback
+
+# Public candidate / WSI flows
+/api/v1/wsi/async/*
+/api/public/*
+
+# Navigation hint / first-paint helpers
+/api/v1/navigation-intent

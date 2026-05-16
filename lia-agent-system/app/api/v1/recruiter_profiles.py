@@ -13,6 +13,7 @@ from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
 from app.core.database import get_db, get_tenant_db
 from app.shared.services.recruiter_personalization_service import recruiter_personalization_service
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -80,7 +81,7 @@ async def get_my_profile(
     db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 
-):
+company_id: str = Depends(require_company_id)):
     """
     Get the current recruiter's personalization profile.
     
@@ -114,7 +115,7 @@ async def get_my_profile(
 async def get_my_settings(
     db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get the current recruiter's personalization settings.
@@ -144,7 +145,7 @@ async def update_my_settings(
     request: PersonalizationSettingsUpdate,
     db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Update personalization settings.
@@ -180,7 +181,7 @@ async def get_my_field_preferences(
     db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 
-):
+company_id: str = Depends(require_company_id)):
     """
     Get field-specific preferences for the current recruiter.
     
@@ -218,7 +219,7 @@ async def get_personalized_thresholds(
     db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 
-):
+company_id: str = Depends(require_company_id)):
     """
     Get personalized confidence thresholds for the wizard.
     
@@ -247,7 +248,7 @@ async def record_personalization_event(
     db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 
-):
+company_id: str = Depends(require_company_id)):
     """
     Record a personalization event for learning.
     
@@ -287,7 +288,7 @@ async def recalculate_profile(
     db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
 
-):
+company_id: str = Depends(require_company_id)):
     """
     Trigger a recalculation of the recruiter's profile.
     
@@ -314,7 +315,7 @@ async def recalculate_profile(
 async def delete_my_personalization_data(
     db: AsyncSession = Depends(get_tenant_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Delete all personalization data for the current recruiter.

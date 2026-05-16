@@ -29,6 +29,8 @@ from app.orchestrator.action_executor import (
     is_rejection,
 )
 from app.orchestrator.pending_action import PendingActionState, pending_action_store
+from fastapi import Depends
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -193,8 +195,8 @@ def _extract_param_value_from_message(
 
 
 @router.post("/jobs-management", response_model=OrchestratedJobsManagementResponse)
-async def orchestrated_jobs_management(request: OrchestratedJobsManagementRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def orchestrated_jobs_management(request: OrchestratedJobsManagementRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Process job portfolio queries through the Jobs Management Assistant.
 
@@ -534,8 +536,8 @@ async def orchestrated_jobs_management(request: OrchestratedJobsManagementReques
 
 
 @router.get("/jobs-management/intents", response_model=None)
-async def get_jobs_management_intents():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_jobs_management_intents(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     return {
         "intents": [
             {

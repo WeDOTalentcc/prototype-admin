@@ -25,6 +25,7 @@ from app.core.database import get_db
 from app.models.candidate import Candidate
 from app.models.email_template import EmailTemplate
 from app.models.job_vacancy import JobVacancy
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -83,8 +84,8 @@ async def get_candidate_enrichment(
     request: Request,
     token: str = Depends(verify_rails_token),
     db: AsyncSession = Depends(get_db),
-) -> dict[str, Any]:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)) -> dict[str, Any]:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     _check_rate_limit()
     _audit_log("candidates.enrichment", {"candidate_id": candidate_id})
 
@@ -128,8 +129,8 @@ async def get_job_intelligence(
     job_id: str,
     token: str = Depends(verify_rails_token),
     db: AsyncSession = Depends(get_db),
-) -> dict[str, Any]:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)) -> dict[str, Any]:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     _check_rate_limit()
     _audit_log("jobs.intelligence", {"job_id": job_id})
 
@@ -159,8 +160,8 @@ async def get_job_intelligence(
 async def get_compliance_status(
     token: str = Depends(verify_rails_token),
     db: AsyncSession = Depends(get_db),
-) -> dict[str, Any]:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)) -> dict[str, Any]:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     _check_rate_limit()
     _audit_log("compliance.status", {})
 
@@ -201,8 +202,8 @@ async def bulk_sync_candidates(
     request: Request,
     token: str = Depends(verify_rails_token),
     db: AsyncSession = Depends(get_db),
-) -> dict[str, Any]:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)) -> dict[str, Any]:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     _check_rate_limit()
 
     try:

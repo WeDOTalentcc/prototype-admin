@@ -24,6 +24,7 @@ from app.domains.job_creation.repositories.jd_similar_history_repository import 
 )
 from app.domains.job_creation.services.jd_similar_service import JdSimilarService
 from app.auth.models import User
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 router = APIRouter(prefix="/jd-similar", tags=["jd-similar", "sprint-b"])
 
@@ -118,7 +119,7 @@ async def lookup_similar(
     limit: int = Query(3, ge=1, le=10),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> JdSimilarLookupResponse:
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))) -> JdSimilarLookupResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     company_id = _enforce_tenant(company_id, current_user)
     """Busca JDs similares no histórico da empresa.
@@ -162,7 +163,7 @@ async def record_jd(
     body: JdRecordRequest,
     svc: JdSimilarService = Depends(_get_service),
     current_user: User = Depends(get_current_user),
-) -> GenericResponse:
+company_id: str = Depends(require_company_id)) -> GenericResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Registra JD enriquecida no histórico (chamado após publish bem-sucedido)."""
     company_id = _enforce_tenant(body.company_id, current_user)
@@ -186,7 +187,7 @@ async def increment_reuse(
     body: ReuseRequest,
     svc: JdSimilarService = Depends(_get_service),
     current_user: User = Depends(get_current_user),
-) -> GenericResponse:
+company_id: str = Depends(require_company_id)) -> GenericResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Incrementa contador de reuso quando recruiter usa JD do histórico como base."""
     company_id = _enforce_tenant(body.company_id, current_user)
@@ -202,7 +203,7 @@ async def mark_filled(
     body: MarkFilledRequest,
     svc: JdSimilarService = Depends(_get_service),
     current_user: User = Depends(get_current_user),
-) -> GenericResponse:
+company_id: str = Depends(require_company_id)) -> GenericResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Marca JD como preenchida (vaga fechou)."""
     company_id = _enforce_tenant(body.company_id, current_user)

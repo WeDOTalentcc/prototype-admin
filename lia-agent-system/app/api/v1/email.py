@@ -16,6 +16,7 @@ from pydantic import BaseModel, EmailStr
 
 from app.domains.communication.dependencies import get_email_repo
 from app.domains.communication.repositories.email_repository import EmailRepository
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -70,8 +71,8 @@ class EmailHistoryResponse(BaseModel):
 async def send_direct_email(
     request: DirectEmailRequest,
     repo: EmailRepository = Depends(get_email_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Send an email directly without using a template.
 
@@ -128,8 +129,8 @@ async def get_email_history_by_candidate(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     repo: EmailRepository = Depends(get_email_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get email history for a specific candidate.
 
@@ -177,8 +178,8 @@ async def get_all_email_history(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     repo: EmailRepository = Depends(get_email_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get all email history with optional filters.
     """
@@ -214,8 +215,8 @@ async def get_all_email_history(
 
 
 @router.get("/status", response_model=None)
-async def get_email_system_status():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_email_system_status(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get the current status of the email system.
 

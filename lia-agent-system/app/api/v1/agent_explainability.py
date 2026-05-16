@@ -6,6 +6,7 @@ from pydantic import BaseModel
 
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +66,7 @@ class StatsResponse(BaseModel):
 
 
 @router.get("/timeline/{session_id}", response_model=list[TimelineStepResponse])
-async def get_timeline(session_id: str, current_user: User = Depends(get_current_user_or_demo)):
+async def get_timeline(session_id: str, current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         timeline = await store.get_timeline(session_id)
@@ -80,7 +81,7 @@ async def get_timeline(session_id: str, current_user: User = Depends(get_current
 
 
 @router.get("/session/{session_id}/summary", response_model=SessionSummaryResponse)
-async def get_session_summary(session_id: str, current_user: User = Depends(get_current_user_or_demo)):
+async def get_session_summary(session_id: str, current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         records = await store.get_by_session(session_id, limit=1)
@@ -122,7 +123,7 @@ async def get_recent_executions(
     domain: str | None = Query(None, description="Filter by domain"),
     limit: int = Query(20, le=100, ge=1),
     current_user: User = Depends(get_current_user_or_demo),
-):
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         records = await store.get_by_company(company_id, domain=domain, limit=limit)
@@ -149,7 +150,7 @@ async def get_recent_executions(
 
 
 @router.get("/stats/{company_id}", response_model=StatsResponse)
-async def get_company_stats(company_id: str, current_user: User = Depends(get_current_user_or_demo)):
+async def get_company_stats(company_id: str, current_user: User = Depends(get_current_user_or_demo), _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         stats = await store.get_stats(company_id)

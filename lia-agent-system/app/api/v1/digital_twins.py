@@ -12,6 +12,7 @@ from app.auth.dependencies import get_current_user
 from app.core.database import get_db
 from pydantic import BaseModel, Field
 from typing import Optional
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter(prefix="/api/v1/digital-twins", tags=["Digital Twins"])
 
@@ -42,7 +43,7 @@ async def create_twin(
     body: CreateTwinRequest,
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Create a Digital Twin and optionally index ATS history.
@@ -93,7 +94,7 @@ async def create_twin(
 async def list_twins(
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List all Digital Twins for the current company."""
     from lia_models.digital_twin import DigitalTwin
@@ -123,8 +124,8 @@ async def list_twins(
 
 
 @router.get("/{twin_id}")
-async def get_twin(twin_id: str, db: AsyncSession = Depends(get_db)):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_twin(twin_id: str, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get details of a specific Digital Twin."""
     from lia_models.digital_twin import DigitalTwin
     from sqlalchemy import select
@@ -151,8 +152,8 @@ async def index_audio(
     twin_id: str,
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Upload and index an interview recording with the SME."""
     audio_bytes = await file.read()
     audio_format = file.content_type or "audio/mp4"
@@ -172,8 +173,8 @@ async def index_manual_decision(
     twin_id: str,
     body: ManualDecisionRequest,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Manually index a single decision + reasoning."""
     from app.services.twin_knowledge_indexer import twin_knowledge_indexer
     result = await twin_knowledge_indexer.index_manual_decision(
@@ -192,8 +193,8 @@ async def evaluate_candidate(
     twin_id: str,
     body: EvaluateRequest,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Evaluate a candidate using the Digital Twin's reasoning.
 

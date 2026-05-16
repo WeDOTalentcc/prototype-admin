@@ -12,6 +12,7 @@ from app.domains.recruitment.services.triagem_session_service import (
     TriagemSessionService,
     get_triagem_service,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -45,8 +46,8 @@ async def get_triagem_session(
     token: str,
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     config = await triagem_svc.get_session_config(repo.db, token)
 
     if config is None:
@@ -71,8 +72,8 @@ async def send_message(
     request: SendMessageRequest,
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     validation = await triagem_svc.validate_token(repo.db, token)
 
     if not validation.get("valid"):
@@ -103,8 +104,8 @@ async def get_history(
     token: str,
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     result = await triagem_svc.get_history(repo.db, token)
 
     if result.get("error") == "not_found":
@@ -118,8 +119,8 @@ async def complete_triagem(
     token: str,
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     validation = await triagem_svc.validate_token(repo.db, token)
 
     if not validation.get("valid"):
@@ -152,7 +153,7 @@ async def create_invite(
     x_company_id: str | None = Header(None, alias="X-Company-ID"),
     x_user_id: str | None = Header(None, alias="X-User-ID"),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     company_id = request.company_id or x_company_id
     if not company_id:
@@ -216,8 +217,8 @@ async def request_phone_call(
     request: RequestCallRequest,
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Request an automated phone call from LIA to the candidate via Twilio Voice."""
     validation = await triagem_svc.validate_token(repo.db, token)
 
@@ -261,8 +262,8 @@ async def start_triagem(
     request: StartSessionRequest | None = None,
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     validation = await triagem_svc.validate_token(repo.db, token)
 
     if not validation.get("valid"):
@@ -291,8 +292,8 @@ async def transcribe_audio(
     question_index: int | None = Form(None),
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Transcribe candidate audio using OpenAI Whisper STT."""
     validation = await triagem_svc.validate_token(repo.db, token)
     if not validation.get("valid"):
@@ -345,8 +346,8 @@ async def synthesize_speech(
     request: TTSRequest,
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Generate TTS audio for a triagem question using OpenAI TTS."""
     validation = await triagem_svc.validate_token(repo.db, token)
     if not validation.get("valid"):
@@ -378,8 +379,8 @@ async def synthesize_message_speech(
     message_id: str,
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Generate TTS audio on demand for a specific LIA message."""
     validation = await triagem_svc.validate_token(repo.db, token)
     if not validation.get("valid"):
@@ -406,8 +407,8 @@ async def voice_status(
     token: str,
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Check availability of voice services (STT/TTS) for the session."""
     validation = await triagem_svc.validate_token(repo.db, token)
     if not validation.get("valid"):
@@ -428,8 +429,8 @@ async def voip_start(
     token: str,
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Initiate a VoIP (browser call) screening session.
 

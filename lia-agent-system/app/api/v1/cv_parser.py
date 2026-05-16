@@ -25,6 +25,7 @@ from app.schemas.cv_parser import (
     SupportedFormatsResponse,
 )
 from app.utils.skill_classifier import classify_skills
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -200,7 +201,7 @@ async def upload_and_parse_cv(
     db: AsyncSession = Depends(get_db)
 ,
     cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Upload a CV file and extract structured candidate information.
@@ -279,7 +280,7 @@ async def parse_cv_text(
     db: AsyncSession = Depends(get_db)
 ,
     cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Parse plain text CV content and extract structured information.
@@ -331,7 +332,7 @@ async def confirm_cv_and_create_candidate(
     db: AsyncSession = Depends(get_db)
 ,
     cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Confirm parsed CV data and create a new candidate in the database.
@@ -498,8 +499,8 @@ async def confirm_cv_and_create_candidate(
 @router.get("/formats", response_model=SupportedFormatsResponse)
 async def get_supported_formats(
     cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get list of supported CV file formats and size limits.
     """
@@ -508,7 +509,7 @@ async def get_supported_formats(
 
 
 @router.get("/health", response_model=None)
-async def health_check():
+async def health_check(company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
     """
     Check if CV Parser service is properly configured.
@@ -534,7 +535,7 @@ async def upload_and_screen_cv(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_service_or_user),
     parser: CVParserService = Depends(get_cv_parser_service),
-):
+_company_gate: str = Depends(require_company_id_strict_match("form.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Full CV flow: parse → create Candidate → add to vacancy → BARS score.

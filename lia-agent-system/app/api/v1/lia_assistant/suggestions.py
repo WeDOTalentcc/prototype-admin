@@ -18,6 +18,7 @@ from ._shared import (
     SuggestionsResponse,
     logger,
 )
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 
@@ -27,8 +28,8 @@ router = APIRouter()
 async def get_dynamic_suggestions(
     limit: int = Query(default=6, ge=1, le=12),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Generate dynamic suggestion cards for the homepage based on real data.

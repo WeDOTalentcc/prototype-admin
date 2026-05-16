@@ -16,6 +16,7 @@ from ._shared import (
     get_user_from_headers,
     logger,
 )
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 
@@ -51,7 +52,7 @@ async def list_client_integrations(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List all integrations for a specific client."""
     try:
@@ -73,7 +74,7 @@ async def add_client_integration(
     data: IntegrationCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Add a new integration for a client."""
     try:
@@ -112,7 +113,7 @@ async def update_client_integration(
     data: IntegrationUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update an existing integration for a client."""
     try:
@@ -155,7 +156,7 @@ async def delete_client_integration(
     integration_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Remove an integration from a client."""
     try:
@@ -186,7 +187,7 @@ async def sync_client_integration(
     integration_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Trigger synchronization for a specific integration."""
     try:
@@ -225,7 +226,7 @@ async def sync_all_client_integrations(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Trigger synchronization for all connected integrations."""
     try:

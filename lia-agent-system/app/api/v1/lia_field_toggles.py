@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user_or_demo
 from app.core.database import get_db
 from app.models.lia_field_toggles import DEFAULT_FIELD_TOGGLES, FIELD_FALLBACK_CONFIG, LiaFieldToggle
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -82,8 +83,8 @@ class CompletenessCheckResponse(BaseModel):
 async def get_field_toggles(
     company_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user_or_demo)
-):
+    current_user: dict = Depends(get_current_user_or_demo), 
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get all field toggles for a company.
@@ -147,8 +148,8 @@ async def update_field_toggles(
     company_id: str,
     update_data: FieldTogglesUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user_or_demo)
-):
+    current_user: dict = Depends(get_current_user_or_demo), 
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Update field toggles and comments for a company.
@@ -227,8 +228,8 @@ async def check_job_completeness(
     company_id: str,
     request: CompletenessCheckRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user_or_demo)
-):
+    current_user: dict = Depends(get_current_user_or_demo), 
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Check completeness of job data and get suggestions for missing fields.
@@ -326,8 +327,8 @@ async def check_job_completeness(
 async def seed_default_toggles(
     company_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user_or_demo)
-):
+    current_user: dict = Depends(get_current_user_or_demo), 
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Seed default field toggles for a company.
@@ -395,8 +396,8 @@ async def get_agent_context(
     company_id: str,
     job_context: JobContextRequest | None = None,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user_or_demo)
-):
+    current_user: dict = Depends(get_current_user_or_demo), 
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get AI agent context for job creation wizard.
@@ -512,9 +513,9 @@ class FieldValueSuggestion(BaseModel):
 async def get_empty_field_notifications(
     company_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user = Depends(get_current_user_or_demo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    current_user = Depends(get_current_user_or_demo), 
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get notifications for fields with active toggles but empty company config.
     
@@ -568,9 +569,9 @@ async def update_empty_field_preference(
     field_key: str,
     update: ReminderPreferenceUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user = Depends(get_current_user_or_demo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    current_user = Depends(get_current_user_or_demo), 
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Update recruiter's preference for an empty field reminder.
     
@@ -615,8 +616,8 @@ async def suggest_field_value(
     field_key: str,
     request: FieldSuggestionRequest | None = None,
     db: AsyncSession = Depends(get_db),
-    current_user: dict = Depends(get_current_user_or_demo)
-):
+    current_user: dict = Depends(get_current_user_or_demo), 
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get AI suggestion for an empty field value.

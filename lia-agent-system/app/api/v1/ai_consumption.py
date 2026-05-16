@@ -40,6 +40,7 @@ from app.shared.services.token_tracking_service import (
 )
 from app.domains.credits.services.token_budget_service import get_plan_limit
 from app.shared.tenant_guard import get_verified_company_id
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -164,8 +165,8 @@ async def _get_usage_summary_data(company_id: str, db: AsyncSession) -> UsageSum
 @router.get("/summary", response_model=UsageSummaryResponse, summary="Get usage summary")
 async def get_summary(
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get AI usage summary for the current billing period (alias for /usage)."""
     try:
@@ -178,8 +179,8 @@ async def get_summary(
 @router.get("/usage", response_model=UsageSummaryResponse, summary="Get current period usage")
 async def get_usage_summary(
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get AI usage summary for the current billing period."""
     try:
@@ -193,8 +194,8 @@ async def get_usage_summary(
 async def get_client_usage(
     client_id: str,
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get AI usage summary for a specific client (admin endpoint)."""
     try:
@@ -251,8 +252,8 @@ async def get_usage_history(
     limit: int = Query(50, ge=1, le=500, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get historical AI consumption records with filters."""
     try:
@@ -297,8 +298,8 @@ async def get_usage_by_agent(
     start_date: datetime | None = Query(None, description="Start date filter"),
     end_date: datetime | None = Query(None, description="End date filter"),
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get AI usage grouped by agent type."""
     try:
@@ -343,8 +344,8 @@ async def get_usage_by_agent(
 async def get_agent_daily_trend(
     days: int = Query(30, ge=1, le=365, description="Number of days to include"),
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get AI usage grouped by day and agent type for trend charts."""
     try:
@@ -409,8 +410,8 @@ async def _get_daily_usage_data(days: int, company_id: str, db: AsyncSession) ->
 async def get_daily_usage(
     days: int = Query(30, ge=1, le=365, description="Number of days to include"),
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get AI usage grouped by day (alias for /by-day)."""
     try:
@@ -424,8 +425,8 @@ async def get_daily_usage(
 async def get_usage_by_day(
     days: int = Query(30, ge=1, le=365, description="Number of days to include"),
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get AI usage grouped by day for charts."""
     try:
@@ -438,8 +439,8 @@ async def get_usage_by_day(
 @router.get("/balance", response_model=BalanceResponse, summary="Get credits balance")
 async def get_balance(
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get current AI credits balance and limits."""
     try:
@@ -470,8 +471,8 @@ async def get_balance(
 async def record_consumption(
     record: AiConsumptionRecord,
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Record a new AI consumption entry (internal use)."""
     try:
@@ -515,8 +516,8 @@ async def update_limits(
     client_id: str,
     request: UpdateLimitsRequest,
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update AI limits for a client (admin endpoint)."""
     try:
@@ -574,8 +575,8 @@ async def get_my_usage(
     period: str = Query("day", description="Period: hour, day, week, month"),
     user_id: str | None = Depends(get_user_id_from_header),
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
-) -> dict[str, Any]:
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)) -> dict[str, Any]:
     """
     Get AI token usage for the current user.
     
@@ -620,8 +621,8 @@ async def get_my_usage(
 async def get_company_usage(
     period: str = Query("day", description="Period: hour, day, week, month"),
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
-) -> dict[str, Any]:
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)) -> dict[str, Any]:
     """
     Get AI token usage for the company.
     
@@ -655,8 +656,8 @@ async def get_company_usage(
 async def get_agents_usage(
     period: str = Query("day", description="Period: hour, day, week, month"),
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
-) -> dict[str, Any]:
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)) -> dict[str, Any]:
     """
     Get AI token usage grouped by agent type (admin endpoint).
     
@@ -686,8 +687,8 @@ async def get_agents_usage(
 @ai_usage_router.get("/limits", summary="Get configured usage limits")
 async def get_usage_limits(
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
-) -> dict[str, Any]:
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)) -> dict[str, Any]:
     """
     Get the configured usage limits for the company.
     
@@ -713,8 +714,8 @@ async def get_usage_limits(
 async def check_usage_limits(
     user_id: str | None = Depends(get_user_id_from_header),
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
-) -> dict[str, Any]:
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)) -> dict[str, Any]:
     """
     Check if the user/company is within configured usage limits.
     
@@ -771,8 +772,8 @@ async def check_usage_limits(
 async def get_real_time_usage(
     window_minutes: int = Query(5, ge=1, le=60, description="Time window in minutes"),
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
-) -> dict[str, Any]:
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)) -> dict[str, Any]:
     """
     Get real-time AI usage statistics for the last N minutes.
     

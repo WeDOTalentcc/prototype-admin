@@ -20,6 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
 from app.core.database import get_db
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -53,8 +54,8 @@ class QualityScoreResponse(BaseModel):
 # ── Templates endpoint ───────────────────────────────────────────
 
 @router.get("/templates", response_model=list[TemplateResponse])
-async def list_templates():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def list_templates(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List available agent templates. Recruiter picks one as starting point."""
     try:
         # Try multiple paths (dev vs production)
@@ -97,7 +98,7 @@ async def get_quality_score(
     agent_id: str,
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Compute quality score for a custom agent."""
     from uuid import UUID

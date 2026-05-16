@@ -10,6 +10,7 @@ from app.shared.async_processing.enhanced_task_manager import EnhancedTaskManage
 from app.shared.async_processing.task_persistence import TaskPersistenceService
 from app.shared.async_processing.task_queue import TaskPriority
 from app.shared.async_processing.task_scheduler import TaskScheduler
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ class ScheduleCreateRequest(BaseModel):
 
 
 @router.post("/submit", response_model=None)
-async def submit_task(request: TaskSubmitRequest, current_user: User = Depends(get_current_user_or_demo)):
+async def submit_task(request: TaskSubmitRequest, current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         manager = EnhancedTaskManager.get_instance()
@@ -67,7 +68,7 @@ async def submit_task(request: TaskSubmitRequest, current_user: User = Depends(g
 
 
 @router.get("/stats", response_model=None)
-async def get_stats(current_user: User = Depends(get_current_user_or_demo)):
+async def get_stats(current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         manager = EnhancedTaskManager.get_instance()
@@ -86,7 +87,7 @@ async def get_task_history(
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         manager = EnhancedTaskManager.get_instance()
@@ -110,7 +111,7 @@ async def list_schedules(
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         scheduler = TaskScheduler.get_instance()
@@ -122,7 +123,7 @@ async def list_schedules(
 
 
 @router.post("/schedules", response_model=None)
-async def create_schedule(request: ScheduleCreateRequest, current_user: User = Depends(get_current_user_or_demo)):
+async def create_schedule(request: ScheduleCreateRequest, current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         scheduler = TaskScheduler.get_instance()
@@ -147,7 +148,7 @@ async def create_schedule(request: ScheduleCreateRequest, current_user: User = D
 
 
 @router.delete("/schedules/{schedule_id}", response_model=None)
-async def remove_schedule(schedule_id: str, current_user: User = Depends(get_current_user_or_demo)):
+async def remove_schedule(schedule_id: str, current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         scheduler = TaskScheduler.get_instance()
@@ -169,7 +170,7 @@ async def list_dlq(
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         persistence = TaskPersistenceService.get_instance()
@@ -183,7 +184,7 @@ async def list_dlq(
 
 
 @router.post("/dlq/{dlq_id}/retry", response_model=None)
-async def retry_dlq_entry(dlq_id: str, current_user: User = Depends(get_current_user_or_demo)):
+async def retry_dlq_entry(dlq_id: str, current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         persistence = TaskPersistenceService.get_instance()
@@ -211,7 +212,7 @@ async def retry_dlq_entry(dlq_id: str, current_user: User = Depends(get_current_
 
 
 @router.get("/{task_id}", response_model=None)
-async def get_task_status(task_id: str, current_user: User = Depends(get_current_user_or_demo)):
+async def get_task_status(task_id: str, current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         manager = EnhancedTaskManager.get_instance()
@@ -232,7 +233,7 @@ async def list_tasks(
     state: str | None = Query(None),
     user_id: str | None = Query(None),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         manager = EnhancedTaskManager.get_instance()
@@ -255,7 +256,7 @@ async def list_tasks(
 
 
 @router.delete("/{task_id}", response_model=None)
-async def cancel_task(task_id: str, current_user: User = Depends(get_current_user_or_demo)):
+async def cancel_task(task_id: str, current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         manager = EnhancedTaskManager.get_instance()

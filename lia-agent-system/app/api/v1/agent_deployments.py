@@ -18,6 +18,7 @@ from app.schemas.agent_deployment import (
     UpdateDeploymentRequest,
 )
 from app.services.agent_deployment_service import agent_deployment_service
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ async def create_deployment(
     body: CreateDeploymentRequest,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Bind an agent to a target (job, talent pool, pipeline stage, candidate list)."""
     try:
@@ -98,7 +99,7 @@ async def list_agent_deployments(
     agent_id: str,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List all deployments for a specific agent."""
     deployments = await agent_deployment_service.list_by_agent(
@@ -120,7 +121,7 @@ async def list_deployments_by_target(
     target_id: str = Query(..., description="UUID of the target"),
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     """List all active agent deployments for a specific target (e.g., a job or pool)."""
     deployments = await agent_deployment_service.list_by_target(
         db=db,
@@ -140,7 +141,7 @@ async def update_deployment(
     body: UpdateDeploymentRequest,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     """Update a deployment (change trigger, pause/resume, override config)."""
     deployment = await agent_deployment_service.update_deployment(
         db=db,
@@ -159,7 +160,7 @@ async def delete_deployment(
     deployment_id: str,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     """Remove a deployment binding."""
     deleted = await agent_deployment_service.delete_deployment(
         db=db, deployment_id=deployment_id, company_id=current_user.company_id
@@ -175,7 +176,7 @@ async def run_deployment(
     body: RunDeploymentRequest = None,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     """Manually trigger an agent on its target.
 
     Executes the agent with context from the target (job details, pool candidates, etc).

@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.shared.services.salary_benchmark_service import salary_benchmark_service
 from app.shared.tenant_guard import get_verified_company_id
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/salary-benchmark", tags=["salary-benchmark"])
@@ -20,7 +21,7 @@ async def get_salary_benchmark(
     seniority: str = Query("pleno", description="Nível: junior, pleno, senior, especialista, gerente"),
     location: str = Query("Brasil", description="Cidade ou 'Brasil' para nacional"),
     company_id: str = Depends(get_verified_company_id),
-) -> dict:
+_company_gate: str = Depends(require_company_id)) -> dict:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Retorna benchmark salarial real para o cargo/nível/localização.

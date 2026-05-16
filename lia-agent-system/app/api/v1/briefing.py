@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.shared.services.briefing_service import briefing_service
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/briefing", tags=["briefing"])
@@ -30,9 +31,9 @@ _EMPTY_BRIEFING = {
 @router.get("", response_model=None)
 async def get_daily_briefing(
     user_id: str = "default_user",
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get daily briefing for a user.
 
@@ -68,9 +69,9 @@ async def get_daily_briefing(
 @router.post("/refresh", response_model=None)
 async def refresh_briefing(
     user_id: str = "default_user",
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Force refresh the daily briefing.
     """

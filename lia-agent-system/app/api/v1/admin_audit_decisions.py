@@ -18,6 +18,8 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+
 from app.auth.dependencies import require_admin
 from app.shared.compliance.audit_service import audit_service
 from app.shared.tenant_guard import get_verified_company_id
@@ -50,7 +52,7 @@ async def list_decisions_by_user(
     date_to: datetime | None = Query(None, alias="date_to"),
     company_id: str = Depends(get_verified_company_id),
     _user: Any = Depends(require_admin),
-) -> dict:
+_company_gate: str = Depends(require_company_id)) -> dict:
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Return paginated audit entries authored by ``actor_user_id``.
 

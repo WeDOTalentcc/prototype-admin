@@ -12,6 +12,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, Query
 
 from app.auth.dependencies import require_admin
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +23,7 @@ router = APIRouter(prefix="/traces", tags=["traces"])
 async def get_recent_traces(
     limit: int = Query(50, ge=1, le=500, description="Máximo de spans retornados"),
     _: None = Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Retorna spans recentes capturados pelo LightweightTracer interno."""
     from app.shared.tracing import get_recent_traces
@@ -32,7 +33,7 @@ async def get_recent_traces(
 @router.get("/stats", response_model=dict[str, Any])
 async def get_trace_stats(
     _: None = Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Retorna estatísticas agregadas de latência e erros dos spans.
 
@@ -46,7 +47,7 @@ async def get_trace_stats(
 @router.get("/status", response_model=dict[str, Any])
 async def get_tracer_status(
     _: None = Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Retorna o status atual do exporter de traces."""
     import os

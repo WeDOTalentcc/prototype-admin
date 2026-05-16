@@ -24,6 +24,7 @@ from app.schemas.rubric import JobRequirementCreate, RequirementPriorityEnum
 from app.domains.candidates.services.candidate_feedback_service import candidate_feedback_service
 from app.domains.cv_screening.services.lia_score_service import lia_score_service
 from app.services.notification_service import NotificationType, notification_service
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -104,8 +105,8 @@ async def apply_to_vacancy(
     repo: ApplicationRepository = Depends(get_application_repo),
     cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
     rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Processa inscricao de candidato em uma vaga.
 
@@ -336,8 +337,8 @@ async def resubmit_cv(
     repo: ApplicationRepository = Depends(get_application_repo)
 ,
     cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Processa reenvio de CV apos feedback de baixa aderencia.
 
@@ -475,9 +476,9 @@ async def resubmit_cv(
 async def get_feedback_analytics(
     vacancy_id: str,
     days: int = Query(30, ge=1, le=365, description="Periodo em dias"),
-    repo: ApplicationRepository = Depends(get_application_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: ApplicationRepository = Depends(get_application_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Retorna analytics sobre feedbacks enviados para uma vaga.
 
@@ -504,9 +505,9 @@ async def get_feedback_analytics(
 @router.post("/feedback/{feedback_id}/track-click", response_model=None)
 async def track_resubmit_click(
     feedback_id: str,
-    repo: ApplicationRepository = Depends(get_application_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: ApplicationRepository = Depends(get_application_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Registra clique no link de reenvio de CV."""
     try:
         success = await candidate_feedback_service.mark_resubmit_clicked(

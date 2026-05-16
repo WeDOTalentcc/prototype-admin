@@ -42,6 +42,7 @@ from app.shared.services.interview_notes_service import (
 )
 from app.domains.ai.services.llm import llm_service
 from app.shared.compliance.fairness_guard import FairnessGuard
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 fairness_guard = FairnessGuard()
@@ -329,8 +330,8 @@ def _get_wsi_decision(total_wsi: float) -> tuple[str, str]:
 async def generate_interview_questions(
     request: GenerateQuestionsRequest,
     current_user: User = Depends(get_current_active_user),
-    db: AsyncSession = Depends(get_db)
-) -> GenerateQuestionsResponse:
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)) -> GenerateQuestionsResponse:
     """
     Generate interview questions based on REAL job profile and candidate data.
     
@@ -843,8 +844,8 @@ def _create_default_blocks(wsi_level: str | None = None) -> list[QuestionBlock]:
 @router.post("/calculate-wsi", response_model=WSIScore)
 async def calculate_wsi_score(
     request: CalculateWSIRequest,
-    current_user: User = Depends(get_current_active_user)
-) -> WSIScore:
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)) -> WSIScore:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Calculate WSI Score based on evaluated question blocks.
@@ -920,8 +921,8 @@ async def calculate_wsi_score(
 @router.post("/generate-parecer", response_model=GenerateParecerResponse)
 async def generate_interview_parecer(
     request: GenerateParecerRequest,
-    current_user: User = Depends(get_current_active_user)
-) -> GenerateParecerResponse:
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)) -> GenerateParecerResponse:
     """
     Generate interview parecer (evaluation report) based on answers.
     
@@ -1047,7 +1048,7 @@ async def create_interview_note(
     data: InterviewNoteCreate,
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
-) -> InterviewNoteCreateResponse:
+company_id: str = Depends(require_company_id)) -> InterviewNoteCreateResponse:
     """Save a new interview note to the database (persistent)."""
     try:
         company_id = get_user_company_id(current_user)
@@ -1097,7 +1098,7 @@ async def get_interview_note(
     note_id: str,
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
-) -> InterviewNoteResponse:
+company_id: str = Depends(require_company_id)) -> InterviewNoteResponse:
     """Retrieve a single interview note by ID (company-scoped)."""
     company_id = get_user_company_id(current_user)
     note = await db_get_interview_note(db, note_id, company_id)
@@ -1138,7 +1139,7 @@ async def list_notes_for_candidate(
     job_id: str | None = Query(None),
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
-) -> list[InterviewNoteSummary]:
+company_id: str = Depends(require_company_id)) -> list[InterviewNoteSummary]:
     """List all interview notes for a candidate (optionally filtered by job)."""
     company_id = get_user_company_id(current_user)
     notes = await get_notes_for_candidate(db, candidate_id, company_id, job_id)
@@ -1178,7 +1179,7 @@ async def update_interview_note(
     data: InterviewNoteUpdateRequest,
     current_user: User = Depends(get_current_active_user),
     db: AsyncSession = Depends(get_db),
-) -> InterviewNoteUpdateResponse:
+company_id: str = Depends(require_company_id)) -> InterviewNoteUpdateResponse:
     """Partially update an interview note (e.g. save draft, add WSI score)."""
     company_id = get_user_company_id(current_user)
     fields = {

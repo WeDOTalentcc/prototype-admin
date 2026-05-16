@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.analytics.services.candidate_report_service import candidate_report_service
 from app.domains.analytics.services.report_service import report_service
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -67,9 +68,9 @@ class ComparisonReportRequest(BaseModel):
 @router.post("/candidate", response_model=None)
 async def generate_candidate_report(
     request: CandidateReportRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Generate a comprehensive candidate report/parecer."""
     try:
         report = await candidate_report_service.generate_report(
@@ -90,9 +91,9 @@ async def generate_candidate_report(
 @router.post("/comparison", response_model=None)
 async def generate_comparison_report(
     request: ComparisonReportRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Generate a comparison report for multiple candidates."""
     try:
         report = await candidate_report_service.generate_comparison_report(
@@ -112,9 +113,9 @@ async def get_candidate_report(
     candidate_id: str,
     job_id: str | None = None,
     format: str = Query(default="detailed", enum=["detailed", "executive", "comparison"]),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get a candidate report by candidate ID."""
     try:
         report = await candidate_report_service.generate_report(
@@ -131,9 +132,9 @@ async def get_candidate_report(
 @router.post("/daily-briefing/send", response_model=None)
 async def send_daily_briefing(
     request: DailyBriefingSendRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Send a daily briefing email to a recruiter.
     
@@ -165,8 +166,8 @@ async def send_daily_briefing(
 
 
 @router.post("/weekly/send", response_model=None)
-async def send_weekly_report(request: WeeklyReportSendRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def send_weekly_report(request: WeeklyReportSendRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Send a weekly performance report.
     
@@ -196,8 +197,8 @@ async def send_weekly_report(request: WeeklyReportSendRequest):
 
 
 @router.post("/monthly/send", response_model=None)
-async def send_monthly_report(request: MonthlyReportSendRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def send_monthly_report(request: MonthlyReportSendRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Send a monthly manager/executive report.
     
@@ -230,9 +231,9 @@ async def send_monthly_report(request: MonthlyReportSendRequest):
 async def preview_report(
     report_type: ReportType,
     user_name: str = Query(default="Recrutador", description="Name for personalization"),
-    company_name: str = Query(default="Empresa Demo", description="Company name for branding")
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    company_name: str = Query(default="Empresa Demo", description="Company name for branding"), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Preview a report without sending email.
     
@@ -260,9 +261,9 @@ async def preview_report(
 async def preview_report_json(
     report_type: ReportType,
     user_name: str = Query(default="Recrutador", description="Name for personalization"),
-    company_name: str = Query(default="Empresa Demo", description="Company name for branding")
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    company_name: str = Query(default="Empresa Demo", description="Company name for branding"), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Preview a report and return JSON with HTML content and metadata.
     

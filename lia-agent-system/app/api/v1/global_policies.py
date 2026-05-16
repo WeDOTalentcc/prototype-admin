@@ -29,6 +29,7 @@ from app.schemas.global_policies import (
     PolicyWithHistoryResponse,
     SeedPoliciesResponse,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -55,8 +56,8 @@ async def list_policies(
     limit: int = Query(100, ge=1, le=500),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List all global policies with optional filtering."""
     try:
         conditions = []
@@ -81,8 +82,8 @@ async def list_policies(
 
 
 @router.get("/categories", response_model=CategoryListResponse)
-async def list_categories(db: AsyncSession = Depends(get_db)):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def list_categories(db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List all policy categories with counts."""
     try:
         repo = GlobalPolicyRepository(db)
@@ -102,8 +103,8 @@ async def get_policy(
     include_history: bool = Query(True),
     history_limit: int = Query(10, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get a single policy with optional audit history."""
     try:
         policy_uuid = UUID(policy_id)
@@ -133,8 +134,8 @@ async def update_policy(
     data: PolicyUpdate,
     user_id: str | None = Depends(get_user_id_from_header),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update a policy value and create an audit log entry."""
     try:
         policy_uuid = UUID(policy_id)
@@ -179,8 +180,8 @@ async def get_policy_history(
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get the complete audit history for a specific policy."""
     try:
         policy_uuid = UUID(policy_id)
@@ -202,8 +203,8 @@ async def get_policy_history(
 
 
 @router.post("/seed", response_model=SeedPoliciesResponse)
-async def seed_default_policies(db: AsyncSession = Depends(get_db)):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def seed_default_policies(db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Seed the database with default policies. Skips existing policies."""
     try:
         repo = GlobalPolicyRepository(db)

@@ -51,6 +51,7 @@ from ._shared import (
     rubric_evaluation_service,
 )
 from app.domains.credits.services.credit_service import CreditService, get_credit_service
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 
@@ -77,9 +78,9 @@ class RevealedContactResponse(BaseModel):
 @router.post("/candidates/persist-revealed", response_model=RevealedContactResponse)
 async def persist_revealed_contact(
     request: RevealedContactDTO,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Persiste dados de contato revelados de candidatos Pearch.
     

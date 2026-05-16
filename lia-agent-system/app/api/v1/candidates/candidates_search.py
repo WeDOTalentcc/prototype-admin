@@ -22,6 +22,7 @@ from ._shared import (
     logger,
     User,
 )
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 
@@ -32,7 +33,7 @@ async def search_candidates_local(
     current_user: User = Depends(get_current_user_or_demo),
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     audit_svc: AuditService = Depends(get_audit_service),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Search candidates in proprietary PostgreSQL database (FREE - no credits consumed).
@@ -108,8 +109,8 @@ async def search_candidates(
     request: PearchSearchRequest,
     audit_svc: AuditService = Depends(get_audit_service),
     pearch_svc: PearchService = Depends(get_pearch_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Search for candidates using natural language query (Pearch AI - PAID)."""
     try:
         _timeout = getattr(request, "timeout", 60) or 60
@@ -157,8 +158,8 @@ async def search_candidates_get(
     limit: int = Query(10, ge=1, le=100, description="Number of results"),
     timeout: int = Query(60, ge=10, le=1800, description="Timeout in seconds"),
     pearch_svc: PearchService = Depends(get_pearch_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Search for candidates using GET request (convenient for testing)."""
     try:
         from lia_models.pearch import SearchType as _ST
@@ -178,8 +179,8 @@ async def search_by_job_description(
     location: str | None = None,
     limit: int = Query(20, ge=1, le=100),
     pearch_svc: PearchService = Depends(get_pearch_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Search candidates by pasting a full job description."""
     try:
         return await pearch_svc.search_by_job_description(
@@ -193,7 +194,7 @@ async def search_by_job_description(
 
 
 @router.get("/health", response_model=None)
-async def health_check():
+async def health_check(company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
     """Check if Pearch AI integration is properly configured."""
     import os

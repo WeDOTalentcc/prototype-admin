@@ -18,6 +18,7 @@ from fastapi import APIRouter, Header, HTTPException, status
 from pydantic import BaseModel
 
 from app.core.config import settings
+from fastapi import Depends
 
 logger = logging.getLogger(__name__)
 

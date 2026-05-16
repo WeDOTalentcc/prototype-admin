@@ -5,14 +5,16 @@ from fastapi import APIRouter, HTTPException, Request
 from lia_agents_core.agent_interface import AgentInput
 
 from app.domains.cv_screening.agents.pipeline_react_agent import PipelineReActAgent
+from fastapi import Depends
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger("lia.pipeline_orchestrator")
 router = APIRouter(prefix="/pipeline", tags=["Pipeline Agent"])
 
 
 @router.post("/react-orchestrate", response_model=None)
-async def pipeline_react_orchestrate(request: Request):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def pipeline_react_orchestrate(request: Request, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Pipeline agent endpoint - ReAct based autonomous candidate management."""
     if not os.getenv("USE_REACT_AGENTS", "false").lower() == "true":
         return {"error": "ReAct agents not enabled", "detail": "Set USE_REACT_AGENTS=true"}

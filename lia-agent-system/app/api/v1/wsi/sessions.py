@@ -18,6 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.voice.repositories.wsi_repository import WsiRepository
 from app.shared.services.interview_session_store import interview_session_store
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -30,8 +31,8 @@ router = APIRouter()
 
 @router.get("/session/{session_id}", response_model=None)
 # TODO(phase2): extract to repository — WSI session management
-async def get_session(session_id: str, db: AsyncSession = Depends(get_db)):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_session(session_id: str, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get WSI session details with questions and responses."""
     try:
         _repo = WsiRepository(db)
@@ -70,9 +71,9 @@ async def get_session(session_id: str, db: AsyncSession = Depends(get_db)):
 async def get_candidate_results(
     candidate_id: str,
     limit: int = 10,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get WSI results for a specific candidate."""
     try:
         _repo = WsiRepository(db)
@@ -117,7 +118,7 @@ class InterviewGraphRespondRequest(BaseModel):
 async def start_interview_graph_session(
     request: InterviewGraphStartRequest,
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Cria uma nova sessão de entrevista WSI usando o WSIInterviewGraph.
 
@@ -174,8 +175,8 @@ async def start_interview_graph_session(
     "/interview-graph/sessions/{session_id}/respond",
     summary="Envia resposta do candidato na entrevista WSI síncrona",
     response_model=None)
-async def respond_interview_graph(session_id: str, request: InterviewGraphRespondRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def respond_interview_graph(session_id: str, request: InterviewGraphRespondRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Processa a resposta do candidato, pontua e avança para a próxima pergunta.
 
     Retorna a próxima pergunta (se houver) ou o resultado final (se a entrevista encerrou).
@@ -227,8 +228,8 @@ async def respond_interview_graph(session_id: str, request: InterviewGraphRespon
     "/interview-graph/sessions/{session_id}",
     summary="Resumo auditável da sessão de entrevista WSI",
     response_model=None)
-async def get_interview_graph_session(session_id: str):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_interview_graph_session(session_id: str, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Retorna o resumo completo da sessão para fins de auditoria e compliance."""
     from app.domains.cv_screening.agents.wsi_interview_graph import wsi_interview_graph
 

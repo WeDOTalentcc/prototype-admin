@@ -29,6 +29,7 @@ from app.schemas.shared_search import (
     RecipientSummary,
     ShareChannel,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -262,8 +263,8 @@ def build_feedback_summary(feedbacks, total_candidates: int) -> FeedbackSummary:
 async def create_shared_search(
     data: CreateSharedSearchRequest,
     repo: SharedSearchRepository = Depends(get_shared_search_repo),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     """
     Create a new shared search with candidate snapshots and recipient access tokens.
     """
@@ -482,8 +483,8 @@ async def list_shared_searches(
     limit: int = Query(50, ge=1, le=100),
     offset: int = Query(0, ge=0),
     repo: SharedSearchRepository = Depends(get_shared_search_repo),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     """
     List shared searches for the current company with feedback summaries.
     """
@@ -571,8 +572,8 @@ async def list_shared_searches(
 async def get_shared_search(
     search_id: str,
     repo: SharedSearchRepository = Depends(get_shared_search_repo),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     """
     Get shared search details including all candidates and feedbacks.
     """
@@ -678,8 +679,8 @@ async def resend_invite(
     search_id: str,
     data: ResendInviteRequest,
     repo: SharedSearchRepository = Depends(get_shared_search_repo),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     """
     Resend invite email with a new OTP.
     """
@@ -730,8 +731,8 @@ async def update_shared_search(
     search_id: str,
     data: UpdateSharedSearchRequest,
     repo: SharedSearchRepository = Depends(get_shared_search_repo),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     """
     Update shared search (status, expires_at, description).
     """
@@ -781,8 +782,8 @@ async def update_shared_search(
 async def delete_shared_search(
     search_id: str,
     repo: SharedSearchRepository = Depends(get_shared_search_repo),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     """
     Delete/revoke a shared search.
     """
@@ -815,8 +816,8 @@ async def add_approved_to_job(
     search_id: str,
     data: AddToJobRequest,
     repo: SharedSearchRepository = Depends(get_shared_search_repo),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     """
     Add approved candidates from shared search to a job vacancy.
     """

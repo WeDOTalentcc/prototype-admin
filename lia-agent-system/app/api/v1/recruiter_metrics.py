@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.auth import get_current_user_or_demo
 from app.core.database import get_db
 from app.shared.services.recruiter_metrics_service import recruiter_metrics_service
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,7 @@ async def get_recruiter_summary(
     period_days: int = Query(30, ge=1, le=90, description="Período em dias para avg response time"),
     current_user=Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: public endpoint (metrics) — no tenant data
     """
     Retorna o resumo semanal de produtividade do recrutador:
@@ -52,7 +53,7 @@ async def get_recruiter_backlog(
     company_id: str = Query(..., description="ID da empresa (multi-tenant)"),
     current_user=Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: public endpoint (metrics) — no tenant data
     """
     Retorna a lista priorizada de candidatos aguardando ação do recrutador,
@@ -83,7 +84,7 @@ async def get_recruiter_benchmark(
     company_id: str = Query(..., description="ID da empresa (multi-tenant)"),
     current_user=Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: public endpoint (metrics) — no tenant data
     """
     Compara métricas do recrutador com a mediana anônima da empresa.

@@ -9,6 +9,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from app.domains.recruiter_assistant.services.kanban_assistant_service import kanban_assistant_service
+from fastapi import Depends
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -55,8 +57,8 @@ class KanbanAssistantResponse(BaseModel):
 
 
 @router.post("/lia/kanban-assistant", response_model=KanbanAssistantResponse)
-async def kanban_assistant(request: KanbanAssistantRequest) -> KanbanAssistantResponse:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def kanban_assistant(request: KanbanAssistantRequest, company_id: str = Depends(require_company_id)) -> KanbanAssistantResponse:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Process a Kanban assistant command for AI-powered pipeline analysis.
     
@@ -134,8 +136,8 @@ class StageMoveSuggestionsResponse(BaseModel):
 
 
 @router.post("/lia/kanban-assistant/stage-move-suggestions", response_model=StageMoveSuggestionsResponse)
-async def get_stage_move_suggestions(context: StageMoveContext) -> StageMoveSuggestionsResponse:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_stage_move_suggestions(context: StageMoveContext, company_id: str = Depends(require_company_id)) -> StageMoveSuggestionsResponse:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Return contextual LIA suggestions when a candidate is moved to a new stage.
 
@@ -209,8 +211,8 @@ async def get_stage_move_suggestions(context: StageMoveContext) -> StageMoveSugg
 
 
 @router.get("/lia/kanban-assistant/command-types", response_model=None)
-async def get_command_types():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_command_types(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get available command types for the Kanban assistant.
     """

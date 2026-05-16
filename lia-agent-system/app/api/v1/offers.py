@@ -25,6 +25,7 @@ from app.schemas.offer import (
     OfferPrepareManualResponse,
     OfferSendAutoResponse,
 )
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter(prefix="/offers", tags=["offers"])
 logger = logging.getLogger(__name__)
@@ -35,7 +36,7 @@ async def create_offer_draft(
     data: OfferDraftCreate,
     db: AsyncSession = Depends(get_tenant_db),
     current_user=Depends(get_current_user),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create offer draft (or return existing draft for same candidate+job)."""
     company_id = current_user.company_id
@@ -71,7 +72,7 @@ async def get_offer_draft(
     offer_id: UUID,
     db: AsyncSession = Depends(get_tenant_db),
     current_user=Depends(get_current_user),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     from app.domains.offer.services.offer_service import OfferService
     company_id = current_user.company_id
@@ -88,7 +89,7 @@ async def update_offer_draft(
     data: OfferDraftUpdate,
     db: AsyncSession = Depends(get_tenant_db),
     current_user=Depends(get_current_user),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     from app.domains.offer.services.offer_service import OfferService
     company_id = current_user.company_id
@@ -108,7 +109,7 @@ async def send_offer_auto(
     offer_id: UUID,
     db: AsyncSession = Depends(get_tenant_db),
     current_user=Depends(get_current_user),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Send offer automatically via email template."""
     from app.domains.offer.tools.send_offer import run as send_run
@@ -138,7 +139,7 @@ async def prepare_offer_manual(
     offer_id: UUID,
     db: AsyncSession = Depends(get_tenant_db),
     current_user=Depends(get_current_user),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     from app.domains.offer.tools.prepare_offer_manual_send import run as prep_run
     from app.domains.base import DomainContext
@@ -167,7 +168,7 @@ async def cancel_offer_draft(
     body: OfferCancelRequest | None = None,
     db: AsyncSession = Depends(get_tenant_db),
     current_user=Depends(get_current_user),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     from app.domains.offer.services.offer_service import OfferService
     company_id = current_user.company_id

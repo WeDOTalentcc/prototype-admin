@@ -15,6 +15,7 @@ from ._shared import (
     get_current_user_or_demo,
     logger,
 )
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 
@@ -45,7 +46,7 @@ async def get_candidate_consents(
     candidate_id: uuid.UUID,
     x_company_id: str | None = Header(None),
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Lista todos os consentimentos LGPD de um candidato."""
     company_id = x_company_id or "admin_company"
@@ -60,7 +61,7 @@ async def create_or_update_candidate_consent(
     request: ConsentCreateRequest,
     x_company_id: str | None = Header(None),
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Registra ou atualiza consentimento LGPD de um candidato por finalidade."""
     company_id = x_company_id or "admin_company"
@@ -84,7 +85,7 @@ async def revoke_candidate_consent(
     consent_type: str,
     x_company_id: str | None = Header(None),
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Revoga consentimento LGPD de um candidato para uma finalidade específica."""
     company_id = x_company_id or "admin_company"
@@ -113,7 +114,7 @@ async def get_communication_preferences(
     candidate_id: uuid.UUID,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Retorna preferências de canal de comunicação do candidato."""
     candidate = await candidate_repo.get_by_id(candidate_id)
@@ -133,7 +134,7 @@ async def update_communication_preferences(
     request: CommunicationPreferencesUpdate,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Atualiza preferências de canal de comunicação do candidato."""
     candidate = await candidate_repo.get_by_id(candidate_id)

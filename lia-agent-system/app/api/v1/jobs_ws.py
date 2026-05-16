@@ -15,6 +15,8 @@ from datetime import datetime
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 
 from app.core.celery_app import celery_app
+from fastapi import Depends
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter(tags=["websocket"])
 logger = logging.getLogger(__name__)
@@ -26,7 +28,7 @@ _MAX_DURATION = 10800
 
 
 @router.websocket("/ws/jobs/{job_id}")
-async def job_progress_ws(websocket: WebSocket, job_id: str):
+async def job_progress_ws(websocket: WebSocket, job_id: str, company_id: str = Depends(require_company_id)):
     """
     WebSocket para acompanhar progresso de tarefas Celery em tempo real.
 

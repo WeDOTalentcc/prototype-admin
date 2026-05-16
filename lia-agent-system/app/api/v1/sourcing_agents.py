@@ -14,6 +14,7 @@ from app.auth.models import User
 from app.core.database import get_db, get_tenant_db
 from pydantic import BaseModel, Field
 from typing import Optional
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ async def create_sourcing_agent(
     body: CreateSourcingAgentRequest,
     current_user = Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new persistent sourcing agent for a job or talent pool."""
     from app.services.quota_enforcement import enforce_quota
@@ -66,7 +67,7 @@ async def list_sourcing_agents(
     status: Optional[str] = None,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List sourcing agents for the current company."""
     from lia_models.sourcing_agent import SourcingAgent
@@ -136,8 +137,8 @@ async def list_sourcing_agents(
 
 
 @router.get("/{agent_id}")
-async def get_sourcing_agent(agent_id: str, db: AsyncSession = Depends(get_db)):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_sourcing_agent(agent_id: str, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get details of a specific sourcing agent."""
     from lia_models.sourcing_agent import SourcingAgent
     from sqlalchemy import select
@@ -165,8 +166,8 @@ async def submit_feedback(
     agent_id: str,
     body: FeedbackRequest,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Process recruiter feedback (approve/reject) on a candidate.
     Triggers strategy recalibration.
@@ -195,8 +196,8 @@ async def get_calibration_candidates(
     agent_id: str,
     limit: int = 10,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get candidates for the Big Card calibration modal."""
     from app.services.sourcing_agent_orchestrator import sourcing_agent_orchestrator
     candidates = await sourcing_agent_orchestrator.get_calibration_candidates(
@@ -210,8 +211,8 @@ async def get_agent_timeline(
     agent_id: str,
     limit: int = 20,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get activity timeline for the Agents tab."""
     from app.services.sourcing_agent_orchestrator import sourcing_agent_orchestrator
     timeline = await sourcing_agent_orchestrator.get_agent_timeline(
@@ -221,8 +222,8 @@ async def get_agent_timeline(
 
 
 @router.patch("/{agent_id}/pause")
-async def pause_agent(agent_id: str, db: AsyncSession = Depends(get_db)):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def pause_agent(agent_id: str, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Pause a sourcing agent."""
     from lia_models.sourcing_agent import SourcingAgent
     from sqlalchemy import select
@@ -238,8 +239,8 @@ async def pause_agent(agent_id: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.patch("/{agent_id}/resume")
-async def resume_agent(agent_id: str, db: AsyncSession = Depends(get_db)):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def resume_agent(agent_id: str, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Resume a paused sourcing agent."""
     from lia_models.sourcing_agent import SourcingAgent
     from sqlalchemy import select

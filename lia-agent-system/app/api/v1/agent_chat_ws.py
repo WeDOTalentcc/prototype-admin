@@ -52,6 +52,7 @@ from app.shared.robustness.security_patterns import check_input_security, get_bl
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.compliance.c3b_layer import pre_compliance, post_compliance, ComplianceContext
 from app.shared.tenant_session import create_session_id
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -158,8 +159,8 @@ async def list_active_sessions(
     authorization: str = Header(default=""),
     token: str = Query(default=""),
     ws_mgr: WSManager = Depends(get_ws_manager),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List active WebSocket sessions for the authenticated user.
 
     Returns only session IDs belonging to the current user, not all
@@ -393,7 +394,7 @@ async def agent_chat_ws(
     token: str | None = Query(None),
     domain: str = Query("recruiter_assistant"),
     ws_mgr: WSManager = Depends(get_ws_manager),
-):
+company_id: str = Depends(require_company_id)):
     """
     WebSocket bidirecional para chat com agentes LIA.
 
@@ -1338,8 +1339,8 @@ class HTTPChatResponse(BaseModel):
 
 
 @router.post("/chat/message", response_model=HTTPChatResponse)
-async def http_chat_message(req: HTTPChatRequest, request: Request):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def http_chat_message(req: HTTPChatRequest, request: Request, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     HTTP fallback for agent chat when WebSocket is unavailable.
     Same logic as WS handler but synchronous request/response.

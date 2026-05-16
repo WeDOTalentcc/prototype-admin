@@ -1,5 +1,7 @@
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
+from fastapi import Depends
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter(prefix="/internal/llm", tags=["Internal LLM"])
 
@@ -24,7 +26,7 @@ class GenerateResponse(BaseModel):
 
 
 @router.post("/generate", response_model=GenerateResponse)
-async def generate(body: GenerateRequest, request: Request) -> GenerateResponse:
+async def generate(body: GenerateRequest, request: Request, company_id: str = Depends(require_company_id)) -> GenerateResponse:
     # multi-tenancy: admin/platform-level (internal_) — role-based access required
     """Internal endpoint: generates text via the LLM factory.
 

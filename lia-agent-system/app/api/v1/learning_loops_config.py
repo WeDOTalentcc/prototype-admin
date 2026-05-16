@@ -30,6 +30,7 @@ from lia_models.company_hiring_policy import (
     AUTOMATION_RULES_DEFAULTS,
     CompanyHiringPolicy,
 )
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 router = APIRouter(
     prefix="/companies",
@@ -122,7 +123,7 @@ async def get_config(
     company_id: str,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> LearningLoopsConfigResponse:
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))) -> LearningLoopsConfigResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Retorna config dos learning loops da empresa.
 
@@ -153,7 +154,7 @@ async def patch_config(
     body: LearningLoopsConfigPatch,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
-) -> LearningLoopsConfigResponse:
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))) -> LearningLoopsConfigResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     company_id = _enforce_tenant(company_id, current_user)
     """Update partial dos toggles.

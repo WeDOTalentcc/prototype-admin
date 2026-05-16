@@ -13,6 +13,7 @@ from pydantic import BaseModel
 
 from app.auth.dependencies import get_current_user
 from app.domains.communication.services.teams_service import AlertSeverity, teams_service
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -62,8 +63,8 @@ class TeamsTestRequest(BaseModel):
 @router.post("/teams/send", response_model=None)
 async def send_teams_message(
     request: TeamsSendMessageRequest,
-    current_user: dict[str, Any] = Depends(get_current_user)
-):
+    current_user: dict[str, Any] = Depends(get_current_user), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Send a message to Microsoft Teams via Incoming Webhook.
@@ -89,8 +90,8 @@ async def send_teams_message(
 @router.post("/teams/send-alert", response_model=None)
 async def send_teams_alert(
     request: TeamsSendAlertRequest,
-    current_user: dict[str, Any] = Depends(get_current_user)
-):
+    current_user: dict[str, Any] = Depends(get_current_user), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Send an alert with severity level to Microsoft Teams.
@@ -131,8 +132,8 @@ async def send_teams_alert(
 @router.post("/teams/send-card", response_model=None)
 async def send_teams_card(
     request: TeamsSendCardRequest,
-    current_user: dict[str, Any] = Depends(get_current_user)
-):
+    current_user: dict[str, Any] = Depends(get_current_user), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Send a custom Adaptive Card to Microsoft Teams.
@@ -154,8 +155,8 @@ async def send_teams_card(
 @router.post("/teams/send-candidate-notification", response_model=None)
 async def send_teams_candidate_notification(
     request: TeamsCandidateNotificationRequest,
-    current_user: dict[str, Any] = Depends(get_current_user)
-):
+    current_user: dict[str, Any] = Depends(get_current_user), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Send a candidate-related notification to Microsoft Teams.
@@ -180,8 +181,8 @@ async def send_teams_candidate_notification(
 @router.post("/teams/test", response_model=None)
 async def test_teams_connection(
     request: TeamsTestRequest,
-    current_user: dict[str, Any] = Depends(get_current_user)
-):
+    current_user: dict[str, Any] = Depends(get_current_user), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Test Microsoft Teams webhook connection.
@@ -198,8 +199,8 @@ async def test_teams_connection(
 
 @router.get("/teams/status", response_model=None)
 async def get_teams_status(
-    current_user: dict[str, Any] = Depends(get_current_user)
-):
+    current_user: dict[str, Any] = Depends(get_current_user), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get Microsoft Teams integration status.
@@ -216,8 +217,8 @@ async def get_teams_status(
 
 @router.get("/status", response_model=None)
 async def get_integrations_status(
-    current_user: dict[str, Any] = Depends(get_current_user)
-):
+    current_user: dict[str, Any] = Depends(get_current_user), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get status of all external integrations.
@@ -252,8 +253,8 @@ async def get_integrations_status(
 
 @router.get("/health", response_model=None)
 async def get_integrations_health(
-    current_user: dict[str, Any] = Depends(get_current_user)
-):
+    current_user: dict[str, Any] = Depends(get_current_user), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
     """
     Unified health check for all external business integrations.

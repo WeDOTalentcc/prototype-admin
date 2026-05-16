@@ -18,6 +18,7 @@ from app.core.database import get_db
 from app.shared.services.ml_feedback_service import FeedbackSignal, MLFeedbackService
 from app.domains.analytics.services.ml_feedback_service import get_ml_feedback_service
 from app.shared.tenant_guard import get_verified_company_id
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +48,7 @@ async def record_feedback_signal(
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
     service: MLFeedbackService = Depends(get_ml_feedback_service),
-) -> dict:
+_company_gate: str = Depends(require_company_id)) -> dict:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Registra sinal de feedback de recrutador (D6 — ML Adaptativo).
@@ -74,7 +75,7 @@ async def get_adaptive_weights(
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
     service: MLFeedbackService = Depends(get_ml_feedback_service),
-) -> dict:
+_company_gate: str = Depends(require_company_id)) -> dict:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Retorna pesos adaptativos calculados pelo feedback loop para uma vaga.

@@ -17,6 +17,7 @@ from app.core.database import get_db
 from app.domains.company.repositories.benefit_template_repository import BenefitTemplateRepository
 from app.domains.company.repositories.benefit_repository import BenefitRepository
 from app.models.company import Benefit, BenefitTemplate
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -128,9 +129,9 @@ async def get_benefit_templates(
     category: str | None = Query(None, description="Filter by category"),
     search: str | None = Query(None, description="Search by name"),
     popular_only: bool = Query(False, description="Show only popular templates"),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get all available benefit templates.
     """
@@ -161,9 +162,9 @@ async def get_benefit_templates(
 
 @router.post("/seed-templates", response_model=None)
 async def seed_benefit_templates(
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Seed the database with pre-defined benefit templates.
     Only adds templates that don't already exist (by name).
@@ -206,9 +207,9 @@ async def seed_benefit_templates(
 @router.get("/templates/{template_id}", response_model=BenefitTemplateResponse)
 async def get_benefit_template(
     template_id: UUID,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get a specific benefit template by ID.
     """
@@ -311,8 +312,8 @@ class BenefitImportResponse(BaseModel):
 
 
 @router.get("/import/template", response_model=None)
-async def download_benefits_import_template():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def download_benefits_import_template(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Download CSV template for benefits import.
     """
@@ -367,9 +368,9 @@ async def download_benefits_import_template():
 async def import_benefits(
     file: UploadFile = File(...),
     company_id: UUID = Query(..., description="Company ID to associate benefits with"),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Import benefits from CSV or Excel file.
     """

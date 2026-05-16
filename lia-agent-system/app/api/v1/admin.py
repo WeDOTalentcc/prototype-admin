@@ -10,6 +10,7 @@ from app.domains.admin.dependencies import get_admin_repo
 from app.domains.admin.repositories.admin_repository import AdminRepository
 from app.models.alert import AlertSeverity, AlertType
 from app.models.task import TaskPriority, TaskType
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 logger = logging.getLogger(__name__)
@@ -224,7 +225,7 @@ DEFAULT_ALERT_RULES = [
 async def seed_database(
     repo: AdminRepository = Depends(get_admin_repo),
     _admin=Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (/admin) — role-based access required
     """
     Seed the database with default Task Templates and Alert Rules.
@@ -263,7 +264,7 @@ async def seed_database(
 async def seed_task_templates_only(
     repo: AdminRepository = Depends(get_admin_repo),
     _admin=Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (/admin) — role-based access required
     """
     Seed only Task Templates.
@@ -292,7 +293,7 @@ async def seed_task_templates_only(
 async def seed_alert_rules_only(
     repo: AdminRepository = Depends(get_admin_repo),
     _admin=Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (/admin) — role-based access required
     """
     Seed only Alert Rules.
@@ -321,7 +322,7 @@ async def seed_alert_rules_only(
 async def seed_demo_data_endpoint(
     repo: AdminRepository = Depends(get_admin_repo),
     _admin=Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (/admin) — role-based access required
     """
     Seed demo data for vagas (jobs) and candidatos (candidates).
@@ -369,7 +370,7 @@ async def seed_demo_data_endpoint(
 async def clear_demo_data_endpoint(
     repo: AdminRepository = Depends(get_admin_repo),
     _admin=Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (/admin) — role-based access required
     """
     Clear all demo data from the database.

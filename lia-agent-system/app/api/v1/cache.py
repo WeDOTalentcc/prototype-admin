@@ -10,6 +10,8 @@ from fastapi import APIRouter, HTTPException
 
 from app.domains.job_management.services.jd_template_cache_service import jd_template_cache_service
 from app.shared.services.embedding_cache_service import embedding_cache
+from fastapi import Depends
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -17,8 +19,8 @@ router = APIRouter(prefix="/cache", tags=["cache"])
 
 
 @router.delete("/jd/{company_id}", response_model=None)
-async def invalidate_jd_cache(company_id: str):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def invalidate_jd_cache(company_id: str, _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Manually invalidate JD template cache for a company.
     
@@ -61,7 +63,7 @@ async def invalidate_jd_cache(company_id: str):
 
 
 @router.get("/jd/metrics", response_model=None)
-async def get_jd_cache_metrics():
+async def get_jd_cache_metrics(company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (metrics) — no tenant data
     """
     Get JD template cache performance metrics.
@@ -93,7 +95,7 @@ async def get_jd_cache_metrics():
 
 
 @router.post("/jd/reset-metrics", response_model=None)
-async def reset_jd_cache_metrics():
+async def reset_jd_cache_metrics(company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (metrics) — no tenant data
     """
     Reset JD template cache performance metrics.
@@ -122,8 +124,8 @@ async def reset_jd_cache_metrics():
 
 
 @router.get("/embeddings/stats", response_model=None)
-async def get_embedding_cache_stats():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_embedding_cache_stats(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get embedding cache statistics.
     
@@ -152,8 +154,8 @@ async def get_embedding_cache_stats():
 
 
 @router.post("/embeddings/clear", response_model=None)
-async def clear_embedding_cache():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def clear_embedding_cache(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Clear embedding cache.
     

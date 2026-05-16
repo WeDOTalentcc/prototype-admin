@@ -39,6 +39,8 @@ from pydantic import BaseModel
 
 from app.shared.pii_masking import mask_pii
 from app.shared.resilience.circuit_breaker import GEMINI_LIVE_CIRCUIT
+from fastapi import Depends
+from app.shared.security.require_company_id import require_company_id
 
 
 def _get_hmac_secret() -> str:
@@ -93,7 +95,7 @@ class StartSessionResponse(BaseModel):
 async def start_gemini_voice_session(
     request_body: StartSessionRequest,
     request: Request,
-) -> StartSessionResponse:
+company_id: str = Depends(require_company_id)) -> StartSessionResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Create a new Gemini Live Audio screening session.
@@ -239,7 +241,7 @@ async def gemini_live_stream_websocket(
     websocket: WebSocket,
     session_id: str = Query(...),
     ws_token: str = Query(...),
-):
+company_id: str = Depends(require_company_id)):
     """
     WebSocket endpoint for bidirectional Gemini Live Audio streaming.
 
@@ -692,8 +694,8 @@ async def gemini_live_stream_websocket(
 
 
 @router.get("/gemini-voice/session/{session_id}", response_model=None)
-async def get_gemini_session_status(session_id: str):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_gemini_session_status(session_id: str, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     from app.shared.services.gemini_live_audio_service import get_gemini_live_service
 
     live_service = get_gemini_live_service()
@@ -725,7 +727,7 @@ async def get_gemini_session_status(session_id: str):
 
 
 @router.get("/gemini-voice/health", response_model=None)
-async def gemini_voice_health():
+async def gemini_voice_health(company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
     from app.shared.services.gemini_live_audio_service import get_gemini_live_service
 

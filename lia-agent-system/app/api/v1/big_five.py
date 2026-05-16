@@ -18,6 +18,7 @@ from sqlalchemy.orm.attributes import flag_modified
 
 from app.core.database import get_db
 from app.models.client_account import ClientAccount
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -190,8 +191,8 @@ def validate_traits(traits: dict[str, int]) -> bool:
 async def list_profiles(
     job_id: str | None = Query(None, description="Filter by job ID"),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List all Big Five profiles for the company."""
     try:
@@ -227,8 +228,8 @@ async def list_profiles(
 async def create_profile(
     data: BigFiveProfileCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new Big Five profile for the company."""
     try:
@@ -281,8 +282,8 @@ async def create_profile(
 async def get_profile(
     profile_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get a specific Big Five profile by ID."""
     try:
@@ -317,8 +318,8 @@ async def update_profile(
     profile_id: str,
     data: BigFiveProfileUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update an existing Big Five profile."""
     try:
@@ -376,8 +377,8 @@ async def update_profile(
 async def delete_profile(
     profile_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Delete a Big Five profile."""
     try:
@@ -417,8 +418,8 @@ async def delete_profile(
 async def analyze_candidate(
     data: AnalyzeRequest,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Analyze a candidate's Big Five traits against an ideal profile.

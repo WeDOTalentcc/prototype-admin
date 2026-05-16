@@ -22,6 +22,7 @@ from app.shared.services.model_drift_service import (
     DriftStatus,
     model_drift_service,
 )
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -91,7 +92,7 @@ async def run_drift_batch(
     notify_user_id: str | None = Query(None, description="ID do usuário que receberá alertas"),
     _current_user: User = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
-) -> DriftBatchResponse:
+company_id: str = Depends(require_company_id)) -> DriftBatchResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Executa drift check para todas as empresas ativas em batch.
@@ -116,8 +117,8 @@ async def run_drift_batch(
 async def get_drift_status(
     company_id: UUID = Query(..., description="UUID da empresa"),
     db: AsyncSession = Depends(get_db),
-) -> DriftStatusResponse:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))) -> DriftStatusResponse:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Retorna o status de drift para a empresa indicada.
 

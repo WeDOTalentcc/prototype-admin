@@ -16,6 +16,7 @@ from app.models.interview import Interview, InterviewFeedback
 from app.domains.analytics.services.activity_service import ActivityService, get_activity_service
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = get_masked_logger(__name__)
 
@@ -76,8 +77,8 @@ async def schedule_interview(
     repo: InterviewRepository = Depends(get_interview_repo),
     audit_svc: AuditService = Depends(get_audit_service),
     activity_svc: ActivityService = Depends(get_activity_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Schedule a new interview with automatic Microsoft Calendar integration.
     """
@@ -254,8 +255,8 @@ async def list_interviews(
     candidate_id: str | None = Query(None, description="Filter by candidate ID"),
     limit: int = Query(50, ge=1, le=100),
     repo: InterviewRepository = Depends(get_interview_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     List interviews with optional filters.
     """
@@ -327,8 +328,8 @@ async def cancel_interview(
     interview_id: str,
     cancellation_message: str | None = None,
     repo: InterviewRepository = Depends(get_interview_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Cancel a scheduled interview.
     """
@@ -375,7 +376,7 @@ async def complete_interview(
     interview_id: str,
     request: CompleteInterviewRequest,
     repo: InterviewRepository = Depends(get_interview_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Mark an interview as completed.
@@ -423,8 +424,8 @@ async def reschedule_interview(
     interview_id: str,
     request: RescheduleInterviewRequest,
     repo: InterviewRepository = Depends(get_interview_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Reschedule an existing interview.
     """
@@ -475,8 +476,8 @@ async def reschedule_interview(
 
 
 @router.post("/interviews/check-availability", response_model=dict)
-async def check_availability(request: CheckAvailabilityRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def check_availability(request: CheckAvailabilityRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Check interviewer availability for a specific date.
     """
@@ -505,8 +506,8 @@ async def submit_interview_feedback(
     interview_id: str,
     feedback: InterviewFeedbackRequest,
     repo: InterviewRepository = Depends(get_interview_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Submit feedback for a completed interview.
     """
@@ -582,8 +583,8 @@ class ScheduleFromPromptRequest(BaseModel):
 
 
 @router.post("/interviews/generate-email-template", response_model=dict)
-async def generate_email_template(request: GenerateEmailTemplateRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def generate_email_template(request: GenerateEmailTemplateRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Generate interview invitation email template using LIA.
     AI-first approach for email generation.
@@ -634,8 +635,8 @@ Retorne APENAS o corpo do email (sem assunto), formatado em HTML simples.
 async def schedule_from_prompt(
     request: ScheduleFromPromptRequest,
     repo: InterviewRepository = Depends(get_interview_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Schedule interview using natural language prompt.
     Parses: "Agendar para amanhã às 14h comigo"
@@ -837,8 +838,8 @@ async def get_shortlisted_candidate_ids(
     project_id: str | None = Query(None, description="Project/Vacancy ID for project-specific scopes"),
     since_date: str | None = Query(None, description="Filter interviews since this date (ISO format)"),
     repo: InterviewRepository = Depends(get_interview_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get candidate IDs that have been shortlisted (have interview records).
 
@@ -885,7 +886,7 @@ async def get_shortlisted_candidate_ids(
 async def get_interview_stages(
     request: Request,
     repo: InterviewRepository = Depends(get_interview_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get the company's configured recruitment stages that can be used for interviews.
@@ -942,7 +943,7 @@ async def upload_recording(
     request_obj: Request,
     background_tasks: BackgroundTasks,
     repo: InterviewRepository = Depends(get_interview_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Attach a recording URL to an interview and optionally trigger transcription.
@@ -999,7 +1000,7 @@ async def transcribe_interview(
     request_obj: Request,
     background_tasks: BackgroundTasks,
     repo: InterviewRepository = Depends(get_interview_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Trigger transcription for an interview that already has a recording URL.
@@ -1056,7 +1057,7 @@ async def get_interview_transcript(
     interview_id: str,
     request_obj: Request,
     repo: InterviewRepository = Depends(get_interview_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get the transcript for an interview.

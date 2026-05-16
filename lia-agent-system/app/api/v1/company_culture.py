@@ -56,6 +56,7 @@ from app.schemas.company_culture import (
     CultureAnalysisResult,
 )
 from app.shared.services.culture_analyzer_service import culture_analyzer_service
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -184,7 +185,7 @@ async def start_culture_analysis(
     background_tasks: BackgroundTasks,
     repo: CompanyCultureRepository = Depends(get_company_culture_repo),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Start automatic culture profile analysis for a company website.
 
@@ -252,7 +253,7 @@ async def start_culture_analysis(
 async def analyze_culture_direct(
     request: CultureAnalysisDirectRequest,
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Direct culture analysis that returns results immediately without requiring
     company_id to exist in database. Useful for onboarding new companies.
@@ -439,7 +440,7 @@ async def get_analysis_status(
     job_id: uuid.UUID,
     repo: CompanyCultureRepository = Depends(get_company_culture_repo),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Get the status of a culture analysis job.
 
@@ -470,7 +471,7 @@ async def get_culture_profile(
     company_id: uuid.UUID,
     repo: CompanyCultureRepository = Depends(get_company_culture_repo),
     current_user: User = Depends(get_current_user_or_demo),
-):
+_company_gate: str = Depends(require_company_id)):
     """
     Phase H — multi-tenancy: company_id from URL MUST match JWT (404 on mismatch).
     
@@ -505,7 +506,7 @@ async def update_culture_profile(
     data: CompanyCultureProfileUpdate,
     repo: CompanyCultureRepository = Depends(get_company_culture_repo),
     current_user: User = Depends(get_current_user_or_demo),
-):
+_company_gate: str = Depends(require_company_id)):
     """
     Phase H — multi-tenancy: company_id from URL MUST match JWT (404 on mismatch).
     
@@ -539,7 +540,7 @@ async def delete_culture_profile(
     company_id: uuid.UUID,
     repo: CompanyCultureRepository = Depends(get_company_culture_repo),
     current_user: User = Depends(get_current_user_or_demo),
-):
+_company_gate: str = Depends(require_company_id)):
     """
     Phase H — multi-tenancy: company_id from URL MUST match JWT (404 on mismatch).
     
@@ -571,7 +572,7 @@ async def list_culture_profiles(
     limit: int = Query(50, ge=1, le=100),
     repo: CompanyCultureRepository = Depends(get_company_culture_repo),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """
     List culture profiles for the caller's company.
 
@@ -598,7 +599,7 @@ async def calculate_culture_match(
     candidate_profile: dict,
     repo: CompanyCultureRepository = Depends(get_company_culture_repo),
     current_user: User = Depends(get_current_user_or_demo),
-):
+_company_gate: str = Depends(require_company_id)):
     """
     Phase H — multi-tenancy: company_id from URL MUST match JWT (404 on mismatch).
     
@@ -723,7 +724,7 @@ async def _require_profile_in_tenant(
 async def enrich_company_profile(
     data: CompanyEnrichRequest,
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """Enrich company profile with LinkedIn and Glassdoor data via Apify actors.
 
     Task #1029 — explicit tenant gate via ``_require_company_id``. The
@@ -791,7 +792,7 @@ async def auto_enrich_company(
     profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
     cp_repo: CultureProfileRepository = Depends(get_culture_profile_repo),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """Automatically enrich company profile after wizard submission.
 
     Task #1029 — explicit tenant gate via ``_require_profile_in_tenant``:
@@ -986,7 +987,7 @@ async def generate_evp(
     profile_id: uuid.UUID,
     profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """Generate EVP (Employee Value Proposition) analysis using LLM.
 
     Task #1029 — explicit tenant gate via ``_require_profile_in_tenant``:
@@ -1101,7 +1102,7 @@ REGRAS:
 async def analyze_company_culture(
     data: LegacyCultureAnalysisRequest,
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """Analyze company website and extract culture information using AI.
 
     Task #1029 — explicit tenant gate via ``_require_company_id``. Even

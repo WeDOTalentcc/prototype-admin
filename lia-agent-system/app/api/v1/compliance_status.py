@@ -15,6 +15,7 @@ from app.shared.compliance.fairness_guard import (
     IMPLICIT_BIAS_TERMS_EN,
     FairnessGuard,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,7 @@ router = APIRouter(prefix="/compliance", tags=["compliance-status"])
 @router.get("/status")
 async def get_compliance_status(
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     guard = FairnessGuard()
 

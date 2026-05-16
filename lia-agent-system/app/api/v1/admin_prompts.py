@@ -14,6 +14,7 @@ from pydantic import BaseModel
 from app.auth.dependencies import require_admin
 from app.auth.models import User
 from app.shared.services.prompt_version_registry import prompt_version_registry
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter(prefix="/admin/prompts", tags=["admin-prompts"])
 logger = logging.getLogger(__name__)
@@ -60,7 +61,7 @@ def _to_response(entry: dict) -> PromptVersionResponse:
 @router.get("/versions", response_model=PromptVersionListResponse)
 async def list_all_versions(
     current_user: User = Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """
     Lista todos os prompts registrados no PromptVersionRegistry.
@@ -78,7 +79,7 @@ async def list_all_versions(
 async def list_versions_by_name(
     name: str,
     current_user: User = Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """
     Lista todas as versões registradas para um nome de prompt específico.

@@ -10,6 +10,7 @@ from app.core.database import get_db
 from app.domains.recruiter_assistant.services.pipeline_service import pipeline_service
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger
+from app.shared.security.require_company_id import require_company_id
 
 logger = get_masked_logger(__name__)
 
@@ -25,9 +26,9 @@ class PipelineActionRequest(BaseModel):
 async def get_stale_candidates(
     stale_days: int = Query(default=3, ge=1, le=30, description="Days of inactivity to consider stale"),
     limit: int = Query(default=50, ge=1, le=100, description="Maximum candidates to return"),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get candidates that have been inactive for X days.
     
@@ -50,8 +51,8 @@ async def execute_pipeline_action(
     request: PipelineActionRequest,
     db: AsyncSession = Depends(get_db),
     audit_svc: AuditService = Depends(get_audit_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Execute a pipeline action on a candidate.
     

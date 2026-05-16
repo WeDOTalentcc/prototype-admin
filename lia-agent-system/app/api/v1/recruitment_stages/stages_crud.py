@@ -26,6 +26,7 @@ from ._shared import (
     SubStatusRepository,
     User,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +39,7 @@ async def list_stages(
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
     sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
-):
+company_id: str = Depends(require_company_id)):
     """
     List all recruitment stages for the authenticated user's company.
     Returns stages with their sub-statuses.
@@ -71,7 +72,7 @@ async def create_stage(
     stage: StageCreate,
     current_user: User = Depends(require_admin_or_recruiter),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
-):
+company_id: str = Depends(require_company_id)):
     """Create a new recruitment stage for the authenticated user's company."""
     try:
         effective_company_id = get_user_company_id(current_user)
@@ -107,7 +108,7 @@ async def update_stage(
     stage: StageUpdate,
     current_user: User = Depends(require_admin_or_recruiter),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update an existing recruitment stage. Validates resource ownership."""
     try:
@@ -140,7 +141,7 @@ async def delete_stage(
     hard_delete: bool = Query(default=False),
     current_user: User = Depends(require_admin_or_recruiter),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Delete a recruitment stage. Validates resource ownership.
@@ -175,7 +176,7 @@ async def update_stage_config(
     config: StageConfigUpdate,
     current_user: User = Depends(require_admin_or_recruiter),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update stage configuration (action_behavior, default_channel, SLA)."""
     try:
@@ -210,15 +211,15 @@ async def update_stage_config(
 
 
 @router.get("/catalog", response_model=None)
-async def get_stage_catalog():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_stage_catalog(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get the standard stage catalog for adding new columns."""
     return {"catalog": STANDARD_STAGE_CATALOG, "total": len(STANDARD_STAGE_CATALOG)}
 
 
 @router.get("/stage-catalog", summary="Get standard stage catalog", response_model=None)
-async def get_standard_stage_catalog():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_standard_stage_catalog(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Returns the standard stage catalog with all available pipeline columns.
 
@@ -242,8 +243,8 @@ async def get_standard_stage_catalog():
 
 
 @router.get("/defaults", response_model=None)
-async def get_defaults():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_defaults(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get default stage configurations.
     Useful for reference and setting up new companies.
@@ -270,7 +271,7 @@ async def inline_edit_stage(
     payload: InlineStageEdit,
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         stage = await stage_repo.get_by_id_str(stage_id)
@@ -318,7 +319,7 @@ async def remove_custom_stage(
     stage_id: str,
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         stage = await stage_repo.get_by_id_str(stage_id)
@@ -349,7 +350,7 @@ async def reorder_stages(
     payload: StageReorderRequest,
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         items = [{"stage_id": item.stage_id, "new_order": item.new_order} for item in payload.stages]
@@ -365,7 +366,7 @@ async def infer_stage_behavior(
     request: InferBehaviorRequest,
     method: str = Query(default="auto", regex="^(keyword|llm|auto)$"),
     current_user: User = Depends(get_current_active_user),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Infer action_behavior for a custom stage name."""
     try:

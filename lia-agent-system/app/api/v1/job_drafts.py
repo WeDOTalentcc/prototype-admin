@@ -16,6 +16,7 @@ from app.auth.models import User
 from app.core.database import get_db
 from app.models.job_draft import DraftFieldHistory, JobDraft, JobDraftStatus
 from app.models.job_vacancy import JobVacancy
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -186,8 +187,8 @@ async def list_job_drafts(
     page: int = Query(1, ge=1, description="Page number"),
     page_size: int = Query(20, ge=1, le=100, description="Items per page"),
     current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
     """
     List all job drafts for the user's company with pagination and optional status filter.
     """
@@ -236,8 +237,8 @@ async def list_job_drafts(
 async def get_job_draft(
     draft_id: UUID,
     current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get a specific job draft with all details.
@@ -260,8 +261,8 @@ async def get_job_draft_history(
     draft_id: UUID,
     field_name: str | None = Query(None, description="Filter by field name"),
     current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get the field change history for a job draft.
@@ -310,8 +311,8 @@ async def get_job_draft_history(
 async def create_job_draft(
     data: JobDraftCreate,
     current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
     """
     Create a new job draft from raw input text.
     """
@@ -340,8 +341,8 @@ async def update_job_draft(
     draft_id: UUID,
     data: JobDraftUpdate,
     current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Partially update a job draft's fields.
@@ -419,8 +420,8 @@ async def update_job_draft(
 async def delete_job_draft(
     draft_id: UUID,
     current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Soft delete a job draft by setting its status to CANCELLED.
@@ -454,8 +455,8 @@ async def publish_job_draft(
     draft_id: UUID,
     data: PublishDraftRequest | None = None,
     current_user: User = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Publish a draft to create a JobVacancy.

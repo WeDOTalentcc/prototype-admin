@@ -44,6 +44,7 @@ from app.shared.services.tool_executor_service import (
     ToolExecutionRequest,
     tool_executor_service,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -99,8 +100,8 @@ class ExecuteToolResponse(BaseModel):
 @router.post("/process", response_model=OrchestratorResponse)
 async def process_request(
     request: OrchestratorRequest,
-    orch: Orchestrator = Depends(get_orchestrator)
-):
+    orch: Orchestrator = Depends(get_orchestrator), 
+company_id: str = Depends(require_company_id)):
     """
     Process user request through orchestrator.
     
@@ -137,8 +138,8 @@ async def process_request(
 @router.get("/conversation/{conversation_id}", response_model=None)
 async def get_conversation(
     conversation_id: str,
-    orch: Orchestrator = Depends(get_orchestrator)
-):
+    orch: Orchestrator = Depends(get_orchestrator), 
+company_id: str = Depends(require_company_id)):
     """Get conversation state by ID."""
     state = orch.get_conversation_state(conversation_id)
     
@@ -149,7 +150,7 @@ async def get_conversation(
 
 
 @router.get("/metrics", response_model=None)
-async def get_metrics(orch: Orchestrator = Depends(get_orchestrator)):
+async def get_metrics(orch: Orchestrator = Depends(get_orchestrator), company_id: str = Depends(require_company_id)):
     """Get orchestrator metrics for observability."""
     return orch.get_metrics()
 
@@ -157,7 +158,7 @@ async def get_metrics(orch: Orchestrator = Depends(get_orchestrator)):
 @router.get("/health", response_model=None)
 async def health_check(
     llm_svc: LLMService = Depends(get_llm_service),
-):
+company_id: str = Depends(require_company_id)):
     """Health check endpoint with LLM validation."""
     import os
 
@@ -191,7 +192,7 @@ async def health_check(
 
 
 @router.post("/execute-tool", response_model=ExecuteToolResponse)
-async def execute_tool(request: ExecuteToolRequest):
+async def execute_tool(request: ExecuteToolRequest, company_id: str = Depends(require_company_id)):
     """
     Execute a tool via the orchestrator.
     
@@ -238,8 +239,8 @@ async def execute_tool(request: ExecuteToolRequest):
 
 @router.get("/tools", response_model=None)
 async def get_available_tools(
-    agent_type: str | None = None
-):
+    agent_type: str | None = None, 
+company_id: str = Depends(require_company_id)):
     """
     Get list of available tools.
     

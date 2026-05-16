@@ -22,6 +22,7 @@ from app.domains.job_management.dependencies import get_job_vacancy_crud_repo
 from app.domains.integrations_hub.services.rails_adapter import RailsAdapter, RAILS_ENABLED
 from app.domains.integrations_hub.services.rails_adapter_dependency import get_rails_adapter
 from app.shared.rails_migration.deprecation import enforce_job_vacancies_deprecation
+from app.shared.security.require_company_id import require_company_id
 
 # MIGRATION_PLAN item 7.1 — Python CRUD deprecated in favor of Rails (ats-api-copia).
 #
@@ -147,8 +148,8 @@ class FindJobResponse(BaseModel):
 async def finalize_job_vacancy(
     request: FinalizeJobVacancyRequest,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
-    current_user: User = Depends(get_current_active_user)
-):
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
     """Finalize job vacancy creation from conversational flow."""
     try:
         company_id = get_user_company_id(current_user)
@@ -222,8 +223,8 @@ async def search_job_vacancies(
     page: int = Query(1, ge=1),
     page_size: int = Query(10, ge=1, le=50),
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     """Search job vacancies by title or job_id."""
     try:
         company_id = get_user_company_id(current_user)
@@ -285,8 +286,8 @@ class ArchetypesResponse(BaseModel):
 @router.get("/job-vacancies/archetypes", response_model=ArchetypesResponse)
 async def get_archetypes(
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     """Get completed job vacancies with hired candidates for archetype search."""
     try:
         company_id = get_user_company_id(current_user)
@@ -343,8 +344,8 @@ class FindJobRequest(BaseModel):
 async def find_job_by_identifier(
     request: FindJobRequest,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     """Find a job by ID, job_id code, or title."""
     from app.domains.job_management.services.job_clone_service import job_clone_service
 
@@ -383,7 +384,7 @@ async def get_job_vacancy(
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo),
     rails_adapter: RailsAdapter = Depends(get_rails_adapter),
-):
+company_id: str = Depends(require_company_id)):
     """Get job vacancy by ID. Accepts UUID (local) or integer string (Rails bigint).
     When RAILS_API_URL is configured and the ID looks like a Rails bigint, queries Rails first.
     Falls back to local DB with company/visibility authorization when Rails is disabled or ID is a UUID.
@@ -494,7 +495,7 @@ async def list_job_vacancies(
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo),
     rails_adapter: RailsAdapter = Depends(get_rails_adapter),
-):
+company_id: str = Depends(require_company_id)):
     """List job vacancies. When RAILS_API_URL is configured, tries Rails first then local DB."""
     try:
         # Only query Rails when explicitly enabled — never let the adapter's own DB fallback
@@ -672,7 +673,7 @@ async def create_job_vacancy(
     current_user: User = Depends(get_current_user_or_demo),
     _trial_check: None = Depends(require_active_subscription_or_demo),
     _plan_check: None = Depends(check_active_jobs_limit_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """Create a new job vacancy directly (not via conversation)."""
     try:
         company_id = get_user_company_id(current_user)
@@ -764,8 +765,8 @@ async def update_job_vacancy(
     job_vacancy_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     job_data: JobVacancyUpdate = ...,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     """Update an existing job vacancy."""
     try:
         logger.info(f"Updating job vacancy: {job_vacancy_id}")
@@ -851,8 +852,8 @@ async def update_job_vacancy(
 async def delete_job_vacancy(
     job_vacancy_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
-    current_user: User = Depends(get_current_active_user)
-):
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
     """Delete a job vacancy (soft delete - sets status to Arquivada)."""
     try:
         logger.info(f"Deleting job vacancy: {job_vacancy_id}")
@@ -899,8 +900,8 @@ async def update_job_vacancy_status(
     job_vacancy_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     status: str = ...,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
-    current_user: User = Depends(get_current_active_user)
-):
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
     """Update job vacancy status."""
     try:
         # Phase C.1 — consolidate with _shared.VALID_JOB_STATUSES (was drift).
@@ -985,8 +986,8 @@ async def duplicate_job(
     job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     request: DuplicateJobRequest = ...,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     """Duplicate a job vacancy with all its data."""
     from app.domains.job_management.services.job_clone_service import job_clone_service
 
@@ -1026,8 +1027,8 @@ async def clone_from_template(
     job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     request: CloneFromTemplateRequest = ...,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     """Create a new job using an existing job as a template (no candidates)."""
     from app.domains.job_management.services.job_clone_service import job_clone_service
 
@@ -1062,9 +1063,9 @@ async def clone_from_template(
 @router.get("/job-vacancies/{job_id}/clone-summary", response_model=CloneSummaryResponse)
 async def get_clone_summary(
     job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
-    repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get a summary of a job for displaying before cloning."""
     from app.domains.job_management.services.job_clone_service import job_clone_service
 

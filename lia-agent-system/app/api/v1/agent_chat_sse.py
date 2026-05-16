@@ -46,6 +46,8 @@ from app.domains.credits.services.token_budget_service import (
     get_plan_for_company,
     increment_usage,
 )
+from fastapi import Depends
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -166,8 +168,8 @@ async def sse_chat_action(
     req: SSEActionRequest,
     request: Request,
     authorization: str = Header(default=""),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     REST endpoint for HITL approval actions when using SSE transport.
 
@@ -205,8 +207,8 @@ async def sse_chat_stream(
     request: Request,
     authorization: str = Header(default=""),
     last_event_id: str = Header(default="", alias="Last-Event-ID"),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     SSE streaming endpoint for agent chat.
 

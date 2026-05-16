@@ -42,6 +42,7 @@ from app.shared.services.lgpd_cleanup_service import (
     schedule_deletion_for_candidate,
 )
 from app.shared.tenant_guard import get_verified_company_id
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +53,7 @@ router = APIRouter(prefix="/lgpd", tags=["lgpd-compliance"])
 async def get_lgpd_stats(
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get aggregated LGPD compliance statistics for the company."""
     try:
@@ -84,7 +85,7 @@ async def list_dpo_entries(
     offset: int = Query(0, ge=0),
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List all DPO registry entries (admin view)."""
     try:
@@ -105,7 +106,7 @@ async def get_dpo_for_company(
     target_company_id: str,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get DPO registry entry for a specific company."""
     try:
@@ -128,7 +129,7 @@ async def create_dpo_registry(
     data: DPORegistryCreate,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Register or update DPO for the company."""
     try:
@@ -157,7 +158,7 @@ async def update_dpo_registry(
     data: DPORegistryUpdate,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update DPO registry for the company."""
     try:
@@ -194,7 +195,7 @@ async def list_breach_notifications(
     offset: int = Query(0, ge=0),
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List breach notifications with optional filters."""
     try:
@@ -220,7 +221,7 @@ async def get_breach_notification(
     breach_id: str,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get a specific breach notification by ID."""
     try:
@@ -244,7 +245,7 @@ async def create_breach_notification(
     data: BreachNotificationCreate,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Report a new data breach. LGPD requires ANPD notification within 48 hours."""
     try:
@@ -276,7 +277,7 @@ async def update_breach_notification(
     data: BreachNotificationUpdate,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update a breach notification."""
     try:
@@ -312,7 +313,7 @@ async def mark_anpd_notified(
     data: ANPDNotification,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Mark that ANPD has been notified about the breach (48h requirement)."""
     try:
@@ -346,7 +347,7 @@ async def mark_subjects_notified(
     data: SubjectsNotification,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Mark that affected data subjects have been notified about the breach."""
     try:
@@ -372,7 +373,7 @@ async def resolve_breach(
     data: BreachResolution,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Mark a breach as resolved."""
     try:
@@ -402,7 +403,7 @@ async def list_automated_decisions(
     offset: int = Query(0, ge=0),
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List automated decision explanations with optional filters."""
     try:
@@ -430,7 +431,7 @@ async def get_automated_decision(
     decision_id: str,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get a specific automated decision explanation by ID."""
     try:
@@ -454,7 +455,7 @@ async def create_automated_decision(
     data: AutomatedDecisionCreate,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Record an automated decision for Article 20 compliance."""
     try:
@@ -486,7 +487,7 @@ async def request_human_review(
     data: HumanReviewRequest,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Request human review of an automated decision (LGPD Article 20)."""
     try:
@@ -516,7 +517,7 @@ async def complete_human_review(
     data: HumanReviewComplete,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Complete human review of an automated decision."""
     try:
@@ -575,7 +576,7 @@ async def schedule_candidate_deletion(
     data: ScheduleDeletionRequest,
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Schedule permanent deletion of a candidate's data.
@@ -611,7 +612,7 @@ async def trigger_cleanup(
     dry_run: bool = Query(True, description="dry_run=true logs deletions without executing"),
     company_id: str = Depends(get_verified_company_id),
     _admin_user: User = Depends(require_admin),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Manually trigger the LGPD data cleanup job.
@@ -633,7 +634,7 @@ async def trigger_cleanup(
 async def pending_deletions(
     company_id: str = Depends(get_verified_company_id),
     lgpd_repo: LGPDRepository = Depends(get_lgpd_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Return count of records pending deletion (monitoring/DPO dashboard)."""
     return await get_pending_deletions_count(lgpd_repo.db)

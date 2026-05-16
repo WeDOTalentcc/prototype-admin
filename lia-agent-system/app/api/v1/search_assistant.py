@@ -22,6 +22,7 @@ from app.core.taxonomy import (
 from app.core.taxonomy import (
     JOB_TITLES_TAXONOMY as TAXONOMY_JOB_TITLES,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -312,9 +313,9 @@ async def get_search_suggestions(
     query: str = Query("", description="Texto atual da busca"),
     category: str | None = Query(None, description="Filtrar por categoria"),
     limit: int = Query(15, ge=1, le=50),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get intelligent search suggestions based on current query.
     Returns autocomplete suggestions, related terms, and best practices.
@@ -343,9 +344,9 @@ class AnalyzeRequest(BaseModel):
 @router.post("/analyze", response_model=AnalysisResponse)
 async def analyze_search(
     request: AnalyzeRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Analyze search query and provide quality feedback.
     Returns completeness score, alerts, and improvement suggestions.
@@ -375,8 +376,8 @@ async def analyze_search(
 @router.get("/synonyms", response_model=None)
 async def get_term_synonyms(
     term: str = Query(..., description="Termo para buscar sinônimos"),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get synonyms for a specific term."""
     synonyms = get_synonyms(term)
     return {"term": term, "synonyms": synonyms}
@@ -573,8 +574,8 @@ def get_predictive_suggestions(query: str, cursor_position: int | None = None) -
 async def get_autocomplete(
     query: str = Query("", description="Texto atual da busca"),
     cursor: int | None = Query(None, description="Posição do cursor"),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get predictive autocomplete suggestions as user types.
     Returns contextual suggestions based on query and cursor position.
@@ -597,8 +598,8 @@ async def get_autocomplete(
 async def get_taxonomy(
     category: str,
     search: str = Query("", description="Filtrar por texto"),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get taxonomy items for a category."""
     if category == "job_titles":
         items = []

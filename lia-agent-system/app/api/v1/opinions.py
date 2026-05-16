@@ -20,6 +20,7 @@ from app.schemas.lia_opinion import (
     LiaOpinionListResponse,
     LiaOpinionUpdate,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +70,7 @@ async def get_candidate_opinions_summary(
     candidate_id: UUID,
     repo: OpinionsRepository = Depends(get_opinions_repo),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get summary of all opinions for a candidate (for preview display)."""
     if not current_user.company_id:
@@ -124,7 +125,7 @@ async def get_candidate_opinions_history(
     candidate_id: UUID,
     repo: OpinionsRepository = Depends(get_opinions_repo),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get full history of all opinions for a candidate (including non-current versions)."""
     if not current_user.company_id:
@@ -153,7 +154,7 @@ async def list_candidate_opinions(
     page_size: int = Query(20, ge=1, le=100),
     repo: OpinionsRepository = Depends(get_opinions_repo),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List all opinions for a candidate with optional filters."""
     if not current_user.company_id:
@@ -190,7 +191,7 @@ async def get_opinion(
     opinion_id: UUID,
     repo: OpinionsRepository = Depends(get_opinions_repo),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get a specific opinion by ID."""
     if not current_user.company_id:
@@ -213,7 +214,7 @@ async def create_opinion(
     data: LiaOpinionCreate,
     repo: OpinionsRepository = Depends(get_opinions_repo),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new LIA opinion."""
     if not current_user.company_id:
@@ -304,7 +305,7 @@ async def update_opinion(
     data: LiaOpinionUpdate,
     repo: OpinionsRepository = Depends(get_opinions_repo),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update a LIA opinion (e.g., recruiter notes or override)."""
     if not current_user.company_id:
@@ -352,7 +353,7 @@ async def delete_opinion(
     opinion_id: UUID,
     repo: OpinionsRepository = Depends(get_opinions_repo),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Delete a LIA opinion (soft delete by marking as non-current)."""
     if not current_user.company_id:

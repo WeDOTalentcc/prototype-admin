@@ -40,6 +40,7 @@ from app.schemas.policy import (
     RateLimitRuleUpdate,
 )
 from app.shared.tenant_guard import get_verified_company_id
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -67,8 +68,8 @@ async def list_policies(
     is_active: bool | None = Query(None, description="Filter by active status"),
     company_id: str | None = Depends(get_verified_company_id),
     repo: PolicyRepository = Depends(get_policy_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List all policy rules (business, rate limit, escalation)."""
     try:
         business_rules = await repo.list_business_rules(
@@ -100,7 +101,7 @@ async def create_business_rule(
     company_id: str | None = Depends(get_verified_company_id),
     user_id: str | None = Depends(get_user_id_from_header),
     repo: PolicyRepository = Depends(get_policy_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new business rule."""
     try:
@@ -128,8 +129,8 @@ async def create_business_rule(
 async def get_business_rule(
     rule_id: str,
     repo: PolicyRepository = Depends(get_policy_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get a specific business rule."""
     try:
         rule_uuid = UUID(rule_id)
@@ -151,8 +152,8 @@ async def update_business_rule(
     rule_id: str,
     data: BusinessRuleUpdate,
     repo: PolicyRepository = Depends(get_policy_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update a business rule."""
     try:
         rule_uuid = UUID(rule_id)
@@ -175,8 +176,8 @@ async def update_business_rule(
 async def delete_business_rule(
     rule_id: str,
     repo: PolicyRepository = Depends(get_policy_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Delete a business rule."""
     try:
         rule_uuid = UUID(rule_id)
@@ -199,7 +200,7 @@ async def create_rate_limit_rule(
     data: RateLimitRuleCreate,
     company_id: str | None = Depends(get_verified_company_id),
     repo: PolicyRepository = Depends(get_policy_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new rate limit rule."""
     try:
@@ -227,8 +228,8 @@ async def update_rate_limit_rule(
     rule_id: str,
     data: RateLimitRuleUpdate,
     repo: PolicyRepository = Depends(get_policy_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update a rate limit rule."""
     try:
         rule_uuid = UUID(rule_id)
@@ -252,7 +253,7 @@ async def create_escalation_rule(
     data: EscalationRuleCreate,
     company_id: str | None = Depends(get_verified_company_id),
     repo: PolicyRepository = Depends(get_policy_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new escalation rule."""
     try:
@@ -281,8 +282,8 @@ async def update_escalation_rule(
     rule_id: str,
     data: EscalationRuleUpdate,
     repo: PolicyRepository = Depends(get_policy_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update an escalation rule."""
     try:
         rule_uuid = UUID(rule_id)
@@ -307,7 +308,7 @@ async def evaluate_policy(
     company_id: str | None = Depends(get_verified_company_id),
     user_id: str | None = Depends(get_user_id_from_header),
     service: PolicyEngineService = Depends(get_policy_engine_service),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Evaluate whether an action is allowed by policies."""
     try:
@@ -342,7 +343,7 @@ async def check_rate_limit(
     data: RateLimitCheckRequest,
     company_id: str | None = Depends(get_verified_company_id),
     service: PolicyEngineService = Depends(get_policy_engine_service),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Check rate limit for a specific target and action."""
     try:
@@ -364,7 +365,7 @@ async def trigger_escalation(
     data: EscalationTriggerRequest,
     company_id: str | None = Depends(get_verified_company_id),
     service: PolicyEngineService = Depends(get_policy_engine_service),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Trigger an escalation based on a rule or trigger type."""
     try:
@@ -390,8 +391,8 @@ async def apply_sector_defaults(
     sector: str = Query(..., description="Setor: tech | varejo | logistica | financeiro | saude | rpo"),
     repo: PolicyRepository = Depends(get_policy_repo),
     service: PolicyEngineService = Depends(get_policy_engine_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Persiste os defaults setoriais (Alpha 1) em CompanyHiringPolicy.
 
@@ -427,8 +428,8 @@ async def apply_sector_defaults(
 @router.post("/seed", response_model=PolicySeedResponse, summary="Seed default policies")
 async def seed_default_policies(
     service: PolicyEngineService = Depends(get_policy_engine_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Seed the database with default policy rules."""
     try:
         stats = await service.load_default_rules()
@@ -467,8 +468,8 @@ async def get_evaluation_logs(
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     company_id: str | None = Depends(get_verified_company_id),
     repo: PolicyRepository = Depends(get_policy_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get policy evaluation logs."""
     try:
         logs = await repo.list_evaluation_logs(
@@ -493,8 +494,8 @@ async def get_escalation_logs(
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     company_id: str | None = Depends(get_verified_company_id),
     repo: PolicyRepository = Depends(get_policy_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get escalation logs."""
     try:
         logs = await repo.list_escalation_logs(
@@ -516,8 +517,8 @@ async def resolve_escalation(
     resolution_notes: str | None = Query(None, description="Resolution notes"),
     user_id: str | None = Depends(get_user_id_from_header),
     repo: PolicyRepository = Depends(get_policy_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Mark an escalation as resolved."""
     try:
         log_uuid = UUID(log_id)

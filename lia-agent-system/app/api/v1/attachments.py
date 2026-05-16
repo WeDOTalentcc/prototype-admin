@@ -22,6 +22,8 @@ from app.schemas.attachment import (
     FileUploadResponse,
 )
 from app.shared.services.attachment_service import attachment_service
+from fastapi import Depends
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +76,7 @@ def get_file_category(filename: str, mime_type: str = None) -> str:
 
 
 @router.post("", response_model=AttachmentResponse, status_code=status.HTTP_201_CREATED)
-async def create_attachment(data: AttachmentCreate):
+async def create_attachment(data: AttachmentCreate, company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Create a new attachment record.
@@ -121,8 +123,8 @@ async def list_attachments(
     is_active: bool | None = Query(True, description="Filter by active status (default: True)"),
     limit: int = Query(50, ge=1, le=200, description="Max results (default: 50, max: 200)"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     List attachments with optional filters.
     
@@ -152,8 +154,8 @@ async def list_attachments(
 
 
 @router.get("/{attachment_id}", response_model=AttachmentResponse)
-async def get_attachment(attachment_id: str):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_attachment(attachment_id: str, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get a single attachment by ID.
     
@@ -183,8 +185,8 @@ async def get_attachment(attachment_id: str):
 
 
 @router.delete("/{attachment_id}", response_model=AttachmentResponse)
-async def delete_attachment(attachment_id: str):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def delete_attachment(attachment_id: str, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Soft delete an attachment (deactivate).
     
@@ -219,7 +221,7 @@ async def get_candidate_attachments(
     company_id: str = Query(..., description="Company ID (required)"),
     limit: int = Query(100, ge=1, le=500, description="Max results (default: 100, max: 500)"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     """
     Get all attachments for a specific candidate.
     
@@ -260,7 +262,7 @@ async def upload_candidate_file(
     company_id: str = Form(...),
     uploaded_by: str = Form(default="system"),
     uploaded_by_name: str = Form(default="Sistema"),
-):
+_company_gate: str = Depends(require_company_id_strict_match("form.company_id"))):
     """
     Upload a file for a candidate.
     
@@ -347,7 +349,7 @@ async def get_candidate_files(
     candidate_id: str,
     company_id: str = Query(..., description="Company ID"),
     category: str | None = Query(None, description="Filter by category"),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     """
     Get all files for a candidate with category counts.
     
@@ -403,7 +405,7 @@ async def get_candidate_files(
 async def download_candidate_file(
     candidate_id: str,
     filename: str,
-):
+company_id: str = Depends(require_company_id)):
     """
     Download a candidate file.
     
@@ -450,7 +452,7 @@ async def download_candidate_file(
 async def delete_candidate_file(
     candidate_id: str,
     attachment_id: str,
-):
+company_id: str = Depends(require_company_id)):
     """
     Delete a candidate file.
     

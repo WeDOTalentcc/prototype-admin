@@ -28,6 +28,7 @@ from app.domains.cv_screening.services.lia_score_service import get_lia_score_se
 from app.domains.job_management.repositories.job_vacancy_public_repository import JobVacancyPublicRepository
 from app.models.candidate import Candidate, VacancyCandidate
 from app.services.notification_service import NotificationType
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 router_public = APIRouter()
@@ -92,8 +93,8 @@ async def generate_public_link(
     vacancy_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     request: GeneratePublicLinkRequest = GeneratePublicLinkRequest(),
     repo: JobVacancyPublicRepository = Depends(get_job_vacancy_public_repo),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     """Generate or retrieve public sharing link for a job vacancy."""
     try:
         company_id = get_user_company_id(current_user)
@@ -146,8 +147,8 @@ async def generate_public_link(
 async def get_share_link(
     vacancy_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     repo: JobVacancyPublicRepository = Depends(get_job_vacancy_public_repo),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     """Get shareable link details for a job vacancy."""
     try:
         company_id = get_user_company_id(current_user)
@@ -196,8 +197,8 @@ async def get_share_link(
 @router_public.get("/p/{slug}", response_model=PublicVacancyResponse)
 async def get_public_vacancy(
     slug: str,
-    repo: JobVacancyPublicRepository = Depends(get_job_vacancy_public_repo)
-):
+    repo: JobVacancyPublicRepository = Depends(get_job_vacancy_public_repo), 
+company_id: str = Depends(require_company_id)):
     """Get public vacancy information by slug (no authentication required)."""
     try:
         job = await repo.get_vacancy_by_slug(slug)
@@ -294,7 +295,7 @@ async def apply_to_public_vacancy(
 ,
     cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
     lia_svc: LIAScoreService = Depends(get_lia_score_service),
-):
+company_id: str = Depends(require_company_id)):
     try:
         if lgpd_consent.lower() not in ("true", "1", "yes", "sim"):
             raise HTTPException(

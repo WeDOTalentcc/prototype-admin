@@ -19,6 +19,7 @@ from app.auth.models import User, UserRole
 from app.core.database import get_db
 from app.domains.analytics.services.weekly_digest_service import WeeklyDigestService, get_weekly_digest_service
 from app.domains.auth.repositories.user_repository import UserRepository
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +37,7 @@ async def preview_weekly_digest(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
     svc: WeeklyDigestService = Depends(get_weekly_digest_service),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     from app.domains.analytics.services.digest_formatter import (
         BellDigestFormatter,
@@ -78,7 +79,7 @@ async def send_weekly_digest(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
     svc: WeeklyDigestService = Depends(get_weekly_digest_service),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     if current_user.role != UserRole.admin and str(current_user.id) != recruiter_id:
         raise HTTPException(status_code=403, detail="Apenas administradores podem enviar digest para outros usuários")
@@ -100,7 +101,7 @@ async def send_weekly_digest_to_all(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
     svc: WeeklyDigestService = Depends(get_weekly_digest_service),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     if current_user.role != UserRole.admin:
         raise HTTPException(status_code=403, detail="Apenas administradores podem disparar digest para todos")
@@ -113,7 +114,7 @@ async def send_weekly_digest_to_all(
 async def get_weekly_digest_preference(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     user_id = str(current_user.id)
     prefs = getattr(current_user, "notification_preferences", None) or {}
@@ -127,7 +128,7 @@ async def update_weekly_digest_preference(
     body: WeeklyDigestPreferenceRequest,
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     prefs = getattr(current_user, "notification_preferences", None) or {}
     if not isinstance(prefs, dict):
@@ -166,7 +167,7 @@ async def send_daily_digest_to_all(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
     svc: WeeklyDigestService = Depends(get_weekly_digest_service),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Trigger the daily morning digest for all active recruiters.
@@ -187,7 +188,7 @@ async def send_daily_digest_to_user(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
     svc: WeeklyDigestService = Depends(get_weekly_digest_service),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Send daily digest to a specific recruiter (admin or self)."""
     if current_user.role != UserRole.admin and str(current_user.id) != recruiter_id:

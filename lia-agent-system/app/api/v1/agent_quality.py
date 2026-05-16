@@ -21,6 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.models.agent_quality_evaluation import AgentQualityEvaluation
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +65,7 @@ async def list_agent_quality_trends(
     agent_id: str | None = Query(None, description="Filtrar por agente específico"),
     days: int = Query(30, ge=1, le=365, description="Janela de análise em dias"),
     db: AsyncSession = Depends(get_db),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Retorna trend de qualidade por agente nos últimos N dias.
@@ -115,7 +116,7 @@ async def list_agent_quality_trends(
 async def get_evaluation_detail(
     evaluation_id: str,
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Retorna detalhe de uma avaliação específica pelo ID."""
     stmt = select(AgentQualityEvaluation).where(

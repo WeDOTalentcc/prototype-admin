@@ -37,6 +37,7 @@ from ._shared import (
     get_scheduling_service,
     get_whatsapp_service,
 )
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -87,8 +88,8 @@ class TriggerEventResponse(BaseModel):
     data: dict[str, Any]
 
 @router.get("/triggers", response_model=TriggersListResponse)
-async def get_automation_triggers():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_automation_triggers(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get all automation trigger configurations.
     """
@@ -109,9 +110,9 @@ async def get_automation_triggers():
 @router.post("/triggers/{trigger_id}", response_model=TriggerUpdateResponse)
 async def update_trigger(
     trigger_id: str,
-    request: UpdateTriggerRequest
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    request: UpdateTriggerRequest, 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Enable or disable an automation trigger.
     """
@@ -133,9 +134,9 @@ async def update_trigger(
 
 @router.post("/check", response_model=TriggerCheckResponse)
 async def check_and_execute_triggers(
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Manually trigger automation check.
     This will check all enabled triggers and execute actions for matching conditions.
@@ -152,8 +153,8 @@ async def check_and_execute_triggers(
 
 
 @router.get("/status", response_model=AutomationStatusResponse)
-async def get_automation_status():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_automation_status(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get automation engine status.
     """
@@ -182,9 +183,9 @@ async def get_stage_suggestions(
     to_stage: str = Query(..., description="Target stage name"),
     candidate_id: str | None = Query(None, description="Candidate ID"),
     vacancy_id: str | None = Query(None, description="Vacancy ID"),
-    company_id: str = Query(..., description="Company ID for multi-tenancy")
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    company_id: str = Query(..., description="Company ID for multi-tenancy"), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get AI-powered suggestions for automation actions based on stage transition.
     
@@ -247,7 +248,7 @@ async def execute_action(
     request: ExecuteActionRequest,
     db: AsyncSession = Depends(get_db),
     activity_svc: ActivityService = Depends(get_activity_service),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Execute a specific automation action.
@@ -467,8 +468,8 @@ async def execute_action(
 @router.post("/screen-candidate", response_model=ScreenCandidateResponse)
 async def screen_candidate(
     request: ScreenCandidateRequest,
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Execute CV screening for a candidate against a vacancy using Rubric Evaluation.
@@ -544,7 +545,7 @@ async def trigger_automation_event(
     request: TriggerEventRequest,
     db: AsyncSession = Depends(get_db),
     activity_svc: ActivityService = Depends(get_activity_service),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Trigger an automation event for agent processing.

@@ -19,6 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user
 from app.core.database import get_db
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ async def get_calibration_dashboard_v2(
     days: int = Query(30, ge=7, le=365),
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-) -> dict[str, Any]:
+company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Calibration dashboard — per-domain divergence analysis.

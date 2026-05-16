@@ -25,6 +25,7 @@ from app.shared.services.skills_catalog_service import (
     get_skills_catalog_db_service,
     get_skills_catalog_service,
 )
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 router = APIRouter(prefix="/skills-catalog", tags=["skills-catalog"])
 logger = logging.getLogger(__name__)
@@ -219,7 +220,7 @@ async def get_company_catalog(
     category: str | None = Query(None, description="Filter by category"),
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-) -> CompanyCatalogResponse:
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))) -> CompanyCatalogResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get the complete company-specific skills catalog.
@@ -258,7 +259,7 @@ async def add_skill_to_catalog(
     request: AddSkillRequest,
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-) -> AddSkillResponse:
+company_id: str = Depends(require_company_id)) -> AddSkillResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Add a new skill to the company's catalog.
@@ -300,7 +301,7 @@ async def sync_tech_stack_to_catalog(
     request: SyncTechStackRequest,
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-) -> SyncTechStackResponse:
+company_id: str = Depends(require_company_id)) -> SyncTechStackResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Sync skills from company's tech stack configuration.
@@ -339,7 +340,7 @@ async def suggest_skills_for_wizard(
     request: SuggestSkillsRequest,
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-) -> SuggestSkillsResponse:
+company_id: str = Depends(require_company_id)) -> SuggestSkillsResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get intelligent skill suggestions for the job wizard.
@@ -428,7 +429,7 @@ async def record_skill_usage(
     request: RecordSkillUsageRequest,
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-) -> RecordSkillUsageResponse:
+company_id: str = Depends(require_company_id)) -> RecordSkillUsageResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Record the usage of a skill in the job wizard.
@@ -509,8 +510,8 @@ async def get_static_skill_suggestions(
     job_title: str = Query(..., description="Job title for suggestions"),
     seniority: str | None = Query(None, description="Seniority level"),
     limit: int = Query(10, ge=1, le=20, description="Maximum number of skills"),
-) -> dict[str, Any]:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)) -> dict[str, Any]:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get skill suggestions from the static catalog only.
     
@@ -548,8 +549,8 @@ async def get_static_skill_suggestions(
 async def search_skills(
     q: str = Query(..., min_length=2, description="Search query"),
     area: str | None = Query(None, description="Filter by area"),
-) -> dict[str, Any]:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)) -> dict[str, Any]:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Search for skills in the static catalog.
     

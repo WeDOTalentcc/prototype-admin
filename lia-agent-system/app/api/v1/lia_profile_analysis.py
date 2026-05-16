@@ -17,6 +17,7 @@ from app.schemas.lia_profile_analysis import (
     LiaProfileAnalysisCreate,
     LiaProfileAnalysisResponse,
 )
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -133,8 +134,8 @@ Use hífen (-) para bullet points. Seja abrangente mas conciso."""
 
 
 @router.post("", response_model=ProfileAnalysisResponse)
-async def generate_profile_analysis(request: ProfileAnalysisRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def generate_profile_analysis(request: ProfileAnalysisRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Generate an AI-powered profile analysis for a candidate."""
     
     valid_types = ['bullet_points', 'short_paragraph', 'detailed_bullets']
@@ -171,8 +172,8 @@ async def generate_profile_analysis(request: ProfileAnalysisRequest):
 async def save_profile_analysis(
     request: LiaProfileAnalysisCreate,
     company_id: str = Query(..., description="Company ID for multi-tenancy"),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Save a generated profile analysis to the database."""
     try:
@@ -227,8 +228,8 @@ async def save_profile_analysis(
 async def get_candidate_analyses(
     candidate_id: str,
     company_id: str = Query(..., description="Company ID for multi-tenancy"),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get all saved analyses for a candidate."""
     try:
@@ -279,9 +280,9 @@ async def delete_candidate_analysis(
     candidate_id: str,
     analysis_type: str,
     company_id: str = Query(..., description="Company ID for multi-tenancy"),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Delete a specific analysis for a candidate."""
     try:
         repo = ProfileAnalysisRepository(db)

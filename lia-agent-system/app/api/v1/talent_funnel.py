@@ -11,6 +11,8 @@ from app.shared.services.es_score_drop_analyzer import es_score_drop_analyzer
 from app.shared.services.pgv_gap_analyzer import pgv_gap_analyzer
 from app.shared.services.pre_wrf_filter_service import pre_wrf_filter_service
 from app.shared.services.wrf_dynamic_k_service import wrf_dynamic_k_service
+from fastapi import Depends
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -50,8 +52,8 @@ class PreWRFRequest(BaseModel):
 
 
 @router.post("/analyze-score-drop", response_model=None)
-async def analyze_score_drop(body: ScoreDropRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def analyze_score_drop(body: ScoreDropRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     candidates = [c.model_dump() for c in body.candidates]
     result = es_score_drop_analyzer.analyze(candidates, body.qualification_level)
     return {
@@ -67,8 +69,8 @@ async def analyze_score_drop(body: ScoreDropRequest):
 
 
 @router.post("/analyze-semantic-gap", response_model=None)
-async def analyze_semantic_gap(body: GapAnalysisRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def analyze_semantic_gap(body: GapAnalysisRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     candidates = [c.model_dump() for c in body.candidates]
     result = pgv_gap_analyzer.analyze(candidates, body.qualification_level)
     return {
@@ -83,8 +85,8 @@ async def analyze_semantic_gap(body: GapAnalysisRequest):
 
 
 @router.post("/wrf-rank", response_model=None)
-async def wrf_rank(body: WRFRankRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def wrf_rank(body: WRFRankRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     candidates = [c.model_dump() for c in body.candidates]
     ranked = wrf_dynamic_k_service.rank_candidates(candidates, body.qualification_level)
     k = wrf_dynamic_k_service.get_k(body.qualification_level)
@@ -98,14 +100,14 @@ async def wrf_rank(body: WRFRankRequest):
 
 
 @router.get("/wrf-config", response_model=None)
-async def get_wrf_config():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_wrf_config(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     return wrf_dynamic_k_service.get_config()
 
 
 @router.post("/pre-wrf-filter", response_model=None)
-async def pre_wrf_filter(body: PreWRFRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def pre_wrf_filter(body: PreWRFRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     es_candidates = [c.model_dump() for c in body.es_candidates]
     pgv_candidates = [c.model_dump() for c in body.pgv_candidates]
     result = pre_wrf_filter_service.orchestrate(es_candidates, pgv_candidates, body.qualification_level)

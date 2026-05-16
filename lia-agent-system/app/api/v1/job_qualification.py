@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.job_management.services.job_qualification_service import job_qualification_service
 from app.models.job_vacancy import JobVacancy
+from app.shared.security.require_company_id import require_company_id
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
 # Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
@@ -56,8 +57,8 @@ class OverrideQualificationRequest(BaseModel):
 
 
 @router.post("/classify", response_model=ClassifyJobResponse)
-async def classify_job(body: ClassifyJobRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def classify_job(body: ClassifyJobRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Classify a job vacancy qualification level using AI (without saving)."""
     result = await job_qualification_service.classify(
         title=body.title,
@@ -73,8 +74,8 @@ async def classify_job(body: ClassifyJobRequest):
 
 
 @router.post("/{job_id}/classify", response_model=JobQualificationResponse)
-async def classify_and_save(job_id: str, db: AsyncSession = Depends(get_db)):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def classify_and_save(job_id: str, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Classify a job vacancy and save the result to the database."""
     result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
     job = result.scalar_one_or_none()
@@ -119,8 +120,8 @@ async def classify_and_save(job_id: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.get("/{job_id}", response_model=JobQualificationResponse)
-async def get_qualification(job_id: str, db: AsyncSession = Depends(get_db)):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_qualification(job_id: str, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get the current qualification level of a job vacancy."""
     result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
     job = result.scalar_one_or_none()
@@ -138,8 +139,8 @@ async def get_qualification(job_id: str, db: AsyncSession = Depends(get_db)):
 
 
 @router.put("/{job_id}/override", response_model=JobQualificationResponse)
-async def override_qualification(job_id: str, body: OverrideQualificationRequest, db: AsyncSession = Depends(get_db)):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def override_qualification(job_id: str, body: OverrideQualificationRequest, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Manually override the qualification level of a job vacancy."""
     result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
     job = result.scalar_one_or_none()

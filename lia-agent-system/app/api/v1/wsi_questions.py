@@ -17,6 +17,7 @@ from pydantic import BaseModel, Field, validator
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.compliance.fairness_guard_middleware import check_fairness
 from app.domains.cv_screening.dependencies import WSIService, get_wsi_service
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter(prefix="/wsi", tags=["WSI Questions"])
 logger = logging.getLogger(__name__)
@@ -174,7 +175,7 @@ async def generate_wsi_questions(
     request: GenerateQuestionsRequest,
     audit_svc: AuditService = Depends(get_audit_service),
     wsi_svc: WSIService = Depends(get_wsi_service),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Generate WSI questions based on job competencies using Gemini LLM.
@@ -278,8 +279,8 @@ async def generate_wsi_questions(
 async def regenerate_wsi_questions(
     request: RegenerateQuestionsRequest,
     wsi_svc: WSIService = Depends(get_wsi_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Regenerate WSI questions when competencies change.
 
@@ -376,8 +377,8 @@ async def regenerate_wsi_questions(
 
 
 @router.get("/question-templates", response_model=None)
-async def get_question_templates():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_question_templates(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get available question templates for reference.
     """

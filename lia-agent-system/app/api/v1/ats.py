@@ -25,6 +25,7 @@ from app.models.ats_integration import (
 )
 from app.shared.encryption import encrypt_value, decrypt_value
 from app.domains.ats_integration.services.ats_sync_service import ATSSyncService, get_ats_sync_service
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +66,7 @@ async def create_ats_connection(
     request: CreateATSConnectionRequest,
     repo: ATSRepository = Depends(get_ats_repo),
     current_user=Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Create a new ATS connection (Gupy, Pandapé, or Merge).
     """
@@ -125,7 +126,7 @@ async def create_ats_connection(
 async def list_ats_connections(
     repo: ATSRepository = Depends(get_ats_repo),
     current_user=Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """
     List ATS connections for the current user's company.
     """
@@ -158,8 +159,8 @@ async def list_ats_connections(
 async def test_ats_connection(
     request: TestATSConnectionRequest,
     current_user=Depends(get_current_user_or_demo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Test ATS connection credentials without saving. Requires authentication.
     """
@@ -252,7 +253,7 @@ async def save_field_mappings(
     request: SaveFieldMappingsRequest,
     repo: ATSRepository = Depends(get_ats_repo),
     current_user=Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Save field mappings for an ATS connection.
     """
@@ -293,7 +294,7 @@ async def get_field_mappings(
     connection_id: str,
     repo: ATSRepository = Depends(get_ats_repo),
     current_user=Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Get field mappings for an ATS connection.
     """
@@ -324,7 +325,7 @@ async def list_remote_jobs(
     size: int = 50,
     repo: ATSRepository = Depends(get_ats_repo),
     current_user=Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """Phase C.3 — list jobs available in the connected ATS for selective import.
 
     Validates the connection belongs to the caller's company (404 on mismatch
@@ -416,7 +417,7 @@ async def trigger_ats_sync(
     repo: ATSRepository = Depends(get_ats_repo),
     current_user=Depends(get_current_user_or_demo),
     sync_service: ATSSyncService = Depends(get_ats_sync_service),
-):
+company_id: str = Depends(require_company_id)):
     """
     Manually trigger synchronization for an ATS connection.
     """
@@ -571,8 +572,8 @@ async def list_sync_jobs(
     status: str | None = Query(None),
     limit: int = Query(20, ge=1, le=100),
     repo: ATSRepository = Depends(get_ats_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     List ATS synchronization jobs.
     """
@@ -613,8 +614,8 @@ async def list_ats_candidates(
     connection_id: str | None = Query(None),
     limit: int = Query(50, ge=1, le=200),
     repo: ATSRepository = Depends(get_ats_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     List candidates imported from ATS platforms.
     """
@@ -1073,8 +1074,8 @@ async def list_webhook_logs(
     processed: bool | None = Query(None),
     limit: int = Query(50, ge=1, le=200),
     repo: ATSRepository = Depends(get_ats_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     List webhook logs from ATS platforms.
     """

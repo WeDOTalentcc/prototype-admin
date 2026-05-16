@@ -22,6 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.candidates.repositories.short_list_repository import ShortListRepository
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -109,8 +110,8 @@ async def create_short_list(
     company_id: str = Query(..., description="Company ID (multi-tenant)"),
     user_id: str = Query("system"),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Cria uma short list para uma vaga."""
     repo = ShortListRepository(db)
     record = await repo.create(
@@ -128,8 +129,8 @@ async def list_short_lists(
     company_id: str = Query(...),
     job_id: str | None = Query(None, description="Filtrar por vaga"),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Lista short lists da empresa, opcionalmente filtradas por vaga."""
     repo = ShortListRepository(db)
     records = await repo.list_for_company(company_id, job_id=job_id)
@@ -141,8 +142,8 @@ async def get_short_list(
     list_id: UUID,
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Retorna uma short list pelo ID."""
     repo = ShortListRepository(db)
     record = await repo.get_by_id(list_id, company_id)
@@ -157,8 +158,8 @@ async def add_candidate(
     body: ShortListCandidateAdd,
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Adiciona um candidato à short list."""
     repo = ShortListRepository(db)
     record = await repo.get_by_id(list_id, company_id)
@@ -185,8 +186,8 @@ async def remove_candidate(
     candidate_id: str,
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Remove um candidato da short list."""
     repo = ShortListRepository(db)
     record = await repo.get_by_id(list_id, company_id)

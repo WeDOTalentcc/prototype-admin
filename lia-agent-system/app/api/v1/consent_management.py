@@ -30,6 +30,7 @@ from app.schemas.consent_management import (
     ConsentVersionResponse,
 )
 from app.shared.tenant_guard import get_verified_company_id
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +66,7 @@ async def create_consent_version(
     data: ConsentVersionCreate,
     company_id: str = Depends(get_verified_company_id),
     repo: ConsentRepository = Depends(get_consent_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new consent version. Marks previous versions of the same type as not current."""
     try:
@@ -119,7 +120,7 @@ async def list_consent_versions(
     offset: int = Query(0, ge=0),
     company_id: str = Depends(get_verified_company_id),
     repo: ConsentRepository = Depends(get_consent_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List consent versions with optional filters and pagination."""
     try:
@@ -153,7 +154,7 @@ async def get_current_consent_version(
     consent_type: str,
     company_id: str = Depends(get_verified_company_id),
     repo: ConsentRepository = Depends(get_consent_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get the current (active) consent version for a specific type."""
     try:
@@ -184,7 +185,7 @@ async def get_consent_version(
     version_id: str,
     company_id: str = Depends(get_verified_company_id),
     repo: ConsentRepository = Depends(get_consent_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get a specific consent version by ID."""
     try:
@@ -216,7 +217,7 @@ async def create_consent_event(
     data: ConsentEventCreate,
     company_id: str = Depends(get_verified_company_id),
     repo: ConsentRepository = Depends(get_consent_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Register a consent event (grant, revoke, renew, expire). Public endpoint for WhatsApp integration."""
     try:
@@ -287,7 +288,7 @@ async def list_consent_events(
     offset: int = Query(0, ge=0),
     company_id: str = Depends(get_verified_company_id),
     repo: ConsentRepository = Depends(get_consent_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List consent events with optional filters and pagination."""
     try:
@@ -328,7 +329,7 @@ async def get_subject_consent_history(
     subject_identifier: str,
     company_id: str = Depends(get_verified_company_id),
     repo: ConsentRepository = Depends(get_consent_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get complete consent history for a data subject."""
     try:
@@ -405,7 +406,7 @@ async def revoke_consent(
     data: ConsentRevokeRequest,
     company_id: str = Depends(get_verified_company_id),
     repo: ConsentRepository = Depends(get_consent_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Revoke consent for a data subject. Creates a revocation event."""
     try:
@@ -478,7 +479,7 @@ async def revoke_consent(
 async def get_consent_stats(
     company_id: str = Depends(get_verified_company_id),
     repo: ConsentRepository = Depends(get_consent_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get aggregated consent statistics for the company."""
     try:

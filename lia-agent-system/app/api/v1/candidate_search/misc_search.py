@@ -19,6 +19,7 @@ from ._shared import (
     logger,
     search_analytics_service,
 )
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 
@@ -46,8 +47,8 @@ async def search_from_cv(
 ,
     cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
     pearch_svc: PearchService = Depends(get_pearch_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Upload a CV file and search for similar candidates.
     
@@ -220,8 +221,8 @@ class AnalyzeSearchResponse(BaseModel):
 
 
 @router.post("/analyze", response_model=AnalyzeSearchResponse)
-async def analyze_search_results(request: AnalyzeSearchRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def analyze_search_results(request: AnalyzeSearchRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Analisa resultados de busca e retorna métricas proativas.
     
@@ -295,8 +296,8 @@ class EnhancePromptResponse(BaseModel):
 
 
 @router.post("/enhance-prompt", response_model=EnhancePromptResponse)
-async def enhance_search_prompt(request: EnhancePromptRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def enhance_search_prompt(request: EnhancePromptRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Analisa e aprimora um prompt de busca de candidatos.
     

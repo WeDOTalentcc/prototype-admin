@@ -25,6 +25,7 @@ from app.shared.tenant_guard import get_verified_company_id
 from typing import TYPE_CHECKING
 
 from app.domains.integrations_hub.services.rails_adapter import RailsAdapter
+from app.shared.security.require_company_id import require_company_id
 
 if TYPE_CHECKING:
     from app.shared.services.bias_audit_service import BiasAuditReport
@@ -90,7 +91,7 @@ async def get_bias_audit(
     job_id: UUID,
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
-) -> BiasAuditReportResponse:
+_company_gate: str = Depends(require_company_id)) -> BiasAuditReportResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Retorna auditoria de adverse impact para a vaga indicada.
@@ -120,7 +121,7 @@ async def get_bias_audit_history(
     company_id: str = Depends(get_verified_company_id),
     limit: int = Query(10, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Retorna histórico de snapshots de auditoria de viés para a vaga.

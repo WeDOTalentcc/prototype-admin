@@ -32,6 +32,7 @@ from app.schemas.health_check import (
     HealthCheckVerifyRequest,
     SeedHealthCheckResponse,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +52,7 @@ FRAMEWORK_MAPPING = {
 @router.get("/summary", response_model=HealthCheckSummaryResponse, summary="Get health check summary")
 async def get_health_check_summary(
     repo: HealthCheckRepository = Depends(get_health_check_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
     """Get summary statistics for compliance health check by framework."""
     try:
@@ -154,7 +155,7 @@ async def export_health_check(
     status_filter: str | None = Query(None, alias="status", description="Filter by status"),
     format: str = Query("csv", description="Export format: csv or json"),
     repo: HealthCheckRepository = Depends(get_health_check_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
     """Export health check items as CSV or JSON file."""
     try:
@@ -212,7 +213,7 @@ async def export_health_check(
 @router.post("/seed", response_model=SeedHealthCheckResponse, summary="Seed default health check items")
 async def seed_health_check_items(
     repo: HealthCheckRepository = Depends(get_health_check_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
     """Seed default compliance health check items for all frameworks."""
     try:
@@ -231,7 +232,7 @@ async def seed_health_check_items(
 @router.post("/sync-from-library", response_model=SeedHealthCheckResponse, summary="Sync controls from library")
 async def sync_from_library(
     repo: HealthCheckRepository = Depends(get_health_check_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
     """Synchronize controls from compliance_control_library to health check items."""
     try:
@@ -251,7 +252,7 @@ async def sync_from_library(
 async def get_item_history(
     req_id: str,
     repo: HealthCheckRepository = Depends(get_health_check_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
     """Get status change history for a specific health check item."""
     try:
@@ -281,7 +282,7 @@ async def mark_item_checked(
     req_id: str,
     data: HealthCheckVerifyRequest,
     repo: HealthCheckRepository = Depends(get_health_check_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
     """Mark a health check item as verified, updating last_checked_at and related fields."""
     try:
@@ -315,7 +316,7 @@ async def update_item_status(
     req_id: str,
     data: HealthCheckStatusUpdateRequest,
     repo: HealthCheckRepository = Depends(get_health_check_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
     """Update the status of a health check item with history tracking."""
     try:
@@ -349,7 +350,7 @@ async def update_item_status(
 async def get_health_check_item(
     req_id: str,
     repo: HealthCheckRepository = Depends(get_health_check_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
     """Get a single health check item by its requirement ID."""
     try:
@@ -379,7 +380,7 @@ async def list_health_check_items(
     limit: int = Query(50, ge=1, le=500, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     repo: HealthCheckRepository = Depends(get_health_check_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
     """List health check items with optional filtering and pagination."""
     try:
@@ -409,7 +410,7 @@ async def list_health_check_items(
 async def create_health_check_item(
     data: HealthCheckItemCreate,
     repo: HealthCheckRepository = Depends(get_health_check_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
     """Create a new health check item."""
     try:

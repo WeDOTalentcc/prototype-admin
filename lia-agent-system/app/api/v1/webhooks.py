@@ -17,6 +17,7 @@ from app.schemas.webhook import (
     WebhookResponse,
 )
 from app.services.webhook_dispatcher import webhook_service
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -24,8 +25,8 @@ router = APIRouter(prefix="/webhooks", tags=["Webhooks"])
 
 
 @router.get("/events", summary="List allowed webhook event types")
-async def list_allowed_events():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def list_allowed_events(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Return the catalog of webhook event types clients can subscribe to."""
     return {"events": ALLOWED_EVENTS}
 
@@ -35,7 +36,7 @@ async def create_webhook(
     body: CreateWebhookRequest,
     current_user=Depends(require_role([UserRole.admin])),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new webhook subscription. Returns secret ONCE on creation."""
     try:
@@ -61,7 +62,7 @@ async def create_webhook(
 async def list_webhooks(
     current_user=Depends(require_role([UserRole.admin])),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List all webhooks for the current company."""
     webhooks = await webhook_service.list_for_company(db, current_user.company_id)
@@ -77,7 +78,7 @@ async def update_webhook(
     body: UpdateWebhookRequest,
     current_user=Depends(require_role([UserRole.admin])),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update webhook (URL, events, active state)."""
     webhook = await webhook_service.update(
@@ -97,7 +98,7 @@ async def delete_webhook(
     webhook_id: str,
     current_user=Depends(require_role([UserRole.admin])),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Delete a webhook subscription."""
     deleted = await webhook_service.delete(
@@ -113,7 +114,7 @@ async def test_webhook(
     webhook_id: str,
     current_user=Depends(require_role([UserRole.admin])),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Send a test event to verify webhook URL is reachable and responding."""
     webhook = await webhook_service.get(db, webhook_id, current_user.company_id)

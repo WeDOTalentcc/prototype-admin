@@ -13,6 +13,7 @@ from ._shared import (
     get_user_from_headers,
     logger,
 )
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 
@@ -30,7 +31,7 @@ async def get_dashboard_summary(
     end_date: datetime | None = Query(None),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get unified dashboard summary with KPIs and client lists. Admin only."""
     try:
@@ -111,7 +112,7 @@ async def get_dashboard_summary(
 async def get_platform_stats(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (platform_) — role-based access required
     """Get platform-wide statistics for all clients. Admin only."""
     try:

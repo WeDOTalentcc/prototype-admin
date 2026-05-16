@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.cv_screening.services.wsi_async_session_service import WSIAsyncSessionService, get_wsi_async_session_service
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/wsi/async", tags=["wsi-async"])
@@ -35,7 +36,7 @@ async def create_async_invite(
     payload: InviteRequest,
     db: AsyncSession = Depends(get_db),
     svc: WSIAsyncSessionService = Depends(get_wsi_async_session_service),
-) -> dict:
+company_id: str = Depends(require_company_id)) -> dict:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Cria sessão WSI assíncrona e retorna token de acesso para o candidato.
@@ -63,8 +64,8 @@ async def get_session_state(
     token: str,
     db: AsyncSession = Depends(get_db),
     svc: WSIAsyncSessionService = Depends(get_wsi_async_session_service),
-) -> dict:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)) -> dict:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Retorna estado atual da sessão WSI + próxima pergunta.
     """
@@ -92,8 +93,8 @@ async def submit_answer(
     payload: AnswerRequest,
     db: AsyncSession = Depends(get_db),
     svc: WSIAsyncSessionService = Depends(get_wsi_async_session_service),
-) -> dict:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)) -> dict:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Submete resposta para a pergunta atual da sessão WSI assíncrona.
     """
@@ -134,8 +135,8 @@ async def complete_session(
     token: str,
     db: AsyncSession = Depends(get_db),
     svc: WSIAsyncSessionService = Depends(get_wsi_async_session_service),
-) -> dict:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)) -> dict:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Finaliza a sessão WSI assíncrona e dispara scoring.
     """

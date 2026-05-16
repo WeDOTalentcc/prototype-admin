@@ -36,6 +36,7 @@ from ._shared import (
     DREYFUS_LEVELS,
     WSI_CLASSIFICATION_MAP,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -353,8 +354,8 @@ Retorne JSON:
 # ---------------------------------------------------------------------------
 
 @router.get("/f11-report/{session_id}", summary="F11 — Relatório completo do consultor WSI", response_model=None)
-async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Gera o relatório completo F11 para uma sessão WSI concluída.
 
     Inclui: G1-G6 gates, SHA-256 das respostas brutas, 2 perguntas CBI para
@@ -701,8 +702,8 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db)):
 async def get_vacancy_ranking(
     job_vacancy_id: str,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Retorna o ranking completo de candidatos triados para uma vaga.
 
     Spec: WSI_METHODOLOGY_COMPLETE_v2.md §11.6.4 Tab 3.
@@ -786,8 +787,8 @@ async def get_candidate_ranking(
     candidate_id: str,
     job_vacancy_id: str,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Retorna a posição do candidato no ranking da vaga (rank #N de M).
 
     Spec: WSI_METHODOLOGY_COMPLETE_v2.md §11.6.4 Tab 3.

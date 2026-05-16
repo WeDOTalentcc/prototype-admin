@@ -35,6 +35,7 @@ from app.core.database import get_db
 from app.domains.company.repositories.compensation_policy_repository import (
     CompensationPolicyRepository,
 )
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 router = APIRouter(
     prefix="/company/compensation-policies", tags=["compensation-policies"]
@@ -241,7 +242,7 @@ async def list_policies(
     search: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     """List PRV policies for a company."""
     try:
         effective_company_id = company_id or get_user_company_id(current_user)
@@ -265,7 +266,7 @@ async def create_policy(
     company_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     """Create a new PRV policy."""
     try:
         effective_company_id = company_id or get_user_company_id(current_user)
@@ -296,7 +297,7 @@ async def get_policy(
     policy_id: UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get a specific PRV policy by ID."""
     try:
@@ -319,7 +320,7 @@ async def update_policy(
     updates: CompensationPolicyUpdate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update a PRV policy (auto-increments version + appends revision_history)."""
     try:
@@ -354,7 +355,7 @@ async def delete_policy(
     hard_delete: bool = Query(False),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Deactivate (soft) or permanently delete a PRV policy."""
     try:
@@ -390,7 +391,7 @@ async def seed_default_policies(
     company_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     """Seed PLR Anual Padrão + Bônus Comercial templates for a new company."""
     try:
         effective_company_id = company_id or get_user_company_id(current_user)
@@ -428,8 +429,8 @@ async def seed_default_policies(
 
 
 @router.get("/policy-types/list", response_model=None)
-async def list_policy_types():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def list_policy_types(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List available PRV policy types."""
     return [
         {

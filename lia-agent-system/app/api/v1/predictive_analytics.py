@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.analytics.services.predictive_analytics_service import predictive_analytics_service
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/analytics/predictions", tags=["predictive-analytics"])
@@ -47,9 +48,9 @@ class PipelineForecastRequest(BaseModel):
 @router.get("/dashboard", response_model=None)
 async def get_predictions_dashboard(
     user_id: str | None = Query(None, description="Filter by user/recruiter"),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get comprehensive predictive analytics dashboard.
     
@@ -74,9 +75,9 @@ async def get_predictions_dashboard(
 @router.post("/hiring-probability", response_model=None)
 async def predict_hiring_probability(
     request: HiringProbabilityRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Predict probability of hiring a candidate for a specific job.
     
@@ -109,9 +110,9 @@ async def predict_hiring_probability(
 async def get_hiring_probability(
     candidate_id: str,
     job_id: str,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get hiring probability prediction via GET request.
     """
@@ -133,9 +134,9 @@ async def get_hiring_probability(
 @router.post("/time-to-fill", response_model=None)
 async def predict_time_to_fill(
     request: TimeToFillRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Predict time to fill a job vacancy.
     
@@ -165,9 +166,9 @@ async def predict_time_to_fill(
 @router.get("/time-to-fill/{job_id}", response_model=None)
 async def get_time_to_fill(
     job_id: str,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get time to fill prediction via GET request.
     """
@@ -188,9 +189,9 @@ async def get_time_to_fill(
 @router.post("/dropout-risk", response_model=None)
 async def predict_dropout_risk(
     request: DropoutRiskRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Predict risk of candidate dropping out of the process.
     
@@ -221,9 +222,9 @@ async def predict_dropout_risk(
 async def get_dropout_risk(
     candidate_id: str,
     job_id: str,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get dropout risk prediction via GET request.
     """
@@ -245,9 +246,9 @@ async def get_dropout_risk(
 @router.post("/pipeline-forecast", response_model=None)
 async def generate_pipeline_forecast(
     request: PipelineForecastRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Generate pipeline forecast for a job.
     
@@ -278,9 +279,9 @@ async def generate_pipeline_forecast(
 async def get_pipeline_forecast(
     job_id: str,
     weeks_ahead: int = Query(4, ge=1, le=12, description="Weeks to forecast"),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get pipeline forecast via GET request.
     """
@@ -300,7 +301,7 @@ async def get_pipeline_forecast(
 
 
 @router.get("/health", response_model=None)
-async def analytics_health():
+async def analytics_health(company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
     """Health check for predictive analytics service."""
     return {

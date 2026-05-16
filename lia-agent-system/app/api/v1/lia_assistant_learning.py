@@ -17,6 +17,7 @@ from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
 from app.shared.services.learning_hub_service import learning_hub_service
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -191,8 +192,8 @@ class SkillsDeduplicatedResponse(BaseModel):
 async def confirm_skill(
     request: SkillConfirmationRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
-) -> SkillConfirmationResponse:
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)) -> SkillConfirmationResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         if request.accepted:
@@ -235,8 +236,8 @@ async def confirm_skill(
 async def confirm_responsibility(
     request: ResponsibilityConfirmationRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
-) -> ResponsibilityConfirmationResponse:
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)) -> ResponsibilityConfirmationResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         if request.accepted:
@@ -274,8 +275,8 @@ async def confirm_responsibility(
 async def get_learning_context(
     request: LearningContextRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
-) -> LearningContextResponse:
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)) -> LearningContextResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         context = await learning_hub_service.get_learning_context(
@@ -299,8 +300,8 @@ async def get_learning_context(
 async def record_job_outcome(
     request: JobOutcomeRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
-) -> JobOutcomeResponse:
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)) -> JobOutcomeResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         result = await learning_hub_service.record_job_outcome(
@@ -346,8 +347,8 @@ async def record_job_outcome(
 async def get_outcome_insights(
     request: OutcomeInsightsRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
-) -> OutcomeInsightsResponse:
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)) -> OutcomeInsightsResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         insights = await learning_hub_service.get_outcome_insights(
@@ -377,8 +378,8 @@ async def get_outcome_insights(
 async def record_stage_feedback(
     request: StageFeedbackRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
-) -> StageFeedbackResponse:
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)) -> StageFeedbackResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         job_uuid = None
@@ -418,8 +419,8 @@ async def record_stage_feedback(
 async def get_learning_dashboard(
     request: LearningDashboardRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
-) -> LearningDashboardResponse:
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)) -> LearningDashboardResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         dashboard = await learning_hub_service.get_learning_dashboard(
@@ -443,8 +444,8 @@ async def get_learning_dashboard(
 async def get_skills_deduplicated(
     request: SkillsDeduplicatedRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
-) -> SkillsDeduplicatedResponse:
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)) -> SkillsDeduplicatedResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         skills = await learning_hub_service.get_skills_without_duplicates(

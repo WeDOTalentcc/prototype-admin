@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.automation.services.task_service import task_service
 from app.models.task import Task
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter(prefix="/task-lifecycle", tags=["task-lifecycle"])
 
@@ -96,9 +97,9 @@ class BulkOperationResponse(BaseModel):
 async def confirm_task(
     task_id: str,
     request: TaskConfirmRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Confirm a task that requires confirmation.
     
@@ -118,9 +119,9 @@ async def confirm_task(
 async def reject_task(
     task_id: str,
     request: TaskRejectRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Reject a task.
     
@@ -141,9 +142,9 @@ async def reject_task(
 async def escalate_task(
     task_id: str,
     request: TaskEscalateRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Escalate a task to a higher level.
     
@@ -167,9 +168,9 @@ async def escalate_task(
 @router.post("/{task_id}/reminder", response_model=TaskLifecycleResponse)
 async def send_task_reminder(
     task_id: str,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Mark a reminder as sent for a task and increment the reminder counter.
     """
@@ -182,9 +183,9 @@ async def send_task_reminder(
 @router.post("/check-reminders", response_model=BulkOperationResponse)
 async def check_and_send_reminders(
     request: CheckRemindersRequest = CheckRemindersRequest(),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Check for tasks due soon and mark them for reminder.
     
@@ -203,9 +204,9 @@ async def check_and_send_reminders(
 @router.post("/check-escalations", response_model=BulkOperationResponse)
 async def check_and_escalate_overdue(
     request: CheckEscalationsRequest = CheckEscalationsRequest(),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Check for overdue tasks and auto-escalate them.
     
@@ -225,9 +226,9 @@ async def check_and_escalate_overdue(
 async def get_tasks_pending_confirmation(
     user_id: str | None = None,
     limit: int = Query(default=50, le=100),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     List tasks that are pending confirmation.
     
@@ -244,9 +245,9 @@ async def get_tasks_pending_confirmation(
 @router.get("/needing-reminder", response_model=list[TaskLifecycleResponse])
 async def get_tasks_needing_reminder(
     hours_before_due: int = Query(default=24, ge=1, le=168),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     List tasks that are due soon and haven't received a reminder yet.
     """
@@ -260,9 +261,9 @@ async def get_tasks_needing_reminder(
 @router.get("/escalatable", response_model=list[TaskLifecycleResponse])
 async def get_escalatable_tasks(
     overdue_hours: int = Query(default=48, ge=1, le=720),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     List HIGH/CRITICAL priority tasks that are overdue and can be escalated.
     """

@@ -22,6 +22,7 @@ from app.auth.models import User
 from app.shared.tenant_llm_context import clear_tenant_config_cache
 from app.domains.ai.repositories.llm_config_repository import LlmConfigRepository
 from app.domains.admin.repositories.audit_log_repository import AuditLogRepository
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/admin/llm-config", tags=["llm-config"])
@@ -80,7 +81,7 @@ class TestProviderResponse(BaseModel):
 async def get_llm_config(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get current LLM configuration for the tenant."""
     company_id = current_user.company_id
@@ -135,7 +136,7 @@ async def update_llm_config(
     request: LLMConfigRequest,
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update LLM configuration for the tenant.
     Uses merge semantics: only keys with real (non-masked) values are updated.
@@ -253,7 +254,7 @@ async def update_llm_config(
 async def test_llm_provider(
     request: TestProviderRequest,
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Test if a provider + API key works by sending a simple prompt."""
     import time
@@ -312,8 +313,8 @@ async def test_llm_provider(
 
 
 @router.get("/providers", response_model=None)
-async def list_available_providers():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def list_available_providers(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List all available LLM providers with their capabilities."""
     return {
         "providers": [

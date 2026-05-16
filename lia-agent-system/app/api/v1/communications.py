@@ -33,6 +33,7 @@ from app.domains.communication.services.whatsapp_service import (
     whatsapp_service,
 )
 from app.shared.tenant_guard import get_verified_company_id
+from app.shared.security.require_company_id import require_company_id_strict_match
 from app.schemas.communication import (
     CommunicationCreate,
     CommunicationListResponse,
@@ -58,7 +59,7 @@ def require_company_id(x_company_id: str | None = Header(None, alias="X-Company-
 
 
 @router.post("", response_model=CommunicationResponse, status_code=status.HTTP_201_CREATED)
-async def create_communication(data: CommunicationCreate):
+async def create_communication(data: CommunicationCreate, company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Log a new communication.
@@ -113,8 +114,8 @@ async def list_communications(
     status: str | None = Query(None, description="Filter by status: pending, sent, delivered, read, failed"),
     limit: int = Query(50, ge=1, le=200, description="Max results (default: 50, max: 200)"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     List communications with optional filters.
     
@@ -153,8 +154,8 @@ async def get_communication_history(
     status_filter: str | None = Query(None, alias="status", description="Filter by status: pending, sent, delivered, read, failed"),
     limit: int = Query(50, ge=1, le=200, description="Max results (default: 50, max: 200)"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get communication history with optional filters.
     
@@ -185,8 +186,8 @@ async def get_communication_history(
 
 
 @router.get("/{communication_id}", response_model=CommunicationResponse)
-async def get_communication(communication_id: str):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_communication(communication_id: str, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get a single communication by ID.
     
@@ -219,9 +220,9 @@ async def get_communication(communication_id: str):
 @router.put("/{communication_id}/status", response_model=CommunicationResponse)
 async def update_communication_status(
     communication_id: str,
-    data: CommunicationStatusUpdate
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    data: CommunicationStatusUpdate, 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Update communication status.
     
@@ -268,7 +269,7 @@ async def get_candidate_communications(
     company_id: str = Query(..., description="Company ID (required)"),
     limit: int = Query(100, ge=1, le=500, description="Max results (default: 100, max: 500)"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     """
     Get all communications for a specific candidate.
     
@@ -304,7 +305,7 @@ async def send_email(
     request: SendEmailRequest,
     company_id: str = Depends(get_verified_company_id),
     mailgun_svc: MailgunEmailService = Depends(get_mailgun_email_service),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Send an email via Mailgun (primary) with Resend as automatic fallback.
@@ -380,7 +381,7 @@ async def send_template_email(
     request: SendTemplateEmailRequest,
     company_id: str = Depends(get_verified_company_id),
     mailgun_svc: MailgunEmailService = Depends(get_mailgun_email_service),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Send an email using a predefined template.
@@ -441,7 +442,7 @@ async def send_bulk_email(
     request: SendBulkEmailRequest,
     company_id: str = Depends(get_verified_company_id),
     mailgun_svc: MailgunEmailService = Depends(get_mailgun_email_service),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Send bulk emails to multiple recipients.
@@ -486,8 +487,8 @@ async def send_bulk_email(
 @router.post("/whatsapp/send", response_model=dict[str, Any], status_code=status.HTTP_200_OK)
 async def send_whatsapp(
     request: SendWhatsAppRequest,
-    company_id: str = Depends(get_verified_company_id)
-):
+    company_id: str = Depends(get_verified_company_id), 
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Send a WhatsApp message via Twilio.
@@ -546,8 +547,8 @@ async def send_whatsapp(
 @router.post("/whatsapp/send-template", response_model=dict[str, Any], status_code=status.HTTP_200_OK)
 async def send_whatsapp_template(
     request: SendWhatsAppTemplateRequest,
-    company_id: str = Depends(get_verified_company_id)
-):
+    company_id: str = Depends(get_verified_company_id), 
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Send a WhatsApp message using a predefined template.
@@ -601,8 +602,8 @@ async def send_whatsapp_template(
 @router.post("/whatsapp/send-interactive", response_model=dict[str, Any], status_code=status.HTTP_200_OK)
 async def send_whatsapp_interactive(
     request: SendInteractiveRequest,
-    company_id: str = Depends(get_verified_company_id)
-):
+    company_id: str = Depends(get_verified_company_id), 
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Send an interactive WhatsApp message with buttons.
@@ -663,8 +664,8 @@ class TransferCommunicationsRequest(BaseModel):
 @router.post("/transfer", response_model=None)
 async def transfer_communications(
     request: TransferCommunicationsRequest,
-    company_id: str = Depends(get_verified_company_id)
-):
+    company_id: str = Depends(get_verified_company_id), 
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Transfer pending communications from previous recruiters to a new recruiter.

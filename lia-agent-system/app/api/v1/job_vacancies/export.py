@@ -16,6 +16,7 @@ from ._shared import (  # noqa: F401
     HTTPException,
     logger,
 )
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 
@@ -25,8 +26,8 @@ async def export_job_vacancy_pdf(
     job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     report_type: str = Query("analytics", description="Report type: funnel, analytics, or candidates"),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
-):
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
     """Export job vacancy report as PDF."""
     try:
         company_id = get_user_company_id(current_user)
@@ -76,8 +77,8 @@ async def export_job_vacancy_excel(
     job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     report_type: str = Query("analytics", description="Report type: funnel, analytics, or candidates"),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
-):
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
     """Export job vacancy report as Excel file."""
     try:
         company_id = get_user_company_id(current_user)

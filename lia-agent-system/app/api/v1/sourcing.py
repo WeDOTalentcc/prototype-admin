@@ -24,6 +24,7 @@ from app.domains.sourcing.services.query_builders import (
 )
 from app.models.candidate import Candidate
 from app.models.job_vacancy import JobVacancy
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -127,9 +128,9 @@ class ProactiveSuggestRequest(BaseModel):
 @router.post("/search", response_model=SourcingSearchResponse)
 async def search_candidates(
     request: SourcingSearchRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Search candidates with advanced boolean query building.
     
@@ -232,9 +233,9 @@ async def search_candidates(
 @router.post("/match-candidates", response_model=MatchCandidatesResponse)
 async def match_candidates(
     request: MatchCandidatesRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Match and score candidates against job requirements.
     
@@ -360,9 +361,9 @@ async def get_suggested_candidates(
     job_id: str,
     limit: int = Query(default=20, ge=1, le=100),
     min_score: float = Query(default=55.0, ge=0, le=100),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get suggested candidates for a job from the talent pool.
     
@@ -462,8 +463,8 @@ async def get_suggested_candidates(
 
 
 @router.post("/boolean-query", response_model=BooleanQueryResponse)
-async def generate_boolean_query(request: BooleanQueryRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def generate_boolean_query(request: BooleanQueryRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Generate boolean search strings for various platforms.
     
@@ -508,9 +509,9 @@ async def generate_boolean_query(request: BooleanQueryRequest):
 @router.post("/proactive-suggest", response_model=None)
 async def trigger_proactive_suggestions(
     request: ProactiveSuggestRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Trigger proactive candidate suggestions for a job.
     
@@ -552,7 +553,7 @@ async def trigger_proactive_suggestions(
 
 
 @router.get("/health", response_model=None)
-async def sourcing_health_check():
+async def sourcing_health_check(company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
     """Health check for sourcing endpoints."""
     return {

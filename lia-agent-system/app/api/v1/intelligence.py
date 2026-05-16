@@ -13,6 +13,7 @@ from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
 from app.core.database import get_db
 from app.shared.services.intelligence_layer_service import intelligence_layer_service
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -61,7 +62,7 @@ class WizardSuggestionResponse(BaseModel):
 async def get_data_quality(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     """
     Get data quality assessment for the Intelligence Layer.
     
@@ -91,7 +92,7 @@ async def get_intelligence_context(
     request: IntelligenceContextRequest,
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     """
     Get full intelligence context for a job creation session.
     
@@ -135,7 +136,7 @@ async def adjust_field_value(
     request: PatternAdjustmentRequest,
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     """
     Apply pattern-based adjustments to a field value.
     
@@ -177,7 +178,7 @@ async def get_wizard_enhancements(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
 
-):
+company_id: str = Depends(require_company_id)):
     """
     Get all wizard enhancements for the current context.
     
@@ -220,7 +221,7 @@ async def get_success_profile(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
 
-):
+company_id: str = Depends(require_company_id)):
     """
     Get the success profile for a specific context.
     
@@ -270,7 +271,7 @@ async def get_correlations(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
 
-):
+company_id: str = Depends(require_company_id)):
     """
     Get outcome correlations for the company.
     

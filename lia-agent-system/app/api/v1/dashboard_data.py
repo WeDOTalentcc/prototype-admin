@@ -7,6 +7,8 @@ from enum import Enum, StrEnum
 
 from fastapi import APIRouter
 from pydantic import BaseModel
+from fastapi import Depends
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
@@ -109,8 +111,8 @@ class PredictionsResponse(BaseModel):
 
 
 @router.get("/strategic-indicators", response_model=StrategicIndicatorsResponse)
-async def get_strategic_indicators():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_strategic_indicators(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get strategic KPI indicators for the business dashboard."""
     indicators = [
         StrategicIndicator(
@@ -267,8 +269,8 @@ async def get_strategic_indicators():
 
 
 @router.get("/funnel-performance", response_model=FunnelPerformanceResponse)
-async def get_funnel_performance():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_funnel_performance(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get recruitment funnel performance data."""
     stages = [
         FunnelStage(
@@ -323,8 +325,8 @@ async def get_funnel_performance():
 
 
 @router.get("/channel-performance", response_model=ChannelPerformanceResponse)
-async def get_channel_performance():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_channel_performance(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get sourcing channel performance data."""
     total = 1247
     channels = [
@@ -384,8 +386,8 @@ async def get_channel_performance():
 
 
 @router.get("/recruiter-ranking", response_model=RecruiterRankingResponse)
-async def get_recruiter_ranking():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_recruiter_ranking(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get recruiter performance ranking."""
     recruiters = [
         RecruiterPerformance(
@@ -463,8 +465,8 @@ async def get_recruiter_ranking():
 
 
 @router.get("/predictions", response_model=PredictionsResponse)
-async def get_predictions():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_predictions(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get AI-powered predictions for recruitment metrics."""
     predictions = [
         Prediction(

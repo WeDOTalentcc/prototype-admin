@@ -34,6 +34,7 @@ from app.domains.integrations_hub.services.rails_adapter import RailsAdapter, RA
 from app.domains.integrations_hub.services.rails_adapter_dependency import get_rails_adapter
 from app.shared.rails_migration.deprecation import enforce_candidates_deprecation
 from app.schemas.envelope import ResponseEnvelope, ok_envelope
+from app.shared.security.require_company_id import require_company_id
 
 # MIGRATION_PLAN item 7.2 — Python CRUD deprecated in favor of Rails (ats-api-copia).
 #
@@ -169,8 +170,8 @@ async def list_candidates(
     sort_order: str | None = None,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     rails_adapter: RailsAdapter = Depends(get_rails_adapter),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List candidates. When RAILS_API_URL is configured, tries Rails first then falls back to local DB."""
     # Only call Rails when explicitly enabled — avoids adapter's own DB fallback
     # bypassing endpoint-level filters and authorization.
@@ -237,8 +238,8 @@ async def get_candidate(
     candidate_id: str,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     rails_adapter: RailsAdapter = Depends(get_rails_adapter),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get a candidate by ID. When RAILS_API_URL is configured, tries Rails first then falls back to local DB."""
     # Only call Rails when explicitly enabled — avoids adapter's own DB fallback
     # returning unscoped/unfiltered data.
@@ -296,8 +297,8 @@ async def create_candidate(
     candidate_data: CandidateCreate,
     background_tasks: BackgroundTasks,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Create a new candidate. If auto_enrich=True and linkedin_url is provided, enrichment runs in background."""
     try:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
@@ -369,8 +370,8 @@ async def update_candidate(
     candidate_id: str,
     candidate_data: CandidateUpdate,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update an existing candidate."""
     try:
         candidate = await candidate_repo.get_by_id_str(candidate_id)
@@ -406,8 +407,8 @@ async def update_candidate_stage(
     vc_repo: VacancyCandidateRepository = Depends(get_vacancy_candidate_repo),
     audit_svc: AuditService = Depends(get_audit_service),
     activity_svc: ActivityService = Depends(get_activity_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update candidate pipeline stage (used when moving candidates in Kanban)."""
     try:
         candidate = await candidate_repo.get_by_id_str(candidate_id)
@@ -583,8 +584,8 @@ async def update_candidate_stage(
 async def delete_candidate(
     candidate_id: str,
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Soft delete (deactivate) a candidate."""
     try:
         candidate = await candidate_repo.get_by_id_str(candidate_id)
@@ -616,8 +617,8 @@ async def enrich_candidate(
     candidate_id: str,
     request: EnrichmentRequest = EnrichmentRequest(),
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Enrich candidate data from LinkedIn using Apify scrapers."""
     try:
         from app.domains.candidates.services.candidate_enrichment_service import candidate_enrichment_service
@@ -664,7 +665,7 @@ async def get_candidate_ai_explanation(
     job_vacancy_id: str = Query(..., description="Job vacancy ID for which to explain decisions"),
     current_user=Depends(get_current_user_or_demo),
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """LGPD Art.20 — Return a human-readable explanation of all AI decisions
     made for a candidate on a specific job vacancy.

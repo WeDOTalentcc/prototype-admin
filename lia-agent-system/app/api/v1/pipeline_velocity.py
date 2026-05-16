@@ -13,6 +13,7 @@ from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
 from app.shared.services.pipeline_velocity_service import pipeline_velocity_service
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ async def get_pipeline_velocity(
     company_id: str | None = Query(None, description="ID da empresa (opcional)"),
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Retorna métricas de velocidade por etapa do pipeline.
@@ -63,7 +64,7 @@ async def get_velocity_bottlenecks(
     company_id: str | None = Query(None),
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Lista candidatos atualmente acima do limite de tempo em sua etapa.

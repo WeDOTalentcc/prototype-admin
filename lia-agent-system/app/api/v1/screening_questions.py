@@ -26,6 +26,7 @@ from app.models.screening_question import (
     QUESTION_TYPES,
     CompanyScreeningQuestion,
 )
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -102,8 +103,8 @@ async def list_company_screening_questions(
     category: str | None = None,
     is_active: bool | None = True,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     """
     List all company default screening questions.
     Multi-tenant: Only returns questions from the user's company.
@@ -147,8 +148,8 @@ async def list_company_screening_questions(
 async def create_screening_question(
     request: ScreeningQuestionCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
-):
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
     """
     Create a new company default screening question.
     """
@@ -201,8 +202,8 @@ async def update_screening_question(
     question_id: str,
     request: ScreeningQuestionUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
-):
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
     """
     Update a company screening question.
     """
@@ -248,8 +249,8 @@ async def update_screening_question(
 async def delete_screening_question(
     question_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
-):
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
     """
     Delete a company screening question.
     """
@@ -280,8 +281,8 @@ async def delete_screening_question(
 async def reorder_screening_questions(
     request: ReorderRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
-):
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
     """
     Reorder company screening questions.
     """
@@ -305,8 +306,8 @@ async def reorder_screening_questions(
 @router.post("/company/screening-questions/seed", response_model=None)
 async def seed_default_questions(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_active_user)
-):
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
     """
     Seed default screening questions for a company.
     Only creates if no questions exist.
@@ -360,8 +361,8 @@ async def seed_default_questions(
 
 @router.get("/company/screening-questions/categories", response_model=CategoriesResponse)
 async def get_categories(
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get available question categories and types.

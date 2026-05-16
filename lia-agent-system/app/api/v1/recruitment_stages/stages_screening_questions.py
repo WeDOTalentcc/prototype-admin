@@ -22,6 +22,7 @@ from ._shared import (
     User,
 )
 from pydantic import BaseModel, Field
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -105,7 +106,7 @@ async def initialize_default_questions(
 async def list_screening_questions(
     current_user: User = Depends(get_current_active_user),
     sq_repo: ScreeningQuestionRepository = Depends(get_screening_question_repo),
-):
+company_id: str = Depends(require_company_id)):
     """
     List all screening questions for the authenticated user's company.
     Initializes default questions if none exist.
@@ -127,7 +128,7 @@ async def create_screening_question(
     question: ScreeningQuestionCreate,
     current_user: User = Depends(require_admin_or_recruiter),
     sq_repo: ScreeningQuestionRepository = Depends(get_screening_question_repo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Create a new screening question for the authenticated user's company.
     """
@@ -162,7 +163,7 @@ async def update_screening_questions(
     questions: list[dict] = Body(...),
     current_user: User = Depends(require_admin_or_recruiter),
     sq_repo: ScreeningQuestionRepository = Depends(get_screening_question_repo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Update screening questions (bulk update).
     Syncs the database with the provided list of questions.
@@ -241,7 +242,7 @@ async def update_screening_question(
     question: ScreeningQuestionUpdate,
     current_user: User = Depends(require_admin_or_recruiter),
     sq_repo: ScreeningQuestionRepository = Depends(get_screening_question_repo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Update a single screening question.
     """
@@ -280,7 +281,7 @@ async def delete_screening_question(
     question_id: str,
     current_user: User = Depends(require_admin_or_recruiter),
     sq_repo: ScreeningQuestionRepository = Depends(get_screening_question_repo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Delete a screening question (soft delete).
     """

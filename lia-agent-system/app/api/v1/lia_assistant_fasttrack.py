@@ -20,6 +20,7 @@ from app.core.database import get_db
 from app.domains.job_management.services.vacancy_search_service import vacancy_search_service
 from app.models import JobVacancy
 from app.shared.services.intent_classifier import IntentType, intent_classifier_service
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -69,8 +70,8 @@ class FastTrackWizardResponse(BaseModel):
 async def fast_track_wizard_step(
     request: FastTrackWizardRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
-) -> FastTrackWizardResponse:
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)) -> FastTrackWizardResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         conversation_id = request.conversation_id or str(uuid4())

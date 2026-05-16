@@ -54,6 +54,7 @@ from app.schemas.chat import (
     MessageCreate,
     MessageResponse,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -233,7 +234,7 @@ async def send_message(
     message_data: MessageCreate,
     current_user: User = Depends(get_current_user_or_demo),
     repo: ChatRepository = Depends(get_chat_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Send a message to LIA and get response.
@@ -433,7 +434,7 @@ async def send_message_with_attachments(
     audio: UploadFile | None = File(default=None),
     current_user: User = Depends(get_current_user_or_demo),
     repo: ChatRepository = Depends(get_chat_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Send a message to LIA with file attachments and/or audio.
@@ -594,7 +595,7 @@ async def list_conversations(
     page: int = 1,
     page_size: int = 20,
     repo: ChatRepository = Depends(get_chat_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     List user's conversations.
@@ -641,7 +642,7 @@ async def websocket_endpoint(
     websocket: WebSocket,
     user_id: str,
     repo: ChatRepository = Depends(get_chat_repo),
-):
+company_id: str = Depends(require_company_id)):
     """
     WebSocket endpoint for real-time chat with LIA.
 
@@ -908,7 +909,7 @@ async def stream_message(
     request: Request,
     current_user: User = Depends(get_current_user_or_demo),
     repo: ChatRepository = Depends(get_chat_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Stream LIA response as SSE (Server-Sent Events).
@@ -1036,7 +1037,7 @@ async def direct_candidate_field_update(
     request: Request,
     current_user: User = Depends(get_current_user_or_demo),
     repo: ChatRepository = Depends(get_chat_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Structured endpoint to update one or more candidate fields directly.
@@ -1179,7 +1180,7 @@ async def set_chat_context(
     payload: ChatContextRequest,
     current_user: User = Depends(get_current_user_or_demo),
     repo: ChatRepository = Depends(get_chat_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Notify the orchestrator that the chat context has changed.
 

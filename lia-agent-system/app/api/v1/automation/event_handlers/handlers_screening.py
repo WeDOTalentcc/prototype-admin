@@ -24,6 +24,7 @@ from .._shared import (
     get_wsi_service,
     validate_multi_tenancy,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -495,8 +496,8 @@ async def handle_screening_completed(
     audit_svc: AuditService = Depends(get_audit_service),
     activity_svc: ActivityService = Depends(get_activity_service_canonical),
     comm_svc: CommunicationService = Depends(get_communication_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Handle screening_completed trigger: WSI calculation and candidate notification."""
     try:
         return await _process_screening_completed(request, db, audit_svc, activity_svc, comm_svc)

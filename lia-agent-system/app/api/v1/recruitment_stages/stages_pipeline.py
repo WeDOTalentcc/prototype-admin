@@ -36,6 +36,7 @@ from ._shared import (
     pipeline_stage_service,
     User,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,7 @@ async def initialize_company_stages(
     current_user: User = Depends(require_admin_or_recruiter),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
     ats_repo: ATSMappingRepository = Depends(get_ats_mapping_repo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Initialize default stages and sub-statuses for the authenticated user's company.
     Optionally also initializes ATS mappings for Gupy or Pandapé.
@@ -103,7 +104,7 @@ async def sync_canonical_sub_statuses(
     current_user: User = Depends(require_admin_or_recruiter),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
     sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Idempotent sync: inserts any CANONICAL_SUB_STATUSES entries missing from
     the company's existing stages. Safe to run multiple times.
@@ -155,7 +156,7 @@ async def get_company_pipeline(
     current_user: User = Depends(get_current_user_or_demo),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
     sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
-):
+company_id: str = Depends(require_company_id)):
     try:
         effective_company_id = get_user_company_id(current_user)
         pipeline = await _get_company_pipeline(effective_company_id, stage_repo, sub_status_repo)
@@ -171,7 +172,7 @@ async def update_company_pipeline(
     current_user: User = Depends(get_current_user_or_demo),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
     sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
-):
+company_id: str = Depends(require_company_id)):
     try:
         effective_company_id = get_user_company_id(current_user)
 
@@ -257,7 +258,7 @@ async def get_job_pipeline(
     current_user: User = Depends(get_current_user_or_demo),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
     sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
-):
+company_id: str = Depends(require_company_id)):
     try:
         from app.models.job_vacancy import JobVacancy
 
@@ -320,7 +321,7 @@ async def update_job_pipeline(
     current_user: User = Depends(get_current_user_or_demo),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
     sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
-):
+company_id: str = Depends(require_company_id)):
     try:
         from app.models.job_vacancy import JobVacancy
 
@@ -387,7 +388,7 @@ async def get_pipeline_inheritance_status(
     job_id: str,
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Check if a job's pipeline is customized or inherited from company default."""
     try:
@@ -419,7 +420,7 @@ async def copy_company_pipeline_to_job(
     job_id: str,
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
-):
+company_id: str = Depends(require_company_id)):
     """Copy company's default pipeline configuration to a job (reset to default)."""
     try:
         from sqlalchemy import select as sa_select
@@ -489,7 +490,7 @@ async def mark_pipeline_customized(
     job_id: str,
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
-):
+company_id: str = Depends(require_company_id)):
     """Mark a job's pipeline as customized (no longer inherits from company).
 
     Phase G.3 — multi-tenancy fix. The original implementation issued

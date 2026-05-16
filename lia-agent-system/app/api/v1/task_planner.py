@@ -22,6 +22,7 @@ from app.core.database import get_db
 from app.domains.automation.agents.automation_react_agent import AutomationReActAgent
 from app.domains.automation.services.planned_task_service import CycleDetectedError, planned_task_service
 from app.models.planned_task import PlannedTaskPriority, PlannedTaskStatus
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter(prefix="/task-planner", tags=["Task Planner"])
 
@@ -80,7 +81,7 @@ async def decompose_task(
     request: DecomposeTaskRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Decompose a complex task into subtasks using AI.
     
@@ -117,7 +118,7 @@ async def create_planned_task(
     request: CreatePlannedTaskRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """Create a new planned task."""
     company_id = get_user_company_id(current_user)
     try:
@@ -150,9 +151,9 @@ async def create_planned_task(
 @router.get("/tasks/{task_id}", response_model=None)
 async def get_planned_task(
     task_id: str,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get a planned task by ID."""
     task = await planned_task_service.get_task(db, task_id)
     
@@ -166,9 +167,9 @@ async def get_planned_task(
 async def update_task_status(
     task_id: str,
     request: UpdateTaskStatusRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update the status of a planned task."""
     try:
         status = PlannedTaskStatus(request.status)
@@ -195,9 +196,9 @@ async def update_task_status(
 @router.get("/tasks/{task_id}/subtasks", response_model=None)
 async def get_subtasks(
     task_id: str,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get all subtasks of a parent task."""
     subtasks = await planned_task_service.get_subtasks(db, task_id)
     
@@ -211,9 +212,9 @@ async def get_subtasks(
 @router.get("/tasks/{task_id}/dependencies", response_model=None)
 async def check_task_dependencies(
     task_id: str,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Check the dependency status for a task."""
     result = await planned_task_service.check_dependencies(db, task_id)
     
@@ -227,9 +228,9 @@ async def check_task_dependencies(
 async def get_tasks_by_goal(
     goal_id: str,
     include_completed: bool = Query(False),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get all tasks for a specific goal."""
     tasks = await planned_task_service.get_tasks_by_goal(
         db, goal_id, include_completed
@@ -245,9 +246,9 @@ async def get_tasks_by_goal(
 @router.post("/prioritize", response_model=None)
 async def prioritize_tasks(
     request: PrioritizeTasksRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Recalculate priority scores for tasks."""
     agent = AutomationReActAgent()
     response = await agent.prioritize_tasks(
@@ -268,9 +269,9 @@ async def prioritize_tasks(
 @router.post("/dag/build", response_model=None)
 async def build_task_dag(
     task_ids: list[str] = Body(..., embed=True),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Build and validate a DAG from task dependencies.
     
@@ -303,7 +304,7 @@ async def create_execution_plan(
     request: CreateExecutionPlanRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Create an execution plan from a set of tasks.
     
@@ -336,9 +337,9 @@ async def create_execution_plan(
 @router.get("/execution-plans/{plan_id}", response_model=None)
 async def get_execution_plan(
     plan_id: str,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get an execution plan by ID."""
     plan = await planned_task_service.get_execution_plan(db, plan_id)
     
@@ -356,7 +357,7 @@ async def get_next_tasks(
     limit: int = Query(5, ge=1, le=20),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Get the next tasks that are ready for execution.
     
@@ -392,9 +393,9 @@ async def add_chain_of_thought(
     task_id: str,
     thought: str = Body(..., embed=True),
     thought_type: str = Body("reasoning", embed=True),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Add a chain-of-thought entry to a task for logging decisions."""
     task = await planned_task_service.add_chain_of_thought(
         db=db,
@@ -420,7 +421,7 @@ async def add_chain_of_thought(
 @router.get("/execution-templates")
 async def list_execution_templates(
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List all available Plan & Execute templates (multi-step workflow plans).
 
@@ -453,7 +454,7 @@ async def list_execution_templates(
 async def get_execution_template(
     template_id: str,
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get details of a specific Plan & Execute template."""
     from app.shared.execution.plan_templates import PlanTemplateRegistry

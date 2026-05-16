@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import require_admin
 from app.core.database import get_db
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter(prefix="/admin/lgpd", tags=["Admin - LGPD"])
 
@@ -19,7 +20,7 @@ router = APIRouter(prefix="/admin/lgpd", tags=["Admin - LGPD"])
 async def trigger_lgpd_cleanup(
     dry_run: bool = Query(True, description="Simular sem deletar (default: True para segurança)"),
     _user=Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """
     Dispara cleanup LGPD manual via Celery.
@@ -41,7 +42,7 @@ async def trigger_lgpd_cleanup(
 async def get_cleanup_status(
     _user=Depends(require_admin),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """
     Retorna contagem de registros pendentes de deleção LGPD.
@@ -61,7 +62,7 @@ async def get_cleanup_status(
 @router.get("/retention-policy", response_model=None)
 async def get_retention_policy(
     _user=Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """
     Retorna a política de retenção de dados configurada (LGPD Art. 16).

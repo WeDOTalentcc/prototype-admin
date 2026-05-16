@@ -22,6 +22,7 @@ from app.domains.cv_screening.services.screening_question_set_service import (
     get_screening_question_set_service,
     ScreeningQuestionSetService,
 )
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -152,7 +153,7 @@ class SmartOrchestrateResponse(BaseModel):
 async def smart_orchestrate(
     request: SmartOrchestrateRequest,
     current_user: User = Depends(get_current_user_or_demo),
-) -> SmartOrchestrateResponse:
+company_id: str = Depends(require_company_id)) -> SmartOrchestrateResponse:
     """
     Execute the JobWizardGraph with LLM processing.
     
@@ -328,7 +329,7 @@ async def smart_orchestrate(
 async def react_orchestrate(
     request: SmartOrchestrateRequest,
     current_user: User = Depends(get_current_user_or_demo),
-) -> SmartOrchestrateResponse:
+company_id: str = Depends(require_company_id)) -> SmartOrchestrateResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """DEPRECATED — alias for /smart-orchestrate.
 
@@ -346,8 +347,8 @@ async def react_orchestrate(
 
 
 @router.get("/stage-mapping", response_model=None)
-async def get_stage_mapping() -> dict[str, Any]:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_stage_mapping(company_id: str = Depends(require_company_id)) -> dict[str, Any]:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get the mapping between frontend and backend stage names.
     

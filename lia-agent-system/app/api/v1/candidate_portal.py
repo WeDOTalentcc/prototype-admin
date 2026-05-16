@@ -13,6 +13,8 @@ from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 
 from app.schemas.api_envelope import APIResponse
+from fastapi import Depends
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +39,8 @@ class CandidateApplicationsResponse(BaseModel):
 
 
 @router.post("/chat", response_model=APIResponse)
-async def candidate_chat(request_data: CandidateChatRequest, request: Request):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def candidate_chat(request_data: CandidateChatRequest, request: Request, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Candidate-facing chat endpoint — LLM-powered status queries.
 
     Auth: JWT token in body (candidate_token).
@@ -125,8 +127,8 @@ async def candidate_chat(request_data: CandidateChatRequest, request: Request):
 
 
 @router.get("/applications", response_model=APIResponse)
-async def list_candidate_applications(candidate_token: str):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def list_candidate_applications(candidate_token: str, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List active applications for a candidate — used by frontend job selector.
 
     Returns list of applies so UI can show selector if candidate has 2+ vacancies.

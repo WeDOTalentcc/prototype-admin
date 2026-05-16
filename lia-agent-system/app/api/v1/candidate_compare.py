@@ -18,6 +18,7 @@ from app.core.database import get_db
 from app.domains.candidates.services.candidate_comparison_service import CandidateComparisonService
 from app.domains.candidates.services.candidate_comparison_service import get_candidate_comparison_service
 from app.shared.tenant_guard import get_verified_company_id
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +37,7 @@ async def compare_candidates(
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
     service: CandidateComparisonService = Depends(get_candidate_comparison_service),
-) -> dict:
+_company_gate: str = Depends(require_company_id)) -> dict:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Compara 2 a 4 candidatos lado a lado (D9 — Análise Comparativa Visual).

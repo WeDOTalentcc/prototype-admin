@@ -16,6 +16,7 @@ from ._shared import (
     ATSMappingRepository,
     User,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,7 @@ async def list_ats_mappings(
     ats_type: str | None = Query(default=None, description="Filter by ATS type"),
     current_user: User = Depends(get_current_active_user),
     ats_repo: ATSMappingRepository = Depends(get_ats_mapping_repo),
-):
+company_id: str = Depends(require_company_id)):
     """List all ATS stage mappings for the authenticated user's company."""
     try:
         effective_company_id = get_user_company_id(current_user)
@@ -50,7 +51,7 @@ async def create_ats_mapping(
     mapping: ATSMappingCreate,
     current_user: User = Depends(require_admin_or_recruiter),
     ats_repo: ATSMappingRepository = Depends(get_ats_mapping_repo),
-):
+company_id: str = Depends(require_company_id)):
     """Create a new ATS stage mapping for the authenticated user's company."""
     try:
         effective_company_id = get_user_company_id(current_user)
@@ -80,7 +81,7 @@ async def delete_ats_mapping(
     mapping_id: str,
     current_user: User = Depends(require_admin_or_recruiter),
     ats_repo: ATSMappingRepository = Depends(get_ats_mapping_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Delete an ATS mapping. Validates resource ownership."""
     try:

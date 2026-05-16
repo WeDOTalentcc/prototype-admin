@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.models.communication_settings import DEFAULT_COMMUNICATION_SETTINGS, CommunicationSettings
 from app.domains.communication.repositories.communication_settings_repository import CommunicationSettingsRepository
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -84,8 +85,8 @@ def get_company_id(
 @router.get("/communication-settings", response_model=CommunicationSettingsResponse)
 async def get_communication_settings(
     company_id: str = Depends(get_company_id),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get communication settings for a company.
@@ -143,8 +144,8 @@ async def get_communication_settings(
 async def update_communication_settings(
     data: CommunicationSettingsUpdate,
     company_id: str = Depends(get_company_id),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Update communication settings for a company.

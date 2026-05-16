@@ -10,6 +10,7 @@ from app.domains.tasks.dependencies import get_tasks_repo
 from app.domains.tasks.repositories.tasks_repository import TasksRepository
 from app.domains.automation.services.task_service import task_service
 from app.models.task import TaskPriority, TaskStatus, TaskType
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
@@ -79,9 +80,9 @@ class TaskSummaryResponse(BaseModel):
 @router.post("/", response_model=TaskResponse)
 async def create_task(
     task_data: TaskCreate,
-    repo: TasksRepository = Depends(get_tasks_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: TasksRepository = Depends(get_tasks_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Create a new task."""
     task = await task_service.create_task(
         db=repo.db,
@@ -108,9 +109,9 @@ async def list_tasks(
     user_id: str | None = None,
     agent_type: str | None = None,
     limit: int = Query(default=50, le=100),
-    repo: TasksRepository = Depends(get_tasks_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: TasksRepository = Depends(get_tasks_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List tasks with optional filters."""
     tasks = await repo.get_pending_tasks(
         user_id=user_id,
@@ -124,9 +125,9 @@ async def list_tasks(
 @router.get("/summary", response_model=TaskSummaryResponse)
 async def get_task_summary(
     user_id: str | None = None,
-    repo: TasksRepository = Depends(get_tasks_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: TasksRepository = Depends(get_tasks_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get task summary for dashboard."""
     summary = await repo.get_task_summary(user_id=user_id)
     return summary
@@ -135,9 +136,9 @@ async def get_task_summary(
 @router.get("/today", response_model=list[TaskResponse])
 async def get_tasks_due_today(
     user_id: str | None = None,
-    repo: TasksRepository = Depends(get_tasks_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: TasksRepository = Depends(get_tasks_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get tasks due today."""
     tasks = await repo.get_tasks_due_today(user_id=user_id)
     return [task.to_dict() for task in tasks]
@@ -146,9 +147,9 @@ async def get_tasks_due_today(
 @router.get("/overdue", response_model=list[TaskResponse])
 async def get_overdue_tasks(
     user_id: str | None = None,
-    repo: TasksRepository = Depends(get_tasks_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: TasksRepository = Depends(get_tasks_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get overdue tasks."""
     tasks = await repo.get_overdue_tasks(user_id=user_id)
     return [task.to_dict() for task in tasks]
@@ -157,9 +158,9 @@ async def get_overdue_tasks(
 @router.get("/{task_id}", response_model=TaskResponse)
 async def get_task(
     task_id: str,
-    repo: TasksRepository = Depends(get_tasks_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: TasksRepository = Depends(get_tasks_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get a specific task by ID."""
     task = await repo.get_task(task_id=task_id)
     if not task:
@@ -171,9 +172,9 @@ async def get_task(
 async def update_task(
     task_id: str,
     update_data: TaskUpdate,
-    repo: TasksRepository = Depends(get_tasks_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: TasksRepository = Depends(get_tasks_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update a task."""
     task = await repo.get_task(task_id=task_id)
     if not task:
@@ -207,9 +208,9 @@ async def update_task(
 async def complete_task(
     task_id: str,
     result: dict | None = None,
-    repo: TasksRepository = Depends(get_tasks_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: TasksRepository = Depends(get_tasks_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Mark a task as completed."""
     task = await task_service.update_task_status(
         db=repo.db,
@@ -226,9 +227,9 @@ async def complete_task(
 async def cancel_task(
     task_id: str,
     reason: str | None = None,
-    repo: TasksRepository = Depends(get_tasks_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: TasksRepository = Depends(get_tasks_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Cancel a task."""
     task = await task_service.cancel_task(
         db=repo.db,
@@ -245,9 +246,9 @@ async def assign_task(
     task_id: str,
     user_id: str | None = None,
     agent_type: str | None = None,
-    repo: TasksRepository = Depends(get_tasks_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: TasksRepository = Depends(get_tasks_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Assign a task to a user or agent."""
     if not user_id and not agent_type:
         raise HTTPException(

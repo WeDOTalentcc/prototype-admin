@@ -21,6 +21,7 @@ from app.domains.job_management.services.job_template_service import (
     enrich_template_with_ai,
     validate_wsi_quality,
 )
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 router = APIRouter(prefix="/job-templates", tags=["Job Templates"])
 
@@ -126,8 +127,8 @@ class TemplateFeedbackRequest(BaseModel):
 @router.get("/categories", response_model=list[CategoryResponse])
 async def get_categories(
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get all template categories with metadata."""
     service = JobTemplateService(db)
     categories = service.get_categories()
@@ -156,8 +157,8 @@ async def list_templates(
     limit: int = Query(50, le=100),
     offset: int = 0,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List templates with optional filtering."""
     service = JobTemplateService(db)
     
@@ -179,8 +180,8 @@ async def search_templates(
     company_id: str | None = None,
     limit: int = Query(20, le=50),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Search templates by title."""
     service = JobTemplateService(db)
     
@@ -199,8 +200,8 @@ async def get_popular_templates(
     company_id: str | None = None,
     limit: int = Query(10, le=20),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get most popular templates."""
     service = JobTemplateService(db)
     
@@ -214,8 +215,8 @@ async def get_popular_templates(
 
 
 @router.get("/quality-gates", response_model=None)
-async def get_quality_gates():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_quality_gates(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get WSI quality gate requirements."""
     return {
         "requirements": WSI_QUALITY_GATES,
@@ -226,8 +227,8 @@ async def get_quality_gates():
 @router.post("/validate", response_model=None)
 async def validate_template_data(
     request: CreateTemplateRequest,
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Validate template data against WSI quality gates.
     
@@ -251,8 +252,8 @@ async def validate_template_data(
 async def get_template(
     template_id: str,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get a specific template by ID."""
     service = JobTemplateService(db)
     
@@ -269,8 +270,8 @@ async def use_template(
     company_id: str = Query(...),
     user_id: str | None = None,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Use a template for Fast Track job creation.
     
@@ -294,7 +295,7 @@ async def clone_template(
     template_id: str,
     request: CloneTemplateRequest,
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Clone a template for a company with optional modifications."""
     service = JobTemplateService(db)
@@ -316,8 +317,8 @@ async def submit_feedback(
     request: TemplateFeedbackRequest,
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Submit usage feedback for a template."""
     service = JobTemplateService(db)
     
@@ -339,8 +340,8 @@ async def create_template(
     company_id: str = Query(...),
     enrich_with_ai: bool = Query(False, description="Use AI to enrich missing fields"),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Create a new company-specific template."""
     service = JobTemplateService(db)
     
@@ -358,8 +359,8 @@ async def create_template(
 @router.post("/seed", response_model=None)
 async def seed_templates(
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Seed database with system templates (admin only)."""
     service = JobTemplateService(db)
     count = await service.seed_system_templates()
@@ -375,8 +376,8 @@ async def seed_templates(
 async def seed_brazilian_market_templates(
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Seed database with curated Brazilian market templates.
     
@@ -430,8 +431,8 @@ async def seed_brazilian_market_templates(
 
 
 @router.get("/brazilian-market", response_model=None)
-async def get_brazilian_market_templates():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_brazilian_market_templates(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get all curated Brazilian market templates.
     
@@ -466,8 +467,8 @@ async def import_from_esco(
     subcategory: str = Query("geral"),
     search_terms: str = Query(..., description="Comma-separated search terms"),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Import templates from ESCO database.
     
@@ -496,8 +497,8 @@ async def import_from_esco(
 @router.get("/import/status", response_model=None)
 async def get_import_status(
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get current template import status and progress toward 480 goal."""
     from app.domains.job_management.services.template_importer_service import TemplateImporterService
     
@@ -512,8 +513,8 @@ async def get_import_status(
 async def get_learning_stats(
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get learning statistics for a company."""
     from app.domains.job_management.services.template_learning_service import TemplateLearningService
     
@@ -526,8 +527,8 @@ async def get_learning_suggestions(
     company_id: str = Query(...),
     limit: int = Query(5, le=10),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get suggestions for jobs that could benefit from templates."""
     from app.domains.job_management.services.template_learning_service import TemplateLearningService
     
@@ -556,7 +557,7 @@ class LearnFromJobRequest(BaseModel):
 async def learn_from_job_creation(
     request: LearnFromJobRequest,
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Learn from a completed job creation.

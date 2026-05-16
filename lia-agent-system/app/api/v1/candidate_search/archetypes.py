@@ -23,6 +23,7 @@ from ._shared import (
     get_pearch_service,
     logger,
 )
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 
@@ -116,9 +117,9 @@ async def list_archetypes(
     include_inactive: bool = Query(False, description="Incluir arquétipos inativos"),
     industry: str | None = Query(None, description="Filtrar por indústria"),
     seniority: str | None = Query(None, description="Filtrar por senioridade"),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Lista todos os arquétipos disponíveis.
     
@@ -191,9 +192,9 @@ async def list_archetypes(
 @router.post("/archetypes", response_model=ArchetypeDTO)
 async def create_archetype(
     request: ArchetypeCreateRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Cria um novo arquétipo personalizado.
     
@@ -266,8 +267,8 @@ async def create_archetype(
 async def create_archetype_from_search(
     data: ArchetypeFromSearchCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Cria um novo arquétipo a partir de um SearchSpec.
@@ -367,9 +368,9 @@ class ArchetypeFromDescriptionRequest(BaseModel):
 @router.get("/archetypes/suggestions/closed-jobs", response_model=ClosedJobSuggestionsResponse)
 async def get_closed_job_suggestions(
     limit: int = Query(5, ge=1, le=10),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Lista sugestões de vagas fechadas para criar arquétipos.
     
@@ -444,9 +445,9 @@ async def get_closed_job_suggestions(
 async def create_archetype_from_job(
     job_id: str,
     custom_name: str | None = Query(None, description="Nome customizado para o arquétipo"),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Cria um arquétipo automaticamente a partir de uma vaga fechada.
     
@@ -591,9 +592,9 @@ async def create_archetype_from_job(
 @router.post("/archetypes/from-description", response_model=ArchetypeDTO)
 async def create_archetype_from_description(
     request: ArchetypeFromDescriptionRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Cria um arquétipo a partir de uma descrição textual.
     
@@ -726,9 +727,9 @@ async def create_archetype_from_description(
 @router.get("/archetypes/{archetype_id}", response_model=ArchetypeDTO)
 async def get_archetype(
     archetype_id: str,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Obtém detalhes de um arquétipo específico."""
     from sqlalchemy import select
 
@@ -770,9 +771,9 @@ async def get_archetype(
 @router.delete("/archetypes/{archetype_id}", response_model=None)
 async def delete_archetype(
     archetype_id: str,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Deleta um arquétipo personalizado.
     
@@ -816,9 +817,9 @@ async def delete_archetype(
 async def update_archetype(
     archetype_id: str,
     request: ArchetypeUpdateRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Atualiza um arquétipo existente.
     
@@ -893,8 +894,8 @@ async def search_by_archetype(
     db: AsyncSession = Depends(get_db)
 ,
     pearch_svc: PearchService = Depends(get_pearch_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Executa busca de candidatos usando um arquétipo específico.
     
@@ -1112,9 +1113,9 @@ class ArchetypeGenerationResponse(BaseModel):
 @router.post("/archetypes/from-job", response_model=ArchetypeGenerationResponse)
 async def generate_archetype_from_job(
     request: ArchetypeGenerationRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Gera um arquétipo de busca a partir de uma vaga fechada com candidato contratado.
     
@@ -1285,9 +1286,9 @@ class ArchetypeFromDescriptionRequest(BaseModel):
 @router.post("/archetypes/from-description", response_model=ArchetypeGenerationResponse)
 async def generate_archetype_from_description(
     request: ArchetypeFromDescriptionRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Gera um arquétipo de busca a partir de uma descrição textual livre.
     
@@ -1412,9 +1413,9 @@ class ClosedJobSuggestionsResponse(BaseModel):
 @router.get("/archetypes/suggestions", response_model=ClosedJobSuggestionsResponse)
 async def get_archetype_suggestions(
     db: AsyncSession = Depends(get_db),
-    limit: int = Query(10, ge=1, le=50)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    limit: int = Query(10, ge=1, le=50), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Lista vagas fechadas que podem ser usadas para criar arquétipos.
     Prioriza vagas com dados do candidato contratado.

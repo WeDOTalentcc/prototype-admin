@@ -39,6 +39,28 @@ ROOT = Path(__file__).resolve().parents[1]
 # layouts put libs/ as a sibling of app/)
 MODELS_DIR = ROOT / "libs" / "models" / "lia_models"
 ALEMBIC_DIR = ROOT / "alembic" / "versions"
+ALLOWLIST_FILE = ROOT / "scripts" / ".rls_allowlist.txt"
+
+
+def load_allowlist() -> dict[str, str]:
+    """Load tablename → reason from scripts/.rls_allowlist.txt.
+
+    Format: ``tablename: reason`` (reason optional). Lines starting with
+    ``#`` and blank lines are ignored.
+    """
+    out: dict[str, str] = {}
+    if not ALLOWLIST_FILE.exists():
+        return out
+    for raw in ALLOWLIST_FILE.read_text(encoding="utf-8").splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if ":" in line:
+            name, reason = line.split(":", 1)
+            out[name.strip()] = reason.strip()
+        else:
+            out[line] = "(see scripts/.rls_allowlist.txt)"
+    return out
 
 # Tables we know are isolated transitively (FK chain) — documented in ADR-030 v2
 TRANSITIVE_ISOLATION = frozenset({
@@ -121,9 +143,11 @@ def main() -> int:
     tables = collect_tables_with_company_id()
     rls_enabled = collect_rls_enabled_tables()
     exempt = get_exempt_tables()
+    allowlist = load_allowlist()
 
     gaps: list[tuple[str, Path]] = []
     transitive: list[str] = []
+    allowlisted: list[tuple[str, str]] = []
 
     for tablename, model_path in sorted(tables.items()):
         if tablename in rls_enabled:
@@ -133,13 +157,22 @@ def main() -> int:
         if tablename in TRANSITIVE_ISOLATION:
             transitive.append(tablename)
             continue
+        if tablename in allowlist:
+            allowlisted.append((tablename, allowlist[tablename]))
+            continue
         gaps.append((tablename, model_path))
 
     print(
         f"[ADR-030 sensor] Inventory: {len(tables)} tables with company_id, "
         f"{len(rls_enabled)} with RLS enabled, {len(exempt)} explicitly exempt, "
-        f"{len(transitive)} transitively isolated, {len(gaps)} GAPS."
+        f"{len(transitive)} transitively isolated, "
+        f"{len(allowlisted)} allowlisted, {len(gaps)} GAPS."
     )
+    if allowlisted:
+        print(
+            "[ADR-030 sensor] Allowlisted via scripts/.rls_allowlist.txt: "
+            f"{[t for t, _ in allowlisted]}"
+        )
 
     if transitive:
         print(

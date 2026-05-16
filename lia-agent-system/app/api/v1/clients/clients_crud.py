@@ -26,13 +26,14 @@ from ._shared import (
     provision_workos_organization,
     sync_client_to_hubspot,
 )
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 
 
 @router.get("/status-options", summary="List available status options", response_model=None)
-async def list_status_options():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def list_status_options(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List all available client status options."""
     return {
         "success": True,
@@ -54,7 +55,7 @@ async def list_clients(
     offset: int = Query(0, ge=0),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List all clients with optional filters."""
     try:
@@ -87,7 +88,7 @@ async def get_client(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get a specific client by ID."""
     try:
@@ -105,7 +106,7 @@ async def get_client_stats(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get statistics for a specific client."""
     try:
@@ -141,7 +142,7 @@ async def create_client(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
     email_svc: EmailService = Depends(get_email_service),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new client. Only admin users can create new clients."""
     try:
@@ -237,7 +238,7 @@ async def update_client(
     data: ClientUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update an existing client."""
     try:
@@ -274,7 +275,7 @@ async def update_client_status(
     data: StatusUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update client status. Only admin users can update client status."""
     try:
@@ -311,7 +312,7 @@ async def delete_client(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Soft delete a client. Only admin users can delete clients."""
     try:

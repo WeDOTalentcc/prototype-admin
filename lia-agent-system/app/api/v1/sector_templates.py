@@ -16,6 +16,7 @@ from app.auth.dependencies import get_current_user
 from app.core.database import get_db
 from pydantic import BaseModel
 from typing import Optional
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter(tags=["Agent Studio — Sector Templates"])
 
@@ -42,8 +43,8 @@ class ApplySectorResponse(BaseModel):
 
 
 @router.get("/agent-templates/sectors", response_model=list[SectorTemplateSummary])
-async def list_sector_templates():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def list_sector_templates(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List available sector templates for the Agent Studio gallery."""
     from app.shared.agent_templates.sector_templates import list_templates
     return list_templates()
@@ -55,7 +56,7 @@ async def apply_sector_template(
     body: ApplySectorRequest = ApplySectorRequest(),
     current_user: dict = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Instantiate a sector template as an AgentTemplate for the current tenant.

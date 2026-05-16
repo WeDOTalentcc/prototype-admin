@@ -40,6 +40,7 @@ from app.services.quota_enforcement import (
     get_current_count,
     get_effective_quotas,
 )
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -149,7 +150,7 @@ async def list_companies(
     offset: int = Query(0, ge=0),
     _admin: Any = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     conditions = [ClientAccount.is_deleted == False]
 
@@ -245,7 +246,7 @@ async def get_company_overview(
     company_id: str,
     _admin: Any = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
-):
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     try:
         company_uuid = UUID(company_id)
@@ -357,7 +358,7 @@ async def list_studio_agents(
     company_id: str,
     _admin: Any = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
-):
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     cid = str(company_id)
 
@@ -474,7 +475,7 @@ async def get_studio_consumption(
     days: int = Query(30, ge=1, le=365),
     _admin: Any = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
-):
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     try:
         company_uuid = UUID(company_id)
@@ -559,7 +560,7 @@ async def get_agent_quota(
     company_id: str,
     _admin: Any = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
-):
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     try:
         company_uuid = UUID(company_id)
@@ -617,7 +618,7 @@ async def update_agent_quota(
     body: AgentQuotaUpdateRequest,
     _admin: Any = Depends(require_admin),
     db: AsyncSession = Depends(get_db),
-):
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     try:
         company_uuid = UUID(company_id)

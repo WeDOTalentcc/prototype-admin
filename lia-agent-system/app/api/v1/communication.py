@@ -17,6 +17,7 @@ from app.domains.communication.services.communication_dispatcher import communic
 from app.domains.communication.services.communication_history_service import communication_history_service
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger
+from app.shared.security.require_company_id import require_company_id
 
 logger = get_masked_logger(__name__)
 
@@ -95,7 +96,7 @@ async def send_email(
     request: SendEmailRequest,
     x_company_id: str | None = Header(None, alias="X-Company-ID"),
     audit_svc: AuditService = Depends(get_audit_service),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Send an email via the CommunicationDispatcher (Mailgun primary, Resend fallback).
@@ -215,7 +216,7 @@ async def send_whatsapp(
     request: SendWhatsAppRequest,
     x_company_id: str | None = Header(None, alias="X-Company-ID"),
     audit_svc: AuditService = Depends(get_audit_service),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Send a WhatsApp message via the CommunicationDispatcher (Twilio).
@@ -333,7 +334,7 @@ async def send_screening_invite(
     x_company_id: str | None = Header(None, alias="X-Company-ID"),
     repo: CommunicationRepository = Depends(get_communication_repo),
     audit_svc: AuditService = Depends(get_audit_service),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Send a WSI (Work Sample Interview) screening invite to a candidate.

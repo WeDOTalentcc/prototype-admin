@@ -23,6 +23,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user
 from app.core.database import get_db
 from lia_models.agent_template import AgentTemplate, AgentTemplateStatus
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 
@@ -89,7 +90,7 @@ async def list_templates(
     domain: str | None = None,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Lista templates disponíveis para a empresa:
@@ -122,7 +123,7 @@ async def create_template(
     body: AgentTemplateCreate,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Cria novo template de agente para a empresa. Status inicial: draft."""
     repo = _get_agent_template_repo(db)
@@ -145,7 +146,7 @@ async def get_template(
     template_id: str,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Retorna um template pelo ID (próprio da empresa ou público WeDO)."""
     repo = _get_agent_template_repo(db)
@@ -167,7 +168,7 @@ async def update_template(
     body: AgentTemplateCreate,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Edita um template draft. Se estiver publicado, cria nova versão (imutabilidade).
@@ -219,7 +220,7 @@ async def publish_template(
     template_id: str,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Publica um template draft. Após publicar, o template entra em produção
@@ -252,7 +253,7 @@ async def archive_template(
     template_id: str,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Arquiva um template (soft delete — dados preservados para auditoria)."""
     repo = _get_agent_template_repo(db)

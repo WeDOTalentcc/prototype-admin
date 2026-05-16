@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.sourcing.services.sourcing_pipeline_service import sourcing_pipeline_service
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter(prefix="/pipeline", tags=["sourcing-pipeline"])
 
@@ -85,16 +86,16 @@ class RunPipelineRequest(BaseModel):
 
 
 @router.get("/config", response_model=PipelineConfigResponse)
-async def get_pipeline_config():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_pipeline_config(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get current pipeline configuration."""
     config = sourcing_pipeline_service.get_config()
     return config
 
 
 @router.put("/config", response_model=PipelineConfigResponse)
-async def update_pipeline_config(config_update: PipelineConfigRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def update_pipeline_config(config_update: PipelineConfigRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Update pipeline configuration.
     
@@ -112,9 +113,9 @@ async def update_pipeline_config(config_update: PipelineConfigRequest):
 @router.get("/status/{job_id}", response_model=JobPipelineStatusResponse)
 async def get_job_pipeline_status(
     job_id: str,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get the pipeline status for a specific job.
     
@@ -143,9 +144,9 @@ async def get_job_pipeline_status(
 @router.get("/jobs-needing-candidates", response_model=list[JobPipelineStatusResponse])
 async def get_jobs_needing_candidates(
     limit: int = Query(default=50, ge=1, le=100),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get all open jobs that need more candidates.
     
@@ -175,9 +176,9 @@ async def get_jobs_needing_candidates(
 async def run_pipeline_for_job(
     job_id: str,
     request: RunPipelineRequest | None = None,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Run the sourcing pipeline for a specific job.
     
@@ -217,9 +218,9 @@ async def run_pipeline_for_job(
 @router.post("/run-all", response_model=PipelineRunAllResponse)
 async def run_pipeline_for_all_jobs(
     max_jobs: int = Query(default=10, ge=1, le=50),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Run the sourcing pipeline for all jobs that need more candidates.
     
@@ -232,8 +233,8 @@ async def run_pipeline_for_all_jobs(
 
 
 @router.get("/summary", response_model=None)
-async def get_pipeline_summary(db: AsyncSession = Depends(get_db)):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_pipeline_summary(db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get a summary of the sourcing pipeline status.
     

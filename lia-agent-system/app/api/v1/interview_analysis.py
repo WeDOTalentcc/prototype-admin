@@ -34,6 +34,7 @@ from app.services.notification_service import (
     ProactiveNotificationType,
     notification_service,
 )
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -259,9 +260,9 @@ async def analyze_interview(
     interview_id: str,
     force_refresh: bool = Query(False, description="Force fetch new transcript from Teams"),
     company_id: str = Query(..., description="Company ID for tenant scoping"),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Analyze an interview's transcript using WSI methodology.
     """
@@ -346,9 +347,9 @@ async def analyze_interview(
 async def analyze_raw_transcript(
     request: AnalyzeTranscriptRequest,
     company_id: str = Query(..., description="Company ID for tenant scoping"),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Analyze a raw transcript text using WSI methodology.
     """
@@ -398,9 +399,9 @@ async def teams_meeting_webhook(
     payload: TeamsWebhookPayload,
     background_tasks: BackgroundTasks,
     response: Response,
-    request: Request
+    request: Request, 
 ):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Webhook to receive Microsoft Graph subscription notifications.
     """
@@ -463,9 +464,9 @@ async def teams_meeting_webhook(
 @router.get("/status/{interview_id}", response_model=None)
 async def get_analysis_status(
     interview_id: str,
-    db: AsyncSession = Depends(get_db)
-) -> AnalysisStatusResponse:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)) -> AnalysisStatusResponse:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get status of interview analysis."""
     try:
         repo = InterviewAnalysisRepository(db)
@@ -506,9 +507,9 @@ async def get_analysis_status(
 @router.get("/results/{interview_id}", response_model=None)
 async def get_analysis_results(
     interview_id: str,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get full analysis results for an interview."""
     try:
         repo = InterviewAnalysisRepository(db)

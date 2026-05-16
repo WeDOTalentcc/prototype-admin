@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
 from pydantic import BaseModel
 
 from app.domains.cv_screening.services.cv_parser import CVParserService, cv_parser_service, get_cv_parser_service
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -28,8 +29,8 @@ class FileAnalysisResponse(BaseModel):
 @router.post("/file", response_model=FileAnalysisResponse)
 async def analyze_file(file: UploadFile = File(...),
     cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Analyze an uploaded file and extract relevant information.
     

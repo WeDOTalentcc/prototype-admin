@@ -19,6 +19,7 @@ from app.domains.admin.repositories.admin_template_repository import (
 )
 from app.models.email_template import EmailTemplate
 from app.schemas.email_template import EmailTemplateResponse
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -96,7 +97,7 @@ async def list_system_templates(
     limit: int = Query(50, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """List all system templates (admin only)."""
     try:
@@ -117,7 +118,7 @@ async def create_system_template(
     template_data: SystemTemplateCreate,
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Create a new system template (admin only)."""
     try:
@@ -154,7 +155,7 @@ async def get_system_template(
     template_id: str,
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Get a specific system template by ID (admin only)."""
     try:
@@ -178,7 +179,7 @@ async def update_system_template(
     template_data: SystemTemplateUpdate,
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Update an existing system template (admin only). Increments version."""
     try:
@@ -216,7 +217,7 @@ async def delete_system_template(
     hard_delete: bool = Query(False),
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Delete a system template (admin only). Soft delete by default."""
     try:
@@ -243,7 +244,7 @@ async def publish_template_to_companies(
     company_ids: list[str] | None = Query(None),
     db: AsyncSession = Depends(get_db),
     _admin: User = Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Publish a system template to all or specific companies (admin only)."""
     try:

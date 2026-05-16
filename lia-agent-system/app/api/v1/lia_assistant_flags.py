@@ -22,6 +22,7 @@ from app.auth.models import User, UserRole
 from app.core.database import get_db
 from app.shared.governance.feature_flag_service import FeatureFlagService, get_feature_flag_service
 from app.shared.pii_masking import mask_pii as _mask_pii  # P1-3: LGPD redaction on free-text fields
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -179,7 +180,7 @@ async def set_feature_flag(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
     ff_svc: FeatureFlagService = Depends(get_feature_flag_service),
-) -> FeatureFlagResponse:
+company_id: str = Depends(require_company_id)) -> FeatureFlagResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     # P1-9: HITL gate FIRST — sensitive flags require admin/DPO. Short-
     # circuits BEFORE any DB mutation or tenant enforcement.
@@ -276,7 +277,7 @@ async def get_feature_flags(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
     ff_svc: FeatureFlagService = Depends(get_feature_flag_service),
-) -> dict[str, Any]:
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))) -> dict[str, Any]:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         flags = await ff_svc.get_all_flags(
@@ -302,7 +303,7 @@ async def check_feature_flag(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
     ff_svc: FeatureFlagService = Depends(get_feature_flag_service),
-) -> dict[str, Any]:
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))) -> dict[str, Any]:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         is_enabled = await ff_svc.is_enabled(
@@ -441,7 +442,7 @@ async def request_feature_flag_toggle(
     request: FeatureFlagToggleRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-) -> FeatureFlagToggleApprovalResponse:
+company_id: str = Depends(require_company_id)) -> FeatureFlagToggleApprovalResponse:
     """Phase B: non-admin requests a toggle for a sensitive flag.
 
     Flow:
@@ -583,7 +584,7 @@ async def request_feature_flag_toggle(
 async def list_pending_feature_flag_approvals(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-) -> dict[str, Any]:
+company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     """Admin-only: list pending feature_flag_toggle approval requests
     for the user's company. Non-admin returns 403."""
     if getattr(current_user, "role", None) != UserRole.admin:
@@ -625,7 +626,7 @@ async def approve_feature_flag_toggle(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
     ff_svc: FeatureFlagService = Depends(get_feature_flag_service),
-) -> FeatureFlagToggleApprovalResponse:
+company_id: str = Depends(require_company_id)) -> FeatureFlagToggleApprovalResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Phase B: admin approves a pending feature flag toggle request.
 
@@ -750,7 +751,7 @@ async def reject_feature_flag_toggle(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
     ff_svc: FeatureFlagService = Depends(get_feature_flag_service),
-) -> FeatureFlagToggleApprovalResponse:
+company_id: str = Depends(require_company_id)) -> FeatureFlagToggleApprovalResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Phase B: admin rejects a pending feature flag toggle request.
 

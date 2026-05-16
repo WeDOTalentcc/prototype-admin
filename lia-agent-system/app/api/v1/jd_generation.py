@@ -8,6 +8,7 @@ from app.auth.models import User
 from app.domains.job_management.services.jd_generator_service import jd_generator_service
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.compliance.fairness_guard_middleware import check_fairness
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/jd", tags=["jd-generation"])
@@ -92,7 +93,7 @@ async def generate_jd(
     request: GenerateJDRequest,
     current_user: User = Depends(get_current_user_or_demo),
     audit_svc: AuditService = Depends(get_audit_service),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     _fg_check_input(request, request.company_id)
 

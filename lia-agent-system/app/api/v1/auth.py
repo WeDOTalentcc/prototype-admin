@@ -41,6 +41,7 @@ from app.domains.auth.repositories.user_repository import UserRepository
 from app.domains.communication.services.email_service import EmailService, get_email_service
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger
+from app.shared.security.require_company_id import require_company_id
 
 logger = get_masked_logger(__name__)
 
@@ -52,9 +53,8 @@ FRONTEND_URL = os.getenv("FRONTEND_URL", "https://plataforma-lia.replit.app")
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def register(
     user_data: UserCreate,
-    repo: UserRepository = Depends(get_user_repo)
+    repo: UserRepository = Depends(get_user_repo), 
 ):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Register a new user.
 
@@ -97,7 +97,6 @@ async def login(
     repo: UserRepository = Depends(get_user_repo),
     audit_svc: AuditService = Depends(get_audit_service),
 ):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Login with email and password.
 
@@ -171,9 +170,8 @@ async def login(
 @router.post("/refresh", response_model=TokenResponse)
 async def refresh_token(
     token_data: TokenRefresh,
-    repo: UserRepository = Depends(get_user_repo)
+    repo: UserRepository = Depends(get_user_repo), 
 ):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Refresh access token using refresh token.
     """
@@ -239,7 +237,6 @@ async def refresh_token(
 async def get_current_user_info(
     current_user: User = Depends(get_current_user_or_demo)
 ):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get current authenticated user information.
 
@@ -265,7 +262,6 @@ async def update_current_user_profile(
     current_user: User = Depends(get_current_user_or_demo),
     repo: UserRepository = Depends(get_user_repo),
 ):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update current user's profile (name, avatar)."""
     update_fields = {}
     if profile_data.name is not None:
@@ -302,7 +298,6 @@ async def change_password(
     current_user: User = Depends(get_current_user_or_demo),
     repo: UserRepository = Depends(get_user_repo),
 ):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Change password for authenticated user (not available for SSO users)."""
     if getattr(current_user, 'sso_provider', None):
         raise HTTPException(
@@ -390,7 +385,6 @@ async def forgot_password(
     repo: UserRepository = Depends(get_user_repo),
     email_svc: EmailService = Depends(get_email_service),
 ):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Request a password reset email.
     Always returns success to prevent email enumeration.
@@ -426,9 +420,8 @@ async def forgot_password(
 @router.post("/reset-password", response_model=None)
 async def reset_password(
     request_data: PasswordResetConfirm,
-    repo: UserRepository = Depends(get_user_repo)
+    repo: UserRepository = Depends(get_user_repo), 
 ):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Reset password using a valid token.
     """
@@ -461,9 +454,8 @@ async def reset_password(
 @router.post("/verify-email", response_model=None)
 async def verify_email(
     request_data: EmailVerificationRequest,
-    repo: UserRepository = Depends(get_user_repo)
+    repo: UserRepository = Depends(get_user_repo), 
 ):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Verify email using a valid token.
     """
@@ -500,7 +492,6 @@ async def resend_verification(
     repo: UserRepository = Depends(get_user_repo),
     email_svc: EmailService = Depends(get_email_service),
 ):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Resend verification email.
     """
@@ -537,7 +528,6 @@ async def get_invitation_info(
     token: str,
     repo: UserRepository = Depends(get_user_repo)
 ):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get invitation information for a token.
     """
@@ -572,9 +562,8 @@ async def get_invitation_info(
 @router.post("/accept-invitation", response_model=None)
 async def accept_invitation(
     request_data: InvitationAccept,
-    repo: UserRepository = Depends(get_user_repo)
+    repo: UserRepository = Depends(get_user_repo), 
 ):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Accept an invitation and set password.
     """

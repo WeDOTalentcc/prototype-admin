@@ -6,6 +6,8 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+
 from ._shared import (
     CVParserService,
     CandidateProfile,
@@ -60,7 +62,7 @@ async def evaluate_candidates_for_job(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
     rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Avalia candidatos em batch contra os requisitos de uma vaga usando rubricas.
@@ -76,7 +78,7 @@ async def evaluate_candidates_for_job(
     from sqlalchemy import select
 
     from app.models.candidate import Candidate, ExternalCandidateProfile
-    
+
     results = []
     evaluated_count = 0
     failed_count = 0

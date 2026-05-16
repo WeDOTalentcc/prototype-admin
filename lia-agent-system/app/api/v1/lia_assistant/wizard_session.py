@@ -55,6 +55,7 @@ from pydantic import BaseModel, Field
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.shared.sessions import derive_thread_id, is_wizard_session_active
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -131,7 +132,7 @@ async def _read_state_snapshot(thread_id: str) -> dict[str, Any] | None:
 async def get_wizard_session_state(
     session_id: str,
     current_user: User = Depends(get_current_user_or_demo),
-) -> SessionStateResponse:
+company_id: str = Depends(require_company_id)) -> SessionStateResponse:
     """Return the canonical wizard checkpoint snapshot for this session.
 
     Frontend mounts this on conversation load/switch instead of reading
@@ -185,7 +186,7 @@ async def get_wizard_session_state(
 async def reset_wizard_session(
     session_id: str,
     current_user: User = Depends(get_current_user_or_demo),
-) -> ResetSessionResponse:
+company_id: str = Depends(require_company_id)) -> ResetSessionResponse:
     """Reset the wizard checkpoint for this ``(company_id, session_id)``.
 
     Marks the checkpoint as ``current_stage="completed"`` and clears the

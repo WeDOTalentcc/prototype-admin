@@ -15,6 +15,7 @@ from app.core.database import get_db
 from app.domains.company.repositories.company_benefit_repository import (
     CompanyBenefitRepository,
 )
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 router = APIRouter(prefix="/company/benefits", tags=["company-benefits"])
 logger = logging.getLogger(__name__)
@@ -197,7 +198,7 @@ async def list_company_benefits(
     search: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     """List company benefits."""
     try:
         effective_company_id = company_id or get_user_company_id(current_user)
@@ -220,7 +221,7 @@ async def create_company_benefit(
     company_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     """Create a new company benefit."""
     try:
         effective_company_id = company_id or get_user_company_id(current_user)
@@ -241,7 +242,7 @@ async def list_active_company_benefits(
     seniority_level: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     """List only active benefits for a company.
 
     Canonical replacement for the legacy `/company/benefits/active` endpoint
@@ -273,7 +274,7 @@ async def list_highlighted_company_benefits(
     company_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     """List highlighted (and active) benefits for a company.
 
     Canonical replacement for legacy `/company/benefits/highlighted`. Must
@@ -296,7 +297,7 @@ async def get_company_benefits_summary(
     company_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     """Get an AI-agent-friendly summary of company benefits.
 
     Canonical replacement for legacy `/company/benefits/summary` from
@@ -397,7 +398,7 @@ async def get_company_benefit(
     benefit_id: UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get a specific company benefit by ID."""
     try:
@@ -419,7 +420,7 @@ async def update_company_benefit(
     updates: CompanyBenefitUpdate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update a company benefit."""
     try:
@@ -445,7 +446,7 @@ async def delete_company_benefit(
     hard_delete: bool = Query(False),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Delete a company benefit (soft delete by default)."""
     try:
@@ -474,7 +475,7 @@ async def seed_default_benefits(
     company_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     """Seed default Brazilian benefits for a company."""
     try:
         effective_company_id = company_id or get_user_company_id(current_user)
@@ -502,8 +503,8 @@ async def seed_default_benefits(
 
 
 @router.get("/categories/list", response_model=None)
-async def list_benefit_categories():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def list_benefit_categories(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List available benefit categories."""
     return [
         {"id": "health", "name": "Saúde", "icon": "🏥"},

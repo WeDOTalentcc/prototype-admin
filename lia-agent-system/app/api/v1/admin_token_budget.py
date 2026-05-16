@@ -17,6 +17,7 @@ from app.domains.credits.services.token_budget_service import (
     check_budget,
     get_budget_status,
 )
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 router = APIRouter(prefix="/admin/token-budget", tags=["admin-token-budget"])
 logger = logging.getLogger(__name__)
@@ -82,7 +83,7 @@ async def get_company_token_budget(
     ),
     admin: User = Depends(require_admin),
     current_user=None,  # test-only alias; takes precedence over FastAPI-injected admin
-):
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """
     Retorna status completo do budget de tokens LLM para a empresa.
@@ -114,7 +115,7 @@ async def check_company_budget(
     plan_code: str | None = Query(default=None),
     admin: User = Depends(require_admin),
     current_user=None,  # test-only alias
-):
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     _effective_admin = current_user if current_user is not None else admin
     if current_user is None:  # production path: full validation

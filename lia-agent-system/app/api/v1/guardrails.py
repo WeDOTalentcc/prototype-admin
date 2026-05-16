@@ -26,6 +26,7 @@ from app.auth.models import User
 from app.core.database import get_db
 from app.models.guardrail import Guardrail
 from app.shared.compliance.guardrail_repository import GuardrailCreate, GuardrailRepository
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -92,8 +93,8 @@ async def list_guardrails(
     is_active: bool | None = Query(None, description="Filtrar por status ativo"),
     level: str | None = Query(None, description="Filtrar por nível: primary | secondary"),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Lista guardrails com filtros opcionais."""
     guardrails = await GuardrailRepository.list_filtered(
         db,
@@ -110,7 +111,7 @@ async def create_guardrail(
     data: GuardrailCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     """Cria um novo guardrail. Requer role admin."""
     guardrail = await GuardrailRepository.upsert(db, data)
     logger.info(
@@ -125,8 +126,8 @@ async def create_guardrail(
 async def get_guardrail(
     guardrail_id: str,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Retorna um guardrail pelo ID."""
     stmt = select(Guardrail).where(Guardrail.id == guardrail_id)
     result = await db.execute(stmt)
@@ -144,7 +145,7 @@ async def update_guardrail(
     data: GuardrailUpdateRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     """Atualiza um guardrail existente."""
     stmt = select(Guardrail).where(Guardrail.id == guardrail_id)
     result = await db.execute(stmt)
@@ -175,7 +176,7 @@ async def toggle_guardrail(
     guardrail_id: str,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     """Ativa ou desativa um guardrail sem deletá-lo."""
     guardrail = await GuardrailRepository.toggle_active(db, guardrail_id)
 
@@ -196,7 +197,7 @@ async def delete_guardrail(
     guardrail_id: str,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     """Soft delete: desativa o guardrail (is_active=False). Dados preservados para auditoria."""
     deleted = await GuardrailRepository.soft_delete(db, guardrail_id)
     if not deleted:
@@ -279,7 +280,7 @@ async def seed_default_guardrails(
     company_id: str | None = Query(None, description="Tenant específico. None = global"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(require_admin),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     """
     Seed idempotente de guardrails padrão (primários e secundários).
     Usa upsert — não duplica se já existir com mesma rule + domain + company_id.

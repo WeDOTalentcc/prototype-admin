@@ -18,6 +18,7 @@ from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
 from app.core.database import get_db
 from app.models.talent_pool import TalentPool, TalentPoolCandidate
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -148,7 +149,7 @@ async def list_pools(
     status: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """List talent pools for the current account."""
     company_id = get_user_company_id(current_user)
     stmt = select(TalentPool).where(
@@ -166,7 +167,7 @@ async def create_pool(
     payload: dict[str, Any],
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """Create a new talent pool."""
     company_id = get_user_company_id(current_user)
     body = payload.get("talent_pool", payload)
@@ -192,7 +193,7 @@ async def get_pool(
     pool_id: UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """Get a single talent pool."""
     company_id = get_user_company_id(current_user)
     pool = await _get_pool_or_404(pool_id, company_id, db)
@@ -205,7 +206,7 @@ async def update_pool(
     payload: dict[str, Any],
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """Update a talent pool."""
     company_id = get_user_company_id(current_user)
     pool = await _get_pool_or_404(pool_id, company_id, db)
@@ -225,7 +226,7 @@ async def delete_pool(
     pool_id: UUID,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """Soft-delete (archive) a talent pool."""
     company_id = get_user_company_id(current_user)
     pool = await _get_pool_or_404(pool_id, company_id, db)
@@ -244,7 +245,7 @@ async def list_candidates(
     stage: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """List candidates in a talent pool."""
     company_id = get_user_company_id(current_user)
     await _get_pool_or_404(pool_id, company_id, db)
@@ -266,7 +267,7 @@ async def add_candidates(
     payload: AddCandidatesRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """Add candidates to a talent pool."""
     company_id = get_user_company_id(current_user)
     await _get_pool_or_404(pool_id, company_id, db)
@@ -307,7 +308,7 @@ async def move_to_job(
     payload: MoveToJobRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """Move candidates from pool to a job vacancy."""
     company_id = get_user_company_id(current_user)
     await _get_pool_or_404(pool_id, company_id, db)
@@ -344,7 +345,7 @@ async def create_job_from_pool(
     payload: CreateJobFromPoolRequest | None = None,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """Placeholder — job creation requires Rails integration."""
     company_id = get_user_company_id(current_user)
     await _get_pool_or_404(pool_id, company_id, db)

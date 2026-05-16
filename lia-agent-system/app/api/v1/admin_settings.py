@@ -18,6 +18,7 @@ from app.domains.admin_settings.dependencies import get_admin_settings_repo
 from app.domains.admin_settings.repositories.admin_settings_repository import (
     AdminSettingsRepository,
 )
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +117,7 @@ async def list_roles(
     include_inactive: bool = Query(False, description="Include inactive roles"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """List all roles for a company."""
     _check_admin_tenant_access(admin, company_id)
@@ -140,7 +141,7 @@ async def create_role(
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Create a new role."""
     _check_admin_tenant_access(admin, company_id)
@@ -168,7 +169,7 @@ async def update_role(
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Update a role."""
     _check_admin_tenant_access(admin, company_id)
@@ -204,7 +205,7 @@ async def delete_role(
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Delete a role (soft delete by setting is_active=False)."""
     _check_admin_tenant_access(admin, company_id)
@@ -233,7 +234,7 @@ async def initialize_default_roles(
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Initialize default roles for a company."""
     _check_admin_tenant_access(admin, company_id)
@@ -255,7 +256,7 @@ async def list_user_roles(
     user_id: str | None = Query(None, description="Filter by user ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """List user role assignments."""
     _check_admin_tenant_access(admin, company_id)
@@ -280,7 +281,7 @@ async def assign_role_to_user(
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Assign a role to a user."""
     _check_admin_tenant_access(admin, company_id)
@@ -324,7 +325,7 @@ async def remove_role_assignment(
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Remove a role assignment."""
     _check_admin_tenant_access(admin, company_id)
@@ -351,7 +352,7 @@ async def list_notification_policies(
     event_type: str | None = Query(None, description="Filter by event type"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """List notification policies."""
     _check_admin_tenant_access(admin, company_id)
@@ -376,7 +377,7 @@ async def create_notification_policy(
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Create a notification policy."""
     _check_admin_tenant_access(admin, company_id)
@@ -408,7 +409,7 @@ async def update_notification_policy(
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Update a notification policy."""
     _check_admin_tenant_access(admin, company_id)
@@ -445,7 +446,7 @@ async def delete_notification_policy(
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Delete a notification policy."""
     _check_admin_tenant_access(admin, company_id)
@@ -471,7 +472,7 @@ async def get_security_settings(
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Get security settings for a company."""
     _check_admin_tenant_access(admin, company_id)
@@ -492,7 +493,7 @@ async def update_security_settings(
     company_id: str = Query(..., description="Company ID"),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Update security settings."""
     _check_admin_tenant_access(admin, company_id)
@@ -536,7 +537,7 @@ async def get_audit_logs(
     page_size: int = Query(50, ge=1, le=100),
     repo: AdminSettingsRepository = Depends(get_admin_settings_repo),
     admin: User = Depends(require_admin),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Get audit logs with filtering and pagination."""
     _check_admin_tenant_access(admin, company_id)
@@ -573,7 +574,7 @@ async def get_audit_logs(
 
 
 @router.get("/permissions-matrix", response_model=None)
-async def get_permissions_matrix(_admin: User = Depends(require_admin)):
+async def get_permissions_matrix(_admin: User = Depends(require_admin), company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Get the available permissions matrix."""
     return {
@@ -586,7 +587,7 @@ async def get_permissions_matrix(_admin: User = Depends(require_admin)):
 
 
 @router.get("/notification-event-types", response_model=None)
-async def get_notification_event_types(_admin: User = Depends(require_admin)):
+async def get_notification_event_types(_admin: User = Depends(require_admin), company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Get available notification event types."""
     return {

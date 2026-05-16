@@ -32,6 +32,8 @@ from fastapi import (
 from pydantic import BaseModel
 
 from app.shared.pii_masking import mask_pii
+from fastapi import Depends
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +90,7 @@ class VoiceStreamStartResponse(BaseModel):
 async def start_voice_stream_session(
     request_body: VoiceStreamStartRequest,
     request: Request,
-) -> VoiceStreamStartResponse:
+company_id: str = Depends(require_company_id)) -> VoiceStreamStartResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     authenticated_tenant = getattr(request.state, "company_id", None) or getattr(
         request.state, "tenant_id", None
@@ -184,7 +186,7 @@ async def voice_stream_websocket(
     websocket: WebSocket,
     session_id: str = Query(...),
     ws_token: str = Query(...),
-):
+company_id: str = Depends(require_company_id)):
     client_ip = "unknown"
     if websocket.client:
         client_ip = websocket.client.host or "unknown"
@@ -400,8 +402,8 @@ async def voice_stream_websocket(
 
 
 @router.get("/voice-stream/status")
-async def voice_stream_status(company_id: str = Query("")):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def voice_stream_status(company_id: str = Query(""), _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     from app.shared.providers.llm_factory import get_voice_provider_for_tenant
 
     voice_provider = get_voice_provider_for_tenant(

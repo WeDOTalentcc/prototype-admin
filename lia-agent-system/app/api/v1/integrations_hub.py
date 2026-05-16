@@ -12,6 +12,7 @@ from app.domains.integrations_hub.repositories.integrations_hub_repository impor
     IntegrationsHubRepository,
 )
 from app.models.integration_hub import IntegrationCategory
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -161,8 +162,8 @@ async def list_providers(
     category: str | None = Query(None, description="Filter by category"),
     active_only: bool = Query(True),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List all available integration providers."""
     try:
         providers = await repo.list_providers(active_only=active_only, category=category)
@@ -181,8 +182,8 @@ async def list_providers(
 async def list_providers_by_category(
     category: str,
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List providers filtered by category."""
     valid_categories = [c.value for c in IntegrationCategory]
     if category not in valid_categories:
@@ -200,8 +201,8 @@ async def list_connections(
     status: str | None = Query(None),
     category: str | None = Query(None),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get company's integration connections."""
     try:
         rows = await repo.list_connections(
@@ -218,7 +219,7 @@ async def list_connections(
 async def create_connection(
     request: ConnectionCreate,
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new integration connection."""
     try:
@@ -255,8 +256,8 @@ async def update_connection(
     request: ConnectionUpdate,
     company_id: str = Query(..., description="Company ID"),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update an integration connection."""
     try:
         row = await repo.get_connection_with_provider(connection_id)
@@ -291,8 +292,8 @@ async def delete_connection(
     connection_id: str,
     company_id: str = Query(..., description="Company ID"),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Remove an integration connection."""
     try:
         connection = await repo.get_connection_by_id(connection_id)
@@ -316,8 +317,8 @@ async def test_connection(
     connection_id: str,
     company_id: str = Query(..., description="Company ID"),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Test an integration connection."""
     try:
         row = await repo.get_connection_with_provider(connection_id)
@@ -351,8 +352,8 @@ async def trigger_sync(
     company_id: str = Query(..., description="Company ID"),
     sync_type: str = Query("full", description="full, incremental, or webhook"),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Trigger a sync operation for a connection."""
     try:
         connection = await repo.get_connection_by_id(connection_id)
@@ -385,8 +386,8 @@ async def get_sync_logs(
     company_id: str = Query(..., description="Company ID"),
     limit: int = Query(20, ge=1, le=100),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get sync logs for a connection."""
     try:
         connection = await repo.get_connection_by_id(connection_id)
@@ -422,7 +423,7 @@ async def get_sync_logs(
 async def get_integration_health(
     company_id: str = Query(..., description="Company ID"),
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: public endpoint (health) — no tenant data
     """Get overall integration health status."""
     try:
@@ -463,8 +464,8 @@ async def get_integration_health(
 @router.post("/ai/recommend", response_model=AIRecommendationResponse)
 async def get_ai_recommendations(
     request: AIRecommendationRequest,
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get AI-powered recommendations for integration setup."""
     try:
         recommendations = []
@@ -546,8 +547,8 @@ async def get_ai_recommendations(
 @router.post("/seed-providers", response_model=None)
 async def seed_providers(
     repo: IntegrationsHubRepository = Depends(get_integrations_hub_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Seed default integration providers."""
     try:
         providers = await repo.seed_default_providers()
@@ -562,7 +563,7 @@ async def seed_providers(
 
 
 @router.get("/apify/health")
-async def apify_health_check():
+async def apify_health_check(company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
     from app.shared.resilience.circuit_breaker import APIFY_CIRCUIT
 

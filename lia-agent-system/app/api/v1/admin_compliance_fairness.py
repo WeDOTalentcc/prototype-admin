@@ -33,6 +33,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import require_admin
 from app.core.database import get_db
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -427,7 +428,7 @@ async def get_fairness_report(
     end_date: str | None = Query(None, description="Data de fim (ISO 8601) para period=custom"),
     _admin=Depends(require_admin),
     db: AsyncSession = Depends(get_db),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """
     Exporta relatório de fairness (Four-Fifths Rule / disparate impact).

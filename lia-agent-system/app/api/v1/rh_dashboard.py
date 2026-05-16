@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends, Query
 
 from app.api.deps import get_current_company_id
 from app.schemas.api_envelope import APIResponse
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 router = APIRouter()
@@ -24,7 +25,7 @@ async def list_lgpd_requests(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     company_id: str = Depends(get_current_company_id),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Proxies to Rails GET /v1/candidate-portal/lgpd-requests.
 
@@ -60,7 +61,7 @@ async def list_lgpd_requests(
 async def mark_lgpd_request_responded(
     request_id: str,
     company_id: str = Depends(get_current_company_id),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Proxies to Rails PATCH /v1/candidate-portal/lgpd-requests/:id/respond."""
     logger.info(

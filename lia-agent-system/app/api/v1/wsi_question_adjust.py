@@ -11,6 +11,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from app.domains.cv_screening.services.wsi_question_adjuster import wsi_question_adjuster_service
+from fastapi import Depends
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter(prefix="/wsi", tags=["WSI Question Adjust"])
 logger = logging.getLogger(__name__)
@@ -70,8 +72,8 @@ class GetQuestionsResponse(BaseModel):
 
 
 @router.post("/questions/adjust", response_model=None)
-async def adjust_questions(request: AdjustQuestionsRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def adjust_questions(request: AdjustQuestionsRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Adjust WSI questions based on recruiter's natural language prompt."""
     try:
         result = await wsi_question_adjuster_service.adjust_questions(
@@ -94,8 +96,8 @@ async def adjust_questions(request: AdjustQuestionsRequest):
 
 
 @router.post("/jd-evaluate", response_model=None)
-async def evaluate_jd(request: EvaluateJDRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def evaluate_jd(request: EvaluateJDRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Evaluate a Job Description for WSI question generation readiness."""
     try:
         result = await wsi_question_adjuster_service.evaluate_job_description(
@@ -114,8 +116,8 @@ async def evaluate_jd(request: EvaluateJDRequest):
 
 
 @router.post("/questions/save", response_model=SaveQuestionsResponse)
-async def save_questions(request: SaveQuestionsRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def save_questions(request: SaveQuestionsRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Save generated or adjusted screening questions to a job vacancy.
     Resets the adjuster iteration count for this job so fresh adjustments can be made.
@@ -159,8 +161,8 @@ async def save_questions(request: SaveQuestionsRequest):
 
 
 @router.get("/questions/{job_id}", response_model=GetQuestionsResponse)
-async def get_questions(job_id: str):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_questions(job_id: str, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Retrieve saved screening questions for a job vacancy.
     """

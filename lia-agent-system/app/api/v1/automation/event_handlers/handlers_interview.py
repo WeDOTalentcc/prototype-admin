@@ -29,6 +29,7 @@ from .._shared import (
     log_automation_execution,
     validate_multi_tenancy,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -267,8 +268,8 @@ async def handle_interview_scheduled(
     request: InterviewScheduledRequest,
     db: AsyncSession = Depends(get_db),
     activity_svc: ActivityService = Depends(get_activity_service_canonical),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Handle interview_scheduled trigger: send invites and create calendar event."""
     try:
         return await _process_interview_scheduled(request, db, activity_svc)
@@ -284,7 +285,7 @@ async def handle_interview_completed(
     request: InterviewCompletedRequest,
     db: AsyncSession = Depends(get_db),
     activity_svc: ActivityService = Depends(get_activity_service_canonical),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Handle interview_completed trigger.

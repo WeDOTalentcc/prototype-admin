@@ -32,6 +32,7 @@ from app.domains.analytics.services.activity_service import ActivityService, get
 from app.domains.job_management.dependencies import get_job_vacancy_lifecycle_repo
 from app.domains.job_management.repositories.job_vacancy_lifecycle_repository import JobVacancyLifecycleRepository
 from app.domains.communication.services.communication_service import CommunicationService, get_communication_service
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 
@@ -117,8 +118,8 @@ async def publish_job_vacancy_simple(
     job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     request: JobPublishRequest = JobPublishRequest(),
     repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
-    current_user: User = Depends(get_current_active_user)
-):
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
     """Publish a job vacancy and trigger automated sourcing (simple version)."""
     company_id = get_user_company_id(current_user)
 
@@ -189,8 +190,8 @@ async def confirm_global_search_simple(
     job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     request: ConfirmGlobalSearchRequest = ...,
     repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
-    current_user: User = Depends(get_current_active_user)
-):
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
     """Confirm global search expansion using Pearch AI."""
     company_id = get_user_company_id(current_user)
 
@@ -221,8 +222,8 @@ async def confirm_global_search_simple(
 async def get_sourcing_status_simple(
     job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
-    current_user: User = Depends(get_current_active_user)
-):
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
     """Get current sourcing status for a job (simple version)."""
     company_id = get_user_company_id(current_user)
 
@@ -308,7 +309,7 @@ async def unpublish_job_vacancy(
     job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
     current_user: User = Depends(get_current_active_user),
-):
+company_id: str = Depends(require_company_id)):
     """Phase C.2 — clear published_* flags. Symmetric to /publish.
 
     Idempotent: returns 200 with {changed: false} when the vacancy was
@@ -354,8 +355,8 @@ async def publish_job_vacancy_v2(
     job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     request: JobPublishRequestV2 = JobPublishRequestV2(),
     repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
-    current_user: User = Depends(get_current_active_user)
-):
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
     """Publish a job vacancy and trigger initial sourcing pipeline (full version)."""
     try:
         logger.info(f"Publishing job vacancy: {job_id}")
@@ -431,8 +432,8 @@ async def confirm_global_search_v2(
     job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     request: ConfirmGlobalSearchRequest = ...,
     repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
-    current_user: User = Depends(get_current_active_user)
-):
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
     """Confirm global search expansion for a job vacancy (full version)."""
     try:
         logger.info(f"Confirming global search for job: {job_id}")
@@ -491,8 +492,8 @@ async def confirm_global_search_v2(
 async def get_sourcing_status_v2(
     job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     """Get current sourcing progress and candidates found for a job (full version)."""
     try:
         logger.info(f"Getting sourcing status for job: {job_id}")
@@ -546,7 +547,7 @@ async def close_vacancy(
     current_user: User = Depends(get_current_user_or_demo),
     activity_svc: ActivityService = Depends(get_activity_service),
     comm_svc: CommunicationService = Depends(get_communication_service),
-) -> dict[str, Any]:
+company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     """Close a vacancy after hiring a candidate."""
     try:
         company_id = get_user_company_id(current_user)
@@ -689,8 +690,8 @@ async def close_vacancy(
 async def bulk_pause_job_vacancies(
     request: BulkActionRequest,
     repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
-    current_user: User = Depends(get_current_active_user)
-):
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
     """Pause multiple job vacancies."""
     from app.domains.job_management.services.job_audit_service import job_audit_service
 
@@ -775,8 +776,8 @@ async def bulk_pause_job_vacancies(
 async def bulk_resume_job_vacancies(
     request: BulkActionRequest,
     repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
-    current_user: User = Depends(get_current_active_user)
-):
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
     """Resume multiple paused job vacancies."""
     from app.domains.job_management.services.job_audit_service import job_audit_service
 
@@ -848,8 +849,8 @@ async def bulk_resume_job_vacancies(
 async def bulk_archive_job_vacancies(
     request: BulkActionRequest,
     repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
-    current_user: User = Depends(get_current_active_user)
-):
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
     """Archive multiple job vacancies (soft delete)."""
     from app.domains.job_management.services.job_audit_service import job_audit_service
 
@@ -916,8 +917,8 @@ async def bulk_archive_job_vacancies(
 async def bulk_assign_recruiter(
     request: BulkAssignRecruiterRequest,
     repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
-    current_user: User = Depends(get_current_active_user)
-):
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
     """Assign a recruiter to multiple job vacancies."""
     from app.domains.job_management.services.job_audit_service import job_audit_service
 
@@ -979,8 +980,8 @@ async def bulk_assign_recruiter(
 async def bulk_change_status(
     request: BulkChangeStatusRequest,
     repo: JobVacancyLifecycleRepository = Depends(get_job_vacancy_lifecycle_repo),
-    current_user: User = Depends(get_current_active_user)
-):
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
     """Change status for multiple job vacancies with transition validation."""
     from app.domains.job_management.services.job_audit_service import job_audit_service
 

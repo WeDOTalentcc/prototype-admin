@@ -42,6 +42,7 @@ from app.schemas.saas_metrics import (
     RevenueAnalysis,
     RevenueBreakdown,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -146,7 +147,7 @@ def _build_usage_response(usage) -> ClientUsageMetricsResponse:
 async def get_aggregate_metrics(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),
-) -> PlatformAggregateMetrics:
+company_id: str = Depends(require_company_id)) -> PlatformAggregateMetrics:
     # multi-tenancy: public endpoint (metrics) — no tenant data
     """
     Get platform-wide aggregated SaaS metrics.
@@ -275,7 +276,7 @@ async def get_aggregate_metrics(
 async def get_platform_summary(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (metrics) — no tenant data
     """
     Get platform-wide SaaS metrics summary.
@@ -361,7 +362,7 @@ async def get_all_client_metrics(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),
-) -> ClientAllMetricsResponse:
+company_id: str = Depends(require_company_id)) -> ClientAllMetricsResponse:
     # multi-tenancy: public endpoint (metrics) — no tenant data
     """
     Get all metrics (revenue, usage, health) for a specific client.
@@ -408,7 +409,7 @@ async def get_revenue_metrics(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),
-) -> ClientSaasMetricsResponse:
+company_id: str = Depends(require_company_id)) -> ClientSaasMetricsResponse:
     # multi-tenancy: public endpoint (metrics) — no tenant data
     """
     Get revenue metrics (MRR, ARR, LTV, CAC) for a specific client.
@@ -452,7 +453,7 @@ async def get_usage_metrics(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),
-) -> ClientUsageMetricsResponse:
+company_id: str = Depends(require_company_id)) -> ClientUsageMetricsResponse:
     # multi-tenancy: public endpoint (metrics) — no tenant data
     """
     Get usage metrics (AI credits, users, jobs, storage) for a specific client.
@@ -496,7 +497,7 @@ async def get_health_metrics(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),
-) -> ClientHealthMetricsResponse:
+company_id: str = Depends(require_company_id)) -> ClientHealthMetricsResponse:
     # multi-tenancy: public endpoint (health) — no tenant data
     """
     Get health metrics (churn risk, health score, NPS, engagement) for a specific client.
@@ -543,7 +544,7 @@ async def get_payment_history(
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),
-) -> PaymentHistoryListResponse:
+company_id: str = Depends(require_company_id)) -> PaymentHistoryListResponse:
     # multi-tenancy: public endpoint (metrics) — no tenant data
     """
     Get payment history for a specific client.
@@ -597,7 +598,7 @@ async def create_payment(
     payment_data: PaymentHistoryCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),
-) -> PaymentHistoryResponse:
+company_id: str = Depends(require_company_id)) -> PaymentHistoryResponse:
     # multi-tenancy: public endpoint (metrics) — no tenant data
     """
     Record a new payment for a specific client.
@@ -660,7 +661,7 @@ async def get_client_metrics(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get metrics for a specific client.
@@ -775,7 +776,7 @@ async def list_client_metrics(
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (metrics) — no tenant data
     """
     List metrics for all clients.
@@ -856,7 +857,7 @@ async def list_client_metrics(
 async def get_churn_analysis(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (metrics) — no tenant data
     """
     Get churn analysis data.
@@ -909,7 +910,7 @@ async def get_churn_analysis(
 async def get_revenue_analysis(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: SaasMetricsRepository = Depends(get_saas_metrics_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (metrics) — no tenant data
     """
     Get revenue breakdown analysis.

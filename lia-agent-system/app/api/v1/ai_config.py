@@ -22,6 +22,7 @@ from lia_models.company_hiring_policy import (
     COMMUNICATION_RULES_DEFAULTS,
     SCREENING_RULES_DEFAULTS,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -154,7 +155,7 @@ def _apply_update(policy: CompanyHiringPolicy, update: AIConfigUpdate) -> None:
 async def get_ai_config(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get unified AI configuration for the current tenant."""
     company_id = str(current_user.company_id)
@@ -167,7 +168,7 @@ async def update_ai_config(
     update: AIConfigUpdate,
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update AI configuration. Only provided fields are changed."""
     company_id = str(current_user.company_id)
@@ -180,8 +181,8 @@ async def update_ai_config(
 
 
 @router.get("/defaults/{sector}")
-async def get_sector_defaults(sector: str):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_sector_defaults(sector: str, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get benchmark defaults for a sector. Helps recruiters decide."""
     SECTOR_BENCHMARKS: dict[str, dict[str, Any]] = {
         "tech": {

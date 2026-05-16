@@ -24,6 +24,7 @@ from app.domains.job_management.services.wizard_data_priority_service import (
     JobContext,
     wizard_data_priority_service,
 )
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -91,7 +92,7 @@ async def get_field_suggestion(
     include_all_sources: bool = Query(False, description="Return suggestions from all sources"),
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-) -> FieldSuggestionsResponse:
+company_id: str = Depends(require_company_id)) -> FieldSuggestionsResponse:
     """
     Get a suggestion for a specific wizard field.
     
@@ -163,7 +164,7 @@ async def get_all_field_suggestions(
     ),
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-) -> AllFieldSuggestionsResponse:
+company_id: str = Depends(require_company_id)) -> AllFieldSuggestionsResponse:
     """
     Get suggestions for multiple wizard fields at once.
     
@@ -236,7 +237,7 @@ async def get_similar_jobs(
     limit: int = Query(5, le=20, description="Max results"),
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-) -> list[SimilarJobResponse]:
+company_id: str = Depends(require_company_id)) -> list[SimilarJobResponse]:
     """
     Find similar jobs for Fast Track mode.
     
@@ -269,7 +270,7 @@ async def get_similar_jobs(
 async def get_data_coverage(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-) -> dict[str, Any]:
+company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     """
     Get data coverage statistics for the Learning Loop.
     
@@ -320,8 +321,8 @@ async def get_data_coverage(
 
 
 @router.get("/sources-priority", response_model=None)
-async def get_sources_priority() -> dict[str, Any]:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_sources_priority(company_id: str = Depends(require_company_id)) -> dict[str, Any]:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get information about the data sources priority system.
     

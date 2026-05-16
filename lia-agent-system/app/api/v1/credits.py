@@ -11,6 +11,7 @@ from app.domains.credits.dependencies import get_credits_repo
 from app.domains.credits.repositories.credits_repository import CreditsRepository
 from app.domains.credits.services.credit_service import ACTION_CREDIT_COSTS
 from lia_models.billing import CreditTransactionType
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -79,8 +80,8 @@ class CreditTransactionResponse(BaseModel):
 async def get_credit_balance(
     request: Request,
     repo: CreditsRepository = Depends(get_credits_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     company_id = _get_company_id(request)
     try:
         data = await repo.get_balance(company_id)
@@ -95,8 +96,8 @@ async def add_credits(
     request: Request,
     body: AddCreditsRequest,
     repo: CreditsRepository = Depends(get_credits_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     user_role = getattr(request.state, "user_role", None)
     if user_role != "admin":
         raise HTTPException(status_code=403, detail="Admin access required")
@@ -138,8 +139,8 @@ async def consume_credits(
     request: Request,
     body: ConsumeCreditsRequest,
     repo: CreditsRepository = Depends(get_credits_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     company_id = _get_company_id(request)
     user_id = getattr(request.state, "user_id", "system")
 
@@ -173,8 +174,8 @@ async def consume_action_credits(
     request: Request,
     body: ConsumeActionRequest,
     repo: CreditsRepository = Depends(get_credits_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     company_id = _get_company_id(request)
     user_id = getattr(request.state, "user_id", "system")
 
@@ -213,8 +214,8 @@ async def consume_action_credits(
 
 
 @router.get("/costs")
-async def get_action_costs():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_action_costs(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     return {
         "costs": ACTION_CREDIT_COSTS,
     }
@@ -226,8 +227,8 @@ async def get_credit_transactions(
     repo: CreditsRepository = Depends(get_credits_repo),
     limit: int = Query(default=50, le=200),
     offset: int = Query(default=0, ge=0),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     company_id = _get_company_id(request)
     try:
         txs = await repo.get_transactions(company_id, limit, offset)

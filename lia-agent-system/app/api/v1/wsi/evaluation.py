@@ -38,6 +38,7 @@ from ._shared import (
     get_anthropic_client,
     parse_json_response,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -46,8 +47,8 @@ router = APIRouter()
 
 @router.post("/jd-evaluate", response_model=None)
 # TODO(phase2): extract to repository — complex WSI scoring logic
-async def evaluate_jd(request: JDEvaluateRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def evaluate_jd(request: JDEvaluateRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Evaluate job description quality using 9 dimensions (spec F1.B).
     Hard block if score < 30 (band=Crítico). 5 quality bands."""
     resp_count   = len(request.responsibilities or [])
@@ -280,9 +281,9 @@ async def evaluate_jd(request: JDEvaluateRequest):
 @router.post("/analyze-response", response_model=AnalyzeResponseOutput)
 async def analyze_response(
     request: AnalyzeResponseRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Analyze a single candidate response using Claude AI.
 
@@ -431,9 +432,9 @@ Return ONLY valid JSON:
 @router.post("/complete-screening", response_model=CompleteScreeningResponse)
 async def complete_screening(
     request: CompleteScreeningRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Complete WSI screening by analyzing all responses and generating final report.
 

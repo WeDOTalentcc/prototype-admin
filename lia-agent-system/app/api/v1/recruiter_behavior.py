@@ -17,6 +17,7 @@ from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
 from app.auth.models import User
 from app.core.database import get_db
 from app.shared.services.recruiter_behavior_service import recruiter_behavior_service
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +55,7 @@ async def get_behavior_profile(
     force_refresh: bool = False,
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     """
     Retorna o perfil comportamental de um recrutador.
 
@@ -84,7 +85,7 @@ async def record_behavior_signal(
     body: BehaviorSignalRequest,
     recruiter_id: str = Path(..., description="ID do recrutador"),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Registra um sinal comportamental do recrutador (fire-and-forget).
 
@@ -108,7 +109,7 @@ async def record_behavior_signal(
 async def invalidate_behavior_cache(
     recruiter_id: str = Path(..., description="ID do recrutador"),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """Força re-computação do perfil comportamental (remove cache Redis)."""
     company_id = get_user_company_id(current_user)
     if str(current_user.id) != recruiter_id and not getattr(current_user, "is_admin", False):

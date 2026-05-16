@@ -16,6 +16,8 @@ from app.shared.prompts.glossary_loader import (
     get_glossary,
     get_term,
 )
+from fastapi import Depends
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 
@@ -34,8 +36,8 @@ def _serialize(entry: GlossaryEntry) -> dict:
     summary="List canonical glossary terms",
     tags=["glossary"],
 )
-async def list_terms() -> dict:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def list_terms(company_id: str = Depends(require_company_id)) -> dict:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Return the canonical prompt terms that have a definition available."""
     glossary = get_glossary()
     available: list[dict] = []
@@ -57,8 +59,8 @@ async def list_terms() -> dict:
     summary="Lookup a glossary entry by name",
     tags=["glossary"],
 )
-async def get_term_definition(term: str) -> dict:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_term_definition(term: str, company_id: str = Depends(require_company_id)) -> dict:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Return the canonical definition for ``term`` (tolerant to case/accent)."""
     cleaned = term.strip()
     if not cleaned:

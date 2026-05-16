@@ -43,6 +43,7 @@ from app.schemas.email_template import (
     TemplatePreviewByIdRequest,
     TemplatePreviewByIdResponse,
 )
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -100,8 +101,8 @@ async def list_email_templates(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     List all email templates with optional filtering.
     If company_id is provided, returns templates for that company plus system templates (company_id IS NULL).
@@ -164,8 +165,8 @@ async def list_email_template_categories(
     company_id: str | None = Query(None),
     visibility: str | None = Query("recruiter"),
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     try:
         categories = await repo.list_distinct_categories(
             company_id=company_id,
@@ -181,8 +182,8 @@ async def list_email_template_categories(
 async def get_email_template(
     template_id: str,
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get a specific email template by ID.
     """
@@ -223,8 +224,8 @@ async def create_email_template(
     template_data: EmailTemplateCreate,
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
     email_svc: EmailService = Depends(get_email_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Create a new email template.
     """
@@ -291,8 +292,8 @@ async def update_email_template(
     template_data: EmailTemplateUpdate,
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
     email_svc: EmailService = Depends(get_email_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Update an existing email template.
     """
@@ -355,8 +356,8 @@ async def delete_email_template(
     template_id: str,
     hard_delete: bool = Query(False, description="If True, permanently delete. If False, soft delete (deactivate)."),
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Delete an email template (soft delete by default).
     """
@@ -392,8 +393,8 @@ async def preview_email(
     request: EmailPreviewRequest,
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
     email_svc: EmailService = Depends(get_email_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Preview an email with variables substituted.
     Can use an existing template or provide custom subject/body.
@@ -422,8 +423,8 @@ async def preview_template_by_id(
     template_id: str,
     request: TemplatePreviewByIdRequest,
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Preview a template by ID with variables substituted.
 
@@ -471,7 +472,7 @@ async def send_email(
     current_user: User = Depends(get_current_user),
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
     email_svc: EmailService = Depends(get_email_service),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Send an email using a template.
@@ -549,8 +550,8 @@ async def list_email_logs(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     List email logs with optional filtering.
     """
@@ -593,8 +594,8 @@ async def seed_default_templates(
     created_by: str = Query("system", description="User creating the templates"),
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
     email_svc: EmailService = Depends(get_email_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Seed the database with default email templates.
     Only creates templates that don't already exist (by name).
@@ -635,8 +636,8 @@ async def seed_default_templates(
 async def clone_templates_for_client(
     client_id: str,
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Clone all system templates for a new client.
 
@@ -663,8 +664,8 @@ async def clone_templates_for_client(
 @router.post("/seed-system-templates", response_model=None)
 async def seed_system_templates_endpoint(
     repo: EmailTemplatesRepository = Depends(get_email_templates_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Seed all system default templates.
 
@@ -692,8 +693,8 @@ async def seed_system_templates_endpoint(
 @router.post("/generate", response_model=TemplateGenerateResponse)
 async def generate_template_with_ai(
     request: TemplateGenerateRequest,
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Generate email template content using AI (Anthropic Claude).
 
@@ -820,8 +821,8 @@ Responda APENAS com o JSON, sem texto adicional."""
 @router.post("/adjust", response_model=TemplateAdjustResponse)
 async def adjust_template_with_ai(
     request: TemplateAdjustRequest,
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Adjust an existing email template using AI with a free-form prompt.
 

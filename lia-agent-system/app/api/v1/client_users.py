@@ -31,6 +31,7 @@ from app.schemas.client_user import (
     ClientUserRoleUpdate,
     ClientUserUpdate,
 )
+from app.shared.security.require_company_id import require_company_id
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://app.wedotalent.com")
 
@@ -101,7 +102,7 @@ async def verify_client_exists(client_id: str, repo: ClientUserRepository):
 async def accept_invitation(
     data: AcceptInvitationRequest,
     repo: ClientUserRepository = Depends(get_client_user_repo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Accept an invitation using the token from the email link.
     This endpoint is unauthenticated - only requires a valid token.
@@ -175,7 +176,7 @@ async def accept_invitation(
 async def validate_invitation(
     token: str = Query(..., description="Invitation token to validate"),
     repo: ClientUserRepository = Depends(get_client_user_repo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Validate an invitation token without accepting it.
     Returns basic info about the invitation if valid.
@@ -213,8 +214,8 @@ async def validate_invitation(
 # ---------------------------------------------------------------------------
 
 @router.get("/options", summary="List available role and status options", response_model=None)
-async def list_options():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def list_options(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List all available role and status options for client users."""
     return {
         "success": True,
@@ -235,7 +236,7 @@ async def list_client_users(
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientUserRepository = Depends(get_client_user_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List all users for a specific client."""
     try:
@@ -287,7 +288,7 @@ async def get_client_user(
     user_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientUserRepository = Depends(get_client_user_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get a specific user by ID for a client."""
     try:
@@ -329,7 +330,7 @@ async def create_client_user(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientUserRepository = Depends(get_client_user_repo),
     email_svc: EmailService = Depends(get_email_service),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create or invite a new user to a client."""
     try:
@@ -434,7 +435,7 @@ async def update_client_user(
     data: ClientUserUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientUserRepository = Depends(get_client_user_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update a user for a client."""
     try:
@@ -506,7 +507,7 @@ async def delete_client_user(
     user_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientUserRepository = Depends(get_client_user_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Soft delete a user from a client."""
     try:
@@ -566,7 +567,7 @@ async def resend_invite(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientUserRepository = Depends(get_client_user_repo),
     email_svc: EmailService = Depends(get_email_service),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Resend invitation email to a pending user."""
     try:
@@ -656,7 +657,7 @@ async def update_user_role(
     data: ClientUserRoleUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientUserRepository = Depends(get_client_user_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update the role of a user."""
     try:

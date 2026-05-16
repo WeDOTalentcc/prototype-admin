@@ -39,6 +39,7 @@ from app.schemas.company_hiring_policy import (
 )
 from app.shared.policy_helper import get_company_policy, invalidate_policy_cache
 from app.shared.policy_sync_service import sync_policy_to_models
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -84,8 +85,8 @@ def _blocks_completed(policy) -> dict[str, bool]:
 
 
 @router.get("/{company_id}", response_model=CompanyHiringPolicyResponse)
-async def get_policy(company_id: str, db: AsyncSession = Depends(get_db)):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_policy(company_id: str, db: AsyncSession = Depends(get_db), _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get hiring policy for a company. Returns defaults if none exists."""
     repo = HiringPolicyRepository(db)
     policy = await repo.get_by_company(company_id)
@@ -116,8 +117,8 @@ async def upsert_policy(
     payload: CompanyHiringPolicyUpdate,
     user_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Create or update full hiring policy for a company."""
     repo = HiringPolicyRepository(db)
     update_data = payload.model_dump(exclude_none=True)
@@ -145,8 +146,8 @@ async def update_policy_partial(
     payload: CompanyHiringPolicyUpdate,
     user_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Partially update hiring policy — merges provided blocks."""
     repo = HiringPolicyRepository(db)
     policy = await repo.create_if_missing(company_id, user_id)
@@ -183,8 +184,8 @@ async def update_policy_block(
     payload: CompanyHiringPolicyBlockUpdate,
     user_id: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update a single block of the hiring policy."""
     if payload.block not in VALID_BLOCKS:
         raise HTTPException(
@@ -219,8 +220,8 @@ async def update_policy_block(
 
 
 @router.get("/{company_id}/progress", response_model=PolicyProgressResponse)
-async def get_policy_progress(company_id: str, db: AsyncSession = Depends(get_db)):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_policy_progress(company_id: str, db: AsyncSession = Depends(get_db), _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get setup progress for a company's hiring policy."""
     repo = HiringPolicyRepository(db)
     policy = await repo.get_by_company(company_id)
@@ -244,8 +245,8 @@ async def policy_chat(
     company_id: str,
     payload: PolicyChatMessage,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Conversational endpoint for hiring policy configuration."""
     current_policy = await get_company_policy(company_id, db)
 

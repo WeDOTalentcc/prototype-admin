@@ -113,6 +113,7 @@ class VacancyGoalResponse(BaseModel):
 
 
 from app.domains.candidates.services.candidate_goal_service import candidate_goal_service as _recruiter_agent
+from app.shared.security.require_company_id import require_company_id
 
 
 @router.post("/calibration/feedback", response_model=CalibrationFeedbackResponse)
@@ -120,8 +121,8 @@ async def submit_calibration_feedback(
     request: CalibrationFeedbackRequest,
     db: AsyncSession = Depends(get_db),
     repo: ScreeningRepository = Depends(get_screening_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Recebe feedback de calibração do recrutador.
 
@@ -232,8 +233,8 @@ async def start_calibration_session(
     request: CalibrationStartRequest,
     db: AsyncSession = Depends(get_db),
     repo: ScreeningRepository = Depends(get_screening_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Inicia uma sessão de calibração.
 
@@ -310,8 +311,8 @@ async def start_calibration_session(
 async def get_calibration_status(
     session_id: str,
     repo: ScreeningRepository = Depends(get_screening_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Retorna o status da sessão de calibração.
 
@@ -383,9 +384,9 @@ async def get_calibration_status(
 @router.post("/vacancy/goal-check", response_model=VacancyGoalResponse)
 async def check_vacancy_candidate_goal(
     request: VacancyGoalRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Verifica se a vaga atingiu a meta de candidatos.
 
@@ -443,7 +444,7 @@ async def add_candidates_to_vacancy(
     db: AsyncSession = Depends(get_db),
     rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
     repo: ScreeningRepository = Depends(get_screening_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Adiciona candidatos a uma vaga e verifica meta automaticamente.
@@ -627,8 +628,8 @@ async def add_candidates_to_vacancy(
 async def get_vacancy_candidates_count(
     vacancy_id: str,
     repo: ScreeningRepository = Depends(get_screening_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Retorna a contagem de candidatos em uma vaga e o status da meta.
     """

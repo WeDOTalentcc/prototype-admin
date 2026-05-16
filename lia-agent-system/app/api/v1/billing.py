@@ -33,6 +33,7 @@ from app.schemas.billing import (
     SubscriptionUpdate,
 )
 from app.domains.billing.services.billing_service import BillingService
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -309,8 +310,8 @@ class UsageDataWrapper(BaseModel):
 async def get_billing_status(
     _company_id_check: str = Depends(_require_company_id_header),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    repo: BillingRepository = Depends(get_billing_repo)
-) -> BillingStatusResponse:
+    repo: BillingRepository = Depends(get_billing_repo), 
+company_id: str = Depends(require_company_id)) -> BillingStatusResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get status of billing providers (Iugu/Vindi).
@@ -361,8 +362,8 @@ async def list_subscriptions(
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     _company_id_check: str = Depends(_require_company_id_header),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    repo: BillingRepository = Depends(get_billing_repo)
-):
+    repo: BillingRepository = Depends(get_billing_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     List subscriptions.
@@ -420,8 +421,8 @@ async def list_subscriptions(
 async def get_client_subscription(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    repo: BillingRepository = Depends(get_billing_repo)
-):
+    repo: BillingRepository = Depends(get_billing_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get subscription for a specific client.
@@ -475,8 +476,8 @@ async def get_client_subscription(
 async def create_subscription(
     data: SubscriptionCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    repo: BillingRepository = Depends(get_billing_repo)
-):
+    repo: BillingRepository = Depends(get_billing_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Create a new subscription for a client.
@@ -534,8 +535,8 @@ async def update_subscription(
     subscription_id: str,
     data: SubscriptionUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    repo: BillingRepository = Depends(get_billing_repo)
-):
+    repo: BillingRepository = Depends(get_billing_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Update an existing subscription (change plan, etc).
@@ -608,8 +609,8 @@ async def cancel_subscription(
     subscription_id: str,
     data: SubscriptionCancel | None = None,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    repo: BillingRepository = Depends(get_billing_repo)
-):
+    repo: BillingRepository = Depends(get_billing_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Cancel a subscription.
@@ -673,8 +674,8 @@ async def list_invoices(
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    repo: BillingRepository = Depends(get_billing_repo)
-):
+    repo: BillingRepository = Depends(get_billing_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     List invoices.
@@ -734,8 +735,8 @@ async def get_client_invoices(
     status_filter: str | None = Query(None, alias="status", description="Filter by status"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    repo: BillingRepository = Depends(get_billing_repo)
-):
+    repo: BillingRepository = Depends(get_billing_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get invoices for a specific client.
@@ -787,8 +788,8 @@ async def get_client_invoices(
 async def get_invoice(
     invoice_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    repo: BillingRepository = Depends(get_billing_repo)
-):
+    repo: BillingRepository = Depends(get_billing_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get details of a specific invoice.
@@ -841,8 +842,8 @@ async def refund_invoice(
     invoice_id: str,
     data: RefundRequest | None = None,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    repo: BillingRepository = Depends(get_billing_repo)
-):
+    repo: BillingRepository = Depends(get_billing_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Process a refund for an invoice.
@@ -913,8 +914,8 @@ async def refund_invoice(
 async def get_client_payment_methods(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    repo: BillingRepository = Depends(get_billing_repo)
-):
+    repo: BillingRepository = Depends(get_billing_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get payment methods for a specific client.
@@ -961,8 +962,8 @@ async def get_client_payment_methods(
 async def add_payment_method(
     data: PaymentMethodCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    repo: BillingRepository = Depends(get_billing_repo)
-):
+    repo: BillingRepository = Depends(get_billing_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Add a new payment method for a subscription.
@@ -1053,8 +1054,8 @@ async def add_payment_method(
 async def remove_payment_method(
     payment_method_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    repo: BillingRepository = Depends(get_billing_repo)
-):
+    repo: BillingRepository = Depends(get_billing_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Remove (deactivate) a payment method.
@@ -1111,7 +1112,7 @@ async def remove_payment_method(
 @router.post("/webhooks/iugu", summary="Iugu webhook handler", response_model=WebhookProcessedResponse)
 async def handle_iugu_webhook(
     request: Request,
-    repo: BillingRepository = Depends(get_billing_repo)
+    repo: BillingRepository = Depends(get_billing_repo), 
 ):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
@@ -1150,8 +1151,8 @@ async def handle_iugu_webhook(
 @router.post("/webhooks/vindi", summary="Vindi webhook handler", response_model=WebhookProcessedResponse)
 async def handle_vindi_webhook(
     request: Request,
-    repo: BillingRepository = Depends(get_billing_repo)
-):
+    repo: BillingRepository = Depends(get_billing_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Handle webhooks from Vindi payment gateway.
@@ -1289,8 +1290,8 @@ def get_billing_settings(client) -> dict[str, Any]:
 async def get_client_billing(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    repo: BillingRepository = Depends(get_billing_repo)
-):
+    repo: BillingRepository = Depends(get_billing_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get complete billing data for a client from settings.
@@ -1333,8 +1334,8 @@ async def get_client_billing(
 @router.get("/subscription", summary="Get current user subscription", response_model=SubscriptionSettingsWrapper)
 async def get_current_subscription(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    repo: BillingRepository = Depends(get_billing_repo)
-):
+    repo: BillingRepository = Depends(get_billing_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get subscription for the current users company.
@@ -1371,8 +1372,8 @@ async def get_current_subscription(
 async def update_current_subscription(
     data: SubscriptionUpdateRequest,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    repo: BillingRepository = Depends(get_billing_repo)
-):
+    repo: BillingRepository = Depends(get_billing_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Update subscription for the current users company.
@@ -1427,8 +1428,8 @@ async def list_my_invoices(
     status_filter: str | None = Query(None, alias="status"),
     limit: int = Query(50, ge=1, le=200),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    repo: BillingRepository = Depends(get_billing_repo)
-):
+    repo: BillingRepository = Depends(get_billing_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     List invoices for the current users company from settings.
@@ -1468,8 +1469,8 @@ async def list_my_invoices(
 async def get_my_invoice(
     invoice_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    repo: BillingRepository = Depends(get_billing_repo)
-):
+    repo: BillingRepository = Depends(get_billing_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get details of a specific invoice from settings.
@@ -1509,8 +1510,8 @@ async def get_my_invoice(
 async def pay_my_invoice(
     invoice_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    repo: BillingRepository = Depends(get_billing_repo)
-):
+    repo: BillingRepository = Depends(get_billing_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Mark an invoice as paid (simulation mode).
@@ -1572,8 +1573,8 @@ async def pay_my_invoice(
 @router.get("/my-payment-methods", summary="List current user payment methods", response_model=PaymentMethodListWrapper)
 async def list_my_payment_methods(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    repo: BillingRepository = Depends(get_billing_repo)
-):
+    repo: BillingRepository = Depends(get_billing_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     List payment methods for the current users company from settings.
@@ -1608,8 +1609,8 @@ async def list_my_payment_methods(
 async def add_my_payment_method(
     data: PaymentMethodCreateRequest,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    repo: BillingRepository = Depends(get_billing_repo)
-):
+    repo: BillingRepository = Depends(get_billing_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Add a payment method for the current users company.
@@ -1663,8 +1664,8 @@ async def add_my_payment_method(
 async def remove_my_payment_method(
     method_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    repo: BillingRepository = Depends(get_billing_repo)
-):
+    repo: BillingRepository = Depends(get_billing_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Remove a payment method for the current users company.
@@ -1720,8 +1721,8 @@ async def remove_my_payment_method(
 @router.get("/usage", summary="Get current usage", response_model=UsageDataWrapper)
 async def get_usage(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
-    repo: BillingRepository = Depends(get_billing_repo)
-):
+    repo: BillingRepository = Depends(get_billing_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get current usage data for the users company.

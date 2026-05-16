@@ -19,6 +19,7 @@ from ._shared import (  # noqa: F401
 )
 from app.domains.job_management.repositories.job_vacancy_screening_repository import JobVacancyScreeningRepository
 from app.domains.job_management.dependencies import get_job_vacancy_screening_repo
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 
@@ -106,9 +107,9 @@ class ScreeningStatusUpdateRequest(BaseModel):
 @router.get("/vagas/{job_id}/screening-config", response_model=ScreeningConfigResponse)
 async def get_screening_config(
     job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
-    repo: JobVacancyScreeningRepository = Depends(get_job_vacancy_screening_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: JobVacancyScreeningRepository = Depends(get_job_vacancy_screening_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get screening configuration for a job vacancy."""
     try:
         job = await repo.get_vacancy_by_id(job_id)
@@ -158,8 +159,8 @@ async def update_screening_config(
     job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     config_data: ScreeningConfigRequest = ...,
     repo: JobVacancyScreeningRepository = Depends(get_job_vacancy_screening_repo),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update screening configuration for a job vacancy."""
     try:
@@ -225,8 +226,8 @@ async def update_screening_status(
     job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     request: ScreeningStatusUpdateRequest = ...,
     repo: JobVacancyScreeningRepository = Depends(get_job_vacancy_screening_repo),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update the screening status for a job vacancy."""
     if request.screening_status not in VALID_SCREENING_STATUSES:

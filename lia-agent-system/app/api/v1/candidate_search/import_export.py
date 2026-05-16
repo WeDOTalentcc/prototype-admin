@@ -81,14 +81,15 @@ def _generate_fingerprint(name: str, linkedin_url: str | None = None, email: str
 
 from app.auth.dependencies import assert_resource_ownership, get_current_user_or_demo, get_user_company_id
 from app.auth.models import User as ImportUser
+from app.shared.security.require_company_id import require_company_id
 
 
 @router.post("/candidates/import", response_model=ImportCandidatesResponse)
 async def import_pearch_candidates(
     request: ImportCandidatesRequest,
     current_user: ImportUser = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
     """
     Importa candidatos da busca Pearch para a TABELA DE STAGING (external_candidate_profiles).
     
@@ -295,8 +296,8 @@ class PromoteCandidateResponse(BaseModel):
 async def promote_candidate_to_main_base(
     profile_id: str,
     current_user: ImportUser = Depends(get_current_user_or_demo),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
     """
     Promove um candidato descoberto (staging) para a base principal.
     

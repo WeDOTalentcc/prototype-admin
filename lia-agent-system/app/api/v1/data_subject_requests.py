@@ -34,6 +34,7 @@ from app.schemas.data_subject_requests import (
     DataSubjectRequestVerifyIdentity,
 )
 from app.shared.tenant_guard import get_verified_company_id
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +125,7 @@ def _make_audit_entry(action: str, user_id: str | None = None, details: dict | N
 async def create_data_subject_request(
     data: DataSubjectRequestCreate,
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Create a new data subject request (public endpoint - no authentication required).
@@ -205,8 +206,8 @@ async def create_data_subject_request(
 async def track_request_status(
     request_id: str,
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Track the status of a data subject request (public endpoint).
 
@@ -244,7 +245,7 @@ async def track_request_status(
 async def get_request_stats(
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get aggregated statistics for data subject requests."""
     try:
@@ -287,7 +288,7 @@ async def list_data_subject_requests(
     limit: int = Query(50, ge=1, le=200),
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List data subject requests with filters and pagination."""
     try:
@@ -322,7 +323,7 @@ async def get_data_subject_request(
     request_id: str,
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get detailed information about a specific data subject request."""
     try:
@@ -350,7 +351,7 @@ async def assign_request(
     data: DataSubjectRequestAssign,
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Assign a data subject request to a user for handling."""
     try:
@@ -396,7 +397,7 @@ async def verify_identity(
     data: DataSubjectRequestVerifyIdentity,
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Verify the identity of the data subject making the request."""
     try:
@@ -452,7 +453,7 @@ async def start_processing(
     request_id: str,
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Start processing a data subject request."""
     try:
@@ -501,7 +502,7 @@ async def complete_request(
     data: DataSubjectRequestComplete,
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Complete a data subject request with a response."""
     try:
@@ -576,7 +577,7 @@ async def reject_request(
     data: DataSubjectRequestReject,
     company_id: str = Depends(get_verified_company_id),
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Reject a data subject request with a reason."""
     try:

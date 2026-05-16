@@ -8,6 +8,7 @@ from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.shared.channels.channel_adapter import ChannelMessage, ChannelType
 from app.shared.channels.multi_channel_service import multi_channel_service
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +78,7 @@ class DeliveryStatusResponse(BaseModel):
 
 
 @router.post("/send", response_model=SendMessageResponse)
-async def send_message(request: SendMessageRequest, current_user: User = Depends(get_current_user_or_demo)):
+async def send_message(request: SendMessageRequest, current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         channel_types = []
@@ -128,7 +129,7 @@ async def send_message(request: SendMessageRequest, current_user: User = Depends
 
 
 @router.get("/status/{message_id}", response_model=DeliveryStatusResponse)
-async def get_delivery_status(message_id: str, current_user: User = Depends(get_current_user_or_demo)):
+async def get_delivery_status(message_id: str, current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         status = await multi_channel_service.get_delivery_status(message_id)
@@ -151,7 +152,7 @@ async def get_delivery_status(message_id: str, current_user: User = Depends(get_
 
 
 @router.get("/channels", response_model=ChannelStatusResponse)
-async def list_available_channels(current_user: User = Depends(get_current_user_or_demo)):
+async def list_available_channels(current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         channels = await multi_channel_service.get_available_channels()
@@ -164,7 +165,7 @@ async def list_available_channels(current_user: User = Depends(get_current_user_
 
 
 @router.post("/bulk", response_model=BulkSendResponse)
-async def send_bulk_messages(request: BulkSendRequest, current_user: User = Depends(get_current_user_or_demo)):
+async def send_bulk_messages(request: BulkSendRequest, current_user: User = Depends(get_current_user_or_demo), company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         try:

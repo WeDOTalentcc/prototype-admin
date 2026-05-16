@@ -35,6 +35,7 @@ from ._shared import (
     settings,
     User,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +47,7 @@ async def transition_candidate(
     request: TransitionRequest,
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Transition a candidate to a new stage/sub-status.
 
@@ -87,7 +88,7 @@ async def get_candidate_stage_info(
     vacancy_candidate_id: str,
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Get current stage/sub-status info for a candidate.
     Uses the authenticated user's company for access control.
@@ -116,7 +117,7 @@ async def get_candidate_history(
     limit: int = Query(default=50, ge=1, le=200),
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Get stage transition history for a candidate.
     Uses the authenticated user's company for access control.
@@ -143,7 +144,7 @@ async def get_candidate_history(
 async def interpret_transition_context(
     request: InterpretContextRequest,
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Interpret a candidate stage transition context.
     Layer 3: PipelineTransitionAgent (ReAct loop with tools) — primary.
@@ -267,7 +268,7 @@ async def execute_transition(
     request: TransitionExecuteRequest,
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Execute a candidate stage transition with optional auto-dispatch."""
     import asyncio as _asyncio

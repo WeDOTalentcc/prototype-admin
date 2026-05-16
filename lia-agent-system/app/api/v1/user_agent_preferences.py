@@ -19,6 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.shared.services.user_agent_preference_service import UserAgentPreferenceService
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -78,8 +79,8 @@ async def list_user_preferences(
     user_id: str = Query(...),
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Lista todas as preferências de auto_confirm de um usuário."""
     prefs = await UserAgentPreferenceService.list_user_preferences(
         db, user_id=user_id, company_id=company_id
@@ -91,7 +92,7 @@ async def list_user_preferences(
 async def upsert_preference(
     data: PreferenceUpsertRequest,
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Cria ou atualiza preferência de auto_confirm."""
     pref = await UserAgentPreferenceService.upsert(
@@ -112,8 +113,8 @@ async def check_auto_confirm(
     domain: str = Query(...),
     action_type: str = Query(...),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Verifica se auto_confirm está ativo para um usuário/domínio/ação.
     Usado pelo HITL service antes de cada aprovação.

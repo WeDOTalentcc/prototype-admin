@@ -38,6 +38,7 @@ from .._shared import (
     log_automation_execution,
     validate_multi_tenancy,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +55,7 @@ async def handle_candidate_inactive(
     db: AsyncSession = Depends(get_db),
     audit_svc: AuditService = Depends(get_audit_service),
     activity_svc: ActivityService = Depends(get_activity_service_canonical),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Handle candidate_inactive trigger.
@@ -358,7 +359,7 @@ async def handle_candidate_no_show(
     db: AsyncSession = Depends(get_db),
     audit_svc: AuditService = Depends(get_audit_service),
     activity_svc: ActivityService = Depends(get_activity_service_canonical),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Handle candidate_no_show trigger.
@@ -717,7 +718,7 @@ async def handle_offer_sent(
     db: AsyncSession = Depends(get_db),
     audit_svc: AuditService = Depends(get_audit_service),
     activity_svc: ActivityService = Depends(get_activity_service_canonical),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Handle when an offer is sent to a candidate.
@@ -884,7 +885,7 @@ async def handle_candidate_hired(
     audit_svc: AuditService = Depends(get_audit_service),
     activity_svc: ActivityService = Depends(get_activity_service_canonical),
     pipeline_service: PipelineStageService = Depends(get_pipeline_stage_service),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Handle when a candidate is hired.
@@ -1083,7 +1084,7 @@ async def handle_candidate_rejected(
     audit_svc: AuditService = Depends(get_audit_service),
     activity_svc: ActivityService = Depends(get_activity_service_canonical),
     pipeline_service: PipelineStageService = Depends(get_pipeline_stage_service),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Handle when a candidate is rejected.

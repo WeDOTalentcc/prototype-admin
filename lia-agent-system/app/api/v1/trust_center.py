@@ -36,6 +36,7 @@ from app.schemas.trust_center import (
     TrustCenterUpdateResponse,
 )
 from app.shared.tenant_guard import get_verified_company_id
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +47,7 @@ router = APIRouter(prefix="/trust-center", tags=["trust-center"])
 async def get_trust_center_overview(
     company_slug: str,
     repo: TrustCenterRepository = Depends(get_trust_center_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (trust_center) — no tenant data
     """Get public-facing trust center overview for a company."""
     try:
@@ -103,7 +104,7 @@ async def get_trust_center_overview(
 async def get_trust_center_certifications(
     company_slug: str,
     repo: TrustCenterRepository = Depends(get_trust_center_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (trust_center) — no tenant data
     """Get public certifications and compliance badges."""
     try:
@@ -151,7 +152,7 @@ async def get_trust_center_certifications(
 async def get_trust_center_controls(
     company_slug: str,
     repo: TrustCenterRepository = Depends(get_trust_center_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (trust_center) — no tenant data
     """Get high-level public control status by framework."""
     try:
@@ -214,7 +215,7 @@ async def get_trust_center_controls(
 async def get_trust_center_bias_audits(
     company_slug: str,
     repo: TrustCenterRepository = Depends(get_trust_center_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (trust_center) — no tenant data
     """Get public bias audit reports."""
     try:
@@ -260,7 +261,7 @@ async def get_trust_center_subprocessors(
     company_slug: str,
     category: str | None = Query(None, description="Filter by category"),
     repo: TrustCenterRepository = Depends(get_trust_center_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (trust_center) — no tenant data
     """Get list of data subprocessors."""
     try:
@@ -287,7 +288,7 @@ async def get_trust_center_resources(
     company_slug: str,
     category: str | None = Query(None, description="Filter by category"),
     repo: TrustCenterRepository = Depends(get_trust_center_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (trust_center) — no tenant data
     """Get list of downloadable policies and documents."""
     try:
@@ -312,7 +313,7 @@ async def get_trust_center_updates(
     category: str | None = Query(None, description="Filter by category"),
     limit: int = Query(10, ge=1, le=50, description="Max results"),
     repo: TrustCenterRepository = Depends(get_trust_center_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (trust_center) — no tenant data
     """Get compliance news and updates."""
     try:
@@ -337,7 +338,7 @@ async def create_trust_center_settings(
     settings_data: TrustCenterSettingsCreate,
     company_id: str = Depends(get_verified_company_id),
     repo: TrustCenterRepository = Depends(get_trust_center_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (trust_center) — no tenant data
     """Create trust center settings for a company (admin only)."""
     try:
@@ -371,7 +372,7 @@ async def update_trust_center_settings(
     settings_data: TrustCenterSettingsUpdate,
     company_id: str = Depends(get_verified_company_id),
     repo: TrustCenterRepository = Depends(get_trust_center_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (trust_center) — no tenant data
     """Update trust center settings (admin only)."""
     try:
@@ -405,7 +406,7 @@ async def update_trust_center_settings(
 async def get_trust_center_settings(
     company_id: str = Depends(get_verified_company_id),
     repo: TrustCenterRepository = Depends(get_trust_center_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (trust_center) — no tenant data
     """Get trust center settings for authenticated company."""
     try:
@@ -431,7 +432,7 @@ async def create_trust_center_resource(
     resource_data: TrustCenterResourceCreate,
     company_id: str = Depends(get_verified_company_id),
     repo: TrustCenterRepository = Depends(get_trust_center_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (trust_center) — no tenant data
     """Add a downloadable resource (admin only)."""
     try:
@@ -448,7 +449,7 @@ async def create_subprocessor(
     subprocessor_data: SubprocessorCreate,
     company_id: str = Depends(get_verified_company_id),
     repo: TrustCenterRepository = Depends(get_trust_center_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (trust_center) — no tenant data
     """Add a data subprocessor (admin only)."""
     try:
@@ -465,7 +466,7 @@ async def create_trust_center_update(
     update_data: TrustCenterUpdateCreate,
     company_id: str = Depends(get_verified_company_id),
     repo: TrustCenterRepository = Depends(get_trust_center_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (trust_center) — no tenant data
     """Post a compliance update/news (admin only)."""
     try:

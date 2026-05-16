@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 from app.domains.journey_mapping.dependencies import get_journey_mapping_repo
 from app.domains.journey_mapping.repositories.journey_mapping_repository import JourneyMappingRepository
 from app.domains.ai.services.llm import llm_service
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -239,8 +240,8 @@ STEP_TYPE_MAP = {
 @router.post("/wizard/complete", response_model=JourneyBlueprintResponse)
 async def complete_wizard(
     data: WizardCompleteData,
-    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
-):
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Complete the journey mapping wizard by creating:
@@ -349,9 +350,9 @@ async def complete_wizard(
 @router.get("/blueprint", response_model=JourneyBlueprintResponse)
 async def get_company_blueprint(
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get the company's journey blueprint with steps and integrations."""
     try:
         blueprint = await repo.get_company_blueprint(company_id)
@@ -370,8 +371,8 @@ async def get_company_blueprint(
 @router.post("/blueprint", response_model=JourneyBlueprintResponse)
 async def create_blueprint(
     data: JourneyBlueprintCreate,
-    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
-):
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new journey blueprint for a company."""
     try:
@@ -398,9 +399,9 @@ async def update_blueprint(
     blueprint_id: uuid.UUID,
     data: JourneyBlueprintUpdate,
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update an existing journey blueprint."""
     try:
         blueprint = await repo.get_blueprint_with_relations(blueprint_id)
@@ -424,9 +425,9 @@ async def update_blueprint(
 async def save_wizard_step(
     data: WizardStepData,
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Save wizard step data and update progress."""
     try:
         blueprint = await repo.get_blueprint_with_relations(data.blueprint_id)
@@ -449,9 +450,9 @@ async def save_wizard_step(
 async def get_steps(
     blueprint_id: uuid.UUID = Query(..., description="Blueprint ID"),
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get all steps for a journey blueprint."""
     try:
         blueprint = await repo.get_blueprint(blueprint_id)
@@ -468,9 +469,9 @@ async def get_steps(
 async def create_step(
     data: JourneyStepCreate,
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Create a new journey step."""
     try:
         blueprint = await repo.get_blueprint(data.blueprint_id)
@@ -491,9 +492,9 @@ async def update_step(
     step_id: uuid.UUID,
     data: JourneyStepUpdate,
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update an existing journey step."""
     try:
         step = await repo.get_step(step_id)
@@ -521,9 +522,9 @@ async def update_step(
 async def delete_step(
     step_id: uuid.UUID,
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Delete a journey step."""
     try:
         step = await repo.get_step(step_id)
@@ -550,9 +551,9 @@ async def delete_step(
 async def get_integrations(
     blueprint_id: uuid.UUID = Query(..., description="Blueprint ID"),
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get all integrations for a journey blueprint."""
     try:
         blueprint = await repo.get_blueprint(blueprint_id)
@@ -569,9 +570,9 @@ async def get_integrations(
 async def create_integration(
     data: JourneyIntegrationCreate,
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Create a new journey integration."""
     try:
         blueprint = await repo.get_blueprint(data.blueprint_id)
@@ -592,9 +593,9 @@ async def update_integration(
     integration_id: uuid.UUID,
     data: JourneyIntegrationUpdate,
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update an existing journey integration."""
     try:
         integration = await repo.get_integration(integration_id)
@@ -621,9 +622,9 @@ async def update_integration(
 async def get_ai_recommendations(
     data: AIRecommendationsRequest,
     company_id: uuid.UUID = Query(..., description="Company ID"),
-    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: JourneyMappingRepository = Depends(get_journey_mapping_repo), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get AI-generated recommendations for journey optimization."""
     try:
         blueprint = await repo.get_blueprint_with_relations(data.blueprint_id)

@@ -28,6 +28,7 @@ from app.schemas.calendar import (
     ScheduleInterviewRequest,
     TimeSlot,
 )
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -51,7 +52,7 @@ class CalendarHealthResponse(BaseModel):
 
 
 @router.get("/health", response_model=CalendarHealthResponse)
-async def calendar_health():
+async def calendar_health(company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
     """Health check for calendar integration."""
     is_configured = (
@@ -68,8 +69,8 @@ async def calendar_health():
 
 
 @router.post("/availability", response_model=list[TimeSlot], dependencies=[Depends(check_graph_configured)])
-async def check_availability(request: AvailabilityRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def check_availability(request: AvailabilityRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Check interviewer availability for a specific date.
     Returns available time slots.
@@ -96,8 +97,8 @@ async def check_availability(request: AvailabilityRequest):
 
 
 @router.post("/find-meeting-times", response_model=list[dict], dependencies=[Depends(check_graph_configured)])
-async def find_meeting_times(request: FindMeetingTimeRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def find_meeting_times(request: FindMeetingTimeRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Find best meeting times for interview using Microsoft Graph findMeetingTimes API.
     Returns suggested meeting times sorted by confidence.
@@ -123,7 +124,7 @@ async def schedule_interview(
     http_request: Request,
     body: ScheduleInterviewRequest,
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Schedule an interview appointment.
@@ -187,8 +188,8 @@ class CancelInterviewResponse(BaseModel):
 
 
 @router.post("/cancel-interview", dependencies=[Depends(check_graph_configured)], response_model=CancelInterviewResponse)
-async def cancel_interview(request: CancelInterviewRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def cancel_interview(request: CancelInterviewRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Cancel a scheduled interview.
     Sends cancellation notification to all attendees.
@@ -213,8 +214,8 @@ async def cancel_interview(request: CancelInterviewRequest):
 
 
 @router.post("/reschedule-interview", response_model=dict, dependencies=[Depends(check_graph_configured)])
-async def reschedule_interview(request: RescheduleInterviewRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def reschedule_interview(request: RescheduleInterviewRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Reschedule an existing interview to a new time.
     Sends update notification to all attendees.
@@ -285,7 +286,7 @@ class GoogleCalendarHealthResponse(BaseModel):
 
 
 @router.get("/google/health", response_model=GoogleCalendarHealthResponse)
-async def google_calendar_health():
+async def google_calendar_health(company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
     """Health check for Google Calendar integration."""
     return {
@@ -305,8 +306,8 @@ class GoogleAvailabilitySlotsResponse(BaseModel):
 
 
 @router.post("/google/availability", dependencies=[Depends(check_google_calendar_configured)], response_model=GoogleAvailabilitySlotsResponse)
-async def google_check_availability(request: GoogleAvailabilityRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def google_check_availability(request: GoogleAvailabilityRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Check attendee availability using Google Calendar freebusy API.
     Returns list of available time slots.
@@ -333,8 +334,8 @@ class GoogleScheduleInterviewResponse(BaseModel):
 
 
 @router.post("/google/schedule-interview", dependencies=[Depends(check_google_calendar_configured)], response_model=GoogleScheduleInterviewResponse)
-async def google_schedule_interview(request: GoogleScheduleInterviewRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def google_schedule_interview(request: GoogleScheduleInterviewRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Create a Google Calendar event for an interview with optional Google Meet link.
     """
@@ -362,8 +363,8 @@ class GoogleCancelInterviewResponse(BaseModel):
 
 
 @router.post("/google/cancel-interview", dependencies=[Depends(check_google_calendar_configured)], response_model=GoogleCancelInterviewResponse)
-async def google_cancel_interview(request: GoogleCancelInterviewRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def google_cancel_interview(request: GoogleCancelInterviewRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Cancel a Google Calendar event and notify attendees.
     """
@@ -394,8 +395,12 @@ class GoogleOAuthAuthUrlResponse(BaseModel):
 
 
 @router.get("/google/auth-url", dependencies=[Depends(check_google_calendar_configured)], response_model=GoogleOAuthAuthUrlResponse)
-async def google_oauth_auth_url(request: Request, company_id: str = Query(..., description="Company ID")):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def google_oauth_auth_url(
+    request: Request,
+    company_id: str = Query(..., description="Company ID"),
+    _gate: str = Depends(require_company_id_strict_match("query.company_id")),
+):
+    # multi-tenancy: gated via require_company_id_strict_match (JWT vs query.company_id) — 403 on mismatch (Task #1143)
     """
     Generate Google OAuth authorization URL.
     Frontend redirects the user (admin) to this URL to grant calendar access.
@@ -452,7 +457,7 @@ async def google_oauth_callback(
     code: str = Query(...),
     state: str = Query(..., description="company_id passed as OAuth state"),
 ):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Handle Google OAuth callback. Exchanges code for tokens and stores
     encrypted credentials in company_calendar_credentials.
@@ -584,8 +589,12 @@ def _assert_company_access(request: Request, company_id: str) -> None:
 
 
 @router.get("/microsoft/auth-url", dependencies=[Depends(check_microsoft_oauth_configured)], response_model=MicrosoftOAuthAuthUrlResponse)
-async def microsoft_oauth_auth_url(request: Request, company_id: str = Query(..., description="Company ID")):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def microsoft_oauth_auth_url(
+    request: Request,
+    company_id: str = Query(..., description="Company ID"),
+    _gate: str = Depends(require_company_id_strict_match("query.company_id")),
+):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Generate Microsoft OAuth authorization URL for delegated calendar access.
     Frontend redirects the company admin to this URL to grant calendar permissions.
@@ -624,7 +633,7 @@ async def microsoft_oauth_callback(
     code: str = Query(...),
     state: str = Query(...),
 ):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Handle Microsoft OAuth callback. Exchanges authorization code for tokens
     and stores encrypted credentials in company_calendar_credentials.
@@ -711,8 +720,12 @@ class MicrosoftOAuthStatusResponse(BaseModel):
 
 
 @router.get("/microsoft/oauth-status", response_model=MicrosoftOAuthStatusResponse)
-async def microsoft_oauth_status(request: Request, company_id: str = Query(..., description="Company ID")):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def microsoft_oauth_status(
+    request: Request,
+    company_id: str = Query(..., description="Company ID"),
+    _gate: str = Depends(require_company_id_strict_match("query.company_id")),
+):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Return Microsoft Calendar OAuth connection status for a company.
     Queries company_calendar_credentials without making external calls.
@@ -760,8 +773,12 @@ class GoogleOAuthStatusResponse(BaseModel):
 
 
 @router.get("/google/oauth-status", dependencies=[Depends(check_google_calendar_configured)], response_model=GoogleOAuthStatusResponse)
-async def google_oauth_status(request: Request, company_id: str = Query(..., description="Company ID")):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def google_oauth_status(
+    request: Request,
+    company_id: str = Query(..., description="Company ID"),
+    _gate: str = Depends(require_company_id_strict_match("query.company_id")),
+):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Return the current Google Calendar OAuth connection status for a company.
     Caller must belong to the same company (tenant-scoped).

@@ -18,6 +18,7 @@ from app.auth.dependencies import get_current_user
 from app.core.database import get_db
 from app.domains.analytics.repositories.fairness_report_repository import FairnessReportRepository
 from app.schemas.envelope import ResponseEnvelope, ok_envelope
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 router = APIRouter(prefix="/fairness", tags=["fairness-reports"])
 
@@ -56,7 +57,7 @@ async def get_fairness_summary(
     days: int = Query(30, ge=1, le=365, description="Look-back period in days"),
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Summary of FairnessGuard events grouped by bias category.
@@ -97,7 +98,7 @@ async def get_fairness_trend(
     days: int = Query(90, ge=7, le=365, description="Look-back period in days"),
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Daily trend of FairnessGuard events over time.
@@ -155,7 +156,7 @@ async def get_fairness_audit_logs(
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Paginado audit trail do FairnessGuard — EU AI Act / LGPD compliance.
@@ -205,7 +206,7 @@ async def export_fairness_report(
     format: str = Query("csv", regex="^(csv|json)$"),
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Export FairnessGuard report as CSV or JSON (EU AI Act compliance).

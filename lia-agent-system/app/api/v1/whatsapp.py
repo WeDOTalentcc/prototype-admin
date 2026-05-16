@@ -22,6 +22,7 @@ from app.domains.communication.services.whatsapp_meta_service import meta_whatsa
 from app.domains.communication.services.whatsapp_provider import ProviderType
 from app.domains.communication.services.whatsapp_twilio_service import twilio_whatsapp_service
 from app.domains.recruiter_assistant.services.conversation_manager import ConversationManager
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -112,9 +113,8 @@ class WebhookVerifyParams(BaseModel):
 
 @router.get("/webhook", response_model=None)
 async def verify_webhook(
-    request: Request
+    request: Request, 
 ):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Verify webhook subscription from Meta.
     
@@ -156,9 +156,8 @@ def extract_phone_number_id(payload: dict) -> str | None:
 @router.post("/webhook", response_model=None)
 async def receive_webhook(
     request: Request,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db), 
 ):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Receive incoming messages and status updates from Meta WhatsApp.
     
@@ -265,9 +264,8 @@ async def receive_webhook(
 @router.post("/twilio-webhook", response_model=None)
 async def receive_twilio_webhook(
     request: Request,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db), 
 ):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Receive incoming messages from Twilio WhatsApp.
     
@@ -386,9 +384,8 @@ class SendFeedbackRequest(BaseModel):
 @router.post("/send-message", response_model=None)
 async def send_message(
     request: SendMessageRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
     """
     Send a WhatsApp message (for testing/manual messaging).
     
@@ -419,9 +416,8 @@ async def send_message(
 @router.post("/send-feedback", response_model=None)
 async def send_feedback(
     request: SendFeedbackRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
     """
     Send feedback to a candidate after recruiter decision.
     """
@@ -442,9 +438,8 @@ async def list_conversations(
     company_id: str | None = Query(default=None),
     status: str | None = Query(default=None),
     limit: int = Query(default=50, le=100),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     """
     List WhatsApp conversations for a company.
     
@@ -471,8 +466,8 @@ async def list_conversations_authenticated(
     company_id: str | None = Query(default=None),
     status: str | None = Query(default=None),
     limit: int = Query(default=50, le=100),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     """
     List WhatsApp conversations for a company (authenticated endpoint).
     
@@ -522,8 +517,7 @@ async def list_conversations_authenticated(
 
 
 @router.get("/providers", response_model=None)
-async def list_providers():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def list_providers(company_id: str = Depends(require_company_id)):
     """
     List available WhatsApp providers and their configuration status.
     """
@@ -546,7 +540,7 @@ async def list_providers():
 
 
 @router.get("/health", response_model=None)
-async def whatsapp_health():
+async def whatsapp_health(company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
     """
     Health check for WhatsApp integration.

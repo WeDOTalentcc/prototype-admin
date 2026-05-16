@@ -18,6 +18,7 @@ from ._shared import (
     SubStatusRepository,
     User,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ async def list_stage_sub_statuses(
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
     sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List sub-statuses for a specific stage. Use include_inactive=true in settings to show full catalog."""
     try:
@@ -64,7 +65,7 @@ async def create_sub_status(
     current_user: User = Depends(require_admin_or_recruiter),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
     sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
-):
+company_id: str = Depends(require_company_id)):
     """Create a new sub-status for a stage. Validates stage ownership."""
     try:
         effective_company_id = get_user_company_id(current_user)
@@ -95,7 +96,7 @@ async def update_sub_status(
     sub_status: SubStatusCreate,
     current_user: User = Depends(require_admin_or_recruiter),
     sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update a sub-status. Validates resource ownership."""
     try:
@@ -124,7 +125,7 @@ async def patch_sub_status(
     payload: dict = Body(...),
     current_user: User = Depends(require_admin_or_recruiter),
     sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Partially update a sub-status (e.g., toggle is_active or is_default). All fields optional."""
     try:
@@ -150,7 +151,7 @@ async def delete_sub_status(
     sub_status_id: str,
     current_user: User = Depends(require_admin_or_recruiter),
     sub_status_repo: SubStatusRepository = Depends(get_sub_status_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Delete a sub-status (soft delete). Validates resource ownership."""
     try:

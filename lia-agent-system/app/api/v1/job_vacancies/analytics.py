@@ -25,6 +25,7 @@ from app.domains.job_vacancies_analytics.dependencies import get_job_vacancies_a
 from app.domains.job_vacancies_analytics.repositories.job_vacancies_analytics_repository import (
     JobVacanciesAnalyticsRepository,
 )
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 
@@ -73,7 +74,7 @@ async def get_job_vacancy_metrics(
     job_vacancy_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     current_user: User = Depends(get_current_user_or_demo),
     repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
-):
+company_id: str = Depends(require_company_id)):
     """Get performance metrics for a specific job vacancy."""
     try:
         company_id = get_user_company_id(current_user)
@@ -221,7 +222,7 @@ async def get_job_analytics(
     job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     current_user: User = Depends(get_current_user_or_demo),
     repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
-):
+company_id: str = Depends(require_company_id)):
     """Returns detailed analytics for a job vacancy."""
     try:
         company_id = get_user_company_id(current_user)
@@ -449,7 +450,7 @@ async def get_job_vacancy_history(
     page_size: int = Query(50, ge=1, le=100),
     current_user: User = Depends(get_current_user_or_demo),
     repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
-):
+company_id: str = Depends(require_company_id)):
     """Get audit history for a job vacancy."""
     from app.domains.job_management.services.job_audit_service import job_audit_service
     from app.core.database import get_db as _get_db
@@ -647,7 +648,7 @@ async def get_job_vacancies_stats_overview(
     recruiter_email: str | None = Query(None),
     current_user: User = Depends(get_current_user_or_demo),
     repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
-):
+company_id: str = Depends(require_company_id)):
     """Get aggregated metrics for the job vacancies dashboard."""
     try:
         company_id = get_user_company_id(current_user)
@@ -869,7 +870,7 @@ async def get_job_report(
     current_user: User = Depends(get_current_user_or_demo),
     repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
     db=None,
-):
+company_id: str = Depends(require_company_id)):
     # Support db kwarg for backwards compatibility (tests inject db directly)
     if db is not None and not hasattr(repo, 'get_job_by_id_and_company'):
         from app.domains.job_vacancies_analytics.repositories.job_vacancies_analytics_repository import JobVacanciesAnalyticsRepository as _JVAR
@@ -955,7 +956,7 @@ async def get_work_model_analytics(
     period: str = Query("90d"),
     current_user=Depends(get_current_user_or_demo),
     repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     company_id = str(current_user.company_id) if hasattr(current_user, "company_id") and current_user.company_id else None
     if not company_id:
@@ -1081,7 +1082,7 @@ STAGE_TO_MACRO = {
 async def get_pipeline_pulse(
     current_user=Depends(get_current_user_or_demo),
     repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Lightweight pipeline counts grouped by macro recruitment stage."""
     company_id = str(current_user.company_id) if hasattr(current_user, "company_id") and current_user.company_id else None
@@ -1121,7 +1122,7 @@ async def get_pipeline_overview(
     candidates_per_stage: int = Query(default=100, ge=1, le=500, description="Max candidates to return per stage"),
     current_user=Depends(get_current_user_or_demo),
     repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Aggregate candidate counts by stage across all active job vacancies
@@ -1398,7 +1399,7 @@ async def get_job_lifecycle_overview(
     vacancies_per_stage: int = Query(default=50, ge=1, le=500),
     current_user: User = Depends(get_current_user_or_demo),
     repo: JobVacanciesAnalyticsRepository = Depends(get_job_vacancies_analytics_repo),
-):
+company_id: str = Depends(require_company_id)):
     """Aggregate job vacancies by 8 lifecycle stages for the panoramic view.
 
     Companion to `/pipeline-overview` (candidate side). Powers the

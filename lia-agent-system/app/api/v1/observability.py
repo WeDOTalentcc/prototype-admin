@@ -49,6 +49,7 @@ from app.schemas.observability import (
     ObservabilityDashboardResponse,
 )
 from app.shared.tenant_guard import get_verified_company_id
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -70,7 +71,7 @@ async def get_ai_inference_stats(
     end_date: datetime | None = Query(None, description="End date filter"),
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get aggregated statistics for AI inference logs."""
     try:
@@ -112,7 +113,7 @@ async def list_ai_inference_logs(
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List AI inference logs with optional filters."""
     try:
@@ -145,7 +146,7 @@ async def get_ai_inference_log(
     log_id: str,
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get a specific AI inference log by ID."""
     try:
@@ -173,7 +174,7 @@ async def get_data_access_stats(
     end_date: datetime | None = Query(None, description="End date filter"),
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get aggregated statistics for data access logs (LGPD)."""
     try:
@@ -212,7 +213,7 @@ async def list_data_access_logs(
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List data access logs with optional filters (LGPD compliance)."""
     try:
@@ -249,7 +250,7 @@ async def list_consent_records(
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List consent records with optional filters."""
     try:
@@ -280,7 +281,7 @@ async def get_candidate_consents(
     is_active: bool | None = Query(None, description="Filter by active status"),
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get all consent records for a specific candidate."""
     try:
@@ -309,7 +310,7 @@ async def create_consent_record(
     data: ConsentCreate,
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Register a new consent record."""
     try:
@@ -343,7 +344,7 @@ async def revoke_consent(
     data: ConsentRevoke,
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Revoke an existing consent record."""
     try:
@@ -376,7 +377,7 @@ async def list_incidents(
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List incident reports with optional filters."""
     try:
@@ -409,7 +410,7 @@ async def create_incident(
     data: IncidentCreate,
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new incident report."""
     try:
@@ -438,7 +439,7 @@ async def update_incident(
     data: IncidentUpdate,
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update an existing incident report."""
     try:
@@ -483,7 +484,7 @@ async def resolve_incident(
     data: IncidentResolve,
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Mark an incident as resolved."""
     try:
@@ -520,7 +521,7 @@ async def get_evaluation_summary(
     model_version: str | None = Query(None, description="Filter by model version"),
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get summary of model evaluations by dimension."""
     try:
@@ -552,7 +553,7 @@ async def list_model_evaluations(
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List model evaluations with optional filters."""
     try:
@@ -584,7 +585,7 @@ async def get_compliance_summary(
     framework: str | None = Query(None, description="Filter by framework"),
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get summary of compliance controls by framework."""
     try:
@@ -613,7 +614,7 @@ async def list_compliance_controls(
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List compliance controls with optional filters."""
     try:
@@ -645,7 +646,7 @@ async def update_compliance_control(
     data: ComplianceControlUpdate,
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update a compliance control."""
     try:
@@ -687,7 +688,7 @@ async def get_observability_dashboard(
     period_days: int = Query(30, ge=1, le=365, description="Period in days"),
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get consolidated dashboard data for observability."""
     try:
@@ -758,7 +759,7 @@ async def get_observability_dashboard(
 async def get_latest_bias_audit(
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get the most recent bias audit report for the company."""
     try:
@@ -780,7 +781,7 @@ async def get_latest_bias_audit(
 async def get_bias_audit_summary(
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get a summary of all bias audits for the company."""
     try:
@@ -819,7 +820,7 @@ async def list_bias_audits(
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List bias audit reports with optional filters."""
     try:
@@ -851,7 +852,7 @@ async def get_bias_audit(
     audit_id: str,
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get a specific bias audit report by ID."""
     try:
@@ -876,7 +877,7 @@ async def create_bias_audit(
     data: BiasAuditCreate,
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new bias audit report."""
     try:
@@ -930,7 +931,7 @@ async def publish_bias_audit(
     data: BiasAuditPublish,
     company_id: str = Depends(get_verified_company_id),
     repo: ObservabilityRepository = Depends(get_observability_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Publish or unpublish a bias audit report."""
     try:

@@ -22,6 +22,7 @@ from app.services.notification_service import (
     ProactiveNotificationType,
 )
 from app.domains.communication.services.email_service import EmailService, get_email_service
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/notifications", tags=["notifications"])
@@ -142,9 +143,9 @@ async def get_notifications(
     notification_type: str | None = None,
     limit: int = 50,
     offset: int = 0,
-    repo: NotificationsRepository = Depends(get_notifications_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: NotificationsRepository = Depends(get_notifications_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get notifications for a user.
     """
@@ -169,9 +170,9 @@ async def get_notifications(
 @router.get("/summary", response_model=None)
 async def get_notification_summary(
     user_id: str = "default_user",
-    repo: NotificationsRepository = Depends(get_notifications_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: NotificationsRepository = Depends(get_notifications_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get notification summary for header badge.
     """
@@ -189,9 +190,9 @@ async def get_notification_summary(
 @router.post("", response_model=None)
 async def create_notification(
     request: CreateNotificationRequest,
-    repo: NotificationsRepository = Depends(get_notifications_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: NotificationsRepository = Depends(get_notifications_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Create a new notification.
     """
@@ -223,9 +224,9 @@ async def create_notification(
 async def mark_notification_as_read(
     notification_id: str,
     user_id: str = "default_user",
-    repo: NotificationsRepository = Depends(get_notifications_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: NotificationsRepository = Depends(get_notifications_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Mark a notification as read.
     """
@@ -246,9 +247,9 @@ async def mark_notification_as_read(
 async def mark_all_as_read(
     user_id: str = "default_user",
     category: str | None = None,
-    repo: NotificationsRepository = Depends(get_notifications_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: NotificationsRepository = Depends(get_notifications_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Mark all notifications as read for a user.
     """
@@ -267,9 +268,9 @@ async def mark_all_as_read(
 async def dismiss_notification(
     notification_id: str,
     user_id: str = "default_user",
-    repo: NotificationsRepository = Depends(get_notifications_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: NotificationsRepository = Depends(get_notifications_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Dismiss a notification.
     """
@@ -289,9 +290,9 @@ async def dismiss_notification(
 @router.post("/recruiter-action", response_model=None)
 async def send_recruiter_action_notification(
     request: RecruiterActionNotificationRequest,
-    repo: NotificationsRepository = Depends(get_notifications_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: NotificationsRepository = Depends(get_notifications_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Send notifications to recruiters about job actions (pause, activate, unpublish, etc.).
     Supports multiple channels: email, teams, bell.
@@ -394,9 +395,9 @@ async def send_recruiter_action_notification(
 @router.get("/unread-count", response_model=None)
 async def get_unread_count(
     user_id: str = "default_user",
-    repo: NotificationsRepository = Depends(get_notifications_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: NotificationsRepository = Depends(get_notifications_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get the count of unread notifications for the bell badge.
     """
@@ -420,9 +421,9 @@ async def get_chat_notifications(
     thread_id: str | None = None,
     undelivered_only: bool = True,
     limit: int = 20,
-    repo: NotificationsRepository = Depends(get_notifications_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: NotificationsRepository = Depends(get_notifications_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get pending chat notifications for inline display in chat.
     """
@@ -446,9 +447,9 @@ async def get_chat_notifications(
 async def mark_chat_notification_delivered(
     notification_id: str,
     user_id: str = "default_user",
-    repo: NotificationsRepository = Depends(get_notifications_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: NotificationsRepository = Depends(get_notifications_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Mark a single chat notification as delivered.
     """
@@ -469,9 +470,9 @@ async def mark_chat_notification_delivered(
 async def mark_chat_notifications_delivered(
     request: MarkDeliveredRequest,
     user_id: str = "default_user",
-    repo: NotificationsRepository = Depends(get_notifications_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: NotificationsRepository = Depends(get_notifications_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Mark multiple chat notifications as delivered.
     """
@@ -489,9 +490,9 @@ async def mark_chat_notifications_delivered(
 @router.post("/send", response_model=None)
 async def send_multi_channel_notification(
     request: MultiChannelNotificationRequest,
-    repo: NotificationsRepository = Depends(get_notifications_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: NotificationsRepository = Depends(get_notifications_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Send a notification to multiple channels (chat, bell, teams).
     """
@@ -555,9 +556,9 @@ async def send_proactive_notification(
     related_candidate_id: str | None = None,
     suggested_actions: list[str] | None = None,
     priority: str = "normal",
-    repo: NotificationsRepository = Depends(get_notifications_repo)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    repo: NotificationsRepository = Depends(get_notifications_repo), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Send a proactive notification (convenience endpoint).
     Automatically sends to both chat and bell channels.
@@ -610,8 +611,8 @@ class UpdateThresholdRequest(BaseModel):
 @router.post("/proactive/check", response_model=None)
 async def trigger_proactive_check(
     request: ProactiveAlertCheckRequest,
-    repo: NotificationsRepository = Depends(get_notifications_repo)
-):
+    repo: NotificationsRepository = Depends(get_notifications_repo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Trigger a proactive alert check for a user.
@@ -647,9 +648,9 @@ async def trigger_proactive_check(
 
 @router.get("/proactive/history", response_model=None)
 async def get_proactive_alert_history(
-    user_id: str = "default_user"
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    user_id: str = "default_user", 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get history of proactive alerts sent to a user.
 
@@ -672,9 +673,9 @@ async def get_proactive_alert_history(
 
 @router.put("/proactive/thresholds", response_model=None)
 async def update_alert_threshold(
-    request: UpdateThresholdRequest
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    request: UpdateThresholdRequest, 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Update threshold configuration for an alert condition.
 
@@ -706,8 +707,8 @@ async def update_alert_threshold(
 
 
 @router.get("/proactive/thresholds", response_model=None)
-async def get_alert_thresholds():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_alert_thresholds(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get all alert threshold configurations.
 
@@ -735,8 +736,8 @@ async def get_alert_thresholds():
 async def send_job_created_notification(
     request: JobCreatedNotificationRequest,
     email_svc: EmailService = Depends(get_email_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Send job created notification to recruiter and manager.
 

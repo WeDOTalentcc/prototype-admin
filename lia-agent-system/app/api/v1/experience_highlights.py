@@ -18,6 +18,7 @@ from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
 from app.domains.cv_screening.repositories.experience_highlight_repository import ExperienceHighlightRepository
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -156,8 +157,8 @@ def generate_fallback_highlight(data: GenerateHighlightRequest) -> str:
 async def get_experience_highlight(
     candidate_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
-) -> ExperienceHighlightResponse:
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)) -> ExperienceHighlightResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     company_id = current_user.company_id
     """
@@ -187,8 +188,8 @@ async def get_experience_highlight(
 async def generate_experience_highlight(
     request: GenerateHighlightRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
-) -> ExperienceHighlightResponse:
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)) -> ExperienceHighlightResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     company_id = current_user.company_id
     """
@@ -241,8 +242,8 @@ async def generate_experience_highlight(
 async def delete_experience_highlight(
     candidate_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     company_id = current_user.company_id
     """Delete cached highlight for a candidate (admin use)."""
@@ -257,8 +258,8 @@ async def delete_experience_highlight(
 async def batch_generate_highlights(
     candidates: list[GenerateHighlightRequest],
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
-) -> list[ExperienceHighlightResponse]:
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)) -> list[ExperienceHighlightResponse]:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Generate highlights for multiple candidates at once.

@@ -15,6 +15,7 @@ from ._shared import (
     hubspot_service,
     logger,
 )
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 
@@ -32,7 +33,7 @@ async def get_hubspot_sync_status(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get HubSpot sync status for a client."""
     try:
@@ -54,7 +55,7 @@ async def sync_client_hubspot(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Manually sync a client to HubSpot CRM. Only admin users can trigger manual sync."""
     try:
@@ -87,7 +88,7 @@ async def update_hubspot_onboarding(
     data: HubSpotOnboardingUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update onboarding status on HubSpot for a client. Only admin users."""
     try:

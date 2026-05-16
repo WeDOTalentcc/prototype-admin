@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.shared.tenant_guard import get_verified_company_id
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -37,8 +38,8 @@ async def get_premium_suggestions(
     user_id: str = Query(..., description="User ID — required for per-user history"),
     limit: int = Query(10, ge=1, le=20),
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get premium autocomplete suggestions based on company history.

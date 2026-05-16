@@ -21,6 +21,7 @@ from app.domains.job_management.services.recruitment_email_templates import (
     seed_default_templates,
 )
 from app.models.recruitment_email_template import RecruitmentEmailTemplate, RecruitmentStageName, TemplateType
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -125,9 +126,9 @@ async def list_recruitment_email_templates(
     template_type: str | None = Query(None, description="Filter by template type: candidate, recruiter, manager"),
     is_active: bool | None = Query(None, description="Filter by active status"),
     company_id: str | None = Query(None, description="Filter by company ID"),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     List all recruitment email templates with optional filtering.
     Returns company-specific templates plus system templates.
@@ -151,8 +152,8 @@ async def list_recruitment_email_templates(
 
 
 @router.get("/stages", response_model=list[StageInfo])
-async def list_available_stages():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def list_available_stages(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     List all available recruitment stages for templates.
     """
@@ -172,8 +173,8 @@ async def list_available_stages():
 
 
 @router.get("/types", response_model=list[TemplateTypeInfo])
-async def list_template_types():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def list_template_types(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     List all available template types.
     """
@@ -186,8 +187,8 @@ async def list_template_types():
 
 
 @router.get("/variables", response_model=None)
-async def list_available_variables():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def list_available_variables(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     List all available template variables with sample values.
     """
@@ -202,9 +203,9 @@ async def get_template_by_stage(
     stage_name: str,
     template_type: str = Query("candidate", description="Template type: candidate, recruiter, manager"),
     company_id: str | None = Query(None, description="Company ID for company-specific templates"),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get the active template for a specific recruitment stage.
     Falls back to system template if no company-specific template exists.
@@ -236,8 +237,8 @@ async def get_template_by_stage(
 async def get_template_by_id(
     template_id: str,
     repo: RecruitmentEmailTemplateRepository = Depends(get_recruitment_email_template_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get a specific template by ID.
     """
@@ -260,8 +261,8 @@ async def update_template(
     template_id: str,
     update_data: TemplateUpdateRequest,
     repo: RecruitmentEmailTemplateRepository = Depends(get_recruitment_email_template_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Update a recruitment email template.
     System templates cannot be modified directly.
@@ -293,9 +294,9 @@ async def update_template(
 @router.post("/seed", response_model=SeedResponse)
 async def seed_templates(
     company_id: str | None = Query(None, description="Company ID to seed templates for"),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Seed default recruitment email templates.
     If company_id is provided, seeds for that company.
@@ -317,9 +318,9 @@ async def seed_templates(
 @router.post("/clone", response_model=SeedResponse)
 async def clone_system_templates(
     company_id: str = Query(..., description="Company ID to clone templates for"),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Clone system templates for a specific company.
     This allows companies to customize their own templates.
@@ -342,8 +343,8 @@ async def preview_template_with_data(
     template_id: str,
     preview_request: TemplatePreviewRequest,
     repo: RecruitmentEmailTemplateRepository = Depends(get_recruitment_email_template_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Preview a template with provided or sample data.
     """
@@ -378,9 +379,9 @@ async def preview_stage_template(
     preview_request: TemplatePreviewRequest,
     template_type: str = Query("candidate"),
     company_id: str | None = Query(None),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Preview the template for a specific stage with provided or sample data.
     """
@@ -421,8 +422,8 @@ async def preview_stage_template(
 async def delete_template(
     template_id: str,
     repo: RecruitmentEmailTemplateRepository = Depends(get_recruitment_email_template_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Delete a recruitment email template.
     System templates cannot be deleted.

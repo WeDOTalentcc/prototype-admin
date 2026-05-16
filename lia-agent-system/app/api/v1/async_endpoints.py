@@ -11,6 +11,8 @@ from pydantic import BaseModel, Field
 
 from app.core.celery_app import celery_app
 from app.schemas.async_job import AsyncJobResponse, AsyncJobStatusResponse
+from fastapi import Depends
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter(prefix="/async", tags=["async-jobs"])
 logger = logging.getLogger(__name__)
@@ -40,7 +42,7 @@ class TriagemBatchRequest(BaseModel):
 
 
 @router.post("/triagem/run-batch", response_model=AsyncJobResponse, summary="Triagem curricular em lote")
-async def run_triagem_batch(req: TriagemBatchRequest):
+async def run_triagem_batch(req: TriagemBatchRequest, company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Dispara triagem curricular em lote via Celery.
@@ -76,7 +78,7 @@ class WSIInterviewRequest(BaseModel):
 
 
 @router.post("/interviews/wsi/start", response_model=AsyncJobResponse, summary="Iniciar entrevista WSI")
-async def start_wsi_interview(req: WSIInterviewRequest):
+async def start_wsi_interview(req: WSIInterviewRequest, company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Inicia entrevista WSI em background.
@@ -107,7 +109,7 @@ class SourcingSearchRequest(BaseModel):
 
 
 @router.post("/sourcing/search", response_model=AsyncJobResponse, summary="Busca de candidatos via Pearch")
-async def search_candidates_async(req: SourcingSearchRequest):
+async def search_candidates_async(req: SourcingSearchRequest, company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Busca candidatos via Pearch AI + banco interno em background.
@@ -142,7 +144,7 @@ class BulkEmailRequest(BaseModel):
 
 
 @router.post("/communication/email/bulk", response_model=AsyncJobResponse, summary="Envio de email em massa")
-async def send_bulk_email(req: BulkEmailRequest):
+async def send_bulk_email(req: BulkEmailRequest, company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Dispara envio de email em massa via Celery.
@@ -169,8 +171,8 @@ async def send_bulk_email(req: BulkEmailRequest):
 # ---------------------------------------------------------------------------
 
 @router.get("/jobs/{job_id}/status", response_model=AsyncJobStatusResponse, summary="Status de tarefa async")
-async def get_job_status(job_id: str):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_job_status(job_id: str, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Polling fallback — retorna status atual de uma tarefa Celery.
     Preferir WebSocket /ws/jobs/{job_id} para atualizações em tempo real.

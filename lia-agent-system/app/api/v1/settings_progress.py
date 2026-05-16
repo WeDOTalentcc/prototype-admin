@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.company.repositories.settings_progress_repository import SettingsProgressRepository
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -49,8 +50,8 @@ async def calculate_company_data_progress(company, db: AsyncSession) -> tuple[in
 @router.get("/progress", response_model=None)
 async def get_settings_progress(
     company_id: str = Query(default=None, description="Company ID (optional, uses default if not provided)"),
-    db: AsyncSession = Depends(get_db)
-) -> dict[str, Any]:
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))) -> dict[str, Any]:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get settings completion progress.

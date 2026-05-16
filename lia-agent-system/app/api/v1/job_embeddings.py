@@ -13,6 +13,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
 from app.domains.job_management.services.job_embedding_service import job_embedding_service
+from fastapi import Depends
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 router = APIRouter(prefix="/job-embeddings", tags=["Job Embeddings"])
 logger = logging.getLogger(__name__)
@@ -67,7 +69,7 @@ class BatchProcessRequest(BaseModel):
 
 
 @router.post("/create", response_model=None)
-async def create_embedding(request: CreateEmbeddingRequest):
+async def create_embedding(request: CreateEmbeddingRequest, company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Create or update embedding for a job vacancy.
@@ -101,7 +103,7 @@ async def create_embedding(request: CreateEmbeddingRequest):
 
 
 @router.post("/similar", response_model=None)
-async def find_similar_jobs(request: SimilarJobsRequest):
+async def find_similar_jobs(request: SimilarJobsRequest, company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Find semantically similar jobs using vector search.
@@ -133,7 +135,7 @@ async def find_similar_jobs(request: SimilarJobsRequest):
 
 
 @router.post("/fast-track", response_model=None)
-async def get_fast_track_suggestions(request: FastTrackRequest):
+async def get_fast_track_suggestions(request: FastTrackRequest, company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get Fast Track suggestions for quick job creation.
@@ -172,7 +174,7 @@ class FullJobDataRequest(BaseModel):
 
 
 @router.post("/full-job-data", response_model=None)
-async def get_full_job_data(request: FullJobDataRequest):
+async def get_full_job_data(request: FullJobDataRequest, company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get complete job data for Fast Track copy.
@@ -206,7 +208,7 @@ async def get_full_job_data(request: FullJobDataRequest):
 
 
 @router.post("/batch-process", response_model=None)
-async def batch_process_embeddings(request: BatchProcessRequest):
+async def batch_process_embeddings(request: BatchProcessRequest, company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Process embeddings for multiple jobs in batch.
@@ -228,8 +230,8 @@ async def batch_process_embeddings(request: BatchProcessRequest):
 
 
 @router.get("/stats/{company_id}", response_model=None)
-async def get_embedding_stats(company_id: str):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_embedding_stats(company_id: str, _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get embedding statistics for a company.
     """
@@ -264,7 +266,7 @@ class OutcomeUpdateRequest(BaseModel):
 
 
 @router.post("/fast-track/record-usage", response_model=None)
-async def record_fast_track_usage(request: FastTrackUsageRequest):
+async def record_fast_track_usage(request: FastTrackUsageRequest, company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Record when Fast Track is used to create a job.
@@ -287,7 +289,7 @@ async def record_fast_track_usage(request: FastTrackUsageRequest):
 
 
 @router.post("/outcome", response_model=None)
-async def update_job_outcome(request: OutcomeUpdateRequest):
+async def update_job_outcome(request: OutcomeUpdateRequest, company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Update job embedding with outcome data.
@@ -313,8 +315,8 @@ async def update_job_outcome(request: OutcomeUpdateRequest):
 
 
 @router.get("/fast-track/insights/{company_id}", response_model=None)
-async def get_fast_track_insights(company_id: str):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_fast_track_insights(company_id: str, _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get Fast Track usage insights for a company.
     

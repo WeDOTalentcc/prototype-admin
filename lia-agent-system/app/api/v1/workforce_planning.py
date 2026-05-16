@@ -16,6 +16,7 @@ from sqlalchemy.orm.attributes import flag_modified
 from app.core.database import get_db
 from app.models.client_account import ClientAccount
 from app.shared.tenant_guard import get_verified_company_id
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/workforce-planning", tags=["workforce-planning"])
@@ -83,8 +84,8 @@ async def list_workforce_plans(
     year: int | None = Query(None, description="Filter by year"),
     status_filter: str | None = Query(None, alias="status", description="Filter by status"),
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List all workforce plans for the company."""
     try:
@@ -123,8 +124,8 @@ async def list_workforce_plans(
 async def get_workforce_plan(
     plan_id: str,
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get a specific workforce plan by ID."""
     try:
@@ -158,8 +159,8 @@ async def get_workforce_plan(
 async def create_workforce_plan(
     data: WorkforcePlanCreate,
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new workforce plan."""
     try:
@@ -208,8 +209,8 @@ async def update_workforce_plan(
     plan_id: str,
     data: WorkforcePlanUpdate,
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update an existing workforce plan."""
     try:
@@ -266,8 +267,8 @@ async def update_workforce_plan(
 async def delete_workforce_plan(
     plan_id: str,
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Delete a workforce plan."""
     try:
@@ -309,8 +310,8 @@ async def delete_workforce_plan(
 async def list_plan_departments(
     plan_id: str,
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List all departments in a workforce plan."""
     try:
@@ -351,8 +352,8 @@ async def list_plan_departments(
 async def calculate_plan_metrics(
     plan_id: str,
     company_id: str = Depends(get_verified_company_id),
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (metrics) — no tenant data
     """Recalculate metrics for a workforce plan based on department data."""
     try:

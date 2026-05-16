@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.recruitment.repositories.search_feedback_repository import SearchFeedbackRepository
 from app.models.search_feedback import SearchFeedback
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -33,8 +34,8 @@ async def submit_feedback(
     request: Request,
     body: SubmitFeedbackRequest,
     repo: SearchFeedbackRepository = Depends(get_search_feedback_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     user_id = getattr(request.state, "user_id", None)
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
@@ -77,8 +78,8 @@ async def get_user_feedbacks(
     request: Request,
     job_id: str | None = None,
     repo: SearchFeedbackRepository = Depends(get_search_feedback_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     user_id = getattr(request.state, "user_id", None)
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")
@@ -94,8 +95,8 @@ async def get_user_feedbacks(
 async def get_job_feedbacks(
     job_id: str,
     repo: SearchFeedbackRepository = Depends(get_search_feedback_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     feedbacks = await repo.list_for_job(job_id=job_id)
 
     likes = sum(1 for f in feedbacks if f.feedback_type == "like")
@@ -114,8 +115,8 @@ async def delete_feedback(
     request: Request,
     feedback_id: str,
     repo: SearchFeedbackRepository = Depends(get_search_feedback_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     user_id = getattr(request.state, "user_id", None)
     if not user_id:
         raise HTTPException(status_code=401, detail="Authentication required")

@@ -13,6 +13,7 @@ from app.core.database import get_db
 from app.domains.compliance.services.compliance_reporter import ComplianceReporter
 from app.auth.models import User
 from app.schemas.envelope import ResponseEnvelope, ok_envelope, error_envelope
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,7 @@ async def get_compliance_report(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
     _: None = Depends(require_admin),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # UC-P0-08: admin é role, NÃO é fronteira de tenant. company_id da query
     # tem que bater com o tenant do JWT do usuário autenticado.
     jwt_company = get_user_company_id(current_user)

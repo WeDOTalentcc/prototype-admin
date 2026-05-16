@@ -13,6 +13,7 @@ from app.auth.dependencies import get_current_user
 from app.core.database import get_db
 from pydantic import BaseModel, Field
 from typing import Optional
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter(prefix="/api/v1/sourcing", tags=["Multi-Strategy Search"])
 
@@ -54,7 +55,7 @@ class MultiStrategyResponse(BaseModel):
 async def multi_strategy_search(
     body: MultiStrategyRequest,
     current_user: dict = Depends(get_current_user),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Execute 4 search strategies in parallel, deduplicate and rank results.

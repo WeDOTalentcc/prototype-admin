@@ -1,0 +1,14 @@
+# RLS coverage sensor allowlist — Task #1143.
+#
+# Tables listed here are reported as "allowlisted" by
+# scripts/check_table_has_rls_policy.py and excluded from the GAP count.
+#
+# Prefer adding `# RLS-EXEMPT: <reason>` to the model file instead — this
+# allowlist exists only for false-positives where the sensor's regex picks
+# up a `company_id` column alias that doesn't actually require RLS
+# (e.g. legacy `client_id`/`workspace_id` references that mention
+# `company_id` in a docstring).
+#
+# Format: one tablename per line, comments start with `#`.
+
+# (intentionally empty — populate as false-positives surface)

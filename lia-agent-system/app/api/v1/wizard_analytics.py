@@ -13,6 +13,8 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
 from app.domains.analytics.services.wizard_analytics_service import wizard_analytics_service
+from fastapi import Depends
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 router = APIRouter(prefix="/wizard-analytics", tags=["Wizard Analytics"])
 logger = logging.getLogger(__name__)
@@ -54,7 +56,7 @@ class CompleteSessionRequest(BaseModel):
 
 
 @router.post("/session/start", response_model=None)
-async def start_session(request: StartSessionRequest):
+async def start_session(request: StartSessionRequest, company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Start tracking a new wizard session."""
     try:
@@ -76,8 +78,8 @@ async def start_session(request: StartSessionRequest):
 
 
 @router.post("/session/stage", response_model=None)
-async def track_stage_change(request: StageChangeRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def track_stage_change(request: StageChangeRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Track stage change in session."""
     try:
         wizard_analytics_service.track_stage_change(
@@ -93,8 +95,8 @@ async def track_stage_change(request: StageChangeRequest):
 
 
 @router.post("/session/field", response_model=None)
-async def track_field_update(request: FieldUpdateRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def track_field_update(request: FieldUpdateRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Track field update in session."""
     try:
         wizard_analytics_service.track_field_update(
@@ -113,8 +115,8 @@ async def track_field_update(request: FieldUpdateRequest):
 
 
 @router.post("/session/suggestion", response_model=None)
-async def track_suggestion(request: SuggestionTrackRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def track_suggestion(request: SuggestionTrackRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Track suggestion acceptance."""
     try:
         wizard_analytics_service.track_suggestion(
@@ -131,8 +133,8 @@ async def track_suggestion(request: SuggestionTrackRequest):
 
 
 @router.post("/session/complete", response_model=None)
-async def complete_session(request: CompleteSessionRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def complete_session(request: CompleteSessionRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Complete session and get metrics."""
     try:
         metrics = await wizard_analytics_service.complete_session(
@@ -157,7 +159,7 @@ async def complete_session(request: CompleteSessionRequest):
 async def get_company_metrics(
     company_id: str,
     days: int = Query(30, ge=1, le=365),
-):
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: public endpoint (metrics) — no tenant data
     """Get aggregated metrics for a company."""
     try:
@@ -178,7 +180,7 @@ async def get_recruiter_metrics(
     company_id: str,
     recruiter_id: str,
     days: int = Query(30, ge=1, le=365),
-):
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: public endpoint (metrics) — no tenant data
     """Get metrics for a specific recruiter."""
     try:
@@ -199,8 +201,8 @@ async def get_recruiter_metrics(
 async def get_stage_breakdown(
     company_id: str,
     days: int = Query(30, ge=1, le=365),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get time breakdown by wizard stage."""
     try:
         breakdown = await wizard_analytics_service.get_stage_breakdown(
@@ -219,8 +221,8 @@ async def get_stage_breakdown(
 async def get_suggestion_effectiveness(
     company_id: str,
     days: int = Query(30, ge=1, le=365),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get effectiveness metrics for LIA suggestions."""
     try:
         effectiveness = await wizard_analytics_service.get_suggestion_effectiveness(
@@ -236,8 +238,8 @@ async def get_suggestion_effectiveness(
 
 
 @router.get("/kpis", response_model=None)
-async def get_kpi_summary():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_kpi_summary(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get KPI summary for dashboard."""
     return wizard_analytics_service.get_kpi_summary()
 
@@ -246,8 +248,8 @@ async def get_kpi_summary():
 async def get_dashboard_data(
     company_id: str,
     days: int = Query(30, ge=1, le=365),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get all dashboard data in a single call."""
     try:
         metrics = await wizard_analytics_service.get_company_metrics(

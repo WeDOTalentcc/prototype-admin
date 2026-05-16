@@ -32,6 +32,7 @@ def get_jd_import_service():  # type: ignore[override]  # noqa: F811
     return JDImportService()
 
 from app.domains.job_management.services.wizard_data_priority_service import JobContext, WizardDataPriorityService, get_wizard_data_priority_service
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter(tags=["Learning Loop"])
 logger = logging.getLogger(__name__)
@@ -115,7 +116,7 @@ async def import_batch_jds(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
     service: JDImportService = Depends(get_jd_import_service),
-):
+company_id: str = Depends(require_company_id)):
     """
     Import multiple job descriptions in a batch.
     
@@ -176,7 +177,7 @@ async def import_single_jd(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
     service: JDImportService = Depends(get_jd_import_service),
-):
+company_id: str = Depends(require_company_id)):
     """
     Import a single job description.
     
@@ -221,7 +222,7 @@ async def get_import_stats(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
     service: JDImportService = Depends(get_jd_import_service),
-):
+company_id: str = Depends(require_company_id)):
     """
     Get import statistics for a company.
     
@@ -243,7 +244,7 @@ async def get_field_suggestion(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
     service: WizardDataPriorityService = Depends(get_wizard_data_priority_service),
-):
+company_id: str = Depends(require_company_id)):
     """
     Get the best suggestion for a wizard field.
     
@@ -288,7 +289,7 @@ async def get_all_field_suggestions(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
     service: WizardDataPriorityService = Depends(get_wizard_data_priority_service),
-):
+company_id: str = Depends(require_company_id)):
     """
     Get suggestions for all wizard fields at once.
     
@@ -326,7 +327,7 @@ async def get_similar_jobs(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
     service: WizardDataPriorityService = Depends(get_wizard_data_priority_service),
-):
+company_id: str = Depends(require_company_id)):
     """
     Find similar jobs for Fast Track mode.
     
@@ -351,7 +352,7 @@ async def upload_jd_file(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
     service: JDImportService = Depends(get_jd_import_service),
-) -> dict[str, Any]:
+company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     """
     Importa uma Job Description a partir de upload de arquivo (P3-2).
 
@@ -483,7 +484,7 @@ async def get_data_coverage(
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
     service: WizardDataPriorityService = Depends(get_wizard_data_priority_service),
-):
+company_id: str = Depends(require_company_id)):
     """
     Get data coverage statistics.
     

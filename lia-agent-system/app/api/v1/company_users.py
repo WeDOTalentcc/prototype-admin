@@ -34,6 +34,7 @@ from app.schemas.company import (
     SmartWizardGreetingResponse,
 )
 from app.domains.company.services.company_configuration_service import company_config_service
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://plataforma-lia.replit.app")
 
@@ -46,8 +47,8 @@ router = APIRouter(prefix="/company", tags=["company"])
 async def get_global_search_settings(
     company_id: str | None = Query(None, description="Company ID for multi-tenant isolation"),
     gs_repo: GlobalSettingsRepository = Depends(get_global_settings_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get global search settings for a specific company (multi-tenant isolated)."""
     try:
         if not company_id:
@@ -80,8 +81,8 @@ async def update_global_search_settings(
     data: GlobalSearchSettingsUpdate,
     company_id: str | None = Query(None, description="Company ID for multi-tenant isolation"),
     gs_repo: GlobalSettingsRepository = Depends(get_global_settings_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update global search settings for a specific company (multi-tenant isolated)."""
     try:
         if not company_id:
@@ -108,7 +109,7 @@ async def list_users(
     company_id: str = Query(..., description="Company ID (required for tenant isolation)"),
     user_repo: UserRepository = Depends(get_user_repo),
     current_user=Depends(get_current_user_or_demo),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List all users for a company."""
     if not company_id or company_id in ("default", "unknown"):
@@ -137,7 +138,7 @@ async def create_user(
     company_id: str | None = Query(None),
     user_repo: UserRepository = Depends(get_user_repo),
     email_svc: EmailService = Depends(get_email_service),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new user with invitation token."""
     try:
@@ -186,8 +187,8 @@ async def update_user(
     user_id: str,
     data: UserManagementUpdate,
     user_repo: UserRepository = Depends(get_user_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update a user."""
     try:
         user_uuid = uuid.UUID(user_id)
@@ -223,8 +224,8 @@ async def update_user(
 async def delete_user(
     user_id: str,
     user_repo: UserRepository = Depends(get_user_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Delete a user."""
     try:
         user_uuid = uuid.UUID(user_id)
@@ -252,8 +253,8 @@ async def resend_invitation(
     user_id: str,
     user_repo: UserRepository = Depends(get_user_repo),
     email_svc: EmailService = Depends(get_email_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Resend invitation email to a user who hasn't activated their account yet."""
     try:
         user_uuid = uuid.UUID(user_id)
@@ -296,7 +297,7 @@ async def list_company_users(
     is_active: bool = Query(True, description="Filter by active status"),
     user_repo: UserRepository = Depends(get_user_repo),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List users belonging to the same company as the current user."""
     try:
@@ -337,7 +338,7 @@ async def list_company_users(
 async def get_catalog_status(
     company_id: str = Depends(get_verified_company_id),
     profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get the maturity status of company's catalog data for Smart Wizard.
 
@@ -359,7 +360,7 @@ async def get_smart_wizard_greeting(
     company_id: str = Depends(get_verified_company_id),
     dept_repo: DepartmentRepository = Depends(get_department_repo),
     profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get personalized greeting for the Smart Wizard based on catalog status.
 

@@ -33,6 +33,7 @@ from ._shared import (
     JobDraft,
     logger,
 )
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 
@@ -117,7 +118,7 @@ async def handle_conversational_message(
     llm_svc: LLMService = Depends(get_llm_service),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Handle general conversational messages using LLM for natural responses.
@@ -372,7 +373,7 @@ async def get_job_draft(
     conversation_id: str,
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-) -> dict[str, Any]:
+company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get the current job draft for a conversation, reading from the database."""
     try:
@@ -420,7 +421,7 @@ async def get_job_draft(
 async def get_active_draft(
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-) -> dict[str, Any]:
+company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get the most recent active draft for the current user."""
     user_id = str(current_user.id)
@@ -442,7 +443,7 @@ async def clear_job_draft(
     conversation_id: str,
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-) -> dict[str, Any]:
+company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Clear (cancel) a job draft linked to a conversation."""
     try:
@@ -483,7 +484,7 @@ async def get_context_suggestions(
     limit: int = Query(default=5, ge=1, le=8),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Returns a context badge + proactive suggestion chips for the current page.

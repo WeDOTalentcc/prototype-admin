@@ -24,6 +24,7 @@ from app.schemas.screening import (
     WSIScreeningPipelineRequest,
     WSIScreeningPipelineResponse,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +37,7 @@ async def generate_screening_pipeline(
     request: WSIScreeningPipelineRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Generate unified WSI screening questions across all blocks.
     

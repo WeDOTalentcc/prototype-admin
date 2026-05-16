@@ -28,6 +28,7 @@ from app.shared.services.consent_checker_service import ConsentCheckerService
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.pii_masking import get_masked_logger
+from app.shared.security.require_company_id import require_company_id
 
 logger = get_masked_logger(__name__)
 fairness_guard = FairnessGuard()
@@ -64,7 +65,7 @@ async def evaluate_candidate(
     audit_svc: AuditService = Depends(get_audit_service),
     rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
     repo: ScreeningRepository = Depends(get_screening_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Evaluate a single candidate against job requirements using structured rubrics.
@@ -232,8 +233,8 @@ async def batch_evaluate_candidates(
     db: AsyncSession = Depends(get_db),
     rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
     repo: ScreeningRepository = Depends(get_screening_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Evaluate multiple candidates against the same job requirements.
 
@@ -355,8 +356,8 @@ async def batch_evaluate_candidates(
 async def get_job_requirements(
     job_id: UUID,
     repo: ScreeningRepository = Depends(get_screening_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get all requirements for a specific job vacancy.
     """
@@ -373,8 +374,8 @@ async def add_job_requirement(
     job_id: UUID,
     requirement: JobRequirementCreate,
     repo: ScreeningRepository = Depends(get_screening_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Add a requirement to a job vacancy for rubric evaluation.
     """
@@ -397,8 +398,8 @@ async def delete_job_requirement(
     job_id: UUID,
     requirement_id: UUID,
     repo: ScreeningRepository = Depends(get_screening_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Delete a requirement from a job vacancy.
     """
@@ -415,8 +416,8 @@ async def get_job_evaluations(
     job_id: UUID,
     min_score: float | None = None,
     repo: ScreeningRepository = Depends(get_screening_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get all rubric evaluations for a specific job vacancy.
     Optionally filter by minimum score.
@@ -452,8 +453,8 @@ async def get_score_breakdown(
     candidate_id: UUID,
     repo: ScreeningRepository = Depends(get_screening_repo),
     db=None,
-) -> dict:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)) -> dict:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     # Support db kwarg for backwards compatibility (tests inject db directly)
     if db is not None and not hasattr(repo, 'get_latest_evaluation'):
         from app.domains.cv_screening.repositories.screening_repository import ScreeningRepository as _SR
@@ -494,8 +495,8 @@ async def evaluate_candidate_legacy(
     request: EvaluateCandidateRequest,
     db: AsyncSession = Depends(get_db),
     rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Evaluate candidate and return result in legacy LIA Score format.
 

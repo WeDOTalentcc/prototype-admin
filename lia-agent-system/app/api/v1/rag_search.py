@@ -19,6 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.ai.services.rag_pipeline_service import rag_pipeline_service as _rag_service
 from app.domains.ai.services.rag_pipeline_service import RAGSearchResult
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +78,7 @@ async def rag_search_candidates(
     job_requirements: str = Query(default="", description="Requisitos da vaga para LLM classification"),
     sector: str = Query(default="", description="Setor para FairnessGuard L3 sector-aware check"),
     db: AsyncSession = Depends(get_db),
-) -> RAGSearchResponse:
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))) -> RAGSearchResponse:
     # multi-tenancy: public endpoint (rag_search) — no tenant data
     """
     Executa busca híbrida de candidatos.

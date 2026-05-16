@@ -11,6 +11,7 @@ from app.core.database import get_db
 from app.models.candidate import VacancyCandidate
 from app.models.company import CompanyProfile
 from app.models.job_vacancy import JobVacancy
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies).
@@ -142,7 +143,7 @@ async def get_saturation_settings(
     db: AsyncSession = Depends(get_db),
     x_company_id: str | None = Header(None, alias="X-Company-ID"),
     x_user_id: str | None = Header(None, alias="X-User-ID"),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     company = await _find_company(db, company_id)
     defaults = _get_company_saturation_defaults(company)
@@ -164,7 +165,7 @@ async def update_saturation_settings(
     db: AsyncSession = Depends(get_db),
     x_company_id: str | None = Header(None, alias="X-Company-ID"),
     x_user_id: str | None = Header(None, alias="X-User-ID"),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     company = await _find_company(db, company_id)
 
@@ -202,7 +203,7 @@ async def update_saturation_settings(
 
 
 @router.get("/job-vacancies/{job_id}/saturation-status", response_model=SaturationStatusResponse, tags=["saturation"])
-async def get_saturation_status(job_id: UUID, db: AsyncSession = Depends(get_db)):
+async def get_saturation_status(job_id: UUID, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
     vacancy = result.scalar_one_or_none()
@@ -365,8 +366,8 @@ class ProcessQueueResponse(BaseModel):
 
 
 @router.get("/job-vacancies/{job_id}/screening-queue", response_model=QueueStatusResponse, tags=["saturation"])
-async def get_screening_queue(job_id: UUID, db: AsyncSession = Depends(get_db)):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_screening_queue(job_id: UUID, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
     vacancy = result.scalar_one_or_none()
     if not vacancy:
@@ -402,7 +403,7 @@ async def get_screening_queue(job_id: UUID, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/job-vacancies/{job_id}/process-queue", response_model=ProcessQueueResponse, tags=["saturation"])
-async def process_queue(job_id: UUID, request: ProcessQueueRequest, db: AsyncSession = Depends(get_db)):
+async def process_queue(job_id: UUID, request: ProcessQueueRequest, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
     vacancy = result.scalar_one_or_none()
@@ -435,7 +436,7 @@ async def unlock_pipeline(
     db: AsyncSession = Depends(get_db),
     x_company_id: str | None = Header(None, alias="X-Company-ID"),
     x_user_id: str | None = Header(None, alias="X-User-ID"),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
     vacancy = result.scalar_one_or_none()

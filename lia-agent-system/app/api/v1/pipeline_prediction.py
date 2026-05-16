@@ -13,6 +13,8 @@ import logging
 from fastapi import APIRouter, HTTPException, Query
 
 from app.shared.services.pipeline_prediction_service import pipeline_prediction_service
+from fastapi import Depends
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -23,8 +25,8 @@ router = APIRouter(prefix="/pipeline-prediction", tags=["pipeline-prediction"])
 async def get_vacancy_prediction(
     vacancy_id: str = Query(..., description="UUID da vaga"),
     company_id: str = Query(..., description="UUID da empresa"),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Retorna probabilidade de fechamento de uma vaga específica.
 
@@ -53,8 +55,8 @@ async def get_vacancy_prediction(
 @router.get("/company-overview", response_model=None)
 async def get_company_overview(
     company_id: str = Query(..., description="UUID da empresa"),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Retorna previsões de todas as vagas ativas da empresa,
     ordenadas por closure_probability ascendente (mais em risco primeiro).

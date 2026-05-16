@@ -36,6 +36,7 @@ from app.domains.auth.dependencies import get_user_repo, get_workos_repo
 from app.domains.auth.repositories.user_repository import UserRepository
 from app.domains.auth.repositories.workos_repository import WorkOSRepository
 from app.shared.resilience.circuit_breaker import WORKOS_CIRCUIT, circuit_breaker_decorator
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -203,7 +204,7 @@ class CheckSSODomainResponse(BaseModel):
 async def check_sso_domain(
     email: str = Query(..., description="Email address to check for SSO availability"),
     workos_repo: WorkOSRepository = Depends(get_workos_repo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Check if an email domain has SSO configured.
     This is a public endpoint called from the login page before authentication.
@@ -256,7 +257,7 @@ async def sync_workos_user(
     user_data: WorkOSSyncUser,
     user_repo: UserRepository = Depends(get_user_repo),
     workos_repo: WorkOSRepository = Depends(get_workos_repo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Sync a user from WorkOS SSO.
     Called after successful SSO authentication to ensure user exists in our database.
@@ -338,7 +339,7 @@ async def scim_user_created(
     user_data: SCIMUserCreated,
     user_repo: UserRepository = Depends(get_user_repo),
     workos_repo: WorkOSRepository = Depends(get_workos_repo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Handle SCIM dsync.user.created event.
     Auto-provisions a new user from the corporate directory.
@@ -464,7 +465,7 @@ async def scim_user_updated(
     user_data: SCIMUserUpdated,
     user_repo: UserRepository = Depends(get_user_repo),
     workos_repo: WorkOSRepository = Depends(get_workos_repo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Handle SCIM dsync.user.updated event.
     Updates user information from corporate directory.
@@ -523,7 +524,7 @@ async def scim_user_deleted(
     user_data: SCIMUserDeleted,
     user_repo: UserRepository = Depends(get_user_repo),
     workos_repo: WorkOSRepository = Depends(get_workos_repo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Handle SCIM dsync.user.deleted event.
     Deactivates user (soft delete) - does not remove data for compliance.
@@ -571,7 +572,7 @@ async def scim_group_action(
     action: str,
     group_data: SCIMGroupAction,
     workos_repo: WorkOSRepository = Depends(get_workos_repo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Handle SCIM group events (created, updated, deleted).
     Persists groups to the database and logs audit events.
@@ -649,7 +650,7 @@ async def scim_group_membership(
     membership_data: SCIMGroupMembershipSchema,
     user_repo: UserRepository = Depends(get_user_repo),
     workos_repo: WorkOSRepository = Depends(get_workos_repo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Handle SCIM group membership events.
     Persists memberships to the database and logs audit events.
@@ -721,8 +722,8 @@ async def get_sso_status(
     company_id: str = Query(...),
     user_repo: UserRepository = Depends(get_user_repo),
     workos_repo: WorkOSRepository = Depends(get_workos_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get SSO/SCIM configuration status for a company.
 
@@ -790,7 +791,7 @@ async def get_realtime_metrics(
     company_id: str = Query(...),
     user_repo: UserRepository = Depends(get_user_repo),
     workos_repo: WorkOSRepository = Depends(get_workos_repo),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: public endpoint (metrics) — no tenant data
     """
     Fetch real-time metrics directly from WorkOS API.
@@ -840,8 +841,8 @@ async def get_realtime_metrics(
 async def get_groups(
     company_id: str = Query(...),
     workos_repo: WorkOSRepository = Depends(get_workos_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get WorkOS groups for a company with role mappings.
 
@@ -884,8 +885,8 @@ async def set_group_role_mapping(
     mapping: RoleMappingRequest,
     company_id: str = Query(...),
     workos_repo: WorkOSRepository = Depends(get_workos_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Set role mapping for a WorkOS group.
 
@@ -926,8 +927,8 @@ async def get_audit_logs(
     offset: int = Query(default=0),
     event_type: str | None = Query(default=None),
     workos_repo: WorkOSRepository = Depends(get_workos_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get SSO/SCIM audit logs for a company.
 
@@ -964,7 +965,7 @@ async def get_sso_users(
     offset: int = Query(default=0),
     scim_only: bool = Query(default=False),
     user_repo: UserRepository = Depends(get_user_repo),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get SSO/SCIM managed users for a company.

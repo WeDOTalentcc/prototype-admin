@@ -15,6 +15,7 @@ from app.auth.dependencies import get_current_user
 from app.core.database import get_db
 from pydantic import BaseModel, Field
 from typing import Optional
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +47,7 @@ class SessionResponse(BaseModel):
 async def create_voice_session(
     body: CreateSessionRequest,
     current_user: dict = Depends(get_current_user),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Create a new voice screening session for a candidate in a talent pool.
@@ -91,8 +92,8 @@ async def create_voice_session(
 async def submit_audio(
     session_id: str,
     file: UploadFile = File(...),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Submit audio response from candidate. Transcribes and advances the state machine.
     """
@@ -124,8 +125,8 @@ async def submit_audio(
 async def submit_text(
     session_id: str,
     body: dict,
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Submit text response (for WhatsApp/chat fallback). Same flow as audio but skips STT.
     """
@@ -159,8 +160,8 @@ async def submit_text(
 
 
 @router.get("/sessions/{session_id}")
-async def get_session_status(session_id: str):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_session_status(session_id: str, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get current status of a voice screening session."""
     session = _sessions.get(session_id)
     if not session:

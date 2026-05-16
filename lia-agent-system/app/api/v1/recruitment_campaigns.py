@@ -11,6 +11,7 @@ from typing import Any
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,7 @@ _NOT_IMPLEMENTED = {
 async def list_campaigns(
     status: str | None = Query(None),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     return {
         **_NOT_IMPLEMENTED,
@@ -42,7 +43,7 @@ async def create_campaign(
     payload: dict[str, Any],
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     from app.services.quota_enforcement import enforce_quota
     await enforce_quota("campaigns", current_user.company_id, db)
@@ -53,7 +54,7 @@ async def create_campaign(
 async def get_campaign(
     campaign_id: str,
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     return _NOT_IMPLEMENTED
 
@@ -63,7 +64,7 @@ async def update_campaign(
     campaign_id: str,
     payload: dict[str, Any],
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     return _NOT_IMPLEMENTED
 
@@ -73,7 +74,7 @@ async def advance_stage(
     campaign_id: str,
     payload: dict[str, Any] | None = None,
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     return _NOT_IMPLEMENTED
 
@@ -83,7 +84,7 @@ async def complete_stage(
     campaign_id: str,
     payload: dict[str, Any] | None = None,
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     return _NOT_IMPLEMENTED
 
@@ -93,7 +94,7 @@ async def add_checkpoint(
     campaign_id: str,
     payload: dict[str, Any] | None = None,
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     return _NOT_IMPLEMENTED
 

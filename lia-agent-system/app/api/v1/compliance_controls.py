@@ -41,6 +41,7 @@ from app.schemas.compliance_controls import (
 )
 from app.shared.tenant_guard import get_verified_company_id
 from app.schemas.envelope import ResponseEnvelope, ok_envelope
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -55,8 +56,8 @@ async def list_control_library(
     limit: int = Query(100, ge=1, le=500, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List all controls in the library, optionally filtered by framework."""
     try:
         controls, total = await repo.list_control_library(
@@ -81,8 +82,8 @@ async def list_control_library(
 async def create_control_library(
     data: ControlLibraryCreate,
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Create a new control in the library."""
     try:
         control = await repo.create_control_library(
@@ -110,8 +111,8 @@ async def get_controls_by_framework(
     limit: int = Query(200, ge=1, le=500),
     offset: int = Query(0, ge=0),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get all controls for a specific framework."""
     try:
         controls, total = await repo.get_controls_by_framework(
@@ -138,7 +139,7 @@ async def list_company_controls(
     offset: int = Query(0, ge=0),
     company_id: str = Depends(get_verified_company_id),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List company's compliance controls with their status."""
     try:
@@ -176,7 +177,7 @@ async def create_company_control(
     data: CompanyControlCreate,
     company_id: str = Depends(get_verified_company_id),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a company compliance control mapping."""
     try:
@@ -214,7 +215,7 @@ async def update_company_control(
     data: CompanyControlUpdate,
     company_id: str = Depends(get_verified_company_id),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update a company's compliance control status."""
     try:
@@ -251,7 +252,7 @@ async def upload_evidence(
     data: EvidenceUpload,
     company_id: str = Depends(get_verified_company_id),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Upload evidence file for a control."""
     try:
@@ -289,7 +290,7 @@ async def list_audits(
     offset: int = Query(0, ge=0),
     company_id: str = Depends(get_verified_company_id),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List compliance audits."""
     try:
@@ -319,7 +320,7 @@ async def create_audit(
     data: ComplianceAuditCreate,
     company_id: str = Depends(get_verified_company_id),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new compliance audit."""
     try:
@@ -347,7 +348,7 @@ async def create_audit(
 async def get_compliance_dashboard(
     company_id: str = Depends(get_verified_company_id),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get comprehensive compliance dashboard across all frameworks."""
     try:
@@ -421,7 +422,7 @@ async def list_sox_controls(
     offset: int = Query(0, ge=0),
     company_id: str = Depends(get_verified_company_id),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List SOX controls for a company."""
     try:
@@ -451,7 +452,7 @@ async def create_sox_control(
     data: SOXControlCreate,
     company_id: str = Depends(get_verified_company_id),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new SOX control."""
     try:
@@ -481,7 +482,7 @@ async def update_sox_control(
     data: SOXControlUpdate,
     company_id: str = Depends(get_verified_company_id),
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update a SOX control."""
     try:
@@ -508,8 +509,8 @@ async def update_sox_control(
 @router.post("/seed", response_model=SeedDataResponse, summary="Seed control library data")
 async def seed_control_library(
     repo: ComplianceControlsRepository = Depends(get_compliance_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Seed the control library with ISO 27001, SOC 2 TSC, and SOX controls."""
     try:
         iso_27001_controls = [

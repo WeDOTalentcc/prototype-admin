@@ -10,6 +10,8 @@ from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, Header, HTTPException, Request
 from pydantic import BaseModel, ValidationError
+from fastapi import Depends
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter(prefix="/webhooks/merge", tags=["merge-webhooks"])
 logger = logging.getLogger(__name__)
@@ -42,9 +44,9 @@ def verify_merge_signature(payload: bytes, signature: str) -> bool:
 async def handle_merge_webhook(
     request: Request,
     background_tasks: BackgroundTasks,
-    x_merge_signature: str | None = Header(None, alias="X-Merge-Signature")
+    x_merge_signature: str | None = Header(None, alias="X-Merge-Signature"), 
 ):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Receive webhooks from Merge.dev when data changes.
     Events: Candidate.created, Candidate.updated, Application.changed_stage, etc.

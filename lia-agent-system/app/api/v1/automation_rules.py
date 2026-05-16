@@ -11,6 +11,7 @@ from app.core.database import get_db
 from app.domains.automation.repositories.automation_rule_repository import (
     AutomationRuleRepository,
 )
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 router = APIRouter(prefix="/automation-rules", tags=["automation-rules"])
 
@@ -67,8 +68,8 @@ async def get_company_rules(
     is_active: bool | None = None,
     trigger_type: str | None = None,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get all automation rules for a company with optional filters."""
     repo = AutomationRuleRepository(db)
     rules = await repo.list_for_company(company_id, is_active=is_active, trigger_type=trigger_type)
@@ -76,8 +77,8 @@ async def get_company_rules(
 
 
 @router.get("/company/{company_id}/{rule_id}", response_model=None)
-async def get_rule(company_id: str, rule_id: str, db: AsyncSession = Depends(get_db)):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_rule(company_id: str, rule_id: str, db: AsyncSession = Depends(get_db), _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get a specific automation rule."""
     repo = AutomationRuleRepository(db)
     rule = await repo.get_by_id(rule_id, company_id)
@@ -91,8 +92,8 @@ async def create_rule(
     company_id: str,
     rule: AutomationRuleCreate,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Create a new automation rule for a company."""
     repo = AutomationRuleRepository(db)
     data = rule.model_dump()
@@ -107,8 +108,8 @@ async def update_rule(
     rule_id: str,
     updates: AutomationRuleUpdate,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update an automation rule."""
     repo = AutomationRuleRepository(db)
     rule = await repo.get_by_id(rule_id, company_id)
@@ -122,8 +123,8 @@ async def update_rule(
 
 
 @router.delete("/company/{company_id}/{rule_id}", response_model=None)
-async def delete_rule(company_id: str, rule_id: str, db: AsyncSession = Depends(get_db)):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def delete_rule(company_id: str, rule_id: str, db: AsyncSession = Depends(get_db), _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Delete an automation rule."""
     repo = AutomationRuleRepository(db)
     rule = await repo.get_by_id(rule_id, company_id)
@@ -134,8 +135,8 @@ async def delete_rule(company_id: str, rule_id: str, db: AsyncSession = Depends(
 
 
 @router.post("/company/{company_id}/toggle/{rule_id}", response_model=None)
-async def toggle_rule(company_id: str, rule_id: str, db: AsyncSession = Depends(get_db)):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def toggle_rule(company_id: str, rule_id: str, db: AsyncSession = Depends(get_db), _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Toggle the active status of an automation rule."""
     repo = AutomationRuleRepository(db)
     rule = await repo.get_by_id(rule_id, company_id)
@@ -150,8 +151,8 @@ async def seed_default_rules(
     company_id: str,
     force: bool = False,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Seed default automation rules for a new company."""
     repo = AutomationRuleRepository(db)
     existing = await repo.list_for_company(company_id)
@@ -166,8 +167,8 @@ async def seed_default_rules(
 
 
 @router.get("/trigger-types", response_model=None)
-async def get_available_trigger_types():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_available_trigger_types(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get list of available trigger types."""
     return {
         "trigger_types": [
@@ -190,8 +191,8 @@ async def get_available_trigger_types():
 
 
 @router.get("/action-types", response_model=None)
-async def get_available_action_types():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_available_action_types(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get list of available action types."""
     return {
         "action_types": [

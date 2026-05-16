@@ -30,6 +30,7 @@ from app.schemas.custom_agent import (
     UpdateCustomAgentRequest,
 )
 from app.services.agent_marketplace_service import agent_marketplace_service
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -39,7 +40,7 @@ router = APIRouter(prefix="/custom-agents", tags=["Agent Studio"])
 @router.get("/available-tools", summary="List available tools for custom agents")
 async def list_available_tools(
     current_user=Depends(get_current_user),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     return {"tools": get_available_tool_names()}
 
@@ -49,7 +50,7 @@ async def create_custom_agent(
     body: CreateCustomAgentRequest,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     from app.services.quota_enforcement import enforce_quota
     await enforce_quota("custom_agents", current_user.company_id, db)
@@ -79,7 +80,7 @@ async def list_custom_agents(
     offset: int = Query(0, ge=0),
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     agents, total = await agent_marketplace_service.list_agents(
         db=db,
@@ -100,7 +101,7 @@ async def get_custom_agent(
     agent_id: str,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     agent = await agent_marketplace_service.get_agent(
         db=db, agent_id=agent_id, company_id=current_user.company_id
@@ -116,7 +117,7 @@ async def update_custom_agent(
     body: UpdateCustomAgentRequest,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update custom agent. Automatically creates a version snapshot before applying changes."""
     # P2.2: Snapshot before update
@@ -168,7 +169,7 @@ async def delete_custom_agent(
     agent_id: str,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         deleted = await agent_marketplace_service.delete_agent(
@@ -191,7 +192,7 @@ async def test_custom_agent(
     body: TestCustomAgentRequest,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     agent = await agent_marketplace_service.get_agent(
         db=db, agent_id=agent_id, company_id=current_user.company_id
@@ -251,7 +252,7 @@ async def execute_custom_agent(
     body: ExecuteCustomAgentRequest,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     agent = await agent_marketplace_service.get_agent(
         db=db, agent_id=agent_id, company_id=current_user.company_id
@@ -422,7 +423,7 @@ async def publish_to_marketplace(
     body: PublishToMarketplaceRequest,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         listing = await agent_marketplace_service.publish_to_marketplace(
@@ -456,7 +457,7 @@ async def browse_marketplace(
     offset: int = Query(0, ge=0),
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     listings, total = await agent_marketplace_service.list_marketplace(
         db=db,
         category=category,
@@ -475,7 +476,7 @@ async def install_marketplace_agent(
     body: InstallAgentRequest,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     try:
         installation = await agent_marketplace_service.install_agent(
             db=db,
@@ -499,7 +500,7 @@ async def list_installations(
     offset: int = Query(0, ge=0),
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     installations, total = await agent_marketplace_service.list_installations(
         db=db,
         company_id=current_user.company_id,
@@ -517,7 +518,7 @@ async def uninstall_agent(
     installation_id: str,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     try:
         result = await agent_marketplace_service.uninstall_agent(
             db=db,
@@ -539,7 +540,7 @@ async def uninstall_agent(
 async def get_marketplace_billing(
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     summaries = await agent_marketplace_service.get_billing_summary(
         db=db,
         company_id=current_user.company_id,
@@ -559,7 +560,7 @@ async def list_pending_reviews(
     offset: int = Query(0, ge=0),
     _user=Depends(require_admin),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     listings, total = await agent_marketplace_service.get_pending_reviews(
         db=db, limit=limit, offset=offset
     )
@@ -575,7 +576,7 @@ async def review_listing(
     body: MarketplaceReviewRequest,
     _user=Depends(require_admin),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     try:
         listing = await agent_marketplace_service.review_listing(
             db=db,
@@ -603,7 +604,7 @@ async def get_agent_executions(
     offset: int = Query(0, ge=0),
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Paginated execution history for a specific agent."""
     from sqlalchemy import select, and_, func
@@ -638,7 +639,7 @@ async def get_studio_consumption(
     days: int = Query(default=30, ge=1, le=365),
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     from app.services.studio_metering_service import studio_metering_service
 
@@ -657,7 +658,7 @@ async def get_studio_consumption(
 async def get_studio_quota(
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     from lia_models.agent_quota import AgentQuota, get_limits_for_plan
     from sqlalchemy import select
@@ -694,7 +695,7 @@ async def list_agent_versions(
     offset: int = Query(0, ge=0),
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Paginated list of version snapshots for an agent."""
     from app.services.agent_version_service import agent_version_service
@@ -719,7 +720,7 @@ async def get_agent_version(
     version: int,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get full snapshot data for a specific version."""
     from app.services.agent_version_service import agent_version_service
@@ -740,7 +741,7 @@ async def revert_agent_to_version(
     version: int,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Revert agent state to a previous version. Creates a new snapshot before reverting."""
     from app.services.agent_version_service import agent_version_service
@@ -780,7 +781,7 @@ async def search_agents_by_name(
     limit: int = Query(5, ge=1, le=20),
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Fuzzy search for agents by name. Used by chat to find agent mentioned by user.
 
@@ -814,7 +815,7 @@ async def get_studio_compliance_summary(
     period_days: int = Query(30, ge=1, le=365),
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Aggregated compliance metrics across all Studio agents in the period.
 
@@ -950,7 +951,7 @@ async def get_studio_metrics_summary(
     period_days: int = Query(7, ge=1, le=90),
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Returns aggregated metrics across all tenant agents for the specified period.
 
@@ -1066,7 +1067,7 @@ def _coalesce(value, default):
 async def generate_agent_from_description(
     body: dict,
     current_user=Depends(get_current_user),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Generate a complete agent configuration from a natural language description.
 
@@ -1180,7 +1181,7 @@ async def clone_custom_agent(
     agent_id: str,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a copy of an existing agent with '(copia)' appended to name."""
     agent = await agent_marketplace_service.get_agent(
@@ -1224,7 +1225,7 @@ async def preview_agent_prompt(
     agent_id: str,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Preview the composed system prompt for a custom agent.
 

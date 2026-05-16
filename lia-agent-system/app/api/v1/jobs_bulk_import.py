@@ -26,6 +26,7 @@ from app.auth.models import User
 from app.core.database import get_db
 from app.domains.job_management.services.jd_import_service import JDImportService
 from lia_models.imported_job_description import ImportBatch, ImportStatus
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +96,7 @@ async def bulk_import_jobs(
     request: BulkImportRequest,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
-) -> JSONResponse:
+company_id: str = Depends(require_company_id)) -> JSONResponse:
     # company_id always from JWT — never from payload
     company_id: UUID = get_user_company_id(user)
     if not company_id:
@@ -150,7 +151,7 @@ async def get_import_batch_status(
     batch_id: UUID,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(get_current_user),
-) -> BatchStatusResponse:
+company_id: str = Depends(require_company_id)) -> BatchStatusResponse:
     company_id: UUID = get_user_company_id(user)
 
     result = await db.execute(

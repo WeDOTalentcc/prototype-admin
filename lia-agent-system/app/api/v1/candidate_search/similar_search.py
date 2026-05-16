@@ -52,6 +52,7 @@ from ._shared import (
     rubric_evaluation_service,
 )
 from app.domains.credits.services.credit_service import CreditService, get_credit_service
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 
@@ -82,8 +83,8 @@ async def search_similar_candidates(
     db: AsyncSession = Depends(get_db)
 ,
     pearch_svc: PearchService = Depends(get_pearch_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Encontra candidatos similares a um perfil específico.
     
@@ -220,8 +221,8 @@ async def combine_profiles_for_search(
     db: AsyncSession = Depends(get_db)
 ,
     cv_parser_svc: CVParserService = Depends(get_cv_parser_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Combine multiple candidate profiles (URLs and/or CVs) into an ideal profile.
     

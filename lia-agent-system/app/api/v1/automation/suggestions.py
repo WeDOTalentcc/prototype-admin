@@ -25,6 +25,7 @@ from ._shared import (
     BulkSuggestionRequest,
     RejectSuggestionRequest,
 )
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -38,9 +39,9 @@ async def get_pending_suggestions(
     vacancy_id: str | None = Query(None, description="Filter by vacancy ID"),
     suggestion_type: str | None = Query(None, description="Filter by suggestion type"),
     limit: int = Query(50, le=100, description="Maximum number of suggestions to return"),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get all pending AI suggestions for a company.
     """
@@ -73,9 +74,9 @@ async def approve_suggestion(
     suggestion_id: str,
     company_id: str = Query(..., description="Company ID for validation"),
     reviewer_id: str | None = Query(None, description="ID of the reviewer"),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Approve an AI suggestion.
     """
@@ -127,9 +128,9 @@ async def reject_suggestion(
     company_id: str = Query(..., description="Company ID for validation"),
     reviewer_id: str | None = Query(None, description="ID of the reviewer"),
     reason: str | None = Query(None, description="Reason for rejection"),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Reject an AI suggestion.
     """
@@ -180,8 +181,8 @@ async def reject_suggestion(
 @router.post("/bulk-approve-suggestions", response_model=None)
 async def bulk_approve_suggestions(
     request: BulkSuggestionRequest,
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Bulk approve AI suggestions.
@@ -229,8 +230,8 @@ async def bulk_approve_suggestions(
 @router.post("/bulk-reject-suggestions", response_model=None)
 async def bulk_reject_suggestions(
     request: BulkSuggestionRequest,
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Bulk reject AI suggestions.
@@ -281,9 +282,9 @@ async def bulk_reject_suggestions(
 async def get_ai_suggestions_by_vacancy(
     vacancy_id: str,
     status: str | None = Query(None, description="Filter by status: pending, approved, rejected"),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get AI suggestions for a specific vacancy.
     """
@@ -303,9 +304,9 @@ async def get_ai_suggestions_by_vacancy(
 async def get_ai_suggestions_by_candidate(
     candidate_id: str,
     status: str | None = Query(None, description="Filter by status: pending, approved, rejected"),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get AI suggestions for a specific candidate.
     """
@@ -324,9 +325,9 @@ async def get_ai_suggestions_by_candidate(
 @router.post("/ai-suggestions/{suggestion_id}/approve", response_model=None)
 async def approve_ai_suggestion(
     suggestion_id: str,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Approve an AI suggestion and execute the suggested action.
     """
@@ -367,9 +368,9 @@ async def approve_ai_suggestion(
 async def reject_ai_suggestion(
     suggestion_id: str,
     request: RejectSuggestionRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Reject an AI suggestion with an optional reason.
     """

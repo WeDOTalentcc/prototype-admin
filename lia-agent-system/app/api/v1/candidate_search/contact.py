@@ -21,6 +21,7 @@ from app.domains.candidates.repositories.candidate_filter_repository import Cand
 router = APIRouter()
 
 import logging as _contact_log
+from app.shared.security.require_company_id import require_company_id
 _contact_logger = _contact_log.getLogger(__name__)
 
 
@@ -90,9 +91,9 @@ class RevealCostEstimate(BaseModel):
 @router.get("/reveal/cost", response_model=None)
 # TODO(phase2): extract to repository — candidate contact enrichment
 async def get_reveal_cost(
-    reveal_type: str = Query(..., description="Tipo: 'email' ou 'phone'")
-) -> RevealCostEstimate:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    reveal_type: str = Query(..., description="Tipo: 'email' ou 'phone'"), 
+company_id: str = Depends(require_company_id)) -> RevealCostEstimate:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Retorna o custo para revelar email ou telefone.
     
@@ -119,8 +120,8 @@ async def reveal_contact(
     request: RevealContactRequest,
     db: AsyncSession = Depends(get_db),
     pearch_svc: PearchService = Depends(get_pearch_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Revela email ou telefone de um candidato.
     
@@ -406,9 +407,9 @@ class FilterSuggestionsResponse(BaseModel):
 @router.post("/suggestions", response_model=FilterSuggestionsResponse)
 async def get_filter_suggestions(
     request: FilterSuggestionsRequest,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Retorna sugestões de filtros com contagem de candidatos.
     

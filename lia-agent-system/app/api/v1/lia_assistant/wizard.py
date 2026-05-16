@@ -13,6 +13,8 @@ from typing import Any, Optional
 
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
+from fastapi import Depends
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -59,35 +61,35 @@ class _AnyBody(BaseModel):
 # ---------------------------------------------------------------------------
 
 @router.post("/job-wizard/interpret")
-async def interpret_user_message(request: Request) -> None:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def interpret_user_message(request: Request, company_id: str = Depends(require_company_id)) -> None:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     _emit_deprecation_log(request, "interpret_user_message")
     raise HTTPException(status_code=410, detail=_CANONICAL_DETAIL)
 
 
 @router.post("/job-wizard/orchestrate")
-async def orchestrate_wizard_message(request: Request) -> None:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def orchestrate_wizard_message(request: Request, company_id: str = Depends(require_company_id)) -> None:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     _emit_deprecation_log(request, "orchestrate_wizard_message")
     raise HTTPException(status_code=410, detail=_CANONICAL_DETAIL)
 
 
 @router.post("/job-wizard/salary-benchmark")
-async def get_salary_benchmark(request: Request) -> None:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_salary_benchmark(request: Request, company_id: str = Depends(require_company_id)) -> None:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     _emit_deprecation_log(request, "get_salary_benchmark")
     raise HTTPException(status_code=410, detail=_CANONICAL_DETAIL)
 
 
 @router.post("/job-wizard/evaluate")
-async def evaluate_wizard_input(request: Request) -> None:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def evaluate_wizard_input(request: Request, company_id: str = Depends(require_company_id)) -> None:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     _emit_deprecation_log(request, "evaluate_wizard_input")
     raise HTTPException(status_code=410, detail=_CANONICAL_DETAIL)
 
 
 @router.post("/job-wizard/step")
-async def process_wizard_step(request: Request) -> None:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def process_wizard_step(request: Request, company_id: str = Depends(require_company_id)) -> None:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     _emit_deprecation_log(request, "process_wizard_step")
     raise HTTPException(status_code=410, detail=_CANONICAL_DETAIL)

@@ -8,6 +8,7 @@ from app.auth.dependencies import get_current_user, get_user_company_id
 from app.auth.models import User
 from app.core.database import get_db, get_tenant_db
 from app.shared.learning.ab_testing_service import ab_testing_service as _service, ABTestingService
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter(prefix="/ab-tests", tags=["ab-testing"])
 
@@ -46,8 +47,8 @@ class BusinessMetricRecord(BaseModel):
 @router.get("", response_model=None)
 async def list_active_tests(
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     tests = await _service.list_active_tests(db)
     return {"tests": tests}
 
@@ -56,8 +57,8 @@ async def list_active_tests(
 async def create_test(
     body: TestCreate,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     variants_data = [v.model_dump() for v in body.variants]
     result = await _service.create_test(body.test_name, variants_data, db)
     return result
@@ -67,8 +68,8 @@ async def create_test(
 async def get_test_results(
     test_name: str,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     results = await _service.get_test_results(test_name, db)
     return results
 
@@ -79,7 +80,7 @@ async def record_metric(
     body: MetricRecord,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     # UC-P0-08: company_id MUST come from the JWT, never from the request body
     company_id = get_user_company_id(current_user)
     record = await _service.record_metric(
@@ -103,7 +104,7 @@ async def record_business_metrics(
     body: BusinessMetricRecord,
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_tenant_db),
-):
+company_id: str = Depends(require_company_id)):
     # UC-P0-08: company_id MUST come from the JWT, never from the request body
     company_id = get_user_company_id(current_user)
     recorded_ids: list[str] = []
@@ -160,8 +161,8 @@ async def get_variant(
     test_name: str,
     session_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     variant = await _service.get_variant(test_name, session_id, db)
     if variant:
         return variant

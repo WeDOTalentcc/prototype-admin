@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.auth import get_current_user_or_demo
 from app.core.database import get_db
 from app.shared.services.early_warning_service import early_warning_service
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +28,8 @@ async def get_early_warning(
     ),
     current_user=Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Retorna candidatos em risco de desengajamento ordenados por EWS score.
     Inclui resumo por nível de risco e top candidatos críticos.

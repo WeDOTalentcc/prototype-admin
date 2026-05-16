@@ -90,6 +90,7 @@ from app.schemas.company import (
     TenantResolutionResponse,
 )
 from app.domains.company.services.company_configuration_service import company_config_service
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "https://plataforma-lia.replit.app")
 
@@ -106,7 +107,7 @@ async def resolve_tenant(
     client_account_id: str | None = Query(None),
     tenant_repo: TenantRepository = Depends(get_tenant_repo),
     current_user = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Resolve tenant IDs from WorkOS organization ID or client account ID."""
     try:
@@ -152,7 +153,7 @@ async def submit_onboarding(
     profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
     cp_repo: CultureProfileRepository = Depends(get_culture_profile_repo),
     current_user = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Submit onboarding data from the wizard.
@@ -419,7 +420,7 @@ async def get_company_profile(
     company_id: str | None = Query(None),
     profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
     current_user = Depends(get_current_user_or_demo),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get a company profile by ID, or resolve from authenticated user's tenant."""
     try:
@@ -575,7 +576,7 @@ async def create_company_profile(
     client_account_id: str | None = Query(None),
     profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
     current_user = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new company profile, optionally linking to a ClientAccount."""
     try:
@@ -605,7 +606,7 @@ async def update_company_profile(
     data: CompanyProfileUpdate,
     profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
     current_user = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update an existing company profile."""
     try:
@@ -638,8 +639,8 @@ async def update_company_profile(
 async def get_company_profile_with_relations(
     profile_id: uuid.UUID,
     profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get company profile with all related data (departments, benefits, culture)."""
     try:
         data = await profile_repo.get_with_relations(profile_id)
@@ -669,8 +670,8 @@ async def get_company_stats(
     ip_repo: IdealProfileRepository = Depends(get_ideal_profile_repo),
     bf_repo: BigFiveRepository = Depends(get_big_five_repo),
     tt_repo: TechnicalTestRepository = Depends(get_technical_test_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get statistics for company setup completion."""
     try:
         stats = {

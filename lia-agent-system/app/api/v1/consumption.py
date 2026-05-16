@@ -15,6 +15,7 @@ from app.domains.billing.services.consumption_tracking_service import (
     ConsumptionTrackingService,
 )
 from app.shared.tenant_guard import get_verified_company_id
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +103,7 @@ async def get_consumption_report(
     end_date: datetime = Query(..., description="End date (ISO format)"),
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         report = await ConsumptionReportService.get_report_by_period(
@@ -120,7 +121,7 @@ async def get_invoice_data(
     month: int = Query(..., ge=1, le=12, description="Invoice month"),
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         data = await ConsumptionReportService.get_invoice_data(
@@ -136,7 +137,7 @@ async def get_invoice_data(
 async def get_budget_status(
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         current_spend = await ConsumptionTrackingService.get_monthly_apify_spend(
@@ -161,7 +162,7 @@ async def get_budget_status(
 async def get_consumption_dashboard(
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         data = await ConsumptionReportService.get_dashboard(db, company_id)
@@ -175,7 +176,7 @@ async def get_consumption_dashboard(
 async def get_tenant_summary(
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         data = await ConsumptionReportService.get_tenant_summary(db, company_id=company_id)
@@ -195,7 +196,7 @@ async def get_detailed_invoice(
     month: int = Path(..., ge=1, le=12, description="Invoice month"),
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     if target_company_id != company_id:
         raise HTTPException(status_code=403, detail="Access denied to this company's invoice")
@@ -213,7 +214,7 @@ async def get_detailed_invoice(
 async def get_pricing_analytics(
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         data = await ConsumptionReportService.get_pricing_analytics(db, company_id)

@@ -29,6 +29,7 @@ from app.schemas.company import (
     ManagerResponse,
     ManagerSearchResponse,
 )
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -40,8 +41,8 @@ async def list_departments(
     company_id: uuid.UUID | None = Query(None),
     include_inactive: bool = Query(False),
     dept_repo: DepartmentRepository = Depends(get_department_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List all departments for a company."""
     try:
         if not company_id:
@@ -66,8 +67,8 @@ async def create_department(
     company_id: str = Query(...),
     data: DepartmentCreate = None,
     dept_repo: DepartmentRepository = Depends(get_department_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Create a new department."""
     try:
         if not company_id or company_id in ("default", "unknown"):
@@ -95,8 +96,8 @@ async def update_department(
     department_id: uuid.UUID,
     data: DepartmentUpdate,
     dept_repo: DepartmentRepository = Depends(get_department_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update a department."""
     try:
         update_data = data.model_dump(exclude_unset=True)
@@ -116,8 +117,8 @@ async def update_department(
 async def delete_department(
     department_id: uuid.UUID,
     dept_repo: DepartmentRepository = Depends(get_department_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Soft delete a department."""
     try:
         deleted = await dept_repo.delete(department_id)
@@ -136,8 +137,8 @@ async def list_department_members(
     department_id: uuid.UUID,
     include_inactive: bool = Query(False),
     dept_repo: DepartmentRepository = Depends(get_department_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List all members of a department."""
     try:
         department = await dept_repo.get_by_id(department_id)
@@ -162,7 +163,7 @@ async def create_department_member(
     department_id: uuid.UUID,
     data: DepartmentMemberCreate,
     dept_repo: DepartmentRepository = Depends(get_department_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new member in a department."""
     try:
@@ -191,8 +192,8 @@ async def update_department_member(
     member_id: uuid.UUID,
     data: DepartmentMemberUpdate,
     dept_repo: DepartmentRepository = Depends(get_department_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update a department member."""
     try:
         update_data = data.model_dump(exclude_unset=True)
@@ -212,8 +213,8 @@ async def update_department_member(
 async def delete_department_member(
     member_id: uuid.UUID,
     dept_repo: DepartmentRepository = Depends(get_department_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Soft delete a department member."""
     try:
         deleted = await dept_repo.remove_member(member_id)
@@ -238,7 +239,7 @@ async def list_managers(
     department_id: str | None = Query(None),
     limit: int = Query(20, ge=1, le=100),
     current_user = Depends(get_current_user_or_demo),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List managers for a company."""
     try:
@@ -271,7 +272,7 @@ async def infer_manager_email(
     department: str | None = Query(None, description="Department context"),
     company_id: str | None = Query(None),
     current_user = Depends(get_current_user_or_demo),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Infer manager email from name."""
     try:
@@ -355,8 +356,8 @@ async def parse_import_file(file: UploadFile) -> list[dict[str, str]]:
 
 
 @router.get("/departments/import/template", response_model=None)
-async def download_departments_import_template():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def download_departments_import_template(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Download CSV template for departments import with Excel compatibility."""
     try:
         headers = ["name", "description", "manager", "manager_email", "manager_linkedin", "parent_department", "cost_center", "order"]
@@ -379,8 +380,8 @@ async def download_departments_import_template():
 
 
 @router.get("/members/import/template", response_model=None)
-async def download_members_import_template():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def download_members_import_template(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Download CSV template for department members import with Excel compatibility."""
     try:
         headers = ["department", "name", "title", "email", "phone", "linkedin_url", "level"]
@@ -404,8 +405,8 @@ async def download_members_import_template():
 
 
 @router.get("/benefits/import/template", response_model=None)
-async def download_benefits_import_template():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def download_benefits_import_template(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Download CSV template for benefits import with Excel compatibility."""
     try:
         headers = ["name", "description", "category", "value_type", "value", "seniority_levels", "waiting_period_days", "provider"]
@@ -436,7 +437,7 @@ async def import_departments(
     company_id: str = Depends(get_verified_company_id),
     dept_repo: DepartmentRepository = Depends(get_department_repo),
     profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Import departments from Excel/CSV file with AI processing.
 

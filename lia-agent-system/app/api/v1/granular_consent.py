@@ -19,6 +19,7 @@ from app.shared.services.granular_consent_service import (
     ALL_PURPOSES,
     GranularConsentService,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +63,7 @@ async def get_granular_consents(
     candidate_id: str,
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
-) -> GranularConsentSummaryResponse:
+_company_gate: str = Depends(require_company_id)) -> GranularConsentSummaryResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Retorna resumo de todos os consentimentos LGPD granulares do candidato.
@@ -105,7 +106,7 @@ async def update_granular_consents(
     request: Request,
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
-) -> dict:
+_company_gate: str = Depends(require_company_id)) -> dict:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Atualiza múltiplos consentimentos LGPD em lote.

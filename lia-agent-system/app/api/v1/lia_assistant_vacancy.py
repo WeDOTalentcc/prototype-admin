@@ -16,6 +16,7 @@ from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
 from app.domains.job_management.services.vacancy_search_service import vacancy_search_service
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -69,8 +70,8 @@ class VacancyAdjustmentsResponse(BaseModel):
 async def search_previous_vacancies(
     request: VacancySearchRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
-) -> VacancySearchResponse:
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)) -> VacancySearchResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         company_id = current_user.company_id
@@ -105,8 +106,8 @@ async def search_previous_vacancies(
 async def get_vacancy_full_details(
     vacancy_id: UUID,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
-) -> dict[str, Any]:
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         company_id = current_user.company_id
@@ -128,8 +129,8 @@ async def get_vacancy_full_details(
 @router.post("/vacancy-criteria-extract", response_model=VacancyCriteriaExtractionResponse)
 async def extract_vacancy_criteria(
     request: VacancyCriteriaExtractionRequest,
-    current_user: User = Depends(get_current_user_or_demo)
-) -> VacancyCriteriaExtractionResponse:
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)) -> VacancyCriteriaExtractionResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         criteria = await vacancy_search_service.extract_search_criteria(request.message)
@@ -158,8 +159,8 @@ async def extract_vacancy_criteria(
 async def extract_and_apply_adjustments(
     request: VacancyAdjustmentsRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
-) -> VacancyAdjustmentsResponse:
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)) -> VacancyAdjustmentsResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     try:
         adjustments = await vacancy_search_service.extract_adjustments(request.message)

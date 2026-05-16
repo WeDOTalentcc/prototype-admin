@@ -9,6 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.modules.services.module_service import get_module_service, ModuleService
 from lia_models.billing import AVAILABLE_MODULES, MODULE_STATUS_OPTIONS, ModuleStatus, ModuleTier
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -60,8 +61,8 @@ class ModuleActivateRequest(BaseModel):
 
 @router.get("")
 @router.get("/catalog")
-async def get_module_catalog():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_module_catalog(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     items = []
     for name, info in AVAILABLE_MODULES.items():
         items.append({
@@ -81,8 +82,8 @@ async def get_company_modules(
     include_catalog: bool = False,
     db: AsyncSession = Depends(get_db),
     svc: ModuleService = Depends(get_module_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     _enforce_tenant(request, company_id)
     modules = await svc.get_company_modules(db, company_id, include_catalog=include_catalog)
     return {"company_id": company_id, "modules": modules, "count": len(modules)}
@@ -95,8 +96,8 @@ async def check_module_active(
     request: Request,
     db: AsyncSession = Depends(get_db),
     svc: ModuleService = Depends(get_module_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     _enforce_tenant(request, company_id)
     active = await svc.is_module_active(db, company_id, module_name)
     status = await svc.get_module_status(db, company_id, module_name)
@@ -117,8 +118,8 @@ async def activate_module(
     request: Request,
     db: AsyncSession = Depends(get_db),
     svc: ModuleService = Depends(get_module_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     _enforce_tenant(request, company_id)
     _validate_status(body.status)
     _validate_tier(body.tier)
@@ -150,8 +151,8 @@ async def deactivate_module(
     request: Request,
     db: AsyncSession = Depends(get_db),
     svc: ModuleService = Depends(get_module_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     _enforce_tenant(request, company_id)
     result = await svc.deactivate_module(db, company_id, module_name)
     if not result["success"]:
@@ -167,8 +168,8 @@ async def update_module(
     request: Request,
     db: AsyncSession = Depends(get_db),
     svc: ModuleService = Depends(get_module_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     _enforce_tenant(request, company_id)
 
     expires = None
@@ -202,8 +203,8 @@ async def seed_company_modules(
     request: Request,
     db: AsyncSession = Depends(get_db),
     svc: ModuleService = Depends(get_module_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     _enforce_tenant(request, company_id)
     created = await svc.seed_beta_modules(db, company_id)
     return {
@@ -220,7 +221,7 @@ async def update_module_by_id(
     request: Request,
     db: AsyncSession = Depends(get_db),
     svc: ModuleService = Depends(get_module_service),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     mod = await svc.get_module_by_id(db, module_id)
     if not mod:
@@ -258,8 +259,8 @@ async def get_module_billing_context(
     request: Request,
     db: AsyncSession = Depends(get_db),
     svc: ModuleService = Depends(get_module_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     _enforce_tenant(request, company_id)
     ctx = await svc.get_billing_context(db, company_id, module_name)
     if not ctx:

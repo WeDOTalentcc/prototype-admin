@@ -16,6 +16,7 @@ from ._shared import (
     get_user_from_headers,
     logger,
 )
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 
@@ -51,7 +52,7 @@ async def list_client_automations(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List all automations for a specific client."""
     try:
@@ -73,7 +74,7 @@ async def create_client_automation(
     data: AutomationCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new automation for a client."""
     try:
@@ -108,7 +109,7 @@ async def update_client_automation(
     data: AutomationUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update an existing automation."""
     try:
@@ -143,7 +144,7 @@ async def delete_client_automation(
     automation_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Delete an automation."""
     try:
@@ -172,7 +173,7 @@ async def toggle_client_automation(
     automation_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Toggle the is_active state of an automation."""
     try:

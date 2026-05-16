@@ -19,6 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.automation.services.automation_service import AutomationService, automation_service, get_automation_service
 from app.models.automation import ActionType, TriggerType
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -80,8 +81,8 @@ async def list_automations(
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     db: AsyncSession = Depends(get_db),
     auto_svc: AutomationService = Depends(get_automation_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     List all automations for a company.
     
@@ -119,8 +120,8 @@ async def create_automation(
     user_id: str | None = Query(None, description="User creating the automation"),
     db: AsyncSession = Depends(get_db),
     auto_svc: AutomationService = Depends(get_automation_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Create a new automation.
     
@@ -185,8 +186,8 @@ async def get_automation(
     company_id: str = Query(..., description="Company ID (required)"),
     db: AsyncSession = Depends(get_db),
     auto_svc: AutomationService = Depends(get_automation_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get a single automation by ID.
     
@@ -228,8 +229,8 @@ async def update_automation(
     user_id: str | None = Query(None, description="User updating the automation"),
     db: AsyncSession = Depends(get_db),
     auto_svc: AutomationService = Depends(get_automation_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Update an existing automation.
     
@@ -293,8 +294,8 @@ async def delete_automation(
     company_id: str = Query(..., description="Company ID (required)"),
     db: AsyncSession = Depends(get_db),
     auto_svc: AutomationService = Depends(get_automation_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Delete an automation.
     
@@ -337,8 +338,8 @@ async def test_automation(
     company_id: str = Query(..., description="Company ID (required)"),
     db: AsyncSession = Depends(get_db),
     auto_svc: AutomationService = Depends(get_automation_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Test an automation without executing the actual action.
     
@@ -387,8 +388,8 @@ async def trigger_automations(
     company_id: str = Query(..., description="Company ID (required)"),
     db: AsyncSession = Depends(get_db),
     auto_svc: AutomationService = Depends(get_automation_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Manually trigger automations for a specific event.
     
@@ -427,8 +428,8 @@ async def get_automation_logs(
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     db: AsyncSession = Depends(get_db),
     auto_svc: AutomationService = Depends(get_automation_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get execution logs for a specific automation.
     
@@ -457,8 +458,8 @@ async def get_automation_logs(
 
 
 @router.get("/trigger-types/available", summary="Get available trigger types", response_model=None)
-async def get_trigger_types():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_trigger_types(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get list of available trigger types for automations.
     """
@@ -522,8 +523,8 @@ async def get_trigger_types():
 
 
 @router.get("/action-types/available", summary="Get available action types", response_model=None)
-async def get_action_types():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_action_types(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get list of available action types for automations.
     """

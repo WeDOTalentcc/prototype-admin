@@ -13,6 +13,8 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, EmailStr
 
 from app.shared.services.microsoft_graph_service import AttendeeType, MeetingAttendee, microsoft_graph_service
+from fastapi import Depends
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -76,8 +78,8 @@ class CreateBookingsAppointmentRequest(BaseModel):
 
 
 @router.get("/status", response_model=ConnectionStatusResponse)
-async def check_connection_status():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def check_connection_status(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Check Microsoft Graph API connection status.
     
@@ -88,8 +90,8 @@ async def check_connection_status():
 
 
 @router.post("/meetings/teams", response_model=TeamsOnlineMeetingResponse)
-async def create_teams_meeting(request: CreateTeamsMeetingRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def create_teams_meeting(request: CreateTeamsMeetingRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Create a Teams meeting with calendar event.
     
@@ -156,9 +158,9 @@ async def create_standalone_teams_meeting(
     subject: str,
     start_time: datetime,
     duration_minutes: int = 60,
-    attendee_emails: list[str] | None = None
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    attendee_emails: list[str] | None = None, 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Create a standalone Teams meeting (without calendar event).
     
@@ -198,9 +200,9 @@ async def create_standalone_teams_meeting(
 @router.get("/calendar/events/{event_id}", response_model=None)
 async def get_calendar_event(
     event_id: str,
-    user_email: EmailStr = Query(..., description="Email of the calendar owner")
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    user_email: EmailStr = Query(..., description="Email of the calendar owner"), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get details of a calendar event.
     """
@@ -233,9 +235,9 @@ async def get_calendar_event(
 async def cancel_calendar_event(
     event_id: str,
     user_email: EmailStr = Query(..., description="Email of the calendar owner"),
-    cancellation_message: str | None = None
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    cancellation_message: str | None = None, 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Cancel a calendar event and notify attendees.
     """
@@ -257,8 +259,8 @@ async def cancel_calendar_event(
 
 
 @router.get("/bookings/businesses", response_model=list[dict])
-async def list_bookings_businesses():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def list_bookings_businesses(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     List all Microsoft Bookings businesses.
     """
@@ -283,8 +285,8 @@ async def list_bookings_businesses():
 
 
 @router.get("/bookings/businesses/{business_id}/services", response_model=None)
-async def list_bookings_services(business_id: str):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def list_bookings_services(business_id: str, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     List services for a Bookings business.
     """
@@ -309,8 +311,8 @@ async def list_bookings_services(business_id: str):
 
 
 @router.get("/bookings/businesses/{business_id}/booking-page-url", response_model=None)
-async def get_booking_page_url(business_id: str):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_booking_page_url(business_id: str, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get the public booking page URL for a business.
     """
@@ -327,8 +329,8 @@ async def get_booking_page_url(business_id: str):
 
 
 @router.post("/bookings/appointments", response_model=None)
-async def create_bookings_appointment(request: CreateBookingsAppointmentRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def create_bookings_appointment(request: CreateBookingsAppointmentRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Create an appointment in Microsoft Bookings.
     """

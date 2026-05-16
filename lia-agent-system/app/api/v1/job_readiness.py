@@ -35,6 +35,7 @@ from app.domains.job_management.services.job_readiness_service import (
 from app.shared.async_processing.task_manager import DomainTaskManager
 from lia_models.job_vacancy import JobVacancy
 from lia_models.job_vacancy_audit import JobVacancyAuditLog
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -164,7 +165,7 @@ def _to_card(job: JobVacancy) -> JobCard:
 async def overview(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-) -> OverviewResponse:
+company_id: str = Depends(require_company_id)) -> OverviewResponse:
     company_id = get_user_company_id(user)
 
     rows = await db.execute(
@@ -219,7 +220,7 @@ async def board(
     limit: int = Query(default=200, ge=1, le=500),
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-) -> BoardResponse:
+company_id: str = Depends(require_company_id)) -> BoardResponse:
     company_id = get_user_company_id(user)
 
     from sqlalchemy import and_, or_
@@ -303,7 +304,7 @@ async def get_job_detail(
     job_id: UUID,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-) -> JobDetailResponse:
+company_id: str = Depends(require_company_id)) -> JobDetailResponse:
     company_id = get_user_company_id(user)
     job = await _load_job(db, job_id, company_id)
     timeline = await _load_timeline(db, job_id, company_id)
@@ -323,7 +324,7 @@ async def get_job_detail(
 async def run_all(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-) -> RunResponse:
+company_id: str = Depends(require_company_id)) -> RunResponse:
     company_id = get_user_company_id(user)
     actor = (user.email or str(user.id)) if user else "lia"
 
@@ -361,7 +362,7 @@ async def run_batch(
     payload: RunRequest,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-) -> RunResponse:
+company_id: str = Depends(require_company_id)) -> RunResponse:
     if not payload.job_ids:
         raise HTTPException(status_code=400, detail="job_ids must not be empty")
     company_id = get_user_company_id(user)
@@ -392,7 +393,7 @@ async def approve_stage(
     payload: StageActionRequest | None = None,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-) -> JobDetailResponse:
+company_id: str = Depends(require_company_id)) -> JobDetailResponse:
     company_id = get_user_company_id(user)
     actor = (user.email or str(user.id)) if user else "recruiter"
     job = await _load_job(db, job_id, company_id)
@@ -410,7 +411,7 @@ async def reject_stage(
     payload: StageActionRequest | None = None,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-) -> JobDetailResponse:
+company_id: str = Depends(require_company_id)) -> JobDetailResponse:
     company_id = get_user_company_id(user)
     actor = (user.email or str(user.id)) if user else "recruiter"
     job = await _load_job(db, job_id, company_id)
@@ -429,7 +430,7 @@ async def dispatch_screening(
     payload: DispatchRequest,
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-) -> JobDetailResponse:
+company_id: str = Depends(require_company_id)) -> JobDetailResponse:
     company_id = get_user_company_id(user)
     actor = (user.email or str(user.id)) if user else "recruiter"
     job = await _load_job(db, job_id, company_id)

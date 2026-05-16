@@ -10,6 +10,7 @@ import logging
 from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from typing import Optional
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -104,8 +105,8 @@ async def _get_orchestrator(db=None):
 # --- Endpoints ---
 
 @router.post("/start")
-async def start_onboarding(req: StartOnboardingRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def start_onboarding(req: StartOnboardingRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Start onboarding for a new user. Called by RabbitMQ consumer or directly."""
     from app.services.onboarding_orchestrator import OnboardingSession
 
@@ -148,8 +149,8 @@ async def start_onboarding(req: StartOnboardingRequest):
 
 
 @router.get("/{user_id}/state")
-async def get_onboarding_state(user_id: int):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_onboarding_state(user_id: int, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get current onboarding state for a user."""
     db = await _get_db()
     session = await _load_session(db, user_id)
@@ -169,8 +170,8 @@ async def get_onboarding_state(user_id: int):
 
 
 @router.post("/{user_id}/event")
-async def handle_web_event(user_id: int, req: WebEventRequest):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def handle_web_event(user_id: int, req: WebEventRequest, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Handle web events (first_login, tour steps, action choices)."""
     db = await _get_db()
     session = await _load_session(db, user_id)
@@ -203,8 +204,8 @@ async def handle_web_event(user_id: int, req: WebEventRequest):
 
 
 @router.get("/{user_id}/context")
-async def get_whatsapp_context(user_id: int):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_whatsapp_context(user_id: int, company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get WhatsApp conversation context for web handoff."""
     db = await _get_db()
     session = await _load_session(db, user_id)

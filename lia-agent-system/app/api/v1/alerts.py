@@ -14,6 +14,7 @@ from app.domains.notifications.repositories.alert_repository import AlertReposit
 from app.domains.job_management.services.job_alert_service import job_alert_service
 from app.models.alert import AlertConfig, AlertPreference, AlertSeverity
 from app.shared.tenant_guard import get_verified_company_id
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -71,9 +72,9 @@ async def list_alerts(
     severity: AlertSeverity | None = None,
     user_id: str | None = None,
     limit: int = Query(default=50, le=100),
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List active alerts with optional filters."""
     alerts = await job_alert_service.get_active_alerts(
         db=db,
@@ -86,9 +87,9 @@ async def list_alerts(
 
 @router.get("/summary", response_model=AlertSummaryResponse)
 async def get_alert_summary(
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get summary of active alerts by severity."""
     summary = await job_alert_service.get_alert_summary(db=db)
     return summary
@@ -97,9 +98,9 @@ async def get_alert_summary(
 @router.post("/check", response_model=None)
 async def run_alert_checks(
     background_tasks: BackgroundTasks,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Manually trigger alert checks."""
     alerts = await job_alert_service.check_all_alerts(db=db)
     return {
@@ -113,9 +114,9 @@ async def run_alert_checks(
 async def acknowledge_alert(
     alert_id: str,
     user_id: str = "system",
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Acknowledge an alert."""
     alert = await job_alert_service.acknowledge_alert(
         db=db,
@@ -132,9 +133,9 @@ async def resolve_alert(
     alert_id: str,
     user_id: str = "system",
     resolution_note: str | None = None,
-    db: AsyncSession = Depends(get_db)
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Resolve an alert."""
     alert = await job_alert_service.resolve_alert(
         db=db,
@@ -181,7 +182,7 @@ DEFAULT_ALERTS = [
 async def get_alert_config(
     company_id: str = Depends(get_verified_company_id),
     repo: AlertRepository = Depends(get_alert_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get current alert configuration. Requires X-Company-ID header for multi-tenant isolation."""
     try:
@@ -209,7 +210,7 @@ async def update_alert_config(
     data: AlertConfigRequest,
     company_id: str = Depends(get_verified_company_id),
     repo: AlertRepository = Depends(get_alert_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update alert configuration. Requires X-Company-ID header for multi-tenant isolation."""
     try:
@@ -299,7 +300,7 @@ async def get_alert_preferences(
     user_id: str = Query(..., description="User ID (required)"),
     company_id: str = Depends(get_verified_company_id),
     repo: AlertRepository = Depends(get_alert_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get users alert preferences. Requires X-Company-ID header for multi-tenant isolation."""
     try:
@@ -339,7 +340,7 @@ async def create_alert_preferences(
     data: AlertPreferenceRequest,
     company_id: str = Depends(get_verified_company_id),
     repo: AlertRepository = Depends(get_alert_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create or update users alert preferences. Requires X-Company-ID header for multi-tenant isolation."""
     try:
@@ -388,7 +389,7 @@ async def update_alert_preferences(
     data: AlertPreferenceRequest,
     company_id: str = Depends(get_verified_company_id),
     repo: AlertRepository = Depends(get_alert_repo),
-):
+_company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update users alert preferences. Requires X-Company-ID header for multi-tenant isolation."""
     return await create_alert_preferences(data, company_id, repo)

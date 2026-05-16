@@ -12,6 +12,7 @@ from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
 from app.orchestrator.navigation_intent import detect_navigation_intent
+from fastapi import Depends
 
 router = APIRouter(prefix="/navigation-intent", tags=["navigation"])
 
@@ -28,7 +29,7 @@ class NavigationIntentResponse(BaseModel):
 
 
 @router.post("", response_model=NavigationIntentResponse)
-async def classify_navigation_intent(request: NavigationIntentRequest) -> NavigationIntentResponse:
+async def classify_navigation_intent(request: NavigationIntentRequest, ) -> NavigationIntentResponse:
     # multi-tenancy: public endpoint (navigation_intent) — no tenant data
     """
     Classify a user message to detect which platform page it refers to.

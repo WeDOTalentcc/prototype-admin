@@ -18,6 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import get_current_user
 from app.core.database import get_db
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +80,7 @@ async def get_execution_timeline(
     execution_id: str,
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Reconstrói a timeline completa de uma execução de agente.
@@ -158,7 +159,7 @@ async def list_executions(
     offset: int = Query(0),
     db: AsyncSession = Depends(get_db),
     current_user: dict = Depends(get_current_user),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Lista execuções recentes com metadados leves.

@@ -23,6 +23,7 @@ from app.domains.automation.services.webhook_adapters import (
 )
 
 from app.domains.ats_integration.services.ats_sync_service import ATSSyncService, get_ats_sync_service
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +85,7 @@ async def handle_ats_webhook(
     x_pandape_signature: str | None = Header(None, alias="X-Pandape-Signature"),
     x_merge_signature: str | None = Header(None, alias="X-Merge-Signature"),
 ):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Receive webhook from ATS platforms (Gupy, Pandapé, Merge).
     Used for inbound sync when changes happen in external ATS.
@@ -306,7 +307,7 @@ async def handle_interview_webhook(
     request: Request,
     background_tasks: BackgroundTasks,
 ):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Receive webhook from interview scheduling tools.
     Supported providers: calendly, custom
@@ -332,7 +333,7 @@ async def handle_test_webhook(
     request: Request,
     background_tasks: BackgroundTasks,
 ):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Receive webhook from assessment/test platforms.
     Supported providers: testgorilla, codility, custom
@@ -358,7 +359,7 @@ async def handle_document_webhook(
     request: Request,
     background_tasks: BackgroundTasks,
 ):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Receive webhook from document collection services.
     """
@@ -378,8 +379,8 @@ async def handle_document_webhook(
 
 
 @router.get("/event-log", response_model=None)
-async def get_webhook_event_log(limit: int = 50):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_webhook_event_log(limit: int = 50, ):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get recent webhook event processing log."""
     return {
         "events": WebhookAdapter.get_event_log(limit),

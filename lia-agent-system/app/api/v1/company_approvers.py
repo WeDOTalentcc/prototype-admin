@@ -18,6 +18,7 @@ from app.schemas.company import (
     ApproverResponse,
     ApproverUpdate,
 )
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -29,8 +30,8 @@ async def list_approvers(
     company_id: uuid.UUID | None = Query(None),
     include_inactive: bool = Query(False),
     approver_repo: ApproverRepository = Depends(get_approver_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List all approvers for a company."""
     try:
         if not company_id:
@@ -51,8 +52,8 @@ async def create_approver(
     data: ApproverCreate = None,
     approver_repo: ApproverRepository = Depends(get_approver_repo),
     profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Create a new approver."""
     try:
         resolved_company_id = None
@@ -84,8 +85,8 @@ async def update_approver(
     approver_id: uuid.UUID,
     data: ApproverUpdate,
     approver_repo: ApproverRepository = Depends(get_approver_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Update an approver."""
     try:
         update_data = data.model_dump(exclude_unset=True)
@@ -105,8 +106,8 @@ async def update_approver(
 async def delete_approver(
     approver_id: uuid.UUID,
     approver_repo: ApproverRepository = Depends(get_approver_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Soft delete an approver."""
     try:
         deleted = await approver_repo.delete(approver_id)

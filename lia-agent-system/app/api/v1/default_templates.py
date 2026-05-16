@@ -29,6 +29,7 @@ from app.schemas.default_templates import (
     TemplateVariableResponse,
     TemplateVariablesListResponse,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -68,8 +69,8 @@ def _to_response(t: DefaultTemplate) -> DefaultTemplateResponse:
 
 
 @router.get("/variables", response_model=None)
-async def list_template_variables() -> TemplateVariablesListResponse:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def list_template_variables(company_id: str = Depends(require_company_id)) -> TemplateVariablesListResponse:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get all available template variables."""
     variables = [TemplateVariableResponse(**var) for var in AVAILABLE_TEMPLATE_VARIABLES]
     return TemplateVariablesListResponse(variables=variables)
@@ -83,8 +84,8 @@ async def list_default_templates(
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     db: AsyncSession = Depends(get_db),
-) -> DefaultTemplateListResponse:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)) -> DefaultTemplateListResponse:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List all default templates with optional filtering."""
     try:
         conditions = []
@@ -108,8 +109,8 @@ async def list_default_templates(
 async def get_default_template(
     template_id: UUID,
     db: AsyncSession = Depends(get_db),
-) -> DefaultTemplateResponse:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)) -> DefaultTemplateResponse:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get a specific default template by ID."""
     try:
         repo = DefaultTemplateRepository(db)
@@ -129,7 +130,7 @@ async def create_default_template(
     data: DefaultTemplateCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db),
-) -> DefaultTemplateResponse:
+company_id: str = Depends(require_company_id)) -> DefaultTemplateResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new default template. Admin access required."""
     try:
@@ -161,7 +162,7 @@ async def update_default_template(
     data: DefaultTemplateUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db),
-) -> DefaultTemplateResponse:
+company_id: str = Depends(require_company_id)) -> DefaultTemplateResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update an existing default template. Admin access required."""
     try:
@@ -202,7 +203,7 @@ async def delete_default_template(
     template_id: UUID,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db),
-) -> dict[str, Any]:
+company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Delete a default template. Admin access required."""
     try:
@@ -230,7 +231,7 @@ async def duplicate_default_template(
     data: DefaultTemplateDuplicateRequest | None = None,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db),
-) -> DefaultTemplateResponse:
+company_id: str = Depends(require_company_id)) -> DefaultTemplateResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Duplicate an existing default template. Admin access required."""
     try:
@@ -255,7 +256,7 @@ async def duplicate_default_template(
 async def seed_default_templates(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     db: AsyncSession = Depends(get_db),
-) -> SeedTemplatesResponse:
+company_id: str = Depends(require_company_id)) -> SeedTemplatesResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Seed the database with default recruitment templates. Admin access required."""
     try:

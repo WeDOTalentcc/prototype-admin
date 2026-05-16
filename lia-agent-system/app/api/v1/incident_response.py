@@ -18,6 +18,7 @@ from app.auth.dependencies import require_admin
 from app.core.database import get_db
 from lia_models.incident import IncidentSeverity, IncidentStatus
 from app.domains.lgpd.services.incident_response_service import IncidentResponseService
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 router = APIRouter(prefix="/admin/incidents", tags=["LGPD Art.48 — Incident Response"])
 logger = logging.getLogger(__name__)
@@ -30,7 +31,7 @@ async def register_incident(
     payload: dict,
     db: AsyncSession = Depends(get_db),
     _user=Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Register a data security incident. Triggers CRITICAL log alert to
@@ -58,7 +59,7 @@ async def list_open_incidents(
     company_id: str,
     db: AsyncSession = Depends(get_db),
     _user=Depends(require_admin),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List incidents in OPEN or INVESTIGATING status requiring DPO attention."""
     incidents = await _service.get_open_incidents(db, company_id=company_id)
@@ -80,7 +81,7 @@ async def update_incident_status(
     new_status: IncidentStatus,
     db: AsyncSession = Depends(get_db),
     _user=Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Update incident status. Use REPORTED_ANPD after manual ANPD notification.

@@ -14,6 +14,8 @@ from app.shared.services.semantic_search_service import (
     SemanticExpansionResult,
     semantic_search_service,
 )
+from fastapi import Depends
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter(prefix="/semantic-search", tags=["Semantic Search"])
 
@@ -29,7 +31,7 @@ class SemanticSearchResponse(BaseModel):
     
 
 @router.post("/skills", response_model=SemanticSearchResponse)
-async def expand_skills(request: SemanticSearchRequest):
+async def expand_skills(request: SemanticSearchRequest, company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (semantic_search) — no tenant data
     """
     Expand skill search with semantic suggestions.
@@ -47,7 +49,7 @@ async def expand_skills(request: SemanticSearchRequest):
 
 
 @router.post("/job-titles", response_model=SemanticSearchResponse)
-async def expand_job_titles(request: SemanticSearchRequest):
+async def expand_job_titles(request: SemanticSearchRequest, company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (semantic_search) — no tenant data
     """
     Expand job title search with semantic suggestions.
@@ -65,7 +67,7 @@ async def expand_job_titles(request: SemanticSearchRequest):
 
 
 @router.post("/roles", response_model=SemanticSearchResponse)
-async def expand_roles(request: SemanticSearchRequest):
+async def expand_roles(request: SemanticSearchRequest, company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (semantic_search) — no tenant data
     """
     Expand function/role search with semantic suggestions.
@@ -83,7 +85,7 @@ async def expand_roles(request: SemanticSearchRequest):
 
 
 @router.post("/industries", response_model=SemanticSearchResponse)
-async def expand_industries(request: SemanticSearchRequest):
+async def expand_industries(request: SemanticSearchRequest, company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (semantic_search) — no tenant data
     """
     Expand industry/sector search with semantic suggestions.
@@ -101,7 +103,7 @@ async def expand_industries(request: SemanticSearchRequest):
 
 
 @router.post("/expertise", response_model=SemanticSearchResponse)
-async def expand_expertise(request: SemanticSearchRequest):
+async def expand_expertise(request: SemanticSearchRequest, company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (semantic_search) — no tenant data
     """
     Expand expertise area search with semantic suggestions.
@@ -119,7 +121,7 @@ async def expand_expertise(request: SemanticSearchRequest):
 
 
 @router.post("/fields-of-study", response_model=SemanticSearchResponse)
-async def expand_fields_of_study(request: SemanticSearchRequest):
+async def expand_fields_of_study(request: SemanticSearchRequest, company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (semantic_search) — no tenant data
     """
     Expand field of study search with semantic suggestions.
@@ -137,7 +139,7 @@ async def expand_fields_of_study(request: SemanticSearchRequest):
 
 
 @router.post("/companies", response_model=SemanticSearchResponse)
-async def expand_company_competitors(request: SemanticSearchRequest):
+async def expand_company_competitors(request: SemanticSearchRequest, company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (semantic_search) — no tenant data
     """
     Expand company search with competitors and similar companies.
@@ -157,8 +159,8 @@ async def expand_company_competitors(request: SemanticSearchRequest):
 @router.post("/expand/{domain}", response_model=SemanticSearchResponse)
 async def expand_generic(
     domain: SemanticDomain,
-    request: SemanticSearchRequest
-):
+    request: SemanticSearchRequest, 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (semantic_search) — no tenant data
     """
     Generic endpoint to expand any domain.

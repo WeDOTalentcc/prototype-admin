@@ -16,6 +16,7 @@ from app.core.database import get_db
 from app.domains.pipeline.repositories.pipeline_template_repository import (
     PipelineTemplateRepository,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +94,7 @@ async def list_pipeline_templates(
     is_active: bool | None = True,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List all pipeline templates for the company."""
     repo = PipelineTemplateRepository(db)
@@ -117,7 +118,7 @@ async def create_pipeline_template(
     data: PipelineTemplateCreate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new pipeline template."""
     repo = PipelineTemplateRepository(db)
@@ -148,7 +149,7 @@ async def get_pipeline_template(
     template_id: str,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get a specific pipeline template by ID."""
     try:
@@ -169,7 +170,7 @@ async def update_pipeline_template(
     data: PipelineTemplateUpdate,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update a pipeline template."""
     try:
@@ -209,7 +210,7 @@ async def delete_pipeline_template(
     template_id: str,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Delete (soft delete) a pipeline template."""
     try:
@@ -234,7 +235,7 @@ async def clone_pipeline_template(
     new_name: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Clone an existing pipeline template."""
     try:
@@ -263,7 +264,7 @@ async def seed_default_templates(
     force: bool = Query(False, description="Force re-seeding even if templates exist"),
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Seed default pipeline templates for the company."""
     company_id = current_user.company_id
@@ -288,7 +289,7 @@ async def increment_template_usage(
     template_id: str,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Increment the usage count of a template (called when applied to a job)."""
     try:

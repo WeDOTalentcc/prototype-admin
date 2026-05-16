@@ -13,6 +13,7 @@ from app.domains.candidate_lists.dependencies import get_candidate_list_repo
 from app.domains.candidate_lists.repositories.candidate_list_repository import (
     CandidateListRepository,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +53,7 @@ async def list_candidate_lists(
     search: str | None = None,
     repo: CandidateListRepository = Depends(get_candidate_list_repo),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """
     List all candidate lists for the company.
     """
@@ -93,7 +94,7 @@ async def create_candidate_list(
     data: CandidateListCreate,
     repo: CandidateListRepository = Depends(get_candidate_list_repo),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Create a new candidate list.
     """
@@ -131,7 +132,7 @@ async def get_candidate_list(
     limit: int = 50,
     repo: CandidateListRepository = Depends(get_candidate_list_repo),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Get a specific candidate list with its members.
     """
@@ -204,7 +205,7 @@ async def update_candidate_list(
     data: CandidateListUpdate,
     repo: CandidateListRepository = Depends(get_candidate_list_repo),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Update a candidate list (rename, description, color).
     """
@@ -245,7 +246,7 @@ async def delete_candidate_list(
     list_id: str,
     repo: CandidateListRepository = Depends(get_candidate_list_repo),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Delete a candidate list (soft delete).
     """
@@ -274,7 +275,7 @@ async def add_candidates_to_list(
     data: AddCandidatesRequest,
     repo: CandidateListRepository = Depends(get_candidate_list_repo),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Add one or more candidates to a list.
     Duplicates are silently ignored.
@@ -348,7 +349,7 @@ async def remove_candidates_from_list(
     data: RemoveCandidatesRequest,
     repo: CandidateListRepository = Depends(get_candidate_list_repo),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Remove one or more candidates from a list.
     """
@@ -393,7 +394,7 @@ async def assign_list_to_jobs(
     data: AssignJobsRequest,
     repo: CandidateListRepository = Depends(get_candidate_list_repo),
     current_user: User = Depends(get_current_user_or_demo),
-):
+company_id: str = Depends(require_company_id)):
     """
     Add candidates from a list to one or more job vacancies.
     Can specify candidate_ids to add only specific candidates, or add all if not specified.

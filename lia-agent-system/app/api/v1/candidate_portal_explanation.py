@@ -25,6 +25,8 @@ from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel
 
 from app.schemas.api_envelope import APIResponse
+from fastapi import Depends
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -54,8 +56,8 @@ async def explain_candidate_decisions_endpoint(
         None,
         description="Vaga específica; se omitido, usa a vaga do token",
     ),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Retorna explicação das decisões tomadas sobre a candidatura.
 
     Auth: JWT token via query param `candidate_token`.

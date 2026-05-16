@@ -27,6 +27,7 @@ from app.models.communication_matrix import (
     ModuleType,
     RecipientType,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -52,8 +53,8 @@ async def list_matrix_entries(
     module: str | None = Query(None, description="Filter by module type"),
     is_active: bool | None = Query(None, description="Filter by active status"),
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     company_id = current_user.company_id
     """
@@ -103,8 +104,8 @@ async def list_matrix_entries(
 
 
 @router.get("/modules", summary="List available modules", response_model=None)
-async def list_modules():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def list_modules(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     List all available modules with their labels and descriptions.
     """
@@ -140,8 +141,8 @@ async def list_modules():
 async def get_matrix_entry(
     entry_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get a specific communication matrix entry by ID.
@@ -184,8 +185,8 @@ async def update_matrix_entry(
     entry_id: str,
     data: UpdateMatrixEntryRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Update a communication matrix entry.
@@ -248,8 +249,8 @@ async def update_matrix_entry(
 async def reset_matrix_to_defaults(
     data: ResetMatrixRequest,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     company_id = current_user.company_id
     """
@@ -308,8 +309,8 @@ async def reset_matrix_to_defaults(
 @router.post("/seed", summary="Seed default matrix entries (if empty)", response_model=None)
 async def seed_matrix_entries(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     company_id = current_user.company_id
     """
@@ -370,8 +371,8 @@ async def seed_matrix_entries(
 @router.post("/copy-to-company", summary="Copy platform defaults to a company", response_model=None)
 async def copy_defaults_to_company(
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(get_current_user_or_demo)
-):
+    current_user: User = Depends(get_current_user_or_demo), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     company_id = current_user.company_id
     """

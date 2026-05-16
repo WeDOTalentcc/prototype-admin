@@ -33,6 +33,7 @@ from app.schemas.audit_logs import (
     SeedRetentionPoliciesResponse,
 )
 from app.shared.tenant_guard import get_verified_company_id
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -71,8 +72,8 @@ async def get_audit_stats(
     client_id: str | None = Query(None),
     company_id: str | None = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get aggregated statistics for audit logs."""
     try:
         conditions = _build_conditions(date_from, date_to, client_id, company_id)
@@ -103,8 +104,8 @@ async def export_audit_logs(
     action_category: str | None = Query(None),
     company_id: str | None = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Export audit logs as CSV file for compliance reporting."""
     try:
         conditions = _build_conditions(date_from, date_to, client_id, company_id, action_category=action_category)
@@ -147,8 +148,8 @@ async def export_audit_logs(
 
 
 @router.get("/retention-policies", response_model=AuditRetentionPolicyListResponse)
-async def list_retention_policies(db: AsyncSession = Depends(get_db)):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def list_retention_policies(db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List all audit retention policies."""
     try:
         repo = AuditLogRepository(db)
@@ -163,8 +164,8 @@ async def list_retention_policies(db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/retention-policies/seed", response_model=SeedRetentionPoliciesResponse)
-async def seed_retention_policies(db: AsyncSession = Depends(get_db)):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def seed_retention_policies(db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Seed default SOX-compliant retention policies."""
     try:
         repo = AuditLogRepository(db)
@@ -184,8 +185,8 @@ async def seed_retention_policies(db: AsyncSession = Depends(get_db)):
 async def create_retention_policy(
     data: AuditRetentionPolicyCreate,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Create a new audit retention policy."""
     try:
         repo = AuditLogRepository(db)
@@ -215,8 +216,8 @@ async def get_audit_log(
     log_id: str,
     company_id: str | None = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get a single audit log entry by ID."""
     try:
         log_uuid = UUID(log_id)
@@ -248,8 +249,8 @@ async def list_audit_logs(
     offset: int = Query(0, ge=0),
     company_id: str | None = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """List audit logs with optional filtering and pagination."""
     try:
         conditions = _build_conditions(
@@ -275,8 +276,8 @@ async def list_audit_logs(
 async def create_audit_log(
     data: AuditLogCreate,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Create a new audit log entry (internal use)."""
     try:
         repo = AuditLogRepository(db)

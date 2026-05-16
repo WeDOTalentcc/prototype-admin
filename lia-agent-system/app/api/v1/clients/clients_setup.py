@@ -15,6 +15,7 @@ from ._shared import (
     get_user_from_headers,
     logger,
 )
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 
@@ -41,7 +42,7 @@ async def get_client_setup(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get setup status for a specific client."""
     try:
@@ -63,7 +64,7 @@ async def update_client_setup_section(
     data: SetupSectionUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: ClientAccountRepository = Depends(get_client_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update progress for a specific setup section."""
     try:

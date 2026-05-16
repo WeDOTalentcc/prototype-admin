@@ -16,6 +16,7 @@ from app.schemas.agent_approval import (
     ReviewApprovalRequest,
 )
 from app.services.agent_approval_service import agent_approval_service
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ async def request_agent_approval(
     agent_id: str,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     """Submit an agent for approval. Agent must be in draft status."""
     try:
         approval = await agent_approval_service.request_approval(
@@ -96,7 +97,7 @@ approvals_router = APIRouter(prefix="/agent-approvals", tags=["Agent Approvals"]
 async def list_pending_approvals(
     current_user=Depends(require_role([UserRole.admin])),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     """List all pending approval requests (admin only)."""
     approvals = await agent_approval_service.list_pending(
         db=db, company_id=current_user.company_id
@@ -124,7 +125,7 @@ async def review_approval(
     body: ReviewApprovalRequest,
     current_user=Depends(require_role([UserRole.admin])),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     """Approve or reject an approval request (admin only)."""
     try:
         approval = await agent_approval_service.review(

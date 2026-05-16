@@ -16,6 +16,7 @@ from app.schemas.screening import (
     ScreeningQuestionRequest,
     ScreeningQuestionResponse,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -105,7 +106,7 @@ async def generate_screening_questions(
     request: ScreeningQuestionRequest,
     current_user: User = Depends(get_current_active_user),
     wsi_svc: WSIService = Depends(get_wsi_service),
-) -> ScreeningQuestionResponse:
+company_id: str = Depends(require_company_id)) -> ScreeningQuestionResponse:
     try:
         company_id = get_user_company_id(current_user)
         logger.info(f"Generating screening questions for: {request.title} ({request.seniority}) - company: {company_id}, user: {current_user.id}")
@@ -142,7 +143,7 @@ async def regenerate_questions(
     request: RegenerateQuestionsRequest,
     current_user: User = Depends(get_current_active_user),
     wsi_svc: WSIService = Depends(get_wsi_service),
-) -> list[ScreeningQuestion]:
+company_id: str = Depends(require_company_id)) -> list[ScreeningQuestion]:
     try:
         company_id = get_user_company_id(current_user)
         logger.info(f"Regenerating questions for: {request.context.title} - company: {company_id}, user: {current_user.id}")
@@ -177,8 +178,8 @@ async def regenerate_questions(
 
 @router.get("/frameworks", response_model=None)
 async def get_screening_frameworks(
-    current_user: User = Depends(get_current_active_user)
-):
+    current_user: User = Depends(get_current_active_user), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     from app.api.v1.wsi._shared import BLOOM_LEVELS as BLOOM_RICH
     from app.api.v1.wsi._shared import DREYFUS_LEVELS as DREYFUS_RICH
@@ -216,7 +217,7 @@ async def get_screening_frameworks(
 async def auto_trigger_screening(
     request: AutoScreeningRequest,
     repo: ScreeningRepository = Depends(get_screening_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     if request.source != "website":
         raise HTTPException(
@@ -255,8 +256,8 @@ async def auto_trigger_screening(
 async def list_screening_tasks(
     job_id: str,
     repo: ScreeningRepository = Depends(get_screening_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     try:
         tasks = await repo.list_tasks_by_job(job_id)
         return {"job_id": job_id, "tasks": [t.to_dict() for t in tasks], "total": len(tasks)}
@@ -269,8 +270,8 @@ async def list_screening_tasks(
 async def execute_screening_task(
     task_id: str,
     repo: ScreeningRepository = Depends(get_screening_repo),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     try:
         task_uuid = uuid_mod.UUID(task_id)
     except ValueError:

@@ -22,6 +22,7 @@ from .._shared import (
     notify_unmapped_stage,
     validate_multi_tenancy,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -219,8 +220,8 @@ async def handle_ats_sync(
     db: AsyncSession = Depends(get_db),
     audit_svc: AuditService = Depends(get_audit_service),
     activity_svc: ActivityService = Depends(get_activity_service_canonical),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Handle ats_sync trigger: sync candidate stage with external ATS platform."""
     try:
         return await _process_ats_sync(request, db, audit_svc, activity_svc)

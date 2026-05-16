@@ -8,6 +8,8 @@ from fastapi import APIRouter, HTTPException
 
 from app.schemas.analysis import AnalysisRequest, AnalysisResponse
 from app.shared.services.analysis_service import analysis_service
+from fastapi import Depends
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -15,8 +17,8 @@ router = APIRouter()
 
 
 @router.post("/analysis/candidates", response_model=AnalysisResponse)
-async def analyze_candidates(request: AnalysisRequest) -> AnalysisResponse:
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def analyze_candidates(request: AnalysisRequest, company_id: str = Depends(require_company_id)) -> AnalysisResponse:
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Analyze candidates using AI-powered LIA methodology.
     
@@ -56,8 +58,8 @@ async def analyze_candidates(request: AnalysisRequest) -> AnalysisResponse:
 
 
 @router.get("/analysis/archetypes", response_model=None)
-async def get_archetypes():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_archetypes(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get available Big Five archetypes.
     """
@@ -116,8 +118,8 @@ async def get_archetypes():
 
 
 @router.get("/analysis/scoring-methodology", response_model=None)
-async def get_scoring_methodology():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_scoring_methodology(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get the LIA scoring methodology.
     """

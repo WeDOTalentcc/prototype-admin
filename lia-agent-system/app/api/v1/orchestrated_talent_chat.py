@@ -14,6 +14,7 @@ from app.api.orchestrator_routes import get_main_orchestrator
 from app.dependencies.token_budget import require_token_budget
 from app.orchestrator.context_adapter import ContextAdapter
 from app.orchestrator.main_orchestrator import MainOrchestrator
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +66,7 @@ async def orchestrated_talent_chat(
     request: OrchestratedTalentChatRequest,
     main_orchestrator: MainOrchestrator = Depends(get_main_orchestrator),
     _budget: None = Depends(require_token_budget),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Unified pipeline via MainOrchestrator.process() (v4.0):
@@ -116,8 +117,8 @@ async def orchestrated_talent_chat(
         )
 
 @router.get("/talent-chat/intents", response_model=None)
-async def get_talent_chat_intents():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_talent_chat_intents(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     return {
         "intents": [
             {"id": "rankear_candidatos", "description": "Ranking de candidatos", "keywords": ["ranking", "ordenar", "top", "melhores"]},

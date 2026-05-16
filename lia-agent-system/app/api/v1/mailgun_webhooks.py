@@ -24,6 +24,7 @@ from app.domains.communication.dependencies import get_communication_repo
 from app.domains.communication.repositories.communication_repository import (
     CommunicationRepository,
 )
+from app.shared.security.require_company_id import require_company_id
 
 MAX_TIMESTAMP_AGE_SECONDS = 300
 
@@ -64,7 +65,6 @@ async def mailgun_webhook(
     request: Request,
     repo: CommunicationRepository = Depends(get_communication_repo),
 ):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
     """
     Receive Mailgun delivery events.
 

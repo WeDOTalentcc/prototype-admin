@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.shared.services.cultural_fit_integration_service import cultural_fit_service
 from app.shared.tenant_guard import get_verified_company_id
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/candidates", tags=["cultural-fit"])
@@ -22,7 +23,7 @@ async def get_cultural_fit(
     job_id: str = Query(..., description="ID da vaga"),
     company_id: str = Depends(get_verified_company_id),
     db: AsyncSession = Depends(get_db),
-) -> dict:
+_company_gate: str = Depends(require_company_id)) -> dict:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Retorna score de fit cultural integrado (WSI + entrevista + cultura empresa).

@@ -406,6 +406,30 @@ jobs:
       - name: "G-MODELS: lia_models __init__ completeness (ADR-002)"
         run: python scripts/check_init_completeness.py
 
+      # Task #1143 — Multi-tenant Ownership Foundation.
+      # G-RLS: every table with `company_id` must have a corresponding
+      # ENABLE ROW LEVEL SECURITY migration (or `# RLS-EXEMPT:` marker /
+      # scripts/.rls_allowlist.txt entry). Warn-only until S10 Sealing.
+      - name: "G-RLS: ADR-030 RLS coverage sensor (warn-only)"
+        run: python scripts/check_table_has_rls_policy.py
+        continue-on-error: true
+
+      # Task #1143 — require_company_id explicit gate ratchet.
+      # Counts remaining `Sprint follow-up: add _require_company_id` markers
+      # across app/api. Historical marker counter — kept for telemetry only;
+      # canonical gate is the structural verifier below.
+      - name: "G-OWN: require_company_id marker ratchet (legacy telemetry)"
+        run: python scripts/check_require_company_id_coverage.py --block
+
+      # Task #1143 — STRUCTURAL gate. Walks every router decorator in
+      # app/api/**/*.py with libcst and asserts the function either carries an
+      # explicit Depends(require_company_id[_strict_match]) on its params /
+      # decorator dependencies, OR sits behind the PUBLIC_FILES /
+      # PUBLIC_FUNCTIONS allowlist baked into the script. Today: 0 gaps
+      # across 333 files. Any new endpoint without an explicit gate fails CI.
+      - name: "G-OWN-STRUCT: require_company_id structural verifier (--block)"
+        run: python scripts/enforce_require_company_id.py --strict
+
 
 
       # LIA-D04: TODO — make lint blocking once 752 ruff errors are resolved.

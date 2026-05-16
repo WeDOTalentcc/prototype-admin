@@ -22,6 +22,7 @@ from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
 from app.shared.services.zero_touch_scheduling_service import zero_touch_scheduling_service
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +64,7 @@ class ConfirmSlotRequest(BaseModel):
 async def get_scheduling_link(
     token: str,
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (public) — no tenant data
     """
     Retorna dados públicos de um link de auto-agendamento.
@@ -108,7 +109,7 @@ async def confirm_scheduling_slot(
     token: str,
     body: ConfirmSlotRequest,
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (public) — no tenant data
     """
     Candidato confirma o horário escolhido.
@@ -147,7 +148,7 @@ async def create_scheduling_link(
     body: CreateSchedulingLinkRequest,
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (public) — no tenant data
     """
     Cria um link de auto-agendamento e envia ao candidato via WhatsApp ou e-mail.

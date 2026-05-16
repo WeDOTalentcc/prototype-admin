@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter(tags=["audit"])
 
@@ -14,7 +15,7 @@ async def get_candidate_event_history(
     limit: int = 100,
     x_company_id: str | None = Header(None),
     db: AsyncSession = Depends(get_db),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     if not x_company_id:
         raise HTTPException(status_code=401, detail="X-Company-ID required")

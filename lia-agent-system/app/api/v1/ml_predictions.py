@@ -15,6 +15,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.services.ml import OutcomePredictor, get_model_registry
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -94,8 +95,8 @@ class HiringInsightsResponse(BaseModel):
 @router.post("/predict/time-to-fill", response_model=TimeToFillResponse)
 async def predict_time_to_fill(
     request: TimeToFillRequest,
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Predict time to fill for a job vacancy.
@@ -142,8 +143,8 @@ async def predict_time_to_fill(
 @router.post("/predict/salary", response_model=SalaryPredictionResponse)
 async def predict_optimal_salary(
     request: SalaryPredictionRequest,
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Predict optimal salary range for a job vacancy.
@@ -224,8 +225,8 @@ async def predict_optimal_salary(
 @router.post("/predict/skill-success", response_model=SkillSuccessResponse)
 async def predict_skill_success(
     request: SkillSuccessRequest,
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Predict success likelihood for a skill.
@@ -269,8 +270,8 @@ async def predict_skill_success(
 @router.post("/insights/hiring", response_model=HiringInsightsResponse)
 async def get_hiring_insights(
     request: HiringInsightsRequest,
-    db: AsyncSession = Depends(get_db)
-):
+    db: AsyncSession = Depends(get_db), 
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Get comprehensive hiring insights for a company.
@@ -303,8 +304,8 @@ async def list_models(
     model_name: str | None = None,
     active_only: bool = True,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     List registered ML models.
 
@@ -325,8 +326,8 @@ async def list_models(
 async def get_model_performance(
     model_id: str,
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Get performance metrics for a specific model.
     """
@@ -350,8 +351,8 @@ async def get_model_performance(
 async def compare_models(
     model_ids: list[str],
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Compare performance of multiple models.
     """

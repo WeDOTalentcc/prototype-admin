@@ -17,6 +17,7 @@ from pydantic import BaseModel
 
 from app.auth.dependencies import require_admin
 from app.shared.resilience.dlq_service import KNOWN_QUEUES, dlq_service
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +67,7 @@ class ClearResponse(BaseModel):
 @router.get("", response_model=DLQSummaryResponse)
 async def get_dlq_summary(
     _: None = Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """
     Resumo de todas as filas com entradas na DLQ.
@@ -86,7 +87,7 @@ async def list_dlq_entries(
     queue: str = Path(..., description="Nome da fila (ex: onboarding_low)"),
     limit: int = Query(50, ge=1, le=500, description="Máximo de entradas retornadas"),
     _: None = Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """
     Lista as últimas N entradas da DLQ de uma fila.
@@ -107,7 +108,7 @@ async def requeue_entry(
     queue: str = Path(..., description="Nome da fila"),
     entry_id: str = Path(..., description="ID da entry a re-enfileirar"),
     _: None = Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """
     Re-enfileira uma task da DLQ na fila original.
@@ -137,7 +138,7 @@ async def requeue_entry(
 async def clear_dlq_queue(
     queue: str = Path(..., description="Nome da fila a limpar"),
     _: None = Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """
     Remove todas as entradas da DLQ de uma fila.

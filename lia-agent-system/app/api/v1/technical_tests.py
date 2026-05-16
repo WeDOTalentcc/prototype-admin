@@ -28,6 +28,7 @@ from app.schemas.technical_tests import (
     TechnicalTestCreate,
     TechnicalTestUpdate,
 )
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -55,8 +56,8 @@ def get_user_from_headers(
 
 
 @router.get("/technical-tests/options", summary="Get test options", response_model=None)
-async def get_test_options():
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+async def get_test_options(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get available test categories, subcategories, and difficulties."""
     subcategory_options = [
         {"value": s.value, "label": s.value.replace("_", " ").title()}
@@ -85,7 +86,7 @@ async def list_technical_tests(
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List all available tests from the global library."""
     try:
@@ -134,7 +135,7 @@ async def get_technical_test(
     test_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get details of a specific test."""
     try:
@@ -174,7 +175,7 @@ async def create_technical_test(
     data: TechnicalTestCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Create a new technical test (admin only)."""
     try:
@@ -229,7 +230,7 @@ async def update_technical_test(
     data: TechnicalTestUpdate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Update an existing technical test."""
     try:
@@ -292,7 +293,7 @@ async def delete_technical_test(
     test_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Delete a technical test (soft delete by deactivating)."""
     try:
@@ -349,7 +350,7 @@ async def get_client_tests(
     offset: int = Query(0, ge=0, description="Offset for pagination"),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get tests configured for a specific client."""
     try:
@@ -416,7 +417,7 @@ async def configure_client_test(
     data: ClientTestConfigCreate,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Configure a test for a specific client (enable/disable, custom settings)."""
     try:
@@ -503,7 +504,7 @@ async def remove_client_test(
     test_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Remove a test configuration from a client."""
     try:
@@ -558,7 +559,7 @@ async def get_client_test_stats(
     client_id: str,
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get test statistics for a specific client."""
     try:
@@ -654,7 +655,7 @@ async def get_client_test_stats(
 async def seed_default_tests(
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: TechnicalTestsRepository = Depends(get_technical_tests_repo),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Seed the database with default tests (admin only)."""
     try:

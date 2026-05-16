@@ -51,6 +51,7 @@ from ._shared import (
     rubric_evaluation_service,
 )
 from app.domains.credits.services.credit_service import CreditService, get_credit_service
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 
@@ -96,8 +97,8 @@ class DetailedCreditEstimateDTO(BaseModel):
 @router.post("/candidates/estimate", response_model=DetailedCreditEstimateDTO)
 async def estimate_search_credits(request: CreditEstimateRequest,
     pearch_svc: PearchService = Depends(get_pearch_service),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Estima o custo em créditos ANTES de executar a busca.
     

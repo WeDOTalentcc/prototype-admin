@@ -18,6 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user
 from app.core.database import get_db
 from lia_models.audit_log import AuditLog
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -136,7 +137,7 @@ async def explain_candidate_decisions(
     job_id: str = Query(..., description="Job vacancy ID"),
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Explain all AI decisions made for a candidate on a specific job.

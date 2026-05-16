@@ -21,6 +21,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import require_admin
 from app.auth.models import User
+from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -58,7 +59,7 @@ class IntegrationHealthItem(BaseModel):
 # ─── POST /webhooks/hubspot ──────────────────────────────────────────────────
 
 @router.post("/webhooks/hubspot", tags=["webhooks"])
-async def hubspot_webhook(request: Request):
+async def hubspot_webhook(request: Request, ):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """
     Receive HubSpot webhook events (deal stage changes).
@@ -114,7 +115,7 @@ async def hubspot_webhook(request: Request):
 async def onboard_client_manual(
     data: OnboardClientRequest,
     _admin: User = Depends(require_admin),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """
     Manually trigger the full client onboarding flow:
@@ -168,7 +169,7 @@ async def onboard_client_manual(
 # ─── GET /automation/onboarding-status ───────────────────────────────────────
 
 @router.get("/automation/onboarding-status", tags=["automation"])
-async def get_onboarding_status(_admin: User = Depends(require_admin)):
+async def get_onboarding_status(_admin: User = Depends(require_admin), company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """
     Consolidated onboarding status for all clients.
@@ -195,7 +196,7 @@ async def get_onboarding_status(_admin: User = Depends(require_admin)):
 # ─── GET /admin/integrations/health ──────────────────────────────────────────
 
 @router.get("/admin/integrations/health", tags=["admin"])
-async def get_integrations_health(_admin: User = Depends(require_admin)):
+async def get_integrations_health(_admin: User = Depends(require_admin), company_id: str = Depends(require_company_id)):
     # multi-tenancy: public endpoint (health) — no tenant data
     """
     Check health of all external integrations.
@@ -246,7 +247,7 @@ async def get_integrations_health(_admin: User = Depends(require_admin)):
 # ─── GET /admin/version ──────────────────────────────────────────────────────
 
 @router.get("/admin/version", tags=["admin"])
-async def get_system_version(_admin: User = Depends(require_admin)):
+async def get_system_version(_admin: User = Depends(require_admin), company_id: str = Depends(require_company_id)):
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Return system version, commit, and environment info."""
     import subprocess

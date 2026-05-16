@@ -65,6 +65,7 @@ from app.shared.resilience.circuit_breaker import (
     PEARCH_CIRCUIT,
     get_degraded_response,
 )
+from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 
@@ -105,7 +106,7 @@ async def search_candidates(
     pearch_svc: PearchService = Depends(get_pearch_service),
     rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
     _cs: CreditService = Depends(get_credit_service),
-):
+company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Busca candidatos usando busca híbrida (banco local + Pearch AI).

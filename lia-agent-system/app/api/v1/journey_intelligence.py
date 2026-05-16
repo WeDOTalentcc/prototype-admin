@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.auth import get_current_user_or_demo
 from app.core.database import get_db
 from app.shared.services.journey_intelligence_service import journey_intelligence_service
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,7 @@ async def get_journey_metrics(
     company_id: str = Query(..., description="ID da empresa (multi-tenant)"),
     current_user=Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-):
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
     # multi-tenancy: public endpoint (metrics) — no tenant data
     """
     Retorna métricas detalhadas do funil de uma vaga:
@@ -51,8 +52,8 @@ async def get_company_overview(
     company_id: str = Query(..., description="ID da empresa (multi-tenant)"),
     current_user=Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-):
-    # multi-tenancy: protected via auth middleware (JWT) + Postgres RLS runtime (Sprint follow-up: add _require_company_id explicit gate)
+_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
     Visão geral da saúde de pipeline por vaga ativa da empresa.
     Vagas ordenadas por health_score ASC (piores primeiro).
