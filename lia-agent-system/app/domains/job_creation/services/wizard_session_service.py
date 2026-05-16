@@ -523,6 +523,260 @@ class WizardSessionService:
                 state[k] = ctx[k]
         return state
 
+    # ── Task #1127 (T1.1 + T2.1 + T2.2) — Supervisor pre-graph ────────
+    #
+    # Helper que (a) resolve contexto mínimo (tenant snippet, últimas
+    # turns, draft-active flag); (b) chama o ``WizardSupervisorClassifier``
+    # síncrono via ``asyncio.to_thread`` (não bloqueia event loop);
+    # (c) decide short-circuit para ``meta_question`` / ``exit_wizard``;
+    # (d) emite audit row + Prometheus counter (telemetria fail-OPEN).
+    #
+    # Fail-OPEN é INTENCIONAL: qualquer falha do supervisor (sem API key,
+    # timeout, schema inválido, off-allowlist) devolve ``None`` → caller
+    # cai 100% no fluxo legacy (preserva contrato vigente do graph).
+    # ------------------------------------------------------------------
+
+    @classmethod
+    async def _run_supervisor(
+        cls,
+        *,
+        user_message: str,
+        prior_state: dict | None,
+        context: dict | None,
+        company_id: str | None,
+        session_id: str,
+        thread_id: str,
+    ) -> dict | None:
+        """Roda o supervisor pre-graph e devolve decisão de roteamento.
+
+        Returns:
+            ``None`` se supervisor desabilitado / fail-OPEN — caller cai
+            no fluxo legacy (continue_current).
+
+            ``{"intent": str, "short_circuit": False}`` se intent é
+            ``continue_current`` / ``create_new`` / ``resume_draft`` /
+            ``edit_published`` — caller segue para o graph (esses 3
+            últimos terão handlers próprios nas Tasks #1128+).
+
+            ``{"intent": "meta_question", "short_circuit": True,
+            "message": str, "ws_stage_payload": dict}`` quando o
+            supervisor classifica como meta — caller responde direto sem
+            tocar o graph.
+
+            ``{"intent": "exit_wizard", "short_circuit": True,
+            "message": str, "ws_stage_payload": dict}`` quando o
+            supervisor classifica como saída — caller emite despedida.
+        """
+        from app.domains.job_creation.services.wizard_supervisor_classifier import (
+            get_wizard_supervisor_classifier,
+            is_supervisor_enabled,
+        )
+
+        if not is_supervisor_enabled():
+            return None
+
+        # Contexto mínimo para o classifier — sem PII, snippets curtos.
+        ctx = context or {}
+        prior = prior_state or {}
+        current_stage = prior.get("current_stage") if isinstance(prior, dict) else None
+
+        # tenant snippet via helper canônico (NON-ReAct callsite — T-F).
+        tenant_snippet = ""
+        try:
+            from app.shared.agents.tenant_aware_agent import (
+                resolve_tenant_snippet_for_non_react,
+            )
+            tenant_snippet = (
+                resolve_tenant_snippet_for_non_react(
+                    company_id=company_id,
+                    context=ctx,
+                )
+                or prior.get("tenant_context_snippet")
+                or ""
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.debug(
+                "[WizardSupervisor] tenant snippet resolve failed: %s", exc,
+            )
+
+        # Últimas 3 turns (apenas conteúdo, sem role) — sinal pra LLM
+        # detectar loop / mudança de intenção.
+        last_turns: list[str] = []
+        conv = prior.get("conversation_messages") if isinstance(prior, dict) else None
+        if isinstance(conv, list):
+            for m in conv[-6:]:
+                if isinstance(m, dict):
+                    c = str(m.get("content") or "").strip()
+                    if c:
+                        last_turns.append(c)
+
+        has_active_draft = bool(prior)
+
+        classifier = get_wizard_supervisor_classifier()
+        try:
+            output = await asyncio.to_thread(
+                classifier.classify_sync,
+                user_message=user_message,
+                current_stage=current_stage,
+                tenant_context_snippet=tenant_snippet,
+                last_turns=last_turns,
+                has_active_draft=has_active_draft,
+            )
+        except Exception as exc:  # noqa: BLE001 — fail-OPEN
+            logger.warning(
+                "[WizardSupervisor] classify_sync raised (fail-open): %s",
+                exc,
+            )
+            return None
+
+        if output is None:
+            return None
+
+        intent = output.intent
+        cls._emit_supervisor_telemetry(
+            intent=intent,
+            confidence=output.confidence,
+            company_id=company_id,
+            thread_id=thread_id,
+            current_stage=current_stage,
+        )
+
+        # ── Short-circuit: meta_question ─────────────────────────────
+        if intent == "meta_question":
+            reply = (output.conversational_reply or "").strip()
+            if not reply:
+                try:
+                    from app.domains.job_creation.services.wizard_meta_question_helper import (
+                        generate_meta_response_sync,
+                    )
+                    reply = await asyncio.to_thread(
+                        generate_meta_response_sync,
+                        stage=current_stage or "wizard",
+                        user_message=user_message,
+                        tenant_context_snippet=tenant_snippet,
+                        last_turns=last_turns,
+                        stage_description=(
+                            f"wizard de criação de vaga, etapa {current_stage}"
+                            if current_stage else "wizard de criação de vaga"
+                        ),
+                    ) or ""
+                except Exception as exc:  # noqa: BLE001
+                    logger.warning(
+                        "[WizardSupervisor] meta helper failed (fail-open): %s",
+                        exc,
+                    )
+            if not reply:
+                # Fallback determinístico — NÃO é canned do produto (sentinela
+                # T3 veta literais de produto). Hard-prefix sinaliza estado.
+                reply = (
+                    "Posso responder rapidinho: estamos no wizard de criação "
+                    "de vaga. Quer que eu repita o que estava pedindo?"
+                )
+            return {
+                "intent": "meta_question",
+                "short_circuit": True,
+                "message": reply,
+                "ws_stage_payload": {
+                    "type": "wizard_meta_reply",
+                    "data": {"message": reply, "stage": current_stage or ""},
+                },
+            }
+
+        # ── Short-circuit: exit_wizard ────────────────────────────────
+        if intent == "exit_wizard":
+            reply = (output.conversational_reply or "").strip() or (
+                "Sem problema, paramos por aqui. Quando quiser retomar, é só "
+                "me chamar."
+            )
+            return {
+                "intent": "exit_wizard",
+                "short_circuit": True,
+                "message": reply,
+                "ws_stage_payload": {
+                    "type": "wizard_exit",
+                    "data": {"message": reply, "stage": current_stage or ""},
+                },
+            }
+
+        # create_new / resume_draft / edit_published / continue_current
+        # caem no fluxo legacy (graph). Handlers dedicados virão nas
+        # Tasks #1128+ (follow-ups). Preservar fluxo é a postura segura.
+        return {"intent": intent, "short_circuit": False}
+
+    @staticmethod
+    def _emit_supervisor_telemetry(
+        *,
+        intent: str,
+        confidence: float,
+        company_id: str | None,
+        thread_id: str,
+        current_stage: str | None,
+    ) -> None:
+        """Telemetria fail-OPEN do supervisor (Prometheus + audit).
+
+        Counter Prometheus ``lia_wizard_supervisor_intent_total``
+        (label=intent,stage) e audit row ``decision_type=
+        wizard_supervisor_routed`` (SOX 7y) — best-effort, nunca derruba
+        o turno.
+        """
+        stage_label = current_stage or "unstarted"
+
+        # Prometheus
+        try:  # pragma: no cover — exercitado via integração
+            from prometheus_client import REGISTRY as _PROM_REGISTRY
+            from prometheus_client import Counter as _PromCounter
+
+            existing = getattr(
+                _PROM_REGISTRY, "_names_to_collectors", {},
+            ).get("lia_wizard_supervisor_intent_total")
+            if existing is None:
+                counter = _PromCounter(
+                    "lia_wizard_supervisor_intent_total",
+                    "Total de intents classificados pelo Wizard Supervisor "
+                    "(Task #1127). Label intent ∈ allowlist canônica; "
+                    "label stage = current_stage do graph ou 'unstarted'.",
+                    labelnames=("intent", "stage"),
+                )
+            else:
+                counter = existing
+            counter.labels(intent=intent, stage=stage_label).inc()
+        except Exception as pm_exc:  # noqa: BLE001
+            logger.debug(
+                "[WizardSupervisor] prometheus inc failed (fail-open): %s",
+                pm_exc,
+            )
+
+        # Audit row (best-effort)
+        cid = str(company_id) if company_id else ""
+        if not cid:
+            return
+        try:
+            from app.shared.compliance.audit_service import AuditService
+            asyncio.create_task(AuditService().log_decision(
+                company_id=cid,
+                agent_name="wizard_supervisor_classifier",
+                decision_type="wizard_supervisor_routed",
+                action=f"supervisor_route:{intent}",
+                decision=intent,
+                reasoning=[
+                    f"intent={intent}",
+                    f"confidence={confidence:.2f}",
+                    f"stage={stage_label}",
+                    f"thread_id={thread_id}",
+                ],
+                criteria_used=[
+                    "wizard_supervisor_t1127",
+                    f"intent:{intent}",
+                    f"stage:{stage_label}",
+                ],
+                human_review_required=False,
+            ))
+        except Exception as audit_exc:  # noqa: BLE001
+            logger.debug(
+                "[WizardSupervisor] audit emit failed (fail-open): %s",
+                audit_exc,
+            )
+
     @classmethod
     async def process_message(
         cls,
@@ -556,6 +810,36 @@ class WizardSessionService:
         wiz_g = get_job_creation_graph()
 
         prior_state = await cls._get_prior_state(thread_id)
+
+        # ── Task #1127 (T1.1 + T2.1) — Supervisor pre-graph ────────────
+        # Classifica a INTENÇÃO GLOBAL do turno antes de tocar o graph.
+        # Short-circuit determinístico para meta_question / exit_wizard;
+        # demais intents (continue_current / create_new / resume_draft /
+        # edit_published) caem no fluxo legacy (preserva contrato vigente
+        # — extensões nas Tasks #1128+ via follow-ups).
+        # Fail-OPEN: qualquer falha do supervisor devolve None →
+        # continue_current → fluxo intacto. Sentinela offline em
+        # tests/integration/agents/test_wizard_supervisor_t1127.py.
+        try:
+            sv_result = await cls._run_supervisor(
+                user_message=user_message,
+                prior_state=prior_state,
+                context=context,
+                company_id=company_id,
+                session_id=session_id,
+                thread_id=thread_id,
+            )
+        except Exception as sv_exc:  # noqa: BLE001 — supervisor é fail-OPEN
+            logger.warning(
+                "[WizardSession] supervisor raised (fail-open): %s", sv_exc,
+            )
+            sv_result = None
+        if sv_result is not None and sv_result.get("short_circuit"):
+            return (
+                sv_result["message"],
+                sv_result.get("ws_stage_payload") or {},
+                0,
+            )
 
         # Task #1094 — caminho canônico de resume: se o checkpoint está
         # pausado em ``langgraph.types.interrupt()`` (HITL gate ativo),

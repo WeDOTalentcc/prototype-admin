@@ -65,6 +65,13 @@ DECISION_TYPE_MAPPING = {
     # (anti-pattern Caso #3/#4 do canonical-fix), emite-se este audit row
     # com `human_review_required=True` para EU AI Act trail + investigação.
     "wizard_fallback_invoked": DecisionType.GENERATE_FEEDBACK,
+    # Task #1127 (T2.2) — Wizard Supervisor pre-graph (intent routing).
+    # Cada turno do wizard que passa pelo `WizardSupervisorClassifier`
+    # emite um audit row com o intent decidido (allowlist 6 intents
+    # canônicos). Mapeado para GENERATE_FEEDBACK por consistência com
+    # os demais audit rows do wizard (wizard_step_completed,
+    # wizard_fallback_invoked) — mesmo retention SOX 7y.
+    "wizard_supervisor_routed": DecisionType.GENERATE_FEEDBACK,
 }
 
 PROTECTED_CRITERIA = [

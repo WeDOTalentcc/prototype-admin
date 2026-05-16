@@ -365,3 +365,39 @@ fora de `lia-agent-system/app/shared/llm_models.py`. Importe
 - **2026-05-15** — reescrita completa após auditoria + canonical-fix do Bug A (intake import + schema drift). Removida narrativa fictícia dos 6 nós (`intent_classifier`/`field_extractor`/etc.) que nunca existiram. Removida menção ao `JobWizardGraph` legacy (deprecated desde Task #1084). Adicionada §5 "Bugs históricos" com diagnóstico do template-repetido-4× e §9.3 "Onde olhar quando o wizard falha".
 - **2026-05-14** — auditoria profunda em `docs/audits/wizard-job-creation-2026-05.md` (Task #1058) — base desta reescrita.
 - **Anterior** — versões descrevendo dois wizards convivendo (`JobWizardGraph` + `WizardReActAgent`). Obsoleto.
+
+## §12 — Wizard Supervisor (pre-graph) — Task #1127
+
+A partir de Task #1127 todo turno do wizard passa por um **supervisor pre-graph** antes de tocar o `JobCreationGraph`. O supervisor é um classifier LLM (`WizardSupervisorClassifier`, `app/domains/job_creation/services/wizard_supervisor_classifier.py`) que decide a INTENÇÃO GLOBAL do recrutador em 6 categorias canônicas (allowlist enforced):
+
+| Intent | Comportamento do caller |
+|---|---|
+| `meta_question` | **Short-circuit** — `WizardSessionService._run_supervisor` responde via `wizard_meta_question_helper` (Sonnet) e devolve payload `wizard_meta_reply` SEM tocar o graph. Funciona mesmo mid-HITL. |
+| `exit_wizard` | **Short-circuit** — emite mensagem educada de despedida (payload `wizard_exit`). NÃO descarta o draft. |
+| `continue_current` | DEFAULT. Cai no fluxo legacy (graph). Sem mudança de contrato. |
+| `create_new` / `resume_draft` / `edit_published` | Slice T1.1 mantém em `continue_current`-like (passa para o graph). Handlers dedicados virão nas Tasks #1128+ (follow-ups). |
+
+**Contrato de segurança**:
+- Pydantic schema + allowlist post-hoc (defense-in-depth). Sentinela `tests/integration/agents/test_wizard_supervisor_t1127.py` veta drift da allowlist.
+- Fail-OPEN: qualquer falha (sem API key, timeout, schema inválido, off-allowlist) devolve `None` → caller cai 100% no fluxo legacy.
+- Mutação de state pelo supervisor: ZERO. Apenas roteia.
+- `tenant_context_snippet` é passado via `resolve_tenant_snippet_for_non_react` (NON-ReAct callsite — T-F).
+
+**Env flags**:
+- `LIA_WIZARD_SUPERVISOR_CLASSIFIER` — default ON em dev/test, OFF em prod/staging até GA.
+- `LIA_WIZARD_SUPERVISOR_MODEL` — override do modelo (default `CANONICAL_HAIKU_MODEL`).
+- `LIA_WIZARD_SUPERVISOR_TIMEOUT_S` — default 5s.
+
+**Observabilidade**:
+- Prometheus counter `lia_wizard_supervisor_intent_total{intent,stage}` por turno.
+- Audit row `decision_type=wizard_supervisor_routed` (SOX 7y) com `intent`, `confidence`, `stage`, `thread_id` em `reasoning`.
+- Eval gate `eval/golden/wizard_supervisor_routing.jsonl` (10 cenários × 6 intents, threshold 0.85).
+
+**Follow-ups (Tasks #1128+)** — fase 1 do plano #1127 entregou supervisor + meta global. Pendente:
+- T1.2 drafts endpoint + listagem FE
+- T1.3 deprecação `WizardReActAgent` com sentinela
+- T3.1–T3.4 migração dos 3 gates restantes (competency/wsi/review) para LLM classifier + GA da flag `LIA_WIZARD_LLM_GATES`
+- T4.1 env hygiene Anthropic 401 (`AI_INTEGRATIONS_ANTHROPIC_BASE_URL` audit)
+- T4.2 runbook Grafana wizard-supervisor + wizard-gates
+- T5.1 5 specs Playwright (`16-20-*.spec.ts`)
+- T5.2 segundo eval gate `wizard_meta_question_global.jsonl`
