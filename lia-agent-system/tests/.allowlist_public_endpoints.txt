@@ -28,6 +28,11 @@ app/api/public/jobs.py
 app/api/public/apply.py
 app/api/public/wsi_chat.py
 app/api/public/tracking.py
+# T-1157: 2 endpoints públicos (candidato sem JWT) + 1 endpoint do recrutador
+# (mantém Depends(require_company_id)). A allowlist é file-level, mas o gate
+# do recrutador é defesa em profundidade preservada inline. Qualquer endpoint
+# novo neste arquivo DEVE ser explicitamente público OU gated.
+app/api/v1/self_scheduling_public.py
 app/api/v1/webhooks.py
 app/api/v1/external_webhooks.py
 app/api/v1/teams.py

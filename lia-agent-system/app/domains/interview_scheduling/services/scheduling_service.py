@@ -24,6 +24,7 @@ from lia_models.interview import Interview
 from app.domains.interview_scheduling.repositories.interview_repository import (
     InterviewRepository,
 )
+from app.shared.compliance.audit_service import AuditService  # T-1157
 from app.shared.policy_middleware import get_policy_for_company, resolve_policy_value
 
 _microsoft_graph_service = None
@@ -243,7 +244,30 @@ class SchedulingService:
         db.add(interview)
         await db.commit()
         await db.refresh(interview)
-        
+
+        # T-1157 audit (entrevista é decisão recrutamento-relevante; LGPD + WSI)
+        if company_id:
+            try:
+                await AuditService().log_decision_in_session(
+                    session=db,
+                    company_id=company_id,
+                    agent_name="scheduling_service",
+                    decision_type="schedule_interview",
+                    action="create_interview",
+                    decision="scheduled",
+                    reasoning=[
+                        f"interview_type={interview_type}",
+                        f"interview_mode={interview_mode}",
+                        f"start_time={start_time.isoformat()}",
+                    ],
+                    criteria_used=["interview_type", "duration_minutes", "interviewer"],
+                    candidate_id=candidate_id,
+                    job_vacancy_id=job_vacancy_id,
+                )
+                await db.commit()
+            except Exception as audit_err:
+                logger.warning(f"[T-1157] create_interview audit failed: {audit_err}")
+
         logger.info(f"📅 Interview created: {interview.id} for {candidate_id}")
         logger.info(f"   Date/Time: {start_time.isoformat()}")
         logger.info(f"   Type: {interview_type} ({interview_mode})")

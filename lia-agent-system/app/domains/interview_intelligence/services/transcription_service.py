@@ -292,6 +292,31 @@ class TranscriptionService:
 
             await db.commit()
 
+            # T-1157 audit (transcrição é PII sensível; LGPD Art.46 + retention)
+            _company_id = getattr(interview, "company_id", None)
+            if _company_id:
+                try:
+                    from app.shared.compliance.audit_service import AuditService
+                    await AuditService().log_decision_in_session(
+                        session=db,
+                        company_id=str(_company_id),
+                        agent_name="transcription_service",
+                        decision_type="generate_feedback",
+                        action="transcribe_interview",
+                        decision="transcribed",
+                        reasoning=[
+                            f"source={transcription.get('source')}",
+                            f"language={transcription.get('language')}",
+                            f"words={transcription.get('word_count')}",
+                        ],
+                        criteria_used=["recording_url", "language_hint"],
+                        candidate_id=str(interview.candidate_id) if interview.candidate_id else None,
+                        job_vacancy_id=str(interview.job_vacancy_id) if interview.job_vacancy_id else None,
+                    )
+                    await db.commit()
+                except Exception as audit_err:
+                    logger.warning(f"[T-1157] transcribe audit failed: {audit_err}")
+
             await self._update_pipeline_metadata(db, interview, transcription)
 
             logger.info(

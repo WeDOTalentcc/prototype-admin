@@ -64,8 +64,11 @@ class ConfirmSlotRequest(BaseModel):
 async def get_scheduling_link(
     token: str,
     db: AsyncSession = Depends(get_db),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: public endpoint (public) — no tenant data
+):
+    # T-1157: endpoint LEGITIMAMENTE público (candidato sem JWT).
+    # Tenant scope deriva do token opaco (single-use, expira via SelfSchedulingLink.is_valid).
+    # NÃO adicionar Depends(require_company_id) aqui — quebra o fluxo de candidato.
+    # Arquivo está em tests/.allowlist_public_endpoints.txt (T-1129 sealing).
     """
     Retorna dados públicos de um link de auto-agendamento.
 
@@ -109,8 +112,10 @@ async def confirm_scheduling_slot(
     token: str,
     body: ConfirmSlotRequest,
     db: AsyncSession = Depends(get_db),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: public endpoint (public) — no tenant data
+):
+    # T-1157: endpoint LEGITIMAMENTE público (candidato sem JWT).
+    # Tenant scope deriva do token opaco; replay protegido por SelfSchedulingLink.is_valid
+    # (status pending/active, expires_at, use_count < max_uses).
     """
     Candidato confirma o horário escolhido.
 
@@ -148,13 +153,23 @@ async def create_scheduling_link(
     body: CreateSchedulingLinkRequest,
     current_user: User = Depends(get_current_user_or_demo),
     db: AsyncSession = Depends(get_db),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: public endpoint (public) — no tenant data
+    company_id: str = Depends(require_company_id),
+):
     """
     Cria um link de auto-agendamento e envia ao candidato via WhatsApp ou e-mail.
 
     Retorna o token do link e a URL para o candidato acessar.
+
+    T-1157: endpoint do recrutador — mantém gate require_company_id.
+    Hardening: ignora ``body.company_id`` se diferir do JWT (defesa em
+    profundidade contra tenant-spoofing via body).
     """
+    if body.company_id and body.company_id != company_id:
+        logger.warning(
+            "[self_scheduling] body.company_id=%s differs from JWT=%s; overriding with JWT",
+            body.company_id, company_id,
+        )
+    body.company_id = company_id
     slots_as_dicts = [{"start": s.start, "end": s.end} for s in body.available_slots]
     created_by = getattr(current_user, "id", "system") or "system"
 

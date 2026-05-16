@@ -196,6 +196,11 @@ PUBLIC_PREFIXES = (
     "/api/v1/teams/",
     "/api/v1/auth/invitation-info/",
     "/api/v1/wsi/async/",
+    # T-1157: candidato self-scheduling (token opaco single-use).
+    # Apenas GET /link/{token} e POST /link/{token}/confirm são públicos;
+    # POST /link (criação) mantém Depends(require_company_id) — middleware
+    # libera o prefixo, mas o gate de Depends ainda roda na rota autenticada.
+    "/api/v1/scheduling/link/",
     "/api/public/",
     "/docs/",
     "/static/",

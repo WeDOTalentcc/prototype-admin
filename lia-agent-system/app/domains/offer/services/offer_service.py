@@ -14,6 +14,7 @@ from lia_models.offer_proposal import OfferProposal
 
 from app.domains.offer.repositories.offer_repository import OfferRepository
 from app.schemas.offer import OfferDraftCreate, OfferDraftUpdate
+from app.shared.compliance.audit_service import AuditService  # T-1157
 
 logger = logging.getLogger(__name__)
 
@@ -244,7 +245,24 @@ class OfferService:
         proposal.cancelled_by_user_id = user_id
         if reason:
             proposal.recruiter_notes = (proposal.recruiter_notes or "") + f"\n[cancelled: {reason}]"
-        return await self._repo.update(proposal)
+        updated = await self._repo.update(proposal)
+        # T-1157 audit (SOX retention; mutation em offer_proposal)
+        try:
+            await AuditService().log_decision_in_session(
+                session=self._db,
+                company_id=company_id,
+                agent_name="offer_service",
+                decision_type="approve_hiring",
+                action="cancel_offer_draft",
+                decision="cancelled",
+                reasoning=[reason or "no reason provided"],
+                criteria_used=["offer_status_transition"],
+                candidate_id=str(proposal.candidate_id) if proposal.candidate_id else None,
+                job_vacancy_id=str(proposal.job_id) if proposal.job_id else None,
+            )
+        except Exception as audit_err:
+            logger.warning(f"[T-1157] offer cancel audit failed: {audit_err}")
+        return updated
 
     async def get_draft(
         self, offer_id: UUID, company_id: str
@@ -269,7 +287,24 @@ class OfferService:
         proposal.sent_by_user_id = user_id
         proposal.sent_at = datetime.utcnow()
         proposal.email_log_id = email_log_id
-        return await self._repo.update(proposal)
+        updated = await self._repo.update(proposal)
+        # T-1157 audit (SOX retention; offer enviada formalmente ao candidato)
+        try:
+            await AuditService().log_decision_in_session(
+                session=self._db,
+                company_id=company_id,
+                agent_name="offer_service",
+                decision_type="approve_hiring",
+                action="mark_offer_sent",
+                decision="sent",
+                reasoning=[f"send_mode={send_mode}"],
+                criteria_used=["offer_status_transition", "send_mode"],
+                candidate_id=str(proposal.candidate_id) if proposal.candidate_id else None,
+                job_vacancy_id=str(proposal.job_id) if proposal.job_id else None,
+            )
+        except Exception as audit_err:
+            logger.warning(f"[T-1157] offer mark_sent audit failed: {audit_err}")
+        return updated
 
     def render_offer_template_variables(
         self, proposal: OfferProposal
