@@ -2,6 +2,17 @@
 
 import { HITLConfirmCard } from "@/components/lia-float/HITLConfirmCard";
 import { SwitchTaskModal } from "@/components/lia-float/SwitchTaskModal";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { buttonVariants } from "@/components/ui/button";
 import type { ChatSuggestionMetadata } from "@/components/ui/chat-workflow-reels";
 import { useLiaChatContext, useLiaFloat } from "@/contexts/lia-float-context";
 import { useNavigationIntent } from "@/hooks/shared/use-navigation-intent";
@@ -500,35 +511,73 @@ export function UnifiedChat({
     }
   }, [chatSessionId, chatConversationId, wizard]);
 
+  // Task #1133 — diálogo canônico (DS LIA v4.2.2 AlertDialog) que substitui o
+  // `window.confirm` jurássico usado entre #1128 e #1133. A confirmação SÓ
+  // aparece quando há rascunho em risco (`wizard.active === true`); se o
+  // wizard estiver inativo o comportamento original — cancelar/abrir nova
+  // conversa direto, sem prompt — é mantido. Promise armazenada em ref
+  // evita re-renders/race entre múltiplos cliques.
+  const [wizardConfirm, setWizardConfirm] = useState<{
+    open: boolean;
+    mode: "cancel" | "new-chat";
+  }>({ open: false, mode: "cancel" });
+  const wizardConfirmResolverRef = useRef<((ok: boolean) => void) | null>(null);
+
+  const requireWizardCancelConfirm = useCallback(
+    (mode: "cancel" | "new-chat"): Promise<boolean> => {
+      if (!wizard.active) return Promise.resolve(true);
+      return new Promise<boolean>((resolve) => {
+        wizardConfirmResolverRef.current = resolve;
+        setWizardConfirm({ open: true, mode });
+      });
+    },
+    [wizard.active],
+  );
+
+  const closeWizardConfirm = useCallback((decision: boolean) => {
+    const resolver = wizardConfirmResolverRef.current;
+    wizardConfirmResolverRef.current = null;
+    setWizardConfirm((prev) => ({ ...prev, open: false }));
+    resolver?.(decision);
+  }, []);
+
   // Task #1128 — "Nova conversa": clears wizard AND switches to a fresh
   // conversation. Triggered by the sidebar/slash command "/nova-conversa".
+  // Task #1133 — quando há wizard ativo, exige confirmação antes de
+  // descartar o rascunho (mesmo modal canônico do "Cancelar wizard").
   const handleNewChat = useCallback(async () => {
+    const proceed = await requireWizardCancelConfirm("new-chat");
+    if (!proceed) return;
     const ok = await resetCurrentWizardSession();
     if (!ok) return;
     switchChatContext("general", { conversationId: null });
     setChatMessages([]);
     setInputText("");
     setAttachedFile(null);
-  }, [resetCurrentWizardSession, switchChatContext, setChatMessages]);
+  }, [
+    requireWizardCancelConfirm,
+    resetCurrentWizardSession,
+    switchChatContext,
+    setChatMessages,
+  ]);
 
   // Task #1128 — "Cancelar wizard": kills the wizard checkpoint but
   // PRESERVES the current `conversation_id` / chat thread. The recruiter
   // stays in the same conversation, the stepper/banner disappear, and
   // the next message is routed to general chat instead of resuming the
-  // wizard. A confirmation prompt is required because the in-flight job
-  // draft (JD, competencies, salary band) is dropped server-side and
-  // cannot be recovered.
+  // wizard.
+  // Task #1133 — confirmação migra de `window.confirm` para `AlertDialog`
+  // canônico do DS LIA v4.2.2 (rounded-md, status-error, copy PT-BR
+  // fail-loud). O prompt continua sendo um requisito porque o draft em
+  // andamento (JD, competências, salário) é descartado server-side e
+  // não pode ser recuperado.
   const handleCancelWizard = useCallback(async () => {
-    if (typeof window !== "undefined") {
-      const confirmed = window.confirm(
-        "Cancelar criação da vaga? Você perderá o rascunho desta vaga (JD, competências, salário) e voltará ao chat geral. Esta ação não pode ser desfeita.",
-      );
-      if (!confirmed) return;
-    }
+    const proceed = await requireWizardCancelConfirm("cancel");
+    if (!proceed) return;
     await resetCurrentWizardSession();
     // Stay on the same conversation_id — only nudge focus back to the
     // input so the recruiter can keep talking with the LIA generalist.
-  }, [resetCurrentWizardSession]);
+  }, [requireWizardCancelConfirm, resetCurrentWizardSession]);
 
   const removeRecentItem = useRecentItemsStore((s) => s.removeItem);
   const removeStoredConversationId = useChatStateStore(
@@ -957,6 +1006,54 @@ export function UnifiedChat({
         onSelectSession={handleSelectSession}
         currentSessionId={chatConversationId}
       />
+
+      {/*
+        Task #1133 — modal canônico de confirmação ao cancelar wizard
+        ativo. Mesma instância serve "Cancelar wizard" (stepper) e
+        "Nova conversa" (header/slash); o `mode` diferencia só o copy
+        do título/CTA. Botão destrutivo usa `buttonVariants` + classes
+        status-error do DS LIA v4.2.2 (rounded-md herdado do Button).
+      */}
+      <AlertDialog
+        open={wizardConfirm.open}
+        onOpenChange={(open) => {
+          if (!open) closeWizardConfirm(false);
+        }}
+      >
+        <AlertDialogContent data-testid="wizard-cancel-confirm-dialog">
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {wizardConfirm.mode === "new-chat"
+                ? "Iniciar nova conversa e descartar rascunho?"
+                : "Cancelar criação da vaga?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Você perderá o rascunho desta vaga (JD, competências, salário)
+              e voltará ao chat geral. Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              data-testid="wizard-cancel-confirm-keep"
+              onClick={() => closeWizardConfirm(false)}
+            >
+              Continuar editando
+            </AlertDialogCancel>
+            <AlertDialogAction
+              data-testid="wizard-cancel-confirm-discard"
+              onClick={() => closeWizardConfirm(true)}
+              className={cn(
+                buttonVariants({ variant: "destructive" }),
+                "bg-status-error text-white hover:bg-status-error/90",
+              )}
+            >
+              {wizardConfirm.mode === "new-chat"
+                ? "Descartar e iniciar nova"
+                : "Descartar rascunho"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

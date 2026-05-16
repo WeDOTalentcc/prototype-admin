@@ -164,18 +164,22 @@ test.describe("Wizard — Nova conversa reseta o wizard via DELETE backend", () 
       () => new URL(window.location.href).searchParams.get("conversation_id"),
     )
 
-    // Aceitar o confirm() canônico — sem isso o handleCancelWizard
-    // aborta sem chamar o DELETE.
-    page.once("dialog", (dialog) => {
-      expect(dialog.message()).toMatch(/cancelar criação da vaga\?/i)
-      dialog.accept()
-    })
-
+    // Task #1133 — o `window.confirm` foi substituído pelo AlertDialog
+    // canônico do DS LIA v4.2.2. O recrutador precisa clicar em
+    // "Descartar rascunho" no modal antes do DELETE ser disparado.
     const cancelButton = page
       .getByTestId("wizard-cancel-button")
       .or(page.getByTestId("wizard-cancel-button-compact"))
       .first()
     await cancelButton.click()
+
+    await expect(page.getByTestId("wizard-cancel-confirm-dialog")).toBeVisible({
+      timeout: 5_000,
+    })
+    await expect(
+      page.getByTestId("wizard-cancel-confirm-dialog"),
+    ).toContainText(/cancelar criação da vaga\?/i)
+    await page.getByTestId("wizard-cancel-confirm-discard").click()
 
     // DELETE foi chamado uma vez.
     await expect.poll(() => counters.deleteHits, { timeout: 15_000 }).toBe(1)
@@ -209,12 +213,13 @@ test.describe("Wizard — Nova conversa reseta o wizard via DELETE backend", () 
     await page.waitForLoadState("networkidle")
     await expect(page.getByTestId("wizard-progress-bar")).toBeVisible({ timeout: 30_000 })
 
-    page.once("dialog", (dialog) => dialog.accept())
     const cancelButton = page
       .getByTestId("wizard-cancel-button")
       .or(page.getByTestId("wizard-cancel-button-compact"))
       .first()
     await cancelButton.click()
+    // Task #1133 — confirma via modal canônico antes do DELETE.
+    await page.getByTestId("wizard-cancel-confirm-discard").click()
     await expect.poll(() => counters.deleteHits, { timeout: 15_000 }).toBe(1)
     await expect(page.getByTestId("wizard-progress-bar")).toBeHidden({ timeout: 10_000 })
 
@@ -243,7 +248,7 @@ test.describe("Wizard — Nova conversa reseta o wizard via DELETE backend", () 
     expect(leftover).toEqual([])
   })
 
-  test("recusar o confirm() cancela a operação — nenhum DELETE é emitido", async ({ page }) => {
+  test("recusar o modal cancela a operação — nenhum DELETE é emitido (Task #1133)", async ({ page }) => {
     test.setTimeout(60_000)
     const counters = await installWizardSessionRoutes(page, {
       activeStage: "jd_enrichment",
@@ -254,17 +259,88 @@ test.describe("Wizard — Nova conversa reseta o wizard via DELETE backend", () 
     await page.waitForLoadState("networkidle")
     await expect(page.getByTestId("wizard-progress-bar")).toBeVisible({ timeout: 30_000 })
 
-    page.once("dialog", (dialog) => dialog.dismiss())
-
     const cancelButton = page
       .getByTestId("wizard-cancel-button")
       .or(page.getByTestId("wizard-cancel-button-compact"))
       .first()
     await cancelButton.click()
 
+    // Task #1133 — modal canônico DS LIA v4.2.2 aparece; clicar em
+    // "Continuar editando" fecha sem disparar o DELETE.
+    await expect(page.getByTestId("wizard-cancel-confirm-dialog")).toBeVisible({
+      timeout: 5_000,
+    })
+    await page.getByTestId("wizard-cancel-confirm-keep").click()
+    await expect(
+      page.getByTestId("wizard-cancel-confirm-dialog"),
+    ).toBeHidden({ timeout: 5_000 })
+
     // Pequena janela para confirmar que nenhuma chamada extra foi feita.
     await page.waitForTimeout(500)
     expect(counters.deleteHits).toBe(0)
     await expect(page.getByTestId("wizard-progress-bar")).toBeVisible()
+  })
+
+  test("Task #1133 — Nova conversa com wizard ATIVO exige confirmação no modal canônico", async ({ page }) => {
+    test.setTimeout(120_000)
+    const counters = await installWizardSessionRoutes(page, {
+      activeStage: "jd_enrichment",
+    })
+
+    await authenticateAsRecruiter(page)
+    await page.goto("/pt/chat")
+    await page.waitForLoadState("networkidle")
+    await expect(page.getByTestId("wizard-progress-bar")).toBeVisible({
+      timeout: 30_000,
+    })
+
+    const newChatButton = page
+      .getByRole("button", { name: /nova conversa/i })
+      .first()
+    await newChatButton.click()
+
+    // Modal canônico AlertDialog aparece com copy modo "new-chat".
+    await expect(page.getByTestId("wizard-cancel-confirm-dialog")).toBeVisible({
+      timeout: 5_000,
+    })
+    await expect(
+      page.getByTestId("wizard-cancel-confirm-dialog"),
+    ).toContainText(/iniciar nova conversa e descartar rascunho\?/i)
+
+    // Sem confirmar, nenhum DELETE pode ter sido emitido.
+    expect(counters.deleteHits).toBe(0)
+
+    await page.getByTestId("wizard-cancel-confirm-discard").click()
+    await expect.poll(() => counters.deleteHits, { timeout: 15_000 }).toBe(1)
+  })
+
+  test("Task #1133 — Nova conversa com wizard INATIVO não exibe modal (UX inalterada)", async ({ page }) => {
+    test.setTimeout(120_000)
+    // activeStage=null garante que o GET inicial responde active=false.
+    const counters = await installWizardSessionRoutes(page, {
+      activeStage: null,
+    })
+
+    await authenticateAsRecruiter(page)
+    await page.goto("/pt/chat")
+    await page.waitForLoadState("networkidle")
+    await expect
+      .poll(() => counters.getHits, { timeout: 30_000 })
+      .toBeGreaterThanOrEqual(1)
+    // Stepper NÃO está visível porque o wizard está inativo.
+    await expect(page.getByTestId("wizard-progress-bar")).toBeHidden()
+
+    const newChatButton = page
+      .getByRole("button", { name: /nova conversa/i })
+      .first()
+    await newChatButton.click()
+
+    // O modal NÃO pode aparecer — não há rascunho em risco.
+    await page.waitForTimeout(500)
+    await expect(page.getByTestId("wizard-cancel-confirm-dialog")).toBeHidden()
+
+    // Mas o DELETE canônico continua sendo emitido (Task #1128) — o
+    // reset é idempotente mesmo sem wizard ativo, mantém o contrato.
+    await expect.poll(() => counters.deleteHits, { timeout: 15_000 }).toBe(1)
   })
 })

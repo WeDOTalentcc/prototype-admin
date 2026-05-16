@@ -113,33 +113,31 @@ def _in_graph_runtime() -> bool:
 def _llm_gates_enabled() -> bool:
     """Task #1085 (T2) — feature flag ``LIA_WIZARD_LLM_GATES``.
 
-    Default ``false`` em prod (preserva comportamento legado de ``route_after_jd``).
-    Default ``true`` em dev para exercitar o gate_node em toda PR.
+    Task #1130 (GA) — flag agora **ON por default em TODOS os ambientes**
+    (dev, staging, prod). Os 3 gates restantes (competency #1086, wsi
+    #1087, review #1088) foram migrados para o classifier LLM e ficaram
+    estáveis. O caminho legado ``route_after_jd`` keyword-based segue
+    disponível só para rollback emergencial via ``LIA_WIZARD_LLM_GATES=0``.
+
     Lido a cada chamada ao builder para que testes possam alternar o flag
     via ``monkeypatch.setenv`` sem reset do módulo.
 
-    REMOVE: 2026-07-01 após T2 GA + migração de gates competency/wsi/review
-    (Tasks #4/#5/#6) — momento em que o caminho legado ``route_after_jd``
-    deixa de ser necessário.
+    REMOVE: 2026-09-01 — após 30 dias de baseline pós-GA sem regressão,
+    deletar ``route_after_jd``/``route_after_competency``/``route_after_wsi``/
+    ``route_after_review`` keyword-based do ``domain.py`` e remover o
+    short-circuit "OFF" desta função (a flag deixa de existir, gates LLM
+    viram caminho único).
     """
     raw = os.environ.get("LIA_WIZARD_LLM_GATES", "").strip().lower()
     if raw in ("1", "true", "yes", "on"):
         return True
     if raw in ("0", "false", "no", "off"):
         return False
-    # Inferência por ambiente: dev → on, prod/staging → off.
-    # T2 fix #12 (code review #10 comment 2): incluir ``APP_ENV`` (convenção
-    # canônica do plataforma-lia / scripts/dev-up.sh / playwright workflows)
-    # ALÉM de ``LIA_ENV``/``ENVIRONMENT``. Sem isso, ambientes dev que só
-    # exportam ``APP_ENV=development`` (a maioria) caíam no default OFF, e
-    # o gate só era exercitado quando o flag era setado explicitamente.
-    env = (
-        os.environ.get("LIA_ENV")
-        or os.environ.get("APP_ENV")
-        or os.environ.get("ENVIRONMENT")
-        or ""
-    ).lower()
-    return env in ("dev", "development", "local", "test")
+    # Task #1130 — default ON em TODOS os ambientes. Mantemos a leitura de
+    # ``LIA_ENV``/``APP_ENV``/``ENVIRONMENT`` no histórico para que
+    # operadores possam reconhecer o callsite, mas a inferência por
+    # ambiente foi APOSENTADA (toda ramificação caía em True após GA).
+    return True
 
 from app.domains.job_creation.state import (
     JobCreationState,

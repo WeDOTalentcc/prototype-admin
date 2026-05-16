@@ -3,7 +3,7 @@ export interface DeleteChatConversationDeps {
   fetchImpl?: typeof fetch;
   removeRecentItem: (id: string, type: string) => void;
   removeStoredConversationId: (key: string) => void;
-  resetChat: () => void;
+  resetChat: () => Promise<void> | void;
   onError?: (err: unknown) => void;
   storedConversationKey?: string;
 }
@@ -33,7 +33,7 @@ export async function deleteChatConversation({
   storedConversationKey = "general",
 }: DeleteChatConversationDeps): Promise<DeleteChatConversationResult> {
   if (!conversationId) {
-    resetChat();
+    await resetChat();
     return { status: "noop" };
   }
 
@@ -48,7 +48,7 @@ export async function deleteChatConversation({
     }
     removeRecentItem(conversationId, "chat");
     removeStoredConversationId(storedConversationKey);
-    resetChat();
+    await resetChat();
     return { status: res.status === 404 ? "already_gone" : "deleted" };
   } catch (err) {
     onError?.(err);
