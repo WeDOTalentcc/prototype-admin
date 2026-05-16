@@ -33,9 +33,14 @@ Os 3 domínios passaram a ter:
    quebrando o fluxo de candidato); endpoint do recrutador agora
    sobrescreve `body.company_id` com o claim do JWT (defesa contra
    tenant-spoofing via body).
-5. **`/api/v1/scheduling/link/` adicionado a `PUBLIC_PREFIXES`** em
-   `app/middleware/auth_enforcement.py` — alinha o middleware com a
-   intenção do código.
+5. **Middleware com regex pública EXPLÍCITA** em
+   `app/middleware/auth_enforcement.py` — `PUBLIC_REGEX_PATHS` casa
+   APENAS `GET /api/v1/scheduling/link/{token}` e
+   `POST /api/v1/scheduling/link/{token}/confirm` (token 16-128 chars,
+   `[A-Za-z0-9_-]`). O prefixo amplo `/api/v1/scheduling/link/` foi
+   **REMOVIDO** de `PUBLIC_PREFIXES` para evitar que sub-rotas
+   futuras (ex.: `/link/admin/X`, `/link/{token}/cancel`) fiquem
+   acidentalmente auth-bypassed. Ver §5.1 para detalhes.
 
 ## 2. Padrão ratchet (igual T-1149)
 
@@ -163,9 +168,13 @@ Se a sentinela bloquear um hotfix urgente:
    `# TEMP T-1157 hotfix YYYY-MM-DD — remover até <data>`.
 2. Abra issue de follow-up referenciando #1157 e a entrada.
 3. Para o hotfix do `self_scheduling_public.py`: se o middleware
-   precisar reverter, remova `/api/v1/scheduling/link/` de
-   `PUBLIC_PREFIXES` E remova o arquivo de `tests/.allowlist_public_endpoints.txt`
+   precisar reverter, remova as duas regexes de `PUBLIC_REGEX_PATHS`
+   E remova o arquivo de `tests/.allowlist_public_endpoints.txt`
    — os dois em conjunto restauram o estado "quebrado mas gated".
+   **NÃO** reintroduza o prefixo amplo `/api/v1/scheduling/link/` em
+   `PUBLIC_PREFIXES` (a sentinela
+   `test_middleware_no_longer_uses_broad_scheduling_prefix` quebraria
+   a build, e além disso reabre o gap original).
 
 ## 7. Pontos abertos (não cobertos por T-1157)
 
