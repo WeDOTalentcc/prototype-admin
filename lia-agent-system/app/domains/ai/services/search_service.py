@@ -269,19 +269,40 @@ class ElasticsearchSearchBackend(SearchBackend):
     def __init__(self) -> None:
         self._client = None
 
-    def _get_client(self) -> Any:
-        """Lazy-init do cliente ES via elasticsearch-py."""
-        if self._client is not None:
+    def _get_client(self, service: str = "ai_search_service") -> Any:
+        """Lazy-init do cliente ES via elasticsearch-py.
+
+        Returns a fresh :class:`TenantAwareElasticsearchClient` (Task #1147)
+        per call, sharing the underlying raw ``AsyncElasticsearch`` instance.
+        Per-call wrapping is required so the ``service`` label exposed in
+        ``lia_es_search_tenant_filter_outcome_total{service,outcome}``
+        accurately reflects the invoking callsite
+        (``ai_search_service.candidates`` vs ``.jobs``); a single cached
+        wrapper would lock the label to whichever callsite happened to
+        initialise it first.
+
+        Tests inject a pre-built wrapper into ``self._client`` to bypass
+        the network bootstrap path; if present, that wrapper is returned
+        unchanged.
+        """
+        from app.shared.search import TenantAwareElasticsearchClient
+
+        # Test-injected wrapper (already a TenantAwareElasticsearchClient).
+        if isinstance(self._client, TenantAwareElasticsearchClient):
             return self._client
+
         try:
             from elasticsearch import AsyncElasticsearch
 
             from app.core.config import settings
-            es_url = getattr(settings, "ELASTICSEARCH_URL", None)
-            if not es_url:
-                raise ValueError("ELASTICSEARCH_URL não configurado")
-            self._client = AsyncElasticsearch([es_url])
-            return self._client
+            if self._client is None:
+                es_url = getattr(settings, "ELASTICSEARCH_URL", None)
+                if not es_url:
+                    raise ValueError("ELASTICSEARCH_URL não configurado")
+                # Cache the RAW client; wrap it per-call below so the
+                # metric ``service`` label is accurate per callsite.
+                self._client = AsyncElasticsearch([es_url])
+            return TenantAwareElasticsearchClient(self._client, service=service)
         except ImportError:
             raise ImportError(
                 "elasticsearch-py não instalado. "
@@ -298,20 +319,23 @@ class ElasticsearchSearchBackend(SearchBackend):
     ) -> list[SearchResult]:
         """Busca candidatos no Elasticsearch."""
         try:
-            client = self._get_client()
+            from app.shared.search import with_tenant_filter
+
+            client = self._get_client("ai_search_service.candidates")
             es_query: dict[str, Any] = {
                 "query": {
                     "bool": {
                         "must": [{"multi_match": {"query": query, "fields": ["full_name^2", "skills", "current_role"]}}],
-                        "filter": [{"term": {"company_id": company_id}}],
                     }
                 },
                 "size": limit,
             }
             if filters:
+                bool_filters = es_query["query"]["bool"].setdefault("filter", [])
                 for key, val in filters.items():
-                    es_query["query"]["bool"]["filter"].append({"term": {key: val}})
+                    bool_filters.append({"term": {key: val}})
 
+            es_query = with_tenant_filter(es_query, company_id)
             response = await client.search(index="candidates", body=es_query)
             results = []
             for hit in response["hits"]["hits"]:
@@ -337,16 +361,18 @@ class ElasticsearchSearchBackend(SearchBackend):
     ) -> list[SearchResult]:
         """Busca vagas no Elasticsearch."""
         try:
-            client = self._get_client()
+            from app.shared.search import with_tenant_filter
+
+            client = self._get_client("ai_search_service.jobs")
             es_query: dict[str, Any] = {
                 "query": {
                     "bool": {
                         "must": [{"multi_match": {"query": query, "fields": ["title^3", "description"]}}],
-                        "filter": [{"term": {"company_id": company_id}}],
                     }
                 },
                 "size": limit,
             }
+            es_query = with_tenant_filter(es_query, company_id)
             response = await client.search(index="jobs", body=es_query)
             results = []
             for hit in response["hits"]["hits"]:
