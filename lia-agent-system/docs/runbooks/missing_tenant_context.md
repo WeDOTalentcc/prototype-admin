@@ -129,6 +129,26 @@ doppler secrets set LIA_AGENT_TENANT_STRICT=false --project lia --config prd
   `sum(rate(...{outcome="fail_closed"}[5m])) / sum(rate(...{outcome=~"hit|miss"}[5m])) > 0.001`
   (>0,1% de fail_closed em 24h indica regressão).
 
+## Audit schema mapping — `cross_tenant_session` (Task #1148)
+
+A spec do ADR-030 v2 §4 descreve audit rows com colunas conceituais
+`event_type / actor / reason / started_at / ended_at`. A tabela real
+`audit_logs` neste repo não tem essas colunas — o canonical helper mapeia
+da seguinte forma (duas rows por bypass: uma de `start`, uma de `end`):
+
+| Conceito spec | Coluna real em `audit_logs` |
+|---|---|
+| `event_type='cross_tenant_bypass'` | `decision_type='cross_tenant_bypass'` |
+| `actor` (user id) | `session_id` |
+| `reason` | `criteria_used` (JSON `{"reason": "<reason>", "phase": "start\|end"}`) |
+| `started_at` | row `action='start'` + `created_at` |
+| `ended_at` | row `action='end'` + `created_at` |
+| `duration_seconds` | row `action='end'` + `score` |
+
+Consumidores de observabilidade (dashboards, alertas, exports SOX/EU-AI-Act)
+devem consultar por `decision_type='cross_tenant_bypass'` e correlacionar
+as duas rows via `session_id` (mesmo actor) + `created_at` próximos.
+
 ## Referências
 
 - `app/shared/agents/tenant_aware_agent.py` — implementação canônica.

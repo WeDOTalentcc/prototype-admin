@@ -27,6 +27,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import require_admin
 from app.core.database import get_db
+from app.shared.admin.cross_tenant_session import (
+    cross_tenant_session,
+    require_superadmin,
+)
 from app.models.ai_consumption import AiConsumption, AiCreditsBalance
 from app.models.billing import Subscription
 from app.models.client_account import ClientAccount
@@ -149,92 +153,101 @@ async def list_companies(
     limit: int = Query(50, ge=1, le=200),
     offset: int = Query(0, ge=0),
     _admin: Any = Depends(require_admin),
+    superadmin: Any = Depends(require_superadmin),
     db: AsyncSession = Depends(get_db),
 company_id: str = Depends(require_company_id)):
-    # multi-tenancy: admin/platform-level (admin_) — role-based access required
-    conditions = [ClientAccount.is_deleted == False]
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required.
+    # Task #1148: enumerating ALL tenants is inherently cross-tenant, so the
+    # whole handler body runs under an audited ``cross_tenant_session``
+    # (start+end audit rows, Prometheus counter, RESET ROLE guaranteed).
+    async with cross_tenant_session(
+        reason="admin_list_companies",
+        audit_user_id=str(getattr(superadmin, "id", "") or ""),
+    ) as bypass_db:
+        db = bypass_db
+        conditions = [ClientAccount.is_deleted == False]
 
-    if status_filter:
-        conditions.append(ClientAccount.status == status_filter)
-    if plan_filter:
-        conditions.append(ClientAccount.plan_id == plan_filter)
-    if search:
-        conditions.append(
-            ClientAccount.name.ilike(f"%{search}%")
-            | ClientAccount.primary_email.ilike(f"%{search}%")
-        )
-
-    count_q = select(func.count(ClientAccount.id)).where(and_(*conditions))
-    total = (await db.execute(count_q)).scalar() or 0
-
-    q = (
-        select(ClientAccount)
-        .where(and_(*conditions))
-        .order_by(ClientAccount.created_at.desc())
-        .limit(limit)
-        .offset(offset)
-    )
-    result = await db.execute(q)
-    clients = result.scalars().all()
-
-    thirty_days_ago = datetime.utcnow() - timedelta(days=30)
-
-    items = []
-    for client in clients:
-        cid = client.id
-
-        agent_count_q = select(func.count(CustomAgent.id)).where(
-            and_(
-                CustomAgent.company_id == str(cid),
-                CustomAgent.status == "active",
+        if status_filter:
+            conditions.append(ClientAccount.status == status_filter)
+        if plan_filter:
+            conditions.append(ClientAccount.plan_id == plan_filter)
+        if search:
+            conditions.append(
+                ClientAccount.name.ilike(f"%{search}%")
+                | ClientAccount.primary_email.ilike(f"%{search}%")
             )
-        )
-        active_agents = (await db.execute(agent_count_q)).scalar() or 0
 
-        sourcing_count_q = select(func.count(SourcingAgent.id)).where(
-            SourcingAgent.company_id == str(cid)
-        )
-        active_sourcing = (await db.execute(sourcing_count_q)).scalar() or 0
+        count_q = select(func.count(ClientAccount.id)).where(and_(*conditions))
+        total = (await db.execute(count_q)).scalar() or 0
 
-        twin_count_q = select(func.count(DigitalTwin.id)).where(
-            and_(DigitalTwin.company_id == str(cid), DigitalTwin.is_active == True)
+        q = (
+            select(ClientAccount)
+            .where(and_(*conditions))
+            .order_by(ClientAccount.created_at.desc())
+            .limit(limit)
+            .offset(offset)
         )
-        active_twins = (await db.execute(twin_count_q)).scalar() or 0
+        result = await db.execute(q)
+        clients = result.scalars().all()
 
-        usage_q = select(
-            func.coalesce(func.sum(AiConsumption.total_tokens), 0).label("tokens"),
-            func.coalesce(func.sum(AiConsumption.cost_cents), 0).label("cost"),
-        ).where(
-            and_(
-                AiConsumption.company_id == cid,
-                AiConsumption.created_at >= thirty_days_ago,
+        thirty_days_ago = datetime.utcnow() - timedelta(days=30)
+
+        items = []
+        for client in clients:
+            cid = client.id
+
+            agent_count_q = select(func.count(CustomAgent.id)).where(
+                and_(
+                    CustomAgent.company_id == str(cid),
+                    CustomAgent.status == "active",
+                )
             )
-        )
-        usage_row = (await db.execute(usage_q)).one()
+            active_agents = (await db.execute(agent_count_q)).scalar() or 0
 
-        items.append(
-            CompanyListItem(
-                id=str(cid),
-                name=client.name,
-                trade_name=client.trade_name,
-                status=client.status or "",
-                plan_id=client.plan_id,
-                industry=client.industry,
-                company_size=client.company_size,
-                primary_email=client.primary_email,
-                created_at=client.created_at.isoformat() if client.created_at else None,
-                active_agents=active_agents + active_sourcing + active_twins,
-                total_tokens_30d=int(usage_row.tokens),
-                total_cost_30d=int(usage_row.cost),
+            sourcing_count_q = select(func.count(SourcingAgent.id)).where(
+                SourcingAgent.company_id == str(cid)
             )
-        )
+            active_sourcing = (await db.execute(sourcing_count_q)).scalar() or 0
 
-    return CompanyListResponse(
-        companies=items,
-        total=total,
-        limit=limit,
-        offset=offset,
-    )
+            twin_count_q = select(func.count(DigitalTwin.id)).where(
+                and_(DigitalTwin.company_id == str(cid), DigitalTwin.is_active == True)
+            )
+            active_twins = (await db.execute(twin_count_q)).scalar() or 0
+
+            usage_q = select(
+                func.coalesce(func.sum(AiConsumption.total_tokens), 0).label("tokens"),
+                func.coalesce(func.sum(AiConsumption.cost_cents), 0).label("cost"),
+            ).where(
+                and_(
+                    AiConsumption.company_id == cid,
+                    AiConsumption.created_at >= thirty_days_ago,
+                )
+            )
+            usage_row = (await db.execute(usage_q)).one()
+
+            items.append(
+                CompanyListItem(
+                    id=str(cid),
+                    name=client.name,
+                    trade_name=client.trade_name,
+                    status=client.status or "",
+                    plan_id=client.plan_id,
+                    industry=client.industry,
+                    company_size=client.company_size,
+                    primary_email=client.primary_email,
+                    created_at=client.created_at.isoformat() if client.created_at else None,
+                    active_agents=active_agents + active_sourcing + active_twins,
+                    total_tokens_30d=int(usage_row.tokens),
+                    total_cost_30d=int(usage_row.cost),
+                )
+            )
+
+        return CompanyListResponse(
+            companies=items,
+            total=total,
+            limit=limit,
+            offset=offset,
+        )
 
 
 @router.get(

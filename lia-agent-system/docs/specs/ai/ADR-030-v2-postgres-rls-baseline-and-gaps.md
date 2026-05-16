@@ -128,7 +128,7 @@ Promove para `--block` após smoke test em staging.
 
 **NÃO É POSSÍVEL** verificar do código se 068 efetivamente aplicou em
 staging (cross-tenant code paths em `billing.py` / `observability.py` que
-usam `cross_tenant_session_legacy` não falham hoje — pode indicar (a) 068
+usam o bypass legado (pré-`cross_tenant_session` canônico) não falham hoje — pode indicar (a) 068
 nunca aplicou, ou (b) bypass não documentado existe).
 
 **Sprint 4 task obrigatório**: SSH staging Postgres + `\dp candidates`

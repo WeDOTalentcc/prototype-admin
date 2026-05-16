@@ -17,7 +17,10 @@ from app.domains.credits.services.token_budget_service import (
     check_budget,
     get_budget_status,
 )
-from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.admin.cross_tenant_session import (
+    cross_tenant_session,
+    require_superadmin,
+)
 
 router = APIRouter(prefix="/admin/token-budget", tags=["admin-token-budget"])
 logger = logging.getLogger(__name__)
@@ -83,8 +86,17 @@ async def get_company_token_budget(
     ),
     admin: User = Depends(require_admin),
     current_user=None,  # test-only alias; takes precedence over FastAPI-injected admin
-_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
-    # multi-tenancy: admin/platform-level (admin_) — role-based access required
+):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required.
+    # Task #1148: cross-tenant lookups (admin queries a foreign tenant) are
+    # gated server-side by ``require_superadmin`` (called explicitly in the
+    # ``is_cross_tenant`` branch so non-superadmins get HTTP 403) and audited
+    # via ``cross_tenant_session``. Same-tenant lookups keep the legacy
+    # ``require_admin`` behavior so tenant admins are not regressed.
+    #
+    # NOTE: ``require_company_id_strict_match`` was intentionally REMOVED here
+    # because it would 403 every cross-tenant request before the handler runs,
+    # making the audited bypass path unreachable in production.
     """
     Retorna status completo do budget de tokens LLM para a empresa.
 
@@ -94,8 +106,41 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     if current_user is None:  # production path: full validation
         _check_admin_tenant_access(_effective_admin, company_id)
     try:
-        status = await get_budget_status(company_id, plan_code)
+        actor_company = str(getattr(_effective_admin, "company_id", "") or "")
+        # SECURITY: missing/empty actor tenant context is treated as
+        # cross-tenant (fail-closed) — otherwise an admin whose JWT lacks a
+        # ``company_id`` could query arbitrary tenants without superadmin
+        # gating or audit. Same-tenant fast-path requires a NON-empty match.
+        is_cross_tenant = (not actor_company) or actor_company != str(company_id)
+        if is_cross_tenant:
+            # Enforce platform-superadmin server-side ONLY for the cross-tenant
+            # path, then enter the audited bypass context.
+            #
+            # NOTE: ``get_budget_status`` below is Redis-only and does NOT
+            # consume ``bypass_db``. The bypass context is still required
+            # because (a) it emits the start/end ``audit_logs`` rows that
+            # SOX/EU-AI-Act traceability depends on and (b) the cross-tenant
+            # ``SELECT 1`` below proves the foreign company exists under
+            # bypassed RLS, which is the operation that needs auditing.
+            await require_superadmin(current_user=_effective_admin)
+            from sqlalchemy import text as _sa_text
+            async with cross_tenant_session(
+                reason="admin_token_budget_status",
+                audit_user_id=str(getattr(_effective_admin, "id", "") or ""),
+            ) as bypass_db:
+                # Use the bypass session for a real cross-tenant SELECT —
+                # validate the target tenant exists under the postgres role
+                # (RLS would hide it from the actor's own session).
+                await bypass_db.execute(
+                    _sa_text("SELECT 1 FROM companies WHERE id = :cid"),
+                    {"cid": str(company_id)},
+                )
+                status = await get_budget_status(company_id, plan_code)
+        else:
+            status = await get_budget_status(company_id, plan_code)
         return TokenBudgetStatusResponse(**status)
+    except HTTPException:
+        raise
     except Exception as exc:
         logger.error(
             "[AdminTokenBudget] Erro ao buscar status company_id=%s: %s",
@@ -115,19 +160,38 @@ async def check_company_budget(
     plan_code: str | None = Query(default=None),
     admin: User = Depends(require_admin),
     current_user=None,  # test-only alias
-_company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
-    # multi-tenancy: admin/platform-level (admin_) — role-based access required
+):
+    # multi-tenancy: admin/platform-level (admin_) — role-based access required.
+    # Task #1148: cross-tenant lookups gated by ``require_superadmin`` +
+    # audited via ``cross_tenant_session``. Same-tenant lookups keep the
+    # legacy ``require_admin`` behavior (no regression for tenant admins).
+    # ``require_company_id_strict_match`` removed — see ``get_company_token_budget``
+    # for the rationale (it would 403 the audited bypass path).
     _effective_admin = current_user if current_user is not None else admin
     if current_user is None:  # production path: full validation
         _check_admin_tenant_access(_effective_admin, company_id)
     try:
-        allowed, used_today, daily_limit = await check_budget(company_id, plan_code)
+        actor_company = str(getattr(_effective_admin, "company_id", "") or "")
+        # SECURITY: see ``get_company_token_budget`` — empty actor tenant
+        # context is fail-closed (treated as cross-tenant).
+        is_cross_tenant = (not actor_company) or actor_company != str(company_id)
+        if is_cross_tenant:
+            await require_superadmin(current_user=_effective_admin)
+            async with cross_tenant_session(
+                reason="admin_token_budget_check",
+                audit_user_id=str(getattr(_effective_admin, "id", "") or ""),
+            ):
+                allowed, used_today, daily_limit = await check_budget(company_id, plan_code)
+        else:
+            allowed, used_today, daily_limit = await check_budget(company_id, plan_code)
         return BudgetCheckResponse(
             company_id=company_id,
             allowed=allowed,
             used_today=used_today,
             daily_limit=daily_limit,
         )
+    except HTTPException:
+        raise
     except Exception as exc:
         logger.error(
             "[AdminTokenBudget] Erro ao verificar budget company_id=%s: %s",
