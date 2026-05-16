@@ -276,6 +276,34 @@ def test_short_circuit_exit_wizard_returns_payload(monkeypatch):
     assert len(result["message"]) > 10  # mensagem real, não vazia
 
 
+def test_supervisor_fallback_message_is_not_canned_product_literal():
+    """Política de fallback determinístico do supervisor (post code-review
+    Task #1127). O fallback emitido quando helper E classifier devolvem
+    reply vazio é uma string curta de roteamento — NÃO pode reintroduzir
+    nenhum dos literais de produto vetados pela sentinela T3
+    (test_wizard_no_canned_fallback_t3.py).
+
+    Veta drift de policy: se alguém trocar o fallback por uma string
+    de produto (ex.: 'Captei a vaga'), a sentinela trava o build.
+    """
+    import inspect
+    from app.domains.job_creation.services import wizard_session_service as svc_mod
+
+    src = inspect.getsource(svc_mod.WizardSessionService._run_supervisor)
+    banned = [
+        "preciso da sua aprovação",
+        "Captei a vaga",
+        "Vaga em criação",
+        "Vaga criada com sucesso",
+    ]
+    for literal in banned:
+        assert literal.lower() not in src.lower(), (
+            f"Fallback do supervisor reintroduziu literal canned proibido "
+            f"pela sentinela T3: {literal!r}. Use string de roteamento "
+            f"curta (sem semântica de produto)."
+        )
+
+
 def test_continue_current_does_not_short_circuit(monkeypatch):
     """``continue_current`` (default) devolve ``short_circuit=False`` —
     caller DEVE seguir para o graph como sempre."""

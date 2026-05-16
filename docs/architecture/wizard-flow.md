@@ -381,7 +381,9 @@ A partir de Task #1127 todo turno do wizard passa por um **supervisor pre-graph*
 - Pydantic schema + allowlist post-hoc (defense-in-depth). Sentinela `tests/integration/agents/test_wizard_supervisor_t1127.py` veta drift da allowlist.
 - Fail-OPEN: qualquer falha (sem API key, timeout, schema inválido, off-allowlist) devolve `None` → caller cai 100% no fluxo legacy.
 - Mutação de state pelo supervisor: ZERO. Apenas roteia.
-- `tenant_context_snippet` é passado via `resolve_tenant_snippet_for_non_react` (NON-ReAct callsite — T-F).
+- `tenant_context_snippet` é passado via `resolve_tenant_snippet_for_non_react(ctx, *, agent_name="wizard_supervisor", company_id_raw=...)` — assinatura canônica T-F (NÃO use kwargs `company_id=`/`context=`).
+
+**Carve-out de FairnessGuard (governança)**: o supervisor pre-graph é um **router de intent**, não um produtor de resposta de produto — por isso **não roda FairnessGuard L1 antes do classifier**. Justificativa: (a) o supervisor não emite output user-facing nas intents `continue_current` / `create_new` / `resume_draft` / `edit_published` (apenas roteia para o graph, onde FairnessGuard L1/L3 do `JobCreationGraph` continua intacto); (b) nas intents `meta_question` / `exit_wizard` o output user-facing vem do `wizard_meta_question_helper` (Sonnet stage-aware, helper-first) ou de uma string determinística curta — ambos passíveis de instrumentação dedicada nas Tasks #1130/#1131. Esta carve-out é DELIBERADA, documentada aqui e revisitada quando os 3 gates restantes forem migrados para LLM classifier (Task #1130). Sentinela arquitetural do fallback determinístico em `test_wizard_supervisor_t1127.py::test_supervisor_fallback_message_is_not_canned_product_literal`.
 
 **Env flags**:
 - `LIA_WIZARD_SUPERVISOR_CLASSIFIER` — default ON em dev/test, OFF em prod/staging até GA.
