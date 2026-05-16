@@ -32,6 +32,11 @@ import {
 import type { ChatMode } from "./unified-chat-types";
 import { useJdUploadProgress } from "./useJdUploadProgress";
 import {
+  fetchWizardSessionState,
+  purgeLegacyWizardStorage,
+  resetWizardSession,
+} from "./wizard/useWizardSessionApi";
+import {
   DynamicContextPanel,
   SPLIT_STAGES,
 } from "./wizard/DynamicContextPanel";
@@ -211,6 +216,64 @@ export function UnifiedChat({
   // `userId` namespaces the wizard's localStorage key so recruiter A's
   // in-flight job doesn't bleed to recruiter B on a shared browser (LGPD).
   const wizard = useWizardFlow({ userId: authUser?.id });
+
+  // Task #1128 — one-shot purge of the abolished
+  // `localStorage["lia-wizard-state-*"]` cache for users who installed
+  // the app before Nova-conversa-reset shipped. Idempotent so re-mounts
+  // are free.
+  useEffect(() => {
+    purgeLegacyWizardStorage();
+  }, []);
+
+  // Task #1128 — hydrate wizard state from the backend checkpointer on
+  // every conversation/session change. Source of truth is the LangGraph
+  // thread keyed by `(company_id, session_id)`; we never trust local
+  // caches anymore. A 404 / inactive snapshot triggers `wizard.reset()`
+  // so a fresh conversation never inherits a stale stage row from the
+  // previous one. Errors are toast-logged but never silently swallowed.
+  const wizardHandleStagePayload = wizard.handleStagePayload;
+  const wizardReset = wizard.reset;
+  useEffect(() => {
+    if (!chatSessionId) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const snap = await fetchWizardSessionState(chatSessionId);
+        if (cancelled) return;
+        if (!snap || !snap.active || !snap.current_stage) {
+          wizardReset();
+          return;
+        }
+        wizardHandleStagePayload({
+          type: "wizard_stage",
+          stage: snap.current_stage as never,
+          data: snap.stage_data ?? {},
+          completeness: snap.completeness ?? 0,
+          requires_approval: !!snap.requires_approval,
+          thread_id: snap.thread_id,
+        } as never);
+      } catch (err) {
+        if (cancelled) return;
+        // eslint-disable-next-line no-console
+        console.error(
+          "[UnifiedChat] GET wizard session hydration failed",
+          { session_id: chatSessionId },
+          err,
+        );
+        // Task #1128 — feedback explícito ao recrutador: sem hidratação
+        // a UI pode mostrar um stepper stale (de uma rota anterior) ou
+        // simplesmente nenhum, e ele precisa saber que o servidor não
+        // confirmou o estado atual.
+        toast.error("Não consegui carregar o estado do wizard", {
+          description:
+            "Recarregue a página em alguns segundos. Se persistir, abra uma nova conversa.",
+        });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [chatSessionId, wizardHandleStagePayload, wizardReset]);
   const {
     currentStage: wizardStage,
     stageData: wizardStageData,
@@ -401,12 +464,71 @@ export function UnifiedChat({
     [sendChatMessage],
   );
 
-  const handleNewChat = useCallback(() => {
+  // Task #1128 — shared low-level reset: DELETE the canonical wizard
+  // checkpointer for the current session. Used by BOTH "Nova conversa"
+  // (which then also switches conversation) and "Cancelar wizard"
+  // (which keeps the current conversation, just kills the wizard).
+  // Fail-loud — recruiter must know the reset did not happen.
+  const resetCurrentWizardSession = useCallback(async (): Promise<boolean> => {
+    const previousSessionId = chatSessionId;
+    if (!previousSessionId) {
+      wizard.reset();
+      return true;
+    }
+    try {
+      await resetWizardSession(previousSessionId);
+      wizard.reset();
+      return true;
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error(
+        "[UnifiedChat] DELETE wizard session failed",
+        { session_id: previousSessionId, conversation_id: chatConversationId },
+        err,
+      );
+      toast.error("Não consegui cancelar o wizard atual", {
+        description:
+          "O wizard ainda está ativo no servidor. Tente novamente em alguns segundos. Se persistir, recarregue a página.",
+      });
+      // CRITICAL (Task #1128 code review): NÃO chamamos wizard.reset() aqui.
+      // O backend é a fonte da verdade — esconder o stepper localmente
+      // enquanto o checkpoint segue aberto criaria a ilusão de cancelamento
+      // bem-sucedido, e o próximo `ws_stage_payload` re-abriria o stepper
+      // do nada, reproduzindo o bug original do screenshot. Fail-loud:
+      // o stepper permanece visível, o recrutador vê o toast e re-tenta.
+      return false;
+    }
+  }, [chatSessionId, chatConversationId, wizard]);
+
+  // Task #1128 — "Nova conversa": clears wizard AND switches to a fresh
+  // conversation. Triggered by the sidebar/slash command "/nova-conversa".
+  const handleNewChat = useCallback(async () => {
+    const ok = await resetCurrentWizardSession();
+    if (!ok) return;
     switchChatContext("general", { conversationId: null });
     setChatMessages([]);
     setInputText("");
     setAttachedFile(null);
-  }, [switchChatContext, setChatMessages]);
+  }, [resetCurrentWizardSession, switchChatContext, setChatMessages]);
+
+  // Task #1128 — "Cancelar wizard": kills the wizard checkpoint but
+  // PRESERVES the current `conversation_id` / chat thread. The recruiter
+  // stays in the same conversation, the stepper/banner disappear, and
+  // the next message is routed to general chat instead of resuming the
+  // wizard. A confirmation prompt is required because the in-flight job
+  // draft (JD, competencies, salary band) is dropped server-side and
+  // cannot be recovered.
+  const handleCancelWizard = useCallback(async () => {
+    if (typeof window !== "undefined") {
+      const confirmed = window.confirm(
+        "Cancelar criação da vaga? Você perderá o rascunho desta vaga (JD, competências, salário) e voltará ao chat geral. Esta ação não pode ser desfeita.",
+      );
+      if (!confirmed) return;
+    }
+    await resetCurrentWizardSession();
+    // Stay on the same conversation_id — only nudge focus back to the
+    // input so the recruiter can keep talking with the LIA generalist.
+  }, [resetCurrentWizardSession]);
 
   const removeRecentItem = useRecentItemsStore((s) => s.removeItem);
   const removeStoredConversationId = useChatStateStore(
@@ -678,6 +800,7 @@ export function UnifiedChat({
               stageHistory={wizardHistory}
               degradedStages={wizardDegradedStages}
               compact={effectiveMode === "floating"}
+              onCancelWizard={handleCancelWizard}
             />
           </div>
         )}

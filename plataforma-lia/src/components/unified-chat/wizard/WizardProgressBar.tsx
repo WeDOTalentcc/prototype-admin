@@ -2,7 +2,7 @@
 
 import React from "react"
 import { cn } from "@/lib/utils"
-import { Check, ShieldAlert } from "lucide-react"
+import { Check, ShieldAlert, X } from "lucide-react"
 import { STAGE_LABELS, STAGE_ORDER, type WizardStage } from "./wizard-types"
 import { PLAN_VISIBLE_STAGES } from "./wizard-plan-card"
 import type { DegradedStageEntry } from "./useWizardFlow"
@@ -23,6 +23,16 @@ interface Props {
    * "Etapa X de Y · Nome" with the same progress bar.
    */
   compact?: boolean
+  /**
+   * Task #1128 — optional callback for the "Cancelar wizard" button.
+   * When provided, renders a small dismissive button on the right side
+   * of the bar that asks the parent to abort the current wizard run
+   * (which in `UnifiedChat` translates to DELETE on the wizard session
+   * + local `wizard.reset()` + switch back to general chat). When
+   * undefined the button is hidden so existing callers that don't want
+   * a cancel affordance keep their current layout.
+   */
+  onCancelWizard?: () => void
 }
 
 const DEGRADED_REASON_COPY: Record<string, string> = {
@@ -52,7 +62,7 @@ function buildDegradedTooltip(
  * (single source of truth: `PLAN_VISIBLE_STAGES` in `wizard-plan-card`).
  * Design: wedo-cyan accent, lia-border-subtle, Open Sans.
  */
-export function WizardProgressBar({ currentStage, completeness, stageHistory, degradedStages, compact = false }: Props) {
+export function WizardProgressBar({ currentStage, completeness, stageHistory, degradedStages, compact = false, onCancelWizard }: Props) {
   if (!currentStage) return null
 
   const currentIdx = STAGE_ORDER.indexOf(currentStage)
@@ -126,6 +136,18 @@ export function WizardProgressBar({ currentStage, completeness, stageHistory, de
             <span className="text-[11px] text-lia-text-tertiary tabular-nums">
               {Math.round(completeness * 100)}%
             </span>
+            {onCancelWizard && (
+              <button
+                type="button"
+                onClick={onCancelWizard}
+                data-testid="wizard-cancel-button-compact"
+                title="Cancelar wizard"
+                aria-label="Cancelar wizard"
+                className="inline-flex items-center justify-center w-4 h-4 rounded-full text-lia-text-tertiary hover:text-status-error hover:bg-status-error/10 transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-status-error"
+              >
+                <X className="w-2.5 h-2.5" aria-hidden="true" />
+              </button>
+            )}
           </div>
         </div>
         <div className="h-1 rounded-full bg-lia-bg-secondary overflow-hidden">
@@ -143,6 +165,19 @@ export function WizardProgressBar({ currentStage, completeness, stageHistory, de
       className="px-4 py-2.5 bg-lia-bg-primary"
       data-degraded-count={totalDegradedCount}
     >
+      {onCancelWizard && (
+        <div className="flex items-center justify-end mb-1.5">
+          <button
+            type="button"
+            onClick={onCancelWizard}
+            data-testid="wizard-cancel-button"
+            className="inline-flex items-center gap-1 text-[11px] text-lia-text-tertiary hover:text-status-error transition-colors focus:outline-none focus-visible:ring-1 focus-visible:ring-status-error rounded px-1 py-0.5"
+          >
+            <X className="w-3 h-3" aria-hidden="true" />
+            Cancelar wizard
+          </button>
+        </div>
+      )}
       {/* Progress bar */}
       <div className="h-1 rounded-full bg-lia-bg-secondary mb-2.5 overflow-hidden">
         <div

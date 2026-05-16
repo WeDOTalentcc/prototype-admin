@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useReducer, useEffect, useState } from "react"
+import { useCallback, useReducer, useEffect } from "react"
 import type {
   WizardStage,
   WizardStagePayload,
@@ -109,10 +109,6 @@ type WizardAction =
   | { type: "CLEAR_ERROR" }
   | { type: "SET_THREAD"; threadId: string }
   | { type: "RESET" }
-  // Replace the in-memory state wholesale with one rehydrated from the
-  // active storage namespace. Used when `userId` flips mid-session so we
-  // never carry recruiter A's state into recruiter B's session (LGPD).
-  | { type: "REHYDRATE"; state: WizardState }
 
 function buildHistory(current: WizardStage | null, next: WizardStage, history: WizardStage[]): WizardStage[] {
   // Always include all visited stages in order
@@ -174,99 +170,62 @@ function wizardReducer(state: WizardState, action: WizardAction): WizardState {
       return { ...state, threadId: action.threadId }
     case "RESET":
       return initialState
-    case "REHYDRATE":
-      return action.state
     default:
       return state
   }
 }
 
-// --- Persistence ---
+// --- Persistence (REMOVED — Task #1128) ---
 //
-// Wizard state contains the in-flight job posting (raw input, JD draft,
-// competencies, salary band, etc.) and may include candidate-shaped data
-// once calibration starts — i.e. data of the recruiter's tenant. To avoid
-// leaking that across users on a shared browser (LGPD + multi-tenant),
-// the localStorage key is namespaced by `userId`. Without a `userId`
-// (logged-out / SSR / pre-auth render) we **do not persist at all** — a
-// global "lia-wizard-state" key would silently bleed between sessions.
+// Until Task #1128 this file kept wizard state in
+// `localStorage["lia-wizard-state-<userId>"]` and treated that cache as
+// the source of truth. The result was the bug "Nova conversa keeps
+// resurrecting the wizard": clearing chat messages did NOT clear the
+// cache, the next `ws_stage_payload` rehydrated from disk, and the
+// recruiter was stuck in the same stage they thought they had left.
+//
+// The canonical source of truth now lives in the LangGraph checkpointer
+// on the backend, addressed by `(company_id, session_id)` via
+// `app.shared.sessions.thread_id.derive_thread_id`. The chat surface
+// rehydrates from `GET /api/v1/lia/job-wizard/session/{session_id}` on
+// mount and calls `DELETE` on "Nova conversa" / "Cancelar wizard".
+//
+// `getWizardStorageKey` is retained ONLY to compute legacy keys the chat
+// surface purges on first mount (see `purgeLegacyWizardStorage` in
+// `useWizardSessionApi.ts`). Do NOT reintroduce read/write here — the
+// sentinel `useWizardFlow.test.ts` greps this file for forbidden tokens
+// (`localStorage.setItem`, `loadPersistedState`, `persistState`).
 
-const WIZARD_STORAGE_KEY_PREFIX = "lia-wizard-state"
+const LEGACY_WIZARD_STORAGE_KEY_PREFIX = "lia-wizard-state"
 
-/** Returns the per-user storage key, or `null` when persistence must be skipped. */
+/**
+ * Compute the legacy per-user storage key. Kept exported so the one-shot
+ * purger in `useWizardSessionApi.ts` and the existing unit tests can name
+ * the migration target; nothing in this file reads or writes that key.
+ */
 export function getWizardStorageKey(userId: string | null | undefined): string | null {
   if (typeof userId !== "string") return null
   const trimmed = userId.trim()
   if (trimmed === "") return null
-  return `${WIZARD_STORAGE_KEY_PREFIX}-${trimmed}`
-}
-
-function loadPersistedState(storageKey: string | null): WizardState {
-  if (storageKey === null) return initialState
-  if (typeof window === "undefined") return initialState
-  try {
-    const stored = localStorage.getItem(storageKey)
-    if (stored) {
-      const parsed = JSON.parse(stored) as WizardState
-      if (parsed.active && parsed.currentStage) return parsed
-    }
-  } catch { /* ignore */ }
-  return initialState
-}
-
-function persistState(state: WizardState, storageKey: string | null): void {
-  if (storageKey === null) return
-  if (typeof window === "undefined") return
-  try {
-    if (state.active) {
-      localStorage.setItem(storageKey, JSON.stringify(state))
-    } else {
-      localStorage.removeItem(storageKey)
-    }
-  } catch { /* ignore */ }
+  return `${LEGACY_WIZARD_STORAGE_KEY_PREFIX}-${trimmed}`
 }
 
 // --- Hook ---
 
 export interface UseWizardFlowOptions {
   /**
-   * User identifier used to namespace the wizard's localStorage key so
-   * recruiter A's in-flight job doesn't bleed to recruiter B on a shared
-   * browser (LGPD + multi-tenant). When omitted/null the wizard works
-   * normally but its state is **not persisted** across reloads.
+   * Task #1128 — kept ONLY for backward compatibility with existing
+   * call-sites (chat surface, tests). The wizard no longer persists to
+   * localStorage; the LangGraph checkpointer on the backend, keyed by
+   * `(company_id, session_id)` via `derive_thread_id`, is the only
+   * source of truth. Tenant isolation that this prop used to provide is
+   * now enforced server-side.
    */
   userId?: string | null
 }
 
-export function useWizardFlow(options: UseWizardFlowOptions = {}) {
-  const { userId = null } = options
-  const storageKey = getWizardStorageKey(userId)
-  const [state, dispatch] = useReducer(
-    wizardReducer,
-    initialState,
-    () => loadPersistedState(storageKey),
-  )
-
-  // Track which `storageKey` the current `state` belongs to. When the
-  // identity changes mid-session (recruiter A logs out → B logs in,
-  // hydration finally produces a userId, etc.) we must (1) drop A's
-  // in-memory wizard state and (2) hydrate B's namespace from disk
-  // **before** any persist effect runs — otherwise the persist effect
-  // would write A's stale state under B's storage key, defeating the
-  // whole namespacing exercise (LGPD cross-tenant bleed). Doing the
-  // dispatch during render via the "Adjusting state during rendering"
-  // pattern guarantees React commits the rehydrated state before the
-  // persist effect fires, so no intermediate write happens.
-  const [prevStorageKey, setPrevStorageKey] = useState<string | null>(storageKey)
-  if (prevStorageKey !== storageKey) {
-    setPrevStorageKey(storageKey)
-    dispatch({ type: "REHYDRATE", state: loadPersistedState(storageKey) })
-  }
-
-  // Persist state changes to localStorage (no-op when storageKey is null)
-  useEffect(() => {
-    persistState(state, storageKey)
-  }, [state, storageKey])
+export function useWizardFlow(_options: UseWizardFlowOptions = {}) {
+  const [state, dispatch] = useReducer(wizardReducer, initialState)
 
   // Subscribe to the canonical `lia:wizard-stage-payload` window event so the
   // hook is self-sufficient when mounted on the chat surface. The event is
