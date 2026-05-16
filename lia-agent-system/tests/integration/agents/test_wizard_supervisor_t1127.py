@@ -166,26 +166,34 @@ def test_allowlist_is_canonical():
 # ---------------------------------------------------------------------------
 
 
-def test_short_circuit_meta_question_returns_payload(monkeypatch):
-    """``_run_supervisor`` devolve ``short_circuit=True`` com
-    ``ws_stage_payload.type == 'wizard_meta_reply'`` para meta_question.
-    NÃO toca prior_state nem chama o graph."""
+def test_short_circuit_meta_question_uses_helper_as_primary(monkeypatch):
+    """``_run_supervisor`` deve chamar ``wizard_meta_question_helper`` como
+    caller PRIMÁRIO (Sonnet, stage-aware). O ``conversational_reply`` do
+    supervisor (Haiku) é apenas last-resort. Inverter essa ordem produz
+    respostas genéricas e perde awareness de etapa.
+
+    Também valida ``short_circuit=True``, payload ``wizard_meta_reply``
+    e que o ``prior_state`` NÃO é mutado.
+    """
     from app.domains.job_creation.services import wizard_session_service as svc_mod
+    from app.domains.job_creation.services import wizard_meta_question_helper as helper_mod
 
     monkeypatch.setenv("LIA_WIZARD_SUPERVISOR_CLASSIFIER", "1")
 
-    # Stub supervisor para devolver meta_question com reply pronto.
+    # Reply do supervisor (Haiku) — DEVE ser ignorado se o helper responder.
     fake_output = MagicMock()
     fake_output.intent = "meta_question"
     fake_output.confidence = 0.9
-    fake_output.conversational_reply = "Estamos no enriquecimento da JD. Quer continuar?"
+    fake_output.conversational_reply = "[REPLY DO SUPERVISOR — NÃO DEVE APARECER]"
 
     fake_classifier = MagicMock()
     fake_classifier.classify_sync = MagicMock(return_value=fake_output)
 
-    with patch.object(
-        svc_mod, "logger", svc_mod.logger,
-    ), patch(
+    helper_mock = MagicMock(
+        return_value="Estamos no enriquecimento da JD. Quer continuar?",
+    )
+
+    with patch(
         "app.domains.job_creation.services.wizard_supervisor_classifier."
         "get_wizard_supervisor_classifier",
         return_value=fake_classifier,
@@ -193,6 +201,8 @@ def test_short_circuit_meta_question_returns_payload(monkeypatch):
         "app.domains.job_creation.services.wizard_supervisor_classifier."
         "is_supervisor_enabled",
         return_value=True,
+    ), patch.object(
+        helper_mod, "generate_meta_response_sync", helper_mock,
     ):
         prior_state = {
             "current_stage": "jd_enrichment",
@@ -210,8 +220,18 @@ def test_short_circuit_meta_question_returns_payload(monkeypatch):
     assert result is not None
     assert result["intent"] == "meta_question"
     assert result["short_circuit"] is True
-    assert result["message"].startswith("Estamos no enriquecimento")
     assert result["ws_stage_payload"]["type"] == "wizard_meta_reply"
+
+    # CONTRATO HELPER-FIRST: helper foi chamado e seu reply venceu.
+    assert helper_mock.called, (
+        "wizard_meta_question_helper.generate_meta_response_sync DEVE ser "
+        "chamado como caller primário em meta_question."
+    )
+    assert result["message"].startswith("Estamos no enriquecimento"), (
+        "Reply do helper (Sonnet) DEVE prevalecer sobre conversational_reply "
+        "do supervisor (Haiku)."
+    )
+    assert "REPLY DO SUPERVISOR" not in result["message"]
 
     # Sanity: prior_state NÃO foi mutado.
     assert prior_state["current_stage"] == "jd_enrichment"

@@ -581,6 +581,9 @@ class WizardSessionService:
         current_stage = prior.get("current_stage") if isinstance(prior, dict) else None
 
         # tenant snippet via helper canônico (NON-ReAct callsite — T-F).
+        # Assinatura canônica: (ctx, *, agent_name, company_id_raw).
+        # NÃO use kwargs `company_id=`/`context=` — TypeError silenciado
+        # quebraria a postura de governança T-F.
         tenant_snippet = ""
         try:
             from app.shared.agents.tenant_aware_agent import (
@@ -588,8 +591,9 @@ class WizardSessionService:
             )
             tenant_snippet = (
                 resolve_tenant_snippet_for_non_react(
-                    company_id=company_id,
-                    context=ctx,
+                    ctx,
+                    agent_name="wizard_supervisor",
+                    company_id_raw=company_id,
                 )
                 or prior.get("tenant_context_snippet")
                 or ""
@@ -642,29 +646,36 @@ class WizardSessionService:
         )
 
         # ── Short-circuit: meta_question ─────────────────────────────
+        # Contrato canônico (Task #1127, fase 1.1): meta perguntas são
+        # respondidas pelo `wizard_meta_question_helper` (Sonnet, stage-aware).
+        # O `output.conversational_reply` do supervisor (Haiku) é APENAS
+        # last-resort — nunca primário. Inverter essa ordem produz respostas
+        # genéricas e perde a awareness de etapa.
         if intent == "meta_question":
-            reply = (output.conversational_reply or "").strip()
+            reply = ""
+            try:
+                from app.domains.job_creation.services.wizard_meta_question_helper import (
+                    generate_meta_response_sync,
+                )
+                reply = await asyncio.to_thread(
+                    generate_meta_response_sync,
+                    stage=current_stage or "wizard",
+                    user_message=user_message,
+                    tenant_context_snippet=tenant_snippet,
+                    last_turns=last_turns,
+                    stage_description=(
+                        f"wizard de criação de vaga, etapa {current_stage}"
+                        if current_stage else "wizard de criação de vaga"
+                    ),
+                ) or ""
+            except Exception as exc:  # noqa: BLE001
+                logger.warning(
+                    "[WizardSupervisor] meta helper failed (fail-open): %s",
+                    exc,
+                )
             if not reply:
-                try:
-                    from app.domains.job_creation.services.wizard_meta_question_helper import (
-                        generate_meta_response_sync,
-                    )
-                    reply = await asyncio.to_thread(
-                        generate_meta_response_sync,
-                        stage=current_stage or "wizard",
-                        user_message=user_message,
-                        tenant_context_snippet=tenant_snippet,
-                        last_turns=last_turns,
-                        stage_description=(
-                            f"wizard de criação de vaga, etapa {current_stage}"
-                            if current_stage else "wizard de criação de vaga"
-                        ),
-                    ) or ""
-                except Exception as exc:  # noqa: BLE001
-                    logger.warning(
-                        "[WizardSupervisor] meta helper failed (fail-open): %s",
-                        exc,
-                    )
+                # Last-resort: usa reply do supervisor classifier (Haiku).
+                reply = (output.conversational_reply or "").strip()
             if not reply:
                 # Fallback determinístico — NÃO é canned do produto (sentinela
                 # T3 veta literais de produto). Hard-prefix sinaliza estado.
