@@ -18,7 +18,7 @@ Usage:
     from app.shared.cache_strategy import CacheNamespace, CacheTTL, CacheConfig, NAMESPACE_CACHE_CONFIGS
 
     ttl = CacheStrategy.get_ttl(CacheDomain.CANDIDATE_SEARCH)
-    key = CacheStrategy.build_key(CacheDomain.CANDIDATE_SEARCH, query="python")
+    key = CacheStrategy.build_key(CacheDomain.CANDIDATE_SEARCH, company_id, query="python")
     CacheStrategy.invalidate(CacheDomain.JOB_VACANCY, job_id="123")
 """
 import hashlib
@@ -200,10 +200,30 @@ class CacheStrategy:
         return config["ttl_seconds"] if config else 300
 
     @staticmethod
-    def build_key(domain: CacheDomain, **kwargs) -> str:
+    def build_key(domain: CacheDomain, company_id: str | None = None, **kwargs) -> str:
+        """Build a tenant-namespaced cache key.
+
+        Task #1144: ``company_id`` is required. Shape:
+        ``lia:<domain>:<company_id>:<md5(sorted_kwargs)[:12]>``. Missing
+        ``company_id`` records a namespace violation and falls back to the
+        ``__unknown__`` tenant (sentinel S9 will flag the leak).
+        """
         sorted_params = json.dumps(kwargs, sort_keys=True, default=str)
         param_hash = hashlib.md5(sorted_params.encode()).hexdigest()[:12]
-        return f"lia:{domain.value}:{param_hash}"
+        from app.shared.security.tenant_redis_namespace import (
+            record_namespace_violation,
+            tenant_namespaced_key,
+        )
+        if not company_id:
+            # Task #1144 — fail-loud: in production record_namespace_violation
+            # raises RuntimeError; in dev/test it logs CRITICAL and we keep
+            # going with a clearly-marked unknown bucket so the test suite
+            # can observe the violation without crashing.
+            record_namespace_violation(f"cache_strategy.{domain.value}")
+            return f"lia:{domain.value}:__unknown__:{param_hash}"
+        # Let any helper failure propagate — no broad except / no fallback
+        # f-string that could leak a malformed key past the central gate.
+        return tenant_namespaced_key(f"lia:{domain.value}", company_id, param_hash)
 
     @staticmethod
     def get_invalidation_events(domain: CacheDomain) -> list[str]:

@@ -134,13 +134,29 @@ class RateLimiter:
     async def _check_redis(self, user_id: str, company_id: str) -> tuple[bool, int | None]:
         """Redis-backed sliding window check."""
         try:
-            prefix = "rl"
-
-            # Per-minute checks
-            user_min_key = f"{prefix}:user:{user_id}:min"
-            company_min_key = f"{prefix}:company:{company_id}:min"
-            user_hour_key = f"{prefix}:user:{user_id}:hour"
-            company_hour_key = f"{prefix}:company:{company_id}:hour"
+            # Task #1144: tenant-namespaced keys for authenticated traffic;
+            # a SEPARATE non-tenant prefix (``rl_public``) for unauthenticated
+            # / pre-login traffic. This avoids pretending ``"anonymous"`` is
+            # a tenant (which would coalesce all pre-login traffic into one
+            # pseudo-tenant bucket and trigger the central gate's fail-loud
+            # in production for legitimate public routes like /login).
+            if not company_id or company_id == "anonymous":
+                prefix = "rl_public"
+                user_min_key = f"{prefix}:user:{user_id}:min"
+                company_min_key = f"{prefix}:total:min"
+                user_hour_key = f"{prefix}:user:{user_id}:hour"
+                company_hour_key = f"{prefix}:total:hour"
+            else:
+                # Authenticated traffic — keys tenant-namespaced via the
+                # canonical helper (defence-in-depth: a user-id colliding
+                # across two tenants must NOT share a token bucket).
+                from app.shared.security.tenant_redis_namespace import (
+                    tenant_namespaced_key,
+                )
+                user_min_key = tenant_namespaced_key("rl", company_id, f"user:{user_id}:min")
+                company_min_key = tenant_namespaced_key("rl", company_id, "company:min")
+                user_hour_key = tenant_namespaced_key("rl", company_id, f"user:{user_id}:hour")
+                company_hour_key = tenant_namespaced_key("rl", company_id, "company:hour")
 
             allowed_u_min, u_min_count = await self._redis_sliding_window(
                 user_min_key, self.LIMITS["per_minute_per_user"], 60
@@ -172,6 +188,12 @@ class RateLimiter:
 
             return True, None
 
+        except RuntimeError:
+            # Task #1144 fail-loud: namespace-violation RuntimeError must
+            # propagate in production instead of being swallowed by the
+            # broad ``except Exception`` below (which would silently degrade
+            # to allow-all and reopen the cross-tenant bucket bug).
+            raise
         except Exception as e:
             logger.warning(f"[RateLimiter] Redis check failed ({e}), degrading to allow-all")
             self._redis_available = False

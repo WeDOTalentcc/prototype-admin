@@ -41,18 +41,21 @@ class TestSessionBridgeFallback:
         bridge = sb.SessionBridge(ttl_seconds=60)
         bridge._get_redis_client = AsyncMock(return_value=None)
 
+        # Task #1144: SessionContext carries company_id; keys are namespaced
+        # as ``lia:session:<company_id>:<session_id>``.
+        cid = "00000000-0000-4000-a000-000000000001"
         ctx = sb.SessionContext(
-            session_id="sess-1", user_id="u1", domain="recruiting"
+            session_id="sess-1", user_id="u1", domain="recruiting", company_id=cid
         )
 
         asyncio.run(bridge.save(ctx))
-        assert "lia:session:sess-1" in bridge._memory_store
+        assert f"lia:session:{cid}:sess-1" in bridge._memory_store
 
         # Jump just past the TTL so the entry must be swept.
         clock["value"] += 61
-        loaded = asyncio.run(bridge.load("sess-1"))
+        loaded = asyncio.run(bridge.load("sess-1", company_id=cid))
         assert loaded is None
-        assert "lia:session:sess-1" not in bridge._memory_store
+        assert f"lia:session:{cid}:sess-1" not in bridge._memory_store
 
     def test_save_sweeps_other_expired_entries(self, monkeypatch):
         from app.shared import session_bridge as sb
@@ -63,15 +66,16 @@ class TestSessionBridgeFallback:
         bridge = sb.SessionBridge(ttl_seconds=30)
         bridge._get_redis_client = AsyncMock(return_value=None)
 
-        old = sb.SessionContext(session_id="old", user_id="u1", domain="x")
+        cid = "00000000-0000-4000-a000-000000000001"
+        old = sb.SessionContext(session_id="old", user_id="u1", domain="x", company_id=cid)
         asyncio.run(bridge.save(old))
 
         clock["value"] += 31  # invalidate "old"
-        new = sb.SessionContext(session_id="new", user_id="u2", domain="x")
+        new = sb.SessionContext(session_id="new", user_id="u2", domain="x", company_id=cid)
         asyncio.run(bridge.save(new))
 
-        assert "lia:session:old" not in bridge._memory_store
-        assert "lia:session:new" in bridge._memory_store
+        assert f"lia:session:{cid}:old" not in bridge._memory_store
+        assert f"lia:session:{cid}:new" in bridge._memory_store
 
     def test_in_memory_load_returns_session_after_save(self, monkeypatch):
         """Without crypto Redis, plain JSON round-trips through the fallback."""
@@ -80,13 +84,14 @@ class TestSessionBridgeFallback:
         bridge = sb.SessionBridge(ttl_seconds=3600)
         bridge._get_redis_client = AsyncMock(return_value=None)
 
+        cid = "00000000-0000-4000-a000-000000000001"
         ctx = sb.SessionContext(
-            session_id="sess-x", user_id="u1", domain="recruiting"
+            session_id="sess-x", user_id="u1", domain="recruiting", company_id=cid
         )
         ctx.entity_cache["candidate_id"] = "42"
 
         asyncio.run(bridge.save(ctx))
-        loaded = asyncio.run(bridge.load("sess-x"))
+        loaded = asyncio.run(bridge.load("sess-x", company_id=cid))
         assert loaded is not None
         assert loaded.session_id == "sess-x"
         assert loaded.entity_cache.get("candidate_id") == "42"

@@ -88,7 +88,11 @@ async def flush_redis_routing_cache() -> int:
     try:
         from app.orchestrator.semantic_cache import SemanticCache
         cache = SemanticCache()
-        count = await cache.flush_all()
+        # Task #1144: flush_all() now requires an explicit scope (tenant or
+        # pattern) to prevent accidental cross-tenant wipes. This script is
+        # the documented operational override that intentionally targets
+        # every tenant's routing cache — pass the broad pattern explicitly.
+        count = await cache.flush_all(pattern="route_cache:*")
         logger.info("[DONE] Flushed %d Redis route_cache entries", count)
         return count
     except Exception as exc:

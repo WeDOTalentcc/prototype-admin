@@ -24,6 +24,12 @@ class SessionContext:
     session_id: str
     user_id: str
     domain: str
+    # Task #1144: company_id is required for tenant-namespaced Redis keys.
+    # Kept as last positional with default to preserve back-compat in tests
+    # (``test_inmem_fallback_eviction.py`` instantiates without company_id —
+    # those entries land under the legacy ``__unknown__`` namespace and are
+    # surfaced as violations by the sentinel test).
+    company_id: str = ""
     intent_history: list[str] = field(default_factory=list)  # last N intents
     entity_cache: dict[str, Any] = field(default_factory=dict)  # candidate_id, job_id etc
     last_active: datetime = field(default_factory=lambda: datetime.now(UTC))
@@ -87,8 +93,24 @@ class SessionBridge:
             self._redis = None
         return self._redis
     
-    def _key(self, session_id: str) -> str:
-        return f"lia:session:{session_id}"
+    def _key(self, session_id: str, company_id: str | None = None) -> str:
+        """Compose tenant-namespaced Redis key for a session.
+
+        Task #1144: every key must be ``lia:session:<company_id>:<session_id>``.
+        Empty ``company_id`` records a namespace violation and falls back to
+        ``__unknown__`` (visible via Prometheus sentinel S9).
+        """
+        from app.shared.security.tenant_redis_namespace import (
+            record_namespace_violation,
+            tenant_namespaced_key,
+        )
+        if not company_id:
+            # Fail-loud in prod (raises). In dev/test the violation is logged
+            # and we return a clearly-marked unknown bucket so unit tests can
+            # observe the violation. No broad except wrapping the helper.
+            record_namespace_violation("session_bridge")
+            return f"lia:session:__unknown__:{session_id}"
+        return tenant_namespaced_key("lia:session", company_id, session_id)
     
     def _sweep_memory_store(self) -> None:
         """Evict expired entries from in-memory fallback (TTL-based)."""
@@ -106,21 +128,24 @@ class SessionBridge:
             if redis_client:
                 from app.shared.security.redis_crypto import get_redis_crypto
                 await redis_client.setex(
-                    self._key(ctx.session_id), self._ttl,
+                    self._key(ctx.session_id, ctx.company_id), self._ttl,
                     get_redis_crypto().encrypt(serialized),
                 )
             else:
                 # Sweep expired entries before adding new one
                 self._sweep_memory_store()
                 expiry = _now() + self._ttl
-                self._memory_store[self._key(ctx.session_id)] = (serialized, expiry)
+                self._memory_store[self._key(ctx.session_id, ctx.company_id)] = (serialized, expiry)
+        except RuntimeError:
+            # Task #1144 fail-loud — never swallow tenant-namespace violations.
+            raise
         except Exception as exc:
             logger.error("[SessionBridge] Failed to save session %s: %s", ctx.session_id, exc)
 
-    async def load(self, session_id: str) -> SessionContext | None:
-        """Load session context by session_id."""
+    async def load(self, session_id: str, company_id: str = "") -> SessionContext | None:
+        """Load session context by session_id (tenant-scoped, Task #1144)."""
         try:
-            key = self._key(session_id)
+            key = self._key(session_id, company_id)
             redis_client = await self._get_redis_client()
             if redis_client:
                 raw = await redis_client.get(key)
@@ -136,13 +161,16 @@ class SessionBridge:
                         del self._memory_store[key]
                         return None
                     return SessionContext.from_json(serialized)
+        except RuntimeError:
+            # Task #1144 fail-loud — never swallow tenant-namespace violations.
+            raise
         except Exception as exc:
             logger.error("[SessionBridge] Failed to load session %s: %s", session_id, exc)
         return None
     
-    async def delete(self, session_id: str) -> bool:
+    async def delete(self, session_id: str, company_id: str = "") -> bool:
         """Delete session (LGPD Art. 15 — right to erasure)."""
-        key = self._key(session_id)
+        key = self._key(session_id, company_id)
         try:
             redis_client = await self._get_redis_client()
             if redis_client:
@@ -150,6 +178,9 @@ class SessionBridge:
             elif key in self._memory_store:
                 del self._memory_store[key]
                 return True
+        except RuntimeError:
+            # Task #1144 fail-loud — never swallow tenant-namespace violations.
+            raise
         except Exception as exc:
             logger.error("[SessionBridge] Failed to delete session %s: %s", session_id, exc)
         return False
@@ -160,6 +191,10 @@ class SessionBridge:
         try:
             redis_client = await self._get_redis_client()
             if redis_client:
+                # Task #1144: scan over the tenant-namespaced layout
+                # (``lia:session:<company_id>:<session_id>``). The trailing
+                # ``*`` matches any tenant — required for cross-tenant LGPD
+                # right-to-erasure flows.
                 pattern = "lia:session:*"
                 async for key in redis_client.scan_iter(pattern):
                     raw = await redis_client.get(key)
@@ -182,16 +217,16 @@ class SessionBridge:
         logger.info("[SessionBridge] Deleted %d sessions for user %s", count, user_id)
         return count
     
-    async def update_entity_cache(self, session_id: str, entity_type: str, entity_id: str) -> None:
-        """Update entity cache in existing session."""
-        ctx = await self.load(session_id)
+    async def update_entity_cache(self, session_id: str, entity_type: str, entity_id: str, company_id: str = "") -> None:
+        """Update entity cache in existing session (tenant-scoped, Task #1144)."""
+        ctx = await self.load(session_id, company_id)
         if ctx:
             ctx.entity_cache[entity_type] = entity_id
             await self.save(ctx)
     
-    async def append_intent(self, session_id: str, intent: str, max_history: int = 10) -> None:
-        """Append intent to history, capped at max_history."""
-        ctx = await self.load(session_id)
+    async def append_intent(self, session_id: str, intent: str, max_history: int = 10, company_id: str = "") -> None:
+        """Append intent to history (tenant-scoped, Task #1144)."""
+        ctx = await self.load(session_id, company_id)
         if ctx:
             ctx.intent_history.append(intent)
             if len(ctx.intent_history) > max_history:

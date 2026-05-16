@@ -104,6 +104,10 @@ class ExperimentResult:
     tokens_used: int
     quality_score: float | None = None
     timestamp: datetime = field(default_factory=datetime.utcnow)
+    # Task #1144: company_id is required for tenant-namespaced Redis keys.
+    # Default ``""`` triggers a namespace-violation log/Prometheus increment
+    # (sentinel S9) but does not break legacy callers.
+    company_id: str = ""
 
 
 # ---------------------------------------------------------------------------
@@ -230,8 +234,25 @@ class PromptExperiment:
             self._redis = None
         return self._redis
 
-    def _redis_key(self, variant_id: str, day: date) -> str:
-        return f"prompt_exp:{self.experiment_id}:{variant_id}:{day}"
+    def _redis_key(self, variant_id: str, day: date, company_id: str = "") -> str:
+        """Build tenant-namespaced Redis key (Task #1144).
+
+        Shape: ``prompt_exp:<company_id>:<experiment_id>:<variant_id>:<day>``.
+        Empty ``company_id`` falls back to ``__unknown__`` and records a
+        namespace violation (sentinel S9 surfaces it via Prometheus).
+        """
+        from app.shared.security.tenant_redis_namespace import (
+            record_namespace_violation,
+            tenant_namespaced_key,
+        )
+        suffix = f"{self.experiment_id}:{variant_id}:{day}"
+        if not company_id:
+            # Fail-loud in prod (raises). In dev/test the violation is logged
+            # and we return a clearly-marked unknown bucket so unit tests can
+            # observe the violation. No broad except wrapping the helper.
+            record_namespace_violation("prompt_experiment")
+            return f"prompt_exp:__unknown__:{suffix}"
+        return tenant_namespaced_key("prompt_exp", company_id, suffix)
 
     # ------------------------------------------------------------------
     # Result recording
@@ -250,7 +271,7 @@ class PromptExperiment:
         Compliance note:
             EU AI Act Art. 13 — rastreabilidade de decisões do sistema de IA.
         """
-        key = self._redis_key(result.variant_id, result.timestamp.date())
+        key = self._redis_key(result.variant_id, result.timestamp.date(), result.company_id)
         entry = {
             "latency_ms": result.latency_ms,
             "tokens_used": result.tokens_used,
@@ -304,7 +325,13 @@ class PromptExperiment:
             if redis_client is not None:
                 try:
                     # Scan for all daily keys for this variant
-                    pattern = f"prompt_exp:{self.experiment_id}:{variant.variant_id}:*"
+                    # Task #1144: tenant-namespaced layout
+                    # ``prompt_exp:<company_id>:<experiment_id>:<variant_id>:*``.
+                    # The leading ``*`` is intentional — stats are
+                    # per-experiment, aggregated across tenants for the admin
+                    # plane. Tenant-scoped stats should pass a company_id
+                    # filter in a future PR (Task #1129 follow-up).
+                    pattern = f"prompt_exp:*:{self.experiment_id}:{variant.variant_id}:*"
                     keys = []
                     async for key in redis_client.scan_iter(pattern):
                         keys.append(key)
@@ -319,9 +346,11 @@ class PromptExperiment:
                     logger.warning("[P03] Redis read failed for stats (%s).", exc)
 
             # Also collect from in-memory store (may have entries after Redis failure)
-            mem_pattern = f"prompt_exp:{self.experiment_id}:{variant.variant_id}:"
+            # Task #1144: keys now embed company_id between the prefix and
+            # the experiment_id. Match any tenant for aggregate stats.
+            mem_substr = f":{self.experiment_id}:{variant.variant_id}:"
             for key, entries in self._memory_store.items():
-                if key.startswith(mem_pattern):
+                if key.startswith("prompt_exp:") and mem_substr in key:
                     for entry in entries:
                         latencies.append(float(entry["latency_ms"]))
                         if entry.get("quality_score") is not None:

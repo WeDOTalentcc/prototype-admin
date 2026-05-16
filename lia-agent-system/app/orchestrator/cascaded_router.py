@@ -167,9 +167,19 @@ class CascadedRouter:
             logger.debug("[CascadedRouter] VectorSemanticCache não disponível: %s", exc)
             return None
 
-    def _cache_key(self, message: str) -> str:
+    def _cache_key(self, message: str, company_id: str | None = None) -> str:
+        """Tier-1 LRU key — Task #1144: must include company_id.
+
+        Two tenants sending the same message MUST NOT collide on the
+        in-process memory cache. ``company_id=None`` is preserved only for
+        legacy call sites in tests; the live router path always passes a
+        concrete value (or ``"__unknown__"`` if the request had none, which
+        is logged via ``record_namespace_violation``).
+        """
         normalized = message.lower().strip()
-        return hashlib.md5(normalized.encode()).hexdigest()
+        digest = hashlib.md5(normalized.encode()).hexdigest()
+        cid = company_id or "__unknown__"
+        return f"{cid}:{digest}"
 
     def _wizard_domain_override(self, message: str, cached_domain: str) -> bool:
         """Return True if fast router strongly identifies wizard domain for this message,
@@ -262,7 +272,31 @@ class CascadedRouter:
                     logger.debug("CascadedRouter: memory resolver skipped: %s", _mem_exc)
                     _t0_span.set_attribute("skipped", str(_mem_exc))
 
-        cache_key = self._cache_key(message)
+        # Task #1144: Redis cache must be tenant-namespaced. Extract company_id
+        # from context once and pass it to every ``self._redis_cache.*`` call
+        # below. Falls back to ``"__unknown__"`` only for the local LRU cache
+        # key (which already lives in-process per worker); Redis layer will
+        # reject empty company_id via ``CompanyId.parse``.
+        _company_id_for_cache = (context or {}).get("company_id") or "__unknown__"
+        # Task #1144: SemanticCache delegates to CompanyId.parse, which
+        # rejects ``"__unknown__"`` (and all forbidden literals). When the
+        # caller did not inject a company_id we MUST NOT call into the
+        # Redis layer at all — instead we skip it (Tier-1 LRU still works
+        # in-process) and record the violation for sentinel S9.
+        _redis_cache_enabled = _company_id_for_cache != "__unknown__"
+        if not _redis_cache_enabled:
+            try:
+                from app.shared.security.tenant_redis_namespace import (
+                    record_namespace_violation,
+                )
+                record_namespace_violation("cascaded_router.unknown_company")
+            except RuntimeError:
+                # Production fail-loud: re-raise so the request fails cleanly
+                # instead of leaking into the cross-tenant "__unknown__" bucket.
+                raise
+            except Exception:
+                pass
+        cache_key = self._cache_key(message, _company_id_for_cache)
 
         # Tier 1 — LRU in-process (hash MD5, O(1))
         async with _tracer.start_span("router.tier1_lru_cache", attributes={
@@ -298,7 +332,11 @@ class CascadedRouter:
             "tier_name": "tier2_redis_cache", "service": "cascaded_router", "match_type": "exact_hash",
         }) as _t2_span:
             _t0 = time.perf_counter()
-            redis_hit = await self._redis_cache.get(message)
+            redis_hit = (
+                await self._redis_cache.get(_company_id_for_cache, message)
+                if _redis_cache_enabled
+                else None
+            )
             if redis_hit:
                 _elapsed_ms = (time.perf_counter() - _t0) * 1000
                 self._stats["redis_hits"] += 1
@@ -340,17 +378,19 @@ class CascadedRouter:
                 matched_pattern=_t25_fast_prefetch.matched_pattern,
             )
             self._cache_store(cache_key, _t25_result)
-            try:
-                await self._redis_cache.set(
-                    message,
-                    {
-                        "domain_id": "wizard",
-                        "confidence": _t25_fast_prefetch.confidence,
-                        "matched_pattern": _t25_fast_prefetch.matched_pattern,
-                    },
-                )
-            except Exception:
-                pass
+            if _redis_cache_enabled:
+                try:
+                    await self._redis_cache.set(
+                        _company_id_for_cache,
+                        message,
+                        {
+                            "domain_id": "wizard",
+                            "confidence": _t25_fast_prefetch.confidence,
+                            "matched_pattern": _t25_fast_prefetch.matched_pattern,
+                        },
+                    )
+                except Exception:
+                    pass
             logger.debug(
                 "CascadedRouter: [T2.5 wizard_guard] '%s...' → wizard (conf=%.2f)",
                 message[:40],
@@ -434,14 +474,16 @@ class CascadedRouter:
                 _t4_span.set_attribute("matched_pattern", result.matched_pattern or "")
                 _t4_span.set_attribute("latency_ms", f"{_elapsed_ms:.2f}")
                 self._cache_store(cache_key, result)
-                await self._redis_cache.set(
-                    message,
-                    {
-                        "domain_id": result.domain_id,
-                        "confidence": result.confidence,
-                        "matched_pattern": result.matched_pattern,
-                    },
-                )
+                if _redis_cache_enabled:
+                    await self._redis_cache.set(
+                        _company_id_for_cache,
+                        message,
+                        {
+                            "domain_id": result.domain_id,
+                            "confidence": result.confidence,
+                            "matched_pattern": result.matched_pattern,
+                        },
+                    )
                 if self._vector_cache is not None:
                     try:
                         await self._vector_cache.set(
@@ -509,10 +551,12 @@ class CascadedRouter:
                     else:
                         _t5_span.set_attribute("hit", "true")
                         self._cache_store(cache_key, cascade_result)
-                        await self._redis_cache.set(
-                            message,
-                            {"domain_id": cascade_result.domain_id, "confidence": cascade_result.confidence},
-                        )
+                        if _redis_cache_enabled:
+                            await self._redis_cache.set(
+                                _company_id_for_cache,
+                                message,
+                                {"domain_id": cascade_result.domain_id, "confidence": cascade_result.confidence},
+                            )
                         if self._vector_cache is not None:
                             try:
                                 await self._vector_cache.set(

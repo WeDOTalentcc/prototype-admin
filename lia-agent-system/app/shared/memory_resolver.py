@@ -104,11 +104,26 @@ class MemoryResolver:
             self.session_id, domain, action,
         )
         # UC-P2-01: persist to Redis (non-blocking, fail-open)
+        # Task #1144: Redis key MUST embed company_id (tenant namespacing).
         if _REDIS:
             try:
-                key = f"lia:action_history:{self.session_id}"
+                from app.shared.security.tenant_redis_namespace import (
+                    record_namespace_violation,
+                    tenant_namespaced_key,
+                )
+                if not self.company_id:
+                    record_namespace_violation("memory_resolver.action_history")
+                    return record
+                key = tenant_namespaced_key(
+                    "lia:action_history", self.company_id, self.session_id
+                )
                 _REDIS.rpush(key, _json.dumps(record.to_dict()))
                 _REDIS.expire(key, _ACTION_HISTORY_TTL)
+            except RuntimeError:
+                # Task #1144 fail-loud — namespace violations must propagate
+                # in production. Never coalesce into the generic "fail-open"
+                # debug log below.
+                raise
             except Exception as exc:  # noqa: BLE001
                 logger.debug(
                     "[MemoryResolver][%s] Redis write failed (non-blocking): %s",
@@ -117,11 +132,21 @@ class MemoryResolver:
         return record
 
     def get_action_history(self, session_id: str | None = None) -> list[dict]:
-        """Return full action history, preferring Redis when available (UC-P2-01)."""
+        """Return full action history, preferring Redis when available (UC-P2-01).
+
+        Task #1144: read uses the tenant-namespaced key. Missing company_id
+        falls back to the in-process buffer (still tenant-isolated by the
+        ``_sessions[company_id]`` partition in :func:`get_or_create_resolver`).
+        """
         sid = session_id or self.session_id
-        if _REDIS:
+        if _REDIS and self.company_id:
             try:
-                key = f"lia:action_history:{sid}"
+                from app.shared.security.tenant_redis_namespace import (
+                    tenant_namespaced_key,
+                )
+                key = tenant_namespaced_key(
+                    "lia:action_history", self.company_id, sid
+                )
                 raw = _REDIS.lrange(key, 0, -1)
                 if raw:
                     return [_json.loads(r) for r in raw]
