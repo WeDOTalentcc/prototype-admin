@@ -99,7 +99,15 @@ def _get_timeout_s() -> float:
 
 
 _DEFAULT_MODEL = os.environ.get(
-    "LIA_WIZARD_INTAKE_CLASSIFIER_MODEL", "claude-3-5-haiku-20241022"
+    "LIA_WIZARD_INTAKE_CLASSIFIER_MODEL",
+    # Canonical Haiku model name for the local modelfarm proxy
+    # (localhost:1106/modelfarm/anthropic). Used by 15+ callsites:
+    # agents_registry.yaml, agent_model_config.py, fairness_guard.py,
+    # intake_extractor.py. The original "claude-3-5-haiku-20241022"
+    # default returns UNSUPPORTED_MODEL from the modelfarm proxy in
+    # dev/staging, causing the classifier to silently fail-OPEN every
+    # turn and the static guard to fire forever.
+    "claude-haiku-4-5-20251001",
 )
 
 
