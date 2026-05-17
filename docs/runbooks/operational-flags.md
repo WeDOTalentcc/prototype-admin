@@ -70,3 +70,22 @@ bash plataforma-lia/scripts/run-pw-cenario.sh pw-cenario-1131-18 e2e/tests/wizar
 bash plataforma-lia/scripts/run-pw-cenario.sh pw-cenario-1131-19 e2e/tests/wizard/19-meta-question-global.spec.ts
 bash plataforma-lia/scripts/run-pw-cenario.sh pw-cenario-1131-20 e2e/tests/wizard/20-exit-wizard-clean.spec.ts
 ```
+
+## Task #1161 — Checkpointer async (LangGraph)
+
+> Detalhamento completo em [`task-1161-three-bugs.md`](./task-1161-three-bugs.md) §Bug B (root cause REAL).
+
+A factory `lia_agents_core.checkpointer.get_checkpointer()` agora aplica um
+guard `_supports_async(saver)`: se o saver retornado herda `aget_tuple` do
+stub abstrato `BaseCheckpointSaver` (caso da classe sync `PostgresSaver`),
+em DEV cai para `MemorySaver`/`InMemorySaver` (suporta async); em
+`APP_ENV in {"production","staging"}` levanta `RuntimeError` exigindo
+migração para `AsyncPostgresSaver`.
+
+**Por quê.** O wizard `aresume_with_message` faz
+`await self._graph.ainvoke(Command(resume=...))`. O `AsyncPregelLoop.__aenter__`
+chama `await checkpointer.aget_tuple(...)`. Sem o guard, o stub abstrato
+disparava `NotImplementedError` silenciado pelo `_emit_silent_fallback`
+do `wizard_session_service` — o usuário via apenas a mensagem genérica
+de fallback. Sentinela: `tests/integration/agents/test_checkpointer_async_support_t_1161.py`.
+
