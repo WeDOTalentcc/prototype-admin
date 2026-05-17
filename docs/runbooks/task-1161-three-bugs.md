@@ -78,6 +78,39 @@ o estado real do checkpoint LangGraph.
   índice de `logger.exception(...)` no body do handler venha ANTES do
   índice de `_emit_silent_fallback(...)`.
 
+**Root cause REAL (addendum 2026-05-17).** Com `logger.exception(...)` o
+traceback completo apareceu no stdout do backend e revelou a verdadeira
+origem do `NotImplementedError`:
+
+```
+File ".../langgraph/checkpoint/base/__init__.py", line 271, in aget_tuple
+    raise NotImplementedError
+```
+
+A classe sync `langgraph.checkpoint.postgres.PostgresSaver` herda
+`aget_tuple` do stub abstrato `BaseCheckpointSaver`. Como
+`aresume_with_message` faz `await self._graph.ainvoke(Command(resume=...))`,
+o `AsyncPregelLoop.__aenter__` chama `await checkpointer.aget_tuple(...)`
+e bate no stub — `NIE` silenciado pelo `_emit_silent_fallback`. Em
+produção, `get_checkpointer()` retornava o mesmo `PostgresSaver` sync,
+então o bug atinge prod (não só dev).
+
+**Fix.** `libs/agents-core/lia_agents_core/checkpointer.py`:
+- Adicionado helper `_supports_async(saver)` que detecta se `aget_tuple`
+  foi sobrescrito em algum ancestral antes de bater no
+  `BaseCheckpointSaver`.
+- `get_checkpointer()` agora aplica esse guard: em DEV, cai para
+  `MemorySaver` (= `InMemorySaver`, que implementa async); em
+  prod/staging, levanta `RuntimeError` exigindo migração para
+  `AsyncPostgresSaver`.
+
+**Sentinela complementar.** `tests/integration/agents/test_checkpointer_async_support_t_1161.py`
+- `test_supports_async_helper_is_defined` — AST garante a presença do helper.
+- `test_get_checkpointer_calls_supports_async_guard` — AST exige a
+  chamada de `_supports_async(...)` dentro de `get_checkpointer()`.
+- `test_runtime_checkpointer_supports_aget_tuple` — runtime: o saver
+  efetivamente retornado em dev deve sobrescrever `aget_tuple`.
+
 ---
 
 ## Bug C — `/company/culture-*` retorna 500 vazando `str(e)` (raiz: ResponseValidationError)

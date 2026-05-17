@@ -53,6 +53,31 @@ logger = logging.getLogger(__name__)
 _POOL_SINGLETON: Any = None
 
 
+def _supports_async(saver: Any) -> bool:
+    """
+    Task #1161 — Bug B root cause guard.
+
+    O wizard (``app/domains/job_creation/graph.py::aresume_with_message``)
+    chama ``await self._graph.ainvoke(Command(resume=...))``. LangGraph,
+    por sua vez, chama ``await checkpointer.aget_tuple(...)`` dentro do
+    ``AsyncPregelLoop.__aenter__``. Se o saver retornado NÃO sobrescrever
+    ``aget_tuple`` (caso do ``PostgresSaver`` sync — que herda o stub
+    abstrato de ``BaseCheckpointSaver``), o resultado é
+    ``NotImplementedError`` silenciado pelo ``_emit_silent_fallback`` do
+    ``wizard_session_service`` — exatamente o sintoma do Task #1161.
+
+    Detecta isso checando se ``aget_tuple`` foi sobrescrito em algum lugar
+    da MRO além da classe abstrata base.
+    """
+    cls = type(saver)
+    for ancestor in cls.__mro__:
+        if ancestor.__module__.endswith("checkpoint.base") and ancestor.__name__ == "BaseCheckpointSaver":
+            return False
+        if "aget_tuple" in ancestor.__dict__:
+            return True
+    return False
+
+
 def get_checkpointer() -> Any:
     """
     Retorna o checkpointer adequado ao ambiente.
@@ -65,12 +90,19 @@ def get_checkpointer() -> Any:
 
     Defense in depth: ``app.main.lifespan`` deve abortar boot quando este
     retornar MemorySaver em APP_ENV não-dev (sensor de boot fail-closed).
+
+    Task #1161 (Bug B root cause): se o saver não suportar
+    ``aget_tuple`` (caso da classe sync ``PostgresSaver``), em DEV cai
+    para ``MemorySaver`` (que é ``InMemorySaver`` e implementa async); em
+    prod-like levanta ``RuntimeError`` exigindo migração para
+    ``AsyncPostgresSaver``.
     """
+    app_env = getattr(settings, "APP_ENV", "development")
+    is_production_like = app_env in {"production", "staging"}
+
     try:
-        return _postgres_saver()
+        saver = _postgres_saver()
     except Exception as exc:
-        app_env = getattr(settings, "APP_ENV", "development")
-        is_production_like = app_env in {"production", "staging"}
         if is_production_like:
             raise RuntimeError(
                 f"[Checkpointer] PostgresSaver FALHOU em ambiente {app_env!r} — "
@@ -86,6 +118,20 @@ def get_checkpointer() -> Any:
             exc,
         )
         return _memory_saver()
+
+    if not _supports_async(saver):
+        msg = (
+            f"[Checkpointer] {type(saver).__name__} nao implementa aget_tuple "
+            f"(sync-only). O wizard.aresume_with_message usa async ainvoke e "
+            f"langgraph chamaria aget_tuple => NotImplementedError (Task #1161 "
+            f"Bug B). Use AsyncPostgresSaver para producao."
+        )
+        if is_production_like:
+            raise RuntimeError(msg)
+        logger.warning("%s Fallback dev -> MemorySaver.", msg)
+        return _memory_saver()
+
+    return saver
 
 
 def _memory_saver() -> Any:
