@@ -1,0 +1,165 @@
+# Runbook — Task #1161: Wizard E2E 3 bugs bloqueantes
+
+> Última revisão: 2026-05-17 — Task #1161
+>
+> Este runbook documenta a causa raiz, fix e sentinelas das 3 regressões
+> que travavam pw-cenario-B/C/D simultaneamente. Use-o quando vir:
+> - 401 do Anthropic em dev/staging mesmo com tenant key válida no banco
+> - `WizardSessionService` respondendo só "Houve um problema, tente novamente"
+>   sem traceback no log
+> - 500 em `/api/v1/company/culture-*` com body genérico e sem stack server-side
+
+---
+
+## Bug A — Anthropic 401 quando o callsite passa `api_key` explícita
+
+**Sintoma.** Em dev/staging, `ChatAnthropic(api_key=<tenant_key>)` retorna 401
+mesmo com `AI_INTEGRATIONS_ANTHROPIC_BASE_URL=https://modelfarm.local/...`
+configurada. Em produção (sem a env var) o caminho funciona.
+
+**Causa raiz.** Em `lia-agent-system/app/shared/llm_bootstrap.py`, o patch
+do SDK `anthropic.Anthropic.__init__` aninhava a injeção de `base_url` dentro
+do mesmo bloco `if "api_key" not in kwargs:` que cuidava da injeção de
+api_key. Quando o LangChain (`ChatAnthropic`) passa `api_key=...` explícito
+para o SDK, o bloco inteiro era pulado — incluindo `base_url`. O cliente
+batia direto na API pública (`https://api.anthropic.com`), que rejeitava a
+chave de dev → 401.
+
+**Fix.** Extraído helper `_inject_anthropic_env(kwargs)` com DUAS condições
+independentes:
+- `api_key` continua gated em `if "api_key" not in kwargs` (não sobrescreve
+  intenção do caller).
+- `base_url` injeta SEMPRE que `AI_INTEGRATIONS_ANTHROPIC_BASE_URL` está
+  setada e o caller não passou `base_url` explícito.
+
+Em produção a env var fica unset → no-op. Em dev/staging todo cliente
+Anthropic (sync, async, via LangChain ou direto) passa pelo modelfarm proxy.
+
+**Sentinela.** `tests/integration/llm/test_anthropic_base_url_injection_t_1161.py`
+- `test_base_url_injected_when_caller_passes_explicit_api_key` — reproduz o
+  callsite real do `ChatAnthropic`.
+- `test_base_url_injected_when_caller_passes_nothing` — caminho original.
+- `test_base_url_noop_when_env_unset` — produção (sem proxy).
+- `test_inject_helper_uses_unconditional_base_url` — AST assertion que o
+  bloco `if base_url and "base_url" not in kwargs:` NÃO está aninhado dentro
+  de `if "api_key" not in kwargs:`. Garante que ninguém regenere o bug por
+  refactor.
+
+---
+
+## Bug B — `NotImplementedError` silenciado em `aresume_with_message`
+
+**Sintoma.** No wizard, ao retomar uma sessão pausada em HITL, o usuário
+recebe uma resposta de fallback genérica ("Houve um problema, tente
+novamente") sem nenhum erro no log do backend. Diagnóstico fica impossível.
+
+**Causa raiz.** Em `WizardSessionService.process_message`, o `try/except`
+que envolve `wiz_g.aresume_with_message(...)` capturava `Exception` com
+`logger.error(f"... {type(exc).__name__}")` — só o NOME do tipo, sem stack
+trace. Exceções como `NotImplementedError` vindas de stubs legados
+profundos no graph eram silenciadas, e `_emit_silent_fallback` mascarava
+o estado real do checkpoint LangGraph.
+
+**Fix.** No catch em `app/domains/job_creation/services/wizard_session_service.py`
+(handler de `aresume_with_message`):
+1. Substituído `logger.error(...)` por `logger.exception(...)` — escreve
+   o traceback COMPLETO no log do backend.
+2. Adicionado `sentry_sdk.capture_exception(inv_exc)` em try/except
+   defensivo (Sentry pode não estar configurado em test envs).
+3. AMBOS rodam ANTES de `_emit_silent_fallback` — assim o fallback não
+   ofusca a causa raiz que ele está mascarando.
+
+**Sentinela.** `tests/integration/agents/test_wizard_resume_traceback_t_1161.py`
+- `test_resume_catch_calls_logger_exception` — AST exige `logger.exception(`
+  no handler.
+- `test_resume_catch_calls_sentry_capture` — AST exige
+  `sentry_sdk.capture_exception(`.
+- `test_logger_exception_runs_before_silent_fallback` — AST exige que o
+  índice de `logger.exception(...)` no body do handler venha ANTES do
+  índice de `_emit_silent_fallback(...)`.
+
+---
+
+## Bug C — `/company/culture-*` retorna 500 vazando `str(e)` (raiz: ResponseValidationError)
+
+**Sintoma duplo:**
+1. **Information disclosure** (threat model): 500 com `detail=str(e)`
+   vazando paths, queries SQL e stack hints para o cliente.
+2. **Root cause real**: `fastapi.exceptions.ResponseValidationError` em
+   `GET /api/v1/company/culture-profile/{company_id}`, payload
+   `{'type': 'string_type', 'loc': ('response', 'default_languages', 0),
+   'input': {'code': 'pt-BR', 'label': 'Português (Brasil)'}}`.
+
+**Causa raiz.** O schema `CompanyCultureProfileBase.default_languages`
+tipa `list[str]`, mas o banco contém objetos `[{code, label, level,
+required}]` salvos pelo UI antigo (`app/data/ui_actions_data.json`
+seed e variantes). Pydantic v2 rejeita a serialização → 500. Os 19
+catches em `app/api/v1/company_culture.py` e `company_culture_config.py`
+encadeavam `detail=str(e)` e `logger.error(f'... {e}')`, então:
+- Cliente recebia o texto do `ResponseValidationError` (interno).
+- Backend log NÃO tinha traceback completo (`.error` em vez de `.exception`).
+
+**Fix em 2 camadas:**
+
+1. **HTTP layer (information disclosure)** — Script batch substituiu
+   nos 2 arquivos:
+   - `detail=str(e)` → `detail="internal error"` + `raise ... from e`
+   - `logger.error(f"... {e}")` → `logger.exception("...")`
+
+2. **Schema (root cause da 500)** — Adicionado em
+   `app/schemas/company_culture.py`:
+   - Helper `_normalize_list_of_strings(v)` que aceita lista mista
+     (`str | dict | None`) e devolve `list[str]`. Para dicts, extrai
+     `code` → `name` → `label` → `value`. Defesa em profundidade.
+   - `@field_validator(..., mode="before")` aplicado em `values`,
+     `evp_bullets`, `core_competencies`, `analyzed_pages`, `locations`,
+     `tech_stack`, `default_languages` na `CompanyCultureProfileBase`.
+
+**Sentinela.** `tests/integration/security/test_culture_no_internal_leak_t_1161.py`
+- `test_no_str_e_in_http_exception_detail[modpath]` — AST proíbe
+  `HTTPException(detail=str(e))` e `detail=f"... {e}"` nos dois módulos.
+- `test_catch_all_uses_logger_exception[modpath]` — AST exige
+  `logger.exception(` em todo `except Exception` que termina em 500.
+- `test_culture_profile_schema_normalizes_dict_items` — coverage real
+  do validator: payload com mix de `dict`/`str`/`None`/`""` produz
+  exatamente `list[str]`.
+
+---
+
+## Comandos CI / Validação local
+
+```bash
+# Sentinelas offline (rodam sem DB/Redis):
+cd lia-agent-system
+python3 -m pytest \
+  tests/integration/llm/test_anthropic_base_url_injection_t_1161.py \
+  tests/integration/agents/test_wizard_resume_traceback_t_1161.py \
+  tests/integration/security/test_culture_no_internal_leak_t_1161.py \
+  -v
+
+# E2E (precisa lia-backend + dev-server):
+cd plataforma-lia
+APP_ENV=development pnpm playwright test \
+  e2e/tests/wizard/03-vaga-executiva.spec.ts \
+  e2e/tests/wizard/08-hitl-correcao.spec.ts \
+  e2e/tests/wizard/09-edge-cases.spec.ts \
+  --project=desktop-chrome --reporter=list
+
+# Ou via workflows Replit:
+#   pw-cenario-B  → 03-vaga-executiva.spec.ts
+#   pw-cenario-C  → 08-hitl-correcao.spec.ts
+#   pw-cenario-D  → 09-edge-cases.spec.ts (com LIA_JD_ENRICHMENT_TIMEOUT_S=0.001)
+```
+
+## Rollback (emergency only)
+
+| Bug | Rollback | Risco |
+|-----|----------|-------|
+| A | Reverter `_inject_anthropic_env` p/ aninhamento original | Volta o 401 em dev/staging |
+| B | Reverter `logger.exception` p/ `logger.error` | Volta a opacidade do silent fallback |
+| C (HTTP) | Reverter `detail="internal error"` p/ `detail=str(e)` | Volta o leak de PII/internals |
+| C (schema) | Remover `field_validator` em `CompanyCultureProfileBase` | Volta o 500 no GET culture-profile |
+
+Não há flag de feature: os 3 fixes são corretos por construção e
+cobertos por sentinela. Rollback só justificável em incidente onde
+um dos fixes prove ter introduzido outra regressão.

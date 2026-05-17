@@ -863,6 +863,24 @@ class WizardSessionService:
             try:
                 result = await wiz_g.aresume_with_message(thread_id, user_message)
             except Exception as inv_exc:  # noqa: BLE001
+                # Task #1161 (Bug B): preserve full traceback before fallback.
+                # The original catch only logged `type(exc).__name__`, hiding
+                # the actual stack and root cause (e.g. `NotImplementedError`
+                # from a legacy stub deep in the graph). `logger.exception`
+                # writes the full traceback; `sentry_sdk.capture_exception`
+                # surfaces it in prod observability.
+                logger.exception(
+                    "[WizardSession] aresume_with_message raised %s "
+                    "(session=%s thread=%s company=%s) — triggering silent "
+                    "fallback. Stack trace above is the ROOT CAUSE; do not "
+                    "treat fallback message as the real error.",
+                    type(inv_exc).__name__, session_id, thread_id, company_id,
+                )
+                try:  # pragma: no cover — Sentry opcional em testes
+                    import sentry_sdk
+                    sentry_sdk.capture_exception(inv_exc)
+                except Exception:
+                    pass
                 _emit_silent_fallback(
                     stage=None,
                     company_id=company_id,

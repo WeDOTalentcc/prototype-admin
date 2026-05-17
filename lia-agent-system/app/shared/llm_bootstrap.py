@@ -109,31 +109,45 @@ def _patch_anthropic():
     _orig_init = anthropic.Anthropic.__init__
     _orig_async_init = anthropic.AsyncAnthropic.__init__
 
-    @functools.wraps(_orig_init)
-    def _patched_init(self, *args, **kwargs):
-        # Inject API key from env if not provided
-        if "api_key" not in kwargs and not args:
+    def _inject_anthropic_env(kwargs: dict) -> None:
+        """Task #1161 — Bug A fix: ALWAYS inject ``base_url`` when env var is
+        set, regardless of whether caller passed ``api_key`` explicitly.
+
+        Previously ``base_url`` was only injected when caller passed neither
+        ``api_key`` nor positional args. Callsites that constructed
+        ``ChatAnthropic(api_key=tenant_key)`` (LangChain wrapper) caused the
+        underlying SDK ``Anthropic(api_key=...)`` to be built with the api_key
+        already in kwargs, so the proxy ``base_url`` was silently skipped —
+        bypassing ``AI_INTEGRATIONS_ANTHROPIC_BASE_URL`` and hitting the
+        public Anthropic API directly (401 in dev/staging).
+
+        Now: ``api_key`` injection still gated on caller absence, but
+        ``base_url`` injection runs unconditionally whenever the env var is
+        configured. In prod the env var is unset → no-op. In dev/staging it
+        points at the local modelfarm proxy → every Anthropic client routes
+        through it.
+        """
+        if "api_key" not in kwargs:
             kwargs["api_key"] = (
                 os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY")
                 or os.environ.get("ANTHROPIC_API_KEY")
             )
-            base_url = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
-            if base_url and "base_url" not in kwargs:
-                kwargs["base_url"] = base_url
+        base_url = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
+        if base_url and "base_url" not in kwargs:
+            kwargs["base_url"] = base_url
+
+    @functools.wraps(_orig_init)
+    def _patched_init(self, *args, **kwargs):
+        if not args:
+            _inject_anthropic_env(kwargs)
         _orig_init(self, *args, **kwargs)
         # Patch messages.create and messages.stream on this instance
         _patch_messages_api(self, "anthropic")
 
     @functools.wraps(_orig_async_init)
     def _patched_async_init(self, *args, **kwargs):
-        if "api_key" not in kwargs and not args:
-            kwargs["api_key"] = (
-                os.environ.get("AI_INTEGRATIONS_ANTHROPIC_API_KEY")
-                or os.environ.get("ANTHROPIC_API_KEY")
-            )
-            base_url = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
-            if base_url and "base_url" not in kwargs:
-                kwargs["base_url"] = base_url
+        if not args:
+            _inject_anthropic_env(kwargs)
         _orig_async_init(self, *args, **kwargs)
         _patch_messages_api(self, "anthropic-async")
 

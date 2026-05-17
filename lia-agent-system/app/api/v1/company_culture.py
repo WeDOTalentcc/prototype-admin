@@ -245,8 +245,9 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error starting culture analysis: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Task #1161 (Bug C): full traceback + no internal leak.
+        logger.exception("Error starting culture analysis")
+        raise HTTPException(status_code=500, detail="internal error") from e
 
 
 @router.post("/analyze-direct", response_model=CultureAnalysisResult)
@@ -431,8 +432,9 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in direct culture analysis: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Task #1161 (Bug C): full traceback + no internal leak.
+        logger.exception("Error in direct culture analysis")
+        raise HTTPException(status_code=500, detail="internal error") from e
 
 
 @router.get("/status/{job_id}", response_model=CultureAnalysisJobStatus)
@@ -462,8 +464,9 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error fetching job status: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Task #1161 (Bug C): full traceback + no internal leak.
+        logger.exception("Error fetching job status")
+        raise HTTPException(status_code=500, detail="internal error") from e
 
 
 @router.get("/{company_id}", response_model=CompanyCultureProfileResponse)
@@ -496,8 +499,9 @@ _company_gate: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error fetching culture profile: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Task #1161 (Bug C): full traceback + no internal leak.
+        logger.exception("Error fetching culture profile")
+        raise HTTPException(status_code=500, detail="internal error") from e
 
 
 @router.put("/{company_id}", response_model=CompanyCultureProfileResponse)
@@ -531,8 +535,9 @@ _company_gate: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error updating culture profile: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Task #1161 (Bug C): full traceback + no internal leak.
+        logger.exception("Error updating culture profile")
+        raise HTTPException(status_code=500, detail="internal error") from e
 
 
 @router.delete("/{company_id}", response_model=None)
@@ -562,8 +567,9 @@ _company_gate: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error deleting culture profile: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Task #1161 (Bug C): full traceback + no internal leak.
+        logger.exception("Error deleting culture profile")
+        raise HTTPException(status_code=500, detail="internal error") from e
 
 
 @router.get("/", response_model=list[CompanyCultureProfileResponse])
@@ -589,8 +595,9 @@ company_id: str = Depends(require_company_id)):
         return profiles
 
     except Exception as e:
-        logger.error(f"Error listing culture profiles: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Task #1161 (Bug C): full traceback + no internal leak.
+        logger.exception("Error listing culture profiles")
+        raise HTTPException(status_code=500, detail="internal error") from e
 
 
 @router.post("/{company_id}/match", response_model=None)
@@ -643,8 +650,9 @@ _company_gate: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error calculating culture match: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Task #1161 (Bug C): full traceback + no internal leak.
+        logger.exception("Error calculating culture match")
+        raise HTTPException(status_code=500, detail="internal error") from e
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -782,8 +790,9 @@ company_id: str = Depends(require_company_id)):
             errors=errors,
         )
     except Exception as e:
-        logger.error(f"Error enriching company profile: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Task #1161 (Bug C): full traceback + no internal leak.
+        logger.exception("Error enriching company profile")
+        raise HTTPException(status_code=500, detail="internal error") from e
 
 
 @legacy_router.post("/auto-enrich/{profile_id}", response_model=AutoEnrichResponse)
@@ -978,8 +987,9 @@ REGRAS:
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error in auto-enrich: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Task #1161 (Bug C): full traceback + no internal leak.
+        logger.exception("Error in auto-enrich")
+        raise HTTPException(status_code=500, detail="internal error") from e
 
 
 @legacy_router.post("/profile/{profile_id}/generate-evp", response_model=EVPAnalysisResponse)
@@ -1094,8 +1104,9 @@ REGRAS:
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error generating EVP: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Task #1161 (Bug C): full traceback + no internal leak.
+        logger.exception("Error generating EVP")
+        raise HTTPException(status_code=500, detail="internal error") from e
 
 
 @legacy_router.post("/analyze-culture", response_model=LegacyCultureAnalysisResponse)
@@ -1246,5 +1257,6 @@ Responda APENAS em formato JSON válido com a seguinte estrutura:
         )
 
     except Exception as e:
-        logger.error(f"Error analyzing company culture: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Task #1161 (Bug C): full traceback + no internal leak.
+        logger.exception("Error analyzing company culture")
+        raise HTTPException(status_code=500, detail="internal error") from e

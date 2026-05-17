@@ -4,7 +4,39 @@ Pydantic schemas for Company Culture Profile endpoints.
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
+
+
+def _normalize_list_of_strings(v):
+    """Task #1161 (Bug C raiz): aceita lista mista (str | dict) vinda de seeds/UI
+    legados — ex.: default_languages com [{code,label,level,required}] — e
+    devolve sempre list[str]. Defesa em profundidade: protege a serialização
+    Pydantic contra ResponseValidationError 500 quando o JSON salvo no banco
+    drifta do contrato. Mantém ordem; ignora None/strings vazias depois do strip."""
+    if v is None:
+        return []
+    if not isinstance(v, list):
+        return v  # deixa Pydantic levantar o erro original (não é uma lista)
+    out: list[str] = []
+    for item in v:
+        if item is None:
+            continue
+        if isinstance(item, str):
+            s = item.strip()
+            if s:
+                out.append(s)
+            continue
+        if isinstance(item, dict):
+            # Preferência: code → name → label → value → str(item)
+            for key in ("code", "name", "label", "value"):
+                candidate = item.get(key)
+                if isinstance(candidate, str) and candidate.strip():
+                    out.append(candidate.strip())
+                    break
+            continue
+        # Outros tipos primitivos: coerce para str
+        out.append(str(item))
+    return out
 
 
 class CompanyCultureProfileBase(BaseModel):
@@ -42,6 +74,23 @@ class CompanyCultureProfileBase(BaseModel):
     tech_stack: list[str] = []
     engineering_culture: str | None = None
     default_languages: list[str] = []
+
+    # Task #1161 (Bug C raiz): defesa em profundidade contra ResponseValidationError 500
+    # quando o JSON salvo no banco drifta do contrato list[str] (ex.: default_languages
+    # gravado como [{code,label,level,required}] pelo UI antigo).
+    @field_validator(
+        "values",
+        "evp_bullets",
+        "core_competencies",
+        "analyzed_pages",
+        "locations",
+        "tech_stack",
+        "default_languages",
+        mode="before",
+    )
+    @classmethod
+    def _coerce_list_of_strings(cls, v):
+        return _normalize_list_of_strings(v)
 
 
 class CompanyCultureProfileCreate(CompanyCultureProfileBase):

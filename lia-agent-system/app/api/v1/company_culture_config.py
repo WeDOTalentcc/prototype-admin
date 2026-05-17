@@ -48,8 +48,10 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             values = [v for v in values if v.is_active]
         return values
     except Exception as e:
-        logger.error(f"Error listing culture values: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Task #1161 (Bug C): preserve full traceback (was hidden by f-string
+        # of `str(e)`) and do not leak internal error message to the client.
+        logger.exception("Error listing culture values")
+        raise HTTPException(status_code=500, detail="internal error") from e
 
 
 @router.post("/culture-values", response_model=CultureValueResponse)
@@ -66,8 +68,9 @@ _company_gate: str = Depends(require_company_id)):
         logger.info(f"Created culture value: {cv.name}")
         return cv
     except Exception as e:
-        logger.error(f"Error creating culture value: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Task #1161 (Bug C): full traceback + no internal leak.
+        logger.exception("Error creating culture value")
+        raise HTTPException(status_code=500, detail="internal error") from e
 
 
 @router.put("/culture-values/{value_id}", response_model=CultureValueResponse)
@@ -88,8 +91,9 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error updating culture value: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Task #1161 (Bug C): full traceback + no internal leak.
+        logger.exception("Error updating culture value")
+        raise HTTPException(status_code=500, detail="internal error") from e
 
 
 @router.delete("/culture-values/{value_id}", response_model=None)
@@ -107,8 +111,9 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error deleting culture value: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Task #1161 (Bug C): full traceback + no internal leak.
+        logger.exception("Error deleting culture value")
+        raise HTTPException(status_code=500, detail="internal error") from e
 
 
 @router.get("/ideal-profiles", response_model=list[IdealProfileResponse])
@@ -136,8 +141,9 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             profiles = [p for p in profiles if p.is_active]
         return profiles
     except Exception as e:
-        logger.error(f"Error listing ideal profiles: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Task #1161 (Bug C): full traceback + no internal leak.
+        logger.exception("Error listing ideal profiles")
+        raise HTTPException(status_code=500, detail="internal error") from e
 
 
 @router.post("/ideal-profiles", response_model=IdealProfileResponse)
@@ -154,8 +160,9 @@ _company_gate: str = Depends(require_company_id)):
         logger.info(f"Created ideal profile: {profile.name}")
         return profile
     except Exception as e:
-        logger.error(f"Error creating ideal profile: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Task #1161 (Bug C): full traceback + no internal leak.
+        logger.exception("Error creating ideal profile")
+        raise HTTPException(status_code=500, detail="internal error") from e
 
 
 @router.put("/ideal-profiles/{profile_id}", response_model=IdealProfileResponse)
@@ -179,8 +186,9 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error updating ideal profile: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Task #1161 (Bug C): full traceback + no internal leak.
+        logger.exception("Error updating ideal profile")
+        raise HTTPException(status_code=500, detail="internal error") from e
 
 
 @router.delete("/ideal-profiles/{profile_id}", response_model=None)
@@ -198,5 +206,6 @@ company_id: str = Depends(require_company_id)):
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error deleting ideal profile: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        # Task #1161 (Bug C): full traceback + no internal leak.
+        logger.exception("Error deleting ideal profile")
+        raise HTTPException(status_code=500, detail="internal error") from e
