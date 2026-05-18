@@ -2,8 +2,9 @@
 
 import { useState, Suspense, useEffect, useRef } from "react"
 import React from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, usePathname } from "next/navigation"
 import { useLocale } from "next-intl"
+import { useLiaChatContext } from "@/contexts/lia-float-context"
 import { useKeyboardShortcuts } from "@/hooks/shared/use-keyboard-shortcuts"
 
 import { Sidebar } from "@/components/sidebar"
@@ -50,6 +51,35 @@ const LEGACY_LABEL_MAP: Record<string, DashboardPageLabel> = {
   "Visão do Funil": "Recrutar",
 }
 
+/**
+ * Task #1165 — PT-BR free-form yes/no classifier for navigation proposals.
+ *
+ * Returns `"yes"` / `"no"` / `"ambiguous"`. The recruiter reply lives in a
+ * regular chat turn, so we keep this purely client-side (no LLM round-trip)
+ * — the supervisor classifier is reserved for wizard intent classification
+ * (create_new / resume_draft / exit_wizard / ...). The patterns below
+ * mirror the colloquial confirmations enumerated in `replit.md > User
+ * Preferences > "A LIA deve entender variações naturais de confirmação"`.
+ *
+ * Exported for unit tests; callers should not depend on the boolean
+ * encoding directly.
+ */
+export function classifyNavConfirmation(raw: string): "yes" | "no" | "ambiguous" {
+  if (!raw) return "ambiguous"
+  const t = raw.trim().toLowerCase()
+  if (!t) return "ambiguous"
+  // Negatives are matched FIRST so "agora não", "pode esperar", "deixa pra
+  // lá" don't get swept up by the positive token "pode".
+  if (/\b(n[aã]o|nao|nope|agora\s+n[aã]o|depois|mais\s+tarde|deixa(?:\s+pra\s+l[aá])?|cancela|esquece|pode\s+esperar)\b/.test(t)) {
+    return "no"
+  }
+  if (/^(sim|s|yes|y|ok|okay)\b/.test(t)) return "yes"
+  if (/\b(vamos|bora|claro|com\s+certeza|pode|pode\s+ir|me\s+leva|leva|manda|fechou|certo|positivo|isso|isso\s+a[ií])\b/.test(t)) {
+    return "yes"
+  }
+  return "ambiguous"
+}
+
 function normalizePageLabel(raw: string): CurrentPage {
   if (raw.startsWith("upgrade-")) return raw as `upgrade-${string}`
   const mapped = LEGACY_LABEL_MAP[raw] ?? raw
@@ -81,9 +111,25 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
   const [agentStudioRefreshKey, setAgentStudioRefreshKey] = useState(0)
   const { isAuthenticated, user, logout } = useAuth()
   const router = useRouter()
+  const pathname = usePathname()
   const { recentItems, addRecentItem, removeRecentItem, clearAll: clearRecentItems } = useRecentItems()
   const { open: openFloat, splitView, setContextPage } = useLiaFloat()
+  const { chatMessages, setChatMessages } = useLiaChatContext()
   const locale = useLocale()
+
+  // Task #1165 — pending navigation proposal. Set when a `lia:navigation-hint`
+  // arrives with `mode === "ask"` and the user is NOT already on the target
+  // route. We post a LIA message asking for confirmation; the next user
+  // message in chat is parsed as a free-form PT-BR yes/no (the supervisor
+  // classifier is intentionally bypassed for this trivial UX confirm so we
+  // don't pay an LLM call per chat turn). On `yes` we `router.push`; on
+  // `no` we acknowledge and forget.
+  const [pendingNavProposal, setPendingNavProposal] = useState<{
+    page: string
+    proposalMessageId: string
+    /** id of the last user message present when the proposal was posted */
+    seenLastUserMsgId: string | null
+  } | null>(null)
 
   useEffect(() => {
     setContextPage(currentPage)
@@ -144,19 +190,97 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
     return () => window.removeEventListener("lia:leave-fullscreen-chat", handler)
   }, [currentPage])
 
-  // Handle navigation hints from UnifiedChat (auto-navigate when LIA detects intent)
+  // Handle navigation hints from UnifiedChat / proactive router / wizard.
+  //
+  // Task #1165 — two modes:
+  //   - `mode === "ask"`: the LIA proposes the transition in chat and waits
+  //     for the recruiter's free-form PT-BR confirmation. We never push the
+  //     router until the user agrees. If the user is already on the target
+  //     route, the proposal is suppressed entirely (silent no-op).
+  //   - default ("navigate"): legacy behaviour, kept for callers like
+  //     `useProactiveActionRouter`, `TourController`, `DonePanel`,
+  //     `BibliotecaLiaRouteClient` and `NavigationHintCard` that issued the
+  //     event directly without the `ask` semantic.
   useEffect(() => {
     const handler = (e: Event) => {
-      const { page } = (e as CustomEvent<{ page: string; hint: string }>).detail
-      if (page) {
-        setCurrentPage(normalizePageLabel(page))
-        // Open sidebar if not already open
+      const detail = (e as CustomEvent<{ page: string; hint?: string; mode?: "ask" | "navigate" }>).detail
+      const { page, hint, mode } = detail || ({} as { page?: string })
+      if (!page) return
+
+      if (mode === "ask") {
+        const targetPath = pathFromLabel(normalizePageLabel(page))
+        if (targetPath && pathname?.endsWith(targetPath)) {
+          // Already on the target route — silently drop the proposal.
+          return
+        }
+        const proposalText =
+          page === "Vagas"
+            ? `Posso te levar para o ambiente de vagas para continuar por lá? (responda "sim" ou "agora não")`
+            : `Posso te levar para ${page}? (responda "sim" ou "agora não")`
+        const proposalId = `lia-${Date.now()}-nav-proposal`
+        const lastUser = [...chatMessages].reverse().find((m) => m.sender === "user")
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            id: proposalId,
+            sender: "lia" as const,
+            content: proposalText,
+            timestamp: new Date().toISOString(),
+          },
+        ])
+        setPendingNavProposal({
+          page,
+          proposalMessageId: proposalId,
+          seenLastUserMsgId: lastUser?.id ?? null,
+        })
         openFloat()
+        return
       }
+
+      // Legacy mode — direct navigation as before.
+      setCurrentPage(normalizePageLabel(page))
+      openFloat()
+      void hint
     }
     window.addEventListener("lia:navigation-hint", handler)
     return () => window.removeEventListener("lia:navigation-hint", handler)
-  }, [openFloat])
+  }, [openFloat, pathname, chatMessages, setChatMessages])
+
+  // Task #1165 — observe the chat for the recruiter's reply to a pending
+  // navigation proposal. The first user message posted AFTER the proposal
+  // is parsed for a positive ("sim", "vamos", "pode", "bora", "claro",
+  // "ok") or negative ("não", "agora não", "depois", "deixa pra lá")
+  // confirmation. On positive we push the router and open the float; on
+  // negative we just acknowledge. Anything else (e.g. the user keeps
+  // talking about the JD) is ignored — the proposal expires silently on
+  // the next hint.
+  useEffect(() => {
+    if (!pendingNavProposal) return
+    const lastUser = [...chatMessages].reverse().find((m) => m.sender === "user")
+    if (!lastUser) return
+    if (lastUser.id === pendingNavProposal.seenLastUserMsgId) return
+    const verdict = classifyNavConfirmation(lastUser.content)
+    if (verdict === "yes") {
+      const route = pathFromLabel(normalizePageLabel(pendingNavProposal.page))
+      if (route) {
+        router.push(`/${locale}${route}`)
+      }
+      setCurrentPage(normalizePageLabel(pendingNavProposal.page))
+      setPendingNavProposal(null)
+    } else if (verdict === "no") {
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          id: `lia-${Date.now()}-nav-ack`,
+          sender: "lia" as const,
+          content: "Combinado — seguimos por aqui.",
+          timestamp: new Date().toISOString(),
+        },
+      ])
+      setPendingNavProposal(null)
+    }
+    // Ambiguous reply: leave proposal pending until next user message.
+  }, [chatMessages, pendingNavProposal, router, locale, setChatMessages])
 
   const handleNavigate = (page: string) => {
     if (page === "Sair") {

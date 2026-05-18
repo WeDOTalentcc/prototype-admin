@@ -1,11 +1,12 @@
 "use client"
 
-import { useCallback, useReducer, useEffect } from "react"
+import { useCallback, useReducer, useEffect, useRef } from "react"
 import type {
   WizardStage,
   WizardStagePayload,
   ScreeningMode,
 } from "./wizard-types"
+import { SPLIT_STAGES } from "./DynamicContextPanel"
 
 /**
  * useWizardFlow — manages wizard state from wizard_stage WS messages.
@@ -285,6 +286,38 @@ export function useWizardFlow(_options: UseWizardFlowOptions = {}) {
   const reset = useCallback(() => {
     dispatch({ type: "RESET" })
   }, [])
+
+  // Task #1165 — quando o stage transitar para uma SPLIT_STAGE (review →
+  // publish → calibration → handoff → done / scheduling) o wizard passa a
+  // ter UI dedicada (split view 340/420px). Emitimos um
+  // `lia:navigation-hint` com `mode: "ask"` para que o `DashboardApp`
+  // proponha mover o recrutador para `/vagas`. O recrutador confirma no
+  // chat (PT-BR livre). Se já estiver em `/vagas`, o handler suprime.
+  // Disparamos apenas na transição (não a cada update do mesmo stage).
+  const lastEmittedStageRef = useRef<WizardStage | null>(null)
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const stage = state.currentStage
+    if (!stage) {
+      lastEmittedStageRef.current = null
+      return
+    }
+    if (!SPLIT_STAGES.includes(stage)) {
+      lastEmittedStageRef.current = stage
+      return
+    }
+    if (lastEmittedStageRef.current === stage) return
+    lastEmittedStageRef.current = stage
+    window.dispatchEvent(
+      new CustomEvent("lia:navigation-hint", {
+        detail: {
+          page: "Vagas",
+          hint: `wizard:${stage}`,
+          mode: "ask" as const,
+        },
+      }),
+    )
+  }, [state.currentStage])
 
   /**
    * Check if a WS message is a wizard_stage payload.

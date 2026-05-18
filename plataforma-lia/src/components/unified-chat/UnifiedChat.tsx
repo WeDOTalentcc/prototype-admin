@@ -443,9 +443,19 @@ export function UnifiedChat({
       // atingiam no máximo ~0.70 mesmo após fix do dampening no backend.
       // 0.65 captura imperativos de navegação sem falso-positivar perguntas genéricas.
       if (result?.page && result.confidence >= 0.65) {
+        // Task #1165 — forward the context-aware `mode` resolved inside
+        // `useNavigationIntent`. When the hook decided we are already on
+        // `/chat` and the suggestion is "Vagas", it zeros `page` out (so
+        // we never reach this branch) and the user stays put. Otherwise
+        // `mode === "ask"` and `DashboardApp` will propose the
+        // transition via chat instead of pushing the router silently.
         window.dispatchEvent(
           new CustomEvent("lia:navigation-hint", {
-            detail: { page: result.page, hint: result.hint },
+            detail: {
+              page: result.page,
+              hint: result.hint,
+              mode: result.mode,
+            },
           }),
         );
       }
