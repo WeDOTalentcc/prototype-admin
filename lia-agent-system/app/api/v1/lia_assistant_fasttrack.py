@@ -233,6 +233,10 @@ company_id: str = Depends(require_company_id)) -> FastTrackWizardResponse:
                             employment_type=vacancy_details.employment_type,
                             seniority_level=vacancy_details.seniority_level,
                             description=vacancy_details.description,
+                            # T-1166 — propagate responsibilities defensively
+                            # (fast-track clones an existing vacancy; legacy
+                            # source rows may have it null/missing).
+                            responsibilities=list(getattr(vacancy_details, "responsibilities", None) or []),
                             salary_range=vacancy_details.salary_range,
                             benefits=vacancy_details.benefits or [],
                             technical_requirements=vacancy_details.technical_requirements or [],

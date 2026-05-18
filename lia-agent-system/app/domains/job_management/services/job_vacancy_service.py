@@ -507,7 +507,14 @@ class JobVacancyService:
             
             # Description
             description=state.description,
-            
+
+            # T-1166 — responsibilities (job duties) persisted separately from
+            # requirements. IntakeExtractor emits `responsibilities` in the
+            # JobIntakePayload; the wizard state forwards it via `responsibilities`
+            # (falls back to the legacy attribute or empty list defensively, since
+            # not every state mutation path populates it yet).
+            responsibilities=list(getattr(state, "responsibilities", None) or []),
+
             # Technical requirements
             technical_requirements=[req.model_dump() for req in state.technical_requirements],
             languages=[lang.model_dump() for lang in state.languages],
@@ -696,7 +703,16 @@ class JobVacancyService:
             seniority_level=draft.get("seniority") or draft.get("seniority_level"),
             
             description=draft.get("description") or draft.get("job_description"),
-            
+
+            # T-1166 — accept responsibilities from wizard draft when present.
+            # JobDraft model currently lacks a dedicated column, so the wizard
+            # passes it via the draft dict (e.g. from IntakeExtractor payload).
+            responsibilities=list(
+                draft.get("responsibilities")
+                or draft.get("job_responsibilities")
+                or []
+            ),
+
             technical_requirements=technical_requirements,
             behavioral_competencies=behavioral_competencies,
             

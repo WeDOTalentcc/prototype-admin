@@ -375,8 +375,13 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
       .filter((s): s is string => Boolean(s))
     const behavComps = (job.behavioralCompetencies || []) as Record<string, unknown>[]
     const behavComp = (behavComps.map((c) => c.competency || c.name || c).filter(Boolean) as string[])
-    const reqs = (job.requirements || []) as Array<string | Record<string, unknown>>
-    const responsibilities = (reqs.map((r) => typeof r === 'string' ? r : (r as Record<string, unknown>).requirement || (r as Record<string, unknown>).text || (r as Record<string, unknown>).name || r).filter(Boolean) as string[])
+    // T-1166 — read job duties from the canonical `responsibilities` field
+    // (persisted in `job_vacancies.responsibilities` via migration 132).
+    // Falling back to `requirements` would re-introduce the contamination bug
+    // where technical skills appeared as "RESPONSABILIDADES" bullets (vaga 200).
+    // Legacy vagas with null `responsibilities` correctly produce an empty list.
+    const respSource = ((job as Record<string, unknown>).responsibilities || []) as Array<string | Record<string, unknown>>
+    const responsibilities = (respSource.map((r) => typeof r === 'string' ? r : (r as Record<string, unknown>).requirement || (r as Record<string, unknown>).text || (r as Record<string, unknown>).name || r).filter(Boolean) as string[])
     setWsiGenerationContext({
       title: (job.title as string) || '',
       seniority: getJobSeniority(job as { seniority?: string | null; level?: string | null }) ?? null,

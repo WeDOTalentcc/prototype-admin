@@ -213,6 +213,11 @@ class JobVacancyCreate(BaseModel):
     employment_type: str | None = None
     seniority_level: str | None = None
     description: str | None = None
+    # T-1166 — responsibilities (job duties) MUST be persisted separately from
+    # requirements. Frontend reads `job.responsibilities` (see
+    # SCMSectionContent.tsx) under the "RESPONSABILIDADES" label. Collapsing
+    # both into `requirements` is the bug fixed by migration 132.
+    responsibilities: list[str] | None = []
     requirements: list[str] | None = []
     technical_requirements: list[dict] | None = []
     languages: list[dict] | None = []
@@ -258,6 +263,8 @@ class JobVacancyUpdate(BaseModel):
     employment_type: str | None = None
     seniority_level: str | None = None
     description: str | None = None
+    # T-1166 — see JobVacancyCreate.
+    responsibilities: list[str] | None = None
     requirements: list[str] | None = None
     technical_requirements: list[dict] | None = None
     languages: list[dict] | None = None
@@ -305,6 +312,8 @@ class JobVacancyResponse(BaseModel):
     employment_type: str | None = None
     seniority_level: str | None = None
     description: str | None = None
+    # T-1166 — see JobVacancyCreate.
+    responsibilities: list[str] | None = []
     requirements: list[str] | None = []
     technical_requirements: list[dict] | None = []
     languages: list[dict] | None = []

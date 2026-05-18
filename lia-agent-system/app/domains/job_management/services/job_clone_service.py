@@ -37,7 +37,11 @@ class JobCloneService:
     
     FIELDS_TO_CLONE = [
         'company_id', 'department', 'location', 'work_model', 'employment_type',
-        'seniority_level', 'description', 'requirements', 'technical_requirements',
+        # T-1166 — `responsibilities` MUST be cloned alongside `requirements`
+        # and `technical_requirements`. Omitting it would silently empty the
+        # new vacancy's RESPONSABILIDADES panel.
+        'seniority_level', 'description', 'responsibilities', 'requirements',
+        'technical_requirements',
         'languages', 'behavioral_competencies', 'salary', 'salary_range', 'benefits',
         'priority', 'urgency_level', 'manager', 'manager_email', 'recruiter',
         'recruiter_email', 'organizational_structure', 'interview_stages',

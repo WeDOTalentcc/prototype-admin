@@ -36,6 +36,14 @@ class JobVacancy(Base):
     # Description & Requirements
     description = Column(Text, nullable=True)
     requirements = Column(ARRAY(String), default=list)  # Basic requirements (legacy)
+
+    # T-1166 — Responsibilities (job duties), separated from requirements.
+    # `imported_job_descriptions.responsibilities` and IntakeExtractor's
+    # `JobIntakePayload.responsibilities` already separate this from
+    # `technical_skills`/`requirements`; this column closes the schema gap
+    # so persist callsites stop collapsing both lists into `requirements`.
+    # Backfill via scripts/backfill_job_vacancy_responsibilities.py.
+    responsibilities = Column(ARRAY(String), default=list)
     
     # NEW: Structured Technical Requirements (from documents)
     technical_requirements = Column(JSON, default=list)  # [{"category": "Linguagens", "technology": "Python", "level": "Avançado", "required": true}]

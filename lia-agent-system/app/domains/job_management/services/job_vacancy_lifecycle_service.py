@@ -142,6 +142,9 @@ class JobVacancyLifecycleService:
                 location=location,
                 work_model=work_model,
                 description=description,
+                # T-1166 — lifecycle.create is a thin wrapper around the model;
+                # ensure the new ARRAY column is initialized to [].
+                responsibilities=[],
                 status=status,
                 created_at=datetime.utcnow(),
             )

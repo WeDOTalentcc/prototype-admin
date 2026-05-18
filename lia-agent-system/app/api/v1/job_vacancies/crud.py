@@ -460,6 +460,8 @@ company_id: str = Depends(require_company_id)):
             "status": job_vacancy.status,
             "is_confidential": job_vacancy.is_confidential,
             "salary_range": job_vacancy.salary_range,
+            "responsibilities": job_vacancy.responsibilities or [],  # T-1166
+            "requirements": job_vacancy.requirements or [],
             "technical_requirements": job_vacancy.technical_requirements,
             "languages": job_vacancy.languages,
             "behavioral_competencies": job_vacancy.behavioral_competencies,
@@ -600,6 +602,7 @@ company_id: str = Depends(require_company_id)):
                     "employment_type": jv.employment_type,
                     "seniority_level": jv.seniority_level,
                     "description": jv.description,
+                    "responsibilities": jv.responsibilities or [],  # T-1166
                     "requirements": jv.requirements or [],
                     "technical_requirements": jv.technical_requirements or [],
                     "languages": jv.languages or [],
@@ -688,6 +691,7 @@ company_id: str = Depends(require_company_id)):
             employment_type=job_data.employment_type,
             seniority_level=job_data.seniority_level,
             description=job_data.description,
+            responsibilities=job_data.responsibilities or [],  # T-1166
             requirements=job_data.requirements or [],
             technical_requirements=job_data.technical_requirements or [],
             languages=job_data.languages or [],
@@ -729,6 +733,7 @@ company_id: str = Depends(require_company_id)):
             employment_type=job_vacancy.employment_type,
             seniority_level=job_vacancy.seniority_level,
             description=job_vacancy.description,
+            responsibilities=job_vacancy.responsibilities or [],  # T-1166
             requirements=job_vacancy.requirements or [],
             technical_requirements=job_vacancy.technical_requirements or [],
             languages=job_vacancy.languages or [],
@@ -816,6 +821,7 @@ company_id: str = Depends(require_company_id)):
             employment_type=job_vacancy.employment_type,
             seniority_level=job_vacancy.seniority_level,
             description=job_vacancy.description,
+            responsibilities=job_vacancy.responsibilities or [],  # T-1166
             requirements=job_vacancy.requirements or [],
             technical_requirements=job_vacancy.technical_requirements or [],
             languages=job_vacancy.languages or [],

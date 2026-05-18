@@ -93,6 +93,10 @@ async def create_job(
                 work_model=work_model,
                 location=location,
                 description=description,
+                # T-1166 — `job_tools.create_job` only exposes `requirements`
+                # as input today; emit an explicit empty list so the column is
+                # never NULL. New callers should add a `responsibilities` kwarg.
+                responsibilities=[],
                 requirements=requirements or [],
                 salary_range=salary_range,
                 status=status,

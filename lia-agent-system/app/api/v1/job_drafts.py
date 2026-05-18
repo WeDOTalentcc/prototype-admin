@@ -508,6 +508,11 @@ company_id: str = Depends(require_company_id)):
         employment_type=draft.employment_type,
         seniority_level=draft.seniority,
         description=draft.generated_jd or draft.raw_input,
+        # T-1166 — responsibilities flows through when the wizard stored it on
+        # the draft (column may not exist yet on JobDraft for legacy drafts —
+        # getattr falls back to []). Empty list is the safe default; previous
+        # behaviour silently lost responsibilities by never populating the col.
+        responsibilities=list(getattr(draft, "responsibilities", None) or []),
         requirements=draft.skills or [],
         technical_requirements=[],
         languages=[{"language": lang, "level": "fluent"} for lang in (draft.languages or [])],

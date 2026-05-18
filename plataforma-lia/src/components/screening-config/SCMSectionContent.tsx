@@ -20,6 +20,9 @@ type SCMSectionContentProps = ReturnType<typeof useScreeningConfigManagerCore>
 
 interface JobFields {
   title: string
+  // T-1166 — canonical field for job duties, separated from `requirements`.
+  // Backend now persists it in `job_vacancies.responsibilities` (migration 132).
+  responsibilities: string[]
   requirements: string[]
   technicalRequirements: Array<Record<string, unknown>>
   behavioralCompetencies: Array<Record<string, unknown>>
@@ -65,7 +68,12 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
             <JDEvaluationPanel
               className="!mx-0 !mt-0"
               jobTitle={job.title as string}
-              responsibilities={(job.requirements as string[]) || []}
+              // T-1166 — read `responsibilities` directly from the persisted
+              // field. Legacy vagas (pre-migration 132) may have it null; in
+              // that case explicit `[]` is the correct default. The previous
+              // fallback `(job.requirements) || []` collapsed tech skills into
+              // the "RESPONSABILIDADES" bullet list (vaga 200 bug).
+              responsibilities={(job.responsibilities as string[]) || []}
               technicalSkills={
                 ((job.technicalRequirements || []) as unknown[])
                   .map((r) => normalizeTechnicalRequirement(r))
@@ -93,14 +101,18 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
               onUpdateOfficialJD={async (updates) => {
                 if (!job) return
                 const jobId = job.backendId || job.jobId || String(job.id)
-                await fetch(`/api/backend-proxy/job-vacancies/${jobId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ description: updates.description, requirements: updates.requirements, technical_requirements: updates.technicalSkills?.map((s: string) => ({ category: 'Técnica', technology: s, level: 'Intermediário', required: true })), behavioral_competencies: updates.behavioralCompetencies?.map((c: string) => ({ competency: c, weight: 'Importante' })) }) })
-                onJobUpdate?.({ ...job, description: updates.description || job.description, requirements: updates.requirements || job.requirements, technicalRequirements: updates.technicalSkills?.map((s: string) => ({ category: 'Técnica', technology: s, level: 'Intermediário', required: true })) || job.technicalRequirements, behavioralCompetencies: updates.behavioralCompetencies?.map((c: string) => ({ competency: c, weight: 'Importante' })) || job.behavioralCompetencies })
+                // T-1166 — JDArrayEditor edits `responsibilities` as the
+                // duties list. We MUST send it to the dedicated backend column
+                // (migration 132) instead of overloading `requirements`.
+                await fetch(`/api/backend-proxy/job-vacancies/${jobId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ description: updates.description, responsibilities: updates.responsibilities, requirements: updates.requirements, technical_requirements: updates.technicalSkills?.map((s: string) => ({ category: 'Técnica', technology: s, level: 'Intermediário', required: true })), behavioral_competencies: updates.behavioralCompetencies?.map((c: string) => ({ competency: c, weight: 'Importante' })) }) })
+                onJobUpdate?.({ ...job, description: updates.description || job.description, responsibilities: updates.responsibilities || job.responsibilities, requirements: updates.requirements || job.requirements, technicalRequirements: updates.technicalSkills?.map((s: string) => ({ category: 'Técnica', technology: s, level: 'Intermediário', required: true })) || job.technicalRequirements, behavioralCompetencies: updates.behavioralCompetencies?.map((c: string) => ({ competency: c, weight: 'Importante' })) || job.behavioralCompetencies })
               }}
               onSaveJDInline={async (updates) => {
                 if (!job) return
                 const jobId = job.backendId || job.jobId || String(job.id)
-                await fetch(`/api/backend-proxy/job-vacancies/${jobId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ description: updates.description, requirements: updates.requirements, technical_requirements: updates.technicalSkills?.map((s: string) => ({ category: 'Técnica', technology: s, level: 'Intermediário', required: true })), behavioral_competencies: updates.behavioralCompetencies?.map((c: string) => ({ competency: c, weight: 'Importante' })) }) })
-                onJobUpdate?.({ ...job, description: updates.description || job.description, requirements: updates.requirements || job.requirements, technicalRequirements: updates.technicalSkills?.map((s: string) => ({ category: 'Técnica', technology: s, level: 'Intermediário', required: true })) || job.technicalRequirements, behavioralCompetencies: updates.behavioralCompetencies?.map((c: string) => ({ competency: c, weight: 'Importante' })) || job.behavioralCompetencies })
+                // T-1166 — same as onUpdateOfficialJD: persist responsibilities separately.
+                await fetch(`/api/backend-proxy/job-vacancies/${jobId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ description: updates.description, responsibilities: updates.responsibilities, requirements: updates.requirements, technical_requirements: updates.technicalSkills?.map((s: string) => ({ category: 'Técnica', technology: s, level: 'Intermediário', required: true })), behavioral_competencies: updates.behavioralCompetencies?.map((c: string) => ({ competency: c, weight: 'Importante' })) }) })
+                onJobUpdate?.({ ...job, description: updates.description || job.description, responsibilities: updates.responsibilities || job.responsibilities, requirements: updates.requirements || job.requirements, technicalRequirements: updates.technicalSkills?.map((s: string) => ({ category: 'Técnica', technology: s, level: 'Intermediário', required: true })) || job.technicalRequirements, behavioralCompetencies: updates.behavioralCompetencies?.map((c: string) => ({ competency: c, weight: 'Importante' })) || job.behavioralCompetencies })
               }}
               isGenerating={props.isGeneratingWSI}
               companyId={(job as Record<string, unknown>).companyId as string || ''}

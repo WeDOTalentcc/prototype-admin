@@ -360,6 +360,15 @@ class JDImportService:
         # We set BOTH for defense-in-depth.
         source_system_slug = self._map_source_to_system_slug(import_source)
 
+        # T-1166 — separate responsibilities from requirements at mirror time.
+        # `imported_job_descriptions` already keeps them in distinct columns
+        # (`responsibilities` ARRAY vs `requirements_mandatory` ARRAY); the old
+        # mirror dropped both on the floor, which (combined with the missing
+        # `job_vacancies.responsibilities` column, now fixed in migration 132)
+        # is why the JD edit panel showed tech skills under "RESPONSABILIDADES".
+        responsibilities_list = list(imported_jd.responsibilities or [])
+        requirements_list = list(imported_jd.requirements_mandatory or [])
+
         vacancy = JobVacancy(
             company_id=str(company_id),
             title=imported_jd.job_title_original or "Vaga importada",
@@ -369,6 +378,8 @@ class JDImportService:
             employment_type=imported_jd.employment_type,
             seniority_level=imported_jd.seniority,
             description=imported_jd.description_raw,
+            responsibilities=responsibilities_list,
+            requirements=requirements_list,
             salary_range=salary_range,
             benefits=imported_jd.benefits or [],
             manager=imported_jd.hiring_manager,
