@@ -1,6 +1,0 @@
-{
-  "returns_agent_output": true,
-  "message_non_empty": true,
-  "no_exception": true,
-  "company_id_preserved": true
-}

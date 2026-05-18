@@ -1,8 +1,0 @@
-{
-  "message_non_empty": true,
-  "domain": "pipeline",
-  "company_id": "test-company-001",
-  "from_stage": "triage",
-  "to_stage": "technical_interview",
-  "confidence_valid": true
-}
