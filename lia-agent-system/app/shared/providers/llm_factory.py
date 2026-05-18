@@ -526,13 +526,45 @@ async def get_provider_for_tenant_from_db(
     return registry.get_container(tenant_id=tenant_id)
 
 
-def _resolve_provider_api_key(provider: str) -> str:
-    """Resolve API key for a provider from env vars (with AI_INTEGRATIONS_* fallback)."""
+def _resolve_provider_base_url(provider: str) -> str | None:
+    """Resolve modelfarm proxy base URL for a provider from env vars.
+
+    Task #1170 — mirror of the Anthropic ``AI_INTEGRATIONS_ANTHROPIC_BASE_URL``
+    flow for Gemini. When the wrapper key (``AI_INTEGRATIONS_GEMINI_API_KEY``)
+    is in use the SDK must be pointed at the modelfarm proxy, otherwise the
+    wrapper key is sent to ``generativelanguage.googleapis.com`` and Google
+    rejects it with ``400 API_KEY_INVALID`` — which is exactly what made
+    ``jd_enrichment_node`` fall back to the canned "qualidade estimada: 20%"
+    reply on every wizard turn.
+    """
     if provider == "gemini":
+        return os.environ.get("AI_INTEGRATIONS_GEMINI_BASE_URL") or None
+    if provider == "claude":
+        return os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL") or None
+    if provider == "openai":
+        return os.environ.get("AI_INTEGRATIONS_OPENAI_BASE_URL") or None
+    return None
+
+
+def _resolve_provider_api_key(provider: str) -> str:
+    """Resolve API key for a provider from env vars (with AI_INTEGRATIONS_* fallback).
+
+    Task #1170 — when the modelfarm proxy URL is set for Gemini, the wrapper
+    key (``AI_INTEGRATIONS_GEMINI_API_KEY``) MUST take precedence over a
+    stale ``GEMINI_API_KEY`` / ``GOOGLE_API_KEY`` left over from a previous
+    direct-Google setup. Otherwise the proxied endpoint receives a key it
+    cannot validate. The same rule applies to Anthropic and OpenAI for
+    consistency with the bootstrap injection in ``llm_bootstrap.py``.
+    """
+    if provider == "gemini":
+        proxy = os.environ.get("AI_INTEGRATIONS_GEMINI_BASE_URL")
+        wrapper = os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY", "")
+        if proxy and wrapper:
+            return wrapper
         return (
             os.environ.get("GEMINI_API_KEY")
             or os.environ.get("GOOGLE_API_KEY")
-            or os.environ.get("AI_INTEGRATIONS_GEMINI_API_KEY", "")
+            or wrapper
         )
     if provider == "claude":
         return (
@@ -631,8 +663,22 @@ def create_tracked_llm(
         try:
             if provider == "gemini":
                 from langchain_google_genai import ChatGoogleGenerativeAI
+                gemini_kwargs = dict(kwargs)
+                # Task #1170 — route through modelfarm proxy when configured.
+                # ``ChatGoogleGenerativeAI`` merges ``base_url`` into
+                # ``client_options.api_endpoint`` (chat_models.py L2025/L2072
+                # in langchain-google-genai). Without this the wrapper key
+                # from ``AI_INTEGRATIONS_GEMINI_API_KEY`` is sent to
+                # ``generativelanguage.googleapis.com`` and Google answers
+                # ``400 API_KEY_INVALID`` — the exact failure that made
+                # ``jd_enrichment`` fall back to "qualidade estimada: 20%"
+                # on every wizard turn.
+                gemini_base_url = _resolve_provider_base_url("gemini")
+                if gemini_base_url:
+                    gemini_kwargs.setdefault("base_url", gemini_base_url)
+                    gemini_kwargs.setdefault("transport", "rest")
                 llm = ChatGoogleGenerativeAI(
-                    model=model_name, google_api_key=api_key, **kwargs,
+                    model=model_name, google_api_key=api_key, **gemini_kwargs,
                 )
             elif provider == "claude":
                 from langchain_anthropic import ChatAnthropic

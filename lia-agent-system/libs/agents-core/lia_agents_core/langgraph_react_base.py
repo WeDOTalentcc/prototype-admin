@@ -429,12 +429,27 @@ class LangGraphReActBase(LangGraphBase):
                 )
             elif provider == "gemini":
                 from langchain_google_genai import ChatGoogleGenerativeAI
-                return ChatGoogleGenerativeAI(
+                gemini_kwargs = dict(
                     model=model_name,
                     temperature=settings.LLM_AGENT_TEMPERATURE,
                     google_api_key=api_key,
                     streaming=True,
                 )
+                # Task #1170 — route through modelfarm proxy when configured
+                # (mirror of the Anthropic ``base_url`` injection a few lines
+                # above). Without this the wrapper key from
+                # ``AI_INTEGRATIONS_GEMINI_API_KEY`` is rejected by Google
+                # with 400 API_KEY_INVALID.
+                gemini_base_url = os.environ.get("AI_INTEGRATIONS_GEMINI_BASE_URL") or getattr(
+                    settings, "AI_INTEGRATIONS_GEMINI_BASE_URL", None
+                )
+                if gemini_base_url:
+                    gemini_kwargs["base_url"] = gemini_base_url
+                    # Task #1170 — modelfarm proxy is HTTP REST only;
+                    # without ``transport="rest"`` ChatGoogleGenerativeAI
+                    # defaults to gRPC and the call hangs against the proxy.
+                    gemini_kwargs["transport"] = "rest"
+                return ChatGoogleGenerativeAI(**gemini_kwargs)
             else:
                 # Fallback to Claude
                 from langchain_anthropic import ChatAnthropic
