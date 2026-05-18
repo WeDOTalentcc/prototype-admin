@@ -2,6 +2,10 @@
 
 import { useState, useEffect } from "react"
 import { FALLBACK_TECH_SKILLS, FALLBACK_BEHAV_COMPETENCIES } from "./jdFallbackConstants"
+import {
+  mapJDGenerateErrorMessage,
+  mapJDEvaluationErrorMessage,
+} from "./jdErrorMessages"
 
 export interface JDIndicator {
   label: string
@@ -91,6 +95,10 @@ export function useJDEvaluation(props: {
 
   const [isExpanded, setIsExpanded] = useState(true)
   const [evaluation, setEvaluation] = useState<JDEvaluationData | null>(null)
+  // Bug A (Task #1165 canonical-fix): expõe motivo real do erro de avaliação
+  // para o painel mostrar mensagem específica (auth/rede/servidor) em vez de
+  // ficar mudo quando evaluation=null.
+  const [evaluationError, setEvaluationError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editDescription, setEditDescription] = useState(description || '')
@@ -203,12 +211,11 @@ export function useJDEvaluation(props: {
         body: JSON.stringify({ job_title: jobTitle, department: department || undefined, seniority: seniority || undefined, description: editDescription || undefined, responsibilities: editResponsibilities, technical_skills: editTechSkills, behavioral_competencies: editBehavCompetencies, company_id: companyId || "", company_name: companyName || undefined, company_description: companyDescription || undefined, company_industry: companyIndustry || undefined, benefits: benefits.length > 0 ? benefits : undefined, interview_stages: interviewStages.length > 0 ? interviewStages : undefined })
       })
       if (!response.ok) {
-        let msg = 'Não consegui gerar a descrição agora. Tente novamente em instantes.'
-        if (response.status === 401 || response.status === 403) {
-          msg = 'Sua sessão expirou. Recarregue a página e tente novamente.'
-        } else if (response.status === 422) {
-          msg = 'Faltam dados na vaga para gerar a descrição. Preencha responsabilidades e competências antes de tentar novamente.'
-        }
+        // Bug B (Task #1165 canonical-fix): preserva mensagem real do backend
+        // (FairnessGuard, Pydantic) em vez de mascarar todo 422 como "faltam dados".
+        const errPayload = await response.json().catch(() => null)
+        const msg = mapJDGenerateErrorMessage(response.status, errPayload)
+        console.error('[generateJD] backend error', response.status, errPayload)
         setJdGenerationError(msg)
         setJdDynamicMessage('')
         return
@@ -267,19 +274,28 @@ export function useJDEvaluation(props: {
       }
 
       if (!response.ok) {
-        console.error('[fetchEvaluation] backend error:', response.status)
+        // Bug A (Task #1165 canonical-fix): discrimina auth (401/403) vs servidor (5xx)
+        // em vez de colapsar tudo num setEvaluation(null) silencioso.
+        const errBody = await response.text().catch(() => '')
+        const msg = mapJDEvaluationErrorMessage(response.status)
+        console.error('[fetchEvaluation] backend error', response.status, errBody.slice(0, 300))
+        setEvaluationError(msg)
         setEvaluation(null)
         return
       }
 
       const data = await response.json()
       if (data.success) {
+        setEvaluationError(null)
         setEvaluation(data)
       } else {
+        console.error('[fetchEvaluation] backend returned success=false', data)
+        setEvaluationError('Não foi possível avaliar a descrição agora. Tente novamente.')
         setEvaluation(null)
       }
     } catch (err) {
       console.error('[fetchEvaluation] network/proxy error:', err)
+      setEvaluationError(mapJDEvaluationErrorMessage("network"))
       setEvaluation(null)
     } finally { setIsLoading(false) }
   }
@@ -332,7 +348,7 @@ export function useJDEvaluation(props: {
   }
 
   return {
-    isExpanded, setIsExpanded, evaluation, isLoading, isEditing, setIsEditing,
+    isExpanded, setIsExpanded, evaluation, evaluationError, isLoading, isEditing, setIsEditing,
     editDescription, setEditDescription, editResponsibilities, setEditResponsibilities,
     editTechSkills, setEditTechSkills, editBehavCompetencies, setEditBehavCompetencies,
     isSavingInline, newItem, setNewItem, editingField, setEditingField, saveError,

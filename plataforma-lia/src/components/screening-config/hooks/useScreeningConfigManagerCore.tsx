@@ -422,6 +422,26 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
           description: job.description || null
         })
       })
+      // Bug C (Task #1165 canonical-fix): antes, qualquer non-ok caía no
+      // `data.success && data.questions` falsy e virava "Invalid response"
+      // genérico. Agora discriminamos status real (401/403/422/5xx) e
+      // preservamos a mensagem do backend quando houver.
+      if (!res.ok) {
+        const errPayload = await res.json().catch(() => null) as { detail?: unknown; message?: unknown } | null
+        const detail = errPayload?.detail
+        const detailMsg = typeof detail === 'string' ? detail
+          : (detail && typeof detail === 'object' && 'message' in detail && typeof (detail as { message: unknown }).message === 'string')
+            ? (detail as { message: string }).message
+            : typeof errPayload?.message === 'string' ? errPayload.message : null
+        console.error('[WSI generation] backend non-ok', res.status, errPayload)
+        if (res.status === 401 || res.status === 403) {
+          throw new Error('Sua sessão expirou. Recarregue a página e tente novamente.')
+        }
+        if (res.status >= 500) {
+          throw new Error('Tivemos um problema no servidor ao gerar o roteiro WSI. Tente novamente em instantes.')
+        }
+        throw new Error(detailMsg || `Falha ao gerar roteiro WSI (status ${res.status}).`)
+      }
       const data = await res.json()
       if (data.success && data.questions) {
         const grouped: Record<number, any[]> = {}

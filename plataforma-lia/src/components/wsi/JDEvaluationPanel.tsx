@@ -53,7 +53,7 @@ export function JDEvaluationPanel({
   })
 
   const {
-    isExpanded, setIsExpanded, evaluation, isLoading, isEditing, setIsEditing,
+    isExpanded, setIsExpanded, evaluation, evaluationError, isLoading, isEditing, setIsEditing,
     editDescription, setEditDescription, editResponsibilities, setEditResponsibilities,
     editTechSkills, setEditTechSkills, editBehavCompetencies, setEditBehavCompetencies,
     isSavingInline, newItem, setNewItem, editingField, setEditingField, saveError,
@@ -131,7 +131,13 @@ export function JDEvaluationPanel({
 
               {!evaluation && !isEditing && (
                 <div className="text-center py-4">
-                  <p className="text-xs text-lia-text-secondary">Não foi possível avaliar o JD.</p>
+                  {/* Bug A (Task #1165): mostra mensagem real do hook em vez de genérica */}
+                  <p
+                    className="text-xs text-lia-text-secondary"
+                    role={evaluationError ? "alert" : undefined}
+                  >
+                    {evaluationError || "Não foi possível avaliar o JD."}
+                  </p>
                   <Button
                     variant="outline"
                     size="sm"
