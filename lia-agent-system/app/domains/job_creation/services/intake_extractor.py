@@ -387,12 +387,15 @@ class IntakeExtractor:
             self._llm = None
         if self._llm is None:
             try:
-                from langchain_anthropic import ChatAnthropic
-
                 from app.core.config import settings
+                from app.shared.providers.anthropic_client import get_chat_anthropic
 
-                self._llm = ChatAnthropic(
-                    model_name=settings.LLM_PRIMARY_MODEL,
+                # Task #1166: route through the centralized helper so
+                # the proxy ``base_url`` injection (Task #1164 Bug D) is
+                # guaranteed and the AST sentinel can enforce a single
+                # construction seam for the wizard domain.
+                self._llm = get_chat_anthropic(
+                    model=settings.LLM_PRIMARY_MODEL,
                     temperature=settings.LLM_DEFAULT_TEMPERATURE,
                     max_tokens=settings.LLM_MAX_TOKENS,
                     timeout=settings.LLM_TIMEOUT_SECONDS,

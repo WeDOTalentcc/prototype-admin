@@ -86,15 +86,21 @@ async def _generate_fallback_reply(
     if os.environ.get("LIA_WIZARD_FALLBACK_LLM_DISABLED", "").strip() in {"1", "true", "yes"}:
         return _build_hard_fallback_message(stage)
     try:
-        from langchain_anthropic import ChatAnthropic  # type: ignore
         from langchain_core.messages import HumanMessage, SystemMessage  # type: ignore
 
         from app.shared.llm_models import CANONICAL_HAIKU_MODEL
+        from app.shared.providers.anthropic_client import get_chat_anthropic
+
         model_name = os.environ.get(
             "LIA_WIZARD_FALLBACK_MODEL", CANONICAL_HAIKU_MODEL,
         )
         timeout_s = float(os.environ.get("LIA_WIZARD_FALLBACK_TIMEOUT_S", "3"))
-        llm = ChatAnthropic(model=model_name, temperature=0, timeout=timeout_s, max_tokens=200)
+        # Task #1166: centralized seam — proxy ``base_url`` is enforced
+        # by the bootstrap monkey-patch and the AST sentinel forbids
+        # bare ``ChatAnthropic(...)`` inside ``app/domains/job_creation/``.
+        llm = get_chat_anthropic(
+            model=model_name, temperature=0, timeout=timeout_s, max_tokens=200,
+        )
 
         tail_lines: list[str] = []
         for msg in (conversation_tail or [])[-4:]:
