@@ -18,6 +18,7 @@ interface JDGenerationSectionProps {
   jdGenerationStep: number
   jdTypedMessage: string
   jdDynamicMessage: string
+  jdGenerationError?: string | null
   copiedJD: boolean
   isSavingWithJD: boolean
   onGenerate: () => void
@@ -86,6 +87,7 @@ export const JDGenerationSection = React.memo(function JDGenerationSection({
   jdGenerationStep,
   jdTypedMessage,
   jdDynamicMessage,
+  jdGenerationError,
   copiedJD,
   isSavingWithJD,
   onGenerate,
@@ -159,6 +161,14 @@ export const JDGenerationSection = React.memo(function JDGenerationSection({
         {/* Generated content */}
         {generatedJD && !isGeneratingJD && (
           <div className="max-h-content-lg overflow-y-auto p-4">
+            {jdGenerationError && (
+              <p
+                role="alert"
+                className="text-xs text-destructive mb-3 p-2 rounded-md bg-destructive/10"
+              >
+                {jdGenerationError}
+              </p>
+            )}
             {formatJDText(generatedJD.full_description)}
 
             {generatedJD.tags.length > 0 && (
@@ -217,9 +227,18 @@ export const JDGenerationSection = React.memo(function JDGenerationSection({
         {!generatedJD && !isGeneratingJD && (
           <div className="flex flex-col items-center justify-center py-16 px-4">
             <Brain className="h-6 w-6 mb-2 text-wedo-cyan" />
-            <p className="text-xs text-lia-text-disabled text-center">
-              Descrição gerada pela LIA aparecerá aqui
-            </p>
+            {jdGenerationError ? (
+              <p
+                role="alert"
+                className="text-xs text-destructive text-center max-w-prose"
+              >
+                {jdGenerationError}
+              </p>
+            ) : (
+              <p className="text-xs text-lia-text-disabled text-center">
+                Descrição gerada pela LIA aparecerá aqui
+              </p>
+            )}
           </div>
         )}
       </div>

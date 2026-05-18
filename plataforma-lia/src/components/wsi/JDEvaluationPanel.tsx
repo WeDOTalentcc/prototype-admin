@@ -60,7 +60,7 @@ export function JDEvaluationPanel({
     aiTechSuggestions, setAiTechSuggestions, aiBehavSuggestions, setAiBehavSuggestions,
     isLoadingTechSuggestions, isLoadingBehavSuggestions,
     generatedJD, isGeneratingJD, copiedJD, isSavingDefinitive, isSavingWithJD,
-    jdTypedMessage, jdDynamicMessage, jdGenerationStep,
+    jdTypedMessage, jdDynamicMessage, jdGenerationStep, jdGenerationError,
     fetchTechSuggestions, fetchBehavSuggestions, generateJD, handleCopyJD,
     fetchEvaluation, handleSaveRascunho, handleSaveDefinitiva, handleSaveAndUpdateJD, handleCancel,
   } = hook
@@ -237,6 +237,7 @@ export function JDEvaluationPanel({
                       jdGenerationStep={jdGenerationStep}
                       jdTypedMessage={jdTypedMessage}
                       jdDynamicMessage={jdDynamicMessage}
+                      jdGenerationError={jdGenerationError}
                       copiedJD={copiedJD}
                       isSavingWithJD={isSavingWithJD}
                       onGenerate={generateJD}

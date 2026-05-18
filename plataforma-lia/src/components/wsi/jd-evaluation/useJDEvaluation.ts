@@ -114,6 +114,7 @@ export function useJDEvaluation(props: {
   const [jdTypedMessage, setJdTypedMessage] = useState('')
   const [jdDynamicMessage, setJdDynamicMessage] = useState('')
   const [jdGenerationStep, setJdGenerationStep] = useState(0)
+  const [jdGenerationError, setJdGenerationError] = useState<string | null>(null)
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchEvaluation() }, [jobTitle, responsibilities.length, technicalSkills.length, behavioralCompetencies.length])
@@ -190,6 +191,7 @@ export function useJDEvaluation(props: {
 
   const generateJD = async () => {
     setIsGeneratingJD(true); setJdGenerationStep(1)
+    setJdGenerationError(null)
     setJdDynamicMessage('Analisando dados da vaga e competências mapeadas...')
     try {
       await new Promise(r => setTimeout(r, 1500)); setJdGenerationStep(2)
@@ -200,12 +202,29 @@ export function useJDEvaluation(props: {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ job_title: jobTitle, department: department || undefined, seniority: seniority || undefined, description: editDescription || undefined, responsibilities: editResponsibilities, technical_skills: editTechSkills, behavioral_competencies: editBehavCompetencies, company_id: companyId || "", company_name: companyName || undefined, company_description: companyDescription || undefined, company_industry: companyIndustry || undefined, benefits: benefits.length > 0 ? benefits : undefined, interview_stages: interviewStages.length > 0 ? interviewStages : undefined })
       })
-      const data = await response.json()
-      if (data.success || data.full_description) {
+      if (!response.ok) {
+        let msg = 'Não consegui gerar a descrição agora. Tente novamente em instantes.'
+        if (response.status === 401 || response.status === 403) {
+          msg = 'Sua sessão expirou. Recarregue a página e tente novamente.'
+        } else if (response.status === 422) {
+          msg = 'Faltam dados na vaga para gerar a descrição. Preencha responsabilidades e competências antes de tentar novamente.'
+        }
+        setJdGenerationError(msg)
+        setJdDynamicMessage('')
+        return
+      }
+      const data = await response.json().catch(() => null) as { success?: boolean; full_description?: string; sections?: Record<string, string>; tags?: string[] } | null
+      if (data && (data.success || data.full_description)) {
         setJdGenerationStep(4); setJdDynamicMessage('Descrição gerada com sucesso!')
         setGeneratedJD({ full_description: data.full_description || '', sections: data.sections || {}, summary: '', tags: data.tags || [] })
+      } else {
+        setJdGenerationError('Não consegui gerar a descrição agora. Tente novamente em instantes.')
+        setJdDynamicMessage('')
       }
-    } catch { setJdDynamicMessage('Erro ao gerar descrição. Tente novamente.') }
+    } catch {
+      setJdGenerationError('Falha de conexão ao gerar a descrição. Verifique sua internet e tente novamente.')
+      setJdDynamicMessage('')
+    }
     finally { setIsGeneratingJD(false) }
   }
 
@@ -321,7 +340,7 @@ export function useJDEvaluation(props: {
     isLoadingTechSuggestions, isLoadingBehavSuggestions,
     generatedJD, isGeneratingJD, copiedJD, isSavingDefinitive, isSavingWithJD,
     showFullDescription, setShowFullDescription,
-    jdTypedMessage, jdDynamicMessage, jdGenerationStep,
+    jdTypedMessage, jdDynamicMessage, jdGenerationStep, jdGenerationError,
     fetchTechSuggestions, fetchBehavSuggestions, generateJD, handleCopyJD,
     fetchEvaluation, handleSaveRascunho, handleSaveDefinitiva, handleSaveAndUpdateJD, handleCancel,
   }
