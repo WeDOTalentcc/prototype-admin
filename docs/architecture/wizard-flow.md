@@ -183,6 +183,8 @@ WS  agent_chat_ws.py (resume_domain=="wizard")    REST  /api/v1/wizard/hitl/*
 
 **Sentinela offline:** `tests/integration/llm/test_anthropic_base_url_injection_t_1161.py` inclui AST guard `test_inject_helper_uses_unconditional_base_url`.
 
+**Addendum Task #1164 (Bug D — root cause real do "IA degradada").** A fix de Bug A não cobria callsites do `ChatAnthropic` porque `langchain_anthropic.ChatAnthropic._client_params` (L1617 em `chat_models.py`) SEMPRE faz `"base_url": self.anthropic_api_url`, com o default vindo de `from_env(["ANTHROPIC_API_URL","ANTHROPIC_BASE_URL"], default="https://api.anthropic.com")`. Em dev/staging nenhum desses env vars está setado → kwargs chega no patch com `base_url="https://api.anthropic.com"` já populado → o guard `"base_url" not in kwargs` pulava a injeção → `create_tracked_llm`/`get_claude_model_for_tenant`/`IntakeExtractor._get_llm` saíam batendo direto na API pública com a wrapper key do modelfarm (401). Os classifiers (supervisor/gates/intake/meta_helper) escapavam porque criam `anthropic.Anthropic(...)` direto sem `base_url`. **Fix Task #1164:** novo helper `_is_default_anthropic_base_url(value)` enumera os defaults upstream (`https://api.anthropic.com` com/sem trailing slash) e o guard ficou `if current is None or _is_default_anthropic_base_url(current): kwargs["base_url"] = base_url`. Override explícito do caller com URL não-default continua respeitado. **Sentinelas:** `tests/integration/llm/test_anthropic_base_url_injection_t_1164.py` (5 testes — reprodução do kwargs do LangChain wrapper, variante trailing slash, preservação de override não-default, coverage runtime do helper, AST guard exigindo chamada de `_is_default_anthropic_base_url`).
+
 ---
 
 ## 4. Continuidade de sessão e pin (Task #1080)

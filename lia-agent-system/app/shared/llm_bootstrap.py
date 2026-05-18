@@ -98,6 +98,30 @@ def _audit_log(provider: str, action: str, model: str = "", latency_ms: float = 
 # Anthropic patches
 # ---------------------------------------------------------------------------
 
+# Upstream defaults that LangChain ``ChatAnthropic`` and the raw Anthropic
+# SDK auto-populate when no explicit ``base_url`` is provided. The bootstrap
+# treats these as "no explicit override" so the proxy URL (configured via
+# ``AI_INTEGRATIONS_ANTHROPIC_BASE_URL``) replaces them. Source: SDK
+# ``DEFAULT_BASE_URL`` + ``ChatAnthropic.anthropic_api_url`` Field default.
+_DEFAULT_ANTHROPIC_BASE_URLS: frozenset[str] = frozenset({
+    "https://api.anthropic.com",
+    "https://api.anthropic.com/",
+})
+
+
+def _is_default_anthropic_base_url(value: object) -> bool:
+    """Return True when ``value`` is one of the upstream Anthropic defaults.
+
+    Used by ``_inject_anthropic_env`` to decide whether the kwargs
+    ``base_url`` represents an explicit caller override (leave alone) or
+    the LangChain/SDK default that should be replaced by the modelfarm
+    proxy URL.
+    """
+    if not isinstance(value, str):
+        return False
+    return value.rstrip("/") in {u.rstrip("/") for u in _DEFAULT_ANTHROPIC_BASE_URLS}
+
+
 def _patch_anthropic():
     """Patch anthropic.Anthropic and AsyncAnthropic constructors + messages."""
     try:
@@ -110,22 +134,38 @@ def _patch_anthropic():
     _orig_async_init = anthropic.AsyncAnthropic.__init__
 
     def _inject_anthropic_env(kwargs: dict) -> None:
-        """Task #1161 — Bug A fix: ALWAYS inject ``base_url`` when env var is
-        set, regardless of whether caller passed ``api_key`` explicitly.
+        """Task #1164 — Bug D fix (extends Task #1161 Bug A): override the
+        LangChain ``ChatAnthropic`` default ``base_url`` with the modelfarm
+        proxy when configured.
 
-        Previously ``base_url`` was only injected when caller passed neither
-        ``api_key`` nor positional args. Callsites that constructed
-        ``ChatAnthropic(api_key=tenant_key)`` (LangChain wrapper) caused the
-        underlying SDK ``Anthropic(api_key=...)`` to be built with the api_key
-        already in kwargs, so the proxy ``base_url`` was silently skipped —
-        bypassing ``AI_INTEGRATIONS_ANTHROPIC_BASE_URL`` and hitting the
-        public Anthropic API directly (401 in dev/staging).
+        History:
+          - #1161 Bug A: injected ``base_url`` only when caller passed
+            nothing in kwargs. Fixed callsites that passed ``api_key=``
+            explicitly via raw ``anthropic.Anthropic``.
+          - #1164 Bug D: ``langchain_anthropic.ChatAnthropic._client_params``
+            ALWAYS sets ``base_url=self.anthropic_api_url`` (default
+            ``"https://api.anthropic.com"`` via ``from_env``). So kwargs
+            arrives with ``base_url`` already populated → the previous
+            guard ``"base_url" not in kwargs`` skipped injection → every
+            ChatAnthropic instance (jd_enrichment, wsi_questions,
+            bigfive via ``create_tracked_llm``) bypassed the proxy and
+            hit ``api.anthropic.com`` directly with the wrapper key →
+            401 invalid x-api-key. Diagnosed in Task #1164.
 
-        Now: ``api_key`` injection still gated on caller absence, but
-        ``base_url`` injection runs unconditionally whenever the env var is
-        configured. In prod the env var is unset → no-op. In dev/staging it
-        points at the local modelfarm proxy → every Anthropic client routes
-        through it.
+        Resolution:
+          - ``api_key`` injection still gated on caller absence (don't
+            override an explicit tenant key).
+          - ``base_url`` injection now runs whenever the env var is set
+            AND kwargs lacks an explicit non-default value. The set
+            ``_DEFAULT_ANTHROPIC_BASE_URLS`` enumerates the upstream
+            defaults the SDK / LangChain wrapper auto-populate; matching
+            those is treated as "no explicit override" and we replace
+            them with the proxy URL.
+
+        In prod the env var is unset → no-op for both paths. In
+        dev/staging it points at the local modelfarm proxy → every
+        Anthropic client routes through it, including the LangChain
+        wrapper.
         """
         if "api_key" not in kwargs:
             kwargs["api_key"] = (
@@ -133,8 +173,10 @@ def _patch_anthropic():
                 or os.environ.get("ANTHROPIC_API_KEY")
             )
         base_url = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
-        if base_url and "base_url" not in kwargs:
-            kwargs["base_url"] = base_url
+        if base_url:
+            current = kwargs.get("base_url")
+            if current is None or _is_default_anthropic_base_url(current):
+                kwargs["base_url"] = base_url
 
     @functools.wraps(_orig_init)
     def _patched_init(self, *args, **kwargs):

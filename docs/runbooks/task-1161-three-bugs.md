@@ -45,6 +45,52 @@ Anthropic (sync, async, via LangChain ou direto) passa pelo modelfarm proxy.
   de `if "api_key" not in kwargs:`. Garante que ninguém regenere o bug por
   refactor.
 
+### Bug A — Addendum Task #1164 (Bug D, root cause real do "IA degradada")
+
+**Sintoma residual.** Mesmo com a fix de Bug A aplicada, o wizard de criação
+de vaga seguia disparando `_fallback_enrichment` ("O serviço de IA está
+degradado neste momento, então gerei um enriquecimento mínimo (qualidade
+estimada: 20%)") em 100% dos turnos. Logs do `lia-backend` mostravam
+`POST https://api.anthropic.com/v1/messages` retornando 401 enquanto os
+classifiers (supervisor/gates/intake/meta_helper) continuavam OK via
+`localhost:1106/modelfarm/anthropic`.
+
+**Causa raiz.** `langchain_anthropic.ChatAnthropic._client_params` (linha
+1617 em `chat_models.py`) SEMPRE faz `"base_url": self.anthropic_api_url`,
+com o default vindo de `from_env(["ANTHROPIC_API_URL", "ANTHROPIC_BASE_URL"], default="https://api.anthropic.com")`.
+Em dev/staging nenhum desses env vars está setado, então `ChatAnthropic`
+construía `anthropic.Client(api_key=..., base_url="https://api.anthropic.com")`.
+O guard de Bug A (`if base_url and "base_url" not in kwargs:`) então
+PULAVA a injeção porque `base_url` já estava em kwargs (default Anthropic),
+e o cliente saía batendo direto na API pública com a wrapper key →
+401. Os classifiers escapavam porque criam `anthropic.Anthropic(...)`
+direto (sem o wrapper LangChain) e populam `base_url` explicitamente a
+partir do env var.
+
+**Fix.** Em `_inject_anthropic_env` o guard ficou:
+```python
+base_url = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
+if base_url:
+    current = kwargs.get("base_url")
+    if current is None or _is_default_anthropic_base_url(current):
+        kwargs["base_url"] = base_url
+```
+O helper `_is_default_anthropic_base_url` enumera os defaults upstream
+(`https://api.anthropic.com` com/sem trailing slash). Qualquer outro
+valor passa intocado (respeita override explícito do caller).
+
+**Sentinela.** `tests/integration/llm/test_anthropic_base_url_injection_t_1164.py`
+- `test_base_url_overridden_when_kwargs_has_anthropic_default` — reproduz o
+  callsite real do `ChatAnthropic._client` (kwargs já com o default).
+- `test_base_url_overridden_when_kwargs_has_anthropic_default_with_trailing_slash`
+  — variante com trailing slash.
+- `test_explicit_non_default_base_url_is_preserved` — override do caller
+  com URL não-default é respeitado.
+- `test_helper_detects_default_anthropic_base_urls` — coverage runtime do
+  helper.
+- `test_inject_helper_overrides_default_anthropic_base_url` — AST guard
+  exigindo a chamada de `_is_default_anthropic_base_url` no helper.
+
 ---
 
 ## Bug B — `NotImplementedError` silenciado em `aresume_with_message`
