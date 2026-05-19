@@ -131,6 +131,27 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
     seenLastUserMsgId: string | null
   } | null>(null)
 
+  // Harness fix (2026-05-19) — track wizard activity to suppress navigation
+  // proposals during an active wizard flow. Regression observed: while the
+  // user was in the job-creation wizard chat, a NavigationProposal "Posso te
+  // levar para o ambiente de vagas?" was injected — redundant (user already
+  // creating a job) and triggered a false `exit_wizard` from the supervisor
+  // classifier when the user answered "agora não" (canonical regression
+  // 2026-05-19 — see wizard_supervisor_classifier.py REGRA CRÍTICA 2).
+  const wizardLastActivityRef = useRef<number>(0)
+  const WIZARD_ACTIVITY_TTL_MS = 5 * 60 * 1000
+  useEffect(() => {
+    const onWizardStage = () => {
+      wizardLastActivityRef.current = Date.now()
+    }
+    window.addEventListener("lia:wizard-stage-payload", onWizardStage)
+    return () => window.removeEventListener("lia:wizard-stage-payload", onWizardStage)
+  }, [])
+  const isWizardCurrentlyActive = (): boolean => {
+    if (!wizardLastActivityRef.current) return false
+    return Date.now() - wizardLastActivityRef.current < WIZARD_ACTIVITY_TTL_MS
+  }
+
   useEffect(() => {
     setContextPage(currentPage)
     if (currentPage !== "Conversar") {
@@ -208,6 +229,16 @@ export function DashboardApp({ initialPage = "Conversar", children }: DashboardA
       if (!page) return
 
       if (mode === "ask") {
+        // Harness fix (2026-05-19) — silent drop when a wizard flow is
+        // currently active. NavigationProposals during an active wizard
+        // (e.g. "vamos te levar para Vagas?" while the user is creating
+        // a job via chat wizard) are redundant and trigger false
+        // exit_wizard classifications when the user answers "agora não".
+        // See wizard_supervisor_classifier.py REGRA CRÍTICA 2 +
+        // wizard_session_service.py _generate_fallback_reply guard.
+        if (isWizardCurrentlyActive()) {
+          return
+        }
         const targetPath = pathFromLabel(normalizePageLabel(page))
         if (targetPath && pathname?.endsWith(targetPath)) {
           // Already on the target route — silently drop the proposal.
