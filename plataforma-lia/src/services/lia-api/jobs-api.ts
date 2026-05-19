@@ -6,6 +6,7 @@ import {
   HttpError,
   parseRetryAfterMs,
 } from './base'
+import { unwrapEnvelopeSuccess } from '@/lib/api/unwrapEnvelope'
 import type {
   JobVacancy,
   JobVacancyCreateRequest,
@@ -74,7 +75,7 @@ export async function getJobVacancy(id: string): Promise<JobVacancy> {
       throw new Error(`Failed to fetch job vacancy: ${response.statusText}`)
     }
 
-    return response.json()
+    return unwrapEnvelopeSuccess(await response.json()) as JobVacancy
   } finally {
     clearTimeout(timeout)
   }
@@ -94,7 +95,7 @@ export async function createJobVacancy(data: JobVacancyCreateRequest): Promise<J
     throw new Error(error.detail || 'Failed to create job vacancy')
   }
 
-  return response.json()
+  return unwrapEnvelopeSuccess(await response.json()) as JobVacancy
 }
 
 export async function updateJobVacancy(id: string, data: Partial<JobVacancyCreateRequest>): Promise<JobVacancy> {
@@ -109,7 +110,7 @@ export async function updateJobVacancy(id: string, data: Partial<JobVacancyCreat
     throw new Error(error.detail || 'Failed to update job vacancy')
   }
 
-  return response.json()
+  return unwrapEnvelopeSuccess(await response.json()) as JobVacancy
 }
 
 export async function deleteJobVacancy(id: string): Promise<{ success: boolean; message: string }> {
