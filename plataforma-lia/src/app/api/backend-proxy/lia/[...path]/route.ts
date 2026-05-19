@@ -4,6 +4,7 @@ import { z } from 'zod'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 const MAX_BODY_SIZE = 2 * 1024 * 1024
+const BACKEND_FETCH_TIMEOUT_MS = 8_000
 
 const catchAllPathSchema = z.object({
   path: z.array(z.string().min(1)).min(1, 'Path is required'),
@@ -32,6 +33,53 @@ function getHeaders(request: NextRequest): HeadersInit {
   return headers
 }
 
+/**
+ * Task #1177 — classify a `fetch()` rejection as "backend is not reachable
+ * yet" (transient, retryable) vs. an unexpected proxy bug. Cold start on
+ * Replit and rolling restarts in prod surface as ECONNREFUSED / ENOTFOUND /
+ * AbortError, and clients (chiefly the wizard hydration in UnifiedChat) can
+ * recover with a short retry — so we report 503 + `retryable: true` instead
+ * of an opaque 500 that triggers the dev overlay and a hard toast.
+ */
+export function isBackendUnavailableError(error: unknown): {
+  unavailable: boolean
+  code: string
+} {
+  if (!error) return { unavailable: false, code: 'unknown' }
+  const err = error as { name?: unknown; code?: unknown; cause?: unknown; message?: unknown }
+  const name = typeof err.name === 'string' ? err.name : ''
+  const message = typeof err.message === 'string' ? err.message : ''
+  const directCode = typeof err.code === 'string' ? err.code : ''
+  const causeCode =
+    err.cause && typeof err.cause === 'object' && err.cause !== null
+      ? (() => {
+          const c = err.cause as { code?: unknown }
+          return typeof c.code === 'string' ? c.code : ''
+        })()
+      : ''
+  const code = directCode || causeCode || ''
+  if (name === 'AbortError' || name === 'TimeoutError') {
+    return { unavailable: true, code: code || 'TIMEOUT' }
+  }
+  if (
+    code === 'ECONNREFUSED' ||
+    code === 'ENOTFOUND' ||
+    code === 'ECONNRESET' ||
+    code === 'EAI_AGAIN' ||
+    code === 'UND_ERR_SOCKET' ||
+    code === 'UND_ERR_CONNECT_TIMEOUT'
+  ) {
+    return { unavailable: true, code }
+  }
+  // `undici` raises a bare TypeError("fetch failed") whose .cause carries
+  // the syscall info; if we made it here without matching a code but the
+  // message looks like a connection failure, treat it as transient.
+  if (name === 'TypeError' && /fetch failed/i.test(message)) {
+    return { unavailable: true, code: code || 'FETCH_FAILED' }
+  }
+  return { unavailable: false, code: code || name || 'unknown' }
+}
+
 async function proxyRequest(
   request: NextRequest,
   params: Promise<{ path: string[] }>,
@@ -50,7 +98,11 @@ async function proxyRequest(
     let backendUrl = `${BACKEND_URL}/api/v1/lia/${pathStr}`
     if (queryString) backendUrl = `${backendUrl}?${queryString}`
 
-    const fetchOptions: RequestInit = { method, headers: getHeaders(request) }
+    const fetchOptions: RequestInit = {
+      method,
+      headers: getHeaders(request),
+      signal: AbortSignal.timeout(BACKEND_FETCH_TIMEOUT_MS),
+    }
 
     if (method !== 'GET' && method !== 'HEAD') {
       try {
@@ -62,7 +114,24 @@ async function proxyRequest(
       } catch { /* ignore empty body */ }
     }
 
-    const response = await fetch(backendUrl, fetchOptions)
+    let response: Response
+    try {
+      response = await fetch(backendUrl, fetchOptions)
+    } catch (fetchErr) {
+      const cls = isBackendUnavailableError(fetchErr)
+      if (cls.unavailable) {
+        // Task #1177 — log at warn (not error) so the dev overlay stays
+        // quiet during cold-start; the client retries this status.
+        console.warn(
+          `[lia-proxy] backend unavailable (${cls.code}) for ${method} /api/v1/lia/${pathStr}`,
+        )
+        return NextResponse.json(
+          { error: 'backend unavailable', retryable: true, code: cls.code },
+          { status: 503 },
+        )
+      }
+      throw fetchErr
+    }
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ detail: response.statusText }))

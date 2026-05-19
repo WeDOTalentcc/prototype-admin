@@ -15,6 +15,14 @@
  * Sentry and toasts the recruiter — never swallow silently, that's
  * exactly what got us into the "wizard refuses to die" loop the task
  * is fixing.
+ *
+ * Task #1177 — the GET path on mount adds a short retry loop for
+ * transient "backend not reachable yet" errors (503 retryable + raw
+ * fetch failures during cold start). After the budget is exhausted we
+ * throw `WizardBackendUnavailableError` so the caller can show a
+ * neutral "Conectando ao servidor…" toast instead of the alarming
+ * "Não consegui carregar o estado do wizard" + dev overlay. Real
+ * upstream errors (500/404/4xx) continue to fail on the first try.
  */
 
 export interface WizardSessionState {
@@ -36,8 +44,48 @@ export interface WizardSessionResetResult {
   was_active: boolean;
 }
 
+/**
+ * Task #1177 — thrown by `fetchWizardSessionState` when the backend stays
+ * unreachable across every retry attempt (cold start, rolling restart,
+ * upstream 502/503/504). The hydration `useEffect` in `UnifiedChat`
+ * branches on this type to show a neutral toast and suppress the
+ * `console.error` that would otherwise trigger the Next.js dev overlay.
+ */
+export class WizardBackendUnavailableError extends Error {
+  readonly attempts: number;
+  readonly lastStatus: number | null;
+  readonly code: string | null;
+  constructor(opts: { attempts: number; lastStatus: number | null; code: string | null }) {
+    super(
+      `Wizard backend unavailable after ${opts.attempts} attempt(s) (status=${opts.lastStatus ?? 'n/a'}, code=${opts.code ?? 'n/a'})`,
+    );
+    this.name = 'WizardBackendUnavailableError';
+    this.attempts = opts.attempts;
+    this.lastStatus = opts.lastStatus;
+    this.code = opts.code;
+  }
+}
+
+// Task #1177 — short exponential backoff. 300 + 800 + 2000 ≈ 3.1s of
+// total wait across 3 retries (4 attempts), which is the typical cold
+// start budget for the FastAPI worker on Replit and well under the
+// recruiter patience window.
+const RETRY_DELAYS_MS = [300, 800, 2000] as const;
+
 function backendUrl(sessionId: string): string {
   return `/api/backend-proxy/lia/job-wizard/session/${encodeURIComponent(sessionId)}`;
+}
+
+function isRetryableStatus(status: number): boolean {
+  // 503 is what our own proxy emits for ECONNREFUSED/timeout (Task
+  // #1177). 502/504 cover the equivalents when there's a real LB
+  // upstream in front of FastAPI. 500 is NOT retryable — that's a
+  // genuine endpoint exception and the caller should fail loud.
+  return status === 502 || status === 503 || status === 504;
+}
+
+async function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export async function fetchWizardSessionState(
@@ -45,19 +93,76 @@ export async function fetchWizardSessionState(
   fetchImpl: typeof fetch = fetch,
 ): Promise<WizardSessionState | null> {
   if (!sessionId) return null;
-  const res = await fetchImpl(backendUrl(sessionId), {
-    method: "GET",
-    credentials: "include",
-  });
-  // CRITICAL (Task #1128 code review): fail-loud em todos os não-2xx,
-  // inclusive 404. O backend canônico devolve 200 com `active=false`
-  // para sessões sem snapshot (S4 do sentinela); um 404 só pode
-  // significar deploy parcial ou tenant mismatch e o caller PRECISA
-  // ver o erro para toast + reset defensivo.
-  if (!res.ok) {
+  const totalAttempts = RETRY_DELAYS_MS.length + 1;
+  let lastStatus: number | null = null;
+  let lastCode: string | null = null;
+
+  for (let attempt = 0; attempt < totalAttempts; attempt++) {
+    let res: Response;
+    try {
+      res = await fetchImpl(backendUrl(sessionId), {
+        method: 'GET',
+        credentials: 'include',
+      });
+    } catch (networkErr) {
+      // The proxy normally catches connection failures and returns 503,
+      // but `fetch()` itself can still reject (e.g. the proxy is being
+      // recompiled mid-request). Treat as retryable.
+      lastStatus = null;
+      lastCode = networkErr instanceof Error ? networkErr.name : 'NETWORK';
+      if (attempt < totalAttempts - 1) {
+        await sleep(RETRY_DELAYS_MS[attempt]);
+        continue;
+      }
+      throw new WizardBackendUnavailableError({
+        attempts: totalAttempts,
+        lastStatus,
+        code: lastCode,
+      });
+    }
+
+    if (res.ok) {
+      return (await res.json()) as WizardSessionState;
+    }
+
+    lastStatus = res.status;
+    if (isRetryableStatus(res.status)) {
+      // Try to pull the `code` field the proxy sets so the eventual
+      // error message is informative without leaking sensitive details.
+      try {
+        const body = await res.clone().json();
+        if (body && typeof body === 'object' && typeof body.code === 'string') {
+          lastCode = body.code;
+        }
+      } catch {
+        /* ignore — body parse is best-effort */
+      }
+      if (attempt < totalAttempts - 1) {
+        await sleep(RETRY_DELAYS_MS[attempt]);
+        continue;
+      }
+      throw new WizardBackendUnavailableError({
+        attempts: totalAttempts,
+        lastStatus,
+        code: lastCode,
+      });
+    }
+
+    // CRITICAL (Task #1128 code review): fail-loud em todos os não-2xx
+    // não-retryáveis, inclusive 404. O backend canônico devolve 200 com
+    // `active=false` para sessões sem snapshot (S4 do sentinela); um 404
+    // só pode significar deploy parcial ou tenant mismatch e o caller
+    // PRECISA ver o erro para toast + reset defensivo.
     throw new Error(`GET wizard session failed: ${res.status}`);
   }
-  return (await res.json()) as WizardSessionState;
+
+  // Defensive — loop above always either returns or throws, but TS
+  // wants an exhaustive return.
+  throw new WizardBackendUnavailableError({
+    attempts: totalAttempts,
+    lastStatus,
+    code: lastCode,
+  });
 }
 
 export async function resetWizardSession(
@@ -85,6 +190,10 @@ export async function resetWizardSession(
   // PRECISA ver o erro — sem isso o frontend resetaria a UI achando que
   // cancelou enquanto o servidor segue com o wizard aberto, exatamente
   // o bug que esta task fecha.
+  //
+  // Task #1177 explicitamente mantém o DELETE sem retry: "Nova conversa"
+  // é ação disparada pelo recrutador, faz sentido falhar alto na 1ª
+  // tentativa em vez de mascarar problemas com backoff silencioso.
   if (!res.ok) {
     throw new Error(`DELETE wizard session failed: ${res.status}`);
   }

@@ -44,6 +44,7 @@ import type { ChatMode } from "./unified-chat-types";
 import { useJdUploadProgress } from "./useJdUploadProgress";
 import {
   fetchWizardSessionState,
+  WizardBackendUnavailableError,
   purgeLegacyWizardStorage,
   resetWizardSession,
 } from "./wizard/useWizardSessionApi";
@@ -265,6 +266,19 @@ export function UnifiedChat({
         } as never);
       } catch (err) {
         if (cancelled) return;
+        // Task #1177 — separa três ramos:
+        //   (b) backend ainda subindo / indisponível após retries → toast
+        //       neutro "Conectando ao servidor…", SEM console.error (evita
+        //       o overlay vermelho do Next.js no dev e ruído no Sentry).
+        //   (c) erro real (500 do endpoint, 404, 4xx auth/tenant) →
+        //       comportamento Task #1128: console.error + toast vermelho.
+        if (err instanceof WizardBackendUnavailableError) {
+          toast("Conectando ao servidor…", {
+            description:
+              "O backend está demorando para responder. Vamos retomar assim que ele estiver pronto.",
+          });
+          return;
+        }
         // eslint-disable-next-line no-console
         console.error(
           "[UnifiedChat] GET wizard session hydration failed",

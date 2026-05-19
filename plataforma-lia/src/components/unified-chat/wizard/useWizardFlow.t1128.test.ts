@@ -24,6 +24,7 @@ import {
   resetWizardSession,
   purgeLegacyWizardStorage,
   LEGACY_WIZARD_STORAGE_PREFIX,
+  WizardBackendUnavailableError,
 } from "./useWizardSessionApi"
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -274,6 +275,108 @@ describe("Task #1128 — wizard session reset canonical contract", () => {
       await expect(fetchWizardSessionState("sess-missing", fakeFetch)).rejects.toThrow(
         /GET wizard session failed: 404/,
       )
+    })
+  })
+
+  // ---------------- S4 — Task #1177 — retry resiliente em cold start ----------------
+  describe("S4 — fetchWizardSessionState retry/cold-start (Task #1177)", () => {
+    function okResponse(): Response {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          session_id: "sess-r",
+          thread_id: "wiz-x-sess-r",
+          active: false,
+          current_stage: null,
+          completeness: 0,
+          requires_approval: false,
+          stage_data: {},
+          degraded_stages: {},
+          conversation_message_count: 0,
+        }),
+        clone() {
+          return this
+        },
+      } as unknown as Response
+    }
+    function unavailableResponse(): Response {
+      return {
+        ok: false,
+        status: 503,
+        json: async () => ({ error: "backend unavailable", retryable: true, code: "ECONNREFUSED" }),
+        clone() {
+          return this
+        },
+      } as unknown as Response
+    }
+
+    it("S4a — 503 retryable seguido de 200 resolve sem lançar e sem tocar console.error", async () => {
+      const consoleErr = vi.spyOn(console, "error").mockImplementation(() => {})
+      const fakeFetch = vi
+        .fn()
+        .mockResolvedValueOnce(unavailableResponse())
+        .mockResolvedValueOnce(unavailableResponse())
+        .mockResolvedValueOnce(okResponse()) as unknown as typeof fetch
+
+      const result = await fetchWizardSessionState("sess-r", fakeFetch)
+      expect(result).not.toBeNull()
+      expect((fakeFetch as unknown as { mock: { calls: unknown[] } }).mock.calls.length).toBe(3)
+      expect(consoleErr).not.toHaveBeenCalled()
+      consoleErr.mockRestore()
+    })
+
+    it("S4b — 503 persistente lança WizardBackendUnavailableError após esgotar retries", async () => {
+      const fakeFetch = vi.fn().mockResolvedValue(unavailableResponse()) as unknown as typeof fetch
+
+      await expect(fetchWizardSessionState("sess-r", fakeFetch)).rejects.toBeInstanceOf(
+        WizardBackendUnavailableError,
+      )
+      // 1 tentativa inicial + 3 retries = 4 chamadas
+      expect((fakeFetch as unknown as { mock: { calls: unknown[] } }).mock.calls.length).toBe(4)
+    })
+
+    it("S4c — 500 real lança na 1ª tentativa (sem retry, fail-loud preservado)", async () => {
+      const fakeFetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500,
+        json: async () => ({ detail: "boom" }),
+        clone() {
+          return this
+        },
+      }) as unknown as typeof fetch
+
+      await expect(fetchWizardSessionState("sess-r", fakeFetch)).rejects.toThrow(
+        /GET wizard session failed: 500/,
+      )
+      expect((fakeFetch as unknown as { mock: { calls: unknown[] } }).mock.calls.length).toBe(1)
+    })
+
+    it("S4d — 404 lança na 1ª tentativa (sem retry, fail-loud Task #1128 preservado)", async () => {
+      const fakeFetch = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 404,
+        json: async () => ({}),
+        clone() {
+          return this
+        },
+      }) as unknown as typeof fetch
+
+      await expect(fetchWizardSessionState("sess-r", fakeFetch)).rejects.toThrow(
+        /GET wizard session failed: 404/,
+      )
+      expect((fakeFetch as unknown as { mock: { calls: unknown[] } }).mock.calls.length).toBe(1)
+    })
+
+    it("S4e — network error (fetch rejeita) também entra no retry e converte para WizardBackendUnavailableError", async () => {
+      const fakeFetch = vi
+        .fn()
+        .mockRejectedValue(Object.assign(new TypeError("fetch failed"), { code: "ECONNREFUSED" })) as unknown as typeof fetch
+
+      await expect(fetchWizardSessionState("sess-r", fakeFetch)).rejects.toBeInstanceOf(
+        WizardBackendUnavailableError,
+      )
+      expect((fakeFetch as unknown as { mock: { calls: unknown[] } }).mock.calls.length).toBe(4)
     })
   })
 })
