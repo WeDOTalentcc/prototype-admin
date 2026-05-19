@@ -237,6 +237,14 @@ export function LiaEditor({
     extensions: allExtensions,
     content,
     editable: !disabled,
+    // T-1167 (Bug "Algo deu errado / Tiptap Error: SSR has been detected") —
+    // Tiptap v3 renderiza no servidor por padrão e isso causa hydration mismatch
+    // no Next.js App Router (a página /pt/jobs quebrava com "Algo deu errado.
+    // Ocorreu um erro ao carregar esta seção. Tiptap Error: SSR has been
+    // detected, please set..."). Fix oficial Tiptap v3 para Next.js SSR é
+    // marcar immediatelyRender: false — o editor monta só no client.
+    // Aplicado na FONTE (LiaEditor) e não nos 4 callsites (canonical-fix).
+    immediatelyRender: false,
     onUpdate: ({ editor: ed }) => {
       onUpdate(ed.getHTML())
     },
