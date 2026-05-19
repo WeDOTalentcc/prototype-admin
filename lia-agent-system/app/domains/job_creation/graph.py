@@ -60,6 +60,25 @@ def _extract_last_turns(state: Any, n: int = 3) -> list[str]:
     return out[-n:]
 
 
+def _min_jd_quality_threshold() -> float:
+    """Min JD quality score (0-100) required to advance past jd_gate to bigfive.
+
+    Configurable via ``LIA_WIZARD_MIN_JD_QUALITY`` env var. Default 30
+    (production threshold — vagas with quality < 30 force the recruiter
+    to rewrite). In dev environments where the LLM enrichment proxy
+    fails (e.g. Replit modelfarm Gemini endpoint not supported), every
+    enrichment hits the deterministic fallback (score=20.0). Set this
+    env var to ``0`` in dev to allow the wizard to advance past the
+    fallback enrichment for testing. See harness fix 2026-05-19
+    (Bug C — wizard stuck at jd_gate after 'Recebi a descrição').
+    """
+    raw = os.environ.get("LIA_WIZARD_MIN_JD_QUALITY", "30").strip()
+    try:
+        return float(raw)
+    except (TypeError, ValueError):
+        return 30.0
+
+
 def _try_meta_helper(
     *,
     state: Any,
@@ -3297,10 +3316,15 @@ def route_after_gate(state: JobCreationState) -> str:
     approved = state.get("jd_approved")
     if approved is True:
         quality = state.get("jd_quality_score", 0.0) or 0.0
-        if quality < 30:
-            logger.info("[JobCreation:route] jd_gate -> END (quality %.1f < 30)", quality)
+        _min_q = _min_jd_quality_threshold()
+        if quality < _min_q:
+            logger.info(
+                "[JobCreation:route] jd_gate -> END (quality %.1f < %.1f, "
+                "configurable via LIA_WIZARD_MIN_JD_QUALITY)",
+                quality, _min_q,
+            )
             return "end"
-        logger.info("[JobCreation:route] jd_gate -> bigfive (approved)")
+        logger.info("[JobCreation:route] jd_gate -> bigfive (approved, quality=%.1f)", quality)
         return "bigfive"
 
     # ask_question / off_topic / pending → aguarda novo turno
@@ -3336,8 +3360,13 @@ def route_after_jd(state: JobCreationState) -> str:
         logger.info("[JobCreation:route] jd_enrichment -> intake (rejected)")
         return "intake"
 
-    if quality < 30:
-        logger.info("[JobCreation:route] jd_enrichment -> END (quality %.1f < 30, blocked)", quality)
+    _min_q = _min_jd_quality_threshold()
+    if quality < _min_q:
+        logger.info(
+            "[JobCreation:route] jd_enrichment -> END (quality %.1f < %.1f, "
+            "blocked — configurable via LIA_WIZARD_MIN_JD_QUALITY)",
+            quality, _min_q,
+        )
         return "end"
 
     logger.info("[JobCreation:route] jd_enrichment -> bigfive (approved, quality=%.1f)", quality)
