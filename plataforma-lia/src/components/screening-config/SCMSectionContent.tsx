@@ -84,11 +84,31 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
                   ?? []) as string[]
               }
               technicalSkills={
-                ((job.technicalRequirements || []) as unknown[])
+                // T-1168 (Bug 5 canonical-fix, anti-padrão #6): prefira a fonte
+                // ENRIQUECIDA quando o JD foi gerado/regenerado pela LIA. O
+                // backend atualiza `enriched_jd.technical_skills` (lista normalizada
+                // de N strings) mas a UI antes só lia `job.technicalRequirements`,
+                // que pode estar desatualizado (somente os 5 originais do form).
+                // Mesmo padrão da fix D2/D9: produtor decide a verdade visível.
+                ((((job.enrichedJd as { technical_skills?: unknown[] } | undefined)?.technical_skills
+                  ?? (job.technicalRequirements as unknown[] | undefined)
+                  ?? []) as unknown[])
                   .map((r) => normalizeTechnicalRequirement(r))
-                  .filter((s): s is string => Boolean(s))
+                  .filter((s): s is string => Boolean(s)))
               }
-              behavioralCompetencies={(job.behavioralCompetencies || []).map((c: Record<string, unknown>) => c.competency || c.name || (typeof c === 'string' ? c : '')).filter(Boolean) as string[]}
+              behavioralCompetencies={
+                // T-1168 — idem: `enriched_jd.behavioral_competencies` tem a lista
+                // canônica pós-enriquecimento; fallback ao snapshot do form.
+                ((((job.enrichedJd as { behavioral_competencies?: unknown[] } | undefined)?.behavioral_competencies
+                  ?? (job.behavioralCompetencies as unknown[] | undefined)
+                  ?? []) as unknown[])
+                  .map((c) => {
+                    if (typeof c === 'string') return c
+                    const rec = c as Record<string, unknown>
+                    return (rec.competency || rec.name || rec.text || '') as string
+                  })
+                  .filter((s): s is string => Boolean(s)))
+              }
               // Audit task #531 (G23-01) — leitura unificada via helper canônico
               // `getJobSeniority` (precedência `seniority` → `level` legacy);
               // substitui o fallback inline da rev. 20 sem mudar comportamento.

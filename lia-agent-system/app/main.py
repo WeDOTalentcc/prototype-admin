@@ -773,9 +773,17 @@ async def pydantic_validation_error_handler(request: FastAPIRequest, exc: Pydant
 @app.exception_handler(RequestValidationError)
 async def request_validation_error_handler(request: FastAPIRequest, exc: RequestValidationError) -> JSONResponse:
     request_id = getattr(request.state, "request_id", "unknown")
+    # T-1168 — incluir o `errors()` no log é essencial para diagnose: antes só
+    # logávamos a contagem ("1 errors on POST /api/v1/wsi/screening-pipeline"),
+    # o que escondeu por horas o campo culpado (`seniority` com Literal violation).
+    # `errors()` é determinístico e não vaza segredos (Pydantic redige valores).
+    _err_summary = [
+        {"loc": e.get("loc"), "type": e.get("type"), "msg": e.get("msg")}
+        for e in exc.errors()
+    ]
     logger.warning(
-        "Request validation error: %d errors on %s %s",
-        len(exc.errors()), request.method, request.url.path,
+        "Request validation error: %d errors on %s %s — details=%s",
+        len(exc.errors()), request.method, request.url.path, _err_summary,
     )
     return JSONResponse(
         status_code=422,

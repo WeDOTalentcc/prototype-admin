@@ -369,12 +369,24 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
     setWsiGenerationCompleted(false)
     setWsiSummaryExpanded(false)
 
-    const techReqs = (job.technicalRequirements || []) as Record<string, unknown>[]
-    const techSkills = techReqs
+    // T-1168 (Bug 5 canonical-fix, anti-padrão #6): mesmo merge do
+    // `SCMSectionContent` — leia da fonte enriquecida quando existir.
+    // Antes só lia `job.technicalRequirements`, então o backend recebia 5 skills
+    // mesmo quando o JD enriquecido tinha 9, e o painel mostrava "Apenas 5 ...
+    // recomendado 9". Produtor (a UI/hook que monta o request) é quem corrige.
+    const enrichedJdAny = (job as { enrichedJd?: Record<string, unknown> }).enrichedJd
+    const techSource = (enrichedJdAny?.technical_skills as unknown[] | undefined)
+      ?? ((job.technicalRequirements || []) as Record<string, unknown>[])
+    const techSkills = (techSource as unknown[])
       .map((r) => normalizeTechnicalRequirement(r))
       .filter((s): s is string => Boolean(s))
-    const behavComps = (job.behavioralCompetencies || []) as Record<string, unknown>[]
-    const behavComp = (behavComps.map((c) => c.competency || c.name || c).filter(Boolean) as string[])
+    const behavSource = (enrichedJdAny?.behavioral_competencies as unknown[] | undefined)
+      ?? ((job.behavioralCompetencies || []) as Record<string, unknown>[])
+    const behavComp = ((behavSource as unknown[]).map((c) => {
+      if (typeof c === 'string') return c
+      const rec = c as Record<string, unknown>
+      return (rec.competency || rec.name || rec.text || '') as string
+    }).filter(Boolean) as string[])
     // T-1166 — read job duties from the canonical `responsibilities` field
     // (persisted in `job_vacancies.responsibilities` via migration 132).
     // Falling back to `requirements` would re-introduce the contamination bug
@@ -420,11 +432,23 @@ export function useScreeningConfigManagerCore({ job, onJobUpdate, onFormUpdate, 
         body: JSON.stringify({
           job_id: jobId,
           job_title: job.title,
-          mode,
+          format: mode,
           technical_skills: techSkills,
           behavioral_competencies: behavComp,
-          seniority: getJobSeniority(job as { seniority?: string | null; level?: string | null }) ?? null,
-          description: job.description || null
+          responsibilities,
+          seniority: (() => {
+            // T-1168 (Bug 5 canonical-fix) — schema `WSIScreeningPipelineRequest`
+            // exige `Literal["junior","pleno","senior","lead","executive"]`
+            // LOWERCASE. Antes mandávamos "Pleno"/"Senior" capitalizado e era o
+            // único campo que disparava o 422 "Request validation failed: 1 errors".
+            // Também trocamos `mode` -> `format` e `description` -> `job_description`
+            // para alinhar com o contrato real (Pydantic v2 ignorava silenciosamente).
+            const raw = getJobSeniority(job as { seniority?: string | null; level?: string | null })
+            const norm = raw ? raw.trim().toLowerCase() : null
+            const ALLOWED = new Set(['junior', 'pleno', 'senior', 'lead', 'executive'])
+            return norm && ALLOWED.has(norm) ? norm : null
+          })(),
+          job_description: job.description || null,
         })
       })
       // Bug C (Task #1165 canonical-fix): antes, qualquer non-ok caía no

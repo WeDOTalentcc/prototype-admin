@@ -95,4 +95,58 @@ describe('T-1166 — JD editor: responsibilities NÃO pode vir de job.requiremen
         '`enrichedJd` (criação manual + save inline) pontuam D2=0/15 e D9=0/5 no painel.',
     ).toBe(true)
   })
+
+  it('T-1168: SCMSectionContent prefere `enrichedJd.technical_skills` antes do fallback `job.technicalRequirements`', () => {
+    const src = readFileSync(join(ROOT, 'SCMSectionContent.tsx'), 'utf-8')
+    // Sem essa mescla, o painel "Perguntas de Triagem" mostra a contagem do
+    // form original ("Apenas 5 competências técnicas — recomendado 9") mesmo
+    // quando a LIA enriqueceu o JD para 9 skills. Mesmo padrão T-1167.
+    const hasTechMerge = /enrichedJd[\s\S]{0,200}\.technical_skills[\s\S]{0,200}\?\?[\s\S]{0,200}job\.technicalRequirements/.test(src)
+    expect(
+      hasTechMerge,
+      'T-1168 REGRESSÃO: SCMSectionContent deve preferir `enrichedJd?.technical_skills` antes de ' +
+        '`job.technicalRequirements`. Sem essa mescla, a contagem mostrada e o feed do gerador WSI ' +
+        'usam a fonte stale do form original.',
+    ).toBe(true)
+  })
+
+  it('T-1168: SCMSectionContent prefere `enrichedJd.behavioral_competencies` antes do fallback `job.behavioralCompetencies`', () => {
+    const src = readFileSync(join(ROOT, 'SCMSectionContent.tsx'), 'utf-8')
+    const hasBehavMerge = /enrichedJd[\s\S]{0,300}\.behavioral_competencies[\s\S]{0,300}\?\?[\s\S]{0,300}job\.behavioralCompetencies/.test(src)
+    expect(
+      hasBehavMerge,
+      'T-1168 REGRESSÃO: SCMSectionContent deve preferir `enrichedJd?.behavioral_competencies` antes ' +
+        'de `job.behavioralCompetencies`. Sem isso, painel mostra "4 (recomendado 5)" mesmo quando ' +
+        'o JD enriquecido tem 5+.',
+    ).toBe(true)
+  })
+
+  it('T-1168: useScreeningConfigManagerCore prefere `enrichedJd.technical_skills`/`.behavioral_competencies`', () => {
+    const src = readFileSync(join(ROOT, 'hooks', 'useScreeningConfigManagerCore.tsx'), 'utf-8')
+    const hasTech = /enrichedJd[\s\S]{0,200}\.technical_skills[\s\S]{0,300}\?\?[\s\S]{0,300}job\.technicalRequirements/.test(src)
+    const hasBehav = /enrichedJd[\s\S]{0,200}\.behavioral_competencies[\s\S]{0,300}\?\?[\s\S]{0,300}job\.behavioralCompetencies/.test(src)
+    expect(
+      hasTech && hasBehav,
+      'T-1168 REGRESSÃO: o hook `handleGenerateWSI` deve montar `techSkills`/`behavComp` priorizando ' +
+        '`enrichedJd.technical_skills`/`enrichedJd.behavioral_competencies` antes de cair em ' +
+        '`job.technicalRequirements`/`job.behavioralCompetencies`. Sem isso o backend recebe a lista ' +
+        'stale do form original e o roteiro WSI sai magro.',
+    ).toBe(true)
+  })
+
+  it('T-1168: hook envia payload alinhado com WSIScreeningPipelineRequest (format/job_description + seniority lowercase)', () => {
+    const src = readFileSync(join(ROOT, 'hooks', 'useScreeningConfigManagerCore.tsx'), 'utf-8')
+    // Schema canônico (lia-agent-system/app/schemas/screening.py::WSIScreeningPipelineRequest):
+    //   • `format: Literal["compact","full"]` (NÃO `mode`)
+    //   • `job_description: str | None` (NÃO `description`)
+    //   • `seniority: Literal["junior","pleno","senior","lead","executive"]` (lowercase obrigatório)
+    // Antes mandávamos `mode`, `description` (ignorados) e `seniority="Pleno"` capitalizado —
+    // este último era o ÚNICO erro do 422 "Request validation failed: 1 errors".
+    expect(/format:\s*mode/.test(src), 'T-1168: payload deve usar `format: mode` (não `mode`).').toBe(true)
+    expect(/job_description:/.test(src), 'T-1168: payload deve usar `job_description` (não `description`).').toBe(true)
+    expect(
+      /\.toLowerCase\(\)[\s\S]{0,400}(junior|pleno|senior|lead|executive)/.test(src),
+      'T-1168: hook deve normalizar seniority para LOWERCASE antes de enviar (schema usa Literal lowercase).',
+    ).toBe(true)
+  })
 })
