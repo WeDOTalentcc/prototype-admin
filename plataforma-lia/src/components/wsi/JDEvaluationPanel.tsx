@@ -9,6 +9,8 @@ import {
   CheckCircle,
   Save,
   ListChecks,
+  Wand2,
+  Info,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { JDEvaluationHeader } from "./jd-evaluation/JDEvaluationHeader"
@@ -63,6 +65,7 @@ export function JDEvaluationPanel({
     jdTypedMessage, jdDynamicMessage, jdGenerationStep, jdGenerationError,
     fetchTechSuggestions, fetchBehavSuggestions, generateJD, handleCopyJD,
     fetchEvaluation, handleSaveRascunho, handleSaveDefinitiva, handleSaveAndUpdateJD, handleCancel,
+    isExtracting, extractError, extractFromText,
   } = hook
 
   if (!isExpanded) {
@@ -164,15 +167,36 @@ export function JDEvaluationPanel({
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-4">
                       <div>
-                        <label className="text-xs font-semibold text-lia-text-primary uppercase tracking-wide mb-2 block">Descrição / Sumário</label>
+                        <div className="flex items-center justify-between mb-2">
+                          <label className="text-xs font-semibold text-lia-text-primary uppercase tracking-wide">Descrição / Sumário</label>
+                          {/* T-1167 (Bug #3) — extrai responsabilidades/skills/comp.comp. do texto colado */}
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="h-6 text-micro px-2 border-lia-border-subtle text-lia-text-secondary hover:bg-lia-interactive-hover"
+                            onClick={extractFromText}
+                            disabled={isExtracting || !editDescription || editDescription.trim().length < 50}
+                            title="Detecta responsabilidades, competências técnicas e comportamentais no texto colado e preenche as listas abaixo (sem duplicar o que você já adicionou)."
+                          >
+                            {isExtracting ? (
+                              <Loader2 className="h-3 w-3 mr-1 animate-spin motion-reduce:animate-none" />
+                            ) : (
+                              <Wand2 className="h-3 w-3 mr-1 text-wedo-cyan" />
+                            )}
+                            Extrair do texto
+                          </Button>
+                        </div>
                         <div className="bg-lia-bg-primary rounded-xl border border-lia-border-subtle p-3">
                           <textarea
                             value={editDescription}
                             onChange={(e) => setEditDescription(e.target.value)}
                             className="w-full h-40 text-xs text-lia-text-primary border border-lia-border-subtle rounded-xl p-2.5 resize-none focus:outline-none focus:ring-1 focus:ring-lia-btn-primary-bg/20 focus:border-lia-border-medium bg-lia-bg-secondary"
-                            placeholder="Forneça uma visão geral da vaga, incluindo propósito e como contribui para a organização..."
+                            placeholder="Cole aqui um JD completo (mín. 50 caracteres) e use 'Extrair do texto' para preencher responsabilidades e competências automaticamente."
                           />
                         </div>
+                        {extractError && (
+                          <p role="alert" className="text-micro text-status-error mt-1">{extractError}</p>
+                        )}
                       </div>
 
                       <JDArrayEditor
@@ -253,6 +277,13 @@ export function JDEvaluationPanel({
                     />
                   </div>
 
+                  {/* T-1167 (Bug #2 / Opção B) — aviso visual explícito da diferença entre Rascunho e Definitiva */}
+                  <div className="flex items-start gap-2 mt-4 px-3 py-2 rounded-md bg-lia-bg-secondary border border-lia-border-subtle">
+                    <Info className="h-3.5 w-3.5 text-lia-text-disabled shrink-0 mt-0.5" />
+                    <p className="text-micro text-lia-text-secondary leading-relaxed">
+                      <span className="font-semibold">Rascunho</span> guarda uma cópia privada (apenas neste painel) e <span className="font-semibold">não atualiza</span> os campos canônicos da vaga. Para publicar Responsabilidades / Competências oficialmente, use <span className="font-semibold">Salvar Versão Definitiva</span>.
+                    </p>
+                  </div>
                   <div className="flex items-center justify-between pt-4 mt-4 border-t border-lia-border-subtle">
                     <Button
                       variant="outline"
@@ -263,15 +294,18 @@ export function JDEvaluationPanel({
                       Cancelar
                     </Button>
                     <div className="flex items-center gap-2">
+                      {/* T-1167 (Bug #2 / Opção B) — Rascunho não publica nos campos canônicos da vaga.
+                          Renomeado + tooltip + banner para deixar explícito ao recrutador. */}
                       <Button
                         variant="outline"
                         size="sm"
                         className="h-7 text-micro px-3 border-lia-border-subtle text-lia-text-secondary"
                         onClick={handleSaveRascunho}
                         disabled={isSavingInline}
+                        title="Salva como rascunho privado (campo enriched_jd). NÃO atualiza Responsabilidades / Competências da vaga oficial — para isso use 'Salvar Versão Definitiva'."
                       >
                         {isSavingInline ? <Loader2 className="h-3 w-3 animate-spin motion-reduce:animate-none mr-1" /> : <Save className="h-3 w-3 mr-1" />}
-                        Salvar Rascunho
+                        Salvar Rascunho (não publica)
                       </Button>
                       <Button
                         size="sm"

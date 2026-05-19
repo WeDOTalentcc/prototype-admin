@@ -1,10 +1,12 @@
 import logging
+import re
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
+from app.domains.ai.services.jd_parser_service import jd_parser_service
 from app.domains.job_management.services.jd_generator_service import jd_generator_service
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.compliance.fairness_guard_middleware import check_fairness
@@ -12,6 +14,91 @@ from app.shared.security.require_company_id import require_company_id
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/jd", tags=["jd-generation"])
+
+
+class ExtractJDRequest(BaseModel):
+    """T-1167 (Bug #3) — extrai responsabilidades/skills/comp.comp. de um JD colado em texto livre."""
+    text: str
+    company_id: str
+
+
+class ExtractJDResponse(BaseModel):
+    success: bool
+    job_title: str | None = None
+    responsibilities: list[str] = []
+    technical_skills: list[str] = []
+    behavioral_competencies: list[str] = []
+
+
+@router.post("/extract", response_model=ExtractJDResponse)
+async def extract_jd(
+    request: ExtractJDRequest,
+    current_user: User = Depends(get_current_user_or_demo),
+    company_id: str = Depends(require_company_id),
+):
+    """T-1167 (Bug #3) — endpoint REST que expõe JDParserService.extract_requirements
+    para a aba "Descrição do Cargo" preencher automaticamente responsabilidades/skills/
+    competências a partir do JD colado pelo recrutador no campo DESCRIÇÃO/SUMÁRIO.
+    Antes, o recrutador tinha que digitar tudo de novo manualmente."""
+    text = (request.text or "").strip()
+    if len(text) < 50:
+        raise HTTPException(
+            status_code=422,
+            detail={"error": "text_too_short", "message": "Cole um JD com pelo menos 50 caracteres."},
+        )
+    # T-1167 (Bug #3) — usa SEMPRE o company_id resolvido do JWT pelo Depends.
+    # Ignora qualquer company_id vindo no body (anti tenant-spoofing — code review
+    # do architect achou que request.company_id era usado direto, abrindo
+    # broken tenant isolation contract; require_company_id NÃO faz strict match).
+    tenant_id = company_id
+    # Reutiliza FairnessGuard input antes de mandar pro LLM.
+    fg = check_fairness({"description": text}, context="jd_extract_input", company_id=tenant_id)
+    if fg.is_blocked:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "error": "fairness_blocked",
+                "field": fg.blocked_field,
+                "message": fg.blocked_result.educational_message if fg.blocked_result else "Viés detectado.",
+                "category": fg.blocked_result.category if fg.blocked_result else None,
+            },
+        )
+    try:
+        extracted = await jd_parser_service.extract_requirements(text, company_id=tenant_id)
+    except Exception as exc:
+        # Log técnico só no servidor; resposta genérica para não vazar internals.
+        logger.exception("[extract_jd] parser failed")
+        raise HTTPException(
+            status_code=500,
+            detail={"error": "extract_failed", "message": "Não foi possível extrair os campos agora. Tente novamente."},
+        ) from exc
+
+    responsibilities: list[str] = []
+    technical_skills: list[str] = []
+    behavioral_competencies: list[str] = []
+    for req in extracted.get("requirements", []) or []:
+        text_val = (req.get("requirement") or "").strip()
+        if not text_val:
+            continue
+        category = (req.get("category") or "").lower()
+        if category == "technical":
+            technical_skills.append(text_val)
+        elif category in ("soft_skill", "soft", "behavioral"):
+            behavioral_competencies.append(text_val)
+        elif category in ("experience", "responsibility", "responsibilities"):
+            responsibilities.append(text_val)
+        else:
+            # Heurística leve: itens que começam com verbo no infinitivo ("Desenvolver",
+            # "Coordenar", "Liderar"...) provavelmente são responsabilidades, e não skills.
+            if re.match(r"^[A-ZÁÉÍÓÚÂÊÔÃÕÇ][a-záéíóúâêôãõç]+(ar|er|ir)\b", text_val):
+                responsibilities.append(text_val)
+    return ExtractJDResponse(
+        success=True,
+        job_title=extracted.get("job_title"),
+        responsibilities=responsibilities,
+        technical_skills=technical_skills,
+        behavioral_competencies=behavioral_competencies,
+    )
 
 
 class GenerateJDRequest(BaseModel):

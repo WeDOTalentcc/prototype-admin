@@ -151,6 +151,15 @@ export function useJDEvaluation(props: {
     }
   }, [isEditing])
 
+  // T-1167 (Bug #1) — limpa erro "stale" de geração assim que o usuário
+  // começa a corrigir os dados faltantes. Antes, a mensagem só era zerada
+  // no início da próxima tentativa de generateJD, levando o recrutador a
+  // pensar que ainda há erro mesmo depois de preencher resp/skills/comp.
+  useEffect(() => {
+    if (jdGenerationError) setJdGenerationError(null)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editDescription, editResponsibilities, editTechSkills, editBehavCompetencies])
+
   useEffect(() => {
     if (!jdDynamicMessage) return
     let i = 0
@@ -233,6 +242,54 @@ export function useJDEvaluation(props: {
       setJdDynamicMessage('')
     }
     finally { setIsGeneratingJD(false) }
+  }
+
+  // T-1167 (Bug #3) — extrai responsabilidades/skills/comp.comp. do texto colado
+  // em DESCRIÇÃO/SUMÁRIO usando JDParserService no backend. Antes, o recrutador
+  // tinha que digitar tudo manualmente mesmo já tendo o JD completo em mãos.
+  const [isExtracting, setIsExtracting] = useState(false)
+  const [extractError, setExtractError] = useState<string | null>(null)
+  const extractFromText = async () => {
+    if (!editDescription || editDescription.trim().length < 50) {
+      setExtractError('Cole um JD com pelo menos 50 caracteres em DESCRIÇÃO / SUMÁRIO.')
+      return
+    }
+    setIsExtracting(true); setExtractError(null)
+    try {
+      const response = await fetch('/api/backend-proxy/jd/extract', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: editDescription, company_id: companyId || '' }),
+      })
+      if (!response.ok) {
+        const errPayload = await response.json().catch(() => null) as { detail?: { message?: string } | string; message?: string } | null
+        const detail = errPayload?.detail
+        const msg = typeof detail === 'string' ? detail
+          : (detail && typeof detail === 'object' && typeof detail.message === 'string') ? detail.message
+          : typeof errPayload?.message === 'string' ? errPayload.message
+          : `Falha ao extrair (status ${response.status}).`
+        setExtractError(msg)
+        return
+      }
+      const data = await response.json() as { responsibilities?: string[]; technical_skills?: string[]; behavioral_competencies?: string[] }
+      // Merge sem duplicar — preserva o que o recrutador já tinha digitado.
+      const mergeUnique = (current: string[], incoming: string[] | undefined) => {
+        if (!incoming || incoming.length === 0) return current
+        const seen = new Set(current.map(s => s.toLowerCase().trim()))
+        const merged = [...current]
+        for (const item of incoming) {
+          const k = item.toLowerCase().trim()
+          if (k && !seen.has(k)) { seen.add(k); merged.push(item) }
+        }
+        return merged
+      }
+      setEditResponsibilities(prev => mergeUnique(prev, data.responsibilities))
+      setEditTechSkills(prev => mergeUnique(prev, data.technical_skills))
+      setEditBehavCompetencies(prev => mergeUnique(prev, data.behavioral_competencies))
+    } catch (err) {
+      console.error('[extractFromText] network error:', err)
+      setExtractError('Falha de conexão ao extrair os campos.')
+    } finally { setIsExtracting(false) }
   }
 
   const handleCopyJD = async () => {
@@ -359,5 +416,7 @@ export function useJDEvaluation(props: {
     jdTypedMessage, jdDynamicMessage, jdGenerationStep, jdGenerationError,
     fetchTechSuggestions, fetchBehavSuggestions, generateJD, handleCopyJD,
     fetchEvaluation, handleSaveRascunho, handleSaveDefinitiva, handleSaveAndUpdateJD, handleCancel,
+    // T-1167 (Bug #3) — extração de campos do JD colado
+    isExtracting, extractError, extractFromText,
   }
 }
