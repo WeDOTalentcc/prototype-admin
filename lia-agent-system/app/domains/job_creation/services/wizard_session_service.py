@@ -115,7 +115,11 @@ async def _generate_fallback_reply(
             "(1-2 frases) em PT-BR, natural, perguntando o que o recrutador quer "
             "fazer (tentar de novo, revisar o registrado, ou pedir ajuda). NÃO "
             "invente conteúdo da vaga. NÃO repita prompts canned como 'preciso da "
-            "sua aprovação'."
+            "sua aprovação'. NUNCA peça ao recrutador dados do tenant "
+            "(company_id, id da empresa, nome da empresa, setor, plano, "
+            "nome do consultor, nome do gestor, nome do recrutador) — esses "
+            "vêm do contexto autenticado. Se faltar contexto, ofereça TENTAR "
+            "DE NOVO ou REVISAR o registrado — NUNCA peça dados de identificação."
         )
         if tenant_snippet:
             sys += f"\n\nContexto do tenant: {tenant_snippet[:400]}"
@@ -125,7 +129,25 @@ async def _generate_fallback_reply(
             timeout=timeout_s,
         )
         text = (getattr(result, "content", "") or "").strip()
-        if text and "preciso da sua aprovação" not in text.lower():
+        # R-008 harness guard (2026-05-19): reject responses that ask for
+        # tenant data — regressão B1 anti-pattern (`wizard_no_tenant_leak.jsonl`).
+        # Tenant comes from authenticated context, never from chat input.
+        _tlow = text.lower() if text else ""
+        _tenant_question_patterns = (
+            "company_id", "id da empresa", "nome da empresa", "qual o setor",
+            "qual a empresa", "qual sua empresa", "qual seu plano",
+            "nome do consultor", "nome do gestor", "nome do recrutador",
+            "qual o seu nome", "informe a empresa", "qual é a empresa",
+        )
+        _asks_tenant = any(p in _tlow for p in _tenant_question_patterns)
+        if _asks_tenant:
+            logger.warning(
+                "[WizardSession] fallback LLM tentou perguntar tenant data (stage=%s) "
+                "— bloqueado por harness guard e degradado para hard prefix. "
+                "Resposta rejeitada (preview): %r",
+                stage, text[:120],
+            )
+        if text and "preciso da sua aprovação" not in _tlow and not _asks_tenant:
             return text[:500]
     except Exception as exc:  # noqa: BLE001 — fallback é fail-open p/ hard prefix
         logger.warning(
