@@ -25,12 +25,30 @@ import type { AppRouterInstance } from "next/dist/shared/lib/app-router-context.
 import { toast } from "sonner"
 
 /**
- * Navigate to a job's detail page. Returns true if navigation happened.
+ * Extract the current locale segment from `window.location.pathname`.
  *
- * Currently always returns false (route does not exist). When product
- * restores the route, change this function — DO NOT add `router.push`
- * calls directly in components. The reason this helper exists is to keep
- * that change surface to a single file.
+ * Canonical locales are 2-letter codes — `pt` (default) and `en` —
+ * mirroring `src/i18n/config.ts` and `DashboardLayoutClient`'s
+ * `/^\/[a-z]{2}(?=\/|$)/` strip. The next-intl middleware (`localePrefix:
+ * 'always'`) injects the prefix on every request, so on the client the
+ * regex match below virtually always succeeds. Falls back to `"pt"`
+ * (the app's `defaultLocale`) on SSR or when no prefix is present.
+ */
+function currentLocale(): string {
+  if (typeof window === "undefined") return "pt"
+  const match = window.location.pathname.match(/^\/([a-z]{2})(?=\/|$)/)
+  return match?.[1] ?? "pt"
+}
+
+/**
+ * Navigate to a job's detail page (`/[locale]/jobs/<id>`). Returns true
+ * if navigation was triggered.
+ *
+ * Route restored 2026-05-19 under `(dashboard)/jobs/[id]/` so the page
+ * inherits the global Sidebar + LiaFloat shell. This helper remains the
+ * single navigation source — DO NOT add `router.push('/jobs/...')`
+ * directly in components; the sensor at
+ * `src/lib/navigation/__tests__/job-navigation.test.ts` will fail.
  */
 export function navigateToJobDetail(
   router: AppRouterInstance | null,
@@ -41,18 +59,20 @@ export function navigateToJobDetail(
     console.warn("[job-navigation] navigateToJobDetail called without jobId")
     return false
   }
-  console.warn(
-    `[job-navigation] /jobs/<id> route does not exist yet — jobId=${jobId}. ` +
-      `When canonical route is decided, update src/lib/navigation/job-navigation.ts.`,
-  )
-  toast.success(
-    jobTitle ? `Vaga "${jobTitle}" salva.` : "Vaga salva.",
-    { description: "Atualize a lista para visualizá-la." },
-  )
-  // Suppress unused-arg warning while keeping the API stable for the
-  // future implementation that will use `router.push(...)`.
-  void router
-  return false
+  if (!router) {
+    console.warn(
+      `[job-navigation] navigateToJobDetail called without router — ` +
+        `falling back to toast for jobId=${jobId}`,
+    )
+    toast.success(
+      jobTitle ? `Vaga "${jobTitle}" salva.` : "Vaga salva.",
+      { description: "Atualize a lista para visualizá-la." },
+    )
+    return false
+  }
+  const locale = currentLocale()
+  router.push(`/${locale}/jobs/${encodeURIComponent(jobId)}`)
+  return true
 }
 
 /**

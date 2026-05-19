@@ -40,7 +40,7 @@ vi.mock("@/components/ui/error-boundary-section", () => ({
 
 // ── Import component after mocks ─────────────────────────────────────────────
 
-import JobPage from "@/app/[locale]/jobs/[id]/JobDetailClient"
+import JobPage from "@/app/[locale]/(dashboard)/jobs/[id]/JobDetailClient"
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
