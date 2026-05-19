@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 import { getAuthHeaders } from '@/lib/api/auth-headers'
+import { unwrapEnvelopeSuccess, unwrapEnvelopeError } from '@/lib/api/unwrapEnvelope'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
@@ -34,29 +35,27 @@ export async function POST(request: NextRequest) {
     })
 
     if (!response.ok) {
-      // T-1167 (Bug #2 root cause real) — antes, o proxy DESCARTAVA o body do
-      // backend e devolvia `{success:false, error:"Failed to generate JD"}`,
-      // então o mapper do frontend (extractBackendMessage) não achava
-      // message/detail/lia_suggestion e caía no fallback "Faltam dados na vaga
-      // para gerar a descrição. Preencha responsabilidades e competências..."
-      // — MESMO com as listas preenchidas. Agora forwarded o payload do FastAPI
-      // (formato `{detail: {error, field, message, category}}` do FairnessGuard
-      // ou `{detail: [...]}` do Pydantic) para o mapper poder extrair o motivo
-      // real (FairnessGuard, validação, etc).
+      // T-1167 (Bug #2 root cause real, addendum #2) — backend FastAPI usa
+      // `ResponseEnvelopeMiddleware` que envelopa erros em
+      // `{error:true, status_code, message: <detail original>, request_id}`.
+      // Antes (fix #1): forwarding cru do envelope; mapper procurava
+      // `payload.detail.message` mas o detail original estava sob `.message`.
+      // Agora: unwrap canônico via `unwrapEnvelopeError` -> `{detail: <inner>}`
+      // que casa com o formato esperado por `extractBackendMessage`.
       const errText = await response.text().catch(() => '')
       try {
         const parsed = JSON.parse(errText)
-        return NextResponse.json(parsed, { status: response.status })
+        return NextResponse.json(unwrapEnvelopeError(parsed), { status: response.status })
       } catch {
         return NextResponse.json(
-          { success: false, error: 'Failed to generate JD', detail: { message: errText.slice(0, 200) || `status ${response.status}` } },
+          { detail: { message: errText.slice(0, 200) || `status ${response.status}` } },
           { status: response.status }
         )
       }
     }
 
     const data = await response.json()
-    return NextResponse.json(data)
+    return NextResponse.json(unwrapEnvelopeSuccess(data))
   } catch (error) {
     return NextResponse.json(
       { success: false, error: 'Proxy connection error' },

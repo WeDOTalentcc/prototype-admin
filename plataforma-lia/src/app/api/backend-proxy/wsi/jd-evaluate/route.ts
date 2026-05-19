@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 import { getAuthHeaders } from '@/lib/api/auth-headers'
+import { unwrapEnvelopeSuccess, unwrapEnvelopeError } from '@/lib/api/unwrapEnvelope'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
@@ -37,11 +38,21 @@ export async function POST(request: NextRequest) {
     if (response.status === 422) {
       try {
         const raw = await response.json()
-        // FastAPI wraps HTTPException detail in { "detail": {...} }
-        // Normalize so the hook always receives a flat shape with score/band/indicators at top level
-        const payload = (raw && typeof raw.detail === 'object' && raw.detail !== null && !Array.isArray(raw.detail))
-          ? raw.detail
-          : raw
+        // T-1167 addendum #2 — backend envelopa erros em
+        // `{error:true, status_code:422, message:<detail original>}`.
+        // Antes esse desembrulho só lidava com `.detail` mas não com `.message`
+        // do envelope global, então o hook recebia o envelope cru e o branch
+        // "200 OK + setEvaluation success=false" não disparava (status era 422,
+        // mas o conteúdo do detail ficava aninhado sob message). Agora
+        // `unwrapEnvelopeError` devolve `{detail: <inner>}` e a normalização
+        // canônica abaixo extrai o detail real (com score/band/indicators).
+        const unwrapped = unwrapEnvelopeError(raw)
+        const payload = (unwrapped && typeof unwrapped === 'object' && 'detail' in (unwrapped as Record<string, unknown>)
+          && typeof (unwrapped as Record<string, unknown>).detail === 'object'
+          && (unwrapped as Record<string, unknown>).detail !== null
+          && !Array.isArray((unwrapped as Record<string, unknown>).detail))
+          ? (unwrapped as Record<string, unknown>).detail
+          : unwrapped
         return NextResponse.json(payload, { status: 422 })
       } catch (parseErr) {
         console.error('[jd-evaluate] failed to parse 422 body:', parseErr)
@@ -53,14 +64,25 @@ export async function POST(request: NextRequest) {
     }
 
     if (!response.ok) {
-      return NextResponse.json(
-        { success: false, error: 'Failed to evaluate JD' },
-        { status: response.status }
-      )
+      // T-1167 addendum #2 — unwrap envelope de erro do FastAPI também aqui.
+      const errText = await response.text().catch(() => '')
+      try {
+        const parsed = JSON.parse(errText)
+        return NextResponse.json(unwrapEnvelopeError(parsed), { status: response.status })
+      } catch {
+        return NextResponse.json(
+          { detail: { message: errText.slice(0, 200) || `status ${response.status}` } },
+          { status: response.status }
+        )
+      }
     }
 
+    // T-1167 addendum #2 — unwrap envelope de SUCESSO do FastAPI
+    // (`ResponseEnvelopeMiddleware` envelopa em `{ok:true, data:..., meta:{}}`)
+    // para o hook receber `{success, score, band, indicators}` direto, em vez de
+    // logar "success=false" porque procurava `data.success` no topo do envelope.
     const data = await response.json()
-    return NextResponse.json(data)
+    return NextResponse.json(unwrapEnvelopeSuccess(data))
   } catch (error) {
     console.error('[jd-evaluate] proxy error:', error)
     return NextResponse.json(
