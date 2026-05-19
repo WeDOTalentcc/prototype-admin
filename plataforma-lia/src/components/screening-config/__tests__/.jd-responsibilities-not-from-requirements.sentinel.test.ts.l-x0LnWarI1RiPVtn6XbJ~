@@ -86,8 +86,7 @@ describe('T-1166 — JD editor: responsibilities NÃO pode vir de job.requiremen
     // Padrão obrigatório: a mescla `enrichedJd?.responsibilities ?? job.responsibilities` (com `??`).
     // Garante que vagas legacy (job.responsibilities=null) com JD enriquecido salvo continuam
     // pontuando D2/D9 corretamente no painel de avaliação de qualidade.
-    // Regex tolerante a TS type annotations (que contêm `}`) entre `enrichedJd` e `.responsibilities`.
-    const hasMescla = /enrichedJd[\s\S]{0,200}\.responsibilities[\s\S]{0,200}\?\?[\s\S]{0,200}job\.responsibilities/.test(src)
+    const hasMescla = /enrichedJd[^}]*\.responsibilities[\s\S]{0,80}\?\?[\s\S]{0,80}job\.responsibilities/.test(src)
     expect(
       hasMescla,
       'T-1167 REGRESSÃO: SCMSectionContent deve preferir `enrichedJd?.responsibilities` antes de ' +

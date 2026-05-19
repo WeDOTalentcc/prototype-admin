@@ -164,15 +164,25 @@ def _fg_check_input(request: GenerateJDRequest, company_id: str):
 
 
 def _fg_check_output(full_description: str, company_id: str):
-    """A1/G1: FairnessGuard on generated JD output."""
-    if not full_description:
-        return None
-    fg_output = check_fairness(
-        {"full_description": full_description},
-        context="jd_generation_output",
-        company_id=company_id,
-    )
-    return fg_output
+    """DEPRECATED — T-1167 / Bug #1 (vaga 200).
+
+    Originalmente esta função rodava FairnessGuard Layer 1 (regex) sobre o
+    texto enriquecido que o LLM gerou. Problema: a LIA frequentemente inclui
+    boilerplate de inclusão como "Não discriminamos por orientação sexual,
+    gênero, raça, religião..." — uso LEGÍTIMO E INCLUSIVO desses termos.
+    O regex Layer 1 não distingue uso discriminatório vs. inclusivo, então
+    bloqueava 422 com a `educational_message` da categoria (ex.: ADO 26 sobre
+    orientação sexual), confundindo o recrutador.
+
+    Decisão (usuário, 2026-05): manter `_fg_check_input` (valida o que o
+    RECRUTADOR escreveu — legítimo) e remover a checagem de output. Layer 1
+    regex no output é low-signal high-noise. Caso futuro precise voltar uma
+    proteção semântica no output, usar `check_with_layer3` com prompt que
+    distinga uso inclusivo vs. discriminatório.
+
+    Mantida com retorno None para preservar callsites e o teste sentinela.
+    """
+    return None
 
 
 @router.post("/generate", response_model=None)
@@ -210,19 +220,12 @@ company_id: str = Depends(require_company_id)):
         result["tags"] = _build_tags(request)
         result["summary"] = ""
 
+        # T-1167 / Bug #1 — `_fg_check_output` desativado (ver docstring).
+        # Mantém a chamada (retorna None) para manter a forma do fluxo e
+        # facilitar reativação futura com Layer 3 semântico se necessário.
         fg_output = _fg_check_output(result.get("full_description", ""), request.company_id)
-        if fg_output and fg_output.is_blocked:
-            raise HTTPException(
-                status_code=422,
-                detail={
-                    "error": "fairness_blocked",
-                    "field": "full_description",
-                    "message": fg_output.blocked_result.educational_message if fg_output.blocked_result else "Viés detectado na descrição gerada.",
-                    "category": fg_output.blocked_result.category if fg_output.blocked_result else None,
-                },
-            )
         response = {"success": True, **result}
-        if fg_output and fg_output.has_warnings:
+        if fg_output and getattr(fg_output, "has_warnings", False):
             response["fairness_warning"] = {
                 "blocked": False,
                 "warnings": fg_output.warnings,
@@ -268,17 +271,10 @@ company_id: str = Depends(require_company_id)):
             }
             desc = jd_generator_service.generate_description(job_data_sync)
             
+            # T-1167 / Bug #1 — `_fg_check_output` desativado (retorna None,
+            # ver docstring). Chamada mantida para preservar a forma do fluxo
+            # e facilitar reativação futura com Layer 3 semântico.
             fg_output = _fg_check_output(desc, request.company_id)
-            if fg_output and fg_output.is_blocked:
-                raise HTTPException(
-                    status_code=422,
-                    detail={
-                        "error": "fairness_blocked",
-                        "field": "full_description",
-                        "message": fg_output.blocked_result.educational_message if fg_output.blocked_result else "Viés detectado na descrição gerada.",
-                        "category": fg_output.blocked_result.category if fg_output.blocked_result else None,
-                    },
-                )
             response = {
                 "success": True,
                 "full_description": desc,

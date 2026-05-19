@@ -28,10 +28,23 @@ class WSIQuestionGenerator:
         self._load_rag_templates()
     
     def _load_rag_templates(self):
-        """Carrega templates de perguntas do RAG knowledge base com fallbacks."""
+        """Carrega templates de perguntas do RAG knowledge base com fallbacks.
+
+        T-1167 / Bug #2 — path resolvido RELATIVO AO __file__ deste módulo.
+        Antes usava `Path("lia-agent-system/training/...")` (relativo ao CWD),
+        que sob `cd lia-agent-system && uvicorn ...` resolvia para
+        `lia-agent-system/lia-agent-system/training/...` — inexistente.
+        Resultado: fallback hardcoded minúsculo sempre acionado, modo
+        completo (12 perguntas) crashava em Pydantic → 500 → "Falha ao gerar WSI".
+        """
         from pathlib import Path
-        
-        rag_dir = Path("lia-agent-system/training/rag_knowledge/wsi_methodology")
+
+        # __file__ resolvido =
+        #   .../lia-agent-system/app/domains/cv_screening/services/wsi_service/question_generator.py
+        # parents[0]=wsi_service  parents[1]=services  parents[2]=cv_screening
+        # parents[3]=domains      parents[4]=app       parents[5]=lia-agent-system
+        _LIA_ROOT = Path(__file__).resolve().parents[5]
+        rag_dir = _LIA_ROOT / "training" / "rag_knowledge" / "wsi_methodology"
         
         # Load frameworks overview with fallback
         frameworks_file = rag_dir / "frameworks_overview.md"

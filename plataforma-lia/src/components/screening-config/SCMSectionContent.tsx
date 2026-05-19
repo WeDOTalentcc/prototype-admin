@@ -68,12 +68,21 @@ export function SCMSectionContent(props: SCMSectionContentProps) {
             <JDEvaluationPanel
               className="!mx-0 !mt-0"
               jobTitle={job.title as string}
-              // T-1166 — read `responsibilities` directly from the persisted
-              // field. Legacy vagas (pre-migration 132) may have it null; in
-              // that case explicit `[]` is the correct default. The previous
-              // fallback `(job.requirements) || []` collapsed tech skills into
-              // the "RESPONSABILIDADES" bullet list (vaga 200 bug).
-              responsibilities={(job.responsibilities as string[]) || []}
+              // T-1166 + T-1167 — Prefer `enrichedJd.responsibilities` when present
+              // (set by the JD editor's "Save Enriched" flow), otherwise fall back
+              // to the persisted `job.responsibilities` column (migration 132).
+              // Legacy vagas (pre-migration 132) may have BOTH null; explicit `[]`
+              // is the only safe default. NEVER fall back to `job.requirements`
+              // — that collapses tech skills into the "RESPONSABILIDADES" bullet
+              // list (vaga 200 bug). The mescla `enrichedJd ?? job` keeps the JD
+              // evaluation API in sync with what the user sees on screen, fixing
+              // D2 (Responsibilities) and D9 (Density) scoring 0 even when 4+
+              // duties are visible.
+              responsibilities={
+                ((job.enrichedJd as { responsibilities?: string[] } | undefined)?.responsibilities
+                  ?? (job.responsibilities as string[] | undefined)
+                  ?? []) as string[]
+              }
               technicalSkills={
                 ((job.technicalRequirements || []) as unknown[])
                   .map((r) => normalizeTechnicalRequirement(r))
