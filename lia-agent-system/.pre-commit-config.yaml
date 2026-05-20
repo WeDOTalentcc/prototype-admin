@@ -264,5 +264,12 @@ repos:
         entry: bash -c "python3 scripts/check_pydantic_conventions.py app/ 2>&1 | tail -10; exit 0"
         files: ^app/.*\.py$
         pass_filenames: false
+
+      - id: pydantic-R4-blocking
+        name: "R4 BLOCKING (T-03 ADR-029-v2): no x_company_id via Header (LGPD multi-tenancy)"
+        language: system
+        entry: python3 scripts/check_pydantic_R4_only.py
+        files: ^app/.*\.py$
+        pass_filenames: false
         always_run: false
 
