@@ -22,16 +22,21 @@ async def run(params: dict[str, Any], context: DomainContext) -> dict[str, Any]:
         if not draft:
             return {"success": False, "error": "Proposta nao encontrada"}
 
+        # Sprint F.4 #42 canonical-remap: read canonical column names from the
+        # model and expose wire-level field names ("offered_salary",
+        # "offered_salary_currency", "offered_start_date", "validity_days")
+        # for FE compat.
+        from app.domains.offer.services.offer_service import _validity_days_from_deadline
         job = draft.job_data_snapshot or {}
         candidate = draft.candidate_data_snapshot or {}
         return {
             "success": True,
             "offer_id": str(draft.id),
             "status": draft.status,
-            "offered_salary": float(draft.offered_salary) if draft.offered_salary else None,
-            "offered_salary_currency": draft.offered_salary_currency,
-            "offered_start_date": str(draft.offered_start_date) if draft.offered_start_date else None,
-            "validity_days": draft.validity_days,
+            "offered_salary": float(draft.salary) if draft.salary else None,
+            "offered_salary_currency": draft.currency,
+            "offered_start_date": str(draft.start_date) if draft.start_date else None,
+            "validity_days": _validity_days_from_deadline(draft),
             "candidate_name": candidate.get("name", ""),
             "job_title": job.get("title", ""),
         }

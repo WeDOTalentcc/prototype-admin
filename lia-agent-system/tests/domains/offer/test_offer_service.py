@@ -11,39 +11,41 @@ from decimal import Decimal
 class TestPrefillFromSnapshots:
 
     def test_salary_midpoint_from_range(self):
+        """Sprint F.4 #42 canonical-remap: prefill keys use canonical column
+        names (``salary``, ``benefits``, ``start_date``, ``currency``)."""
         from app.domains.offer.services.offer_service import prefill_from_snapshots
         job = {"salary_range": {"min": 8000, "max": 12000, "currency": "BRL"}, "benefits": []}
         candidate = {}
         fields = prefill_from_snapshots(job, candidate)
-        assert fields["offered_salary"] == Decimal("10000.0")
+        assert fields["salary"] == Decimal("10000.0")
 
     def test_salary_from_candidate_desired_when_no_range(self):
         from app.domains.offer.services.offer_service import prefill_from_snapshots
         job = {"benefits": []}
         candidate = {"desired_salary_min": 9000}
         fields = prefill_from_snapshots(job, candidate)
-        assert fields["offered_salary"] == Decimal("9000")
+        assert fields["salary"] == Decimal("9000")
 
     def test_benefits_copied_from_job(self):
         from app.domains.offer.services.offer_service import prefill_from_snapshots
         job = {"salary_range": {}, "benefits": ["VT", "VR", "Plano de saude"]}
         candidate = {}
         fields = prefill_from_snapshots(job, candidate)
-        assert fields["offered_benefits"] == [{"name": "VT"}, {"name": "VR"}, {"name": "Plano de saude"}]
+        assert fields["benefits"] == [{"name": "VT"}, {"name": "VR"}, {"name": "Plano de saude"}]
 
     def test_default_start_date_is_future(self):
         from app.domains.offer.services.offer_service import prefill_from_snapshots
         job = {}
         candidate = {}
         fields = prefill_from_snapshots(job, candidate)
-        assert fields["offered_start_date"] > date.today()
+        assert fields["start_date"] > date.today()
 
     def test_currency_from_range(self):
         from app.domains.offer.services.offer_service import prefill_from_snapshots
         job = {"salary_range": {"currency": "USD", "min": 5000, "max": 8000}}
         candidate = {}
         fields = prefill_from_snapshots(job, candidate)
-        assert fields["offered_salary_currency"] == "USD"
+        assert fields["currency"] == "USD"
 
 
 class TestSalaryWarnings:

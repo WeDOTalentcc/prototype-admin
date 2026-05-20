@@ -13,13 +13,16 @@ class TestOfferProposalModel:
         assert OfferProposal.__tablename__ == "offer_proposals"
 
     def test_required_columns(self):
+        """Sprint F.4 #42 canonical-remap: required columns now use canonical
+        names (job_vacancy_id, salary, created_by) instead of legacy names
+        (job_id, offered_salary, created_by_user_id)."""
         from lia_models.offer_proposal import OfferProposal
         cols = {c.name for c in OfferProposal.__table__.columns}
         required = {
-            "id", "company_id", "candidate_id", "job_id",
+            "id", "company_id", "candidate_id", "job_vacancy_id",
             "job_data_snapshot", "candidate_data_snapshot",
-            "offered_salary", "status",
-            "created_by_user_id", "created_at", "updated_at",
+            "salary", "status",
+            "created_by", "created_at", "updated_at",
         }
         assert required.issubset(cols), f"Missing columns: {required - cols}"
 

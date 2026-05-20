@@ -32,13 +32,18 @@ class OfferRepository:
     async def get_active_draft(
         self, company_id: str, candidate_id: str, job_id: UUID
     ) -> OfferProposal | None:
-        """Return existing draft for (company, candidate, job), if any."""
+        """Return existing draft for (company, candidate, job), if any.
+
+        Note (Sprint F.4 #42 canonical-remap): caller param remains ``job_id``
+        for backwards compat (FE wire contract). Internally maps to the
+        canonical column ``OfferProposal.job_vacancy_id``.
+        """
         result = await self._db.execute(
             select(OfferProposal).where(
                 and_(
                     OfferProposal.company_id == company_id,
                     OfferProposal.candidate_id == candidate_id,
-                    OfferProposal.job_id == job_id,
+                    OfferProposal.job_vacancy_id == job_id,
                     OfferProposal.status == "draft",
                 )
             )

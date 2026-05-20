@@ -90,7 +90,13 @@ async def _send_via_provider(
         for k, v in variables.items():
             body_html = body_html.replace("{{" + k + "}}", v)
             subject = subject.replace("{{" + k + "}}", v)
-        draft.template_id = template.id
+        # Sprint F.4 #42 canonical-remap: canonical OfferProposal has no
+        # ``template_id`` (UUID FK); it has ``template_version`` (VARCHAR(32)).
+        # We stringify the UUID so the offer still records WHICH template was
+        # used. A future migration could add a proper template_id FK or move
+        # to a versioned-template lookup table.
+        # TODO Sprint F.4 #42: canonical-remap — replace with template.version if EmailTemplate gains one.
+        draft.template_version = str(template.id)
 
     if not recipient_email:
         logger.warning("[OFFER-TOOL] No recipient email for candidate %s", draft.candidate_id)
