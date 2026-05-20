@@ -58,14 +58,14 @@ ALPHA1_SECTOR_RULES: dict = {
         "hitl_threshold": 0.70,
         "auto_approve_threshold": 0.80,
         "max_pipeline_days": 21,
-        "fairness_layer3_enabled": False,
+        "fairness_layer3_enabled": True,
     },
     "logistica": {
         "autonomy_level": "medium",
         "hitl_threshold": 0.70,
         "auto_approve_threshold": 0.80,
         "max_pipeline_days": 14,
-        "fairness_layer3_enabled": False,
+        "fairness_layer3_enabled": True,
     },
     "financeiro": {
         "autonomy_level": "low",

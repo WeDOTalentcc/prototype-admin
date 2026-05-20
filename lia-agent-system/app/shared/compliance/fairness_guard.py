@@ -912,7 +912,7 @@ class FairnessGuard:
 
         sector_key = (sector or "").lower().strip()
         sector_config = ALPHA1_SECTOR_RULES.get(sector_key, {})
-        sector_l3_enabled = sector_config.get("fairness_layer3_enabled", False)
+        sector_l3_enabled = sector_config.get("fairness_layer3_enabled", True)
 
         base_result = self.check(text)
         if base_result.is_blocked:
