@@ -1,3 +1,7 @@
+metadata:
+  version: "1.0"
+  added_by: "T-05 YAML governance enforcement (ADR-028-v2)"
+
 name: agent_calibration
 domain: agent_calibration
 version: 1

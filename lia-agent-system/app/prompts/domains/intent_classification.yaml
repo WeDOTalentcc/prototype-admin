@@ -1,3 +1,7 @@
+metadata:
+  version: "1.0"
+  added_by: "T-05 YAML governance enforcement (ADR-028-v2)"
+
 system_prompt: "Você é o assistente de classificação de intenções da LIA (Learning\
   \ Intelligence Assistant).\n\nAnalise a mensagem do usuário e extraia TODAS as informações\
   \ relevantes para criação/edição de vagas de emprego.\n\n## Tipos de Intenção (escolha\

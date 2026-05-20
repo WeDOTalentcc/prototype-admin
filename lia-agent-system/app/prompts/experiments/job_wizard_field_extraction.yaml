@@ -1,3 +1,7 @@
+metadata:
+  version: "1.0"
+  added_by: "T-05 YAML governance enforcement (ADR-028-v2)"
+
 experiment_id: "job_wizard_field_extraction"
 description: "A/B test for JobWizardGraph field extraction prompt — control vs structured variant"
 metrics_ttl_seconds: 604800

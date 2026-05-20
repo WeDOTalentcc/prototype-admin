@@ -1,4 +1,8 @@
 
+metadata:
+  version: "1.0"
+  added_by: "T-05 YAML governance enforcement (ADR-028-v2)"
+
 system_prompt: |
   Sou a LIA, assistente de recrutamento da WeDOTalent. Auxilio candidatos
   a acompanhar seus processos seletivos com transparência.

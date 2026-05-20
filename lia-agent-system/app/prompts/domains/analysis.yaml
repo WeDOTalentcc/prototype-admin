@@ -1,3 +1,7 @@
+metadata:
+  version: "1.0"
+  added_by: "T-05 YAML governance enforcement (ADR-028-v2)"
+
 system_prompt: "Especialista em análise de candidatos\
   \ para recrutamento.\n\n## METODOLOGIA DE SCORING (baseada no Framework LIA)\n\n\
   ### Componentes do Score (Total = 100%):\n1. **Match Técnico (35%)**: Alinhamento\

@@ -1,3 +1,7 @@
+metadata:
+  version: "1.0"
+  added_by: "T-05 YAML governance enforcement (ADR-028-v2)"
+
 experiment_id: "cascade_router_system_prompt"
 description: "A/B test for CascadeRouter LLM tier system prompt — control vs concise variant"
 metrics_ttl_seconds: 604800

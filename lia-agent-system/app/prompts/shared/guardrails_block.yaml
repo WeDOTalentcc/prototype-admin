@@ -7,6 +7,10 @@
 # Domain-specific guardrails (wizard competency minimums, pipeline rejection
 # reasons, sourcing diversity alerts) stay in each domain's *_system_prompt.py.
 
+metadata:
+  version: "1.0"
+  added_by: "T-05 YAML governance enforcement (ADR-028-v2)"
+
 version: 1
 
 # ---------------------------------------------------------------------------

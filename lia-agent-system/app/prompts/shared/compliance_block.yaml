@@ -9,6 +9,10 @@
 #
 # Three variants by agent type. ComplianceDomainPrompt selects the right one.
 
+metadata:
+  version: "1.0"
+  added_by: "T-05 YAML governance enforcement (ADR-028-v2)"
+
 version: 1
 
 # ---------------------------------------------------------------------------

@@ -271,5 +271,12 @@ repos:
         entry: python3 scripts/check_pydantic_R4_only.py
         files: ^app/.*\.py$
         pass_filenames: false
+
+      - id: yaml-metadata-version
+        name: "T-05 ADR-028-v2: YAML metadata.version enforcement"
+        language: system
+        entry: python3 scripts/check_yaml_metadata_version.py
+        files: ^app/prompts/.*\.(yaml|yml)$
+        pass_filenames: false
         always_run: false
 
