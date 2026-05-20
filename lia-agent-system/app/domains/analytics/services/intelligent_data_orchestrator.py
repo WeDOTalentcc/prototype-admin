@@ -153,7 +153,7 @@ class IntelligentDataOrchestrator:
     def _get_learning_loop(self):
         """Lazy load learning loop service."""
         if self._learning_loop is None:
-            from app.shared.services.learning_loop_service import learning_loop_service
+            from app.shared.learning.learning_loop_service import learning_loop_service
             self._learning_loop = learning_loop_service
         return self._learning_loop
     

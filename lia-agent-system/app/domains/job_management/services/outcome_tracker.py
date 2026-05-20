@@ -16,7 +16,7 @@ from app.domains.job_management.repositories.job_vacancy_crud_repository import 
 from lia_models.candidate import VacancyCandidate
 from lia_models.feedback_learning import JobOutcome, JobOutcomeType
 from lia_models.job_vacancy import JobVacancy
-from app.shared.services.feedback_learning_service import FeedbackLearningService
+from app.domains.analytics.services.feedback_learning_service import FeedbackLearningService
 
 logger = logging.getLogger(__name__)
 

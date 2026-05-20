@@ -30,7 +30,7 @@ from app.shared.services.config_completeness_service import ConfigCompletenessSe
 from app.shared.services.skills_catalog_service import skills_catalog_service
 from app.shared.services.responsibilities_catalog_service import responsibilities_catalog_service
 from app.domains.job_management.services.jd_generator_service import jd_generator_service
-from app.shared.services.feedback_learning_service import FeedbackLearningService
+from app.domains.analytics.services.feedback_learning_service import FeedbackLearningService
 from app.domains.ai.services.llm import llm_service
 
 USE_ENHANCED_CLASSIFIER = True

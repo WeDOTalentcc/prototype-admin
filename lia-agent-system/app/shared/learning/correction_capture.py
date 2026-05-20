@@ -58,7 +58,7 @@ class LearningSignal:
 # ---------------------------------------------------------------------------
 
 
-class LearningLoopService:
+class CorrectionCaptureService:
     """Captures learning signals and gates clarification requests.
 
     Designed to be instantiated once per app lifetime (singleton via DI).

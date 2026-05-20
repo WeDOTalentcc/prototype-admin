@@ -617,7 +617,7 @@ class TestRemainingZeroCoverageImports:
         _try_import("app.domains.job_creation.feature_flag")
 
     def test_learning_loop(self):
-        _try_import("app.shared.learning.learning_loop")
+        _try_import("app.shared.learning.correction_capture")
 
     def test_reranker(self):
         _try_import("app.shared.rag.reranker")
