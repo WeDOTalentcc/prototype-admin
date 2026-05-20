@@ -107,7 +107,10 @@ def check_fairness(
                         company_id=company_id,
                     ))
             except Exception:
-                pass
+                logger.error(
+                    "[fairness_guard_middleware] log_check failed company_id=%s — LGPD audit gap",
+                    company_id, exc_info=True,
+                )
 
             if raise_on_block:
                 raise FairnessViolation(result=result, field_name=field_name)

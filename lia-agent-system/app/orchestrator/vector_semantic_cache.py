@@ -215,8 +215,11 @@ class VectorSemanticCache:
                                     "domain=%s — considere reduzir ROUTER_VECTOR_SIMILARITY_THRESHOLD",
                                     _nm_sim, self.threshold, _nm_domain,
                                 )
-                    except Exception:
-                        pass
+                    except Exception as nm_exc:
+                        logger.warning(
+                            "[VectorSemanticCache] near-miss query failed - threshold A/B sinal perdido: %s",
+                            nm_exc, exc_info=True,
+                        )
                     return None
 
                 row_id, domain_id, confidence, source, hit_count = row

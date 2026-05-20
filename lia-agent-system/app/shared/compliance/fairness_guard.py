@@ -1016,8 +1016,11 @@ class FairnessGuard:
             try:
                 for _ in blocked:
                     fairness_blocks_total.labels(category="learning_batch").inc()
-            except Exception:
-                pass
+            except Exception as metric_exc:
+                logger.error(
+                    "[fairness_guard.LearningBatchValidator] metric inc failed - fairness alarm gap: %s",
+                    metric_exc, exc_info=True,
+                )
 
         return LearningBatchValidationResult(
             is_clean=len(blocked) == 0,

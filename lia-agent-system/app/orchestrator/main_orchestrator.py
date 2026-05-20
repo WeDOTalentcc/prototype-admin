@@ -606,8 +606,12 @@ class MainOrchestrator:
                                     or _tenant_cfg.get("primary_provider")
                                     or "claude"
                                 )
-                        except Exception:
-                            pass  # Fail-open: use claude default
+                        except Exception as _llm_cfg_exc:
+                            logger.warning(
+                                "[main_orchestrator] tenant LLM config lookup failed company_id=%s - degraded to claude default: %s",
+                                _loop_company_id, _llm_cfg_exc, exc_info=True,
+                            )
+                            # Fail-open: use claude default
 
                     _agentic_result = await agentic_loop.run(
                         user_message=ctx.message,

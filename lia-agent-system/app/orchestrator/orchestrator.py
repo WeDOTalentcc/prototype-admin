@@ -300,8 +300,11 @@ class Orchestrator:
                         intent=intent, context=ctx, user_message=sanitized,
                         company_id=ctx.get("company_id"))
                     await self._response_cache.cache_response(ck, result, intent=intent)
-                except Exception:
-                    pass
+                except Exception as cache_exc:
+                    logger.warning(
+                        "[orchestrator] response_cache write failed intent=%s - next request pays full LLM cost: %s",
+                        intent, cache_exc, exc_info=True,
+                    )
             return result
         except Exception as e:
             logger.error(f"Orchestration failed: {e}", exc_info=True)
