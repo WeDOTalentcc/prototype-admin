@@ -767,7 +767,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.put("/job-vacancies/{job_vacancy_id}", response_model=JobVacancyResponse)
 async def update_job_vacancy(
-    job_vacancy_id: str = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    job_vacancy_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     job_data: JobVacancyUpdate = ...,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo), 
@@ -856,7 +856,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.delete("/job-vacancies/{job_vacancy_id}", response_model=JobVacancyDeleteResponse)
 async def delete_job_vacancy(
-    job_vacancy_id: str = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    job_vacancy_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_active_user), 
 company_id: str = Depends(require_company_id)):
@@ -903,7 +903,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.patch("/job-vacancies/{job_vacancy_id}/status", response_model=JobVacancyStatusUpdateResponse)
 async def update_job_vacancy_status(
-    job_vacancy_id: str = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    job_vacancy_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     status: str = ...,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_active_user), 
@@ -989,7 +989,7 @@ class CloneFromTemplateRequest(BaseModel):
 
 @router.post("/job-vacancies/{job_id}/duplicate", response_model=DuplicateJobResponse)
 async def duplicate_job(
-    job_id: str = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     request: DuplicateJobRequest = ...,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo), 
@@ -1030,7 +1030,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.post("/job-vacancies/{job_id}/clone-from-template", response_model=CloneFromTemplateResponse)
 async def clone_from_template(
-    job_id: str = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     request: CloneFromTemplateRequest = ...,
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo),
     current_user: User = Depends(get_current_user_or_demo), 
@@ -1068,7 +1068,7 @@ company_id: str = Depends(require_company_id)):
 
 @router.get("/job-vacancies/{job_id}/clone-summary", response_model=CloneSummaryResponse)
 async def get_clone_summary(
-    job_id: str = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
+    job_id: UUID = Path(..., pattern=r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"),
     repo: JobVacancyCRUDRepository = Depends(get_job_vacancy_crud_repo), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)

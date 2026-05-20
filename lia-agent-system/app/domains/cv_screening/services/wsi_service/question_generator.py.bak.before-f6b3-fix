@@ -12,7 +12,6 @@ from app.domains.cv_screening.constants.wsi_constants import SENIORITY_DISTRIBUT
 from app.domains.ai.services.llm import llm_service
 
 from .models import (
-    safe_json_parse,
     Competency,
     OceanTraitScore,
     SENIORITY_BIGFIVE_TOP_N,

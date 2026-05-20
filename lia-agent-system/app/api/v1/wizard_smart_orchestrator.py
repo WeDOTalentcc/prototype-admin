@@ -1,72 +1,99 @@
 """
-Wizard Smart Orchestrator API - LLM-powered Job Wizard Graph Execution.
+Wizard Smart Orchestrator API - REST wrapper over canonical WizardSessionService.
 
-This endpoint executes the JobWizardGraph with LLM processing,
-enabling intelligent intent classification, field extraction,
-tool routing, and response generation.
+Task #1085 / T2 superseded the legacy JobWizardGraph engine. This endpoint is
+the REST counterpart of the canonical WebSocket flow in agent_chat_ws.py:1108,
+delegating to ``WizardSessionService.process_message(...)`` which drives the
+12-stage JobCreationGraph (intake → jd_enrichment → bigfive → salary →
+competency → wsi_questions → eligibility → review → publish → calibration →
+handoff → done).
+
+Frontend contract (plataforma-lia/src/services/chat-api.ts:188) is preserved:
+same SmartOrchestrateRequest/SmartOrchestrateResponse schemas.
 """
 import logging
-from typing import Any
+from typing import Any, Literal
 
-from fastapi import APIRouter, Depends
-from lia_agents_core.state_machine import WizardStage
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 
-from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
+from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
-from app.core.database import AsyncSessionLocal
-from app.domains.job_management.tools.job_wizard_tools import generate_enriched_jd  # noqa: F401
-from app.domains.job_management.services.job_vacancy_service import job_vacancy_service
-from app.shared.tenant_session import create_session_id
-from app.domains.cv_screening.services.screening_question_set_service import (
-    get_screening_question_set_service,
-    ScreeningQuestionSetService,
-)
 from app.shared.security.require_company_id import require_company_id
+from app.shared.sessions.thread_id import derive_thread_id
+from app.shared.tenant_session import create_session_id
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-
+# Frontend uses the 9-stage UI taxonomy. Backend canonical (JobCreationGraph)
+# uses the 12-stage WizardStage from app/domains/job_creation/state.py.
+# Mappings are best-effort: when frontend sends an ambiguous stage we let the
+# graph's prior_state decide the actual stage (frontend hint is advisory).
 FRONTEND_TO_BACKEND_STAGE: dict[str, str] = {
-    "input-evaluation": WizardStage.TITLE_DEPARTMENT.value,
-    "title-department": WizardStage.TITLE_DEPARTMENT.value,
-    "job-summary": WizardStage.JOB_SUMMARY.value,
-    "jd-enrichment": WizardStage.JOB_SUMMARY.value,
-    "job_summary": WizardStage.JOB_SUMMARY.value,
-    "salary": WizardStage.SALARY.value,
-    "competencies": WizardStage.COMPETENCIES.value,
-    "wsi-questions": WizardStage.SCREENING.value,
-    "screening": WizardStage.SCREENING.value,
-    "review-publish": WizardStage.REVIEW.value,
-    "review": WizardStage.REVIEW.value,
-    "complete": WizardStage.COMPLETE.value,
-    "initial": WizardStage.INITIAL.value,
+    "initial": "intake",
+    "input-evaluation": "intake",
+    "title-department": "intake",
+    "job-summary": "jd_enrichment",
+    "jd-enrichment": "jd_enrichment",
+    "job_summary": "jd_enrichment",
+    "salary": "salary",
+    "competencies": "competency",
+    "wsi-questions": "wsi_questions",
+    "screening": "wsi_questions",
+    "review-publish": "review",
+    "review": "review",
+    "complete": "done",
 }
 
 BACKEND_TO_FRONTEND_STAGE: dict[str, str] = {
-    WizardStage.INITIAL.value: "input-evaluation",
-    WizardStage.TITLE_DEPARTMENT.value: "input-evaluation",
-    WizardStage.JOB_SUMMARY.value: "jd-enrichment",
-    WizardStage.SALARY.value: "salary",
-    WizardStage.COMPETENCIES.value: "competencies",
-    WizardStage.SCREENING.value: "wsi-questions",
-    WizardStage.REVIEW.value: "review-publish",
-    WizardStage.COMPLETE.value: "complete",
+    "intake": "input-evaluation",
+    "jd_enrichment": "jd-enrichment",
+    "bigfive": "competencies",
+    "salary": "salary",
+    "competency": "competencies",
+    "wsi_questions": "wsi-questions",
+    "eligibility": "review-publish",
+    "review": "review-publish",
+    "publish": "review-publish",
+    "calibration": "review-publish",
+    "handoff": "complete",
+    "done": "complete",
 }
 
 
 class SmartOrchestrateRequest(BaseModel):
-    """Request for smart orchestration using LLM-powered graph."""
-    message: str = Field(..., description="User message to process")
+    """Request for smart orchestration using the canonical wizard graph.
+
+    Two modes:
+
+    1. **Normal turn** (default): user sends free text. Handler calls
+       ``WizardSessionService.process_message(...)`` → drives the
+       JobCreationGraph forward.
+
+    2. **HITL gate resume** (when ``approval_decision`` is set): user clicked
+       Approve/Reject on a pending wizard gate (e.g. jd_enrichment,
+       wsi_questions). Handler calls
+       ``wizard_gate_service.resume_gate(...)`` → unblocks the graph at the
+       ``langgraph.types.interrupt()`` checkpoint. The ``message`` field is
+       ignored in this mode (the gate decision is what matters).
+
+    The two modes are mutually exclusive: ``approval_decision`` requires
+    ``pending_id``, and presence of either short-circuits the normal-turn
+    path.
+    """
+    message: str = Field(
+        default="",
+        description="User message to process. Ignored when approval_decision is set."
+    )
     current_stage: str = Field(
         default="input-evaluation",
-        description="Current wizard stage (frontend format)"
+        description="Current wizard stage (frontend format, advisory)"
     )
     collected_data: dict[str, Any] = Field(
         default_factory=dict,
-        description="Data already collected in the wizard"
+        description="Data already collected in the wizard (carried as right_panel_form context)"
     )
     conversation_history: list[dict[str, str]] = Field(
         default_factory=list,
@@ -76,237 +103,244 @@ class SmartOrchestrateRequest(BaseModel):
         None,
         description="Conversation ID for context continuity"
     )
-    company_id: str | None = Field(None, description="Company ID override")
-    user_id: str | None = Field(None, description="User ID override")
+    company_id: str | None = Field(None, description="Company ID override (ignored; comes from JWT)")
+    user_id: str | None = Field(None, description="User ID override (ignored; comes from JWT)")
+
+    # ── HITL gate resume signaling ────────────────────────────────────────
+    # Frontend sets these when the user clicks Approve/Reject on a pending
+    # wizard gate card. Mirrors the WS pattern in agent_chat_ws.py:683-687.
+    approval_decision: Literal["approved", "rejected"] | None = Field(
+        None,
+        description=(
+            "When set, this request is a HITL gate resume — NOT a new "
+            "message. Backend invokes wizard_gate_service.resume_gate() "
+            "instead of process_message(). Requires pending_id."
+        ),
+    )
+    pending_id: str | None = Field(
+        None,
+        description=(
+            "UUID4 of the hitl_service.request_approval() that produced "
+            "the pending gate. Required when approval_decision is set."
+        ),
+    )
+    approval_comment: str | None = Field(
+        None,
+        description="Optional approver comment, persisted in audit trail.",
+    )
+
+    def hitl_validation_error(self) -> str | None:
+        """Return canonical error string if HITL fields are inconsistent.
+
+        Pydantic-level validator was avoided here because the global
+        ``ResponseEnvelopeMiddleware`` cannot JSON-serialize ``ValueError``
+        bubbled from a model_validator. Handler invokes this and returns
+        a structured 422 response when non-None.
+        """
+        if (self.approval_decision is None) ^ (self.pending_id is None):
+            return (
+                "approval_decision and pending_id must be provided together. "
+                "Set both to resume a HITL gate, or neither for a normal turn."
+            )
+        return None
 
 
 class SmartOrchestrateResponse(BaseModel):
     """Response from smart orchestration."""
     success: bool = Field(..., description="Whether processing succeeded")
-    lia_message: str = Field(
-        default="",
-        description="LIA's response generated by LLM"
-    )
+    lia_message: str = Field(default="", description="LIA's response generated by LLM")
     detected_criteria: dict[str, Any] = Field(
         default_factory=dict,
-        description="Extracted fields from user message"
+        description="Extracted/accumulated fields from job_draft"
     )
     next_stage: str | None = Field(
         None,
         description="Next stage if transition occurred (frontend format)"
     )
-    auto_transition: bool = Field(
-        default=False,
-        description="Whether to auto-transition to next stage"
-    )
-    tool_results: list[dict[str, Any]] = Field(
-        default_factory=list,
-        description="Results from executed tools"
-    )
-    confidence: float = Field(
-        default=0.0,
-        ge=0.0,
-        le=1.0,
-        description="Overall confidence of the response"
-    )
-    reasoning_steps: list[str] = Field(
-        default_factory=list,
-        description="Reasoning steps for debugging"
-    )
-    intent: str | None = Field(
-        None,
-        description="Detected user intent"
-    )
-    error: str | None = Field(
-        None,
-        description="Error message if processing failed"
-    )
+    auto_transition: bool = Field(default=False)
+    tool_results: list[dict[str, Any]] = Field(default_factory=list)
+    confidence: float = Field(default=0.0, ge=0.0, le=1.0)
+    reasoning_steps: list[str] = Field(default_factory=list)
+    intent: str | None = Field(None, description="Detected user intent")
+    error: str | None = Field(None, description="Error message if processing failed")
     awaiting_confirmation: bool = Field(
         default=False,
-        description="Whether the wizard is blocked waiting for user confirmation"
+        description="True when wizard is paused at a HITL gate (jd_enrichment, wsi_questions)"
     )
-    job_vacancy_id: str | None = Field(
-        None,
-        description="ID of created job vacancy when wizard completes"
-    )
-    job_published: bool = Field(
-        default=False,
-        description="Whether the job was successfully published to database"
-    )
+    job_vacancy_id: str | None = Field(None)
+    job_published: bool = Field(default=False)
     conversation_id: str | None = Field(
         None,
-        description="Session/conversation ID — send back in next request to maintain multi-turn memory"
+        description="Send back in next request to maintain multi-turn memory"
     )
 
 
+def _map_frontend_to_backend_stage(frontend_stage: str) -> str:
+    return FRONTEND_TO_BACKEND_STAGE.get(frontend_stage, "intake")
 
 
-
-
-
-
-
-
+def _map_backend_to_frontend_stage(backend_stage: str | None) -> str | None:
+    if not backend_stage:
+        return None
+    return BACKEND_TO_FRONTEND_STAGE.get(backend_stage, "input-evaluation")
 
 
 @router.post("/smart-orchestrate", response_model=SmartOrchestrateResponse)
 async def smart_orchestrate(
     request: SmartOrchestrateRequest,
     current_user: User = Depends(get_current_user_or_demo),
-company_id: str = Depends(require_company_id)) -> SmartOrchestrateResponse:
+    company_id: str = Depends(require_company_id),
+) -> SmartOrchestrateResponse:
     """
-    Execute the JobWizardGraph with LLM processing.
-    
-    This endpoint runs the complete LangGraph-style state machine,
-    including:
-    1. Intent classification (what does the user want?)
-    2. Field extraction (what data is being provided?)
-    3. Tool routing (should we call any tools?)
-    4. Tool execution (execute matched tools)
-    5. Response generation (generate LIA's response)
-    6. Stage transition (should we move to next stage?)
-    
-    Returns:
-        SmartOrchestrateResponse with LIA's message and extracted data
+    Execute the canonical JobCreationGraph via WizardSessionService.
+
+    REST counterpart of the WebSocket wizard path in agent_chat_ws.py:1108.
+    Same service, same graph, same checkpointer — just synchronous request/
+    response instead of streaming WS frames.
     """
-    session_id = request.conversation_id or create_session_id(current_user.company_id)
-    company_id = request.company_id or get_user_company_id(current_user)
-    user_id = request.user_id or (str(current_user.id) if current_user.id is not None else "anonymous")
-    
-    logger.info(
-        f"Smart orchestrate request: stage={request.current_stage}, "
-        f"message_len={len(request.message)}, session={session_id}"
-    )
-    
-    try:
-        backend_stage = map_frontend_to_backend_stage(request.current_stage)
-        
-        messages = build_messages_from_history(
-            request.conversation_history,
-            request.message
+    hitl_err = request.hitl_validation_error()
+    if hitl_err is not None:
+        raise HTTPException(status_code=422, detail=hitl_err)
+
+    user_id = str(current_user.id) if getattr(current_user, "id", None) else "anonymous"
+    session_id = request.conversation_id or create_session_id(company_id)
+    thread_id = derive_thread_id(company_id, session_id)
+
+    # ── HITL gate resume branch ─────────────────────────────────────────
+    # Mirrors the canonical WS path in agent_chat_ws.py:683-687. When the
+    # frontend sets approval_decision + pending_id, this request is a gate
+    # resume, not a new message — the user already saw the awaiting payload
+    # and is now deciding.
+    if request.approval_decision is not None and request.pending_id is not None:
+        logger.info(
+            "smart_orchestrate HITL resume: decision=%s pending_id=%s session=%s thread=%s",
+            request.approval_decision, request.pending_id, session_id, thread_id,
         )
-        
-        initial_state: JobWizardState = {
-            "messages": messages,
-            "current_stage": backend_stage,
-            "job_draft": request.collected_data.copy(),
-            "confidence_scores": {},
-            "reasoning_steps": [],
-            "next_action": None,
-            "intent": None,
-            "tool_calls": [],
-            "tool_results": [],
-            "session_id": session_id,
-            "company_id": company_id,
-            "user_id": user_id,
-            "should_continue": False,
-            "needs_clarification": False,
-            "error": None,
-            "response_text": None,
-            "extracted_fields": {},
-            "current_node": "start",
-            "auto_transition": False,
-            "awaiting_confirmation": False,
-        }
-        
-        logger.debug(f"Initial state created for session {session_id}")
-        
-        final_state = await job_wizard_graph.invoke(initial_state)
-        
-        detected_criteria = normalize_fields_for_frontend(final_state.get("extracted_fields", {}))
-        for key, value in final_state.get("job_draft", {}).items():
-            if key not in request.collected_data or request.collected_data.get(key) != value:
-                if value is not None:
-                    detected_criteria[key] = value
-        
-        current_backend_stage = final_state.get("current_stage", backend_stage)
-        next_stage = None
-        auto_transition = False
-        
-        if current_backend_stage != backend_stage:
-            next_stage = map_backend_to_frontend_stage(current_backend_stage)
-            auto_transition = True
-        elif final_state.get("should_continue"):
-            auto_transition = True
-        
-        # generate_enriched_jd is now called autonomously by the WizardReActAgent
-        # when the stage is jd-enrichment and title is available (see wizard_system_prompt.py).
-        # The endpoint no longer bypasses agent autonomy by calling it directly.
-        tool_results = final_state.get("tool_results", [])
-        
-        awaiting_confirmation = final_state.get("awaiting_confirmation", False)
-        
-        logger.debug(
-            f"Stage mapping validation: frontend='{request.current_stage}' -> "
-            f"backend='{backend_stage}' -> current='{current_backend_stage}' -> "
-            f"frontend_next='{next_stage}', awaiting_confirmation={awaiting_confirmation}"
-        )
-        
-        job_vacancy_id = None
-        job_published = False
-
-        # Auto-save draft progress after each successful agent turn (not only at completion).
-        # Persists collected_data + detected_criteria into Redis so the session can be
-        # recovered if the user refreshes mid-wizard.
-        if detected_criteria and current_backend_stage != WizardStage.COMPLETE.value:
-            try:
-                import json
-
-                from app.core.config import settings
-                merged_progress = {**request.collected_data, **detected_criteria}
-                if merged_progress.get("title") or merged_progress.get("job_title"):
-                    redis_key = f"wizard_draft:{session_id}"
-                    async with __import__("redis.asyncio", fromlist=["Redis"]).Redis.from_url(
-                        settings.REDIS_URL, decode_responses=True
-                    ) as redis_client:
-                        await redis_client.setex(redis_key, 86400, json.dumps(merged_progress))
-                    logger.debug(f"[wizard] Draft auto-saved to Redis: key={redis_key}")
-            except Exception as draft_err:
-                logger.debug(f"[wizard] Draft auto-save skipped: {draft_err}")
-
-        if current_backend_stage == WizardStage.COMPLETE.value:
-            merged_draft = {**request.collected_data, **detected_criteria}
-            
-            job_vacancy_id = await finalize_job_vacancy_from_wizard(
-                job_draft=merged_draft,
-                session_id=session_id,
+        try:
+            from app.domains.job_creation.services.wizard_gate_service import (
+                wizard_gate_service,
+            )
+            gate_result = await wizard_gate_service.resume_gate(
+                thread_id=thread_id,
+                pending_id=request.pending_id,
+                decision=request.approval_decision,
+                ws_session_id=session_id,
                 company_id=company_id,
                 user_id=user_id,
+                comment=request.approval_comment,
+                resume_domain="wizard",
             )
-            
-            if job_vacancy_id:
-                job_published = True
-                logger.info(f"🎉 Wizard completed! Job vacancy created: {job_vacancy_id}")
-            else:
-                logger.warning("⚠️ Wizard completed but job vacancy creation failed")
-        
+            gate_message = gate_result.get("message") or ""
+            return SmartOrchestrateResponse(
+                success=True,
+                lia_message=gate_message,
+                detected_criteria={},
+                next_stage=None,
+                auto_transition=False,
+                tool_results=[],
+                confidence=0.95,
+                reasoning_steps=[],
+                intent=f"hitl_{request.approval_decision}",
+                awaiting_confirmation=False,
+                job_vacancy_id=None,
+                job_published=False,
+                conversation_id=session_id,
+            )
+        except ValueError as gate_val_exc:
+            logger.error("smart_orchestrate HITL invalid: %s", gate_val_exc)
+            return SmartOrchestrateResponse(
+                success=False,
+                lia_message="Pedido de aprovação inválido.",
+                error=str(gate_val_exc),
+                conversation_id=session_id,
+            )
+        except Exception as gate_exc:
+            logger.exception("smart_orchestrate HITL failed: %s", gate_exc)
+            return SmartOrchestrateResponse(
+                success=False,
+                lia_message="Erro ao processar a aprovação do wizard.",
+                error=f"{type(gate_exc).__name__}: {gate_exc}",
+                conversation_id=session_id,
+            )
+
+    logger.info(
+        "smart_orchestrate request: stage=%s msg_len=%d session=%s thread=%s",
+        request.current_stage, len(request.message), session_id, thread_id,
+    )
+
+    context: dict[str, Any] = {
+        # WizardSessionService carries these context keys forward into state:
+        # right_panel_form, attached_file_text, tenant_context_snippet.
+        # Frontend's collected_data maps to right_panel_form (the wizard form
+        # state mirrored from UI).
+        "right_panel_form": request.collected_data or {},
+        "conversation_history": request.conversation_history or [],
+        "frontend_stage_hint": _map_frontend_to_backend_stage(request.current_stage),
+    }
+
+    try:
+        from app.domains.job_creation.services.wizard_session_service import (
+            WizardSessionService,
+        )
+
+        recruiter_message, stage_payload, tokens_emitted = (
+            await WizardSessionService.process_message(
+                thread_id=thread_id,
+                user_message=request.message,
+                user_id=user_id,
+                company_id=company_id,
+                session_id=session_id,
+                context=context,
+                on_token=None,
+            )
+        )
+
+        stage_payload = stage_payload or {}
+        backend_stage = stage_payload.get("stage") or stage_payload.get("current_stage")
+        next_stage = _map_backend_to_frontend_stage(backend_stage)
+        # Canonical: `requires_approval` is the structured HITL gate signal
+        # (jd_enrichment, wsi_questions). `awaiting_confirmation` kept for
+        # legacy callers that may inspect both.
+        awaiting = bool(
+            stage_payload.get("requires_approval")
+            or stage_payload.get("awaiting_confirmation")
+        )
+        job_draft = stage_payload.get("data") or stage_payload.get("job_draft") or {}
+
+        detected_criteria: dict[str, Any] = {}
+        # Drop the LIA reply itself when the service mirrors it under
+        # data["message"] — it already comes through `lia_message`.
+        _skip_keys = {"message"}
+        for key, value in (job_draft or {}).items():
+            if value is None or key in _skip_keys:
+                continue
+            if key not in request.collected_data or request.collected_data.get(key) != value:
+                detected_criteria[key] = value
+
         response = SmartOrchestrateResponse(
-            success=final_state.get("error") is None,
-            lia_message=final_state.get("response_text") or "",
+            success=True,
+            lia_message=recruiter_message or "",
             detected_criteria=detected_criteria,
             next_stage=next_stage,
-            auto_transition=auto_transition and not awaiting_confirmation,
-            tool_results=final_state.get("tool_results", []),
-            confidence=calculate_overall_confidence(final_state),
-            reasoning_steps=final_state.get("reasoning_steps", []),
-            intent=final_state.get("intent"),
-            error=final_state.get("error"),
-            awaiting_confirmation=awaiting_confirmation,
-            job_vacancy_id=job_vacancy_id,
-            job_published=job_published,
+            auto_transition=bool(stage_payload.get("auto_transition", False)) and not awaiting,
+            tool_results=stage_payload.get("tool_results") or [],
+            confidence=float(stage_payload.get("confidence") or 0.95),
+            reasoning_steps=stage_payload.get("reasoning_steps") or [],
+            intent=stage_payload.get("intent"),
+            awaiting_confirmation=awaiting,
+            job_vacancy_id=stage_payload.get("job_vacancy_id"),
+            job_published=bool(stage_payload.get("job_published", False)),
             conversation_id=session_id,
         )
-        
+
         logger.info(
-            f"Smart orchestrate complete: session={session_id}, "
-            f"intent={response.intent}, extracted_fields={len(detected_criteria)}, "
-            f"confidence={response.confidence:.2f}"
+            "smart_orchestrate complete: session=%s backend_stage=%s next=%s awaiting=%s tokens=%d",
+            session_id, backend_stage, next_stage, awaiting, tokens_emitted,
         )
-        
         return response
-        
-    except Exception as e:
-        logger.error(f"Smart orchestrate error: {e}", exc_info=True)
+
+    except Exception as exc:
+        logger.exception("smart_orchestrate failed for session=%s: %s", session_id, exc)
         return SmartOrchestrateResponse(
             success=False,
             lia_message="Desculpe, ocorreu um erro ao processar sua mensagem. Por favor, tente novamente.",
@@ -315,13 +349,13 @@ company_id: str = Depends(require_company_id)) -> SmartOrchestrateResponse:
             auto_transition=False,
             tool_results=[],
             confidence=0.0,
-            reasoning_steps=[f"Error: {str(e)}"],
+            reasoning_steps=[f"Error: {type(exc).__name__}: {exc}"],
             intent=None,
-            error=str(e),
+            error=str(exc),
             awaiting_confirmation=False,
             job_vacancy_id=None,
             job_published=False,
-            conversation_id=session_id if 'session_id' in locals() else None,
+            conversation_id=session_id,
         )
 
 
@@ -329,33 +363,27 @@ company_id: str = Depends(require_company_id)) -> SmartOrchestrateResponse:
 async def react_orchestrate(
     request: SmartOrchestrateRequest,
     current_user: User = Depends(get_current_user_or_demo),
-company_id: str = Depends(require_company_id)) -> SmartOrchestrateResponse:
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    """DEPRECATED — alias for /smart-orchestrate.
-
-    Phase 4D simplification: USE_REACT_AGENTS feature flag was never enabled
-    in any environment (.env files don't set it). Removed the legacy
-    WizardReActAgent branch entirely. /react-orchestrate now always delegates
-    to smart_orchestrate, which uses canonical WizardSessionService.
-    """
+    company_id: str = Depends(require_company_id),
+) -> SmartOrchestrateResponse:
+    """DEPRECATED alias for /smart-orchestrate."""
     logger.warning(
-        "[DEPRECATED] /api/v1/wizard/react-orchestrate called — alias to "
-        "canonical /smart-orchestrate. Migrate FE to /api/v1/wizard/message "
-        "(telemetry tag: phase4d.legacy_react_alias)."
+        "[DEPRECATED] /api/v1/wizard/react-orchestrate called — alias to canonical "
+        "/smart-orchestrate (phase4d.legacy_react_alias)."
     )
-    return await smart_orchestrate(request, current_user)
+    return await smart_orchestrate(request, current_user, company_id)
 
 
 @router.get("/stage-mapping", response_model=None)
-async def get_stage_mapping(company_id: str = Depends(require_company_id)) -> dict[str, Any]:
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """
-    Get the mapping between frontend and backend stage names.
-    
-    Useful for debugging stage transitions.
-    """
+async def get_stage_mapping(
+    company_id: str = Depends(require_company_id),
+) -> dict[str, Any]:
+    """Debug endpoint: frontend↔backend stage mapping."""
     return {
         "frontend_to_backend": FRONTEND_TO_BACKEND_STAGE,
         "backend_to_frontend": BACKEND_TO_FRONTEND_STAGE,
-        "backend_stages": [stage.value for stage in WizardStage],
+        "backend_stages": [
+            "intake", "jd_enrichment", "bigfive", "salary", "competency",
+            "wsi_questions", "eligibility", "review", "publish",
+            "calibration", "handoff", "done",
+        ],
     }

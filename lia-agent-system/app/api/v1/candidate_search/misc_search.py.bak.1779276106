@@ -405,6 +405,69 @@ Responda APENAS com o JSON, sem texto adicional."""
         )
 
 
+class CalibrationFeedbackRequest(BaseModel):
+    """Request para feedback de calibração."""
+    candidate_id: str = Field(..., description="ID do candidato")
+    feedback: str = Field(..., pattern="^(like|dislike)$", description="Tipo: 'like' ou 'dislike'")
+    vacancy_id: str | None = Field(None, description="ID da vaga (opcional)")
+    session_id: str | None = Field(None, description="ID da sessão de calibração")
+    reason: str | None = Field(None, description="Motivo do feedback")
+    candidate_snapshot: dict[str, Any] | None = Field(None, description="Dados do candidato")
+
+
+class CalibrationFeedbackResponse(BaseModel):
+    """Response do feedback de calibração."""
+    status: str
+    total_feedbacks: int
+    likes_count: int
+    dislikes_count: int
+    calibration_complete: bool
+    confidence_level: float
+    learned_patterns: dict[str, Any]
+    message: str
+    feedback_id: str
+    sourcing_blocked: bool = True
+    ready_to_source: bool = False
+    feedbacks_remaining: int = 0
+    min_feedbacks_required: int = 5
+
+
+class CalibrationStartRequest(BaseModel):
+    """Request para iniciar sessão de calibração."""
+    vacancy_id: str | None = Field(None, description="ID da vaga")
+    search_criteria: dict[str, Any] | None = Field(None, description="Critérios de busca")
+    sample_size: int = Field(5, ge=3, le=10, description="Quantidade de candidatos para avaliar")
+
+
+class CalibrationStartResponse(BaseModel):
+    """Response do início da calibração."""
+    session_id: str
+    vacancy_id: str | None
+    status: str
+    candidates: list[CandidateSearchResultDTO]
+    message: str
+
+
+class CalibrationStatusResponse(BaseModel):
+    """Response do status da calibração."""
+    session_id: str
+    vacancy_id: str | None
+    status: str
+    total_shown: int
+    likes_count: int
+    dislikes_count: int
+    calibration_complete: bool
+    confidence_level: float
+    learned_patterns: dict[str, Any] | None
+    message: str
+    created_at: str | None
+    completed_at: str | None
+    sourcing_blocked: bool = True
+    ready_to_source: bool = False
+    feedbacks_remaining: int = 0
+    min_feedbacks_required: int = 5
+
+
 class VacancyGoalRequest(BaseModel):
     """Request para verificar meta da vaga."""
     vacancy_id: str = Field(..., description="ID da vaga")
