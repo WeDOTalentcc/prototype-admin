@@ -10,7 +10,7 @@ Referência: app/core/agent_registry_watcher.py
 import logging
 from typing import Any
 
-from fastapi import APIRouter, Depends, Header
+from fastapi import APIRouter, Depends
 
 from app.auth.dependencies import require_admin
 from app.core.agent_registry_watcher import (
@@ -27,9 +27,9 @@ router = APIRouter(prefix="/admin/agents", tags=["Admin - Agents"])
 
 @router.post("/reload", response_model=None)
 async def reload_agent_registry(
-    x_company_id: str = Header(..., alias="X-Company-ID"),
     _user: Any = Depends(require_admin),
-company_id: str = Depends(require_company_id)) -> dict[str, Any]:
+    company_id: str = Depends(require_company_id),
+) -> dict[str, Any]:
     # multi-tenancy: admin/platform-level (admin_) — role-based access required
     """Trigger hot-reload of the agent YAML registry.
 
@@ -38,14 +38,14 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     agents registry regardless of mtime so that an admin can force a sync.
 
     Args:
-        x_company_id: Company identifier (admin-only; validated by require_admin).
+        company_id: Company identifier from JWT (admin-only; validated by require_admin).
 
     Returns:
         JSON with ``reloaded`` (list of agent names) and ``total`` (count).
     """
     logger.info(
         "[admin_agents] reload_agent_registry called by admin for company=%s",
-        x_company_id,
+        company_id,
     )
 
     # 1. Check-and-reload (mtime-gated, covers both YAML files).

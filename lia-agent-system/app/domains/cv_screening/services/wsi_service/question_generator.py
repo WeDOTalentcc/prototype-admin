@@ -1,6 +1,7 @@
 """
 WSI Question Generator - Generates scientific questions based on WSI frameworks.
 """
+import asyncio
 import json
 import logging
 import re
@@ -10,6 +11,7 @@ from typing import Any, Literal
 
 from app.domains.cv_screening.constants.wsi_constants import SENIORITY_DISTRIBUTIONS
 from app.domains.ai.services.llm import llm_service
+from app.shared.observability.fallback_metrics import inc_wsi_fallback
 
 from .models import (
     safe_json_parse,
@@ -162,7 +164,8 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
 }}"""
         try:
             response = await self.llm.safe_invoke(prompt, temperature=0.1, max_tokens=800)
-            parsed = safe_json_parse(response.content, fallback={"big_five_jd": _FALLBACK})
+            # F6.B5 fix (2026-05-20): safe_invoke retorna string (não AIMessage)
+            parsed = safe_json_parse(response, fallback={"big_five_jd": _FALLBACK})
             data = parsed.get("big_five_jd") or _FALLBACK
             if not isinstance(data, dict) or not any(t in data for t in _FIVE_TRAITS):
                 data = _FALLBACK
@@ -296,42 +299,48 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
             f"cbi_behav={_cbi_behav_n}, bigfive={_bigfive_n}"
         )
 
-        questions = []
         jd = job_description  # alias curto para legibilidade
+
+        # F6.O1 — pré-computa plano determinístico de geração ANTES de disparar gather.
+        # Cada item: (gen_fn, competency, kwargs_dict). Ordem preservada para distribuição final.
+        # BigFive trait uniqueness: `used_bf` set é mutado SOMENTE neste loop síncrono pré-gather,
+        # eliminando race condition em execução paralela.
+        generation_plan: list[tuple[Callable, Any, dict]] = []
 
         # --- CBI técnico ---
         for comp in technical[:_cbi_tech_n]:
-            questions.append(await self._generate_with_validation(
+            generation_plan.append((
                 self._generate_cbi_question, comp,
-                jd_text=jd, skill_or_trait=comp.name, question_category="technical",
+                {"jd_text": jd, "skill_or_trait": comp.name, "question_category": "technical"},
             ))
 
         # --- CBI comportamental ---
         for comp in behavioral[:_cbi_behav_n]:
-            questions.append(await self._generate_with_validation(
+            generation_plan.append((
                 self._generate_cbi_question, comp,
-                jd_text=jd, skill_or_trait=comp.name, question_category="behavioral",
+                {"jd_text": jd, "skill_or_trait": comp.name, "question_category": "behavioral"},
             ))
 
         # --- Dreyfus (autodeclaração de proficiência) ---
         dreyfus_offset = _cbi_tech_n
         for i in range(_dreyfus_n):
             comp = technical[dreyfus_offset + i] if len(technical) > dreyfus_offset + i else technical[-1]
-            questions.append(await self._generate_with_validation(
+            generation_plan.append((
                 self._generate_dreyfus_question, comp,
-                jd_text=jd, skill_or_trait=comp.name, question_category="technical",
+                {"jd_text": jd, "skill_or_trait": comp.name, "question_category": "technical"},
             ))
 
         # --- Bloom (microcase situacional) ---
         bloom_offset = dreyfus_offset + _dreyfus_n
         for i in range(_bloom_n):
             comp = technical[bloom_offset + i] if len(technical) > bloom_offset + i else technical[0]
-            questions.append(await self._generate_with_validation(
+            generation_plan.append((
                 self._generate_bloom_question, comp,
-                jd_text=jd, skill_or_trait=comp.name, question_category="technical",
+                {"jd_text": jd, "skill_or_trait": comp.name, "question_category": "technical"},
             ))
 
         # --- Big Five: F6.6 — seleção por afinidade de trait (fallback: posicional) ---
+        # Pré-alocação SÍNCRONA de traits ANTES do gather — preserva uniqueness sem race.
         used_bf: set = set()
         for i in range(_bigfive_n):
             trait = selected_traits[i].trait if i < len(selected_traits) else None
@@ -343,11 +352,27 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
                 idx = available[0] if available else 0
                 bf_comp = behavioral[idx] if behavioral else technical[0]
                 used_bf.add(idx)
-            questions.append(await self._generate_with_validation(
+            generation_plan.append((
                 self._generate_bigfive_question, bf_comp,
-                jd_text=jd, skill_or_trait=trait or bf_comp.name, question_category="behavioral",
-                ocean_trait=trait,
+                {
+                    "jd_text": jd,
+                    "skill_or_trait": trait or bf_comp.name,
+                    "question_category": "behavioral",
+                    "ocean_trait": trait,
+                },
             ))
+
+        # F6.O1 — dispara TODAS as gerações em paralelo via asyncio.gather.
+        # Ganho esperado: ~5x (de ~103-167s sequencial para ~25-35s paralelo) —
+        # cada LLM call Anthropic é ~17-26s; sequencial == soma, paralelo == max.
+        # `return_exceptions=False`: propaga primeira falha (comportamento idêntico ao loop original com await).
+        logger.info(
+            f"WSI F6.O1 dispatching {len(generation_plan)} LLM generations in parallel via asyncio.gather"
+        )
+        questions = list(await asyncio.gather(*[
+            self._generate_with_validation(gen_fn, comp, **kwargs)
+            for gen_fn, comp, kwargs in generation_plan
+        ]))
 
         target_count = _dist["total"]
 
@@ -440,7 +465,8 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
         full_prompt = f"SYSTEM:\n{system_prompt}\n\nUSER:\n{user_prompt}"
         try:
             response = await self.llm.safe_invoke(full_prompt, temperature=0.0, max_tokens=300)
-            result = safe_json_parse(response.content, fallback=None)
+            # F6.B5 fix (2026-05-20): safe_invoke retorna string (não AIMessage)
+            result = safe_json_parse(response, fallback=None)
             if result and isinstance(result, dict) and "is_anchored" in result:
                 return result
         except Exception as e:
@@ -586,7 +612,7 @@ Responda APENAS em JSON:
 }}"""
 
         try:
-            response = await self.llm.claude.bind(temperature=0.7).ainvoke(prompt)
+            response = await self.llm.claude.bind(temperature=0.7, max_tokens=2000).ainvoke(prompt)
             data = safe_json_parse(response.content, fallback={
                 "framework": "CBI",
                 "question_type": "contextual",
@@ -601,6 +627,8 @@ Responda APENAS em JSON:
         except Exception as e:
             # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"Failed to generate CBI question for {competency.name}: {e}")
+            # REGRA 4 sensor — Prometheus counter for Grafana alarm
+            inc_wsi_fallback("CBI", "llm_error")
             # Use fallback
             data = {
                 "framework": "CBI",
@@ -619,7 +647,7 @@ Responda APENAS em JSON:
             competency=competency.name,
             framework="CBI",
             question_type="contextual",
-            question_text=data["question_text"],
+            question_text=data.get("question_text") or f"Conte sobre uma situação em que você precisou utilizar {competency.name} para resolver um problema técnico. Qual foi o contexto, sua ação e o resultado obtido?",
             weight=competency.weight,
             expected_signals=data.get("expected_signals", ["Contexto", "Ação", "Resultado"]),
             scoring_criteria=data.get("scoring_criteria", {}),
@@ -645,7 +673,7 @@ Combina:
 Responda APENAS em JSON com mesma estrutura anterior."""
 
         try:
-            response = await self.llm.claude.bind(temperature=0.75).ainvoke(prompt)
+            response = await self.llm.claude.bind(temperature=0.75, max_tokens=2000).ainvoke(prompt)
             data = safe_json_parse(response.content, fallback={
                 "framework": "Dreyfus",
                 "question_type": "autodeclaration",
@@ -660,6 +688,8 @@ Responda APENAS em JSON com mesma estrutura anterior."""
         except Exception as e:
             # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"Failed to generate Dreyfus question for {competency.name}: {e}")
+            # REGRA 4 sensor — Prometheus counter for Grafana alarm
+            inc_wsi_fallback("Dreyfus", "llm_error")
             # Use fallback
             data = {
                 "framework": "Dreyfus",
@@ -678,7 +708,7 @@ Responda APENAS em JSON com mesma estrutura anterior."""
             competency=competency.name,
             framework="Dreyfus",
             question_type="autodeclaration",
-            question_text=data["question_text"],
+            question_text=data.get("question_text") or f"Descreva sua experiência com {competency.name} em projetos reais. De 1 a 5, como você avalia sua proficiência e em que tipo de cenário aplicou?",
             weight=competency.weight,
             expected_signals=data.get("expected_signals", ["Autodeclaração", "Projeto", "Contexto"]),
             scoring_criteria=data.get("scoring_criteria", {})
@@ -714,7 +744,7 @@ Responda APENAS em JSON."""
         cognitive_level = "APLICAR" if bloom_level == 3 else "ANALISAR" if bloom_level == 4 else "CRIAR"
         
         try:
-            response = await self.llm.claude.bind(temperature=0.75).ainvoke(prompt)
+            response = await self.llm.claude.bind(temperature=0.75, max_tokens=2000).ainvoke(prompt)
             data = safe_json_parse(response.content, fallback={
                 "framework": "Bloom",
                 "question_type": "microcase",
@@ -729,6 +759,8 @@ Responda APENAS em JSON."""
         except Exception as e:
             # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"Failed to generate Bloom question for {competency.name}: {e}")
+            # REGRA 4 sensor — Prometheus counter for Grafana alarm
+            inc_wsi_fallback("Bloom", "llm_error")
             # Use fallback
             data = {
                 "framework": "Bloom",
@@ -747,7 +779,7 @@ Responda APENAS em JSON."""
             competency=competency.name,
             framework="Bloom",
             question_type="microcase",
-            question_text=data["question_text"],
+            question_text=data.get("question_text") or f"Descreva como você abordaria um desafio técnico envolvendo {competency.name}. Explique sua estratégia, decisões e trade-offs considerados.",
             weight=competency.weight,
             expected_signals=data.get("expected_signals", ["Raciocínio", "Abordagem", "Conhecimento"]),
             scoring_criteria=data.get("scoring_criteria", {})
@@ -837,7 +869,7 @@ Foco em traços OCEAN:
 Responda APENAS em JSON."""
 
         try:
-            response = await self.llm.claude.bind(temperature=0.8).ainvoke(prompt)
+            response = await self.llm.claude.bind(temperature=0.8, max_tokens=2000).ainvoke(prompt)
             data = safe_json_parse(response.content, fallback={
                 "framework": "BigFive",
                 "question_type": "situational",
@@ -852,6 +884,8 @@ Responda APENAS em JSON."""
         except Exception as e:
             # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"Failed to generate BigFive question for {competency.name}: {e}")
+            # REGRA 4 sensor — Prometheus counter for Grafana alarm
+            inc_wsi_fallback("BigFive", "llm_error")
             # Use fallback
             data = {
                 "framework": "BigFive",
@@ -874,7 +908,7 @@ Responda APENAS em JSON."""
             competency=competency.name,
             framework="BigFive",
             question_type="situational",
-            question_text=data["question_text"],
+            question_text=data.get("question_text") or f"Compartilhe uma situação recente em que você precisou demonstrar {competency.name} em seu trabalho. Como você lidou com o desafio e qual foi o impacto?",
             weight=competency.weight,
             expected_signals=data.get("expected_signals", ["Situação", "Comportamento", "Resultado"]),
             scoring_criteria=scoring_criteria,

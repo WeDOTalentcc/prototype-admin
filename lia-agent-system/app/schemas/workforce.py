@@ -6,6 +6,7 @@ from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel
+from app.shared.types import WeDoBaseModel
 
 
 class HiringPlanBase(BaseModel):
@@ -25,7 +26,7 @@ class HiringPlanCreate(HiringPlanBase):
     company_id: UUID  # Required - must specify which company this plan belongs to
 
 
-class HiringPlanUpdate(BaseModel):
+class HiringPlanUpdate(WeDoBaseModel):
     fiscal_year: int | None = None
     name: str | None = None
     description: str | None = None
@@ -80,7 +81,7 @@ class PlannedHeadcountCreate(PlannedHeadcountBase):
     ideal_profile_id: UUID | None = None
 
 
-class PlannedHeadcountUpdate(BaseModel):
+class PlannedHeadcountUpdate(WeDoBaseModel):
     target_month: int | None = None
     target_year: int | None = None
     title: str | None = None
@@ -134,7 +135,7 @@ class ImportJobBase(BaseModel):
     ai_suggestions: dict[str, Any] | None = {}
 
 
-class ImportJobCreate(BaseModel):
+class ImportJobCreate(WeDoBaseModel):
     hiring_plan_id: UUID
     file_name: str
     file_type: str

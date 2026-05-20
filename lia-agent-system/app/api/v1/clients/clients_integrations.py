@@ -17,6 +17,7 @@ from ._shared import (
     logger,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter()
 
@@ -24,7 +25,7 @@ VALID_INTEGRATION_NAMES = ["gupy", "linkedin", "greenhouse", "slack", "whatsapp"
 VALID_INTEGRATION_STATUSES = ["connected", "disconnected", "pending"]
 
 
-class IntegrationCreate(BaseModel):
+class IntegrationCreate(WeDoBaseModel):
     """Request model for creating an integration."""
     name: str = Field(..., description="Integration name (gupy, linkedin, greenhouse, slack, whatsapp, email)")
     description: str | None = Field(None)
@@ -32,7 +33,7 @@ class IntegrationCreate(BaseModel):
     config: dict[str, Any] | None = Field(None)
 
 
-class IntegrationUpdate(BaseModel):
+class IntegrationUpdate(WeDoBaseModel):
     """Request model for updating an integration."""
     name: str | None = Field(None)
     description: str | None = Field(None)

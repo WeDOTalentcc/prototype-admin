@@ -10,6 +10,7 @@ from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class RequestTypeEnum(StrEnum):
@@ -43,7 +44,7 @@ class SourceChannelEnum(StrEnum):
     API = "api"
 
 
-class DataSubjectRequestCreate(BaseModel):
+class DataSubjectRequestCreate(WeDoBaseModel):
     """Schema for creating a new data subject request (public endpoint)."""
     company_id: str = Field(..., description="Company ID (tenant) receiving the request")
     subject_name: str = Field(..., min_length=2, max_length=255, description="Full name of the data subject")
@@ -113,7 +114,7 @@ class DataSubjectRequestListResponse(BaseModel):
     limit: int
 
 
-class DataSubjectRequestPublicCreate(BaseModel):
+class DataSubjectRequestPublicCreate(WeDoBaseModel):
     """Public response after creating a request (limited info for security)."""
     id: str
     status: str

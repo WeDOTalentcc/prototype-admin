@@ -18,13 +18,15 @@ from app.domains.communication.services.communication_history_service import com
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger
 from app.shared.security.require_company_id import require_company_id
+from app.shared.tenant_guard import get_verified_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = get_masked_logger(__name__)
 
 router = APIRouter(prefix="/communication", tags=["communication"])
 
 
-class SendEmailRequest(BaseModel):
+class SendEmailRequest(WeDoBaseModel):
     to_email: str = Field(..., description="Recipient email address")
     to_name: str | None = Field(None, description="Recipient name")
     subject: str = Field(..., description="Email subject")
@@ -36,10 +38,9 @@ class SendEmailRequest(BaseModel):
     vacancy_title: str | None = Field(None, description="Vacancy title")
     communication_type: str | None = Field("email", description="Type of communication")
     metadata: dict[str, Any] | None = Field(None, description="Additional metadata")
-    company_id: str | None = Field(None, description="Company ID for multi-tenancy")
 
 
-class SendWhatsAppRequest(BaseModel):
+class SendWhatsAppRequest(WeDoBaseModel):
     to_phone: str = Field(..., description="Recipient phone number with country code")
     message: str = Field(..., description="Message content")
     candidate_id: str | None = Field(None, description="Candidate ID for tracking")
@@ -48,10 +49,9 @@ class SendWhatsAppRequest(BaseModel):
     vacancy_title: str | None = Field(None, description="Vacancy title")
     communication_type: str | None = Field("whatsapp", description="Type of communication")
     metadata: dict[str, Any] | None = Field(None, description="Additional metadata")
-    company_id: str | None = Field(None, description="Company ID for multi-tenancy")
 
 
-class SendScreeningInviteRequest(BaseModel):
+class SendScreeningInviteRequest(WeDoBaseModel):
     channel: str = Field(..., description="Communication channel: email, whatsapp, or telefone")
     candidate_id: str = Field(..., description="Candidate ID")
     candidate_name: str = Field(..., description="Candidate name")
@@ -64,7 +64,6 @@ class SendScreeningInviteRequest(BaseModel):
     screening_question_ids: list | None = Field(None, description="List of screening question IDs")
     stage: str | None = Field("triagem", description="Pipeline stage")
     tone_style: str | None = Field("profissional", description="Message tone style")
-    company_id: str | None = Field(None, description="Company ID for multi-tenancy")
     override_saturation: bool = Field(False, description="Override saturation guardrail (manual approval)")
 
 
@@ -94,10 +93,8 @@ class SendResponse(BaseModel):
 @router.post("/send-email", response_model=SendResponse, status_code=status.HTTP_200_OK)
 async def send_email(
     request: SendEmailRequest,
-    x_company_id: str | None = Header(None, alias="X-Company-ID"),
     audit_svc: AuditService = Depends(get_audit_service),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
+company_id: str = Depends(get_verified_company_id)):
     """
     Send an email via the CommunicationDispatcher (Mailgun primary, Resend fallback).
 
@@ -106,10 +103,6 @@ company_id: str = Depends(require_company_id)):
     - Logs the communication to CommunicationHistory
     """
     try:
-        company_id = x_company_id or request.company_id
-        if not company_id:
-            raise HTTPException(status_code=400, detail="company_id is required (via X-Company-Id header or request body)")
-
         logger.info(f"Sending email for company {company_id}")
 
         result = communication_dispatcher.send_email(
@@ -214,10 +207,8 @@ company_id: str = Depends(require_company_id)):
 @router.post("/send-whatsapp", response_model=SendResponse, status_code=status.HTTP_200_OK)
 async def send_whatsapp(
     request: SendWhatsAppRequest,
-    x_company_id: str | None = Header(None, alias="X-Company-ID"),
     audit_svc: AuditService = Depends(get_audit_service),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
+company_id: str = Depends(get_verified_company_id)):
     """
     Send a WhatsApp message via the CommunicationDispatcher (Twilio).
 
@@ -226,10 +217,6 @@ company_id: str = Depends(require_company_id)):
     - Logs the communication to CommunicationHistory
     """
     try:
-        company_id = x_company_id or request.company_id
-        if not company_id:
-            raise HTTPException(status_code=400, detail="company_id is required (via X-Company-Id header or request body)")
-
         logger.info(f"Sending WhatsApp for company {company_id}")
 
         result = communication_dispatcher.send_whatsapp(
@@ -331,11 +318,9 @@ company_id: str = Depends(require_company_id)):
 @router.post("/send-screening-invite", response_model=ScreeningInviteResponse, status_code=status.HTTP_200_OK)
 async def send_screening_invite(
     request: SendScreeningInviteRequest,
-    x_company_id: str | None = Header(None, alias="X-Company-ID"),
     repo: CommunicationRepository = Depends(get_communication_repo),
     audit_svc: AuditService = Depends(get_audit_service),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
+company_id: str = Depends(get_verified_company_id)):
     """
     Send a WSI (Work Sample Interview) screening invite to a candidate.
 
@@ -350,9 +335,6 @@ company_id: str = Depends(require_company_id)):
     All invitations are logged to CommunicationHistory for tracking.
     """
     try:
-        company_id = x_company_id or request.company_id
-        if not company_id:
-            raise HTTPException(status_code=400, detail="company_id is required (via X-Company-Id header or request body)")
         channel = request.channel.lower()
 
         logger.info(f"Sending screening invite via {channel} for company {company_id}, candidate_id={request.candidate_id}")

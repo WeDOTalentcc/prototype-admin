@@ -6,33 +6,19 @@ from datetime import datetime
 from pydantic import BaseModel, EmailStr, Field
 
 
-class AvailabilityRequest(BaseModel):
-    """Request to check interviewer availability."""
-    interviewer_email: EmailStr
-    date: datetime
-    duration_minutes: int = Field(default=60, ge=15, le=480)
+# Sprint F.3 #25 canonical-fix: AvailabilityRequest moved to schemas/calendar.py
+from app.schemas.calendar import AvailabilityRequest  # noqa: F401  (re-export for backward compat)
 
 
-class TimeSlot(BaseModel):
-    """Available time slot."""
-    start: datetime
-    end: datetime
-    duration_minutes: int
+# Sprint F.3 #25 canonical-fix: TimeSlot moved to schemas/calendar.py
+from app.schemas.calendar import TimeSlot  # noqa: F401  (re-export for backward compat)
 
 
-class FindMeetingTimeRequest(BaseModel):
-    """Request to find best meeting times."""
-    organizer_email: EmailStr
-    interviewer_emails: list[EmailStr]
-    candidate_email: EmailStr
-    duration_minutes: int = Field(default=60, ge=15, le=480)
-    preferred_days: list[str] | None = Field(
-        default=None,
-        description="List of preferred days: Mon, Tue, Wed, Thu, Fri"
-    )
+# Sprint F.3 #25 canonical-fix: FindMeetingTimeRequest moved to schemas/calendar.py
+from app.schemas.calendar import FindMeetingTimeRequest  # noqa: F401  (re-export for backward compat)
 
 
-class ScheduleInterviewRequest(BaseModel):
+class ScheduleInterviewRequest(WeDoBaseModel):
     """Request to schedule an interview."""
     organizer_email: EmailStr
     candidate_name: str = Field(min_length=1, max_length=200)
@@ -46,14 +32,11 @@ class ScheduleInterviewRequest(BaseModel):
     notes: str | None = Field(default=None, max_length=2000)
 
 
-class CancelInterviewRequest(BaseModel):
-    """Request to cancel an interview."""
-    organizer_email: EmailStr
-    event_id: str
-    cancellation_message: str | None = Field(default=None, max_length=500)
+# Sprint F.3 #25 canonical-fix: CancelInterviewRequest moved to schemas/calendar.py
+from app.schemas.calendar import CancelInterviewRequest  # noqa: F401  (re-export for backward compat)
 
 
-class RescheduleInterviewRequest(BaseModel):
+class RescheduleInterviewRequest(WeDoBaseModel):
     """Request to reschedule an interview."""
     organizer_email: EmailStr
     event_id: str
@@ -61,22 +44,10 @@ class RescheduleInterviewRequest(BaseModel):
     new_duration_minutes: int | None = Field(default=None, ge=15, le=480)
 
 
-class CalendarEventResponse(BaseModel):
-    """Calendar event response."""
-    id: str
-    subject: str
-    start: datetime
-    end: datetime
-    location: str | None = None
-    is_online_meeting: bool = False
-    organizer_email: str
-    attendees: list[str]
+# Sprint F.3 #25 canonical-fix: CalendarEventResponse moved to schemas/calendar.py
+from app.schemas.calendar import CalendarEventResponse  # noqa: F401  (re-export for backward compat)
 
 
-class MeetingSuggestion(BaseModel):
-    """Meeting time suggestion from Graph API."""
-    confidence: float
-    start_time: datetime
-    end_time: datetime
-    locations: list[str] | None = None
-    suggestion_reason: str | None = None
+# Sprint F.3 #25 canonical-fix: MeetingSuggestion moved to schemas/calendar.py
+from app.schemas.calendar import MeetingSuggestion  # noqa: F401  (re-export for backward compat)
+from app.shared.types import WeDoBaseModel

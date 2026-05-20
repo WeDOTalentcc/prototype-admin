@@ -15,19 +15,20 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.cv_screening.services.wsi_async_session_service import WSIAsyncSessionService, get_wsi_async_session_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/wsi/async", tags=["wsi-async"])
 
 
-class InviteRequest(BaseModel):
+class InviteRequest(WeDoBaseModel):
     candidate_id: str
     job_id: str
     company_id: str
     expire_hours: int = 72
 
 
-class AnswerRequest(BaseModel):
+class AnswerRequest(WeDoBaseModel):
     answer: str
 
 

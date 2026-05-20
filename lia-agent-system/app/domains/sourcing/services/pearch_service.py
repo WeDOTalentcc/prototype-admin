@@ -421,7 +421,42 @@ class PearchService:
                 error_message=str(e)[:500],
             )
             raise
-    
+
+    async def search_by_job_description(
+        self,
+        job_description: str,
+        location: str | None = None,
+        limit: int = 20,
+        company_id: str | None = None,
+    ) -> "PearchSearchResponse":
+        """F8.B1 fix (2026-05-20): wrapper canonical para busca por JD.
+
+        Constrói PearchSearchRequest usando o JD como query natural-language e
+        delega para ``search_candidates``. Permite que clientes (frontend, agentes)
+        usem o JD completo como query sem precisar montar request manualmente.
+
+        Args:
+            job_description: Texto do JD (truncado em 2000 chars para evitar overflow).
+            location: Localização para filtrar (e.g. "São Paulo").
+            limit: Número máximo de resultados (default 20).
+            company_id: Tenant context (auditoria + multi-tenancy).
+
+        Returns:
+            PearchSearchResponse com candidatos encontrados.
+        """
+        from libs.models.lia_models.pearch import PearchSearchRequest, SearchType
+
+        request = PearchSearchRequest(
+            query=(job_description or "")[:2000],
+            type=SearchType.FAST,
+            insights=True,
+            profile_scoring=True,
+            custom_filters={"location": location} if location else None,
+            limit=max(1, min(int(limit or 20), 100)),
+        )
+        # Pass explicit timeout — search_candidates does timeout+10 internally
+        return await self.search_candidates(request, timeout=30.0, company_id=company_id)
+
     @staticmethod
     async def _track_pearch_consumption(
         company_id: str | None,
@@ -496,7 +531,7 @@ class PearchService:
             uuid=data.get("uuid", ""),
             thread_id=data.get("thread_id", ""),
             query=data.get("query", ""),
-            user=data.get("user"),
+            user=None,  # F8.O2 LGPD: mascarado — não vaza email admin Pearch WeDOTalent pro cliente (audit 2026-05-20)
             created_at=data.get("created_at"),
             duration=data.get("duration"),
             status=data.get("status", "completed"),

@@ -11,11 +11,12 @@ from typing import Any
 from pydantic import BaseModel
 
 from app.tools import ToolExecutionContext, tool_executor, tool_registry
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 
-class ToolExecutionRequest(BaseModel):
+class ToolExecutionRequest(WeDoBaseModel):
     """Request model for tool execution."""
     tool_name: str
     parameters: dict[str, Any]

@@ -5,6 +5,7 @@ from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class Experience(BaseModel):
@@ -73,13 +74,13 @@ class CVUploadResponse(BaseModel):
     candidate_id: UUID | None = Field(None, description="ID if candidate was auto-created")
 
 
-class CVParseTextRequest(BaseModel):
+class CVParseTextRequest(WeDoBaseModel):
     """Request for parsing plain text CV."""
     text: str = Field(..., min_length=50, description="CV text content")
     source: str | None = Field("manual_text", description="Source identifier")
 
 
-class CVConfirmRequest(BaseModel):
+class CVConfirmRequest(WeDoBaseModel):
     """Request to confirm parsed CV and create candidate."""
     parsed_cv: ParsedCV
     override_duplicate: bool = Field(False, description="Create even if duplicate found")

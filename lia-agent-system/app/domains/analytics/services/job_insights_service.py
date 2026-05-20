@@ -69,6 +69,44 @@ class SimilarJob:
     similarity_score: float
 
 
+def _coerce_str_param(value, field_name: str, logger_obj=None):
+    """Defensive: callers sometimes pass dict (e.g. structured location/salary).
+
+    Extract canonical string or return None. Logs unexpected types so we can fix upstream.
+    Root cause hardening for bug 2026-05-20 "dict object has no attribute lower".
+    """
+    if value is None or value == "":
+        return None
+    if isinstance(value, str):
+        return value
+    if isinstance(value, dict):
+        for k in ("name", "title", "label", "value", "city", "text"):
+            v = value.get(k)
+            if isinstance(v, str) and v:
+                if logger_obj:
+                    logger_obj.warning(
+                        "job_insights_service received dict for %s, extracted from key %s",
+                        field_name, k,
+                        extra={"input_type": type(value).__name__, "field": field_name, "extracted_key": k},
+                    )
+                return v
+        if logger_obj:
+            logger_obj.warning(
+                "job_insights_service received dict for %s with no usable string key; treating as None",
+                field_name,
+                extra={"input_type": type(value).__name__, "field": field_name, "keys": list(value.keys())},
+            )
+        return None
+    if logger_obj:
+        logger_obj.warning(
+            "job_insights_service received unexpected type for %s, coercing via str()",
+            field_name,
+            extra={"input_type": type(value).__name__, "field": field_name},
+        )
+    return str(value)
+
+
+
 class JobInsightsService:
     """
     Service for querying historical job data to provide intelligent suggestions.
@@ -176,6 +214,13 @@ class JobInsightsService:
             Dictionary with salary statistics and confidence
         """
         try:
+            # Defensive coercion: upstream callers may pass dict (e.g. structured location)
+            # Root cause hardening for bug 2026-05-20 "dict object has no attribute lower".
+            role = _coerce_str_param(role, "role", self.logger) or ""
+            seniority = _coerce_str_param(seniority, "seniority", self.logger)
+            location = _coerce_str_param(location, "location", self.logger)
+            work_model = _coerce_str_param(work_model, "work_model", self.logger)
+
             cutoff_date = datetime.utcnow() - timedelta(days=months_back * 30)
             
             role_variations = self._normalize_role_for_search(role)

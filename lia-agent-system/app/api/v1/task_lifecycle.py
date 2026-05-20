@@ -10,6 +10,7 @@ from app.core.database import get_db
 from app.domains.automation.services.task_service import task_service
 from app.models.task import Task
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter(prefix="/task-lifecycle", tags=["task-lifecycle"])
 
@@ -38,29 +39,29 @@ def _task_to_lifecycle_response(task: Task) -> dict:
     }
 
 
-class TaskConfirmRequest(BaseModel):
+class TaskConfirmRequest(WeDoBaseModel):
     """Request model for confirming a task."""
     confirmed_by: str = Field(..., description="User ID who confirmed the task")
 
 
-class TaskRejectRequest(BaseModel):
+class TaskRejectRequest(WeDoBaseModel):
     """Request model for rejecting a task."""
     rejected_by: str = Field(..., description="User ID who rejected the task")
     reason: str | None = Field(None, description="Reason for rejection")
 
 
-class TaskEscalateRequest(BaseModel):
+class TaskEscalateRequest(WeDoBaseModel):
     """Request model for escalating a task."""
     escalate_to: str = Field(..., description="User/role to escalate to")
     reason: str | None = Field(None, description="Reason for escalation")
 
 
-class CheckRemindersRequest(BaseModel):
+class CheckRemindersRequest(WeDoBaseModel):
     """Request model for checking reminders."""
     hours_before_due: int = Field(default=24, ge=1, le=168, description="Hours before due date to send reminder")
 
 
-class CheckEscalationsRequest(BaseModel):
+class CheckEscalationsRequest(WeDoBaseModel):
     """Request model for checking escalations."""
     overdue_hours: int = Field(default=48, ge=1, le=720, description="Hours after due date to trigger escalation")
 

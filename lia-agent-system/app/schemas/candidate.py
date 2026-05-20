@@ -6,6 +6,7 @@ from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator
+from app.shared.types import WeDoBaseModel
 
 
 class CandidateBase(BaseModel):
@@ -71,7 +72,7 @@ class CandidateCreate(CandidateBase):
     auto_enrich: bool = Field(default=False, description="Auto-enrich from LinkedIn when linkedin_url is provided")
 
 
-class CandidateUpdate(BaseModel):
+class CandidateUpdate(WeDoBaseModel):
     """Schema for updating a candidate (all fields optional)."""
     name: str | None = None
     email: str | None = None
@@ -99,7 +100,7 @@ class CandidateUpdate(BaseModel):
     lia_insights: dict | None = None
 
 
-class CandidateStageUpdate(BaseModel):
+class CandidateStageUpdate(WeDoBaseModel):
     """Schema for updating candidate pipeline stage."""
     stage: str = Field(..., description="Pipeline stage: sourcing, screening, interview_hr, hired, rejected, etc.")
     sub_status: str | None = Field(None, description="Detailed status within the stage")
@@ -147,7 +148,7 @@ class CandidateResponse(BaseModel):
     # Skills & Competencies
     technical_skills: list[str] | None = Field(default_factory=list)
     soft_skills: list[str] | None = Field(default_factory=list)
-    languages: dict[str, str] | None = Field(default_factory=dict)
+    languages: list[dict] | dict[str, str] | None = Field(default_factory=list)  # F8.B2: DB stores list[{language,level}]
     certifications: list[str] | None = Field(default_factory=list)
     interests: list[str] | None = Field(default_factory=list)
     
@@ -219,13 +220,13 @@ class CandidateResponse(BaseModel):
     # Status
     status: str = "new"
     is_active: bool = True
-    is_blacklisted: bool = False
+    is_blacklisted: bool | None = False  # F8.B2: tolerate None from DB
     blacklist_reason: str | None = None
     
     # Communication
-    preferred_contact_method: str = "email"
+    preferred_contact_method: str | None = "email"  # F8.B2
     best_time_to_contact: str | None = None
-    communication_consent: bool = False
+    communication_consent: bool | None = False  # F8.B2
     
     # Registration
     completed_register: bool | None = False
@@ -286,7 +287,7 @@ class CandidateSearchFilters(BaseModel):
     offset: int = Field(0, ge=0, description="Skip N results")
 
 
-class CandidateSearchRequest(BaseModel):
+class CandidateSearchRequest(WeDoBaseModel):
     """Request for searching candidates."""
     filters: CandidateSearchFilters
     conversation_id: UUID | None = None  # Link to chat conversation

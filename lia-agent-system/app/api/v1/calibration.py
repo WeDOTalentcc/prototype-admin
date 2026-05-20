@@ -16,6 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.shared.services.calibration_service import CalibrationService
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter(prefix="/calibration", tags=["Calibration"])
 
@@ -76,7 +77,7 @@ class DashboardResponse(BaseModel):
     data: dict[str, Any]
 
 
-class ExplicitFeedbackRequest(BaseModel):
+class ExplicitFeedbackRequest(WeDoBaseModel):
     candidate_id: str
     job_id: str | None = None
     agrees_with_lia: bool
@@ -86,7 +87,7 @@ class ExplicitFeedbackRequest(BaseModel):
     context: dict[str, Any] | None = None
 
 
-class ImplicitFeedbackRequest(BaseModel):
+class ImplicitFeedbackRequest(WeDoBaseModel):
     candidate_id: str
     job_id: str
     action: str
@@ -97,7 +98,7 @@ class ImplicitFeedbackRequest(BaseModel):
     context: dict[str, Any] | None = None
 
 
-class PostHireFeedbackRequest(BaseModel):
+class PostHireFeedbackRequest(WeDoBaseModel):
     candidate_id: str
     job_id: str
     success: bool
@@ -106,11 +107,11 @@ class PostHireFeedbackRequest(BaseModel):
     context: dict[str, Any] | None = None
 
 
-class SuggestionActionRequest(BaseModel):
+class SuggestionActionRequest(WeDoBaseModel):
     reason: str | None = None
 
 
-class StartCalibrationSessionRequest(BaseModel):
+class StartCalibrationSessionRequest(WeDoBaseModel):
     job_vacancy_id: str
     job_description: str
     technical_skills: list[str] = []

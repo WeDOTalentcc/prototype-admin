@@ -16,6 +16,7 @@ from app.core.database import get_db
 from pydantic import BaseModel, Field
 from typing import Optional
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ router = APIRouter(prefix="/api/v1/voice-screening", tags=["Voice Screening"])
 _sessions: dict = {}
 
 
-class CreateSessionRequest(BaseModel):
+class CreateSessionRequest(WeDoBaseModel):
     talent_pool_id: str
     candidate_id: str
     candidate_name: str

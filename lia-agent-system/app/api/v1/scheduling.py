@@ -23,13 +23,14 @@ from app.domains.interview_scheduling.services.scheduling_service import schedul
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = get_masked_logger(__name__)
 
 router = APIRouter(prefix="/scheduling", tags=["scheduling"])
 
 
-class CreateInterviewRequest(BaseModel):
+class CreateInterviewRequest(WeDoBaseModel):
     """Request to create a new interview."""
     candidate_id: str
     candidate_name: str
@@ -47,7 +48,7 @@ class CreateInterviewRequest(BaseModel):
     additional_interviewers: list[dict[str, str]] | None = None
 
 
-class UpdateInterviewRequest(BaseModel):
+class UpdateInterviewRequest(WeDoBaseModel):
     """Request to update an interview."""
     start_time: datetime | None = None
     duration_minutes: int | None = None
@@ -189,7 +190,7 @@ company_id: str = Depends(require_company_id)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-class CreateInterviewWithTeamsRequest(BaseModel):
+class CreateInterviewWithTeamsRequest(WeDoBaseModel):
     """Request to create an interview with Microsoft Teams meeting."""
     organizer_email: EmailStr
     candidate_id: str
@@ -436,7 +437,7 @@ async def get_scheduling_status(company_id: str = Depends(require_company_id)):
     return await scheduling_service.get_calendar_status()
 
 
-class SendInterviewInviteRequest(BaseModel):
+class SendInterviewInviteRequest(WeDoBaseModel):
     """Request to send an interview invite with Bookings link."""
     candidate_id: str
     candidate_email: EmailStr
@@ -518,7 +519,7 @@ company_id: str = Depends(require_company_id)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-class SendInterviewConfirmationRequest(BaseModel):
+class SendInterviewConfirmationRequest(WeDoBaseModel):
     """Request to send an interview confirmation with meeting link."""
     candidate_id: str
     candidate_email: EmailStr

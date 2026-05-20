@@ -25,6 +25,7 @@ from app.domains.candidates.services.candidate_feedback_service import candidate
 from app.domains.cv_screening.services.lia_score_service import lia_score_service
 from app.services.notification_service import NotificationType, notification_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,7 @@ router = APIRouter(prefix="/applications", tags=["applications"])
 
 
 
-class CandidateApplicationRequest(BaseModel):
+class CandidateApplicationRequest(WeDoBaseModel):
     """Request para inscricao de candidato em uma vaga."""
     name: str = Field(..., description="Nome completo do candidato")
     email: EmailStr = Field(..., description="Email do candidato")

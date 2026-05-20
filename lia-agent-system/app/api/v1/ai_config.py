@@ -23,6 +23,7 @@ from lia_models.company_hiring_policy import (
     SCREENING_RULES_DEFAULTS,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +66,7 @@ class AIConfigResponse(BaseModel):
     compliance: ComplianceConfig
     setup_progress: int = 0
 
-class AIConfigUpdate(BaseModel):
+class AIConfigUpdate(WeDoBaseModel):
     persona: PersonaConfig | None = None
     scoring: ScoringConfig | None = None
     channels: ChannelsConfig | None = None

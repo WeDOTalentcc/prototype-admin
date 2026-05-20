@@ -16,6 +16,7 @@ from ._shared import (
     logger,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter()
 
@@ -24,7 +25,7 @@ router = APIRouter()
 # Pydantic models
 # ---------------------------------------------------------------------------
 
-class ConsentCreateRequest(BaseModel):
+class ConsentCreateRequest(WeDoBaseModel):
     consent_type: str
     consent_given: bool
     consent_source: str = "api"
@@ -32,7 +33,7 @@ class ConsentCreateRequest(BaseModel):
     ip_address: str | None = None
 
 
-class CommunicationPreferencesUpdate(BaseModel):
+class CommunicationPreferencesUpdate(WeDoBaseModel):
     preferred_channels: list[str] | None = None  # ["email", "whatsapp", "sms"]
     channel_opt_out: list[str] | None = None      # ["marketing_email", "whatsapp"]
 
@@ -44,12 +45,9 @@ class CommunicationPreferencesUpdate(BaseModel):
 @router.get("/{candidate_id}/consents", response_model=None)
 async def get_candidate_consents(
     candidate_id: uuid.UUID,
-    x_company_id: str | None = Header(None),
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Lista todos os consentimentos LGPD de um candidato."""
-    company_id = x_company_id or "admin_company"
     svc = ConsentCheckerService(candidate_repo.db)
     consents = await svc.get_candidate_consents(str(candidate_id), company_id)
     return {"candidate_id": str(candidate_id), "consents": consents}
@@ -59,12 +57,9 @@ company_id: str = Depends(require_company_id)):
 async def create_or_update_candidate_consent(
     candidate_id: uuid.UUID,
     request: ConsentCreateRequest,
-    x_company_id: str | None = Header(None),
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Registra ou atualiza consentimento LGPD de um candidato por finalidade."""
-    company_id = x_company_id or "admin_company"
     svc = ConsentCheckerService(candidate_repo.db)
     consent = await svc.register_consent(
         candidate_id=str(candidate_id),
@@ -83,12 +78,9 @@ company_id: str = Depends(require_company_id)):
 async def revoke_candidate_consent(
     candidate_id: uuid.UUID,
     consent_type: str,
-    x_company_id: str | None = Header(None),
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
 company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Revoga consentimento LGPD de um candidato para uma finalidade específica."""
-    company_id = x_company_id or "admin_company"
     svc = ConsentCheckerService(candidate_repo.db)
     consent = await svc.register_consent(
         candidate_id=str(candidate_id),
@@ -115,7 +107,6 @@ async def get_communication_preferences(
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     current_user: User = Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Retorna preferências de canal de comunicação do candidato."""
     candidate = await candidate_repo.get_by_id(candidate_id)
     if not candidate:
@@ -135,7 +126,6 @@ async def update_communication_preferences(
     candidate_repo: CandidateRepository = Depends(get_candidate_repo),
     current_user: User = Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Atualiza preferências de canal de comunicação do candidato."""
     candidate = await candidate_repo.get_by_id(candidate_id)
     if not candidate:

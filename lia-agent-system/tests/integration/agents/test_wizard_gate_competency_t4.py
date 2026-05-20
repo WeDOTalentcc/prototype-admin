@@ -80,7 +80,8 @@ class WizardCompetencyGateT4(unittest.TestCase):
         result = graph_mod.competency_gate_node(state)
         self.assertEqual(result.get("current_stage"), "competency")
         self.assertNotIn("screening_mode", result)
-        self.assertEqual(graph_mod.route_after_competency_gate(result), "end")
+        # Sprint F.2 fix — non-terminal (no mode + no fairness block) self-loops
+        self.assertEqual(graph_mod.route_after_competency_gate(result), "competency_gate")
 
     # ---------------- S5 ----------------
     def test_S5_select_compact_sets_screening_mode(self):
@@ -147,7 +148,8 @@ class WizardCompetencyGateT4(unittest.TestCase):
         self.assertNotIn("screening_mode", result)  # não muta
         self.assertEqual(result["gate_last_intent"], "ask_question")
         self.assertIn("Compacto", result["gate_clarify_message"])
-        self.assertEqual(graph_mod.route_after_competency_gate(result), "end")
+        # Sprint F.2 fix — ask_question self-loops to interrupt() for next turn
+        self.assertEqual(graph_mod.route_after_competency_gate(result), "competency_gate")
 
     # ---------------- S8 ----------------
     def test_S8_undecided_does_not_mutate_mode_and_provides_default(self):
@@ -169,7 +171,8 @@ class WizardCompetencyGateT4(unittest.TestCase):
         self.assertEqual(result["gate_last_intent"], "undecided")
         # Recomendação por seniority junior → Compacto.
         self.assertIn("Compacto", result["gate_clarify_message"])
-        self.assertEqual(graph_mod.route_after_competency_gate(result), "end")
+        # Sprint F.2 fix — undecided self-loops to interrupt() for next turn
+        self.assertEqual(graph_mod.route_after_competency_gate(result), "competency_gate")
 
     # ---------------- S9 ----------------
     def test_S9_low_confidence_clarifies_without_mutating_mode(self):
@@ -187,7 +190,8 @@ class WizardCompetencyGateT4(unittest.TestCase):
                 result = graph_mod.competency_gate_node(state)
         self.assertNotIn("screening_mode", result)
         self.assertEqual(result["gate_last_confidence"], 0.5)
-        self.assertEqual(graph_mod.route_after_competency_gate(result), "end")
+        # Sprint F.2 fix — low confidence self-loops to interrupt() for next turn
+        self.assertEqual(graph_mod.route_after_competency_gate(result), "competency_gate")
 
     # ---------------- S10 ----------------
     def test_S10_off_allowlist_intent_falls_back(self):
@@ -234,7 +238,8 @@ class WizardCompetencyGateT4(unittest.TestCase):
             "compacto" in clarify or "completo" in clarify or "perguntas" in clarify,
             f"expected clarify message com modos, got: {clarify!r}",
         )
-        self.assertEqual(graph_mod.route_after_competency_gate(result), "end")
+        # Sprint F.2 fix — classifier exception falls back to ask_question (non-terminal) → self-loop
+        self.assertEqual(graph_mod.route_after_competency_gate(result), "competency_gate")
 
     # ---------------- S12 ----------------
     def test_S12_domain_route_by_stage_dispatches_to_gate_competency_when_flag_on(self):

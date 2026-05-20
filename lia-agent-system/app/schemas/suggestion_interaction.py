@@ -10,6 +10,7 @@ from enum import Enum, StrEnum
 from pydantic import BaseModel, Field
 
 from .job_description import RequirementLevel
+from app.shared.types import WeDoBaseModel
 
 
 class SuggestionInteractionType(StrEnum):
@@ -21,7 +22,7 @@ class SuggestionInteractionType(StrEnum):
     CLARIFY = "clarify"
 
 
-class SuggestionInteractionRequest(BaseModel):
+class SuggestionInteractionRequest(WeDoBaseModel):
     """Request para processar interação com sugestões"""
     message: str = Field(
         ...,

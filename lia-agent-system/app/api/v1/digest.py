@@ -20,13 +20,14 @@ from app.core.database import get_db
 from app.domains.analytics.services.weekly_digest_service import WeeklyDigestService, get_weekly_digest_service
 from app.domains.auth.repositories.user_repository import UserRepository
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/digest", tags=["digest"])
 
 
-class WeeklyDigestPreferenceRequest(BaseModel):
+class WeeklyDigestPreferenceRequest(WeDoBaseModel):
     enabled: bool
 
 

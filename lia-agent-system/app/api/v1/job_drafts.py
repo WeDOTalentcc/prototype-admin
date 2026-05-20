@@ -17,18 +17,19 @@ from app.core.database import get_db
 from app.models.job_draft import DraftFieldHistory, JobDraft, JobDraftStatus
 from app.models.job_vacancy import JobVacancy
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-class JobDraftCreate(BaseModel):
+class JobDraftCreate(WeDoBaseModel):
     """Schema for creating a new job draft."""
     raw_input: str = Field(..., min_length=1, description="Raw job description text")
     conversation_id: str | None = None
 
 
-class JobDraftUpdate(BaseModel):
+class JobDraftUpdate(WeDoBaseModel):
     """Schema for partial update of a job draft."""
     job_title: str | None = None
     department: str | None = None
@@ -121,7 +122,7 @@ class JobDraftListResponse(BaseModel):
     total_pages: int
 
 
-class PublishDraftRequest(BaseModel):
+class PublishDraftRequest(WeDoBaseModel):
     """Request schema for publishing a draft."""
     status: str = "Rascunho"
     priority: str = "média"

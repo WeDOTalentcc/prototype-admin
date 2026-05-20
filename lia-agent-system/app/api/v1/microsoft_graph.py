@@ -15,13 +15,14 @@ from pydantic import BaseModel, EmailStr
 from app.shared.services.microsoft_graph_service import AttendeeType, MeetingAttendee, microsoft_graph_service
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/microsoft", tags=["microsoft-graph"])
 
 
-class CreateTeamsMeetingRequest(BaseModel):
+class CreateTeamsMeetingRequest(WeDoBaseModel):
     """Request to create a Teams meeting with calendar event."""
     organizer_email: EmailStr
     subject: str
@@ -64,7 +65,7 @@ class BookingsBusinessResponse(BaseModel):
     public_url: str | None
 
 
-class CreateBookingsAppointmentRequest(BaseModel):
+class CreateBookingsAppointmentRequest(WeDoBaseModel):
     """Request to create a Bookings appointment."""
     business_id: str
     service_id: str

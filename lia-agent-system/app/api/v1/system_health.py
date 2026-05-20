@@ -782,3 +782,46 @@ async def cron_sentinel_health():
     result = get_cron_health()
     status_code = 200 if result["status"] == "healthy" else 503
     return JSONResponse(status_code=status_code, content=result)
+
+
+
+# ─── F-BG.3: RabbitMQ consumer self-healing sensor ──────────────────────────
+@router.get("/health/messaging", response_model=None)
+async def messaging_health():
+    # multi-tenancy: public endpoint (health) — no tenant data
+    """F-BG.3 — Expose RabbitMQ consumer state for canary/k8s probes.
+
+    Retorna 503 quando `_running=False` (consumer caiu silenciosamente). Inclui
+    `last_error` para diagnóstico e `active_subscriptions` para observabilidade.
+    O `_reconnect_loop` (exponential backoff 5s→300s) roda no background; este
+    endpoint expõe o estado pro alerting external (Grafana/PagerDuty).
+    """
+    try:
+        from app.shared.messaging.rabbitmq_consumer import rabbitmq_consumer
+    except Exception as exc:
+        return JSONResponse(
+            status_code=503,
+            content={
+                "status": "unhealthy",
+                "broker": "rabbitmq",
+                "error": f"consumer module import failed: {exc}",
+            },
+        )
+
+    consumer_running = getattr(rabbitmq_consumer, "_running", False)
+    last_error = getattr(rabbitmq_consumer, "_last_error", None)
+    active_subs = getattr(rabbitmq_consumer, "active_subscriptions", 0)
+    reconnect_task = getattr(rabbitmq_consumer, "_reconnect_task", None)
+    reconnect_scheduled = bool(reconnect_task and not reconnect_task.done())
+
+    payload = {
+        "status": "healthy" if consumer_running else "unhealthy",
+        "broker": "rabbitmq",
+        "consumer_running": consumer_running,
+        "active_subscriptions": active_subs,
+        "reconnect_scheduled": reconnect_scheduled,
+        "last_error": last_error,
+    }
+    if consumer_running:
+        return payload
+    return JSONResponse(status_code=503, content=payload)

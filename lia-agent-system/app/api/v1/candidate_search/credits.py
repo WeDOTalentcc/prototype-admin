@@ -52,10 +52,11 @@ from ._shared import (
 )
 from app.domains.credits.services.credit_service import CreditService, get_credit_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter()
 
-class CreditEstimateRequest(BaseModel):
+class CreditEstimateRequest(WeDoBaseModel):
     """Request completo para estimativa de créditos."""
     query: str = Field(..., description="Query de busca")
     pearch_type: str = Field("fast", description="Tipo de busca (apenas fast)", pattern="^fast$")

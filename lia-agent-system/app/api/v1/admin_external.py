@@ -45,6 +45,7 @@ from app.services.quota_enforcement import (
     get_effective_quotas,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -127,7 +128,7 @@ class AgentQuotaResponse(BaseModel):
     quota_enforcement: dict[str, Any] = {}
 
 
-class AgentQuotaUpdateRequest(BaseModel):
+class AgentQuotaUpdateRequest(WeDoBaseModel):
     custom_agents: int | None = Field(None, ge=-1)
     sourcing_agents: int | None = Field(None, ge=-1)
     digital_twins: int | None = Field(None, ge=-1)

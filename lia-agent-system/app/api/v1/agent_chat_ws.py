@@ -53,6 +53,7 @@ from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.compliance.c3b_layer import pre_compliance, post_compliance, ComplianceContext
 from app.shared.tenant_session import create_session_id
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -367,6 +368,12 @@ def _ensure_agents_loaded() -> None:
         from app.domains.pipeline.agents.pipeline_context_agent import PipelineContextAgent  # noqa: F401
         from app.domains.pipeline.agents.pipeline_decision_agent import PipelineDecisionAgent  # noqa: F401
         from app.domains.pipeline.agents.pipeline_action_agent import PipelineActionAgent  # noqa: F401
+
+        # Standalone domain agents (added 2026-05-20 by Sprint A.1 — Task #28)
+        from app.domains.talent_pool.agents.talent_pool_agent import TalentPoolReActAgent  # noqa: F401
+        from app.domains.autonomous.agents.autonomous_react_agent import AutonomousReActAgent  # noqa: F401
+        from app.domains.company_settings.agents.company_react_agent import CompanySettingsReActAgent  # noqa: F401
+        from app.domains.candidate_self_service.agents.candidate_react_agent import CandidateSelfServiceAgent  # noqa: F401
 
         _AGENTS_LOADED = True
     except Exception as exc:
@@ -1318,7 +1325,7 @@ company_id: str = Depends(require_company_id)):
             pass
 
 
-class HTTPChatRequest(BaseModel):
+class HTTPChatRequest(WeDoBaseModel):
     message: str
     domain: str = ""
     session_id: str = ""

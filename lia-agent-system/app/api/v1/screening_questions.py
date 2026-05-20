@@ -27,6 +27,7 @@ from app.models.screening_question import (
     CompanyScreeningQuestion,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -36,7 +37,7 @@ def get_screening_question_repo(db: AsyncSession = Depends(get_db)) -> CompanySc
     return CompanyScreeningQuestionRepository(db)
 
 
-class ScreeningQuestionCreate(BaseModel):
+class ScreeningQuestionCreate(WeDoBaseModel):
     """Schema for creating a screening question."""
     question_text: str = Field(..., min_length=1, max_length=1000)
     question_type: str = "text"  # text, single_choice, multiple_choice, yes_no, scale
@@ -48,7 +49,7 @@ class ScreeningQuestionCreate(BaseModel):
     order: int | None = None
 
 
-class ScreeningQuestionUpdate(BaseModel):
+class ScreeningQuestionUpdate(WeDoBaseModel):
     """Schema for updating a screening question."""
     question_text: str | None = None
     question_type: str | None = None
@@ -87,7 +88,7 @@ class ScreeningQuestionsListResponse(BaseModel):
     total_count: int
 
 
-class ReorderRequest(BaseModel):
+class ReorderRequest(WeDoBaseModel):
     """Request to reorder questions."""
     question_ids: list[str]  # Ordered list of question IDs
 

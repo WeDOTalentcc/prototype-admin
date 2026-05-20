@@ -248,7 +248,7 @@ class JobVacanciesAnalyticsRepository:
                 SELECT
                     COALESCE(work_model, 'Não informado') as work_model,
                     COUNT(*) as total,
-                    AVG(CASE WHEN salary_max > 0 THEN salary_max ELSE NULL END)::int as avg_salary
+                    AVG(CASE WHEN (salary_range->>'max')::int > 0 THEN (salary_range->>'max')::int ELSE NULL END)::int as avg_salary
                 FROM job_vacancies
                 WHERE company_id = :co
                   AND created_at >= NOW() - (:days || ' days')::interval

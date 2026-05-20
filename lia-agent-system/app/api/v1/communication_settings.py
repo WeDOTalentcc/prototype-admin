@@ -17,13 +17,14 @@ from app.core.database import get_db
 from app.models.communication_settings import DEFAULT_COMMUNICATION_SETTINGS, CommunicationSettings
 from app.domains.communication.repositories.communication_settings_repository import CommunicationSettingsRepository
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/company", tags=["company"])
 
 
-class CommunicationSettingsUpdate(BaseModel):
+class CommunicationSettingsUpdate(WeDoBaseModel):
     signature: str | None = None
     signature_html: str | None = None
     sending_hours_start: int | None = None
@@ -68,31 +69,20 @@ class CommunicationSettingsResponse(BaseModel):
 
 
 # TODO(phase2): extract to repository — communication settings
-def get_company_id(
-    x_company_id: str | None = Header(None, alias="X-Company-ID"),
-    company_id: str | None = Query(None, description="Company ID")
-) -> str:
-    """Get company_id from header or query param, with validation."""
-    resolved_company_id = x_company_id or company_id
-    if not resolved_company_id:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Company ID required. Provide X-Company-ID header or company_id query parameter."
-        )
-    return resolved_company_id
+def get_company_id(company_id: str = Depends(require_company_id)) -> str:
+    """Canonical: company_id sourced from JWT via require_company_id (never user-supplied)."""
+    return company_id
 
 
 @router.get("/communication-settings", response_model=CommunicationSettingsResponse)
 async def get_communication_settings(
     company_id: str = Depends(get_company_id),
-    db: AsyncSession = Depends(get_db), 
-_company_gate: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
+    db: AsyncSession = Depends(get_db)):
     """
     Get communication settings for a company.
     
     Returns the company's communication settings or default settings if none exist.
-    Company ID can be provided via X-Company-ID header or company_id query param.
+    Company ID sourced from JWT (canonical multi-tenancy).
     """
     try:
         repo = CommunicationSettingsRepository(db)
@@ -144,14 +134,12 @@ _company_gate: str = Depends(require_company_id)):
 async def update_communication_settings(
     data: CommunicationSettingsUpdate,
     company_id: str = Depends(get_company_id),
-    db: AsyncSession = Depends(get_db), 
-_company_gate: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
+    db: AsyncSession = Depends(get_db)):
     """
     Update communication settings for a company.
     
     Creates settings if they don't exist, or updates existing settings.
-    Company ID can be provided via X-Company-ID header or company_id query param.
+    Company ID sourced from JWT (canonical multi-tenancy).
     """
     try:
         repo = CommunicationSettingsRepository(db)

@@ -18,6 +18,7 @@ from app.domains.communication.services.email_service import EmailService, get_e
 from app.domains.job_management.services.job_board_service import job_board_service
 from app.models.job_vacancy import JobVacancy
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
 # Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
@@ -580,7 +581,7 @@ company_id: str = Depends(require_company_id)):
     }
 
 
-class UnpublishCompleteRequest(BaseModel):
+class UnpublishCompleteRequest(WeDoBaseModel):
     job_ids: list[str]
     freeze_job: bool = False
     freeze_reason: str | None = None

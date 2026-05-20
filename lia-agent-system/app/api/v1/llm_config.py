@@ -23,6 +23,7 @@ from app.shared.tenant_llm_context import clear_tenant_config_cache
 from app.domains.ai.repositories.llm_config_repository import LlmConfigRepository
 from app.domains.admin.repositories.audit_log_repository import AuditLogRepository
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/admin/llm-config", tags=["llm-config"])
@@ -47,7 +48,7 @@ class RoutingConfig(BaseModel):
     voice: str = "gemini"
     fallback: str = "openai"
 
-class LLMConfigRequest(BaseModel):
+class LLMConfigRequest(WeDoBaseModel):
     primary_provider: str = "gemini"
     fallback_order: list[str] = Field(default=["gemini", "claude", "openai"])
     providers: dict[str, ProviderConfig] = Field(default={})
@@ -61,7 +62,7 @@ class LLMConfigResponse(BaseModel):
     routing: dict[str, str]
     is_active: bool
 
-class TestProviderRequest(BaseModel):
+class TestProviderRequest(WeDoBaseModel):
     provider: str
     api_key: str
     model: str | None = None

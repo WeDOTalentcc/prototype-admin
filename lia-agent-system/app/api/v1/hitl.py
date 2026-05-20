@@ -17,6 +17,7 @@ from app.auth.models import User
 from app.core.database import get_db
 from app.domains.cv_screening.services.hitl_service import hitl_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ router = APIRouter(prefix="/hitl", tags=["hitl"])
 # ---------------------------------------------------------------------------
 
 
-class ApprovalRequest(BaseModel):
+class ApprovalRequest(WeDoBaseModel):
     pending_id: str
     approved: bool
     comment: str | None = None

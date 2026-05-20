@@ -10,6 +10,7 @@ from datetime import datetime
 from enum import Enum, StrEnum
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class PolicyCategoryEnum(StrEnum):
@@ -62,7 +63,7 @@ class PolicyListResponse(BaseModel):
     offset: int
 
 
-class PolicyUpdate(BaseModel):
+class PolicyUpdate(WeDoBaseModel):
     """Schema for updating a policy value."""
     current_value: str = Field(..., description="New value for the policy")
     change_reason: str | None = Field(None, description="Reason for the change")

@@ -14,11 +14,12 @@ from app.core.database import get_db
 from pydantic import BaseModel, Field
 from typing import Optional
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter(prefix="/api/v1/sourcing", tags=["Multi-Strategy Search"])
 
 
-class MultiStrategyRequest(BaseModel):
+class MultiStrategyRequest(WeDoBaseModel):
     job_title: str = Field(..., min_length=2)
     required_skills: list[str] = Field(default_factory=list)
     location: str = Field(default="")

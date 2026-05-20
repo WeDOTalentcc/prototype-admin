@@ -1,6 +1,6 @@
 """Event history endpoint for SOX audit replay."""
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -13,12 +13,10 @@ async def get_candidate_event_history(
     candidate_id: str,
     from_sequence: int = 0,
     limit: int = 100,
-    x_company_id: str | None = Header(None),
     db: AsyncSession = Depends(get_db),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    if not x_company_id:
-        raise HTTPException(status_code=401, detail="X-Company-ID required")
+    company_id: str = Depends(require_company_id),
+):
+    # multi-tenancy: company_id vem do JWT via require_company_id (canonical)
     from app.shared.services.event_store_service import event_store_service
     events = await event_store_service.get_history(
         aggregate_type="candidate",

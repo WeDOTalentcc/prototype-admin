@@ -19,6 +19,7 @@ from sqlalchemy.orm.attributes import flag_modified
 from app.core.database import get_db
 from app.models.client_account import ClientAccount
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -27,22 +28,16 @@ router = APIRouter(prefix="/big-five", tags=["big-five"])
 
 # TODO(phase2): extract ClientAccount lookup to BigFiveRepository.get_client()
 def get_user_from_headers(
-    x_company_id: str | None = Header(None, alias="X-Company-ID"),
+    company_id: str = Depends(require_company_id),
     x_user_id: str | None = Header(None, alias="X-User-ID"),
-    x_user_role: str | None = Header(None, alias="X-User-Role")
+    x_user_role: str | None = Header(None, alias="X-User-Role"),
 ) -> dict[str, Any]:
-    """Get user context from request headers."""
-    if not x_company_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Company ID required. Please provide X-Company-ID header."
-        )
-    
+    """Get user context. company_id sourced from JWT via require_company_id (canonical)."""
     return {
-        "company_id": x_company_id,
+        "company_id": company_id,
         "user_id": x_user_id or "system",
         "role": x_user_role or "user",
-        "is_admin": x_user_role == "admin"
+        "is_admin": x_user_role == "admin",
     }
 
 
@@ -64,7 +59,7 @@ class BigFiveWeights(BaseModel):
     neuroticism: float = Field(0.2, ge=0.0, le=1.0)
 
 
-class BigFiveProfileCreate(BaseModel):
+class BigFiveProfileCreate(WeDoBaseModel):
     """Request model for creating a Big Five profile."""
     name: str = Field(..., min_length=1, max_length=255, description="Profile name")
     job_id: str | None = Field(None, description="Associated job vacancy ID")
@@ -73,7 +68,7 @@ class BigFiveProfileCreate(BaseModel):
     description: str | None = Field(None, max_length=1000, description="Profile description")
 
 
-class BigFiveProfileUpdate(BaseModel):
+class BigFiveProfileUpdate(WeDoBaseModel):
     """Request model for updating a Big Five profile."""
     name: str | None = Field(None, min_length=1, max_length=255)
     job_id: str | None = None
@@ -94,7 +89,7 @@ class BigFiveProfileResponse(BaseModel):
     updated_at: datetime
 
 
-class CandidateTraitsInput(BaseModel):
+class CandidateTraitsInput(WeDoBaseModel):
     """Candidate's Big Five traits for analysis."""
     openness: int = Field(..., ge=1, le=100)
     conscientiousness: int = Field(..., ge=1, le=100)
@@ -103,7 +98,7 @@ class CandidateTraitsInput(BaseModel):
     neuroticism: int = Field(..., ge=1, le=100)
 
 
-class AnalyzeRequest(BaseModel):
+class AnalyzeRequest(WeDoBaseModel):
     """Request model for analyzing candidate against profile."""
     profile_id: str = Field(..., description="Big Five profile ID to compare against")
     candidate_traits: CandidateTraitsInput = Field(..., description="Candidate's Big Five traits")

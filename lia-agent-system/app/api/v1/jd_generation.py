@@ -11,12 +11,13 @@ from app.domains.job_management.services.jd_generator_service import jd_generato
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.compliance.fairness_guard_middleware import check_fairness
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/jd", tags=["jd-generation"])
 
 
-class ExtractJDRequest(BaseModel):
+class ExtractJDRequest(WeDoBaseModel):
     """T-1167 (Bug #3) — extrai responsabilidades/skills/comp.comp. de um JD colado em texto livre."""
     text: str
     company_id: str
@@ -101,7 +102,7 @@ async def extract_jd(
     )
 
 
-class GenerateJDRequest(BaseModel):
+class GenerateJDRequest(WeDoBaseModel):
     job_title: str
     department: str | None = None
     seniority: str | None = None

@@ -20,6 +20,7 @@ from ._shared import (  # noqa: F401
 from app.domains.job_management.repositories.job_vacancy_screening_repository import JobVacancyScreeningRepository
 from app.domains.job_management.dependencies import get_job_vacancy_screening_repo
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter()
 
@@ -72,7 +73,7 @@ class ScreeningConfigFeedback(BaseModel):
     rejected: str | None = "Agradecemos sua participação. Infelizmente não seguiremos com sua candidatura neste momento."
 
 
-class ScreeningConfigRequest(BaseModel):
+class ScreeningConfigRequest(WeDoBaseModel):
     status: ScreeningConfigStatus | None = None
     channels: ScreeningConfigChannels | None = None
     settings: ScreeningConfigSettings | None = None
@@ -96,7 +97,7 @@ class ScreeningConfigResponse(BaseModel):
     updated_at: str | None = None
 
 
-class ScreeningStatusUpdateRequest(BaseModel):
+class ScreeningStatusUpdateRequest(WeDoBaseModel):
     screening_status: str
     pause_reason: str | None = None
     scheduled_end_date: str | None = None
@@ -198,11 +199,16 @@ company_id: str = Depends(require_company_id)):
 
         job = await repo.update_screening_config(job, merged_config)
 
-        logger.info(f"Screening config updated for job {job_id}")
+        # F3.O5 fix — derive screening_status from merged_config so the response
+        # reflects the just-saved state (was returning hardcoded default "not_configured").
+        screening_status = derive_screening_status(merged_config)
+
+        logger.info(f"Screening config updated for job {job_id} (status={screening_status})")
 
         return ScreeningConfigResponse(
             job_id=str(job_id),
             is_default=False,
+            screening_status=screening_status,
             status=merged_config.get("status"),
             channels=merged_config.get("channels"),
             settings=merged_config.get("settings"),

@@ -5,6 +5,7 @@ from datetime import datetime
 from enum import Enum, StrEnum
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class ChecklistItem(BaseModel):
@@ -86,7 +87,7 @@ class HealthCheckItemListResponse(BaseModel):
     has_more: bool = False
 
 
-class HealthCheckItemCreate(BaseModel):
+class HealthCheckItemCreate(WeDoBaseModel):
     """Schema for creating a new health check item."""
     framework: ComplianceFrameworkEnum = Field(..., description="Compliance framework")
     category: str = Field(..., description="Category within the framework", max_length=100)
@@ -114,7 +115,7 @@ class HealthCheckItemCreate(BaseModel):
         }
 
 
-class HealthCheckItemUpdate(BaseModel):
+class HealthCheckItemUpdate(WeDoBaseModel):
     """Schema for updating a health check item."""
     requirement: str | None = Field(None, description="Requirement description", max_length=500)
     evidence: str | None = Field(None, description="Expected evidence", max_length=500)
@@ -123,7 +124,7 @@ class HealthCheckItemUpdate(BaseModel):
     review_frequency: ReviewFrequencyEnum | None = Field(None, description="Review frequency")
 
 
-class HealthCheckVerifyRequest(BaseModel):
+class HealthCheckVerifyRequest(WeDoBaseModel):
     """Schema for marking an item as verified."""
     checked_by_id: str | None = Field(None, description="ID of the user performing verification")
     checked_by_name: str | None = Field(None, description="Name of the user performing verification")
@@ -141,7 +142,7 @@ class HealthCheckVerifyRequest(BaseModel):
         }
 
 
-class HealthCheckStatusUpdateRequest(BaseModel):
+class HealthCheckStatusUpdateRequest(WeDoBaseModel):
     """Schema for updating item status."""
     status: HealthCheckStatusEnum = Field(..., description="New status")
     changed_by_id: str | None = Field(None, description="ID of user making the change")
@@ -212,7 +213,7 @@ class SeedHealthCheckResponse(BaseModel):
     message: str
 
 
-class HealthCheckExportRequest(BaseModel):
+class HealthCheckExportRequest(WeDoBaseModel):
     """Request schema for exporting health check data."""
     framework: ComplianceFrameworkEnum | None = Field(None, description="Filter by framework")
     status: HealthCheckStatusEnum | None = Field(None, description="Filter by status")

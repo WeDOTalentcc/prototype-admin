@@ -28,13 +28,14 @@ from app.models.communication_matrix import (
     RecipientType,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/communication-matrix", tags=["communication-matrix"])
 
 
-class UpdateMatrixEntryRequest(BaseModel):
+class UpdateMatrixEntryRequest(WeDoBaseModel):
     """Request model for updating a matrix entry."""
     channels: list[str] | None = Field(None, description="List of channels to use")
     is_automatic: bool | None = Field(None, description="Whether this is sent automatically")
@@ -43,7 +44,7 @@ class UpdateMatrixEntryRequest(BaseModel):
     is_active: bool | None = Field(None, description="Whether this communication is enabled")
 
 
-class ResetMatrixRequest(BaseModel):
+class ResetMatrixRequest(WeDoBaseModel):
     """Request model for resetting matrix to defaults."""
     confirm: bool = Field(..., description="Must be true to confirm reset")
 

@@ -2,14 +2,15 @@
 from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
-class RequestApprovalRequest(BaseModel):
+class RequestApprovalRequest(WeDoBaseModel):
     """Empty body — agent_id comes from URL path."""
     pass
 
 
-class ReviewApprovalRequest(BaseModel):
+class ReviewApprovalRequest(WeDoBaseModel):
     action: Literal["approve", "reject"]
     notes: Optional[str] = Field(None, max_length=2000)
 

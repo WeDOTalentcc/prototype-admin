@@ -57,27 +57,19 @@ PLAN_PRICES = {
 
 
 def get_user_from_headers(
-    x_company_id: str | None = Header(None, alias="X-Company-ID"),
+    company_id: str = Depends(require_company_id),
     x_user_id: str | None = Header(None, alias="X-User-ID"),
     x_user_role: str | None = Header(None, alias="X-User-Role"),
 ) -> dict[str, Any]:
-    """Get user context from request headers."""
-    if not x_company_id:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="X-Company-ID header required",
-        )
+    """
+    Get user context combining JWT (company_id) with optional request headers
+    (user_id, role).
 
-    try:
-        UUID(x_company_id)
-    except ValueError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid X-Company-ID format",
-        )
-
+    Multi-tenancy canonical: company_id comes from JWT via require_company_id —
+    NEVER from X-Company-ID header (cross-tenant anti-pattern).
+    """
     return {
-        "company_id": x_company_id,
+        "company_id": company_id,
         "user_id": x_user_id or "system",
         "role": x_user_role or "user",
         "is_admin": x_user_role == "admin",

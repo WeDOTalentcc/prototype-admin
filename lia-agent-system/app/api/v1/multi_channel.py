@@ -9,13 +9,14 @@ from app.auth.models import User
 from app.shared.channels.channel_adapter import ChannelMessage, ChannelType
 from app.shared.channels.multi_channel_service import multi_channel_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/multi-channel", tags=["multi-channel"])
 
 
-class SendMessageRequest(BaseModel):
+class SendMessageRequest(WeDoBaseModel):
     recipient_id: str
     recipient_name: str
     recipient_contact: str
@@ -25,7 +26,6 @@ class SendMessageRequest(BaseModel):
     template_id: str | None = None
     template_vars: dict[str, Any] | None = None
     metadata: dict[str, Any] | None = None
-    company_id: str = ""
     vacancy_id: str | None = None
     channels: list[str] = ["email"]
     fallback: bool = True
@@ -55,7 +55,7 @@ class BulkMessageItem(BaseModel):
     vacancy_id: str | None = None
 
 
-class BulkSendRequest(BaseModel):
+class BulkSendRequest(WeDoBaseModel):
     messages: list[BulkMessageItem]
     channel: str = "email"
 
@@ -101,7 +101,7 @@ async def send_message(request: SendMessageRequest, current_user: User = Depends
             template_id=request.template_id,
             template_vars=request.template_vars,
             metadata=request.metadata,
-            company_id=request.company_id,
+            company_id=company_id,
             vacancy_id=request.vacancy_id,
         )
 

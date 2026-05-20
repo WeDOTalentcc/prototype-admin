@@ -101,8 +101,19 @@ class LangGraphBase(BaseAgent, ABC):
         # Default max_iterations=5 → recursion_limit=11 (2×5+1).
         # Subclasses that override _run_graph (Autonomous, CustomAgentRuntime) set their own.
         max_iter = getattr(self, "_max_steps", None) or getattr(self, "max_iterations", 5)
+        # Sprint C #41 mitigation: thread_id includes domain to prevent
+        # cross-agent state contamination ("Received multiple non-consecutive
+        # system messages"). Each (session, domain) pair gets its own
+        # checkpointer namespace — preserves conversation memory within a
+        # domain while isolating messages between sequential domain hops.
+        _agent_domain = (
+            getattr(self, "domain_name", None) or self.__class__.__name__
+        )
+        _thread_key = (
+            f"{session_id}::{_agent_domain}" if _agent_domain else session_id
+        )
         config: Dict[str, Any] = {
-            "configurable": {"thread_id": session_id},
+            "configurable": {"thread_id": _thread_key},
             "recursion_limit": max_iter * 2 + 1,
         }
         callbacks = [cb for cb in [audit_callback, streaming_callback] if cb is not None]

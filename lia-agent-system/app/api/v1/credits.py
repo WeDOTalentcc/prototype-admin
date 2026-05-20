@@ -12,6 +12,7 @@ from app.domains.credits.repositories.credits_repository import CreditsRepositor
 from app.domains.credits.services.credit_service import ACTION_CREDIT_COSTS
 from lia_models.billing import CreditTransactionType
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +38,7 @@ class CreditBalanceResponse(BaseModel):
     updated_at: str | None = None
 
 
-class AddCreditsRequest(BaseModel):
+class AddCreditsRequest(WeDoBaseModel):
     amount: int = Field(..., gt=0, le=100000)
     transaction_type: str = Field(
         default="purchase",
@@ -48,7 +49,7 @@ class AddCreditsRequest(BaseModel):
     reference_id: str | None = None
 
 
-class ConsumeCreditsRequest(BaseModel):
+class ConsumeCreditsRequest(WeDoBaseModel):
     amount: int = Field(..., gt=0, le=10000)
     description: str
     action_type: str | None = None
@@ -56,7 +57,7 @@ class ConsumeCreditsRequest(BaseModel):
     reference_id: str | None = None
 
 
-class ConsumeActionRequest(BaseModel):
+class ConsumeActionRequest(WeDoBaseModel):
     action_type: str = Field(..., description="Action type (search, analysis, screening, report, etc.)")
     reference_type: str | None = None
     reference_id: str | None = None

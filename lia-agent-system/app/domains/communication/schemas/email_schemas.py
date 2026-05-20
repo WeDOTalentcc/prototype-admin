@@ -9,6 +9,7 @@ from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class EmailDeliveryStatus(StrEnum):
@@ -31,7 +32,7 @@ class EmailAttachment(BaseModel):
     content_type: str = Field("application/octet-stream", description="MIME type")
 
 
-class SendEmailRequest(BaseModel):
+class SendEmailRequest(WeDoBaseModel):
     to_email: str = Field(..., description="Primary recipient email")
     to_name: str | None = Field(None, description="Recipient name")
     subject: str = Field(..., description="Email subject")
@@ -45,7 +46,7 @@ class SendEmailRequest(BaseModel):
     company_id: str | None = Field(None, description="Company ID for multi-tenancy")
 
 
-class SendTemplateEmailRequest(BaseModel):
+class SendTemplateEmailRequest(WeDoBaseModel):
     to_email: str = Field(..., description="Primary recipient email")
     to_name: str | None = Field(None, description="Recipient name")
     template_name: str = Field(..., description="Template name from EmailTemplates")
@@ -63,7 +64,7 @@ class BulkEmailRecipient(BaseModel):
     personalization: dict[str, Any] | None = Field(default_factory=dict)
 
 
-class SendBulkEmailRequest(BaseModel):
+class SendBulkEmailRequest(WeDoBaseModel):
     recipients: list[BulkEmailRecipient] = Field(..., description="List of recipients")
     subject: str = Field(..., description="Email subject")
     body: str = Field(..., description="Plain text body")

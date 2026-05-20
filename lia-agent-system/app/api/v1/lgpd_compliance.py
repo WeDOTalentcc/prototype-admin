@@ -43,6 +43,7 @@ from app.shared.services.lgpd_cleanup_service import (
 )
 from app.shared.tenant_guard import get_verified_company_id
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -552,7 +553,7 @@ _company_gate: str = Depends(require_company_id)):
 # L4 — Data Deletion Scheduling (LGPD Art. 16 / Data Retention)
 # ---------------------------------------------------------------------------
 
-class ScheduleDeletionRequest(BaseModel):
+class ScheduleDeletionRequest(WeDoBaseModel):
     candidate_id: str
     reason: str = Field(
         "rejected",

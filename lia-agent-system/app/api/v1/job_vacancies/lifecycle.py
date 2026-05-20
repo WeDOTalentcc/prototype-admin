@@ -34,13 +34,14 @@ from app.domains.job_management.repositories.job_vacancy_lifecycle_repository im
 from app.domains.communication.services.communication_service import CommunicationService, get_communication_service
 from app.shared.security.require_company_id import require_company_id
 from app.domains.sourcing.services.sourcing_pipeline_service import sourcing_pipeline_service
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter()
 
 
 # ─── Schemas ──────────────────────────────────────────────────────────────────
 
-class JobPublishRequest(BaseModel):
+class JobPublishRequest(WeDoBaseModel):
     """Request to publish a job vacancy (simple version)."""
     trigger_sourcing: bool = True
 
@@ -68,7 +69,7 @@ class JobPublishResponseV2(BaseModel):
     message: str
 
 
-class ConfirmGlobalSearchRequest(BaseModel):
+class ConfirmGlobalSearchRequest(WeDoBaseModel):
     credits_to_use: int = 20
 
 

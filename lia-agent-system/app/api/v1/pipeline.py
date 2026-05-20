@@ -11,13 +11,14 @@ from app.domains.recruiter_assistant.services.pipeline_service import pipeline_s
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = get_masked_logger(__name__)
 
 router = APIRouter()
 
 
-class PipelineActionRequest(BaseModel):
+class PipelineActionRequest(WeDoBaseModel):
     candidate_id: str
     action_id: str
 

@@ -43,6 +43,7 @@ from app.shared.services.archetype_builder_service import (
     build_archetype_from_search,  # noqa: F401
     extract_tags_from_search_spec,  # noqa: F401
 )
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -511,7 +512,7 @@ class ImportCandidateDTO(BaseModel):
 
 
 
-class ImportCandidatesRequest(BaseModel):
+class ImportCandidatesRequest(WeDoBaseModel):
     """Request para importar candidatos Pearch para base local."""
     candidates: list[ImportCandidateDTO]
     source_search_query: str | None = None
@@ -548,7 +549,7 @@ class CreditEstimateDTO(BaseModel):
     confirmation_message: str
 
 
-class EvaluateForJobRequest(BaseModel):
+class EvaluateForJobRequest(WeDoBaseModel):
     """Request para avaliar candidatos em batch por job_id."""
     job_id: str = Field(..., description="UUID da vaga para avaliação")
     candidate_ids: list[str] = Field(..., description="Lista de UUIDs dos candidatos a avaliar", min_length=1, max_length=100)

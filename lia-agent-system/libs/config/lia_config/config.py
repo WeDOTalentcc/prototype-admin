@@ -171,6 +171,12 @@ class AuditSettings(BaseSettings):
 
 class AuthSettings(BaseSettings):
     SECRET_KEY: str = "change-this-in-production"
+    # Sprint E.1 #26: dual-key rotation support (ADR-AUTH-001).
+    # When SECRET_KEY rotates, set this to the previous value for the
+    # transition window (≤7 days). decode_token() falls back to this
+    # key on InvalidSignatureError so existing JWTs keep validating.
+    # Unset after all old tokens have expired (refresh TTL = 7 days).
+    SECRET_KEY_LEGACY: str | None = None
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     # R-007 (Sprint 1 Quick Wins): aud + iss validation no JWT.

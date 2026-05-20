@@ -13,11 +13,12 @@ from pydantic import BaseModel, Field
 
 from app.orchestrator.navigation_intent import detect_navigation_intent
 from fastapi import Depends
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter(prefix="/navigation-intent", tags=["navigation"])
 
 
-class NavigationIntentRequest(BaseModel):
+class NavigationIntentRequest(WeDoBaseModel):
     message: str = Field(..., min_length=1, max_length=2000)
 
 

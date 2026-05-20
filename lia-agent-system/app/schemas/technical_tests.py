@@ -7,6 +7,7 @@ from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class TestCategoryEnum(StrEnum):
@@ -44,7 +45,7 @@ class TestDifficultyEnum(StrEnum):
     HARD = "hard"
 
 
-class TechnicalTestCreate(BaseModel):
+class TechnicalTestCreate(WeDoBaseModel):
     """Schema for creating a technical test."""
     name: str = Field(..., min_length=1, max_length=255, description="Test name")
     category: TestCategoryEnum = Field(..., description="Test category")
@@ -75,7 +76,7 @@ class TechnicalTestCreate(BaseModel):
         }
 
 
-class TechnicalTestUpdate(BaseModel):
+class TechnicalTestUpdate(WeDoBaseModel):
     """Schema for updating a technical test."""
     name: str | None = Field(None, min_length=1, max_length=255)
     category: TestCategoryEnum | None = None
@@ -131,7 +132,7 @@ class TechnicalTestListResponse(BaseModel):
     offset: int
 
 
-class ClientTestConfigCreate(BaseModel):
+class ClientTestConfigCreate(WeDoBaseModel):
     """Schema for creating/updating client test configuration."""
     is_enabled: bool = Field(True, description="Whether test is enabled for this client")
     custom_time_limit: int | None = Field(None, ge=5, le=180, description="Custom time limit in minutes")
@@ -182,7 +183,7 @@ class ClientTestConfigListResponse(BaseModel):
     offset: int
 
 
-class TestResultCreate(BaseModel):
+class TestResultCreate(WeDoBaseModel):
     """Schema for creating a test result."""
     candidate_id: str = Field(..., description="Candidate ID")
     test_id: str = Field(..., description="Test ID")
@@ -207,7 +208,7 @@ class TestResultCreate(BaseModel):
         }
 
 
-class TestResultUpdate(BaseModel):
+class TestResultUpdate(WeDoBaseModel):
     """Schema for updating a test result."""
     completed_at: datetime | None = None
     score: float | None = Field(None, ge=0, le=100)

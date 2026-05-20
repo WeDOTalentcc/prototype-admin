@@ -9,6 +9,7 @@ import os
 from typing import Any
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +109,7 @@ class WSIQuestionOutput(BaseModel):
     is_eliminatory: bool | None = False
 
 
-class GenerateQuestionsRequest(BaseModel):
+class GenerateQuestionsRequest(WeDoBaseModel):
     job_vacancy_id: str | None = None
     company_id: str | None = None
     job_title: str | None = None
@@ -166,7 +167,7 @@ class BigFiveIndicators(BaseModel):
         return 100 - self.neuroticism
 
 
-class AnalyzeResponseRequest(BaseModel):
+class AnalyzeResponseRequest(WeDoBaseModel):
     session_id: str
     question_id: str
     response_text: str
@@ -189,12 +190,12 @@ class AnalyzeResponseOutput(BaseModel):
     red_flags: list[str]
 
 
-class ResponseInput(BaseModel):
+class ResponseInput(WeDoBaseModel):
     question_id: str
     response_text: str
 
 
-class CompleteScreeningRequest(BaseModel):
+class CompleteScreeningRequest(WeDoBaseModel):
     session_id: str
     candidate_id: str
     job_vacancy_id: str | None = None
@@ -222,7 +223,7 @@ class CompleteScreeningResponse(BaseModel):
     response_analyses: list[AnalyzeResponseOutput]
 
 
-class JDEvaluateRequest(BaseModel):
+class JDEvaluateRequest(WeDoBaseModel):
     job_title: str
     responsibilities: list[str] | None = None
     technical_skills: list[str] | None = None
@@ -244,13 +245,13 @@ class JDEvaluateResponse(BaseModel):
     details: dict[str, Any]
 
 
-class SaveQuestionsRequest(BaseModel):
+class SaveQuestionsRequest(WeDoBaseModel):
     job_id: str
     questions: list[dict[str, Any]]
     source: str | None = "manual"
 
 
-class SuggestQuestionRequest(BaseModel):
+class SuggestQuestionRequest(WeDoBaseModel):
     prompt: str
     job_title: str | None = None
     block_id: int | None = None

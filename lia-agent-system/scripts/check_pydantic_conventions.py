@@ -23,6 +23,15 @@ Regras enforced (todas Replit-only; output otimizado pra consumo de LLM):
        Use `: JobIdParam` (alias canonical em app/shared/types.py) ou `: str = Path(...)`.
        Por quê: audit F2.B1 — 24 endpoints quebrados pelo mesmo copy-paste pattern.
 
+  R4 — x_company_id Header anti-pattern PROIBIDO (multi-tenancy cross-tenant)
+       Nenhum handler pode declarar `x_company_id: ... = Header(..., alias="X-Company-ID")`
+       NEM atribuir `company_id = x_company_id ...` (overwrite do JWT canonical).
+       Use sempre `company_id: str = Depends(require_company_id)` canonical.
+       Por quê: audit SMOKE-#2 LGPD (2026-05-20) — 28 sites em 21 arquivos permitiam
+       user mandar X-Company-ID em header e operar sobre dados de OUTRA company
+       (cross-tenant data manipulation, LGPD compliance break). Infrastructure canonical
+       em app/shared/tenant_guard.get_verified_company_id existia mas era ignorada.
+
 Uso:
     python3 scripts/check_pydantic_conventions.py [DIR]   # default: lia-agent-system/app
     Exit 0 = clean, Exit 1 = violations encontradas (mensagens com fix sugerido).
@@ -51,6 +60,24 @@ SKIP_R1: set[str] = {
     # Sempre adicionar com motivo + ticket associado.
 }
 
+SKIP_R2: set[str] = {
+    # Schemas onde company_id no payload é LEGÍTIMO (public endpoints sem JWT,
+    # schemas internos não-HTTP, ou DB record models reutilizados como sufixo Create).
+    # Sempre adicionar com motivo + ticket associado.
+    "DataSubjectRequestCreate",  # Portal do Titular LGPD Art.18 — endpoint público sem JWT, company_id é tenant alvo da request (recebido via form do titular)
+    "PersonalizationEventCreate",  # Schema interno (service-to-service), NÃO HTTP body. PersonalizationEventResponse herda dele.
+    "IntelligenceInsightCreate",   # Schema interno (service-to-service), NÃO HTTP body. IntelligenceInsightResponse herda dele.
+    "JDGenerationRequest",         # Schema interno service-to-service (jd_template_service), NÃO HTTP body.
+    "EnrichmentRequest",           # Schema interno service-to-service (jd_enrichment_service, job_wizard_tools), NÃO HTTP body. Há outra EnrichmentRequest em candidates_crud.py que é separada e legítima.
+    "CompanyHiringPolicyCreate",   # Schema interno (apenas test usa), CompanyHiringPolicyResponse herda dele.
+    "PersonalizedFeedbackRequest", # Schema interno service-to-service (personalized_feedback_service), NÃO HTTP body.
+    "ToolExecutionRequest",        # Schema interno service-to-service (orchestrator_routes constrói internamente), NÃO HTTP body.
+    "GuardrailCreate",             # Schema interno (guardrail_repository) usado por seeds + handler que constrói internamente — company_id é argumento legítimo do método create.
+    "SSOAuditLogCreate",           # Schema interno (audit log record), NÃO HTTP body — usado por WorkOS SSO service para persistir.
+    "CultureAnalysisRequest",      # Schema interno service-to-service (analytics culture), tem handler mas company_id vem do JWT — verificar.
+    "CultureAnalysisDirectRequest",# Schema sem requerer company_id em DB — usado para análise direta sem persistir.
+}
+
 CANONICAL_BASE_CLASSES = {"WeDoBaseModel"}
 """Subclasses dessas têm extra='forbid' herdado — passam R1 sem model_config explícito."""
 
@@ -60,6 +87,23 @@ EXCLUDE_PATHS = (
     "tests/fixtures",
     "alembic/versions",  # migrations geram models temporários
 )
+
+# R4 skip filter — canonical defense functions/files que LEGITIMAMENTE usam Header
+# (e.g., tenant_guard.get_verified_company_id compara header vs JWT e retorna 403
+# se mismatch — esse é o pattern CORRETO, não anti-pattern).
+SKIP_R4_FILES: set[str] = {
+    "app/shared/tenant_guard.py",  # canonical defense: get_verified_company_id
+    "app/shared/policy_middleware.py",  # canonical policy middleware
+}
+
+SKIP_R4_FUNCTIONS: set[str] = {
+    "get_verified_company_id",  # canonical defense em tenant_guard.py
+    # Webhook canonical defense-in-depth: HMAC-signed (X-Teams-Signature),
+    # usa Depends(require_company_id) para JWT auth, e x_company_id Header
+    # serve apenas para cross-check (403 se mismatch vs JWT — Task #1146).
+    # NÃO é o anti-pattern R4 (não há overwrite do JWT — apenas validação).
+    "teams_adaptive_card_webhook",  # canonical webhook defense em app/api/v1/teams.py
+}
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -153,9 +197,24 @@ def check_r1(class_node: ast.ClassDef, filepath: str) -> Violation | None:
 
 
 def check_r2(class_node: ast.ClassDef, filepath: str) -> Iterable[Violation]:
-    """R2: nenhum BaseModel pode ter field company_id (multi-tenancy canonical)."""
+    """
+    R2: nenhum request body schema pode ter field company_id (multi-tenancy canonical).
+
+    Refinement 2026-05-20-v2: aplica suffix check Create|Update|Request|Payload|Input
+    (mesmo critério do R1). Antes apitava em qualquer BaseModel com company_id —
+    isso incluia event/result schemas (PlatformEvent, AgentChatMessage, CrewExecutionResult)
+    onde company_id é contexto legítimo, não payload. Baseline R2 caiu de 274 → ~N
+    true positives focados em request bodies.
+
+    Resultado: agora apita SÓ quando o nome da classe sugere request body (Create/Update/...).
+    Event schemas que NÃO chegam via HTTP body passam.
+    """
     if not _is_pydantic_basemodel(class_node):
         return
+    if not _is_request_body_schema(class_node.name):
+        return  # R2 só se aplica a request body schemas, não event/result/internal
+    if class_node.name in SKIP_R2:
+        return  # Schema legitimo (public endpoint sem JWT)
     for stmt in class_node.body:
         if not isinstance(stmt, ast.AnnAssign):
             continue
@@ -231,6 +290,127 @@ def check_r3(tree: ast.AST, filepath: str) -> Iterable[Violation]:
         )
 
 
+def _is_header_call(node: ast.AST) -> bool:
+    """True se node é call `Header(...)` (FastAPI Header dependency)."""
+    if not isinstance(node, ast.Call):
+        return False
+    func = node.func
+    return (isinstance(func, ast.Name) and func.id == "Header") or (
+        isinstance(func, ast.Attribute) and func.attr == "Header"
+    )
+
+
+def _is_x_company_id_header_alias(call: ast.Call) -> bool:
+    """True se Header(..., alias='X-Company-ID') — case-insensitive."""
+    for kw in call.keywords:
+        if kw.arg == "alias" and isinstance(kw.value, ast.Constant):
+            if isinstance(kw.value.value, str) and kw.value.value.lower() == "x-company-id":
+                return True
+    return False
+
+
+def check_r4(tree: ast.AST, filepath: str) -> Iterable[Violation]:
+    """
+    R4: x_company_id Header anti-pattern (multi-tenancy cross-tenant).
+
+    Detecta 2 sub-padrões:
+      R4a — declaração `x_company_id: ... = Header(...)` em function signature
+            OU qualquer `: ... = Header(..., alias="X-Company-ID")` (mesmo com nome diferente)
+      R4b — assignment `company_id = x_company_id ...` no body do handler
+            (overwriting JWT canonical com header value)
+
+    Registrado 2026-05-20 pós-fix SMOKE-#2 LGPD. 28 sites em 21 arquivos
+    descobertos. Anti-pattern viola CLAUDE.md "company_id sempre via JWT,
+    nunca payload/header".
+    """
+    # R4 skip filter: check file path
+    if any(skip in filepath for skip in SKIP_R4_FILES):
+        return
+
+    # R4a — function arg `x_company_id: ... = Header(...)` ou `... = Header(alias="X-Company-ID")`
+    for node in ast.walk(tree):
+        if not isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            continue
+        # skip canonical defense functions
+        if node.name in SKIP_R4_FUNCTIONS:
+            continue
+        # walk args.args + args.kwonlyargs com defaults
+        all_args = list(node.args.args) + list(node.args.kwonlyargs)
+        all_defaults = list(node.args.defaults) + list(node.args.kw_defaults)
+        for arg, default in zip(all_args[-len(all_defaults):] if all_defaults else [], all_defaults):
+            if default is None:
+                continue
+            # Default é Header(...) call?
+            if not _is_header_call(default):
+                continue
+            # arg.arg == "x_company_id"? OU Header tem alias="X-Company-ID"?
+            arg_name = arg.arg
+            has_x_company_alias = _is_x_company_id_header_alias(default)
+            if arg_name == "x_company_id" or has_x_company_alias:
+                yield Violation(
+                    rule="R4",
+                    file=filepath,
+                    line=arg.lineno,
+                    target=f"{node.name}({arg_name})",
+                    message=(
+                        f"❌ R4 violation: {node.name}({arg_name}: ... = Header(...)) em {filepath}:{arg.lineno}\n"
+                        f"   Multi-tenancy canonical (CLAUDE.md) PROÍBE company_id via Header.\n"
+                        f"   Audit SMOKE-#2 LGPD: 28 sites permitiam cross-tenant data manipulation.\n"
+                        f"\n"
+                        f"   Fix canonical:\n"
+                        f"   1. Remova o parameter `{arg_name}: ... = Header(...)` do handler signature.\n"
+                        f"   2. Mantenha apenas `company_id: str = Depends(require_company_id)`:\n"
+                        f"        from app.shared.security.require_company_id import require_company_id\n"
+                        f"        async def {node.name}(\n"
+                        f"            ...,\n"
+                        f"            company_id: str = Depends(require_company_id),  # do JWT\n"
+                        f"        ):\n"
+                        f"   3. Se precisar verificar header (estilo defesa em profundidade), use:\n"
+                        f"        from app.shared.tenant_guard import get_verified_company_id\n"
+                        f"        company_id: str = Depends(get_verified_company_id)\n"
+                        f"      (este compara header com JWT e retorna 403 se mismatch)\n"
+                    ),
+                )
+
+    # R4b — assignment `company_id = x_company_id ...` no body
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Assign):
+            continue
+        # target tem que ser Name "company_id"
+        if not (len(node.targets) == 1 and isinstance(node.targets[0], ast.Name)):
+            continue
+        if node.targets[0].id != "company_id":
+            continue
+        # value contém referência a "x_company_id"?
+        contains_x_company_id = False
+        for sub in ast.walk(node.value):
+            if isinstance(sub, ast.Name) and sub.id == "x_company_id":
+                contains_x_company_id = True
+                break
+        if not contains_x_company_id:
+            continue
+        yield Violation(
+            rule="R4",
+            file=filepath,
+            line=node.lineno,
+            target="company_id = x_company_id ...",
+            message=(
+                f"❌ R4 violation: `company_id = x_company_id ...` em {filepath}:{node.lineno}\n"
+                f"   Assignment sobrescreve company_id do JWT canonical com valor de header.\n"
+                f"   Audit SMOKE-#2 LGPD: ataque cross-tenant via X-Company-ID header.\n"
+                f"\n"
+                f"   Fix canonical:\n"
+                f"   1. REMOVA esta linha completamente. O company_id já vem do JWT via\n"
+                f"      `Depends(require_company_id)` no signature do handler.\n"
+                f"   2. Se há lógica que precisa override LEGÍTIMO (e.g., admin atuando em\n"
+                f"      nome de outra company), use:\n"
+                f"        from app.shared.tenant_guard import get_verified_company_id\n"
+                f"        company_id: str = Depends(get_verified_company_id)\n"
+                f"      Este Dep retorna 403 se header não bate com JWT (canonical).\n"
+            ),
+        )
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # Runner
 # ─────────────────────────────────────────────────────────────────────────────
@@ -246,6 +426,9 @@ def scan_file(filepath: Path) -> list[Violation]:
 
     # R3: file-level (qualquer AnnAssign UUID+Path)
     violations.extend(check_r3(tree, str(filepath)))
+
+    # R4: file-level (x_company_id Header anti-pattern + JWT overwrite)
+    violations.extend(check_r4(tree, str(filepath)))
 
     # R1 e R2: class-level
     for node in ast.walk(tree):

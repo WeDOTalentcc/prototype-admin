@@ -23,6 +23,7 @@ from app.domains.communication.services.whatsapp_provider import ProviderType
 from app.domains.communication.services.whatsapp_twilio_service import twilio_whatsapp_service
 from app.domains.recruiter_assistant.services.conversation_manager import ConversationManager
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -366,7 +367,7 @@ async def _get_company_from_twilio_number(twilio_number: str, db: AsyncSession) 
     return None
 
 
-class SendMessageRequest(BaseModel):
+class SendMessageRequest(WeDoBaseModel):
     """Request to send a message to a WhatsApp number."""
     phone_number: str
     message: str
@@ -374,7 +375,7 @@ class SendMessageRequest(BaseModel):
     provider: str | None = None
 
 
-class SendFeedbackRequest(BaseModel):
+class SendFeedbackRequest(WeDoBaseModel):
     """Request to send feedback to a candidate."""
     conversation_id: str
     approved: bool

@@ -21,6 +21,7 @@ from app.auth.models import User
 from app.core.database import get_db
 from app.shared.services.learning_hub_service import learning_hub_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -38,10 +39,9 @@ class Stage8SearchCriteria(BaseModel):
     experience_years: int | None = None
 
 
-class Stage8CandidateSearchRequest(BaseModel):
+class Stage8CandidateSearchRequest(WeDoBaseModel):
     job_id: str | None = None
     draft_id: str | None = None
-    company_id: str
     search_criteria: Stage8SearchCriteria
     limit: int = 20
 
@@ -55,9 +55,8 @@ class Stage8CandidateSearchResponse(BaseModel):
     search_criteria_enhanced: dict[str, Any] | None = None
 
 
-class Stage8SearchFeedbackRequest(BaseModel):
+class Stage8SearchFeedbackRequest(WeDoBaseModel):
     search_id: str
-    company_id: str
     suggested_candidates: list[str]
     selected_candidates: list[str]
     job_id: str | None = None
@@ -70,9 +69,8 @@ class Stage8SearchFeedbackResponse(BaseModel):
     acceptance_rate: float
 
 
-class Stage9CalibrationRequest(BaseModel):
+class Stage9CalibrationRequest(WeDoBaseModel):
     job_id: str
-    company_id: str
     candidates: list[str]
     calibration_mode: str | None = "auto"
 
@@ -100,9 +98,8 @@ class Stage9CalibrationItem(BaseModel):
     decision: str
 
 
-class Stage9CalibrateFeedbackRequest(BaseModel):
+class Stage9CalibrateFeedbackRequest(WeDoBaseModel):
     job_id: str
-    company_id: str
     calibrations: list[Stage9CalibrationItem]
 
 
@@ -123,9 +120,8 @@ class Stage10SearchCriteria(BaseModel):
     exclude_companies: list[str] | None = None
 
 
-class Stage10ActiveSourcingRequest(BaseModel):
+class Stage10ActiveSourcingRequest(WeDoBaseModel):
     job_id: str
-    company_id: str
     target_count: int = 20
     search_criteria: Stage10SearchCriteria
     auto_outreach: bool = False
@@ -148,9 +144,8 @@ class Stage10ActiveSourcingResponse(BaseModel):
     sources_used: list[str] | None = None
 
 
-class Stage10OutreachRequest(BaseModel):
+class Stage10OutreachRequest(WeDoBaseModel):
     job_id: str
-    company_id: str
     candidates: list[str]
     message_template: str | None = None
 
@@ -163,9 +158,8 @@ class Stage10OutreachResponse(BaseModel):
     outreach_ids: list[str] | None = None
 
 
-class Stage10FeedbackRequest(BaseModel):
+class Stage10FeedbackRequest(WeDoBaseModel):
     job_id: str
-    company_id: str
     sourced_candidates: list[str]
     engaged_candidates: list[str]
     search_id: str | None = None
@@ -198,7 +192,7 @@ company_id: str = Depends(require_company_id)) -> Stage8CandidateSearchResponse:
 
         learning_context = await learning_hub_service.get_learning_context(
             db=db,
-            company_id=request.company_id,
+            company_id=company_id,
             role=request.search_criteria.seniority,
             seniority=request.search_criteria.seniority
         )
@@ -228,7 +222,7 @@ company_id: str = Depends(require_company_id)) -> Stage8CandidateSearchResponse:
         agent_input = AgentInput(
             message=search_message,
             session_id=search_id,
-            company_id=request.company_id,
+            company_id=company_id,
             user_id=getattr(current_user, "id", "wizard"),
             context={
                 "current_stage": "search-criteria",
@@ -314,7 +308,7 @@ company_id: str = Depends(require_company_id)) -> Stage8SearchFeedbackResponse:
 
         success = await learning_hub_service.record_agent_feedback(
             db=db,
-            company_id=request.company_id,
+            company_id=company_id,
             agent_name="sourcing_agent",
             action_type="candidate_search",
             accepted=overall_accepted,
@@ -369,7 +363,7 @@ company_id: str = Depends(require_company_id)) -> Stage9CalibrationResponse:
         try:
             lc = await learning_hub_service.get_learning_context(
                 db=db,
-                company_id=request.company_id,
+                company_id=company_id,
                 role=None,
                 seniority=None,
             )
@@ -395,7 +389,7 @@ company_id: str = Depends(require_company_id)) -> Stage9CalibrationResponse:
             agent_input = AgentInput(
                 message=eval_message,
                 session_id=f"{request.job_id}-{candidate_id}",
-                company_id=request.company_id,
+                company_id=company_id,
                 user_id=getattr(current_user, "id", "wizard"),
                 context={
                     "current_stage": "analysis",
@@ -513,7 +507,7 @@ company_id: str = Depends(require_company_id)) -> Stage9CalibrateFeedbackRespons
 
             success = await learning_hub_service.record_agent_feedback(
                 db=db,
-                company_id=request.company_id,
+                company_id=company_id,
                 agent_name="wsi_evaluator",
                 action_type="calibration",
                 accepted=accepted,
@@ -534,7 +528,7 @@ company_id: str = Depends(require_company_id)) -> Stage9CalibrateFeedbackRespons
         try:
             agent_performance = await learning_hub_service.get_agent_performance(
                 db=db,
-                company_id=request.company_id,
+                company_id=company_id,
                 agent_name="wsi_evaluator",
                 limit=100,
             )
@@ -586,7 +580,7 @@ company_id: str = Depends(require_company_id)) -> Stage10ActiveSourcingResponse:
         try:
             lc = await learning_hub_service.get_learning_context(
                 db=db,
-                company_id=request.company_id,
+                company_id=company_id,
                 role=None,
                 seniority=request.search_criteria.seniority,
             )
@@ -611,7 +605,7 @@ company_id: str = Depends(require_company_id)) -> Stage10ActiveSourcingResponse:
         agent_input = AgentInput(
             message=search_message,
             session_id=search_id,
-            company_id=request.company_id,
+            company_id=company_id,
             user_id=getattr(current_user, "id", "wizard"),
             context={
                 "current_stage": "search-criteria",
@@ -741,7 +735,7 @@ company_id: str = Depends(require_company_id)) -> Stage10FeedbackResponse:
             for candidate_id in request.engaged_candidates:
                 await learning_hub_service.record_agent_feedback(
                     db=db,
-                    company_id=request.company_id,
+                    company_id=company_id,
                     agent_name="sourcing_agent",
                     action_type="outreach_engagement",
                     accepted=True,
@@ -755,7 +749,7 @@ company_id: str = Depends(require_company_id)) -> Stage10FeedbackResponse:
             for candidate_id in non_engaged:
                 await learning_hub_service.record_agent_feedback(
                     db=db,
-                    company_id=request.company_id,
+                    company_id=company_id,
                     agent_name="sourcing_agent",
                     action_type="outreach_engagement",
                     accepted=False,

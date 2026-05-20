@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.shared.services.affirmative_service import AffirmativeService
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter(prefix="/affirmative", tags=["affirmative"])
 
@@ -52,19 +53,19 @@ class ExpiredDocumentsResponse(BaseModel):
     expired_count: int
 
 
-class EligibilityCheckRequest(BaseModel):
+class EligibilityCheckRequest(WeDoBaseModel):
     candidate_id: str
     vacancy_id: str
 
 
-class DocumentUploadRequest(BaseModel):
+class DocumentUploadRequest(WeDoBaseModel):
     document_id: str
     document_url: str
     original_filename: str
     document_type: str
 
 
-class DocumentVerificationRequest(BaseModel):
+class DocumentVerificationRequest(WeDoBaseModel):
     document_id: str
     approved: bool
     notes: str | None = None
@@ -74,8 +75,12 @@ class DocumentVerificationRequest(BaseModel):
 async def get_affirmative_criteria(company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get all available affirmative action criteria."""
+    # SMOKE-#6 fix (audit 2026-05-20): AFFIRMATIVE_CRITERIA é dict[str, dict] (gender, race, ...),
+    # mas CriteriaResponse declara list[dict[str, Any]]. Pydantic 2 rejeita o tipo errado.
+    # Compliance LGPD/Lei 12.711 ADP — catálogo precisa funcionar pra transparência (Art. 9º).
     from app.shared.services.affirmative_service import AFFIRMATIVE_CRITERIA
-    return {"criteria": AFFIRMATIVE_CRITERIA}
+    criteria_list = [{"key": k, **v} for k, v in AFFIRMATIVE_CRITERIA.items()]
+    return {"criteria": criteria_list}
 
 
 @router.post("/check-eligibility", response_model=EligibilityResponse)

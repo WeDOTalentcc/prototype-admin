@@ -6,6 +6,7 @@ from enum import Enum, StrEnum
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
+from app.shared.types import WeDoBaseModel
 
 
 class ShareType(StrEnum):
@@ -35,7 +36,7 @@ class FeedbackDecision(StrEnum):
     rejected = "rejected"
 
 
-class RecipientInput(BaseModel):
+class RecipientInput(WeDoBaseModel):
     """Input schema for adding a recipient to a shared search."""
     email: EmailStr
     name: str | None = None
@@ -43,7 +44,7 @@ class RecipientInput(BaseModel):
     role: str = Field(default="hiring_manager", description="Role of the recipient")
 
 
-class CreateSharedSearchRequest(BaseModel):
+class CreateSharedSearchRequest(WeDoBaseModel):
     """Request schema for creating a new shared search."""
     share_type: ShareType
     title: str = Field(..., min_length=1, max_length=255)
@@ -60,7 +61,7 @@ class CreateSharedSearchRequest(BaseModel):
     can_rate: bool = Field(True, description="Whether recipients can rate/decide on candidates")
 
 
-class SubmitFeedbackRequest(BaseModel):
+class SubmitFeedbackRequest(WeDoBaseModel):
     """Request schema for submitting feedback on a candidate."""
     candidate_id: UUID
     decision: FeedbackDecision
@@ -68,12 +69,12 @@ class SubmitFeedbackRequest(BaseModel):
     comment: str | None = None
 
 
-class RequestOTPRequest(BaseModel):
+class RequestOTPRequest(WeDoBaseModel):
     """Request schema for requesting an OTP."""
     email: EmailStr
 
 
-class VerifyOTPRequest(BaseModel):
+class VerifyOTPRequest(WeDoBaseModel):
     """Request schema for verifying an OTP."""
     email: EmailStr
     otp: str = Field(..., min_length=6, max_length=6)

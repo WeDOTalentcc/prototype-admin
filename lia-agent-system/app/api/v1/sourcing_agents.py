@@ -15,13 +15,14 @@ from app.core.database import get_db, get_tenant_db
 from pydantic import BaseModel, Field
 from typing import Optional
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/sourcing-agents", tags=["Sourcing Agents"])
 
 
-class CreateSourcingAgentRequest(BaseModel):
+class CreateSourcingAgentRequest(WeDoBaseModel):
     agent_name: str = Field(..., min_length=3, max_length=256)
     job_id: Optional[str] = None
     talent_pool_id: Optional[str] = None
@@ -30,7 +31,7 @@ class CreateSourcingAgentRequest(BaseModel):
     preferences: Optional[dict] = None
 
 
-class FeedbackRequest(BaseModel):
+class FeedbackRequest(WeDoBaseModel):
     candidate_id: str
     signal_type: str = Field(..., pattern="^(positive|negative)$")
     reason: str = Field(..., min_length=3, max_length=500)

@@ -23,11 +23,12 @@ from app.auth.dependencies import get_current_user
 from app.core.database import get_db
 from app.domains.company.repositories.company_retention_repository import CompanyRetentionRepository
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter()
 
 
-class RetentionPolicyRequest(BaseModel):
+class RetentionPolicyRequest(WeDoBaseModel):
     retention_months: int = Field(
         default=24,
         ge=6,

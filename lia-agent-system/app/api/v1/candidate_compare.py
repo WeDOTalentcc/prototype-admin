@@ -19,13 +19,14 @@ from app.domains.candidates.services.candidate_comparison_service import Candida
 from app.domains.candidates.services.candidate_comparison_service import get_candidate_comparison_service
 from app.shared.tenant_guard import get_verified_company_id
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/candidates", tags=["candidate-compare"])
 
 
-class CompareRequest(BaseModel):
+class CompareRequest(WeDoBaseModel):
     candidate_ids: list[str] = Field(..., min_length=2, max_length=4)
     job_id: str | None = None
     scenario: Literal["A", "B", "C"] | None = None

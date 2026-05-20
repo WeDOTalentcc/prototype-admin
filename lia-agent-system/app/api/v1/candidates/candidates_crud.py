@@ -35,6 +35,7 @@ from app.domains.integrations_hub.services.rails_adapter_dependency import get_r
 from app.shared.rails_migration.deprecation import enforce_candidates_deprecation
 from app.schemas.envelope import ResponseEnvelope, ok_envelope
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 # MIGRATION_PLAN item 7.2 — Python CRUD deprecated in favor of Rails (ats-api-copia).
 #
@@ -605,7 +606,7 @@ company_id: str = Depends(require_company_id)):
 # Enrichment
 # ---------------------------------------------------------------------------
 
-class EnrichmentRequest(BaseModel):
+class EnrichmentRequest(WeDoBaseModel):
     linkedin_url: str | None = None
     include_experiences: bool = True
     include_education: bool = True

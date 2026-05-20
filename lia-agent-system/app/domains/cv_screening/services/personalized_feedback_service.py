@@ -38,6 +38,7 @@ from app.shared.compliance.audit_service import audit_service
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.pii_masking import get_masked_logger
 from app.templates.communication_templates import EmailTemplates, WhatsAppTemplates
+from app.shared.types import WeDoBaseModel
 
 _fairness_guard = FairnessGuard()
 
@@ -114,7 +115,7 @@ class WSIEvaluationContext(BaseModel):
     summary: str | None = None
 
 
-class PersonalizedFeedbackRequest(BaseModel):
+class PersonalizedFeedbackRequest(WeDoBaseModel):
     """Request for generating personalized feedback."""
     candidate: CandidateContext
     job: JobContext

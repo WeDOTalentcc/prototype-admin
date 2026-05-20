@@ -17,6 +17,7 @@ from app.domains.pipeline.repositories.pipeline_template_repository import (
     PipelineTemplateRepository,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -31,14 +32,14 @@ class PipelineStage(BaseModel):
     instructions: str | None = None
 
 
-class PipelineTemplateCreate(BaseModel):
+class PipelineTemplateCreate(WeDoBaseModel):
     name: str
     description: str | None = None
     stages: list[PipelineStage]
     is_default: bool = False
 
 
-class PipelineTemplateUpdate(BaseModel):
+class PipelineTemplateUpdate(WeDoBaseModel):
     name: str | None = None
     description: str | None = None
     stages: list[PipelineStage] | None = None

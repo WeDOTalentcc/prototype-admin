@@ -16,11 +16,12 @@ from app.shared.services.semantic_search_service import (
 )
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter(prefix="/semantic-search", tags=["Semantic Search"])
 
 
-class SemanticSearchRequest(BaseModel):
+class SemanticSearchRequest(WeDoBaseModel):
     query: str = Field(..., min_length=2, max_length=200, description="Search query to expand")
     existing: list[str] = Field(default=[], description="Already selected items to exclude")
     

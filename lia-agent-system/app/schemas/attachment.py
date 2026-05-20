@@ -5,9 +5,10 @@ Pydantic schemas for Attachment API.
 from datetime import datetime
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
-class AttachmentCreate(BaseModel):
+class AttachmentCreate(WeDoBaseModel):
     """Schema for creating a new attachment record."""
     candidate_id: str = Field(..., description="Candidate ID")
     candidate_name: str = Field(..., description="Candidate name")
@@ -22,7 +23,6 @@ class AttachmentCreate(BaseModel):
     description: str | None = Field(None, description="Description of the attachment")
     uploaded_by: str = Field(..., description="ID of uploader")
     uploaded_by_name: str | None = Field(None, description="Display name of uploader")
-    company_id: str = Field(..., description="Company ID for multi-tenancy")
 
     class Config:
         json_schema_extra = {
@@ -36,8 +36,7 @@ class AttachmentCreate(BaseModel):
                 "mime_type": "application/pdf",
                 "upload_source": "candidate",
                 "uploaded_by": "user_456",
-                "uploaded_by_name": "Maria Santos",
-                "company_id": "company_789"
+                "uploaded_by_name": "Maria Santos"
             }
         }
 

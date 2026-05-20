@@ -25,44 +25,12 @@ from app.domains.ai.services.llm import llm_service
 logger = logging.getLogger(__name__)
 
 
-class VacancySummary(BaseModel):
-    """Summary of a vacancy for Fast Track selection."""
-    id: UUID
-    title: str
-    department: str | None = None
-    manager: str | None = None
-    hired_candidate: str | None = None
-    date_closed: datetime | None = None
-    salary_range: dict[str, Any] | None = None
-    work_model: str | None = None
-    status: str
-    seniority_level: str | None = None
-    location: str | None = None
+# Sprint F.3 #25 canonical-fix: VacancySummary moved to domains/sourcing/services/vacancy_search.py
+from app.domains.sourcing.services.vacancy_search import VacancySummary  # noqa: F401  (re-export for backward compat)
 
 
-class VacancyFullDetails(BaseModel):
-    """Full details of a vacancy for Fast Track reuse."""
-    id: UUID
-    title: str
-    department: str | None = None
-    location: str | None = None
-    work_model: str | None = None
-    employment_type: str | None = None
-    seniority_level: str | None = None
-    job_description: str | None = None
-    salary_range: dict[str, Any] | None = None
-    benefits: list[str] | None = None
-    technical_skills: list[dict[str, Any]] | None = None
-    behavioral_competencies: list[dict[str, Any]] | None = None
-    screening_questions: list[dict[str, Any]] | None = None
-    languages: list[dict[str, Any]] | None = None
-    manager: str | None = None
-    manager_email: str | None = None
-    hired_candidate: str | None = None
-    status: str
-    closed_at: datetime | None = None
-    interview_stages: list[dict[str, Any]] | None = None
-    eligibility_questions: list[dict[str, Any]] | None = None
+# Sprint F.3 #25 canonical-fix: VacancyFullDetails moved to domains/sourcing/services/vacancy_search.py
+from app.domains.sourcing.services.vacancy_search import VacancyFullDetails  # noqa: F401  (re-export for backward compat)
 
 
 class VacancySearchService:
@@ -469,19 +437,19 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
         if filtered_adjustments.get("manager"):
             vacancy_dict["manager"] = filtered_adjustments["manager"]
         
-        if filtered_adjustments.get("bonus_min") or filtered_adjustments.get("bonus_max"):
+        if filtered_adjustments.get("bonus_min") is not None or filtered_adjustments.get("bonus_max") is not None:
             current_salary = vacancy_dict.get("salary_range") or {}
-            if filtered_adjustments.get("bonus_min"):
+            if filtered_adjustments.get("bonus_min") is not None:
                 current_salary["bonus_min"] = filtered_adjustments["bonus_min"]
-            if filtered_adjustments.get("bonus_max"):
+            if filtered_adjustments.get("bonus_max") is not None:
                 current_salary["bonus_max"] = filtered_adjustments["bonus_max"]
             vacancy_dict["salary_range"] = current_salary
         
-        if filtered_adjustments.get("salary_min") or filtered_adjustments.get("salary_max"):
+        if filtered_adjustments.get("salary_min") is not None or filtered_adjustments.get("salary_max") is not None:
             current_salary = vacancy_dict.get("salary_range") or {}
-            if filtered_adjustments.get("salary_min"):
+            if filtered_adjustments.get("salary_min") is not None:
                 current_salary["min"] = filtered_adjustments["salary_min"]
-            if filtered_adjustments.get("salary_max"):
+            if filtered_adjustments.get("salary_max") is not None:
                 current_salary["max"] = filtered_adjustments["salary_max"]
             vacancy_dict["salary_range"] = current_salary
         

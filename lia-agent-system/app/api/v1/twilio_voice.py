@@ -49,6 +49,7 @@ from app.domains.voice.services.voice_screening_orchestrator import (
 from app.shared.pii_masking import mask_pii
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -57,7 +58,7 @@ router = APIRouter(tags=["twilio-voice"])
 
 # ── Schemas ──────────────────────────────────────────────────────────────────
 
-class InitiateCallRequest(BaseModel):
+class InitiateCallRequest(WeDoBaseModel):
     """Request to initiate an outbound voice screening call."""
     candidate_id: str
     candidate_name: str
@@ -667,7 +668,7 @@ async def get_session_status(session_id: str, ):
 
 # ── VoIP (Browser Client) endpoints ───────────────────────────────────────────
 
-class VoIPTokenRequest(BaseModel):
+class VoIPTokenRequest(WeDoBaseModel):
     """Request to generate a Twilio Access Token for the browser VoIP client."""
     session_id: str
     candidate_id: str

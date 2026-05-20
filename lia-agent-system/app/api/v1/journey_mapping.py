@@ -14,6 +14,7 @@ from app.domains.journey_mapping.dependencies import get_journey_mapping_repo
 from app.domains.journey_mapping.repositories.journey_mapping_repository import JourneyMappingRepository
 from app.domains.ai.services.llm import llm_service
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ def verify_ownership(resource, company_id: uuid.UUID, resource_name: str = "Reso
         raise HTTPException(status_code=403, detail="Access denied")
 
 
-class JourneyStepCreate(BaseModel):
+class JourneyStepCreate(WeDoBaseModel):
     blueprint_id: uuid.UUID
     name: str
     description: str | None = None
@@ -45,7 +46,7 @@ class JourneyStepCreate(BaseModel):
     ai_config: dict[str, Any] = {}
 
 
-class JourneyStepUpdate(BaseModel):
+class JourneyStepUpdate(WeDoBaseModel):
     name: str | None = None
     description: str | None = None
     step_type: str | None = None
@@ -84,7 +85,7 @@ class JourneyStepResponse(BaseModel):
         from_attributes = True
 
 
-class JourneyIntegrationCreate(BaseModel):
+class JourneyIntegrationCreate(WeDoBaseModel):
     blueprint_id: uuid.UUID
     name: str
     integration_type: str
@@ -96,7 +97,7 @@ class JourneyIntegrationCreate(BaseModel):
     sync_frequency: str = "realtime"
 
 
-class JourneyIntegrationUpdate(BaseModel):
+class JourneyIntegrationUpdate(WeDoBaseModel):
     name: str | None = None
     integration_type: str | None = None
     provider: str | None = None
@@ -129,8 +130,7 @@ class JourneyIntegrationResponse(BaseModel):
         from_attributes = True
 
 
-class JourneyBlueprintCreate(BaseModel):
-    company_id: uuid.UUID
+class JourneyBlueprintCreate(WeDoBaseModel):
     name: str = "Jornada Principal"
     description: str | None = None
     vacancy_origin: str | None = None
@@ -138,7 +138,7 @@ class JourneyBlueprintCreate(BaseModel):
     has_internal_wfp: bool = False
 
 
-class JourneyBlueprintUpdate(BaseModel):
+class JourneyBlueprintUpdate(WeDoBaseModel):
     name: str | None = None
     description: str | None = None
     status: str | None = None
@@ -193,7 +193,7 @@ class WizardCompleteData(BaseModel):
     careers_page_url: str | None = Field(None, description="URL of careers page if site_proprio selected")
 
 
-class AIRecommendationsRequest(BaseModel):
+class AIRecommendationsRequest(WeDoBaseModel):
     blueprint_id: uuid.UUID
     context: dict[str, Any] | None = {}
 
@@ -377,7 +377,7 @@ company_id: str = Depends(require_company_id)):
     """Create a new journey blueprint for a company."""
     try:
         blueprint = await repo.create_blueprint_with_commit(
-            company_id=data.company_id,
+            company_id=company_id,
             name=data.name,
             description=data.description,
             vacancy_origin=data.vacancy_origin,
@@ -387,7 +387,7 @@ company_id: str = Depends(require_company_id)):
         )
 
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-        logger.info(f"Created journey blueprint: {blueprint.name} for company {data.company_id}")
+        logger.info(f"Created journey blueprint: {blueprint.name} for company {company_id}")
         return blueprint
     except Exception as e:
         logger.error(f"Error creating journey blueprint: {e}")

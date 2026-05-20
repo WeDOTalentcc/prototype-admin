@@ -20,13 +20,14 @@ from app.domains.admin.repositories.admin_template_repository import (
 from app.models.email_template import EmailTemplate
 from app.schemas.email_template import EmailTemplateResponse
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/admin/templates", tags=["admin-templates"])
 
 
-class SystemTemplateCreate(BaseModel):
+class SystemTemplateCreate(WeDoBaseModel):
     name: str = Field(..., min_length=1, max_length=255)
     subject: str | None = Field(None, max_length=500)
     body_html: str = Field(..., min_length=1)
@@ -37,7 +38,7 @@ class SystemTemplateCreate(BaseModel):
     variables: list[str] = Field(default_factory=list)
 
 
-class SystemTemplateUpdate(BaseModel):
+class SystemTemplateUpdate(WeDoBaseModel):
     name: str | None = Field(None, min_length=1, max_length=255)
     subject: str | None = Field(None, max_length=500)
     body_html: str | None = Field(None, min_length=1)

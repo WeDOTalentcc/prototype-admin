@@ -19,6 +19,7 @@ from app.auth.models import User
 from app.core.database import get_db
 from app.domains.cv_screening.repositories.experience_highlight_repository import ExperienceHighlightRepository
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +39,7 @@ class ExperienceHighlightResponse(BaseModel):
     model_used: str = "claude-sonnet-4-6"
 
 
-class GenerateHighlightRequest(BaseModel):
+class GenerateHighlightRequest(WeDoBaseModel):
     """Request schema for generating a new highlight."""
     candidate_id: str
     candidate_name: str

@@ -13,6 +13,7 @@ from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class ComplianceFrameworkTypeEnum(StrEnum):
@@ -101,7 +102,7 @@ class ControlLibraryListResponse(BaseModel):
     offset: int
 
 
-class ControlLibraryCreate(BaseModel):
+class ControlLibraryCreate(WeDoBaseModel):
     """Schema for creating a control library entry."""
     framework: str = Field(..., description="Compliance framework (ISO_27001, SOC_2_TYPE_II, etc.)")
     control_id: str = Field(..., description="Control ID (e.g., A.5.1, CC6.1)")
@@ -153,7 +154,7 @@ class CompanyControlListResponse(BaseModel):
     offset: int
 
 
-class CompanyControlCreate(BaseModel):
+class CompanyControlCreate(WeDoBaseModel):
     """Schema for creating a company compliance control."""
     control_library_id: str = Field(..., description="Control library ID")
     status: str | None = Field("not_started", description="Implementation status")
@@ -162,7 +163,7 @@ class CompanyControlCreate(BaseModel):
     notes: str | None = Field(None, description="Implementation notes")
 
 
-class CompanyControlUpdate(BaseModel):
+class CompanyControlUpdate(WeDoBaseModel):
     """Schema for updating a company compliance control."""
     status: str | None = Field(None, description="Implementation status")
     implementation_date: date | None = Field(None, description="Implementation date")
@@ -215,7 +216,7 @@ class ComplianceAuditListResponse(BaseModel):
     offset: int
 
 
-class ComplianceAuditCreate(BaseModel):
+class ComplianceAuditCreate(WeDoBaseModel):
     """Schema for creating a compliance audit."""
     framework: str = Field(..., description="Compliance framework")
     audit_type: str = Field(..., description="Audit type (internal/external/certification)")
@@ -226,7 +227,7 @@ class ComplianceAuditCreate(BaseModel):
     scope_description: str | None = Field(None, description="Audit scope")
 
 
-class ComplianceAuditUpdate(BaseModel):
+class ComplianceAuditUpdate(WeDoBaseModel):
     """Schema for updating a compliance audit."""
     auditor_organization: str | None = None
     auditor_name: str | None = None
@@ -276,7 +277,7 @@ class SOXControlListResponse(BaseModel):
     offset: int
 
 
-class SOXControlCreate(BaseModel):
+class SOXControlCreate(WeDoBaseModel):
     """Schema for creating a SOX control."""
     section: str = Field(..., description="SOX section (302/404/409/802)")
     control_id: str = Field(..., description="Control ID")
@@ -287,7 +288,7 @@ class SOXControlCreate(BaseModel):
     control_owner: str | None = Field(None, description="Control owner")
 
 
-class SOXControlUpdate(BaseModel):
+class SOXControlUpdate(WeDoBaseModel):
     """Schema for updating a SOX control."""
     control_objective: str | None = None
     key_control: bool | None = None

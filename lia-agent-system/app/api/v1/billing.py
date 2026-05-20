@@ -34,6 +34,7 @@ from app.schemas.billing import (
 )
 from app.domains.billing.services.billing_service import BillingService
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -41,62 +42,32 @@ router = APIRouter(prefix="/billing", tags=["billing"])
 
 
 def get_user_from_headers(
-    x_company_id: str | None = Header(None, alias="X-Company-ID"),
+    company_id: str = Depends(require_company_id),
     x_user_id: str | None = Header(None, alias="X-User-ID"),
-    x_user_role: str | None = Header(None, alias="X-User-Role")
+    x_user_role: str | None = Header(None, alias="X-User-Role"),
 ) -> dict[str, Any]:
-    """Get user context from request headers."""
+    """Get user context. company_id sourced from JWT via require_company_id (canonical)."""
     return {
-        "company_id": x_company_id,
+        "company_id": company_id,
         "user_id": x_user_id or "system",
         "role": x_user_role or "user",
-        "is_admin": x_user_role == "admin"
+        "is_admin": x_user_role == "admin",
     }
 
 
-def require_company_id(current_user: dict[str, Any]) -> str:
-    """
-    Validate that X-Company-ID header is present and return the company_id.
-
-    SECURITY: This is critical for multi-tenant isolation.
-    All billing endpoints MUST call this function.
-
-    Returns:
-        str: The validated company_id
-
-    Raises:
-        HTTPException: 401 if X-Company-ID header is missing or invalid
-    """
+def _extract_company_id_from_user(current_user: dict[str, Any]) -> str:
+    """Extract company_id from user context dict (already validated by JWT via get_user_from_headers)."""
     company_id = current_user.get("company_id")
     if not company_id:
-        logger.warning(
-            f"Multi-tenant security: Missing X-Company-ID header. "
-            f"User: {current_user.get('user_id')}, Role: {current_user.get('role')}"
-        )
+        logger.error("Unexpected: company_id missing from user context after JWT validation")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="X-Company-ID header is required"
+            detail="company_id missing from validated context (canonical JWT)",
         )
     return company_id
 
 
 
-async def _require_company_id_header(
-    x_company_id: str | None = Header(None, alias="X-Company-ID"),
-) -> str:
-    """FastAPI dependency: enforce X-Company-ID before DB is touched.
-
-    By placing this before Depends(get_billing_repo) in endpoint signatures,
-    the 401 fires before a DB connection attempt — critical for unit tests
-    that don't have a test DB.
-    """
-    if not x_company_id:
-        from fastapi import HTTPException
-        raise HTTPException(
-            status_code=401,
-            detail="X-Company-ID header is required",
-        )
-    return x_company_id
 
 
 def require_admin(current_user: dict[str, Any]) -> None:
@@ -308,7 +279,6 @@ class UsageDataWrapper(BaseModel):
 
 @router.get("/status", summary="Get billing providers status", response_model=BillingStatusResponse)
 async def get_billing_status(
-    _company_id_check: str = Depends(_require_company_id_header),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo), 
 company_id: str = Depends(require_company_id)) -> BillingStatusResponse:
@@ -317,7 +287,7 @@ company_id: str = Depends(require_company_id)) -> BillingStatusResponse:
     Get status of billing providers (Iugu/Vindi).
     """
     try:
-        require_company_id(current_user)
+        _extract_company_id_from_user(current_user)
 
         billing_service = BillingService(repo.db)
 
@@ -360,7 +330,6 @@ async def list_subscriptions(
     provider: str | None = Query(None, description="Filter by provider"),
     limit: int = Query(50, ge=1, le=200, description="Max results"),
     offset: int = Query(0, ge=0, description="Offset for pagination"),
-    _company_id_check: str = Depends(_require_company_id_header),
     current_user: dict[str, Any] = Depends(get_user_from_headers),
     repo: BillingRepository = Depends(get_billing_repo), 
 company_id: str = Depends(require_company_id)):
@@ -373,7 +342,7 @@ company_id: str = Depends(require_company_id)):
     - Non-admin users can only see their companys subscriptions
     """
     try:
-        company_id = require_company_id(current_user)
+        company_id = _extract_company_id_from_user(current_user)
         company_uuid = parse_uuid(company_id, "company_id")
 
         is_admin = current_user.get("is_admin", False)
@@ -430,7 +399,7 @@ company_id: str = Depends(require_company_id)):
     SECURITY: Non-admin users can only access their own companys subscription.
     """
     try:
-        company_id = require_company_id(current_user)
+        company_id = _extract_company_id_from_user(current_user)
         client_uuid = parse_uuid(client_id, "client_id")
 
         verify_company_ownership(
@@ -485,7 +454,7 @@ company_id: str = Depends(require_company_id)):
     SECURITY: Admin-only. The subscription is associated with the specified client_id.
     """
     try:
-        company_id = require_company_id(current_user)
+        company_id = _extract_company_id_from_user(current_user)
         require_admin(current_user)
 
         client_uuid = parse_uuid(data.client_id, "client_id")
@@ -544,7 +513,7 @@ company_id: str = Depends(require_company_id)):
     SECURITY: Admin-only. Verifies subscription ownership before modification.
     """
     try:
-        company_id = require_company_id(current_user)
+        company_id = _extract_company_id_from_user(current_user)
         require_admin(current_user)
 
         sub_uuid = parse_uuid(subscription_id, "subscription_id")
@@ -618,7 +587,7 @@ company_id: str = Depends(require_company_id)):
     SECURITY: Admin-only. Verifies subscription exists before cancellation.
     """
     try:
-        company_id = require_company_id(current_user)
+        company_id = _extract_company_id_from_user(current_user)
         require_admin(current_user)
 
         sub_uuid = parse_uuid(subscription_id, "subscription_id")
@@ -685,7 +654,7 @@ company_id: str = Depends(require_company_id)):
     - Non-admin users can only see their companys invoices
     """
     try:
-        company_id = require_company_id(current_user)
+        company_id = _extract_company_id_from_user(current_user)
         company_uuid = parse_uuid(company_id, "company_id")
 
         is_admin = current_user.get("is_admin", False)
@@ -744,7 +713,7 @@ company_id: str = Depends(require_company_id)):
     SECURITY: Non-admin users can only access their own companys invoices.
     """
     try:
-        company_id = require_company_id(current_user)
+        company_id = _extract_company_id_from_user(current_user)
         client_uuid = parse_uuid(client_id, "client_id")
 
         verify_company_ownership(
@@ -797,7 +766,7 @@ company_id: str = Depends(require_company_id)):
     SECURITY: Non-admin users can only access invoices belonging to their company.
     """
     try:
-        company_id = require_company_id(current_user)
+        company_id = _extract_company_id_from_user(current_user)
         inv_uuid = parse_uuid(invoice_id, "invoice_id")
 
         billing_service = BillingService(repo.db)
@@ -851,7 +820,7 @@ company_id: str = Depends(require_company_id)):
     SECURITY: Admin-only. Verifies invoice exists before processing refund.
     """
     try:
-        company_id = require_company_id(current_user)
+        company_id = _extract_company_id_from_user(current_user)
         require_admin(current_user)
 
         inv_uuid = parse_uuid(invoice_id, "invoice_id")
@@ -923,7 +892,7 @@ company_id: str = Depends(require_company_id)):
     SECURITY: Non-admin users can only access their own companys payment methods.
     """
     try:
-        company_id = require_company_id(current_user)
+        company_id = _extract_company_id_from_user(current_user)
         client_uuid = parse_uuid(client_id, "client_id")
 
         verify_company_ownership(
@@ -971,7 +940,7 @@ company_id: str = Depends(require_company_id)):
     SECURITY: Non-admin users can only add payment methods to their own company.
     """
     try:
-        company_id = require_company_id(current_user)
+        company_id = _extract_company_id_from_user(current_user)
 
         sub_uuid = parse_uuid(data.subscription_id, "subscription_id")
         parse_uuid(data.client_id, "client_id")
@@ -1063,7 +1032,7 @@ company_id: str = Depends(require_company_id)):
     SECURITY: Non-admin users can only remove payment methods from their own company.
     """
     try:
-        company_id = require_company_id(current_user)
+        company_id = _extract_company_id_from_user(current_user)
         pm_uuid = parse_uuid(payment_method_id, "payment_method_id")
 
         payment_method = await repo.get_payment_method_by_id(pm_uuid)
@@ -1228,7 +1197,7 @@ class UsageSettingsSchema(BaseModel):
     period_end: datetime | None = None
 
 
-class SubscriptionUpdateRequest(BaseModel):
+class SubscriptionUpdateRequest(WeDoBaseModel):
     """Request to update subscription."""
     plan_id: str | None = None
     status: str | None = None
@@ -1236,7 +1205,7 @@ class SubscriptionUpdateRequest(BaseModel):
     current_period_end: datetime | None = None
 
 
-class PaymentMethodCreateRequest(BaseModel):
+class PaymentMethodCreateRequest(WeDoBaseModel):
     """Request to create payment method."""
     type: str = Field(..., description="credit_card, boleto, pix")
     last_four: str | None = None
@@ -1299,7 +1268,7 @@ company_id: str = Depends(require_company_id)):
     Returns subscription, invoices, payment_methods, and usage.
     """
     try:
-        require_company_id(current_user)
+        _extract_company_id_from_user(current_user)
         verify_company_ownership(current_user, client_id, "billing")
 
         client = await get_client_by_id(client_id, repo)
@@ -1343,7 +1312,7 @@ company_id: str = Depends(require_company_id)):
     Data is stored in client.settings["billing"]["subscription"].
     """
     try:
-        company_id = require_company_id(current_user)
+        company_id = _extract_company_id_from_user(current_user)
         client = await get_client_by_id(company_id, repo)
         settings = get_billing_settings(client)
 
@@ -1381,7 +1350,7 @@ company_id: str = Depends(require_company_id)):
     Data is stored in client.settings["billing"]["subscription"].
     """
     try:
-        company_id = require_company_id(current_user)
+        company_id = _extract_company_id_from_user(current_user)
         client = await get_client_by_id(company_id, repo)
         settings = get_billing_settings(client)
 
@@ -1435,7 +1404,7 @@ company_id: str = Depends(require_company_id)):
     List invoices for the current users company from settings.
     """
     try:
-        company_id = require_company_id(current_user)
+        company_id = _extract_company_id_from_user(current_user)
         client = await get_client_by_id(company_id, repo)
         settings = get_billing_settings(client)
 
@@ -1476,7 +1445,7 @@ company_id: str = Depends(require_company_id)):
     Get details of a specific invoice from settings.
     """
     try:
-        company_id = require_company_id(current_user)
+        company_id = _extract_company_id_from_user(current_user)
         client = await get_client_by_id(company_id, repo)
         settings = get_billing_settings(client)
 
@@ -1519,7 +1488,7 @@ company_id: str = Depends(require_company_id)):
     Updates invoice status in client.settings["billing"]["invoices"].
     """
     try:
-        company_id = require_company_id(current_user)
+        company_id = _extract_company_id_from_user(current_user)
         client = await get_client_by_id(company_id, repo)
         settings = get_billing_settings(client)
 
@@ -1580,7 +1549,7 @@ company_id: str = Depends(require_company_id)):
     List payment methods for the current users company from settings.
     """
     try:
-        company_id = require_company_id(current_user)
+        company_id = _extract_company_id_from_user(current_user)
         client = await get_client_by_id(company_id, repo)
         settings = get_billing_settings(client)
 
@@ -1616,7 +1585,7 @@ company_id: str = Depends(require_company_id)):
     Add a payment method for the current users company.
     """
     try:
-        company_id = require_company_id(current_user)
+        company_id = _extract_company_id_from_user(current_user)
         client = await get_client_by_id(company_id, repo)
         settings = get_billing_settings(client)
 
@@ -1671,7 +1640,7 @@ company_id: str = Depends(require_company_id)):
     Remove a payment method for the current users company.
     """
     try:
-        company_id = require_company_id(current_user)
+        company_id = _extract_company_id_from_user(current_user)
         client = await get_client_by_id(company_id, repo)
         settings = get_billing_settings(client)
 
@@ -1730,7 +1699,7 @@ company_id: str = Depends(require_company_id)):
     Returns AI credits, jobs, and users usage vs limits.
     """
     try:
-        company_id = require_company_id(current_user)
+        company_id = _extract_company_id_from_user(current_user)
         client = await get_client_by_id(company_id, repo)
         settings = get_billing_settings(client)
 

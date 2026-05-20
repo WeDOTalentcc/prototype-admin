@@ -20,6 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.services.toon_service import TOONCard, toon_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.tenant_guard import get_verified_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -70,19 +71,16 @@ class TOONCardResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 def _get_company_id(
-    company_id_query: str | None = Query(None, alias="company_id"),
-    x_company_id: str | None = Header(None, alias="X-Company-ID"),
+    company_id: str = Depends(get_verified_company_id),
 ) -> str:
     """
-    Resolve company_id from either query param or X-Company-ID header.
-    Validates it is a well-formed UUID.
+    Resolve company_id from JWT (multi-tenancy canonical R4).
+
+    ``get_verified_company_id`` reads company_id from the JWT context,
+    cross-checks any X-Company-ID header / query param against it (403 on
+    mismatch), and returns the JWT-resolved value. Header/query are
+    defense-in-depth only — JWT is authoritative.
     """
-    company_id = company_id_query or x_company_id
-    if not company_id:
-        raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="company_id is required (query param or X-Company-ID header)",
-        )
     try:
         UUID(company_id)
     except ValueError:

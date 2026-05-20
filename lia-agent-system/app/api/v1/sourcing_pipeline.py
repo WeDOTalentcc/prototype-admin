@@ -10,11 +10,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.sourcing.services.sourcing_pipeline_service import sourcing_pipeline_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter(prefix="/pipeline", tags=["sourcing-pipeline"])
 
 
-class PipelineConfigRequest(BaseModel):
+class PipelineConfigRequest(WeDoBaseModel):
     """Request model for updating pipeline configuration."""
     min_candidates_per_job: int | None = Field(None, ge=1, le=100)
     min_qualified_ratio: float | None = Field(None, ge=0.0, le=1.0)
@@ -80,7 +81,7 @@ class PipelineRunAllResponse(BaseModel):
     results: list[dict] | None = None
 
 
-class RunPipelineRequest(BaseModel):
+class RunPipelineRequest(WeDoBaseModel):
     """Request model for running pipeline on a job."""
     force_global_search: bool = False
 

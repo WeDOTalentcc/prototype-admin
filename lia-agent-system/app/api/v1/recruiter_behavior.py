@@ -18,6 +18,7 @@ from app.auth.models import User
 from app.core.database import get_db
 from app.shared.services.recruiter_behavior_service import recruiter_behavior_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ class BehaviorProfileResponse(BaseModel):
     experience_level: str = "intermediate"
 
 
-class BehaviorSignalRequest(BaseModel):
+class BehaviorSignalRequest(WeDoBaseModel):
     action_type: str
     metadata: dict[str, Any] | None = None
 

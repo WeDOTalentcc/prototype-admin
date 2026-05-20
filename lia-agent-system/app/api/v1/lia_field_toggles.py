@@ -17,6 +17,7 @@ from app.auth.dependencies import get_current_user_or_demo
 from app.core.database import get_db
 from app.models.lia_field_toggles import DEFAULT_FIELD_TOGGLES, FIELD_FALLBACK_CONFIG, LiaFieldToggle
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -41,19 +42,19 @@ class FieldTogglesResponse(BaseModel):
     details: list[FieldToggleResponse]
 
 
-class FieldToggleUpdate(BaseModel):
+class FieldToggleUpdate(WeDoBaseModel):
     """Update for a single field toggle."""
     is_active: bool
     comment: str | None = None
 
 
-class FieldTogglesUpdate(BaseModel):
+class FieldTogglesUpdate(WeDoBaseModel):
     """Request to update field toggles."""
     toggles: dict[str, bool]
     comments: dict[str, str] | None = None
 
 
-class CompletenessCheckRequest(BaseModel):
+class CompletenessCheckRequest(WeDoBaseModel):
     """Request for completeness check."""
     job_data: dict[str, Any]
     toggles: dict[str, bool] | None = None
@@ -363,7 +364,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     }
 
 
-class JobContextRequest(BaseModel):
+class JobContextRequest(WeDoBaseModel):
     """Job context for better field resolution."""
     title: str | None = None
     seniority: str | None = None
@@ -477,7 +478,7 @@ class EmptyFieldsResponse(BaseModel):
     total_empty_fields: int
 
 
-class ReminderPreferenceUpdate(BaseModel):
+class ReminderPreferenceUpdate(WeDoBaseModel):
     """Update for reminder preference."""
     action: str
 
@@ -492,7 +493,7 @@ class ReminderPreferenceResponse(BaseModel):
     times_filled_with_lia: int
 
 
-class FieldSuggestionRequest(BaseModel):
+class FieldSuggestionRequest(WeDoBaseModel):
     """Request for field value suggestion."""
     job_context: JobContextRequest | None = None
 

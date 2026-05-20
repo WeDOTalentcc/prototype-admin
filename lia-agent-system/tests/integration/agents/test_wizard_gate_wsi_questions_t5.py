@@ -103,7 +103,8 @@ class WizardWsiQuestionsGateT5(unittest.TestCase):
         result = graph_mod.wsi_questions_gate_node(state)
         self.assertEqual(result.get("current_stage"), "wsi_questions")
         self.assertIsNone(result.get("questions_approved"))
-        self.assertEqual(graph_mod.route_after_wsi_questions_gate(result), "end")
+        # Sprint F.2 fix — no resume + non-terminal self-loops to interrupt()
+        self.assertEqual(graph_mod.route_after_wsi_questions_gate(result), "wsi_questions_gate")
 
     # ---------------- S5 ----------------
     def test_S5_approve_all_sets_approved(self):
@@ -188,7 +189,8 @@ class WizardWsiQuestionsGateT5(unittest.TestCase):
         self.assertEqual(len(result.get("wsi_questions") or []), 7)
         self.assertNotIn("wsi_questions_pending_edit", {k: v for k, v in result.items() if v})
         self.assertIn("Qual pergunta", result["gate_clarify_message"])
-        self.assertEqual(graph_mod.route_after_wsi_questions_gate(result), "end")
+        # Sprint F.2 fix — clarify self-loops to interrupt() for next turn
+        self.assertEqual(graph_mod.route_after_wsi_questions_gate(result), "wsi_questions_gate")
 
     # ---------------- S9 ----------------
     def test_S9_add_question_sets_pending_add(self):
@@ -234,7 +236,8 @@ class WizardWsiQuestionsGateT5(unittest.TestCase):
         self.assertNotIn("Q5", labels)
         self.assertIsNone(result["questions_approved"])
         self.assertIs(result.get("wsi_regenerate_pending", False), False)
-        self.assertEqual(graph_mod.route_after_wsi_questions_gate(result), "end")
+        # Sprint F.2 fix — reduced package (questions_approved=None) self-loops to await re-approval
+        self.assertEqual(graph_mod.route_after_wsi_questions_gate(result), "wsi_questions_gate")
 
     # ---------------- S11 ----------------
     def test_S11_ask_question_does_not_mutate_package(self):
@@ -257,7 +260,8 @@ class WizardWsiQuestionsGateT5(unittest.TestCase):
         self.assertIsNone(result.get("questions_approved"))
         self.assertEqual(result["gate_last_intent"], "ask_question")
         self.assertIn("Compacto", result["gate_clarify_message"])
-        self.assertEqual(graph_mod.route_after_wsi_questions_gate(result), "end")
+        # Sprint F.2 fix — ask_question self-loops to interrupt() for next turn
+        self.assertEqual(graph_mod.route_after_wsi_questions_gate(result), "wsi_questions_gate")
 
     # ---------------- S12 ----------------
     def test_S12_low_confidence_clarifies_without_mutating_package(self):
@@ -275,7 +279,8 @@ class WizardWsiQuestionsGateT5(unittest.TestCase):
                 result = graph_mod.wsi_questions_gate_node(state)
         self.assertIsNone(result.get("questions_approved"))
         self.assertEqual(result["gate_last_confidence"], 0.5)
-        self.assertEqual(graph_mod.route_after_wsi_questions_gate(result), "end")
+        # Sprint F.2 fix — low confidence self-loops to interrupt() for next turn
+        self.assertEqual(graph_mod.route_after_wsi_questions_gate(result), "wsi_questions_gate")
 
     # ---------------- S13 ----------------
     def test_S13_off_allowlist_intent_falls_back(self):
@@ -320,7 +325,8 @@ class WizardWsiQuestionsGateT5(unittest.TestCase):
             "aprovar" in clarify or "regenerar" in clarify or "pergunt" in clarify,
             f"expected clarify message com opções, got: {clarify!r}",
         )
-        self.assertEqual(graph_mod.route_after_wsi_questions_gate(result), "end")
+        # Sprint F.2 fix — classifier exception falls back to non-terminal → self-loop
+        self.assertEqual(graph_mod.route_after_wsi_questions_gate(result), "wsi_questions_gate")
 
     # ---------------- S15 ----------------
     def test_S15_domain_route_by_stage_dispatches_to_gate_wsi_when_flag_on(self):

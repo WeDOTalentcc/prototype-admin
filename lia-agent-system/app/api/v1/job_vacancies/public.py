@@ -29,6 +29,7 @@ from app.domains.job_management.repositories.job_vacancy_public_repository impor
 from app.models.candidate import Candidate, VacancyCandidate
 from app.services.notification_service import NotificationType
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter()
 router_public = APIRouter()
@@ -36,7 +37,7 @@ router_public = APIRouter()
 
 # ─── Schemas ──────────────────────────────────────────────────────────────────
 
-class GeneratePublicLinkRequest(BaseModel):
+class GeneratePublicLinkRequest(WeDoBaseModel):
     regenerate: bool = False
 
 

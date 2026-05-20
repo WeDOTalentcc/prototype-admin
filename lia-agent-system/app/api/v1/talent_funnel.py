@@ -13,13 +13,14 @@ from app.shared.services.pre_wrf_filter_service import pre_wrf_filter_service
 from app.shared.services.wrf_dynamic_k_service import wrf_dynamic_k_service
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/talent-funnel", tags=["talent-funnel"])
 
 
-class CandidateInput(BaseModel):
+class CandidateInput(WeDoBaseModel):
     id: str
     name: str | None = None
     score: float | None = None
@@ -30,22 +31,22 @@ class CandidateInput(BaseModel):
     distance: float | None = None
 
 
-class ScoreDropRequest(BaseModel):
+class ScoreDropRequest(WeDoBaseModel):
     candidates: list[CandidateInput]
     qualification_level: str | None = Field("media", pattern="^(alta|media|baixa)$")
 
 
-class GapAnalysisRequest(BaseModel):
+class GapAnalysisRequest(WeDoBaseModel):
     candidates: list[CandidateInput]
     qualification_level: str | None = Field("media", pattern="^(alta|media|baixa)$")
 
 
-class WRFRankRequest(BaseModel):
+class WRFRankRequest(WeDoBaseModel):
     candidates: list[CandidateInput]
     qualification_level: str | None = Field("media", pattern="^(alta|media|baixa)$")
 
 
-class PreWRFRequest(BaseModel):
+class PreWRFRequest(WeDoBaseModel):
     es_candidates: list[CandidateInput]
     pgv_candidates: list[CandidateInput]
     qualification_level: str | None = Field("media", pattern="^(alta|media|baixa)$")

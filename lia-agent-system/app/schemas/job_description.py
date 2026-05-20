@@ -8,6 +8,7 @@ from datetime import datetime
 from enum import Enum, StrEnum
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class SuggestionSource(StrEnum):
@@ -258,7 +259,7 @@ class JobDescriptionFinal(JobDescriptionBase):
         }
 
 
-class JDGenerationRequest(BaseModel):
+class JDGenerationRequest(WeDoBaseModel):
     """Request para gerar Job Description"""
     job_id: str | None = None
     company_id: str

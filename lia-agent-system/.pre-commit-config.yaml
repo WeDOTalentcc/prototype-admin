@@ -233,3 +233,36 @@ repos:
         files: ^app/domains/.*react_agent\.py$
         pass_filenames: false
         always_run: false
+
+      - id: required-env-vars
+        name: "R-006 / ADR-AUTH-001: required env vars (FIELD_ENCRYPTION_KEY, SECRET_KEY, DATABASE_URL)"
+        language: system
+        entry: bash -c "python3 scripts/check_required_env.py --strict --dotenv .env 2>&1 | head -30; exit 0"
+        files: ^\.env(\..+)?$|^libs/config/lia_config/config\.py$
+        pass_filenames: false
+        always_run: false
+
+      - id: pydantic-schemas-no-duplicates-warn
+        name: "R-008 / ADR-SCHEMAS-001: no duplicate Pydantic schemas (warn-only — 192 known)"
+        language: system
+        entry: bash -c "python3 scripts/check_duplicate_pydantic_schemas.py 2>&1 | head -30; exit 0"
+        files: ^app/.*\.py$
+        pass_filenames: false
+        always_run: false
+
+      - id: schema-drift-warn
+        name: "R-007 / ADR-MIGRATIONS-001: model ↔ DB drift (warn-only — 196 known, requires DATABASE_URL)"
+        language: system
+        entry: bash -c "python3 scripts/check_schema_drift.py 2>&1 | head -40; exit 0"
+        files: ^(libs/models/lia_models/.*\.py|alembic/versions/.*\.py)$
+        pass_filenames: false
+        always_run: false
+
+      - id: pydantic-conventions-warn
+        name: "Pydantic Conventions R1+R2+R3+R4 (CLAUDE.md 2026-05-20 pós-audit E2E, warn-only)"
+        language: system
+        entry: bash -c "python3 scripts/check_pydantic_conventions.py app/ 2>&1 | tail -10; exit 0"
+        files: ^app/.*\.py$
+        pass_filenames: false
+        always_run: false
+

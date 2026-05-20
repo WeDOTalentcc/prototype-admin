@@ -23,12 +23,13 @@ from app.services.notification_service import (
 )
 from app.domains.communication.services.email_service import EmailService, get_email_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/notifications", tags=["notifications"])
 
 
-class CreateNotificationRequest(BaseModel):
+class CreateNotificationRequest(WeDoBaseModel):
     """Request model for creating a notification."""
     user_id: str
     title: str
@@ -42,7 +43,7 @@ class CreateNotificationRequest(BaseModel):
     action_label: str | None = None
 
 
-class MultiChannelNotificationRequest(BaseModel):
+class MultiChannelNotificationRequest(WeDoBaseModel):
     """Request model for sending multi-channel notifications."""
     user_id: str
     title: str
@@ -58,12 +59,12 @@ class MultiChannelNotificationRequest(BaseModel):
     thread_id: str | None = None
 
 
-class MarkDeliveredRequest(BaseModel):
+class MarkDeliveredRequest(WeDoBaseModel):
     """Request model for marking chat notifications as delivered."""
     notification_ids: list[str]
 
 
-class RecruiterActionNotificationRequest(BaseModel):
+class RecruiterActionNotificationRequest(WeDoBaseModel):
     """Request model for sending recruiter notifications about job actions."""
     recruiter_ids: list[str]
     action: str  # pause, activate, unpublish, etc.
@@ -106,7 +107,7 @@ class PublishingPlatforms(BaseModel):
     indeed: bool = False
     website: bool = False
 
-class JobCreatedNotificationRequest(BaseModel):
+class JobCreatedNotificationRequest(WeDoBaseModel):
     """Request model for sending job created notifications (workplan format)."""
     job_id: str
     job_title: str
@@ -596,13 +597,12 @@ company_id: str = Depends(require_company_id)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-class ProactiveAlertCheckRequest(BaseModel):
+class ProactiveAlertCheckRequest(WeDoBaseModel):
     """Request model for triggering proactive alert check."""
     user_id: str
-    company_id: str
 
 
-class UpdateThresholdRequest(BaseModel):
+class UpdateThresholdRequest(WeDoBaseModel):
     """Request model for updating alert thresholds."""
     condition: str
     threshold_config: dict
@@ -623,7 +623,7 @@ company_id: str = Depends(require_company_id)):
     try:
         triggered_alerts = await repo.check_proactive_conditions(
             user_id=request.user_id,
-            company_id=request.company_id,
+            company_id=company_id,
         )
 
         return {

@@ -43,6 +43,7 @@ from app.shared.services.consent_checker_service import ConsentCheckerService
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.compliance.fairness_guard_middleware import check_rejection_reason
 from app.shared.pii_masking import get_masked_logger
+from app.shared.types import WeDoBaseModel
 
 logger = get_masked_logger(__name__)
 
@@ -185,7 +186,7 @@ def parse_pg_array_string(array_str: str) -> list:
 # Shared Pydantic request models
 # ---------------------------------------------------------------------------
 
-class ScreeningDecisionRequest(BaseModel):
+class ScreeningDecisionRequest(WeDoBaseModel):
     """Request model for screening decision endpoint."""
     job_id: str | None = None
     decision: str  # "approved" or "rejected"

@@ -6,6 +6,7 @@ from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class ActionCategoryEnum(StrEnum):
@@ -62,7 +63,7 @@ class AuditLogListResponse(BaseModel):
     has_more: bool = False
 
 
-class AuditLogCreate(BaseModel):
+class AuditLogCreate(WeDoBaseModel):
     """Schema for creating a new audit log entry."""
     user_id: str | None = Field(None, description="User ID performing the action")
     user_email: str | None = Field(None, description="User email")
@@ -145,7 +146,7 @@ class AuditRetentionPolicyListResponse(BaseModel):
     total: int
 
 
-class AuditRetentionPolicyCreate(BaseModel):
+class AuditRetentionPolicyCreate(WeDoBaseModel):
     """Schema for creating a retention policy."""
     category: str = Field(..., description="Audit category", max_length=50)
     retention_months: int = Field(..., ge=1, le=1200, description="Retention period in months")
@@ -165,7 +166,7 @@ class AuditRetentionPolicyCreate(BaseModel):
         }
 
 
-class AuditRetentionPolicyUpdate(BaseModel):
+class AuditRetentionPolicyUpdate(WeDoBaseModel):
     """Schema for updating a retention policy."""
     retention_months: int | None = Field(None, ge=1, le=1200, description="Retention period in months")
     description: str | None = Field(None, description="Policy description")
@@ -174,7 +175,7 @@ class AuditRetentionPolicyUpdate(BaseModel):
     is_active: bool | None = Field(None, description="Whether policy is active")
 
 
-class AuditExportRequest(BaseModel):
+class AuditExportRequest(WeDoBaseModel):
     """Request schema for exporting audit logs."""
     date_from: datetime | None = Field(None, description="Start date for export")
     date_to: datetime | None = Field(None, description="End date for export")

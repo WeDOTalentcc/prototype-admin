@@ -34,6 +34,7 @@ from app.shared.services.intent_classifier import (
 )
 from app.domains.ai.services.llm import LLMService, llm_service
 from app.shared.services.skills_catalog_service import skills_catalog_service
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -198,7 +199,7 @@ class SuggestionsResponse(BaseModel):
     context: dict[str, Any] | None = None
 
 
-class WizardStepRequest(BaseModel):
+class WizardStepRequest(WeDoBaseModel):
     conversation_id: str | None = None
     stage: int
     user_input: str
@@ -210,7 +211,7 @@ class WizardStepRequest(BaseModel):
 from app.domains.job_management.schemas.wizard_schemas import WizardStepResponse  # noqa: F401
 
 
-class WizardEvaluateRequest(BaseModel):
+class WizardEvaluateRequest(WeDoBaseModel):
     """Request schema for job wizard evaluation endpoint."""
     conversation_id: str | None = None
     user_input: str
@@ -246,7 +247,7 @@ class WizardEvaluateResponse(BaseModel):
     overall_confidence: float = 0.7
 
 
-class InsightsRequest(BaseModel):
+class InsightsRequest(WeDoBaseModel):
     job_ids: list[str]
     insight_types: list[str] | None = None
 
@@ -266,7 +267,7 @@ class InsightsResponse(BaseModel):
     generated_at: str
 
 
-class ExpandedPromptRequest(BaseModel):
+class ExpandedPromptRequest(WeDoBaseModel):
     message: str
     context_type: str
     context_ids: list[str] | None = None
@@ -291,7 +292,7 @@ class InterpretMessageAction(StrEnum):
     OTHER = "other"
 
 
-class InterpretMessageRequest(BaseModel):
+class InterpretMessageRequest(WeDoBaseModel):
     message: str
     current_stage: str = "input-evaluation"
     context: dict[str, Any] | None = None
@@ -309,7 +310,7 @@ class InterpretMessageResponse(BaseModel):
     reasoning: str | None = None
 
 
-class ConversationalRequest(BaseModel):
+class ConversationalRequest(WeDoBaseModel):
     message: str
     context: str | None = None
     mode: str | None = "job_creation"
@@ -326,7 +327,7 @@ class ConversationalResponse(BaseModel):
     conversation_id: str | None = None
 
 
-class WizardOrchestratorRequest(BaseModel):
+class WizardOrchestratorRequest(WeDoBaseModel):
     message: str
     current_stage: str
     collected_data: dict[str, Any]
@@ -356,7 +357,7 @@ class WizardOrchestratorResponse(BaseModel):
     validation_errors: list[str] | None = None
 
 
-class SalaryBenchmarkRequest(BaseModel):
+class SalaryBenchmarkRequest(WeDoBaseModel):
     job_title: str
     seniority: str | None = None
     location: str | None = None

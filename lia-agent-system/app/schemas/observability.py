@@ -7,6 +7,7 @@ from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class AgentTypeEnum(StrEnum):
@@ -265,7 +266,7 @@ class ConsentRecordListResponse(BaseModel):
     offset: int
 
 
-class ConsentCreate(BaseModel):
+class ConsentCreate(WeDoBaseModel):
     """Schema for creating a consent record."""
     candidate_id: str = Field(..., description="Candidate ID")
     consent_type: str = Field(..., description="Type of consent")
@@ -329,7 +330,7 @@ class IncidentReportListResponse(BaseModel):
     offset: int
 
 
-class IncidentCreate(BaseModel):
+class IncidentCreate(WeDoBaseModel):
     """Schema for creating an incident."""
     incident_type: str = Field(..., description="Type of incident")
     severity: str = Field(..., description="Severity level")
@@ -349,7 +350,7 @@ class IncidentCreate(BaseModel):
         }
 
 
-class IncidentUpdate(BaseModel):
+class IncidentUpdate(WeDoBaseModel):
     """Schema for updating an incident."""
     severity: str | None = Field(None, description="Severity level")
     description: str | None = Field(None, description="Incident description")
@@ -450,7 +451,7 @@ class ComplianceSummaryResponse(BaseModel):
     upcoming_reviews: int
 
 
-class ComplianceControlUpdate(BaseModel):
+class ComplianceControlUpdate(WeDoBaseModel):
     """Schema for updating a compliance control."""
     status: str | None = Field(None, description="Control status")
     evidence_url: str | None = Field(None, description="Evidence URL")
@@ -523,7 +524,7 @@ class BiasAuditReportListResponse(BaseModel):
     offset: int
 
 
-class BiasAuditCreate(BaseModel):
+class BiasAuditCreate(WeDoBaseModel):
     """Schema for creating a bias audit report."""
     audit_type: str = Field(..., description="Type of audit: monthly/quarterly/annual/on_demand")
     audit_date: date = Field(..., description="Date of the audit")

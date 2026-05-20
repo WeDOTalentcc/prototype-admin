@@ -47,18 +47,13 @@ invitation_router = APIRouter(prefix="/invitations", tags=["invitations"])
 # ---------------------------------------------------------------------------
 
 def get_user_from_headers(
-    x_company_id: str | None = Header(None, alias="X-Company-ID"),
+    company_id: str = Depends(require_company_id),
     x_user_id: str | None = Header(None, alias="X-User-ID"),
     x_user_role: str | None = Header(None, alias="X-User-Role"),
 ) -> dict[str, Any]:
-    """Get user context from request headers."""
-    if not x_company_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Company ID required. Please provide X-Company-ID header.",
-        )
+    """Get user context. company_id sourced from JWT via require_company_id (canonical)."""
     return {
-        "company_id": x_company_id,
+        "company_id": company_id,
         "user_id": x_user_id or "system",
         "role": x_user_role or "user",
         "is_admin": x_user_role == "admin",
@@ -72,7 +67,7 @@ def validate_client_access(client_id: str, current_user: dict[str, Any]) -> None
     if not is_admin and client_id != user_company_id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Access denied. X-Company-ID must match the client_id in the path.",
+            detail="Access denied. company_id (from JWT) must match the client_id in the path.",
         )
 
 

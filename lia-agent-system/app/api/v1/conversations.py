@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.recruiter_assistant.services.conversation_memory import conversation_memory
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +67,7 @@ class ConversationListResponse(BaseModel):
     limit: int
 
 
-class CreateConversationRequest(BaseModel):
+class CreateConversationRequest(WeDoBaseModel):
     """Request to create a new conversation.
 
     user_id é opcional — quando ausente, o backend usa 'anonymous' ou
@@ -80,7 +81,7 @@ class CreateConversationRequest(BaseModel):
     metadata: dict[str, Any] | None = None
 
 
-class AddMessageRequest(BaseModel):
+class AddMessageRequest(WeDoBaseModel):
     """Request to add a message to a conversation."""
     role: str = Field(..., description="Message role: user, assistant, system, tool")
     content: str = Field(..., description="Message content")
@@ -89,11 +90,11 @@ class AddMessageRequest(BaseModel):
     metadata: dict[str, Any] | None = None
 
 
-class UpdateSummaryRequest(BaseModel):
+class UpdateSummaryRequest(WeDoBaseModel):
     """Request to update conversation summary."""
     force: bool = False
 
-class RenameConversationRequest(BaseModel):
+class RenameConversationRequest(WeDoBaseModel):
     title: str = Field(..., min_length=1, max_length=500)
 
 

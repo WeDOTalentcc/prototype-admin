@@ -105,6 +105,11 @@ class JobCreationState(TypedDict, total=False):
     session_id: str
     user_id: str
     workspace_id: int
+    # Sprint F.3 multi-tenancy fix: LangGraph filters undeclared keys;
+    # without this, company_id from JWT gets stripped before nodes run,
+    # breaking ADR-LGPD-001/ADR-029 fail-closed audit. JobCreationState must
+    # carry company_id as UUID string sourced from require_company_id JWT dep.
+    company_id: str
     auth_token: str
     language: str  # default "pt-BR"
 
@@ -132,6 +137,43 @@ class JobCreationState(TypedDict, total=False):
     jd_quality_score: float  # 0-100 deterministic
     jd_quality_warnings: List[str]
     jd_approved: Optional[bool]  # HITL point 1
+    jd_rejection_feedback: Optional[str]
+
+    # --- F1.5: JD Enrichment auxiliary (subset propagated to ws_stage_payload) ---
+    jd_enrichment_used_fallback: bool
+    jd_enrichment_fallback_reason: Optional[str]
+    jd_enrichment_blocked: bool
+    jd_enrichment_awaiting_input: bool
+    jd_enriched_present: bool
+
+    # --- Gate fields (Task #1085/T2-T6 LLM-based gates) ---
+    # Sprint F.2 root cause fix (2026-05-20): these MUST be declared in the
+    # TypedDict schema. LangGraph filters undeclared keys during state merge,
+    # which silently dropped gate_seen_user_query / gate_last_intent /
+    # gate_clarify_message / gate_resume_message between node invocations.
+    # Symptom: gate self-loop saw _is_fresh_turn=True every iteration because
+    # gate_seen_user_query did not survive, causing infinite classifier loop
+    # until LangGraph recursion limit aborted (GraphRecursionError observed
+    # 2026-05-20 in lia-backend logs, 46 self-loops in ~60s, single turn).
+    # Same precedent: company_id (lines 105-108 above, Sprint F.3).
+    gate_seen_user_query: Optional[str]
+    gate_last_intent: Optional[str]
+    gate_last_confidence: float
+    gate_clarify_message: Optional[str]
+    gate_resume_message: Optional[str]
+
+    # --- Fairness L1 guard (Sprint F.2 schema fix — same root cause) ---
+    fairness_blocked: bool
+    fairness_block_reason: Optional[str]
+    fairness_category: Optional[str]
+    fairness_warning: Optional[str]
+    fairness_blocked_output: Optional[str]
+    jd_fairness_blocked: bool
+
+    # --- WSI questions pending markers (Task #1087 / #1089 follow-up) ---
+    wsi_regenerate_pending: bool
+    wsi_questions_pending_edit: Optional[Dict[str, Any]]
+    wsi_questions_pending_add: Optional[Dict[str, Any]]
 
     # --- F2+F3: Big Five + Trait Ranking ---
     bigfive_profile: Optional[BigFiveProfile]

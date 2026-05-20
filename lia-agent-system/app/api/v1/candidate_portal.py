@@ -15,6 +15,7 @@ from pydantic import BaseModel
 from app.schemas.api_envelope import APIResponse
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +24,7 @@ router = APIRouter(prefix="/api/v1/candidate", tags=["candidate-portal"])
 _JWT_SECRET = os.getenv("CANDIDATE_PORTAL_JWT_SECRET", "")
 
 
-class CandidateChatRequest(BaseModel):
+class CandidateChatRequest(WeDoBaseModel):
     message: str
     candidate_token: str
     vacancy_id: str | None = None

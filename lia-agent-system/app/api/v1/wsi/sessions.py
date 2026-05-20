@@ -19,6 +19,7 @@ from app.core.database import get_db
 from app.domains.voice.repositories.wsi_repository import WsiRepository
 from app.shared.services.interview_session_store import interview_session_store
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -103,14 +104,14 @@ company_id: str = Depends(require_company_id)):
 # WSI Interview Graph — entrevistas síncronas passo-a-passo
 # ---------------------------------------------------------------------------
 
-class InterviewGraphStartRequest(BaseModel):
+class InterviewGraphStartRequest(WeDoBaseModel):
     candidate_id: str
     job_id: str
     company_id: str
     interview_level: str = Field(default="standard", pattern="^(quick|standard|full)$")
 
 
-class InterviewGraphRespondRequest(BaseModel):
+class InterviewGraphRespondRequest(WeDoBaseModel):
     response: str = Field(..., description="Resposta do candidato à pergunta atual")
 
 

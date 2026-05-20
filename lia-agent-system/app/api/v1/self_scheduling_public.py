@@ -23,6 +23,7 @@ from app.auth.models import User
 from app.core.database import get_db
 from app.shared.services.zero_touch_scheduling_service import zero_touch_scheduling_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +37,7 @@ class SlotSchema(BaseModel):
     end: str = Field(..., description="ISO 8601 datetime, ex: '2026-03-10T11:00:00'")
 
 
-class CreateSchedulingLinkRequest(BaseModel):
+class CreateSchedulingLinkRequest(WeDoBaseModel):
     company_id: str
     candidate_id: str
     candidate_name: str
@@ -53,7 +54,7 @@ class CreateSchedulingLinkRequest(BaseModel):
     expires_hours: int = 72
 
 
-class ConfirmSlotRequest(BaseModel):
+class ConfirmSlotRequest(WeDoBaseModel):
     start: str = Field(..., description="ISO 8601 datetime do slot selecionado")
     end: str = Field(..., description="ISO 8601 datetime fim do slot selecionado")
 

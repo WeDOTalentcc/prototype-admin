@@ -31,6 +31,7 @@ from app.shared.security.webhook_ownership import (
     WebhookOwnershipError,
     verify_webhook_owner,
 )
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +51,7 @@ class TeamsCardAction(StrEnum):
     REQUEST_INFO = "request_info"
 
 
-class TeamsWebhookPayload(BaseModel):
+class TeamsWebhookPayload(WeDoBaseModel):
     """Payload from Teams Adaptive Card action."""
     action: str = Field(..., description="Action type: approve, reject, schedule")
     candidate_id: str | None = Field(None, description="Candidate ID")
@@ -1182,7 +1183,7 @@ company_id: str = Depends(require_company_id)):
 # Calendar — Interview Scheduling via Microsoft Graph
 # ============================================================================
 
-class ScheduleInterviewRequest(BaseModel):
+class ScheduleInterviewRequest(WeDoBaseModel):
     candidate_name: str
     vacancy_title: str
     recruiter_email: str
@@ -1472,7 +1473,7 @@ async def download_teams_manifest_zip(company_id: str = Depends(require_company_
 # Teams Tab endpoints (Approach 2: SSO + behavioral tracking)
 # ================================================================== #
 
-class TabAuthRequest(BaseModel):
+class TabAuthRequest(WeDoBaseModel):
     """SSO token from Teams SDK sent by the iframe."""
     sso_token: str = Field(..., description="JWT from Teams authentication.getAuthToken()")
 
@@ -1486,7 +1487,7 @@ class TabAuthResponse(BaseModel):
     teams_user_id: str | None = None
 
 
-class TabEventRequest(BaseModel):
+class TabEventRequest(WeDoBaseModel):
     """Behavioral event from the Teams Tab tracker hook."""
     event_type: str = Field(..., description="e.g. click_create_job, prolonged_stay")
     entity_type: str | None = Field(None, description="e.g. job, candidate")

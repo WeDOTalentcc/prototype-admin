@@ -23,11 +23,12 @@ from app.domains.automation.agents.automation_react_agent import AutomationReAct
 from app.domains.automation.services.planned_task_service import CycleDetectedError, planned_task_service
 from app.models.planned_task import PlannedTaskPriority, PlannedTaskStatus
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter(prefix="/task-planner", tags=["Task Planner"])
 
 
-class DecomposeTaskRequest(BaseModel):
+class DecomposeTaskRequest(WeDoBaseModel):
     """Request body for task decomposition."""
     task_description: str = Field(..., description="Description of the task to decompose")
     parent_task_id: str | None = None
@@ -37,7 +38,7 @@ class DecomposeTaskRequest(BaseModel):
     additional_context: dict[str, Any] | None = None
 
 
-class CreatePlannedTaskRequest(BaseModel):
+class CreatePlannedTaskRequest(WeDoBaseModel):
     """Request body for creating a planned task."""
     title: str
     description: str | None = None
@@ -54,7 +55,7 @@ class CreatePlannedTaskRequest(BaseModel):
     context: dict[str, Any] | None = None
 
 
-class CreateExecutionPlanRequest(BaseModel):
+class CreateExecutionPlanRequest(WeDoBaseModel):
     """Request body for creating an execution plan."""
     name: str
     task_ids: list[str]
@@ -62,14 +63,14 @@ class CreateExecutionPlanRequest(BaseModel):
     goal_id: str | None = None
 
 
-class PrioritizeTasksRequest(BaseModel):
+class PrioritizeTasksRequest(WeDoBaseModel):
     """Request body for prioritizing tasks."""
     task_ids: list[str] | None = None
     goal_id: str | None = None
     use_llm: bool = False
 
 
-class UpdateTaskStatusRequest(BaseModel):
+class UpdateTaskStatusRequest(WeDoBaseModel):
     """Request body for updating task status."""
     status: str
     result: dict[str, Any] | None = None

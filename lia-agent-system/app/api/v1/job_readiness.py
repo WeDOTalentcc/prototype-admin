@@ -36,6 +36,7 @@ from app.shared.async_processing.task_manager import DomainTaskManager
 from lia_models.job_vacancy import JobVacancy
 from lia_models.job_vacancy_audit import JobVacancyAuditLog
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -99,7 +100,7 @@ class JobDetailResponse(JobCard):
     timeline: list[TimelineEvent] = []
 
 
-class RunRequest(BaseModel):
+class RunRequest(WeDoBaseModel):
     job_ids: list[UUID] = Field(default_factory=list, max_length=200)
 
 
@@ -110,11 +111,11 @@ class RunResponse(BaseModel):
     total: int
 
 
-class StageActionRequest(BaseModel):
+class StageActionRequest(WeDoBaseModel):
     reason: Optional[str] = Field(default=None, max_length=500)
 
 
-class DispatchRequest(BaseModel):
+class DispatchRequest(WeDoBaseModel):
     audience_policy: str
 
 

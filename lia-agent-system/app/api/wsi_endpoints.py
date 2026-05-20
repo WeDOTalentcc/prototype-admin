@@ -20,6 +20,8 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
+
+from app.shared.types import WeDoBaseModel
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -54,7 +56,7 @@ router = APIRouter(prefix="/api/wsi", tags=["WSI"])
 # REQUEST/RESPONSE MODELS
 # ============================================================================
 
-class AnalyzeJDRequest(BaseModel):
+class AnalyzeJDRequest(WeDoBaseModel):
     """Request to analyze job description and suggest competencies."""
     job_description: str = Field(..., description="Full job description text")
     seniority_level: str = Field(..., description="junior, pleno, senior, lead, executive")
@@ -70,21 +72,8 @@ class CompetencySuggestionResponse(BaseModel):
     confidence_score: float
 
 
-class GenerateQuestionsRequest(BaseModel):
-    """Request to generate WSI questions."""
-    session_id: str = Field(..., description="WSI session UUID")
-    candidate_id: str
-    job_vacancy_id: str
-    competencies: list[dict[str, Any]] = Field(..., description="List of competency dicts")
-    mode: str = Field(default="compact", description="compact or compact_plus")
-    job_description: str | None = None
-    seniority: str | None = None
-    enriched_jd: dict[str, Any] | None = Field(
-        default=None,
-        description="Output serializado de JdEnrichmentService. Quando fornecido, "
-                    "preenche big_five_mapping das competências comportamentais (F6.6 trait-affinity) "
-                    "e usa about_role+responsabilidades como contexto F2.5."
-    )
+# Sprint E.1 #44: canonical GenerateQuestionsRequest lives in app/api/v1/wsi/_shared.py.
+from app.api.v1.wsi._shared import GenerateQuestionsRequest  # noqa: F401
 
 
 class GenerateQuestionsResponse(BaseModel):
@@ -94,7 +83,7 @@ class GenerateQuestionsResponse(BaseModel):
     total_questions: int
 
 
-class AnalyzeResponseRequest(BaseModel):
+class AnalyzeResponseRequest(WeDoBaseModel):
     """Request to analyze a candidate response."""
     session_id: str
     question_id: str
@@ -121,7 +110,7 @@ class AnalyzeResponseResponse(BaseModel):
     justification: str
 
 
-class CalculateWSIRequest(BaseModel):
+class CalculateWSIRequest(WeDoBaseModel):
     """Request to calculate final WSI."""
     session_id: str
     candidate_id: str
@@ -141,7 +130,7 @@ class CalculateWSIResponse(BaseModel):
     percentile: int | None
 
 
-class GenerateReportRequest(BaseModel):
+class GenerateReportRequest(WeDoBaseModel):
     """Request to generate structured report."""
     wsi_result_id: str
     candidate_id: str
@@ -157,7 +146,7 @@ class GenerateReportResponse(BaseModel):
     recommendation: dict[str, Any]
 
 
-class GenerateFeedbackRequest(BaseModel):
+class GenerateFeedbackRequest(WeDoBaseModel):
     """Request to generate candidate feedback."""
     wsi_result_id: str
     decision: str = Field(..., description="aprovado, aguardando, nao_aprovado")
@@ -174,7 +163,7 @@ class GenerateFeedbackResponse(BaseModel):
     next_steps: str
 
 
-class StartVoiceScreeningRequest(BaseModel):
+class StartVoiceScreeningRequest(WeDoBaseModel):
     """Request to start a voice screening session."""
     candidate_id: str = Field(..., description="Internal candidate ID")
     job_vacancy_id: str = Field(..., description="Job vacancy ID")
@@ -844,7 +833,7 @@ async def get_voice_screening_by_call(
 # JOB CREATION WSI SCREENING QUESTIONS
 # ============================================================================
 
-class GenerateJobScreeningQuestionsRequest(BaseModel):
+class GenerateJobScreeningQuestionsRequest(WeDoBaseModel):
     """Request to generate WSI screening questions for job creation wizard."""
     job_title: str = Field(..., description="Job title")
     job_description: str | None = Field(None, description="Full job description")

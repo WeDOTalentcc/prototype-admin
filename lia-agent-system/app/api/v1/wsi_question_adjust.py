@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 from app.domains.cv_screening.services.wsi_question_adjuster import wsi_question_adjuster_service
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter(prefix="/wsi", tags=["WSI Question Adjust"])
 logger = logging.getLogger(__name__)
@@ -29,7 +30,7 @@ class QuestionItem(BaseModel):
     skill_targeted: str | None = None
 
 
-class AdjustQuestionsRequest(BaseModel):
+class AdjustQuestionsRequest(WeDoBaseModel):
     job_id: str
     block_id: str
     adjustment_prompt: str
@@ -37,7 +38,7 @@ class AdjustQuestionsRequest(BaseModel):
     job_context: dict[str, Any] | None = None
 
 
-class EvaluateJDRequest(BaseModel):
+class EvaluateJDRequest(WeDoBaseModel):
     job_title: str
     responsibilities: list[str] = Field(default_factory=list)
     technical_skills: list[str] = Field(default_factory=list)
@@ -47,7 +48,7 @@ class EvaluateJDRequest(BaseModel):
     description: str | None = None
 
 
-class SaveQuestionsRequest(BaseModel):
+class SaveQuestionsRequest(WeDoBaseModel):
     job_id: str
     questions: list[QuestionItem]
     source: str = "wsi_generation"

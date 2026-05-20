@@ -14,13 +14,14 @@ from pydantic import BaseModel
 from app.auth.dependencies import get_current_user
 from app.domains.communication.services.teams_service import AlertSeverity, teams_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/integrations", tags=["integrations"])
 
 
-class TeamsSendMessageRequest(BaseModel):
+class TeamsSendMessageRequest(WeDoBaseModel):
     """Request model for sending a Teams message."""
     text: str
     title: str | None = None
@@ -28,7 +29,7 @@ class TeamsSendMessageRequest(BaseModel):
     webhook_url: str | None = None
 
 
-class TeamsSendAlertRequest(BaseModel):
+class TeamsSendAlertRequest(WeDoBaseModel):
     """Request model for sending a Teams alert."""
     title: str
     message: str
@@ -39,13 +40,13 @@ class TeamsSendAlertRequest(BaseModel):
     webhook_url: str | None = None
 
 
-class TeamsSendCardRequest(BaseModel):
+class TeamsSendCardRequest(WeDoBaseModel):
     """Request model for sending a Teams adaptive card."""
     card: dict[str, Any]
     webhook_url: str | None = None
 
 
-class TeamsCandidateNotificationRequest(BaseModel):
+class TeamsCandidateNotificationRequest(WeDoBaseModel):
     """Request model for sending candidate notification to Teams."""
     candidate_name: str
     event: str
@@ -55,7 +56,7 @@ class TeamsCandidateNotificationRequest(BaseModel):
     webhook_url: str | None = None
 
 
-class TeamsTestRequest(BaseModel):
+class TeamsTestRequest(WeDoBaseModel):
     """Request model for testing Teams connection."""
     webhook_url: str | None = None
 

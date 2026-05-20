@@ -17,6 +17,7 @@ from app.domains.analytics.services.activity_service import ActivityService, get
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 logger = get_masked_logger(__name__)
 
@@ -24,7 +25,7 @@ router = APIRouter()
 
 
 # Pydantic schemas for request/response
-class ScheduleInterviewRequest(BaseModel):
+class ScheduleInterviewRequest(WeDoBaseModel):
     candidate_id: str | None = None  # If provided, will validate contact info
     candidate_name: str
     candidate_email: EmailStr
@@ -43,18 +44,18 @@ class ScheduleInterviewRequest(BaseModel):
     notes: str | None = None
 
 
-class CheckAvailabilityRequest(BaseModel):
+class CheckAvailabilityRequest(WeDoBaseModel):
     interviewer_email: EmailStr
     date: datetime
     duration_minutes: int = 60
 
 
-class RescheduleInterviewRequest(BaseModel):
+class RescheduleInterviewRequest(WeDoBaseModel):
     new_start_time: datetime
     new_duration_minutes: int | None = None
 
 
-class InterviewFeedbackRequest(BaseModel):
+class InterviewFeedbackRequest(WeDoBaseModel):
     interviewer_name: str
     interviewer_email: EmailStr
     interviewer_role: str | None = None
@@ -365,10 +366,9 @@ company_id: str = Depends(require_company_id)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-class CompleteInterviewRequest(BaseModel):
+class CompleteInterviewRequest(WeDoBaseModel):
     outcome: str | None = None
     feedback: dict | None = None
-    company_id: str | None = None
 
 
 @router.post("/interviews/{interview_id}/complete", response_model=dict)
@@ -398,7 +398,7 @@ company_id: str = Depends(require_company_id)):
             interview_id=interview_id,
             outcome=request.outcome,
             feedback=request.feedback,
-            company_id=request.company_id,
+            company_id=company_id,
             dispatch_event=True,
         )
 
@@ -562,7 +562,7 @@ company_id: str = Depends(require_company_id)):
 # AI-FIRST SCHEDULING ENDPOINTS
 # =============================================
 
-class GenerateEmailTemplateRequest(BaseModel):
+class GenerateEmailTemplateRequest(WeDoBaseModel):
     candidate_name: str
     candidate_email: EmailStr
     job_title: str
@@ -570,7 +570,7 @@ class GenerateEmailTemplateRequest(BaseModel):
     user_name: str | None = "Consultor"
 
 
-class ScheduleFromPromptRequest(BaseModel):
+class ScheduleFromPromptRequest(WeDoBaseModel):
     candidate_name: str
     candidate_email: EmailStr
     candidate_id: str | None = None
@@ -926,13 +926,13 @@ def _validate_interview_uuid(interview_id: str) -> None:
         raise HTTPException(status_code=404, detail="Interview not found")
 
 
-class UploadRecordingRequest(BaseModel):
+class UploadRecordingRequest(WeDoBaseModel):
     recording_url: str
     language_hint: str = "pt-BR"
     auto_transcribe: bool = True
 
 
-class TranscribeInterviewRequest(BaseModel):
+class TranscribeInterviewRequest(WeDoBaseModel):
     language_hint: str = "pt-BR"
 
 

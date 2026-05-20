@@ -16,15 +16,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.services.ml import OutcomePredictor, get_model_registry
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/ml", tags=["ML Predictions"])
 
 
-class TimeToFillRequest(BaseModel):
+class TimeToFillRequest(WeDoBaseModel):
     """Request for time to fill prediction."""
-    company_id: str
     job_data: dict
     company_data: dict | None = None
 
@@ -42,9 +42,8 @@ class TimeToFillResponse(BaseModel):
     model_version: str
 
 
-class SalaryPredictionRequest(BaseModel):
+class SalaryPredictionRequest(WeDoBaseModel):
     """Request for salary prediction."""
-    company_id: str
     job_data: dict
     market_benchmark: float | None = None
 
@@ -61,9 +60,8 @@ class SalaryPredictionResponse(BaseModel):
     factors: list[dict]
 
 
-class SkillSuccessRequest(BaseModel):
+class SkillSuccessRequest(WeDoBaseModel):
     """Request for skill success prediction."""
-    company_id: str
     skill_name: str
     role: str | None = None
 
@@ -78,9 +76,8 @@ class SkillSuccessResponse(BaseModel):
     confidence_level: str
 
 
-class HiringInsightsRequest(BaseModel):
+class HiringInsightsRequest(WeDoBaseModel):
     """Request for hiring insights."""
-    company_id: str
     role: str | None = None
 
 
@@ -110,7 +107,7 @@ company_id: str = Depends(require_company_id)):
         prediction = await predictor.predict_time_to_fill(
             db=db,
             job_data=request.job_data,
-            company_id=request.company_id,
+            company_id=company_id,
             company_data=request.company_data
         )
 
@@ -161,7 +158,7 @@ company_id: str = Depends(require_company_id)):
             if _fg_result.is_blocked:
                 logger.warning(
                     "[ml/predict/salary] FairnessGuard blocked company=%s: %s",
-                    request.company_id, _fg_result.blocked_terms,
+                    company_id, _fg_result.blocked_terms,
                 )
                 raise HTTPException(
                     status_code=422,
@@ -173,7 +170,7 @@ company_id: str = Depends(require_company_id)):
             if _fg_result.soft_warnings:
                 logger.warning(
                     "[ml/predict/salary] FairnessGuard warnings company=%s: %s",
-                    request.company_id, _fg_result.soft_warnings,
+                    company_id, _fg_result.soft_warnings,
                 )
         except HTTPException:
             raise
@@ -185,7 +182,7 @@ company_id: str = Depends(require_company_id)):
     # Audit: registrar solicitação de previsão salarial
     logger.info(
         "[ml/predict/salary] request company=%s job_title=%s",
-        request.company_id,
+        company_id,
         request.job_data.get("title", "unknown"),
     )
 
@@ -193,7 +190,7 @@ company_id: str = Depends(require_company_id)):
         prediction = await predictor.predict_optimal_salary(
             db=db,
             job_data=request.job_data,
-            company_id=request.company_id,
+            company_id=company_id,
             market_benchmark=request.market_benchmark
         )
         
@@ -240,7 +237,7 @@ company_id: str = Depends(require_company_id)):
         prediction = await predictor.predict_skill_success(
             db=db,
             skill_name=request.skill_name,
-            company_id=request.company_id,
+            company_id=company_id,
             role=request.role
         )
         
@@ -284,7 +281,7 @@ company_id: str = Depends(require_company_id)):
     try:
         insights = await predictor.get_hiring_insights(
             db=db,
-            company_id=request.company_id,
+            company_id=company_id,
             role=request.role
         )
         

@@ -29,6 +29,7 @@ from app.schemas.technical_tests import (
     TechnicalTestUpdate,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.tenant_guard import get_verified_company_id
 
 logger = logging.getLogger(__name__)
 
@@ -36,19 +37,19 @@ router = APIRouter(tags=["technical-tests"])
 
 
 def get_user_from_headers(
-    x_company_id: str | None = Header(None, alias="X-Company-ID"),
+    company_id: str = Depends(get_verified_company_id),
     x_user_id: str | None = Header(None, alias="X-User-ID"),
     x_user_role: str | None = Header(None, alias="X-User-Role")
 ) -> dict[str, Any]:
-    """Get user context from request headers."""
-    if not x_company_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Company ID required. Please provide X-Company-ID header."
-        )
+    """Get user context from request.
 
+    Multi-tenancy canonical (R4): ``company_id`` comes from JWT via
+    ``get_verified_company_id`` (which validates header matches JWT and
+    rejects cross-tenant spoof attempts). NEVER trust X-Company-ID header
+    blindly — that was the SMOKE-#2 LGPD anti-pattern.
+    """
     return {
-        "company_id": x_company_id,
+        "company_id": company_id,
         "user_id": x_user_id or "system",
         "role": x_user_role or "user",
         "is_admin": x_user_role == "admin"

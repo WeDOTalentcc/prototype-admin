@@ -17,29 +17,30 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.analytics.services.predictive_analytics_service import predictive_analytics_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/analytics/predictions", tags=["predictive-analytics"])
 
 
-class HiringProbabilityRequest(BaseModel):
+class HiringProbabilityRequest(WeDoBaseModel):
     """Request for hiring probability prediction."""
     candidate_id: str
     job_id: str
 
 
-class TimeToFillRequest(BaseModel):
+class TimeToFillRequest(WeDoBaseModel):
     """Request for time to fill prediction."""
     job_id: str
 
 
-class DropoutRiskRequest(BaseModel):
+class DropoutRiskRequest(WeDoBaseModel):
     """Request for dropout risk prediction."""
     candidate_id: str
     job_id: str
 
 
-class PipelineForecastRequest(BaseModel):
+class PipelineForecastRequest(WeDoBaseModel):
     """Request for pipeline forecast."""
     job_id: str
     weeks_ahead: int = 4

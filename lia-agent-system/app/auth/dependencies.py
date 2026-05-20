@@ -398,6 +398,12 @@ async def get_current_user_or_demo(
     
     from uuid import uuid4
     from scripts.seeds.demo_company import CANONICAL_DEMO_UUID
+    # F-BG.1 (audit 2026-05-20): RLS deny-by-default em users (migration 068)
+    # exige `app.company_id` setado na sessão Postgres antes do INSERT.
+    # Sem isso, 100% das requests anônimas em dev caem em HTTP 500 + traceback ~70 linhas.
+    from app.core.database import set_tenant_context
+    await set_tenant_context(db, str(CANONICAL_DEMO_UUID))
+
     demo_user = User(
         id=uuid4(),
         email="demo@wedotalent.com",

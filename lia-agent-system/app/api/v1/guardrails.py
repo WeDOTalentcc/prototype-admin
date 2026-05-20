@@ -27,6 +27,7 @@ from app.core.database import get_db
 from app.models.guardrail import Guardrail
 from app.shared.compliance.guardrail_repository import GuardrailCreate, GuardrailRepository
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +70,7 @@ class GuardrailResponse(BaseModel):
         )
 
 
-class GuardrailUpdateRequest(BaseModel):
+class GuardrailUpdateRequest(WeDoBaseModel):
     level: str | None = None
     domain: str | None = None
     node: str | None = None
@@ -77,7 +78,6 @@ class GuardrailUpdateRequest(BaseModel):
     rule: str | None = None
     blocking_message: str | None = None
     is_active: bool | None = None
-    company_id: str | None = None
     updated_by: str = "admin"
 
 

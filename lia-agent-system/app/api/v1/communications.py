@@ -33,7 +33,7 @@ from app.domains.communication.services.whatsapp_service import (
     whatsapp_service,
 )
 from app.shared.tenant_guard import get_verified_company_id
-from app.shared.security.require_company_id import require_company_id_strict_match
+from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.schemas.communication import (
     CommunicationCreate,
     CommunicationListResponse,
@@ -45,17 +45,6 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/communications", tags=["communications"])
 candidate_communications_router = APIRouter(prefix="/candidates", tags=["candidates"])
-
-
-# DEPRECATED — use get_verified_company_id from app.shared.tenant_guard
-def require_company_id(x_company_id: str | None = Header(None, alias="X-Company-ID")) -> str:
-    """DEPRECATED: Use get_verified_company_id instead. Kept for backward compatibility."""
-    if not x_company_id:
-        raise HTTPException(
-            status_code=403,
-            detail="Company ID required. Please provide X-Company-ID header."
-        )
-    return x_company_id
 
 
 @router.post("", response_model=CommunicationResponse, status_code=status.HTTP_201_CREATED)
@@ -652,9 +641,10 @@ _company_gate: str = Depends(require_company_id)):
 
 
 from pydantic import BaseModel
+from app.shared.types import WeDoBaseModel
 
 
-class TransferCommunicationsRequest(BaseModel):
+class TransferCommunicationsRequest(WeDoBaseModel):
     """Request model for transferring communications between recruiters."""
     job_ids: list[str]
     from_recruiter_ids: list[str]

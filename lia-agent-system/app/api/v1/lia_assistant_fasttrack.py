@@ -21,6 +21,7 @@ from app.domains.job_management.services.vacancy_search_service import vacancy_s
 from app.models import JobVacancy
 from app.shared.services.intent_classifier import IntentType, intent_classifier_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ class FastTrackState(StrEnum):
     PUBLISHING = "publishing"
 
 
-class FastTrackWizardRequest(BaseModel):
+class FastTrackWizardRequest(WeDoBaseModel):
     company_id: str
     conversation_id: str | None = None
     state: FastTrackState = FastTrackState.PRE_WIZARD

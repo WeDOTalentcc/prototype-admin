@@ -12,6 +12,7 @@ from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class BreachSeverityEnum(StrEnum):
@@ -62,7 +63,7 @@ class DPORegistryListResponse(BaseModel):
     offset: int
 
 
-class DPORegistryCreate(BaseModel):
+class DPORegistryCreate(WeDoBaseModel):
     """Schema for creating/updating a DPO registry entry."""
     dpo_name: str = Field(..., min_length=2, max_length=255, description="Full name of the DPO")
     dpo_email: str = Field(..., description="DPO contact email")
@@ -82,7 +83,7 @@ class DPORegistryCreate(BaseModel):
         }
 
 
-class DPORegistryUpdate(BaseModel):
+class DPORegistryUpdate(WeDoBaseModel):
     """Schema for updating a DPO registry entry."""
     dpo_name: str | None = Field(None, min_length=2, max_length=255)
     dpo_email: str | None = None
@@ -125,7 +126,7 @@ class BreachNotificationListResponse(BaseModel):
     offset: int
 
 
-class BreachNotificationCreate(BaseModel):
+class BreachNotificationCreate(WeDoBaseModel):
     """Schema for creating a breach notification."""
     breach_detected_at: datetime = Field(..., description="When the breach was detected")
     breach_description: str = Field(..., min_length=10, description="Description of the breach")
@@ -145,7 +146,7 @@ class BreachNotificationCreate(BaseModel):
         }
 
 
-class BreachNotificationUpdate(BaseModel):
+class BreachNotificationUpdate(WeDoBaseModel):
     """Schema for updating a breach notification."""
     breach_description: str | None = Field(None, min_length=10)
     affected_data_types: list[str] | None = None
@@ -233,7 +234,7 @@ class AutomatedDecisionListResponse(BaseModel):
     offset: int
 
 
-class AutomatedDecisionCreate(BaseModel):
+class AutomatedDecisionCreate(WeDoBaseModel):
     """Schema for creating an automated decision record."""
     decision_type: DecisionTypeEnum = Field(..., description="Type of decision")
     candidate_id: str | None = Field(None, description="Candidate ID")
@@ -265,7 +266,7 @@ class AutomatedDecisionCreate(BaseModel):
         }
 
 
-class HumanReviewRequest(BaseModel):
+class HumanReviewRequest(WeDoBaseModel):
     """Schema for requesting human review of an automated decision."""
     reason: str | None = Field(None, description="Reason for requesting human review")
     requested_by: str | None = Field(None, description="ID of the data subject requesting review")

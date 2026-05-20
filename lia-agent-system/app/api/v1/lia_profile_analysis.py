@@ -18,6 +18,7 @@ from app.schemas.lia_profile_analysis import (
     LiaProfileAnalysisResponse,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ class CandidateData(BaseModel):
     experiences: list[dict[str, Any]] | None = []
     summary: str | None = None
 
-class ProfileAnalysisRequest(BaseModel):
+class ProfileAnalysisRequest(WeDoBaseModel):
     candidate_id: str
     analysis_type: str  # 'bullet_points', 'short_paragraph', 'detailed_bullets'
     candidate_data: CandidateData

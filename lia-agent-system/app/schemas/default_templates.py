@@ -6,6 +6,7 @@ from enum import Enum, StrEnum
 from uuid import UUID
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class TemplateCategoryEnum(StrEnum):
@@ -46,7 +47,7 @@ class DefaultTemplateCreate(DefaultTemplateBase):
     created_by: str | None = Field(None, description="User who created the template")
 
 
-class DefaultTemplateUpdate(BaseModel):
+class DefaultTemplateUpdate(WeDoBaseModel):
     """Schema for updating a default template (all fields optional)."""
     name: str | None = Field(None, min_length=1, max_length=255)
     category: TemplateCategoryEnum | None = None
@@ -85,7 +86,7 @@ class TemplateVariablesListResponse(BaseModel):
     variables: list[TemplateVariableResponse]
 
 
-class DefaultTemplateDuplicateRequest(BaseModel):
+class DefaultTemplateDuplicateRequest(WeDoBaseModel):
     """Request for duplicating a template."""
     new_name: str | None = Field(None, description="Name for the duplicated template. If not provided, appends ' (Copy)'")
 

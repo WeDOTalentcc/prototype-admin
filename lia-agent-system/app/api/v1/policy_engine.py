@@ -106,7 +106,7 @@ _company_gate: str = Depends(require_company_id)):
     """Create a new business rule."""
     try:
         rule = BusinessRule(
-            company_id=UUID(data.company_id or company_id) if (data.company_id or company_id) else None,
+            company_id=UUID(company_id) if company_id else None,
             name=data.name,
             description=data.description,
             rule_type=data.rule_type.value,
@@ -205,7 +205,7 @@ _company_gate: str = Depends(require_company_id)):
     """Create a new rate limit rule."""
     try:
         rule = RateLimitRule(
-            company_id=UUID(data.company_id or company_id) if (data.company_id or company_id) else None,
+            company_id=UUID(company_id) if company_id else None,
             name=data.name,
             description=data.description,
             target_type=data.target_type.value,
@@ -258,7 +258,7 @@ _company_gate: str = Depends(require_company_id)):
     """Create a new escalation rule."""
     try:
         rule = EscalationRule(
-            company_id=UUID(data.company_id or company_id) if (data.company_id or company_id) else None,
+            company_id=UUID(company_id) if company_id else None,
             name=data.name,
             description=data.description,
             trigger_type=data.trigger_type.value,
@@ -316,7 +316,7 @@ _company_gate: str = Depends(require_company_id)):
             action=data.action,
             context=data.context,
             agent_name=data.agent_name,
-            company_id=data.company_id or company_id,
+            company_id=company_id,
             user_id=data.user_id or user_id,
             check_rate_limit=data.check_rate_limit,
             dry_run=data.dry_run,
@@ -351,7 +351,7 @@ _company_gate: str = Depends(require_company_id)):
             target_type=data.target_type.value,
             target_id=data.target_id,
             action=data.action,
-            company_id=data.company_id or company_id,
+            company_id=company_id,
             increment=data.increment,
         )
         return RateLimitCheckResponse(**result.to_dict())
@@ -373,7 +373,7 @@ _company_gate: str = Depends(require_company_id)):
             rule_id=data.rule_id,
             trigger_type=data.trigger_type.value if data.trigger_type else None,
             context=data.context,
-            company_id=data.company_id or company_id,
+            company_id=company_id,
         )
         return EscalationTriggerResponse(**result.to_dict())
     except Exception as e:

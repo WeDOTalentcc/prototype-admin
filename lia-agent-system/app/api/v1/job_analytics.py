@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.domains.analytics.services.job_analytics_prompt_service import job_analytics_prompt_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +38,7 @@ class ExecuteCommandContext(BaseModel):
     job_ids: list[str] | None = None
 
 
-class ExecuteCommandRequest(BaseModel):
+class ExecuteCommandRequest(WeDoBaseModel):
     command_id: str = Field(..., description="ID of the command template to execute")
     context: ExecuteCommandContext = Field(default_factory=ExecuteCommandContext)
 
@@ -48,7 +49,7 @@ class NaturalQueryContext(BaseModel):
     page: str | None = None
 
 
-class NaturalQueryRequest(BaseModel):
+class NaturalQueryRequest(WeDoBaseModel):
     query: str = Field(..., description="Natural language query about jobs")
     context: NaturalQueryContext = Field(default_factory=NaturalQueryContext)
 
@@ -93,7 +94,7 @@ class QuickInsightsResponse(BaseModel):
     suggestions: list[str] = Field(default_factory=list)
 
 
-class CompareJobsRequest(BaseModel):
+class CompareJobsRequest(WeDoBaseModel):
     job_ids: list[str] = Field(..., min_length=2, description="List of job IDs to compare")
 
 
@@ -112,7 +113,7 @@ class SuggestionsResponse(BaseModel):
     additional_suggestions: list[str] = Field(default_factory=list)
 
 
-class BatchAnalyzeRequest(BaseModel):
+class BatchAnalyzeRequest(WeDoBaseModel):
     job_ids: list[str] = Field(..., min_length=1, description="List of job IDs to analyze")
     analysis_types: list[str] = Field(..., min_length=1, description="Types of analysis to run")
 

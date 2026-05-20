@@ -7,6 +7,7 @@ from enum import Enum, StrEnum
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class CandidateMatchScore(BaseModel):
@@ -99,7 +100,7 @@ class VolumeAssessment(BaseModel):
     suggested_action: Literal["proceed", "expand_local", "expand_global", "adjust_criteria"] = "proceed"
 
 
-class GlobalSearchRequest(BaseModel):
+class GlobalSearchRequest(WeDoBaseModel):
     """Request for global (Pearch) search."""
     requested: bool = False
     approved: bool = False

@@ -16,6 +16,8 @@ from app.domains.job_management.services.template_seeder import clone_templates_
 from app.models.client_account import CLIENT_STATUS_OPTIONS, COMPANY_SIZE_OPTIONS, ClientAccount, ClientStatus
 from app.shared.services.hubspot_service import hubspot_service, sync_client_to_hubspot
 from app.shared.services.workos_provisioning_service import provision_workos_organization
+from app.shared.tenant_guard import get_verified_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +34,7 @@ class AddressSchema(BaseModel):
     country: str | None = "Brasil"
 
 
-class ClientCreate(BaseModel):
+class ClientCreate(WeDoBaseModel):
     """Request model for creating a client."""
     name: str = Field(..., min_length=1, max_length=255)
     trade_name: str | None = Field(None, max_length=255)
@@ -57,7 +59,7 @@ class ClientCreate(BaseModel):
     company_size: str | None = Field(None, max_length=50)
 
 
-class ClientUpdate(BaseModel):
+class ClientUpdate(WeDoBaseModel):
     """Request model for updating a client."""
     name: str | None = Field(None, min_length=1, max_length=255)
     trade_name: str | None = Field(None, max_length=255)
@@ -82,7 +84,7 @@ class ClientUpdate(BaseModel):
     onboarding_completed_at: datetime | None = None
 
 
-class StatusUpdate(BaseModel):
+class StatusUpdate(WeDoBaseModel):
     """Request model for updating client status."""
     status: str = Field(..., description="New status")
     reason: str | None = Field(None, description="Reason for status change")
@@ -93,12 +95,19 @@ class StatusUpdate(BaseModel):
 # ---------------------------------------------------------------------------
 
 def get_user_from_headers(
-    x_company_id: str | None = Header(None, alias="X-Company-ID"),
+    company_id: str = Depends(get_verified_company_id),
     x_user_id: str | None = Header(None, alias="X-User-ID"),
     x_user_role: str | None = Header(None, alias="X-User-Role"),
 ) -> dict[str, Any]:
+    """Get user context from request.
+
+    Multi-tenancy canonical (R4): ``company_id`` comes from JWT via
+    ``get_verified_company_id`` (validates header matches JWT, 403 on
+    mismatch). NEVER trust X-Company-ID header blindly — that was the
+    SMOKE-#2 LGPD anti-pattern.
+    """
     return {
-        "company_id": x_company_id,
+        "company_id": company_id,
         "user_id": x_user_id,
         "role": x_user_role,
         "is_admin": x_user_role == "admin",

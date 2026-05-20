@@ -17,13 +17,14 @@ from app.schemas.screening import (
     ScreeningQuestionResponse,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/screening", tags=["screening"])
 
 
-class AutoScreeningRequest(BaseModel):
+class AutoScreeningRequest(WeDoBaseModel):
     candidate_id: str
     job_id: str
     source: str
@@ -46,8 +47,24 @@ def _wsi_questions_to_screening_response(wsi_questions, request) -> ScreeningQue
     cultural_questions = []
 
     for idx, wq in enumerate(wsi_questions):
-        is_behavioral = wq.framework == "BigFive" or wq.question_type == "situational"
-        category = "behavioral" if is_behavioral else "technical"
+        # F6.O5: cultural_questions sempre vazio. Root cause upstream:
+        #   - WSIQuestion (services/wsi_service/models.py:138) NAO tem field competency_type
+        #   - question_generator.py:242 funde Competency(type=cultural) no bucket behavioral antes
+        #     de gerar WSIQuestion, perdendo a origem cultural
+        #   - generate_from_simple_inputs (service.py:204) nao aceita parametro cultural
+        # Fix correto exige mudanca upstream: adicionar competency_type ao WSIQuestion e
+        # propagar pelo question_generator. Veja tambem F6.O3 (behavioral=[] hardcoded
+        # em screening.py:117 abaixo, que reforca o mesmo gap).
+        # Defesa em profundidade: SE WSIQuestion futuramente expor competency_type ou
+        # competency_obj.type, categorizar como cultural (prioridade sobre behavioral).
+        _comp_type = getattr(wq, "competency_type", None)
+        if _comp_type is None:
+            _comp_obj = getattr(wq, "competency_obj", None)
+            if _comp_obj is not None:
+                _comp_type = getattr(_comp_obj, "type", None)
+        is_cultural = _comp_type == "cultural"
+        is_behavioral = (wq.framework == "BigFive" or wq.question_type == "situational") and not is_cultural
+        category = "cultural" if is_cultural else ("behavioral" if is_behavioral else "technical")
         bloom_level = wq.scoring_criteria.get("bloom_level", 3) if isinstance(wq.scoring_criteria, dict) else 3
         if not isinstance(bloom_level, int):
             try:
@@ -77,7 +94,9 @@ def _wsi_questions_to_screening_response(wsi_questions, request) -> ScreeningQue
             order=idx,
         )
         all_questions.append(sq)
-        if category == "behavioral":
+        if category == "cultural":
+            cultural_questions.append(sq)
+        elif category == "behavioral":
             behavioral_questions.append(sq)
         else:
             technical_questions.append(sq)
@@ -122,6 +141,16 @@ company_id: str = Depends(require_company_id)) -> ScreeningQuestionResponse:
         )
 
         response = _wsi_questions_to_screening_response(wsi_questions, request)
+
+        # F6.O2 fix (audit 2026-05-20): contrato API expõe cap quando count solicitado
+        # > total_count devolvido (le=15 no schema mas distribuição canonical max=12).
+        # Sem isso, frontend acredita que recebeu N perguntas quando recebeu menos.
+        if request.question_count and response.total_count < request.question_count:
+            if not hasattr(response, "metadata") or response.metadata is None:
+                response.metadata = {}
+            response.metadata["cap_applied"] = True
+            response.metadata["requested_count"] = request.question_count
+            response.metadata["returned_count"] = response.total_count
 
         logger.info(f"Generated {response.total_count} questions: "
                    f"{len(response.behavioral_questions)} behavioral, "

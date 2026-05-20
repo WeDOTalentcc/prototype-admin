@@ -850,6 +850,42 @@ class WizardSessionService:
 
         prior_state = await cls._get_prior_state(thread_id)
 
+        # ── Sprint F.2 (2026-05-20) — Skip supervisor mid-flow ─────────
+        # CANONICAL FIX (Option A): when ``prior_state.current_stage`` is
+        # in the ACTIVE wizard stages, SKIP the pre-graph supervisor
+        # classifier entirely. Rationale: those stages have an active
+        # HITL gate (``langgraph.types.interrupt()``) waiting for a
+        # specific recruiter response (modo compact/full, aprovação JD,
+        # ajuste de competência). Re-classifying short answers like
+        # "modo compacto" / "aprovado" / "ok" via Haiku risks misrouting
+        # them as ``create_new`` / ``meta_question`` / ``exit_wizard``
+        # and regressing the wizard to intake. The supervisor must only
+        # run for (a) genuine new conversations (no prior_state) or
+        # (b) terminal/idle stages where re-classification is safe.
+        #
+        # Active wizard stages = entire WizardStage Literal minus
+        # ``intake`` (where supervisor is needed to detect meta_question
+        # / exit_wizard before the first JD parse) and terminal
+        # ``done`` / ``handoff`` / ``calibration`` (post-publish).
+        # The 8 active stages map 1:1 to nodes with interrupt() gates.
+        _ACTIVE_WIZARD_STAGES = frozenset({
+            "jd_enrichment", "bigfive", "salary", "competency",
+            "wsi_questions", "eligibility", "review", "publish",
+        })
+        _prior_stage = None
+        if isinstance(prior_state, dict):
+            _prior_stage = prior_state.get("current_stage")
+        _skip_supervisor = (
+            isinstance(_prior_stage, str)
+            and _prior_stage in _ACTIVE_WIZARD_STAGES
+        )
+        # Sprint F.4 (iter 3) — diagnostic INFO so we can see supervisor
+        # skip engagement in prod INFO logs (was logger.debug, filtered).
+        logger.info(
+            "[WizardSession] supervisor decision: prior_stage=%r skip=%s thread=%s",
+            _prior_stage, _skip_supervisor, thread_id,
+        )
+
         # ── Task #1127 (T1.1 + T2.1) — Supervisor pre-graph ────────────
         # Classifica a INTENÇÃO GLOBAL do turno antes de tocar o graph.
         # Short-circuit determinístico para meta_question / exit_wizard;
@@ -859,20 +895,28 @@ class WizardSessionService:
         # Fail-OPEN: qualquer falha do supervisor devolve None →
         # continue_current → fluxo intacto. Sentinela offline em
         # tests/integration/agents/test_wizard_supervisor_t1127.py.
-        try:
-            sv_result = await cls._run_supervisor(
-                user_message=user_message,
-                prior_state=prior_state,
-                context=context,
-                company_id=company_id,
-                session_id=session_id,
-                thread_id=thread_id,
+        sv_result = None
+        if _skip_supervisor:
+            logger.info(
+                "[WizardSession] supervisor SKIPPED (active stage=%s "
+                "thread=%s) — Sprint F.2 canonical fix",
+                _prior_stage, thread_id,
             )
-        except Exception as sv_exc:  # noqa: BLE001 — supervisor é fail-OPEN
-            logger.warning(
-                "[WizardSession] supervisor raised (fail-open): %s", sv_exc,
-            )
-            sv_result = None
+        else:
+            try:
+                sv_result = await cls._run_supervisor(
+                    user_message=user_message,
+                    prior_state=prior_state,
+                    context=context,
+                    company_id=company_id,
+                    session_id=session_id,
+                    thread_id=thread_id,
+                )
+            except Exception as sv_exc:  # noqa: BLE001 — supervisor é fail-OPEN
+                logger.warning(
+                    "[WizardSession] supervisor raised (fail-open): %s", sv_exc,
+                )
+                sv_result = None
         if sv_result is not None and sv_result.get("short_circuit"):
             return (
                 sv_result["message"],

@@ -11,13 +11,14 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 from typing import Optional
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/onboarding", tags=["onboarding"])
 
 
-class StartOnboardingRequest(BaseModel):
+class StartOnboardingRequest(WeDoBaseModel):
     user_id: int
     account_id: int
     name: str
@@ -28,7 +29,7 @@ class StartOnboardingRequest(BaseModel):
     invited_by: Optional[str] = None
 
 
-class WebEventRequest(BaseModel):
+class WebEventRequest(WeDoBaseModel):
     event_type: str
     data: Optional[dict] = None
 

@@ -400,6 +400,15 @@ class WSIQuestionGenerator:
         """
         all_questions: List[GeneratedQuestion] = []
 
+        # Sprint F.4 (iter 3) harness guard — state["question_distribution"]
+        # may be explicitly None when the gate classifier resumes via
+        # Command(resume=...) before the dispatcher writes the canonical
+        # dict. Coerce to the WSI default instead of raising AttributeError
+        # (which propagated to wizard_session_service:L958 silent fallback
+        # → "vaga foi cortada" reply observed in F.2 retest 2026-05-20).
+        if not isinstance(distribution, dict):
+            distribution = {"technical": 5, "behavioral": 2}
+
         n_tech = distribution.get("technical", 5)
         n_behav = distribution.get("behavioral", 2)
 

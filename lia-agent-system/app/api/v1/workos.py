@@ -37,11 +37,12 @@ from app.domains.auth.repositories.user_repository import UserRepository
 from app.domains.auth.repositories.workos_repository import WorkOSRepository
 from app.shared.resilience.circuit_breaker import WORKOS_CIRCUIT, circuit_breaker_decorator
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 
-class RoleMappingRequest(BaseModel):
+class RoleMappingRequest(WeDoBaseModel):
     role: str
     permissions: list[str] | None = []
 
@@ -1393,6 +1394,28 @@ async def scim_webhook(
     elif event_type and event_type.startswith("dsync.group."):
         actor_id = data.get("id")
         target_id = data.get("id")
+
+    # SMOKE-#1 RLS fix (audit 2026-05-20): webhooks externos (sem JWT) precisam
+    # injetar company_id na session Postgres para satisfazer RLS policy de sso_audit_logs.
+    # Padrão canonical de app/shared/security/webhook_ownership.py:212-225.
+    if company_id:
+        try:
+            from app.core.database import set_tenant_context
+            await set_tenant_context(workos_repo.db, str(company_id))
+        except Exception as _rls_err:
+            # pii-logs ok: nome de tabela/erro técnico, sem PII
+            logger.error(
+                f"[SCIM] Falha ao setar tenant context para RLS: {_rls_err}",
+                exc_info=True,
+            )
+            # company_id é NOT NULL em sso_audit_logs — sem RLS context o INSERT falha
+            return {"success": False, "message": "RLS context setup failed", "event_id": event_id}
+    else:
+        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V)
+        logger.warning(
+            f"[SCIM] Sem company_id resolvido para event_id={event_id} directory={directory_id} — skipping audit log"
+        )
+        return {"success": True, "message": f"Event {event_type} acknowledged (no company_id, audit skipped)", "event_id": event_id}
 
     await workos_repo.log_sso_event({
         "company_id": company_id,

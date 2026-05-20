@@ -25,6 +25,7 @@ from app.domains.job_management.services.wizard_data_priority_service import (
     wizard_data_priority_service,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -53,7 +54,7 @@ class FieldSuggestionsResponse(BaseModel):
     all_suggestions: list[SuggestionResponse] = Field(default_factory=list)
 
 
-class WizardContextRequest(BaseModel):
+class WizardContextRequest(WeDoBaseModel):
     job_title: str | None = None
     department: str | None = None
     seniority: str | None = None

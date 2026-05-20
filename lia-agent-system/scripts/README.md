@@ -48,3 +48,68 @@ python3 -m pytest tests/unit/test_global_tool_registry_empty.py
 
 The scripts not listed above (`seed_*.py`, `audit_prompts.py`, etc.) are
 one-off operational tools rather than guards. They are not wired into CI.
+
+
+## Pydantic Conventions canonical (2026-05-20 pós-audit E2E)
+
+| Script                                  | Hook id                       | Regras       | Notes                                                |
+| --------------------------------------- | ----------------------------- | ------------ | ---------------------------------------------------- |
+| `check_pydantic_conventions.py`         | `pydantic-conventions-warn`   | R1+R2+R3+R4  | CLAUDE.md "Pydantic Conventions canonical (registrado 2026-05-20)". |
+
+**Regras:**
+- **R1** — Request body schemas DEVEM ter `extra='forbid'` ou herdar de `WeDoBaseModel` (canonical em `app/shared/types.py`). Origem: F1.O2 audit.
+- **R2** — Nenhum BaseModel com sufixo `Create|Update|Request|Payload|Input` pode ter field `company_id`. Multi-tenancy canonical — vem do JWT via `Depends(require_company_id)`. Origem: F4.O1+F5.O1.
+- **R3** — Nenhum `: UUID = Path(..., pattern=...)` combo. Pydantic 2.10+ não aceita. Use `JobIdParam` alias canonical. Origem: F2.B1 (24 endpoints quebrados).
+- **R4** — Nenhum handler com `x_company_id: ... = Header(...)` nem assignment `company_id = x_company_id ...`. Use `Depends(get_verified_company_id)` canonical. Origem: SMOKE-#2 LGPD (28 sites cross-tenant manipulation).
+
+### Como rodar locally
+
+```bash
+# Via Makefile (recomendado):
+make check-pydantic       # AST checker R1+R2+R3+R4 (~1s)
+make smoke                # contract smoke test 1798 endpoints (~34s)
+make check-all            # ambos em sequência (~35s)
+
+# Manual:
+python3 scripts/check_pydantic_conventions.py app/
+python3 -m pytest tests/contract/test_endpoint_smoke.py
+```
+
+### Como interpretar violations
+
+Baseline 2026-05-20 (pós-audit E2E + Sprint 0 refinement):
+
+| Regra | Baseline | Sprint pra fix | Prioridade |
+| ----- | -------- | -------------- | ---------- |
+| R1    | 694      | Sprint 4 (migration gradual + codemod)  | Médio (legacy débito) |
+| R2    | 139      | Sprint 4 (gradual)            | Médio |
+| R3    | **0** ✅ | Mantém em 0 (sensor blocking) | Alto (regressão crítica) |
+| R4    | 29       | Sprint 1 (hybrid via `tenant_guard.get_verified_company_id`) | **Alto (LGPD cross-tenant)** |
+
+### Priorização pra fixar
+
+1. **R3 (0)** — manter em 0. CI promove a blocking automático. Regression = build red.
+2. **R4 (29)** — Sprint 1 prioritário (multi-tenancy LGPD risk). Refactor canonical batch via `tenant_guard.get_verified_company_id`.
+3. **R2 (139)** — Sprint 4 gradual. Cada PR que toca handler com `company_id` no payload deve corrigir.
+4. **R1 (694)** — Sprint 4 gradual + codemod automation. Boy Scout rule: cada PR que toca schema legacy, migra pra `WeDoBaseModel`.
+
+### Adicionar SKIP
+
+Se uma classe LEGITIMAMENTE precisa de `extra='allow'` (e.g., webhook externo com schema drift), adicione ao `SKIP_R1` set em `scripts/check_pydantic_conventions.py` com motivo + ticket.
+
+Pra R4: `SKIP_R4_FILES` e `SKIP_R4_FUNCTIONS` (canonical defense em `tenant_guard.py`).
+
+### Contract Smoke Test
+
+| Script                                  | Hook id                       | Notes                                                |
+| --------------------------------------- | ----------------------------- | ---------------------------------------------------- |
+| `tests/contract/test_endpoint_smoke.py` | `smoke-test-warn` (futuro CI) | Hits cada endpoint da OpenAPI com sample payload, asserta NÃO retorna HTTP 500. Detecta NameError, schema mismatch, stack leak. |
+
+Baseline 2026-05-20: **1789/1798 passed (99.5%)**, 9 falhas catalogadas em backlog.
+
+```bash
+make smoke  # requires uvicorn rodando em localhost:8001
+```
+
+Adicionar endpoints conhecidos como falsos positivos: editar `SKIP_ENDPOINTS` em `tests/contract/test_endpoint_smoke.py` com motivo + ticket.
+

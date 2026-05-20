@@ -42,25 +42,12 @@ class WSIQuestion(BaseModel):
     block_id: int | None = None
 
 
-class GenerateQuestionsRequest(BaseModel):
-    """Request to generate WSI questions."""
-    company_id: str
-    job_title: str
-    technical_skills: list[str] = Field(default_factory=list)
-    behavioral_competencies: list[str] = Field(default_factory=list)
-    responsibilities: list[str] = Field(default_factory=list)
-    seniority: str | None = None
-    department: str | None = None
-    max_questions: int = DEFAULT_MAX_QUESTIONS
-
-    @validator('technical_skills', 'behavioral_competencies', pre=True, always=True)
-    def filter_empty_strings(cls, v):
-        if v is None:
-            return []
-        return [s.strip() for s in v if s and s.strip()]
+# Sprint E.1 #44: canonical GenerateQuestionsRequest lives in app/api/v1/wsi/_shared.py.
+from app.api.v1.wsi._shared import GenerateQuestionsRequest  # noqa: F401
+from app.shared.types import WeDoBaseModel
 
 
-class RegenerateQuestionsRequest(BaseModel):
+class RegenerateQuestionsRequest(WeDoBaseModel):
     """Request to regenerate WSI questions based on full competency lists."""
     company_id: str
     job_title: str

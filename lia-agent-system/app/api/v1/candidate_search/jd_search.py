@@ -20,36 +20,17 @@ from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 
-class JobDescriptionSearchRequest(BaseModel):
-    """Request para busca por job description."""
-    job_description: str = Field(..., min_length=50, description="Descrição completa da vaga")
-    location: str | None = Field(None, description="Localização preferida")
-    limit: int = Field(20, ge=1, le=50)
-    search_pearch: bool = Field(True, description="Buscar também na Pearch AI")
-    pearch_type: str = Field("fast", description="Tipo de busca (sempre fast)")
+# Sprint F.3 #25 canonical-fix: JobDescriptionSearchRequest moved to api/v1/candidate_search/jd_models.py
+from app.api.v1.candidate_search.jd_models import JobDescriptionSearchRequest  # noqa: F401  (re-export for backward compat)
 
 
-class ExtractedCriteria(BaseModel):
-    """Critérios extraídos da job description."""
-    job_title: str | None = None
-    seniority: str | None = None
-    skills: list[str] = Field(default_factory=list)
-    experience_years: int | None = None
-    location: str | None = None
-    languages: list[str] = Field(default_factory=list)
-    certifications: list[str] = Field(default_factory=list)
+# Sprint F.3 #25 canonical-fix: ExtractedCriteria moved to api/v1/candidate_search/jd_models.py
+from app.api.v1.candidate_search.jd_models import ExtractedCriteria  # noqa: F401  (re-export for backward compat)
 
 
-class JobDescriptionSearchResponse(BaseModel):
-    """Response da busca por job description."""
-    extracted_criteria: ExtractedCriteria
-    query_generated: str
-    candidates: list[CandidateSearchResultDTO] = Field(default_factory=list)
-    local_count: int = 0
-    pearch_count: int = 0
-    total_count: int = 0
-    credits_remaining: int | None = None
-    search_time_seconds: float | None = None
+# Sprint F.3 #25 canonical-fix: JobDescriptionSearchResponse moved to api/v1/candidate_search/jd_models.py
+from app.api.v1.candidate_search.jd_models import JobDescriptionSearchResponse  # noqa: F401  (re-export for backward compat)
+from app.shared.types import WeDoBaseModel
 
 
 @router.post("/by-job-description", response_model=JobDescriptionSearchResponse)
@@ -268,7 +249,7 @@ company_id: str = Depends(require_company_id)):
         raise HTTPException(status_code=500, detail=f"Local search failed: {str(e)}")
 
 
-class ParseQueryRequest(BaseModel):
+class ParseQueryRequest(WeDoBaseModel):
     """Request para parsing de query em linguagem natural."""
     query: str = Field(..., min_length=1, max_length=500)
 
@@ -623,37 +604,14 @@ class RevealType(str):
     PHONE = "phone"
 
 
-class RevealContactRequest(BaseModel):
-    """Request para revelar email ou telefone de um candidato Pearch."""
-    candidate_id: str = Field(..., description="ID do candidato (docid do Pearch)")
-    candidate_name: str = Field(..., description="Nome do candidato para busca")
-    reveal_type: str = Field(..., description="Tipo: 'email' ou 'phone'", pattern="^(email|phone)$")
-    linkedin_slug: str | None = Field(None, description="LinkedIn slug para busca mais precisa")
+# Sprint F.3 #25 canonical-fix: RevealContactRequest moved to api/v1/candidate_search/contact.py
+from app.api.v1.candidate_search.contact import RevealContactRequest  # noqa: F401  (re-export for backward compat)
 
 
-class RevealContactResponse(BaseModel):
-    """Response com dados de contato revelados."""
-    success: bool
-    candidate_id: str
-    reveal_type: str
-    
-    # Dados revelados
-    email: str | None = None
-    emails: list[str] = Field(default_factory=list)
-    phone: str | None = None
-    phones: list[str] = Field(default_factory=list)
-    
-    # Custos
-    credits_used: int = 0
-    credits_remaining: int | None = None
-    
-    # Mensagem
-    message: str = ""
+# Sprint F.3 #25 canonical-fix: RevealContactResponse moved to api/v1/candidate_search/contact.py
+from app.api.v1.candidate_search.contact import RevealContactResponse  # noqa: F401  (re-export for backward compat)
 
 
-class RevealCostEstimate(BaseModel):
-    """Estimativa de custo para reveal."""
-    reveal_type: str
-    credits_required: int
-    description: str
+# Sprint F.3 #25 canonical-fix: RevealCostEstimate moved to api/v1/candidate_search/contact.py
+from app.api.v1.candidate_search.contact import RevealCostEstimate  # noqa: F401  (re-export for backward compat)
 

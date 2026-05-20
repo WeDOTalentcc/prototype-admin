@@ -30,7 +30,13 @@ except ImportError:
             return fn
         return decorator
 
-FALLBACK_ORDER: list[str] = ["gemini", "claude", "openai"]
+# Sprint F.1: claude FIRST because Replit modelfarm proxy (localhost:1106)
+# is broken for Gemini and OpenAI, AND langchain_anthropic.ChatAnthropic does
+# NOT honor a base_url override → goes straight to api.anthropic.com using
+# AI_INTEGRATIONS_ANTHROPIC_API_KEY (a real sk-ant-* key). Restoring this to
+# ["gemini", "claude", "openai"] requires either fixing modelfarm or
+# setting LLM_DEFAULT_PROVIDER per-tenant.
+FALLBACK_ORDER: list[str] = ["claude", "gemini", "openai"]
 
 
 # ---------------------------------------------------------------------------
@@ -112,7 +118,7 @@ class ProviderContainer:
         provider_api_keys: dict[str, str] | None = None,
     ) -> None:
         self._tenant_id = tenant_id
-        self._primary = primary_provider or os.environ.get("LLM_DEFAULT_PROVIDER", "gemini")
+        self._primary = primary_provider or os.environ.get("LLM_DEFAULT_PROVIDER", "claude")
         raw_order = fallback_order or list(FALLBACK_ORDER)
         self._fallback_order = [self._primary] + [
             p for p in raw_order if p != self._primary
@@ -409,7 +415,7 @@ class TenantProviderRegistry:
                 tenant_id,
                 exc,
             )
-            default = os.environ.get("LLM_DEFAULT_PROVIDER", "gemini")
+            default = os.environ.get("LLM_DEFAULT_PROVIDER", "claude")
             return primary_override or default, fallback_override or list(FALLBACK_ORDER)
 
     async def load_from_db(self, tenant_id: str) -> ProviderContainer | None:
@@ -600,7 +606,7 @@ def _resolve_provider_chain(
             "[create_tracked_llm] ProviderContainer lookup failed for tenant=%s: %s",
             tenant_id, exc,
         )
-        primary = os.environ.get("LLM_DEFAULT_PROVIDER", "gemini")
+        primary = os.environ.get("LLM_DEFAULT_PROVIDER", "claude")
         return (
             primary,
             [primary] + [p for p in FALLBACK_ORDER if p != primary],
@@ -631,13 +637,13 @@ def create_tracked_llm(
         from app.core.config import settings as _s
         model_map = {
             "gemini": getattr(_s, "GEMINI_MODEL", "gemini-2.0-flash"),
-            "claude": getattr(_s, "ANTHROPIC_MODEL", "claude-sonnet-4-20250514"),
+            "claude": getattr(_s, "ANTHROPIC_MODEL", "claude-sonnet-4-5"),
             "openai": getattr(_s, "OPENAI_MODEL", "gpt-4o"),
         }
     except Exception:
         model_map = {
             "gemini": "gemini-2.0-flash",
-            "claude": "claude-sonnet-4-20250514",
+            "claude": "claude-sonnet-4-5",
             "openai": "gpt-4o",
         }
 
@@ -682,10 +688,27 @@ def create_tracked_llm(
                 )
             elif provider == "claude":
                 from langchain_anthropic import ChatAnthropic
-                llm = ChatAnthropic(model=model_name, api_key=api_key, **kwargs)
+                # Sprint F.1: normalize max_output_tokens (gemini convention)
+                # → max_tokens (anthropic/openai convention). Without this
+                # remap, ChatAnthropic raises TypeError and the chain falls
+                # through to the broken modelfarm proxy for Gemini.
+                claude_kwargs = {k: v for k, v in kwargs.items() if k != "max_output_tokens"}
+                if "max_output_tokens" in kwargs:
+                    claude_kwargs["max_tokens"] = kwargs["max_output_tokens"]
+                # Sprint F.1: route through modelfarm proxy when wrapper key
+                # is in use (AI_INTEGRATIONS_ANTHROPIC_API_KEY) — the proxy
+                # exchanges the wrapper for the real upstream key.
+                claude_base = _resolve_provider_base_url("claude")
+                if claude_base:
+                    claude_kwargs["base_url"] = claude_base
+                llm = ChatAnthropic(model=model_name, api_key=api_key, **claude_kwargs)
             else:  # openai
                 from langchain_openai import ChatOpenAI
-                llm = ChatOpenAI(model=model_name, api_key=api_key, **kwargs)
+                # Same normalization as claude — OpenAI also uses max_tokens.
+                openai_kwargs = {k: v for k, v in kwargs.items() if k != "max_output_tokens"}
+                if "max_output_tokens" in kwargs:
+                    openai_kwargs["max_tokens"] = kwargs["max_output_tokens"]
+                llm = ChatOpenAI(model=model_name, api_key=api_key, **openai_kwargs)
         except Exception as exc:
             tried.append(f"{provider}({type(exc).__name__})")
             logger.warning(

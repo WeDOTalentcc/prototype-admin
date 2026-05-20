@@ -45,13 +45,14 @@ from app.shared.services.tool_executor_service import (
     tool_executor_service,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/orchestrator", tags=["orchestrator"])
 
 
-class OrchestratorRequest(BaseModel):
+class OrchestratorRequest(WeDoBaseModel):
     """Request model for orchestrator endpoint."""
     user_id: str
     message: str
@@ -73,7 +74,7 @@ class OrchestratorResponse(BaseModel):
     error: str | None = None
 
 
-class ExecuteToolRequest(BaseModel):
+class ExecuteToolRequest(WeDoBaseModel):
     """Request model for tool execution endpoint."""
     tool_name: str
     parameters: dict[str, Any]

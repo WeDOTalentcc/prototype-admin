@@ -138,16 +138,28 @@ def decode_token(token: str) -> dict:
         InvalidIssuerError: iss incorreto (quando settings.JWT_ISSUER setado).
         JWTError: outras falhas (assinatura, formato, etc.).
     """
-    decode_kwargs: dict = {
-        "key": settings.SECRET_KEY,
+    # Sprint E.1 #26: dual-key rotation support (ADR-AUTH-001 / Option B).
+    # Try current SECRET_KEY first. On InvalidSignatureError, fall back to
+    # SECRET_KEY_LEGACY (when set). All other errors (expired, audience,
+    # issuer) bubble up immediately on the first attempt — they are not
+    # signature mismatches and should not retry.
+    decode_kwargs_common: dict = {
         "algorithms": [settings.ALGORITHM],
     }
     audience = getattr(settings, "JWT_AUDIENCE", None)
     issuer = getattr(settings, "JWT_ISSUER", None)
     if audience:
-        decode_kwargs["audience"] = audience
+        decode_kwargs_common["audience"] = audience
     if issuer:
-        decode_kwargs["issuer"] = issuer
+        decode_kwargs_common["issuer"] = issuer
 
-    payload = jwt.decode(token, **decode_kwargs)
-    return payload
+    try:
+        return jwt.decode(token, settings.SECRET_KEY, **decode_kwargs_common)
+    except jwt.InvalidSignatureError:
+        legacy = getattr(settings, "SECRET_KEY_LEGACY", None)
+        if not legacy:
+            raise
+        # Token may have been signed before the rotation window — try the
+        # previous key. If it also fails, the original InvalidSignatureError
+        # bubbles up unchanged for the caller.
+        return jwt.decode(token, legacy, **decode_kwargs_common)

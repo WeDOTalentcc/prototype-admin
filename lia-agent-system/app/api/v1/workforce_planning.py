@@ -17,6 +17,7 @@ from app.core.database import get_db
 from app.models.client_account import ClientAccount
 from app.shared.tenant_guard import get_verified_company_id
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/workforce-planning", tags=["workforce-planning"])
@@ -30,7 +31,7 @@ class DepartmentPlan(BaseModel):
     budget: float = Field(default=0.0, ge=0, description="Department budget")
 
 
-class WorkforcePlanCreate(BaseModel):
+class WorkforcePlanCreate(WeDoBaseModel):
     """Request model for creating a workforce plan."""
     name: str = Field(..., min_length=1, max_length=255, description="Plan name")
     year: int = Field(..., ge=2020, le=2100, description="Fiscal year")
@@ -40,7 +41,7 @@ class WorkforcePlanCreate(BaseModel):
     total_planned_hires: int = Field(default=0, ge=0, description="Total planned hires")
 
 
-class WorkforcePlanUpdate(BaseModel):
+class WorkforcePlanUpdate(WeDoBaseModel):
     """Request model for updating a workforce plan."""
     name: str | None = Field(None, min_length=1, max_length=255)
     year: int | None = Field(None, ge=2020, le=2100)

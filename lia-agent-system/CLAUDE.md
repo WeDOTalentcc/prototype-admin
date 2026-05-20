@@ -559,3 +559,85 @@ Padrão canônico para módulos em `app/shared/`:
 
 Histórico: drift bidirecional acumulado em 6 arquivos (R-005.2 cobre os 5 restantes em Wave 2).
 
+
+## Required env vars guard (R-006 / ADR-AUTH-001)
+
+Catches the class of bug we hit in 2026-05-20: `FIELD_ENCRYPTION_KEY` missing
+in the uvicorn process env → `get_current_user_or_demo` instantiates a `User`
+SQLAlchemy model with PII columns → Fernet `_get_fernet()` raises
+`EncryptionKeyMissingError` → HTTP 500 on the first request hitting auth fallback.
+
+**Princípio:** app MUST fail at startup, not at first request that needs the var.
+
+**Guide (feedforward):**
+- Required: `DATABASE_URL`, `SECRET_KEY` (≥32 chars RFC 7518), `FIELD_ENCRYPTION_KEY` (valid Fernet 44-char base64).
+- Optional but recommended dev: `IS_DEVELOPMENT=true`, `REDIS_URL`.
+- **Anti-pattern proibido:** `os.getenv("FIELD_ENCRYPTION_KEY", "")` ou `or "default"` — silent fallback destrói o sensor.
+
+**Sensor:** `scripts/check_required_env.py`
+- Roda em CI + startup entrypoint.
+- `--strict`: valida min_length + parseabilidade Fernet.
+- `--dotenv .env`: carrega .env antes de checar (Replit Secrets passam direto).
+- Mensagem de erro nomeia o var, o motivo, e o comando exato pra gerar valor válido.
+- **Achados ativos 2026-05-20**: `SECRET_KEY` tem 25 chars no .env (precisa ≥32). Tracked como follow-up (rotação requer re-login).
+
+## Schema drift detection (R-007 / ADR-MIGRATIONS-001)
+
+Catches the class of bug `calibration_weights.company_id does not exist`: model
+declara coluna, mas migration alembic nunca rodou ou nunca foi criada → query
+retorna `asyncpg.exceptions.UndefinedColumnError` em runtime.
+
+**Princípio:** parity model ↔ DB é verificada no boot/deploy, nunca lazy.
+
+**Guide (feedforward):**
+- Toda migration que adiciona coluna em tabela tenant-aware DEVE incluir `company_id` simultaneamente.
+- Deploy pipeline roda `alembic upgrade head` **antes** de `uvicorn`, com `--sql` dry-run em log para audit trail.
+- Multi-tenancy especial: coluna `company_id` em model SEM migration correspondente bloqueia deploy.
+
+**Sensor:** `scripts/check_schema_drift.py`
+- Compara `Base.metadata.tables` (lia_config.database) vs `inspect(engine)` da DB live.
+- Separa em "in_model_not_in_db" (missing migration) vs "in_db_not_in_model" (stale model).
+- Output JSON via `--json` para integração CI.
+- **Achados ativos 2026-05-20**: 196 drifts no codebase (116 missing migrations em 21 tables, 80 stale models em 18 tables). Sprint dedicado em follow-up.
+
+## Pydantic schemas single-source (R-008 / ADR-SCHEMAS-001)
+
+Cada feature tem **um** módulo canonical de schemas (ex:
+`app/api/v1/<feature>/calibration.py`). Duplicar nome de classe `BaseModel`
+entre arquivos é violação — causa silent contract bugs (divergem) ou dead
+code (idênticos).
+
+**Guide (feedforward):**
+- Antes de criar `class FooRequest(BaseModel)`, `grep -rn "class FooRequest" app/` — se existir, importe ou nomeie diferente (`FooRequestV2`, `FooContext`, etc).
+- Nome canônico espelha contrato Rails quando aplicável (`job_vacancy_id` > `vacancy_id`).
+- **Anti-pattern proibido:** classe `BaseModel` declarada em ≥2 arquivos com mesmos OU diferentes fields.
+
+**Sensor:** `scripts/check_duplicate_pydantic_schemas.py`
+- AST lint, <2s em codebase 181k LOC.
+- Distingue identical (= dead code, cleanup mecânico) de divergent (= silent contract bug grave).
+- Output otimizado pra LLM: path:line dos 2 sites, diff fields, ação corretiva (`rm class X from Y`).
+- **Achados ativos 2026-05-20**: 192 duplicates restantes (122 dead code + 75 divergent). Onda 1 limpou 5 Calibration* dead em `misc_search.py`. Follow-up prioriza 75 divergent (silent contract bugs em produção).
+
+## Wizard canonical endpoint (R-009 / ADR-WIZARD-001)
+
+Único path canônico de criação de vaga conversacional via REST:
+**`POST /api/v1/wizard/smart-orchestrate`** (`app/api/v1/wizard_smart_orchestrator.py:152`).
+
+**Mirrors the WS pattern** em `agent_chat_ws.py:1108` (canonical wizard via WebSocket). Mesmo `WizardSessionService.process_message()` + mesmo `JobCreationGraph` (12 stages: intake → jd_enrichment → bigfive → salary → competency → wsi_questions → eligibility → review → publish → calibration → handoff → done).
+
+**Dois modos** no SmartOrchestrateRequest, mutuamente exclusivos:
+
+1. **Normal turn** (default): `message` livre, handler chama `WizardSessionService.process_message(...)` → drives graph forward.
+
+2. **HITL gate resume**: `approval_decision: Literal["approved","rejected"]` + `pending_id: str` set juntos → handler chama `wizard_gate_service.resume_gate(...)` (mesma idempotência CAS + audit row do WS). `message` é ignorado neste modo.
+
+**Guide (feedforward):**
+- Pydantic validator pair guard: `approval_decision` e `pending_id` DEVEM ser ambos presentes ou ambos ausentes. Validation message nomeia ambos os fields + as 2 ações válidas para self-correction LLM-readable.
+- Frontend `plataforma-lia/src/services/chat-api.ts:188` (`orchestrateWizardMessage`) envia os 3 fields HITL (`approval_decision`, `pending_id`, `approval_comment`) quando user clica Aprovar/Rejeitar no painel.
+- **Anti-pattern proibido:** chamar `JobWizardGraph` em `app/domains/job_management/agents/job_wizard_graph.py` (motor legacy, Task #1085 remove a classe inteira). Canonical é `JobCreationGraph` em `app/domains/job_creation/graph.py`.
+
+**Sensor:** `tests/integration/test_wizard_hitl_approval_rest.py`
+- 3 cenários: HITL invoca `resume_gate` (not `process_message`), Pydantic guard 422, ValueError → HTTP 200 estruturado (never 500).
+- TestClient + AsyncMock têm flakiness ocasional por event-loop cleanup; follow-up migrar pra `httpx.AsyncClient`.
+
+**Endpoint legacy deprecado:** `POST /chat/message` com `domain="wizard"` retornava `internal_error` por NameErrors em helpers nunca implementados. Aposentado pelo refactor 2026-05-20. Frontend nunca chamou esse path.

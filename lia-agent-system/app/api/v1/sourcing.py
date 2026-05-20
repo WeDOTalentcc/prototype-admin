@@ -25,13 +25,14 @@ from app.domains.sourcing.services.query_builders import (
 from app.models.candidate import Candidate
 from app.models.job_vacancy import JobVacancy
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/sourcing", tags=["sourcing"])
 
 
-class SourcingSearchRequest(BaseModel):
+class SourcingSearchRequest(WeDoBaseModel):
     """Request for candidate sourcing search."""
     query: str | None = Field(None, description="Free text search query")
     title: str | None = Field(None, description="Job title to search")
@@ -59,7 +60,7 @@ class SourcingSearchResponse(BaseModel):
     search_time_ms: int = 0
 
 
-class MatchCandidatesRequest(BaseModel):
+class MatchCandidatesRequest(WeDoBaseModel):
     """Request to match candidates against job requirements."""
     job_id: str = Field(..., description="Job ID to match against")
     candidate_ids: list[str] = Field(default_factory=list, description="Specific candidate IDs to evaluate")
@@ -100,7 +101,7 @@ class SuggestionResponse(BaseModel):
     criteria_used: dict[str, Any]
 
 
-class BooleanQueryRequest(BaseModel):
+class BooleanQueryRequest(WeDoBaseModel):
     """Request to generate boolean search query."""
     title: str | None = Field(None, description="Job title")
     skills: list[str] = Field(default_factory=list, description="Required skills")
@@ -119,7 +120,7 @@ class BooleanQueryResponse(BaseModel):
     synonyms_expanded: list[dict[str, Any]] = Field(default_factory=list)
 
 
-class ProactiveSuggestRequest(BaseModel):
+class ProactiveSuggestRequest(WeDoBaseModel):
     """Request to trigger proactive suggestions."""
     job_id: str = Field(..., description="Job ID for suggestions")
     trigger: str = Field(default="manual", description="Trigger type: new_job, manual, scheduled")

@@ -9,6 +9,7 @@ from enum import Enum, StrEnum
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class SuggestionSource(StrEnum):
@@ -247,7 +248,7 @@ class EnrichedJobDescription(BaseModel):
         }
 
 
-class EnrichmentRequest(BaseModel):
+class EnrichmentRequest(WeDoBaseModel):
     """Request para enriquecimento de Job Description."""
     company_id: str
     job_draft_id: str | None = None
@@ -279,7 +280,7 @@ class EnrichmentResponse(BaseModel):
     error: str | None = None
 
 
-class SuggestionAcceptanceRequest(BaseModel):
+class SuggestionAcceptanceRequest(WeDoBaseModel):
     """Request para aceitar/rejeitar sugestões."""
     job_draft_id: str
     accepted_suggestion_ids: list[str] = Field(default_factory=list)

@@ -22,6 +22,7 @@ from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 try:
     from twilio.base.exceptions import TwilioRestException
@@ -47,7 +48,7 @@ class WhatsAppStatus(StrEnum):
     UNDELIVERED = "undelivered"
 
 
-class SendWhatsAppRequest(BaseModel):
+class SendWhatsAppRequest(WeDoBaseModel):
     """Request model for sending WhatsApp messages."""
     to_phone: str = Field(..., description="Recipient phone number (with country code)")
     message: str = Field(..., description="Message text")
@@ -66,7 +67,7 @@ class SendWhatsAppRequest(BaseModel):
         }
 
 
-class SendWhatsAppTemplateRequest(BaseModel):
+class SendWhatsAppTemplateRequest(WeDoBaseModel):
     """Request model for sending template-based WhatsApp messages."""
     to_phone: str = Field(..., description="Recipient phone number")
     template_name: str = Field(..., description="Template name from WhatsAppTemplates")
@@ -95,7 +96,7 @@ class InteractiveButton(BaseModel):
     title: str = Field(..., description="Button text (max 20 chars)")
 
 
-class SendInteractiveRequest(BaseModel):
+class SendInteractiveRequest(WeDoBaseModel):
     """Request model for interactive WhatsApp messages with buttons."""
     to_phone: str = Field(..., description="Recipient phone number")
     header: str | None = Field(None, description="Message header")

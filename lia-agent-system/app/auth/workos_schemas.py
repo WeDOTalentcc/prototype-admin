@@ -6,6 +6,7 @@ from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
+from app.shared.types import WeDoBaseModel
 
 
 class WorkOSSyncUser(BaseModel):
@@ -122,7 +123,7 @@ class WorkOSGroupRoleMappingResponse(BaseModel):
         from_attributes = True
 
 
-class SSOAuditLogCreate(BaseModel):
+class SSOAuditLogCreate(WeDoBaseModel):
     """Schema for creating SSO Audit Log entries."""
     company_id: str
     event_type: str = Field(..., description="Event type: sso.login, scim.user.created, scim.user.updated, scim.user.deleted, scim.group.created, scim.group.updated, scim.group.deleted, scim.group.user_added, scim.group.user_removed")

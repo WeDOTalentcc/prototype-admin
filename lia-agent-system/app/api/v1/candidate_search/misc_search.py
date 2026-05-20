@@ -23,18 +23,9 @@ from app.shared.security.require_company_id import require_company_id
 
 router = APIRouter()
 
-class CVSearchResultDTO(BaseModel):
-    """Result from CV-based search."""
-    parsed_cv: dict
-    query_generated: str
-    candidates: list[CandidateSearchResultDTO] = Field(default_factory=list)
-    local_count: int = 0
-    pearch_count: int = 0
-    total_count: int = 0
-    credits_remaining: int | None = None
-    search_time_seconds: float | None = None
-    extracted_skills: list[str] = Field(default_factory=list)
-    extracted_title: str | None = None
+# Sprint F.3 #25 canonical-fix: CVSearchResultDTO moved to api/v1/candidate_search/archetypes.py
+from app.api.v1.candidate_search.archetypes import CVSearchResultDTO  # noqa: F401  (re-export for backward compat)
+from app.shared.types import WeDoBaseModel
 
 
 @router.post("/from-cv", response_model=CVSearchResultDTO)
@@ -147,7 +138,7 @@ company_id: str = Depends(require_company_id)):
 # SEARCH ANALYTICS ENDPOINT - Proactive analysis of search results
 # ============================================================================
 
-class AnalyzeSearchRequest(BaseModel):
+class AnalyzeSearchRequest(WeDoBaseModel):
     """Request para análise de resultados de busca."""
     candidates: list[dict[str, Any]] = Field(..., description="Lista de candidatos para analisar")
     search_criteria: dict[str, Any] | None = Field(None, description="Critérios de busca opcionais")
@@ -273,7 +264,7 @@ async def analyze_search_results(request: AnalyzeSearchRequest, company_id: str 
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
 
-class EnhancePromptRequest(BaseModel):
+class EnhancePromptRequest(WeDoBaseModel):
     """Request para aprimorar prompt de busca."""
     query: str = Field(..., description="Query original do usuário")
     context: dict[str, Any] | None = Field(None, description="Contexto adicional (vaga, filtros, etc)")
@@ -405,26 +396,12 @@ Responda APENAS com o JSON, sem texto adicional."""
         )
 
 
-class VacancyGoalRequest(BaseModel):
-    """Request para verificar meta da vaga."""
-    vacancy_id: str = Field(..., description="ID da vaga")
-    current_count: int = Field(..., ge=0, description="Contagem atual de candidatos")
-    target_min: int = Field(50, ge=1, description="Meta mínima")
-    target_max: int = Field(70, ge=1, description="Meta máxima")
+# Sprint F.3 #25 canonical-fix: VacancyGoalRequest moved to api/v1/candidate_search/calibration.py
+from app.api.v1.candidate_search.calibration import VacancyGoalRequest  # noqa: F401  (re-export for backward compat)
 
 
-class VacancyGoalResponse(BaseModel):
-    """Response da verificação de meta."""
-    status: str
-    vacancy_id: str
-    current_count: int
-    target_range: list[int]
-    deficit: int
-    surplus: int
-    progress_percentage: int
-    recommendation: str
-    message: str
-    suggested_actions: list[dict[str, Any]]
+# Sprint F.3 #25 canonical-fix: VacancyGoalResponse moved to api/v1/candidate_search/calibration.py
+from app.api.v1.candidate_search.calibration import VacancyGoalResponse  # noqa: F401  (re-export for backward compat)
 
 
 

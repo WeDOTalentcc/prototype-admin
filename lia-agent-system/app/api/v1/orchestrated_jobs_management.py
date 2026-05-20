@@ -31,6 +31,7 @@ from app.orchestrator.action_executor import (
 from app.orchestrator.pending_action import PendingActionState, pending_action_store
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +72,7 @@ _JOBS_MGMT_ACTION_KEYWORDS: dict[str, list[str]] = {
 }
 
 
-class OrchestratedJobsManagementRequest(BaseModel):
+class OrchestratedJobsManagementRequest(WeDoBaseModel):
     message: str = Field(..., description="User's natural language query")
     jobs_context: dict[str, Any] = Field(
         default_factory=dict,
@@ -89,7 +90,6 @@ class OrchestratedJobsManagementRequest(BaseModel):
     action: str | None = Field(None, description="Pre-detected action/intent from frontend")
     user_id: str | None = Field(default="recruiter", description="User ID")
     conversation_id: str | None = Field(None, description="Conversation ID for multi-turn context")
-    company_id: str = Field(default="", description="Tenant company ID for multi-tenancy isolation")
 
 
 class OrchestratedJobsManagementResponse(BaseModel):
@@ -354,7 +354,7 @@ async def orchestrated_jobs_management(request: OrchestratedJobsManagementReques
             agent_input = ReactAgentInput(
                 message=request.message,
                 session_id=conv_id,
-                company_id=request.company_id,
+                company_id=company_id,
                 user_id=request.user_id or "recruiter",
                 context={
                     "jobs_context": request.jobs_context,

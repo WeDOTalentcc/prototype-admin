@@ -16,13 +16,14 @@ from app.domains.goals.dependencies import get_goals_repo
 from app.domains.goals.repositories.goals_repository import GoalsRepository
 from app.models.goal import Goal
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/goals", tags=["goals"])
 
 
-class GoalCreate(BaseModel):
+class GoalCreate(WeDoBaseModel):
     user_id: str
     template_id: str | None = None
     name: str
@@ -35,10 +36,9 @@ class GoalCreate(BaseModel):
     start_date: datetime | None = None
     end_date: datetime | None = None
     is_custom: bool = False
-    company_id: uuid.UUID | None = None
 
 
-class GoalUpdate(BaseModel):
+class GoalUpdate(WeDoBaseModel):
     name: str | None = None
     description: str | None = None
     target: float | None = None
@@ -76,14 +76,13 @@ class GoalResponse(BaseModel):
         from_attributes = True
 
 
-class GoalTemplateCreate(BaseModel):
+class GoalTemplateCreate(WeDoBaseModel):
     name: str
     description: str | None = None
     category: str = "recruitment"
     default_target: float
     unit: str | None = None
     period: str = "monthly"
-    company_id: uuid.UUID | None = None
 
 
 class GoalTemplateResponse(BaseModel):

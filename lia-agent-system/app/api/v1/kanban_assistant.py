@@ -11,13 +11,14 @@ from pydantic import BaseModel, Field
 from app.domains.recruiter_assistant.services.kanban_assistant_service import kanban_assistant_service
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
 
-class KanbanAssistantRequest(BaseModel):
+class KanbanAssistantRequest(WeDoBaseModel):
     """Request model for Kanban Assistant."""
     command: str = Field(..., description="User's natural language command")
     command_type: str | None = Field(None, description="Pre-detected command type (rankear, funil, etc.)")

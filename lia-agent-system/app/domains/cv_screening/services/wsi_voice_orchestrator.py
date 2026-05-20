@@ -27,6 +27,7 @@ from app.domains.cv_screening.services.wsi_service import (
     WSIResult,
     wsi_service,
 )
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ def get_event_dispatcher():
     return _event_dispatcher
 
 
-class VoiceScreeningRequest(BaseModel):
+class VoiceScreeningRequest(WeDoBaseModel):
     """Request model for starting voice screening."""
     candidate_id: str
     job_vacancy_id: str

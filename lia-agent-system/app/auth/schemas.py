@@ -6,6 +6,7 @@ from enum import Enum, StrEnum
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
+from app.shared.types import WeDoBaseModel
 
 
 class UserRole(StrEnum):
@@ -15,7 +16,7 @@ class UserRole(StrEnum):
     viewer = "viewer"
 
 
-class UserCreate(BaseModel):
+class UserCreate(WeDoBaseModel):
     """Schema for user registration."""
     email: EmailStr
     password: str = Field(..., min_length=8, description="Password must be at least 8 characters")
@@ -58,7 +59,7 @@ class TokenRefresh(BaseModel):
     refresh_token: str
 
 
-class TokenPayload(BaseModel):
+class TokenPayload(WeDoBaseModel):
     """Schema for JWT token payload."""
     sub: str
     exp: datetime
@@ -66,7 +67,7 @@ class TokenPayload(BaseModel):
     role: str | None = None
 
 
-class UserUpdate(BaseModel):
+class UserUpdate(WeDoBaseModel):
     """Schema for updating a user."""
     email: EmailStr | None = None
     name: str | None = Field(None, min_length=2, max_length=255)
@@ -74,7 +75,7 @@ class UserUpdate(BaseModel):
     is_active: bool | None = None
 
 
-class UserManagementCreate(BaseModel):
+class UserManagementCreate(WeDoBaseModel):
     """Schema for creating users from admin panel."""
     email: EmailStr
     name: str = Field(..., min_length=2, max_length=255)
@@ -100,7 +101,7 @@ class UserManagementResponse(BaseModel):
         from_attributes = True
 
 
-class UserManagementUpdate(BaseModel):
+class UserManagementUpdate(WeDoBaseModel):
     """Schema for updating a user from admin panel."""
     email: EmailStr | None = None
     name: str | None = Field(None, min_length=2, max_length=255)
@@ -110,7 +111,7 @@ class UserManagementUpdate(BaseModel):
     permissions: list[str] | None = None
 
 
-class ProfileUpdate(BaseModel):
+class ProfileUpdate(WeDoBaseModel):
     """Schema for user updating their own profile."""
     name: str | None = Field(None, min_length=2, max_length=255)
     avatar_url: str | None = Field(None, max_length=1024)
@@ -122,7 +123,7 @@ class PasswordChange(BaseModel):
     new_password: str = Field(..., min_length=8, description="New password must be at least 8 characters")
 
 
-class PasswordResetRequest(BaseModel):
+class PasswordResetRequest(WeDoBaseModel):
     """Schema for password reset request."""
     email: EmailStr
 
@@ -133,7 +134,7 @@ class PasswordResetConfirm(BaseModel):
     new_password: str = Field(..., min_length=8, description="New password must be at least 8 characters")
 
 
-class EmailVerificationRequest(BaseModel):
+class EmailVerificationRequest(WeDoBaseModel):
     """Schema for email verification."""
     token: str
 

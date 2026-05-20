@@ -24,6 +24,7 @@ from ._shared import (
     logger,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter()
 
@@ -51,7 +52,7 @@ class ArchetypeListResponse(BaseModel):
     default_count: int
 
 
-class ArchetypeCreateRequest(BaseModel):
+class ArchetypeCreateRequest(WeDoBaseModel):
     """Request to create a new archetype."""
     id: str | None = Field(None, description="ID único, gerado automaticamente se não fornecido")
     name: str = Field(..., min_length=2, max_length=100)
@@ -64,7 +65,7 @@ class ArchetypeCreateRequest(BaseModel):
     seniority: str | None = None
 
 
-class ArchetypeUpdateRequest(BaseModel):
+class ArchetypeUpdateRequest(WeDoBaseModel):
     """Request to update an existing archetype."""
     name: str | None = Field(None, min_length=2, max_length=100)
     description: str | None = None
@@ -77,7 +78,7 @@ class ArchetypeUpdateRequest(BaseModel):
     is_active: bool | None = None
 
 
-class ArchetypeSearchRequest(BaseModel):
+class ArchetypeSearchRequest(WeDoBaseModel):
     """Request to search using an archetype."""
     search_local: bool = Field(True, description="Buscar no banco local")
     search_pearch: bool = Field(True, description="Buscar na Pearch AI")
@@ -359,7 +360,7 @@ class ClosedJobSuggestionsResponse(BaseModel):
     total: int = 0
 
 
-class ArchetypeFromDescriptionRequest(BaseModel):
+class ArchetypeFromDescriptionRequest(WeDoBaseModel):
     """Request para criar arquétipo a partir de descrição."""
     description: str = Field(..., min_length=20, description="Descrição do perfil ideal")
     name: str | None = Field(None, description="Nome do arquétipo (opcional, será gerado se não fornecido)")
@@ -1094,7 +1095,7 @@ company_id: str = Depends(require_company_id)):
 # ARCHETYPE GENERATION FROM JOB VACANCY - Create archetype from closed job
 # ============================================================================
 
-class ArchetypeGenerationRequest(BaseModel):
+class ArchetypeGenerationRequest(WeDoBaseModel):
     """Request to generate an archetype from a closed job vacancy."""
     job_id: int = Field(..., description="ID da vaga fechada")
     name: str | None = Field(None, description="Nome personalizado para o arquétipo (opcional, será gerado se não fornecido)")
@@ -1276,7 +1277,7 @@ Responda APENAS com o JSON, sem explicações adicionais."""
         raise HTTPException(status_code=500, detail=f"Falha ao gerar arquétipo: {str(e)}")
 
 
-class ArchetypeFromDescriptionRequest(BaseModel):
+class ArchetypeFromDescriptionRequest(WeDoBaseModel):
     """Request to generate an archetype from a text description."""
     description: str = Field(..., min_length=20, description="Descrição textual do perfil ideal")
     name: str | None = Field(None, description="Nome personalizado para o arquétipo")
@@ -1404,13 +1405,13 @@ class ClosedJobSuggestionDTO(BaseModel):
     has_hired_data: bool = False
 
 
-class ClosedJobSuggestionsResponse(BaseModel):
+class ClosedJobsSuggestionsResponse(BaseModel):
     """Response with list of closed jobs that can be used to create archetypes."""
     jobs: list[ClosedJobSuggestionDTO]
     total: int
 
 
-@router.get("/archetypes/suggestions", response_model=ClosedJobSuggestionsResponse)
+@router.get("/archetypes/suggestions", response_model=ClosedJobsSuggestionsResponse)
 async def get_archetype_suggestions(
     db: AsyncSession = Depends(get_db),
     limit: int = Query(10, ge=1, le=50), 
@@ -1451,7 +1452,7 @@ company_id: str = Depends(require_company_id)):
         
         suggestions.sort(key=lambda x: (not x.has_hired_data, x.closed_at or ""))
         
-        return ClosedJobSuggestionsResponse(
+        return ClosedJobsSuggestionsResponse(
             jobs=suggestions,
             total=len(suggestions)
         )

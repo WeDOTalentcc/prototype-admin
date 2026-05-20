@@ -30,23 +30,24 @@ from app.schemas.shared_search import (
     ShareChannel,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
 
-class UpdateSharedSearchRequest(BaseModel):
+class UpdateSharedSearchRequest(WeDoBaseModel):
     status: str | None = None
     expires_at: datetime | None = None
     description: str | None = None
 
 
-class ResendInviteRequest(BaseModel):
+class ResendInviteRequest(WeDoBaseModel):
     email: EmailStr
 
 
-class AddToJobRequest(BaseModel):
+class AddToJobRequest(WeDoBaseModel):
     job_id: str
     candidate_ids: list[str] | None = None
     all_approved: bool = False

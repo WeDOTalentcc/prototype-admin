@@ -16,6 +16,7 @@ from ._shared import (
     logger,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter()
 
@@ -31,7 +32,7 @@ VALID_SECTION_IDS = ["company-profile", "benefits", "culture", "departments", "d
 VALID_SECTION_STATUSES = ["complete", "partial", "pending"]
 
 
-class SetupSectionUpdate(BaseModel):
+class SetupSectionUpdate(WeDoBaseModel):
     """Request model for updating a setup section."""
     status: str | None = Field(None, description="Section status: complete, partial, pending")
     progress: int | None = Field(None, ge=0, le=100)

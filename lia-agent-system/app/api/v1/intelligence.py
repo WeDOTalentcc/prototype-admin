@@ -14,6 +14,7 @@ from app.auth.models import User
 from app.core.database import get_db
 from app.shared.services.intelligence_layer_service import intelligence_layer_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -30,13 +31,13 @@ class DataQualityResponse(BaseModel):
     recommendations: list[str] = Field(default_factory=list)
 
 
-class IntelligenceContextRequest(BaseModel):
+class IntelligenceContextRequest(WeDoBaseModel):
     role: str | None = None
     seniority: str | None = None
     department: str | None = None
 
 
-class PatternAdjustmentRequest(BaseModel):
+class PatternAdjustmentRequest(WeDoBaseModel):
     field: str
     value: Any
     seniority: str | None = None

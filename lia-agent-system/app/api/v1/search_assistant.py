@@ -23,6 +23,7 @@ from app.core.taxonomy import (
     JOB_TITLES_TAXONOMY as TAXONOMY_JOB_TITLES,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -336,7 +337,7 @@ company_id: str = Depends(require_company_id)):
     )
 
 
-class AnalyzeRequest(BaseModel):
+class AnalyzeRequest(WeDoBaseModel):
     query: str = Field(..., description="Texto da busca")
     entities: dict[str, Any] = Field(default_factory=dict, description="Entidades parseadas")
 

@@ -5,6 +5,7 @@ from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class RuleTypeEnum(StrEnum):
@@ -44,7 +45,7 @@ class PolicyEvaluationResultEnum(StrEnum):
     RATE_LIMITED = "rate_limited"
 
 
-class BusinessRuleCreate(BaseModel):
+class BusinessRuleCreate(WeDoBaseModel):
     """Schema for creating a business rule."""
     name: str = Field(..., min_length=1, max_length=255)
     description: str | None = None
@@ -55,10 +56,9 @@ class BusinessRuleCreate(BaseModel):
     approval_config: dict[str, Any] | None = None
     is_active: bool = True
     rule_metadata: dict[str, Any] | None = None
-    company_id: str | None = None
 
 
-class BusinessRuleUpdate(BaseModel):
+class BusinessRuleUpdate(WeDoBaseModel):
     """Schema for updating a business rule."""
     name: str | None = Field(None, min_length=1, max_length=255)
     description: str | None = None
@@ -92,7 +92,7 @@ class BusinessRuleResponse(BaseModel):
         from_attributes = True
 
 
-class RateLimitRuleCreate(BaseModel):
+class RateLimitRuleCreate(WeDoBaseModel):
     """Schema for creating a rate limit rule."""
     name: str = Field(..., min_length=1, max_length=255)
     description: str | None = None
@@ -103,10 +103,9 @@ class RateLimitRuleCreate(BaseModel):
     window_seconds: int = Field(..., ge=1)
     burst_limit: int | None = None
     is_active: bool = True
-    company_id: str | None = None
 
 
-class RateLimitRuleUpdate(BaseModel):
+class RateLimitRuleUpdate(WeDoBaseModel):
     """Schema for updating a rate limit rule."""
     name: str | None = Field(None, min_length=1, max_length=255)
     description: str | None = None
@@ -141,7 +140,7 @@ class RateLimitRuleResponse(BaseModel):
         from_attributes = True
 
 
-class EscalationRuleCreate(BaseModel):
+class EscalationRuleCreate(WeDoBaseModel):
     """Schema for creating an escalation rule."""
     name: str = Field(..., min_length=1, max_length=255)
     description: str | None = None
@@ -153,10 +152,9 @@ class EscalationRuleCreate(BaseModel):
     cooldown_seconds: int = Field(default=3600, ge=0)
     priority: int = Field(default=100, ge=1, le=1000)
     is_active: bool = True
-    company_id: str | None = None
 
 
-class EscalationRuleUpdate(BaseModel):
+class EscalationRuleUpdate(WeDoBaseModel):
     """Schema for updating an escalation rule."""
     name: str | None = Field(None, min_length=1, max_length=255)
     description: str | None = None
@@ -192,12 +190,11 @@ class EscalationRuleResponse(BaseModel):
         from_attributes = True
 
 
-class PolicyEvaluateRequest(BaseModel):
+class PolicyEvaluateRequest(WeDoBaseModel):
     """Schema for policy evaluation request."""
     action: str = Field(..., min_length=1)
     context: dict[str, Any] = Field(default_factory=dict)
     agent_name: str | None = None
-    company_id: str | None = None
     user_id: str | None = None
     check_rate_limit: bool = True
     dry_run: bool = False
@@ -216,12 +213,11 @@ class PolicyEvaluateResponse(BaseModel):
     rules_evaluated: int
 
 
-class RateLimitCheckRequest(BaseModel):
+class RateLimitCheckRequest(WeDoBaseModel):
     """Schema for rate limit check request."""
     target_type: TargetTypeEnum
     target_id: str
     action: str
-    company_id: str | None = None
     increment: bool = True
 
 
@@ -236,12 +232,11 @@ class RateLimitCheckResponse(BaseModel):
     rule_name: str | None = None
 
 
-class EscalationTriggerRequest(BaseModel):
+class EscalationTriggerRequest(WeDoBaseModel):
     """Schema for escalation trigger request."""
     rule_id: str | None = None
     trigger_type: TriggerTypeEnum | None = None
     context: dict[str, Any] = Field(default_factory=dict)
-    company_id: str | None = None
 
 
 class EscalationTriggerResponse(BaseModel):

@@ -18,6 +18,7 @@ from app.auth.models import User
 from app.core.database import get_db
 from app.shared.services.learning_hub_service import learning_hub_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -28,8 +29,7 @@ router = APIRouter(prefix="/lia", tags=["lia-learning"])
 # Pydantic schemas
 # ---------------------------------------------------------------------------
 
-class SkillConfirmationRequest(BaseModel):
-    company_id: str
+class SkillConfirmationRequest(WeDoBaseModel):
     skill_name: str
     skill_type: str = "technical"
     role: str | None = None
@@ -46,8 +46,7 @@ class SkillConfirmationResponse(BaseModel):
     message: str
 
 
-class ResponsibilityConfirmationRequest(BaseModel):
-    company_id: str
+class ResponsibilityConfirmationRequest(WeDoBaseModel):
     description: str
     category: str | None = None
     role: str | None = None
@@ -64,8 +63,7 @@ class ResponsibilityConfirmationResponse(BaseModel):
     message: str
 
 
-class LearningContextRequest(BaseModel):
-    company_id: str
+class LearningContextRequest(WeDoBaseModel):
     role: str | None = None
     seniority: str | None = None
 
@@ -84,8 +82,7 @@ class JobOutcomeType(StrEnum):
     REPOSTED = "reposted"
 
 
-class JobOutcomeRequest(BaseModel):
-    company_id: str
+class JobOutcomeRequest(WeDoBaseModel):
     job_id: UUID
     outcome: JobOutcomeType
     time_to_fill_days: int | None = None
@@ -116,8 +113,7 @@ class JobOutcomeResponse(BaseModel):
     error: str | None = None
 
 
-class OutcomeInsightsRequest(BaseModel):
-    company_id: str
+class OutcomeInsightsRequest(WeDoBaseModel):
     role: str | None = None
     seniority: str | None = None
 
@@ -135,8 +131,7 @@ class OutcomeInsightsResponse(BaseModel):
     error: str | None = None
 
 
-class StageFeedbackRequest(BaseModel):
-    company_id: str
+class StageFeedbackRequest(WeDoBaseModel):
     stage_number: int
     field_name: str
     suggested_value: Any | None = None
@@ -160,8 +155,8 @@ class StageFeedbackResponse(BaseModel):
     error: str | None = None
 
 
-class LearningDashboardRequest(BaseModel):
-    company_id: str
+class LearningDashboardRequest(WeDoBaseModel):
+    pass
 
 
 class LearningDashboardResponse(BaseModel):
@@ -173,8 +168,7 @@ class LearningDashboardResponse(BaseModel):
     error: str | None = None
 
 
-class SkillsDeduplicatedRequest(BaseModel):
-    company_id: str
+class SkillsDeduplicatedRequest(WeDoBaseModel):
     role: str | None = None
     exclude_already_selected: list[str] | None = None
 
@@ -425,7 +419,7 @@ company_id: str = Depends(require_company_id)) -> LearningDashboardResponse:
     try:
         dashboard = await learning_hub_service.get_learning_dashboard(
             db=db,
-            company_id=request.company_id
+            company_id=company_id
         )
         return LearningDashboardResponse(
             summary=dashboard.get("summary"),

@@ -24,6 +24,7 @@ from app.auth.dependencies import get_current_user
 from app.core.database import get_db
 from lia_models.agent_template import AgentTemplate, AgentTemplateStatus
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter()
 
@@ -40,7 +41,7 @@ ALLOWED_DOMAINS = [
 
 # ── Schemas ───────────────────────────────────────────────────────────────────
 
-class AgentTemplateCreate(BaseModel):
+class AgentTemplateCreate(WeDoBaseModel):
     name: str = Field(..., min_length=3, max_length=500)
     domain: str = Field(..., description=f"Um de: {ALLOWED_DOMAINS}")
     system_prompt_yaml: str = Field(..., min_length=50, description="System prompt em formato YAML")

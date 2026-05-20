@@ -8,6 +8,7 @@ from datetime import date, datetime
 from enum import Enum, StrEnum
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class ChurnRiskEnum(StrEnum):
@@ -290,7 +291,7 @@ class PlatformAggregateMetrics(BaseModel):
         }
 
 
-class SaasMetricsUpdate(BaseModel):
+class SaasMetricsUpdate(WeDoBaseModel):
     """Schema for updating SaaS metrics."""
     mrr: float | None = Field(None, alias="mrr")
     arr: float | None = Field(None, alias="arr")
@@ -306,7 +307,7 @@ class SaasMetricsUpdate(BaseModel):
         populate_by_name = True
 
 
-class UsageMetricsUpdate(BaseModel):
+class UsageMetricsUpdate(WeDoBaseModel):
     """Schema for updating usage metrics."""
     ai_credits_used: int | None = Field(None, alias="aiCreditsUsed")
     ai_credits_limit: int | None = Field(None, alias="aiCreditsLimit")
@@ -321,7 +322,7 @@ class UsageMetricsUpdate(BaseModel):
         populate_by_name = True
 
 
-class HealthMetricsUpdate(BaseModel):
+class HealthMetricsUpdate(WeDoBaseModel):
     """Schema for updating health metrics."""
     churn_risk: str | None = Field(None, alias="churnRisk")
     health_score: int | None = Field(None, ge=0, le=100, alias="healthScore")

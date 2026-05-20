@@ -15,25 +15,26 @@ from pydantic import BaseModel
 from app.domains.analytics.services.wizard_analytics_service import wizard_analytics_service
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter(prefix="/wizard-analytics", tags=["Wizard Analytics"])
 logger = logging.getLogger(__name__)
 
 
-class StartSessionRequest(BaseModel):
+class StartSessionRequest(WeDoBaseModel):
     """Request to start a wizard session."""
     session_id: str
     company_id: str
     recruiter_id: str
 
 
-class StageChangeRequest(BaseModel):
+class StageChangeRequest(WeDoBaseModel):
     """Request to track stage change."""
     session_id: str
     stage: str
 
 
-class FieldUpdateRequest(BaseModel):
+class FieldUpdateRequest(WeDoBaseModel):
     """Request to track field update."""
     session_id: str
     field: str
@@ -42,14 +43,14 @@ class FieldUpdateRequest(BaseModel):
     new_value: str | None = None
 
 
-class SuggestionTrackRequest(BaseModel):
+class SuggestionTrackRequest(WeDoBaseModel):
     """Request to track suggestion."""
     session_id: str
     suggestion_type: str
     accepted: bool
 
 
-class CompleteSessionRequest(BaseModel):
+class CompleteSessionRequest(WeDoBaseModel):
     """Request to complete a session."""
     session_id: str
     job_id: str | None = None

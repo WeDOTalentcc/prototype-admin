@@ -9,6 +9,7 @@ from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class RequirementPriorityEnum(StrEnum):
@@ -33,7 +34,7 @@ class EvidenceType(StrEnum):
     INFERRED = "inferred"
 
 
-class JobRequirementCreate(BaseModel):
+class JobRequirementCreate(WeDoBaseModel):
     """Schema for creating a job requirement."""
     requirement: str = Field(..., min_length=1, max_length=500)
     description: str | None = None
@@ -114,7 +115,7 @@ class RubricEvaluationResponse(BaseModel):
         from_attributes = True
 
 
-class EvaluateCandidateRequest(BaseModel):
+class EvaluateCandidateRequest(WeDoBaseModel):
     """Request to evaluate a single candidate against job requirements."""
     candidate_id: UUID
     job_vacancy_id: UUID
@@ -123,7 +124,7 @@ class EvaluateCandidateRequest(BaseModel):
     save_result: bool = Field(True, description="Whether to persist the evaluation result")
 
 
-class BatchEvaluateRequest(BaseModel):
+class BatchEvaluateRequest(WeDoBaseModel):
     """Request to evaluate multiple candidates against job requirements."""
     candidate_ids: list[UUID] = Field(..., min_length=1, max_length=100)
     job_vacancy_id: UUID

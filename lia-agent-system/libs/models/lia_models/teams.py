@@ -17,6 +17,10 @@ class TeamsConversation(Base):
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
+    # Multi-tenancy scope (ADR-LGPD-001). Sprint F.3 #43 follow-up: model parity with DB column from migration 097.
+    # Nullable in DB (legacy rows pre-migration 097); RLS policy already enforces (company_id IS NULL OR company_id = current).
+    company_id = Column(String(255), nullable=True, index=True)
+    
     # Teams identifiers
     conversation_id = Column(String(255), nullable=False, unique=True, index=True)
     service_url = Column(String(500), nullable=False)

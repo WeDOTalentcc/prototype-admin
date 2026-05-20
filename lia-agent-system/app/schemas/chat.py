@@ -5,9 +5,10 @@ from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
-class MessageCreate(BaseModel):
+class MessageCreate(WeDoBaseModel):
     """Request to create a new message."""
     content: str = Field(..., min_length=1, max_length=10000)
     conversation_id: str | None = None

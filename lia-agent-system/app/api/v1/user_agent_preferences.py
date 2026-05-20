@@ -20,6 +20,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.database import get_db
 from app.shared.services.user_agent_preference_service import UserAgentPreferenceService
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ router = APIRouter(prefix="/user-preferences/agent", tags=["user-preferences"])
 # Schemas
 # ---------------------------------------------------------------------------
 
-class PreferenceUpsertRequest(BaseModel):
+class PreferenceUpsertRequest(WeDoBaseModel):
     user_id: str
     company_id: str
     domain: str

@@ -29,6 +29,7 @@ from app.schemas.calendar import (
     TimeSlot,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -251,8 +252,7 @@ def check_google_calendar_configured():
         )
 
 
-class GoogleScheduleInterviewRequest(BaseModel):
-    company_id: str = Field(..., description="Company ID (tenant)")
+class GoogleScheduleInterviewRequest(WeDoBaseModel):
     attendees: list[str] = Field(..., description="Attendee email addresses")
     organizer_email: str = Field(..., description="Organizer / calendar owner email")
     start_time: datetime = Field(..., description="Interview start time (UTC)")
@@ -262,14 +262,12 @@ class GoogleScheduleInterviewRequest(BaseModel):
     create_meet_link: bool = Field(default=True, description="Create Google Meet link")
 
 
-class GoogleCancelInterviewRequest(BaseModel):
-    company_id: str
+class GoogleCancelInterviewRequest(WeDoBaseModel):
     event_id: str = Field(..., description="Google Calendar event ID")
     calendar_id: str = Field(default="primary", description="Calendar ID or organizer email")
 
 
-class GoogleAvailabilityRequest(BaseModel):
-    company_id: str
+class GoogleAvailabilityRequest(WeDoBaseModel):
     organizer_email: str
     attendees: list[str]
     duration_minutes: int = Field(default=60, ge=15, le=480)

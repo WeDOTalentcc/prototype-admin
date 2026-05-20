@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class ArchetypeBase(BaseModel):
@@ -25,7 +26,7 @@ class ArchetypeCreate(ArchetypeBase):
     is_default: bool = Field(default=False)
 
 
-class ArchetypeUpdate(BaseModel):
+class ArchetypeUpdate(WeDoBaseModel):
     """Schema for updating an archetype."""
     name: str | None = Field(None, max_length=100)
     description: str | None = Field(None, max_length=500)
@@ -61,7 +62,7 @@ class ArchetypeResponse(BaseModel):
         from_attributes = True
 
 
-class ArchetypeFromSearchCreate(BaseModel):
+class ArchetypeFromSearchCreate(WeDoBaseModel):
     """Schema for creating an archetype from a search specification."""
     search_spec: dict[str, Any] = Field(..., description="The search specification to convert to archetype")
     name: str = Field(..., min_length=1, max_length=100, description="Name for the archetype")

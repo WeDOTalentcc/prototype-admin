@@ -12,6 +12,7 @@ from app.core.database import get_db
 from app.domains.analytics.services.candidate_report_service import candidate_report_service
 from app.domains.analytics.services.report_service import report_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter(prefix="/reports", tags=["reports"])
 
@@ -22,7 +23,7 @@ class ReportType(StrEnum):
     MONTHLY = "monthly"
 
 
-class DailyBriefingSendRequest(BaseModel):
+class DailyBriefingSendRequest(WeDoBaseModel):
     """Request model for sending daily briefing."""
     user_id: str
     user_email: str
@@ -30,27 +31,27 @@ class DailyBriefingSendRequest(BaseModel):
     company_name: str = "Sua Empresa"
 
 
-class WeeklyReportSendRequest(BaseModel):
+class WeeklyReportSendRequest(WeDoBaseModel):
     """Request model for sending weekly report."""
     recipient_emails: list[str]
     recipient_name: str = "Equipe"
     company_name: str = "Sua Empresa"
 
 
-class MonthlyReportSendRequest(BaseModel):
+class MonthlyReportSendRequest(WeDoBaseModel):
     """Request model for sending monthly manager report."""
     recipient_emails: list[str]
     recipient_name: str = "Gestão"
     company_name: str = "Sua Empresa"
 
 
-class ReportPreviewRequest(BaseModel):
+class ReportPreviewRequest(WeDoBaseModel):
     """Request model for report preview."""
     user_name: str = "Recrutador"
     company_name: str = "Empresa Demo"
 
 
-class CandidateReportRequest(BaseModel):
+class CandidateReportRequest(WeDoBaseModel):
     """Request model for generating a candidate report."""
     candidate_id: str
     job_id: str | None = None
@@ -59,7 +60,7 @@ class CandidateReportRequest(BaseModel):
     format: str = "detailed"
 
 
-class ComparisonReportRequest(BaseModel):
+class ComparisonReportRequest(WeDoBaseModel):
     """Request model for generating a comparison report."""
     candidate_ids: list[str]
     job_id: str

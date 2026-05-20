@@ -13,13 +13,14 @@ from app.domains.recruitment.services.triagem_session_service import (
     get_triagem_service,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/triagem", tags=["triagem"])
 
 
-class SendMessageRequest(BaseModel):
+class SendMessageRequest(WeDoBaseModel):
     content: str
     message_type: str = "text"
     selected_option: str | None = None
@@ -27,7 +28,7 @@ class SendMessageRequest(BaseModel):
     voice_mode: bool | None = None
 
 
-class InviteRequest(BaseModel):
+class InviteRequest(WeDoBaseModel):
     candidate_id: str
     candidate_name: str | None = None
     candidate_email: str | None = None
@@ -150,14 +151,12 @@ company_id: str = Depends(require_company_id)):
 async def create_invite(
     request: InviteRequest,
     repo: TriagemRepository = Depends(get_triagem_repo),
-    x_company_id: str | None = Header(None, alias="X-Company-ID"),
     x_user_id: str | None = Header(None, alias="X-User-ID"),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    company_id = request.company_id or x_company_id
-    if not company_id:
-        raise HTTPException(status_code=400, detail="company_id é obrigatório")
+    company_id: str = Depends(require_company_id),
+):
+    # multi-tenancy: company_id from JWT (R4 canonical). request.company_id and
+    # X-Company-ID header are NOT trusted — JWT is authoritative.
 
     session = await triagem_svc.create_session(
         db=repo.db,
@@ -195,7 +194,7 @@ company_id: str = Depends(require_company_id)):
 _E164_BR_PATTERN = re.compile(r"^\+55\d{10,11}$")
 
 
-class RequestCallRequest(BaseModel):
+class RequestCallRequest(WeDoBaseModel):
     candidate_phone: str
 
     def model_post_init(self, __context: Any = None) -> None:
@@ -252,7 +251,7 @@ company_id: str = Depends(require_company_id)):
     return JSONResponse(content=result)
 
 
-class StartSessionRequest(BaseModel):
+class StartSessionRequest(WeDoBaseModel):
     voice_mode: bool | None = None
 
 
@@ -333,7 +332,7 @@ company_id: str = Depends(require_company_id)):
     return JSONResponse(content=result)
 
 
-class TTSRequest(BaseModel):
+class TTSRequest(WeDoBaseModel):
     text: str
     voice: str = "nova"
     speed: float = 1.0

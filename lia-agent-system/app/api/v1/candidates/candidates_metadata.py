@@ -29,6 +29,7 @@ from ._shared import (
     User,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter()
 
@@ -37,7 +38,7 @@ router = APIRouter()
 # Viewed candidates
 # ---------------------------------------------------------------------------
 
-class ViewedCandidateCreate(BaseModel):
+class ViewedCandidateCreate(WeDoBaseModel):
     source: str | None = None
 
 
@@ -134,13 +135,13 @@ company_id: str = Depends(require_company_id)):
 # Favorites
 # ---------------------------------------------------------------------------
 
-class FavoriteCreate(BaseModel):
+class FavoriteCreate(WeDoBaseModel):
     note: str | None = None
     is_pinned: bool = False
     source: str | None = None
 
 
-class FavoriteUpdate(BaseModel):
+class FavoriteUpdate(WeDoBaseModel):
     note: str | None = None
     is_pinned: bool | None = None
 
@@ -278,7 +279,7 @@ company_id: str = Depends(require_company_id)):
 # Hidden candidates
 # ---------------------------------------------------------------------------
 
-class HiddenCreate(BaseModel):
+class HiddenCreate(WeDoBaseModel):
     reason: str | None = None
     source: str | None = None
 

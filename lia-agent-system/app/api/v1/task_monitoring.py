@@ -11,13 +11,14 @@ from app.shared.async_processing.task_persistence import TaskPersistenceService
 from app.shared.async_processing.task_queue import TaskPriority
 from app.shared.async_processing.task_scheduler import TaskScheduler
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/async-tasks")
 
 
-class TaskSubmitRequest(BaseModel):
+class TaskSubmitRequest(WeDoBaseModel):
     domain_id: str
     action_id: str
     params: dict[str, Any] = Field(default_factory=dict)
@@ -29,7 +30,7 @@ class TaskSubmitRequest(BaseModel):
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
-class ScheduleCreateRequest(BaseModel):
+class ScheduleCreateRequest(WeDoBaseModel):
     name: str
     domain_id: str
     action_id: str

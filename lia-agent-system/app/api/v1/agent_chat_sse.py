@@ -48,6 +48,7 @@ from app.domains.credits.services.token_budget_service import (
 )
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +95,7 @@ _AGENT_TIMEOUT = settings.LLM_TIMEOUT_SECONDS
 _injection_guard = PromptInjectionGuard()
 
 
-class SSEChatRequest(BaseModel):
+class SSEChatRequest(WeDoBaseModel):
     message: str
     domain: str = "recruiter_assistant"
     context: dict[str, Any] = {}
@@ -152,7 +153,7 @@ def _strip_react_json(text: str) -> str:
     return text
 
 
-class SSEActionRequest(BaseModel):
+class SSEActionRequest(WeDoBaseModel):
     type: str
     pending_id: str = ""
     thread_id: str = ""

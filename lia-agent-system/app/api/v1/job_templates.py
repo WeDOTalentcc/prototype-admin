@@ -22,6 +22,7 @@ from app.domains.job_management.services.job_template_service import (
     validate_wsi_quality,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter(prefix="/job-templates", tags=["Job Templates"])
 
@@ -91,7 +92,7 @@ class CategoryResponse(BaseModel):
     template_count: int = 0
 
 
-class CreateTemplateRequest(BaseModel):
+class CreateTemplateRequest(WeDoBaseModel):
     """Request to create a new template."""
     category: str
     subcategory: str
@@ -110,13 +111,12 @@ class CreateTemplateRequest(BaseModel):
     employment_type: str = "clt"
 
 
-class CloneTemplateRequest(BaseModel):
+class CloneTemplateRequest(WeDoBaseModel):
     """Request to clone a template for a company."""
-    company_id: str
     modifications: dict = {}
 
 
-class TemplateFeedbackRequest(BaseModel):
+class TemplateFeedbackRequest(WeDoBaseModel):
     """Template usage feedback request."""
     job_id: str | None = None
     fields_modified: list[str] = []
@@ -303,7 +303,7 @@ company_id: str = Depends(require_company_id)):
     try:
         template = await service.clone_template_for_company(
             template_id=UUID(template_id),
-            company_id=UUID(request.company_id),
+            company_id=UUID(company_id),
             modifications=request.modifications,
         )
         return TemplateResponse(**template.to_dict())
@@ -536,9 +536,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
     return await learning.suggest_templates_for_improvement(UUID(company_id), limit)
 
 
-class LearnFromJobRequest(BaseModel):
+class LearnFromJobRequest(WeDoBaseModel):
     """Request to learn from a job creation."""
-    company_id: str
     title: str
     department: str | None = None
     seniority: str | None = None
@@ -574,7 +573,7 @@ company_id: str = Depends(require_company_id)):
     template_used = UUID(request.template_used) if request.template_used else None
     
     new_template = await learning.learn_from_job_creation(
-        company_id=UUID(request.company_id),
+        company_id=UUID(company_id),
         job_data=job_data,
         template_used=template_used
     )

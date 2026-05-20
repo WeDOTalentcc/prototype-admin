@@ -25,6 +25,7 @@ from app.domains.job_creation.repositories.jd_similar_history_repository import 
 from app.domains.job_creation.services.jd_similar_service import JdSimilarService
 from app.auth.models import User
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter(prefix="/jd-similar", tags=["jd-similar", "sprint-b"])
 
@@ -65,8 +66,7 @@ class JdSimilarLookupResponse(BaseModel):
     threshold_met: bool
 
 
-class JdRecordRequest(BaseModel):
-    company_id: str = Field(..., min_length=1)
+class JdRecordRequest(WeDoBaseModel):
     job_id: str = Field(..., min_length=1)
     title: str = Field(..., min_length=1)
     jd_enriched: dict[str, Any]
@@ -74,15 +74,14 @@ class JdRecordRequest(BaseModel):
     department: str | None = None
 
 
-class MarkFilledRequest(BaseModel):
-    company_id: str = Field(..., min_length=1)
+class MarkFilledRequest(WeDoBaseModel):
     job_id: str = Field(..., min_length=1)
     time_to_fill_days: int = Field(..., ge=0)
     candidates_count: int = Field(..., ge=0)
 
 
-class ReuseRequest(BaseModel):
-    company_id: str = Field(..., min_length=1)
+class ReuseRequest(WeDoBaseModel):
+    pass
 
 
 class GenericResponse(BaseModel):
@@ -166,7 +165,6 @@ async def record_jd(
 company_id: str = Depends(require_company_id)) -> GenericResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Registra JD enriquecida no histórico (chamado após publish bem-sucedido)."""
-    company_id = _enforce_tenant(body.company_id, current_user)
     try:
         await svc.record_jd(
             company_id=company_id,
@@ -190,7 +188,6 @@ async def increment_reuse(
 company_id: str = Depends(require_company_id)) -> GenericResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Incrementa contador de reuso quando recruiter usa JD do histórico como base."""
-    company_id = _enforce_tenant(body.company_id, current_user)
     try:
         await svc.increment_reuse(company_id=company_id, record_id=record_id)
     except ValueError as exc:
@@ -206,7 +203,6 @@ async def mark_filled(
 company_id: str = Depends(require_company_id)) -> GenericResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Marca JD como preenchida (vaga fechou)."""
-    company_id = _enforce_tenant(body.company_id, current_user)
     try:
         await svc.mark_filled(
             company_id=company_id,

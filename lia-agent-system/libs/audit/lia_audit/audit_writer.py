@@ -23,6 +23,25 @@ from lia_audit.audit_storage import build_storage_path, get_audit_storage
 logger = logging.getLogger(__name__)
 
 
+def _coerce_timestamp(value):
+    """Sprint C #36 fix: asyncpg requires datetime for TIMESTAMPTZ columns.
+
+    ExecutionAuditRecord.start_time historically stored as ISO string. This
+    helper accepts str | datetime | None and returns a datetime instance.
+    """
+    from datetime import datetime, timezone as _tz
+    if value is None or value == "":
+        return datetime.now(_tz.utc)
+    if isinstance(value, datetime):
+        return value
+    if isinstance(value, str):
+        try:
+            return datetime.fromisoformat(value)
+        except ValueError:
+            return datetime.now(_tz.utc)
+    return datetime.now(_tz.utc)
+
+
 class AuditWriter:
     """
     Persiste registros de execução de agentes em dois destinos:
@@ -53,6 +72,8 @@ class AuditWriter:
         saved_path = await storage.save(path, record.to_full_dict())
         return saved_path
 
+
+
     async def _save_metadata(self, record: ExecutionAuditRecord, db: Optional[AsyncSession] = None) -> None:
         """Insere metadados leves na tabela audit_execution_metadata."""
         if db is None:
@@ -77,7 +98,7 @@ class AuditWriter:
             "user_id": record.user_id or "",
             "domain": record.domain,
             "agent_type": record.agent_type,
-            "timestamp": record.start_time or datetime.now(timezone.utc).isoformat(),
+            "timestamp": _coerce_timestamp(record.start_time),
             "duration_ms": record.total_duration_ms,
             "nodes_visited": json.dumps(record.nodes_visited),
             "tools_used": json.dumps(record.tools_used),

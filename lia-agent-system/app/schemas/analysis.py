@@ -5,6 +5,7 @@ from enum import Enum, StrEnum
 from typing import Literal
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class AnalysisType(StrEnum):
@@ -23,7 +24,7 @@ class ArchetypeEnum(StrEnum):
     ARQUITETO_METODICO = "Arquiteto Metódico"
 
 
-class CandidateInput(BaseModel):
+class CandidateInput(WeDoBaseModel):
     id: str
     name: str
     position: str | None = None
@@ -58,7 +59,7 @@ class CandidateAnalysisResult(BaseModel):
     potential_roles: list[str] | None = None
 
 
-class AnalysisRequest(BaseModel):
+class AnalysisRequest(WeDoBaseModel):
     candidates: list[CandidateInput]
     job_vacancy_id: str | None = None
     analysis_type: AnalysisType = AnalysisType.GENERAL

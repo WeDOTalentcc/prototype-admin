@@ -26,6 +26,7 @@ from app.models.ats_integration import (
 from app.shared.encryption import encrypt_value, decrypt_value
 from app.domains.ats_integration.services.ats_sync_service import ATSSyncService, get_ats_sync_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -34,29 +35,28 @@ SUPPORTED_PROVIDERS = ("gupy", "pandape", "merge")
 router = APIRouter()
 
 
-class CreateATSConnectionRequest(BaseModel):
+class CreateATSConnectionRequest(WeDoBaseModel):
     provider: str
     provider_name: str
     api_key: str
     api_secret: str | None = None
     api_endpoint: str | None = None
-    company_id: str | None = None
     auto_sync_enabled: bool = True
     sync_frequency_hours: int = 24
 
 
-class TestATSConnectionRequest(BaseModel):
+class TestATSConnectionRequest(WeDoBaseModel):
     provider: str
     api_key: str
     api_endpoint: str | None = None
 
 
-class SaveFieldMappingsRequest(BaseModel):
+class SaveFieldMappingsRequest(WeDoBaseModel):
     connection_id: str
     mappings: list[dict]
 
 
-class TriggerSyncRequest(BaseModel):
+class TriggerSyncRequest(WeDoBaseModel):
     sync_type: str = "full"
     filters: dict = {}
 

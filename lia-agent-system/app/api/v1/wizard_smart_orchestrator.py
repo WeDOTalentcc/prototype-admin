@@ -22,6 +22,7 @@ from app.auth.models import User
 from app.shared.security.require_company_id import require_company_id
 from app.shared.sessions.thread_id import derive_thread_id
 from app.shared.tenant_session import create_session_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -63,7 +64,7 @@ BACKEND_TO_FRONTEND_STAGE: dict[str, str] = {
 }
 
 
-class SmartOrchestrateRequest(BaseModel):
+class SmartOrchestrateRequest(WeDoBaseModel):
     """Request for smart orchestration using the canonical wizard graph.
 
     Two modes:

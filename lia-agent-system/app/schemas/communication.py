@@ -6,9 +6,10 @@ from datetime import datetime
 from typing import Any
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
-class CommunicationCreate(BaseModel):
+class CommunicationCreate(WeDoBaseModel):
     """Schema for creating a new communication record."""
     candidate_id: str = Field(..., description="Candidate ID")
     candidate_name: str = Field(..., description="Candidate name")
@@ -26,7 +27,6 @@ class CommunicationCreate(BaseModel):
     attachments: list[dict[str, Any]] | None = Field(default_factory=list, description="List of attachments")
     sent_by: str = Field(..., description="ID of sender")
     sent_by_name: str | None = Field(None, description="Display name of sender")
-    company_id: str = Field(..., description="Company ID for multi-tenancy")
     extra_data: dict[str, Any] | None = Field(default_factory=dict, description="Additional metadata")
 
     class Config:
@@ -41,8 +41,7 @@ class CommunicationCreate(BaseModel):
                 "subject": "Convite para entrevista",
                 "message_content": "Olá João, gostaríamos de convidá-lo para uma entrevista...",
                 "sent_by": "user_456",
-                "sent_by_name": "Maria Santos",
-                "company_id": "company_789"
+                "sent_by_name": "Maria Santos"
             }
         }
 
@@ -90,7 +89,7 @@ class CommunicationListResponse(BaseModel):
     offset: int
 
 
-class CommunicationStatusUpdate(BaseModel):
+class CommunicationStatusUpdate(WeDoBaseModel):
     """Schema for updating communication status."""
     status: str = Field(..., description="New status: sent, delivered, read, failed")
     error_message: str | None = Field(None, description="Error message for failed status")

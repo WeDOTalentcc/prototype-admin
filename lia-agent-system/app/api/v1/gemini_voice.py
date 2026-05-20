@@ -41,6 +41,7 @@ from app.shared.pii_masking import mask_pii
 from app.shared.resilience.circuit_breaker import GEMINI_LIVE_CIRCUIT
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 
 def _get_hmac_secret() -> str:
@@ -71,11 +72,10 @@ logger = logging.getLogger(__name__)
 router = APIRouter(tags=["gemini-voice"])
 
 
-class StartSessionRequest(BaseModel):
+class StartSessionRequest(WeDoBaseModel):
     candidate_id: str
     candidate_name: str
     job_title: str
-    company_id: str
     job_id: str | None = None
     language: str = "pt-BR"
 
@@ -139,7 +139,7 @@ company_id: str = Depends(require_company_id)) -> StartSessionResponse:
             async with AsyncSessionLocal() as db:
                 await voice_screening_orchestrator.verify_consent(
                     candidate_id=request_body.candidate_id,
-                    company_id=request_body.company_id,
+                    company_id=company_id,
                     db=db,
                 )
         except ConsentNotGrantedError:
@@ -186,7 +186,7 @@ company_id: str = Depends(require_company_id)) -> StartSessionResponse:
                 job_context = await voice_screening_orchestrator._fetch_job_context_from_db(
                     request_body.job_id or "",
                     db,
-                    company_id=request_body.company_id,
+                    company_id=company_id,
                 )
         except Exception as e:
             logger.debug("[GEMINI VOICE] Job context fetch failed (non-blocking): %s", e)
@@ -195,7 +195,7 @@ company_id: str = Depends(require_company_id)) -> StartSessionResponse:
             candidate_id=request_body.candidate_id,
             candidate_name=request_body.candidate_name,
             job_title=request_body.job_title,
-            company_id=request_body.company_id,
+            company_id=company_id,
             job_id=request_body.job_id,
             language=request_body.language,
             job_context=job_context,
@@ -205,12 +205,12 @@ company_id: str = Depends(require_company_id)) -> StartSessionResponse:
             "[GEMINI VOICE] Session started: session=%s candidate=%s company=%s",
             session.session_id,
             mask_pii(request_body.candidate_id),
-            request_body.company_id,
+            company_id,
         )
 
         ws_token = _generate_ws_token(
             session.session_id,
-            request_body.company_id,
+            company_id,
             request_body.candidate_id,
         )
 

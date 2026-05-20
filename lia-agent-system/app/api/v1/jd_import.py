@@ -33,6 +33,7 @@ def get_jd_import_service():  # type: ignore[override]  # noqa: F811
 
 from app.domains.job_management.services.wizard_data_priority_service import JobContext, WizardDataPriorityService, get_wizard_data_priority_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter(tags=["Learning Loop"])
 logger = logging.getLogger(__name__)
@@ -75,7 +76,7 @@ class JDImportItem(BaseModel):
     metadata: dict[str, Any] = {}
 
 
-class BatchImportRequest(BaseModel):
+class BatchImportRequest(WeDoBaseModel):
     """Request to import multiple JDs."""
     source: str = Field(default="manual_upload", description="Import source (ats_gupy, manual_upload, etc.)")
     jds: list[JDImportItem] = Field(..., description="List of JDs to import")

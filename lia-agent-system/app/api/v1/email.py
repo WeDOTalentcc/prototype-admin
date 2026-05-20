@@ -17,13 +17,14 @@ from pydantic import BaseModel, EmailStr
 from app.domains.communication.dependencies import get_email_repo
 from app.domains.communication.repositories.email_repository import EmailRepository
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/email", tags=["email"])
 
 
-class DirectEmailRequest(BaseModel):
+class DirectEmailRequest(WeDoBaseModel):
     """Request for sending a direct email (without template)."""
     recipient_email: EmailStr
     recipient_name: str | None = None

@@ -12,6 +12,7 @@ from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class ConsentEventTypeEnum(StrEnum):
@@ -31,7 +32,7 @@ class ConsentChannelEnum(StrEnum):
     PORTAL = "portal"
 
 
-class ConsentVersionCreate(BaseModel):
+class ConsentVersionCreate(WeDoBaseModel):
     """Schema for creating a new consent version."""
     consent_type: str = Field(..., min_length=1, max_length=50, description="Type of consent (e.g., data_processing, ai_scoring)")
     version: str = Field(..., min_length=1, max_length=20, description="Version string (e.g., 1.0, 2.0)")
@@ -88,7 +89,7 @@ class ConsentVersionListResponse(BaseModel):
     offset: int
 
 
-class ConsentEventCreate(BaseModel):
+class ConsentEventCreate(WeDoBaseModel):
     """Schema for creating a consent event."""
     consent_version_id: str = Field(..., description="ID of the consent version")
     subject_email: str = Field(..., description="Email of the data subject")
@@ -172,7 +173,7 @@ class ConsentSubjectHistory(BaseModel):
     total_events: int
 
 
-class ConsentRevokeRequest(BaseModel):
+class ConsentRevokeRequest(WeDoBaseModel):
     """Schema for revoking consent."""
     subject_identifier: str = Field(..., max_length=50, description="CPF or other identifier of the data subject")
     consent_type: str | None = Field(None, max_length=50, description="Type of consent to revoke (optional)")

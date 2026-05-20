@@ -7,6 +7,7 @@ from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class OfferBonusVariable(BaseModel):
@@ -16,13 +17,13 @@ class OfferBonusVariable(BaseModel):
     conditions: str | None = None
 
 
-class OfferDraftCreate(BaseModel):
+class OfferDraftCreate(WeDoBaseModel):
     candidate_id: str
     job_id: UUID
     template_id: UUID | None = None
 
 
-class OfferDraftUpdate(BaseModel):
+class OfferDraftUpdate(WeDoBaseModel):
     offered_salary: Decimal | None = None
     offered_salary_currency: str | None = None
     offered_bonus_admission: Decimal | None = None
@@ -64,7 +65,7 @@ class OfferDraftResponse(BaseModel):
         from_attributes = True
 
 
-class OfferSendAutoRequest(BaseModel):
+class OfferSendAutoRequest(WeDoBaseModel):
     pass  # draft data already in DB; no extra params needed
 
 
@@ -85,5 +86,5 @@ class OfferPrepareManualResponse(BaseModel):
     message: str
 
 
-class OfferCancelRequest(BaseModel):
+class OfferCancelRequest(WeDoBaseModel):
     reason: str | None = None

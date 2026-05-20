@@ -6,6 +6,7 @@ from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, field_validator
+from app.shared.types import WeDoBaseModel
 
 
 class DepartmentBase(BaseModel):
@@ -28,7 +29,7 @@ class DepartmentCreate(DepartmentBase):
     pass
 
 
-class DepartmentUpdate(BaseModel):
+class DepartmentUpdate(WeDoBaseModel):
     name: str | None = None
     code: str | None = None
     description: str | None = None
@@ -71,7 +72,7 @@ class DepartmentMemberCreate(DepartmentMemberBase):
     department_id: UUID | None = None  # Optional because it comes from URL path
 
 
-class DepartmentMemberUpdate(BaseModel):
+class DepartmentMemberUpdate(WeDoBaseModel):
     name: str | None = None
     title: str | None = None
     email: str | None = None
@@ -122,7 +123,7 @@ class BenefitCreate(BenefitBase):
     pass
 
 
-class BenefitUpdate(BaseModel):
+class BenefitUpdate(WeDoBaseModel):
     name: str | None = None
     description: str | None = None
     category: str | None = None
@@ -171,7 +172,7 @@ class CultureValueCreate(CultureValueBase):
     pass
 
 
-class CultureValueUpdate(BaseModel):
+class CultureValueUpdate(WeDoBaseModel):
     name: str | None = None
     description: str | None = None
     category: str | None = None
@@ -227,7 +228,7 @@ class CompanyProfileCreate(CompanyProfileBase):
     pass
 
 
-class CompanyProfileUpdate(BaseModel):
+class CompanyProfileUpdate(WeDoBaseModel):
     name: str | None = None
     trading_name: str | None = None
     website: str | None = None
@@ -325,7 +326,7 @@ class IdealProfileCreate(IdealProfileBase):
     pass
 
 
-class IdealProfileUpdate(BaseModel):
+class IdealProfileUpdate(WeDoBaseModel):
     name: str | None = None
     description: str | None = None
     department_id: UUID | None = None
@@ -389,7 +390,7 @@ class BigFiveQuestionCreate(BigFiveQuestionBase):
     pass
 
 
-class BigFiveQuestionUpdate(BaseModel):
+class BigFiveQuestionUpdate(WeDoBaseModel):
     text: str | None = None
     text_en: str | None = None
     trait: str | None = None
@@ -450,7 +451,7 @@ class BigFiveRoleProfileCreate(BigFiveRoleProfileBase):
     company_id: UUID | None = None
 
 
-class BigFiveRoleProfileUpdate(BaseModel):
+class BigFiveRoleProfileUpdate(WeDoBaseModel):
     name: str | None = None
     description: str | None = None
     role_category: str | None = None
@@ -516,7 +517,7 @@ class TechnicalQuestionCreate(TechnicalQuestionBase):
     pass
 
 
-class TechnicalQuestionUpdate(BaseModel):
+class TechnicalQuestionUpdate(WeDoBaseModel):
     title: str | None = None
     description: str | None = None
     question_type: str | None = None
@@ -578,7 +579,7 @@ class TechnicalTestTemplateCreate(TechnicalTestTemplateBase):
     company_id: UUID | None = None
 
 
-class TechnicalTestTemplateUpdate(BaseModel):
+class TechnicalTestTemplateUpdate(WeDoBaseModel):
     name: str | None = None
     description: str | None = None
     area: str | None = None
@@ -617,7 +618,7 @@ class TechnicalTestTemplateResponse(TechnicalTestTemplateBase):
         from_attributes = True
 
 
-class CultureAnalysisRequest(BaseModel):
+class CultureAnalysisRequest(WeDoBaseModel):
     website_url: str | None = None
     linkedin_url: str | None = None
     glassdoor_url: str | None = None
@@ -632,7 +633,7 @@ class CultureAnalysisResponse(BaseModel):
     sources_analyzed: list[str]
 
 
-class IdealProfileGenerateRequest(BaseModel):
+class IdealProfileGenerateRequest(WeDoBaseModel):
     role_type: str
     seniority_level: str
     department_id: UUID | None = None
@@ -647,7 +648,7 @@ class IdealProfileGenerateResponse(BaseModel):
     reasoning: str
 
 
-class BigFiveGenerateRequest(BaseModel):
+class BigFiveGenerateRequest(WeDoBaseModel):
     trait: str
     count: int | None = 5
     role_specific: list[str] | None = None
@@ -659,7 +660,7 @@ class BigFiveGenerateResponse(BaseModel):
     trait: str
 
 
-class TechnicalQuestionsGenerateRequest(BaseModel):
+class TechnicalQuestionsGenerateRequest(WeDoBaseModel):
     area: str
     difficulty: str
     question_type: str
@@ -685,7 +686,7 @@ class GlobalSearchSettingsBase(BaseModel):
     global_search_enabled: bool = True
 
 
-class GlobalSearchSettingsUpdate(BaseModel):
+class GlobalSearchSettingsUpdate(WeDoBaseModel):
     default_limit: int | None = None
     search_type: str | None = None
     show_emails: bool | None = None
@@ -718,7 +719,7 @@ class ApproverCreate(ApproverBase):
     pass
 
 
-class ApproverUpdate(BaseModel):
+class ApproverUpdate(WeDoBaseModel):
     user_name: str | None = None
     email: str | None = None
     role: str | None = None
@@ -751,7 +752,7 @@ class TenantResolutionResponse(BaseModel):
     status: str | None = None
 
 
-class CompanyEnrichRequest(BaseModel):
+class CompanyEnrichRequest(WeDoBaseModel):
     linkedin_url: str | None = None
     glassdoor_company_name: str | None = None
 

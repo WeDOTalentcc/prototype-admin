@@ -13,6 +13,7 @@ from app.domains.integrations_hub.repositories.integrations_hub_repository impor
 )
 from app.models.integration_hub import IntegrationCategory
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -42,9 +43,8 @@ class ProviderResponse(BaseModel):
     is_premium: bool = False
 
 
-class ConnectionCreate(BaseModel):
+class ConnectionCreate(WeDoBaseModel):
     provider_id: str
-    company_id: str
     auth_type: str = Field(..., description="oauth, api_key, or webhook")
     credentials: dict = Field(default={}, description="Encrypted credentials")
     sync_enabled: bool = True
@@ -53,7 +53,7 @@ class ConnectionCreate(BaseModel):
     field_mappings: dict = {}
 
 
-class ConnectionUpdate(BaseModel):
+class ConnectionUpdate(WeDoBaseModel):
     sync_enabled: bool | None = None
     sync_direction: str | None = None
     sync_frequency: str | None = None
@@ -105,7 +105,7 @@ class HealthResponse(BaseModel):
     connections_by_category: dict
 
 
-class AIRecommendationRequest(BaseModel):
+class AIRecommendationRequest(WeDoBaseModel):
     company_size: str = Field(..., description="small, medium, large, enterprise")
     industry: str
     current_tools: list[str] = []
@@ -228,7 +228,7 @@ company_id: str = Depends(require_company_id)):
             raise HTTPException(status_code=404, detail="Provider not found")
 
         connection = await repo.create_connection(
-            company_id=request.company_id,
+            company_id=company_id,
             provider_id=request.provider_id,
             auth_type=request.auth_type,
             credentials=request.credentials,

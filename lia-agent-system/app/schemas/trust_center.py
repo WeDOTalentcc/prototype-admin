@@ -5,6 +5,7 @@ from datetime import datetime
 from enum import Enum, StrEnum
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class SubprocessorCategoryEnum(StrEnum):
@@ -61,7 +62,7 @@ class TrustCenterSettingsCreate(TrustCenterSettingsBase):
     pass
 
 
-class TrustCenterSettingsUpdate(BaseModel):
+class TrustCenterSettingsUpdate(WeDoBaseModel):
     """Schema for updating trust center settings."""
     company_slug: str | None = Field(None, min_length=2, max_length=100)
     company_name: str | None = Field(None, min_length=1, max_length=255)

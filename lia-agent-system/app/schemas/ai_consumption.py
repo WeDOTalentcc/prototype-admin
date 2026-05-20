@@ -7,6 +7,7 @@ from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class AgentTypeEnum(StrEnum):
@@ -165,7 +166,7 @@ class BalanceResponse(BaseModel):
     updated_at: str | None = None
 
 
-class UpdateLimitsRequest(BaseModel):
+class UpdateLimitsRequest(WeDoBaseModel):
     """Request to update client AI limits."""
     monthly_limit: int | None = Field(default=None, ge=0, description="Monthly token limit")
     overage_allowed: bool | None = Field(default=None, description="Allow overage usage")

@@ -15,6 +15,7 @@ from app.core.database import get_db
 from app.domains.policy.repositories.global_policy_repository import GlobalPolicyRepository
 from app.models.global_policy import POLICY_TYPES, GlobalPolicy, PolicyScope, PolicyType
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -22,28 +23,26 @@ router = APIRouter(prefix="/policies", tags=["policies"])
 
 
 def get_user_from_headers(
-    x_company_id: str | None = Header(None, alias="X-Company-ID"),
+    company_id: str = Depends(require_company_id),
     x_user_id: str | None = Header(None, alias="X-User-ID"),
     x_user_role: str | None = Header(None, alias="X-User-Role")
 ) -> dict[str, Any]:
     """
-    Get user context from request headers.
-    Used for development and internal API calls.
+    Get user context combining JWT (company_id) with optional request headers
+    (user_id, role).
+
+    Multi-tenancy canonical: company_id comes from JWT via require_company_id —
+    NEVER from X-Company-ID header (cross-tenant anti-pattern).
     """
-    if not x_company_id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Company ID required. Please provide X-Company-ID header."
-        )
     return {
-        "company_id": x_company_id,
+        "company_id": company_id,
         "user_id": x_user_id or "system",
         "role": x_user_role or "user",
         "is_admin": x_user_role == "admin"
     }
 
 
-class PolicyCreate(BaseModel):
+class PolicyCreate(WeDoBaseModel):
     """Request model for creating a policy."""
     name: str = Field(..., min_length=1, max_length=255, description="Policy name")
     description: str | None = Field(None, max_length=1000, description="Policy description")
@@ -54,7 +53,7 @@ class PolicyCreate(BaseModel):
     company_id: str | None = Field(None, description="Company ID (null for platform policies)")
 
 
-class PolicyUpdate(BaseModel):
+class PolicyUpdate(WeDoBaseModel):
     """Request model for updating a policy."""
     name: str | None = Field(None, min_length=1, max_length=255)
     description: str | None = Field(None, max_length=1000)

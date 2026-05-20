@@ -16,6 +16,7 @@ from app.domains.company.repositories.company_benefit_repository import (
     CompanyBenefitRepository,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter(prefix="/company/benefits", tags=["company-benefits"])
 logger = logging.getLogger(__name__)
@@ -64,7 +65,7 @@ def _check_fairness_eligibility(field_name: str, value) -> None:
         )
 
 
-class CompanyBenefitCreate(BaseModel):
+class CompanyBenefitCreate(WeDoBaseModel):
     name: str = Field(..., min_length=1, max_length=255)
     category: str | None = None
     description: str | None = None
@@ -129,7 +130,7 @@ class CompanyBenefitCreate(BaseModel):
         return self
 
 
-class CompanyBenefitUpdate(BaseModel):
+class CompanyBenefitUpdate(WeDoBaseModel):
     name: str | None = None
     category: str | None = None
     description: str | None = None

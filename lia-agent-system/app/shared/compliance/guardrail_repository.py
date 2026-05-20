@@ -13,11 +13,12 @@ from sqlalchemy import and_, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.guardrail import Guardrail
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 
-class GuardrailCreate(BaseModel):
+class GuardrailCreate(WeDoBaseModel):
     level: str = "primary"
     domain: str | None = None
     node: str | None = None

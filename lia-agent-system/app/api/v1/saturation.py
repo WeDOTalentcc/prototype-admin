@@ -2,7 +2,7 @@ import logging
 from datetime import datetime, timedelta
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
 from sqlalchemy import and_, func, not_, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,6 +12,7 @@ from app.models.candidate import VacancyCandidate
 from app.models.company import CompanyProfile
 from app.models.job_vacancy import JobVacancy
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies).
@@ -44,7 +45,7 @@ class ChannelSaturation(BaseModel):
     percentage: float = 0.0
 
 
-class SaturationSettingsRequest(BaseModel):
+class SaturationSettingsRequest(WeDoBaseModel):
     threshold_web: int | None = Field(None, ge=1, le=500)
     threshold_sourcing: int | None = Field(None, ge=1, le=500)
     unlock_increment: int | None = Field(None, ge=1, le=100)
@@ -80,7 +81,7 @@ class SaturationStatusResponse(BaseModel):
     unlock_hours: int
 
 
-class UnlockPipelineRequest(BaseModel):
+class UnlockPipelineRequest(WeDoBaseModel):
     action: str = Field(..., pattern="^(increase_threshold|disable_temporarily)$")
     new_threshold: int | None = Field(None, ge=5, le=500)
     disable_hours: int | None = Field(None, ge=1)
@@ -141,10 +142,9 @@ async def _find_company(db: AsyncSession, company_id: str):
 async def get_saturation_settings(
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
-    x_company_id: str | None = Header(None, alias="X-Company-ID"),
-    x_user_id: str | None = Header(None, alias="X-User-ID"),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
+    _company_gate: str = Depends(require_company_id_strict_match("query.company_id")),
+):
+    # multi-tenancy: company_id (Query) must match JWT (require_company_id_strict_match)
     company = await _find_company(db, company_id)
     defaults = _get_company_saturation_defaults(company)
 
@@ -163,10 +163,9 @@ async def update_saturation_settings(
     request: SaturationSettingsRequest,
     company_id: str = Query(...),
     db: AsyncSession = Depends(get_db),
-    x_company_id: str | None = Header(None, alias="X-Company-ID"),
-    x_user_id: str | None = Header(None, alias="X-User-ID"),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
+    _company_gate: str = Depends(require_company_id_strict_match("query.company_id")),
+):
+    # multi-tenancy: company_id (Query) must match JWT (require_company_id_strict_match)
     company = await _find_company(db, company_id)
 
     if not company:
@@ -355,7 +354,7 @@ class QueueStatusResponse(BaseModel):
     candidates: list = []
 
 
-class ProcessQueueRequest(BaseModel):
+class ProcessQueueRequest(WeDoBaseModel):
     max_promote: int = Field(1, ge=1, le=50)
 
 
@@ -434,10 +433,9 @@ async def unlock_pipeline(
     job_id: UUID,
     request: UnlockPipelineRequest,
     db: AsyncSession = Depends(get_db),
-    x_company_id: str | None = Header(None, alias="X-Company-ID"),
-    x_user_id: str | None = Header(None, alias="X-User-ID"),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
+    company_id: str = Depends(require_company_id),
+):
+    # multi-tenancy: company_id vem do JWT via require_company_id (canonical)
     result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
     vacancy = result.scalar_one_or_none()
     if not vacancy:

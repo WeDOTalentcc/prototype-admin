@@ -17,29 +17,59 @@ class ExperienceHighlightRepository:
         self.db = db
 
     async def ensure_table(self) -> None:
-        """Ensure the candidate_experience_highlights cache table exists."""
-        await self.db.execute(text("""
-            CREATE TABLE IF NOT EXISTS candidate_experience_highlights (
-                id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-                candidate_id VARCHAR(255) NOT NULL,
-                company_id VARCHAR(255) NOT NULL,
-                highlight_text TEXT NOT NULL,
-                model_used VARCHAR(100) NOT NULL DEFAULT 'claude-sonnet-4-6',
-                generated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                expires_at TIMESTAMP NOT NULL,
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                CONSTRAINT uq_candidate_highlight UNIQUE (candidate_id, company_id)
-            )
-        """))
-        await self.db.execute(text("""
-            CREATE INDEX IF NOT EXISTS idx_exp_highlights_candidate
-            ON candidate_experience_highlights(candidate_id)
-        """))
-        await self.db.execute(text("""
-            CREATE INDEX IF NOT EXISTS idx_exp_highlights_expires
-            ON candidate_experience_highlights(expires_at)
-        """))
+        """Best-effort: table is canonical-managed by alembic migration 138.
+
+        SMOKE-#4+#5 fix (audit 2026-05-20): under role ``lia_app`` (no CREATE on
+        schema public — by design), CREATE TABLE IF NOT EXISTS raises
+        InsufficientPrivilegeError. The table already exists from prior runs +
+        canonical migration; swallow permission denied with debug log instead
+        of HTTP 500.
+        """
+        import logging
+        _logger = logging.getLogger(__name__)
+        try:
+            """Ensure the candidate_experience_highlights cache table exists."""
+            await self.db.execute(text("""
+                CREATE TABLE IF NOT EXISTS candidate_experience_highlights (
+                    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+                    candidate_id VARCHAR(255) NOT NULL,
+                    company_id VARCHAR(255) NOT NULL,
+                    highlight_text TEXT NOT NULL,
+                    model_used VARCHAR(100) NOT NULL DEFAULT 'claude-sonnet-4-6',
+                    generated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    expires_at TIMESTAMP NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    CONSTRAINT uq_candidate_highlight UNIQUE (candidate_id, company_id)
+                )
+            """))
+            await self.db.execute(text("""
+                CREATE INDEX IF NOT EXISTS idx_exp_highlights_candidate
+                ON candidate_experience_highlights(candidate_id)
+            """))
+            await self.db.execute(text("""
+                CREATE INDEX IF NOT EXISTS idx_exp_highlights_expires
+                ON candidate_experience_highlights(expires_at)
+            """))
+
+        except Exception as exc:
+            # Permission denied for schema public under lia_app is expected:
+            # table is alembic-managed (migration 138). Other errors should still
+            # bubble up since they indicate real DDL failure.
+            if "permission denied" in str(exc).lower() or "insufficientprivilege" in type(exc).__name__.lower():
+                # SMOKE-#4+#5 v2 fix: asyncpg poisons the transaction on permission denied.
+                # We MUST rollback to recover, otherwise subsequent SELECT/DELETE on the
+                # same session lança InFailedSQLTransactionError.
+                try:
+                    await self.db.rollback()
+                except Exception:
+                    pass  # rollback errors are non-fatal here
+                _logger.debug(
+                    "ExperienceHighlightRepository.ensure_table skipped (lia_app no CREATE on public — table is alembic-managed): %s",
+                    exc,
+                )
+                return
+            raise
 
     async def get_valid_highlight(
         self, candidate_id: str, company_id: str

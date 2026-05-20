@@ -13,6 +13,7 @@ from app.core.celery_app import celery_app
 from app.schemas.async_job import AsyncJobResponse, AsyncJobStatusResponse
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter(prefix="/async", tags=["async-jobs"])
 logger = logging.getLogger(__name__)
@@ -35,10 +36,9 @@ def _build_response(task_result, domain: str, company_id: str, estimate: int) ->
 # Triagem em lote
 # ---------------------------------------------------------------------------
 
-class TriagemBatchRequest(BaseModel):
+class TriagemBatchRequest(WeDoBaseModel):
     candidate_ids: list[str] = Field(..., min_items=1, description="IDs dos candidatos a triar")
     job_id: str = Field(..., description="ID da vaga")
-    company_id: str = Field(..., description="ID da empresa")
 
 
 @router.post("/triagem/run-batch", response_model=AsyncJobResponse, summary="Triagem curricular em lote")
@@ -55,11 +55,11 @@ async def run_triagem_batch(req: TriagemBatchRequest, company_id: str = Depends(
             kwargs={
                 "candidate_ids": req.candidate_ids,
                 "job_id": req.job_id,
-                "company_id": req.company_id,
+                "company_id": company_id,
             },
         )
         estimate = max(10, len(req.candidate_ids) * 2)
-        return _build_response(task, "cv_screening", req.company_id, estimate)
+        return _build_response(task, "cv_screening", company_id, estimate)
     except Exception as exc:
         logger.error("Falha ao enfileirar triagem: %s", exc)
         raise HTTPException(status_code=500, detail="Erro ao enfileirar triagem")
@@ -69,10 +69,9 @@ async def run_triagem_batch(req: TriagemBatchRequest, company_id: str = Depends(
 # Entrevista WSI
 # ---------------------------------------------------------------------------
 
-class WSIInterviewRequest(BaseModel):
+class WSIInterviewRequest(WeDoBaseModel):
     candidate_id: str
     job_id: str
-    company_id: str
     interview_type: str = Field(default="wsi_full", description="wsi_full | wsi_quick | triagem_voz")
     context: dict = Field(default_factory=dict)
 
@@ -89,10 +88,10 @@ async def start_wsi_interview(req: WSIInterviewRequest, company_id: str = Depend
             "agents.wsi_interview.start",
             kwargs={
                 "request_data": req.model_dump(exclude={"company_id"}),
-                "company_id": req.company_id,
+                "company_id": company_id,
             },
         )
-        return _build_response(task, "interview_scheduling", req.company_id, 1800)
+        return _build_response(task, "interview_scheduling", company_id, 1800)
     except Exception as exc:
         logger.error("Falha ao enfileirar WSI interview: %s", exc)
         raise HTTPException(status_code=500, detail="Erro ao iniciar entrevista WSI")
@@ -102,10 +101,9 @@ async def start_wsi_interview(req: WSIInterviewRequest, company_id: str = Depend
 # Sourcing assíncrono
 # ---------------------------------------------------------------------------
 
-class SourcingSearchRequest(BaseModel):
+class SourcingSearchRequest(WeDoBaseModel):
     criteria: dict = Field(..., description="Critérios de busca: skills, location, seniority, etc.")
     job_id: str
-    company_id: str
 
 
 @router.post("/sourcing/search", response_model=AsyncJobResponse, summary="Busca de candidatos via Pearch")
@@ -121,10 +119,10 @@ async def search_candidates_async(req: SourcingSearchRequest, company_id: str = 
             kwargs={
                 "criteria": req.criteria,
                 "job_id": req.job_id,
-                "company_id": req.company_id,
+                "company_id": company_id,
             },
         )
-        return _build_response(task, "sourcing", req.company_id, 60)
+        return _build_response(task, "sourcing", company_id, 60)
     except Exception as exc:
         logger.error("Falha ao enfileirar sourcing search: %s", exc)
         raise HTTPException(status_code=500, detail="Erro ao enfileirar busca de candidatos")
@@ -134,13 +132,12 @@ async def search_candidates_async(req: SourcingSearchRequest, company_id: str = 
 # Email em massa
 # ---------------------------------------------------------------------------
 
-class BulkEmailRequest(BaseModel):
+class BulkEmailRequest(WeDoBaseModel):
     recipients: list[str] = Field(..., min_items=1)
     template_id: str | None = None
     subject: str = ""
     body: str = ""
     variables: dict = Field(default_factory=dict)
-    company_id: str
 
 
 @router.post("/communication/email/bulk", response_model=AsyncJobResponse, summary="Envio de email em massa")
@@ -156,11 +153,11 @@ async def send_bulk_email(req: BulkEmailRequest, company_id: str = Depends(requi
             "communication.email.send_bulk",
             kwargs={
                 "email_data": req.model_dump(exclude={"company_id"}),
-                "company_id": req.company_id,
+                "company_id": company_id,
             },
         )
         estimate = max(10, len(req.recipients) // 10)
-        return _build_response(task, "communication", req.company_id, estimate)
+        return _build_response(task, "communication", company_id, estimate)
     except Exception as exc:
         logger.error("Falha ao enfileirar bulk email: %s", exc)
         raise HTTPException(status_code=500, detail="Erro ao enfileirar envio de emails")

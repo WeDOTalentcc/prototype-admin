@@ -202,6 +202,7 @@ async def notify_unmapped_stage(
 
 
 from sqlalchemy import select
+from app.shared.types import WeDoBaseModel
 
 
 async def validate_multi_tenancy(
@@ -246,12 +247,12 @@ async def validate_multi_tenancy(
     return True, ""
 
 
-class UpdateTriggerRequest(BaseModel):
+class UpdateTriggerRequest(WeDoBaseModel):
     """Request model for updating a trigger."""
     enabled: bool
 
 
-class ExecuteActionRequest(BaseModel):
+class ExecuteActionRequest(WeDoBaseModel):
     """Request model for executing a specific automation action."""
     action_type: Literal['email', 'whatsapp', 'triagem_wsi', 'agendar_entrevista', 'apenas_mover'] = Field(
         ..., description="Type of action to execute"
@@ -281,7 +282,7 @@ class ExecuteActionRequest(BaseModel):
         }
 
 
-class InterviewScheduledRequest(BaseModel):
+class InterviewScheduledRequest(WeDoBaseModel):
     """Request model for interview scheduled trigger."""
     candidate_id: str = Field(..., description="ID of the candidate")
     vacancy_id: str = Field(..., description="ID of the vacancy")
@@ -318,7 +319,7 @@ class InterviewScheduledRequest(BaseModel):
         }
 
 
-class InterviewCompletedRequest(BaseModel):
+class InterviewCompletedRequest(WeDoBaseModel):
     """Request model for interview completed trigger."""
     candidate_id: str = Field(..., description="ID of the candidate")
     vacancy_id: str = Field(..., description="ID of the vacancy")
@@ -356,7 +357,7 @@ class InterviewCompletedRequest(BaseModel):
         }
 
 
-class CandidateInactiveRequest(BaseModel):
+class CandidateInactiveRequest(WeDoBaseModel):
     """Request model for candidate inactive trigger."""
     candidate_id: str = Field(..., description="ID of the candidate")
     vacancy_id: str = Field(..., description="ID of the vacancy")
@@ -386,7 +387,7 @@ class CandidateInactiveRequest(BaseModel):
         }
 
 
-class ATSSyncRequest(BaseModel):
+class ATSSyncRequest(WeDoBaseModel):
     """Request model for ATS synchronization trigger."""
     candidate_id: str = Field(..., description="ID of the candidate in LIA")
     vacancy_id: str = Field(..., description="ID of the vacancy in LIA")
@@ -426,7 +427,7 @@ class ATSSyncRequest(BaseModel):
 
 # --- Additional Pydantic models used by event_handlers and triggers ---
 
-class ScreenCandidateRequest(BaseModel):
+class ScreenCandidateRequest(WeDoBaseModel):
     """Request model for screening a candidate against a vacancy."""
     candidate_id: str = Field(..., description="ID of the candidate to screen")
     vacancy_id: str = Field(..., description="ID of the job vacancy")
@@ -443,7 +444,7 @@ class ScreenCandidateRequest(BaseModel):
 
 
 
-class TriggerEventRequest(BaseModel):
+class TriggerEventRequest(WeDoBaseModel):
     """Request model for triggering an automation event."""
     event_type: str = Field(..., description="Type of event to trigger (e.g., job_created, screening_completed)")
     entity_id: str = Field(..., description="ID of the related entity (job, candidate, etc)")
@@ -467,7 +468,7 @@ class TriggerEventRequest(BaseModel):
 
 
 
-class ScreeningCompletedRequest(BaseModel):
+class ScreeningCompletedRequest(WeDoBaseModel):
     """Request model for conversational screening completed trigger."""
     candidate_id: str = Field(..., description="ID of the candidate who completed screening")
     vacancy_id: str = Field(..., description="ID of the job vacancy")
@@ -511,7 +512,7 @@ class ScreeningCompletedRequest(BaseModel):
 WSI_PASS_THRESHOLD = 3.75  # approved_auto ≥ 3.75/5 (= 7.5/10)
 WSI_REVIEW_THRESHOLD = 3.0  # review_min ≥ 3.0/5 (= 6.0/10)
 
-class BulkSuggestionRequest(BaseModel):
+class BulkSuggestionRequest(WeDoBaseModel):
     """Request model for bulk suggestion operations."""
     suggestion_ids: list[str] = Field(..., description="List of suggestion IDs to process")
     company_id: str = Field(..., description="Company ID for multi-tenancy validation")
@@ -520,7 +521,7 @@ class BulkSuggestionRequest(BaseModel):
 
 
 
-class CandidateNoShowRequest(BaseModel):
+class CandidateNoShowRequest(WeDoBaseModel):
     """Request model for candidate no-show trigger."""
     candidate_id: str = Field(..., description="ID of the candidate who didn't show")
     vacancy_id: str = Field(..., description="ID of the vacancy")
@@ -555,7 +556,7 @@ class CandidateNoShowRequest(BaseModel):
 
 
 
-class OfferSentPayload(BaseModel):
+class OfferSentPayload(WeDoBaseModel):
     """Request model for offer sent trigger."""
     candidate_id: str = Field(..., description="ID of the candidate")
     vacancy_id: str = Field(..., description="ID of the vacancy")
@@ -586,7 +587,7 @@ class OfferSentPayload(BaseModel):
 
 
 
-class CandidateHiredPayload(BaseModel):
+class CandidateHiredPayload(WeDoBaseModel):
     """Request model for candidate hired trigger."""
     candidate_id: str = Field(..., description="ID of the candidate")
     vacancy_id: str = Field(..., description="ID of the vacancy")
@@ -617,7 +618,7 @@ class CandidateHiredPayload(BaseModel):
 
 
 
-class CandidateRejectedPayload(BaseModel):
+class CandidateRejectedPayload(WeDoBaseModel):
     """Request model for candidate rejected trigger."""
     candidate_id: str = Field(..., description="ID of the candidate")
     vacancy_id: str = Field(..., description="ID of the vacancy")
@@ -649,7 +650,7 @@ class CandidateRejectedPayload(BaseModel):
 
 
 
-class RejectSuggestionRequest(BaseModel):
+class RejectSuggestionRequest(WeDoBaseModel):
     """Request model for rejecting an AI suggestion."""
     reason: str | None = Field(None, description="Reason for rejecting the suggestion")
 

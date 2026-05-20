@@ -27,6 +27,7 @@ from app.core.database import get_db
 from app.domains.job_management.services.jd_import_service import JDImportService
 from lia_models.imported_job_description import ImportBatch, ImportStatus
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,7 @@ class JDItem(BaseModel):
     status: str | None = None
 
 
-class BulkImportRequest(BaseModel):
+class BulkImportRequest(WeDoBaseModel):
     source: str = Field("spreadsheet", description="gupy | pandape | greenhouse | spreadsheet | manual_upload")
     jobs: list[JDItem] = Field(..., min_length=1, max_length=500)
 

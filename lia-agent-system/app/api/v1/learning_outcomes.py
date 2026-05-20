@@ -18,6 +18,7 @@ from app.domains.recruitment.repositories.learning_outcome_repository import Lea
 from app.domains.job_management.services.outcome_tracker import outcome_tracker
 from app.models.feedback_learning import JobOutcome, JobOutcomeType
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter(prefix="/learning-outcomes", tags=["Learning Outcomes"])
 logger = logging.getLogger(__name__)
@@ -27,8 +28,7 @@ def get_learning_outcome_repo(db: AsyncSession = Depends(get_db)) -> LearningOut
     return LearningOutcomeRepository(db)
 
 
-class OutcomeRecordRequest(BaseModel):
-    company_id: str
+class OutcomeRecordRequest(WeDoBaseModel):
     job_id: str
     reason: str = Field(..., description="Close reason: filled, cancelled, expired, reposted")
     hired_candidate_id: str | None = None
@@ -81,7 +81,7 @@ async def record_outcome(request: OutcomeRecordRequest, db: AsyncSession = Depen
     try:
         result = await outcome_tracker.record_job_close(
             job_id=request.job_id,
-            company_id=request.company_id,
+            company_id=company_id,
             reason=request.reason,
             hired_candidate_id=request.hired_candidate_id,
             db=db,

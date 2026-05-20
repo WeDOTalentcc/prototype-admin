@@ -15,21 +15,11 @@ from app.domains.job_management.services.job_alert_service import job_alert_serv
 from app.models.alert import AlertConfig, AlertPreference, AlertSeverity
 from app.shared.tenant_guard import get_verified_company_id
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/alerts", tags=["alerts"])
-
-
-# DEPRECATED — use get_verified_company_id from app.shared.tenant_guard
-def require_company_id(x_company_id: str | None = Header(None, alias="X-Company-ID")) -> str:
-    """DEPRECATED: Use get_verified_company_id instead. Kept for backward compatibility."""
-    if not x_company_id:
-        raise HTTPException(
-            status_code=403,
-            detail="Company ID required. Please provide X-Company-ID header."
-        )
-    return x_company_id
 
 
 def get_alert_repo(db: AsyncSession = Depends(get_db)) -> AlertRepository:
@@ -157,7 +147,7 @@ class AlertConfigItem(BaseModel):
     channel: str = "email"
 
 
-class AlertConfigRequest(BaseModel):
+class AlertConfigRequest(WeDoBaseModel):
     """Request model for alert configuration."""
     alerts: list[AlertConfigItem]
     briefing_frequency: str = "daily"
@@ -262,7 +252,7 @@ class AlertPreferenceItem(BaseModel):
     cooldown_hours: int = 24
 
 
-class AlertPreferenceRequest(BaseModel):
+class AlertPreferenceRequest(WeDoBaseModel):
     """Request model for creating/updating preferences."""
     preferences: list[AlertPreferenceItem]
 

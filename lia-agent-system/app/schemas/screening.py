@@ -5,6 +5,7 @@ import logging
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 _logger = logging.getLogger(__name__)
 
@@ -17,7 +18,7 @@ class BigFiveProfile(BaseModel):
     stability: int = Field(default=50, ge=0, le=100, description="Estabilidade emocional")
 
 
-class ScreeningQuestionRequest(BaseModel):
+class ScreeningQuestionRequest(WeDoBaseModel):
     title: str = Field(..., description="Job title")
     department: str | None = Field(None, description="Department/area")
     seniority: Literal["junior", "pleno", "senior", "lead", "executive"] | None = Field(
@@ -58,7 +59,7 @@ class ScreeningQuestionResponse(BaseModel):
     metadata: dict[str, Any] = Field(default={}, description="Generation metadata")
 
 
-class RegenerateQuestionsRequest(BaseModel):
+class RegenerateQuestionsRequest(WeDoBaseModel):
     context: ScreeningQuestionRequest = Field(..., description="Original job context")
     category: Literal["behavioral", "technical", "cultural"] | None = Field(
         None, description="Category to regenerate, or all if None"
@@ -91,7 +92,7 @@ class UnifiedScreeningQuestion(BaseModel):
     order: int = Field(default=0, description="Display order within block")
 
 
-class WSIScreeningPipelineRequest(BaseModel):
+class WSIScreeningPipelineRequest(WeDoBaseModel):
     """Request for the unified WSI screening pipeline."""
     company_id: str | None = Field(None, description="Company ID (auto-filled from auth)")
     job_title: str = Field(..., description="Job title")

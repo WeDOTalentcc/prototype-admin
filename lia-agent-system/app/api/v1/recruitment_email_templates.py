@@ -22,6 +22,7 @@ from app.domains.job_management.services.recruitment_email_templates import (
 )
 from app.models.recruitment_email_template import RecruitmentEmailTemplate, RecruitmentStageName, TemplateType
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +60,7 @@ class TemplateListResponse(BaseModel):
     items: list[TemplateResponse]
 
 
-class TemplateUpdateRequest(BaseModel):
+class TemplateUpdateRequest(WeDoBaseModel):
     name: str | None = None
     description: str | None = None
     subject: str | None = None
@@ -69,7 +70,7 @@ class TemplateUpdateRequest(BaseModel):
     is_active: bool | None = None
 
 
-class TemplatePreviewRequest(BaseModel):
+class TemplatePreviewRequest(WeDoBaseModel):
     variables: dict[str, str] | None = Field(default_factory=dict)
 
 

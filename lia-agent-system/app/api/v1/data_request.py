@@ -28,6 +28,7 @@ from app.models.data_request import (
     TriggerType,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +51,7 @@ class FieldSchema(BaseModel):
     allowed_file_types: list[str] | None = None
 
 
-class CreateDataRequestRequest(BaseModel):
+class CreateDataRequestRequest(WeDoBaseModel):
     """Request to create a new data request."""
     candidate_id: UUID
     vacancy_id: UUID | None = None
@@ -98,7 +99,7 @@ class DataRequestListResponse(BaseModel):
     total: int
 
 
-class ResendNotificationRequest(BaseModel):
+class ResendNotificationRequest(WeDoBaseModel):
     """Request to resend notification."""
     channels: list[str] = Field(default=["email"])
 
@@ -133,7 +134,7 @@ class ConfigResponse(BaseModel):
         from_attributes = True
 
 
-class UpdateConfigRequest(BaseModel):
+class UpdateConfigRequest(WeDoBaseModel):
     """Request to update company configuration."""
     default_expiration_days: int | None = None
     require_otp: bool | None = None
@@ -161,7 +162,7 @@ class LGPDSettingsSchema(BaseModel):
     allow_data_deletion: bool = True
 
 
-class CollectionSettingsRequest(BaseModel):
+class CollectionSettingsRequest(WeDoBaseModel):
     """Request to update collection settings (LGPD/WhatsApp)."""
     collection_mode: str = Field(
         default="portal_only",
@@ -201,7 +202,7 @@ class TemplateResponse(BaseModel):
         from_attributes = True
 
 
-class CreateTemplateRequest(BaseModel):
+class CreateTemplateRequest(WeDoBaseModel):
     """Request to create a template."""
     name: str = Field(..., min_length=1, max_length=255)
     description: str | None = None
@@ -212,7 +213,7 @@ class CreateTemplateRequest(BaseModel):
     fields: list[FieldSchema] = Field(default=[])
 
 
-class UpdateTemplateRequest(BaseModel):
+class UpdateTemplateRequest(WeDoBaseModel):
     """Request to update a template."""
     name: str | None = None
     description: str | None = None
@@ -224,7 +225,7 @@ class UpdateTemplateRequest(BaseModel):
     is_active: bool | None = None
 
 
-class CreateFieldRequest(BaseModel):
+class CreateFieldRequest(WeDoBaseModel):
     """Request to create a custom field."""
     name: str = Field(..., min_length=1, max_length=100)
     label: str = Field(..., min_length=1, max_length=255)
@@ -806,7 +807,7 @@ class StageTriggerConfig(BaseModel):
     trigger_type: str = "stage_entry"
 
 
-class UpdateVacancyTriggersRequest(BaseModel):
+class UpdateVacancyTriggersRequest(WeDoBaseModel):
     """Request to update vacancy triggers."""
     use_company_defaults: bool = False
     stage_configs: dict[str, StageTriggerConfig] = {}
@@ -1026,12 +1027,12 @@ company_id: str = Depends(require_company_id)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-class WhatsAppStartRequest(BaseModel):
+class WhatsAppStartRequest(WeDoBaseModel):
     """Request to start WhatsApp collection."""
     candidate_phone: str = Field(..., description="Candidate's WhatsApp phone number")
 
 
-class WhatsAppProcessMessageRequest(BaseModel):
+class WhatsAppProcessMessageRequest(WeDoBaseModel):
     """Request to process incoming WhatsApp message."""
     message_content: str = Field(..., description="Text content of the message")
     file_url: str | None = Field(None, description="URL of uploaded file (if any)")

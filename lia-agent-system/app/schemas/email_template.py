@@ -6,6 +6,7 @@ from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
+from app.shared.types import WeDoBaseModel
 
 
 class EmailTemplateBase(BaseModel):
@@ -28,7 +29,7 @@ class EmailTemplateCreate(EmailTemplateBase):
     created_by: str | None = Field(None, description="User who created the template")
 
 
-class EmailTemplateUpdate(BaseModel):
+class EmailTemplateUpdate(WeDoBaseModel):
     """Schema for updating an email template (all fields optional)."""
     name: str | None = Field(None, min_length=1, max_length=255)
     subject: str | None = Field(None, max_length=500)
@@ -73,7 +74,7 @@ class EmailTemplateListResponse(BaseModel):
     items: list[EmailTemplateResponse]
 
 
-class EmailPreviewRequest(BaseModel):
+class EmailPreviewRequest(WeDoBaseModel):
     """Request for previewing an email with variables substituted."""
     template_id: UUID | None = Field(None, description="ID of template to preview (optional if subject/body provided)")
     subject: str | None = Field(None, description="Custom subject (overrides template)")
@@ -91,7 +92,7 @@ class EmailPreviewResponse(BaseModel):
     missing_variables: list[str] = Field(default_factory=list)
 
 
-class EmailSendRequest(BaseModel):
+class EmailSendRequest(WeDoBaseModel):
     """Request for sending an email using a template."""
     recipient_email: EmailStr = Field(..., description="Recipient email address")
     recipient_name: str | None = Field(None, description="Recipient name (used in variables)")
@@ -142,7 +143,7 @@ class DefaultTemplatesResponse(BaseModel):
     message: str
 
 
-class TemplatePreviewByIdRequest(BaseModel):
+class TemplatePreviewByIdRequest(WeDoBaseModel):
     """Request for previewing a template by ID with variables substituted."""
     variables: dict[str, str] = Field(default_factory=dict, description="Variables to substitute in template, e.g. {'candidate_name': 'João Silva', 'job_title': 'Desenvolvedor'}")
 
@@ -160,7 +161,7 @@ class TemplatePreviewByIdResponse(BaseModel):
     data: TemplatePreviewByIdData
 
 
-class TemplateGenerateRequest(BaseModel):
+class TemplateGenerateRequest(WeDoBaseModel):
     """Request for AI-powered email template generation."""
     template_type: str = Field(..., description="Type of template: initial_contact, screening_reminder, offer_letter, rejection, interview_invitation, follow_up")
     context: dict[str, Any] = Field(default_factory=dict, description="Context variables like job_title, company_name, tone (formal/casual)")
@@ -180,7 +181,7 @@ class TemplateGenerateResponse(BaseModel):
     data: TemplateGenerateData
 
 
-class TemplateAdjustRequest(BaseModel):
+class TemplateAdjustRequest(WeDoBaseModel):
     """Request for AI-powered template adjustment using free-form prompt."""
     template_id: str | None = Field(None, description="ID of the template being adjusted (optional)")
     prompt: str = Field(..., min_length=3, description="Free-form prompt describing the desired adjustments")

@@ -15,12 +15,13 @@ from app.dependencies.token_budget import require_token_budget
 from app.orchestrator.context_adapter import ContextAdapter
 from app.orchestrator.main_orchestrator import MainOrchestrator
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-class OrchestratedTalentChatRequest(BaseModel):
+class OrchestratedTalentChatRequest(WeDoBaseModel):
     message: str = Field(..., description="User's natural language query")
     candidates: list[dict[str, Any]] = Field(
         default_factory=list, description="List of candidates in current view"
@@ -38,7 +39,6 @@ class OrchestratedTalentChatRequest(BaseModel):
         None, description="Optional conversation ID for context continuity"
     )
     user_id: str = Field(default="recruiter", description="User ID for routing")
-    company_id: str = Field(default="", description="Tenant company ID for multi-tenancy isolation")
 
 class OrchestratedTalentChatResponse(BaseModel):
     success: bool
@@ -79,7 +79,7 @@ company_id: str = Depends(require_company_id)):
         ctx = ContextAdapter.from_talent_chat(
             request,
             user_id=request.user_id,
-            company_id=request.company_id or "",
+            company_id=company_id or "",
         )
 
         db = None

@@ -2,9 +2,10 @@
 from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
-class CreateDeploymentRequest(BaseModel):
+class CreateDeploymentRequest(WeDoBaseModel):
     target_type: Literal["job", "talent_pool", "pipeline_stage", "candidate_list"]
     target_id: str
     target_name: Optional[str] = None
@@ -13,7 +14,7 @@ class CreateDeploymentRequest(BaseModel):
     config_overrides: dict[str, Any] = Field(default_factory=dict)
 
 
-class UpdateDeploymentRequest(BaseModel):
+class UpdateDeploymentRequest(WeDoBaseModel):
     trigger_mode: Optional[Literal["manual", "on_new_candidate", "on_stage_change", "scheduled"]] = None
     schedule_cron: Optional[str] = None
     is_active: Optional[bool] = None
@@ -45,7 +46,7 @@ class DeploymentListResponse(BaseModel):
     total: int
 
 
-class RunDeploymentRequest(BaseModel):
+class RunDeploymentRequest(WeDoBaseModel):
     """Manual trigger: run agent on all candidates in target."""
     message: Optional[str] = None
     context: dict[str, Any] = Field(default_factory=dict)

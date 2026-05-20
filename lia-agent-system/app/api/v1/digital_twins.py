@@ -13,11 +13,12 @@ from app.core.database import get_db
 from pydantic import BaseModel, Field
 from typing import Optional
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter(prefix="/api/v1/digital-twins", tags=["Digital Twins"])
 
 
-class CreateTwinRequest(BaseModel):
+class CreateTwinRequest(WeDoBaseModel):
     twin_name: str = Field(..., min_length=3, max_length=256)
     sme_user_id: Optional[str] = None
     specialties: list[str] = Field(default_factory=list)
@@ -25,13 +26,13 @@ class CreateTwinRequest(BaseModel):
     months_back: int = Field(default=12, ge=1, le=36)
 
 
-class EvaluateRequest(BaseModel):
+class EvaluateRequest(WeDoBaseModel):
     candidate_profile: dict
     job_context: dict
     k: int = Field(default=5, ge=1, le=20)
 
 
-class ManualDecisionRequest(BaseModel):
+class ManualDecisionRequest(WeDoBaseModel):
     decision: str = Field(..., pattern="^(approved|rejected|maybe)$")
     reasoning: str = Field(..., min_length=10, max_length=2000)
     candidate_snapshot: Optional[dict] = None

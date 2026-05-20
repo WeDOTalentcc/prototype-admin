@@ -5,6 +5,7 @@ from datetime import datetime
 from enum import Enum, StrEnum
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class AnalysisTypeEnum(StrEnum):
@@ -13,7 +14,7 @@ class AnalysisTypeEnum(StrEnum):
     DETAILED_BULLETS = "detailed_bullets"
 
 
-class LiaProfileAnalysisCreate(BaseModel):
+class LiaProfileAnalysisCreate(WeDoBaseModel):
     """Schema for creating a new profile analysis."""
     candidate_id: str
     analysis_type: AnalysisTypeEnum

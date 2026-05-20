@@ -48,6 +48,7 @@ from app.models.recruitment_stages import (
     RecruitmentStage,
     ScreeningQuestion,
 )
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +80,7 @@ ACTION_BEHAVIOR_LABELS = {
 # Pydantic models — Stage CRUD
 # ---------------------------------------------------------------------------
 
-class StageCreate(BaseModel):
+class StageCreate(WeDoBaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     display_name: str = Field(..., min_length=1, max_length=100)
     description: str | None = None
@@ -96,13 +97,13 @@ class StageCreate(BaseModel):
     action_behavior: str = Field(default="passive", description="Action behavior type for this stage")
 
 
-class StageConfigUpdate(BaseModel):
+class StageConfigUpdate(WeDoBaseModel):
     action_behavior: str | None = Field(None, description="Tipo de ação (screening, scheduling, evaluation, verification, offer, passive, etc.)")
     default_channel: str | None = Field(None, description="Canal padrão (email, whatsapp, email_whatsapp)")
     sla_hours: int | None = Field(None, description="SLA em horas")
 
 
-class StageUpdate(BaseModel):
+class StageUpdate(WeDoBaseModel):
     display_name: str | None = None
     description: str | None = None
     stage_order: int | None = None
@@ -126,7 +127,7 @@ class StageReorderItem(BaseModel):
     new_order: int
 
 
-class StageReorderRequest(BaseModel):
+class StageReorderRequest(WeDoBaseModel):
     stages: list[StageReorderItem]
 
 
@@ -134,7 +135,7 @@ class StageReorderRequest(BaseModel):
 # Pydantic models — Sub-status
 # ---------------------------------------------------------------------------
 
-class SubStatusCreate(BaseModel):
+class SubStatusCreate(WeDoBaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     display_name: str = Field(..., min_length=1, max_length=150)
     description: str | None = None
@@ -152,7 +153,7 @@ class SubStatusCreate(BaseModel):
 # Pydantic models — ATS Mapping
 # ---------------------------------------------------------------------------
 
-class ATSMappingCreate(BaseModel):
+class ATSMappingCreate(WeDoBaseModel):
     ats_type: str = Field(..., description="gupy, pandape, merge")
     ats_stage_id: str | None = None
     ats_stage_name: str = Field(..., min_length=1, max_length=255)
@@ -183,7 +184,7 @@ class CompanyPipelineStageItem(BaseModel):
     default_channel: str | None = None
 
 
-class CompanyPipelineUpdate(BaseModel):
+class CompanyPipelineUpdate(WeDoBaseModel):
     stages: list[CompanyPipelineStageItem]
 
 
@@ -197,7 +198,7 @@ class JobPipelineStageItem(BaseModel):
     icon: str | None = None
 
 
-class JobPipelineUpdate(BaseModel):
+class JobPipelineUpdate(WeDoBaseModel):
     stages: list[JobPipelineStageItem]
 
 
@@ -205,7 +206,7 @@ class JobPipelineUpdate(BaseModel):
 # Pydantic models — Transition
 # ---------------------------------------------------------------------------
 
-class TransitionRequest(BaseModel):
+class TransitionRequest(WeDoBaseModel):
     vacancy_candidate_id: str
     to_stage: str
     to_sub_status: str | None = None
@@ -223,7 +224,7 @@ class ChatMessageItem(BaseModel):
     timestamp: float | None = None
 
 
-class InterpretContextRequest(BaseModel):
+class InterpretContextRequest(WeDoBaseModel):
     candidate_id: str
     candidate_name: str | None = None
     job_title: str | None = None
@@ -280,7 +281,7 @@ class DispatchResult(BaseModel):
     ai_personalized: bool = False
 
 
-class TransitionExecuteRequest(BaseModel):
+class TransitionExecuteRequest(WeDoBaseModel):
     vacancy_candidate_id: str
     to_stage: str
     from_stage: str | None = None
@@ -308,7 +309,7 @@ class TransitionExecuteResponse(BaseModel):
 # Pydantic models — Return Events
 # ---------------------------------------------------------------------------
 
-class ReturnEventRequest(BaseModel):
+class ReturnEventRequest(WeDoBaseModel):
     vacancy_candidate_id: str = Field(..., description="ID do VacancyCandidate")
     event_type: str = Field(..., description="Tipo do evento de retorno (screening_complete, interview_confirmed, etc.)")
     metadata: dict | None = Field(default=None, description="Dados adicionais do evento (score, notas, etc.)")
@@ -326,7 +327,7 @@ class ReturnEventResponse(BaseModel):
     error: str | None = None
 
 
-class BulkReturnEventRequest(BaseModel):
+class BulkReturnEventRequest(WeDoBaseModel):
     events: list[ReturnEventRequest] = Field(..., description="Lista de eventos de retorno para processar em lote")
 
 
@@ -334,7 +335,7 @@ class BulkReturnEventRequest(BaseModel):
 # Pydantic models — Infer Behavior
 # ---------------------------------------------------------------------------
 
-class InferBehaviorRequest(BaseModel):
+class InferBehaviorRequest(WeDoBaseModel):
     stage_name: str = Field(..., min_length=1, max_length=200, description="Nome da etapa customizada")
     description: str | None = None
 

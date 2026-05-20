@@ -169,10 +169,10 @@ global:
       - wsi_screening
       - create_nurture_sequence
       - suggest_reengagement
-  llm_provider: gemini
+  llm_provider: claude
   llm_fallback_order:
-  - gemini
   - claude
+  - gemini
   - openai
 
 # ── RESTRICTED TOOLS ─────────────────────────────────────────────────────────

@@ -23,6 +23,7 @@ from app.domains.integrations_hub.services.rails_adapter import RailsAdapter, RA
 from app.domains.integrations_hub.services.rails_adapter_dependency import get_rails_adapter
 from app.shared.rails_migration.deprecation import enforce_job_vacancies_deprecation
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 # MIGRATION_PLAN item 7.1 — Python CRUD deprecated in favor of Rails (ats-api-copia).
 #
@@ -336,7 +337,7 @@ company_id: str = Depends(require_company_id)):
 
 # ─── Find by identifier ────────────────────────────────────────────────────
 
-class FindJobRequest(BaseModel):
+class FindJobRequest(WeDoBaseModel):
     identifier: str = Field(..., description="Job ID, job_id code, or title to search for")
 
 
@@ -682,42 +683,36 @@ company_id: str = Depends(require_company_id)):
         company_id = get_user_company_id(current_user)
         logger.info(f"Creating job vacancy: {job_data.title} for company: {company_id}")
 
+        # Sprint 4 Refactor (audit 2026-05-20): elimina drop silencioso de fields.
+        # job_data.model_dump() retorna TODOS os fields do schema automaticamente —
+        # quando schema cresce, novos fields fluem sem precisar editar este bloco.
+        # Sensor harness: tests/contract/test_jobvacancy_roundtrip.py garante regressao.
+        job_data_dict = job_data.model_dump(exclude={"conversation_id"})
+
+        # Preservar semantica original (None -> []) para list fields com default=list
+        # T-1166 — responsibilities especialmente: model coerce None nao acontece automatico.
+        _LIST_FIELDS_DEFAULT_EMPTY = (
+            "responsibilities", "requirements", "technical_requirements",
+            "languages", "behavioral_competencies", "benefits",
+            "access_list", "screening_questions", "interview_stages",
+            "eligibility_questions", "disabled_eligibility_question_ids",
+            "affirmative_document_types",
+        )
+        for _field in _LIST_FIELDS_DEFAULT_EMPTY:
+            if job_data_dict.get(_field) is None:
+                job_data_dict[_field] = []
+
+        # conversation_id requer UUID conversion (nao puro dump)
+        conversation_id = uuid_lib.UUID(job_data.conversation_id) if job_data.conversation_id else None
+
         job_vacancy = JobVacancy(
             id=uuid_lib.uuid4(),
-            title=job_data.title,
-            department=job_data.department,
-            location=job_data.location,
-            work_model=job_data.work_model,
-            employment_type=job_data.employment_type,
-            seniority_level=job_data.seniority_level,
-            description=job_data.description,
-            responsibilities=job_data.responsibilities or [],  # T-1166
-            requirements=job_data.requirements or [],
-            technical_requirements=job_data.technical_requirements or [],
-            languages=job_data.languages or [],
-            behavioral_competencies=job_data.behavioral_competencies or [],
-            salary=job_data.salary,
-            salary_range=job_data.salary_range,
-            benefits=job_data.benefits or [],
-            manager=job_data.manager,
-            manager_email=job_data.manager_email,
-            recruiter=job_data.recruiter,
-            recruiter_email=job_data.recruiter_email,
-            is_confidential=job_data.is_confidential,
-            visibility=job_data.visibility,
-            access_list=job_data.access_list or [],
-            masked_company_name=job_data.masked_company_name,
-            exclude_from_sync=job_data.exclude_from_sync,
-            status=job_data.status,
-            priority=job_data.priority,
-            screening_questions=job_data.screening_questions or [],
-            interview_stages=job_data.interview_stages or [],
-            disabled_eligibility_question_ids=job_data.disabled_eligibility_question_ids or [],
-            conversation_id=uuid_lib.UUID(job_data.conversation_id) if job_data.conversation_id else None,
+            **job_data_dict,
+            conversation_id=conversation_id,
             company_id=company_id,
             created_by=str(current_user.id),
             created_at=datetime.utcnow(),
-            updated_at=datetime.utcnow()
+            updated_at=datetime.utcnow(),
         )
 
         job_vacancy = await repo.create_vacancy(job_vacancy)
@@ -753,7 +748,20 @@ company_id: str = Depends(require_company_id)):
             screening_questions=job_vacancy.screening_questions or [],
             interview_stages=job_vacancy.interview_stages or [],
             disabled_eligibility_question_ids=job_vacancy.disabled_eligibility_question_ids or [],
-            conversation_id=str(job_vacancy.conversation_id) if job_vacancy.conversation_id else None
+            conversation_id=str(job_vacancy.conversation_id) if job_vacancy.conversation_id else None,
+            # Sprint 3 Boy Scout (audit 2026-05-20): 11 fields que dropavam no constructor
+            # também filtravam aqui. Bug simétrico: INSERT salvava, response não devolvia.
+            bonus_range=job_vacancy.bonus_range,
+            eligibility_questions=job_vacancy.eligibility_questions or [],
+            confidentiality_config=job_vacancy.confidentiality_config,
+            is_affirmative=job_vacancy.is_affirmative or False,
+            affirmative_criteria_primary=job_vacancy.affirmative_criteria_primary,
+            affirmative_criteria_secondary=job_vacancy.affirmative_criteria_secondary,
+            affirmative_description=job_vacancy.affirmative_description,
+            affirmative_document_required=job_vacancy.affirmative_document_required or False,
+            affirmative_document_types=job_vacancy.affirmative_document_types or [],
+            source=job_vacancy.source,
+            wizard_stage=job_vacancy.wizard_stage,
         )
 
     except HTTPException:
@@ -974,7 +982,7 @@ company_id: str = Depends(require_company_id)):
 
 # ─── Duplicate / Clone ────────────────────────────────────────────────────────
 
-class DuplicateJobRequest(BaseModel):
+class DuplicateJobRequest(WeDoBaseModel):
     copies: int = Field(default=1, ge=1, le=10)
     include_candidates: bool = Field(default=True)
     candidate_filter: str | None = Field(default=None)
@@ -982,7 +990,7 @@ class DuplicateJobRequest(BaseModel):
     overrides: dict[str, Any] | None = Field(default=None)
 
 
-class CloneFromTemplateRequest(BaseModel):
+class CloneFromTemplateRequest(WeDoBaseModel):
     new_title: str | None = Field(default=None)
     overrides: dict[str, Any] | None = Field(default=None)
 

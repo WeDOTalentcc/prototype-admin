@@ -26,13 +26,14 @@ from app.models.approval import ApprovalRequest
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.pii_masking import get_masked_logger
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 logger = get_masked_logger(__name__)
 
 router = APIRouter(prefix="/approvals", tags=["approvals"])
 
 
-class ApprovalRequestCreate(BaseModel):
+class ApprovalRequestCreate(WeDoBaseModel):
     request_type: str = "vacancy_approval"
     requester_name: str
     requester_email: str
@@ -48,7 +49,7 @@ class ApprovalRequestCreate(BaseModel):
     due_date: datetime | None = None
 
 
-class ApprovalRequestUpdate(BaseModel):
+class ApprovalRequestUpdate(WeDoBaseModel):
     approval_notes: str | None = None
     rejection_reason: str | None = None
 

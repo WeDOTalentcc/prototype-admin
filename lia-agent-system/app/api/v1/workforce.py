@@ -745,6 +745,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
 
 from pydantic import BaseModel
+from app.shared.types import WeDoBaseModel
 
 
 class WorkforceEntryItem(BaseModel):
@@ -755,7 +756,7 @@ class WorkforceEntryItem(BaseModel):
     actual: int = 0
 
 
-class WorkforceEntriesRequest(BaseModel):
+class WorkforceEntriesRequest(WeDoBaseModel):
     """Request for saving workforce entries."""
     year: int
     entries: list[WorkforceEntryItem]

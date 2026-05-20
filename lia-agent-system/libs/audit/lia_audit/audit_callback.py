@@ -96,6 +96,13 @@ class AuditCallback(BaseCallbackHandler):
         self._current_tool_name: Optional[str] = None
         self._nodes_visited: List[str] = []
         self._final_confidence: float = 0.0
+        # Sprint C #37 fix: capture the main event loop at construction time
+        # so persistence can be scheduled even when LangChain calls the
+        # callback from a ThreadPoolExecutor worker thread.
+        try:
+            self._main_loop: Optional[asyncio.AbstractEventLoop] = asyncio.get_running_loop()
+        except RuntimeError:
+            self._main_loop = None
 
     def on_chain_start(self, serialized: Dict, inputs: Any, **kwargs: Any) -> None:
         if self._start_time is None:
@@ -291,14 +298,38 @@ class AuditCallback(BaseCallbackHandler):
         )
 
     def _schedule_persist(self, success: bool, error: Optional[str] = None) -> None:
+        # Sprint C #37 fix: schedule persistence robustly across threads.
+        # LangChain may invoke callbacks from ThreadPoolExecutor workers
+        # (e.g. tool nodes). Those threads don't have a running event loop,
+        # so we must use run_coroutine_threadsafe against the main loop
+        # captured in __init__.
+        coro = self._persist(success=success, error=error)
         try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                loop.create_task(self._persist(success=success, error=error))
-            else:
-                loop.run_until_complete(self._persist(success=success, error=error))
-        except Exception as exc:
-            logger.error("[AuditCallback] Falha ao agendar persistência: %s", exc)
+            running = asyncio.get_running_loop()
+            running.create_task(coro)
+            return
+        except RuntimeError:
+            pass
+        main = self._main_loop
+        if main is not None and main.is_running():
+            try:
+                asyncio.run_coroutine_threadsafe(coro, main)
+                return
+            except Exception as exc:  # pragma: no cover — defensive
+                logger.warning(
+                    "[AuditCallback] run_coroutine_threadsafe falhou (exec=%s): %s",
+                    self.execution_id, exc,
+                )
+        # No loop available — drop with a warning, don't crash the agent turn.
+        logger.warning(
+            "[AuditCallback] persistência ignorada — nenhum event loop disponível (exec=%s)",
+            self.execution_id,
+        )
+        # Best-effort: close the coroutine so we don't leak warnings.
+        try:
+            coro.close()
+        except Exception:
+            pass
 
     async def _persist(self, success: bool, error: Optional[str] = None) -> None:
         try:

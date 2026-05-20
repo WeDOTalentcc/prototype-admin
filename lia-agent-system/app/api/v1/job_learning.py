@@ -16,14 +16,14 @@ from pydantic import BaseModel, Field
 from app.domains.job_management.services.job_pattern_service import job_pattern_service
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter(prefix="/learning", tags=["Job Learning"])
 logger = logging.getLogger(__name__)
 
 
-class WizardSuggestionsRequest(BaseModel):
+class WizardSuggestionsRequest(WeDoBaseModel):
     """Request for wizard suggestions."""
-    company_id: str
     job_title: str
     department: str | None = None
     seniority: str | None = None
@@ -32,18 +32,16 @@ class WizardSuggestionsRequest(BaseModel):
     existing_behavioral: list[str] | None = Field(default_factory=list)
 
 
-class SalarySuggestionRequest(BaseModel):
+class SalarySuggestionRequest(WeDoBaseModel):
     """Request for salary suggestion."""
-    company_id: str
     job_title: str
     seniority: str | None = None
     location: str | None = None
     department: str | None = None
 
 
-class SkillsRecommendationRequest(BaseModel):
+class SkillsRecommendationRequest(WeDoBaseModel):
     """Request for skills recommendation."""
-    company_id: str
     job_title: str
     existing_skills: list[str] | None = Field(default_factory=list)
     department: str | None = None
@@ -51,9 +49,8 @@ class SkillsRecommendationRequest(BaseModel):
     limit: int = 10
 
 
-class BehavioralRecommendationRequest(BaseModel):
+class BehavioralRecommendationRequest(WeDoBaseModel):
     """Request for behavioral recommendation."""
-    company_id: str
     job_title: str
     existing_behavioral: list[str] | None = Field(default_factory=list)
     department: str | None = None
@@ -61,9 +58,8 @@ class BehavioralRecommendationRequest(BaseModel):
     limit: int = 10
 
 
-class TimeFillPredictionRequest(BaseModel):
+class TimeFillPredictionRequest(WeDoBaseModel):
     """Request for time-to-fill prediction."""
-    company_id: str
     job_title: str
     seniority: str | None = None
     location: str | None = None
@@ -71,9 +67,8 @@ class TimeFillPredictionRequest(BaseModel):
     salary_max: float | None = None
 
 
-class JobOutcomeRequest(BaseModel):
+class JobOutcomeRequest(WeDoBaseModel):
     """Request to record job outcome."""
-    company_id: str
     job_id: str
     outcome_status: str
     job_title: str | None = None
@@ -98,9 +93,8 @@ class JobOutcomeRequest(BaseModel):
     extra_data: dict | None = Field(default_factory=dict)
 
 
-class SimilarJobsRequest(BaseModel):
+class SimilarJobsRequest(WeDoBaseModel):
     """Request for similar jobs."""
-    company_id: str
     job_title: str
     department: str | None = None
     seniority: str | None = None
@@ -119,7 +113,7 @@ async def get_wizard_suggestions(request: WizardSuggestionsRequest, company_id: 
     """
     try:
         suggestions = await job_pattern_service.get_wizard_suggestions(
-            company_id=request.company_id,
+            company_id=company_id,
             job_title=request.job_title,
             department=request.department,
             seniority=request.seniority,
@@ -145,7 +139,7 @@ async def get_salary_suggestion(request: SalarySuggestionRequest, company_id: st
     """
     try:
         suggestion = await job_pattern_service.get_salary_suggestion(
-            company_id=request.company_id,
+            company_id=company_id,
             job_title=request.job_title,
             seniority=request.seniority,
             location=request.location,
@@ -169,7 +163,7 @@ async def get_skills_recommendation(request: SkillsRecommendationRequest, compan
     """
     try:
         recommendation = await job_pattern_service.get_skills_recommendation(
-            company_id=request.company_id,
+            company_id=company_id,
             job_title=request.job_title,
             existing_skills=request.existing_skills,
             department=request.department,
@@ -192,7 +186,7 @@ async def get_behavioral_recommendation(request: BehavioralRecommendationRequest
     """
     try:
         recommendation = await job_pattern_service.get_behavioral_recommendation(
-            company_id=request.company_id,
+            company_id=company_id,
             job_title=request.job_title,
             existing_behavioral=request.existing_behavioral,
             department=request.department,
@@ -217,7 +211,7 @@ async def predict_time_to_fill(request: TimeFillPredictionRequest, company_id: s
     """
     try:
         prediction = await job_pattern_service.predict_time_to_fill(
-            company_id=request.company_id,
+            company_id=company_id,
             job_title=request.job_title,
             seniority=request.seniority,
             location=request.location,
@@ -242,7 +236,7 @@ async def get_success_profile(request: SimilarJobsRequest, company_id: str = Dep
     """
     try:
         profile = await job_pattern_service.get_success_profile(
-            company_id=request.company_id,
+            company_id=company_id,
             job_title=request.job_title,
             department=request.department,
         )
@@ -264,7 +258,7 @@ async def find_similar_jobs(request: SimilarJobsRequest, company_id: str = Depen
     """
     try:
         patterns = await job_pattern_service.find_similar_patterns(
-            company_id=request.company_id,
+            company_id=company_id,
             job_title=request.job_title,
             department=request.department,
             seniority=request.seniority,
@@ -292,7 +286,7 @@ async def record_job_outcome(request: JobOutcomeRequest, company_id: str = Depen
     """
     try:
         outcome = await job_pattern_service.record_job_outcome(
-            company_id=request.company_id,
+            company_id=company_id,
             job_id=request.job_id,
             outcome_data=request.model_dump(),
         )

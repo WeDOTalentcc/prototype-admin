@@ -22,6 +22,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import require_admin
 from app.auth.models import User
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ class HubSpotWebhookEvent(BaseModel):
     portalId: int | None = None
 
 
-class OnboardClientRequest(BaseModel):
+class OnboardClientRequest(WeDoBaseModel):
     """Manual client onboarding trigger."""
     company_name: str
     primary_email: str

@@ -14,6 +14,7 @@ from app.auth.models import User
 from app.core.database import get_db, get_tenant_db
 from app.shared.services.recruiter_personalization_service import recruiter_personalization_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -33,7 +34,7 @@ class RecruiterProfileResponse(BaseModel):
     profile_version: int = 1
 
 
-class PersonalizationSettingsUpdate(BaseModel):
+class PersonalizationSettingsUpdate(WeDoBaseModel):
     personalization_enabled: bool | None = None
     data_collection_consent: bool | None = None
     show_personalization_indicators: bool | None = None
@@ -66,7 +67,7 @@ class PersonalizedThresholdsResponse(BaseModel):
     experience_adjustment: float = 0.0
 
 
-class RecordEventRequest(BaseModel):
+class RecordEventRequest(WeDoBaseModel):
     event_type: str
     field_name: str | None = None
     original_value: Any | None = None

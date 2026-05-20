@@ -9,13 +9,14 @@ from app.core.database import get_db
 from app.domains.recruitment.repositories.search_feedback_repository import SearchFeedbackRepository
 from app.models.search_feedback import SearchFeedback
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/search/feedback", tags=["search-feedback"])
 
 
-class SubmitFeedbackRequest(BaseModel):
+class SubmitFeedbackRequest(WeDoBaseModel):
     candidate_id: str
     feedback_type: str = Field(..., pattern="^(like|dislike)$")
     job_id: str | None = None

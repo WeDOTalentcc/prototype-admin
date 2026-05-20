@@ -344,8 +344,12 @@ def _emit_wizard_step_audit(
             state.get("workspace_id") or state.get("company_id") or ""
         )
         if not company_id:
+            _ws = state.get("workspace_id")
+            _cid = state.get("company_id")
+            _keys = sorted(list(state.keys()))[:15]
             logger.warning(
-                "[JobCreation:%s] audit skipped — missing company_id", stage,
+                "[JobCreation:%s] audit skipped — missing company_id (ws=%r cid=%r keys=%s)",
+                stage, _ws, _cid, _keys,
             )
             return
 
@@ -472,6 +476,19 @@ def _emit_wizard_fallback_metric(
             "[JobCreation:%s] wizard fallback fired (reason=%s)",
             node, reason, extra=extra,
         )
+
+        # REGRA 4 sensor — Prometheus counter for Grafana alarm.
+        # inc_wizard_fallback is fail-open + cardinality-bounded.
+        try:
+            from app.shared.observability.fallback_metrics import (
+                inc_wizard_fallback,
+            )
+            inc_wizard_fallback(node, reason)
+        except Exception as _counter_exc:  # noqa: BLE001 — fail-open
+            logger.debug(
+                "[JobCreation:%s] wizard fallback counter inc failed: %s",
+                node, _counter_exc,
+            )
 
         # ── 2. Sentry breadcrumb + capture_message ──
         try:
@@ -946,7 +963,7 @@ def jd_enrichment_node(state: JobCreationState) -> JobCreationState:
         )
         service = _get_jd_service()
         _JD_LLM_TIMEOUT_S = float(__import__("os").environ.get(
-            "LIA_JD_ENRICHMENT_TIMEOUT_S", "12"
+            "LIA_JD_ENRICHMENT_TIMEOUT_S", "60"
         ))
         # Task #1065 — sinaliza ao frontend quando caímos em fallback
         # determinístico (timeout do LLM ou exception). O painel renderiza
@@ -1302,7 +1319,7 @@ def bigfive_node(state: JobCreationState) -> JobCreationState:
         import concurrent.futures as _cf_bf
         from app.domains.job_creation.schemas import BigFiveExtraction as _BFE
         _BF_LLM_TIMEOUT_S = float(__import__("os").environ.get(
-            "LIA_BIGFIVE_TIMEOUT_S", "10"
+            "LIA_BIGFIVE_TIMEOUT_S", "45"
         ))
         # NOTE: não usar `with ThreadPoolExecutor(...)` — o `__exit__` chama
         # `shutdown(wait=True)` e bloqueia até o LLM lento terminar (anula o
@@ -1464,7 +1481,7 @@ def salary_node(state: JobCreationState) -> JobCreationState:
     # o nó pula benchmark gracefully (`salary_benchmark=None`) — recrutador
     # pode preencher manualmente sem travar o wizard.
     _SALARY_TIMEOUT_S = float(__import__("os").environ.get(
-        "LIA_SALARY_TIMEOUT_S", "10"
+        "LIA_SALARY_TIMEOUT_S", "45"
     ))
     # Task #1065 — flag de fallback (timeout do benchmark fetch ou
     # exception). Painel renderiza banner pedindo revisão manual da faixa.
@@ -1837,6 +1854,9 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
 
             enriched = EnrichedJobDescription(**_safe_wsi_dict) if _safe_wsi_dict else None
             distribution = state.get("question_distribution", {"technical": 5, "behavioral": 2})
+            # Sprint F.4: defensive coerce — state may have None explicit; .get(default) only kicks in for MISSING keys.
+            if not isinstance(distribution, dict):
+                distribution = {"technical": 5, "behavioral": 2}
             seniority = state.get("seniority_resolved", "pleno")
             trait_rankings = state.get("trait_rankings", [])
 
@@ -1848,7 +1868,7 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
                 # CBI-conformes para revisão humana (HITL #2 ainda exigido).
                 import concurrent.futures as _cf_wq
                 _WSI_LLM_TIMEOUT_S = float(__import__("os").environ.get(
-                    "LIA_WSI_QUESTIONS_TIMEOUT_S", "20"
+                    "LIA_WSI_QUESTIONS_TIMEOUT_S", "60"
                 ))
                 # Task #1065 — flag de fallback determinístico (timeout LLM
                 # → `_fallback_questions`). Painel renderiza banner pedindo
@@ -3287,7 +3307,18 @@ def _emit_competency_gate_audit(
 
 def route_after_competency_gate(state: JobCreationState) -> str:
     """Routing após competency_gate_node LLM. Determinístico baseado em
-    mutações aplicadas pelo gate."""
+    mutações aplicadas pelo gate.
+
+    Sprint F.2 fix — self-loop on non-terminal intent (ask_question /
+    undecided / low_confidence clarify). Antes (bug): routing retornava
+    ``end`` e graph completava sem interrupt → próximo turno o wizard
+    reiniciava do intake (``is_interrupted=False``). Agora: routing
+    retorna ``competency_gate`` (self), graph re-entra no node, o bloco
+    ``if not msg and _in_graph_runtime(): interrupt()`` pausa o graph
+    canonicamente. Próximo turno: ``is_interrupted=True`` →
+    ``aresume_with_message`` funciona como esperado. State mutations
+    (``gate_clarify_message``) são preservadas via return do node
+    anterior antes do self-loop."""
     if state.get("fairness_blocked") is True:
         logger.info("[JobCreation:route] competency_gate -> END (fairness blocked)")
         return "end"
@@ -3295,15 +3326,28 @@ def route_after_competency_gate(state: JobCreationState) -> str:
     if mode in ("compact", "full"):
         logger.info("[JobCreation:route] competency_gate -> wsi_questions (mode=%s)", mode)
         return "wsi_questions"
-    # ask_question / undecided / pending → aguarda novo turno
+    # ask_question / undecided / low_confidence / pending — Sprint F.2 fix:
+    # self-loop em vez de END para que o interrupt() canônico no topo do
+    # gate pause o graph (caso contrário is_interrupted=False no próximo
+    # turno e wizard reinicia do intake — bug validado em produção).
     intent = state.get("gate_last_intent")
-    logger.info("[JobCreation:route] competency_gate -> END (intent=%s, awaiting next turn)", intent)
-    return "end"
+    logger.info(
+        "[JobCreation:route] competency_gate -> competency_gate (intent=%s, self-loop to interrupt)",
+        intent,
+    )
+    return "competency_gate"
 
 
 def route_after_gate(state: JobCreationState) -> str:
     """Routing após gate_node LLM. Determinístico baseado em mutações
-    aplicadas por ``jd_gate_node``."""
+    aplicadas por ``jd_gate_node``.
+
+    Sprint F.2 fix — self-loop em ask_question / off_topic (mesma classe
+    de bug do competency_gate / wsi_questions_gate). Sem self-loop, graph
+    completa sem interrupt quando usuário faz pergunta em vez de aprovar
+    → próximo turno reinicia do intake. Approve / reject_with_feedback /
+    provide_new_content NÃO precisam de self-loop porque já roteiam para
+    estados terminais (bigfive/intake) ou para outro fluxo definido."""
     if state.get("jd_fairness_blocked") is True:
         logger.info("[JobCreation:route] jd_gate -> END (fairness blocked)")
         return "end"
@@ -3327,9 +3371,14 @@ def route_after_gate(state: JobCreationState) -> str:
         logger.info("[JobCreation:route] jd_gate -> bigfive (approved, quality=%.1f)", quality)
         return "bigfive"
 
-    # ask_question / off_topic / pending → aguarda novo turno
-    logger.info("[JobCreation:route] jd_gate -> END (intent=%s, awaiting next turn)", intent)
-    return "end"
+    # ask_question / off_topic / pending — Sprint F.2 fix: self-loop para
+    # que interrupt() canônico no topo do gate pause o graph; sem isso o
+    # próximo turno do recrutador reinicia o wizard do intake.
+    logger.info(
+        "[JobCreation:route] jd_gate -> jd_gate (intent=%s, self-loop to interrupt)",
+        intent,
+    )
+    return "jd_gate"
 
 
 # ---------------------------------------------------------------------------
@@ -3751,7 +3800,12 @@ def _emit_wsi_questions_gate_audit(
 
 def route_after_wsi_questions_gate(state: JobCreationState) -> str:
     """Routing após wsi_questions_gate_node LLM. Determinístico baseado
-    em mutações aplicadas pelo gate."""
+    em mutações aplicadas pelo gate.
+
+    Sprint F.2 fix — self-loop on non-terminal intent (ask_question /
+    low_confidence clarify / remove_question com pacote reduzido).
+    Mesma motivação do ``route_after_competency_gate``: sem self-loop,
+    graph completa sem interrupt → wizard reinicia próximo turno."""
     if state.get("fairness_blocked") is True:
         logger.info("[JobCreation:route] wsi_questions_gate -> END (fairness blocked)")
         return "end"
@@ -3761,11 +3815,15 @@ def route_after_wsi_questions_gate(state: JobCreationState) -> str:
     if state.get("wsi_regenerate_pending") is True:
         logger.info("[JobCreation:route] wsi_questions_gate -> wsi_questions (regen pending)")
         return "wsi_questions"
+    # ask_question / low_confidence / remove_question (pacote reduzido aguardando
+    # re-aprovação) — Sprint F.2 fix: self-loop para que interrupt() canônico
+    # no topo do gate pause o graph.
     intent = state.get("gate_last_intent")
     logger.info(
-        "[JobCreation:route] wsi_questions_gate -> END (intent=%s, awaiting next turn)", intent,
+        "[JobCreation:route] wsi_questions_gate -> wsi_questions_gate (intent=%s, self-loop to interrupt)",
+        intent,
     )
-    return "end"
+    return "wsi_questions_gate"
 
 
 def route_after_questions(state: JobCreationState) -> str:
@@ -4638,6 +4696,7 @@ def create_job_creation_graph(
             {
                 "bigfive": "bigfive",
                 "intake": "intake",
+                "jd_gate": "jd_gate",  # Sprint F.2 fix — self-loop to interrupt
                 "end": END,
             },
         )
@@ -4667,6 +4726,7 @@ def create_job_creation_graph(
             route_after_competency_gate,
             {
                 "wsi_questions": "wsi_questions",
+                "competency_gate": "competency_gate",  # Sprint F.2 fix — self-loop to interrupt
                 "end": END,
             },
         )
@@ -4693,6 +4753,7 @@ def create_job_creation_graph(
             {
                 "eligibility": "eligibility",
                 "wsi_questions": "wsi_questions",
+                "wsi_questions_gate": "wsi_questions_gate",  # Sprint F.2 fix — self-loop to interrupt
                 "end": END,
             },
         )

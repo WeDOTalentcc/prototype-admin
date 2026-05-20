@@ -181,6 +181,7 @@ from app.auth.dependencies import (  # noqa: F401  # noqa: F401
 )
 from app.auth.models import User  # noqa: F401  # noqa: F401
 from app.core.database import get_db  # noqa: F401
+from app.shared.types import WeDoBaseModel
 
 
 def generate_slug(title: str, company_name: str = "") -> str:
@@ -204,7 +205,7 @@ def generate_slug(title: str, company_name: str = "") -> str:
 # SHARED PYDANTIC SCHEMAS
 # =============================================
 
-class JobVacancyCreate(BaseModel):
+class JobVacancyCreate(WeDoBaseModel):
     """Schema for creating a job vacancy directly (not via conversation)."""
     title: str = Field(..., min_length=1, max_length=255)
     department: str | None = None
@@ -254,7 +255,7 @@ class JobVacancyCreate(BaseModel):
     conversation_id: str | None = None
 
 
-class JobVacancyUpdate(BaseModel):
+class JobVacancyUpdate(WeDoBaseModel):
     """Schema for updating a job vacancy."""
     title: str | None = None
     department: str | None = None
@@ -368,7 +369,7 @@ class JobVacancyResponse(BaseModel):
     enriched_jd: dict | None = None
 
 
-class FinalizeJobVacancyRequest(BaseModel):
+class FinalizeJobVacancyRequest(WeDoBaseModel):
     conversation_id: str
     job_vacancy_state: JobVacancyState
     created_by: str
@@ -394,17 +395,17 @@ class BulkActionResponse(BaseModel):
     errors: list[BulkActionError] = []
 
 
-class BulkActionRequest(BaseModel):
+class BulkActionRequest(WeDoBaseModel):
     job_ids: list[UUID] = Field(..., min_length=1, max_length=100)
 
 
-class BulkAssignRecruiterRequest(BaseModel):
+class BulkAssignRecruiterRequest(WeDoBaseModel):
     job_ids: list[UUID] = Field(..., min_length=1, max_length=100)
     recruiter_email: str = Field(..., min_length=1)
     recruiter_name: str = Field(..., min_length=1)
 
 
-class BulkChangeStatusRequest(BaseModel):
+class BulkChangeStatusRequest(WeDoBaseModel):
     job_ids: list[UUID] = Field(..., min_length=1, max_length=100)
     new_status: str = Field(..., min_length=1)
 

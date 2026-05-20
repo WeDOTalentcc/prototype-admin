@@ -67,18 +67,9 @@ class QuestionBlockType(StrEnum):
     contextual = "contextual"
 
 
-class GenerateQuestionsRequest(BaseModel):
-    """Request for generating interview questions.
-    
-    If jobId is provided, questions are generated based on job requirements + candidate profile.
-    If jobId is None, questions are generated based only on candidate CV (exploratory interview).
-    """
-    jobId: UUID | None = Field(None, description="ID of the job vacancy (optional - if None, generates CV-based questions)")
-    candidateId: UUID = Field(..., description="ID of the candidate")
-    includeVagaQuestions: bool = Field(True, description="Include job-specific questions")
-    includeGapQuestions: bool = Field(True, description="Include questions about experience gaps")
-    includeFitCultural: bool = Field(True, description="Include cultural fit questions")
-    wsiLevel: str | None = Field("intermediate", description="WSI complexity level")
+# Sprint E.1 #44: canonical GenerateQuestionsRequest lives in app/api/v1/wsi/_shared.py.
+from app.api.v1.wsi._shared import GenerateQuestionsRequest  # noqa: F401
+from app.shared.types import WeDoBaseModel
 
 
 class InterviewQuestion(BaseModel):
@@ -162,12 +153,12 @@ class QuestionWithAnswer(BaseModel):
         return self.rating or self.starRating
 
 
-class CalculateWSIRequest(BaseModel):
+class CalculateWSIRequest(WeDoBaseModel):
     """Request for calculating WSI score."""
     blocks: list[QuestionBlock]
 
 
-class GenerateParecerRequest(BaseModel):
+class GenerateParecerRequest(WeDoBaseModel):
     """Request for generating interview parecer."""
     interviewNoteId: UUID = Field(..., description="ID of the interview note")
     questions: list[QuestionWithAnswer] = Field(..., description="Questions with answers and notes")
@@ -188,7 +179,7 @@ class GenerateParecerResponse(BaseModel):
     fairness_warnings: list[str] = Field(default_factory=list, description="Alertas de possível viés detectado no parecer")
 
 
-class InterviewNoteCreate(BaseModel):
+class InterviewNoteCreate(WeDoBaseModel):
     """Full interview note data for saving.
     
     Accepts the rich frontend format with additional metadata fields.
@@ -1159,7 +1150,7 @@ company_id: str = Depends(require_company_id)) -> list[InterviewNoteSummary]:
     ]
 
 
-class InterviewNoteUpdateRequest(BaseModel):
+class InterviewNoteUpdateRequest(WeDoBaseModel):
     questions: list | None = None
     blocks: list | None = None
     generalNotes: str | None = None

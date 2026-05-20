@@ -11,11 +11,12 @@ from app.domains.tasks.repositories.tasks_repository import TasksRepository
 from app.domains.automation.services.task_service import task_service
 from app.models.task import TaskPriority, TaskStatus, TaskType
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter(prefix="/tasks", tags=["tasks"])
 
 
-class TaskCreate(BaseModel):
+class TaskCreate(WeDoBaseModel):
     """Request model for creating a task."""
     title: str = Field(..., min_length=1, max_length=255)
     description: str | None = None
@@ -31,7 +32,7 @@ class TaskCreate(BaseModel):
     requires_confirmation: bool = False
 
 
-class TaskUpdate(BaseModel):
+class TaskUpdate(WeDoBaseModel):
     """Request model for updating a task."""
     title: str | None = None
     description: str | None = None

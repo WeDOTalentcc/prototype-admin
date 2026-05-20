@@ -19,6 +19,7 @@ from app.auth.models import User
 from app.core.database import get_db
 from app.models.talent_pool import TalentPool, TalentPoolCandidate
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +30,7 @@ router = APIRouter(prefix="/talent_pools", tags=["Talent Pools"])
 # Pydantic Schemas
 # ---------------------------------------------------------------------------
 
-class TalentPoolCreate(BaseModel):
+class TalentPoolCreate(WeDoBaseModel):
     name: str
     description: str | None = None
     screening_questions: list[dict[str, Any]] | None = None
@@ -38,7 +39,7 @@ class TalentPoolCreate(BaseModel):
     agent_config: dict[str, Any] | None = None
 
 
-class TalentPoolUpdate(BaseModel):
+class TalentPoolUpdate(WeDoBaseModel):
     name: str | None = None
     description: str | None = None
     status: str | None = None
@@ -48,18 +49,18 @@ class TalentPoolUpdate(BaseModel):
     agent_config: dict[str, Any] | None = None
 
 
-class AddCandidatesRequest(BaseModel):
+class AddCandidatesRequest(WeDoBaseModel):
     candidate_ids: list[int]
     origin: str = "manual"
 
 
-class MoveToJobRequest(BaseModel):
+class MoveToJobRequest(WeDoBaseModel):
     job_id: int
     candidate_ids: list[int]
     target_stage: str = "applied"
 
 
-class CreateJobFromPoolRequest(BaseModel):
+class CreateJobFromPoolRequest(WeDoBaseModel):
     title: str | None = None
 
 

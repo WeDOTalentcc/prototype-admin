@@ -5,6 +5,7 @@ from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, Field, field_validator
+from app.shared.types import WeDoBaseModel
 
 
 def _normalize_list_of_strings(v):
@@ -99,7 +100,7 @@ class CompanyCultureProfileCreate(CompanyCultureProfileBase):
     confidence_score: float = Field(default=1.0, ge=0, le=1)
 
 
-class CompanyCultureProfileUpdate(BaseModel):
+class CompanyCultureProfileUpdate(WeDoBaseModel):
     mission: str | None = None
     vision: str | None = None
     values: list[str] | None = None
@@ -147,13 +148,13 @@ class CompanyCultureProfileResponse(CompanyCultureProfileBase):
         from_attributes = True
 
 
-class CultureAnalysisRequest(BaseModel):
+class CultureAnalysisRequest(WeDoBaseModel):
     website_url: str
     company_id: UUID
     force_refresh: bool = False
 
 
-class CultureAnalysisDirectRequest(BaseModel):
+class CultureAnalysisDirectRequest(WeDoBaseModel):
     """Request for direct culture analysis without requiring company_id in database."""
     website_url: str
     linkedin_url: str | None = None

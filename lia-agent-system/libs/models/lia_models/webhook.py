@@ -91,6 +91,12 @@ class WebhookLog(Base):
     __tablename__ = "webhook_logs"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    company_id = Column(
+        String(255),
+        nullable=False,
+        index=True,
+        doc="Multi-tenancy scope (ADR-LGPD-001). Sprint F.3 #43 follow-up: model parity with DB column from migration 097.",
+    )
     webhook_id = Column(UUID(as_uuid=True), ForeignKey("studio_webhooks.id", ondelete="CASCADE"), nullable=False, index=True)
     event = Column(String(128), nullable=False)
     status = Column(Enum(WebhookStatus), default=WebhookStatus.PENDING, nullable=False)

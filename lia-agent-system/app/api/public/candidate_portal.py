@@ -35,6 +35,7 @@ from app.models.data_request import (
     DataRequestResponse as DataRequestResponseModel,
 )
 from app.models.job_vacancy import JobVacancy
+from app.shared.types import WeDoBaseModel
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
 # Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
@@ -71,7 +72,7 @@ class PortalDataRequestResponse(BaseModel):
     vacancy_info: dict[str, Any] | None = None
 
 
-class RequestOTPRequest(BaseModel):
+class RequestOTPRequest(WeDoBaseModel):
     """Request to send a new OTP."""
     channel: str = Field(default="email", pattern="^(email|whatsapp)$")
 
@@ -84,7 +85,7 @@ class RequestOTPResponse(BaseModel):
     expires_in_minutes: int = 10
 
 
-class VerifyOTPRequest(BaseModel):
+class VerifyOTPRequest(WeDoBaseModel):
     """Request to verify OTP code."""
     code: str = Field(..., min_length=6, max_length=6, pattern="^[0-9]{6}$")
 
@@ -106,7 +107,7 @@ class FieldSubmission(BaseModel):
         return re.sub(r'[^\w\-]', '', v)
 
 
-class SubmitDataRequest(BaseModel):
+class SubmitDataRequest(WeDoBaseModel):
     """Request to submit data."""
     fields: list[FieldSubmission]
     is_final: bool = False

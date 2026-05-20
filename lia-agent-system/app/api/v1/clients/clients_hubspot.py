@@ -16,11 +16,12 @@ from ._shared import (
     logger,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter()
 
 
-class HubSpotOnboardingUpdate(BaseModel):
+class HubSpotOnboardingUpdate(WeDoBaseModel):
     """Request model for updating HubSpot onboarding status."""
     welcome_email_sent: bool | None = None
     workos_configured: bool | None = None

@@ -12,11 +12,12 @@ from app.domains.automation.repositories.automation_rule_repository import (
     AutomationRuleRepository,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter(prefix="/automation-rules", tags=["automation-rules"])
 
 
-class AutomationRuleCreate(BaseModel):
+class AutomationRuleCreate(WeDoBaseModel):
     trigger_type: str
     is_active: bool = True
     auto_execute: bool = False
@@ -30,7 +31,7 @@ class AutomationRuleCreate(BaseModel):
     priority: str = "normal"
 
 
-class AutomationRuleUpdate(BaseModel):
+class AutomationRuleUpdate(WeDoBaseModel):
     is_active: bool | None = None
     auto_execute: bool | None = None
     confidence_threshold: float | None = None

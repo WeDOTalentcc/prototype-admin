@@ -3,8 +3,9 @@ from typing import Any
 from pydantic import BaseModel, Field
 
 from ._shared import CandidateSearchResultDTO
+from app.shared.types import WeDoBaseModel
 
-class JobDescriptionSearchRequest(BaseModel):
+class JobDescriptionSearchRequest(WeDoBaseModel):
     """Request para busca por job description."""
     job_description: str = Field(..., min_length=50, description="Descrição completa da vaga")
     location: str | None = Field(None, description="Localização preferida")

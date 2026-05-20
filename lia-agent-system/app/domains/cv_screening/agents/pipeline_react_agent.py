@@ -75,11 +75,14 @@ class PipelineReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
     def __init__(self) -> None:
         super().__init__()
         self._memory_service = WorkingMemoryService()
-        self._setup_enhanced(domain="pipeline")
+        # Sprint C fix #33: _all_tool_names MUST be populated BEFORE
+        # _setup_enhanced(...) — same pattern as JobsManagementReActAgent.
+        # Reverse order caused EnhancedAgentMixin to receive list where
+        # callable was expected → "list object is not callable" crash
+        # during create_react_agent(tools=tool_node).
         self._all_tool_names = [t.name for t in get_pipeline_tools()]
+        self._setup_enhanced(domain="pipeline")
         logger.info("[PipelineReActAgent] Initialized")
-
-    @property
 
     def _get_tool_contracts(self) -> list:
         """Ativa GovernanceToolNode para cv_screening."""
@@ -89,7 +92,7 @@ class PipelineReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgen
         except ImportError:
             return []
 
-
+    @property
     def domain_name(self) -> str:
         return "pipeline"
 

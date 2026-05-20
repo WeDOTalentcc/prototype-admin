@@ -431,19 +431,19 @@ Se nenhum ajuste for mencionado, retorne null para todos os campos."""
         if filtered_adjustments.get("manager"):
             vacancy_dict["manager"] = filtered_adjustments["manager"]
         
-        if filtered_adjustments.get("bonus_min") or filtered_adjustments.get("bonus_max"):
+        if filtered_adjustments.get("bonus_min") is not None or filtered_adjustments.get("bonus_max") is not None:
             current_salary = vacancy_dict.get("salary_range") or {}
-            if filtered_adjustments.get("bonus_min"):
+            if filtered_adjustments.get("bonus_min") is not None:
                 current_salary["bonus_min"] = filtered_adjustments["bonus_min"]
-            if filtered_adjustments.get("bonus_max"):
+            if filtered_adjustments.get("bonus_max") is not None:
                 current_salary["bonus_max"] = filtered_adjustments["bonus_max"]
             vacancy_dict["salary_range"] = current_salary
         
-        if filtered_adjustments.get("salary_min") or filtered_adjustments.get("salary_max"):
+        if filtered_adjustments.get("salary_min") is not None or filtered_adjustments.get("salary_max") is not None:
             current_salary = vacancy_dict.get("salary_range") or {}
-            if filtered_adjustments.get("salary_min"):
+            if filtered_adjustments.get("salary_min") is not None:
                 current_salary["min"] = filtered_adjustments["salary_min"]
-            if filtered_adjustments.get("salary_max"):
+            if filtered_adjustments.get("salary_max") is not None:
                 current_salary["max"] = filtered_adjustments["salary_max"]
             vacancy_dict["salary_range"] = current_salary
         

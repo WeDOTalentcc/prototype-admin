@@ -26,6 +26,7 @@ from app.shared.services.skills_catalog_service import (
     get_skills_catalog_service,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter(prefix="/skills-catalog", tags=["skills-catalog"])
 logger = logging.getLogger(__name__)
@@ -69,7 +70,7 @@ class CompanyCatalogResponse(BaseModel):
     static_areas: list[str]
 
 
-class AddSkillRequest(BaseModel):
+class AddSkillRequest(WeDoBaseModel):
     """Request model for adding a skill to company catalog."""
     company_id: str
     skill_name: str
@@ -105,7 +106,7 @@ class AddSkillResponse(BaseModel):
     updated_at: str
 
 
-class SyncTechStackRequest(BaseModel):
+class SyncTechStackRequest(WeDoBaseModel):
     """Request model for syncing tech stack."""
     company_id: str
     tech_stack: list[str] = Field(..., min_items=1)
@@ -123,7 +124,7 @@ class SyncTechStackResponse(BaseModel):
     total_processed: int
 
 
-class SuggestSkillsRequest(BaseModel):
+class SuggestSkillsRequest(WeDoBaseModel):
     """Request model for skill suggestions."""
     company_id: str
     job_title: str
@@ -165,7 +166,7 @@ class SuggestSkillsResponse(BaseModel):
     total_suggestions: int
 
 
-class RecordSkillUsageRequest(BaseModel):
+class RecordSkillUsageRequest(WeDoBaseModel):
     """Request model for recording skill usage."""
     company_id: str
     skill_name: str

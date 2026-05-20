@@ -23,6 +23,7 @@ from ._shared import (
 )
 from pydantic import BaseModel, Field
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,7 @@ DEFAULT_SCREENING_QUESTIONS = [
 # Pydantic models
 # ---------------------------------------------------------------------------
 
-class ScreeningQuestionCreate(BaseModel):
+class ScreeningQuestionCreate(WeDoBaseModel):
     question: str = Field(..., min_length=1)
     question_type: str = Field(default="text")
     is_required: bool = True
@@ -53,7 +54,7 @@ class ScreeningQuestionCreate(BaseModel):
     options: list[str] = Field(default_factory=list)
 
 
-class ScreeningQuestionUpdate(BaseModel):
+class ScreeningQuestionUpdate(WeDoBaseModel):
     id: str | None = None
     question: str | None = None
     question_type: str | None = None

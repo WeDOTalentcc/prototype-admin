@@ -31,6 +31,7 @@ from app.domains.job_creation.compliance import (
     check_input_fairness,
     mask_pii_for_llm,
 )
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +95,7 @@ class SalaryRange(BaseModel):
     currency: str = "BRL"
 
 
-class JobIntakePayload(BaseModel):
+class JobIntakePayload(WeDoBaseModel):
     """Canonical structured payload extracted from the recruiter's intake.
 
     Each field carries the extracted value, a per-field confidence

@@ -20,6 +20,7 @@ from app.core.database import get_db
 from app.domains.automation.services.automation_service import AutomationService, automation_service, get_automation_service
 from app.models.automation import ActionType, TriggerType
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +34,7 @@ class AutomationCondition(BaseModel):
     value: Any = Field(..., description="Value to compare against")
 
 
-class CreateAutomationRequest(BaseModel):
+class CreateAutomationRequest(WeDoBaseModel):
     """Request model for creating an automation."""
     name: str = Field(..., min_length=1, max_length=255, description="Automation name")
     description: str | None = Field(None, max_length=1000, description="Automation description")
@@ -47,7 +48,7 @@ class CreateAutomationRequest(BaseModel):
     cooldown_minutes: int = Field(default=0, ge=0, description="Cooldown in minutes between executions")
 
 
-class UpdateAutomationRequest(BaseModel):
+class UpdateAutomationRequest(WeDoBaseModel):
     """Request model for updating an automation."""
     name: str | None = Field(None, min_length=1, max_length=255)
     description: str | None = Field(None, max_length=1000)
@@ -61,12 +62,12 @@ class UpdateAutomationRequest(BaseModel):
     cooldown_minutes: int | None = Field(None, ge=0)
 
 
-class TestAutomationRequest(BaseModel):
+class TestAutomationRequest(WeDoBaseModel):
     """Request model for testing an automation."""
     test_data: dict[str, Any] | None = Field(default=None, description="Test trigger data")
 
 
-class TriggerAutomationRequest(BaseModel):
+class TriggerAutomationRequest(WeDoBaseModel):
     """Request model for manually triggering automations."""
     trigger_type: str = Field(..., description="Trigger type")
     trigger_data: dict[str, Any] = Field(..., description="Trigger event data")

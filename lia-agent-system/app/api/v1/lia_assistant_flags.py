@@ -23,6 +23,7 @@ from app.core.database import get_db
 from app.shared.governance.feature_flag_service import FeatureFlagService, get_feature_flag_service
 from app.shared.pii_masking import mask_pii as _mask_pii  # P1-3: LGPD redaction on free-text fields
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +34,7 @@ router = APIRouter(prefix="/lia", tags=["lia-feature-flags"])
 # Pydantic schemas
 # ---------------------------------------------------------------------------
 
-class FeatureFlagRequest(BaseModel):
+class FeatureFlagRequest(WeDoBaseModel):
     flag_key: str
     is_enabled: bool
     company_id: str | None = None
@@ -342,7 +343,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 _APPROVAL_EXPIRY_DAYS = 7
 
 
-class FeatureFlagToggleRequest(BaseModel):
+class FeatureFlagToggleRequest(WeDoBaseModel):
     """Body for POST /lia/feature-flags/request-toggle.
 
     Non-admins use this when the direct /feature-flags/set path is
@@ -366,7 +367,7 @@ class FeatureFlagToggleApprovalResponse(BaseModel):
     expires_at: str | None = None
 
 
-class FeatureFlagToggleRejectRequest(BaseModel):
+class FeatureFlagToggleRejectRequest(WeDoBaseModel):
     """Body for POST /lia/feature-flags/reject/{request_id}.
 
     Admin/DPO denies a pending toggle with an explanatory reason that

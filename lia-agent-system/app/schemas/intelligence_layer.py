@@ -7,6 +7,7 @@ from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class InsightType(StrEnum):
@@ -112,7 +113,7 @@ class OutcomeCorrelationResponse(OutcomeCorrelationBase):
         from_attributes = True
 
 
-class IntelligenceInsightCreate(BaseModel):
+class IntelligenceInsightCreate(WeDoBaseModel):
     """Schema for creating an intelligence insight."""
     company_id: str
     job_id: UUID | None = None
@@ -139,7 +140,7 @@ class IntelligenceInsightResponse(IntelligenceInsightCreate):
         from_attributes = True
 
 
-class IntelligenceInsightUpdate(BaseModel):
+class IntelligenceInsightUpdate(WeDoBaseModel):
     """Schema for updating an intelligence insight."""
     was_applied: bool | None = None
     was_accepted: bool | None = None

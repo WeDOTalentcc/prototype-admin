@@ -94,7 +94,8 @@ class WizardGateEngineT2(unittest.TestCase):
         result = graph_mod.jd_gate_node(state)
         self.assertEqual(result.get("current_stage"), "jd_enrichment")
         self.assertNotIn("jd_approved", result)
-        self.assertEqual(graph_mod.route_after_gate(result), "end")
+        # Sprint F.2 fix — non-terminal (no jd_approved) self-loops
+        self.assertEqual(graph_mod.route_after_gate(result), "jd_gate")
 
     # ---------------- S5 ----------------
     def test_S5_approve_intent_mutates_jd_approved_true(self):
@@ -129,7 +130,8 @@ class WizardGateEngineT2(unittest.TestCase):
                 result = graph_mod.jd_gate_node(state)
         self.assertIs(result["jd_approved"], False)
         self.assertIn("skills", result["jd_rejection_feedback"].lower())
-        self.assertEqual(graph_mod.route_after_gate(result), "end")
+        # Sprint F.2 fix — non-terminal (no jd_approved) self-loops
+        self.assertEqual(graph_mod.route_after_gate(result), "jd_gate")
 
     # ---------------- S7 ----------------
     def test_S7_provide_new_content_invalidates_cache_and_routes_to_intake(self):
@@ -187,7 +189,8 @@ class WizardGateEngineT2(unittest.TestCase):
         self.assertIsNone(result.get("gate_last_intent"))
         self.assertIsNone(result.get("jd_approved"))
         # Routing agora cai no branch END default — não mais "intake".
-        self.assertEqual(graph_mod.route_after_gate(result), "end")
+        # Sprint F.2 fix — reject_with_feedback (non-terminal) self-loops; recruiter sends correction next turn
+        self.assertEqual(graph_mod.route_after_gate(result), "jd_gate")
 
     def test_S7c_approve_intent_is_preserved_across_no_op_revisit(self):
         """Garantia complementar: ``approve`` (jd_approved=True) NÃO é
@@ -265,7 +268,8 @@ class WizardGateEngineT2(unittest.TestCase):
         # Cleanup rodou: gate_last_intent limpo, jd_approved=None, route=end.
         self.assertIsNone(result.get("gate_last_intent"))
         self.assertIsNone(result.get("jd_approved"))
-        self.assertEqual(graph_mod.route_after_gate(result), "end")
+        # Sprint F.2 fix — after intake re-enrichment with cleared intent, gate awaits via self-loop
+        self.assertEqual(graph_mod.route_after_gate(result), "jd_gate")
 
     # ---------------- S7h (regression: code review #8) ----------------
     def test_S7h_build_state_does_not_overwrite_raw_input_on_continuation(self):
@@ -349,7 +353,8 @@ class WizardGateEngineT2(unittest.TestCase):
         # Cleanup branch: aguarda HITL real (próximo turno do recrutador).
         self.assertIsNone(result.get("gate_last_intent"))
         self.assertIsNone(result.get("jd_approved"))
-        self.assertEqual(graph_mod.route_after_gate(result), "end")
+        # Sprint F.2 fix — same-query no-op falls into self-loop awaiting fresh turn
+        self.assertEqual(graph_mod.route_after_gate(result), "jd_gate")
 
     # ---------------- S7d (regression: code review #4) ----------------
     def test_S7d_ws_session_service_prefers_gate_clarify_message(self):
@@ -396,7 +401,8 @@ class WizardGateEngineT2(unittest.TestCase):
         self.assertNotIn("jd_approved", result)  # state preservado
         self.assertEqual(result["gate_last_intent"], "ask_question")
         self.assertIn("benchmark", result["gate_clarify_message"])
-        self.assertEqual(graph_mod.route_after_gate(result), "end")
+        # Sprint F.2 fix — initial pass (no msg) self-loops to wait for HITL response
+        self.assertEqual(graph_mod.route_after_gate(result), "jd_gate")
 
     # ---------------- S9 ----------------
     def test_S9_low_confidence_clarifies_without_mutating_approval(self):
@@ -408,7 +414,8 @@ class WizardGateEngineT2(unittest.TestCase):
                 result = graph_mod.jd_gate_node(state)
         self.assertNotIn("jd_approved", result)
         self.assertEqual(result["gate_last_confidence"], 0.5)
-        self.assertEqual(graph_mod.route_after_gate(result), "end")
+        # Sprint F.2 fix — ask_question self-loops to interrupt() for next turn
+        self.assertEqual(graph_mod.route_after_gate(result), "jd_gate")
 
     # ---------------- S10 ----------------
     def test_S10_off_allowlist_intent_falls_back(self):
@@ -449,7 +456,8 @@ class WizardGateEngineT2(unittest.TestCase):
             "interpretar" in clarify or "aprovar" in clarify or "ajustar" in clarify,
             f"expected clarify message, got: {clarify!r}",
         )
-        self.assertEqual(graph_mod.route_after_gate(result), "end")
+        # Sprint F.2 fix — low confidence self-loops to interrupt() for next turn
+        self.assertEqual(graph_mod.route_after_gate(result), "jd_gate")
 
     # ---------------- S12 ----------------
     def test_S12_domain_route_by_stage_dispatches_to_gate_jd_when_flag_on(self):

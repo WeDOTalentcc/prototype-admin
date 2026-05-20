@@ -53,10 +53,11 @@ from ._shared import (
 )
 from app.domains.credits.services.credit_service import CreditService, get_credit_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter()
 
-class SimilarSearchRequest(BaseModel):
+class SimilarSearchRequest(WeDoBaseModel):
     """Request para busca de candidatos similares."""
     linkedin_url: str | None = Field(None, description="URL do LinkedIn do candidato referência")
     candidate_id: str | None = Field(None, description="ID do candidato no banco local")

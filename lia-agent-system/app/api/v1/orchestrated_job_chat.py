@@ -15,12 +15,13 @@ from app.dependencies.token_budget import require_token_budget
 from app.orchestrator.context_adapter import ContextAdapter
 from app.orchestrator.main_orchestrator import MainOrchestrator
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-class OrchestratedJobChatRequest(BaseModel):
+class OrchestratedJobChatRequest(WeDoBaseModel):
     """Request for orchestrated job chat."""
     message: str = Field(..., description="User's natural language query")
     job_context: dict[str, Any] = Field(
@@ -40,7 +41,6 @@ class OrchestratedJobChatRequest(BaseModel):
         description="Optional conversation ID for context continuity"
     )
     user_id: str = Field(default="recruiter", description="User ID for routing")
-    company_id: str = Field(default="", description="Tenant company ID for multi-tenancy isolation")
 
 class OrchestratedJobChatResponse(BaseModel):
     """Response from orchestrated job chat."""
@@ -122,7 +122,7 @@ company_id: str = Depends(require_company_id)) -> OrchestratedJobChatResponse:
         ctx = ContextAdapter.from_job_chat(
             request,
             user_id=request.user_id,
-            company_id=request.company_id or "",
+            company_id=company_id or "",
         )
 
         db = None

@@ -2,6 +2,7 @@
 from typing import Any, Optional
 
 from pydantic import BaseModel
+from app.shared.types import WeDoBaseModel
 
 
 class AgentVersionSummary(BaseModel):
@@ -33,5 +34,5 @@ class AgentVersionListResponse(BaseModel):
     offset: int
 
 
-class RevertVersionRequest(BaseModel):
+class RevertVersionRequest(WeDoBaseModel):
     reason: Optional[str] = None

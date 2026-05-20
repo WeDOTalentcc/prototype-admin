@@ -4,9 +4,10 @@ Pydantic schemas for calendar/scheduling operations.
 from datetime import datetime
 
 from pydantic import BaseModel, EmailStr, Field
+from app.shared.types import WeDoBaseModel
 
 
-class AvailabilityRequest(BaseModel):
+class AvailabilityRequest(WeDoBaseModel):
     """Request to check interviewer availability."""
     interviewer_email: EmailStr
     date: datetime
@@ -20,7 +21,7 @@ class TimeSlot(BaseModel):
     duration_minutes: int
 
 
-class FindMeetingTimeRequest(BaseModel):
+class FindMeetingTimeRequest(WeDoBaseModel):
     """Request to find best meeting times."""
     organizer_email: EmailStr
     interviewer_emails: list[EmailStr]
@@ -32,7 +33,7 @@ class FindMeetingTimeRequest(BaseModel):
     )
 
 
-class ScheduleInterviewRequest(BaseModel):
+class ScheduleInterviewRequest(WeDoBaseModel):
     """Request to schedule an interview."""
     organizer_email: EmailStr
     candidate_name: str = Field(min_length=1, max_length=200)
@@ -51,14 +52,14 @@ class ScheduleInterviewRequest(BaseModel):
     )
 
 
-class CancelInterviewRequest(BaseModel):
+class CancelInterviewRequest(WeDoBaseModel):
     """Request to cancel an interview."""
     organizer_email: EmailStr
     event_id: str
     cancellation_message: str | None = Field(default=None, max_length=500)
 
 
-class RescheduleInterviewRequest(BaseModel):
+class RescheduleInterviewRequest(WeDoBaseModel):
     """Request to reschedule an interview."""
     organizer_email: EmailStr
     event_id: str

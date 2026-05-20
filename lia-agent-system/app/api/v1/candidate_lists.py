@@ -14,34 +14,35 @@ from app.domains.candidate_lists.repositories.candidate_list_repository import (
     CandidateListRepository,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
 
-class CandidateListCreate(BaseModel):
+class CandidateListCreate(WeDoBaseModel):
     name: str
     description: str | None = None
     color: str | None = None
 
 
-class CandidateListUpdate(BaseModel):
+class CandidateListUpdate(WeDoBaseModel):
     name: str | None = None
     description: str | None = None
     color: str | None = None
 
 
-class AddCandidatesRequest(BaseModel):
+class AddCandidatesRequest(WeDoBaseModel):
     candidate_ids: list[str]
     notes: str | None = None
 
 
-class RemoveCandidatesRequest(BaseModel):
+class RemoveCandidatesRequest(WeDoBaseModel):
     candidate_ids: list[str]
 
 
-class AssignJobsRequest(BaseModel):
+class AssignJobsRequest(WeDoBaseModel):
     job_vacancy_ids: list[str]
     candidate_ids: list[str] | None = None
 

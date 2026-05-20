@@ -9,18 +9,19 @@ from app.auth.models import User
 from app.core.database import get_db, get_tenant_db
 from app.shared.learning.ab_testing_service import ab_testing_service as _service, ABTestingService
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter(prefix="/ab-tests", tags=["ab-testing"])
 
 
 
-class VariantCreate(BaseModel):
+class VariantCreate(WeDoBaseModel):
     variant_name: str
     prompt_template: str
     traffic_percentage: float = 50.0
 
 
-class TestCreate(BaseModel):
+class TestCreate(WeDoBaseModel):
     test_name: str
     variants: list[VariantCreate]
 

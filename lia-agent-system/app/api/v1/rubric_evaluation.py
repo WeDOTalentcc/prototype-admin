@@ -7,7 +7,7 @@ from datetime import datetime
 from enum import Enum as PyEnum
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
@@ -61,12 +61,12 @@ router = APIRouter()
 async def evaluate_candidate(
     request: EvaluateCandidateRequest,
     db: AsyncSession = Depends(get_db),
-    x_company_id: str | None = Header(None),
     audit_svc: AuditService = Depends(get_audit_service),
     rubric_svc: RubricEvaluationService = Depends(get_rubric_evaluation_service),
     repo: ScreeningRepository = Depends(get_screening_repo),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
+    company_id: str = Depends(require_company_id),
+):
+    # multi-tenancy: company_id vem do JWT via require_company_id (canonical)
     """
     Evaluate a single candidate against job requirements using structured rubrics.
 
@@ -82,8 +82,7 @@ company_id: str = Depends(require_company_id)):
     # LGPD: verificar consentimento antes de avaliação por IA
     consent_warnings: list = []
     candidate_id_for_consent = request.candidate_id
-    if candidate_id_for_consent and x_company_id:
-        company_id = x_company_id
+    if candidate_id_for_consent:
         consent_svc = ConsentCheckerService(db)
         consent_result = await consent_svc.check_candidate_consent(
             candidate_id=str(candidate_id_for_consent),
@@ -195,7 +194,7 @@ company_id: str = Depends(require_company_id)):
         dimension_summary = [f"{e.requirement}: {e.score}/5" for e in _evals[:5]]
         _n_dimensions = len(_evals)
         await audit_svc.log_decision(
-            company_id=x_company_id or None,
+            company_id=company_id,
             agent_name="rubric_evaluation",
             decision_type="score_candidate",
             action="evaluate_candidate",

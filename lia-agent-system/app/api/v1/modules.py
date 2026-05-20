@@ -10,6 +10,7 @@ from app.core.database import get_db
 from app.domains.modules.services.module_service import get_module_service, ModuleService
 from lia_models.billing import AVAILABLE_MODULES, MODULE_STATUS_OPTIONS, ModuleStatus, ModuleTier
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -46,13 +47,13 @@ def _validate_tier(tier: str) -> None:
         raise HTTPException(status_code=400, detail=f"Invalid tier: {tier}. Valid: {valid}")
 
 
-class ModuleUpdateRequest(BaseModel):
+class ModuleUpdateRequest(WeDoBaseModel):
     status: Optional[str] = Field(None, description="New status: beta, trial, active, expired, disabled")
     tier: Optional[str] = Field(None, description="New tier: free, basic, pro, enterprise")
     expires_at: Optional[str] = Field(None, description="ISO date for expiry")
 
 
-class ModuleActivateRequest(BaseModel):
+class ModuleActivateRequest(WeDoBaseModel):
     module_name: str
     status: str = Field(default="beta")
     tier: str = Field(default="free")

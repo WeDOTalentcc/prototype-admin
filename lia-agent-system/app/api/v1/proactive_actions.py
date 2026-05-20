@@ -9,6 +9,7 @@ from pydantic import BaseModel
 
 from app.domains.automation.services.autonomous_agent_service import AutonomousAgentService, get_autonomous_agent_service
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ class ActionResponse(BaseModel):
     expires_at: str | None = None
 
 
-class AcceptRejectRequest(BaseModel):
+class AcceptRejectRequest(WeDoBaseModel):
     user_id: str
 
 

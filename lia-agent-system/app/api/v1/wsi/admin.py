@@ -15,6 +15,7 @@ from app.domains.cv_screening.services.wsi_service.layer2_extractor import (
     purge_layer2_cache_entry,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 try:
     from app.auth.dependencies import require_admin as require_admin_user  # type: ignore[import-not-found]
@@ -35,7 +36,7 @@ class Layer2CacheStats(BaseModel):
     hit_rate: float = Field(..., description="hits / (hits + misses), 0.0 se nunca chamado")
 
 
-class PurgeEntryRequest(BaseModel):
+class PurgeEntryRequest(WeDoBaseModel):
     question_id: str = Field(..., description="ID da pergunta WSI")
     response_text: str = Field(..., description="Texto exato da resposta a remover do cache")
 

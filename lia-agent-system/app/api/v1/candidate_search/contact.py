@@ -17,6 +17,7 @@ from ._shared import (
 )
 from app.domains.sourcing.services.contact_enrichment_service import ContactEnrichmentService
 from app.domains.candidates.repositories.candidate_filter_repository import CandidateFilterRepository
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter()
 
@@ -53,7 +54,7 @@ class RevealType(str):
     PHONE = "phone"
 
 
-class RevealContactRequest(BaseModel):
+class RevealContactRequest(WeDoBaseModel):
     """Request para revelar email ou telefone de um candidato Pearch."""
     candidate_id: str = Field(..., description="ID do candidato (docid do Pearch)")
     candidate_name: str = Field(..., description="Nome do candidato para busca")
@@ -387,7 +388,7 @@ class FilterSuggestion(BaseModel):
     source: str = Field("local", description="Fonte da sugestão: local ou global")
 
 
-class FilterSuggestionsRequest(BaseModel):
+class FilterSuggestionsRequest(WeDoBaseModel):
     """Request para buscar sugestões de filtros."""
     category: str = Field(..., description="Categoria: titles, companies, skills, universities, fields_of_study, locations, countries, industries, languages")
     query: str = Field(..., description="Termo de busca parcial")
@@ -724,21 +725,8 @@ company_id: str = Depends(require_company_id)):
 # ARCHETYPE ENDPOINTS - Pre-configured search profiles
 # ============================================================================
 
-class ArchetypeDTO(BaseModel):
-    """DTO for archetype data in API responses."""
-    id: str
-    name: str
-    description: str | None = None
-    emoji: str = "🎯"
-    query: str
-    filters: dict = Field(default_factory=dict)
-    tags: list[str] = Field(default_factory=list)
-    industry: str | None = None
-    seniority: str | None = None
-    is_default: bool = False
-    is_active: bool = True
-    usage_count: int = 0
-    created_at: str | None = None
+# Sprint F.3 #25 canonical-fix: ArchetypeDTO moved to api/v1/candidate_search/archetypes.py
+from app.api.v1.candidate_search.archetypes import ArchetypeDTO  # noqa: F401  (re-export for backward compat)
 
 
 class ArchetypeListResponse(BaseModel):
@@ -748,42 +736,16 @@ class ArchetypeListResponse(BaseModel):
     default_count: int
 
 
-class ArchetypeCreateRequest(BaseModel):
-    """Request to create a new archetype."""
-    id: str | None = Field(None, description="ID único, gerado automaticamente se não fornecido")
-    name: str = Field(..., min_length=2, max_length=100)
-    description: str | None = None
-    emoji: str = Field("🎯", max_length=10)
-    query: str = Field(..., min_length=5)
-    filters: dict = Field(default_factory=dict)
-    tags: list[str] = Field(default_factory=list)
-    industry: str | None = None
-    seniority: str | None = None
+# Sprint F.3 #25 canonical-fix: ArchetypeCreateRequest moved to api/v1/candidate_search/archetypes.py
+from app.api.v1.candidate_search.archetypes import ArchetypeCreateRequest  # noqa: F401  (re-export for backward compat)
 
 
-class ArchetypeUpdateRequest(BaseModel):
-    """Request to update an existing archetype."""
-    name: str | None = Field(None, min_length=2, max_length=100)
-    description: str | None = None
-    emoji: str | None = Field(None, max_length=10)
-    query: str | None = Field(None, min_length=5)
-    filters: dict | None = None
-    tags: list[str] | None = None
-    industry: str | None = None
-    seniority: str | None = None
-    is_active: bool | None = None
+# Sprint F.3 #25 canonical-fix: ArchetypeUpdateRequest moved to api/v1/candidate_search/archetypes.py
+from app.api.v1.candidate_search.archetypes import ArchetypeUpdateRequest  # noqa: F401  (re-export for backward compat)
 
 
-class ArchetypeSearchRequest(BaseModel):
-    """Request to search using an archetype."""
-    search_local: bool = Field(True, description="Buscar no banco local")
-    search_pearch: bool = Field(True, description="Buscar na Pearch AI")
-    pearch_type: str = Field("fast", description="Tipo de busca (sempre fast)")
-    local_limit: int = Field(20, ge=1, le=100)
-    pearch_limit: int = Field(15, ge=0, le=50)
-    show_emails: bool = False
-    show_phone_numbers: bool = False
-    calculate_lia_score: bool = Field(True, description="Calcular score LIA para cada candidato")
+# Sprint F.3 #25 canonical-fix: ArchetypeSearchRequest moved to api/v1/candidate_search/archetypes.py
+from app.api.v1.candidate_search.archetypes import ArchetypeSearchRequest  # noqa: F401  (re-export for backward compat)
 
 
 class ArchetypeSearchResultDTO(CandidateSearchResultDTO):
@@ -795,16 +757,6 @@ class ArchetypeSearchResultDTO(CandidateSearchResultDTO):
     lia_concerns: list[str] = Field(default_factory=list)
 
 
-class ArchetypeSearchResponse(BaseModel):
-    """Response for archetype-based search."""
-    archetype: ArchetypeDTO
-    query: str
-    thread_id: str | None = None
-    candidates: list[ArchetypeSearchResultDTO] = Field(default_factory=list)
-    local_count: int = 0
-    pearch_count: int = 0
-    total_count: int = 0
-    credits_remaining: int | None = None
-    search_time_seconds: float | None = None
-    warning_message: str | None = None
+# Sprint F.3 #25 canonical-fix: ArchetypeSearchResponse moved to api/v1/candidate_search/archetypes.py
+from app.api.v1.candidate_search.archetypes import ArchetypeSearchResponse  # noqa: F401  (re-export for backward compat)
 

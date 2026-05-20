@@ -2,6 +2,7 @@
 from typing import Optional
 
 from pydantic import BaseModel, Field, validator
+from app.shared.types import WeDoBaseModel
 
 
 ALLOWED_EVENTS = [
@@ -14,7 +15,7 @@ ALLOWED_EVENTS = [
 ]
 
 
-class CreateWebhookRequest(BaseModel):
+class CreateWebhookRequest(WeDoBaseModel):
     name: str = Field(..., min_length=2, max_length=256)
     url: str = Field(..., min_length=10, max_length=2048)
     events: list[str] = Field(..., min_length=1)
@@ -33,7 +34,7 @@ class CreateWebhookRequest(BaseModel):
         return list(set(v))  # dedupe
 
 
-class UpdateWebhookRequest(BaseModel):
+class UpdateWebhookRequest(WeDoBaseModel):
     name: Optional[str] = Field(None, min_length=2, max_length=256)
     url: Optional[str] = Field(None, min_length=10, max_length=2048)
     events: Optional[list[str]] = None

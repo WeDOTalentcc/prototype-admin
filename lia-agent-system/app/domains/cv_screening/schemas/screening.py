@@ -6,24 +6,12 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field
 
 
-class BigFiveProfile(BaseModel):
-    openness: int = Field(default=50, ge=0, le=100, description="Abertura a novas experiências")
-    conscientiousness: int = Field(default=50, ge=0, le=100, description="Organização e responsabilidade")
-    extraversion: int = Field(default=50, ge=0, le=100, description="Sociabilidade e energia")
-    agreeableness: int = Field(default=50, ge=0, le=100, description="Cooperação e empatia")
-    stability: int = Field(default=50, ge=0, le=100, description="Estabilidade emocional")
+# Sprint F.3 #25 canonical-fix: BigFiveProfile moved to schemas/screening.py
+from app.schemas.screening import BigFiveProfile  # noqa: F401  (re-export for backward compat)
 
 
-class ScreeningQuestionRequest(BaseModel):
-    title: str = Field(..., description="Job title")
-    department: str | None = Field(None, description="Department/area")
-    seniority: Literal["junior", "pleno", "senior", "lead", "executive"] | None = Field(
-        default=None, description="Seniority level. Se None, será resolvido automaticamente via multi-signal."
-    )
-    big_five_profile: BigFiveProfile | None = Field(None, description="Big Five personality profile")
-    skills: list[str] = Field(default=[], description="Required technical skills")
-    job_description: str | None = Field(None, description="Full job description text")
-    question_count: int = Field(default=8, ge=4, le=15, description="Number of questions to generate")
+# Sprint F.3 #25 canonical-fix: ScreeningQuestionRequest moved to schemas/screening.py
+from app.schemas.screening import ScreeningQuestionRequest  # noqa: F401  (re-export for backward compat)
 
 
 class ScreeningQuestion(BaseModel):
@@ -55,7 +43,7 @@ class ScreeningQuestionResponse(BaseModel):
     metadata: dict[str, Any] = Field(default={}, description="Generation metadata")
 
 
-class RegenerateQuestionsRequest(BaseModel):
+class RegenerateQuestionsRequest(WeDoBaseModel):
     context: ScreeningQuestionRequest = Field(..., description="Original job context")
     category: Literal["behavioral", "technical", "cultural"] | None = Field(
         None, description="Category to regenerate, or all if None"
@@ -63,65 +51,18 @@ class RegenerateQuestionsRequest(BaseModel):
     exclude_ids: list[str] = Field(default=[], description="Question IDs to exclude from regeneration")
 
 
-class UnifiedScreeningQuestion(BaseModel):
-    """Unified screening question with WSI block assignment."""
-    id: str = Field(..., description="Unique question identifier")
-    text: str = Field(..., description="The question text in Portuguese")
-    category: str = Field(..., description="Question category: behavioral, technical, cultural, eligibility, company")
-    block_id: int = Field(..., description="WSI block ID: 2 (company), 3 (technical), 4 (behavioral/situational)")
-    source: Literal["company", "wsi_generated"] = Field(default="wsi_generated", description="Question source")
-    trait: str | None = Field(None, description="Big Five trait if behavioral question")
-    skill: str | None = Field(None, description="Technical skill if technical question")
-    bloom_level: int = Field(default=3, ge=1, le=6, description="Bloom's Taxonomy level")
-    bloom_label: str = Field(default="Aplicar", description="Bloom level label")
-    dreyfus_stage: int = Field(default=3, ge=1, le=5, description="Dreyfus model stage")
-    dreyfus_label: str = Field(default="Competente", description="Dreyfus stage label")
-    framework: str = Field(default="CBI", description="Framework used")
-    weight: float = Field(default=1.0, ge=0, le=1, description="Question weight")
-    expected_signals: list[str] = Field(default=[], description="Expected positive signals")
-    scoring_criteria: dict[str, Any] = Field(default={}, description="Scoring criteria")
-    is_selected: bool = Field(default=True, description="Whether selected for use")
-    is_eliminatory: bool = Field(default=False, description="Whether eliminatory")
-    question_type: str = Field(default="open", description="Question format: open, yes_no, single_choice, multiple_choice, scale")
-    options: list[str] | None = Field(None, description="Options for choice questions")
-    expected_answer: str | None = Field(None, description="Expected answer for eliminatory questions")
-    order: int = Field(default=0, description="Display order within block")
+# Sprint F.3 #25 canonical-fix: UnifiedScreeningQuestion moved to schemas/screening.py
+from app.schemas.screening import UnifiedScreeningQuestion  # noqa: F401  (re-export for backward compat)
 
 
-class WSIScreeningPipelineRequest(BaseModel):
-    """Request for the unified WSI screening pipeline."""
-    company_id: str | None = Field(None, description="Company ID (auto-filled from auth)")
-    job_title: str = Field(..., description="Job title")
-    department: str | None = Field(None, description="Department")
-    seniority: Literal["junior", "pleno", "senior", "lead", "executive"] | None = Field(default=None, description="Seniority level. Se None, será resolvido automaticamente via multi-signal.")
-    technical_skills: list[str] = Field(default=[], description="Required technical skills")
-    behavioral_competencies: list[str] = Field(default=[], description="Behavioral competencies")
-    responsibilities: list[str] = Field(default=[], description="Job responsibilities")
-    big_five_profile: BigFiveProfile | None = Field(None, description="Big Five profile")
-    job_description: str | None = Field(None, description="Full job description")
-    question_count: int | None = Field(default=None, ge=6, le=25, description="Total target question count. Defaults to 8 for compact, 12 for full format.")
-    format: Literal["compact", "full"] = Field(default="full", description="compact=fewer questions, full=complete assessment")
-    include_company_questions: bool = Field(default=True, description="Include company default questions")
-    company_question_categories: list[str] | None = Field(None, description="Filter company questions by category")
-    is_affirmative: bool = Field(default=False, description="Whether this is an affirmative action job vacancy")
-    affirmative_type: str | None = Field(None, description="Type of affirmative action: pcd, racial, gender, age, lgbtqia+")
+# Sprint F.3 #25 canonical-fix: WSIScreeningPipelineRequest moved to schemas/screening.py
+from app.schemas.screening import WSIScreeningPipelineRequest  # noqa: F401  (re-export for backward compat)
 
 
-class WSIBlockSummary(BaseModel):
-    """Summary of questions in a WSI block."""
-    block_id: int
-    block_name: str
-    question_count: int
-    questions: list[UnifiedScreeningQuestion]
+# Sprint F.3 #25 canonical-fix: WSIBlockSummary moved to schemas/screening.py
+from app.schemas.screening import WSIBlockSummary  # noqa: F401  (re-export for backward compat)
 
 
-class WSIScreeningPipelineResponse(BaseModel):
-    """Response from the unified WSI screening pipeline."""
-    success: bool = True
-    questions: list[UnifiedScreeningQuestion] = Field(default=[], description="All questions flat list")
-    blocks: list[WSIBlockSummary] = Field(default=[], description="Questions grouped by WSI block")
-    total_count: int = Field(default=0)
-    block_distribution: dict[str, int] = Field(default={})
-    metadata: dict[str, Any] = Field(default={})
-    seniority_resolution: dict[str, Any] | None = Field(default=None, description="Metadata da resolução de senioridade multi-signal")
-    quality_warnings: list[str] = Field(default=[])
+# Sprint F.3 #25 canonical-fix: WSIScreeningPipelineResponse moved to schemas/screening.py
+from app.schemas.screening import WSIScreeningPipelineResponse  # noqa: F401  (re-export for backward compat)
+from app.shared.types import WeDoBaseModel

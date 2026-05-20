@@ -5,6 +5,7 @@ from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
+from app.shared.types import WeDoBaseModel
 
 
 class ClientUserBase(BaseModel):
@@ -18,7 +19,7 @@ class ClientUserCreate(ClientUserBase):
     pass
 
 
-class ClientUserUpdate(BaseModel):
+class ClientUserUpdate(WeDoBaseModel):
     email: EmailStr | None = None
     name: str | None = Field(None, min_length=1, max_length=255)
     permissions: list[str] | None = None
@@ -26,7 +27,7 @@ class ClientUserUpdate(BaseModel):
     resend_invitation: bool | None = Field(None, description="Set to true to resend invitation email")
 
 
-class AcceptInvitationRequest(BaseModel):
+class AcceptInvitationRequest(WeDoBaseModel):
     token: str = Field(..., description="Invitation token from the email link")
 
 
@@ -37,7 +38,7 @@ class AcceptInvitationResponse(BaseModel):
     user: dict | None = None
 
 
-class ClientUserRoleUpdate(BaseModel):
+class ClientUserRoleUpdate(WeDoBaseModel):
     role: str = Field(..., description="New role: admin, recruiter, viewer, manager")
 
 

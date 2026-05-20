@@ -6,6 +6,7 @@ from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class RecruiterProfileBase(BaseModel):
@@ -41,7 +42,7 @@ class RecruiterProfileCreate(RecruiterProfileBase):
     pass
 
 
-class RecruiterProfileUpdate(BaseModel):
+class RecruiterProfileUpdate(WeDoBaseModel):
     """Schema for updating a recruiter profile."""
     total_jobs_created: int | None = None
     avg_creation_time_seconds: int | None = None
@@ -104,7 +105,7 @@ class RecruiterFieldPreferenceResponse(RecruiterFieldPreferenceBase):
         from_attributes = True
 
 
-class PersonalizationEventCreate(BaseModel):
+class PersonalizationEventCreate(WeDoBaseModel):
     """Schema for creating personalization events."""
     recruiter_id: str
     company_id: str
@@ -143,7 +144,7 @@ class PersonalizationSettingsCreate(PersonalizationSettingsBase):
     consent_version: str | None = None
 
 
-class PersonalizationSettingsUpdate(BaseModel):
+class PersonalizationSettingsUpdate(WeDoBaseModel):
     """Schema for updating personalization settings."""
     enable_personalization: bool | None = None
     enable_learning: bool | None = None

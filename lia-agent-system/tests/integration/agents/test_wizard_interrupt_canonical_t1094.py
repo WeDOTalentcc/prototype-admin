@@ -322,7 +322,10 @@ class WizardInterruptCanonicalT1094(unittest.TestCase):
             "jd_approved", result,
             "Sem msg + sem runtime, gate_node NÃO deve mutar jd_approved.",
         )
-        self.assertEqual(graph_mod.route_after_gate(result), "end")
+        # Sprint F.2 fix — even legacy offline path (no runtime) now self-loops at the routing layer.
+        # The interrupt() guard preserves backwards-compat at the NODE level (no interrupt outside runtime),
+        # but the routing layer treats non-terminal intent uniformly to keep the contract consistent.
+        self.assertEqual(graph_mod.route_after_gate(result), "jd_gate")
 
 
 if __name__ == "__main__":

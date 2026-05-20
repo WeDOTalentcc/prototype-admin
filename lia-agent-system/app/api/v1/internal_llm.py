@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter(prefix="/internal/llm", tags=["Internal LLM"])
 
@@ -15,7 +16,7 @@ def _require_internal(request: Request) -> None:
         raise HTTPException(status_code=403, detail="Internal endpoint only")
 
 
-class GenerateRequest(BaseModel):
+class GenerateRequest(WeDoBaseModel):
     prompt: str
     system: str | None = None
     max_tokens: int = 1024

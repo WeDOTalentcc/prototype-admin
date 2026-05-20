@@ -32,6 +32,7 @@ _DECISION_TYPE_MAP = {
 from app.domains.communication.services.email_service import EmailService
 from app.models.job_vacancy import JobVacancy
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -108,7 +109,7 @@ class BulkOperationResult(BaseModel):
     message: str = ""
 
 
-class BulkUpdateStatusRequest(BaseModel):
+class BulkUpdateStatusRequest(WeDoBaseModel):
     """Request to update status of multiple candidates."""
     candidate_ids: list[str] = Field(..., min_length=1, max_length=MAX_BULK_ITEMS)
     new_status: str = Field(..., description="Status: new, screening, interview, offer, hired, rejected")
@@ -128,7 +129,7 @@ class BulkUpdateStatusRequest(BaseModel):
         return v
 
 
-class BulkAssignJobRequest(BaseModel):
+class BulkAssignJobRequest(WeDoBaseModel):
     """Request to assign multiple candidates to a job vacancy."""
     candidate_ids: list[str] = Field(..., min_length=1, max_length=MAX_BULK_ITEMS)
     job_vacancy_id: str
@@ -142,7 +143,7 @@ class BulkAssignJobRequest(BaseModel):
         return v
 
 
-class BulkSendEmailRequest(BaseModel):
+class BulkSendEmailRequest(WeDoBaseModel):
     """Request to send emails to multiple candidates."""
     candidate_ids: list[str] = Field(..., min_length=1, max_length=MAX_BULK_ITEMS)
     template_id: str
@@ -156,7 +157,7 @@ class BulkSendEmailRequest(BaseModel):
         return v
 
 
-class BulkStartScreeningRequest(BaseModel):
+class BulkStartScreeningRequest(WeDoBaseModel):
     """Request to start WSI screening for multiple candidates."""
     candidate_ids: list[str] = Field(..., min_length=1, max_length=MAX_BULK_ITEMS)
     job_vacancy_id: str
@@ -171,7 +172,7 @@ class BulkStartScreeningRequest(BaseModel):
         return v
 
 
-class BulkExportRequest(BaseModel):
+class BulkExportRequest(WeDoBaseModel):
     """Request to export multiple candidates data."""
     candidate_ids: list[str] = Field(..., min_length=1, max_length=MAX_BULK_ITEMS)
     format: Literal["csv", "xlsx"] = "csv"
@@ -185,7 +186,7 @@ class BulkExportRequest(BaseModel):
         return v
 
 
-class BulkDeleteRequest(BaseModel):
+class BulkDeleteRequest(WeDoBaseModel):
     """Request to delete (soft delete) multiple candidates."""
     candidate_ids: list[str] = Field(..., min_length=1, max_length=MAX_BULK_ITEMS)
     permanent: bool = False

@@ -34,6 +34,7 @@ from pydantic import BaseModel
 from app.shared.pii_masking import mask_pii
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -69,7 +70,7 @@ def _verify_ws_token(ws_token: str, session_id: str, tenant_id: str) -> bool:
     return hmac.compare_digest(ws_token, expected)
 
 
-class VoiceStreamStartRequest(BaseModel):
+class VoiceStreamStartRequest(WeDoBaseModel):
     company_id: str
     language: str = "pt-BR"
     system_prompt: str = ""

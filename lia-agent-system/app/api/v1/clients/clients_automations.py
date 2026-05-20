@@ -17,11 +17,12 @@ from ._shared import (
     logger,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter()
 
 
-class AutomationCreate(BaseModel):
+class AutomationCreate(WeDoBaseModel):
     """Request model for creating an automation."""
     name: str = Field(..., min_length=1, max_length=255)
     description: str | None = Field(None, max_length=500)
@@ -31,7 +32,7 @@ class AutomationCreate(BaseModel):
     config: dict[str, Any] | None = Field(None)
 
 
-class AutomationUpdate(BaseModel):
+class AutomationUpdate(WeDoBaseModel):
     """Request model for updating an automation."""
     name: str | None = Field(None, min_length=1, max_length=255)
     description: str | None = Field(None, max_length=500)

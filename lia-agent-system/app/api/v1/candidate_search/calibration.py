@@ -19,6 +19,7 @@ from ._shared import (
     rubric_evaluation_service,
 )
 from app.domains.cv_screening.repositories.screening_repository import ScreeningRepository
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter()
 
@@ -27,7 +28,7 @@ async def get_screening_repo(db: AsyncSession = Depends(get_db)) -> ScreeningRep
     return ScreeningRepository(db)
 
 
-class CalibrationFeedbackRequest(BaseModel):
+class CalibrationFeedbackRequest(WeDoBaseModel):
     """Request para feedback de calibração."""
     candidate_id: str = Field(..., description="ID do candidato")
     feedback: str = Field(..., pattern="^(like|dislike)$", description="Tipo: 'like' ou 'dislike'")
@@ -54,7 +55,7 @@ class CalibrationFeedbackResponse(BaseModel):
     min_feedbacks_required: int = 5
 
 
-class CalibrationStartRequest(BaseModel):
+class CalibrationStartRequest(WeDoBaseModel):
     """Request para iniciar sessão de calibração."""
     vacancy_id: str | None = Field(None, description="ID da vaga")
     search_criteria: dict[str, Any] | None = Field(None, description="Critérios de busca")
@@ -90,7 +91,7 @@ class CalibrationStatusResponse(BaseModel):
     min_feedbacks_required: int = 5
 
 
-class VacancyGoalRequest(BaseModel):
+class VacancyGoalRequest(WeDoBaseModel):
     """Request para verificar meta da vaga."""
     vacancy_id: str = Field(..., description="ID da vaga")
     current_count: int = Field(..., ge=0, description="Contagem atual de candidatos")
@@ -418,7 +419,7 @@ company_id: str = Depends(require_company_id)):
         raise HTTPException(status_code=500, detail=f"Vacancy goal check failed: {str(e)}")
 
 
-class AddCandidatesToVacancyRequest(BaseModel):
+class AddCandidatesToVacancyRequest(WeDoBaseModel):
     """Request para adicionar candidatos a uma vaga."""
     candidate_ids: list[str] = Field(..., min_length=1, description="Lista de IDs de candidatos para adicionar")
     source: str = Field("local", description="Fonte dos candidatos: 'local' ou 'pearch'")

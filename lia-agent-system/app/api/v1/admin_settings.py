@@ -19,6 +19,7 @@ from app.domains.admin_settings.repositories.admin_settings_repository import (
     AdminSettingsRepository,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -53,13 +54,13 @@ def _check_admin_tenant_access(admin: User, company_id: str) -> None:
         )
 
 
-class RoleCreate(BaseModel):
+class RoleCreate(WeDoBaseModel):
     name: str
     description: str | None = None
     permissions: dict[str, str] = {}
 
 
-class RoleUpdate(BaseModel):
+class RoleUpdate(WeDoBaseModel):
     name: str | None = None
     description: str | None = None
     permissions: dict[str, str] | None = None
@@ -72,7 +73,7 @@ class UserRoleAssign(BaseModel):
     assigned_by: str | None = None
 
 
-class NotificationPolicyCreate(BaseModel):
+class NotificationPolicyCreate(WeDoBaseModel):
     name: str
     event_type: str
     channels: list[str] = []
@@ -83,7 +84,7 @@ class NotificationPolicyCreate(BaseModel):
     is_enabled: bool = True
 
 
-class NotificationPolicyUpdate(BaseModel):
+class NotificationPolicyUpdate(WeDoBaseModel):
     name: str | None = None
     event_type: str | None = None
     channels: list[str] | None = None
@@ -94,7 +95,7 @@ class NotificationPolicyUpdate(BaseModel):
     is_enabled: bool | None = None
 
 
-class SecuritySettingUpdate(BaseModel):
+class SecuritySettingUpdate(WeDoBaseModel):
     require_2fa: bool | None = None
     session_timeout_minutes: int | None = None
     max_login_attempts: int | None = None

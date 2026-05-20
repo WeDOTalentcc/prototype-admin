@@ -15,6 +15,7 @@ from app.core.database import get_db
 from app.domains.job_management.services.job_qualification_service import job_qualification_service
 from app.models.job_vacancy import JobVacancy
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 # RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies/users).
 # Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
@@ -25,7 +26,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/jobs/qualification", tags=["job-qualification"])
 
 
-class ClassifyJobRequest(BaseModel):
+class ClassifyJobRequest(WeDoBaseModel):
     title: str = Field(..., min_length=1)
     department: str | None = None
     seniority_level: str | None = None
@@ -51,7 +52,7 @@ class JobQualificationResponse(BaseModel):
     classified: bool = False
 
 
-class OverrideQualificationRequest(BaseModel):
+class OverrideQualificationRequest(WeDoBaseModel):
     level: str = Field(..., pattern="^(alta|media|baixa)$")
     reason: str | None = None
 

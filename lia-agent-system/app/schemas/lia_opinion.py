@@ -7,6 +7,7 @@ from typing import Any
 from uuid import UUID
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class OpinionTypeEnum(StrEnum):
@@ -63,7 +64,7 @@ class CulturalFitAnalysis(BaseModel):
     attention_points: list[str] = Field(default_factory=list)
 
 
-class LiaOpinionCreate(BaseModel):
+class LiaOpinionCreate(WeDoBaseModel):
     """Schema for creating a new LIA opinion."""
     candidate_id: UUID
     opinion_type: OpinionTypeEnum = OpinionTypeEnum.GENERAL
@@ -94,7 +95,7 @@ class LiaOpinionCreate(BaseModel):
     recruiter_notes: str | None = None
 
 
-class LiaOpinionUpdate(BaseModel):
+class LiaOpinionUpdate(WeDoBaseModel):
     """Schema for updating a LIA opinion."""
     score: float | None = Field(None, ge=0, le=100)
     wsi_score: float | None = Field(None, ge=0, le=5)

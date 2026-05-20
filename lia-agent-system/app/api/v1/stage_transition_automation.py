@@ -21,6 +21,7 @@ from app.domains.automation.services.stage_transition_automation import SubStatu
 from app.shared.compliance.audit_service import audit_service  # module-level for test patchability
 from app.shared.compliance.fairness_guard import FairnessGuard as _FairnessGuard
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 _fairness_guard_sta = _FairnessGuard()
 
 logger = logging.getLogger(__name__)
@@ -84,7 +85,7 @@ class JobContext(BaseModel):
     has_hired_candidate: bool = False
 
 
-class PredictSubStatusRequest(BaseModel):
+class PredictSubStatusRequest(WeDoBaseModel):
     candidate_context: CandidateContext
     from_stage: str
     to_stage: str
@@ -98,7 +99,7 @@ class PredictSubStatusResponse(BaseModel):
     alternatives: list[dict[str, Any]] = []
 
 
-class GenerateMessageRequest(BaseModel):
+class GenerateMessageRequest(WeDoBaseModel):
     candidate_context: CandidateContext
     job_context: JobContext
     to_stage: str
@@ -113,7 +114,7 @@ class GenerateMessageResponse(BaseModel):
     metadata: dict[str, Any] = {}
 
 
-class RegenerateMessageRequest(BaseModel):
+class RegenerateMessageRequest(WeDoBaseModel):
     original_message: str
     old_substatus: str
     new_substatus: str
@@ -137,7 +138,7 @@ class TransitionAction(BaseModel):
     template_category: str | None = None
 
 
-class GetActionsRequest(BaseModel):
+class GetActionsRequest(WeDoBaseModel):
     from_stage: str
     to_stage: str
 
@@ -333,7 +334,7 @@ async def get_substatus_options(stage: str, company_id: str = Depends(require_co
         raise HTTPException(status_code=500, detail=str(e))
 
 
-class BulkPredictSubStatusRequest(BaseModel):
+class BulkPredictSubStatusRequest(WeDoBaseModel):
     candidates: list[CandidateContext]
     from_stage: str
     to_stage: str
@@ -352,7 +353,7 @@ class BulkPredictSubStatusResponse(BaseModel):
     ai_powered: bool = False
 
 
-class BulkGenerateMessagesRequest(BaseModel):
+class BulkGenerateMessagesRequest(WeDoBaseModel):
     candidates: list[CandidateContext]
     job_context: JobContext
     to_stage: str
@@ -506,7 +507,7 @@ async def bulk_generate_messages(request: BulkGenerateMessagesRequest, company_i
     return BulkGenerateMessagesResponse(messages=messages)
 
 
-class DbPredictSubStatusRequest(BaseModel):
+class DbPredictSubStatusRequest(WeDoBaseModel):
     vacancy_candidate_ids: list[str]
     from_stage: str
     to_stage: str

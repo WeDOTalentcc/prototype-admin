@@ -55,6 +55,7 @@ from app.schemas.chat import (
     MessageResponse,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -1145,7 +1146,7 @@ company_id: str = Depends(require_company_id)):
 #   3) Returns the resolved domain so the frontend can show a context badge
 #      (e.g. "LIA agora está no modo Configurações").
 
-class ChatContextRequest(BaseModel):
+class ChatContextRequest(WeDoBaseModel):
     context_type: str
     conversation_id: str | None = None
     metadata: dict[str, Any] | None = None

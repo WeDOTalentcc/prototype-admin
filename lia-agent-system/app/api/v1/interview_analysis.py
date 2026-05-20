@@ -35,19 +35,20 @@ from app.services.notification_service import (
     notification_service,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/interview-analysis", tags=["Interview Analysis"])
 
 
-class AnalyzeInterviewRequest(BaseModel):
+class AnalyzeInterviewRequest(WeDoBaseModel):
     """Request to analyze interview transcript."""
     interview_id: str
     force_refresh: bool = False
 
 
-class AnalyzeTranscriptRequest(BaseModel):
+class AnalyzeTranscriptRequest(WeDoBaseModel):
     """Request to analyze raw transcript text."""
     transcript_text: str
     candidate_id: str
@@ -55,7 +56,7 @@ class AnalyzeTranscriptRequest(BaseModel):
     interview_type: str = "technical"
 
 
-class TeamsWebhookPayload(BaseModel):
+class TeamsWebhookPayload(WeDoBaseModel):
     """Microsoft Teams subscription webhook payload."""
     value: list = []
     validationToken: str | None = None

@@ -14,6 +14,7 @@ from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field, field_validator, model_validator
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +26,7 @@ class SupportedLanguage(StrEnum):
     ES = "es"
 
 
-class BaseAgentInput(BaseModel):
+class BaseAgentInput(WeDoBaseModel):
     """Base input schema for all agent operations."""
     intent: str = Field(..., min_length=1, max_length=100)
     user_id: str | None = None

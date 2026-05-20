@@ -20,6 +20,7 @@ from app.shared.services.granular_consent_service import (
     GranularConsentService,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,7 @@ class GranularConsentSummaryResponse(BaseModel):
     consents: list[ConsentStatusItem]
 
 
-class BulkConsentUpdateRequest(BaseModel):
+class BulkConsentUpdateRequest(WeDoBaseModel):
     """Mapa de finalidade → consentimento (True=conceder, False=revogar)."""
     updates: dict[str, bool]
     source: str = "api"

@@ -4,6 +4,7 @@ Pydantic schemas for CompanyHiringPolicy API.
 from typing import Any
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class PipelineRulesSchema(BaseModel):
@@ -55,7 +56,7 @@ class LearnedPatternSchema(BaseModel):
     last_observed: str | None = None
 
 
-class CompanyHiringPolicyCreate(BaseModel):
+class CompanyHiringPolicyCreate(WeDoBaseModel):
     company_id: str
     pipeline_rules: PipelineRulesSchema | None = None
     scheduling_rules: SchedulingRulesSchema | None = None
@@ -65,7 +66,7 @@ class CompanyHiringPolicyCreate(BaseModel):
     pipeline_templates: list[PipelineTemplateSchema] | None = None
 
 
-class CompanyHiringPolicyUpdate(BaseModel):
+class CompanyHiringPolicyUpdate(WeDoBaseModel):
     pipeline_rules: dict[str, Any] | None = None
     scheduling_rules: dict[str, Any] | None = None
     communication_rules: dict[str, Any] | None = None
@@ -75,7 +76,7 @@ class CompanyHiringPolicyUpdate(BaseModel):
     updated_by: str | None = None
 
 
-class CompanyHiringPolicyBlockUpdate(BaseModel):
+class CompanyHiringPolicyBlockUpdate(WeDoBaseModel):
     block: str = Field(..., description="Block name: pipeline_rules, scheduling_rules, communication_rules, screening_rules, automation_rules, pipeline_templates")
     data: dict[str, Any] = Field(..., description="Block data to merge")
     updated_by: str | None = None

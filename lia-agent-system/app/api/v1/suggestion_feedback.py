@@ -19,12 +19,13 @@ from app.models.feedback_learning import SuggestionFeedback
 from app.domains.cv_screening.repositories.suggestion_feedback_repository import SuggestionFeedbackRepository
 from app.domains.analytics.services.feedback_learning_service import feedback_learning_service as _feedback_service
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter(prefix="/suggestion-feedback", tags=["Suggestion Feedback"])
 logger = logging.getLogger(__name__)
 
 
-class SuggestionFeedbackRequest(BaseModel):
+class SuggestionFeedbackRequest(WeDoBaseModel):
     company_id: str
     field_name: str = Field(..., description="Field being suggested: salary, skills, seniority, etc.")
     suggested_value: Any | None = None

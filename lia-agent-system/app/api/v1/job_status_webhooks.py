@@ -19,6 +19,7 @@ from app.core.database import get_db
 from app.domains.job_management.repositories.webhook_repository import WebhookRepository
 from app.domains.job_management.services.job_status_webhook_service import job_status_webhook_service
 from app.models.webhook_registration import JOB_STATUS_WEBHOOK_EVENTS, WebhookDeliveryLog, WebhookRegistration
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter(prefix="/webhooks", tags=["webhooks"])
 logger = logging.getLogger(__name__)
@@ -28,7 +29,7 @@ def get_webhook_repo(db: AsyncSession = Depends(get_db)) -> WebhookRepository:
     return WebhookRepository(db)
 
 
-class WebhookRegisterRequest(BaseModel):
+class WebhookRegisterRequest(WeDoBaseModel):
     """Request to register a new webhook."""
     name: str = Field(..., min_length=1, max_length=255)
     url: str = Field(..., min_length=1, max_length=2000)
@@ -77,7 +78,7 @@ class WebhookListResponse(BaseModel):
     total: int
 
 
-class WebhookUpdateRequest(BaseModel):
+class WebhookUpdateRequest(WeDoBaseModel):
     """Request to update a webhook."""
     name: str | None = None
     url: str | None = None

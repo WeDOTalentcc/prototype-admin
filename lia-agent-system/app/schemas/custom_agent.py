@@ -2,9 +2,10 @@ from datetime import datetime
 from typing import Any, Optional
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
-class CreateCustomAgentRequest(BaseModel):
+class CreateCustomAgentRequest(WeDoBaseModel):
     name: str = Field(..., min_length=2, max_length=256)
     role: str = Field(..., min_length=2, max_length=256)
     description: Optional[str] = None
@@ -21,7 +22,7 @@ class CreateCustomAgentRequest(BaseModel):
     excluded_tools: list[str] = Field(default_factory=list)
 
 
-class UpdateCustomAgentRequest(BaseModel):
+class UpdateCustomAgentRequest(WeDoBaseModel):
     name: Optional[str] = Field(None, min_length=2, max_length=256)
     role: Optional[str] = Field(None, min_length=2, max_length=256)
     description: Optional[str] = None
@@ -72,7 +73,7 @@ class CustomAgentListResponse(BaseModel):
     total: int
 
 
-class TestCustomAgentRequest(BaseModel):
+class TestCustomAgentRequest(WeDoBaseModel):
     message: str = Field(..., min_length=1)
     context: dict[str, Any] = Field(default_factory=dict)
 
@@ -89,7 +90,7 @@ class TestCustomAgentResponse(BaseModel):
     model_used: str = ""
 
 
-class PublishToMarketplaceRequest(BaseModel):
+class PublishToMarketplaceRequest(WeDoBaseModel):
     title: str = Field(..., min_length=3, max_length=256)
     short_description: Optional[str] = Field(None, max_length=512)
     long_description: Optional[str] = None
@@ -129,12 +130,12 @@ class MarketplaceListResponse(BaseModel):
     total: int
 
 
-class MarketplaceReviewRequest(BaseModel):
+class MarketplaceReviewRequest(WeDoBaseModel):
     action: str = Field(..., pattern="^(approve|reject)$")
     review_notes: Optional[str] = None
 
 
-class InstallAgentRequest(BaseModel):
+class InstallAgentRequest(WeDoBaseModel):
     listing_id: str
 
 
@@ -158,7 +159,7 @@ class AgentInstallationListResponse(BaseModel):
     total: int
 
 
-class ExecuteCustomAgentRequest(BaseModel):
+class ExecuteCustomAgentRequest(WeDoBaseModel):
     message: str = Field(..., min_length=1)
     context: dict[str, Any] = Field(default_factory=dict)
     session_id: Optional[str] = None

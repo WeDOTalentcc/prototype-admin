@@ -17,6 +17,7 @@ from app.core.database import get_db
 from pydantic import BaseModel
 from typing import Optional
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 router = APIRouter(tags=["Agent Studio — Sector Templates"])
 
@@ -28,7 +29,7 @@ class SectorTemplateSummary(BaseModel):
     icon: str
 
 
-class ApplySectorRequest(BaseModel):
+class ApplySectorRequest(WeDoBaseModel):
     agent_name: Optional[str] = None  # override name; defaults to template display_name
     company_context: Optional[str] = None  # e.g. "Empresa de logística com foco em CLT"
 

@@ -17,6 +17,7 @@ from app.auth.models import User
 from app.core.database import get_db
 from app.domains.job_management.services.vacancy_search_service import vacancy_search_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +28,7 @@ router = APIRouter(prefix="/lia", tags=["lia-vacancy"])
 # Pydantic schemas
 # ---------------------------------------------------------------------------
 
-class VacancySearchRequest(BaseModel):
-    company_id: str
+class VacancySearchRequest(WeDoBaseModel):
     search_criteria: dict[str, Any] = {}
     limit: int = 10
 
@@ -40,8 +40,7 @@ class VacancySearchResponse(BaseModel):
     message: str | None = None
 
 
-class VacancyCriteriaExtractionRequest(BaseModel):
-    company_id: str
+class VacancyCriteriaExtractionRequest(WeDoBaseModel):
     message: str
 
 
@@ -51,7 +50,7 @@ class VacancyCriteriaExtractionResponse(BaseModel):
     message: str
 
 
-class VacancyAdjustmentsRequest(BaseModel):
+class VacancyAdjustmentsRequest(WeDoBaseModel):
     vacancy_id: UUID
     message: str
 

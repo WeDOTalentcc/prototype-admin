@@ -20,6 +20,7 @@ from app.models.recruitment_journey import (
     TemplateType,
 )
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
+from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,7 @@ def verify_ownership(resource, company_id: uuid.UUID, resource_name: str = "Reso
         raise HTTPException(status_code=403, detail="Access denied")
 
 
-class TemplateCreate(BaseModel):
+class TemplateCreate(WeDoBaseModel):
     name: str
     description: str | None = None
     template_type: str = "technical"
@@ -49,7 +50,7 @@ class TemplateCreate(BaseModel):
     is_default: bool = False
 
 
-class TemplateUpdate(BaseModel):
+class TemplateUpdate(WeDoBaseModel):
     name: str | None = None
     description: str | None = None
     template_type: str | None = None
@@ -65,7 +66,7 @@ class TemplateUpdate(BaseModel):
     is_active: bool | None = None
 
 
-class SLACreate(BaseModel):
+class SLACreate(WeDoBaseModel):
     name: str
     description: str | None = None
     stage_id: str | None = None
@@ -79,7 +80,7 @@ class SLACreate(BaseModel):
     critical_action: dict[str, Any] = {}
 
 
-class SLAUpdate(BaseModel):
+class SLAUpdate(WeDoBaseModel):
     name: str | None = None
     description: str | None = None
     stage_id: str | None = None
@@ -94,7 +95,7 @@ class SLAUpdate(BaseModel):
     is_active: bool | None = None
 
 
-class AutomationCreate(BaseModel):
+class AutomationCreate(WeDoBaseModel):
     name: str
     description: str | None = None
     automation_type: str
@@ -104,7 +105,7 @@ class AutomationCreate(BaseModel):
     is_enabled: bool = True
 
 
-class AutomationUpdate(BaseModel):
+class AutomationUpdate(WeDoBaseModel):
     name: str | None = None
     description: str | None = None
     automation_type: str | None = None
@@ -114,7 +115,7 @@ class AutomationUpdate(BaseModel):
     is_enabled: bool | None = None
 
 
-class AISuggestTemplateRequest(BaseModel):
+class AISuggestTemplateRequest(WeDoBaseModel):
     job_title: str
     job_description: str | None = None
     job_type: str | None = None
@@ -122,7 +123,7 @@ class AISuggestTemplateRequest(BaseModel):
     industry: str | None = None
 
 
-class AIOptimizeSLARequest(BaseModel):
+class AIOptimizeSLARequest(WeDoBaseModel):
     historical_data: dict[str, Any] | None = None
     target_metrics: dict[str, Any] | None = None
     current_slas: list[dict[str, Any]] | None = None

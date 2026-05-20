@@ -7,6 +7,7 @@ from enum import Enum, StrEnum
 from typing import Any
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 class SubscriptionStatusEnum(StrEnum):
@@ -43,7 +44,7 @@ class BillingProviderEnum(StrEnum):
     VINDI = "vindi"
 
 
-class SubscriptionCreate(BaseModel):
+class SubscriptionCreate(WeDoBaseModel):
     """Schema for creating a subscription."""
     client_id: str = Field(..., description="Client account ID")
     plan_code: str = Field(..., description="Plan identifier")
@@ -68,7 +69,7 @@ class SubscriptionCreate(BaseModel):
         }
 
 
-class SubscriptionUpdate(BaseModel):
+class SubscriptionUpdate(WeDoBaseModel):
     """Schema for updating a subscription."""
     plan_code: str | None = Field(None, description="New plan code")
     plan_name: str | None = Field(None, description="New plan name")
@@ -170,7 +171,7 @@ class InvoiceListResponse(BaseModel):
     offset: int
 
 
-class RefundRequest(BaseModel):
+class RefundRequest(WeDoBaseModel):
     """Schema for refund request."""
     amount_cents: int | None = Field(None, ge=0, description="Partial refund amount in cents (None for full refund)")
     reason: str | None = Field(None, description="Refund reason")
@@ -184,7 +185,7 @@ class RefundRequest(BaseModel):
         }
 
 
-class PaymentMethodCreate(BaseModel):
+class PaymentMethodCreate(WeDoBaseModel):
     """Schema for creating a payment method."""
     client_id: str = Field(..., description="Client account ID")
     subscription_id: str = Field(..., description="Subscription ID")
@@ -248,7 +249,7 @@ class PaymentMethodListResponse(BaseModel):
     total: int
 
 
-class WebhookPayload(BaseModel):
+class WebhookPayload(WeDoBaseModel):
     """Schema for webhook payload."""
     event: str | None = Field(None, description="Event type")
     data: dict[str, Any] | None = Field(default_factory=dict, description="Event data")
