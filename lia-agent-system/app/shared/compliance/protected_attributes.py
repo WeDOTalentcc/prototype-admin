@@ -91,7 +91,12 @@ def _emit_sentry_breadcrumb(category: str, msg: str) -> None:
             level="error",
         )
     except Exception:
-        pass
+        # T-04 Tipo C: Sentry breadcrumb is best-effort observability;
+        # never break compliance flow if sentry_sdk import/send fails.
+        logger.debug(
+            "[protected_attributes] sentry breadcrumb failed (best-effort)",
+            exc_info=True,
+        )
 
 
 def is_registry_loaded() -> bool:

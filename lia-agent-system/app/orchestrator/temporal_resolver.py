@@ -151,6 +151,9 @@ class TemporalResolver:
                 ))
                 return results
             except ValueError:
+                # T-04 Tipo D: ISO date range parse failure (e.g. "2026-13-45")
+                # is a non-match, not an error — fall through to try other
+                # patterns (single date, "last N days", etc).
                 pass
 
         # ----------------------------------------------------------------
@@ -169,6 +172,9 @@ class TemporalResolver:
                 ))
                 return results
             except ValueError:
+                # T-04 Tipo D: single ISO date parse failure (e.g. "2026-02-30")
+                # is a non-match, not an error — fall through to try other
+                # patterns ("last N days", relative offsets, etc).
                 pass
 
         # ----------------------------------------------------------------

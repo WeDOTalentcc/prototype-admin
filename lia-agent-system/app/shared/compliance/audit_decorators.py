@@ -64,7 +64,12 @@ def _sentry_capture(exc: BaseException) -> None:
 
         sentry_sdk.capture_exception(exc)
     except Exception:
-        pass
+        # T-04 Tipo C: Sentry capture is best-effort observability;
+        # never propagate failure here (we are already in audit error path).
+        logger.debug(
+            "[audit_decorators] sentry capture failed (best-effort)",
+            exc_info=True,
+        )
 
 
 class _AuditCtx:
@@ -204,7 +209,12 @@ class _AuditCtx:
             try:
                 await self._session_cm.__aexit__(exc_type, None, None)
             except Exception:
-                pass
+                # T-04 Tipo C: session-cm teardown is best-effort;
+                # connection may already be poisoned by the outer body exception.
+                logger.debug(
+                    "[audit_decorators] session __aexit__ failed (best-effort)",
+                    exc_info=True,
+                )
             self._session_cm = None
             self.session = None
 
@@ -254,7 +264,12 @@ class _AuditCtx:
                 try:
                     await self.session.rollback()
                 except Exception:
-                    pass
+                    # T-04 Tipo C: rollback is best-effort cleanup on poisoned session;
+                    # the body exception is the real signal and will re-raise.
+                    logger.debug(
+                        "[audit_decorators] session rollback failed (best-effort)",
+                        exc_info=True,
+                    )
             await self._close_session(exc_type)
             if not is_company_audit_disabled() and self.company_id and not self.read_only:
                 try:

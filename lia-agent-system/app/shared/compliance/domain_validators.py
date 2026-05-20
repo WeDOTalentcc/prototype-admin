@@ -42,6 +42,9 @@ async def validate_cv_score_claim(
         try:
             mentioned = int(score_str)
         except ValueError:
+            # T-04 Tipo D: regex may match non-int (e.g. trailing punctuation
+            # captured by group); skip and let other matches in the loop
+            # be evaluated. No data loss — fact-check is best-effort.
             continue
         if abs(mentioned - real_val) > 5:
             return (
@@ -79,6 +82,8 @@ async def validate_analytics_metric_claim(
             try:
                 mentioned = int(days_str)
             except ValueError:
+                # T-04 Tipo D: regex may capture non-int fragments; skip
+                # and let other matches in the loop be evaluated.
                 continue
             if abs(mentioned - real_val) > 3:
                 return (
@@ -123,6 +128,8 @@ async def validate_sourcing_count_claim(
         try:
             mentioned = int(count_str)
         except ValueError:
+            # T-04 Tipo D: regex may capture non-int fragments; skip
+            # and let other matches in the loop be evaluated.
             continue
         if mentioned > real_val * 2:
             return (

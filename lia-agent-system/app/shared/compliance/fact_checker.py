@@ -126,6 +126,9 @@ class FactChecker:
         try:
             return float(cleaned)
         except ValueError:
+            # T-04 Tipo D: BR number parse is best-effort for fact-checking
+            # numeric claims; returning 0.0 makes the downstream "abs() > 5"
+            # comparison harmless (won't flag a fake mismatch).
             return 0.0
 
     def _check_salary_claims(

@@ -952,6 +952,10 @@ class MainOrchestrator:
                     data_str = json.dumps(action_result.data, ensure_ascii=False, default=str)[:2000]
                     interpretation_prompt += f"Dados retornados: {data_str}\n"
                 except Exception:
+                    # T-04 Tipo D: data serialization is decorative
+                    # (enriches LLM prompt with structured context); if it
+                    # fails (non-serializable type), the prompt still has
+                    # the human-readable action_result.message above.
                     pass
 
             interpretation_prompt += (

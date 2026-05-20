@@ -84,7 +84,12 @@ class PendingActionStore:
             try:
                 self._pool.putconn(conn)
             except Exception:
-                pass
+                # T-04 Tipo C: returning connection to pool is best-effort;
+                # pool may be closed or connection invalidated.
+                logger.debug(
+                    "[PendingActionStore] putconn failed (best-effort)",
+                    exc_info=True,
+                )
 
     def get(self, conversation_id: str) -> PendingActionState | None:
         with self._lock:
@@ -199,7 +204,12 @@ class PendingActionStore:
             try:
                 conn.rollback()
             except Exception:
-                pass
+                # T-04 Tipo C: rollback is best-effort after save failed;
+                # connection may already be in invalid state.
+                logger.debug(
+                    "[PendingActionStore] save rollback failed (best-effort)",
+                    exc_info=True,
+                )
         finally:
             self._put_conn(conn)
 
@@ -216,7 +226,12 @@ class PendingActionStore:
             try:
                 conn.rollback()
             except Exception:
-                pass
+                # T-04 Tipo C: rollback is best-effort after remove failed;
+                # connection may already be in invalid state.
+                logger.debug(
+                    "[PendingActionStore] remove rollback failed (best-effort)",
+                    exc_info=True,
+                )
         finally:
             self._put_conn(conn)
 
@@ -235,7 +250,12 @@ class PendingActionStore:
             try:
                 conn.rollback()
             except Exception:
-                pass
+                # T-04 Tipo C: rollback is best-effort after cleanup failed;
+                # connection may already be in invalid state.
+                logger.debug(
+                    "[PendingActionStore] cleanup rollback failed (best-effort)",
+                    exc_info=True,
+                )
             return 0
         finally:
             self._put_conn(conn)

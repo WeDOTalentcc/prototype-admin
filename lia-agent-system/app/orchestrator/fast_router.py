@@ -41,6 +41,13 @@ def _get_domain_matcher():
         )
         return _DOMAIN_MATCHER
     except Exception:
+        # T-04 Tipo B: matcher build failure must be visible — routing
+        # falls back to slower tiers (cascaded router), which is correct
+        # behavior, but operators need to know the keyword map is broken.
+        logger.warning(
+            "[fast_router] _build_domain_matcher failed, returning None (fallback to slower tiers)",
+            exc_info=True,
+        )
         return None
 
 

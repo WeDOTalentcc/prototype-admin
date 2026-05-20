@@ -33,10 +33,20 @@ _ab_experiment_initialized = False
 
 
 def _get_metrics():
-    """Metrics stub — Prometheus removed (Task #138). Returns None."""
+    """Metrics stub — Prometheus removed (Task #138). Returns None.
+
+    T-04 Tipo D: try/except is deliberately empty here. This stub
+    replaced a real Prometheus integration (Task #138) and is kept
+    as a no-op shim so call sites don't have to be rewritten. The
+    except branch is unreachable (literal returns can't fail), but
+    is kept to preserve the original signature contract for the
+    eventual restoration of metrics.
+    """
     try:
         return None, None, None
     except Exception:
+        # Branch inalcancavel (literal return): mantida para preservar signature contract
+        # ate restauracao do Prometheus stack (Task #138 followup)
         return None, None, None
 
 
@@ -202,6 +212,13 @@ class CascadedRouter:
             threshold = settings.ROUTER_FAST_CONFIDENCE_THRESHOLD
             return result.domain_id == "wizard" and result.confidence >= threshold
         except Exception:
+            # T-04 Tipo B: fail-open is intentional (trust the cache decision),
+            # but the matcher failure itself must be visible so operators can
+            # diagnose router regressions.
+            logger.warning(
+                "[CascadedRouter] _should_override_to_wizard matcher failed, fail-open=False",
+                exc_info=True,
+            )
             return False  # fail-open: trust cache on error
 
     @trace_span("router.route", attributes={"component": "cascaded_router"})
@@ -295,7 +312,14 @@ class CascadedRouter:
                 # instead of leaking into the cross-tenant "__unknown__" bucket.
                 raise
             except Exception:
-                pass
+                # T-04 Tipo B: namespace_violation metric is observability
+                # for multi-tenancy invariant breach. Importing/recording
+                # may fail in dev/test (no redis), but we must not silently
+                # swallow in case it's a production regression.
+                logger.warning(
+                    "[CascadedRouter] record_namespace_violation failed",
+                    exc_info=True,
+                )
         cache_key = self._cache_key(message, _company_id_for_cache)
 
         # Tier 1 — LRU in-process (hash MD5, O(1))

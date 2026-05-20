@@ -201,6 +201,7 @@ class VectorSemanticCache:
                             from lia_config.config import settings as _s
                             _near_margin = _s.ROUTER_VECTOR_NEAR_MISS_LOG_MARGIN
                         except Exception:
+                            # Settings opcional: usa default 0.05 se nao configurado/disponivel
                             pass
                         nm_row = await session.execute(
                             sa_text(near_miss_sql),

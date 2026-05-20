@@ -194,7 +194,13 @@ class GeminiLiveVoiceProvider(VoiceStreamProviderABC):
             try:
                 await GEMINI_LIVE_CIRCUIT.record_failure()
             except Exception:
-                pass
+                # T-04 Tipo B: circuit breaker telemetry must not mask the
+                # original receive error — log + continue to propagate the
+                # error event to the session queue below.
+                logger.warning(
+                    "[GeminiLiveVoiceProvider] circuit record_failure failed",
+                    exc_info=True,
+                )
             await session.event_queue.put(VoiceStreamEvent(
                 event_type="error",
                 text=str(e),
@@ -266,7 +272,12 @@ class GeminiLiveVoiceProvider(VoiceStreamProviderABC):
             try:
                 await session.connection_ctx.__aexit__(None, None, None)
             except Exception:
-                pass
+                # T-04 Tipo C: connection context teardown is best-effort;
+                # remote may already be disconnected.
+                logger.debug(
+                    "[GeminiLiveVoiceProvider] connection_ctx __aexit__ failed (best-effort)",
+                    exc_info=True,
+                )
 
         latencies = session.turn_latencies_ms
         avg_latency = sum(latencies) / len(latencies) if latencies else 0

@@ -141,6 +141,9 @@ class OpenAIRealtimeVoiceProvider(VoiceStreamProviderABC):
                 try:
                     event = json.loads(raw_msg)
                 except json.JSONDecodeError:
+                    # T-04 Tipo D: OpenAI Realtime WebSocket occasionally
+                    # sends non-JSON frames (binary audio, keepalive); skip
+                    # and read next frame. Logging here would be spammy.
                     continue
 
                 event_type = event.get("type", "")
@@ -222,7 +225,13 @@ class OpenAIRealtimeVoiceProvider(VoiceStreamProviderABC):
             try:
                 await OPENAI_CIRCUIT.record_failure()
             except Exception:
-                pass
+                # T-04 Tipo B: circuit breaker telemetry must not mask the
+                # original receive error — log + continue to propagate the
+                # error event to the session queue below.
+                logger.warning(
+                    "[OpenAIRealtimeVoiceProvider] circuit record_failure failed",
+                    exc_info=True,
+                )
             await session.event_queue.put(VoiceStreamEvent(
                 event_type="error",
                 text=str(e),
@@ -298,7 +307,12 @@ class OpenAIRealtimeVoiceProvider(VoiceStreamProviderABC):
             try:
                 await session.ws.close()
             except Exception:
-                pass
+                # T-04 Tipo C: websocket close is best-effort teardown;
+                # peer may already have closed or be unreachable.
+                logger.debug(
+                    "[OpenAIRealtimeVoiceProvider] ws close failed (best-effort)",
+                    exc_info=True,
+                )
 
         latencies = session.turn_latencies_ms
         avg_latency = sum(latencies) / len(latencies) if latencies else 0

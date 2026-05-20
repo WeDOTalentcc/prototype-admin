@@ -24,6 +24,13 @@ def is_llm_available() -> bool:
         get_anthropic_client()
         return True
     except Exception:
+        # T-04 Tipo B: probe failure must be visible — return False is the
+        # contract, but the reason (missing API key, network, bad config)
+        # is critical operator information.
+        logger.warning(
+            "[llm_client] is_llm_available probe failed",
+            exc_info=True,
+        )
         return False
 
 
