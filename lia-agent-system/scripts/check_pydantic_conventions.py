@@ -51,7 +51,7 @@ from typing import Iterable
 # ─────────────────────────────────────────────────────────────────────────────
 # Configuração
 # ─────────────────────────────────────────────────────────────────────────────
-REQUEST_BODY_SUFFIXES = ("Create", "Update", "Request", "Payload", "Input")
+REQUEST_BODY_SUFFIXES = ("Create", "Update", "Request", "Payload", "Input", "Data", "Context", "Message")
 """Heurística: schemas com esses sufixos são request bodies. Override via SKIP_R1."""
 
 SKIP_R1: set[str] = {
@@ -74,8 +74,38 @@ SKIP_R2: set[str] = {
     "ToolExecutionRequest",        # Schema interno service-to-service (orchestrator_routes constrói internamente), NÃO HTTP body.
     "GuardrailCreate",             # Schema interno (guardrail_repository) usado por seeds + handler que constrói internamente — company_id é argumento legítimo do método create.
     "SSOAuditLogCreate",           # Schema interno (audit log record), NÃO HTTP body — usado por WorkOS SSO service para persistir.
-    "CultureAnalysisRequest",      # Schema interno service-to-service (analytics culture), tem handler mas company_id vem do JWT — verificar.
-    "CultureAnalysisDirectRequest",# Schema sem requerer company_id em DB — usado para análise direta sem persistir.
+    "CultureAnalysisRequest",      # Canonical defense-in-depth: company_culture.py:198 valida request.company_id == jwt_company_id e retorna 404 cross-tenant. Pattern correto (oposto do R2 anti-pattern).
+    "CultureAnalysisDirectRequest",# Mesma defesa cruzada — auth verificada, results NÃO persistidos (preview/onboarding).
+    "UniversalContext",            # T-06 Batch 1 refinement: schema interno orchestrator (context_adapter), NÃO HTTP body. Service-to-service.
+    "ToolExecutionContext",        # T-06 Batch 1 refinement: schema interno tool executor (app/tools/executor.py), NÃO HTTP body. Service-to-service.
+    "AgentChatMessage",
+    "ScheduleInterviewRequest",    # Calendar canonical defense: body.company_id é validado vs JWT (strict para non-admins) via _assert_company_access em calendar.py:147-150. Pattern correto.
+    "TeamsWebhookPayload",         # Webhook externo Microsoft Teams — tenant validado via X-Teams-Signature HMAC + verify_webhook_owner cross-check (não pode usar JWT pois request vem do Teams).
+    "OfferSentPayload",            # Webhook payload interno Rails → FastAPI (automation domain). Tenant via signature.
+    "CandidateHiredPayload",       # Webhook payload interno Rails → FastAPI (automation domain). Tenant via signature.
+    "CandidateRejectedPayload",    # Webhook payload interno Rails → FastAPI (automation domain). Tenant via signature.
+    "PolicyCreate",                # Admin platform-policy escape: scope=PLATFORM permite company_id override por user admin (RBAC). Defense em handler policies.py:220.
+    # Automation event handlers — internal Rails → FastAPI callbacks (handle-trigger/*).
+    # Helpers acessam request.company_id em ~10 sites; refactor para passar company_id arg explícito é wave 3.
+    # Handlers já usam Depends(require_company_id) — JWT é authoritative, body.company_id é redundante mas helper-passthrough.
+    "ExecuteActionRequest",        # WT-AUTOMATION-WAVE3: refactor helpers triggers.py para passar company_id arg
+    "InterviewScheduledRequest",   # WT-AUTOMATION-WAVE3: refactor helpers handlers_interview.py
+    "InterviewCompletedRequest",   # WT-AUTOMATION-WAVE3
+    "CandidateInactiveRequest",    # WT-AUTOMATION-WAVE3
+    "ATSSyncRequest",              # WT-AUTOMATION-WAVE3: refactor helpers handlers_ats_sync.py
+    "ScreenCandidateRequest",      # WT-AUTOMATION-WAVE3
+    "TriggerEventRequest",         # WT-AUTOMATION-WAVE3
+    "ScreeningCompletedRequest",   # WT-AUTOMATION-WAVE3: refactor helpers handlers_screening.py
+    "BulkSuggestionRequest",       # WT-AUTOMATION-WAVE3
+    "CandidateNoShowRequest",      # WT-AUTOMATION-WAVE3
+    # Wave 3 final additions:
+    "FeatureFlagRequest",          # Canonical defense: _enforce_flag_tenant valida body vs JWT em lia_assistant_flags.py:193 (403 cross-tenant). None permitido para super-admin (global flags).
+    "UserManagementCreate",        # Admin canonical defense: require_company_id_strict_match em company_users.py:140 valida body vs query+JWT. Cross-company creation gated por RBAC.
+    "UserManagementUpdate",        # Idem UserManagementCreate.
+    "GenerateQuestionsRequest",    # WT-WSI-WAVE3 Sprint 5 deferred: wsi/_shared.py downstream usage extenso.
+    "InterviewGraphStartRequest",  # WT-WSI-WAVE3 Sprint 5 deferred.
+    "WizardOrchestratorRequest",   # WT-WIZARD-WAVE3 Sprint 5 deferred.
+    "InterpretContextRequest",     # WT-RECRUITMENT-WAVE3 Sprint 5 deferred.
 }
 
 CANONICAL_BASE_CLASSES = {"WeDoBaseModel"}
