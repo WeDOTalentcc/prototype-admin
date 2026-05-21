@@ -688,3 +688,60 @@ workflow shape — cron schedule, `LIA_E2E_SENSORS_ENABLED="true"` env var,
 pytest invocation of `test_canonical_e2e_sensors.py`, `workflow_dispatch`
 trigger. If any of those drift, the meta-sensor fails locally before the
 nightly silently becomes a green no-op.
+
+
+### ADR-WIZARD-002 — Documento canonical do wizard agêntico (2026-05-21)
+
+> A arquitetura completa do wizard de criação de vaga (agentic conversational
+> end-to-end pipeline) está documentada em `/tmp/WIZARD_ARCHITECTURE_CANONICAL.md`
+> (Replit) + `/Users/paulomoraes/Documents/Python/WIZARD_ARCHITECTURE_CANONICAL.md`
+> (Mac local), 2200+ linhas com:
+>
+> - 19 seções (Executive Summary, ASCII Architecture Diagram, Frontend Layer,
+>   REST API Layer, WizardSessionService, LangGraph 15-node State Machine,
+>   JobCreationState TypedDict, Persistence Layer, Schemas & Data Contracts,
+>   Auth & Multi-tenancy, LLM Provider Chain, Audit Trail & Compliance,
+>   Checkpointer AsyncPostgresSaver, 140+ Sensors, CI/CD, Workflow Replit,
+>   Known Issues, Glossary com Sprint codenames mapping, Verification Recipes)
+> - **Cita file:line para cada claim** — code is source of truth
+> - WSI methodology distribution table inline (de `WSI_METHODOLOGY_COMPLETE_v2.md`
+>   §5.4 + §5.5, referenced em `app/domains/job_creation/graph.py:4579`
+>   `_get_question_distribution`) — compact 7q + full 12q por senioridade,
+>   alocação intra-framework (CBI_tech/Dreyfus/Bloom/CBI_behav/BigFive)
+> - Sprint codenames F→R mapping completo (commit hashes + themes), do estado
+>   broken (pré-F) ao wizard E2E publish + nightly CI sensor green
+>   (`042926e76` Sprint R Wave 4)
+>
+> **Regra de uso**: qualquer mudança arquitetural no wizard (`graph.py`,
+> `wizard_session_service.py`, `state.py`, `wizard_smart_orchestrator.py`,
+> `api_client.py`) DEVE incluir update no doc canonical no mesmo commit ou
+> issue de follow-up explícita. Sensor:
+> `tests/sensors/test_wizard_doc_freshness.py` — checa que o doc existe + foi
+> modificado nos últimos 30 dias (warn-only por enquanto, BLOCKING quando
+> baseline estiver verde + Anderson/time consciente do contrato).
+>
+> Entry point: leia o doc do início (Section 1 Executive Summary + Section 2
+> ASCII Architecture) antes de mudar qualquer node do graph. WSI distribution
+> table (Section 6 Node 8) é canonical — drift entre essa tabela, `graph.py:4579`
+> e `WSI_METHODOLOGY_COMPLETE_v2.md §5.4-5.5` quebra silenciosamente o
+> alinhamento F5 entre proporção de perguntas e scoring weights.
+>
+> ADR origem: canonical fix definitivo do wizard agêntico (commits Sprint F
+> rolled-into → `0627531c9` Sprint H+I+J+K+L → `98082cef8` Sprint M+N →
+> `9cb528561` Sprint O.1/O.3 → `014d77a60` Sprint P → `aa77f6c6a` Sprint Q →
+> `042926e76` Sprint R Wave 4 final). Ver "Sprint Codenames Mapping" na
+> Section 18 Glossary do doc canonical para tabela completa.
+
+
+## Resolved Deprecations
+
+- **2026-05-21 Sprint S:** removed `react_orchestrate` deprecated alias from
+  `app/api/v1/wizard_smart_orchestrator.py` (was lines 374-385, function
+  `async def react_orchestrate` + route `POST /api/v1/wizard/react-orchestrate`).
+  Zero callers verified across `lia-agent-system/` (Python) and
+  `plataforma-lia/` (TS, only auto-generated `api.generated.ts` types — no
+  hand-written caller). Canonical replacement: `POST /api/v1/wizard/smart-orchestrate`.
+  Sibling routes `/api/v1/pipeline/react-orchestrate` and
+  `/api/v1/sourcing/react-orchestrate` (different routers, different domains)
+  remain untouched. Sensor `tests/sensors/test_react_orchestrate_removed.py`
+  enforces both source-level and FastAPI-route-level absence.

@@ -371,19 +371,6 @@ async def smart_orchestrate(
         )
 
 
-@router.post("/react-orchestrate", response_model=SmartOrchestrateResponse)
-async def react_orchestrate(
-    request: SmartOrchestrateRequest,
-    current_user: User = Depends(get_current_user_or_demo),
-    company_id: str = Depends(require_company_id),
-) -> SmartOrchestrateResponse:
-    """DEPRECATED alias for /smart-orchestrate."""
-    logger.warning(
-        "[DEPRECATED] /api/v1/wizard/react-orchestrate called — alias to canonical "
-        "/smart-orchestrate (phase4d.legacy_react_alias)."
-    )
-    return await smart_orchestrate(request, current_user, company_id)
-
 
 @router.get("/stage-mapping", response_model=None)
 async def get_stage_mapping(
