@@ -214,7 +214,7 @@ export function EligibilityTemplatesManager({
   return (
     <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 rounded-xl">
       <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <CardTitle className={`${textStyles.h4} flex items-center gap-2`}>
             <Library className="w-4 h-4 text-wedo-cyan" />
             Gerenciador de Templates de Triagem
@@ -245,7 +245,7 @@ export function EligibilityTemplatesManager({
         )}
 
         {/* Filter chips */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs text-lia-text-secondary">Filtrar:</span>
           {(["all", "master", "custom"] as const).map((f) => (
             <button
@@ -279,7 +279,7 @@ export function EligibilityTemplatesManager({
                 value={form.question}
                 onChange={(e) => setForm({ ...form, question: e.target.value })}
               />
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as QuestionType })}>
                   <SelectTrigger><SelectValue placeholder="Tipo" /></SelectTrigger>
                   <SelectContent>
@@ -367,7 +367,7 @@ export function EligibilityTemplatesManager({
                 className="flex items-start justify-between gap-2 p-3 bg-lia-bg-secondary/50 rounded-xl border border-lia-border-subtle"
               >
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
+                  <div className="flex flex-wrap items-center gap-2 mb-1">
                     <Chip variant="neutral" className={`text-micro ${catInfo?.color || ""}`}>
                       {catInfo?.icon} {catInfo?.label || flat.category}
                     </Chip>

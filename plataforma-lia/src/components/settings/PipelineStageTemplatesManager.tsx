@@ -252,7 +252,7 @@ export function PipelineStageTemplatesManager({
   return (
     <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 rounded-xl">
       <CardHeader className="pb-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <CardTitle className={`${textStyles.h4} flex items-center gap-2`}>
             <Workflow className="w-4 h-4 text-wedo-cyan" />
             Gerenciador de Stages do Pipeline
@@ -283,7 +283,7 @@ export function PipelineStageTemplatesManager({
         )}
 
         {/* Filter chips */}
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs text-lia-text-secondary">Filtrar:</span>
           {(["all", "master", "custom"] as const).map((f) => (
             <button
@@ -322,7 +322,7 @@ export function PipelineStageTemplatesManager({
                 value={form.key}
                 onChange={(e) => setForm({ ...form, key: e.target.value })}
               />
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <Input
                   placeholder="Color (#06b6d4 ou nome)"
                   value={form.color}
@@ -334,7 +334,7 @@ export function PipelineStageTemplatesManager({
                   onChange={(e) => setForm({ ...form, icon: e.target.value })}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <Input
                   type="number"
                   placeholder="Order (ex: 100)"
