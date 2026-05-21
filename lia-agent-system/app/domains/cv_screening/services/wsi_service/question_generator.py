@@ -11,6 +11,7 @@ from typing import Any, Literal
 
 from app.domains.cv_screening.constants.wsi_constants import SENIORITY_DISTRIBUTIONS
 from app.domains.ai.services.llm import llm_service
+from app.shared.llm.safe_response import safe_llm_with_flag_async, LLMResponseEnvelope
 from app.shared.observability.fallback_metrics import inc_wsi_fallback
 
 from .models import (
@@ -25,11 +26,11 @@ logger = logging.getLogger(__name__)
 
 class WSIQuestionGenerator:
     """Gerador de perguntas científicas baseado em frameworks e RAG."""
-    
+
     def __init__(self, llm):
         self.llm = llm
         self._load_rag_templates()
-    
+
     def _load_rag_templates(self):
         """Carrega templates de perguntas do RAG knowledge base com fallbacks.
 
@@ -48,7 +49,7 @@ class WSIQuestionGenerator:
         # parents[3]=domains      parents[4]=app       parents[5]=lia-agent-system
         _LIA_ROOT = Path(__file__).resolve().parents[5]
         rag_dir = _LIA_ROOT / "training" / "rag_knowledge" / "wsi_methodology"
-        
+
         # Load frameworks overview with fallback
         frameworks_file = rag_dir / "frameworks_overview.md"
         if frameworks_file.exists():
@@ -71,7 +72,7 @@ Levels: 1-Lembrar, 2-Compreender, 3-Aplicar, 4-Analisar, 5-Avaliar, 6-Criar
 ## 4. Big Five (OCEAN)
 Traits: Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism
 """
-        
+
         # Load question templates with fallback
         templates_file = rag_dir / "question_generation_templates.md"
         if templates_file.exists():
@@ -88,7 +89,7 @@ Traits: Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism
 ## Dreyfus Questions
 - "De 1 a 5, quanto você domina {skill}? Cite um projeto recente onde aplicou."
 
-## Bloom Questions  
+## Bloom Questions
 - Level 3-4: "Como você implementaria/diagnosticaria {scenario}?"
 - Level 5: "Projete uma solução para {complex_problem}"
 
@@ -96,7 +97,7 @@ Traits: Openness, Conscientiousness, Extraversion, Agreeableness, Neuroticism
 - "Como você reage quando {stressful_situation}?"
 - "Descreva como você trabalha em equipe..."
 """
-    
+
     async def _extract_ocean_scores(
         self,
         job_description: str,
@@ -578,6 +579,78 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
             last_question.needs_manual_review = True
         return last_question  # type: ignore[return-value]
 
+    async def _generate_question_with_envelope(
+        self,
+        prompt: str,
+        fallback_data: dict,
+        framework_label: str,
+        competency_name: str,
+        bind_kwargs: dict | None = None,
+    ) -> LLMResponseEnvelope:
+        """P0.D SIBLINGS canonical helper (audit 2026-05-21).
+
+        Envelopa todas as chamadas LLM dos 4 _generate_X_question() em
+        ``safe_llm_with_flag_async`` (canonical helper em
+        ``app.shared.llm.safe_response``). Em failure, envelope vem com
+        ``success=False`` + ``fallback_used=True`` + ``failure_mode``
+        classificado + ``error_message`` populated.
+
+        Resultado anterior (silent fallback): pergunta template stock caia
+        no payload sem flag, recrutador via WSIQuestion como se fosse output
+        legitimo da LIA. Pattern F6.B3 (audit 2026-05-20) eliminado.
+
+        Args:
+            prompt: prompt completo a enviar a LLM.
+            fallback_data: dict canonical com mesma shape do JSON LLM esperado;
+                eh injetado como ``safe_json_parse`` fallback E como
+                ``envelope.fallback_data`` em caso de excecao da call LLM.
+            framework_label: CBI | Dreyfus | Bloom | BigFive -- usado pra
+                ``inc_wsi_fallback`` Prometheus counter (Grafana alarm).
+            competency_name: nome da competencia -- pra contexto de log
+                estruturado em failure.
+            bind_kwargs: kwargs pra ``self.llm.claude.bind(...)`` (temperature,
+                max_tokens). Cada framework usa valores diferentes.
+
+        Returns:
+            LLMResponseEnvelope com ``success / data / fallback_used /
+            failure_mode / error_message`` populated. Caller transforma
+            ``envelope.data`` (dict) em ``WSIQuestion(...)`` e propaga campos
+            de envelope pros fields canonical da pergunta.
+
+        REGRA 4 (CLAUDE.md): handlers tocando LLM/critical IO DEVEM fail-loud.
+        ADR-001 (helper DRY): 4 SIBLINGS compartilham mesmo invariant -- extract
+        elimina divergence + reduz LOC.
+        """
+        bind_kwargs = bind_kwargs or {}
+
+        async def _invoke_llm() -> dict:
+            response = await self.llm.claude.bind(**bind_kwargs).ainvoke(prompt)
+            return safe_json_parse(response.content, fallback=fallback_data)
+
+        envelope = await safe_llm_with_flag_async(
+            _invoke_llm,
+            fallback_data=fallback_data,
+            # P0.D nota: needs_manual_review_on_fail=False -- questions
+            # ja tem field ``needs_manual_review`` proprio (F6.8 ancoragem JD).
+            # Sinal de LLM failure vive em fallback_used / llm_failure_mode
+            # separado. Nao-conflitamos a semantica do campo F6.8.
+            needs_manual_review_on_fail=False,
+        )
+
+        if not envelope.success:
+            # pii-logs ok: nome de entidade/config (nao PII per LGPD Art.5 V -- pessoa natural)
+            logger.error(
+                "Failed to generate %s question for %s: %s (failure_mode=%s)",
+                framework_label,
+                competency_name,
+                envelope.error_message,
+                envelope.failure_mode.value,
+            )
+            # REGRA 4 sensor -- Prometheus counter for Grafana alarm
+            inc_wsi_fallback(framework_label, "llm_error")
+
+        return envelope
+
     async def _generate_cbi_question(
         self, competency: Competency, improvement_hint: str | None = None
     ) -> WSIQuestion:
@@ -611,37 +684,30 @@ Responda APENAS em JSON:
   }}
 }}"""
 
-        try:
-            response = await self.llm.claude.bind(temperature=0.7, max_tokens=2000).ainvoke(prompt)
-            data = safe_json_parse(response.content, fallback={
-                "framework": "CBI",
-                "question_type": "contextual",
-                "question_text": f"Conte sobre uma experiência onde você aplicou {competency.name} em um projeto real. Qual foi o contexto, sua ação e o resultado?",
-                "expected_signals": ["Contexto claro", "Ação específica", "Resultado mensurável"],
-                "scoring_criteria": {
-                    "score_5": "Projeto complexo + decisões avançadas + impacto quantificado",
-                    "score_3": "Projeto real + ação técnica + resultado visível",
-                    "score_1": "Projeto vago + ação genérica"
-                }
-            })
-        except Exception as e:
-            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-            logger.error(f"Failed to generate CBI question for {competency.name}: {e}")
-            # REGRA 4 sensor — Prometheus counter for Grafana alarm
-            inc_wsi_fallback("CBI", "llm_error")
-            # Use fallback
-            data = {
-                "framework": "CBI",
-                "question_type": "contextual",
-                "question_text": f"Conte sobre uma experiência onde você aplicou {competency.name} em um projeto real. Qual foi o contexto, sua ação e o resultado?",
-                "expected_signals": ["Contexto claro", "Ação específica", "Resultado mensurável"],
-                "scoring_criteria": {
-                    "score_5": "Projeto complexo + decisões avançadas + impacto quantificado",
-                    "score_3": "Projeto real + ação técnica + resultado visível",
-                    "score_1": "Projeto vago + ação genérica"
-                }
-            }
-        
+        # P0.D SIBLINGS canonical (audit 2026-05-21): envelope via DRY helper.
+        cbi_fallback = {
+            "framework": "CBI",
+            "question_type": "contextual",
+            "question_text": (
+                f"Conte sobre uma experiência onde você aplicou {competency.name} "
+                "em um projeto real. Qual foi o contexto, sua ação e o resultado?"
+            ),
+            "expected_signals": ["Contexto claro", "Ação específica", "Resultado mensurável"],
+            "scoring_criteria": {
+                "score_5": "Projeto complexo + decisões avançadas + impacto quantificado",
+                "score_3": "Projeto real + ação técnica + resultado visível",
+                "score_1": "Projeto vago + ação genérica",
+            },
+        }
+        envelope = await self._generate_question_with_envelope(
+            prompt=prompt,
+            fallback_data=cbi_fallback,
+            framework_label="CBI",
+            competency_name=competency.name,
+            bind_kwargs={"temperature": 0.7, "max_tokens": 2000},
+        )
+        data = envelope.data if envelope.success else (envelope.data or cbi_fallback)
+
         return WSIQuestion(
             id=str(uuid.uuid4()),  # Generate UUID instead of relying on LLM
             competency=competency.name,
@@ -652,8 +718,14 @@ Responda APENAS em JSON:
             expected_signals=data.get("expected_signals", ["Contexto", "Ação", "Resultado"]),
             scoring_criteria=data.get("scoring_criteria", {}),
             is_critical=competency.is_critical,
+            # P0.D envelope (audit 2026-05-21)
+            fallback_used=not envelope.success,
+            llm_failure_mode=(
+                envelope.failure_mode.value if not envelope.success else None
+            ),
+            llm_error_message=envelope.error_message if not envelope.success else None,
         )
-    
+
     async def _generate_dreyfus_question(
         self, competency: Competency, improvement_hint: str | None = None
     ) -> WSIQuestion:
@@ -672,37 +744,30 @@ Combina:
 {hint_block}
 Responda APENAS em JSON com mesma estrutura anterior."""
 
-        try:
-            response = await self.llm.claude.bind(temperature=0.75, max_tokens=2000).ainvoke(prompt)
-            data = safe_json_parse(response.content, fallback={
-                "framework": "Dreyfus",
-                "question_type": "autodeclaration",
-                "question_text": f"De 1 a 5, quanto você se considera proficiente em {competency.name}? Pode citar um projeto recente onde aplicou essa competência?",
-                "expected_signals": ["Autodeclaração honesta", "Projeto real mencionado", "Contexto de aplicação"],
-                "scoring_criteria": {
-                    "score_5": "Expert com projeto complexo e impacto mensurável",
-                    "score_3": "Competente com projeto real e aplicação prática",
-                    "score_1": "Iniciante sem experiência prática"
-                }
-            })
-        except Exception as e:
-            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-            logger.error(f"Failed to generate Dreyfus question for {competency.name}: {e}")
-            # REGRA 4 sensor — Prometheus counter for Grafana alarm
-            inc_wsi_fallback("Dreyfus", "llm_error")
-            # Use fallback
-            data = {
-                "framework": "Dreyfus",
-                "question_type": "autodeclaration",
-                "question_text": f"De 1 a 5, quanto você se considera proficiente em {competency.name}? Pode citar um projeto recente onde aplicou essa competência?",
-                "expected_signals": ["Autodeclaração honesta", "Projeto real mencionado", "Contexto de aplicação"],
-                "scoring_criteria": {
-                    "score_5": "Expert com projeto complexo e impacto mensurável",
-                    "score_3": "Competente com projeto real e aplicação prática",
-                    "score_1": "Iniciante sem experiência prática"
-                }
-            }
-        
+        # P0.D SIBLINGS canonical (audit 2026-05-21): envelope via DRY helper.
+        dreyfus_fallback = {
+            "framework": "Dreyfus",
+            "question_type": "autodeclaration",
+            "question_text": (
+                f"De 1 a 5, quanto você se considera proficiente em {competency.name}? "
+                "Pode citar um projeto recente onde aplicou essa competência?"
+            ),
+            "expected_signals": ["Autodeclaração honesta", "Projeto real mencionado", "Contexto de aplicação"],
+            "scoring_criteria": {
+                "score_5": "Expert com projeto complexo e impacto mensurável",
+                "score_3": "Competente com projeto real e aplicação prática",
+                "score_1": "Iniciante sem experiência prática",
+            },
+        }
+        envelope = await self._generate_question_with_envelope(
+            prompt=prompt,
+            fallback_data=dreyfus_fallback,
+            framework_label="Dreyfus",
+            competency_name=competency.name,
+            bind_kwargs={"temperature": 0.75, "max_tokens": 2000},
+        )
+        data = envelope.data if envelope.success else (envelope.data or dreyfus_fallback)
+
         return WSIQuestion(
             id=str(uuid.uuid4()),  # Generate UUID instead of relying on LLM
             competency=competency.name,
@@ -711,9 +776,15 @@ Responda APENAS em JSON com mesma estrutura anterior."""
             question_text=data.get("question_text") or f"Descreva sua experiência com {competency.name} em projetos reais. De 1 a 5, como você avalia sua proficiência e em que tipo de cenário aplicou?",
             weight=competency.weight,
             expected_signals=data.get("expected_signals", ["Autodeclaração", "Projeto", "Contexto"]),
-            scoring_criteria=data.get("scoring_criteria", {})
+            scoring_criteria=data.get("scoring_criteria", {}),
+            # P0.D envelope (audit 2026-05-21)
+            fallback_used=not envelope.success,
+            llm_failure_mode=(
+                envelope.failure_mode.value if not envelope.success else None
+            ),
+            llm_error_message=envelope.error_message if not envelope.success else None,
         )
-    
+
     async def _generate_bloom_question(
         self, competency: Competency, improvement_hint: str | None = None
     ) -> WSIQuestion:
@@ -742,38 +813,31 @@ Exemplos:
 Responda APENAS em JSON."""
 
         cognitive_level = "APLICAR" if bloom_level == 3 else "ANALISAR" if bloom_level == 4 else "CRIAR"
-        
-        try:
-            response = await self.llm.claude.bind(temperature=0.75, max_tokens=2000).ainvoke(prompt)
-            data = safe_json_parse(response.content, fallback={
-                "framework": "Bloom",
-                "question_type": "microcase",
-                "question_text": f"Como você abordaria um desafio técnico envolvendo {competency.name}? Descreva sua estratégia de solução.",
-                "expected_signals": ["Raciocínio técnico", "Abordagem estruturada", "Conhecimento aplicado"],
-                "scoring_criteria": {
-                    "score_5": f"Nível {cognitive_level}: Solução completa, trade-offs considerados, best practices",
-                    "score_3": f"Nível {cognitive_level}: Solução funcional com conceitos corretos",
-                    "score_1": "Conhecimento teórico sem aplicação prática"
-                }
-            })
-        except Exception as e:
-            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-            logger.error(f"Failed to generate Bloom question for {competency.name}: {e}")
-            # REGRA 4 sensor — Prometheus counter for Grafana alarm
-            inc_wsi_fallback("Bloom", "llm_error")
-            # Use fallback
-            data = {
-                "framework": "Bloom",
-                "question_type": "microcase",
-                "question_text": f"Como você abordaria um desafio técnico envolvendo {competency.name}? Descreva sua estratégia de solução.",
-                "expected_signals": ["Raciocínio técnico", "Abordagem estruturada", "Conhecimento aplicado"],
-                "scoring_criteria": {
-                    "score_5": f"Nível {cognitive_level}: Solução completa, trade-offs considerados, best practices",
-                    "score_3": f"Nível {cognitive_level}: Solução funcional com conceitos corretos",
-                    "score_1": "Conhecimento teórico sem aplicação prática"
-                }
-            }
-        
+
+        # P0.D SIBLINGS canonical (audit 2026-05-21): envelope via DRY helper.
+        bloom_fallback = {
+            "framework": "Bloom",
+            "question_type": "microcase",
+            "question_text": (
+                f"Como você abordaria um desafio técnico envolvendo {competency.name}? "
+                "Descreva sua estratégia de solução."
+            ),
+            "expected_signals": ["Raciocínio técnico", "Abordagem estruturada", "Conhecimento aplicado"],
+            "scoring_criteria": {
+                "score_5": f"Nível {cognitive_level}: Solução completa, trade-offs considerados, best practices",
+                "score_3": f"Nível {cognitive_level}: Solução funcional com conceitos corretos",
+                "score_1": "Conhecimento teórico sem aplicação prática",
+            },
+        }
+        envelope = await self._generate_question_with_envelope(
+            prompt=prompt,
+            fallback_data=bloom_fallback,
+            framework_label="Bloom",
+            competency_name=competency.name,
+            bind_kwargs={"temperature": 0.75, "max_tokens": 2000},
+        )
+        data = envelope.data if envelope.success else (envelope.data or bloom_fallback)
+
         return WSIQuestion(
             id=str(uuid.uuid4()),  # Generate UUID instead of relying on LLM
             competency=competency.name,
@@ -782,9 +846,15 @@ Responda APENAS em JSON."""
             question_text=data.get("question_text") or f"Descreva como você abordaria um desafio técnico envolvendo {competency.name}. Explique sua estratégia, decisões e trade-offs considerados.",
             weight=competency.weight,
             expected_signals=data.get("expected_signals", ["Raciocínio", "Abordagem", "Conhecimento"]),
-            scoring_criteria=data.get("scoring_criteria", {})
+            scoring_criteria=data.get("scoring_criteria", {}),
+            # P0.D envelope (audit 2026-05-21)
+            fallback_used=not envelope.success,
+            llm_failure_mode=(
+                envelope.failure_mode.value if not envelope.success else None
+            ),
+            llm_error_message=envelope.error_message if not envelope.success else None,
         )
-    
+
     def _select_comp_by_trait(
         self,
         trait: str,
@@ -868,37 +938,30 @@ Foco em traços OCEAN:
 {trait_context}{hint_block}
 Responda APENAS em JSON."""
 
-        try:
-            response = await self.llm.claude.bind(temperature=0.8, max_tokens=2000).ainvoke(prompt)
-            data = safe_json_parse(response.content, fallback={
-                "framework": "BigFive",
-                "question_type": "situational",
-                "question_text": f"Descreva uma situação recente onde você demonstrou {competency.name}. Como você lidou com o desafio e qual foi o resultado?",
-                "expected_signals": ["Situação real", "Comportamento específico", "Resultado alcançado"],
-                "scoring_criteria": {
-                    "score_5": "Situação complexa + comportamento exemplar + impacto positivo mensurável",
-                    "score_3": "Situação clara + comportamento adequado + resultado satisfatório",
-                    "score_1": "Situação vaga + comportamento genérico + sem resultado claro"
-                }
-            })
-        except Exception as e:
-            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-            logger.error(f"Failed to generate BigFive question for {competency.name}: {e}")
-            # REGRA 4 sensor — Prometheus counter for Grafana alarm
-            inc_wsi_fallback("BigFive", "llm_error")
-            # Use fallback
-            data = {
-                "framework": "BigFive",
-                "question_type": "situational",
-                "question_text": f"Descreva uma situação recente onde você demonstrou {competency.name}. Como você lidou com o desafio e qual foi o resultado?",
-                "expected_signals": ["Situação real", "Comportamento específico", "Resultado alcançado"],
-                "scoring_criteria": {
-                    "score_5": "Situação complexa + comportamento exemplar + impacto positivo mensurável",
-                    "score_3": "Situação clara + comportamento adequado + resultado satisfatório",
-                    "score_1": "Situação vaga + comportamento genérico + sem resultado claro"
-                }
-            }
-        
+        # P0.D SIBLINGS canonical (audit 2026-05-21): envelope via DRY helper.
+        bigfive_fallback = {
+            "framework": "BigFive",
+            "question_type": "situational",
+            "question_text": (
+                f"Descreva uma situação recente onde você demonstrou {competency.name}. "
+                "Como você lidou com o desafio e qual foi o resultado?"
+            ),
+            "expected_signals": ["Situação real", "Comportamento específico", "Resultado alcançado"],
+            "scoring_criteria": {
+                "score_5": "Situação complexa + comportamento exemplar + impacto positivo mensurável",
+                "score_3": "Situação clara + comportamento adequado + resultado satisfatório",
+                "score_1": "Situação vaga + comportamento genérico + sem resultado claro",
+            },
+        }
+        envelope = await self._generate_question_with_envelope(
+            prompt=prompt,
+            fallback_data=bigfive_fallback,
+            framework_label="BigFive",
+            competency_name=competency.name,
+            bind_kwargs={"temperature": 0.8, "max_tokens": 2000},
+        )
+        data = envelope.data if envelope.success else (envelope.data or bigfive_fallback)
+
         scoring_criteria = data.get("scoring_criteria", {})
         if ocean_trait:
             scoring_criteria["ocean_trait"] = ocean_trait
@@ -912,6 +975,12 @@ Responda APENAS em JSON."""
             weight=competency.weight,
             expected_signals=data.get("expected_signals", ["Situação", "Comportamento", "Resultado"]),
             scoring_criteria=scoring_criteria,
+            # P0.D envelope (audit 2026-05-21)
+            fallback_used=not envelope.success,
+            llm_failure_mode=(
+                envelope.failure_mode.value if not envelope.success else None
+            ),
+            llm_error_message=envelope.error_message if not envelope.success else None,
         )
 
 

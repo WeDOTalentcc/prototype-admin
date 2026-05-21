@@ -136,7 +136,28 @@ class CompetencySuggestion(BaseModel):
 
 
 class WSIQuestion(BaseModel):
-    """Pergunta WSI estruturada."""
+    """Pergunta WSI estruturada.
+
+    P0.D SIBLINGS (audit 2026-05-21): campos ``fallback_used`` /
+    ``llm_failure_mode`` / ``llm_error_message`` adicionados pra surface
+    explícita de quando a pergunta foi gerada por LLM (canonical) vs por
+    fallback template stock (degraded). Antes, fallback era SILENT — pergunta
+    template caía no payload sem flag, recrutador via WSIQuestion como se
+    fosse output legitimo da LIA.
+
+    Diferente de StructuredReport (que setou ``needs_manual_review_on_fail=True``),
+    questions fallback NÃO setam ``needs_manual_review=True`` automaticamente:
+    o campo ``needs_manual_review`` já é usado por F6.8 (validação pós-geração
+    de ancoragem JD). Mantemos a semântica original do campo intacta — o
+    sinal de LLM failure vive separado em ``fallback_used`` /
+    ``llm_failure_mode`` / ``llm_error_message``.
+
+    REGRA 4 (CLAUDE.md): handlers tocando LLM/critical IO DEVEM fail-loud.
+    Estes campos compõem o envelope canonical (mesmo contrato que
+    ``app.shared.llm.safe_response.LLMResponseEnvelope``).
+
+    Default ``fallback_used=False`` preserva backward-compat.
+    """
     id: str
     competency: str
     framework: Literal["CBI", "Bloom", "Dreyfus", "BigFive"]
@@ -146,7 +167,7 @@ class WSIQuestion(BaseModel):
     expected_signals: list[str]
     scoring_criteria: dict[str, Any]
     is_critical: bool = False
-    # F6.8 — validação pós-geração
+    # F6.8 — validação pós-geração (ancoragem JD). NÃO eh derivado de LLM failure.
     needs_manual_review: bool = False
     validation_flags: dict[str, Any] = Field(default_factory=dict)
     # Phase 2.5: trait OCEAN copied from Competency.big_five_mapping when
@@ -154,6 +175,11 @@ class WSIQuestion(BaseModel):
     # the trait into ResponseAnalysis for downstream aggregation. None
     # for technical/non-BigFive questions.
     big_five_mapping: str | None = None
+    # P0.D SIBLINGS (audit 2026-05-21): envelope canonical de LLM failure.
+    # Independente de needs_manual_review (que serve F6.8 ancoragem JD).
+    fallback_used: bool = False
+    llm_failure_mode: str | None = None  # LLMFailureMode.value when fallback_used
+    llm_error_message: str | None = None  # human-readable when fallback_used
 
 
 class ResponseAnalysis(BaseModel):
