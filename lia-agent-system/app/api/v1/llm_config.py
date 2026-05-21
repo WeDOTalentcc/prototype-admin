@@ -121,15 +121,25 @@ company_id: str = Depends(require_company_id)):
             is_active=config.is_active,
         )
     except Exception as e:
-        logger.error("[LLMConfig] Error: %s", e)
-        return LLMConfigResponse(
-            company_id=company_id,
-            primary_provider="gemini",
-            fallback_order=["gemini", "claude", "openai"],
-            providers={},
-            routing={},
-            is_active=True,
+        # REGRA 4 (CLAUDE.md): NEVER silently return fabricated config — fail-loud.
+        # Previous version returned a fake "success" LLMConfigResponse with empty
+        # providers, masking DB/RLS/tenant_llm_configs failures (P0.2 audit 2026-05-20).
+        logger.exception(
+            "[LLMConfig] Failed to fetch config for company_id=%s", company_id
         )
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "error": "llm_config_unavailable",
+                "message": (
+                    "Não foi possível recuperar a configuração LLM. "
+                    "Tente novamente em instantes ou contate o suporte se persistir."
+                ),
+                "fallback_used": False,
+                "needs_manual_review": True,
+                "internal_error_class": type(e).__name__,
+            },
+        ) from e
 
 
 @router.put("", response_model=None)

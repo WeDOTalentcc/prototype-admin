@@ -125,7 +125,7 @@ async def _find_company(db: AsyncSession, company_id: str):
         from uuid import UUID as _UUID
         company_uuid = _UUID(company_id)
         result = await db.execute(
-            select(CompanyProfile).where(CompanyProfile.id == company_uuid)
+            select(CompanyProfile).where(CompanyProfile.id == company_uuid)  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
         )
         company = result.scalar_one_or_none()
         if company:
@@ -133,7 +133,7 @@ async def _find_company(db: AsyncSession, company_id: str):
     except (ValueError, AttributeError):
         pass
     result2 = await db.execute(
-        select(CompanyProfile).where(CompanyProfile.is_default).limit(1)
+        select(CompanyProfile).where(CompanyProfile.is_default).limit(1)  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
     )
     return result2.scalar_one_or_none()
 
@@ -204,7 +204,7 @@ async def update_saturation_settings(
 @router.get("/job-vacancies/{job_id}/saturation-status", response_model=SaturationStatusResponse, tags=["saturation"])
 async def get_saturation_status(job_id: UUID, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
+    result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
     vacancy = result.scalar_one_or_none()
     if not vacancy:
         raise HTTPException(status_code=404, detail="Job vacancy not found")
@@ -231,7 +231,7 @@ async def get_saturation_status(job_id: UUID, db: AsyncSession = Depends(get_db)
     )
 
     channel_counts_result = await db.execute(
-        select(
+        select(  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
             func.count(VacancyCandidate.id).filter(
                 VacancyCandidate.origin == "web"
             ).label("web"),
@@ -261,7 +261,7 @@ async def get_saturation_status(job_id: UUID, db: AsyncSession = Depends(get_db)
     total_active = organic_count + source_count
 
     queued_result = await db.execute(
-        select(func.count(VacancyCandidate.id)).where(
+        select(func.count(VacancyCandidate.id)).where(  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
             and_(
                 VacancyCandidate.vacancy_id == job_id,
                 VacancyCandidate.status.in_(('sourced', 'awaiting_screening')),
@@ -271,7 +271,7 @@ async def get_saturation_status(job_id: UUID, db: AsyncSession = Depends(get_db)
     queued_count = queued_result.scalar() or 0
 
     last_screened_result = await db.execute(
-        select(func.max(VacancyCandidate.updated_at)).where(
+        select(func.max(VacancyCandidate.updated_at)).where(  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
             and_(
                 VacancyCandidate.vacancy_id == job_id,
                 not_(VacancyCandidate.status.in_(EXCLUDED_STATUSES)),
@@ -367,13 +367,13 @@ class ProcessQueueResponse(BaseModel):
 @router.get("/job-vacancies/{job_id}/screening-queue", response_model=QueueStatusResponse, tags=["saturation"])
 async def get_screening_queue(job_id: UUID, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
+    result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
     vacancy = result.scalar_one_or_none()
     if not vacancy:
         raise HTTPException(status_code=404, detail="Job vacancy not found")
 
     queued_result = await db.execute(
-        select(VacancyCandidate)
+        select(VacancyCandidate)  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
         .where(
             VacancyCandidate.vacancy_id == job_id,
             VacancyCandidate.status == "awaiting_screening",
@@ -404,7 +404,7 @@ async def get_screening_queue(job_id: UUID, db: AsyncSession = Depends(get_db), 
 @router.post("/job-vacancies/{job_id}/process-queue", response_model=ProcessQueueResponse, tags=["saturation"])
 async def process_queue(job_id: UUID, request: ProcessQueueRequest, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
+    result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
     vacancy = result.scalar_one_or_none()
     if not vacancy:
         raise HTTPException(status_code=404, detail="Job vacancy not found")
@@ -436,7 +436,7 @@ async def unlock_pipeline(
     company_id: str = Depends(require_company_id),
 ):
     # multi-tenancy: company_id vem do JWT via require_company_id (canonical)
-    result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
+    result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
     vacancy = result.scalar_one_or_none()
     if not vacancy:
         raise HTTPException(status_code=404, detail="Job vacancy not found")

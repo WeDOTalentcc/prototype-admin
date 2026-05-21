@@ -109,6 +109,10 @@ const getDefaultSections = (): SettingsSection[] => [
     priority: 'high',
     category: 'basic',
     estimatedTime: 15,
+    subsections: [
+      { id: 'learning-loops', title: 'Learning Loops', description: 'Aprendizado contínuo: Big5 cultura, JD similar, WSI effectiveness (Sprint B Phase 2)', fields: [] },
+      { id: 'instrucoes-lia', title: 'Instruções LIA', description: 'Configure toggles e instruções por campo (34 campos canonical — audit 2026-05-20 Tema D)', fields: [] },
+    ],
   },
   {
     id: 'pipeline',
@@ -196,6 +200,7 @@ const getDefaultSections = (): SettingsSection[] => [
       { id: 'fairness', title: 'Fairness & Compliance', description: 'Eventos de equidade e auditoria da IA', fields: [] },
       { id: 'lgpd-candidatos', title: 'LGPD Candidatos', description: 'Pedidos Art. 20 de candidatos (prazo 15 dias úteis)', fields: [] },
       { id: 'studio', title: 'Agent Studio', description: 'Compliance do Agent Studio', fields: [] },
+      { id: 'ai-transparency', title: 'AI Transparency', description: 'EU AI Act Art. 13/14 + Annex III (T-18)', fields: [] },
     ],
   },
   {
@@ -465,7 +470,7 @@ export default function SettingsPageEnhanced() {
       case 'minha-empresa':
         return (
           <ErrorBoundarySection>
-            <MinhaEmpresaHub />
+            <MinhaEmpresaHub activeSubsection={activeSubsection} />
           </ErrorBoundarySection>
         )
       case 'pipeline':

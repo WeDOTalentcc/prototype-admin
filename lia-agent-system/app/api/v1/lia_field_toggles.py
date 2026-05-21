@@ -103,7 +103,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise HTTPException(status_code=400, detail="Invalid company_id format")
     
     result = await db.execute(
-        select(LiaFieldToggle).where(LiaFieldToggle.company_id == company_uuid)
+        select(LiaFieldToggle).where(LiaFieldToggle.company_id == company_uuid)  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
     )
     existing_toggles = result.scalars().all()
     
@@ -169,7 +169,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     comments = update_data.comments or {}
     
     result = await db.execute(
-        select(LiaFieldToggle).where(LiaFieldToggle.company_id == company_uuid)
+        select(LiaFieldToggle).where(LiaFieldToggle.company_id == company_uuid)  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
     )
     existing_toggles = {t.field_key: t for t in result.scalars().all()}
     
@@ -198,7 +198,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     
     
     result = await db.execute(
-        select(LiaFieldToggle).where(LiaFieldToggle.company_id == company_uuid)
+        select(LiaFieldToggle).where(LiaFieldToggle.company_id == company_uuid)  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
     )
     all_toggles = result.scalars().all()
     
@@ -247,7 +247,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     toggles = request.toggles
     if toggles is None:
         result = await db.execute(
-            select(LiaFieldToggle).where(LiaFieldToggle.company_id == company_uuid)
+            select(LiaFieldToggle).where(LiaFieldToggle.company_id == company_uuid)  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
         )
         existing_toggles = result.scalars().all()
         if existing_toggles:
@@ -256,7 +256,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
             toggles = {t["field_key"]: t["is_active"] for t in DEFAULT_FIELD_TOGGLES}
     
     company_result = await db.execute(
-        select(CompanyProfile).where(CompanyProfile.id == company_uuid)
+        select(CompanyProfile).where(CompanyProfile.id == company_uuid)  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
     )
     company_profile = company_result.scalar_one_or_none()
     company_config = {}
@@ -268,7 +268,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         }
     
     jobs_result = await db.execute(
-        select(JobVacancy)
+        select(JobVacancy)  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
         .where(JobVacancy.company_id == company_id)
         .order_by(JobVacancy.created_at.desc())
         .limit(10)
@@ -341,7 +341,7 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         raise HTTPException(status_code=400, detail="Invalid company_id format")
     
     result = await db.execute(
-        select(LiaFieldToggle).where(LiaFieldToggle.company_id == company_uuid)
+        select(LiaFieldToggle).where(LiaFieldToggle.company_id == company_uuid)  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
     )
     existing_keys = {t.field_key for t in result.scalars().all()}
     

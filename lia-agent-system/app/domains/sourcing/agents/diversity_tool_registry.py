@@ -299,11 +299,14 @@ async def _wrap_diversity_get_pool_metrics(**kwargs: Any) -> dict[str, Any]:
             """))
             row = result.mappings().first()
         except Exception:
-            # Fallback sem coluna de diversidade
+            # P1 audit 2026-05-20: graceful degradation legitima (coluna em
+            # rollout). Mantem success=True (pool size real) + flag explicita
+            # fallback_used pra observabilidade. Nao e mentira semantica.
             result = await session.execute(text("SELECT COUNT(*) as total FROM candidates WHERE is_active = true"))
             total_row = result.scalar() or 0
             return {
                 "success": True,
+                "fallback_used": True,
                 "data": {
                     "total_candidates": total_row,
                     "note": "Coluna diversidade_autodeclarada não disponível ainda neste ambiente.",

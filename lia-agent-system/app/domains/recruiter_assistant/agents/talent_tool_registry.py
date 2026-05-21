@@ -654,9 +654,30 @@ async def _wrap_check_search_fairness(**kwargs: Any) -> dict[str, Any]:
             + (f" {len(all_warnings)} alertas de vies implicito." if all_warnings else ""),
         }
     except Exception as e:
-        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-        logger.error(f"[talent_tools] check_search_fairness error: {e}", exc_info=True)
-        return {"success": True, "data": {"is_fair": True, "soft_warnings": []}, "error": str(e)}
+        # P0 LGPD (audit 2026-05-20 — sensor check_no_silent_llm_fallback):
+        # REGRA 4 CLAUDE.md — fail-CLOSED em fairness check. Anteriormente
+        # retornava success=True + is_fair=True mesmo no erro, mascarando
+        # falha e potencialmente liberando criterio com vies. Agora retorna
+        # success=False + needs_manual_review=True; agente deve parar e pedir
+        # review humano.
+        logger.exception(
+            "[talent_tools] check_search_fairness FAILED -- failing CLOSED"
+        )
+        return {
+            "success": False,
+            "data": {
+                "is_fair": False,
+                "blocked": False,
+                "fallback_used": True,
+                "needs_manual_review": True,
+                "soft_warnings": [],
+            },
+            "error": f"Fairness check failed: {str(e)}",
+            "message": (
+                "Nao foi possivel validar o criterio de busca por vies. "
+                "Por seguranca (fail-closed LGPD), revise manualmente antes de prosseguir."
+            ),
+        }
 
 
 @tool_handler("talent")

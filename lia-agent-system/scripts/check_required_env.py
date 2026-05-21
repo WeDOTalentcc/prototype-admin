@@ -205,3 +205,43 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
+# ─── Programmatic API (importable from app code) ───────────────────────────
+
+def validate_required_env(strict: bool = True) -> list[str]:
+    """
+    Validate required env vars. Returns list of error strings (empty = OK).
+
+    Intended for use from FastAPI lifespan/startup hooks to fail-fast when
+    canonical vars are missing (ADR-AUTH-001).
+
+    Example:
+        from scripts.check_required_env import validate_or_raise
+        validate_or_raise(strict=True)  # raises RuntimeError on any failure
+    """
+    failures: list[str] = []
+    for req in REQUIRED_ENV_VARS:
+        err = _check_var(req, strict)
+        if err:
+            failures.append(err)
+    return failures
+
+
+def validate_or_raise(strict: bool = True) -> None:
+    """
+    Validate required env vars; raise RuntimeError with all violations if any.
+
+    Per ADR-AUTH-001 (CLAUDE.md): app MUST fail at startup, not on first
+    request that hits the missing var.
+    """
+    failures = validate_required_env(strict=strict)
+    if not failures:
+        return
+    msg_parts = [
+        f"{len(failures)} required env var(s) missing or malformed "
+        f"(ADR-AUTH-001 startup check):\n"
+    ]
+    for i, err in enumerate(failures, start=1):
+        msg_parts.append(f"── #{i} ──\n{err}\n")
+    raise RuntimeError("\n".join(msg_parts))

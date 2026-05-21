@@ -213,6 +213,53 @@ async def _wrap_get_sync_status(**kwargs: Any) -> dict[str, Any]:
 # Public registry
 # ---------------------------------------------------------------------------
 
+@tool_handler("ats_integration")
+async def _wrap_recommend_integrations_by_industry(**kwargs):
+    """
+    Recomenda integrações ATS canonical baseado no setor.
+
+    Audit 2026-05-20 Sessão I / Tema B: Settings > Integrações hoje mostra
+    catálogo hardcoded (17 produtos) sem priorização. Esta tool retorna
+    recomendações canonical por setor para a LIA sugerir ao admin.
+
+    Multi-tenancy: company_id obrigatório via ContextVar JWT (@tool_handler).
+    """
+    company_id = kwargs.get("company_id")
+    industry = (kwargs.get("industry") or "").strip().lower()
+
+    INDUSTRY_RECOMMENDATIONS = {
+        "tecnologia": [
+            {"provider": "gupy", "rationale": "Lider ATS para empresas tech no Brasil; integracao nativa LinkedIn."},
+            {"provider": "merge", "rationale": "Unified API: 1 integracao = N ATS conectados."},
+        ],
+        "saude": [
+            {"provider": "gupy", "rationale": "Compliance LGPD-saude nativo + grandes redes hospitalares."},
+        ],
+        "varejo": [
+            {"provider": "pandape", "rationale": "Volume alto + recrutadores junior (UI mais simples)."},
+            {"provider": "gupy", "rationale": "Para varejistas grandes (>500 funcionarios)."},
+        ],
+        "industria": [
+            {"provider": "pandape", "rationale": "Alto volume + processos descentralizados."},
+        ],
+        "servicos": [
+            {"provider": "gupy", "rationale": "Padrao de mercado para servicos profissionais."},
+        ],
+    }
+    industry_key = industry or "tecnologia"
+    recs = INDUSTRY_RECOMMENDATIONS.get(industry_key, INDUSTRY_RECOMMENDATIONS["tecnologia"])
+
+    return {
+        "success": True,
+        "data": {
+            "recommendations": recs,
+            "industry_used": industry_key,
+            "industry_was_default": not industry,
+        },
+        "message": f"{len(recs)} integracao(oes) recomendada(s) para o setor '{industry_key}'.",
+    }
+
+
 def get_ats_integration_tools() -> list[ToolDefinition]:
     """Return all ATS Integration tools."""
     return [
@@ -269,6 +316,26 @@ def get_ats_integration_tools() -> list[ToolDefinition]:
             ),
             output_schema=ToolOutput,
             function=_wrap_get_sync_status,
+        ),
+        ToolDefinition(
+            name="recommend_integrations_by_industry",
+            description=(
+                "Recomenda integracoes ATS canonical baseado no setor da empresa "
+                "(tecnologia, saude, varejo, industria, servicos). Util quando o "
+                "admin abre Settings > Integracoes pela 1a vez."
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "industry": {
+                        "type": "string",
+                        "description": "Setor da empresa em minusculas. Se vazio, default = tecnologia.",
+                    },
+                },
+                "required": [],
+            },
+            output_schema=ToolOutput,
+            function=_wrap_recommend_integrations_by_industry,
         ),
     ]
 

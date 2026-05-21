@@ -39,7 +39,7 @@ export async function POST(
     const body = bodyResult.data
     
     const response = await fetch(
-      `${BACKEND_URL}/api/v1/lia-field-toggles/${companyId}/empty-fields/${fieldKey}/suggest`,
+      `${BACKEND_URL}/api/v1/company/${companyId}/empty-fields/${fieldKey}/suggest`,
       {
         method: 'POST',
         headers: getAuthHeaders(request),

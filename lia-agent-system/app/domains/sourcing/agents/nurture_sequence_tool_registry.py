@@ -310,9 +310,12 @@ async def _wrap_nurture_get_sequence_status(**kwargs: Any) -> dict[str, Any]:
 
         except Exception as db_exc:
             logger.warning("[nurture_tools] DB query failed (tabela pode não existir): %s", db_exc)
-            # Graceful degradation: retornar info básica sem persistência
+            # P1 audit 2026-05-20: graceful degradation legitima (feature em
+            # rollout). Adicionada flag fallback_used pra distinguir de mentira
+            # semantica (sensor check_no_silent_llm_fallback).
             return {
                 "success": True,
+                "fallback_used": True,
                 "data": {
                     "sequence_id": sequence_id,
                     "candidate_id": candidate_id,

@@ -329,6 +329,64 @@ async def _wrap_check_rate_limit(**kwargs: Any) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 
+@tool_handler("communication")
+async def _wrap_suggest_communication_policy(**kwargs):
+    """
+    Sugere politica canonical de comunicacao (horarios + canais) baseado no
+    publico (recrutador|candidato) e evento.
+
+    Audit 2026-05-20 Sessao I / Tema B: Settings > Comunicacao&Alertas hoje
+    tem DEFAULT_ALERTS hardcoded (5 alertas) sem CRUD. Esta tool retorna
+    sugestao canonical pra LIA propor ao admin via chat.
+
+    Multi-tenancy: company_id obrigatorio via ContextVar JWT.
+    """
+    company_id = kwargs.get("company_id")
+    audience = (kwargs.get("audience") or "candidato").strip().lower()
+    event_type = (kwargs.get("event_type") or "geral").strip().lower()
+
+    LGPD_BUSINESS_HOURS = {"start": "09:00", "end": "18:00", "tz": "America/Sao_Paulo", "days": ["mon","tue","wed","thu","fri"]}
+
+    POLICIES = {
+        ("candidato", "geral"): {
+            "channels": ["email", "whatsapp"],
+            "schedule": LGPD_BUSINESS_HOURS,
+            "alert_rules": [
+                {"trigger": "stage_change", "channel": "email", "delay_minutes": 0},
+                {"trigger": "interview_24h_before", "channel": "whatsapp", "delay_minutes": 0},
+            ],
+        },
+        ("candidato", "rejeicao"): {
+            "channels": ["email"],
+            "schedule": LGPD_BUSINESS_HOURS,
+            "alert_rules": [
+                {"trigger": "rejection", "channel": "email", "delay_minutes": 60, "rationale": "Delay 60min canonical pra revisao humana opcional."},
+            ],
+        },
+        ("recrutador", "geral"): {
+            "channels": ["email", "in_app"],
+            "schedule": None,
+            "alert_rules": [
+                {"trigger": "new_candidate_match", "channel": "in_app"},
+                {"trigger": "sla_breach", "channel": "email"},
+            ],
+        },
+    }
+    key = (audience, event_type)
+    policy = POLICIES.get(key) or POLICIES.get((audience, "geral")) or POLICIES[("candidato", "geral")]
+
+    return {
+        "success": True,
+        "data": {
+            "policy": policy,
+            "audience": audience,
+            "event_type": event_type,
+            "lgpd_compliant": audience == "candidato",
+        },
+        "message": f"Politica de comunicacao sugerida para {audience}/{event_type} (LGPD-compliant).",
+    }
+
+
 def get_communication_tools() -> list[ToolDefinition]:
     # R-004 (Sprint 1 Quick Wins): primeiro tool deste registry adota
     # output_schema=ToolOutput como pattern canonical. Demais tools seguem
@@ -404,6 +462,25 @@ def get_communication_tools() -> list[ToolDefinition]:
             ),
             output_schema=ToolOutput,
             function=_wrap_check_rate_limit,
+        ),
+        ToolDefinition(
+            name="suggest_communication_policy",
+            description=(
+                "Sugere politica canonical de comunicacao (canais + horarios + "
+                "alert rules) por publico (recrutador|candidato) e evento "
+                "(geral|rejeicao|sla|...). Util quando admin abre Settings > "
+                "Comunicacao&Alertas. Horarios LGPD-compliant para candidato."
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "audience": {"type": "string", "description": "candidato | recrutador"},
+                    "event_type": {"type": "string", "description": "geral | rejeicao | sla | ..."},
+                },
+                "required": [],
+            },
+            output_schema=ToolOutput,
+            function=_wrap_suggest_communication_policy,
         ),
     ]
 

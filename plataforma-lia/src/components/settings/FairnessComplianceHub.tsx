@@ -18,6 +18,8 @@ interface FairnessSummary {
   by_category: CategorySummary[]
 }
 import { apiFetch } from "@/lib/api/api-fetch"
+import { DSRInboxPanel } from "./governance/DSRInboxPanel"
+import { AITransparencyPanel } from "./governance/AITransparencyPanel"
 
 interface CategorySummary {
   category: string
@@ -68,6 +70,8 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
 
   useEffect(() => {
     if (activeSubsection === "studio") return
+    if (activeSubsection === "ai-transparency") return
+    if (activeSubsection === "lgpd-candidatos") return
     async function fetchData() {
       setLoading(true)
       setError(null)
@@ -93,6 +97,22 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
   // P2.3: Studio subsection has its own dedicated view
   if (activeSubsection === "studio") {
     return <StudioComplianceView />
+  }
+
+  // P0.8 (audit 2026-05-20): LGPD Candidatos subsection renders DSR inbox
+  // canonical (mesmo componente usado em Governança > DSR). Distinção
+  // semântica: aqui foco é Art. 20 (revisão de decisão automatizada);
+  // Governança lista todos os DSR. Filtro por tipo é refinamento futuro.
+  if (activeSubsection === "lgpd-candidatos") {
+    return <DSRInboxPanel />
+  }
+
+  // Wave 1 Agent #2 (T-18 EU AI Act Annex III, 2026-05-21): subsection
+  // canonical para AI Transparency. Render componente dedicado com 4 tabs
+  // (Art. 13 Explainability + Automated Decisions + Art. 14 Oversight +
+  // Annex III Technical Docs). Deadline regulatório: 2 Ago 2026.
+  if (activeSubsection === "ai-transparency") {
+    return <AITransparencyPanel />
   }
 
   const handleExport = (format:"csv" |"json") => {

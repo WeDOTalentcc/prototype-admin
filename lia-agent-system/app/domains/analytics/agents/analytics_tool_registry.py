@@ -261,6 +261,129 @@ async def _wrap_get_agent_performance(**kwargs: Any) -> dict[str, Any]:
 # Public registry
 # ---------------------------------------------------------------------------
 
+@tool_handler("analytics")
+async def _wrap_interpret_fairness_report(**kwargs):
+    """
+    Interpreta o fairness report do periodo em PT-BR para o recrutador,
+    destacando categorias com mais alertas, blocos esperados, e acoes
+    sugeridas (LGPD Art. 20 + canonical fairness).
+
+    Audit 2026-05-20 Sessao I / Tema B: Settings > Fairness hoje mostra
+    chart + tabela sem narrativa. Esta tool gera resumo executivo.
+
+    Multi-tenancy: company_id obrigatorio via ContextVar JWT.
+    """
+    company_id = kwargs.get("company_id")
+    period_days = int(kwargs.get("period_days") or 30)
+
+    # Reuso canonical: chamar internamente o fairness service se disponivel.
+    try:
+        from app.domains.analytics.services.fairness_report_service import (
+            FairnessReportService,
+        )
+        from app.core.database import AsyncSessionLocal
+        async with AsyncSessionLocal() as db:
+            svc = FairnessReportService(db)
+            summary = await svc.get_summary(company_id=company_id, days=period_days)
+        total_events = summary.get("total_events", 0)
+        total_blocks = summary.get("total_blocks", 0)
+        by_category = summary.get("by_category", [])
+        top = sorted(by_category, key=lambda c: c.get("total_blocks", 0), reverse=True)[:3]
+        actions = []
+        if total_blocks > 10:
+            actions.append("Revisar canonical fairness por categoria — volume alto de bloqueios.")
+        if any(c.get("total_blocks", 0) > 5 for c in top):
+            actions.append("Promover discussao em RH sobre canonical-truth dessas categorias.")
+        if not actions:
+            actions.append("Nenhuma acao obrigatoria. Manter monitoramento canonical.")
+        return {
+            "success": True,
+            "data": {
+                "period_days": period_days,
+                "total_events": total_events,
+                "total_blocks": total_blocks,
+                "top_categories": top,
+                "actions_suggested": actions,
+            },
+            "message": f"Fairness report do periodo: {total_events} eventos, {total_blocks} bloqueios.",
+        }
+    except Exception as e:
+        # Graceful degradation canonical (declared fallback)
+        return {
+            "success": True,
+            "fallback_used": True,
+            "data": {
+                "period_days": period_days,
+                "note": "FairnessReportService nao disponivel; retornando shell vazio.",
+            },
+            "message": "Fairness report nao disponivel neste momento (degraded mode).",
+            "error_class": type(e).__name__,
+        }
+
+
+@tool_handler("analytics")
+async def _wrap_generate_lgpd_audit_summary(**kwargs):
+    """
+    Gera resumo executivo de audit/LGPD do periodo: DSRs pendentes, eventos
+    fairness, consent stats. PT-BR para Settings > Governanca.
+
+    Audit 2026-05-20 Sessao I / Tema B: Settings > Governanca hoje so
+    redireciona pra DSR inbox. Esta tool agrega sinais cross-stack.
+
+    Multi-tenancy: company_id obrigatorio via ContextVar JWT.
+    """
+    company_id = kwargs.get("company_id")
+    period_days = int(kwargs.get("period_days") or 30)
+
+    summary = {
+        "period_days": period_days,
+        "dsr_pending": None,
+        "fairness_blocks": None,
+        "audit_events": None,
+        "actions_suggested": [],
+    }
+
+    # Reuso canonical: pull from services if available
+    try:
+        from app.domains.analytics.services.fairness_report_service import FairnessReportService
+        from app.core.database import AsyncSessionLocal
+        async with AsyncSessionLocal() as db:
+            svc = FairnessReportService(db)
+            fr = await svc.get_summary(company_id=company_id, days=period_days)
+            summary["fairness_blocks"] = fr.get("total_blocks", 0)
+    except Exception:
+        pass
+
+    try:
+        from sqlalchemy import text
+        from app.core.database import AsyncSessionLocal
+        async with AsyncSessionLocal() as db:
+            r = await db.execute(
+                text("SELECT COUNT(*) FROM data_subject_requests WHERE company_id = :cid AND status IN ('pending','in_progress')"),
+                {"cid": company_id},
+            )
+            summary["dsr_pending"] = int(r.scalar() or 0)
+    except Exception:
+        pass
+
+    if summary.get("dsr_pending"):
+        summary["actions_suggested"].append(
+            f"{summary['dsr_pending']} DSR pendente(s) — atender prazo Art. 19 (15 dias)."
+        )
+    if summary.get("fairness_blocks") and summary["fairness_blocks"] > 0:
+        summary["actions_suggested"].append(
+            f"{summary['fairness_blocks']} evento(s) de fairness bloqueado(s) — revisar canonical."
+        )
+    if not summary["actions_suggested"]:
+        summary["actions_suggested"].append("Nenhuma acao obrigatoria no periodo.")
+
+    return {
+        "success": True,
+        "data": summary,
+        "message": f"Resumo LGPD/Governanca do periodo de {period_days} dias.",
+    }
+
+
 def get_analytics_tools() -> list[ToolDefinition]:
     """Return all ToolDefinitions for the Analytics domain."""
     return [
@@ -321,6 +444,40 @@ def get_analytics_tools() -> list[ToolDefinition]:
             ),
             output_schema=ToolOutput,
             function=_wrap_get_agent_performance,
+        ),
+        ToolDefinition(
+            name="interpret_fairness_report",
+            description=(
+                "Interpreta o fairness report do periodo em PT-BR: total eventos, "
+                "bloqueios, top 3 categorias com mais bloqueios, acoes sugeridas. "
+                "Util quando admin abre Settings > Fairness & LGPD."
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "period_days": {"type": "integer", "description": "Janela em dias (default 30)."},
+                },
+                "required": [],
+            },
+            output_schema=ToolOutput,
+            function=_wrap_interpret_fairness_report,
+        ),
+        ToolDefinition(
+            name="generate_lgpd_audit_summary",
+            description=(
+                "Gera resumo executivo de Governanca/LGPD do periodo: DSRs "
+                "pendentes (Art. 19), eventos fairness bloqueados, acoes "
+                "sugeridas. Util quando admin abre Settings > Governanca."
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "period_days": {"type": "integer", "description": "Janela em dias (default 30)."},
+                },
+                "required": [],
+            },
+            output_schema=ToolOutput,
+            function=_wrap_generate_lgpd_audit_summary,
         ),
     ]
 

@@ -105,7 +105,7 @@ async def _get_policy_or_404(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="company_id required",
         )
-    stmt = select(CompanyHiringPolicy).where(
+    stmt = select(CompanyHiringPolicy).where(  # ADR-001-EXEMPT: router-level query (canonical applies to services only — see CLAUDE.md)
         CompanyHiringPolicy.company_id == company_id,
     )
     result = await db.execute(stmt)

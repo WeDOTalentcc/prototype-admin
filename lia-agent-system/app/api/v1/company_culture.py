@@ -1201,12 +1201,30 @@ Responda APENAS em formato JSON válido com a seguinte estrutura:
                 logger.warning(f"Regex JSON parse attempt failed: {e}")
 
         if analysis_result is None:
-            logger.error(f"Failed to parse AI response as JSON after all attempts: {parse_error}")
-            analysis_result = {
-                "vision": "", "mission": "", "values": [], "tone": "professional",
-                "evp": "", "culture_summary": "Não foi possível analisar o conteúdo fornecido.",
-                "suggested_values": [], "confidence": 0.2,
-            }
+            # P0.1 (audit 2026-05-20): REGRA 4 (CLAUDE.md) — NEVER silently return
+            # success=True with empty analysis. Previous version returned a fake
+            # "professional tone + confidence=0.2 + empty strings" envelope when
+            # LLM JSON parse failed at all 3 attempts — frontend saw success and
+            # showed empty culture analysis as if it were real.
+            logger.error(
+                "Failed to parse AI response as JSON after all attempts: %s",
+                parse_error,
+            )
+            raise HTTPException(
+                status_code=503,
+                detail={
+                    "error": "llm_culture_analysis_parse_failed",
+                    "message": (
+                        "A IA retornou uma resposta em formato inválido. "
+                        "Tente novamente em instantes ou contate o suporte."
+                    ),
+                    "fallback_used": False,
+                    "needs_manual_review": True,
+                    "parse_error_class": (
+                        type(parse_error).__name__ if parse_error else "Unknown"
+                    ),
+                },
+            )
 
         def normalize_values_to_strings(values_data) -> list:
             if not values_data or not isinstance(values_data, list):

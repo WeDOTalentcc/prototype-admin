@@ -1060,3 +1060,92 @@ def get_company_settings_tools() -> list[ToolDefinition]:
             function=_wrap_get_company_completion,
         ),
     ]
+
+
+# ─── STAGE_TOOLS canonical allowlist ──────────────────────────────────────────
+# Audit 2026-05-20 P1.6 / Tema C — canonical pattern CLAUDE.md (vacancy
+# preview Phase E). Maps Settings UI subsection → tools relevantes pro agente
+# naquele contexto. Stage names correspondem aos blocos MinhaEmpresaHub +
+# extras (learning-loops, overview). Fallback canonical: stage não declarado
+# retorna TODAS as tools (preserva backward compat de chamadas sem stage).
+
+STAGE_TOOLS: dict[str, list[str]] = {
+    "basic": [
+        "get_company_profile",
+        "save_company_field",
+        "get_company_completion",
+    ],
+    "culture": [
+        "get_company_profile",
+        "save_company_field",
+        "save_company_section",
+        "analyze_company_website",
+        "process_uploaded_document",
+        "get_company_completion",
+    ],
+    "tech": [
+        "get_company_profile",
+        "save_company_field",
+        "save_company_section",
+        "process_uploaded_document",
+        "get_company_completion",
+    ],
+    "benefits": [
+        "get_company_profile",
+        "save_company_field",
+        "save_company_section",
+        "process_uploaded_document",
+        "get_company_completion",
+    ],
+    "policy": [
+        "get_company_profile",
+        "save_company_field",
+        "save_company_section",
+        "save_hiring_policy",
+        "process_uploaded_document",
+        "get_company_completion",
+    ],
+    "workforce": [
+        "get_company_profile",
+        "save_company_field",
+        "save_company_section",
+        "import_workforce_plan",
+        "process_uploaded_document",
+        "get_company_completion",
+    ],
+    "compensation": [
+        "get_company_profile",
+        "save_company_field",
+        "save_company_section",
+        "save_hiring_policy",
+        "get_company_completion",
+    ],
+    "learning-loops": [
+        "get_company_profile",
+        "get_company_completion",
+    ],
+    "overview": [
+        "get_company_profile",
+        "get_company_completion",
+        "analyze_company_website",
+    ],
+}
+
+
+def get_company_settings_tools_for_stage(stage: str) -> list[ToolDefinition]:
+    """
+    Return tools filtered by Settings stage (subsection canonical).
+
+    Stage names match MinhaEmpresaHub subsections + extras:
+      basic, culture, tech, benefits, policy, workforce, compensation,
+      learning-loops, overview
+
+    Fallback canonical: stage not in STAGE_TOOLS returns ALL tools
+    (preserva backward compat de chamadas conversacionais sem stage).
+    """
+    all_tools = get_company_settings_tools()
+    tool_names = STAGE_TOOLS.get(stage)
+    if tool_names is None:
+        return all_tools
+    tool_map = {t.name: t for t in all_tools}
+    return [tool_map[name] for name in tool_names if name in tool_map]

@@ -610,9 +610,11 @@ async def _wrap_get_recruiter_preferences(**kwargs: Any) -> dict[str, Any]:
 
             return {"success": True, "preferences": prefs}
     except Exception as e:
+        # P1 audit 2026-05-20: graceful degradation legitima (tabela em rollout).
+        # Adicionada flag fallback_used canonical.
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.debug(f"[pipeline_tools] get_recruiter_preferences: table may not exist yet: {e}")
-        return {"success": True, "preferences": [], "message": "Sistema de preferências ainda não configurado"}
+        return {"success": True, "fallback_used": True, "preferences": [], "message": "Sistema de preferências ainda não configurado"}
 
 
 @tool_handler("pipeline")
@@ -682,9 +684,20 @@ async def _wrap_save_recruiter_preference(**kwargs: Any) -> dict[str, Any]:
             await db.rollback()
         except Exception:
             pass
+        # P1 audit 2026-05-20: REGRA 4 CLAUDE.md — fail-loud quando save NAO
+        # persistiu. Anteriormente dizia "Preferência registrada" sem registrar.
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-        logger.debug(f"[pipeline_tools] save_recruiter_preference: {e}")
-        return {"success": True, "message": "Preferência registrada (tabela será criada em breve)"}
+        logger.exception("[pipeline_tools] save_recruiter_preference FAILED — failing LOUD")
+        return {
+            "success": False,
+            "fallback_used": True,
+            "needs_manual_review": True,
+            "message": (
+                "Não foi possível salvar a preferência no banco. "
+                "A configuração NÃO foi registrada. Tente novamente ou peça suporte."
+            ),
+            "error": str(e),
+        }
 
 
 # ─── Interview Management Tools ───────────────────────────────────────────────

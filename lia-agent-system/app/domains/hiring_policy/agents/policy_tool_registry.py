@@ -1280,3 +1280,66 @@ def get_policy_tools() -> list[ToolDefinition]:
             function=_wrap_apply_industry_defaults,
         ),
     ]
+
+
+# ─── STAGE_TOOLS canonical allowlist ──────────────────────────────────────────
+# Audit 2026-05-20 P1.6 / Tema C — canonical pattern CLAUDE.md (vacancy
+# preview Phase E). Maps Hiring Policy stage → tools relevantes pro agente.
+# Stages refletem fluxo natural de configuração de política: overview → edit
+# → validate → benchmark → deploy. Fallback canonical: stage não declarado
+# retorna TODAS as tools (backward compat).
+
+STAGE_TOOLS: dict[str, list[str]] = {
+    "policy-overview": [
+        "get_current_policy",
+        "get_policy_summary",
+        "get_setup_progress",
+        "get_company_context",
+        "get_industry_benchmarks",
+        "get_platform_benchmarks",
+    ],
+    "policy-edit": [
+        "get_current_policy",
+        "save_policy_field",
+        "save_policy_block",
+        "validate_policy_compliance",
+        "get_setup_progress",
+    ],
+    "policy-validate": [
+        "validate_policy_compliance",
+        "detect_policy_impact_anomalies",
+        "explain_policy_impact",
+        "get_policy_effectiveness_report",
+    ],
+    "policy-benchmark": [
+        "get_industry_benchmarks",
+        "get_platform_benchmarks",
+        "get_company_context",
+        "explain_policy_impact",
+    ],
+    "policy-deploy": [
+        "apply_industry_defaults",
+        "save_policy_block",
+        "validate_policy_compliance",
+        "get_current_policy",
+    ],
+}
+
+
+def get_hiring_policy_tools_for_stage(stage: str) -> list[ToolDefinition]:
+    """
+    Return Hiring Policy tools filtered by stage canonical.
+
+    Stage names refletem o fluxo natural de policy setup:
+      policy-overview, policy-edit, policy-validate, policy-benchmark,
+      policy-deploy
+
+    Fallback canonical: stage not in STAGE_TOOLS returns ALL tools
+    (preserva backward compat de chamadas conversacionais sem stage).
+    """
+    all_tools = get_policy_tools()
+    tool_names = STAGE_TOOLS.get(stage)
+    if tool_names is None:
+        return all_tools
+    tool_map = {t.name: t for t in all_tools}
+    return [tool_map[name] for name in tool_names if name in tool_map]

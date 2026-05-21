@@ -148,7 +148,7 @@ function buildBlocks(
   const basicFields: CardField[] = [
     { key: "name", label: "Nome da Empresa", value: company.name, type: "text", editable: true, block: "basic" },
     { key: "tradeName", label: "Nome Fantasia", value: company.tradeName, type: "text", editable: true, block: "basic" },
-    { key: "logo", label: "Logo", value: company.logo || null, type: "text", editable: false, block: "basic" },
+    { key: "logo", label: "Logo (URL)", value: company.logo || null, type: "text", editable: true, block: "basic" },  // P1.13 audit 2026-05-20: editable=true permite paste URL externa. Upload de arquivo dedicado em backlog Sessão J.
     { key: "cnpj", label: "CNPJ", value: company.cnpj, type: "text", editable: true, block: "basic" },
     { key: "website", label: "Website", value: company.website, type: "text", editable: true, block: "basic" },
     { key: "industry", label: "Setor", value: company.industry, type: "text", editable: true, block: "basic" },

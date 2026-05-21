@@ -490,22 +490,23 @@ async def reject_candidate(
                 }
                 
             except Exception as e:
-                logger.warning(f"Database model access issue: {e}, using mock response")
-                
+                # P1 audit 2026-05-20: REGRA 4 CLAUDE.md — fail-loud quando rejeição
+                # NÃO foi persistida. Anteriormente retornava success=True com
+                # simulated=True, mascarando que a ação não ocorreu no DB.
+                logger.exception(
+                    "[candidate_tools] reject_candidate FAILED (DB issue) — failing LOUD"
+                )
                 return {
-                    "success": True,
-                    "requires_confirmation": True,
-                    "confirmation_message": "⚠️ Tem certeza que deseja rejeitar este candidato?",
-                    "message": f"✅ Candidato foi rejeitado. Motivo: {reason}",
-                    "action_taken": "reject_candidate",
-                    "affected_entities": [candidate_id],
-                    "data": {
-                        "candidate_id": candidate_id,
-                        "job_id": job_id,
-                        "reason": reason,
-                        "feedback_sent": send_feedback,
-                        "simulated": True
-                    }
+                    "success": False,
+                    "fallback_used": True,
+                    "needs_manual_review": True,
+                    "action_taken": None,
+                    "message": (
+                        "Não foi possível registrar a rejeição do candidato no banco. "
+                        "A ação NÃO foi executada. Tente novamente ou peça suporte."
+                    ),
+                    "error": f"Database access failed: {str(e)}",
+                    "data": {"candidate_id": candidate_id, "job_id": job_id},
                 }
                 
     except Exception as e:
@@ -572,19 +573,23 @@ async def shortlist_candidate(
                 }
                 
             except Exception as e:
-                logger.warning(f"Database model access issue: {e}, using mock response")
-                
+                # P1 audit 2026-05-20: REGRA 4 CLAUDE.md — fail-loud quando shortlist
+                # NÃO foi persistida. Anteriormente retornava success=True com
+                # simulated=True, mascarando que a ação não ocorreu no DB.
+                logger.exception(
+                    "[candidate_tools] shortlist_candidate FAILED (DB issue) — failing LOUD"
+                )
                 return {
-                    "success": True,
-                    "message": f"⭐ Candidato foi adicionado à shortlist com prioridade {priority}.",
-                    "action_taken": "shortlist_candidate",
-                    "affected_entities": [candidate_id],
-                    "data": {
-                        "candidate_id": candidate_id,
-                        "job_id": job_id,
-                        "priority": priority,
-                        "simulated": True
-                    }
+                    "success": False,
+                    "fallback_used": True,
+                    "needs_manual_review": True,
+                    "action_taken": None,
+                    "message": (
+                        "Não foi possível adicionar à shortlist no banco. "
+                        "A ação NÃO foi executada. Tente novamente ou peça suporte."
+                    ),
+                    "error": f"Database access failed: {str(e)}",
+                    "data": {"candidate_id": candidate_id, "job_id": job_id, "priority": priority},
                 }
                 
     except Exception as e:

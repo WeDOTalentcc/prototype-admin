@@ -13,7 +13,7 @@
  *   6. Allows callers to override visual classes via className (cva merges via cn).
  *
  * These invariants are the cva contract — any drift breaks both the accordion
- * variant (ABTestingTab) and the card-toggle variant (settings-general-tab).
+ * variant (ABTestingTab) and other interactive-surface consumers.
  *
  * Reference: src/components/ui/interactive-surface.tsx (Task #934, commit e08ca68e3)
  */
@@ -75,7 +75,7 @@ describe("InteractiveSurface", () => {
     expect(btn.className).toMatch(/transition-colors/)
   })
 
-  it("forwards arbitrary aria-* attributes (used by ABTestingTab + settings-general-tab)", () => {
+  it("forwards arbitrary aria-* attributes (used by ABTestingTab and other consumers)", () => {
     render(
       <InteractiveSurface
         variant="accordion"

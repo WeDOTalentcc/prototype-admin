@@ -9,6 +9,8 @@ import { useTranslations } from "next-intl"
 import { useCompanySettingsCards } from "@/hooks/settings/use-company-settings-cards"
 import { useSettingsConversational } from "@/hooks/settings/use-settings-conversational"
 import { MinhaEmpresaCard } from "@/components/settings/MinhaEmpresaCard"
+import { LearningLoopsPanel } from "@/components/settings/LearningLoopsPanel"
+import { LiaFieldsConfigPanel } from "@/components/settings/LiaFieldsConfigPanel"
 import { textStyles } from "@/lib/design-tokens"
 import { Globe } from "lucide-react"
 import type { LucideIcon } from "lucide-react"
@@ -26,7 +28,24 @@ const ICON_MAP: Record<string, LucideIcon> = {
   Upload,
 }
 
-export function MinhaEmpresaHub() {
+interface MinhaEmpresaHubProps {
+  activeSubsection?: string
+}
+
+export function MinhaEmpresaHub({ activeSubsection }: MinhaEmpresaHubProps = {}) {
+  // Subsection routing — quando activeSubsection é 'learning-loops', renderiza
+  // o painel canonical de Learning Loops (Sprint B Phase 2). Caso contrário,
+  // segue o fluxo padrão de cards de Minha Empresa.
+  if (activeSubsection === "learning-loops") {
+    return <LearningLoopsPanel />
+  }
+
+  // Audit 2026-05-20 Tema D / P1.8: 34 canonical LIA field definitions
+  // mas UI só expunha 3. Painel canonical novo expõe todos.
+  if (activeSubsection === "instrucoes-lia") {
+    return <LiaFieldsConfigPanel />
+  }
+
   const t = useTranslations("settings.minhaEmpresa")
   const {
     blocks,

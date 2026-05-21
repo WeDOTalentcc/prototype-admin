@@ -3,6 +3,17 @@ import { NextRequest, NextResponse } from "next/server"
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001"
 
+function getAuthHeaders(request: NextRequest): HeadersInit {
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  }
+  const authHeader = request.headers.get("Authorization")
+  if (authHeader) {
+    headers["Authorization"] = authHeader
+  }
+  return headers
+}
+
 /**
  * Backend proxy for Sprint B Phase 1+2 — Learning Loops config.
  *
@@ -13,7 +24,7 @@ const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001"
  * Fail-graceful: erros retornam defaults (status 200) pra nao quebrar UI.
  */
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ companyId: string }> },
 ) {
   const { companyId } = await params
@@ -26,7 +37,7 @@ export async function GET(
   try {
     const res = await fetch(
       `${BACKEND_URL}/api/v1/companies/${encodeURIComponent(companyId)}/learning-loops-config`,
-      { method: "GET", headers: { "Content-Type": "application/json" } },
+      { method: "GET", headers: getAuthHeaders(request) },
     )
     if (!res.ok) {
       return NextResponse.json(
@@ -61,7 +72,7 @@ export async function PATCH(
       `${BACKEND_URL}/api/v1/companies/${encodeURIComponent(companyId)}/learning-loops-config`,
       {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: getAuthHeaders(request),
         body: JSON.stringify(body),
       },
     )

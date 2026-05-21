@@ -645,9 +645,30 @@ async def _wrap_validate_job_action_fairness(**kwargs: Any) -> dict[str, Any]:
             + (f" {len(all_warnings)} alertas de vies implicito." if all_warnings else ""),
         }
     except Exception as e:
-        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-        logger.error(f"[jobs_mgmt_tools] validate_job_action_fairness error: {e}", exc_info=True)
-        return {"success": True, "data": {"is_compliant": True, "soft_warnings": []}, "error": str(e)}
+        # P0 LGPD (audit 2026-05-20 — sensor check_no_silent_llm_fallback):
+        # REGRA 4 CLAUDE.md — fail-CLOSED em fairness check. Anteriormente
+        # retornava success=True + is_compliant=True mesmo no erro, mascarando
+        # falha e potencialmente liberando acao com vies. Agora retorna
+        # success=False + needs_manual_review=True; agente deve parar e pedir
+        # review humano.
+        logger.exception(
+            "[jobs_mgmt_tools] validate_job_action_fairness FAILED -- failing CLOSED"
+        )
+        return {
+            "success": False,
+            "data": {
+                "is_compliant": False,
+                "blocked": False,
+                "fallback_used": True,
+                "needs_manual_review": True,
+                "soft_warnings": [],
+            },
+            "error": f"Fairness check failed: {str(e)}",
+            "message": (
+                "Nao foi possivel validar a acao por vies. "
+                "Por seguranca (fail-closed LGPD), revise manualmente antes de prosseguir."
+            ),
+        }
 
 
 @tool_handler("jobs_mgmt")
