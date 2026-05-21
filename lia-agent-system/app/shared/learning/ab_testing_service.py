@@ -453,12 +453,33 @@ class ABTestingService:
         # OU se Thompson falhou (fallback).
         if gate_used != "thompson":
             p_value = winner_info.get("p_value", 1.0)
-            if p_value >= 0.01:
+
+            # T-19 Fase 4 BONFERRONI canonical (ADR-AB-001):
+            # Multi-arm test inflaciona Type I error com z-test individual.
+            # Correção: alpha_adjusted = 0.01 / max(1, n_comparisons).
+            # n_comparisons = n_arms - 1 (each non-control compared vs control).
+            # Backward compat: 2 arms = sem correção (alpha = 0.01).
+            n_arms = len(sig_results) + 1  # sig_results = non-control variants vs control
+            n_comparisons = max(1, n_arms - 1)
+            alpha_base = 0.01
+            alpha_adjusted = alpha_base / n_comparisons
+
+            if p_value >= alpha_adjusted:
+                if n_comparisons > 1:
+                    reason_msg = (
+                        f"p_value={p_value:.4f} >= {alpha_adjusted:.5f} "
+                        f"(Bonferroni-adjusted for {n_arms} arms, "
+                        f"base α={alpha_base})"
+                    )
+                else:
+                    reason_msg = f"p_value={p_value:.4f} >= {alpha_base}"
                 return {
                     "promoted": False,
                     "winner": winner_info["variant"],
-                    "reason": f"p_value={p_value:.4f} >= 0.01",
+                    "reason": reason_msg,
                     "gate_used": gate_used,
+                    "n_arms": n_arms,
+                    "alpha_adjusted": alpha_adjusted,
                 }
 
             if min_n < 100:
@@ -467,7 +488,16 @@ class ABTestingService:
                     "winner": winner_info["variant"],
                     "reason": f"n={min_n} < 100",
                     "gate_used": gate_used,
+                    "n_arms": n_arms,
                 }
+
+            if n_arms >= 3:
+                logger.info(
+                    "[AB-TEST T-19 Fase 4] Bonferroni gate PASSED: "
+                    "test=%s winner=%s p=%.4f < α_adj=%.5f n_arms=%d",
+                    test_name, winner_info["variant"], p_value,
+                    alpha_adjusted, n_arms,
+                )
 
         # T-19 FAIRNESS GATE canonical (ADR-031-v3 + ADR-AB-001):
         # Winner variant DEVE passar FairnessGuard antes de promoção.
