@@ -13,13 +13,13 @@ function getAuthHeaders(request: NextRequest): HeadersInit {
 /** POST customize master → cópia canonical A1 + snapshot B1 */
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ masterId: string }> },
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const { masterId } = await params
+  const { id } = await params
   try {
     const body = await request.json().catch(() => ({}))
     const res = await fetch(
-      `${BACKEND_URL}/api/v1/eligibility-question-templates/${encodeURIComponent(masterId)}/customize`,
+      `${BACKEND_URL}/api/v1/eligibility-question-templates/${encodeURIComponent(id)}/customize`,
       {
         method: "POST",
         headers: getAuthHeaders(request),
