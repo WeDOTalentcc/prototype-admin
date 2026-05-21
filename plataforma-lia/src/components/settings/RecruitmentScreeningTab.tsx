@@ -11,17 +11,22 @@ import {
   ChevronDown, ChevronUp, Library, Brain,
 } from"lucide-react"
 import {
-  ELIGIBILITY_QUESTIONS_BANK,
+  useEligibilityTemplates,
+  flattenTemplates,
   QUESTION_CATEGORIES,
-  QuestionCategory,
-  EligibilityQuestionTemplate,
-} from"@/components/settings/eligibility-questions-bank"
+  type FlatEligibilityQuestion,
+  type QuestionCategory,
+} from "@/hooks/screening/use-eligibility-templates"
 import { useTranslations } from "next-intl"
 import { textStyles, actionButtonStyles } from '@/lib/design-tokens'
 import { useRecruitmentHub, type NewQuestionForm } from './useRecruitmentHub'
 import { InteractiveSurface } from "@/components/ui/interactive-surface"
 
 export function RecruitmentScreeningTab() {
+  // F4 audit 2026-05-20: catalogo dinamico
+  const { templates: _eligTemplates } = useEligibilityTemplates({ includeMaster: true })
+  const ELIGIBILITY_QUESTIONS_BANK = flattenTemplates(_eligTemplates)
+
   const t = useTranslations("settings")
   const hub = useRecruitmentHub('screening')
   const error = hub.error
@@ -129,7 +134,8 @@ export function RecruitmentScreeningTab() {
               onAddFromBank={onAddFromBank}
               getQuestionsByCategory={getQuestionsByCategory}
               isQuestionAlreadyAdded={isQuestionAlreadyAdded}
-            />
+          bankSize={ELIGIBILITY_QUESTIONS_BANK.length}
+        />
           )}
 
           {isEditingQuestions && showQuestionForm && (
@@ -203,14 +209,15 @@ interface QuestionBankSectionProps {
   onToggleCategory: (category: QuestionCategory) => void
   onToggleBankQuestion: (questionId: string) => void
   onAddFromBank: () => void
-  getQuestionsByCategory: (category: QuestionCategory) => EligibilityQuestionTemplate[]
-  isQuestionAlreadyAdded: (q: EligibilityQuestionTemplate) => boolean
+  getQuestionsByCategory: (category: QuestionCategory) => FlatEligibilityQuestion[]
+  isQuestionAlreadyAdded: (q: FlatEligibilityQuestion) => boolean
+  bankSize: number  // F4: total items no catalogo (substitui bankSize antigo)
 }
 
 function QuestionBankSection({
   expandedCategories, selectedBankQuestions,
   onClose, onToggleCategory, onToggleBankQuestion, onAddFromBank,
-  getQuestionsByCategory, isQuestionAlreadyAdded,
+  getQuestionsByCategory, isQuestionAlreadyAdded, bankSize,
 }: QuestionBankSectionProps) {
   const t = useTranslations("settings")
   return (
@@ -220,7 +227,7 @@ function QuestionBankSection({
           <div className="flex items-center gap-2">
             <Brain className="w-4 h-4 text-wedo-cyan" />
             <span className={textStyles.h4}>{t("recruitment.screening.suggestedBankTitle")}</span>
-            <Chip variant="neutral" className="text-micro">{t("recruitment.screening.questionsCount", { count: ELIGIBILITY_QUESTIONS_BANK.length })}</Chip>
+            <Chip variant="neutral" className="text-micro">{t("recruitment.screening.questionsCount", { count: bankSize })}</Chip>
           </div>
           <Button variant="ghost" size="sm" className="h-6 w-6 p-0" onClick={onClose}>
             <X className="w-3.5 h-3.5" />

@@ -4,11 +4,12 @@ import React, { useState, useMemo } from 'react'
 import { ChevronDown, ChevronUp, Building2, Plus, X } from 'lucide-react'
 import { textStyles } from '@/lib/design-tokens'
 import {
-  ELIGIBILITY_QUESTIONS_BANK,
+  useEligibilityTemplates,
+  flattenTemplates,
   QUESTION_CATEGORIES,
-  type EligibilityQuestionTemplate,
+  type FlatEligibilityQuestion,
   type QuestionCategory,
-} from '@/components/settings/eligibility-questions-bank'
+} from '@/hooks/screening/use-eligibility-templates'
 
 interface CompanyBankQuestionsProps {
   isEditing: boolean
@@ -28,17 +29,10 @@ interface BankQuestion {
   contextHint?: string
 }
 
-const STATIC_COMPANY_BANK: BankQuestion[] = ELIGIBILITY_QUESTIONS_BANK
-  .filter(q => !q.isSystemDefault)
-  .map(q => ({
-    id: q.id,
-    question: q.question,
-    character: q.eliminatory ? 'eliminatoria' as const : 'classificatoria' as const,
-    expectedAnswer: q.eliminatoryAnswer != null ? String(q.eliminatoryAnswer) : undefined,
-    contextHint: q.contextHint,
-  }))
-
-export const COMPANY_QUESTION_BANK = STATIC_COMPANY_BANK
+// Audit 2026-05-20 F4: catalogo migrado para useEligibilityTemplates hook.
+// COMPANY_QUESTION_BANK mantido vazio por compatibilidade — callers devem
+// usar useEligibilityTemplates() direto.
+export const COMPANY_QUESTION_BANK: BankQuestion[] = []
 export type { CompanyBankQuestionsProps, BankQuestion }
 
 function CharacterBadge({ character }: { character: 'eliminatoria' | 'classificatoria' }) {
@@ -58,28 +52,48 @@ function CharacterBadge({ character }: { character: 'eliminatoria' | 'classifica
 
 export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOverrides, onToggleQuestion, onUpdateSelectedQuestion, excludeIds = [] }: CompanyBankQuestionsProps) {
   const [isExpanded, setIsExpanded] = useState(true)
+  // Audit 2026-05-20 F4: catalogo dinamico via useEligibilityTemplates (substitui ELIGIBILITY_QUESTIONS_BANK_DYNAMIC hardcoded)
+  const { templates, isLoading: _templatesLoading } = useEligibilityTemplates({ includeMaster: true })
+  const ELIGIBILITY_QUESTIONS_BANK_DYNAMIC = useMemo<FlatEligibilityQuestion[]>(
+    () => flattenTemplates(templates),
+    [templates],
+  )
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({})
 
   const nonSystemTemplates = useMemo(() =>
-    ELIGIBILITY_QUESTIONS_BANK.filter(q => !q.isSystemDefault && !excludeIds.includes(q.id)),
+    ELIGIBILITY_QUESTIONS_BANK_DYNAMIC.filter(q => !q.isSystemDefault && !excludeIds.includes(q.id)),
     [excludeIds]
   )
 
   const selectedCount = selectedQuestions.length
 
+  // F4 audit 2026-05-20: deriva do catalogo dinamico (hook) — substitui STATIC_COMPANY_BANK
+  const COMPANY_BANK_DYNAMIC = useMemo<BankQuestion[]>(
+    () => ELIGIBILITY_QUESTIONS_BANK_DYNAMIC
+      .filter(q => !q.isSystemDefault)
+      .map(q => ({
+        id: q.id,
+        question: q.question,
+        character: q.eliminatory ? 'eliminatoria' as const : 'classificatoria' as const,
+        expectedAnswer: q.eliminatoryAnswer != null ? String(q.eliminatoryAnswer) : undefined,
+        contextHint: q.contextHint,
+      })),
+    [ELIGIBILITY_QUESTIONS_BANK_DYNAMIC],
+  )
+
   const selectedBankQuestions = useMemo(() =>
-    STATIC_COMPANY_BANK
+    COMPANY_BANK_DYNAMIC
       .filter(q => selectedQuestions.includes(q.id))
       .map(q => {
         const overrides = questionOverrides?.[q.id]
         if (!overrides) return q
         return { ...q, ...overrides }
       }),
-    [selectedQuestions, questionOverrides]
+    [COMPANY_BANK_DYNAMIC, selectedQuestions, questionOverrides]
   )
 
   const categorizedQuestions = useMemo(() => {
-    const groups: Record<string, EligibilityQuestionTemplate[]> = {}
+    const groups: Record<string, FlatEligibilityQuestion[]> = {}
     for (const q of nonSystemTemplates) {
       if (selectedQuestions.includes(q.id)) continue
       if (!groups[q.category]) groups[q.category] = []
@@ -88,7 +102,7 @@ export function CompanyBankQuestions({ isEditing, selectedQuestions, questionOve
     return groups
   }, [nonSystemTemplates, selectedQuestions])
 
-  const getTemplateById = (id: string) => ELIGIBILITY_QUESTIONS_BANK.find(q => q.id === id)
+  const getTemplateById = (id: string) => ELIGIBILITY_QUESTIONS_BANK_DYNAMIC.find(q => q.id === id)
 
   const toggleCategory = (cat: string) => {
     setExpandedCategories(prev => ({ ...prev, [cat]: !prev[cat] }))

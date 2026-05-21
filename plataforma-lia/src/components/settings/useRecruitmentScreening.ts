@@ -2,10 +2,11 @@
 
 import { useState } from "react"
 import {
-  ELIGIBILITY_QUESTIONS_BANK,
-  QuestionCategory,
-  EligibilityQuestionTemplate,
-} from "@/components/settings/eligibility-questions-bank"
+  useEligibilityTemplates,
+  flattenTemplates,
+  type FlatEligibilityQuestion,
+  type QuestionCategory,
+} from "@/hooks/screening/use-eligibility-templates"
 import type { NewQuestionForm, ScreeningQuestion } from "./recruitment-types"
 import type { RecruitmentPersistenceState } from "./useRecruitmentPersistence"
 import { apiFetch } from "@/lib/api/api-fetch"
@@ -30,8 +31,8 @@ export interface RecruitmentScreeningState {
   toggleCategory: (category: QuestionCategory) => void
   toggleBankQuestion: (questionId: string) => void
   handleAddFromBank: () => void
-  getQuestionsByCategory: (category: QuestionCategory) => EligibilityQuestionTemplate[]
-  isQuestionAlreadyAdded: (bankQuestion: EligibilityQuestionTemplate) => boolean
+  getQuestionsByCategory: (category: QuestionCategory) => FlatEligibilityQuestion[]
+  isQuestionAlreadyAdded: (bankQuestion: FlatEligibilityQuestion) => boolean
   handleStartEditQuestions: () => void
   handleCancelEditQuestions: () => void
   handleSaveQuestions: () => Promise<void>
@@ -48,6 +49,10 @@ export function useRecruitmentScreening({
   onSuccess,
   onError,
 }: ScreeningHookOptions): RecruitmentScreeningState {
+  // F4 audit 2026-05-20: catalogo dinamico via useEligibilityTemplates
+  const { templates: _eligTemplates } = useEligibilityTemplates({ includeMaster: true })
+  const ELIGIBILITY_QUESTIONS_BANK = flattenTemplates(_eligTemplates)
+
   const {
     questions,
     setQuestions,
@@ -210,7 +215,7 @@ export function useRecruitmentScreening({
     return ELIGIBILITY_QUESTIONS_BANK.filter(q => q.category === category)
   }
 
-  const isQuestionAlreadyAdded = (bankQuestion: EligibilityQuestionTemplate) => {
+  const isQuestionAlreadyAdded = (bankQuestion: FlatEligibilityQuestion) => {
     return questions.some(
       q => q.question.toLowerCase() === bankQuestion.question.toLowerCase()
     )
