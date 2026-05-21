@@ -118,7 +118,9 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
 
         # Pool 1: Autonomous tools (40 curated cross-domain tools)
         try:
-            from app.domains.autonomous.agents.autonomous_tool_registry import get_autonomous_tools  # DEPRECATED-IMPORT-EXEMPT: Pool 1 cross-domain canonical (46 tools curadas) — Studio agents usam autonomous como baseline cross-domain + Pool 2 domain-specific (sem equivalente em agent_studio)
+            # Pool 1 cross-domain canonical (46 tools curadas) — Studio agents usam autonomous
+            # como baseline cross-domain + Pool 2 domain-specific (sem substituto em agent_studio).
+            from app.domains.autonomous.agents.autonomous_tool_registry import get_autonomous_tools
             all_tools.extend(get_autonomous_tools())
         except Exception:
             pass

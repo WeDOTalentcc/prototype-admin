@@ -906,7 +906,8 @@ class FairnessGuard:
         to improve bias detection accuracy for that industry.
         """
         try:
-            from app.shared.services.policy_engine_service import ALPHA1_SECTOR_RULES  # DEPRECATED-IMPORT-EXEMPT: ALPHA1_SECTOR_RULES é constante canonical em policy_engine_service (Fase 5/G4 sector-dependent FairnessGuard) — read-only import via shim canonical
+            # Canonical path (Sprint 11 T-09 B+A combo: shim app.shared.services.policy_engine_service deletado)
+            from app.domains.policy.services.policy_engine_service import ALPHA1_SECTOR_RULES
         except ImportError:
             ALPHA1_SECTOR_RULES = {}
 

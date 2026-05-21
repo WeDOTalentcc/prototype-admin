@@ -18,7 +18,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 @pytest.mark.asyncio
 async def test_policy_invalid_company_id_no_exception():
     """UUID inválido em evaluate_policy é tratado com warning, sem ValueError."""
-    from app.shared.services.policy_engine_service import PolicyEngineService
+    from app.domains.policy.services.policy_engine_service import PolicyEngineService
 
     service = PolicyEngineService()
 
@@ -33,7 +33,7 @@ async def test_policy_invalid_company_id_no_exception():
     mock_ctx.__aexit__ = AsyncMock(return_value=False)
 
     with patch(
-        "app.services.policy_engine_service.AsyncSessionLocal",
+        "app.domains.policy.services.policy_engine_service.AsyncSessionLocal",
         return_value=mock_ctx,
     ):
         # company_id inválido (não é UUID) — não deve lançar exceção
@@ -51,7 +51,7 @@ async def test_policy_invalid_company_id_no_exception():
 @pytest.mark.asyncio
 async def test_policy_valid_company_id_still_works():
     """UUID válido continua funcionando após o fix."""
-    from app.shared.services.policy_engine_service import PolicyEngineService
+    from app.domains.policy.services.policy_engine_service import PolicyEngineService
 
     service = PolicyEngineService()
 
@@ -65,7 +65,7 @@ async def test_policy_valid_company_id_still_works():
     mock_ctx.__aexit__ = AsyncMock(return_value=False)
 
     with patch(
-        "app.services.policy_engine_service.AsyncSessionLocal",
+        "app.domains.policy.services.policy_engine_service.AsyncSessionLocal",
         return_value=mock_ctx,
     ):
         result = await service.evaluate(
@@ -80,7 +80,7 @@ async def test_policy_valid_company_id_still_works():
 @pytest.mark.asyncio
 async def test_policy_none_company_id_no_exception():
     """company_id=None não lança exceção (path existente)."""
-    from app.shared.services.policy_engine_service import PolicyEngineService
+    from app.domains.policy.services.policy_engine_service import PolicyEngineService
 
     service = PolicyEngineService()
 
@@ -94,7 +94,7 @@ async def test_policy_none_company_id_no_exception():
     mock_ctx.__aexit__ = AsyncMock(return_value=False)
 
     with patch(
-        "app.services.policy_engine_service.AsyncSessionLocal",
+        "app.domains.policy.services.policy_engine_service.AsyncSessionLocal",
         return_value=mock_ctx,
     ):
         result = await service.evaluate(

@@ -1,17 +1,23 @@
 #!/usr/bin/env python3
-"""Sensor canonical T-09 Fase 0: detecta imports de domains deprecated.
+"""Sensor canonical T-09: detecta imports de paths deprecated.
 
-Domains deprecated (DOMAIN_CATALOG.md):
-- app.domains.autonomous (legacy, supersedido por recruiter_assistant)
-- app.domains.policy (supersedido por hiring_policy)
+PREMISSA CORRIGIDA (Sprint 11, T-09 B+A combo 2026-05-21):
+- `app.domains.policy/` é CANONICAL ATIVO (13 files, 2.343 LOC + 1.167 LOC v1 endpoints).
+  hiring_policy/ (40 LOC) é STUB aspiracional — NÃO substitui policy/.
+- `app.domains.autonomous/` é CANONICAL ATIVO (Tier 6 ReAct fallback do CascadedRouter,
+  4 files, 2.218 LOC).
+- Premissa V4 anterior ("policy/autonomous deprecated") foi confirmada errada via
+  auditoria 2x (Agent #2 Sprint 8 + audit Sprint 11).
+- Shim `app/services/policy_engine_service.py` + `app/shared/services/policy_engine_service.py`
+  foram DELETADOS (T-09 Sprint 11 B+A combo) — callers usam canonical path direto.
 
-Plus shims em app/agents/ e app/shared/services/policy_engine_service.py.
+Paths REAIS deprecated (única coisa que esse sensor monitora agora):
+- `app.agents.policy_setup_agent` (shim — re-exporta de app.domains.policy.agents canonical)
 
-Modo INICIAL: WARN-ONLY (Fase 0) — coletar telemetria 30 dias.
-Promover BLOCKING após Fase 3 (migration completa).
+Modo: BLOCKING (default). Use --warn-only para opt-out (legacy ratchet).
 
 Uso:
-    python scripts/check_no_imports_from_deprecated.py [--strict]
+    python scripts/check_no_imports_from_deprecated.py [--warn-only]
 """
 from __future__ import annotations
 
@@ -21,38 +27,18 @@ from pathlib import Path
 
 
 FORBIDDEN_PATTERNS = [
-    (
-        re.compile(r"\bfrom\s+app\.domains\.autonomous\b"),
-        "app.domains.autonomous (use recruiter_assistant ou agent_studio)",
-    ),
-    (
-        re.compile(r"\bimport\s+app\.domains\.autonomous\b"),
-        "app.domains.autonomous (use recruiter_assistant ou agent_studio)",
-    ),
-    (
-        re.compile(r"\bfrom\s+app\.domains\.policy\b"),
-        "app.domains.policy (use app.domains.hiring_policy)",
-    ),
-    (
-        re.compile(r"\bimport\s+app\.domains\.policy\b"),
-        "app.domains.policy (use app.domains.hiring_policy)",
-    ),
+    # Shim agent legacy (re-exporta de app.domains.policy.agents canonical)
     (
         re.compile(r"\bfrom\s+app\.agents\.policy_setup_agent\b"),
-        "app.agents.policy_setup_agent (shim deprecated)",
-    ),
-    (
-        re.compile(r"\bfrom\s+app\.shared\.services\.policy_engine_service\b"),
-        "app.shared.services.policy_engine_service (shim deprecated)",
+        "app.agents.policy_setup_agent (shim deprecated — use app.domains.policy.agents.agent)",
     ),
 ]
 
 EXEMPT_MARKER = "DEPRECATED-IMPORT-EXEMPT"
 
-# Self-imports dos próprios deprecated paths são OK (eles importam entre si)
+# Self-imports do próprio path deprecated são OK (shim re-exporta canonical)
 SELF_IMPORT_DIRS = (
-    "app/domains/autonomous/",
-    "app/domains/policy/",
+    "app/agents/policy_setup_agent",
 )
 
 # Tests podem testar deprecated imports
@@ -62,7 +48,7 @@ TEST_DIRS = (
 )
 
 
-def check(strict: bool = True) -> int:  # [PROMOTED BLOCKING Sprint 8 T-09]
+def check(strict: bool = True) -> int:  # [PROMOTED BLOCKING Sprint 8 T-09 → re-labeled Sprint 11]
     repo_root = Path(__file__).resolve().parent.parent
     app_dir = repo_root / "app"
     libs_dir = repo_root / "libs"
@@ -103,7 +89,7 @@ def check(strict: bool = True) -> int:  # [PROMOTED BLOCKING Sprint 8 T-09]
                         break
 
     if not violations:
-        print("[T-09 ADR-019] OK -- 0 imports from deprecated domains")
+        print("[T-09 ADR-019] OK -- 0 imports from deprecated paths")
         return 0
 
     print(f"[T-09 ADR-019] {len(violations)} imports from deprecated paths:")
@@ -113,11 +99,10 @@ def check(strict: bool = True) -> int:  # [PROMOTED BLOCKING Sprint 8 T-09]
         print(f"     -> {msg}")
     print()
     print("CORRECAO canonical:")
-    print("  - autonomous: migrar para recruiter_assistant ou agent_studio")
-    print("  - policy: migrar para hiring_policy")
-    print("  - shims: deletar import, usar canonical")
-    print("  - Para casos legítimos (Tier 6 router fallback): adicionar")
-    print("    `# DEPRECATED-IMPORT-EXEMPT: <reason>` no fim da linha")
+    print("  - app.agents.policy_setup_agent: usar app.domains.policy.agents.agent")
+    print("    (PolicySetupAgent, policy_setup_agent são canonical em app.domains.policy.agents)")
+    print("  - Para casos legítimos (test backward-compat, registration trigger):")
+    print("    adicionar `# DEPRECATED-IMPORT-EXEMPT: <reason>` no fim da linha")
     print()
     mode = "BLOCKING" if strict else "WARN-ONLY"
     print(f"Mode: {mode}")
@@ -125,5 +110,5 @@ def check(strict: bool = True) -> int:  # [PROMOTED BLOCKING Sprint 8 T-09]
 
 
 if __name__ == "__main__":
-    strict = "--warn-only" not in sys.argv  # [PROMOTED BLOCKING Sprint 8 T-09]
+    strict = "--warn-only" not in sys.argv  # [PROMOTED BLOCKING Sprint 8 T-09 → re-labeled Sprint 11]
     sys.exit(check(strict=strict))

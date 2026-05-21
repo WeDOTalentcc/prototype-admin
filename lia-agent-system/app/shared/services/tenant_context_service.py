@@ -118,7 +118,8 @@ class TenantContextService:
             # Determinar nível de autonomia via PolicyEngine
             autonomy_level = "medium"
             try:
-                from app.shared.services.policy_engine_service import PolicyEngineService  # DEPRECATED-IMPORT-EXEMPT: Context aggregator legacy import via shim canonical — PolicyEngineService.get_active_policy() para autonomy_level (canonical impl em app.domains.policy.services)
+                # Canonical path (Sprint 11 T-09 B+A combo: shim app.shared.services.policy_engine_service deletado)
+                from app.domains.policy.services.policy_engine_service import PolicyEngineService
                 policy_svc = PolicyEngineService()
                 policy = await policy_svc.get_active_policy(company_id, db)
                 if policy:

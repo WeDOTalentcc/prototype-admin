@@ -13,9 +13,9 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
 
-from app.domains.policy.dependencies import get_policy_repo  # DEPRECATED-IMPORT-EXEMPT: V1 API canonical do PolicyEngine (get_policy_repo dependency) — app.domains.policy é canonical, sem equivalente em hiring_policy
-from app.domains.policy.repositories.policy_repository import PolicyRepository  # DEPRECATED-IMPORT-EXEMPT: V1 API canonical do PolicyEngine (BusinessRule/RateLimitRule/EscalationRule ORMs) — app.domains.policy é canonical
-from app.domains.policy.services.policy_engine_service import PolicyEngineService, get_policy_engine_service  # DEPRECATED-IMPORT-EXEMPT: V1 API canonical do PolicyEngine.evaluate/seed/list — app.domains.policy.services é canonical, sem equivalente em hiring_policy
+from app.domains.policy.dependencies import get_policy_repo
+from app.domains.policy.repositories.policy_repository import PolicyRepository
+from app.domains.policy.services.policy_engine_service import PolicyEngineService, get_policy_engine_service
 from app.models.policy import BusinessRule, EscalationRule, RateLimitRule
 from app.schemas.policy import (
     BusinessRuleCreate,

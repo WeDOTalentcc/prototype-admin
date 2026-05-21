@@ -848,7 +848,9 @@ class CascadedRouter:
         Budget controlado por AUTONOMOUS_REACT_MAX_STEPS (env var, padrão 10).
         """
         try:
-            from app.domains.autonomous.agents.autonomous_react_agent import get_autonomous_react_agent  # DEPRECATED-IMPORT-EXEMPT: Tier 6 ReAct fallback canonical — _route_via_autonomous_agent é a implementação real do Tier 6 do CascadedRouter (no substituto em recruiter_assistant/agent_studio)
+            # Tier 6 ReAct fallback canonical — _route_via_autonomous_agent é a implementação real
+            # do Tier 6 do CascadedRouter (sem substituto em recruiter_assistant/agent_studio).
+            from app.domains.autonomous.agents.autonomous_react_agent import get_autonomous_react_agent
             from lia_agents_core.agent_interface import AgentInput
 
             agent = get_autonomous_react_agent()

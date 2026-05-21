@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.domains.policy.repositories.global_policy_repository import GlobalPolicyRepository  # DEPRECATED-IMPORT-EXEMPT: V1 API canonical (GlobalPolicy ORM em app.models.global_policy — app.domains.policy é canonical, sem equivalente em hiring_policy)
+from app.domains.policy.repositories.global_policy_repository import GlobalPolicyRepository
 from app.models.global_policy import POLICY_TYPES, GlobalPolicy, PolicyScope, PolicyType
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel

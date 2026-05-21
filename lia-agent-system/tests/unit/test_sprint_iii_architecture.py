@@ -72,7 +72,7 @@ class TestDynamicAlphaRAG:
 class TestPolicyEngineAlpha1Rules:
     def test_alpha1_rules_all_sectors_present(self):
         try:
-            from app.shared.services.policy_engine_service import ALPHA1_SECTOR_RULES
+            from app.domains.policy.services.policy_engine_service import ALPHA1_SECTOR_RULES
             expected_sectors = {"tech", "varejo", "logistica", "financeiro", "saude", "rpo"}
             assert expected_sectors.issubset(set(ALPHA1_SECTOR_RULES.keys()))
         except ImportError:
@@ -80,7 +80,7 @@ class TestPolicyEngineAlpha1Rules:
 
     def test_all_rules_have_required_fields(self):
         try:
-            from app.shared.services.policy_engine_service import ALPHA1_SECTOR_RULES
+            from app.domains.policy.services.policy_engine_service import ALPHA1_SECTOR_RULES
             required_fields = {"autonomy_level", "hitl_threshold", "auto_approve_threshold"}
             for sector, rules in ALPHA1_SECTOR_RULES.items():
                 for field in required_fields:
@@ -89,22 +89,22 @@ class TestPolicyEngineAlpha1Rules:
             pytest.skip("ALPHA1_SECTOR_RULES não encontrado")
 
     def test_financeiro_low_autonomy(self):
-        from app.shared.services.policy_engine_service import ALPHA1_SECTOR_RULES
+        from app.domains.policy.services.policy_engine_service import ALPHA1_SECTOR_RULES
         assert ALPHA1_SECTOR_RULES["financeiro"]["autonomy_level"] == "low"
         assert ALPHA1_SECTOR_RULES["financeiro"]["fairness_layer3_enabled"] is True
 
     def test_tech_high_autonomy(self):
-        from app.shared.services.policy_engine_service import ALPHA1_SECTOR_RULES
+        from app.domains.policy.services.policy_engine_service import ALPHA1_SECTOR_RULES
         assert ALPHA1_SECTOR_RULES["tech"]["autonomy_level"] == "high"
 
     def test_saude_strict_thresholds(self):
-        from app.shared.services.policy_engine_service import ALPHA1_SECTOR_RULES
+        from app.domains.policy.services.policy_engine_service import ALPHA1_SECTOR_RULES
         saude = ALPHA1_SECTOR_RULES["saude"]
         assert saude["hitl_threshold"] >= 0.80
         assert saude["auto_approve_threshold"] >= 0.90
 
     def test_rpo_high_autonomy(self):
-        from app.shared.services.policy_engine_service import ALPHA1_SECTOR_RULES
+        from app.domains.policy.services.policy_engine_service import ALPHA1_SECTOR_RULES
         assert ALPHA1_SECTOR_RULES["rpo"]["autonomy_level"] == "high"
         assert ALPHA1_SECTOR_RULES["rpo"]["fairness_layer3_enabled"] is True
 

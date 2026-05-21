@@ -10,7 +10,7 @@ Classification of all directories under `app/domains/`.
 | **Micro-Action** | Has `domain.py` with `@register_domain`, lightweight (3-4 files), action-oriented stubs | 3 |
 | **Service** | Has `services/` with business logic but no `domain.py` — data access + domain services | 11 |
 | **Repository Stub** | Only `__init__.py`, `dependencies.py`, `repositories/` — pure CRUD data access | 30 |
-| **Deprecated** | Scheduled for removal or consolidation | 2 |
+| **Canonical Active (legacy path)** | Pre-domain refactor canonical paths still in production use; not deprecated | 2 |
 
 Total: 59 directories (excluding `__pycache__`)
 
@@ -24,6 +24,15 @@ Sprint 8 Frente C (2026-05-21): Service count corrected 9 → 11 — `modules` e
 `interview_intelligence` adicionados (anteriormente missing do catalog). Sensor
 `check_stub_invariants.py` agora reconhece SERVICE_DOMAINS canonical e foi promovido
 WARN-ONLY → BLOCKING.
+
+Sprint 11 T-09 B+A combo (2026-05-21): premissa V4 corrigida via auditoria 2x.
+`autonomous` e `policy` foram **re-classificados de "Deprecated" para "Canonical
+Active (legacy path)"** — ambos são código de produção ativo, sem substituto canonical
+(hiring_policy é stub 40 LOC, recruiter_assistant não cobre Tier 6 ReAct fallback).
+Sensor `check_no_imports_from_deprecated.py` atualizado: não mais reporta esses paths
+como deprecated. Shim `app/services/policy_engine_service.py` (9 LOC) e
+`app/shared/services/policy_engine_service.py` (2 LOC) **DELETADOS** — callers
+migrados para canonical path `app.domains.policy.services.policy_engine_service`.
 
 ## Agentic Domains (13)
 
@@ -125,9 +134,13 @@ agentic domains and API routes.
 | `trust_center` | Trust center/security records |
 | `workforce` | Workforce planning records |
 
-## Deprecated (2)
+## Canonical Active — Legacy Path (2)
+
+Code paths still in production use. Pre-domain-refactor location, but **not deprecated**:
+no canonical substitute exists. Re-classified Sprint 11 (2026-05-21) after auditoria 2x
+proved V4 premise wrong.
 
 | Domain | Status | Notes |
 |--------|--------|-------|
-| `autonomous` | Legacy | Contains legacy autonomous agents, not registered in DomainRegistry |
-| `policy` | Deprecated | Superseded by `hiring_policy`. See `docs/TODO_POLICY_CONSOLIDATION.md` |
+| `autonomous` | **Canonical Active** | Tier 6 ReAct fallback canonical do CascadedRouter (4 files, 2.218 LOC). Wired em `app/orchestrator/cascaded_router.py:851` + `app/api/v1/agent_chat_ws.py:374` (registration trigger pro `@register_agent`). Sem equivalente em `recruiter_assistant` ou `agent_studio` — esses são tiers diferentes. Mantido como Tier 6 fallback estrutural. |
+| `policy` | **Canonical Active** | Canonical policy engine (13 files, 2.343 LOC) + 1.167 LOC v1 endpoints (`app/api/v1/policy_engine.py`, `global_policies.py`, `policies.py`). Cobre `PolicyEngineService` (BusinessRule/RateLimitRule/EscalationRule), `PolicySetupAgent` (chat-driven setup), `ALPHA1_SECTOR_RULES` (sector-dependent FairnessGuard). `hiring_policy/` é stub aspiracional (40 LOC) — **NÃO substitui** `policy/`. |
