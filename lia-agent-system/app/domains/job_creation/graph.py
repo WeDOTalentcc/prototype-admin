@@ -2510,10 +2510,55 @@ def calibration_node(state: JobCreationState) -> JobCreationState:
     approved_count = sum(1 for c in candidates if c.get("decision") == "approved")
     complete = approved_count >= threshold
 
+    # Sprint O.3 — detect fresh-publish boundary: publish_node ran in this same
+    # graph invocation (stage_history tail) and vacancy was just created with
+    # zero candidates loaded. Without this branch, the calibration message
+    # ("Carreguei 0 candidato(s)...") overwrites publish's success message
+    # since LangGraph auto-transitions publish->calibration in the same turn
+    # (route_after_publish line ~4515). Tracked: Sprint N commit 98082cef8
+    # only handled review_gate->publish boundary; this is the publish->calibration
+    # sibling fix. Sensor: tests/wizard/test_publish_calibration_message.py.
+    _stage_history = state.get("stage_history") or []
+    _just_published = (
+        "publish" in _stage_history[-3:]
+        and bool(job_id)
+        and not state.get("error")
+    )
+    _fresh_publish_zero_cands = (
+        _just_published and len(candidates) == 0 and not complete
+    )
+
+    if _fresh_publish_zero_cands:
+        _share_link = state.get("share_link") or ""
+        _wsi_n = len(state.get("wsi_questions") or [])
+        _calib_message = (
+            "🎉 Vaga publicada com sucesso! "
+            + (f"Link de divulgação: {_share_link}. " if _share_link else "")
+            + (
+                f"Já está visível para captação. Quando os primeiros candidatos "
+                f"se inscreverem, vou usar suas {_wsi_n} perguntas WSI para "
+                "calibrar a triagem inicial — é só voltar para revisar."
+                if _wsi_n
+                else "Já está visível para captação. Quando candidatos se "
+                "inscreverem, vou ajudar você a calibrar a triagem por aqui."
+            )
+        )
+    elif complete:
+        _calib_message = (
+            f"Calibração concluída — {approved_count}/{threshold} "
+            "candidatos aprovados. Posso encerrar a configuração da vaga?"
+        )
+    else:
+        _calib_message = (
+            f"Carreguei {len(candidates)} candidato(s) para "
+            f"calibração ({approved_count}/{threshold} aprovados). "
+            "Continue avaliando para liberar a publicação completa."
+        )
+
     updates: Dict[str, Any] = {
         "current_stage": "calibration",
         "calibration_complete": complete,
-        "stage_history": (state.get("stage_history") or []) + ["calibration"],
+        "stage_history": _stage_history + ["calibration"],
         "completeness": calculate_completeness("calibration"),
         "requires_approval": False,
         "ws_stage_payload": {
@@ -2521,20 +2566,17 @@ def calibration_node(state: JobCreationState) -> JobCreationState:
             "stage": "calibration",
             "data": {
                 # Task #1099 — invariant: data.message obrigatório.
-                "message": (
-                    f"Calibração concluída — {approved_count}/{threshold} "
-                    "candidatos aprovados. Posso encerrar a configuração da vaga?"
-                    if complete
-                    else (
-                        f"Carreguei {len(candidates)} candidato(s) para "
-                        f"calibração ({approved_count}/{threshold} aprovados). "
-                        "Continue avaliando para liberar a publicação completa."
-                    )
-                ),
+                # Sprint O.3 — fresh-publish branch above for UX celebratory.
+                "message": _calib_message,
+                # Sprint O.1: propagate job_id so the orchestrator can link
+                # the response to the created vacancy after calibration
+                # overwrites ws_stage_payload.
+                "job_id": str(job_id) if job_id else None,
                 "candidates": candidates,
                 "threshold": threshold,
                 "approved_count": approved_count,
                 "complete": complete,
+                "fresh_publish": _fresh_publish_zero_cands,
             },
             "completeness": calculate_completeness("calibration"),
             "requires_approval": False,

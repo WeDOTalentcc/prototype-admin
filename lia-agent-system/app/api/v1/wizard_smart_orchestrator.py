@@ -329,9 +329,14 @@ async def smart_orchestrate(
             intent=stage_payload.get("intent"),
             awaiting_confirmation=awaiting,
             job_vacancy_id=(
+                # Sprint O.1 canonical: WizardSessionService injects job_vacancy_id
+                # into stage_payload from result["job_id"] (top-level state). The
+                # data.* fallbacks below cover legacy nodes that still set job_id
+                # only inside ws_stage_payload.data (publish_node:graph.py:2371).
                 stage_payload.get("job_vacancy_id")
                 or (stage_payload.get("data") or {}).get("job_id")
                 or (stage_payload.get("data") or {}).get("job_vacancy_id")
+                or (stage_payload.get("data") or {}).get("id")
             ),
             job_published=(
                 bool(stage_payload.get("job_published", False))

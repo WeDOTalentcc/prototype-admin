@@ -1206,6 +1206,21 @@ class WizardSessionService:
         stage_data = stage_payload.get("data") or {}
         current_stage = result.get("current_stage", "") or ""
 
+        # Sprint O.1 canonical: propagate job_vacancy_id forward.
+        # publish_node sets state["job_id"] AND ws_stage_payload.data.job_id, but
+        # subsequent nodes (calibration_node, handoff_node, review_gate_node)
+        # overwrite ws_stage_payload with their own data dict (without job_id),
+        # so the orchestrator loses the id after the publish turn. Inject from
+        # top-level state so downstream readers always see it regardless of
+        # which node produced the final ws_stage_payload.
+        _o1_job_id = result.get("job_id") if isinstance(result, dict) else None
+        if _o1_job_id:
+            stage_payload.setdefault("job_vacancy_id", str(_o1_job_id))
+            if isinstance(stage_data, dict):
+                stage_data.setdefault("job_id", str(_o1_job_id))
+                stage_payload["data"] = stage_data
+
+
         # Task #1080: Redis session marker upkeep removed. The canonical
         # ``is_wizard_session_active`` reads the checkpointer directly, so
         # there is nothing to mark/clear on each turn. Wizard "doneness" is
