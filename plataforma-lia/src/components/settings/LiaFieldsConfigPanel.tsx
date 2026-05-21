@@ -35,6 +35,8 @@ import { apiFetch } from "@/lib/api/api-fetch"
 import useCompanyId from "@/hooks/company/useCompanyId"
 import { LiaFieldToggle } from "@/components/settings/LiaFieldToggle"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { AiPersonaPanel } from "@/components/settings/AiPersonaPanel"
+import { Sparkles } from "lucide-react"
 import {
   LIA_FIELD_DEFINITIONS,
   type LiaFieldKey,
@@ -237,6 +239,13 @@ export function LiaFieldsConfigPanel() {
             <Brain className="w-4 h-4 mr-2" />
             {t("tabs.fields", { default: "Campos LIA" })}
           </TabsTrigger>
+          {/* E2.4 (audit 2026-05-21): tab "Personalidade da IA" — input
+              estruturado de nome + tom. Substitui o YAML cru pra clientes
+              finais; persona base permanece imutável no backend. */}
+          <TabsTrigger value="ai-persona" data-testid="tab-ai-persona">
+            <Sparkles className="w-4 h-4 mr-2" />
+            {t("tabs.aiPersona", { default: "Personalidade da IA" })}
+          </TabsTrigger>
           {/*
             E1 gate: only render the raw-YAML tab for WeDOTalent staff.
             Backend equivalent gate at app/api/v1/admin_prompts.py uses
@@ -288,6 +297,10 @@ export function LiaFieldsConfigPanel() {
               </div>
             </section>
           ))}
+        </TabsContent>
+
+        <TabsContent value="ai-persona" className="mt-4">
+          <AiPersonaPanel />
         </TabsContent>
 
         {/* E1: content rendered only for WeDOTalent staff (same gate as the trigger). */}
