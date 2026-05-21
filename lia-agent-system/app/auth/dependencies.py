@@ -179,6 +179,13 @@ def require_role(allowed_roles: list[UserRole]):
 require_admin = require_role([UserRole.admin])
 require_admin_or_recruiter = require_role([UserRole.admin, UserRole.recruiter])
 
+# WeDOTalent staff-only gate. Canonical use: per-tenant overrides edited by
+# Anderson + ops via admin2.wedotalent.cc. Customer-end admins (UserRole.admin)
+# MUST receive 403 — they administer their own org, not the platform.
+# See app/api/v1/admin_prompts.py tenant-override endpoints + the contract
+# document docs/admin-wedotalent-integration.md for the canonical caller set.
+require_wedotalent_admin = require_role([UserRole.wedotalent_admin])
+
 
 async def get_optional_current_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(optional_security),

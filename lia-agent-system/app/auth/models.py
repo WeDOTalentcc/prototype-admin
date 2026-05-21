@@ -20,10 +20,23 @@ _LEGACY_NON_UUID_COMPANY_IDS_ALLOWED: frozenset[str] = frozenset()
 
 
 class UserRole(StrEnum):
-    """User role enumeration."""
+    """User role enumeration.
+
+    NOTE on tenant vs. WeDOTalent scope (audit 2026-05-21, P1-7/E4-prep):
+
+    - ``admin`` / ``recruiter`` / ``viewer`` are TENANT roles. A user with
+      ``admin`` administers ONE customer organization (e.g. Acme Corp).
+    - ``wedotalent_admin`` is the WeDOTalent-staff role. Reserved for the
+      WeDOTalent team (Anderson + ops) who operate the platform across
+      ALL tenants. Only this role can edit per-tenant YAML overrides at
+      ``/admin/prompts/tenant-overrides/*`` and other cross-tenant
+      surfaces. Grant via the user-management admin UI in
+      admin2.wedotalent.cc — NEVER assign to a customer-end user.
+    """
     admin = "admin"
     recruiter = "recruiter"
     viewer = "viewer"
+    wedotalent_admin = "wedotalent_admin"
 
 
 class User(EncryptedFieldMixin, Base):
