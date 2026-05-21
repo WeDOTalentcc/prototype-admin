@@ -101,6 +101,43 @@ class TransitionDispatchService:
                         str(_hook_exc)[:200],
                     )
 
+            # T-10 Fase 3 WIRE canonical (ADR-032): REJECTED + WITHDRAWN outcomes
+            # Fail-soft via helper canonical (wire_feedback_outcome nunca raises).
+            # MVP wire — outras learning loops (BigFive negative signal, WSI rejection
+            # patterns) ficam pra Fase 4 (P2 backlog).
+            elif action_behavior in ("conclusion_rejected", "conclusion_declined"):
+                try:
+                    from app.shared.learning.feedback_writer import wire_feedback_outcome
+                    from sqlalchemy import select as _select_t10f3
+                    from lia_models.candidate import VacancyCandidate as _VC_t10f3
+
+                    _outcome_map = {
+                        "conclusion_rejected": "REJECTED",
+                        "conclusion_declined": "WITHDRAWN",
+                    }
+                    _vc_result = await self.db.execute(
+                        _select_t10f3(_VC_t10f3).where(_VC_t10f3.id == vacancy_candidate_id)
+                    )
+                    _vc = _vc_result.scalars().first()
+                    if _vc is not None and getattr(_vc, "vacancy_id", None) and company_id:
+                        await wire_feedback_outcome(
+                            db=self.db,
+                            domain="pipeline",
+                            outcome_type=_outcome_map[action_behavior],
+                            company_id=company_id,
+                            job_id=str(_vc.vacancy_id),
+                            context={
+                                "vacancy_candidate_id": vacancy_candidate_id,
+                                "action_behavior": action_behavior,
+                                "wire_source": "transition_dispatch_service.dispatch_t10_fase3",
+                            },
+                        )
+                except Exception as _wire_exc:
+                    logger.warning(
+                        "[dispatch_for_transition] T-10 Fase 3 wire failed (non-blocking): %s",
+                        str(_wire_exc)[:200],
+                    )
+
             situation = ACTION_BEHAVIOR_SITUATION_MAP[action_behavior]
             if situation is None:
                 logger.info(
