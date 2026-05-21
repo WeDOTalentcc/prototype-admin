@@ -111,8 +111,11 @@ class PolicyProgressResponse(BaseModel):
 
 
 class PolicyChatMessage(BaseModel):
+    """# T-06 R2 fix canonical: PolicyChatMessage company_id field removed.
+
+    Multi-tenancy via path /{company_id}/chat + require_company_id_strict_match.
+    """
     message: str
-    company_id: str
     user_id: str | None = None
     session_id: str | None = None
     conversation_history: list[dict[str, Any]] | None = Field(default_factory=list)

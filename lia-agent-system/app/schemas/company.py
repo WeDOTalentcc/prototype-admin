@@ -786,7 +786,10 @@ class OnboardingCultureProfile(BaseModel):
 
 
 class OnboardingData(BaseModel):
-    company_id: str | None = None
+    """# T-06 R2 fix canonical: OnboardingData company_id field removed.
+
+    Multi-tenancy via Depends(require_company_id) in submit_onboarding handler.
+    """
     company_name: str
     trade_name: str | None = None
     cnpj: str | None = None

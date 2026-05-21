@@ -187,12 +187,13 @@ company_id: str = Depends(require_company_id)):
         )
         profile = None
 
-        if data.company_id:
+        # T-06 R2 downstream fix canonical: company_id now from JWT (always set).
+        if company_id:
             try:
-                company_uuid = uuid.UUID(data.company_id)
+                company_uuid = uuid.UUID(company_id)
                 profile = await profile_repo.get_by_id(company_uuid)
                 if profile:
-                    logger.info(f"Found company profile by ID: {data.company_id}")
+                    logger.info(f"Found company profile by ID: {company_id}")
                     # T4 #991 — IDOR guard: when an authenticated real
                     # tenant submits onboarding referencing a profile by
                     # UUID, the profile MUST belong to that tenant
@@ -206,7 +207,7 @@ company_id: str = Depends(require_company_id)):
                         )
                         # T4 #991 — explicit-target Demo write IDOR.
                         # Non-Demo caller passing the Demo UUID in
-                        # ``data.company_id`` must get an explicit 403
+                        # JWT company_id must get an explicit 403
                         # — never silently degrade into create-new.
                         if is_demo_profile_target:
                             record_demo_fallback(
@@ -254,7 +255,7 @@ company_id: str = Depends(require_company_id)):
                                 },
                             )
             except ValueError:
-                logger.warning(f"Invalid company_id format: {data.company_id}")
+                logger.warning(f"Invalid company_id format: {company_id}")
 
         if not profile and user_company_id:
             try:

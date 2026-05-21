@@ -117,12 +117,15 @@ async def kanban_assistant(request: KanbanAssistantRequest, company_id: str = De
 
 
 class StageMoveContext(BaseModel):
+    """# T-06 R2 fix canonical: StageMoveContext company_id field removed.
+
+    Multi-tenancy via Depends(require_company_id) in get_stage_move_suggestions.
+    """
     candidate_id: str = Field(..., description="ID do candidato sendo movido")
     candidate_name: str | None = Field(None, description="Nome do candidato")
     from_stage: str = Field(..., description="Etapa de origem")
     to_stage: str = Field(..., description="Etapa de destino")
     job_title: str | None = Field(None, description="Título da vaga")
-    company_id: str | None = Field(None, description="ID da empresa")
 
 
 class StageMovesuggestion(BaseModel):

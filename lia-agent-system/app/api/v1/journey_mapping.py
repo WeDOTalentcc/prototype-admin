@@ -183,8 +183,11 @@ class WizardStepData(BaseModel):
 
 
 class WizardCompleteData(BaseModel):
-    """Complete wizard data submitted from frontend."""
-    company_id: uuid.UUID
+    """Complete wizard data submitted from frontend.
+
+    # T-06 R2 fix canonical: company_id field removed.
+    # Multi-tenancy via Depends(require_company_id) in complete_wizard handler.
+    """
     vagas_abertura: str = Field(..., description="Origin type: requisicao_formal, demanda_direta, planejamento_anual")
     sistemas_usados: list[str] = Field(default=[], description="List of system IDs used")
     etapas_processo: list[str] = Field(default=[], description="List of process step names")
@@ -251,7 +254,7 @@ company_id: str = Depends(require_company_id)):
     """
     try:
         blueprint_kwargs = {
-            "company_id": data.company_id,
+            "company_id": uuid.UUID(company_id) if isinstance(company_id, str) else company_id,  # T-06 R2 from JWT
             "name": "Jornada de Recrutamento",
             "description": f"Configurado via wizard em {datetime.utcnow().strftime('%d/%m/%Y')}",
             "vacancy_origin": data.vagas_abertura,
