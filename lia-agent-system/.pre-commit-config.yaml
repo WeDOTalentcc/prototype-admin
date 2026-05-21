@@ -278,5 +278,12 @@ repos:
         entry: python3 scripts/check_yaml_metadata_version.py
         files: ^app/prompts/.*\.(yaml|yml)$
         pass_filenames: false
+
+      - id: pydantic-R1-ratchet
+        name: "T-07 ADR-029-v3: R1 ratchet (no new violations vs baseline)"
+        language: system
+        entry: python3 scripts/check_pydantic_R1_ratchet.py
+        files: ^app/.*\.py$
+        pass_filenames: false
         always_run: false
 
