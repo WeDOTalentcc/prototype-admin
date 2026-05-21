@@ -888,14 +888,296 @@ TOOL_DEFINITIONS.append(
 )
 
 
+
+# ─── Eligibility Question Templates wizard tools (audit 2026-05-20 Sprint 1 F5) ──
+# 3 tools canonical pro wizard conversacional de criacao de vaga manusear o
+# catalogo dinamico de eligibility-question-templates (substitui catalogo
+# hardcoded `plataforma-lia/.../eligibility-questions-bank.ts`).
+
+@tool_handler("wizard")
+async def _wrap_suggest_eligibility_templates(**kwargs):
+    """
+    Sugere templates de elegibilidade canonical relevantes para a vaga em
+    criacao baseado em job_industry, work_model, languages e categorias mais
+    pertinentes.
+
+    Multi-tenancy: company_id obrigatorio via ContextVar JWT (@tool_handler).
+    """
+    from app.core.database import AsyncSessionLocal
+    from app.domains.cv_screening.repositories.eligibility_question_template_repository import (
+        EligibilityQuestionTemplateRepository,
+    )
+
+    company_id = kwargs.get("company_id")
+    job_industry = (kwargs.get("industry") or "").lower()
+    work_model = (kwargs.get("work_model") or "").lower()
+    languages = kwargs.get("languages") or []
+
+    PRIORITY_CATEGORIES = ["system_default", "eligibility", "availability", "compliance"]
+
+    async with AsyncSessionLocal() as db:
+        repo = EligibilityQuestionTemplateRepository(db)
+        all_items = await repo.list_for_company(
+            company_id=company_id, include_master=True
+        )
+
+    suggestions = []
+    for item in all_items:
+        data = item.data or {}
+        category = data.get("category", "")
+        # Score: priority category + linkedField match + languages match
+        score = 0
+        if category in PRIORITY_CATEGORIES:
+            score += 3
+        linked = data.get("linkedField")
+        if linked == "workModel" and work_model:
+            score += 5
+        if linked == "languages" and languages:
+            score += 5
+        if linked == "location" and work_model in ("hibrido", "presencial"):
+            score += 4
+        if score > 0:
+            suggestions.append({
+                "id": str(item.id),
+                "question": data.get("question", ""),
+                "category": category,
+                "is_master": item.is_master_template,
+                "score": score,
+            })
+
+    suggestions.sort(key=lambda s: s["score"], reverse=True)
+    top = suggestions[:10]
+
+    return {
+        "success": True,
+        "data": {
+            "suggestions": top,
+            "total_in_catalog": len(all_items),
+            "industry_used": job_industry or None,
+            "work_model_used": work_model or None,
+        },
+        "message": (
+            f"{len(top)} template(s) de elegibilidade sugerido(s) "
+            f"(top 10 de {len(all_items)} no catalogo da empresa)."
+        ),
+    }
+
+
+@tool_handler("wizard")
+async def _wrap_apply_eligibility_template_to_vacancy(**kwargs):
+    """
+    Aplica template de elegibilidade canonical a uma vaga em criacao.
+
+    Snapshot canonical (decisao Paulo B1): copia o data do template e adiciona
+    a vaga.eligibility_questions JSONB (in-memory; persistencia final ocorre
+    no save_job_draft).
+
+    Multi-tenancy: company_id + vacancy_id required via ContextVar.
+    """
+    from app.core.database import AsyncSessionLocal
+    from app.domains.cv_screening.repositories.eligibility_question_template_repository import (
+        EligibilityQuestionTemplateRepository,
+    )
+    import uuid
+
+    company_id = kwargs.get("company_id")
+    template_id_raw = kwargs.get("template_id")
+    vacancy_id = kwargs.get("vacancy_id")
+
+    if not template_id_raw:
+        return {
+            "success": False,
+            "fallback_used": True,
+            "needs_manual_review": True,
+            "message": "template_id obrigatorio",
+        }
+
+    try:
+        template_uuid = uuid.UUID(template_id_raw) if isinstance(template_id_raw, str) else template_id_raw
+    except (ValueError, TypeError):
+        return {
+            "success": False,
+            "fallback_used": True,
+            "needs_manual_review": True,
+            "message": f"template_id invalido: {template_id_raw}",
+        }
+
+    async with AsyncSessionLocal() as db:
+        repo = EligibilityQuestionTemplateRepository(db)
+        template = await repo.get_by_id(template_uuid, company_id)
+
+    if not template:
+        return {
+            "success": False,
+            "fallback_used": True,
+            "needs_manual_review": True,
+            "message": "Template nao encontrado ou fora do escopo da empresa",
+        }
+
+    snapshot = dict(template.data or {})
+    snapshot["_template_id"] = str(template.id)
+    snapshot["_is_master_origin"] = template.is_master_template
+
+    return {
+        "success": True,
+        "data": {
+            "vacancy_id": vacancy_id,
+            "template_id": str(template.id),
+            "snapshot": snapshot,
+            "is_master_origin": template.is_master_template,
+        },
+        "message": (
+            f"Template '{snapshot.get('question', '')[:60]}...' aplicado à vaga "
+            f"(snapshot canonical B1; persistencia ocorre no save_job_draft)."
+        ),
+    }
+
+
+@tool_handler("wizard")
+async def _wrap_create_custom_eligibility_template(**kwargs):
+    """
+    Cria template de elegibilidade custom canonical via wizard conversacional.
+
+    Permissoes: qualquer user (recrutador + admin podem criar — decisao
+    Paulo C 2026-05-20). Persistido per-company.
+    """
+    from app.core.database import AsyncSessionLocal
+    from app.domains.cv_screening.repositories.eligibility_question_template_repository import (
+        EligibilityQuestionTemplateRepository,
+    )
+
+    company_id = kwargs.get("company_id")
+    user_id = kwargs.get("user_id")
+    question = (kwargs.get("question") or "").strip()
+    question_type = kwargs.get("type") or "yesno"
+    category = kwargs.get("category") or "general"
+
+    if not question or len(question) < 3:
+        return {
+            "success": False,
+            "fallback_used": True,
+            "needs_manual_review": True,
+            "message": "Pergunta obrigatoria (min 3 caracteres)",
+        }
+
+    data = {
+        "question": question,
+        "type": question_type,
+        "category": category,
+        "contextHint": kwargs.get("contextHint"),
+        "eliminatory": kwargs.get("eliminatory", False),
+        "eliminatoryAnswer": kwargs.get("eliminatoryAnswer"),
+    }
+    if kwargs.get("options"):
+        data["options"] = kwargs["options"]
+
+    async with AsyncSessionLocal() as db:
+        repo = EligibilityQuestionTemplateRepository(db)
+        try:
+            template = await repo.create_custom(
+                company_id=company_id,
+                data=data,
+                created_by=str(user_id) if user_id else None,
+            )
+            await db.commit()
+        except Exception as e:
+            await db.rollback()
+            return {
+                "success": False,
+                "fallback_used": True,
+                "needs_manual_review": True,
+                "message": f"Falha ao criar template: {str(e)}",
+            }
+
+    return {
+        "success": True,
+        "data": {
+            "id": str(template.id),
+            "company_id": template.company_id,
+            "is_master_template": False,
+            "question": data["question"],
+            "category": category,
+        },
+        "message": f"Template custom criado para a empresa (id={str(template.id)[:8]}...)",
+    }
+
+
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
+        name="suggest_eligibility_templates",
+        description=(
+            "Sugere templates de elegibilidade canonical relevantes para a vaga em "
+            "criacao baseado em industry, work_model, languages. Retorna top 10 "
+            "ranked por relevancia (priority categorias + linkedField match)."
+        ),
+        parameters={
+            "type": "object",
+            "properties": {
+                "industry": {"type": "string", "description": "Setor da empresa"},
+                "work_model": {"type": "string", "description": "Modelo de trabalho da vaga"},
+                "languages": {"type": "array", "items": {"type": "string"}, "description": "Idiomas requeridos"},
+            },
+            "required": [],
+        },
+        output_schema=ToolOutput,
+        function=_wrap_suggest_eligibility_templates,
+    )
+)
+
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
+        name="apply_eligibility_template_to_vacancy",
+        description=(
+            "Aplica template canonical a uma vaga em criacao via snapshot "
+            "canonical (B1). NAO sincroniza com master apos aplicacao."
+        ),
+        parameters={
+            "type": "object",
+            "properties": {
+                "template_id": {"type": "string", "description": "UUID do template canonical"},
+                "vacancy_id": {"type": "string", "description": "UUID da vaga (ou identifier)"},
+            },
+            "required": ["template_id"],
+        },
+        output_schema=ToolOutput,
+        function=_wrap_apply_eligibility_template_to_vacancy,
+    )
+)
+
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
+        name="create_custom_eligibility_template",
+        description=(
+            "Cria template de elegibilidade custom canonical persistido per-company. "
+            "Recrutador + admin podem criar (decisao Paulo C 2026-05-20)."
+        ),
+        parameters={
+            "type": "object",
+            "properties": {
+                "question": {"type": "string", "description": "Texto da pergunta (min 3 chars)"},
+                "type": {"type": "string", "enum": ["text", "yesno", "scale", "multiple"]},
+                "category": {"type": "string", "description": "Categoria canonical"},
+                "contextHint": {"type": "string"},
+                "eliminatory": {"type": "boolean"},
+                "eliminatoryAnswer": {"type": "string"},
+                "options": {"type": "array", "items": {"type": "string"}},
+            },
+            "required": ["question"],
+        },
+        output_schema=ToolOutput,
+        function=_wrap_create_custom_eligibility_template,
+    )
+)
+
+
 _TOOL_MAP: dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
 
 STAGE_TOOLS: dict[str, list[str]] = {
     "input-evaluation": ["validate_job_requirements", "validate_job_fields", "get_job_suggestions", "get_company_config", "save_job_draft", "check_job_draft_health"],
     "jd-enrichment": ["generate_enriched_jd", "get_job_suggestions", "get_company_config", "save_job_draft", "check_job_draft_health"],
     "salary": ["get_salary_benchmarks", "search_salary_benchmark", "validate_job_fields", "save_job_draft", "check_job_draft_health"],
-    "competencies": ["validate_job_requirements", "get_job_suggestions", "validate_job_fields", "save_job_draft"],
-    "wsi-questions": ["validate_job_requirements", "validate_job_fields", "save_job_draft", "generate_screening_questions"],
+    "competencies": ["validate_job_requirements", "get_job_suggestions", "validate_job_fields", "save_job_draft", "suggest_eligibility_templates", "apply_eligibility_template_to_vacancy", "create_custom_eligibility_template"],
+    "wsi-questions": ["validate_job_requirements", "validate_job_fields", "save_job_draft", "generate_screening_questions", "suggest_eligibility_templates", "apply_eligibility_template_to_vacancy", "create_custom_eligibility_template"],
     "review-publish": ["validate_job_requirements", "save_job_draft", "validate_job_fields", "check_job_draft_health", "generate_report", "publish_vacancy", "change_vacancy_status"],
     # Phase E — vacancy lifecycle stages (Recrutar > Vagas rail).
     # Stage names match _classify_job_lifecycle_stage in

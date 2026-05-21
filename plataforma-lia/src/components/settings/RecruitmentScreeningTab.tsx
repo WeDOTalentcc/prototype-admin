@@ -17,6 +17,7 @@ import {
   type FlatEligibilityQuestion,
   type QuestionCategory,
 } from "@/hooks/screening/use-eligibility-templates"
+import { EligibilityTemplatesManager } from "./EligibilityTemplatesManager"
 import { useTranslations } from "next-intl"
 import { textStyles, actionButtonStyles } from '@/lib/design-tokens'
 import { useRecruitmentHub, type NewQuestionForm } from './useRecruitmentHub'
@@ -198,7 +199,11 @@ export function RecruitmentScreeningTab() {
           </div>
         </CardContent>
       </Card>
-    </div>
+          <EligibilityTemplatesManager
+        isAdmin={true}
+        currentUserId={null}
+      />
+      </div>
   )
 }
 

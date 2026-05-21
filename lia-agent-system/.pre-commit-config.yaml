@@ -279,6 +279,13 @@ repos:
         files: ^app/domains/.*(_tool_registry|_stage_context)\.py$
         pass_filenames: false
 
+      - id: screening-not-hardcoded
+        name: "Screening Questions catalogo DEVE ser dinamico (Sprint 1 F6 2026-05-20, BLOCKING)"
+        language: system
+        entry: bash -c "python3 scripts/check_screening_not_hardcoded.py"
+        files: ^.*\.(ts|tsx|js|jsx)$
+        pass_filenames: false
+
       - id: training-data-anonymized
         name: "T-21 ADR-LGPD-002: training data export DEVE anonymizer (warn-only)"
         language: system
