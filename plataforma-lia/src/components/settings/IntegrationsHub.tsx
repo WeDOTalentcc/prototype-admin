@@ -23,6 +23,7 @@ import {
 } from "./integrations/integration-data"
 import { IntegrationCard } from "./integrations/IntegrationCard"
 import { IntegrationDetailDrawer } from "./integrations/IntegrationDetailDrawer"
+import { useIntegrationCatalog, flattenEntries, type FlatIntegration } from "@/hooks/integrations/use-integration-catalog"
 import { apiFetch } from "@/lib/api/api-fetch"
 
 interface LLMConfigData {
@@ -72,6 +73,18 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
   const [llmConfig, setLlmConfig] = useState<LLMConfigData | null>(null)
   const [atsConnections, setAtsConnections] = useState<Array<{ provider: string; is_active: boolean }>>([])
   const [errorMsg, setErrorMsg] = useState<string | null>(null)
+
+  // Sprint 4 canonical (2026-05-21): fetch dynamic catalog from DB.
+  // Falls back to hardcoded `integrations` if API fails (transitional).
+  const { entries: catalogEntries, isLoading: catalogLoading, error: catalogError } = useIntegrationCatalog({ includeMaster: true })
+  const dynamicIntegrations: FlatIntegration[] = useMemo(
+    () => (catalogEntries.length > 0 ? flattenEntries(catalogEntries) : []),
+    [catalogEntries],
+  )
+  const baseIntegrations = useMemo(
+    () => (dynamicIntegrations.length > 0 ? (dynamicIntegrations as unknown as Integration[]) : integrations),
+    [dynamicIntegrations],
+  )
 
   useEffect(() => {
     setActiveTab(activeSubsection || "all")
@@ -156,7 +169,7 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
       pandape: "pandape",
     }
 
-    return integrations.map((integration) => {
+    return baseIntegrations.map((integration) => {
       if (integration.id === "google-calendar") {
         return {
           ...integration,
@@ -209,7 +222,7 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
       }
       return integration
     })
-  }, [googleStatus, microsoftStatus, teamsStatus, activeProvider, atsConnections, llmConfig])
+  }, [baseIntegrations, googleStatus, microsoftStatus, teamsStatus, activeProvider, atsConnections, llmConfig])
 
   const activeCategory = tabToCategoryMap[activeTab] ?? "all"
 

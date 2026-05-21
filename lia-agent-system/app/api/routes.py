@@ -139,6 +139,8 @@ from app.api.v1 import (
     lia_assistant_wizard_stages,
     lia_field_toggles,
     eligibility_question_templates,
+    integration_catalog,
+    webhook_event_types,
     lia_profile_analysis,
     merge_webhooks,
     microsoft_graph,
@@ -397,6 +399,8 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(company_users.router, prefix="/api/v1", tags=["company"])
     app.include_router(lia_field_toggles.router, prefix="/api/v1", tags=["field-toggles"])
     app.include_router(eligibility_question_templates.router, prefix="/api/v1", tags=["eligibility-question-templates"])
+    app.include_router(integration_catalog.router, prefix="/api/v1", tags=["integration-catalog"])
+    app.include_router(webhook_event_types.router, prefix="/api/v1", tags=["webhook-event-types"])
     app.include_router(company_culture.router, prefix="/api/v1", tags=["company-culture"])
     # T2/#994 — legacy ``/company/{enrich,auto-enrich,profile/{id}/generate-evp,
     # analyze-culture}`` routes were relocated from ``company.py`` into
@@ -648,3 +652,15 @@ def register_all_routes(app: FastAPI) -> None:
 
     app.include_router(candidate_portal.router, tags=["candidate-portal"])
     app.include_router(public_shared_searches.router, prefix="/api", tags=["public-shared-searches"])
+
+    # ── Alert Rule Templates (Sprint 3 catalogos dinamicos 2026-05-21) ──────
+    from app.api.v1.alert_rule_templates import router as _alert_rule_templates_router
+    app.include_router(_alert_rule_templates_router, prefix="/api/v1", tags=["alert-rule-templates"])
+
+    # ── Sprint 2 canonical (catalogos dinamicos) — pipeline_stage_templates ──
+    from app.api.v1 import pipeline_stage_templates as _pipeline_stage_templates_router
+    app.include_router(
+        _pipeline_stage_templates_router.router,
+        prefix="/api/v1",
+        tags=["pipeline-stage-templates"],
+    )

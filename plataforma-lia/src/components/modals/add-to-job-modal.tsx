@@ -43,6 +43,7 @@ import {
 import { cn } from "@/lib/utils"
 import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
 import { toast } from "sonner"
+import { usePipelineStageTemplates, flattenTemplates } from "@/hooks/pipeline/use-pipeline-stage-templates"
 
 const MAX_BULK_CANDIDATES = 100
 
@@ -68,7 +69,10 @@ interface JobDisplay {
   existing_candidate_ids?: string[]
 }
 
-const DEFAULT_STAGES = [
+// Audit 2026-05-20 Sprint 2 F4: catalogo dinamico canonical via
+// usePipelineStageTemplates. Fallback PT-BR mantido apenas para o caso
+// de loading/error/JobVacancy sem pipeline_stages persistidas.
+const DEFAULT_STAGES_FALLBACK = [
   'Triagem',
   'Entrevista RH',
   'Entrevista Técnica',
@@ -108,7 +112,19 @@ const [jobs, setJobs] = useState<JobDisplay[]>([])
   const [selectedStage, setSelectedStage] = useState('Triagem')
   const [notifyManager, setNotifyManager] = useState(false)
   const [includeComments, setIncludeComments] = useState(!!feedbackComments && feedbackComments.size > 0)
-  
+
+  // Sprint 2 F4 canonical: catalogo dinamico per-tenant (master + custom).
+  // Filtra is_default_in_pipeline=true, ordena por data.order asc.
+  const { templates: stageTemplates, isLoading: stagesLoading } = usePipelineStageTemplates({ includeMaster: true })
+  const dynamicDefaultStages = useMemo(() => {
+    if (stagesLoading || !stageTemplates.length) return DEFAULT_STAGES_FALLBACK
+    const flat = flattenTemplates(stageTemplates)
+      .filter((s) => s.is_default_in_pipeline)
+      .sort((a, b) => a.order - b.order)
+    if (!flat.length) return DEFAULT_STAGES_FALLBACK
+    return flat.map((s) => s.display_name)
+  }, [stageTemplates, stagesLoading])
+
   const searchInputRef = useRef<HTMLInputElement>(null)
   const modalRef = useRef<HTMLDivElement>(null)
 
@@ -203,8 +219,8 @@ const [jobs, setJobs] = useState<JobDisplay[]>([])
           location: jv.location,
           status: jv.status,
           candidates_count: (jv as JobVacancy & { candidates_count?: number; funnel_data?: { total?: number } }).candidates_count || (jv as JobVacancy & { candidates_count?: number; funnel_data?: { total?: number } }).funnel_data?.total || 0,
-          pipeline_stages: (jv as JobVacancy & { pipeline_stages?: typeof DEFAULT_STAGES; candidate_ids?: string[] }).pipeline_stages || DEFAULT_STAGES,
-          existing_candidate_ids: (jv as JobVacancy & { pipeline_stages?: typeof DEFAULT_STAGES; candidate_ids?: string[] }).candidate_ids || []
+          pipeline_stages: (jv as JobVacancy & { pipeline_stages?: string[]; candidate_ids?: string[] }).pipeline_stages || dynamicDefaultStages,
+          existing_candidate_ids: (jv as JobVacancy & { pipeline_stages?: string[]; candidate_ids?: string[] }).candidate_ids || []
         }))
         setJobs(mapped)
       } else {
@@ -232,8 +248,8 @@ const [jobs, setJobs] = useState<JobDisplay[]>([])
   }, [jobs, selectedJobId])
 
   const availableStages = useMemo(() => {
-    return selectedJob?.pipeline_stages || DEFAULT_STAGES
-  }, [selectedJob])
+    return selectedJob?.pipeline_stages || dynamicDefaultStages
+  }, [selectedJob, dynamicDefaultStages])
 
   const finalCandidateIds = useMemo(() => {
     if (skipDuplicates && duplicateIds.length > 0) {

@@ -1,3 +1,24 @@
+/**
+ * @deprecated Sprint 4 (catalogos dinamicos 2026-05-21).
+ *
+ * Este catalogo hardcoded foi substituido pelo catalogo dinamico per-tenant
+ * canonical em  (src/hooks/integrations/use-integration-catalog.ts).
+ *
+ * MIGRACAO EM CURSO:
+ *   - Hook canonical: useIntegrationCatalog() → fetch dinamico do DB
+ *   - Shape compat: FlatIntegration (em use-integration-catalog.ts) imita
+ *     o shape  deste arquivo para migracao incremental
+ *   - Schema canonical: status "connected"/"not_configured" → "production";
+ *     "coming_soon" segue igual
+ *
+ * QUEM AINDA USA (a refatorar):
+ *   - IntegrationsHub.tsx (refatorado Sprint 4 F4 para hook + fallback)
+ *   - IntegrationCard.tsx (mantem shape Integration via FlatIntegration)
+ *   - IntegrationDetailDrawer.tsx (mantem shape Integration via FlatIntegration)
+ *
+ * REMOVER quando F6 (Sprint 4 final consolidate) confirmar 0 consumers.
+ */
+
 export type IntegrationStatus = "connected" | "not_configured" | "coming_soon"
 
 export type IntegrationCategory =

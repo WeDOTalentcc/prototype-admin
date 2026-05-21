@@ -1,5 +1,18 @@
 /**
  * Webhook types — mirror backend schemas.
+ *
+ * @deprecated 2026-05-21 (Sprint 5 catalogos dinamicos) — WEBHOOK_EVENTS
+ * hardcoded array foi substituido por catalogo dinamico per-tenant via
+ * `useWebhookEventTypes()` hook em `@/hooks/webhooks/use-webhook-event-types`.
+ *
+ * Mantemos a array hardcoded como FALLBACK para uso emergencial caso o
+ * backend esteja indisponivel (o hook lida com erro mas a UI precisa de
+ * um set minimo de eventos pra renderizar). Refactor canonical migrou
+ * `WebhooksManager.tsx` para o hook dinamico. Outros consumers devem migrar
+ * incrementalmente.
+ *
+ * Para novos eventos: NAO adicione aqui — adicione no master canonical via
+ * migration alembic (vide `alembic/versions/157_webhook_event_types.py`).
  */
 
 export const WEBHOOK_EVENTS = [

@@ -724,6 +724,7 @@ from lia_models.bias_audit_snapshot import BiasAuditSnapshot
 from lia_models.bigfive_department_profile import BigFiveDepartmentProfile
 from lia_models.client_account import ClientAccount, ClientStatus
 from lia_models.eligibility_question_template import EligibilityQuestionTemplate
+from lia_models.integration_catalog_entry import IntegrationCatalogEntry
 from lia_models.client_user import ClientUser, ClientUserRole, ClientUserStatus
 from lia_models.communication_matrix import CommunicationMatrixEntry, ModuleType, RecipientType, ChannelType
 from lia_models.company_benefit import CompanyBenefit
@@ -772,3 +773,6 @@ from lia_models.ui_actions import UIAction, UIComponentType, SidePanelType, Chat
 from lia_models.user_agent_preference import UserAgentPreference
 from lia_models.whatsapp_conversation import WhatsAppConversation, WhatsAppMessage, ConversationState
 from lia_models.wsi_question_effectiveness import WsiQuestionEffectiveness
+from lia_models.webhook_event_type import WebhookEventType
+from lia_models.alert_rule_template import AlertRuleTemplate
+from lia_models.pipeline_stage_template import PipelineStageTemplate

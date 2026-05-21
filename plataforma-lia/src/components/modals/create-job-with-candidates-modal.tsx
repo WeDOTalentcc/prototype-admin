@@ -25,6 +25,7 @@ import {
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { textStyles, cardStyles } from '@/lib/design-tokens'
+import { usePipelineStageTemplates, flattenTemplates } from "@/hooks/pipeline/use-pipeline-stage-templates"
 
 export interface CreateJobWithCandidatesModalProps {
   open: boolean
@@ -46,7 +47,10 @@ export interface CreateJobWithCandidatesConfig {
   sharedSearchId?: string
 }
 
-const DEFAULT_STAGES = [
+// Audit 2026-05-20 Sprint 2 F4: catalogo dinamico canonical via
+// usePipelineStageTemplates. Fallback PT-BR mantido apenas para o caso
+// de loading/error (resiliencia UX).
+const DEFAULT_STAGES_FALLBACK = [
   'Triagem',
   'Entrevista RH',
   'Entrevista Técnica',
@@ -77,6 +81,20 @@ export function CreateJobWithCandidatesModal({
   const [selectedStage, setSelectedStage] = useState('Triagem')
   const [includeComments, setIncludeComments] = useState(!!feedbackComments && feedbackComments.size > 0)
   const modalRef = useRef<HTMLDivElement>(null)
+
+  // Sprint 2 F4 canonical: catalogo dinamico per-tenant (master + custom).
+  // Filtra is_default_in_pipeline=true, ordena por data.order asc.
+  const { templates: stageTemplates, isLoading: stagesLoading } = usePipelineStageTemplates({ includeMaster: true })
+  const availableStages = (() => {
+    if (stagesLoading || !stageTemplates.length) {
+      return DEFAULT_STAGES_FALLBACK
+    }
+    const flat = flattenTemplates(stageTemplates)
+      .filter((s) => s.is_default_in_pipeline)
+      .sort((a, b) => a.order - b.order)
+    if (!flat.length) return DEFAULT_STAGES_FALLBACK
+    return flat.map((s) => s.display_name)
+  })()
 
   useEffect(() => {
     setMounted(true)
@@ -232,10 +250,10 @@ export function CreateJobWithCandidatesModal({
                   <SelectValue placeholder="Selecione a etapa" />
                 </SelectTrigger>
                 <SelectContent className="bg-lia-btn-primary-bg border-lia-border-medium">
-                  {DEFAULT_STAGES.map((stage) => (
-                    <SelectItem 
-                      key={stage} 
-                      value={stage} 
+                  {availableStages.map((stage) => (
+                    <SelectItem
+                      key={stage}
+                      value={stage}
                       className="text-xs text-lia-text-inverse focus:bg-lia-btn-primary-bg focus:text-lia-text-inverse"
                     >
                       {stage}

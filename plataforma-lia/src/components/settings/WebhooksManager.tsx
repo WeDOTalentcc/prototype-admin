@@ -13,12 +13,17 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { textStyles, cardStyles, buttonStyles, badgeStyles } from "@/lib/design-tokens"
 import { toast } from "@/lib/toast"
 import { useWebhooks } from "@/hooks/agents"
-import { WEBHOOK_EVENTS, type Webhook } from "@/components/pages-agent-studio/custom-agents/webhook-types"
+import { type Webhook } from "@/components/pages-agent-studio/custom-agents/webhook-types"
+import { useWebhookEventTypes, flattenEventTypes, type FlatWebhookEvent } from "@/hooks/webhooks/use-webhook-event-types"
 import { apiFetch } from "@/lib/api/api-fetch"
 
 export function WebhooksManager() {
   const t = useTranslations("settings.webhooks")
   const { webhooks, isLoading, mutate } = useWebhooks()
+  // Sprint 5 catalogos dinamicos: substituiu WEBHOOK_EVENTS hardcoded.
+  // includeMaster=true pra trazer eventos curados WeDOTalent + customs.
+  const { eventTypes: rawEventTypes } = useWebhookEventTypes({ includeMaster: true })
+  const availableEvents: FlatWebhookEvent[] = flattenEventTypes(rawEventTypes).filter((e) => !e.deprecated)
   const [creating, setCreating] = useState(false)
   const [newName, setNewName] = useState("")
   const [newUrl, setNewUrl] = useState("")
@@ -28,10 +33,10 @@ export function WebhooksManager() {
   const [testingId, setTestingId] = useState<string | null>(null)
 
   const eventLabel = (event: string): string => {
-    // next-intl proíbe `.` em chaves (caractere reservado para nesting), então
-    // os event types do backend (`agent.execution.completed`, etc) precisam ser
-    // normalizados para `agent_execution_completed` antes do lookup. O event
-    // type bruto é preservado como fallback caso a tradução não exista.
+    // Sprint 5: preferir label canonical do catalogo dinamico per-tenant.
+    const dyn = availableEvents.find((e) => e.event_type === event)
+    if (dyn?.label) return dyn.label
+    // Fallback i18n (compat com tradutoes ja existentes em settings.webhooks.eventLabels.*).
     const key = event.replace(/\./g, "_")
     try {
       return t(`eventLabels.${key}` as never)
@@ -246,14 +251,17 @@ export function WebhooksManager() {
             <div>
               <label className="text-xs font-semibold text-lia-text-primary mb-2 block">{t("events")}</label>
               <div className="space-y-1.5">
-                {WEBHOOK_EVENTS.map((event) => (
-                  <label key={event} className="flex items-center gap-2 text-xs cursor-pointer">
+                {availableEvents.length === 0 && (
+                  <p className="text-xs text-lia-text-disabled italic">{t("loading")}</p>
+                )}
+                {availableEvents.map((evt) => (
+                  <label key={evt.event_type} className="flex items-center gap-2 text-xs cursor-pointer">
                     <Checkbox
-                      checked={newEvents.includes(event)}
-                      onCheckedChange={() => toggleEvent(event)}
+                      checked={newEvents.includes(evt.event_type)}
+                      onCheckedChange={() => toggleEvent(evt.event_type)}
                     />
-                    <span className="text-lia-text-primary">{eventLabel(event)}</span>
-                    <span className="text-lia-text-disabled font-mono text-[10px]">({event})</span>
+                    <span className="text-lia-text-primary">{eventLabel(evt.event_type)}</span>
+                    <span className="text-lia-text-disabled font-mono text-[10px]">({evt.event_type})</span>
                   </label>
                 ))}
               </div>

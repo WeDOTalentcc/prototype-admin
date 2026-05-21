@@ -32,6 +32,12 @@ export const CATEGORY_LABELS: Record<string, { label: string; color: string }> =
   feedback: { label: 'Feedback', color: 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-secondary' }
 }
 
+/**
+ * @deprecated Sprint 3 (2026-05-21) - usar useAlertRuleTemplates hook canonical.
+ * Mantido por compatibilidade durante migração; será removido após F5/F6.
+ * Migração canonical em src/hooks/communication/use-alert-rule-templates.ts
+ * + flattenTemplates() para shape AlertConfig.
+ */
 export const DEFAULT_ALERTS: AlertConfig[] = [
   { id: '1', name: 'SLA Próximo do Vencimento', description: 'Alerta quando um candidato está há 80% do SLA na mesma etapa', enabled: true, channel: 'both' },
   { id: '2', name: 'Meta Mensal em Risco', description: 'Notifica quando a meta de contratações do mês pode não ser atingida', enabled: true, channel: 'email' },

@@ -1,6 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from "react"
 import type { AlertConfig, EmailTemplate, AiResultModal } from './CommunicationHub.types'
 import { DEFAULT_ALERTS, TEMPLATE_GROUPS } from './CommunicationHub.constants'
+import { useAlertRuleTemplates, flattenTemplates, type FlatAlertConfig } from '@/hooks/communication/use-alert-rule-templates'
 import { apiFetch } from '@/lib/api/api-fetch'
 
 export function useCommunicationHub(activeSubsection?: string) {
@@ -42,6 +43,22 @@ export function useCommunicationHub(activeSubsection?: string) {
   }, []);
 
   const [alerts, setAlerts] = useState<AlertConfig[]>(DEFAULT_ALERTS)
+  // Sprint 3 canonical: load catalog dinamico per-tenant via API.
+  // Quando carrega, substitui o seed DEFAULT_ALERTS pelos items canonical.
+  const { templates: alertTemplates, isLoading: alertTemplatesLoading } = useAlertRuleTemplates({ includeMaster: true })
+  useEffect(() => {
+    if (alertTemplatesLoading) return
+    if (!alertTemplates || alertTemplates.length === 0) return
+    const flat: FlatAlertConfig[] = flattenTemplates(alertTemplates)
+    const mapped: AlertConfig[] = flat.map((f) => ({
+      id: f.id,
+      name: f.name,
+      description: f.description,
+      enabled: f.enabled,
+      channel: f.channel,
+    }))
+    setAlerts(mapped)
+  }, [alertTemplates, alertTemplatesLoading])
   const [briefingFrequency, setBriefingFrequency] = useState<'twice_daily' | 'daily' | 'weekly' | 'monthly'>('daily')
   const [channelFilter, setChannelFilter] = useState<'all' | 'email' | 'whatsapp'>('all')
   const [triggerTypeFilter, setTriggerTypeFilter] = useState<'all' | 'automatic' | 'manual' | 'both'>('all')
