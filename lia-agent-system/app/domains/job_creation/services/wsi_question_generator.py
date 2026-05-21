@@ -66,6 +66,12 @@ def _classify_questions_with_taxonomy(questions: list, llm=None) -> list:
 
     Modifies questions in-place adding skill_probed + skill_parent + classification_source.
     Fail-soft: erro na classificacao mantem skill_probed=None.
+
+    Sprint F.5 perf note: kept sequential (not parallel) because each LLM
+    invoke triggers an audit_service.log_decision coroutine via
+    create_tracked_llm callback, and >2 concurrent callbacks corrupt the
+    asyncpg pool through a pre-existing event-loop-leak in audit_service.
+    The classifier loop adds ~7s but does not block the wizard.
     """
     if not questions:
         return questions
@@ -412,19 +418,38 @@ class WSIQuestionGenerator:
         n_tech = distribution.get("technical", 5)
         n_behav = distribution.get("behavioral", 2)
 
-        # Generate technical questions
-        if n_tech > 0:
-            tech_qs = self._generate_block(
-                "technical", enriched, seniority, n_tech, trait_rankings
-            )
-            all_questions.extend(tech_qs)
-
-        # Generate behavioral questions
-        if n_behav > 0:
-            behav_qs = self._generate_block(
-                "behavioral", enriched, seniority, n_behav, trait_rankings
-            )
-            all_questions.extend(behav_qs)
+        # Sprint F.5 perf fix: technical and behavioral generation are
+        # independent LLM calls (~40s + ~18s seq = ~58s). Run them in
+        # parallel via ThreadPoolExecutor — wall time drops to max(40s, 18s).
+        # Each create_tracked_llm call uses its own ChatAnthropic instance
+        # (separate HTTP session), so concurrency is safe.
+        import concurrent.futures as _cf_gen
+        futures = {}
+        with _cf_gen.ThreadPoolExecutor(max_workers=2) as ex:
+            if n_tech > 0:
+                futures["technical"] = ex.submit(
+                    self._generate_block,
+                    "technical", enriched, seniority, n_tech, trait_rankings,
+                )
+            if n_behav > 0:
+                futures["behavioral"] = ex.submit(
+                    self._generate_block,
+                    "behavioral", enriched, seniority, n_behav, trait_rankings,
+                )
+            # Maintain canonical ordering: technical first, then behavioral
+            for block_key in ("technical", "behavioral"):
+                fut = futures.get(block_key)
+                if fut is not None:
+                    try:
+                        all_questions.extend(fut.result())
+                    except Exception as _fut_exc:
+                        logger.warning(
+                            "[WSI:F6] %s generation failed in parallel exec: %s",
+                            block_key, _fut_exc,
+                        )
+                        # Fail-soft: contribute fallback questions
+                        count = n_tech if block_key == "technical" else n_behav
+                        all_questions.extend(self._fallback_questions(block_key, count))
 
         # Normalize weights
         total_weight = sum(q.weight for q in all_questions) or 1.0

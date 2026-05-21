@@ -95,6 +95,20 @@ async def lifespan(app: FastAPI):
     logger.info("🚀 Starting LIA Agent System...")
     logger.info(f"Environment: {settings.APP_ENV}")
     logger.info(f"Debug mode: {settings.DEBUG}")
+
+    # ─── Audit-loop-leak fix (2026-05-20) ────────────────────────────────
+    # Capture the running event loop so AuditService can redispatch
+    # `_asyncio.run(audit.log_decision(...))` calls from LangGraph sync
+    # nodes back onto this loop (prevents asyncpg pool poisoning).
+    try:
+        from app.shared.compliance.audit_service import register_main_loop
+        register_main_loop()
+    except Exception as _loop_reg_exc:
+        logger.warning(
+            "[AuditService] register_main_loop failed at startup: %s",
+            _loop_reg_exc,
+        )
+
     
     # Validate Microsoft Teams configuration
     if settings.MICROSOFT_APP_ID and settings.MICROSOFT_APP_PASSWORD:

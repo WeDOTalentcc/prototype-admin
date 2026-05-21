@@ -236,6 +236,12 @@ class JobCreationState(TypedDict, total=False):
     # + instruction do recrutador (extracted_data validado pelo gate).
     pending_publish_confirmation: bool
     publish_confirmation_ts: Optional[float]
+    # Sprint F.5 fix (2026-05-20): MUST be declared (same precedent as
+    # gate_seen_user_query L159 + company_id L105-108). Set by
+    # review_gate_node on 2nd publish_now within TTL → unlocks publish_node
+    # PolicyGate. Without this declaration LangGraph filtered the key,
+    # leaving job_vacancy_id=None forever (wizard E2E observed 2026-05-20).
+    policy_confirmed_publish: bool
     review_request_changes_pending: Optional[Dict[str, Any]]
 
     # --- Calibration ---

@@ -28,12 +28,60 @@ class APIResponse:
     error: Optional[str] = None
 
 
+def _coerce_str_list(items):
+    """Coerce list elements to strings — Pydantic models, dicts, or scalars."""
+    out = []
+    for x in items or []:
+        if x is None:
+            continue
+        if isinstance(x, str):
+            out.append(x)
+        elif isinstance(x, dict):
+            # Try common key names from EnrichedJD shape
+            v = x.get("skill") or x.get("competencia") or x.get("technology") or x.get("name") or x.get("text") or x.get("description")
+            if v:
+                out.append(str(v))
+            else:
+                out.append(str(x))
+        elif hasattr(x, "model_dump"):
+            d = x.model_dump()
+            v = d.get("skill") or d.get("competencia") or d.get("name") or d.get("text")
+            if v:
+                out.append(str(v))
+        else:
+            out.append(str(x))
+    return out
+
+
+def _coerce_jsonable(items):
+    """Coerce Pydantic models or other non-jsonable to plain dicts/scalars."""
+    out = []
+    for x in items or []:
+        if hasattr(x, "model_dump"):
+            out.append(x.model_dump())
+        elif isinstance(x, (dict, str, int, float, bool, type(None))):
+            out.append(x)
+        else:
+            out.append(str(x))
+    return out
+
+
 class JobCreationAPIClient:
 
     def __init__(self, context=None):
         self.settings = settings  # LIA-D01: settings is a singleton, not a function
-        self.base_url = self.settings.ats_api.base_url
-        self.timeout = self.settings.rails_api.timeout
+        # Sprint F.5 fix (2026-05-20): Settings doesn't expose `ats_api` /
+        # `rails_api` nested config — defensive lookup with env-var fallback
+        # mirroring the canonical pattern (rails_jwt.py, _handler_hooks.py,
+        # rails_health.py: all use `os.environ.get("RAILS_API_URL", "")`).
+        # Without this, publish_node crashed with AttributeError on first
+        # touch, blocking the wizard E2E from ever reaching job-vacancy
+        # creation in production-shaped flows.
+        import os as _os
+        _ats_url = getattr(getattr(self.settings, "ats_api", None), "base_url", None)             or getattr(getattr(self.settings, "rails_api", None), "base_url", None)             or _os.environ.get("RAILS_API_URL", "")             or _os.environ.get("RAILS_BACKEND_URL", "")
+        _ats_timeout = getattr(getattr(self.settings, "rails_api", None), "timeout", None)             or getattr(getattr(self.settings, "ats_api", None), "timeout", None)             or float(_os.environ.get("RAILS_API_TIMEOUT", "30"))
+        self.base_url = _ats_url.rstrip("/") if _ats_url else ""
+        self.timeout = _ats_timeout
         self._ott_service = get_ott_service()
         self._context = context
 
@@ -109,8 +157,272 @@ class JobCreationAPIClient:
         Args:
             job_data: Dict with title, description, department, seniority,
                      location, salary_range, benefits, etc.
+
+        Sprint F.5 dev fallback (2026-05-20): when ``self.base_url`` is empty
+        (Rails not configured in this env) AND
+        ``LIA_DEV_LOCAL_PUBLISH=1``, INSERT directly into local
+        ``job_vacancies`` table so the wizard E2E can validate
+        ``job_vacancy_id != None`` without booting Rails. Production with
+        ``RAILS_API_URL`` set hits the original path.
         """
+        import os as _os
+        if not self.base_url:  # Sprint F.5: Rails not configured — dev-local INSERT path
+            try:
+                return self._create_job_local(job_data)
+            except Exception as e:
+                logger.error("[JobCreationAPI] dev-local create_job failed: %s", e, exc_info=True)
+                return APIResponse(success=False, error=f"dev-local insert failed: {e}")
         return self._request("POST", "/api/v1/jobs", json_body={"job": job_data})
+
+    def _create_job_local(self, job_data: Dict[str, Any]) -> APIResponse:
+        """Dev-only fallback: INSERT into local job_vacancies via psycopg2.
+
+        Schema mirrored from libs/models/lia_models/job_vacancy.py:JobVacancy.
+        Async sessionmaker (AsyncSessionLocal) can't be used from this sync
+        context (publish_node runs in a thread executor). psycopg2 is bundled.
+        Returns APIResponse with JSON:API shape that publish_node expects.
+
+        Sprint L bulletproof rewrite (2026-05-20): five-layer dict-leak
+        defense + per-param diagnostic logging fired BEFORE cursor.execute.
+        Prior agents (Sprint J/K) added partial coerces but the diagnostic
+        loop never fired in logs, meaning the dict leak slipped a defense.
+        This rewrite consolidates into single canonical coerce + logs every
+        param's type+repr before INSERT so future leaks are pinpointed by
+        column name.
+        """
+        import os as _os
+        import json as _json
+        import uuid as _uuid
+        import psycopg2
+
+        company_id = (
+            getattr(self._context, "company_id", None) if self._context else None
+        ) or job_data.get("company_id") or "00000000-0000-4000-a000-000000000001"
+
+        # --- LAYER 0: log INPUT shape before any processing -------------
+        # If publish_node ever passes leaked dicts in unexpected fields,
+        # we see EXACTLY which field upstream needs fixing.
+        try:
+            _input_summary = {
+                k: type(v).__name__ for k, v in (job_data or {}).items()
+            }
+            logger.info(
+                "[JobCreationAPI dev-local INPUT] keys/types: %s",
+                _input_summary,
+            )
+        except Exception:
+            logger.warning("[JobCreationAPI dev-local INPUT] could not summarize")
+
+        # --- LAYER 1: bulletproof scalar coerce -------------------------
+        def _bp_str(v, max_chars=2000):
+            """Last-resort: ANY input -> safe str|None for VARCHAR/TEXT."""
+            if v is None or v == "":
+                return None
+            if isinstance(v, str):
+                return v[:max_chars]
+            if isinstance(v, bool):
+                return str(v)
+            if isinstance(v, (int, float)):
+                return str(v)
+            if isinstance(v, dict):
+                # Try common key names from EnrichedJD shape
+                for k in ("text", "value", "title", "name", "label", "skill",
+                          "description", "padronizado", "preferred"):
+                    if v.get(k) and isinstance(v.get(k), (str, int, float)):
+                        return str(v[k])[:max_chars]
+                try:
+                    return _json.dumps(v, default=str, ensure_ascii=False)[:max_chars]
+                except Exception:
+                    return str(v)[:max_chars]
+            if isinstance(v, (list, tuple, set)):
+                try:
+                    return _json.dumps(list(v), default=str, ensure_ascii=False)[:max_chars]
+                except Exception:
+                    return ", ".join(str(x) for x in list(v)[:5])[:max_chars]
+            # Catch psycopg2 Json wrappers, Pydantic models, anything else
+            if hasattr(v, "model_dump"):
+                try:
+                    return _json.dumps(v.model_dump(), default=str, ensure_ascii=False)[:max_chars]
+                except Exception:
+                    return str(v)[:max_chars]
+            return str(v)[:max_chars]
+
+        # --- LAYER 2: bulletproof jsonable coerce (for JSONB columns) ---
+        def _bp_jsonable(v):
+            """For JSONB columns - ensure psycopg2-jsonb-adaptable structure."""
+            if v is None:
+                return None
+            if isinstance(v, str):
+                try:
+                    return _json.loads(v)
+                except Exception:
+                    return [v]
+            if hasattr(v, "model_dump"):
+                v = v.model_dump()
+            if isinstance(v, dict):
+                return {k: _bp_jsonable(val) for k, val in v.items()}
+            if isinstance(v, (list, tuple, set)):
+                return [_bp_jsonable(x) for x in v]
+            if isinstance(v, (str, int, float, bool)):
+                return v
+            return str(v)
+
+        # --- LAYER 3: bulletproof list-of-str coerce --------------------
+        def _bp_str_list(items):
+            """For requirements/responsibilities (text[]): list of strings."""
+            out = []
+            for x in items or []:
+                if x is None:
+                    continue
+                s = _bp_str(x, max_chars=500)
+                if s:
+                    out.append(s)
+            return out
+
+        new_id = _uuid.uuid4()
+
+        # Extract & coerce scalars
+        title = _bp_str(job_data.get("title")) or "(sem titulo)"
+        description = _bp_str(job_data.get("description"), max_chars=10000) or ""
+        department = _bp_str(job_data.get("department"))
+        location = _bp_str(job_data.get("location"))
+        work_model = _bp_str(job_data.get("work_model"))
+        seniority = _bp_str(job_data.get("seniority"))
+
+        # Skills list extraction (text[] column "requirements")
+        tech_reqs_raw = job_data.get("technical_requirements") or []
+        skills_list = []
+        for tr in tech_reqs_raw:
+            if isinstance(tr, dict):
+                s = tr.get("skill") or tr.get("technology") or tr.get("name") or tr.get("text")
+                if s:
+                    skills_list.append(_bp_str(s, max_chars=300) or "")
+            elif tr is not None:
+                skills_list.append(_bp_str(tr, max_chars=300) or "")
+        skills_list = [s for s in skills_list if s]
+
+        # Responsibilities (text[] column)
+        resp_list = _bp_str_list(job_data.get("responsibilities") or [])
+
+        # JSONB payloads
+        tech_reqs_jsonb = _json.dumps(_bp_jsonable(tech_reqs_raw), default=str, ensure_ascii=False)
+        beh_comp_jsonb = _json.dumps(
+            _bp_jsonable(job_data.get("behavioral_competencies") or []),
+            default=str, ensure_ascii=False,
+        )
+
+        # --- LAYER 4: canonical column->param mapping (no positional drift) ---
+        _columns = [
+            "id", "company_id", "title", "description", "department",
+            "location", "work_model", "seniority_level", "requirements",
+            "responsibilities", "technical_requirements",
+            "behavioral_competencies", "status",
+        ]
+        _params_raw = [
+            str(new_id), str(company_id), title, description, department,
+            location, work_model, seniority, skills_list, resp_list,
+            tech_reqs_jsonb, beh_comp_jsonb, "Rascunho",
+        ]
+
+        # --- LAYER 5: per-param sanity + ULTRA defensive last-mile coerce ---
+        _params = []
+        _safe_scalar_types = (str, int, float, bool, type(None))
+        for _col, _val in zip(_columns, _params_raw):
+            if _col in ("requirements", "responsibilities"):
+                # text[] columns - must be list of str
+                if not isinstance(_val, list):
+                    logger.warning(
+                        "[JobCreationAPI dev-local INSERT] col=%s NOT list (type=%s) - coercing",
+                        _col, type(_val).__name__,
+                    )
+                    _val = [_bp_str(_val) or ""]
+                _safe = []
+                for _x in _val:
+                    if isinstance(_x, str):
+                        _safe.append(_x)
+                    else:
+                        logger.warning(
+                            "[JobCreationAPI dev-local INSERT] col=%s element non-str (type=%s) - coercing",
+                            _col, type(_x).__name__,
+                        )
+                        _safe.append(_bp_str(_x) or "")
+                _params.append(_safe)
+            elif _col in ("technical_requirements", "behavioral_competencies"):
+                # JSONB columns - must be str (json-encoded)
+                if not isinstance(_val, str):
+                    logger.warning(
+                        "[JobCreationAPI dev-local INSERT] col=%s JSONB NOT str (type=%s) - re-encoding",
+                        _col, type(_val).__name__,
+                    )
+                    _val = _json.dumps(_bp_jsonable(_val), default=str, ensure_ascii=False)
+                _params.append(_val)
+            else:
+                # Scalar columns - must be str|None
+                if not isinstance(_val, _safe_scalar_types):
+                    logger.error(
+                        "[JobCreationAPI dev-local INSERT] col=%s LEAK type=%s repr=%r - bulletproof coercing",
+                        _col, type(_val).__name__, str(_val)[:120],
+                    )
+                    _val = _bp_str(_val)
+                _params.append(_val)
+
+        # --- LAYER 6: BEFORE-execute diagnostic log (fires UNCONDITIONALLY) ---
+        # Even if cur.execute raises immediately, we have the param shape on disk.
+        try:
+            _diag = [
+                (i, _columns[i], type(p).__name__, (str(p)[:60] + ("..." if p and len(str(p)) > 60 else "")) if p is not None else "None")
+                for i, p in enumerate(_params)
+            ]
+            logger.info(
+                "[JobCreationAPI dev-local INSERT] %d params:\n%s",
+                len(_params),
+                "\n".join(f"  [{i}] {col:30s} type={t:10s} val={v}" for i, col, t, v in _diag),
+            )
+        except Exception as _e:
+            logger.warning("[JobCreationAPI dev-local INSERT] diag log failed: %s", _e)
+
+        # --- DB INSERT (sync psycopg2, runs in thread executor) ---------
+        db_url = _os.environ["DATABASE_URL"]
+        sync_url = db_url.replace("postgresql+asyncpg://", "postgresql://")
+        conn = psycopg2.connect(sync_url)
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO job_vacancies
+                    (id, company_id, title, description, department, location,
+                     work_model, seniority_level, requirements, responsibilities,
+                     technical_requirements, behavioral_competencies, status)
+                    VALUES
+                    (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s::jsonb, %s)
+                    RETURNING id
+                    """,
+                    _params,
+                )
+                row = cur.fetchone()
+                conn.commit()
+                new_id_str = str(row[0])
+        finally:
+            conn.close()
+
+        logger.info(
+            "[JobCreationAPI] dev-local INSERT OK id=%s title=%r",
+            new_id_str, title,
+        )
+        return APIResponse(
+            success=True,
+            data={
+                "data": {
+                    "id": new_id_str,
+                    "attributes": {
+                        "id": new_id_str,
+                        "uid": new_id_str,
+                        "title": title,
+                        "status": "Rascunho",
+                    },
+                },
+            },
+        )
 
     def update_job(self, job_id: int, updates: Dict[str, Any]) -> APIResponse:
         """Update an existing job."""

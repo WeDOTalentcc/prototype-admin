@@ -641,3 +641,22 @@ code (idênticos).
 - TestClient + AsyncMock têm flakiness ocasional por event-loop cleanup; follow-up migrar pra `httpx.AsyncClient`.
 
 **Endpoint legacy deprecado:** `POST /chat/message` com `domain="wizard"` retornava `internal_error` por NameErrors em helpers nunca implementados. Aposentado pelo refactor 2026-05-20. Frontend nunca chamou esse path.
+
+### Bateria 9 — Wizard canonical E2E sensors (Sprint H/I)
+
+Sensores permanentes em `tests/wizard/test_canonical_e2e_sensors.py`.
+
+Cobertura:
+- Initial stage advances past 'initial'
+- HITL gate (jd-enrichment) sets `awaiting_confirmation=True`
+- `company_id` invariant (multi-tenancy)
+- Full 6-turn conversation reaches `complete` / `done` + `job_vacancy_id` populado
+
+Run manualmente:
+
+```bash
+LIA_E2E_SENSORS_ENABLED=true \
+  python3 -m pytest tests/wizard/test_canonical_e2e_sensors.py -v -s
+```
+
+Default: skipped (slow + requires live wizard em `localhost:8001`). Run pre-deploy.

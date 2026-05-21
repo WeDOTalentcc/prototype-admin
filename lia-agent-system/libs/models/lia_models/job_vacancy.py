@@ -232,6 +232,17 @@ class JobVacancy(Base):
     # 'ats_importada' stage in the Recrutar page rail.
     source_system = Column(String(50), nullable=True, index=True)
 
+    # Sprint G #27 D2 follow-up — Job Readiness Hub (Task #429) state columns.
+    # DB schema already has these (varchar(40), json, timestamp); adding to ORM
+    # so SQLAlchemy actually persists writes. Without these declarations,
+    # job_readiness_service.py:239,240,322 mutates transient attributes that
+    # silently no-op (D2a ORM bypass failure mode).
+    # readiness_stage values: importada | sem_jd | jd_rascunho | jd_enriquecido |
+    #                        perguntas_triagem | pronta_disparo | em_triagem
+    readiness_stage = Column(String(40), nullable=True, index=True)
+    readiness_blockers = Column(JSON, nullable=True)
+    last_readiness_event_at = Column(DateTime, nullable=True)
+
     
     # Talent Funnel - Job Qualification Classification (WDT-009)
     qualification_level = Column(String(20), nullable=True, index=True)  # "alta", "media", "baixa"

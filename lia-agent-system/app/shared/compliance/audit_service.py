@@ -19,6 +19,87 @@ from app.models.audit_log import AuditLog, DecisionType
 logger = logging.getLogger(__name__)
 
 
+# ---------------------------------------------------------------------------
+# Event-loop ownership (Audit-loop-leak fix, 2026-05-20)
+# ---------------------------------------------------------------------------
+# LangGraph sync nodes in `app/domains/job_creation/graph.py` call
+# `_asyncio.run(AuditService().log_decision(...))` from worker threads. Each
+# call spawns a transient event loop. The SQLAlchemy async pool, however, is
+# shared across loops — once a connection's asyncpg callbacks are bound to
+# the transient loop and that loop is closed, returning the connection to
+# the pool poisons it. The next FastAPI request that borrows it raises
+# "Event loop is closed" inside SET ROLE -> "RLS role enforcement failed".
+#
+# Fix: capture the FastAPI main loop at app startup (`register_main_loop`).
+# When `log_decision` is invoked from a non-main loop (i.e. running inside
+# `asyncio.run()` on a worker thread), redispatch the actual DB write to the
+# main loop via `run_coroutine_threadsafe` and block on the resulting Future.
+# This keeps all asyncpg state bound to the long-lived pool-owning loop.
+
+import asyncio as _asyncio_loop_mod
+import concurrent.futures as _cf_loop_mod
+
+_MAIN_LOOP: "_asyncio_loop_mod.AbstractEventLoop | None" = None
+
+
+def register_main_loop(loop: "_asyncio_loop_mod.AbstractEventLoop | None" = None) -> None:
+    """Register the FastAPI app's main event loop.
+
+    Called from `app/main.py` lifespan startup. Idempotent: calling twice with
+    different loops overwrites (lifespan reload in dev) but logs a warning.
+    """
+    global _MAIN_LOOP
+    if loop is None:
+        try:
+            loop = _asyncio_loop_mod.get_running_loop()
+        except RuntimeError:
+            loop = None
+    if loop is None:
+        return
+    if _MAIN_LOOP is not None and _MAIN_LOOP is not loop:
+        logger.warning(
+            "[AuditService] main loop already registered (%s); overwriting with %s",
+            id(_MAIN_LOOP), id(loop),
+        )
+    _MAIN_LOOP = loop
+    logger.info("[AuditService] main loop registered id=%s", id(loop))
+
+
+def _running_on_main_loop() -> bool:
+    """Return True if the current task runs on the registered main loop."""
+    if _MAIN_LOOP is None:
+        return True  # no main loop registered yet — caller is presumed safe
+    try:
+        running = _asyncio_loop_mod.get_running_loop()
+    except RuntimeError:
+        return False
+    return running is _MAIN_LOOP
+
+
+def _dispatch_on_main_loop(coro_factory, *, timeout: float = 10.0):
+    """Schedule `coro_factory()` on the main loop and block for the result.
+
+    `coro_factory` is a zero-arg callable that returns a fresh coroutine —
+    we use a factory (not a bare coroutine) because a coroutine bound to
+    `asyncio.run`'s transient loop cannot be safely transferred. The factory
+    is called from the main loop's thread context (inside the wrapped
+    coroutine below), so the coroutine is created on the right loop.
+    """
+    if _MAIN_LOOP is None or _MAIN_LOOP.is_closed():
+        raise RuntimeError("AuditService main loop not registered or closed")
+
+    async def _runner():
+        return await coro_factory()
+
+    fut = _asyncio_loop_mod.run_coroutine_threadsafe(_runner(), _MAIN_LOOP)
+    try:
+        return fut.result(timeout=timeout)
+    except _cf_loop_mod.TimeoutError:
+        fut.cancel()
+        raise RuntimeError(f"AuditService dispatch to main loop timed out after {timeout}s")
+
+
+
 async def _bind_tenant(session: AsyncSession, company_id: str | None) -> None:
     """Set Postgres GUC ``app.company_id`` so RLS policies on audit_logs allow INSERT.
 
@@ -106,6 +187,35 @@ class AuditService:
     }
 
     async def log_decision(
+
+        self,
+        company_id: str,
+        agent_name: str,
+        decision_type: str,
+        action: str,
+        decision: str,
+        reasoning: list[str],
+        criteria_used: list[str],
+        candidate_id: str | None = None,
+        job_vacancy_id: str | None = None,
+        score: float | None = None,
+        confidence: float | None = None,
+        human_review_required: bool = False,
+        criteria_ignored: list[str] | None = None,
+        actor_user_id: str | None = None,
+    ) -> AuditLog:
+        """Public entrypoint — redispatches to main loop when called from a transient loop.
+
+        See module-level docstring above `register_main_loop` for the rationale.
+        """
+        if not _running_on_main_loop():
+            return _dispatch_on_main_loop(
+                lambda: self._log_decision_impl(company_id=company_id, agent_name=agent_name, decision_type=decision_type, action=action, decision=decision, reasoning=reasoning, criteria_used=criteria_used, candidate_id=candidate_id, job_vacancy_id=job_vacancy_id, score=score, confidence=confidence, human_review_required=human_review_required, criteria_ignored=criteria_ignored, actor_user_id=actor_user_id),
+                timeout=15.0,
+            )
+        return await self._log_decision_impl(company_id=company_id, agent_name=agent_name, decision_type=decision_type, action=action, decision=decision, reasoning=reasoning, criteria_used=criteria_used, candidate_id=candidate_id, job_vacancy_id=job_vacancy_id, score=score, confidence=confidence, human_review_required=human_review_required, criteria_ignored=criteria_ignored, actor_user_id=actor_user_id)
+
+    async def _log_decision_impl(
         self,
         company_id: str,
         agent_name: str,
