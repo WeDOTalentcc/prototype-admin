@@ -1,8 +1,25 @@
 """
 WSI Report Generator - Structured reports and candidate feedback.
+
+P0.D fix (audit 2026-05-21): silent fallback eliminado.
+Antes: try/except Exception retornava template fake content COM aparencia
+de success. Recrutador via "decisao: AGUARDANDO + revisar manualmente"
+sem saber que era fallback automatico (LLM tinha falhado).
+
+Agora: LLM call envolvida em safe_llm_with_flag_async (canonical helper
+em app.shared.llm.safe_response). Em failure:
+  - StructuredReport / CandidateFeedback ainda sao retornados (template
+    fallback preserved para back-compat de callers existentes)
+  - MAS com flags fallback_used=True + needs_manual_review=True +
+    llm_failure_mode populated. Caller pode renderizar UI degraded ou
+    fila pra revisao manual.
+
+Pattern canonical alinhado com REGRA 4 CLAUDE.md (fail-loud em LLM paths).
 """
 import logging
 from typing import Any, Literal
+
+from app.shared.llm.safe_response import safe_llm_with_flag_async, LLMFailureMode
 
 from .models import (
     CandidateFeedback,
@@ -119,61 +136,67 @@ RETORNE APENAS JSON:
   }}
 }}"""
 
-        try:
+        # P0.D canonical (audit 2026-05-21): envelope fallback definido upfront.
+        # Conteudo continua sendo template stock (back-compat), mas flag
+        # fallback_used=True é setada quando LLM falha — surface explícito
+        # pro caller que esse parecer NAO foi gerado pelo modelo.
+        report_fallback = {
+            "executive_summary": (
+                f"Candidato com WSI {wsi_result.classification} "
+                f"({wsi_result.overall_wsi}/5.0). Análise detalhada não disponível."
+            ),
+            "technical_analysis": {
+                "pontos_fortes": ["Análise em processamento"],
+                "gaps": [],
+                "evidencias": [],
+            },
+            "behavioral_analysis": {
+                "colaboracao": 3.0,
+                "inovacao": 3.0,
+                "organizacao": 3.0,
+                "resiliencia": 3.0,
+            },
+            "cultural_fit": {
+                "score": 3.0,
+                "valores_alinhados": ["Em avaliação"],
+                "atencoes": [],
+            },
+            "recommendation": {
+                "decisao": "AGUARDANDO",
+                "justificativa": "Análise em processamento - revisar manualmente",
+                "proximos_passos": ["Revisar análise manualmente"],
+            },
+        }
+
+        # P0.D canonical: safe_llm_with_flag_async retorna envelope explícito.
+        # Em failure (provider error / parse error / network / unknown), envelope
+        # vem com success=False, fallback_used=True, failure_mode classified.
+        async def _invoke_llm() -> dict:
             _response = await self.llm.safe_invoke(prompt, provider="claude")
             response = type("R", (), {"content": _response})()
-            data = safe_json_parse(response.content, fallback={
-                "executive_summary": f"Candidato com WSI {wsi_result.classification} ({wsi_result.overall_wsi}/5.0). Análise detalhada não disponível.",
-                "technical_analysis": {
-                    "pontos_fortes": ["Análise em processamento"],
-                    "gaps": [],
-                    "evidencias": []
-                },
-                "behavioral_analysis": {
-                    "colaboracao": 3.0,
-                    "inovacao": 3.0,
-                    "organizacao": 3.0,
-                    "resiliencia": 3.0
-                },
-                "cultural_fit": {
-                    "score": 3.0,
-                    "valores_alinhados": ["Em avaliação"],
-                    "atencoes": []
-                },
-                "recommendation": {
-                    "decisao": "AGUARDANDO",
-                    "justificativa": "Análise em processamento - revisar manualmente",
-                    "proximos_passos": ["Revisar análise manualmente"]
-                }
-            })
-        except Exception as e:
-            logger.error(f"Failed to generate report for candidate {candidate_id}: {e}")
-            # Use fallback
-            data = {
-                "executive_summary": f"Candidato com WSI {wsi_result.classification} ({wsi_result.overall_wsi}/5.0). Análise detalhada não disponível.",
-                "technical_analysis": {
-                    "pontos_fortes": ["Análise em processamento"],
-                    "gaps": [],
-                    "evidencias": []
-                },
-                "behavioral_analysis": {
-                    "colaboracao": 3.0,
-                    "inovacao": 3.0,
-                    "organizacao": 3.0,
-                    "resiliencia": 3.0
-                },
-                "cultural_fit": {
-                    "score": 3.0,
-                    "valores_alinhados": ["Em avaliação"],
-                    "atencoes": []
-                },
-                "recommendation": {
-                    "decisao": "AGUARDANDO",
-                    "justificativa": "Análise em processamento - revisar manualmente",
-                    "proximos_passos": ["Revisar análise manualmente"]
-                }
-            }
-        
+            return safe_json_parse(response.content, fallback=report_fallback)
+
+        envelope = await safe_llm_with_flag_async(
+            _invoke_llm,
+            fallback_data=report_fallback,
+            needs_manual_review_on_fail=True,  # parecer fallback merece revisao manual
+        )
+
+        if envelope.success:
+            data = envelope.data
+        else:
+            # Caller continua recebendo StructuredReport (back-compat) mas
+            # com flag explícita — UI pode renderizar badge "Análise pendente"
+            # ou fila de revisão manual.
+            data = envelope.data or report_fallback
+            logger.warning(
+                "WSI report fallback used for candidate %s "
+                "(failure_mode=%s, error=%s)",
+                candidate_id,
+                envelope.failure_mode.value,
+                envelope.error_message,
+            )
+
         return StructuredReport(
             candidate_id=candidate_id,
             wsi_result=wsi_result,
@@ -181,7 +204,14 @@ RETORNE APENAS JSON:
             technical_analysis=data.get("technical_analysis", {}),
             behavioral_analysis=data.get("behavioral_analysis", {}),
             cultural_fit=data.get("cultural_fit", {}),
-            recommendation=data.get("recommendation", {})
+            recommendation=data.get("recommendation", {}),
+            # P0.D envelope (audit 2026-05-21)
+            fallback_used=not envelope.success,
+            needs_manual_review=envelope.needs_manual_review,
+            llm_failure_mode=(
+                envelope.failure_mode.value if not envelope.success else None
+            ),
+            llm_error_message=envelope.error_message if not envelope.success else None,
         )
     
     async def generate_feedback(
@@ -271,14 +301,32 @@ RETORNE APENAS JSON:
             "recommended_resources": []
         }
 
-        try:
+        # P0.D canonical (audit 2026-05-21): safe_llm_with_flag_async em vez
+        # de try/except silent. Envelope explícito + flag fallback_used=True
+        # quando LLM falha.
+        async def _invoke_llm() -> dict:
             _response = await self.llm.safe_invoke(prompt, provider="claude")
             response = type("R", (), {"content": _response})()
-            data = safe_json_parse(response.content, fallback=_fallback)
-        except Exception as e:
-            logger.error(f"Failed to generate feedback for candidate {wsi_result.candidate_id}: {e}")
-            data = _fallback
-        
+            return safe_json_parse(response.content, fallback=_fallback)
+
+        envelope = await safe_llm_with_flag_async(
+            _invoke_llm,
+            fallback_data=_fallback,
+            # CandidateFeedback fallback eh template canonical neutro,
+            # nao requer revisao obrigatoria — mas signal pra observabilidade.
+            needs_manual_review_on_fail=False,
+        )
+
+        data = envelope.data if envelope.success else (envelope.data or _fallback)
+        if not envelope.success:
+            logger.warning(
+                "WSI feedback fallback used for candidate %s "
+                "(failure_mode=%s, error=%s)",
+                wsi_result.candidate_id,
+                envelope.failure_mode.value,
+                envelope.error_message,
+            )
+
         return CandidateFeedback(
             candidate_id=wsi_result.candidate_id,
             decision=decision,
@@ -289,7 +337,14 @@ RETORNE APENAS JSON:
             next_steps=data.get("next_steps", _fallback["next_steps"]),
             personalized_tip=data.get("personalized_tip"),
             development_plan=data.get("development_plan"),
-            recommended_resources=data.get("recommended_resources")
+            recommended_resources=data.get("recommended_resources"),
+            # P0.D envelope (audit 2026-05-21)
+            fallback_used=not envelope.success,
+            needs_manual_review=envelope.needs_manual_review,
+            llm_failure_mode=(
+                envelope.failure_mode.value if not envelope.success else None
+            ),
+            llm_error_message=envelope.error_message if not envelope.success else None,
         )
 
 

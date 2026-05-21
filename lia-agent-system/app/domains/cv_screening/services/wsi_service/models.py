@@ -209,33 +209,72 @@ class WSIResult(BaseModel):
 
 
 class StructuredReport(BaseModel):
-    """Parecer estruturado do candidato."""
+    """Parecer estruturado do candidato.
+
+    P0.D (audit 2026-05-21): campos ``fallback_used`` / ``needs_manual_review``
+    / ``llm_failure_mode`` adicionados pra surface explícita de quando o
+    parecer foi gerado por LLM (canonical) vs por fallback template
+    (degraded). Antes, fallback era SILENT — recrutador via decisao=AGUARDANDO
+    com justificativa stock e nao tinha como saber que era fallback automatico.
+
+    REGRA 4 (CLAUDE.md): handlers tocando LLM/critical IO DEVEM fail-loud.
+    Estes campos compõem o envelope canonical (mesmo contrato que
+    ``app.shared.llm.safe_response.LLMResponseEnvelope``).
+
+    Default ``fallback_used=False`` preserva backward-compat: callers que nao
+    consultam estes campos continuam funcionando, mas perdem visibilidade.
+    Novos callers DEVEM checar ``fallback_used`` antes de exibir parecer
+    como autoritativo.
+    """
     candidate_id: str
     wsi_result: WSIResult
-    
+
     executive_summary: str
-    
+
     technical_analysis: dict[str, Any]
     behavioral_analysis: dict[str, Any]
     cultural_fit: dict[str, Any]
-    
+
     recommendation: dict[str, Any]
+
+    # P0.D (audit 2026-05-21): envelope canonical de LLM failure
+    fallback_used: bool = False
+    needs_manual_review: bool = False
+    llm_failure_mode: str | None = None  # LLMFailureMode.value when fallback_used
+    llm_error_message: str | None = None  # human-readable when fallback_used
 
 
 class CandidateFeedback(BaseModel):
-    """Feedback estruturado para o candidato."""
+    """Feedback estruturado para o candidato.
+
+    P0.D (audit 2026-05-21): mesmos campos canonical de envelope LLM-failure
+    que StructuredReport. Quando LLM falha, fallback NEUTRO eh retornado COM
+    flag ``fallback_used=True`` — preserva neutralidade de tom (REGRA pre-existente
+    no docstring de generate_feedback) E sinaliza explicitamente que conteudo
+    foi gerado por template, nao pela LLM.
+
+    needs_manual_review=True → ops/recrutador deve revisar antes de enviar
+    ao candidato (mensagem stock pode parecer impessoal). Mantemos envio
+    automatico por compatibilidade, mas observabilidade ganha sinal.
+    """
     candidate_id: str
     decision: Literal["aprovado", "aguardando", "nao_aprovado"]
-    
+
     main_message: str
     technical_strengths: list[str]
     development_opportunities: list[str]
     behavioral_strengths: list[str]
-    
+
     next_steps: str
     personalized_tip: str | None = None
     development_plan: dict[str, list[str]] | None = None
     recommended_resources: list[str] | None = None
+
+    # P0.D (audit 2026-05-21): envelope canonical de LLM failure
+    fallback_used: bool = False
+    needs_manual_review: bool = False
+    llm_failure_mode: str | None = None
+    llm_error_message: str | None = None
 
 
 
