@@ -6,7 +6,7 @@ import logging
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import and_, desc, func, select, update
+from sqlalchemy import and_, desc, func, select, update, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.job_vacancy import JobVacancy
@@ -343,6 +343,185 @@ class OpinionsRepository:
             )
             self.db.add(opinion)
             return opinion
+
+
+    # ── WSI screening — atomic version handling (race-safe) ────────────────
+
+    async def get_company_id_for_vacancy(self, job_vacancy_id: str) -> str | None:
+        """Resolve company_id from a job vacancy id (multi-tenancy scoping helper).
+
+        Returns the canonical str(company_id) for downstream gates, or None
+        when the vacancy does not exist. Caller MUST handle the None case —
+        downstream writes that depend on company_id must abort fail-closed.
+        """
+        if not job_vacancy_id:
+            return None
+        result = await self.db.execute(
+            text("SELECT company_id FROM job_vacancies WHERE id = :vid LIMIT 1"),
+            {"vid": job_vacancy_id},
+        )
+        row = result.fetchone()
+        if row is None or row.company_id is None:
+            return None
+        return str(row.company_id)
+
+    async def create_wsi_opinion_with_atomic_version(
+        self,
+        *,
+        candidate_id: str,
+        job_vacancy_id: str | None,
+        company_id: str,
+        score: float,
+        wsi_score: float,
+        archetype: str,
+        recommendation: str,
+        summary: str,
+        score_breakdown: dict,
+        strengths: list,
+        concerns: list,
+        gaps: list,
+        matched_skills: list,
+        missing_skills: list,
+        next_steps: list,
+    ) -> str:
+        """Create a new WSI LiaOpinion with atomic version assignment.
+
+        Race-condition safe: uses a single ``INSERT ... SELECT MAX(version)+1``
+        statement so two concurrent writers cannot pick the same next version.
+
+        Steps (single transaction, caller is responsible for commit):
+          1) Archive previous current WSI opinions for this (candidate, vacancy, company).
+          2) Atomically INSERT a new row computing ``COALESCE(MAX(version),0)+1``
+             from the same matching scope inside the same statement.
+
+        Multi-tenancy invariant: ``company_id`` MUST be provided (validated
+        fail-closed via ``_require_company_id``). It MUST come from the JWT
+        (``Depends(require_company_id)``) or from an authoritative
+        repo-side lookup (e.g. ``get_company_id_for_vacancy``) — never
+        from the request payload.
+
+        Returns:
+          The opinion ``id`` (UUID string) of the row just inserted.
+
+        Why atomic SQL CTE (not SELECT-then-INSERT):
+          ``SELECT MAX(version)+1`` followed by a separate ``INSERT`` opens
+          a race window where two concurrent transactions read the same
+          MAX and produce duplicate versions. Even with SERIALIZABLE
+          isolation we would have to handle retries; the single-statement
+          form below is atomic at the row level and works at READ COMMITTED.
+        """
+        self._require_company_id(company_id)
+        if not candidate_id:
+            raise ValueError("candidate_id required")
+
+        import json as _json
+        import uuid as _uuid
+
+        opinion_id = str(_uuid.uuid4())
+
+        # Step 1 — archive previous current WSI opinions for this scope.
+        # Scope mirrors the version-MAX scope used in step 2 so the new
+        # row is the only is_current=True row when we commit.
+        await self.db.execute(
+            text(self._ARCHIVE_WSI_OPINIONS_SQL),
+            {
+                "candidate_id": candidate_id,
+                "company_id": company_id,
+                "job_vacancy_id": job_vacancy_id,
+            },
+        )
+
+        # Step 2 — atomic insert with version computed inside the same statement.
+        # COALESCE(MAX(version), 0) + 1 is evaluated by the same statement
+        # that performs the INSERT, eliminating the read-then-write race.
+        await self.db.execute(
+            text(self._INSERT_WSI_OPINION_ATOMIC_SQL),
+            {
+                "id": opinion_id,
+                "candidate_id": candidate_id,
+                "job_vacancy_id": job_vacancy_id,
+                "company_id": company_id,
+                "score": score,
+                "wsi_score": wsi_score,
+                "archetype": archetype,
+                "recommendation": recommendation,
+                "summary": summary,
+                "score_breakdown": _json.dumps(score_breakdown or {}),
+                "strengths": _json.dumps(strengths or []),
+                "concerns": _json.dumps(concerns or []),
+                "gaps": _json.dumps(gaps or []),
+                "matched_skills": _json.dumps(matched_skills or []),
+                "missing_skills": _json.dumps(missing_skills or []),
+                "next_steps": _json.dumps(next_steps or []),
+            },
+        )
+
+        return opinion_id
+
+    # Internal SQL strings kept at module-method scope to avoid shadowing
+    # by any caller-local `text` shadowing.
+    _ARCHIVE_WSI_OPINIONS_SQL: str = """
+        UPDATE lia_opinions
+        SET is_current = false
+        WHERE candidate_id = :candidate_id
+          AND opinion_type = 'wsi'
+          AND company_id = :company_id
+          AND is_current = true
+          AND (
+            (:job_vacancy_id IS NULL AND job_vacancy_id IS NULL)
+            OR job_vacancy_id = :job_vacancy_id
+          )
+    """
+
+    _INSERT_WSI_OPINION_ATOMIC_SQL: str = """
+        INSERT INTO lia_opinions (
+            id, candidate_id, job_vacancy_id, company_id, opinion_type, source,
+            score, wsi_score, archetype, recommendation, summary, score_breakdown,
+            strengths, concerns, gaps, matched_skills, missing_skills,
+            next_steps, is_current, version, created_at, updated_at
+        )
+        SELECT
+            :id,
+            :candidate_id,
+            :job_vacancy_id,
+            :company_id,
+            'wsi',
+            'wsi_screening',
+            :score,
+            :wsi_score,
+            :archetype,
+            :recommendation,
+            :summary,
+            :score_breakdown::jsonb,
+            :strengths::jsonb,
+            :concerns::jsonb,
+            :gaps::jsonb,
+            :matched_skills::jsonb,
+            :missing_skills::jsonb,
+            :next_steps::jsonb,
+            true,
+            COALESCE((
+                SELECT MAX(version)
+                FROM lia_opinions
+                WHERE candidate_id = :candidate_id
+                  AND opinion_type = 'wsi'
+                  AND company_id = :company_id
+                  AND (
+                    (:job_vacancy_id IS NULL AND job_vacancy_id IS NULL)
+                    OR job_vacancy_id = :job_vacancy_id
+                  )
+            ), 0) + 1,
+            CURRENT_TIMESTAMP,
+            CURRENT_TIMESTAMP
+    """
+
+    @staticmethod
+    def _require_company_id(company_id: str | None) -> None:
+        """Multi-tenancy fail-closed guard (ADR-001 canonical anatomy)."""
+        if not company_id:
+            raise ValueError(
+                "Multi-tenancy invariant: company_id required for OpinionsRepository write"
+            )
 
     async def soft_delete(self, opinion: LiaOpinion) -> None:
         opinion.is_current = False

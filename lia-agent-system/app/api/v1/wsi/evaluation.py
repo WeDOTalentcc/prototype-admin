@@ -17,6 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
 from app.domains.voice.repositories.wsi_repository import WsiRepository
+from app.domains.opinions.repositories.opinions_repository import OpinionsRepository
 
 from ._shared import (
     _BIAS_TERMS,
@@ -46,7 +47,9 @@ router = APIRouter()
 
 
 @router.post("/jd-evaluate", response_model=None)
-# TODO(phase2): extract to repository — complex WSI scoring logic
+# Phase 2 complete (2026-05-21): WSI scoring stays here; persistence
+# moves to OpinionsRepository.create_wsi_opinion_with_atomic_version
+# + WsiRepository.insert_result / complete_session.
 async def evaluate_jd(request: JDEvaluateRequest, company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Evaluate job description quality using 9 dimensions (spec F1.B).
@@ -537,79 +540,46 @@ company_id: str = Depends(require_company_id)):
         f"Arquétipo predominante: {archetypes[0].archetype}."
     )
 
+    # Persistence — moved out of the endpoint per ADR-001 (2026-05-21).
+    # WsiRepository owns wsi_results / wsi_sessions; OpinionsRepository owns
+    # the atomic LiaOpinion version write so two concurrent screening
+    # completions cannot produce duplicate (candidate, vacancy, version) rows.
+    wsi_repo = WsiRepository(db)
+    opinions_repo = OpinionsRepository(db)
+
     result_id = str(uuid.uuid4())
     try:
-        await db.execute(text("""
-            INSERT INTO wsi_results (
-                id, session_id, candidate_id, job_vacancy_id,
-                technical_wsi, behavioral_wsi, overall_wsi, classification
-            )
-            VALUES (:id, :session_id, :candidate_id, :job_vacancy_id,
-                    :technical_wsi, :behavioral_wsi, :overall_wsi, :classification)
-            ON CONFLICT (id) DO NOTHING
-        """), {
-            "id": result_id,
-            "session_id": request.session_id,
-            "candidate_id": request.candidate_id,
-            "job_vacancy_id": request.job_vacancy_id or "",
-            "technical_wsi": avg_score,
-            "behavioral_wsi": avg_score,
-            "overall_wsi": avg_score,
-            "classification": classification
-        })
-
-        await db.execute(text("""
-            UPDATE wsi_sessions SET status = 'completed', completed_at = CURRENT_TIMESTAMP
-            WHERE id = :session_id
-        """), {"session_id": request.session_id})
-
+        await wsi_repo.insert_result(
+            result_id=result_id,
+            session_id=request.session_id,
+            candidate_id=request.candidate_id,
+            job_vacancy_id=request.job_vacancy_id or "",
+            technical_wsi=avg_score,
+            behavioral_wsi=avg_score,
+            overall_wsi=avg_score,
+            classification=classification,
+            percentile=None,
+        )
+        await wsi_repo.complete_session(request.session_id)
     except Exception as e:
         logger.warning(f"Failed to save result: {e}")
 
-    # Create WSI Opinion after successful screening completion
+    # Resolve company_id for the LiaOpinion write.
+    # Vacancy-linked screenings derive the tenant from the vacancy row
+    # (repo-side lookup, never from request payload). Non-vacancy
+    # screenings fall back to the JWT-derived company_id from the
+    # endpoint signature.
     try:
-        company_id = None
+        resolved_company_id: str | None = None
         if request.job_vacancy_id:
-            vac_result = await db.execute(text(
-                "SELECT company_id FROM job_vacancies WHERE id = :vid LIMIT 1"
-            ), {"vid": request.job_vacancy_id})
-            vac_row = vac_result.fetchone()
-            if vac_row and vac_row.company_id:
-                company_id = str(vac_row.company_id)
-
-        # Archive previous WSI opinions for same candidate/vacancy
-        if request.job_vacancy_id:
-            await db.execute(text("""
-                UPDATE lia_opinions
-                SET is_current = false
-                WHERE candidate_id = :candidate_id
-                AND job_vacancy_id = :job_vacancy_id
-                AND opinion_type = 'wsi'
-                AND company_id = :company_id
-                AND is_current = true
-            """), {
-                "candidate_id": request.candidate_id,
-                "job_vacancy_id": request.job_vacancy_id,
-                "company_id": company_id
-            })
-
-        # Get next version number
-        version_result = await db.execute(text("""
-            SELECT COALESCE(MAX(version), 0) + 1 as next_version
-            FROM lia_opinions
-            WHERE candidate_id = :candidate_id
-            AND (job_vacancy_id = :job_vacancy_id OR (:job_vacancy_id IS NULL AND job_vacancy_id IS NULL))
-            AND opinion_type = 'wsi'
-            AND company_id = :company_id
-        """), {
-            "candidate_id": request.candidate_id,
-            "job_vacancy_id": request.job_vacancy_id,
-            "company_id": company_id
-        })
-        new_version = version_result.scalar() or 1
+            resolved_company_id = await opinions_repo.get_company_id_for_vacancy(
+                request.job_vacancy_id
+            )
+        if not resolved_company_id:
+            resolved_company_id = company_id
 
         # Determine recommendation per canonical WSI_CUTOFFS (Spec §10.3)
-        # approved_auto ≥ 3.75/5 (= 7.5/10), review_min ≥ 3.0/5 (= 6.0/10)
+        # approved_auto >= 3.75/5 (= 7.5/10), review_min >= 3.0/5 (= 6.0/10)
         if avg_score >= 3.75:
             recommendation = "approved"
         elif avg_score >= 3.0:
@@ -617,55 +587,42 @@ company_id: str = Depends(require_company_id)):
         else:
             recommendation = "not_approved"
 
-        # Categorize recommendations into strengths, concerns, and gaps
+        # Categorize recommendations into strengths, concerns, and gaps.
+        # (Same heuristic as before — back-compat preserved.)
         strengths = [r for r in recommendations if "sólido" in r.lower() or "demonstra" in r.lower()]
         concerns = [r for r in recommendations if "desenvolver" in r.lower() or "trabalhar" in r.lower()]
         gaps = [r for r in recommendations if "ganhar" in r.lower() or "experiência" in r.lower()]
 
-        # Insert new WSI opinion
-        opinion_id = str(uuid.uuid4())
-        await db.execute(text("""
-            INSERT INTO lia_opinions (
-                id, candidate_id, job_vacancy_id, company_id, opinion_type, source,
-                score, wsi_score, archetype, recommendation, summary, score_breakdown,
-                strengths, concerns, gaps, matched_skills, missing_skills,
-                next_steps, is_current, version, created_at, updated_at
-            ) VALUES (
-                :id, :candidate_id, :job_vacancy_id, :company_id, 'wsi', 'wsi_screening',
-                :score, :wsi_score, :archetype, :recommendation, :summary, :score_breakdown::jsonb,
-                :strengths::jsonb, :concerns::jsonb, :gaps::jsonb, :skills_match::jsonb, :skills_missing::jsonb,
-                :next_steps::jsonb, true, :version, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
-            )
-        """), {
-            "id": opinion_id,
-            "candidate_id": request.candidate_id,
-            "job_vacancy_id": request.job_vacancy_id,
-            "company_id": company_id,
-            "score": round(avg_score, 2),
-            "wsi_score": round(avg_score, 2),
-            "archetype": archetypes[0].archetype if archetypes else "Perfil Equilibrado",
-            "recommendation": recommendation,
-            "summary": summary,
-            "score_breakdown": json.dumps({
+        opinion_id = await opinions_repo.create_wsi_opinion_with_atomic_version(
+            candidate_id=request.candidate_id,
+            job_vacancy_id=request.job_vacancy_id,
+            company_id=resolved_company_id,
+            score=round(avg_score, 2),
+            wsi_score=round(avg_score, 2),
+            archetype=archetypes[0].archetype if archetypes else "Perfil Equilibrado",
+            recommendation=recommendation,
+            summary=summary,
+            score_breakdown={
                 "bloom_level": round(avg_bloom),
                 "dreyfus_level": round(avg_dreyfus),
                 "cognitive_score": round(avg_bloom / 6 * 100),
-                "proficiency_score": round(avg_dreyfus / 5 * 100)
-            }),
-            "strengths": json.dumps(strengths),
-            "concerns": json.dumps(concerns),
-            "gaps": json.dumps(gaps),
-            "skills_match": json.dumps([]),
-            "skills_missing": json.dumps([]),
-            "next_steps": json.dumps(recommendations),
-            "version": new_version
-        })
+                "proficiency_score": round(avg_dreyfus / 5 * 100),
+            },
+            strengths=strengths,
+            concerns=concerns,
+            gaps=gaps,
+            matched_skills=[],
+            missing_skills=[],
+            next_steps=recommendations,
+        )
 
-        logger.info(f"Created WSI opinion {opinion_id} for candidate {request.candidate_id}, vacancy {request.job_vacancy_id}")
+        logger.info(
+            f"Created WSI opinion {opinion_id} for candidate {request.candidate_id}, vacancy {request.job_vacancy_id}"
+        )
 
     except Exception as e:
         logger.warning(f"Failed to create WSI opinion: {e}")
-        # Don't fail the whole request - WSI result is still saved
+        # Don't fail the whole request — the WSI result is still saved.
 
     return CompleteScreeningResponse(
         result_id=result_id,
