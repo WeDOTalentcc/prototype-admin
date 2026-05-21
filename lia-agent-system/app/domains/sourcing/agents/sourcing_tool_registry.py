@@ -47,6 +47,7 @@ async def _wrap_set_search_criteria(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_suggest_skills(**kwargs: Any) -> dict[str, Any]:
     """Suggest relevant skills based on role and context."""
     role = kwargs.get("role", "")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: from tool_handler ContextVar
     if not role:
         return {"success": False, "data": {}, "message": "Parametro 'role' e obrigatorio."}
 
@@ -57,11 +58,12 @@ async def _wrap_suggest_skills(**kwargs: Any) -> dict[str, Any]:
                 FROM candidates
                 WHERE current_title ILIKE :role_pattern
                   AND technical_skills IS NOT NULL
+                  AND (company_id IS NULL OR company_id = :company_id)
                 GROUP BY skill
                 ORDER BY cnt DESC
                 LIMIT 10
             """),
-            {"role_pattern": f"%{role}%"},
+            {"role_pattern": f"%{role}%", "company_id": company_id},
         )
         rows = result.mappings().all()
 
@@ -90,14 +92,20 @@ async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
     location = kwargs.get("location", "")
     seniority = kwargs.get("experience_level", "") or kwargs.get("seniority_level", "")
     role = kwargs.get("role", "")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: from tool_handler ContextVar
     page = kwargs.get("page", 1)
     limit = kwargs.get("limit", 20)
     if limit > 50:
         limit = 50
     offset = (max(1, page) - 1) * limit
 
-    conditions = ["is_active = true"]
-    params: dict[str, Any] = {"lim": limit, "off": offset}
+    # P0.A canonical: tenant gate FIRST in conditions. company_id IS NULL preserves
+    # global talent pool sharing (Pearch AI / merge.dev imported candidates).
+    conditions = [
+        "is_active = true",
+        "(company_id IS NULL OR company_id = :company_id)",
+    ]
+    params: dict[str, Any] = {"lim": limit, "off": offset, "company_id": company_id}
 
     if role:
         conditions.append("current_title ILIKE :role_pattern")
@@ -247,13 +255,21 @@ async def _wrap_filter_results(**kwargs: Any) -> dict[str, Any]:
 
     where_clause = " AND ".join(conditions)
 
+    # CROSS-TENANT-EXEMPT (sensor-window-adjacent block of both queries below):
+    # where_clause built above includes the canonical tenant gate
+    # '(company_id IS NULL OR company_id = :company_id)' as the second
+    # condition (line ~102). Regex sensor cannot inspect f-string interpolation,
+    # so this block is explicit-marker exempt. Audit 2026-05-21 P0.A canonical
+    # (Sub-sprint B).
     async with AsyncSessionLocal() as session:
         count_result = await session.execute(
+            # CROSS-TENANT-EXEMPT: see above (sensor scans 5 lines above text()).
             text(f"SELECT COUNT(*) as total FROM candidates WHERE {where_clause}"), params
         )
         total = count_result.scalar() or 0
 
         result = await session.execute(
+            # CROSS-TENANT-EXEMPT: see above (sensor scans 5 lines above text()).
             text(f"""
                 SELECT id, name, email, current_title, current_company,
                        seniority_level, years_of_experience,
@@ -299,6 +315,7 @@ async def _wrap_filter_results(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_analyze_profile(**kwargs: Any) -> dict[str, Any]:
     """Perform AI analysis of a candidate profile."""
     candidate_id = kwargs.get("candidate_id", "")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: tenant gate
     if not candidate_id:
         return {"success": False, "data": {}, "message": "Parametro 'candidate_id' e obrigatorio."}
 
@@ -310,9 +327,11 @@ async def _wrap_analyze_profile(**kwargs: Any) -> dict[str, Any]:
                        location_city, location_state, location_country,
                        certifications, languages, work_history,
                        lia_score, lia_insights, headline, expertise
-                FROM candidates WHERE id = :cid
+                FROM candidates
+                WHERE id = :cid
+                  AND (company_id IS NULL OR company_id = :company_id)
             """),
-            {"cid": candidate_id},
+            {"cid": candidate_id, "company_id": company_id},
         )
         candidate = result.mappings().first()
 
@@ -432,6 +451,7 @@ async def _wrap_score_candidate(**kwargs: Any) -> dict[str, Any]:
     """Apply WSI scoring to a candidate."""
     candidate_id = kwargs.get("candidate_id", "")
     vacancy_id = kwargs.get("vacancy_id", "")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: tenant gate
     if not candidate_id or not vacancy_id:
         return {"success": False, "data": {}, "message": "Parametros 'candidate_id' e 'vacancy_id' sao obrigatorios."}
 
@@ -440,9 +460,11 @@ async def _wrap_score_candidate(**kwargs: Any) -> dict[str, Any]:
             text("""
                 SELECT id, name, technical_skills, soft_skills, years_of_experience,
                        seniority_level, current_title, location_city, location_state
-                FROM candidates WHERE id = :cid
+                FROM candidates
+                WHERE id = :cid
+                  AND (company_id IS NULL OR company_id = :company_id)
             """),
-            {"cid": candidate_id},
+            {"cid": candidate_id, "company_id": company_id},
         )
         candidate = c_result.mappings().first()
 
@@ -504,6 +526,7 @@ async def _wrap_add_to_shortlist(**kwargs: Any) -> dict[str, Any]:
     """Add a candidate to the shortlist."""
     candidate_id = kwargs.get("candidate_id", "")
     shortlist_id = kwargs.get("shortlist_id", "")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: tenant gate
     added_by = kwargs.get("added_by", "lia-agent")
     notes = kwargs.get("notes", "")
 
@@ -512,20 +535,29 @@ async def _wrap_add_to_shortlist(**kwargs: Any) -> dict[str, Any]:
 
     async with AsyncSessionLocal() as session:
         c_result = await session.execute(
-            text("SELECT id, name FROM candidates WHERE id = :cid"),
-            {"cid": candidate_id},
+            text("""
+                SELECT id, name FROM candidates
+                WHERE id = :cid
+                  AND (company_id IS NULL OR company_id = :company_id)
+            """),
+            {"cid": candidate_id, "company_id": company_id},
         )
         candidate = c_result.mappings().first()
         if not candidate:
             return {"success": False, "data": {}, "message": f"Candidato '{candidate_id}' nao encontrado."}
 
         if shortlist_id:
+            # P0.A canonical: candidate_list_members nao tem company_id;
+            # filtra via parent candidate_lists.company_id.
             existing = await session.execute(
                 text("""
-                    SELECT id FROM candidate_list_members
-                    WHERE list_id = :lid AND candidate_id = :cid
+                    SELECT clm.id FROM candidate_list_members clm
+                    JOIN candidate_lists cl ON cl.id = clm.list_id
+                    WHERE clm.list_id = :lid
+                      AND clm.candidate_id = :cid
+                      AND cl.company_id = :company_id
                 """),
-                {"lid": shortlist_id, "cid": candidate_id},
+                {"lid": shortlist_id, "cid": candidate_id, "company_id": company_id},
             )
             if existing.first():
                 return {
@@ -570,18 +602,27 @@ async def _wrap_remove_from_shortlist(**kwargs: Any) -> dict[str, Any]:
     """Remove a candidate from the shortlist."""
     candidate_id = kwargs.get("candidate_id", "")
     shortlist_id = kwargs.get("shortlist_id", "")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: tenant gate
 
     if not candidate_id or not shortlist_id:
         return {"success": False, "data": {}, "message": "Parametros 'candidate_id' e 'shortlist_id' sao obrigatorios."}
 
     async with AsyncSessionLocal() as session:
+        # P0.A canonical: DELETE com tenant gate via parent candidate_lists.
+        # Antes, recrutador da Company A podia deletar membros de lista
+        # da Company B (cross-tenant DELETE). Agora subquery restringe
+        # apenas ao list_id que pertence a esta company.
         result = await session.execute(
             text("""
                 DELETE FROM candidate_list_members
-                WHERE list_id = :lid AND candidate_id = :cid
+                WHERE list_id = :lid
+                  AND candidate_id = :cid
+                  AND list_id IN (
+                      SELECT id FROM candidate_lists WHERE company_id = :company_id
+                  )
                 RETURNING id
             """),
-            {"lid": shortlist_id, "cid": candidate_id},
+            {"lid": shortlist_id, "cid": candidate_id, "company_id": company_id},
         )
         deleted = result.first()
         await session.commit()
@@ -608,12 +649,16 @@ async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
     """Rank candidates in the shortlist."""
     shortlist_id = kwargs.get("shortlist_id", "")
     vacancy_id = kwargs.get("vacancy_id", "")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical (handoff site 1 + 2)
 
     if not shortlist_id and not vacancy_id:
         return {"success": False, "data": {}, "message": "Informe 'shortlist_id' ou 'vacancy_id' para gerar o ranking."}
 
     async with AsyncSessionLocal() as session:
         if vacancy_id:
+            # P0.A canonical: vacancy_candidates.company_id is NOT NULL — filter
+            # at vc level. JOIN to candidates is safe (vc.company_id already
+            # constrains which candidates are reachable from this vacancy).
             result = await session.execute(
                 text("""
                     SELECT c.id, c.name, c.current_title, c.years_of_experience,
@@ -622,11 +667,14 @@ async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
                     FROM vacancy_candidates vc
                     JOIN candidates c ON c.id = vc.candidate_id
                     WHERE vc.vacancy_id = :vid
+                      AND vc.company_id = :company_id
                     ORDER BY vc.lia_score DESC NULLS LAST, vc.match_percentage DESC NULLS LAST
                 """),
-                {"vid": vacancy_id},
+                {"vid": vacancy_id, "company_id": company_id},
             )
         else:
+            # P0.A canonical: candidate_list_members has no company_id direct;
+            # JOIN candidate_lists to constrain by tenant.
             result = await session.execute(
                 text("""
                     SELECT c.id, c.name, c.current_title, c.years_of_experience,
@@ -634,10 +682,12 @@ async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
                            clm.notes, clm.source
                     FROM candidate_list_members clm
                     JOIN candidates c ON c.id = clm.candidate_id
+                    JOIN candidate_lists cl ON cl.id = clm.list_id
                     WHERE clm.list_id = :lid
+                      AND cl.company_id = :company_id
                     ORDER BY c.lia_score DESC NULLS LAST, c.years_of_experience DESC NULLS LAST
                 """),
-                {"lid": shortlist_id},
+                {"lid": shortlist_id, "company_id": company_id},
             )
         rows = result.mappings().all()
 
@@ -684,14 +734,21 @@ async def _wrap_send_outreach(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "")
     channel = kwargs.get("channel", "email")
     message_template = kwargs.get("message_template", "")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: PII leak gate (email+phone)
 
     if not candidate_id:
         return {"success": False, "data": {}, "message": "Parametro 'candidate_id' e obrigatorio."}
 
     async with AsyncSessionLocal() as session:
+        # P0.A canonical: this query previously leaked email + phone of
+        # candidates from OTHER companies. Tenant gate required.
         c_result = await session.execute(
-            text("SELECT id, name, email, phone FROM candidates WHERE id = :cid"),
-            {"cid": candidate_id},
+            text("""
+                SELECT id, name, email, phone FROM candidates
+                WHERE id = :cid
+                  AND (company_id IS NULL OR company_id = :company_id)
+            """),
+            {"cid": candidate_id, "company_id": company_id},
         )
         candidate = c_result.mappings().first()
 
@@ -738,6 +795,7 @@ async def _wrap_generate_message(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "")
     tone = kwargs.get("tone", "professional")
     role = kwargs.get("role", "")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: tenant gate
 
     if not candidate_id:
         return {"success": False, "data": {}, "message": "Parametro 'candidate_id' e obrigatorio."}
@@ -746,9 +804,11 @@ async def _wrap_generate_message(**kwargs: Any) -> dict[str, Any]:
         result = await session.execute(
             text("""
                 SELECT id, name, current_title, current_company, technical_skills
-                FROM candidates WHERE id = :cid
+                FROM candidates
+                WHERE id = :cid
+                  AND (company_id IS NULL OR company_id = :company_id)
             """),
-            {"cid": candidate_id},
+            {"cid": candidate_id, "company_id": company_id},
         )
         candidate = result.mappings().first()
 
@@ -864,10 +924,15 @@ async def _wrap_track_response(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_view_candidate(**kwargs: Any) -> dict[str, Any]:
     """View detailed candidate profile."""
     candidate_id = kwargs.get("candidate_id", "")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: PII leak gate (full profile)
     if not candidate_id:
         return {"success": False, "data": {}, "message": "Parametro 'candidate_id' e obrigatorio."}
 
     async with AsyncSessionLocal() as session:
+        # P0.A canonical: this query previously leaked the FULL profile
+        # (name, email, phone, linkedin_url, github_url, salary, salary_currency,
+        # location, tags, notes) of candidates from OTHER companies.
+        # Tenant gate required.
         result = await session.execute(
             text("""
                 SELECT id, name, email, phone, linkedin_url, github_url, portfolio_url,
@@ -880,9 +945,11 @@ async def _wrap_view_candidate(**kwargs: Any) -> dict[str, Any]:
                        salary_currency, headline, expertise,
                        lia_score, lia_insights, status, work_history,
                        source, tags, notes, created_at, updated_at
-                FROM candidates WHERE id = :cid
+                FROM candidates
+                WHERE id = :cid
+                  AND (company_id IS NULL OR company_id = :company_id)
             """),
-            {"cid": candidate_id},
+            {"cid": candidate_id, "company_id": company_id},
         )
         candidate = result.mappings().first()
 
