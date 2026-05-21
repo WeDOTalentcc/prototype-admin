@@ -49,9 +49,16 @@ def _build_conditions(
         conditions.append(SOXAuditLog.timestamp >= date_from)
     if date_to:
         conditions.append(SOXAuditLog.timestamp <= date_to)
-    filter_client_id = client_id or company_id
-    if filter_client_id and filter_client_id != "platform":
-        conditions.append(SOXAuditLog.client_id == filter_client_id)
+    # Multi-tenancy fail-closed (fix WT-2023): company_id do JWT SEMPRE filtra.
+    # Sentinela "platform" removida (security bypass via REGRA ZERO + REGRA 6 CLAUDE.md).
+    if not company_id:
+        raise HTTPException(status_code=403, detail="company_id required for tenant scoping")
+    if client_id is not None and str(client_id) != str(company_id):
+        raise HTTPException(
+            status_code=403,
+            detail="client_id query param must match authenticated tenant",
+        )
+    conditions.append(SOXAuditLog.client_id == company_id)
     if user_id:
         conditions.append(SOXAuditLog.user_id == user_id)
     if action_category:
@@ -87,6 +94,8 @@ _company_gate: str = Depends(require_company_id)):
             ai_decisions_count=stats["logs_by_category"].get("ai_decision", 0),
             unique_users=stats["unique_users"],
             unique_clients=stats["unique_clients"],
+            recent_24h=stats.get("recent_24h", 0),  # WT-2022 P5.1
+            by_severity=stats.get("by_severity", {}),  # WT-2022 P5.1
             period_start=date_from,
             period_end=date_to,
             top_actions=stats["top_actions"],

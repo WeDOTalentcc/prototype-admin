@@ -253,11 +253,21 @@ class ABTestingService:
     async def list_active_tests(
         self,
         db: AsyncSession,
+        company_id: str | None = None,  # WT-2024 fix: tenant scoping
     ) -> list[dict[str, Any]]:
+        # WT-2024 P1.2: filtro multi-tenant; None preserva legacy behavior (callers admin/seeder)
+        if company_id is None:
+            logger.warning(
+                "[AB-TEST] list_active_tests called without company_id — "
+                "cross-tenant query (deprecated; pass company_id explicitly)"
+            )
         try:
+            conditions = [PromptVariant.is_active]
+            if company_id is not None:
+                conditions.append(PromptVariant.company_id == company_id)
             result = await db.execute(
                 select(PromptVariant).where(
-                    PromptVariant.is_active,
+                    *conditions
                 ).order_by(PromptVariant.test_name, PromptVariant.variant_name)
             )
             variants = result.scalars().all()
@@ -340,6 +350,7 @@ class ABTestingService:
         *,
         use_thompson_sampling: bool = False,
         thompson_threshold: float = 0.95,
+        company_id: str | None = None,  # WT-2022 P1.3: tenant scoping
     ) -> dict:
         """
         UC-P1-27 + T-19 Fase 3: deactivate non-winner variants em A/B test.
@@ -539,23 +550,49 @@ class ABTestingService:
                         "fairness_violation": True,
                     }
         except ImportError:
-            logger.warning(
-                "[AB-TEST T-19] FairnessGuard not available — promoting WITHOUT gate "
-                "(sensor canonical detectará gap em CI)"
+            # WT-2022 P5.2: FAIL-CLOSED (era fail-open silent — viola REGRA 4 Pydantic Conventions).
+            # FairnessGate indisponivel = nao promover (gate eh requisito canonical T-19).
+            logger.error(
+                "[AB-TEST T-19] FairnessGuard import FAILED - blocking promotion "
+                "(WT-2022 P5.2 fail-closed: refuses to promote without fairness gate)"
             )
+            return {
+                "promoted": False,
+                "winner": winner_info["variant"],
+                "reason": "fairness_gate_unavailable_import_error",
+                "fairness_violation": False,
+                "fairness_gate_error": True,
+            }
         except Exception as _fg_exc:
-            logger.warning(
-                "[AB-TEST T-19] FairnessGuard check failed (non-blocking): %s",
+            # WT-2022 P5.2: FAIL-CLOSED (era fail-open silent).
+            logger.error(
+                "[AB-TEST T-19] FairnessGuard check FAILED - blocking promotion: %s "
+                "(WT-2022 P5.2 fail-closed)",
                 str(_fg_exc)[:200],
             )
+            return {
+                "promoted": False,
+                "winner": winner_info["variant"],
+                "reason": f"fairness_gate_check_failed:{type(_fg_exc).__name__}",
+                "fairness_violation": False,
+                "fairness_gate_error": True,
+            }
 
         # Promote: deactivate losing variants
-        await db.execute(
+        # WT-2022 P1.3: filtro company_id no UPDATE pra evitar cross-tenant write
+        update_stmt = (
             _update(PromptVariant)
             .where(PromptVariant.test_name == test_name)
             .where(PromptVariant.variant_name != winner_info["variant"])
-            .values(is_active=False)
         )
+        if company_id is not None:
+            update_stmt = update_stmt.where(PromptVariant.company_id == company_id)
+        else:
+            logger.warning(
+                "[AB-TEST] auto_promote_winner called without company_id — "
+                "UPDATE without tenant filter (deprecated; pass company_id explicitly)"
+            )
+        await db.execute(update_stmt.values(is_active=False))
         await db.commit()
 
         logger.info(

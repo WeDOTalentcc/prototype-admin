@@ -66,7 +66,18 @@ function flattenPolicyList(data: PolicyListResponse | unknown): Policy[] {
   ]
 }
 
-const SECTORS = ["technology", "finance", "healthcare", "retail", "education"] as const
+// WT-2022 P3.3: sector list MUST match backend canonical (lia-agent-system/app/api/v1/policy_engine.py:407)
+// Backend valid_sectors = {"tech", "varejo", "logistica", "financeiro", "saude", "rpo"}
+const SECTORS = ["tech", "varejo", "logistica", "financeiro", "saude", "rpo"] as const
+
+const SECTOR_LABELS: Record<typeof SECTORS[number], string> = {
+  tech: "Tecnologia",
+  varejo: "Varejo",
+  logistica: "Logistica",
+  financeiro: "Financeiro",
+  saude: "Saude",
+  rpo: "RPO",
+}
 
 export function PolicyEnginePanel() {
   const t = useTranslations("settings.governanca.policyEngine")
@@ -74,7 +85,7 @@ export function PolicyEnginePanel() {
   const [policies, setPolicies] = useState<Policy[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [sector, setSector] = useState<typeof SECTORS[number]>("technology")
+  const [sector, setSector] = useState<typeof SECTORS[number]>("tech")
   const [applyMsg, setApplyMsg] = useState<string | null>(null)
   const [applying, setApplying] = useState(false)
 

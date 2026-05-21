@@ -89,6 +89,9 @@ export function DSRInboxPanel() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>("all")
+  // WT-2022 P2.2: state pra controle de actions (assign/verify-identity/process/complete/reject)
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
+  const [refetchSignal, setRefetchSignal] = useState<number>(0)
 
   useEffect(() => {
     if (!companyId) return
@@ -124,7 +127,60 @@ export function DSRInboxPanel() {
     return () => {
       cancelled = true
     }
-  }, [companyId, t, statusFilter])
+  }, [companyId, t, statusFilter, refetchSignal])
+
+  // WT-2022 P2.2: handler para 5 actions (assign/verify-identity/process/complete/reject)
+  const handleDsrAction = async (
+    dsrId: string,
+    action: "assign" | "verify-identity" | "process" | "complete" | "reject",
+  ) => {
+    if (!dsrId) return
+    setActionLoadingId(dsrId)
+    try {
+      let body: Record<string, unknown> = {}
+      let method: "POST" | "PUT" = "POST"
+
+      if (action === "assign") {
+        const assignee = window.prompt("Email do responsavel:")
+        if (!assignee) return
+        body = { assignee_email: assignee }
+      } else if (action === "verify-identity") {
+        const method_used = window.prompt("Metodo de verificacao (ex: email_confirmation, gov_id):")
+        if (!method_used) return
+        body = { verification_method: method_used }
+      } else if (action === "process") {
+        method = "PUT"
+      } else if (action === "complete") {
+        const response = window.prompt("Resposta ao titular (sera registrada no audit trail):")
+        if (!response) return
+        method = "PUT"
+        body = { response }
+      } else if (action === "reject") {
+        const reason = window.prompt("Motivo da rejeicao:")
+        if (!reason) return
+        method = "PUT"
+        body = { rejection_reason: reason }
+      }
+
+      const url = `/api/backend-proxy/data-subject-requests/${dsrId}/${action}`
+      const resp = await apiFetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      })
+      if (!resp.ok) {
+        const errText = await resp.text().catch(() => "")
+        window.alert(`Erro ${resp.status}: ${errText.slice(0, 500)}`)
+        return
+      }
+      // Refetch list
+      setRefetchSignal((n) => n + 1)
+    } catch (err) {
+      window.alert(`Erro de rede: ${err instanceof Error ? err.message : String(err)}`)
+    } finally {
+      setActionLoadingId(null)
+    }
+  }
 
   if (loading) return <Loading variant="spinner" text={t("loading")} />
   if (error) {
@@ -201,12 +257,13 @@ export function DSRInboxPanel() {
               <th className="px-3 py-2 font-medium">{t("colStatus")}</th>
               <th className="px-3 py-2 font-medium">{t("colCreated")}</th>
               <th className="px-3 py-2 font-medium">{t("colDue")}</th>
+                          <th className="px-3 py-2 font-medium text-right">Acoes</th>
             </tr>
           </thead>
           <tbody>
             {items.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-3 py-6 text-center text-lia-text-secondary">
+                <td colSpan={7} className="px-3 py-6 text-center text-lia-text-secondary">
                   {t("empty")}
                 </td>
               </tr>
@@ -232,6 +289,78 @@ export function DSRInboxPanel() {
                       const deadline = dsr.sla_deadline ?? dsr.due_date
                       return deadline ? new Date(deadline).toLocaleDateString() : "-"
                     })()}
+                  </td>
+                  <td className="px-3 py-2 text-right whitespace-nowrap">
+                    {/* WT-2022 P2.2: 5 actions */}
+                    {!["completed", "rejected", "cancelled"].includes(status) && (
+                      <div className="inline-flex gap-1">
+                        {status === "pending" && (
+                          <>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              disabled={actionLoadingId === id}
+                              onClick={() => handleDsrAction(id, "assign")}
+                              className="h-6 px-2 text-[10px]"
+                              title="Atribuir DSR"
+                            >
+                              Atribuir
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              disabled={actionLoadingId === id}
+                              onClick={() => handleDsrAction(id, "verify-identity")}
+                              className="h-6 px-2 text-[10px]"
+                              title="Verificar identidade"
+                            >
+                              Verificar
+                            </Button>
+                          </>
+                        )}
+                        {(status === "in_review" || status === "pending") && (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            disabled={actionLoadingId === id}
+                            onClick={() => handleDsrAction(id, "process")}
+                            className="h-6 px-2 text-[10px]"
+                            title="Mover para Processing"
+                          >
+                            Processar
+                          </Button>
+                        )}
+                        {(status === "processing" || status === "in_progress") && (
+                          <>
+                            <Button
+                              type="button"
+                              variant="default"
+                              size="sm"
+                              disabled={actionLoadingId === id}
+                              onClick={() => handleDsrAction(id, "complete")}
+                              className="h-6 px-2 text-[10px]"
+                              title="Concluir DSR (executa side-effect real)"
+                            >
+                              Concluir
+                            </Button>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              disabled={actionLoadingId === id}
+                              onClick={() => handleDsrAction(id, "reject")}
+                              className="h-6 px-2 text-[10px]"
+                              title="Rejeitar"
+                            >
+                              Rejeitar
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    )}
                   </td>
                 </tr>
               )

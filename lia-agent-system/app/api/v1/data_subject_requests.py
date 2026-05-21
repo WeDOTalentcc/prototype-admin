@@ -20,6 +20,9 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 
 from app.domains.data_subject.dependencies import get_data_subject_repo
+from app.domains.data_subject.repositories.data_subject_repository import (
+    DsrExecutorFailedError,
+)
 from app.domains.data_subject.repositories.data_subject_repository import DataSubjectRepository
 from app.schemas.data_subject_requests import (
     DataSubjectRequestAssign,
@@ -215,8 +218,10 @@ company_id: str = Depends(require_company_id)):
     """
     try:
         request_uuid = UUID(request_id)
+        company_uuid = UUID(company_id)
 
-        request = await repo.get_by_id(request_uuid)
+        # WT-2022 P1.5: /track endpoint MUST be tenant-scoped (was vazando cross-tenant via UUID guess)
+        request = await repo.get_by_id_and_company(request_uuid, company_uuid)
 
         if not request:
             raise HTTPException(status_code=404, detail="Request not found")
@@ -532,12 +537,27 @@ _company_gate: str = Depends(require_company_id)):
             },
         )
 
-        request = await repo.complete_request(
-            request,
-            response=data.response,
-            evidence_files=data.evidence_files or [],
-            audit_entry=audit_entry,
-        )
+        try:
+            request = await repo.complete_request(
+                request,
+                response=data.response,
+                evidence_files=data.evidence_files or [],
+                audit_entry=audit_entry,
+            )
+        except DsrExecutorFailedError as exc:
+            # WT-2022 P2.1: side-effect failed (e.g., deletion no candidate) - fail-loud
+            logger.warning(
+                "DSR completion blocked by executor for %s: %s",
+                request_id, exc,
+            )
+            raise HTTPException(
+                status_code=500,
+                detail=(
+                    f"DSR side-effect execution failed: {exc}. "
+                    f"Status NOT updated to 'completed' - LGPD compliance gap prevented. "
+                    f"Manual investigation required (see audit_trail)."
+                ),
+            )
 
         logger.info("LGPD: Request %s completed. SLA met: %s.", request_id, request.sla_met)
 

@@ -67,7 +67,7 @@ async def list_experiments(
     company_id: str = Depends(require_company_id),
 ) -> dict[str, Any]:
     """Lista experiments ativos com snapshot de winner stats canonical."""
-    active = await _service.list_active_tests(db)
+    active = await _service.list_active_tests(db, company_id=company_id)
     experiments: list[dict[str, Any]] = []
 
     for entry in active:
@@ -120,10 +120,9 @@ async def get_posteriors(
     )
 
     repo = BanditPosteriorRepository(db)
-    # Tenta company-scoped primeiro; se vazio, fallback para global (None)
+    # WT-2022 P1.4: SEM fallback global — se tenant nao tem posteriors retorna [].
+    # Fallback global vazava posteriors de outros tenants (cross-tenant read).
     posteriors = await repo.get_all_for_test(test_name, company_id=company_id)
-    if not posteriors:
-        posteriors = await repo.get_all_for_test(test_name, company_id=None)
 
     payload: list[dict[str, Any]] = []
     for p in posteriors:
@@ -187,6 +186,7 @@ async def promote_winner(
         db,
         use_thompson_sampling=body.use_thompson_sampling,
         thompson_threshold=body.thompson_threshold,
+        company_id=company_id,  # WT-2022 P1.3: tenant scoping
     )
     return result
 
@@ -257,7 +257,7 @@ async def get_dashboard_summary(
     company_id: str = Depends(require_company_id),
 ) -> dict[str, Any]:
     """KPIs canonical agregados (active, promoted, blocked_by_fairness, total_obs)."""
-    active = await _service.list_active_tests(db)
+    active = await _service.list_active_tests(db, company_id=company_id)
     active_count = len(active)
     total_observations = 0
     pending_fairness_gate = 0

@@ -11,6 +11,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.observability import DataSubjectRequest
 
+import logging
+logger = logging.getLogger(__name__)
+
+
+class DsrExecutorFailedError(Exception):
+    """Raised when critical DSR executor fails — prevents silent compliance theater
+    where status=completed but PII still live (WT-2022 P2.1 fix)."""
+    pass
+
 
 class DataSubjectRepository:
     def __init__(self, db: AsyncSession) -> None:
@@ -234,6 +243,122 @@ class DataSubjectRepository:
         await self.db.refresh(request)
         return request
 
+    async def _execute_dsr_side_effect(self, request: DataSubjectRequest) -> dict:
+        """WT-2022 P2.1: Execute real side-effects per DSR request_type.
+
+        Fixes compliance theater bug: complete_request previously only set
+        status='completed' without invoking any executor. ANPD audit would
+        see status=completed with PII still live, violating LGPD Art. 18 VI
+        (deletion), Art. 18 V (portability), Art. 18 IV (restriction).
+
+        Returns audit-friendly dict with execution status. Raises
+        DsrExecutorFailedError if CRITICAL executor (deletion) fails - to
+        prevent silent completion of deletion requests when no candidate
+        is found (which would mask ANPD non-compliance).
+
+        For request_types without automated executor (correction, restriction,
+        objection, explanation), records 'requires_admin_followup' flag in
+        audit_trail - admin must apply manually but audit trail is faithful.
+        """
+        import hashlib
+
+        side_effect: dict = {
+            "executor_run_at": datetime.utcnow().isoformat(),
+            "request_type": request.request_type,
+        }
+
+        # Find candidate by email_hash (Candidate.email_hash is SHA-256 indexed)
+        candidate = None
+        try:
+            from app.models.candidate import Candidate
+            email_hash = hashlib.sha256(
+                request.subject_email.lower().encode()
+            ).hexdigest()
+            result = await self.db.execute(
+                select(Candidate).where(
+                    and_(
+                        Candidate.email_hash == email_hash,
+                        Candidate.company_id == request.company_id,
+                    )
+                )
+            )
+            candidate = result.scalar_one_or_none()
+        except Exception as exc:
+            side_effect["candidate_lookup_error"] = str(exc)[:200]
+            logger.warning(
+                "DSR candidate lookup failed for request %s: %s",
+                request.id, exc, exc_info=True,
+            )
+
+        side_effect["candidate_found"] = candidate is not None
+        side_effect["candidate_id"] = str(candidate.id) if candidate else None
+
+        rt = request.request_type
+
+        if rt == "deletion":
+            # CRITICAL: LGPD Art. 18 VI fail-loud
+            if not candidate:
+                raise DsrExecutorFailedError(
+                    f"DSR deletion request {request.id}: no candidate found "
+                    f"matching subject_email - manual investigation required "
+                    f"before marking completed (LGPD Art. 18 VI)"
+                )
+            try:
+                from app.domains.lgpd.services.lgpd_cleanup_service import (
+                    schedule_deletion_for_candidate,
+                )
+                deletion_at = await schedule_deletion_for_candidate(
+                    self.db, str(candidate.id), reason="lgpd_dsr_deletion"
+                )
+                side_effect["action"] = "deletion_scheduled"
+                side_effect["scheduled_deletion_at"] = deletion_at.isoformat()
+            except Exception as exc:
+                raise DsrExecutorFailedError(
+                    f"DSR deletion executor failed for {request.id}: {exc}"
+                ) from exc
+
+        elif rt in ("access", "portability"):
+            if not candidate:
+                side_effect["action"] = "no_data_to_export"
+                side_effect["warning"] = "candidate_not_found_matching_subject_email"
+            else:
+                try:
+                    from app.domains.lgpd.services.dsr_export_service import (
+                        DsrExportService,
+                    )
+                    export_svc = DsrExportService()
+                    data = await export_svc.export_candidate_data(
+                        self.db,
+                        str(candidate.id),
+                        str(request.company_id),
+                        request.subject_email,
+                    )
+                    side_effect["action"] = f"data_{rt}_exported"
+                    side_effect["payload_size_bytes"] = len(str(data))
+                except Exception as exc:
+                    side_effect["action"] = f"{rt}_export_failed"
+                    side_effect["error"] = str(exc)[:200]
+                    logger.error(
+                        "DSR export failed for request %s: %s",
+                        request.id, exc, exc_info=True,
+                    )
+
+        elif rt in ("correction", "restriction", "objection", "explanation"):
+            # No automated executor - admin must apply manually
+            side_effect["action"] = f"{rt}_pending_manual_apply"
+            side_effect["requires_admin_followup"] = True
+            side_effect["warning"] = (
+                f"DSR request_type '{rt}' has no automated executor. "
+                "Audit trail shows status=completed but processing change "
+                "requires manual admin application (LGPD compliance gap)."
+            )
+
+        else:
+            side_effect["action"] = "unknown_request_type"
+            side_effect["error"] = f"Unknown request_type: {rt}"
+
+        return side_effect
+
     async def complete_request(
         self,
         request: DataSubjectRequest,
@@ -241,7 +366,17 @@ class DataSubjectRepository:
         evidence_files: list,
         audit_entry: dict,
     ) -> DataSubjectRequest:
-        """Mark request as completed with response and optional evidence files."""
+        """Mark request as completed with response.
+
+        WT-2022 P2.1 fix: invokes _execute_dsr_side_effect FIRST to ensure
+        side-effect (deletion, export, etc.) is actually executed.
+        Raises DsrExecutorFailedError if deletion can't be executed.
+        Endpoint catches and returns 500 - prevents silent compliance theater.
+        """
+        # WT-2022 P2.1: Execute side-effect BEFORE marking completed
+        side_effect_result = await self._execute_dsr_side_effect(request)
+        audit_entry["side_effect"] = side_effect_result
+
         now = datetime.utcnow()
         request.status = "completed"
         request.response = response

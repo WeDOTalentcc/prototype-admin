@@ -50,7 +50,7 @@ async def list_active_tests(
     db: AsyncSession = Depends(get_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    tests = await _service.list_active_tests(db)
+    tests = await _service.list_active_tests(db, company_id=company_id)
     return {"tests": tests}
 
 
