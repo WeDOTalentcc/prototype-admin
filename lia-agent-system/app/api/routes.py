@@ -31,6 +31,7 @@ from app.api.v1 import (
     admin_token_budget,
     affirmative,
     agent_explainability,
+    ai_transparency,
     agent_monitoring,
     ai_consumption,
     alerts,
@@ -48,6 +49,7 @@ from app.api.v1 import (
     automations,
     benefits,
     bias_audit,
+    bias_audit_annual,
     big_five,
     billing,
     briefing,
@@ -529,6 +531,8 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(admin_compliance_fairness.router, prefix="/api/v1")
     app.include_router(bias_audit.router, prefix="/api/v1", tags=["bias-audit"])
     app.include_router(admin_bias_audit.router, prefix="/api/v1", tags=["bias-audit-admin"])
+    app.include_router(bias_audit_annual.router, prefix="/api/v1", tags=["bias-audit-annual"])
+    app.include_router(ai_transparency.router, prefix="/api/v1", tags=["ai-transparency"])
     app.include_router(guardrails.router, prefix="/api/v1", tags=["guardrails"])
 
     # ── Policy ────────────────────────────────────────────────────────────────
