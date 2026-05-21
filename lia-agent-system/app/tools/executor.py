@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Optional
 
-from pydantic import BaseModel, ValidationError, create_model
+from pydantic import BaseModel, ConfigDict, ValidationError, create_model
 
 from app.tools.registry import ToolRegistry, tool_registry
 try:

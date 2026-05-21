@@ -6,7 +6,7 @@ AgentResponseMessage: resposta do agente → enviada de volta ao WS Gateway.
 """
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class AgentChatMessage(BaseModel):

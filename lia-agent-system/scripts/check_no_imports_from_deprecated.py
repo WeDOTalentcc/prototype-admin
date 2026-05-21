@@ -62,7 +62,7 @@ TEST_DIRS = (
 )
 
 
-def check(strict: bool = False) -> int:
+def check(strict: bool = True) -> int:  # [PROMOTED BLOCKING Sprint 8 T-09]
     repo_root = Path(__file__).resolve().parent.parent
     app_dir = repo_root / "app"
     libs_dir = repo_root / "libs"
@@ -125,5 +125,5 @@ def check(strict: bool = False) -> int:
 
 
 if __name__ == "__main__":
-    strict = "--strict" in sys.argv
+    strict = "--warn-only" not in sys.argv  # [PROMOTED BLOCKING Sprint 8 T-09]
     sys.exit(check(strict=strict))

@@ -10,7 +10,7 @@ from datetime import datetime
 from enum import Enum, StrEnum
 from typing import Any
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ProviderType(StrEnum):
