@@ -104,7 +104,6 @@ class SmartOrchestrateRequest(WeDoBaseModel):
         None,
         description="Conversation ID for context continuity"
     )
-    company_id: str | None = Field(None, description="Company ID override (ignored; comes from JWT)")
     user_id: str | None = Field(None, description="User ID override (ignored; comes from JWT)")
 
     # ── HITL gate resume signaling ────────────────────────────────────────
@@ -329,8 +328,15 @@ async def smart_orchestrate(
             reasoning_steps=stage_payload.get("reasoning_steps") or [],
             intent=stage_payload.get("intent"),
             awaiting_confirmation=awaiting,
-            job_vacancy_id=stage_payload.get("job_vacancy_id"),
-            job_published=bool(stage_payload.get("job_published", False)),
+            job_vacancy_id=(
+                stage_payload.get("job_vacancy_id")
+                or (stage_payload.get("data") or {}).get("job_id")
+                or (stage_payload.get("data") or {}).get("job_vacancy_id")
+            ),
+            job_published=(
+                bool(stage_payload.get("job_published", False))
+                or (backend_stage in ("publish", "calibration", "handoff", "done"))
+            ),
             conversation_id=session_id,
         )
 

@@ -19,6 +19,11 @@ from app.services.ott_service import get_ott_service
 
 logger = logging.getLogger(__name__)
 
+# Sprint L+M canonical version marker — bump on each api_client revision.
+# Searchable in logs: "[JobCreationAPI VERSION=" — proves which build is loaded.
+API_CLIENT_VERSION = "sprint-L-bulletproof-2026-05-21"
+logger.info("[JobCreationAPI VERSION=%s] module loaded", API_CLIENT_VERSION)
+
 
 @dataclass
 class APIResponse:
@@ -166,6 +171,10 @@ class JobCreationAPIClient:
         ``RAILS_API_URL`` set hits the original path.
         """
         import os as _os
+        logger.info(
+            "[JobCreationAPI create_job ENTRY] VERSION=%s base_url=%r keys=%s",
+            API_CLIENT_VERSION, self.base_url, sorted(list((job_data or {}).keys())),
+        )
         if not self.base_url:  # Sprint F.5: Rails not configured — dev-local INSERT path
             try:
                 return self._create_job_local(job_data)
@@ -249,14 +258,24 @@ class JobCreationAPIClient:
 
         # --- LAYER 2: bulletproof jsonable coerce (for JSONB columns) ---
         def _bp_jsonable(v):
-            """For JSONB columns - ensure psycopg2-jsonb-adaptable structure."""
+            """For JSONB columns - ensure psycopg2-jsonb-adaptable structure.
+
+            Fix (2026-05-21 DB-poisoning bug): for a string input, ONLY treat it
+            as JSON if it actually looks like JSON (starts with [, {, ", digit,
+            true/false/null). Otherwise return the bare string. Old behavior
+            of wrapping in `[v]` on json.loads failure poisoned tech_req /
+            beh_comp JSON columns with `[["Python"]]` instead of `["Python"]`.
+            """
             if v is None:
                 return None
             if isinstance(v, str):
-                try:
-                    return _json.loads(v)
-                except Exception:
-                    return [v]
+                s = v.strip()
+                if s and s[0] in '[{"-0123456789' or s in ("true", "false", "null"):
+                    try:
+                        return _json.loads(v)
+                    except Exception:
+                        return v  # return raw str, NOT [v]
+                return v  # plain bare string -> return as-is
             if hasattr(v, "model_dump"):
                 v = v.model_dump()
             if isinstance(v, dict):
@@ -269,10 +288,34 @@ class JobCreationAPIClient:
 
         # --- LAYER 3: bulletproof list-of-str coerce --------------------
         def _bp_str_list(items):
-            """For requirements/responsibilities (text[]): list of strings."""
+            """For requirements/responsibilities (text[]): flat list of strings.
+
+            Handles deep cases observed in prod (2026-05-21):
+            - None / "" -> []
+            - "Python" -> ["Python"]
+            - ["Python", "AWS"] -> ["Python", "AWS"]
+            - [["Python"], ["AWS"]] -> ["Python", "AWS"]  (flatten one level)
+            - [{"skill": "Python"}, {"text": "AWS"}] -> ["Python", "AWS"]
+            - mixed -> coerced via _bp_str per item, flat
+            """
+            # Normalize input to a flat iterable
+            if items is None:
+                return []
+            if isinstance(items, str):
+                return [items[:500]] if items else []
+            if isinstance(items, dict):
+                s = _bp_str(items, max_chars=500)
+                return [s] if s else []
+            if not isinstance(items, (list, tuple, set)):
+                s = _bp_str(items, max_chars=500)
+                return [s] if s else []
             out = []
-            for x in items or []:
+            for x in items:
                 if x is None:
+                    continue
+                # Flatten one level: nested list -> recurse
+                if isinstance(x, (list, tuple, set)):
+                    out.extend(_bp_str_list(x))
                     continue
                 s = _bp_str(x, max_chars=500)
                 if s:

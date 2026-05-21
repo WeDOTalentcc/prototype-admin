@@ -1868,7 +1868,7 @@ def wsi_questions_node(state: JobCreationState) -> JobCreationState:
                 # CBI-conformes para revisão humana (HITL #2 ainda exigido).
                 import concurrent.futures as _cf_wq
                 _WSI_LLM_TIMEOUT_S = float(__import__("os").environ.get(
-                    "LIA_WSI_QUESTIONS_TIMEOUT_S", "60"
+                    "LIA_WSI_QUESTIONS_TIMEOUT_S", "120"
                 ))
                 # Task #1065 — flag de fallback determinístico (timeout LLM
                 # → `_fallback_questions`). Painel renderiza banner pedindo
@@ -4076,9 +4076,15 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
         output = _make_fallback()
 
     # Confidence floor — clarify sem mutar pacote.
-    if (output.confidence or 0.0) < 0.7:
+    # Sprint F.2 fix — threshold lower do que demais gates (0.55 vs 0.7).
+    # Review gate tem espaço de intent menor (publish_now / request_changes /
+    # configure_destinations / ask_clarification) — menos ambiguidade
+    # justifica threshold relaxado. Bug F2 E2E 2026-05-20: classifier
+    # retornava confidence=0.65 em "aprovado, pode publicar a vaga"
+    # (frase canonical) — threshold 0.7 era over-aggressive.
+    if (output.confidence or 0.0) < 0.55:
         logger.info(
-            "[JobCreation:review_gate] confidence=%.2f < 0.7 → clarify (intent=%s)",
+            "[JobCreation:review_gate] confidence=%.2f < 0.55 → clarify (intent=%s)",
             output.confidence, output.intent,
         )
         clarify_state = {
@@ -4168,13 +4174,18 @@ def review_gate_node(state: JobCreationState) -> JobCreationState:
             # T6 — propaga confirmation_method para o publish_node final
             # audit (rastreabilidade SOX 7y).
             next_state["publish_confirmation_method"] = "dual"
-            next_state["gate_clarify_message"] = (
-                output.conversational_reply
-                or "Confirmado. Publicando a vaga agora nos canais selecionados."
-            )
+            # Sprint M fix (2026-05-21): on dual-confirmation success, clear
+            # gate_clarify_message + gate_last_intent so the downstream
+            # publish_node "Vaga publicada com sucesso!" message wins
+            # over the LLM"s chatty conversational_reply (which often
+            # reads as a THIRD-confirmation request, e.g. "Vou publicar...
+            # só me confirma uma última vez"). The dual-confirmation
+            # branch is fully deterministic — no need for LLM text here.
+            next_state["gate_clarify_message"] = None
+            next_state["gate_last_intent"] = None
             confirmation_method = "dual"
             logger.info(
-                "[JobCreation:review_gate] publish_now SECOND turn within TTL — confirmed (route=publish)",
+                "[JobCreation:review_gate] publish_now SECOND turn within TTL — confirmed (route=publish, gate_clarify_message cleared so publish_node message wins)",
             )
         else:
             # 1ª confirmação (ou expirada) → SETA pending + pede confirmação.
@@ -4488,10 +4499,17 @@ def route_after_review_gate(state: JobCreationState) -> str:
             )
             return node
     intent = state.get("gate_last_intent")
+    # Sprint F.2 fix — self-loop em ask_clarification / publish_now FIRST turn /
+    # configure_destinations / schema inválido (mesma classe de bug do
+    # competency_gate / wsi_questions_gate / jd_gate). Sem self-loop, graph
+    # completa sem interrupt → wizard reinicia do intake no próximo turno
+    # (bug F2 E2E 2026-05-20: "aprovado, pode publicar a vaga" regredia
+    # review-publish → jd-enrichment). interrupt() canônico já existe no
+    # topo de review_gate_node.
     logger.info(
-        "[JobCreation:route] review_gate -> END (intent=%s, awaiting next turn)", intent,
+        "[JobCreation:route] review_gate -> review_gate (intent=%s, self-loop to interrupt)", intent,
     )
-    return "end"
+    return "review_gate"
 
 
 def route_after_publish(state: JobCreationState) -> str:
@@ -4789,6 +4807,7 @@ def create_job_creation_graph(
                 "wsi_questions": "wsi_questions",
                 "eligibility": "eligibility",
                 "review": "review",
+                "review_gate": "review_gate",  # Sprint F.2 fix — self-loop to interrupt
                 "end": END,
             },
         )
