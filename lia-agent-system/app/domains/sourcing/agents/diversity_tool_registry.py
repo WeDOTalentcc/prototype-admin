@@ -283,6 +283,10 @@ async def _wrap_diversity_get_pool_metrics(**kwargs: Any) -> dict[str, Any]:
 
     async with AsyncSessionLocal() as session:
         try:
+            # P0.A canonical: diversity metrics MUST be tenant-scoped (LGPD
+            # sensitive data — diversidade_autodeclarada). company_id IS NULL
+            # preserves global pool aggregation; explicit company_id matches
+            # only this tenant's candidates.
             result = await session.execute(text("""
                 SELECT
                     COUNT(*) as total,
@@ -296,13 +300,17 @@ async def _wrap_diversity_get_pool_metrics(**kwargs: Any) -> dict[str, Any]:
                     COUNT(CASE WHEN '50_mais' = ANY(diversidade_autodeclarada) THEN 1 END) as seniors_count
                 FROM candidates
                 WHERE is_active = true
-            """))
+                  AND (company_id IS NULL OR company_id = :company_id)
+            """), {"company_id": company_id})
             row = result.mappings().first()
         except Exception:
             # P1 audit 2026-05-20: graceful degradation legitima (coluna em
             # rollout). Mantem success=True (pool size real) + flag explicita
             # fallback_used pra observabilidade. Nao e mentira semantica.
-            result = await session.execute(text("SELECT COUNT(*) as total FROM candidates WHERE is_active = true"))
+            result = await session.execute(
+                text("SELECT COUNT(*) as total FROM candidates WHERE is_active = true AND (company_id IS NULL OR company_id = :company_id)"),
+                {"company_id": company_id},
+            )
             total_row = result.scalar() or 0
             return {
                 "success": True,

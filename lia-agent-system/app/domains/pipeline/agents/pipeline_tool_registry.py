@@ -27,6 +27,7 @@ _fairness_guard = FairnessGuard()
 @tool_handler("pipeline")
 async def _wrap_get_candidate_profile(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: PII (phone+salary+linkedin) leak gate
     if not candidate_id:
         return {"success": False, "error": "candidate_id é obrigatório"}
 
@@ -42,9 +43,10 @@ async def _wrap_get_candidate_profile(**kwargs: Any) -> dict[str, Any]:
                        c.source, c.resume_url
                 FROM candidates c
                 WHERE c.id = :cid
+                  AND (c.company_id IS NULL OR c.company_id = :company_id)
                 LIMIT 1
             """),
-            {"cid": candidate_id},
+            {"cid": candidate_id, "company_id": company_id},
         )
         row = result.mappings().first()
         if not row:
@@ -135,6 +137,7 @@ async def _wrap_get_candidate_screening_results(**kwargs: Any) -> dict[str, Any]
 @tool_handler("pipeline")
 async def _wrap_get_candidate_salary_info(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: salary PII leak gate
 
     async with AsyncSessionLocal() as db:
         result = await db.execute(
@@ -143,9 +146,10 @@ async def _wrap_get_candidate_salary_info(**kwargs: Any) -> dict[str, Any]:
                        c.current_title, c.current_company
                 FROM candidates c
                 WHERE c.id = :cid
+                  AND (c.company_id IS NULL OR c.company_id = :company_id)
                 LIMIT 1
             """),
-            {"cid": candidate_id},
+            {"cid": candidate_id, "company_id": company_id},
         )
         row = result.mappings().first()
         if not row:
@@ -702,14 +706,22 @@ async def _wrap_save_recruiter_preference(**kwargs: Any) -> dict[str, Any]:
 
 # ─── Interview Management Tools ───────────────────────────────────────────────
 
-async def _get_candidate_phone(candidate_email: str, interview_id: str) -> str | None:
-    """Busca telefone do candidato na tabela candidates usando email ou interview_id como fallback."""
+async def _get_candidate_phone(
+    candidate_email: str, interview_id: str, company_id: str = ""
+) -> str | None:
+    """Busca telefone do candidato na tabela candidates usando email ou interview_id.
+
+    P0.A canonical: company_id obrigatorio para tenant gate. company_id IS NULL
+    preserva talent pool global sharing (Pearch AI / merge.dev imported).
+    Default "" mantido como backward-compat soft (caller existente sem
+    company_id continua funcionando mas com risk; futures DEVEM passar).
+    """
     try:
         async with AsyncSessionLocal() as db:
             if candidate_email:
                 result = await db.execute(
-                    text("SELECT phone FROM candidates WHERE email = :email LIMIT 1"),
-                    {"email": candidate_email},
+                    text("SELECT phone FROM candidates WHERE email = :email AND (company_id IS NULL OR company_id = :company_id) LIMIT 1"),
+                    {"email": candidate_email, "company_id": company_id},
                 )
                 row = result.mappings().first()
                 if row and row.get("phone"):
@@ -720,9 +732,10 @@ async def _get_candidate_phone(candidate_email: str, interview_id: str) -> str |
                     SELECT c.phone FROM candidates c
                     JOIN interviews i ON i.candidate_id = c.id
                     WHERE i.id::text = :iid
+                      AND (c.company_id IS NULL OR c.company_id = :company_id)
                     LIMIT 1
                 """),
-                {"iid": interview_id},
+                {"iid": interview_id, "company_id": company_id},
             )
             row = result.mappings().first()
             if row and row.get("phone"):
@@ -880,7 +893,12 @@ async def _wrap_cancel_interview(**kwargs: Any) -> dict[str, Any]:
                 notifications_sent.append({"channel": "email", "status": "failed"})
 
         if notify_channel in ("whatsapp", "both"):
-            candidate_phone = await _get_candidate_phone(interview_data.get("candidate_email", ""), interview_id)
+            # P0.A canonical: pass company_id to _get_candidate_phone tenant gate.
+            candidate_phone = await _get_candidate_phone(
+                interview_data.get("candidate_email", ""),
+                interview_id,
+                kwargs.get("company_id", ""),
+            )
             if candidate_phone:
                 try:
                     from app.domains.communication.services.communication_dispatcher import communication_dispatcher
@@ -1034,7 +1052,10 @@ async def _wrap_reschedule_interview(**kwargs: Any) -> dict[str, Any]:
                 notifications_sent.append({"channel": "email", "status": "failed"})
 
         if notify_channel in ("whatsapp", "both"):
-            candidate_phone = await _get_candidate_phone(candidate_email, interview_id)
+            # P0.A canonical: pass company_id to _get_candidate_phone tenant gate.
+            candidate_phone = await _get_candidate_phone(
+                candidate_email, interview_id, kwargs.get("company_id", ""),
+            )
             if candidate_phone:
                 try:
                     from app.domains.communication.services.communication_dispatcher import communication_dispatcher

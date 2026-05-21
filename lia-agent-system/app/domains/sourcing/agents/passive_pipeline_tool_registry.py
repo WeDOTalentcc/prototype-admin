@@ -209,6 +209,7 @@ async def _wrap_passive_calculate_fit_score(**kwargs: Any) -> dict[str, Any]:
 
     candidate_id = kwargs.get("candidate_id", "")
     vacancy_id = kwargs.get("vacancy_id", "")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: tenant gate
 
     if not candidate_id:
         return {"success": False, "data": {}, "message": "Parâmetro 'candidate_id' é obrigatório."}
@@ -220,18 +221,21 @@ async def _wrap_passive_calculate_fit_score(**kwargs: Any) -> dict[str, Any]:
             text("""
                 SELECT id, name, technical_skills, soft_skills, years_of_experience,
                        seniority_level, current_title, status, updated_at
-                FROM candidates WHERE id = :cid
+                FROM candidates
+                WHERE id = :cid
+                  AND (company_id IS NULL OR company_id = :company_id)
             """),
-            {"cid": candidate_id},
+            {"cid": candidate_id, "company_id": company_id},
         )
         candidate = c_res.mappings().first()
 
         v_res = await session.execute(
             text("""
                 SELECT id, title, requirements, seniority_level
-                FROM job_vacancies WHERE id = :vid
+                FROM job_vacancies
+                WHERE id = :vid AND company_id = :company_id
             """),
-            {"vid": vacancy_id},
+            {"vid": vacancy_id, "company_id": company_id},
         )
         vacancy = v_res.mappings().first()
 
@@ -334,13 +338,14 @@ async def _wrap_passive_check_lgpd_ttl(**kwargs: Any) -> dict[str, Any]:
     from app.core.database import AsyncSessionLocal
 
     candidate_id = kwargs.get("candidate_id", "")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: LGPD TTL gate
     if not candidate_id:
         return {"success": False, "data": {}, "message": "Parâmetro 'candidate_id' é obrigatório."}
 
     async with AsyncSessionLocal() as session:
         result = await session.execute(
-            text("SELECT id, name, status, updated_at, created_at FROM candidates WHERE id = :cid"),
-            {"cid": candidate_id},
+            text("SELECT id, name, status, updated_at, created_at FROM candidates WHERE id = :cid AND (company_id IS NULL OR company_id = :company_id)"),
+            {"cid": candidate_id, "company_id": company_id},
         )
         candidate = result.mappings().first()
 

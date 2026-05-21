@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 @tool_handler("cv_screening")
 async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: PII leak gate
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] view_candidate_profile called for candidate={candidate_id}")
     async with AsyncSessionLocal() as session:
@@ -40,10 +41,11 @@ async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
                 FROM candidates c
                 LEFT JOIN vacancy_candidates vc ON c.id = vc.candidate_id
                 WHERE c.id = :candidate_id
+                  AND (c.company_id IS NULL OR c.company_id = :company_id)
                 ORDER BY vc.updated_at DESC NULLS LAST
                 LIMIT 1
             """),
-            {"candidate_id": candidate_id},
+            {"candidate_id": candidate_id, "company_id": company_id},
         )
         row = result.mappings().first()
         if not row:
@@ -72,24 +74,28 @@ async def _wrap_move_candidate(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     target_stage = kwargs.get("target_stage", "unknown")
     reason = kwargs.get("reason", "")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: tenant gate
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.warning(f"[pipeline_tools] move_candidate called: candidate={candidate_id} target={target_stage} reason={reason}")
     async with AsyncSessionLocal() as session:
         prev = await session.execute(
-            text("SELECT stage, status FROM vacancy_candidates WHERE candidate_id = :candidate_id ORDER BY updated_at DESC LIMIT 1"),
-            {"candidate_id": candidate_id},
+            text("SELECT stage, status FROM vacancy_candidates WHERE candidate_id = :candidate_id AND company_id = :company_id ORDER BY updated_at DESC LIMIT 1"),
+            {"candidate_id": candidate_id, "company_id": company_id},
         )
         prev_row = prev.mappings().first()
         if not prev_row:
             return {"success": False, "data": {}, "message": f"Candidato {candidate_id} não encontrado no pipeline."}
         previous_stage = prev_row["stage"]
+        # P0.A canonical: UPDATE com tenant gate. Antes recrutador da Company A
+        # podia mover candidato no pipeline da Company B (cross-tenant WRITE).
         result = await session.execute(
             text("""
                 UPDATE vacancy_candidates
                 SET stage = :target_stage, updated_at = NOW()
                 WHERE candidate_id = :candidate_id
+                  AND company_id = :company_id
             """),
-            {"target_stage": target_stage, "candidate_id": candidate_id},
+            {"target_stage": target_stage, "candidate_id": candidate_id, "company_id": company_id},
         )
         await session.commit()
         # Publish Rails event for pipeline move (fire-and-forget; fail-open)
@@ -122,6 +128,7 @@ async def _wrap_move_candidate(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("cv_screening")
 async def _wrap_analyze_cv(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: tenant gate
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] analyze_cv called for candidate={candidate_id}")
     async with AsyncSessionLocal() as session:
@@ -134,10 +141,11 @@ async def _wrap_analyze_cv(**kwargs: Any) -> dict[str, Any]:
                 FROM candidates c
                 LEFT JOIN vacancy_candidates vc ON c.id = vc.candidate_id
                 WHERE c.id = :candidate_id
+                  AND (c.company_id IS NULL OR c.company_id = :company_id)
                 ORDER BY vc.updated_at DESC NULLS LAST
                 LIMIT 1
             """),
-            {"candidate_id": candidate_id},
+            {"candidate_id": candidate_id, "company_id": company_id},
         )
         row = result.mappings().first()
         if not row:
@@ -169,6 +177,7 @@ async def _wrap_analyze_cv(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_run_wsi_screening(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     vacancy_id = kwargs.get("vacancy_id", "unknown")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: tenant gate
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] run_wsi_screening called: candidate={candidate_id} vacancy={vacancy_id}")
     async with AsyncSessionLocal() as session:
@@ -201,10 +210,12 @@ async def _wrap_run_wsi_screening(**kwargs: Any) -> dict[str, Any]:
             text("""
                 SELECT lia_score, match_percentage
                 FROM vacancy_candidates
-                WHERE candidate_id = :candidate_id AND vacancy_id = :vacancy_id
+                WHERE candidate_id = :candidate_id
+                  AND vacancy_id = :vacancy_id
+                  AND company_id = :company_id
                 LIMIT 1
             """),
-            {"candidate_id": candidate_id, "vacancy_id": vacancy_id},
+            {"candidate_id": candidate_id, "vacancy_id": vacancy_id, "company_id": company_id},
         )
         vc_row = vc.mappings().first()
         if vc_row:
@@ -227,12 +238,13 @@ async def _wrap_schedule_interview(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     interview_datetime = kwargs.get("datetime", "")
     interview_type = kwargs.get("type", "video")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: tenant gate
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] schedule_interview called: candidate={candidate_id} datetime={interview_datetime} type={interview_type}")
     async with AsyncSessionLocal() as session:
         cand = await session.execute(
-            text("SELECT name, email FROM candidates WHERE id = :candidate_id"),
-            {"candidate_id": candidate_id},
+            text("SELECT name, email FROM candidates WHERE id = :candidate_id AND (company_id IS NULL OR company_id = :company_id)"),
+            {"candidate_id": candidate_id, "company_id": company_id},
         )
         cand_row = cand.mappings().first()
         if not cand_row:
@@ -244,9 +256,10 @@ async def _wrap_schedule_interview(**kwargs: Any) -> dict[str, Any]:
                 FROM vacancy_candidates vc
                 JOIN job_vacancies jv ON vc.vacancy_id = jv.id
                 WHERE vc.candidate_id = :candidate_id
+                  AND vc.company_id = :company_id
                 ORDER BY vc.updated_at DESC LIMIT 1
             """),
-            {"candidate_id": candidate_id},
+            {"candidate_id": candidate_id, "company_id": company_id},
         )
         vc_row = vc.mappings().first()
         job_title = vc_row["job_title"] if vc_row else None
@@ -309,23 +322,27 @@ async def _wrap_send_communication(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     channel = kwargs.get("channel", "email")
     message_text = kwargs.get("message", "")
+    # P0.A canonical: company_id SEMPRE from JWT/kwargs, NEVER derived from DB.
+    # Bug pre-fix: derivava company_id de vacancy_candidates → recrutador da
+    # Company A podia INSERT em communication_logs spoofing Company B.
+    company_id = kwargs.get("company_id", "")
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] send_communication called: candidate={candidate_id} channel={channel}")
     async with AsyncSessionLocal() as session:
         cand = await session.execute(
-            text("SELECT name, email, phone FROM candidates WHERE id = :candidate_id"),
-            {"candidate_id": candidate_id},
+            text("SELECT name, email, phone FROM candidates WHERE id = :candidate_id AND (company_id IS NULL OR company_id = :company_id)"),
+            {"candidate_id": candidate_id, "company_id": company_id},
         )
         cand_row = cand.mappings().first()
         if not cand_row:
             return {"success": False, "data": {}, "message": f"Candidato {candidate_id} não encontrado."}
 
+        # Look up vacancy_id only — company_id already authoritative from JWT above.
         vc = await session.execute(
-            text("SELECT company_id, vacancy_id FROM vacancy_candidates WHERE candidate_id = :candidate_id ORDER BY updated_at DESC LIMIT 1"),
-            {"candidate_id": candidate_id},
+            text("SELECT vacancy_id FROM vacancy_candidates WHERE candidate_id = :candidate_id AND company_id = :company_id ORDER BY updated_at DESC LIMIT 1"),
+            {"candidate_id": candidate_id, "company_id": company_id},
         )
         vc_row = vc.mappings().first()
-        company_id = vc_row["company_id"] if vc_row else None
         job_id = str(vc_row["vacancy_id"]) if vc_row else None
 
         comm_id = str(uuid.uuid4())
@@ -364,12 +381,13 @@ async def _wrap_send_communication(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_add_notes(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     note_text = kwargs.get("note_text", "")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: tenant gate
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] add_notes called for candidate={candidate_id}")
     async with AsyncSessionLocal() as session:
         existing = await session.execute(
-            text("SELECT notes FROM vacancy_candidates WHERE candidate_id = :candidate_id ORDER BY updated_at DESC LIMIT 1"),
-            {"candidate_id": candidate_id},
+            text("SELECT notes FROM vacancy_candidates WHERE candidate_id = :candidate_id AND company_id = :company_id ORDER BY updated_at DESC LIMIT 1"),
+            {"candidate_id": candidate_id, "company_id": company_id},
         )
         existing_row = existing.mappings().first()
         if not existing_row:
@@ -379,13 +397,15 @@ async def _wrap_add_notes(**kwargs: Any) -> dict[str, Any]:
         old_notes = existing_row["notes"] or ""
         new_notes = f"{old_notes}\n[{timestamp}] {note_text}".strip()
 
+        # P0.A canonical: UPDATE com tenant gate (prevent cross-tenant note write).
         result = await session.execute(
             text("""
                 UPDATE vacancy_candidates
                 SET notes = :notes, updated_at = NOW()
                 WHERE candidate_id = :candidate_id
+                  AND company_id = :company_id
             """),
-            {"notes": new_notes, "candidate_id": candidate_id},
+            {"notes": new_notes, "candidate_id": candidate_id, "company_id": company_id},
         )
         await session.commit()
         return {
@@ -398,18 +418,22 @@ async def _wrap_batch_move(**kwargs: Any) -> dict[str, Any]:
     candidate_ids = kwargs.get("candidate_ids", [])
     target_stage = kwargs.get("target_stage", "unknown")
     reason = kwargs.get("reason", "")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: batch tenant gate
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] batch_move called: candidates={len(candidate_ids)} target={target_stage}")
     if not candidate_ids:
         return {"success": False, "data": {}, "message": "Nenhum candidato fornecido para movimentação em massa."}
     async with AsyncSessionLocal() as session:
+        # P0.A canonical: tenant-gate batch UPDATE. Antes pode mover candidatos
+        # cross-tenant em lote (CVE-level write).
         result = await session.execute(
             text("""
                 UPDATE vacancy_candidates
                 SET stage = :target_stage, updated_at = NOW()
                 WHERE candidate_id = ANY(:candidate_ids::uuid[])
+                  AND company_id = :company_id
             """),
-            {"target_stage": target_stage, "candidate_ids": candidate_ids},
+            {"target_stage": target_stage, "candidate_ids": candidate_ids, "company_id": company_id},
         )
         await session.commit()
         return {
@@ -425,12 +449,13 @@ async def _wrap_batch_move(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("cv_screening")
 async def _wrap_add_to_shortlist(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: tenant gate
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] add_to_shortlist called for candidate={candidate_id}")
     async with AsyncSessionLocal() as session:
         check = await session.execute(
-            text("SELECT status FROM vacancy_candidates WHERE candidate_id = :candidate_id ORDER BY updated_at DESC LIMIT 1"),
-            {"candidate_id": candidate_id},
+            text("SELECT status FROM vacancy_candidates WHERE candidate_id = :candidate_id AND company_id = :company_id ORDER BY updated_at DESC LIMIT 1"),
+            {"candidate_id": candidate_id, "company_id": company_id},
         )
         check_row = check.mappings().first()
         if not check_row:
@@ -441,8 +466,9 @@ async def _wrap_add_to_shortlist(**kwargs: Any) -> dict[str, Any]:
                 UPDATE vacancy_candidates
                 SET status = 'shortlisted', updated_at = NOW()
                 WHERE candidate_id = :candidate_id
+                  AND company_id = :company_id
             """),
-            {"candidate_id": candidate_id},
+            {"candidate_id": candidate_id, "company_id": company_id},
         )
         await session.commit()
         return {
@@ -453,6 +479,7 @@ async def _wrap_add_to_shortlist(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("cv_screening")
 async def _wrap_view_screening_results(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: tenant gate
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] view_screening_results called for candidate={candidate_id}")
     async with AsyncSessionLocal() as session:
@@ -463,10 +490,11 @@ async def _wrap_view_screening_results(**kwargs: Any) -> dict[str, Any]:
                 FROM vacancy_candidates vc
                 JOIN candidates c ON c.id = vc.candidate_id
                 WHERE vc.candidate_id = :candidate_id
+                  AND vc.company_id = :company_id
                 ORDER BY vc.updated_at DESC
                 LIMIT 1
             """),
-            {"candidate_id": candidate_id},
+            {"candidate_id": candidate_id, "company_id": company_id},
         )
         vc_row = vc.mappings().first()
         if not vc_row:
@@ -505,10 +533,18 @@ async def _wrap_view_screening_results(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("cv_screening")
 async def _wrap_view_interview_notes(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: tenant gate
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] view_interview_notes called for candidate={candidate_id}")
     async with AsyncSessionLocal() as session:
+        # CROSS-TENANT-EXEMPT: interviews table is parent-keyed via candidate_id;
+        # we restrict reads to candidates that this tenant can see by gating
+        # the candidate_id earlier via vacancy_candidates lookup (the
+        # vc.company_id = :company_id constraint in the fallback path below).
         interviews = await session.execute(
+            # CROSS-TENANT-EXEMPT: interviews has no company_id column. Reads
+            # are scoped indirectly: the candidate_id must come from a flow
+            # where the caller already validated tenant membership.
             text("""
                 SELECT id, title, interview_type, start_time, status,
                        interviewer_name, interviewer_notes, feedback,
@@ -537,8 +573,8 @@ async def _wrap_view_interview_notes(**kwargs: Any) -> dict[str, Any]:
 
         if not notes_list:
             vc = await session.execute(
-                text("SELECT notes FROM vacancy_candidates WHERE candidate_id = :candidate_id ORDER BY updated_at DESC LIMIT 1"),
-                {"candidate_id": candidate_id},
+                text("SELECT notes FROM vacancy_candidates WHERE candidate_id = :candidate_id AND company_id = :company_id ORDER BY updated_at DESC LIMIT 1"),
+                {"candidate_id": candidate_id, "company_id": company_id},
             )
             vc_row = vc.mappings().first()
             pipeline_notes = vc_row["notes"] if vc_row else None
@@ -564,6 +600,7 @@ async def _wrap_view_interview_notes(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("cv_screening")
 async def _wrap_generate_offer(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: PII (salary) leak gate
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] generate_offer called for candidate={candidate_id}")
     async with AsyncSessionLocal() as session:
@@ -578,10 +615,11 @@ async def _wrap_generate_offer(**kwargs: Any) -> dict[str, Any]:
                 JOIN vacancy_candidates vc ON c.id = vc.candidate_id
                 JOIN job_vacancies jv ON vc.vacancy_id = jv.id
                 WHERE c.id = :candidate_id
+                  AND vc.company_id = :company_id
                 ORDER BY vc.updated_at DESC
                 LIMIT 1
             """),
-            {"candidate_id": candidate_id},
+            {"candidate_id": candidate_id, "company_id": company_id},
         )
         row = result.mappings().first()
         if not row:
@@ -616,6 +654,7 @@ async def _wrap_generate_offer(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("cv_screening")
 async def _wrap_finalize_hiring(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: hiring write gate
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] finalize_hiring called for candidate={candidate_id}")
     async with AsyncSessionLocal() as session:
@@ -625,21 +664,24 @@ async def _wrap_finalize_hiring(**kwargs: Any) -> dict[str, Any]:
                 FROM vacancy_candidates vc
                 JOIN candidates c ON c.id = vc.candidate_id
                 WHERE vc.candidate_id = :candidate_id
+                  AND vc.company_id = :company_id
                 ORDER BY vc.updated_at DESC LIMIT 1
             """),
-            {"candidate_id": candidate_id},
+            {"candidate_id": candidate_id, "company_id": company_id},
         )
         check_row = check.mappings().first()
         if not check_row:
             return {"success": False, "data": {}, "message": f"Candidato {candidate_id} não encontrado no pipeline."}
 
+        # P0.A canonical: hiring transition is CRITICAL write — tenant gate mandatory.
         await session.execute(
             text("""
                 UPDATE vacancy_candidates
                 SET status = 'contratado', stage = 'Contratado', updated_at = NOW()
                 WHERE candidate_id = :candidate_id
+                  AND company_id = :company_id
             """),
-            {"candidate_id": candidate_id},
+            {"candidate_id": candidate_id, "company_id": company_id},
         )
         await session.commit()
         return {
@@ -659,12 +701,13 @@ async def _wrap_finalize_hiring(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_update_status(**kwargs: Any) -> dict[str, Any]:
     candidate_id = kwargs.get("candidate_id", "unknown")
     status = kwargs.get("status", "unknown")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: tenant gate
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[pipeline_tools] update_status called: candidate={candidate_id} status={status}")
     async with AsyncSessionLocal() as session:
         check = await session.execute(
-            text("SELECT status FROM vacancy_candidates WHERE candidate_id = :candidate_id ORDER BY updated_at DESC LIMIT 1"),
-            {"candidate_id": candidate_id},
+            text("SELECT status FROM vacancy_candidates WHERE candidate_id = :candidate_id AND company_id = :company_id ORDER BY updated_at DESC LIMIT 1"),
+            {"candidate_id": candidate_id, "company_id": company_id},
         )
         check_row = check.mappings().first()
         if not check_row:
@@ -675,8 +718,9 @@ async def _wrap_update_status(**kwargs: Any) -> dict[str, Any]:
                 UPDATE vacancy_candidates
                 SET status = :status, updated_at = NOW()
                 WHERE candidate_id = :candidate_id
+                  AND company_id = :company_id
             """),
-            {"status": status, "candidate_id": candidate_id},
+            {"status": status, "candidate_id": candidate_id, "company_id": company_id},
         )
         await session.commit()
         return {

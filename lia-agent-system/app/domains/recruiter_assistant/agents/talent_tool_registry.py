@@ -28,7 +28,7 @@ async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
     """Search candidates by skills, experience, location."""
     query = kwargs.get("query", "")
     filters = kwargs.get("filters", {})
-    kwargs.get("company_id", "")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: was extracted but unused
     limit = int(kwargs.get("limit", 20))
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[talent_tools] search_candidates called: query={query} filters={filters}")
@@ -47,6 +47,7 @@ async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
                            skills_match_percentage, status
                     FROM candidates
                     WHERE is_active = true
+                      AND (company_id IS NULL OR company_id = :company_id)
                       AND (:query = ''
                            OR name ILIKE :qlike
                            OR current_title ILIKE :qlike
@@ -63,6 +64,7 @@ async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
                     "lloc": f"%{location}%",
                     "min_exp": min_exp,
                     "lim": limit,
+                    "company_id": company_id,
                 },
             )
             for row in rows.mappings():
@@ -82,6 +84,7 @@ async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
                 text("""
                     SELECT COUNT(*) AS total FROM candidates
                     WHERE is_active = true
+                      AND (company_id IS NULL OR company_id = :company_id)
                       AND (:query = ''
                            OR name ILIKE :qlike
                            OR current_title ILIKE :qlike
@@ -90,7 +93,7 @@ async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
                       AND (years_of_experience IS NULL OR years_of_experience >= :min_exp)
                 """),
                 {"query": query, "qlike": f"%{query}%", "location": location,
-                 "lloc": f"%{location}%", "min_exp": min_exp},
+                 "lloc": f"%{location}%", "min_exp": min_exp, "company_id": company_id},
             )
             total = int((count_row.mappings().first() or {}).get("total", len(results)))
     except Exception as e:
@@ -183,6 +186,7 @@ async def _wrap_list_candidates(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
     """View complete candidate profile including education and work history."""
     candidate_id = kwargs.get("candidate_id", "")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: PII (email+salary+gender) leak gate
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[talent_tools] view_candidate_profile called for candidate={candidate_id}")
 
@@ -203,8 +207,9 @@ async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
                            gender, source
                     FROM candidates
                     WHERE id = :cid
+                      AND (company_id IS NULL OR company_id = :company_id)
                 """),
-                {"cid": candidate_id},
+                {"cid": candidate_id, "company_id": company_id},
             )
             data = row.mappings().first()
             if not data:
@@ -345,6 +350,7 @@ async def _wrap_analyze_skills(**kwargs: Any) -> dict[str, Any]:
     """Analyze skill match between candidate and job requirements."""
     candidate_id = kwargs.get("candidate_id", "")
     vacancy_id = kwargs.get("vacancy_id", "")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: tenant gate
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[talent_tools] analyze_skills called: candidate={candidate_id} vacancy={vacancy_id}")
 
@@ -356,8 +362,8 @@ async def _wrap_analyze_skills(**kwargs: Any) -> dict[str, Any]:
     try:
         async with AsyncSessionLocal() as session:
             c_row = await session.execute(
-                text("SELECT technical_skills, soft_skills FROM candidates WHERE id = :cid"),
-                {"cid": candidate_id},
+                text("SELECT technical_skills, soft_skills FROM candidates WHERE id = :cid AND (company_id IS NULL OR company_id = :company_id)"),
+                {"cid": candidate_id, "company_id": company_id},
             )
             c_data = c_row.mappings().first()
             candidate_skills = set(s.lower() for s in ((c_data or {}).get("technical_skills") or []))
@@ -416,6 +422,7 @@ async def _wrap_analyze_skills(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_recommend_actions(**kwargs: Any) -> dict[str, Any]:
     """Generate action recommendations for candidates based on real scores and status."""
     candidate_ids = kwargs.get("candidate_ids", [])
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: batch tenant gate
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[talent_tools] recommend_actions called: candidates={len(candidate_ids)}")
 
@@ -429,8 +436,9 @@ async def _wrap_recommend_actions(**kwargs: Any) -> dict[str, Any]:
                                last_contacted_at, last_activity_at
                         FROM candidates
                         WHERE id = ANY(:ids::uuid[])
+                          AND (company_id IS NULL OR company_id = :company_id)
                     """),
-                    {"ids": candidate_ids},
+                    {"ids": candidate_ids, "company_id": company_id},
                 )
                 for row in rows.mappings():
                     score = row["lia_score"] or 0
@@ -545,6 +553,7 @@ async def _wrap_export_report(**kwargs: Any) -> dict[str, Any]:
     report_type = kwargs.get("report_type", "general")
     candidate_ids = kwargs.get("candidate_ids", [])
     vacancy_id = kwargs.get("vacancy_id", "")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: tenant gate
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[talent_tools] export_report called: type={report_type} candidates={len(candidate_ids)}")
 
@@ -559,9 +568,10 @@ async def _wrap_export_report(**kwargs: Any) -> dict[str, Any]:
                         SELECT name, current_title, lia_score, skills_match_percentage, status
                         FROM candidates
                         WHERE id = ANY(:ids::uuid[])
+                          AND (company_id IS NULL OR company_id = :company_id)
                         ORDER BY lia_score DESC NULLS LAST
                     """),
-                    {"ids": candidate_ids},
+                    {"ids": candidate_ids, "company_id": company_id},
                 )
                 entries = [dict(r) for r in rows.mappings()]
                 scores = [e["lia_score"] for e in entries if e["lia_score"]]

@@ -174,6 +174,7 @@ async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("jobs_mgmt")
 async def _wrap_view_job_details(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: tenant gate
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] view_job_details called for job={job_id}")
     async with AsyncSessionLocal() as session:
@@ -184,9 +185,10 @@ async def _wrap_view_job_details(**kwargs: Any) -> dict[str, Any]:
                        salary_range, benefits, created_at, deadline,
                        recruiter, manager, company_id,
                        EXTRACT(DAY FROM NOW() - created_at)::int AS days_open
-                FROM job_vacancies WHERE id = :jid
+                FROM job_vacancies
+                WHERE id = :jid AND company_id = :company_id
             """),
-            {"jid": job_id},
+            {"jid": job_id, "company_id": company_id},
         )
         data = row.mappings().first()
         if not data:
@@ -195,10 +197,11 @@ async def _wrap_view_job_details(**kwargs: Any) -> dict[str, Any]:
         counts = await session.execute(
             text("""
                 SELECT status, COUNT(*) AS cnt
-                FROM vacancy_candidates WHERE vacancy_id = :jid
+                FROM vacancy_candidates
+                WHERE vacancy_id = :jid AND company_id = :company_id
                 GROUP BY status
             """),
-            {"jid": job_id},
+            {"jid": job_id, "company_id": company_id},
         )
         by_status = {r["status"]: int(r["cnt"]) for r in counts.mappings()}
         total_candidates = sum(by_status.values())
@@ -276,6 +279,7 @@ async def _wrap_get_portfolio_metrics(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("jobs_mgmt")
 async def _wrap_compare_jobs(**kwargs: Any) -> dict[str, Any]:
     job_ids = kwargs.get("job_ids", [])
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: batch tenant gate
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] compare_jobs called: jobs={job_ids}")
     comparison = []
@@ -292,11 +296,13 @@ async def _wrap_compare_jobs(**kwargs: Any) -> dict[str, Any]:
                                COUNT(vc.id) FILTER (WHERE vc.status = 'rejected') AS rejected_count
                         FROM job_vacancies jv
                         LEFT JOIN vacancy_candidates vc ON vc.vacancy_id = jv.id
+                              AND vc.company_id = :company_id
                         WHERE jv.id = ANY(:ids::uuid[])
+                          AND jv.company_id = :company_id
                         GROUP BY jv.id
                         ORDER BY jv.created_at DESC
                     """),
-                    {"ids": job_ids},
+                    {"ids": job_ids, "company_id": company_id},
                 )
                 for row in rows.mappings():
                     comparison.append({

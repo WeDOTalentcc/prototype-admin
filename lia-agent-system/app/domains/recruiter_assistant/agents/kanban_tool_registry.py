@@ -92,6 +92,8 @@ async def _wrap_get_pipeline_benchmarks(**kwargs: Any) -> dict[str, Any]:
     try:
         async with AsyncSessionLocal() as session:
             if vacancy_id:
+                # P0.A canonical: aggregation must not span tenants. company_id
+                # already extracted at handler entry (line ~83).
                 stage_result = await session.execute(
                     text("""
                         SELECT stage,
@@ -99,9 +101,10 @@ async def _wrap_get_pipeline_benchmarks(**kwargs: Any) -> dict[str, Any]:
                                COUNT(*) AS candidates
                         FROM vacancy_candidates
                         WHERE vacancy_id = :vid
+                          AND company_id = :company_id
                         GROUP BY stage
                     """),
-                    {"vid": vacancy_id},
+                    {"vid": vacancy_id, "company_id": company_id},
                 )
                 for row in stage_result.mappings():
                     per_stage_metrics[row["stage"]] = {
@@ -924,6 +927,7 @@ async def _wrap_generate_pipeline_report(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_view_candidate_full_profile(**kwargs: Any) -> dict[str, Any]:
     """View complete candidate profile including education, work history and scores."""
     candidate_id = kwargs.get("candidate_id", "")
+    company_id = kwargs.get("company_id", "")  # P0.A canonical: PII (email+salary+gender) leak gate
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[kanban_tools] view_candidate_full_profile called for candidate={candidate_id}")
 
@@ -944,8 +948,9 @@ async def _wrap_view_candidate_full_profile(**kwargs: Any) -> dict[str, Any]:
                            gender
                     FROM candidates
                     WHERE id = :cid
+                      AND (company_id IS NULL OR company_id = :company_id)
                 """),
-                {"cid": candidate_id},
+                {"cid": candidate_id, "company_id": company_id},
             )
             data = row.mappings().first()
             if not data:
