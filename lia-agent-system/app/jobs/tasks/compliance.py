@@ -574,3 +574,123 @@ def rls_health_check(self) -> dict:
     )
     return {"status": "ok", "checked": len(_RLS_CRITICAL_TABLES)}
 
+
+
+
+@celery_app.task(base=TenantAwareTask, name="dsr.check_overdue_daily", bind=True, max_retries=3)
+def check_dsr_overdue_daily(self) -> dict:
+    """
+    WT-2022 P5.3: Verificar DSRs com SLA expirado e criar Alerts.
+
+    LGPD Art. 20 estabelece prazo de 15 dias úteis para resposta a DSR.
+    Este job roda diariamente e:
+    - Query DataSubjectRequest WHERE sla_deadline < now() AND status IN ('pending', 'processing', 'in_review')
+    - Para cada DSR overdue sem Alert ativo, cria Alert(type=DEADLINE_APPROACHING, severity=HIGH)
+    - Evita duplicação: skip se já existe Alert ativo para essa DSR.
+
+    Agendado diariamente às 09h Brasília via Celery Beat (beat_schedule: dsr-check-overdue-daily).
+
+    Returns:
+        Dict com {ran_at, checked, overdue_found, alerts_created, errors}
+    """
+    span = _celery_span("celery.task_start", "dsr.check_overdue_daily")
+
+    async def _run() -> dict:
+        from datetime import datetime
+        from sqlalchemy import and_, select
+        from app.core.database import async_session_maker
+        from app.models.observability import DataSubjectRequest
+        from lia_models.alert import Alert, AlertSeverity, AlertStatus, AlertType
+
+        now = datetime.utcnow()
+        summary = {
+            "ran_at": now.isoformat(),
+            "checked": 0,
+            "overdue_found": 0,
+            "alerts_created": 0,
+            "alerts_skipped_duplicate": 0,
+            "errors": [],
+        }
+
+        async with async_session_maker() as db:
+            # Query DSRs overdue
+            stmt = select(DataSubjectRequest).where(
+                and_(
+                    DataSubjectRequest.sla_deadline < now,
+                    DataSubjectRequest.status.in_(["pending", "processing", "in_review"]),
+                )
+            )
+            result = await db.execute(stmt)
+            overdue_dsrs = list(result.scalars().all())
+            summary["overdue_found"] = len(overdue_dsrs)
+            summary["checked"] = len(overdue_dsrs)
+
+            for dsr in overdue_dsrs:
+                try:
+                    # Check existing active alert for this DSR
+                    existing_q = select(Alert).where(
+                        and_(
+                            Alert.alert_type == AlertType.DEADLINE_APPROACHING,
+                            Alert.status == AlertStatus.ACTIVE,
+                            Alert.context["dsr_id"].astext == str(dsr.id),
+                        )
+                    )
+                    existing = (await db.execute(existing_q)).scalar_one_or_none()
+                    if existing is not None:
+                        summary["alerts_skipped_duplicate"] += 1
+                        continue
+
+                    # Create alert
+                    days_over = (now - dsr.sla_deadline).days
+                    alert = Alert(
+                        alert_type=AlertType.DEADLINE_APPROACHING,
+                        severity=AlertSeverity.HIGH,
+                        status=AlertStatus.ACTIVE,
+                        title=f"DSR LGPD prazo vencido ({days_over}d)",
+                        message=(
+                            f"DSR {dsr.id} tipo '{dsr.request_type}' status '{dsr.status}' "
+                            f"vencido em {days_over} dias (LGPD Art. 20 — 15 dias úteis). "
+                            "Requer ação imediata para evitar não-conformidade ANPD."
+                        ),
+                        context={
+                            "dsr_id": str(dsr.id),
+                            "request_type": dsr.request_type,
+                            "status": dsr.status,
+                            "sla_deadline": dsr.sla_deadline.isoformat(),
+                            "days_overdue": days_over,
+                            "company_id": str(dsr.company_id),
+                            "source": "WT-2022 P5.3 cron",
+                        },
+                    )
+                    db.add(alert)
+                    summary["alerts_created"] += 1
+
+                except Exception as exc:
+                    summary["errors"].append({
+                        "dsr_id": str(dsr.id),
+                        "error": str(exc)[:200],
+                    })
+                    logger.error(
+                        "[dsr.check_overdue] Failed to create alert for DSR %s: %s",
+                        dsr.id, exc, exc_info=True,
+                    )
+
+            await db.commit()
+
+        return summary
+
+    try:
+        result = asyncio.run(_run())
+        _finish_celery_success(span, "dsr.check_overdue_daily")
+        logger.info("[dsr.check_overdue_daily] %s", result)
+        from app.shared.resilience.cron_health import record_cron_run
+        record_cron_run("dsr.check_overdue_daily")
+        return result
+    except Exception as exc:
+        _finish_celery_failure(span, "dsr.check_overdue_daily", exc)
+        logger.error("dsr.check_overdue_daily falhou: %s", exc)
+        _emit_celery_retry("dsr.check_overdue_daily", exc, self.request.retries, self.max_retries, 600)
+
+        if self.request.retries >= self.max_retries:
+            _emit_dlq_push("dsr.check_overdue_daily", exc)
+        raise self.retry(exc=exc, countdown=600)

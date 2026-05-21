@@ -49,13 +49,17 @@ GRANULAR_PURPOSE_MAP: dict[str, str] = {
     # Used by training_data_service.export_* (T-21b wired anonymizer)
     # Cross-border via AWS Bedrock fine-tune (Claude 3 Haiku custom)
     "training_data": "TRAINING_DATA",
+    # WT-2022 P4.2: ats_sharing purpose adicionado para evitar collapse em SCREENING default
+    # Usado por ats_pii_filter.check_purpose("ats_sharing") — bloqueia PII em payload ATS externo
+    "ats_sharing": "ATS_SHARING",
 }
 
 # Finalidades que BLOQUEIAM processamento quando revogadas (críticas LGPD)
 # T-11 B.1.1: training_data is BLOCKING — revoke cascata erasure cross-border
 BLOCKING_PURPOSES = {
     "ai_screening", "ai_scoring", "ai_video_analysis", "ai_comparison",
-    "training_data",  # T-11 B.1.1: blocking pra impedir export pós-revoke
+    "training_data",  # T-11 B.1.1: blocking pra impedir export pos-revoke
+    "ats_sharing",  # WT-2022 P4.2: blocking pra impedir PII export ATS externo pos-revoke
 }
 
 # Todas as finalidades suportadas

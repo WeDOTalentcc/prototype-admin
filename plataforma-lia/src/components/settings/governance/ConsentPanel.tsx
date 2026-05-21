@@ -565,11 +565,27 @@ function ConsentMetricsTab() {
         return
       }
       const data = await res.json()
-      const items: ConsentStats[] = Array.isArray(data?.stats)
-        ? data.stats
-        : Array.isArray(data)
-          ? data
-          : []
+      // WT-2022 P4.4: backend retorna {total_granted, total_revoked, by_type: ConsentTypeStats[]}
+      // FE espera array flat {purpose, granted, revoked, total} — transformar aqui.
+      let items: ConsentStats[] = []
+      if (Array.isArray(data?.stats)) {
+        items = data.stats
+      } else if (Array.isArray(data)) {
+        items = data
+      } else if (Array.isArray(data?.by_type)) {
+        // Backend canonical shape
+        items = data.by_type.map((t: {
+          consent_type: string
+          total_granted: number
+          total_revoked: number
+          total_expired?: number
+        }) => ({
+          purpose: t.consent_type,
+          granted: t.total_granted ?? 0,
+          revoked: t.total_revoked ?? 0,
+          total: (t.total_granted ?? 0) + (t.total_revoked ?? 0),
+        }))
+      }
       setStats(items)
     } catch (err) {
       setError(err instanceof Error ? err.message : t("errorLoad"))

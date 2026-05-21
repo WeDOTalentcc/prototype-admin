@@ -122,6 +122,9 @@ class AuditStatsResponse(BaseModel):
     period_start: datetime | None = None
     period_end: datetime | None = None
     top_actions: list[dict[str, Any]] = []
+    # WT-2022 P5.1: novos campos canonical (eram esperados pelo FE mas não populados)
+    recent_24h: int = 0
+    by_severity: dict[str, int] = {}  # vazio até model SOXAuditLog ter severity column (separate migration)
 
 
 class AuditRetentionPolicyResponse(BaseModel):

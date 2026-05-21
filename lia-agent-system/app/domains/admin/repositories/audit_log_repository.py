@@ -106,6 +106,20 @@ class AuditLogRepository:
             {"action": r[0], "count": r[1]} for r in (await self.db.execute(top_q)).fetchall()
         ]
 
+        # WT-2022 P5.1: compute recent_24h real (era ghost — FE esperava mas BE não populava)
+        cutoff_24h = datetime.utcnow() - timedelta(hours=24)
+        recent_q = select(func.count(SOXAuditLog.id)).where(
+            SOXAuditLog.timestamp >= cutoff_24h
+        )
+        if conditions:
+            recent_q = recent_q.where(and_(*conditions))
+        recent_24h = (await self.db.execute(recent_q)).scalar() or 0
+
+        # WT-2022 P5.1: by_severity — model SOXAuditLog NÃO tem severity column.
+        # Retorna dict vazio pra alinhar schema FE/BE (era fake na UI). Feature
+        # de severity exige migration que adicione coluna (separate card).
+        by_severity: dict = {}
+
         return {
             "total_logs": total,
             "logs_by_category": logs_by_category,
@@ -113,6 +127,8 @@ class AuditLogRepository:
             "unique_users": unique_users,
             "unique_clients": unique_clients,
             "top_actions": top_actions,
+            "recent_24h": recent_24h,
+            "by_severity": by_severity,
         }
 
     # ── AuditRetentionPolicy ─────────────────────
