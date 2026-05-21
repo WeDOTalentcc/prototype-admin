@@ -43,7 +43,7 @@ class ManualDecisionRequest(WeDoBaseModel):
 async def create_twin(
     body: CreateTwinRequest,
     current_user: dict = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
@@ -94,7 +94,7 @@ company_id: str = Depends(require_company_id)):
 @router.get("")
 async def list_twins(
     current_user: dict = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """List all Digital Twins for the current company."""
@@ -125,7 +125,7 @@ company_id: str = Depends(require_company_id)):
 
 
 @router.get("/{twin_id}")
-async def get_twin(twin_id: str, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+async def get_twin(twin_id: str, db: AsyncSession = Depends(get_tenant_db), company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get details of a specific Digital Twin."""
     from lia_models.digital_twin import DigitalTwin
@@ -152,7 +152,7 @@ async def get_twin(twin_id: str, db: AsyncSession = Depends(get_db), company_id:
 async def index_audio(
     twin_id: str,
     file: UploadFile = File(...),
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Upload and index an interview recording with the SME."""
@@ -173,7 +173,7 @@ company_id: str = Depends(require_company_id)):
 async def index_manual_decision(
     twin_id: str,
     body: ManualDecisionRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Manually index a single decision + reasoning."""
@@ -193,7 +193,7 @@ company_id: str = Depends(require_company_id)):
 async def evaluate_candidate(
     twin_id: str,
     body: EvaluateRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """

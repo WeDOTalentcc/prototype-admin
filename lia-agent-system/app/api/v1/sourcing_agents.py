@@ -138,7 +138,7 @@ company_id: str = Depends(require_company_id)):
 
 
 @router.get("/{agent_id}")
-async def get_sourcing_agent(agent_id: str, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+async def get_sourcing_agent(agent_id: str, db: AsyncSession = Depends(get_tenant_db), company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get details of a specific sourcing agent."""
     from lia_models.sourcing_agent import SourcingAgent
@@ -166,7 +166,7 @@ async def get_sourcing_agent(agent_id: str, db: AsyncSession = Depends(get_db), 
 async def submit_feedback(
     agent_id: str,
     body: FeedbackRequest,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
@@ -196,7 +196,7 @@ company_id: str = Depends(require_company_id)):
 async def get_calibration_candidates(
     agent_id: str,
     limit: int = 10,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get candidates for the Big Card calibration modal."""
@@ -211,7 +211,7 @@ company_id: str = Depends(require_company_id)):
 async def get_agent_timeline(
     agent_id: str,
     limit: int = 20,
-    db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get activity timeline for the Agents tab."""
@@ -223,7 +223,7 @@ company_id: str = Depends(require_company_id)):
 
 
 @router.patch("/{agent_id}/pause")
-async def pause_agent(agent_id: str, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+async def pause_agent(agent_id: str, db: AsyncSession = Depends(get_tenant_db), company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Pause a sourcing agent."""
     from lia_models.sourcing_agent import SourcingAgent
@@ -240,7 +240,7 @@ async def pause_agent(agent_id: str, db: AsyncSession = Depends(get_db), company
 
 
 @router.patch("/{agent_id}/resume")
-async def resume_agent(agent_id: str, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
+async def resume_agent(agent_id: str, db: AsyncSession = Depends(get_tenant_db), company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Resume a paused sourcing agent."""
     from lia_models.sourcing_agent import SourcingAgent
