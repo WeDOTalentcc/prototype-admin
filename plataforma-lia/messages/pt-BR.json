@@ -5945,7 +5945,44 @@
         "status_revoked": "revogado",
         "status_missing": "pendente",
         "allBlockingGiven": "Todos os consentimentos críticos concedidos",
-        "missingBlocking": "Faltam consentimentos críticos"
+        "missingBlocking": "Faltam consentimentos críticos",
+        "colStatus": "Status",
+        "tabCandidate": "Candidatos (granular)",
+        "tabTrainingData": "Dados de Treinamento",
+        "tabMetrics": "Métricas",
+        "trainingData": {
+          "heading": "Consentimento Empresarial — Uso para Treinamento (RLHF)",
+          "description": "Permite que conversas dos seus recrutadores com a LIA sejam usadas para fine-tune do modelo Claude via AWS Bedrock, gerando um modelo customizado exclusivo da sua empresa.",
+          "disclaimerAnon": "Dados são anonimizados (PII stripped em 4 camadas) antes de qualquer export.",
+          "disclaimerCrossBorder": "Transferência cross-border via AWS Bedrock (DPA pendente legal — LGPD Art. 33).",
+          "disclaimerCustomModel": "Modelo customizado WeDOTalent — não compartilhado com outras empresas ou Anthropic.",
+          "legalBasisLabel": "Base legal",
+          "loading": "Carregando consentimento empresarial...",
+          "errorLoad": "Falha ao carregar consentimento empresarial",
+          "errorGrant": "Falha ao registrar consentimento",
+          "errorRevoke": "Falha ao revogar consentimento",
+          "statusLabel": "Status atual",
+          "statusActive": "Ativo",
+          "statusInactive": "Inativo",
+          "grant": "Permitir",
+          "revoke": "Revogar",
+          "grantedAt": "Concedido em",
+          "revokedAt": "Revogado em",
+          "legalBasis": "Base legal",
+          "lastUpdated": "Última atualização",
+          "revokeReason": "Motivo da revogação",
+          "revokeConfirmTitle": "Confirmar revogação",
+          "revokeConfirmBody": "Isto bloqueia novos exports para fine-tune (LGPD Art. 18). Modelos já treinados permanecem ativos em sua conta AWS Bedrock.",
+          "revokeReasonLabel": "Justificativa (obrigatório, fica em auditoria)",
+          "revokeConfirm": "Revogar consentimento",
+          "cancel": "Cancelar"
+        },
+        "metrics": {
+          "description": "Taxa de adesão por finalidade de consentimento LGPD (8 purposes canonical T-11 B.1.1).",
+          "loading": "Carregando métricas...",
+          "errorLoad": "Falha ao carregar métricas",
+          "empty": "Nenhuma métrica disponível ainda."
+        }
       }
     },
     "aiTransparency": {
@@ -6333,6 +6370,28 @@
         "agent_deployment_paused": "Vínculo pausado",
         "agent_approval_requested": "Aprovação solicitada",
         "agent_approval_reviewed": "Aprovação revisada"
+      }
+    },
+    "liaFields": {
+      "title": "Instruções LIA por Campo",
+      "description": "Configure como a LIA deve interpretar cada campo da empresa. Toggles definem se a IA pode sugerir/preencher; instruções customizam comportamento.",
+      "fieldsTotal": "campos canonical disponíveis",
+      "tabs": {
+        "fields": "Campos LIA",
+        "tenantOverride": "Tenant Override (YAML)"
+      },
+      "tenantOverride": {
+        "title": "Tenant Override (YAML)",
+        "disclaimer": "Modificações em tenant overrides são per-empresa e hot-reload em até 30 segundos. Backup automático mantido. Reverter via Delete.",
+        "activeOverrides": "Overrides ativos",
+        "empty": "Nenhum override ativo — todos os prompts usam canonical.",
+        "pathLabel": "Path canonical:",
+        "loading": "Carregando...",
+        "save": "Salvar override",
+        "create": "Criar override",
+        "delete": "Remover override",
+        "confirmDelete": "Remover override e voltar ao padrão canonical?",
+        "saved": "Salvo em"
       }
     }
   },

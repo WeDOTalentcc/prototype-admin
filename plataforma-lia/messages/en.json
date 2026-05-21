@@ -5945,7 +5945,44 @@
         "status_revoked": "revoked",
         "status_missing": "pending",
         "allBlockingGiven": "All blocking consents granted",
-        "missingBlocking": "Missing blocking consents"
+        "missingBlocking": "Missing blocking consents",
+        "colStatus": "Status",
+        "tabCandidate": "Candidate (granular)",
+        "tabTrainingData": "Training Data",
+        "tabMetrics": "Metrics",
+        "trainingData": {
+          "heading": "Company Consent — Training Data Use (RLHF)",
+          "description": "Allows recruiter conversations with LIA to be used to fine-tune the Claude model via AWS Bedrock, generating a custom model exclusive to your company.",
+          "disclaimerAnon": "Data is anonymized (PII stripped across 4 layers) before any export.",
+          "disclaimerCrossBorder": "Cross-border transfer via AWS Bedrock (DPA pending legal — LGPD Art. 33).",
+          "disclaimerCustomModel": "Custom WeDOTalent model — not shared with other companies or Anthropic.",
+          "legalBasisLabel": "Legal basis",
+          "loading": "Loading company consent...",
+          "errorLoad": "Failed to load company consent",
+          "errorGrant": "Failed to grant consent",
+          "errorRevoke": "Failed to revoke consent",
+          "statusLabel": "Current status",
+          "statusActive": "Active",
+          "statusInactive": "Inactive",
+          "grant": "Grant",
+          "revoke": "Revoke",
+          "grantedAt": "Granted at",
+          "revokedAt": "Revoked at",
+          "legalBasis": "Legal basis",
+          "lastUpdated": "Last updated",
+          "revokeReason": "Revoke reason",
+          "revokeConfirmTitle": "Confirm revocation",
+          "revokeConfirmBody": "This blocks new exports for fine-tune (LGPD Art. 18). Already-trained models remain active in your AWS Bedrock account.",
+          "revokeReasonLabel": "Reason (required, kept in audit trail)",
+          "revokeConfirm": "Revoke consent",
+          "cancel": "Cancel"
+        },
+        "metrics": {
+          "description": "Adoption rate per LGPD consent purpose (8 canonical purposes T-11 B.1.1).",
+          "loading": "Loading metrics...",
+          "errorLoad": "Failed to load metrics",
+          "empty": "No metrics available yet."
+        }
       }
     },
     "aiTransparency": {
@@ -6333,6 +6370,28 @@
         "agent_deployment_paused": "Deployment paused",
         "agent_approval_requested": "Approval requested",
         "agent_approval_reviewed": "Approval reviewed"
+      }
+    },
+    "liaFields": {
+      "title": "LIA Field Instructions",
+      "description": "Configure how LIA should interpret each company field. Toggles define if AI can suggest/fill; instructions customize behavior.",
+      "fieldsTotal": "canonical fields available",
+      "tabs": {
+        "fields": "LIA Fields",
+        "tenantOverride": "Tenant Override (YAML)"
+      },
+      "tenantOverride": {
+        "title": "Tenant Override (YAML)",
+        "disclaimer": "Tenant override modifications are per-company and hot-reload within 30 seconds. Automatic backup retained. Revert via Delete.",
+        "activeOverrides": "Active overrides",
+        "empty": "No active override - all prompts use canonical.",
+        "pathLabel": "Canonical path:",
+        "loading": "Loading...",
+        "save": "Save override",
+        "create": "Create override",
+        "delete": "Remove override",
+        "confirmDelete": "Remove override and revert to canonical default?",
+        "saved": "Saved at"
       }
     }
   },
