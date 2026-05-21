@@ -807,6 +807,29 @@ class TransitionDispatchService:
                 vacancy_candidate=vc,
                 job=job,
             )
+
+            # T-10 Fase 2 WIRE canonical (ADR-032 feedback_learning_service.record_outcome).
+            # Fail-soft via helper canonical (wire_feedback_outcome nunca raises).
+            # Alimenta JobOutcome table + InteractionFeedback mirror (T-10 Fase 1 wire).
+            try:
+                from app.shared.learning.feedback_writer import wire_feedback_outcome
+                await wire_feedback_outcome(
+                    db=self.db,
+                    domain="pipeline",
+                    outcome_type="HIRED",
+                    company_id=company_id or "",
+                    job_id=job_id,
+                    time_to_fill_days=time_to_fill_days,
+                    context={
+                        "vacancy_candidate_id": vacancy_candidate_id,
+                        "wire_source": "transition_dispatch_service._hook_conclusion_hired",
+                    },
+                )
+            except Exception as _wire_exc:
+                logger.warning(
+                    "[ConclusionHired hook] wire_feedback_outcome failed (non-blocking): %s",
+                    str(_wire_exc)[:200],
+                )
         except Exception as exc:
             logger.warning(
                 "[ConclusionHired hook] failed (non-blocking): %s",
