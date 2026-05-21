@@ -1,11 +1,14 @@
 "use client"
 
-import React, { useEffect, useState } from "react"
+import React, { useCallback, useEffect, useState } from "react"
 import { useTranslations } from "next-intl"
+import { Copy, ExternalLink, FileDown, Loader2 } from "lucide-react"
 import { useCompanyId } from "@/hooks/company/useCompanyId"
 import { cardStyles, textStyles } from "@/lib/design-tokens"
 import { Loading } from "@/components/ui/loading"
 import { Chip } from "@/components/ui/chip"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Switch } from "@/components/ui/switch"
 import { cn } from "@/lib/utils"
 import { apiFetch } from "@/lib/api/api-fetch"
 
@@ -38,6 +41,23 @@ interface BiasAuditReport {
   has_alerts: boolean
 }
 
+// T-17 NYC LL144 Annual Bias Audit Report (canonical)
+interface AnnualReportSummary {
+  report_id: string
+  year: number
+  status: "draft" | "generated" | "published"
+  dimensions_count: number
+  four_fifths_pass: boolean
+  generated_at?: string | null
+  published_at?: string | null
+  is_public?: boolean
+  public_slug?: string | null
+  chi2_p_value?: number | null
+  eeoc_compliant?: boolean
+}
+
+const TRUST_PORTAL_HOST = "trust.wedotalent.cc"
+
 export function BiasAuditPanel() {
   const t = useTranslations("settings.governanca.biasAudit")
   const { companyId } = useCompanyId()
@@ -49,6 +69,14 @@ export function BiasAuditPanel() {
   const [drillReport, setDrillReport] = useState<BiasAuditReport | null>(null)
   const [drillLoading, setDrillLoading] = useState(false)
   const [drillError, setDrillError] = useState<string | null>(null)
+
+  // T-17 Annual Report state
+  const [annualReports, setAnnualReports] = useState<AnnualReportSummary[]>([])
+  const [annualLoading, setAnnualLoading] = useState(false)
+  const [annualError, setAnnualError] = useState<string | null>(null)
+  const [generating, setGenerating] = useState(false)
+  const [publishingId, setPublishingId] = useState<string | null>(null)
+  const [copiedSlug, setCopiedSlug] = useState<string | null>(null)
 
   useEffect(() => {
     if (!companyId) return
@@ -100,6 +128,103 @@ export function BiasAuditPanel() {
     }
   }
 
+  // T-17 — Fetch existing annual reports
+  const loadAnnualReports = useCallback(async () => {
+    if (!companyId) return
+    setAnnualLoading(true)
+    setAnnualError(null)
+    try {
+      const res = await apiFetch("/api/backend-proxy/bias-audit/annual", {
+        headers: { "X-Company-ID": companyId },
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json()
+      const items: AnnualReportSummary[] = Array.isArray(data)
+        ? data
+        : data.reports ?? data.items ?? data.data ?? []
+      setAnnualReports(items)
+    } catch (err) {
+      setAnnualError(err instanceof Error ? err.message : t("annualErrorLoad"))
+    } finally {
+      setAnnualLoading(false)
+    }
+  }, [companyId, t])
+
+  // T-17 — Eager load on mount (annual reports are small + canonical UX for both Annual + Trust tabs)
+  useEffect(() => {
+    if (!companyId) return
+    loadAnnualReports()
+  }, [companyId, loadAnnualReports])
+
+  // T-17 — Generate annual report for current year
+  const generateAnnualReport = async () => {
+    if (!companyId || generating) return
+    setGenerating(true)
+    setAnnualError(null)
+    try {
+      const year = new Date().getFullYear()
+      const res = await apiFetch("/api/backend-proxy/bias-audit/annual/generate", {
+        method: "POST",
+        headers: {
+          "X-Company-ID": companyId,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ year }),
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      await loadAnnualReports()
+    } catch (err) {
+      setAnnualError(err instanceof Error ? err.message : t("annualErrorGenerate"))
+    } finally {
+      setGenerating(false)
+    }
+  }
+
+  // T-17 Trust Portal — Toggle public publication
+  const togglePublish = async (report: AnnualReportSummary, makePublic: boolean) => {
+    if (!companyId || publishingId) return
+    setPublishingId(report.report_id)
+    setAnnualError(null)
+    try {
+      const res = await apiFetch(
+        `/api/backend-proxy/bias-audit/annual/${encodeURIComponent(report.report_id)}/publish`,
+        {
+          method: "PATCH",
+          headers: {
+            "X-Company-ID": companyId,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ is_public: makePublic }),
+        },
+      )
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      await loadAnnualReports()
+    } catch (err) {
+      setAnnualError(err instanceof Error ? err.message : t("annualErrorPublish"))
+    } finally {
+      setPublishingId(null)
+    }
+  }
+
+  const exportPdf = (reportId: string) => {
+    if (!companyId) return
+    const url = `/api/backend-proxy/bias-audit/annual/${encodeURIComponent(reportId)}/export?format=pdf`
+    window.open(url, "_blank", "noopener,noreferrer")
+  }
+
+  const copyPublicUrl = async (slug: string) => {
+    const publicUrl = `https://${TRUST_PORTAL_HOST}/${slug}`
+    try {
+      if (typeof navigator !== "undefined" && navigator.clipboard) {
+        await navigator.clipboard.writeText(publicUrl)
+      }
+      setCopiedSlug(slug)
+      setTimeout(() => setCopiedSlug((s) => (s === slug ? null : s)), 2000)
+    } catch {
+      // silencioso — UX nao critica
+    }
+  }
+
   if (loading) return <Loading variant="spinner" text={t("loading")} />
   if (error) {
     return (
@@ -113,93 +238,295 @@ export function BiasAuditPanel() {
   const blocked = logs.filter((l) => l.is_blocked).length
   const warnings = total - blocked
 
+  // Find the most recent published report for trust portal preview
+  const latestPublished = annualReports.find((r) => r.is_public && r.public_slug)
+  const latestReport = annualReports[0]
+
   return (
     <div className="space-y-4" data-testid="bias-audit-panel">
       <p className={textStyles.description}>{t("description")}</p>
 
-      <div className="grid grid-cols-3 gap-3">
-        <SummaryCard label={t("totalAudits")} value={total} />
-        <SummaryCard label={t("warnings")} value={warnings} accent="warning" />
-        <SummaryCard label={t("blocked")} value={blocked} accent="danger" />
-      </div>
+      <Tabs defaultValue="real-time">
+        <TabsList>
+          <TabsTrigger value="real-time" data-testid="bias-audit-tab-realtime">
+            {t("tabRealTime")}
+          </TabsTrigger>
+          <TabsTrigger value="annual-report" data-testid="bias-audit-tab-annual">
+            {t("tabAnnualReport")}
+          </TabsTrigger>
+          <TabsTrigger value="trust-portal" data-testid="bias-audit-tab-trust">
+            {t("tabTrustPortal")}
+          </TabsTrigger>
+        </TabsList>
 
-      <div className={cn(cardStyles.default, "space-y-3 p-3")} data-testid="bias-audit-drilldown">
-        <h2 className={textStyles.h2}>{t("drillDownTitle")}</h2>
-        <p className="text-xs text-lia-text-secondary">{t("drillDownHelp")}</p>
-        <form
-          className="flex gap-2"
-          onSubmit={(e) => {
-            e.preventDefault()
-            runDrillDown(drillJobId)
-          }}
-        >
-          <input
-            value={drillJobId}
-            onChange={(e) => setDrillJobId(e.target.value)}
-            placeholder={t("drillJobPlaceholder")}
-            data-testid="bias-audit-job-input"
-            className="flex-1 rounded-md border border-lia-border-default bg-lia-bg-primary px-2 py-1 text-xs"
-          />
-          <button
-            type="submit"
-            disabled={drillLoading || !drillJobId.trim()}
-            data-testid="bias-audit-drill-submit"
-            className="rounded-md bg-wedo-purple px-3 py-1 text-xs font-medium text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {drillLoading ? "…" : t("drillRun")}
-          </button>
-        </form>
-        {drillError && <div className="text-xs text-status-error">{drillError}</div>}
-        {drillReport && <FourFifthsTable report={drillReport} t={t} />}
-      </div>
+        {/* Tab 1 — Real-time (conteudo existing preservado canonical) */}
+        <TabsContent value="real-time" className="space-y-4 pt-3">
+          <div className="grid grid-cols-3 gap-3">
+            <SummaryCard label={t("totalAudits")} value={total} />
+            <SummaryCard label={t("warnings")} value={warnings} accent="warning" />
+            <SummaryCard label={t("blocked")} value={blocked} accent="danger" />
+          </div>
 
-      <h2 className={textStyles.h2}>{t("recentAudits")}</h2>
+          <div className={cn(cardStyles.default, "space-y-3 p-3")} data-testid="bias-audit-drilldown">
+            <h2 className={textStyles.h2}>{t("drillDownTitle")}</h2>
+            <p className="text-xs text-lia-text-secondary">{t("drillDownHelp")}</p>
+            <form
+              className="flex gap-2"
+              onSubmit={(e) => {
+                e.preventDefault()
+                runDrillDown(drillJobId)
+              }}
+            >
+              <input
+                value={drillJobId}
+                onChange={(e) => setDrillJobId(e.target.value)}
+                placeholder={t("drillJobPlaceholder")}
+                data-testid="bias-audit-job-input"
+                className="flex-1 rounded-md border border-lia-border-default bg-lia-bg-primary px-2 py-1 text-xs"
+              />
+              <button
+                type="submit"
+                disabled={drillLoading || !drillJobId.trim()}
+                data-testid="bias-audit-drill-submit"
+                className="rounded-md bg-wedo-purple px-3 py-1 text-xs font-medium text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {drillLoading ? "…" : t("drillRun")}
+              </button>
+            </form>
+            {drillError && <div className="text-xs text-status-error">{drillError}</div>}
+            {drillReport && <FourFifthsTable report={drillReport} t={t} />}
+          </div>
 
-      <div className={cn(cardStyles.default, "overflow-x-auto")}>
-        <table className="min-w-full text-xs">
-          <thead className="bg-lia-bg-secondary">
-            <tr className="text-left text-lia-text-secondary">
-              <th className="px-3 py-2 font-medium">{t("colJob")}</th>
-              <th className="px-3 py-2 font-medium">{t("colCategory")}</th>
-              <th className="px-3 py-2 font-medium">{t("colTerms")}</th>
-              <th className="px-3 py-2 font-medium">{t("colStatus")}</th>
-              <th className="px-3 py-2 font-medium">{t("colWhen")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {logs.length === 0 && (
-              <tr>
-                <td colSpan={5} className="px-3 py-6 text-center text-lia-text-secondary">
-                  {t("empty")}
-                </td>
-              </tr>
-            )}
-            {logs.map((log, i) => {
-              const ts = log.created_at
-              const blockedRow = log.is_blocked === true
-              return (
-                <tr key={log.id ?? `${log.job_id}-${i}`} className="border-t border-lia-border-subtle">
-                  <td className="px-3 py-2 font-mono text-[11px]">{log.job_id ?? "-"}</td>
-                  <td className="px-3 py-2">{log.category ?? "-"}</td>
-                  <td className="px-3 py-2 text-[11px]">
-                    {(log.blocked_terms ?? []).slice(0, 3).join(", ") ||
-                      (log.soft_warnings ?? []).slice(0, 3).join(", ") ||
-                      "-"}
-                  </td>
-                  <td className="px-3 py-2">
-                    <Chip variant={blockedRow ? "danger" : "warning"} density="compact">
-                      {blockedRow ? t("blockedShort") : t("warnShort")}
-                    </Chip>
-                  </td>
-                  <td className="px-3 py-2 font-mono text-[11px]">
-                    {ts ? new Date(ts).toLocaleString() : "-"}
-                  </td>
+          <h2 className={textStyles.h2}>{t("recentAudits")}</h2>
+
+          <div className={cn(cardStyles.default, "overflow-x-auto")}>
+            <table className="min-w-full text-xs">
+              <thead className="bg-lia-bg-secondary">
+                <tr className="text-left text-lia-text-secondary">
+                  <th className="px-3 py-2 font-medium">{t("colJob")}</th>
+                  <th className="px-3 py-2 font-medium">{t("colCategory")}</th>
+                  <th className="px-3 py-2 font-medium">{t("colTerms")}</th>
+                  <th className="px-3 py-2 font-medium">{t("colStatus")}</th>
+                  <th className="px-3 py-2 font-medium">{t("colWhen")}</th>
                 </tr>
-              )
-            })}
-          </tbody>
-        </table>
-      </div>
+              </thead>
+              <tbody>
+                {logs.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-3 py-6 text-center text-lia-text-secondary">
+                      {t("empty")}
+                    </td>
+                  </tr>
+                )}
+                {logs.map((log, i) => {
+                  const ts = log.created_at
+                  const blockedRow = log.is_blocked === true
+                  return (
+                    <tr key={log.id ?? `${log.job_id}-${i}`} className="border-t border-lia-border-subtle">
+                      <td className="px-3 py-2 font-mono text-[11px]">{log.job_id ?? "-"}</td>
+                      <td className="px-3 py-2">{log.category ?? "-"}</td>
+                      <td className="px-3 py-2 text-[11px]">
+                        {(log.blocked_terms ?? []).slice(0, 3).join(", ") ||
+                          (log.soft_warnings ?? []).slice(0, 3).join(", ") ||
+                          "-"}
+                      </td>
+                      <td className="px-3 py-2">
+                        <Chip variant={blockedRow ? "danger" : "warning"} density="compact">
+                          {blockedRow ? t("blockedShort") : t("warnShort")}
+                        </Chip>
+                      </td>
+                      <td className="px-3 py-2 font-mono text-[11px]">
+                        {ts ? new Date(ts).toLocaleString() : "-"}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+        </TabsContent>
+
+        {/* Tab 2 — T-17 NYC LL144 Annual Bias Audit Report */}
+        <TabsContent value="annual-report" className="space-y-4 pt-3" data-testid="bias-audit-annual-panel">
+          <div className={cn(cardStyles.default, "space-y-3 p-4")}>
+            <div className="flex items-start justify-between gap-3">
+              <div className="space-y-1">
+                <h2 className={textStyles.h2}>{t("annualTitle")}</h2>
+                <p className="text-xs text-lia-text-secondary">{t("annualHelp")}</p>
+              </div>
+              <button
+                type="button"
+                onClick={generateAnnualReport}
+                disabled={generating || !companyId}
+                data-testid="bias-audit-annual-generate"
+                className="inline-flex items-center gap-1 rounded-md bg-wedo-purple px-3 py-1.5 text-xs font-medium text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {generating ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : null}
+                {generating ? t("annualGenerating") : t("annualGenerate")}
+              </button>
+            </div>
+
+            {annualError && (
+              <div className="text-xs text-status-error" data-testid="bias-audit-annual-error">
+                {annualError}
+              </div>
+            )}
+
+            {annualLoading ? (
+              <Loading variant="spinner" text={t("annualLoading")} />
+            ) : annualReports.length === 0 ? (
+              <div className="rounded-md border border-dashed border-lia-border-subtle p-6 text-center text-xs text-lia-text-secondary">
+                {t("annualEmpty")}
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs">
+                  <thead className="bg-lia-bg-secondary">
+                    <tr className="text-left text-lia-text-secondary">
+                      <th className="px-3 py-2 font-medium">{t("annualColYear")}</th>
+                      <th className="px-3 py-2 font-medium">{t("annualColStatus")}</th>
+                      <th className="px-3 py-2 font-medium">{t("annualColDimensions")}</th>
+                      <th className="px-3 py-2 font-medium">{t("annualColFourFifths")}</th>
+                      <th className="px-3 py-2 font-medium">{t("annualColGenerated")}</th>
+                      <th className="px-3 py-2 font-medium text-right">{t("annualColActions")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {annualReports.map((r) => (
+                      <tr
+                        key={r.report_id}
+                        className="border-t border-lia-border-subtle"
+                        data-testid={`bias-audit-annual-row-${r.year}`}
+                      >
+                        <td className="px-3 py-2 font-mono">{r.year}</td>
+                        <td className="px-3 py-2">
+                          <Chip
+                            variant={
+                              r.status === "published"
+                                ? "success"
+                                : r.status === "generated"
+                                  ? "info"
+                                  : "warning"
+                            }
+                            density="compact"
+                          >
+                            {t(`annualStatus.${r.status}`)}
+                          </Chip>
+                        </td>
+                        <td className="px-3 py-2 font-mono">{r.dimensions_count}</td>
+                        <td className="px-3 py-2">
+                          <Chip
+                            variant={r.four_fifths_pass ? "success" : "danger"}
+                            density="compact"
+                          >
+                            {r.four_fifths_pass ? t("annualPass") : t("annualFail")}
+                          </Chip>
+                        </td>
+                        <td className="px-3 py-2 font-mono text-[11px]">
+                          {r.generated_at ? new Date(r.generated_at).toLocaleDateString() : "-"}
+                        </td>
+                        <td className="px-3 py-2 text-right">
+                          <button
+                            type="button"
+                            onClick={() => exportPdf(r.report_id)}
+                            data-testid={`bias-audit-annual-export-${r.year}`}
+                            className="inline-flex items-center gap-1 rounded-md border border-lia-border-default px-2 py-1 text-[11px] font-medium hover:bg-lia-bg-secondary"
+                          >
+                            <FileDown className="h-3 w-3" />
+                            {t("annualExportPdf")}
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </TabsContent>
+
+        {/* Tab 3 — T-17 Trust Portal (HireVue/Eightfold pattern canonical) */}
+        <TabsContent value="trust-portal" className="space-y-4 pt-3" data-testid="bias-audit-trust-panel">
+          <div className={cn(cardStyles.default, "space-y-4 p-4")}>
+            <div className="space-y-1">
+              <h2 className={textStyles.h2}>{t("trustTitle")}</h2>
+              <p className="text-xs text-lia-text-secondary">{t("trustHelp")}</p>
+            </div>
+
+            {annualError && (
+              <div className="text-xs text-status-error">{annualError}</div>
+            )}
+
+            {!latestReport ? (
+              <div className="rounded-md border border-dashed border-lia-border-subtle p-6 text-center text-xs text-lia-text-secondary">
+                {t("trustNoReport")}
+              </div>
+            ) : (
+              <>
+                <div className="flex items-center justify-between gap-3 rounded-md border border-lia-border-subtle p-3">
+                  <div className="space-y-0.5">
+                    <div className="text-xs font-medium text-lia-text-primary">
+                      {t("trustToggleLabel")} {latestReport.year}
+                    </div>
+                    <div className="text-[11px] text-lia-text-secondary">
+                      {t("trustToggleHelp")}
+                    </div>
+                  </div>
+                  <Switch
+                    checked={Boolean(latestReport.is_public)}
+                    disabled={publishingId === latestReport.report_id}
+                    onCheckedChange={(checked) => togglePublish(latestReport, checked)}
+                    data-testid="bias-audit-trust-toggle"
+                    aria-label={t("trustToggleLabel")}
+                  />
+                </div>
+
+                {latestPublished && latestPublished.public_slug && (
+                  <div className="space-y-2 rounded-md border border-lia-border-subtle bg-lia-bg-secondary p-3">
+                    <div className="text-[11px] font-medium text-lia-text-secondary">
+                      {t("trustPublicUrlLabel")}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <code
+                        className="flex-1 truncate rounded bg-lia-bg-primary px-2 py-1 font-mono text-[11px]"
+                        data-testid="bias-audit-trust-public-url"
+                      >
+                        https://{TRUST_PORTAL_HOST}/{latestPublished.public_slug}
+                      </code>
+                      <button
+                        type="button"
+                        onClick={() => copyPublicUrl(latestPublished.public_slug!)}
+                        data-testid="bias-audit-trust-copy"
+                        className="inline-flex items-center gap-1 rounded-md border border-lia-border-default px-2 py-1 text-[11px] font-medium hover:bg-lia-bg-primary"
+                      >
+                        <Copy className="h-3 w-3" />
+                        {copiedSlug === latestPublished.public_slug ? t("trustCopied") : t("trustCopy")}
+                      </button>
+                      <a
+                        href={`https://${TRUST_PORTAL_HOST}/${latestPublished.public_slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        data-testid="bias-audit-trust-open"
+                        className="inline-flex items-center gap-1 rounded-md border border-lia-border-default px-2 py-1 text-[11px] font-medium hover:bg-lia-bg-primary"
+                      >
+                        <ExternalLink className="h-3 w-3" />
+                        {t("trustOpen")}
+                      </a>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+
+            <div className="rounded-md border border-lia-border-subtle bg-lia-bg-secondary p-3 text-[11px] leading-relaxed text-lia-text-secondary">
+              <strong className="text-lia-text-primary">{t("trustDisclaimerTitle")}:</strong>{" "}
+              {t("trustDisclaimer")}
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
