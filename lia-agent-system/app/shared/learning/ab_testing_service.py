@@ -565,6 +565,157 @@ class ABTestingService:
         return {"promoted": True, "winner": winner_info["variant"], "reason": "auto_promoted"}
 
 
+    # ------------------------------------------------------------------
+    # T-19 Fase 5 SEQUENTIAL testing early stopping canonical (ADR-AB-001)
+    # ------------------------------------------------------------------
+
+    async def check_early_stop(
+        self,
+        test_name: str,
+        db: AsyncSession,
+        *,
+        look_number: int,
+        max_looks: int = 10,
+        alpha_total: float = 0.01,
+        futility_threshold: float = 0.001,
+    ) -> dict:
+        """Sequential test early stopping decision (Pocock-style alpha-spending).
+
+        Permite peek no resultado em múltiplos momentos sem inflar Type I error.
+        Pattern canonical:
+        - alpha_per_look = alpha_total / max_looks (Bonferroni-over-looks)
+        - Stop for winner: p_value < alpha_per_look AND n >= 100 per variant
+        - Stop for futility: |estimated effect| < futility_threshold AND n >= 50% max
+        - Continue: else
+
+        Args:
+            test_name: experiment identifier
+            db: AsyncSession
+            look_number: current peek (1-indexed, 1..max_looks)
+            max_looks: planned total peeks
+            alpha_total: significance budget total (default 0.01)
+            futility_threshold: minimum detectable effect (default 0.001)
+
+        Returns:
+            dict {
+                "action": "stop_winner" | "stop_futility" | "continue",
+                "winner": str | None,
+                "p_value": float | None,
+                "alpha_per_look": float,
+                "look_number": int,
+                "max_looks": int,
+                "reason": str,
+            }
+
+        Refs:
+        - Pocock (1977): "Group sequential methods in the design and analysis of clinical trials"
+        - Lan & DeMets (1983): "Discrete sequential boundaries for clinical trials"
+        """
+        if look_number < 1:
+            raise ValueError(f"look_number must be >= 1 (got {look_number})")
+        if look_number > max_looks:
+            raise ValueError(
+                f"look_number {look_number} > max_looks {max_looks}"
+            )
+        if not 0 < alpha_total < 1:
+            raise ValueError(f"alpha_total must be in (0, 1) (got {alpha_total})")
+
+        # Pocock-style alpha-spending (simplified Bonferroni-over-looks)
+        alpha_per_look = alpha_total / max_looks
+
+        results = await self.get_test_results(test_name, db)
+        if not results or not results.get("winner"):
+            return {
+                "action": "continue",
+                "winner": None,
+                "p_value": None,
+                "alpha_per_look": alpha_per_look,
+                "look_number": look_number,
+                "max_looks": max_looks,
+                "reason": "no_winner_data_yet",
+            }
+
+        winner_info = results["winner"]
+        p_value = winner_info.get("p_value", 1.0)
+        sig_results = results.get("statistical_significance") or {}
+        min_n = min(
+            (v.get("n_control", 0) for v in sig_results.values()),
+            default=0,
+        )
+        min_n_variants = min(
+            (v.get("n_variant", 0) for v in sig_results.values()),
+            default=0,
+        )
+        min_n = min(min_n, min_n_variants)
+
+        # Stop for winner canonical: p < alpha_per_look + n suficiente
+        if p_value < alpha_per_look and min_n >= 100:
+            logger.info(
+                "[AB-TEST T-19 Fase 5] STOP_WINNER at look %d/%d: "
+                "test=%s winner=%s p=%.5f < α_per_look=%.5f n=%d",
+                look_number, max_looks, test_name, winner_info["variant"],
+                p_value, alpha_per_look, min_n,
+            )
+            return {
+                "action": "stop_winner",
+                "winner": winner_info["variant"],
+                "p_value": p_value,
+                "alpha_per_look": alpha_per_look,
+                "look_number": look_number,
+                "max_looks": max_looks,
+                "reason": (
+                    f"p={p_value:.5f} < α_per_look={alpha_per_look:.5f} "
+                    f"(early stop look {look_number}/{max_looks})"
+                ),
+            }
+
+        # Stop for futility canonical: effect size muito pequeno + dados suficientes
+        # Estimated effect via point estimate diff (mean control - mean variant)
+        observed_effect = 0.0
+        for variant_name, variant_sig in sig_results.items():
+            obs_diff = abs(variant_sig.get("mean_diff", 0.0))
+            observed_effect = max(observed_effect, obs_diff)
+
+        n_threshold_futility = int(0.5 * max_looks * 100)  # heuristic
+        if (
+            observed_effect < futility_threshold
+            and min_n >= n_threshold_futility
+        ):
+            logger.info(
+                "[AB-TEST T-19 Fase 5] STOP_FUTILITY at look %d/%d: "
+                "test=%s effect=%.5f < futility=%.5f n=%d",
+                look_number, max_looks, test_name,
+                observed_effect, futility_threshold, min_n,
+            )
+            return {
+                "action": "stop_futility",
+                "winner": None,
+                "p_value": p_value,
+                "alpha_per_look": alpha_per_look,
+                "look_number": look_number,
+                "max_looks": max_looks,
+                "reason": (
+                    f"observed_effect={observed_effect:.5f} < "
+                    f"futility_threshold={futility_threshold:.5f} (no real winner)"
+                ),
+                "observed_effect": observed_effect,
+            }
+
+        # Continue canonical
+        return {
+            "action": "continue",
+            "winner": None,
+            "p_value": p_value,
+            "alpha_per_look": alpha_per_look,
+            "look_number": look_number,
+            "max_looks": max_looks,
+            "reason": (
+                f"continue: p={p_value:.5f} not yet < α_per_look={alpha_per_look:.5f} "
+                f"OR n={min_n} < 100 per variant"
+            ),
+        }
+
+
 ab_testing_service = ABTestingService()
 
 
