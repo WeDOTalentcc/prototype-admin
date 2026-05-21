@@ -48,7 +48,7 @@ def _scan_pii_recursive(value, path_prefix: str = "") -> list[str]:
     return findings
 
 
-def check(strict: bool = False) -> int:
+def check(strict: bool = True) -> int:  # [PROMOTED BLOCKING Sprint 7]
     repo_root = Path(__file__).resolve().parent.parent
     tenants_dir = repo_root / "app/prompts/tenants"
 
@@ -128,5 +128,5 @@ def check(strict: bool = False) -> int:
 
 
 if __name__ == "__main__":
-    strict = "--strict" in sys.argv
+    strict = "--warn-only" not in sys.argv  # [PROMOTED BLOCKING Sprint 7]
     sys.exit(check(strict=strict))

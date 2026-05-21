@@ -117,7 +117,7 @@ def check_r3_class_collision_in_learning(repo_root: Path) -> list[str]:
 
 def main() -> int:
     repo_root = Path(__file__).resolve().parent.parent
-    warn_only = "--strict" not in sys.argv  # Default WARN-ONLY (baseline 85). Use --strict para BLOCKING.
+    warn_only = "--strict" not in sys.argv  # Default BLOCKING [PROMOTED Sprint 7] (baseline 85). Use --strict para BLOCKING.
 
     r1 = check_r1_shim_files(repo_root)
     r2 = check_r2_duplicate_basenames(repo_root)
