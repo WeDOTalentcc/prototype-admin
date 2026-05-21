@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react"
 import { useUIPreferencesStore } from "@/stores/ui-preferences-store"
 import {
   Building, Heart, Network, Map, Link2, Workflow, FileText,
-  User, Bell, Shield, Bot, ClipboardList, Star, Cog
+  User, Bell, Shield, Bot, ClipboardList, Star, Cog, Library
 } from "lucide-react"
 
 export interface SettingsTab {
@@ -136,6 +136,14 @@ export function useSettingsNavigation(): { state: SettingsNavigationState; actio
       name: "ADMIN WeDOTalent",
       icon: Cog,
       description: "Gerenciar clientes, tenants e onboarding",
+      category: "Admin"
+    },
+    {
+      // P0.G (audit 2026-05-21): 4 Manager UIs per-tenant
+      id: "catalogs-management",
+      name: "Catálogos Dinâmicos",
+      icon: Library,
+      description: "Pipeline stages, alertas, integrações e webhook events (templates per-tenant)",
       category: "Admin"
     }
   ]

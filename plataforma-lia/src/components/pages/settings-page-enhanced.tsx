@@ -46,6 +46,9 @@ const MinhaEmpresaHub = dynamic(() => import("@/components/settings/MinhaEmpresa
 const AiCreditsPage = dynamic(() => import("@/components/pages/ai-credits-page").then(m => ({ default: m.AiCreditsPage })), { ssr: false, loading: () => <I18nLoadingFallback tKey="company" /> })
 const RecruitmentPipelineTab = dynamic(() => import("@/components/settings/RecruitmentPipelineTab").then(m => ({ default: m.RecruitmentPipelineTab })), { ssr: false, loading: () => <I18nLoadingFallback tKey="pipeline" /> })
 const RecruitmentScreeningTab = dynamic(() => import("@/components/settings/RecruitmentScreeningTab").then(m => ({ default: m.RecruitmentScreeningTab })), { ssr: false, loading: () => <I18nLoadingFallback tKey="screening" /> })
+// P0.G (audit 2026-05-21): aggregated catalog managers for Pipeline Stages,
+// Alert Rules, Integration Catalog, Webhook Event Types.
+const CatalogsManagementSection = dynamic(() => import("@/components/settings/CatalogsManagementSection").then(m => ({ default: m.CatalogsManagementSection })), { ssr: false, loading: () => <I18nLoadingFallback tKey="screening" /> })
 const CommunicationHub = dynamic(() => import("@/components/settings/CommunicationHub").then(m => ({ default: m.CommunicationHub })), { ssr: false, loading: () => <I18nLoadingFallback tKey="communication" /> })
 const IntegrationsHub = dynamic(() => import("@/components/settings/IntegrationsHub").then(m => ({ default: m.IntegrationsHub })), { ssr: false, loading: () => <I18nLoadingFallback tKey="integrations" /> })
 const UsuariosDepartamentosHub = dynamic(() => import("@/components/settings/UsuariosDepartamentosHub").then(m => ({ default: m.UsuariosDepartamentosHub })), { ssr: false, loading: () => <I18nLoadingFallback tKey="users" /> })
@@ -543,6 +546,14 @@ export default function SettingsPageEnhanced() {
         return (
           <ErrorBoundarySection>
             <GovernancaHub activeSubsection={(activeSubsection || 'audit-logs') as 'audit-logs'} />
+          </ErrorBoundarySection>
+        )
+      case 'catalogs-management':
+        return (
+          // P0.G (audit 2026-05-21): 4 Manager UIs canonical (Pipeline,
+          // Alert, Integration, Webhook). Categoria Admin no sidebar.
+          <ErrorBoundarySection>
+            <CatalogsManagementSection />
           </ErrorBoundarySection>
         )
       default:
