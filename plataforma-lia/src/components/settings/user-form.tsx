@@ -8,6 +8,7 @@ import type { UserData } from './user-management-types'
 import { useTranslations } from "next-intl"
 
 interface UserFormProps {
+  departments?: Array<{ id?: string; name: string }>
   isCreating: boolean
   formData: Partial<UserData>
   setFormData: React.Dispatch<React.SetStateAction<Partial<UserData>>>
@@ -15,7 +16,7 @@ interface UserFormProps {
   onCancel: () => void
 }
 
-export function UserForm({ isCreating, formData, setFormData, onSave, onCancel }: UserFormProps) {
+export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, departments }: UserFormProps) {
   const t = useTranslations('settings.users')
   const inputClass = "w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg"
 
@@ -120,16 +121,31 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel }
 
               <div>
                 <label className={textStyles.label + " block mb-1.5"}>{t('department')}</label>
+                {/* WT-2022 P0.RBAC3 fix: department dropdown agora puxa dinamicamente de /company/departments.
+                    Antes: 4 opcoes hardcoded (Talent Acquisition/RH/Operacoes/Tecnologia) + valor nem persistido.
+                    departments prop deve ser passada pelo parent (UsuariosDepartamentosHub).
+                */}
                 <select
                   value={formData.department || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
                   className={inputClass}
                 >
                   <option value="">{t('departmentSelect')}</option>
-                  <option value="Talent Acquisition">{t('departmentTA')}</option>
-                  <option value="RH">{t('departmentHR')}</option>
-                  <option value="Operações">{t('departmentOps')}</option>
-                  <option value="Tecnologia">{t('departmentTech')}</option>
+                  {(departments && departments.length > 0) ? (
+                    departments.map((dept) => (
+                      <option key={dept.id || dept.name} value={dept.name}>
+                        {dept.name}
+                      </option>
+                    ))
+                  ) : (
+                    /* Fallback transitional ate parent passar departments prop */
+                    <>
+                      <option value="Talent Acquisition">{t('departmentTA')}</option>
+                      <option value="RH">{t('departmentHR')}</option>
+                      <option value="Operações">{t('departmentOps')}</option>
+                      <option value="Tecnologia">{t('departmentTech')}</option>
+                    </>
+                  )}
                 </select>
               </div>
 

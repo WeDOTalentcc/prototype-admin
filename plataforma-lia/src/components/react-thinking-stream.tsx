@@ -36,7 +36,7 @@ export function ReactThinkingStream({
   if (!isVisible || events.length === 0) return null;
 
   return (
-    <div className={}>
+    <div className={className}>
       {events.map((ev) => (
         <div key={ev.step} className="flex gap-1 items-start">
           <span className="font-mono opacity-50">{ev.step}.</span>
