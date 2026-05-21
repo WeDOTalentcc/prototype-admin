@@ -333,11 +333,33 @@ class ABTestingService:
             return {"error": str(e), "test_name": test_name}
 
 
-    async def auto_promote_winner(self, test_name: str, db: AsyncSession) -> dict:
+    async def auto_promote_winner(
+        self,
+        test_name: str,
+        db: AsyncSession,
+        *,
+        use_thompson_sampling: bool = False,
+        thompson_threshold: float = 0.95,
+    ) -> dict:
         """
-        UC-P1-27: If test has a statistically significant winner (p<0.01, n>=100 per variant),
-        deactivate all non-winner variants in the DB.
-        Returns: {"promoted": bool, "winner": str | None, "reason": str}
+        UC-P1-27 + T-19 Fase 3: deactivate non-winner variants em A/B test.
+
+        Gate canonical aplicado em sequência:
+        1. Significance gate (z-test p<0.01 + n>=100) OU
+           Thompson Bayesian gate (winner_probability >= threshold) — opt-in.
+        2. FairnessGate (T-19 Fase 1 ADR-031-v3) — bloqueia winner com viés.
+        3. Promote (deactivate losers).
+
+        Args:
+            test_name: experiment identifier
+            db: AsyncSession
+            use_thompson_sampling: True = Bayesian gate (Thompson winner_prob).
+                Default False (backward compat — keep z-test).
+            thompson_threshold: minimum P(winner is best) para promote.
+                Default 0.95 (canonical Bayesian convergence threshold).
+
+        Returns: {"promoted": bool, "winner": str | None, "reason": str,
+                  "gate_used": "frequentist" | "thompson"}
         """
         from sqlalchemy import update as _update
         results = await self.get_test_results(test_name, db)
@@ -346,7 +368,6 @@ class ABTestingService:
             return {"promoted": False, "winner": None, "reason": "no_winner_yet"}
 
         winner_info = results["winner"]
-        p_value = winner_info.get("p_value", 1.0)
         sig_results = results.get("statistical_significance") or {}
         min_n = min(
             (v.get("n_control", 0) for v in sig_results.values()),
@@ -357,19 +378,96 @@ class ABTestingService:
             default=0,
         ))
 
-        if p_value >= 0.01:
-            return {
-                "promoted": False,
-                "winner": winner_info["variant"],
-                "reason": f"p_value={p_value:.4f} >= 0.01",
-            }
+        gate_used = "thompson" if use_thompson_sampling else "frequentist"
 
-        if min_n < 100:
-            return {
-                "promoted": False,
-                "winner": winner_info["variant"],
-                "reason": f"n={min_n} < 100",
-            }
+        # T-19 Fase 3 THOMPSON INTEGRATE canonical (ADR-AB-001):
+        # Bayesian gate alternativo via ThompsonSampler.winner_probability.
+        # Lê posteriors persistidos (T-19 Fase 2 BanditPosterior table).
+        if use_thompson_sampling:
+            try:
+                from app.shared.intelligence.ab_testing.thompson_sampler import (
+                    ThompsonSampler,
+                )
+                from app.shared.intelligence.ab_testing.bandit_posterior_repository import (
+                    BanditPosteriorRepository,
+                )
+
+                _repo = BanditPosteriorRepository(db)
+                _posteriors = await _repo.get_all_for_test(test_name)
+                if not _posteriors:
+                    return {
+                        "promoted": False,
+                        "winner": winner_info["variant"],
+                        "reason": "thompson: no posteriors persisted yet",
+                        "gate_used": gate_used,
+                    }
+
+                _sampler = ThompsonSampler(seed=42)
+                _arms = []
+                for _p in _posteriors:
+                    _sampler.update(
+                        _p.arm,
+                        successes=max(0, int(round(_p.alpha - 1.0))),
+                        failures=max(0, int(round(_p.beta - 1.0))),
+                    )
+                    _arms.append(_p.arm)
+
+                _winner_arm = winner_info["variant"]
+                if _winner_arm not in _arms:
+                    return {
+                        "promoted": False,
+                        "winner": _winner_arm,
+                        "reason": f"thompson: winner {_winner_arm} not in posteriors {_arms}",
+                        "gate_used": gate_used,
+                    }
+
+                _winner_prob = _sampler.winner_probability(
+                    _winner_arm, _arms, n_simulations=5000
+                )
+                if _winner_prob < thompson_threshold:
+                    return {
+                        "promoted": False,
+                        "winner": _winner_arm,
+                        "reason": (
+                            f"thompson: P({_winner_arm} best)={_winner_prob:.4f} "
+                            f"< threshold {thompson_threshold}"
+                        ),
+                        "gate_used": gate_used,
+                        "thompson_winner_probability": _winner_prob,
+                    }
+                logger.info(
+                    "[AB-TEST T-19 Fase 3] Thompson gate PASSED: "
+                    "test=%s winner=%s P=%.4f >= %s",
+                    test_name, _winner_arm, _winner_prob, thompson_threshold,
+                )
+            except Exception as _thomp_exc:
+                logger.warning(
+                    "[AB-TEST T-19 Fase 3] Thompson gate failed (fail-soft): %s — "
+                    "falling back to frequentist z-test",
+                    str(_thomp_exc)[:200],
+                )
+                gate_used = "frequentist_fallback"
+                # Continue para frequentist gate (não-bloqueia)
+
+        # Frequentist gate canonical (z-test) — sempre roda se Thompson não ativado
+        # OU se Thompson falhou (fallback).
+        if gate_used != "thompson":
+            p_value = winner_info.get("p_value", 1.0)
+            if p_value >= 0.01:
+                return {
+                    "promoted": False,
+                    "winner": winner_info["variant"],
+                    "reason": f"p_value={p_value:.4f} >= 0.01",
+                    "gate_used": gate_used,
+                }
+
+            if min_n < 100:
+                return {
+                    "promoted": False,
+                    "winner": winner_info["variant"],
+                    "reason": f"n={min_n} < 100",
+                    "gate_used": gate_used,
+                }
 
         # T-19 FAIRNESS GATE canonical (ADR-031-v3 + ADR-AB-001):
         # Winner variant DEVE passar FairnessGuard antes de promoção.
