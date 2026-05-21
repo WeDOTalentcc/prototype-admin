@@ -1,0 +1,55 @@
+name: Cross-Tenant SQL Sensor
+
+# Registrado 2026-05-21 (audit P0.A sistemico). Sensor BLOCKING que
+# detecta queries SELECT/JOIN contra tabelas tenant-scoped (candidates,
+# vacancy_candidates, candidate_list_members) sem filtro company_id.
+#
+# Baseline inicial: 44 offenders conhecidos em 7 tool_registry files.
+# Ratched para 0 conforme fixes em sub-sprints B/C/D.
+#
+# REGRA canonical: cada SQL block tocando tenant-scoped table DEVE ter
+# company_id em WHERE, OU comment '# CROSS-TENANT-EXEMPT: <justification>'
+# imediatamente acima do block.
+#
+# Promote para BLOCKING --baseline 0 quando todos os 44 sites forem
+# fixados ou explicitamente EXEMPT com justificativa.
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - "feat/**"
+      - "fix/**"
+  pull_request:
+
+jobs:
+  cross-tenant-sql:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Cross-tenant SQL sensor (BLOCKING, ratched baseline)
+        working-directory: lia-agent-system
+        run: |
+          # Baseline 44 (audit 2026-05-21). Ratchet DOWN conforme fixes
+          # em sub-sprints B/C/D (P0.A sistemico). Eventual goal:
+          # baseline 0 + strict --blocking.
+          #
+          # Quando reduzir baseline, edite este step E commite o novo
+          # numero. Cada commit reduzindo o baseline e tracable.
+          python3 scripts/check_no_cross_tenant_query.py \
+            --root . \
+            --blocking \
+            --baseline 44
+
+      - name: Human-readable report (always)
+        if: always()
+        working-directory: lia-agent-system
+        run: |
+          python3 scripts/check_no_cross_tenant_query.py --root . | head -100
