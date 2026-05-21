@@ -371,6 +371,56 @@ class ABTestingService:
                 "reason": f"n={min_n} < 100",
             }
 
+        # T-19 FAIRNESS GATE canonical (ADR-031-v3 + ADR-AB-001):
+        # Winner variant DEVE passar FairnessGuard antes de promoção.
+        # Previne discriminação indireta via A/B test winner que tem viés.
+        # Fail-soft: se FairnessGuard indisponível, alerta WARN + permite promoção
+        # (não bloqueia caminho crítico — sensor canonical detectará gap).
+        try:
+            from app.shared.compliance.fairness_guard import FairnessGuard
+            _guard = FairnessGuard()
+            # Resolve variant prompt text to validate
+            _winner_variant_row = await db.execute(
+                select(PromptVariant).where(
+                    PromptVariant.test_name == test_name,
+                    PromptVariant.variant_name == winner_info["variant"],
+                ).limit(1)
+            )
+            _wv = _winner_variant_row.scalars().first()
+            _prompt_text = getattr(_wv, "prompt_text", None) or ""
+            if _prompt_text:
+                _fairness_result = _guard.check(
+                    query=_prompt_text,
+                    action_type="ab_test_winner_promotion",
+                )
+                if getattr(_fairness_result, "is_blocked", False):
+                    logger.warning(
+                        "[AB-TEST T-19] FAIRNESS GATE BLOCKED promotion: "
+                        "test=%s winner=%s reason=%s",
+                        test_name,
+                        winner_info["variant"],
+                        getattr(_fairness_result, "blocked_reason", "fairness_violation"),
+                    )
+                    return {
+                        "promoted": False,
+                        "winner": winner_info["variant"],
+                        "reason": (
+                            "fairness_gate_blocked: "
+                            + getattr(_fairness_result, "blocked_reason", "fairness_violation")
+                        ),
+                        "fairness_violation": True,
+                    }
+        except ImportError:
+            logger.warning(
+                "[AB-TEST T-19] FairnessGuard not available — promoting WITHOUT gate "
+                "(sensor canonical detectará gap em CI)"
+            )
+        except Exception as _fg_exc:
+            logger.warning(
+                "[AB-TEST T-19] FairnessGuard check failed (non-blocking): %s",
+                str(_fg_exc)[:200],
+            )
+
         # Promote: deactivate losing variants
         await db.execute(
             _update(PromptVariant)
