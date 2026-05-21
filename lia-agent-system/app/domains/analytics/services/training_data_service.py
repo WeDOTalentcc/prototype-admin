@@ -149,24 +149,31 @@ class TrainingDataService:
             limit=limit
         )
         
+        # T-21b WIRE canonical: anonimização ANTES de empacotar (ADR-LGPD-002)
+        anonymized = await self._anonymize_feedback_batch(
+            feedback_entries, company_id=company_id
+        )
+
         training_data = []
-        for feedback in feedback_entries:
-            if not feedback.user_message or not feedback.lia_response:
+        for sample in anonymized:
+            if not sample.get("user_message") or not sample.get("lia_response"):
                 continue
-            
+
             example = {
                 "messages": [
                     {"role": "system", "content": SYSTEM_PROMPT_FOR_TRAINING},
-                    {"role": "user", "content": feedback.user_message},
-                    {"role": "assistant", "content": feedback.lia_response}
-                ]
+                    {"role": "user", "content": sample["user_message"]},
+                    {"role": "assistant", "content": sample["lia_response"]},
+                ],
+                "_anonymization_version": sample.get("_anonymization_version"),
             }
             training_data.append(example)
-        
+
         self.logger.info(
-            f"Exported {len(training_data)} samples in OpenAI format for company {company_id}"
+            f"Exported {len(training_data)} samples in OpenAI format for company {company_id} "
+            f"(anonymized=TrainingDataAnonymizer canonical)"
         )
-        
+
         return training_data
     
     async def export_anthropic_format(
@@ -195,23 +202,30 @@ class TrainingDataService:
             limit=limit
         )
         
+        # T-21b WIRE canonical: anonimização ANTES de empacotar (ADR-LGPD-002)
+        anonymized = await self._anonymize_feedback_batch(
+            feedback_entries, company_id=company_id
+        )
+
         training_data = []
-        for feedback in feedback_entries:
-            if not feedback.user_message or not feedback.lia_response:
+        for sample in anonymized:
+            if not sample.get("user_message") or not sample.get("lia_response"):
                 continue
-            
-            prompt = f"\n\nHuman: {feedback.user_message}\n\nAssistant:"
-            
+
+            prompt = f"\n\nHuman: {sample['user_message']}\n\nAssistant:"
+
             example = {
                 "prompt": prompt,
-                "completion": f" {feedback.lia_response}"
+                "completion": f" {sample['lia_response']}",
+                "_anonymization_version": sample.get("_anonymization_version"),
             }
             training_data.append(example)
-        
+
         self.logger.info(
-            f"Exported {len(training_data)} samples in Anthropic format for company {company_id}"
+            f"Exported {len(training_data)} samples in Anthropic format for company {company_id} "
+            f"(anonymized=TrainingDataAnonymizer canonical)"
         )
-        
+
         return training_data
     
     async def export_dpo_pairs(
@@ -240,25 +254,36 @@ class TrainingDataService:
             require_correction=True
         )
         
+        # T-21b WIRE canonical: anonimização ANTES de empacotar (ADR-LGPD-002)
+        anonymized = await self._anonymize_feedback_batch(
+            feedback_entries, company_id=company_id
+        )
+
         dpo_pairs = []
-        for feedback in feedback_entries:
-            if not feedback.user_message or not feedback.lia_response or not feedback.correction:
+        for sample in anonymized:
+            if (
+                not sample.get("user_message")
+                or not sample.get("lia_response")
+                or not sample.get("correction")
+            ):
                 continue
-            
-            if len(feedback.correction.strip()) < self.MIN_RESPONSE_LENGTH:
+
+            if len(sample["correction"].strip()) < self.MIN_RESPONSE_LENGTH:
                 continue
-            
+
             pair = {
-                "prompt": feedback.user_message,
-                "chosen": feedback.correction,
-                "rejected": feedback.lia_response
+                "prompt": sample["user_message"],
+                "chosen": sample["correction"],
+                "rejected": sample["lia_response"],
+                "_anonymization_version": sample.get("_anonymization_version"),
             }
             dpo_pairs.append(pair)
-        
+
         self.logger.info(
-            f"Exported {len(dpo_pairs)} DPO pairs for company {company_id}"
+            f"Exported {len(dpo_pairs)} DPO pairs for company {company_id} "
+            f"(anonymized=TrainingDataAnonymizer canonical)"
         )
-        
+
         return dpo_pairs
     
     async def get_export_statistics(

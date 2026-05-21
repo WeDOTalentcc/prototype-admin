@@ -4,10 +4,11 @@
 Regra: `training_data_service.export_*` métodos DEVEM chamar
 `TrainingDataAnonymizer.process_batch()` ou `anonymize_sample()` antes do return.
 
-Modo: WARN-ONLY inicial. BLOCKING após T-21 fix completo.
+Modo: BLOCKING por default (T-21b POST-WIRE: BLOCKING by default).
+Use --warn-only para opt-out (legacy ratchet em branches atrasadas).
 
 Uso:
-    python scripts/check_training_data_anonymized.py [--strict]
+    python scripts/check_training_data_anonymized.py [--warn-only]
 """
 from __future__ import annotations
 
@@ -16,7 +17,7 @@ import sys
 from pathlib import Path
 
 
-def check(strict: bool = False) -> int:
+def check(strict: bool = True) -> int:
     repo_root = Path(__file__).resolve().parent.parent
     target = (
         repo_root / "app/domains/analytics/services/training_data_service.py"
@@ -73,5 +74,6 @@ def check(strict: bool = False) -> int:
 
 
 if __name__ == "__main__":
-    strict = "--strict" in sys.argv
+    # T-21b POST-WIRE: BLOCKING by default. --warn-only opt-out for legacy ratchet.
+    strict = "--warn-only" not in sys.argv
     sys.exit(check(strict=strict))
