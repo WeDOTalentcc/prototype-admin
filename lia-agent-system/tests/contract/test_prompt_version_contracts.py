@@ -58,11 +58,11 @@ class TestAdminPromptsEndpoint:
 
 class TestPromptVersionRegistryInterface:
     def test_classe_exportada(self):
-        module = importlib.import_module("app.services.prompt_version_registry")
+        module = importlib.import_module("app.shared.services.prompt_version_registry")
         assert hasattr(module, "PromptVersionRegistry")
 
     def test_singleton_exportado(self):
-        module = importlib.import_module("app.services.prompt_version_registry")
+        module = importlib.import_module("app.shared.services.prompt_version_registry")
         assert hasattr(module, "prompt_version_registry")
 
     def test_metodo_register_existe(self):

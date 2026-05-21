@@ -43,6 +43,10 @@ class HitlApprovalResponse(BaseModel):
     timestamp: str
 
 
+# Backward-compat alias for legacy contract tests (canonical name = HitlApprovalResponse)
+ApprovalResponse = HitlApprovalResponse
+
+
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------

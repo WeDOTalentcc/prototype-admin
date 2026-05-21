@@ -76,8 +76,12 @@ class TwinKnowledgeIndexer:
             if not decision:
                 continue
 
+            # P0-4(b) audit 2026-05-21: LGPD Art. 7/11 — sem PII direta no embed.
+            # 'name' removido do candidate_snapshot. candidate_id mantido para JIT lookup
+            # (que respeitará erasure via cascade na Wave 2). reviewer_notes embedado mas
+            # idealmente passaria por PII strip server-side antes (Wave 2).
             candidate_snapshot = {
-                "name": row.name,
+                "candidate_id": str(row.candidate_id),  # ref, não PII
                 "role_name": row.role_name,
                 "technical_skills": row.technical_skills or [],
                 "years_of_experience": row.years_of_experience,

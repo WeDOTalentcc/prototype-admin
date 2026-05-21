@@ -39,7 +39,7 @@ from app.shared.agents.agent_registry import register_agent
 from app.shared.agents.tenant_aware_agent import TenantAwareAgentMixin
 from app.shared.prompts.prompt_composer import PromptComposer
 
-@register_agent("talent_funnel")
+@register_agent("talent_funnel", aliases=["talent"])  # talent alias for legacy callers (test_context_type_routing_contracts)
 class TalentFunnelReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
     DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
         agent_type="talent",

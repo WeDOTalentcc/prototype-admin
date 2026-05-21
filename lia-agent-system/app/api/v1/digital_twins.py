@@ -70,8 +70,14 @@ company_id: str = Depends(require_company_id)):
     await db.commit()
     await db.refresh(twin)
 
-    # Index ATS history in background
+    # Index ATS history. P0-4(c) audit 2026-05-21: anti-silent-fallback (REGRA 4 CLAUDE.md).
+    # Antes: try/except: pass swallowava falha de indexação. Twin sempre criado vazio sem
+    # erro visível → recruiter via "Avaliação maybe (confiança 0%)" e achava que era bug.
+    # Agora: log explícito + retorna decisions_indexed=0 com flag indexing_failed=True
+    # no response. Frontend pode mostrar warning "Sem histórico ATS — twin criado vazio".
     indexed = 0
+    indexing_failed = False
+    indexing_error = None
     try:
         from app.services.twin_knowledge_indexer import twin_knowledge_indexer
         indexed = await twin_knowledge_indexer.index_from_ats_history(
@@ -80,14 +86,22 @@ company_id: str = Depends(require_company_id)):
             months_back=body.months_back,
             db=db,
         )
-    except Exception:
-        pass  # Non-blocking — twin is created even if indexing fails
+    except Exception as idx_exc:
+        indexing_failed = True
+        indexing_error = str(idx_exc)[:200]
+        logger.error(
+            "[DigitalTwin] index_from_ats_history failed for twin=%s company=%s: %s",
+            twin.id, company_id, idx_exc, exc_info=True,
+        )
 
     return {
         "twin_id": str(twin.id),
         "twin_name": twin.twin_name,
         "decisions_indexed": indexed,
         "status": "active",
+        "indexing_failed": indexing_failed,  # P0-4(c) — true if ATS history indexing failed
+        "indexing_error": indexing_error,     # human-readable error message if any
+        "needs_manual_indexing": indexed == 0,  # UX hint: twin nasceu vazio
     }
 
 
