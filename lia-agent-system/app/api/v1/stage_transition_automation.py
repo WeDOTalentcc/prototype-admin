@@ -65,6 +65,8 @@ class LiaParecer(BaseModel):
 
 
 class CandidateContext(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
     id: str
     name: str
     email: str | None = None
@@ -77,6 +79,8 @@ class CandidateContext(BaseModel):
 
 
 class JobContext(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
     id: str
     title: str
     department: str | None = None
@@ -363,6 +367,8 @@ class BulkGenerateMessagesRequest(WeDoBaseModel):
 
 
 class CandidateMessage(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
     candidate_id: str
     subject: str | None = None
     body: str

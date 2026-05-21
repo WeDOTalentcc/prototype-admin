@@ -34,6 +34,8 @@ class CommandsResponse(BaseModel):
 
 
 class ExecuteCommandContext(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
     job_id: str | None = None
     job_ids: list[str] | None = None
 
@@ -44,6 +46,8 @@ class ExecuteCommandRequest(WeDoBaseModel):
 
 
 class NaturalQueryContext(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
     job_id: str | None = None
     job_ids: list[str] | None = None
     page: str | None = None

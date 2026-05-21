@@ -121,6 +121,8 @@ class StageMoveContext(BaseModel):
 
     Multi-tenancy via Depends(require_company_id) in get_stage_move_suggestions.
     """
+    model_config = ConfigDict(extra='forbid')
+
     candidate_id: str = Field(..., description="ID do candidato sendo movido")
     candidate_name: str | None = Field(None, description="Nome do candidato")
     from_stage: str = Field(..., description="Etapa de origem")

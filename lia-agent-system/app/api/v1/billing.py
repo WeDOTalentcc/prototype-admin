@@ -238,6 +238,8 @@ class PaymentMethodItemWrapper(BaseModel):
 
 class ClientBillingData(BaseModel):
     """Typed data payload within client billing data response."""
+    model_config = ConfigDict(extra='forbid')
+
     client_id: str
     client_name: str | None = None
     plan_id: str | None = None

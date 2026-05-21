@@ -25,6 +25,8 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/lia/profile-analysis", tags=["LIA Profile Analysis"])
 
 class CandidateData(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
     name: str | None = None
     current_role: str | None = None
     current_company: str | None = None

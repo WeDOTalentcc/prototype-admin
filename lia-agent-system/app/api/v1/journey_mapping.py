@@ -177,6 +177,8 @@ class JourneyBlueprintResponse(BaseModel):
 
 
 class WizardStepData(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
     blueprint_id: uuid.UUID
     step_number: int
     data: dict[str, Any]
@@ -188,6 +190,8 @@ class WizardCompleteData(BaseModel):
     # T-06 R2 fix canonical: company_id field removed.
     # Multi-tenancy via Depends(require_company_id) in complete_wizard handler.
     """
+    model_config = ConfigDict(extra='forbid')
+
     vagas_abertura: str = Field(..., description="Origin type: requisicao_formal, demanda_direta, planejamento_anual")
     sistemas_usados: list[str] = Field(default=[], description="List of system IDs used")
     etapas_processo: list[str] = Field(default=[], description="List of process step names")
