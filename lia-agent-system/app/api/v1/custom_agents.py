@@ -62,6 +62,22 @@ company_id: str = Depends(require_company_id)):
             data=body.model_dump(),
         )
         await db.commit()
+        # P0-3 audit 2026-05-21: canonical lifecycle audit (EU AI Act Art. 12 / LGPD Art. 20)
+        from app.domains.agent_studio._audit_helper import studio_audit
+        await studio_audit(
+            company_id=current_user.company_id,
+            action="studio_agent_create",
+            decision="created",
+            reasoning=[
+                f"Agent name: {agent.name}",
+                f"Domain: {agent.domain}",
+                f"Tools: {len(agent.allowed_tools or [])} tools",
+                f"Status: {agent.status}",
+            ],
+            actor_user_id=str(current_user.id),
+            target_id=str(agent.id),
+            criteria_used=["name", "domain", "allowed_tools", "system_prompt"],
+        )
         return CustomAgentResponse(**agent.to_dict())
     except ValueError as e:
         await db.rollback()
@@ -155,6 +171,17 @@ company_id: str = Depends(require_company_id)):
         if not agent:
             raise HTTPException(status_code=404, detail="Agent not found")
         await db.commit()
+        # P0-3 audit 2026-05-21: canonical lifecycle audit
+        from app.domains.agent_studio._audit_helper import studio_audit
+        await studio_audit(
+            company_id=current_user.company_id,
+            action="studio_agent_update",
+            decision="updated",
+            reasoning=[f"Changed fields: {list(update_data.keys())}"],
+            actor_user_id=str(current_user.id),
+            target_id=str(agent.id),
+            criteria_used=list(update_data.keys()),
+        )
         return CustomAgentResponse(**agent.to_dict())
     except HTTPException:
         raise
@@ -178,6 +205,16 @@ company_id: str = Depends(require_company_id)):
         if not deleted:
             raise HTTPException(status_code=404, detail="Agent not found")
         await db.commit()
+        # P0-3 audit 2026-05-21: canonical lifecycle audit
+        from app.domains.agent_studio._audit_helper import studio_audit
+        await studio_audit(
+            company_id=current_user.company_id,
+            action="studio_agent_delete",
+            decision="deleted",
+            reasoning=[f"Agent {agent_id} permanently removed"],
+            actor_user_id=str(current_user.id),
+            target_id=agent_id,
+        )
     except HTTPException:
         raise
     except Exception as e:

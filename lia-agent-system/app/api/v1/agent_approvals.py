@@ -138,6 +138,22 @@ company_id: str = Depends(require_company_id)):
         )
         await db.commit()
 
+        # P0-3 audit 2026-05-21: canonical lifecycle audit (EU AI Act Art. 12 — review decision trail)
+        from app.domains.agent_studio._audit_helper import studio_audit
+        await studio_audit(
+            company_id=current_user.company_id,
+            action="studio_agent_review",
+            decision=body.action,
+            reasoning=[
+                f"Approval ID: {approval_id}",
+                f"Agent ID: {approval.agent_id}",
+                f"Reviewer notes: {body.notes or 'no notes'}",
+            ],
+            actor_user_id=str(current_user.id),
+            target_id=str(approval.agent_id),
+            target_type="agent_approval",
+        )
+
         # P2.5a: Notify creator of decision (non-blocking)
         try:
             from app.services.studio_notification_service import studio_notification_service
