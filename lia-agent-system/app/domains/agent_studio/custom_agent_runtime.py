@@ -280,8 +280,10 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         if self._context_level == "minimal":
             base = SystemPromptBuilder.build(
                 agent_type=builder_agent_type,
+                ai_persona=ctx.get("ai_persona"),  # P0-9 E2.3 per-tenant persona
                 extra_instructions=(
                     f"{intelligence_floor}\n\n"
+                    f"{ctx.get('lia_filtered_prompt', '')}\n\n"  # P0-8 lia_field_toggles canonical
                     f"INSTRUCOES ADICIONAIS DO OPERADOR:\n{self._system_prompt_template}"
                 ),
             )
@@ -294,8 +296,10 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
                 user_name=ctx.get("user_name", ""),
                 user_role=ctx.get("user_role", ""),
                 context_page=ctx.get("context_page", "general"),
+                ai_persona=ctx.get("ai_persona"),  # P0-9 E2.3 per-tenant persona
                 extra_instructions=(
                     f"{intelligence_floor}\n\n"
+                    f"{ctx.get('lia_filtered_prompt', '')}\n\n"  # P0-8 lia_field_toggles canonical
                     f"INSTRUCOES ADICIONAIS DO OPERADOR:\n{self._system_prompt_template}"
                 ),
             )
@@ -311,8 +315,10 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
             conversation_summary=ctx.get("conversation_summary", ""),
             conversation_history=ctx.get("conversation_history"),
             context_page=ctx.get("context_page", "general"),
+            ai_persona=ctx.get("ai_persona"),  # P0-9 E2.3 per-tenant persona
             extra_instructions=(
                 f"{intelligence_floor}\n\n"
+                f"{ctx.get('lia_filtered_prompt', '')}\n\n"  # P0-8 lia_field_toggles canonical
                 f"INSTRUCOES ADICIONAIS DO OPERADOR:\n{self._system_prompt_template}"
             ),
         )
@@ -409,6 +415,47 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
     ) -> AgentOutput:
         effective_company_id = company_id or self._company_id
         _token = _CURRENT_COMPANY_ID.set(effective_company_id)
+
+        # === P0-8 + P0-9 audit 2026-05-21: pre-load AI persona + lia_field_toggles canonical ===
+        # Antes: agent custom ignorava persona name/tone customizado pelo cliente E
+        # ignorava os 34 toggles "Instruções LIA por Campo" (ghost settings).
+        # Agora: helpers canônicos (get_ai_persona, build_company_agent_context) populam
+        # context para _get_system_prompt aplicar via SystemPromptBuilder. Best-effort:
+        # falhas logam warning e seguem com fallback (não bloqueia execução do agent).
+        try:
+            from app.core.database import AsyncSessionLocal
+            from app.domains.persona.services.ai_persona_service import get_ai_persona
+            from app.shared.services.lia_agent_context_builder import build_company_agent_context
+
+            _ctx_local = dict(context) if context else {}
+            async with AsyncSessionLocal() as _persona_db:
+                try:
+                    _persona = await get_ai_persona(effective_company_id, _persona_db)
+                    if _persona:
+                        _ctx_local["ai_persona"] = _persona
+                except Exception as _persona_exc:
+                    logger.warning(
+                        "[CustomAgentRuntime:%s] get_ai_persona failed: %s",
+                        self._agent_name, _persona_exc,
+                    )
+                try:
+                    _lia_filtered = await build_company_agent_context(
+                        effective_company_id, _persona_db,
+                        job_context=_ctx_local.get("job_context"),
+                    )
+                    if _lia_filtered:
+                        _ctx_local["lia_filtered_prompt"] = _lia_filtered
+                except Exception as _ctx_exc:
+                    logger.warning(
+                        "[CustomAgentRuntime:%s] build_company_agent_context failed: %s",
+                        self._agent_name, _ctx_exc,
+                    )
+            context = _ctx_local
+        except Exception as _preload_exc:
+            logger.warning(
+                "[CustomAgentRuntime:%s] persona/toggles preload skipped: %s",
+                self._agent_name, _preload_exc,
+            )
 
         # === 2.1: SecurityPatterns — block SQL injection, XSS, path traversal ===
         try:
