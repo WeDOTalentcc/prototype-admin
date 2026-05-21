@@ -2,6 +2,16 @@
 WSI Question Adjuster Service
 Regenerates WSI screening questions based on recruiter natural language requests.
 Uses Gemini 2.5 Flash for fast iteration.
+
+P0.D fix (audit 2026-05-21, harness REGRA 4): silent fallback eliminado em
+``evaluate_job_description``. Antes: try/except em torno do Gemini call
+retornava template fake (``lia_suggestion = f"Para melhorar..."``) sem
+flag — recrutador via parecer LIA legitimo quando na verdade era template
+estatico. Agora: ``safe_llm_with_flag_async`` wrap + flags ``fallback_used``
++ ``llm_failure_mode`` no return dict pra surface explicito.
+
+Mesmo pattern dos C19 (wsi report_generator) + outros siblings P0.D.
+Doc canonical: ``app/shared/llm/safe_response.py``.
 """
 
 import json
@@ -10,6 +20,8 @@ from app.domains.ai.services.llm import llm_service
 import logging
 import os
 from typing import Any
+
+from app.shared.llm.safe_response import safe_llm_with_flag_async
 
 logger = logging.getLogger(__name__)
 
@@ -219,12 +231,27 @@ Responda APENAS com JSON válido, sem markdown."""
         else:
             indicators.append({"label": "Senioridade", "count": 0, "status": "insufficient", "minimum": 1})
 
-        lia_suggestion = ""
         can_generate = score >= 50
 
-        try:
-            model = self._get_model()
-            eval_prompt = f"""Avalie este Job Description para geração de perguntas de triagem WSI.
+        # P0.D canonical (audit 2026-05-21): template fallback definido upfront.
+        # Conteudo eh template stock baseado nos counts (back-compat preservada),
+        # mas flag ``fallback_used=True`` eh setada quando Gemini falha — surface
+        # explicito pro caller que essa lia_suggestion NAO foi gerada pelo modelo.
+        def _build_template_suggestion() -> str:
+            template_parts: list[str] = []
+            if resp_count < 3:
+                template_parts.append(f"adicione mais {3 - resp_count} responsabilidade(s)")
+            if tech_count < 3:
+                template_parts.append(f"adicione mais {3 - tech_count} competência(s) técnica(s)")
+            if behav_count < 3:
+                template_parts.append(f"adicione mais {3 - behav_count} competência(s) comportamental(is)")
+            if not seniority:
+                template_parts.append("defina o nível de senioridade")
+            if template_parts:
+                return f"Para melhorar a qualidade das perguntas WSI, {', '.join(template_parts)}."
+            return "JD bem estruturado! Pronto para gerar perguntas de triagem WSI."
+
+        eval_prompt = f"""Avalie este Job Description para geração de perguntas de triagem WSI.
 
 Título: {job_title}
 Senioridade: {seniority or 'Não definida'}
@@ -243,28 +270,28 @@ Gere uma avaliação curta (2-3 frases) em português do Brasil:
 
 Responda APENAS com o texto da avaliação, sem formatação especial."""
 
+        async def _invoke_gemini() -> str:
+            # generate_native_gemini_sync eh sync; wrap em coroutine pra honrar
+            # o helper canonical safe_llm_with_flag_async signature.
             response = llm_service.generate_native_gemini_sync(
                 contents=[{"role": "user", "parts": [{"text": eval_prompt}]}],
                 model="gemini-2.5-flash",
                 generation_config={"temperature": 0.5, "max_output_tokens": 500},
             )
-            lia_suggestion = response.text.strip()
-        except Exception as e:
-            logger.error(f"Failed to generate LIA JD evaluation: {e}")
-            suggestions = []
-            if resp_count < 3:
-                suggestions.append(f"adicione mais {3 - resp_count} responsabilidade(s)")
-            if tech_count < 3:
-                suggestions.append(f"adicione mais {3 - tech_count} competência(s) técnica(s)")
-            if behav_count < 3:
-                suggestions.append(f"adicione mais {3 - behav_count} competência(s) comportamental(is)")
-            if not seniority:
-                suggestions.append("defina o nível de senioridade")
+            return response.text.strip()
 
-            if suggestions:
-                lia_suggestion = f"Para melhorar a qualidade das perguntas WSI, {', '.join(suggestions)}."
-            else:
-                lia_suggestion = "JD bem estruturado! Pronto para gerar perguntas de triagem WSI."
+        envelope = await safe_llm_with_flag_async(
+            _invoke_gemini,
+            fallback_data=_build_template_suggestion(),
+            # JD evaluation eh advisory (recrutador decide se gera questoes baseado
+            # no score quantitativo, nao na suggestion). Template eh canonical
+            # fallback funcional; nao precisa review manual obrigatorio.
+            needs_manual_review_on_fail=False,
+        )
+
+        lia_suggestion = (
+            envelope.data if envelope.success else envelope.data
+        )  # envelope.data carries the LLM result on success OR fallback on failure
 
         return {
             "success": True,
@@ -273,6 +300,16 @@ Responda APENAS com o texto da avaliação, sem formatação especial."""
             "indicators": indicators,
             "lia_suggestion": lia_suggestion,
             "can_generate": can_generate,
+            # P0.D canonical: flags pro caller saber se a lia_suggestion eh LLM-generated
+            # ou template fallback. Defaults preservam back-compat (callers que
+            # ignoram esses fields continuam funcionando).
+            "fallback_used": not envelope.success,
+            "llm_failure_mode": (
+                envelope.failure_mode.value if not envelope.success else None
+            ),
+            "llm_error_message": (
+                envelope.error_message if not envelope.success else None
+            ),
             "details": {
                 "responsibilities_count": resp_count,
                 "technical_skills_count": tech_count,

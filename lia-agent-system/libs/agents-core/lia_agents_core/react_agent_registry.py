@@ -138,6 +138,11 @@ class ReactAgentRegistry:
             KeyError: Se o domínio não estiver registrado.
         """
         agent = self.get_agent(domain)
+        # REGRA-4-EXEMPT: explicit error envelope, NAO eh silent fallback.
+        # Em failure: status dict carrega status="error" + error=str(exc)
+        # explicitos — caller pode introspectar e tratar diferente de
+        # status="ok". Nao mascara aparencia de success. Nao eh LLM call
+        # (status query interno). Audit anchor: 2026-05-21 P0.D triage.
         try:
             status = await agent.get_status()
         except Exception as exc:

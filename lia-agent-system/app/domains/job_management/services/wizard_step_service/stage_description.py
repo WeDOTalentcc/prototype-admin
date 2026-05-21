@@ -1,5 +1,13 @@
 """
 Stage 1 — Description handler for the wizard step service.
+
+P0.D fix (audit 2026-05-21, harness REGRA 4): silent fallback eliminado no
+``try/except Exception:`` que envolvia parse JSON + montagem de critérios.
+Antes: qualquer falha (JSON malformed, AttributeError, KeyError, ...) caia
+em ``lia_message = "Consegui processar a descrição..."`` — recrutador via
+LIA fingindo entender quando na verdade não conseguiu extrair nada. Agora:
+log de exception completa + flag ``description_parse_fallback_used=True``
+exposta via ``suggestions_data`` pro caller saber e pra UI degradar.
 """
 import json
 import logging
@@ -333,8 +341,27 @@ Analise esta descrição de vaga e extraia TODAS as informações possíveis.
         else:
             lia_message = "Entendi a descrição! Por favor, me informe se deseja ajustar algo ou adicione mais detalhes."
             detected_criteria = {}
-    except Exception:
-        lia_message = "Consegui processar a descrição. Verifique os critérios detectados no painel lateral."
-        detected_criteria = {}
+    except Exception as exc:
+        # P0.D canonical (audit 2026-05-21, harness REGRA 4): NAO silenciar.
+        # Log exception completa (com stack) pra ops, retorna envelope com
+        # fallback flag EXPLICITO via suggestions_data. Caller (service.py)
+        # passa suggestions_data ao frontend; novos consumers podem
+        # renderizar UI degraded ou fila revisao manual.
+        logger.exception(
+            "[WIZARD-STAGE1] Failed to parse LLM response or build criteria; "
+            "returning canonical fallback. error=%s",
+            exc,
+        )
+        suggestions_data["description_parse_fallback_used"] = True
+        suggestions_data["description_parse_error"] = str(exc)
+        suggestions_data["description_parse_error_type"] = type(exc).__name__
+        return (
+            "Consegui processar a descrição. Verifique os critérios detectados no painel lateral.",
+            {},
+            suggestions_data,
+        )
 
+    # Success path: garante back-compat marcando explicito fallback_used=False
+    # no suggestions_data (novos callers podem checar; antigos ignoram).
+    suggestions_data.setdefault("description_parse_fallback_used", False)
     return lia_message, detected_criteria, suggestions_data

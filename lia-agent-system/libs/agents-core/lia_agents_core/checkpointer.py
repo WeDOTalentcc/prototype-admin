@@ -119,6 +119,11 @@ async def initialize_checkpointer_async() -> Any:
     app_env = getattr(settings, "APP_ENV", "development")
     is_production_like = app_env in {"production", "staging"}
 
+    # REGRA-4-EXEMPT: bootstrap singleton com fail-loud env-aware. Em
+    # production/staging: raise RuntimeError (NAO fallback silent). Em dev:
+    # MemorySaver com WARNING log + _SAVER_KIND="memory" (introspectavel
+    # pelo caller, NAO mascara). Nao eh LLM call (LangGraph checkpointer
+    # bootstrap). Audit anchor: 2026-05-21 P0.D triage.
     try:
         saver = await _build_async_postgres_saver()
     except Exception as exc:

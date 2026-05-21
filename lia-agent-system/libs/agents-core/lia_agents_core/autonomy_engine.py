@@ -76,6 +76,11 @@ class AutonomyEngine:
             return cached["policy"]
 
         logger.info("AutonomyEngine loading policy for company_id=%s", company_id)
+        # REGRA-4-EXEMPT: fail-closed bootstrap. DB error → policy=None →
+        # _get_autonomy_level(None) → "low" (autonomia minima). NAO eh LLM
+        # call e nao mascara falha — caller intencionalmente trata None
+        # como "deny by default" (canonical defensivo). Logger.exception
+        # ja captura stack pra ops. Audit anchor: 2026-05-21 P0.D triage.
         try:
             async with AsyncSessionLocal() as session:
                 result = await session.execute(

@@ -426,7 +426,14 @@ async def _wrap_recommend_actions(**kwargs: Any) -> dict[str, Any]:
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[talent_tools] recommend_actions called: candidates={len(candidate_ids)}")
 
-    recommendations = []
+    # P0.D canonical (audit 2026-05-21, harness REGRA 4): flags pra surface
+    # explicito quando DB query falha e caimos no template stock. Antes:
+    # except Exception retornava {"action": "review_profile"} pra cada
+    # candidato com {"success": True} — recrutador via "recomendacoes
+    # geradas pela LIA" sem saber que era template generico (DB error
+    # mascarado). Agora: caller pode checar fallback_used e renderizar
+    # UI degraded.
+    recommendations: list[dict[str, Any]] = []
     try:
         if candidate_ids:
             async with AsyncSessionLocal() as session:
@@ -479,10 +486,33 @@ async def _wrap_recommend_actions(**kwargs: Any) -> dict[str, Any]:
                         "actions": actions,
                     })
     except Exception as e:
+        # P0.D canonical: NAO silenciar. Log exception completa (com stack)
+        # pra ops/oncall ter contexto, e retorna envelope EXPLICITO com
+        # fallback_used=True pro caller saber que recomendacoes vem de
+        # template stock (nao do DB).
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-        logger.warning(f"[talent_tools] recommend_actions DB error: {e}")
-        recommendations = [{"candidate_id": cid, "actions": [{"action": "review_profile", "priority": "low"}]}
-                           for cid in candidate_ids]
+        logger.exception(
+            "[talent_tools] recommend_actions DB error; returning stock fallback. error=%s",
+            e,
+        )
+        fallback_recommendations = [
+            {"candidate_id": cid, "actions": [{"action": "review_profile", "priority": "low"}]}
+            for cid in candidate_ids
+        ]
+        return {
+            "success": True,
+            "data": {
+                "candidate_ids": candidate_ids,
+                "recommendations_count": len(fallback_recommendations),
+                "recommendations": fallback_recommendations,
+            },
+            "message": f"Recomendacoes geradas para {len(fallback_recommendations)} candidatos.",
+            # P0.D canonical: envelope EXPLICITO de fallback. Caller pode
+            # renderizar UI degraded ou fila pra revisao manual.
+            "fallback_used": True,
+            "needs_manual_review": True,
+            "fallback_reason": f"{type(e).__name__}: {e}",
+        }
 
     return {
         "success": True,
@@ -492,6 +522,12 @@ async def _wrap_recommend_actions(**kwargs: Any) -> dict[str, Any]:
             "recommendations": recommendations,
         },
         "message": f"Recomendacoes geradas para {len(recommendations)} candidatos.",
+        # P0.D canonical: path normal — explicit False pra distinguir do
+        # envelope de fallback acima. Defaults preservam back-compat com
+        # callers que nao checam esses campos.
+        "fallback_used": False,
+        "needs_manual_review": False,
+        "fallback_reason": None,
     }
 
 
