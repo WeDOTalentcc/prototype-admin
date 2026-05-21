@@ -8,10 +8,12 @@ Regras (R1-R5):
 - R4: tests em tests/test_domains/test_{domain_id}*.py OU tests/unit/test_{domain_id}_domain.py
 - R5: promotion candidates state preview (5 candidates ADR-V3.1)
 
-Modo: WARN-ONLY inicial. BLOCKING após primeira passada limpa.
+Modo: BLOCKING [PROMOTED Sprint 8 Frente B] — baseline 0 violations confirmado
+2026-05-21. Use --warn-only para opt-out em branches legadas (ratchet).
 
 Uso:
-    python scripts/check_canonical_domain_structure.py [--strict]
+    python scripts/check_canonical_domain_structure.py            # BLOCKING (default)
+    python scripts/check_canonical_domain_structure.py --warn-only  # opt-out
 """
 from __future__ import annotations
 
@@ -140,7 +142,7 @@ def check_r4_tests(repo_root: Path, domain_id: str) -> list[str]:
     ]
 
 
-def check(strict: bool = False) -> int:
+def check(strict: bool = True) -> int:
     repo_root = Path(__file__).resolve().parent.parent
     all_issues: list[str] = []
     all_warnings: list[str] = []
@@ -199,5 +201,8 @@ def check(strict: bool = False) -> int:
 
 
 if __name__ == "__main__":
-    strict = "--strict" in sys.argv
+    # PROMOTED Sprint 8 Frente B (2026-05-21): default BLOCKING.
+    # --warn-only é opt-out para branches legadas/ratchet incremental.
+    # --strict mantido como alias backward-compatible (no-op em modo default).
+    strict = "--warn-only" not in sys.argv
     sys.exit(check(strict=strict))
