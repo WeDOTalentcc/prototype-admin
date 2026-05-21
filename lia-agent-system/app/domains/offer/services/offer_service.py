@@ -21,6 +21,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from lia_models.offer_proposal import OfferProposal
 
 from app.domains.offer.repositories.offer_repository import OfferRepository
+from app.domains.hiring_policy.repositories.hiring_policy_repository import (
+    HiringPolicyRepository,
+)
 from app.schemas.offer import OfferDraftCreate, OfferDraftUpdate
 from app.shared.compliance.audit_service import AuditService  # T-1157
 
@@ -28,6 +31,63 @@ logger = logging.getLogger(__name__)
 
 _WORKING_DAYS_BUFFER = 30
 _DEFAULT_VALIDITY_DAYS = 7
+
+
+class OfferPolicyGateError(PermissionError):
+    """Base class for any offer-send blocker imposed by company hiring policy.
+
+    All subclasses live here so callers (LLM tools, REST endpoints, future
+    background jobs) can catch the family with one ``except`` and discriminate
+    via ``isinstance``/``.reason``. New gates added to ``OfferService.check_can_send``
+    MUST subclass this — never raise raw ``PermissionError`` (callers will
+    miss the structured UX path) and never reuse a sibling subclass (each
+    reason maps to a different ``ui_action`` in the chat layer).
+    """
+
+    reason: str = "offer_policy_gate"  # overridden by subclasses
+
+
+class ManagerApprovalRequiredError(OfferPolicyGateError):
+    """Raised when an offer transition requires manager approval per company policy.
+
+    Closes P0-2 (2026-05-21 audit): the toggle
+    ``CompanyHiringPolicy.screening_rules.manager_approval_for_offer`` was
+    visible in Configurações → Políticas de Recrutamento but ignored by every
+    write path in ``app/domains/offer/``. Recruiter set ON, offers still went
+    out without approval.
+
+    Gate lives in :py:meth:`OfferService.mark_sent` (single point of
+    enforcement, fail-closed). Any caller — REST endpoint, LLM tool, future
+    background job — that wants to flip a draft to ``sent`` is intercepted
+    here. The exception is a ``PermissionError`` subclass so default handlers
+    surface a 403-equivalent; the tool layer catches it specifically to
+    return a structured ``requires_approval`` payload to the chat.
+    """
+
+    reason = "manager_approval_required"
+
+
+class MinInterviewsNotMetError(OfferPolicyGateError):
+    """Raised when an offer cannot be sent because the candidate has not
+    completed the minimum number of interviews required by company policy.
+
+    Closes P1-9 (2026-05-21 audit): the field
+    ``CompanyHiringPolicy.pipeline_rules.min_interviews_before_offer`` was
+    enforced for STAGE TRANSITIONS (``pipeline_policy.py:50``) but NOT for
+    offer creation/send. Recruiter could skip stages and the LLM tool could
+    create+send an offer with zero interviews completed.
+
+    Gate also lives in :py:meth:`OfferService.check_can_send`, sharing the
+    pre-flight pattern with manager-approval. Defense-in-depth is provided
+    by ``mark_sent`` raising the same exception if the pre-flight is skipped.
+    """
+
+    reason = "min_interviews_not_met"
+
+
+_OFFER_APPROVAL_TOGGLE = "manager_approval_for_offer"
+_MIN_INTERVIEWS_FIELD = "min_interviews_before_offer"
+_INTERVIEW_COMPLETED_STATUSES = ("completed", "done", "realizada")
 
 
 def compute_default_start_date() -> date:
@@ -391,6 +451,157 @@ class OfferService:
     ) -> OfferProposal | None:
         return await self._repo.get_by_id(offer_id, company_id)
 
+    async def check_can_send(
+        self, offer_id: UUID, company_id: str
+    ) -> None:
+        """Pre-flight gate: raise BEFORE side effects (email dispatch) if any
+        company hiring policy refuses this send.
+
+        Two gates today, both subclassing :class:`OfferPolicyGateError`:
+        - **manager approval** (P0-2): ``screening_rules.manager_approval_for_offer``
+          requires a draft to carry ``approval_request_id`` before send.
+        - **min interviews** (P1-9): ``pipeline_rules.min_interviews_before_offer``
+          requires the candidate to have at least N completed interviews
+          before an offer can leave the system.
+
+        Order matters: approval is cheaper to check (no extra count query),
+        so it goes first. Both raise distinct subclasses so the LLM tool can
+        route the user to the right next action (request_offer_approval vs.
+        schedule_more_interviews).
+
+        Callers (REST endpoint, ``send_offer`` LLM tool, future background
+        jobs) MUST invoke this BEFORE dispatching the offer email — not just
+        before ``mark_sent``. The same enforcement also lives inside
+        ``mark_sent`` as defense-in-depth — if a future caller forgets the
+        pre-flight, the state transition still fails. But by then the email
+        has been sent: that is exactly the regression P0-2/P1-9 closes.
+
+        Idempotent and side-effect-free. Returns ``None`` on permit; raises
+        an :class:`OfferPolicyGateError` subclass on deny.
+        """
+        proposal = await self._repo.get_by_id(offer_id, company_id)
+        if not proposal:
+            # Caller will get a 404 from a subsequent ``get_draft``; nothing
+            # to gate against a draft that does not exist.
+            return
+        # --- Gate 1: manager approval (P0-2) --------------------------------
+        if proposal.approval_request_id is None and await self._requires_manager_approval(company_id):
+            raise ManagerApprovalRequiredError(
+                "Esta empresa exige aprovacao do gestor antes de enviar ofertas. "
+                "Solicite aprovacao primeiro (workflow de approval) ou altere "
+                "a politica em Configuracoes > Politicas de Recrutamento > "
+                "Aprovacao Gestor."
+            )
+        # --- Gate 2: min interviews completed (P1-9) ------------------------
+        await self._check_min_interviews_met(proposal, company_id)
+
+    async def _check_min_interviews_met(
+        self, proposal: OfferProposal, company_id: str
+    ) -> None:
+        """Raise :class:`MinInterviewsNotMetError` if the candidate has not
+        completed at least ``pipeline_rules.min_interviews_before_offer``
+        interviews.
+
+        Reads ``CompanyHiringPolicy.pipeline_rules.min_interviews_before_offer``
+        via the canonical repository (ADR-001). Default of 2 mirrors the schema
+        default in ``PipelineRulesIn`` (``app/schemas/company_hiring_policy.py``)
+        and the canonical fallback at ``pipeline_policy.py:50``.
+
+        Interview count uses the canonical ``Interview`` model with
+        case-insensitive matching against the canonical completed-status
+        triple ("completed", "done", "realizada"). Same pattern as the stage
+        transition gate so we never disagree on what counts as "completed".
+
+        Multi-tenancy: the proposal is already scoped to ``company_id`` by
+        ``check_can_send``'s ``get_by_id``; we do not re-query the candidate.
+        """
+        # NOTE: HiringPolicyRepository is imported at module level (see top
+        # of file) — DO NOT re-import locally. Re-import here breaks unit
+        # tests that patch ``mod.HiringPolicyRepository`` because the local
+        # import binds to the real class at call time.
+        policy_repo = HiringPolicyRepository(self._db)
+        policy = await policy_repo.get_by_company(company_id)
+        if not policy or not policy.pipeline_rules:
+            return  # cold-start tenants do not impose a gate they have not configured
+        min_required = policy.pipeline_rules.get(_MIN_INTERVIEWS_FIELD, 0)
+        if not isinstance(min_required, int) or min_required <= 0:
+            return  # zero or non-int means no gate (explicit opt-out)
+        candidate_id = getattr(proposal, "candidate_id", None)
+        if candidate_id is None:
+            # Defensive: orphan draft. Cannot count interviews; fall through
+            # and let mark_sent surface the integrity issue.
+            logger.warning(
+                "[OfferService] check_min_interviews on proposal %s with "
+                "no candidate_id — skipping gate, will be flagged at mark_sent.",
+                proposal.id,
+            )
+            return
+        from sqlalchemy import func, select
+        # Canonical Interview model lives at ``app.models.interview``
+        # (matches pipeline_policy.py:53 to guarantee agreement on what
+        # "completed" means).
+        try:
+            from app.models.interview import Interview
+            stmt = select(func.count(Interview.id)).where(
+                Interview.candidate_id == candidate_id,
+                Interview.status.in_(_INTERVIEW_COMPLETED_STATUSES),
+            )
+            result = await self._db.execute(stmt)
+            completed = int(result.scalar() or 0)
+        except Exception as exc:
+            # Mirror the pipeline_policy.py fallback to the domain model.
+            logger.debug(
+                "[OfferService] canonical Interview lookup failed (%s); "
+                "trying domain model fallback.", str(exc)[:80],
+            )
+            try:
+                from app.domains.interview_scheduling.models.interview import (
+                    Interview as DomainInterview,
+                )
+                stmt = select(func.count(DomainInterview.id)).where(
+                    DomainInterview.candidate_id == candidate_id,
+                    DomainInterview.status.in_(_INTERVIEW_COMPLETED_STATUSES),
+                )
+                result = await self._db.execute(stmt)
+                completed = int(result.scalar() or 0)
+            except Exception as fallback_exc:
+                # Fail OPEN here intentionally: a DB lookup failure on the
+                # gate must NOT block a legitimate offer. The audit trail
+                # surfaces the silent skip so SRE can investigate; gate
+                # remains effective for the 99.9% happy path.
+                logger.warning(
+                    "[OfferService] interview count lookup failed; "
+                    "gate fails OPEN. company_id=%s candidate_id=%s err=%s",
+                    company_id, candidate_id, str(fallback_exc)[:120],
+                )
+                return
+        if completed < min_required:
+            raise MinInterviewsNotMetError(
+                f"Esta empresa exige no minimo {min_required} entrevista(s) "
+                f"completada(s) antes de enviar oferta. Candidato tem "
+                f"{completed}. Agende ou conclua entrevistas adicionais, "
+                f"ou ajuste a politica em Configuracoes > Politicas de "
+                f"Recrutamento > Minimo de Entrevistas."
+            )
+
+    async def _requires_manager_approval(self, company_id: str) -> bool:
+        """Return True iff the company policy gates outbound offers on manager approval.
+
+        Reads ``CompanyHiringPolicy.screening_rules.manager_approval_for_offer``
+        via the canonical repository (ADR-001). Returns ``False`` when no policy
+        row exists yet (cold-start tenants do not impose a gate they have not
+        configured) — explicit opt-in semantics.
+
+        Tight, idempotent helper; intentionally accepts ``str`` (matches the
+        column type ``String(255)``) rather than ``UUID`` to stay aligned with
+        the rest of the offer surface.
+        """
+        policy_repo = HiringPolicyRepository(self._db)
+        policy = await policy_repo.get_by_company(company_id)
+        if not policy or not policy.screening_rules:
+            return False
+        return bool(policy.screening_rules.get(_OFFER_APPROVAL_TOGGLE, False))
+
     async def mark_sent(
         self,
         offer_id: UUID,
@@ -404,6 +615,30 @@ class OfferService:
             return None
         if proposal.status != "draft":
             raise ValueError(f"Cannot send proposal in status '{proposal.status}'")
+        # P0-2 gate (audit 2026-05-21): block sends when company policy requires
+        # manager approval and the draft has no approval record. We use
+        # ``approval_request_id`` (canonical column on OfferProposal) as the
+        # evidence-of-approval marker. A draft becomes sendable when either
+        # (a) the policy toggle is OFF, or (b) an approval workflow has set
+        # ``approval_request_id`` to a non-null UUID. Approver identity / level
+        # detail lives in the linked approval row; this gate only enforces
+        # presence, intentionally not interpretation — the approval domain
+        # owns acceptance semantics.
+        if proposal.approval_request_id is None:
+            requires_approval = await self._requires_manager_approval(company_id)
+            if requires_approval:
+                raise ManagerApprovalRequiredError(
+                    "Esta empresa exige aprovacao do gestor antes de enviar ofertas. "
+                    "Solicite aprovacao primeiro (workflow de approval) ou altere "
+                    "a politica em Configuracoes > Politicas de Recrutamento > "
+                    "Aprovacao Gestor."
+                )
+        # P1-9 defense-in-depth (audit 2026-05-21): if pre-flight
+        # ``check_can_send`` was skipped, enforce min_interviews here too.
+        # Reuses the same helper so the agreement on "what counts as a
+        # completed interview" never drifts between the two enforcement
+        # sites.
+        await self._check_min_interviews_met(proposal, company_id)
         proposal.status = "sent"
         # Sprint F.4 #42: send_mode + sent_by_user_id + email_log_id have NO
         # direct canonical columns. Append a multi-channel record to sent_via

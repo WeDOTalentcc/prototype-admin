@@ -60,10 +60,16 @@ class TestOfferDraftUpdate:
         assert m is not None
 
     def test_salary_update(self):
+        """Sprint F.4 #42 canonical-remap: wire-level field names are still
+        accepted as validation aliases, but the resulting Python attribute
+        uses the canonical column name (``salary``, not ``offered_salary``).
+        """
         from decimal import Decimal
+        # Legacy wire names still accepted on input (validation_alias).
         m = OfferDraftUpdate(offered_salary=Decimal("12000.00"), offered_salary_currency="BRL")
-        assert m.offered_salary == Decimal("12000.00")
-        assert m.offered_salary_currency == "BRL"
+        # Attribute uses canonical column names.
+        assert m.salary == Decimal("12000.00")
+        assert m.currency == "BRL"
 
 
 class TestOfferDraftResponse:
