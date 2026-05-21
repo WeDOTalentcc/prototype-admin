@@ -18,6 +18,7 @@ from app.models.candidate import (
     CandidateSearch,
     ViewedCandidate,
 )
+from app.models.observability import ConsentRecord
 
 logger = logging.getLogger(__name__)
 
@@ -152,6 +153,56 @@ class CandidateRepository:
 
         return query
 
+    async def get_linkedin_url_by_id(self, candidate_id: UUID) -> str | None:
+        """Return the candidate's stored LinkedIn URL (or None).
+
+        Cheap projection used by reveal-contact endpoint. ADR-001 cross-domain
+        read pattern — caller is responsible for tenant scoping (CreditsUsage
+        lookup downstream gates by company_id).
+        """
+        result = await self.db.execute(
+            select(Candidate.linkedin_url)
+            .where(Candidate.id == candidate_id)
+            .limit(1)
+        )
+        return result.scalar_one_or_none()
+
+    async def find_by_linkedin_slug(self, linkedin_slug: str) -> Candidate | None:
+        """Find first candidate whose linkedin_url contains the given slug.
+
+        Used by reveal-contact when the incoming candidate_id is a non-UUID
+        document id and we need to map it to a real UUID. No tenancy filter —
+        caller is responsible (this is best-effort identity resolution).
+        """
+        if not linkedin_slug:
+            return None
+        result = await self.db.execute(
+            select(Candidate)
+            .where(Candidate.linkedin_url.ilike(f"%{linkedin_slug}%"))
+            .limit(1)
+        )
+        return result.scalar_one_or_none()
+
+    async def get_company_id_from_credits_usage(
+        self, candidate_id: UUID
+    ) -> str | None:
+        """Return the company_id from the most recent CreditsUsage row for the
+        candidate (or None).
+
+        Used by reveal-contact to recover the originating company when a
+        candidate is shared/searched outside a vacancy context. The first
+        company that ever paid credits to surface this candidate is the
+        canonical tenant for compliance accounting.
+        """
+        from lia_models.candidate import CreditsUsage
+
+        result = await self.db.execute(
+            select(CreditsUsage.company_id)
+            .where(CreditsUsage.candidate_id == candidate_id)
+            .limit(1)
+        )
+        return result.scalar_one_or_none()
+
     async def count_candidates(
         self,
         search: str | None = None,
@@ -207,6 +258,34 @@ class CandidateRepository:
         Returns (candidates, total_count).
         """
         query = select(Candidate).where(Candidate.is_active == filters.is_active)
+
+        # LGPD Art. 18 - excluir candidatos com consent revogado para AI/automated
+        # processing. Revoked = revoked_at IS NOT NULL OR is_active = False.
+        # Cobre consent types ai_scoring + automated_decision + data_processing.
+        revoked_consent_subq = (
+            select(ConsentRecord.candidate_id)
+            .where(
+                ConsentRecord.consent_type.in_([
+                    "ai_scoring",
+                    "automated_decision",
+                    "data_processing",
+                ]),
+                or_(
+                    ConsentRecord.revoked_at.is_not(None),
+                    ConsentRecord.is_active == False,  # noqa: E712
+                ),
+            )
+            .scalar_subquery()
+        )
+        query = query.where(Candidate.id.notin_(revoked_consent_subq))
+
+        # LGPD retention - excluir candidatos com erasure agendada ja vencida.
+        query = query.where(
+            or_(
+                Candidate.scheduled_deletion_at.is_(None),
+                Candidate.scheduled_deletion_at > datetime.utcnow(),
+            )
+        )
 
         if filters.query:
             normalized = unicodedata.normalize("NFKD", filters.query).encode("ASCII", "ignore").decode("ASCII")

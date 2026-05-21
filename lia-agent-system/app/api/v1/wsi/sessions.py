@@ -31,7 +31,6 @@ router = APIRouter()
 # ---------------------------------------------------------------------------
 
 @router.get("/session/{session_id}", response_model=None)
-# TODO(phase2): extract to repository — WSI session management
 async def get_session(session_id: str, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get WSI session details with questions and responses."""

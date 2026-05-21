@@ -36,20 +36,29 @@ router = APIRouter()
 # ---------------------------------------------------------------------------
 
 async def _fetch_candidate_and_vacancy(db, candidate_id: str, vacancy_id: str):
-    """Fetch candidate and vacancy from DB, raise 404 if not found."""
-    from sqlalchemy import select
-    from app.models.candidate import Candidate
-    from app.models.job_vacancy import JobVacancy
+    """Fetch candidate and vacancy from DB, raise 404 if not found.
 
-    # TODO(phase2-repo-extraction): Move this DB call to AutomationRepository
-    candidate_result = await db.execute(select(Candidate).where(Candidate.id == candidate_id))
-    candidate = candidate_result.scalar_one_or_none()
+    ADR-001 Repository Pattern: delegates to CandidateRepository +
+    JobVacancyCRUDRepository instead of inline SQL. Endpoint helper
+    (not a service) but kept canonical for consistency.
+    """
+    from app.domains.candidates.repositories.candidate_repository import (
+        CandidateRepository,
+    )
+    from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+        JobVacancyCRUDRepository,
+    )
+
+    candidate_repo = CandidateRepository(db)
+    try:
+        candidate = await candidate_repo.get_by_id_str(candidate_id)
+    except (ValueError, TypeError):
+        candidate = None
     if not candidate:
         raise HTTPException(status_code=404, detail="Candidato não encontrado")
 
-    # TODO(phase2-repo-extraction): Move this DB call to AutomationRepository
-    vacancy_result = await db.execute(select(JobVacancy).where(JobVacancy.id == vacancy_id))
-    vacancy = vacancy_result.scalar_one_or_none()
+    vacancy_repo = JobVacancyCRUDRepository(db)
+    vacancy = await vacancy_repo.get_vacancy_by_id(vacancy_id)
     if not vacancy:
         raise HTTPException(status_code=404, detail="Vaga não encontrada")
 
@@ -217,6 +226,40 @@ async def _log_screening_audit(db, audit_svc, request, overall_wsi: float, wsi_r
     """Log automation execution log and centralized audit for screening."""
     _add_screening_execution_log(db, request, overall_wsi, wsi_result, recommendation, passed)
     await _record_screening_decision(audit_svc, request, overall_wsi, wsi_result, recommendation, passed, suggested_next_stage, weights)
+
+    # WT-2022 P0.C: LGPD Art. 20 + EU AI Act Art. 13 — log automated decision per
+    # candidato. AITransparencyPanel le esta tabela e expoe ao recrutador/DPO/
+    # candidato pra direito de revisao de decisao automatizada. fail-safe (returns
+    # None se DB error) — log nunca bloqueia a decisao IA.
+    try:
+        from app.shared.services.automated_decision_logger import (
+            log_automated_decision,
+            PROTECTED_CRITERIA_PT,
+        )
+        await log_automated_decision(
+            db=db,
+            company_id=str(request.company_id),
+            candidate_id=str(request.candidate_id),
+            job_id=str(request.vacancy_id),
+            decision_type="wsi_screening_score",
+            ai_model_used="claude-opus-4-7",
+            explanation_text=(
+                f"WSI={overall_wsi:.2f} (classification={wsi_result.classification}); "
+                f"technical_wsi={wsi_result.technical_wsi:.2f}, "
+                f"behavioral_wsi={wsi_result.behavioral_wsi:.2f}; "
+                f"recommendation={recommendation}; passed={passed}"
+            ),
+            criteria_used=["competencies_weighted_score", "technical_match", "behavioral_indicators", "evidence_concreteness"],
+            criteria_ignored=PROTECTED_CRITERIA_PT,
+            confidence_score=0.85,
+            review_eligible=True,
+            extra_metadata={"weights": weights, "suggested_next_stage": suggested_next_stage},
+        )
+    except ValueError:
+        # ADR-LGPD-001 violation: protected criteria leaked — re-raise (fail-loud)
+        raise
+    except Exception as _adl_exc:
+        logger.warning("[handlers_screening] log_automated_decision failed (fail-safe): %s", _adl_exc)
 
 
 def _validate_screening_request(request) -> None:

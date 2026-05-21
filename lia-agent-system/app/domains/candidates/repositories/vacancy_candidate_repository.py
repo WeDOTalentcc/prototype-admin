@@ -19,14 +19,29 @@ class VacancyCandidateRepository:
         self.db = db
 
     async def get_by_vacancy_and_candidate(
-        self, vacancy_id: UUID, candidate_id: str | UUID
+        self, vacancy_id: str | UUID, candidate_id: str | UUID
     ) -> VacancyCandidate | None:
+        """Lookup VacancyCandidate by composite (vacancy_id, candidate_id).
+
+        Both ids accept str | UUID for caller convenience (HTTP payloads
+        send strings; service callers may have UUIDs). Returns None when
+        the str fails UUID parsing — same null semantics as a not-found row,
+        which is what every caller already handles.
+        """
+        try:
+            vacancy_uuid = (
+                uuid.UUID(str(vacancy_id)) if isinstance(vacancy_id, str) else vacancy_id
+            )
+            candidate_uuid = (
+                uuid.UUID(str(candidate_id)) if isinstance(candidate_id, str) else candidate_id
+            )
+        except (ValueError, TypeError):
+            return None
+
         result = await self.db.execute(
             select(VacancyCandidate).where(
-                VacancyCandidate.vacancy_id == vacancy_id,
-                VacancyCandidate.candidate_id == (
-                    uuid.UUID(str(candidate_id)) if isinstance(candidate_id, str) else candidate_id
-                ),
+                VacancyCandidate.vacancy_id == vacancy_uuid,
+                VacancyCandidate.candidate_id == candidate_uuid,
             )
         )
         return result.scalar_one_or_none()

@@ -940,19 +940,17 @@ company_id: str = Depends(require_company_id)):
             logger.error(f"❌ [CANDIDATE_HIRED] Failed to send welcome email: {e}")
 
         try:
-            from sqlalchemy import and_, select
-            from app.models.candidate import VacancyCandidate
-
-            # TODO(phase2-repo-extraction): Move this DB call to AutomationRepository
-            vc_result = await db.execute(
-                select(VacancyCandidate).where(
-                    and_(
-                        VacancyCandidate.candidate_id == request.candidate_id,
-                        VacancyCandidate.vacancy_id == request.vacancy_id
-                    )
-                )
+            from app.domains.candidates.repositories.vacancy_candidate_repository import (
+                VacancyCandidateRepository,
             )
-            vacancy_candidate = vc_result.scalar_one_or_none()
+
+            # ADR-001 Repository Pattern: VacancyCandidateRepository handles
+            # candidate_id/vacancy_id UUID coercion + tenant-agnostic lookup.
+            vc_repo = VacancyCandidateRepository(db)
+            vacancy_candidate = await vc_repo.get_by_vacancy_and_candidate(
+                vacancy_id=request.vacancy_id,
+                candidate_id=request.candidate_id,
+            )
 
             if vacancy_candidate:
                 await pipeline_service.transition_candidate(
@@ -1186,19 +1184,17 @@ company_id: str = Depends(require_company_id)):
                 logger.error(f"❌ [CANDIDATE_REJECTED] Failed to add to talent pool: {e}")
 
         try:
-            from sqlalchemy import and_, select
-            from app.models.candidate import VacancyCandidate
-
-            # TODO(phase2-repo-extraction): Move this DB call to AutomationRepository
-            vc_result = await db.execute(
-                select(VacancyCandidate).where(
-                    and_(
-                        VacancyCandidate.candidate_id == request.candidate_id,
-                        VacancyCandidate.vacancy_id == request.vacancy_id
-                    )
-                )
+            from app.domains.candidates.repositories.vacancy_candidate_repository import (
+                VacancyCandidateRepository,
             )
-            vacancy_candidate = vc_result.scalar_one_or_none()
+
+            # ADR-001 Repository Pattern: VacancyCandidateRepository handles
+            # candidate_id/vacancy_id UUID coercion + tenant-agnostic lookup.
+            vc_repo = VacancyCandidateRepository(db)
+            vacancy_candidate = await vc_repo.get_by_vacancy_and_candidate(
+                vacancy_id=request.vacancy_id,
+                candidate_id=request.candidate_id,
+            )
 
             if vacancy_candidate:
                 await pipeline_service.transition_candidate(

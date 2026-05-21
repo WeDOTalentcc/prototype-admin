@@ -48,7 +48,6 @@ from app.shared.types import WeDoBaseModel
 logger = logging.getLogger(__name__)
 
 
-# TODO(phase2): extract to repository — candidate search shared DB access
 def _normalize_priority(priority_value) -> RequirementPriorityEnum:
     """Normalize priority value to RequirementPriorityEnum, handling ORM enums and strings."""
     if priority_value is None:
@@ -93,15 +92,25 @@ async def _get_job_requirements(
     db: AsyncSession,
     job_id: str
 ) -> list[JobRequirementCreate] | None:
-    """Fetch job requirements for a given job_id."""
+    """Fetch job requirements for a given job_id.
+
+    ADR-001 Repository Pattern: delegates to JobRequirementRepository
+    (canonical owner of JobRequirement table access). Endpoint helper —
+    kept canonical for consistency with services layer.
+    """
+    from app.domains.job_management.repositories.job_requirement_repository import (
+        JobRequirementRepository,
+    )
+
     try:
-        from sqlalchemy import select
-        result = await db.execute(
-            select(JobRequirement).where(
-                JobRequirement.job_vacancy_id == UUID(job_id)
-            )
-        )
-        db_requirements = result.scalars().all()
+        job_uuid = UUID(job_id)
+    except (ValueError, TypeError):
+        logger.warning(f'Invalid job_id UUID: {job_id}')
+        return None
+
+    try:
+        repo = JobRequirementRepository(db)
+        db_requirements = await repo.list_for_job(job_uuid)
 
         if not db_requirements:
             return None

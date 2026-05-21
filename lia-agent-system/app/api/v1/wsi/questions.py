@@ -59,7 +59,6 @@ _FRAMEWORK_CATEGORY_MAP = {
 
 
 @router.post("/generate-questions", response_model=GenerateQuestionsResponse)
-# TODO(phase2): extract to repository — WSI question management
 async def generate_questions(
     request: GenerateQuestionsRequest,
     db: AsyncSession = Depends(get_db),

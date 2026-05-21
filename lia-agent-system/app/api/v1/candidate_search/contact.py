@@ -90,7 +90,6 @@ class RevealCostEstimate(BaseModel):
 
 
 @router.get("/reveal/cost", response_model=None)
-# TODO(phase2): extract to repository — candidate contact enrichment
 async def get_reveal_cost(
     reveal_type: str = Query(..., description="Tipo: 'email' ou 'phone'"), 
 company_id: str = Depends(require_company_id)) -> RevealCostEstimate:
@@ -135,57 +134,49 @@ company_id: str = Depends(require_company_id)):
     
     try:
         enrichment_svc = get_contact_enrichment_service()
-        
+
         from uuid import UUID as _UUID
-        from sqlalchemy import select
-        from lia_models.candidate import Candidate
+        from app.domains.candidates.repositories.candidate_repository import (
+            CandidateRepository,
+        )
+
+        candidate_repo = CandidateRepository(db)
 
         linkedin_url = None
         if request.linkedin_slug:
             linkedin_url = f"https://www.linkedin.com/in/{request.linkedin_slug}"
-        
+
         cand_uuid = None
         try:
             cand_uuid = _UUID(request.candidate_id)
         except (ValueError, AttributeError):
             pass
 
+        # ADR-001: LinkedIn URL resolution via CandidateRepository
         if not linkedin_url and cand_uuid:
             try:
-                result = await db.execute(
-                    select(Candidate.linkedin_url).where(Candidate.id == cand_uuid).limit(1)
-                )
-                db_url = result.scalar_one_or_none()
+                db_url = await candidate_repo.get_linkedin_url_by_id(cand_uuid)
                 if db_url:
                     linkedin_url = db_url
                     _logger.info("[Reveal] Resolved LinkedIn URL from DB for %s", cand_uuid)
             except Exception as e:
                 _logger.warning("[Reveal] DB LinkedIn URL lookup failed: %s", e)
 
+        # ADR-001: docid → UUID mapping via CandidateRepository
         if not cand_uuid and request.linkedin_slug:
             try:
-                result = await db.execute(
-                    select(Candidate).where(
-                        Candidate.linkedin_url.ilike(f"%{request.linkedin_slug}%")
-                    ).limit(1)
-                )
-                local_cand = result.scalar_one_or_none()
+                local_cand = await candidate_repo.find_by_linkedin_slug(request.linkedin_slug)
                 if local_cand:
                     cand_uuid = local_cand.id
                     _logger.info("[Reveal] Resolved docid %s to UUID %s via LinkedIn slug", request.candidate_id, cand_uuid)
             except Exception as lookup_err:
                 _logger.warning("[Reveal] LinkedIn lookup failed: %s", lookup_err)
-        
+
+        # ADR-001: company_id recovery from CreditsUsage via CandidateRepository
         _company_id = None
         if cand_uuid:
             try:
-                from lia_models.candidate import CreditsUsage
-                _cu_result = await db.execute(
-                    select(CreditsUsage.company_id).where(
-                        CreditsUsage.candidate_id == cand_uuid
-                    ).limit(1)
-                )
-                _company_id = _cu_result.scalar_one_or_none()
+                _company_id = await candidate_repo.get_company_id_from_credits_usage(cand_uuid)
             except Exception:
                 pass
 
