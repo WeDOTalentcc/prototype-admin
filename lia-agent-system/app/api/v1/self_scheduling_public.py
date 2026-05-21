@@ -27,6 +27,38 @@ from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
 
+
+async def _is_self_scheduling_enabled(company_id: str, db: AsyncSession) -> bool:
+    """Return True iff the company policy allows recruiters to create
+    self-scheduling links.
+
+    Closes P1-7 (audit 2026-05-21): the toggle
+    ``CompanyHiringPolicy.scheduling_rules.self_scheduling_enabled`` was
+    propagated to the frontend (``scheduling_service.py:94``) but no
+    write-path endpoint actually refused to create links when off.
+    Recruiter could disable the feature in Configurações and still create
+    self-scheduling links via the API or LLM tool.
+
+    Fail-soft posture: DB error returns the canonical default (False).
+    Cold-start tenants (no policy row yet) return False — explicit opt-in
+    matches the schema default in ``SchedulingRulesIn``.
+    """
+    from app.domains.hiring_policy.repositories.hiring_policy_repository import (
+        HiringPolicyRepository,
+    )
+    try:
+        repo = HiringPolicyRepository(db)
+        policy = await repo.get_by_company(company_id)
+        if not policy or not policy.scheduling_rules:
+            return False
+        return bool(policy.scheduling_rules.get("self_scheduling_enabled", False))
+    except Exception as exc:
+        logger.warning(
+            "[self_scheduling] policy load failed for company=%s; defaulting to OFF. Reason: %s",
+            company_id, str(exc)[:120],
+        )
+        return False
+
 router = APIRouter(prefix="/scheduling", tags=["self-scheduling"])
 
 
@@ -38,7 +70,6 @@ class SlotSchema(BaseModel):
 
 
 class CreateSchedulingLinkRequest(WeDoBaseModel):
-    company_id: str
     candidate_id: str
     candidate_name: str
     candidate_email: EmailStr
@@ -162,20 +193,37 @@ async def create_scheduling_link(
     Retorna o token do link e a URL para o candidato acessar.
 
     T-1157: endpoint do recrutador — mantém gate require_company_id.
-    Hardening: ignora ``body.company_id`` se diferir do JWT (defesa em
+    Hardening: ignora ``company_id`` se diferir do JWT (defesa em
     profundidade contra tenant-spoofing via body).
     """
-    if body.company_id and body.company_id != company_id:
-        logger.warning(
-            "[self_scheduling] body.company_id=%s differs from JWT=%s; overriding with JWT",
-            body.company_id, company_id,
+    # P1-7 gate (audit 2026-05-21): refuse to create the link if the
+    # company has disabled self-scheduling in Configurações. Default is
+    # False (opt-in) — recruiters must explicitly enable. Without this
+    # gate, the toggle was a ghost setting.
+    if not await _is_self_scheduling_enabled(company_id, db):
+        logger.info(
+            "[self_scheduling] create_scheduling_link refused — policy OFF. company_id=%s",
+            company_id,
         )
-    body.company_id = company_id
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "error": "self_scheduling_disabled",
+                "message": (
+                    "Auto-agendamento esta desativado para esta empresa. "
+                    "Ative em Configuracoes > Politicas de Recrutamento > "
+                    "Auto-agendamento, ou agende manualmente."
+                ),
+                "ui_action": "enable_self_scheduling",
+            },
+        )
+
+    # R2 canonical: company_id from JWT (require_company_id) — company_id removed from schema
     slots_as_dicts = [{"start": s.start, "end": s.end} for s in body.available_slots]
     created_by = getattr(current_user, "id", "system") or "system"
 
     result = await zero_touch_scheduling_service.send_scheduling_link(
-        company_id=body.company_id,
+        company_id=company_id,
         candidate_id=body.candidate_id,
         candidate_name=body.candidate_name,
         candidate_email=body.candidate_email,

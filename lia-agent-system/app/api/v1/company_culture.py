@@ -524,10 +524,14 @@ _company_gate: str = Depends(require_company_id)):
         raise HTTPException(status_code=404, detail="Company not found")
     try:
         update_data = data.model_dump(exclude_unset=True)
-        profile = await repo.update_profile_fields(company_id, update_data)
-
-        if not profile:
-            raise HTTPException(status_code=404, detail="Culture profile not found")
+        # Bug fix 2026-05-21: was update_profile_fields() which returned None
+        # when the row did not exist yet, surfacing as HTTP 404 on every
+        # manual save before /analyze had ever run. upsert_profile_fields
+        # creates the row on cold start (source=manual) so inline edits on
+        # Minha Empresa work without forcing the user to upload a doc first.
+        # Multi-tenancy gate above is preserved — only the JWT-bound
+        # company_id is ever written.
+        profile = await repo.upsert_profile_fields(company_id, update_data)
 
         logger.info(f"Updated culture profile for company {company_id}")
         return profile

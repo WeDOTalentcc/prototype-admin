@@ -74,13 +74,73 @@ class CompanyCultureRepository:
     async def update_profile_fields(
         self, company_id: UUID, update_data: dict
     ) -> Optional[CompanyCultureProfile]:
-        """Apply recruiter-driven field updates, marking source as 'manual'."""
+        """Apply recruiter-driven field updates, marking source as 'manual'.
+
+        DEPRECATED for new write paths: returns None when profile does not
+        exist yet, which surfaces as HTTP 404 to the caller. Use
+        :py:meth:`upsert_profile_fields` instead so manual edits work even
+        before any culture analysis job has populated an initial row.
+
+        Retained because external callers may still rely on the strict
+        update-only semantics (e.g. background reconciliation jobs that
+        MUST fail when the row is missing).
+        """
         profile = await self.get_profile_by_company(company_id)
         if not profile:
             return None
         for field, value in update_data.items():
             if hasattr(profile, field):
                 setattr(profile, field, value)
+        profile.source = "manual"
+        profile.updated_at = datetime.utcnow()
+        await self.db.flush()
+        await self.db.refresh(profile)
+        return profile
+
+    async def upsert_profile_fields(
+        self, company_id: UUID, update_data: dict
+    ) -> CompanyCultureProfile:
+        """Apply recruiter-driven field updates with CREATE-IF-MISSING semantics.
+
+        Used by the REST PUT handler so manual inline edits on Minha Empresa
+        cards work even when the culture analysis job has not yet produced
+        an initial row. Always marks ``source = 'manual'`` to keep agent
+        consumers (bigfive_service, wsi_question_generator) aware that the
+        data is human-curated and should override learned defaults.
+
+        Filters update_data to model attributes before set/insert so callers
+        can pass partial payloads safely. Never raises on missing row — the
+        row is created on the fly with the given fields.
+
+        Bug fix 2026-05-21 (Paulo): UI saveField loop was 404'ing for every
+        company that had not gone through /analyze yet. Closes the gap
+        between LIA chat tool save (already upserts via tool registry) and
+        REST manual save (was UPDATE-only).
+        """
+        # Filter unknown attrs once — same defensive pattern as
+        # update_profile_fields above. dict comprehension preserves order.
+        filtered = {
+            field: value
+            for field, value in update_data.items()
+            if hasattr(CompanyCultureProfile, field)
+        }
+        profile = await self.get_profile_by_company(company_id)
+        if profile is None:
+            # CREATE: cold start — no analyze run yet, recruiter is filling
+            # in fields manually via Minha Empresa. Source must be 'manual'
+            # so downstream agents know not to overwrite from auto runs.
+            profile = CompanyCultureProfile(
+                company_id=company_id,
+                source="manual",
+                **filtered,
+            )
+            self.db.add(profile)
+            await self.db.flush()
+            await self.db.refresh(profile)
+            return profile
+        # UPDATE: row exists. Apply filtered diff and flip source to manual.
+        for field, value in filtered.items():
+            setattr(profile, field, value)
         profile.source = "manual"
         profile.updated_at = datetime.utcnow()
         await self.db.flush()
