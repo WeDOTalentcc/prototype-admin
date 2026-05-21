@@ -33,11 +33,41 @@ export const CATEGORY_LABELS: Record<string, { label: string; color: string }> =
 }
 
 /**
- * @deprecated Sprint 3 (2026-05-21) - usar useAlertRuleTemplates hook canonical.
- * Mantido por compatibilidade durante migração; será removido após F5/F6.
- * Migração canonical em src/hooks/communication/use-alert-rule-templates.ts
+ * @deprecated Sprint 3 F6 (2026-05-21) — usar useAlertRuleTemplates hook canonical.
+ *
+ * Status: PRESERVADO como fallback transitorio (seed durante loading do hook
+ * canonical). Hook tem isLoading state; usuario nao deve ver catalogo vazio
+ * durante fetch inicial. Quando hook resolve, substitui este seed pelos
+ * items per-tenant (ver useCommunicationHub.ts:47).
+ *
+ * Decisao F6 2026-05-21: NAO deletar agora. Runtime warning abaixo informa
+ * status deprecated quando arquivo eh importado em dev mode.
+ *
+ * Migracao canonical: src/hooks/communication/use-alert-rule-templates.ts
  * + flattenTemplates() para shape AlertConfig.
+ *
+ * Para criar templates per-tenant via wizard agent:
+ *   tool: create_custom_alert_rule_template (communication agent)
+ *   ou POST /api/backend-proxy/alert-rule-templates
  */
+
+// Sprint 3 F6: runtime deprecation warning (dev only — silenciado em prod
+// para evitar noise nos logs). Fire-once via module-scope IIFE.
+let _deprecationWarningEmitted = false
+function _warnDeprecation() {
+  if (_deprecationWarningEmitted) return
+  _deprecationWarningEmitted = true
+  if (typeof process !== 'undefined' && process.env?.NODE_ENV !== 'production') {
+    // eslint-disable-next-line no-console
+    console.warn(
+      '[DEPRECATED Sprint 3 F6] DEFAULT_ALERTS hardcoded — ' +
+      'usar useAlertRuleTemplates() canonical per-tenant. ' +
+      'Fallback preservado apenas como seed durante loading.'
+    )
+  }
+}
+_warnDeprecation()
+
 export const DEFAULT_ALERTS: AlertConfig[] = [
   { id: '1', name: 'SLA Próximo do Vencimento', description: 'Alerta quando um candidato está há 80% do SLA na mesma etapa', enabled: true, channel: 'both' },
   { id: '2', name: 'Meta Mensal em Risco', description: 'Notifica quando a meta de contratações do mês pode não ser atingida', enabled: true, channel: 'email' },

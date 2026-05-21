@@ -25,6 +25,19 @@ STAGE_DEFINITIONS: dict[str, Any] = {
         "tools": ["get_next_tasks", "check_dependencies"],
         "next_stages": [],
     },
+    # ── Sprint 5 F5: webhook events canonical (catalogo dinamico) ─────────────
+    "webhook-config": {
+        "description": (
+            "Configurar webhook subscriptions canonical: sugerir, aplicar e "
+            "criar event types per-tenant (substitui catalogo hardcoded)."
+        ),
+        "tools": [
+            "suggest_webhook_event_types",
+            "apply_webhook_event_subscription",
+            "create_custom_webhook_event_type",
+        ],
+        "next_stages": [],
+    },
 }
 
 

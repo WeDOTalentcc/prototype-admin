@@ -260,6 +260,179 @@ async def _wrap_recommend_integrations_by_industry(**kwargs):
     }
 
 
+@tool_handler("ats_integration")
+async def _wrap_apply_integration_catalog_entry(**kwargs):
+    """Aplica (= snapshot canonical B1) um entry de catalogo para uso da company.
+
+    Audit 2026-05-20 Sprint 4 F5: substitui catalogo hardcoded por per-tenant DB.
+    Se entry_id eh master -> cria copia canonical (snapshot B1 via repo.customize_master).
+    Se entry_id ja eh custom desta company -> retorna config do entry direto.
+
+    Retorna config canonical pra orquestrar OAuth/setup no frontend.
+
+    Multi-tenancy: company_id obrigatorio via ContextVar JWT (@tool_handler).
+    """
+    import uuid as _uuid
+
+    from app.core.database import AsyncSessionLocal
+    from app.domains.ats_integration.repositories.integration_catalog_entry_repository import (
+        IntegrationCatalogEntryRepository,
+    )
+
+    company_id = kwargs.get("company_id")
+    entry_id_raw = kwargs.get("entry_id")
+    target_company_integration_id = kwargs.get("target_company_integration_id")
+
+    if not entry_id_raw:
+        return {"success": False, "message": "entry_id eh obrigatorio (UUID do catalog entry)"}
+
+    try:
+        entry_id = _uuid.UUID(str(entry_id_raw))
+    except (ValueError, TypeError, AttributeError):
+        return {"success": False, "message": f"entry_id invalido: {entry_id_raw} (esperado UUID)"}
+
+    async with AsyncSessionLocal() as session:
+        repo = IntegrationCatalogEntryRepository(session)
+        entry = await repo.get_by_id(entry_id, company_id)
+        if not entry:
+            return {
+                "success": False,
+                "message": "Entry nao encontrado ou fora do escopo da empresa",
+            }
+
+        # Snapshot canonical B1: se eh master, clona pra company; se ja eh custom, retorna direto
+        applied_entry = entry
+        was_cloned = False
+        if entry.is_master_template:
+            applied_entry = await repo.customize_master(
+                master_id=entry.id,
+                company_id=company_id,
+                created_by=kwargs.get("user_id"),
+            )
+            if not applied_entry:
+                await session.rollback()
+                return {
+                    "success": False,
+                    "message": "Falha ao clonar master entry (snapshot canonical B1)",
+                }
+            was_cloned = True
+            await session.commit()
+
+        data = dict(applied_entry.data or {})
+        metadata = data.get("metadata") or {}
+        connect_action = metadata.get("connect_action") if isinstance(metadata, dict) else None
+        config_fields = metadata.get("config_fields") if isinstance(metadata, dict) else None
+
+        return {
+            "success": True,
+            "data": {
+                "applied_entry_id": str(applied_entry.id),
+                "parent_template_id": (
+                    str(applied_entry.parent_template_id) if applied_entry.parent_template_id else None
+                ),
+                "was_cloned_from_master": was_cloned,
+                "target_company_integration_id": target_company_integration_id,
+                "provider": data.get("provider"),
+                "label": data.get("label"),
+                "category": data.get("category"),
+                "status": data.get("status"),
+                "connect_action": connect_action,
+                "config_fields": config_fields,
+                "logo_url": data.get("logo_url"),
+            },
+            "message": (
+                f"Entry {data.get('label') or data.get('provider')} aplicado para a empresa"
+                + (" (snapshot canonical do master)." if was_cloned else ".")
+            ),
+        }
+
+
+@tool_handler("ats_integration")
+async def _wrap_create_custom_integration_catalog_entry(**kwargs):
+    """Cria custom entry novo no catalogo de integracoes da company.
+
+    Audit 2026-05-20 Sprint 4 F5: admin/recrutador pode adicionar provedor custom
+    nao listado nos masters da WeDOTalent.
+
+    Multi-tenancy: company_id obrigatorio via ContextVar JWT (@tool_handler).
+    """
+    from app.core.database import AsyncSessionLocal
+    from app.domains.ats_integration.repositories.integration_catalog_entry_repository import (
+        IntegrationCatalogEntryRepository,
+    )
+
+    company_id = kwargs.get("company_id")
+    user_id = kwargs.get("user_id")
+    provider = (kwargs.get("provider") or "").strip()
+    label = (kwargs.get("label") or "").strip()
+    category = (kwargs.get("category") or "").strip()
+    description = (kwargs.get("description") or "").strip()
+    logo_url = kwargs.get("logo_url")
+    industries_recommended = kwargs.get("industries_recommended") or []
+
+    if not provider:
+        return {"success": False, "message": "provider eh obrigatorio (slug canonical)"}
+    if len(label) < 2:
+        return {"success": False, "message": "label eh obrigatorio (minimo 2 caracteres)"}
+
+    VALID_CATEGORIES = {
+        "ai_models", "ats", "calendar", "communication", "crm_hris", "mcps_apis",
+    }
+    if category not in VALID_CATEGORIES:
+        return {
+            "success": False,
+            "message": (
+                f"category invalida: '{category}'. Valores aceitos: {sorted(VALID_CATEGORIES)}"
+            ),
+        }
+
+    if not isinstance(industries_recommended, list):
+        return {
+            "success": False,
+            "message": "industries_recommended deve ser uma lista de strings",
+        }
+
+    data: dict = {
+        "provider": provider,
+        "label": label,
+        "category": category,
+        "description": description or f"Integracao custom: {label}",
+        "status": "production",
+        "industries_recommended": [str(i) for i in industries_recommended],
+    }
+    if logo_url:
+        data["logo_url"] = logo_url
+
+    async with AsyncSessionLocal() as session:
+        repo = IntegrationCatalogEntryRepository(session)
+        try:
+            entry = await repo.create_custom(
+                company_id=company_id,
+                data=data,
+                created_by=str(user_id) if user_id else None,
+            )
+            await session.commit()
+        except Exception as exc:
+            await session.rollback()
+            return {
+                "success": False,
+                "message": f"Falha ao criar entry custom: {exc}",
+            }
+
+        return {
+            "success": True,
+            "data": {
+                "entry_id": str(entry.id),
+                "provider": data["provider"],
+                "label": data["label"],
+                "category": data["category"],
+                "status": data["status"],
+            },
+            "message": f"Integracao custom '{label}' criada no catalogo da empresa.",
+        }
+
+
+
 def get_ats_integration_tools() -> list[ToolDefinition]:
     """Return all ATS Integration tools."""
     return [
@@ -336,6 +509,78 @@ def get_ats_integration_tools() -> list[ToolDefinition]:
             },
             output_schema=ToolOutput,
             function=_wrap_recommend_integrations_by_industry,
+        ),
+        ToolDefinition(
+            name="apply_integration_catalog_entry",
+            description=(
+                "Aplica um entry do catalogo de integracoes para a company atual "
+                "(snapshot canonical B1). Se entry_id eh master da WeDOTalent, "
+                "clona para a empresa; se ja eh custom desta empresa, retorna config. "
+                "Util quando admin escolhe um provedor (ex: Gupy/Pandape) para conectar."
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "entry_id": {
+                        "type": "string",
+                        "description": "UUID do catalog entry (master ou custom da company).",
+                    },
+                    "target_company_integration_id": {
+                        "type": "string",
+                        "description": (
+                            "Opcional: UUID de company_integration existente para "
+                            "associar ao snapshot (uso futuro de re-config)."
+                        ),
+                    },
+                },
+                "required": ["entry_id"],
+            },
+            output_schema=ToolOutput,
+            function=_wrap_apply_integration_catalog_entry,
+        ),
+        ToolDefinition(
+            name="create_custom_integration_catalog_entry",
+            description=(
+                "Cria um custom entry novo no catalogo de integracoes da empresa. "
+                "Util para admin adicionar um provedor nao listado nos masters "
+                "curados pela WeDOTalent (ex: ATS interno, integracao homologada)."
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "provider": {
+                        "type": "string",
+                        "description": "Slug canonical do provedor (ex: 'meu-ats-interno').",
+                    },
+                    "label": {
+                        "type": "string",
+                        "description": "Nome display (minimo 2 caracteres).",
+                    },
+                    "category": {
+                        "type": "string",
+                        "description": (
+                            "Categoria canonical: ai_models | ats | calendar | "
+                            "communication | crm_hris | mcps_apis."
+                        ),
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "Descricao curta (opcional).",
+                    },
+                    "logo_url": {
+                        "type": "string",
+                        "description": "URL/path do logo (opcional).",
+                    },
+                    "industries_recommended": {
+                        "type": "array",
+                        "items": {"type": "string"},
+                        "description": "Lista de setores recomendados (opcional).",
+                    },
+                },
+                "required": ["provider", "label", "category"],
+            },
+            output_schema=ToolOutput,
+            function=_wrap_create_custom_integration_catalog_entry,
         ),
     ]
 

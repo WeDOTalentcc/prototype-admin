@@ -1,30 +1,18 @@
 /**
  * Webhook types — mirror backend schemas.
  *
- * @deprecated 2026-05-21 (Sprint 5 catalogos dinamicos) — WEBHOOK_EVENTS
- * hardcoded array foi substituido por catalogo dinamico per-tenant via
- * `useWebhookEventTypes()` hook em `@/hooks/webhooks/use-webhook-event-types`.
+ * Sprint 5 catalogos dinamicos (2026-05-21): WEBHOOK_EVENTS constant array
+ * removida. Catalogo de events canonical agora vive per-tenant no DB
+ * (`webhook_event_types`) e e consumido via hook `useWebhookEventTypes()`
+ * em `@/hooks/webhooks/use-webhook-event-types`.
  *
- * Mantemos a array hardcoded como FALLBACK para uso emergencial caso o
- * backend esteja indisponivel (o hook lida com erro mas a UI precisa de
- * um set minimo de eventos pra renderizar). Refactor canonical migrou
- * `WebhooksManager.tsx` para o hook dinamico. Outros consumers devem migrar
- * incrementalmente.
+ * Este arquivo passa a conter APENAS o interface `Webhook` (shape do
+ * recurso studio_webhooks) usado por `useWebhooks()` + `WebhooksManager`.
  *
- * Para novos eventos: NAO adicione aqui — adicione no master canonical via
- * migration alembic (vide `alembic/versions/157_webhook_event_types.py`).
+ * Para novos eventos: NAO adicione constants aqui — adicione no master
+ * canonical via migration alembic (vide `alembic/versions/157_webhook_event_types.py`)
+ * ou crie custom event type via wizard (tool `create_custom_webhook_event_type`).
  */
-
-export const WEBHOOK_EVENTS = [
-  "agent.execution.completed",
-  "agent.execution.failed",
-  "agent.deployment.created",
-  "agent.deployment.paused",
-  "agent.approval.requested",
-  "agent.approval.reviewed",
-] as const
-
-export type WebhookEvent = typeof WEBHOOK_EVENTS[number]
 
 export interface Webhook {
   id: string

@@ -286,6 +286,27 @@ repos:
         files: ^.*\.(ts|tsx|js|jsx)$
         pass_filenames: false
 
+      - id: alert-rules-not-hardcoded
+        name: "Alert Rules catalogo DEVE ser dinamico (Sprint 3 F6 2026-05-21, BLOCKING)"
+        language: system
+        entry: bash -c "python3 scripts/check_alert_rules_not_hardcoded.py"
+        files: ^.*\.(ts|tsx|js|jsx)$
+        pass_filenames: false
+
+      - id: integrations-not-hardcoded
+        name: "Integrations catalogo DEVE ser dinamico (Sprint 4 F6 2026-05-21, BLOCKING)"
+        language: system
+        entry: bash -c "python3 scripts/check_integrations_not_hardcoded.py"
+        files: ^.*\.(ts|tsx|js|jsx)$
+        pass_filenames: false
+
+      - id: webhook-events-not-hardcoded
+        name: "Webhook Events catalogo DEVE ser dinamico (Sprint 5 F6 2026-05-21, BLOCKING)"
+        language: system
+        entry: bash -c "python3 scripts/check_webhook_events_not_hardcoded.py"
+        files: ^.*\.(ts|tsx|js|jsx)$
+        pass_filenames: false
+
       - id: training-data-anonymized
         name: "T-21 ADR-LGPD-002: training data export DEVE anonymizer (warn-only)"
         language: system
@@ -329,3 +350,10 @@ repos:
         pass_filenames: false
         always_run: false
 
+
+      - id: pipeline-stages-not-hardcoded
+        name: "Pipeline Stages canonical (Sprint 2 F6 2026-05-21, BLOCKING)"
+        language: system
+        entry: bash -c "python3 scripts/check_pipeline_stages_not_hardcoded.py"
+        files: ^.*\.(ts|tsx|js|jsx)$
+        pass_filenames: false

@@ -10,7 +10,13 @@ STAGE_DEFINITIONS: dict[str, Any] = {
             "Identificar o provedor ATS alvo, validar credenciais configuradas "
             "e verificar o status atual de sincronização do candidato."
         ),
-        "tools": ["validate_ats_fields", "get_sync_status", "recommend_integrations_by_industry"],
+        "tools": [
+            "validate_ats_fields",
+            "get_sync_status",
+            "recommend_integrations_by_industry",
+            "apply_integration_catalog_entry",
+            "create_custom_integration_catalog_entry",
+        ],
         "next_stages": ["field-mapping", "sync-execution"],
     },
     "field-mapping": {
@@ -32,6 +38,8 @@ STAGE_DEFINITIONS: dict[str, Any] = {
             "validate_ats_fields",
             "bulk_sync_candidates",
             "get_sync_status",
+            "apply_integration_catalog_entry",
+            "create_custom_integration_catalog_entry",
         ],
         "next_stages": [],
     },

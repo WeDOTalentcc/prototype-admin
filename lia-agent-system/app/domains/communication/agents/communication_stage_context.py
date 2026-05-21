@@ -10,7 +10,7 @@ STAGE_DEFINITIONS: dict[str, Any] = {
             "Entender qual comunicação o usuário deseja enviar: canal, destinatário, "
             "tipo de mensagem. Verificar histórico e rate limit antes de avançar."
         ),
-        "tools": ["get_communication_history", "check_rate_limit", "suggest_communication_policy"],
+        "tools": ["get_communication_history", "check_rate_limit", "suggest_communication_policy", "suggest_alert_rule_templates", "apply_alert_rule_template", "create_custom_alert_rule_template"],
         "next_stages": ["content-preparation", "delivery"],
     },
     "content-preparation": {
@@ -18,7 +18,7 @@ STAGE_DEFINITIONS: dict[str, Any] = {
             "Rascunhar e validar o conteúdo da mensagem. Confirmar que o envio ainda "
             "é permitido após checar novamente rate limit e histórico recente."
         ),
-        "tools": ["check_rate_limit", "get_communication_history"],
+        "tools": ["check_rate_limit", "get_communication_history", "suggest_alert_rule_templates", "apply_alert_rule_template", "create_custom_alert_rule_template"],
         "next_stages": ["delivery"],
     },
     "delivery": {

@@ -387,6 +387,391 @@ async def _wrap_suggest_communication_policy(**kwargs):
     }
 
 
+
+@tool_handler("communication")
+async def _wrap_suggest_alert_rule_templates(**kwargs):
+    """
+    Sugere alert rule templates canonical ranked por relevancia.
+
+    Audit 2026-05-20 Sprint 3 F5: substitui DEFAULT_ALERTS hardcoded
+    (5 items) por catalogo dinamico per-tenant (AlertRuleTemplate).
+
+    kwargs:
+        company_id (str, obrigatorio via ContextVar JWT)
+        audience (str, opcional): recruiter | admin | candidate
+        event_type (str, opcional): chave canonical do evento (filtro)
+
+    Returns: top 10 ranked por relevancia (audience match + event_type
+    match + master priority).
+    """
+    from app.core.database import AsyncSessionLocal
+    from app.domains.communication.repositories.alert_rule_template_repository import (
+        AlertRuleTemplateRepository,
+    )
+
+    company_id = kwargs.get("company_id")
+    audience_filter = (kwargs.get("audience") or "").strip().lower() or None
+    event_type_filter = (kwargs.get("event_type") or "").strip().lower() or None
+
+    async with AsyncSessionLocal() as db:
+        repo = AlertRuleTemplateRepository(db)
+        all_items = await repo.list_for_company(
+            company_id=company_id, include_master=True
+        )
+
+    suggestions = []
+    for item in all_items:
+        data = item.data or {}
+        score = 0
+        item_audience = (data.get("audience") or "").lower()
+        item_event_type = (data.get("event_type") or "").lower()
+
+        # Audience match: +5
+        if audience_filter and item_audience == audience_filter:
+            score += 5
+        elif not audience_filter:
+            # Sem filtro: dar peso default por audience canonical (recruiter mais comum)
+            if item_audience == "recruiter":
+                score += 2
+            elif item_audience == "candidate":
+                score += 1
+
+        # Event type match: +6 (mais especifico que audience)
+        if event_type_filter and item_event_type == event_type_filter:
+            score += 6
+
+        # Master template: +1 (curated by WeDOTalent)
+        if item.is_master_template:
+            score += 1
+
+        # Schedule LGPD compliant: +1 (preferimos canonical compliant)
+        if data.get("schedule_lgpd_compliant", False):
+            score += 1
+
+        # Enabled by default: +1
+        if data.get("enabled_default", True):
+            score += 1
+
+        if score > 0:
+            suggestions.append({
+                "id": str(item.id),
+                "event_type": data.get("event_type", ""),
+                "label": data.get("label", ""),
+                "audience": item_audience,
+                "channels": data.get("channels", []),
+                "delay_minutes": data.get("delay_minutes", 0),
+                "schedule_lgpd_compliant": data.get("schedule_lgpd_compliant", False),
+                "is_master": item.is_master_template,
+                "rationale": data.get("rationale"),
+                "score": score,
+            })
+
+    suggestions.sort(key=lambda s: s["score"], reverse=True)
+    top = suggestions[:10]
+
+    return {
+        "success": True,
+        "data": {
+            "suggestions": top,
+            "total_in_catalog": len(all_items),
+            "audience_filter": audience_filter,
+            "event_type_filter": event_type_filter,
+        },
+        "message": (
+            f"{len(top)} alert rule template(s) sugerido(s) "
+            f"(top 10 de {len(all_items)} no catalogo da empresa)."
+        ),
+    }
+
+
+@tool_handler("communication")
+async def _wrap_apply_alert_rule_template(**kwargs):
+    """
+    Aplica alert rule template canonical via snapshot canonical (B1).
+
+    Decisao Paulo 2026-05-20: snapshot canonical (NAO sincroniza com master
+    apos aplicacao). Quando admin escolhe customizar, criamos copia total
+    via customize_master() do repo.
+
+    kwargs:
+        company_id (str, obrigatorio via ContextVar JWT)
+        template_id (str, obrigatorio): UUID do template canonical
+        target (str, opcional): "vacancy" ou "global" (default: global)
+        vacancy_id (str, opcional se target=vacancy)
+    """
+    import uuid
+
+    from app.core.database import AsyncSessionLocal
+    from app.domains.communication.repositories.alert_rule_template_repository import (
+        AlertRuleTemplateRepository,
+    )
+
+    company_id = kwargs.get("company_id")
+    template_id_raw = kwargs.get("template_id")
+    target = (kwargs.get("target") or "global").strip().lower()
+    vacancy_id = kwargs.get("vacancy_id")
+    user_id = kwargs.get("user_id")
+
+    if not template_id_raw:
+        return {
+            "success": False,
+            "fallback_used": True,
+            "needs_manual_review": True,
+            "message": "template_id obrigatorio",
+        }
+
+    try:
+        template_uuid = (
+            uuid.UUID(template_id_raw)
+            if isinstance(template_id_raw, str)
+            else template_id_raw
+        )
+    except (ValueError, TypeError):
+        return {
+            "success": False,
+            "fallback_used": True,
+            "needs_manual_review": True,
+            "message": f"template_id invalido: {template_id_raw}",
+        }
+
+    if target not in ("vacancy", "global"):
+        return {
+            "success": False,
+            "fallback_used": True,
+            "needs_manual_review": True,
+            "message": f"target invalido '{target}'. Use: vacancy | global",
+        }
+
+    if target == "vacancy" and not vacancy_id:
+        return {
+            "success": False,
+            "fallback_used": True,
+            "needs_manual_review": True,
+            "message": "vacancy_id obrigatorio quando target=vacancy",
+        }
+
+    async with AsyncSessionLocal() as db:
+        repo = AlertRuleTemplateRepository(db)
+        template = await repo.get_by_id(template_uuid, company_id)
+
+        if not template:
+            return {
+                "success": False,
+                "fallback_used": True,
+                "needs_manual_review": True,
+                "message": "Template nao encontrado ou fora do escopo da empresa",
+            }
+
+        # Snapshot canonical B1: copia total do data
+        snapshot = dict(template.data or {})
+        snapshot["_template_id"] = str(template.id)
+        snapshot["_is_master_origin"] = template.is_master_template
+        snapshot["_target"] = target
+        if vacancy_id:
+            snapshot["_vacancy_id"] = str(vacancy_id)
+
+        # Se master, criar copia per-company (decisao A1+B1 canonical)
+        cloned_id = None
+        if template.is_master_template:
+            try:
+                cloned = await repo.customize_master(
+                    master_id=template.id,
+                    company_id=company_id,
+                    created_by=str(user_id) if user_id else None,
+                    overrides=None,
+                )
+                if cloned:
+                    cloned_id = str(cloned.id)
+                    await db.commit()
+            except Exception:
+                await db.rollback()
+                # Snapshot retornado mesmo sem clone; persistencia final
+                # ocorre em camada externa (settings save)
+                pass
+
+    return {
+        "success": True,
+        "data": {
+            "template_id": str(template.id),
+            "cloned_template_id": cloned_id,
+            "target": target,
+            "vacancy_id": str(vacancy_id) if vacancy_id else None,
+            "snapshot": snapshot,
+            "is_master_origin": template.is_master_template,
+        },
+        "message": (
+            f"Alert rule '{snapshot.get('label', '')[:60]}' aplicado "
+            f"(target={target}; snapshot canonical B1)."
+        ),
+    }
+
+
+@tool_handler("communication")
+async def _wrap_create_custom_alert_rule_template(**kwargs):
+    """
+    Cria alert rule template custom canonical via wizard conversacional.
+
+    Permissoes (decisao Paulo C 2026-05-20): recrutador + admin podem criar
+    novos templates; persistido per-company.
+
+    kwargs:
+        company_id (str, obrigatorio via ContextVar JWT)
+        user_id (str, opcional): created_by audit
+        event_type (str, obrigatorio): chave canonical do evento (min 2 chars)
+        label (str, obrigatorio): nome humano (min 2 chars)
+        audience (str, obrigatorio): recruiter | admin | candidate
+        channels (list[str], obrigatorio): pelo menos 1 de email/in_app/teams/whatsapp
+        delay_minutes (int, opcional): 0-43200 (default 0)
+        rationale (str, opcional): explicacao do canal/delay canonical
+        description (str, opcional)
+        schedule_lgpd_compliant (bool, opcional, default True)
+    """
+    from app.core.database import AsyncSessionLocal
+    from app.domains.communication.repositories.alert_rule_template_repository import (
+        AlertRuleTemplateRepository,
+    )
+
+    company_id = kwargs.get("company_id")
+    user_id = kwargs.get("user_id")
+    event_type = (kwargs.get("event_type") or "").strip()
+    label = (kwargs.get("label") or "").strip()
+    audience = (kwargs.get("audience") or "").strip().lower()
+    channels = kwargs.get("channels") or []
+    delay_minutes_raw = kwargs.get("delay_minutes", 0)
+    rationale = kwargs.get("rationale")
+    description = kwargs.get("description")
+    schedule_lgpd_compliant = kwargs.get("schedule_lgpd_compliant", True)
+    enabled_default = kwargs.get("enabled_default", True)
+
+    # Validacoes canonical (mesmas regras do AlertRuleData schema)
+    if not event_type or len(event_type) < 2:
+        return {
+            "success": False,
+            "fallback_used": True,
+            "needs_manual_review": True,
+            "message": "event_type obrigatorio (min 2 caracteres)",
+        }
+    if len(event_type) > 128:
+        return {
+            "success": False,
+            "fallback_used": True,
+            "needs_manual_review": True,
+            "message": "event_type max 128 caracteres",
+        }
+    if not label or len(label) < 2:
+        return {
+            "success": False,
+            "fallback_used": True,
+            "needs_manual_review": True,
+            "message": "label obrigatorio (min 2 caracteres)",
+        }
+    if len(label) > 255:
+        return {
+            "success": False,
+            "fallback_used": True,
+            "needs_manual_review": True,
+            "message": "label max 255 caracteres",
+        }
+
+    VALID_AUDIENCES = {"recruiter", "admin", "candidate"}
+    if audience not in VALID_AUDIENCES:
+        return {
+            "success": False,
+            "fallback_used": True,
+            "needs_manual_review": True,
+            "message": (
+                f"audience invalido '{audience}'. "
+                f"Use: {', '.join(sorted(VALID_AUDIENCES))}"
+            ),
+        }
+
+    if not isinstance(channels, list) or len(channels) < 1:
+        return {
+            "success": False,
+            "fallback_used": True,
+            "needs_manual_review": True,
+            "message": "channels obrigatorio (lista com pelo menos 1 canal)",
+        }
+
+    VALID_CHANNELS = {"email", "in_app", "teams", "whatsapp"}
+    invalid = [c for c in channels if c not in VALID_CHANNELS]
+    if invalid:
+        return {
+            "success": False,
+            "fallback_used": True,
+            "needs_manual_review": True,
+            "message": (
+                f"channels invalidos: {invalid}. "
+                f"Use: {', '.join(sorted(VALID_CHANNELS))}"
+            ),
+        }
+
+    try:
+        delay_minutes = int(delay_minutes_raw)
+    except (ValueError, TypeError):
+        return {
+            "success": False,
+            "fallback_used": True,
+            "needs_manual_review": True,
+            "message": f"delay_minutes invalido: {delay_minutes_raw}",
+        }
+    if delay_minutes < 0 or delay_minutes > 43200:
+        return {
+            "success": False,
+            "fallback_used": True,
+            "needs_manual_review": True,
+            "message": "delay_minutes deve estar entre 0 e 43200 (30 dias)",
+        }
+
+    data = {
+        "event_type": event_type,
+        "label": label,
+        "description": description,
+        "audience": audience,
+        "channels": channels,
+        "delay_minutes": delay_minutes,
+        "schedule_lgpd_compliant": bool(schedule_lgpd_compliant),
+        "rationale": rationale,
+        "enabled_default": bool(enabled_default),
+    }
+
+    async with AsyncSessionLocal() as db:
+        repo = AlertRuleTemplateRepository(db)
+        try:
+            template = await repo.create_custom(
+                company_id=company_id,
+                data=data,
+                created_by=str(user_id) if user_id else None,
+            )
+            await db.commit()
+        except Exception as e:
+            await db.rollback()
+            return {
+                "success": False,
+                "fallback_used": True,
+                "needs_manual_review": True,
+                "message": f"Falha ao criar alert rule template: {str(e)}",
+            }
+
+    return {
+        "success": True,
+        "data": {
+            "id": str(template.id),
+            "company_id": template.company_id,
+            "is_master_template": False,
+            "event_type": event_type,
+            "label": label,
+            "audience": audience,
+            "channels": channels,
+            "delay_minutes": delay_minutes,
+        },
+        "message": (
+            f"Alert rule template custom criado para a empresa "
+            f"(id={str(template.id)[:8]}..., event_type={event_type})."
+        ),
+    }
+
+
 def get_communication_tools() -> list[ToolDefinition]:
     # R-004 (Sprint 1 Quick Wins): primeiro tool deste registry adota
     # output_schema=ToolOutput como pattern canonical. Demais tools seguem
@@ -481,6 +866,110 @@ def get_communication_tools() -> list[ToolDefinition]:
             },
             output_schema=ToolOutput,
             function=_wrap_suggest_communication_policy,
+        ),
+        ToolDefinition(
+            name="suggest_alert_rule_templates",
+            description=(
+                "Sugere alert rule templates canonical ranked por relevancia "
+                "(audience match + event_type match + master priority). Top 10. "
+                "Util quando admin abre Settings > Comunicacao&Alertas e quer "
+                "ver opcoes recomendadas para a empresa."
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "audience": {
+                        "type": "string",
+                        "enum": ["recruiter", "admin", "candidate"],
+                        "description": "Filtrar por publico (opcional)",
+                    },
+                    "event_type": {
+                        "type": "string",
+                        "description": "Filtrar por chave canonical do evento (opcional)",
+                    },
+                },
+                "required": [],
+            },
+            output_schema=ToolOutput,
+            function=_wrap_suggest_alert_rule_templates,
+        ),
+        ToolDefinition(
+            name="apply_alert_rule_template",
+            description=(
+                "Aplica alert rule template canonical via snapshot canonical "
+                "(B1). Se origem master, cria copia per-company automaticamente. "
+                "NAO sincroniza com master apos aplicacao."
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "template_id": {
+                        "type": "string",
+                        "description": "UUID do template canonical",
+                    },
+                    "target": {
+                        "type": "string",
+                        "enum": ["vacancy", "global"],
+                        "description": "Escopo da aplicacao (default global)",
+                    },
+                    "vacancy_id": {
+                        "type": "string",
+                        "description": "UUID da vaga (obrigatorio se target=vacancy)",
+                    },
+                },
+                "required": ["template_id"],
+            },
+            output_schema=ToolOutput,
+            function=_wrap_apply_alert_rule_template,
+        ),
+        ToolDefinition(
+            name="create_custom_alert_rule_template",
+            description=(
+                "Cria alert rule template custom canonical persistido per-company. "
+                "Recrutador + admin podem criar (decisao Paulo C 2026-05-20). "
+                "Schema valida event_type/label/audience/channels canonical."
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "event_type": {
+                        "type": "string",
+                        "description": "Chave canonical do evento (min 2 chars, max 128)",
+                    },
+                    "label": {
+                        "type": "string",
+                        "description": "Nome humano (min 2 chars, max 255)",
+                    },
+                    "description": {"type": "string"},
+                    "audience": {
+                        "type": "string",
+                        "enum": ["recruiter", "admin", "candidate"],
+                    },
+                    "channels": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "enum": ["email", "in_app", "teams", "whatsapp"],
+                        },
+                        "description": "Pelo menos 1 canal canonical",
+                    },
+                    "delay_minutes": {
+                        "type": "integer",
+                        "description": "0-43200 (30 dias). Default 0.",
+                    },
+                    "rationale": {
+                        "type": "string",
+                        "description": "Explicacao opcional do canal/delay canonical",
+                    },
+                    "schedule_lgpd_compliant": {
+                        "type": "boolean",
+                        "description": "Respeitar horario comercial (default True)",
+                    },
+                },
+                "required": ["event_type", "label", "audience", "channels"],
+            },
+            output_schema=ToolOutput,
+            function=_wrap_create_custom_alert_rule_template,
         ),
     ]
 

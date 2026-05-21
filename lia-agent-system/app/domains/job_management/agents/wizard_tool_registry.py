@@ -1170,15 +1170,356 @@ TOOL_DEFINITIONS.append(
 )
 
 
+
+# ============================================================================
+# Sprint 2 F5 — Pipeline Stage Templates wizard tools (canonical 2026-05-21)
+# ============================================================================
+# 3 tools canonical pro wizard conversacional manusear o catalogo dinamico
+# per-tenant de pipeline_stage_templates (substitui hardcoded DEFAULT_STAGES
+# em RecruitmentJourneyConfig.tsx + modais). Mesma estrutura das 3 tools
+# Sprint 1 F5 (eligibility templates) — snapshot canonical B1.
+
+@tool_handler("wizard")
+async def _wrap_suggest_pipeline_stage_templates(**kwargs: Any) -> dict[str, Any]:
+    """
+    Sugere templates de pipeline stage canonical relevantes pra vaga em
+    criacao. Ranking: is_default_in_pipeline (peso 5) + master scope (peso 3)
+    + stage_category match (peso 2). Retorna top 15 (cobre o pipeline completo
+    canonical de ~15 stages).
+
+    Multi-tenancy: company_id obrigatorio via ContextVar JWT (@tool_handler).
+    """
+    from app.core.database import AsyncSessionLocal
+    from app.domains.pipeline.repositories.pipeline_stage_template_repository import (
+        PipelineStageTemplateRepository,
+    )
+
+    company_id = kwargs.get("company_id")
+    job_industry = (kwargs.get("job_industry") or kwargs.get("industry") or "").lower()
+    job_type = (kwargs.get("job_type") or "").lower()
+
+    async with AsyncSessionLocal() as db:
+        repo = PipelineStageTemplateRepository(db)
+        all_items = await repo.list_for_company(
+            company_id=company_id, include_master=True
+        )
+
+    suggestions = []
+    for item in all_items:
+        data = item.data or {}
+        # Score canonical: default_in_pipeline + master + category
+        score = 0
+        if data.get("is_default_in_pipeline"):
+            score += 5
+        if item.is_master_template:
+            score += 3
+        category = data.get("stage_category")
+        if category in ("system", "catalog"):
+            score += 2
+        # Bonus: job_type/industry-aware (futuro — placeholder simbolico)
+        if job_industry and category == "catalog":
+            score += 1
+        suggestions.append({
+            "id": str(item.id),
+            "label": data.get("label", ""),
+            "key": data.get("key", ""),
+            "order": data.get("order", 9999),
+            "action_behavior": data.get("action_behavior"),
+            "stage_category": category,
+            "is_master": item.is_master_template,
+            "is_default_in_pipeline": data.get("is_default_in_pipeline", False),
+            "score": score,
+        })
+
+    # Sort por score desc + order asc (preserva ordem canonical do funil)
+    suggestions.sort(key=lambda s: (-s["score"], s["order"]))
+    top = suggestions[:15]
+
+    return {
+        "success": True,
+        "data": {
+            "suggestions": top,
+            "total_in_catalog": len(all_items),
+            "industry_used": job_industry or None,
+            "job_type_used": job_type or None,
+        },
+        "message": (
+            f"{len(top)} pipeline stage template(s) sugerido(s) "
+            f"(top 15 de {len(all_items)} no catalogo da empresa)."
+        ),
+    }
+
+
+@tool_handler("wizard")
+async def _wrap_apply_pipeline_stage_template_to_vacancy(**kwargs: Any) -> dict[str, Any]:
+    """
+    Aplica template de pipeline stage canonical a uma vaga em criacao.
+
+    Snapshot canonical (decisao Paulo B1): copia o data do template para
+    vaga.pipeline_stages JSONB (in-memory; persistencia ocorre via
+    save_job_draft canonical).
+
+    Multi-tenancy: company_id required via ContextVar; vacancy_id opcional
+    (pode ser snapshot pre-vaga durante o wizard).
+    """
+    import uuid as _uuid
+    from app.core.database import AsyncSessionLocal
+    from app.domains.pipeline.repositories.pipeline_stage_template_repository import (
+        PipelineStageTemplateRepository,
+    )
+
+    company_id = kwargs.get("company_id")
+    template_id_raw = kwargs.get("template_id")
+    vacancy_id = kwargs.get("vacancy_id")
+
+    if not template_id_raw:
+        return {
+            "success": False,
+            "fallback_used": True,
+            "needs_manual_review": True,
+            "message": "template_id obrigatorio",
+        }
+
+    try:
+        template_uuid = (
+            _uuid.UUID(template_id_raw)
+            if isinstance(template_id_raw, str)
+            else template_id_raw
+        )
+    except (ValueError, TypeError):
+        return {
+            "success": False,
+            "fallback_used": True,
+            "needs_manual_review": True,
+            "message": f"template_id invalido: {template_id_raw}",
+        }
+
+    async with AsyncSessionLocal() as db:
+        repo = PipelineStageTemplateRepository(db)
+        template = await repo.get_by_id(template_uuid, company_id)
+
+    if not template:
+        return {
+            "success": False,
+            "fallback_used": True,
+            "needs_manual_review": True,
+            "message": "Template nao encontrado ou fora do escopo da empresa",
+        }
+
+    snapshot = dict(template.data or {})
+    snapshot["_template_id"] = str(template.id)
+    snapshot["_parent_template_id"] = (
+        str(template.parent_template_id) if template.parent_template_id else None
+    )
+    snapshot["_is_master_origin"] = template.is_master_template
+
+    return {
+        "success": True,
+        "data": {
+            "vacancy_id": vacancy_id,
+            "template_id": str(template.id),
+            "snapshot": snapshot,
+            "is_master_origin": template.is_master_template,
+        },
+        "message": (
+            f"Pipeline stage '{snapshot.get('label', '')[:60]}' aplicado a vaga "
+            f"(snapshot canonical B1; persistencia ocorre no save_job_draft)."
+        ),
+    }
+
+
+@tool_handler("wizard")
+async def _wrap_create_custom_pipeline_stage_template(**kwargs: Any) -> dict[str, Any]:
+    """
+    Cria pipeline stage template custom canonical via wizard conversacional.
+
+    Permissoes: qualquer user (recrutador + admin podem criar — decisao Paulo C
+    2026-05-20). Persistido per-company.
+
+    Validacao: label min 2 chars; key inferido se omitido.
+    """
+    from app.core.database import AsyncSessionLocal
+    from app.domains.pipeline.repositories.pipeline_stage_template_repository import (
+        PipelineStageTemplateRepository,
+    )
+
+    company_id = kwargs.get("company_id")
+    user_id = kwargs.get("user_id")
+    label = (kwargs.get("label") or "").strip()
+    key_raw = (kwargs.get("key") or "").strip()
+    color = kwargs.get("color")
+    icon = kwargs.get("icon")
+    order = kwargs.get("order", 0)
+    is_default = kwargs.get("is_default_in_pipeline", False)
+
+    if not label or len(label) < 2:
+        return {
+            "success": False,
+            "fallback_used": True,
+            "needs_manual_review": True,
+            "message": "label obrigatorio (min 2 caracteres)",
+        }
+
+    # Infere key canonical do label se nao fornecido (snake_case)
+    if not key_raw:
+        import re as _re
+        key = _re.sub(r"[^a-z0-9]+", "_", label.lower()).strip("_")[:64] or "custom_stage"
+    else:
+        key = key_raw[:64]
+
+    try:
+        order_int = int(order)
+    except (ValueError, TypeError):
+        order_int = 0
+
+    data: dict[str, Any] = {
+        "label": label,
+        "key": key,
+        "order": max(0, order_int),
+        "is_default_in_pipeline": bool(is_default),
+        "stage_category": kwargs.get("stage_category") or "custom",
+        "type": kwargs.get("type") or "custom",
+    }
+    if color:
+        data["color"] = color
+    if icon:
+        data["icon"] = icon
+    if kwargs.get("action_behavior"):
+        data["action_behavior"] = kwargs["action_behavior"]
+    if kwargs.get("default_channel"):
+        data["default_channel"] = kwargs["default_channel"]
+    if kwargs.get("sla_hours") is not None:
+        try:
+            data["sla_hours"] = max(0, int(kwargs["sla_hours"]))
+        except (ValueError, TypeError):
+            pass
+
+    async with AsyncSessionLocal() as db:
+        repo = PipelineStageTemplateRepository(db)
+        try:
+            template = await repo.create_custom(
+                company_id=company_id,
+                data=data,
+                created_by=str(user_id) if user_id else None,
+            )
+            await db.commit()
+        except Exception as e:
+            await db.rollback()
+            return {
+                "success": False,
+                "fallback_used": True,
+                "needs_manual_review": True,
+                "message": f"Falha ao criar pipeline stage template: {str(e)}",
+            }
+
+    return {
+        "success": True,
+        "data": {
+            "id": str(template.id),
+            "company_id": template.company_id,
+            "is_master_template": False,
+            "label": data["label"],
+            "key": data["key"],
+            "order": data["order"],
+            "is_default_in_pipeline": data["is_default_in_pipeline"],
+        },
+        "message": (
+            f"Pipeline stage custom criado para a empresa "
+            f"(id={str(template.id)[:8]}..., key={key})."
+        ),
+    }
+
+
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
+        name="suggest_pipeline_stage_templates",
+        description=(
+            "Sugere templates canonical de etapas de pipeline (funil de recrutamento) "
+            "relevantes para a vaga em criacao baseado em job_industry e job_type. "
+            "Retorna top 15 ranked por is_default_in_pipeline + master scope + "
+            "stage_category. Substitui o catalogo hardcoded DEFAULT_STAGES."
+        ),
+        parameters={
+            "type": "object",
+            "properties": {
+                "job_industry": {"type": "string", "description": "Setor da empresa"},
+                "job_type": {"type": "string", "description": "Tipo da vaga (CLT, PJ, etc.)"},
+            },
+            "required": [],
+        },
+        output_schema=ToolOutput,
+        function=_wrap_suggest_pipeline_stage_templates,
+    )
+)
+
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
+        name="apply_pipeline_stage_template_to_vacancy",
+        description=(
+            "Aplica template canonical de pipeline stage a uma vaga em criacao via "
+            "snapshot canonical (B1). Copia data + parent_template_id. NAO sincroniza "
+            "com master apos aplicacao. Persistencia final ocorre em save_job_draft."
+        ),
+        parameters={
+            "type": "object",
+            "properties": {
+                "template_id": {"type": "string", "description": "UUID do pipeline stage template"},
+                "vacancy_id": {"type": "string", "description": "UUID da vaga (opcional durante wizard)"},
+            },
+            "required": ["template_id"],
+        },
+        output_schema=ToolOutput,
+        function=_wrap_apply_pipeline_stage_template_to_vacancy,
+    )
+)
+
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
+        name="create_custom_pipeline_stage_template",
+        description=(
+            "Cria pipeline stage template custom canonical persistido per-company. "
+            "Recrutador + admin podem criar (decisao Paulo C 2026-05-20). label min 2 "
+            "chars; key inferido snake_case do label se omitido."
+        ),
+        parameters={
+            "type": "object",
+            "properties": {
+                "label": {"type": "string", "description": "Nome canonical da etapa (min 2 chars)"},
+                "key": {"type": "string", "description": "Slug canonical snake_case (inferido se omitido)"},
+                "color": {"type": "string", "description": "CSS var ou hex (opcional)"},
+                "icon": {"type": "string", "description": "Lucide icon name (opcional)"},
+                "order": {"type": "integer", "description": "Ordem canonical 1..N (default 0)"},
+                "is_default_in_pipeline": {"type": "boolean", "description": "Aparece em novos pipelines (default False)"},
+                "action_behavior": {
+                    "type": "string",
+                    "enum": [
+                        "intake", "screening", "passive", "scheduling", "evaluation",
+                        "verification", "offer", "conclusion_hired",
+                        "conclusion_declined", "conclusion_rejected",
+                    ],
+                },
+                "default_channel": {"type": "string", "enum": ["email", "email_whatsapp", "whatsapp", "none"]},
+                "stage_category": {"type": "string", "enum": ["system", "custom", "catalog"]},
+                "type": {"type": "string", "enum": ["system", "custom", "default"]},
+                "sla_hours": {"type": "integer", "description": "SLA em horas (default 0)"},
+            },
+            "required": ["label"],
+        },
+        output_schema=ToolOutput,
+        function=_wrap_create_custom_pipeline_stage_template,
+    )
+)
+
+
 _TOOL_MAP: dict[str, ToolDefinition] = {t.name: t for t in TOOL_DEFINITIONS}
 
 STAGE_TOOLS: dict[str, list[str]] = {
-    "input-evaluation": ["validate_job_requirements", "validate_job_fields", "get_job_suggestions", "get_company_config", "save_job_draft", "check_job_draft_health"],
+    "input-evaluation": ["validate_job_requirements", "validate_job_fields", "get_job_suggestions", "get_company_config", "save_job_draft", "check_job_draft_health", "suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],
     "jd-enrichment": ["generate_enriched_jd", "get_job_suggestions", "get_company_config", "save_job_draft", "check_job_draft_health"],
     "salary": ["get_salary_benchmarks", "search_salary_benchmark", "validate_job_fields", "save_job_draft", "check_job_draft_health"],
     "competencies": ["validate_job_requirements", "get_job_suggestions", "validate_job_fields", "save_job_draft", "suggest_eligibility_templates", "apply_eligibility_template_to_vacancy", "create_custom_eligibility_template"],
     "wsi-questions": ["validate_job_requirements", "validate_job_fields", "save_job_draft", "generate_screening_questions", "suggest_eligibility_templates", "apply_eligibility_template_to_vacancy", "create_custom_eligibility_template"],
-    "review-publish": ["validate_job_requirements", "save_job_draft", "validate_job_fields", "check_job_draft_health", "generate_report", "publish_vacancy", "change_vacancy_status"],
+    "review-publish": ["validate_job_requirements", "save_job_draft", "validate_job_fields", "check_job_draft_health", "generate_report", "publish_vacancy", "change_vacancy_status", "suggest_pipeline_stage_templates", "apply_pipeline_stage_template_to_vacancy", "create_custom_pipeline_stage_template"],
     # Phase E — vacancy lifecycle stages (Recrutar > Vagas rail).
     # Stage names match _classify_job_lifecycle_stage in
     # app/api/v1/job_vacancies/analytics.py.
