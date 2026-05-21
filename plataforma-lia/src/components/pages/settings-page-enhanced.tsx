@@ -230,6 +230,7 @@ const getDefaultSections = (): SettingsSection[] => [
       { id: 'policy-engine', title: 'Policy Engine', description: 'Políticas de compliance por setor', fields: [] },
       { id: 'dsr', title: 'DSR / LGPD', description: 'Data Subject Requests', fields: [] },
       { id: 'consent', title: 'Consent', description: 'Tipos de consentimento e métricas', fields: [] },
+      { id: 'ai-performance', title: 'AI Performance', description: 'A/B testing canonical (Thompson + Bonferroni + Sequential + FairnessGate) — T-19', fields: [] },
     ],
   },
 ]

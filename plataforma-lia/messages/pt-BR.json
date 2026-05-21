@@ -5699,7 +5699,59 @@
         "automationRules": "Automation Rules",
         "policyEngine": "Policy Engine",
         "dsr": "DSR / LGPD",
-        "consent": "Consent"
+        "consent": "Consent",
+        "aiPerformance": "AI Performance"
+      },
+      "aiPerformance": {
+        "title": "AI Performance",
+        "description": "A/B testing canonical com Thompson Sampling, Bonferroni multi-arm, Sequential Testing (Pocock) e FairnessGate L3 (T-19).",
+        "errorLoad": "Erro ao carregar AI performance",
+        "selectExperiment": "Experimento",
+        "selectPlaceholder": "Selecione um experimento...",
+        "tabs": {
+          "experiments": "Experimentos Ativos",
+          "bandit": "Bandit Dashboard",
+          "earlyStop": "Sequential Testing",
+          "history": "Histórico de Promoções"
+        },
+        "summary": {
+          "active": "Experimentos ativos",
+          "promotedReady": "Prontos para promover (Bonferroni)",
+          "pendingFairness": "Pendentes (FairnessGate)",
+          "totalObservations": "Total de observações"
+        },
+        "empty": {
+          "experiments": "Nenhum experimento ativo no momento.",
+          "posteriors": "Sem posteriors Thompson persistidos para este experimento.",
+          "history": "Sem histórico de comparações."
+        },
+        "experiments": {
+          "arms": "Arms",
+          "observations": "Observações",
+          "winner": "Vencedor atual",
+          "noWinner": "Sem vencedor ainda",
+          "promoteFrequentist": "Promover (z-test + Bonferroni)",
+          "promoteThompson": "Promover (Thompson Bayesiano)",
+          "promoted": "Vencedor promovido com sucesso",
+          "notPromoted": "Promoção bloqueada",
+          "gateUsed": "Gate aplicado",
+          "fairnessBlocked": "Bloqueado pelo FairnessGate L3 (ADR-031-v3)"
+        },
+        "bandit": {
+          "explanation": "Posteriors Bayesianos (distribuição Beta) por arm. α/β atualizados a cada observação; expected value = α/(α+β).",
+          "expectedValue": "Valor esperado"
+        },
+        "earlyStop": {
+          "explanation": "Sequential testing Pocock alpha-spending: alpha_per_look = alpha_total / max_looks. Permite peeks sem inflar Type I error.",
+          "lookNumber": "Look atual",
+          "maxLooks": "Total de looks",
+          "run": "Avaliar",
+          "action": {
+            "stop_winner": "Stop — vencedor",
+            "stop_futility": "Stop — futilidade",
+            "continue": "Continuar"
+          }
+        }
       },
       "auditLogs": {
         "loading": "Carregando audit logs...",

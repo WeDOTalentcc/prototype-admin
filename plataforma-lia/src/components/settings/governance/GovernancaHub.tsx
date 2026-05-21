@@ -2,7 +2,7 @@
 
 import React, { useState } from "react"
 import { useTranslations } from "next-intl"
-import { ScrollText, ShieldAlert, Workflow, FileCheck2, UserCog, ShieldCheck } from "lucide-react"
+import { ScrollText, ShieldAlert, Workflow, FileCheck2, UserCog, ShieldCheck, Activity } from "lucide-react"
 import { tabStyles, textStyles } from "@/lib/design-tokens"
 import { cn } from "@/lib/utils"
 import { AuditLogsPanel } from "./AuditLogsPanel"
@@ -11,6 +11,7 @@ import { AutomationRulesPanel } from "./AutomationRulesPanel"
 import { PolicyEnginePanel } from "./PolicyEnginePanel"
 import { DSRInboxPanel } from "./DSRInboxPanel"
 import { ConsentPanel } from "./ConsentPanel"
+import { AIPerformancePanel } from "./AIPerformancePanel"
 
 export type GovernancaSubsection =
   | "audit-logs"
@@ -19,6 +20,7 @@ export type GovernancaSubsection =
   | "policy-engine"
   | "dsr"
   | "consent"
+  | "ai-performance"
 
 interface GovernancaHubProps {
   activeSubsection?: GovernancaSubsection
@@ -37,6 +39,7 @@ export function GovernancaHub({ activeSubsection }: GovernancaHubProps) {
     { id: "policy-engine", label: t("tabs.policyEngine"), icon: FileCheck2 },
     { id: "dsr", label: t("tabs.dsr"), icon: UserCog },
     { id: "consent", label: t("tabs.consent"), icon: ShieldCheck },
+    { id: "ai-performance", label: t("tabs.aiPerformance"), icon: Activity },
   ]
 
   return (
@@ -84,6 +87,7 @@ export function GovernancaHub({ activeSubsection }: GovernancaHubProps) {
         {active === "policy-engine" && <PolicyEnginePanel />}
         {active === "dsr" && <DSRInboxPanel />}
         {active === "consent" && <ConsentPanel />}
+        {active === "ai-performance" && <AIPerformancePanel />}
       </section>
     </div>
   )

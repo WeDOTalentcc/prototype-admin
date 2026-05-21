@@ -18,6 +18,7 @@ from app.api.v1 import llm_config as llm_config_router_mod
 
 from app.api.v1 import (
     ab_testing,
+    ai_performance,
     jd_similar,
     learning_loops_config,
     activities,
@@ -437,6 +438,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(intelligence.router, prefix="/api/v1/intelligence", tags=["intelligence-layer"])
     app.include_router(drift.router, prefix="/api/v1", tags=["model-drift"])
     app.include_router(ab_testing.router, prefix="/api/v1", tags=["ab-testing"])
+    app.include_router(ai_performance.router, prefix="/api/v1", tags=["ai-performance"])
     app.include_router(finetuning_export.router, prefix="/api/v1", tags=["finetuning-export"])
     app.include_router(wizard_analytics.router, prefix="/api/v1", tags=["wizard-analytics"])
 
