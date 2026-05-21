@@ -45,10 +45,18 @@ GRANULAR_PURPOSE_MAP: dict[str, str] = {
     "data_retention": "DATA_RETENTION",
     "marketing": "MARKETING",
     "analytics": "ANALYTICS",
+    # T-11 B.1.1: training_data purpose canonical (ADR-RLHF-001)
+    # Used by training_data_service.export_* (T-21b wired anonymizer)
+    # Cross-border via AWS Bedrock fine-tune (Claude 3 Haiku custom)
+    "training_data": "TRAINING_DATA",
 }
 
 # Finalidades que BLOQUEIAM processamento quando revogadas (críticas LGPD)
-BLOCKING_PURPOSES = {"ai_screening", "ai_scoring", "ai_video_analysis", "ai_comparison"}
+# T-11 B.1.1: training_data is BLOCKING — revoke cascata erasure cross-border
+BLOCKING_PURPOSES = {
+    "ai_screening", "ai_scoring", "ai_video_analysis", "ai_comparison",
+    "training_data",  # T-11 B.1.1: blocking pra impedir export pós-revoke
+}
 
 # Todas as finalidades suportadas
 ALL_PURPOSES = list(GRANULAR_PURPOSE_MAP.keys())
