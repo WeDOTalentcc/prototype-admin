@@ -64,7 +64,6 @@ class InitiateCallRequest(WeDoBaseModel):
     candidate_name: str
     phone_number: str
     job_title: str
-    company_id: str
     job_id: str | None = None
     language: str = "pt-BR"
 
@@ -105,6 +104,7 @@ def _verify_twilio_signature(request: Request, params: dict[str, str]) -> bool:
 async def initiate_voice_screening(
     request_body: InitiateCallRequest,
     request: Request,
+    company_id: str = Depends(require_company_id),
 ) -> InitiateCallResponse:
     """
     Initiate an outbound voice screening call to a candidate.
@@ -121,7 +121,7 @@ async def initiate_voice_screening(
                 candidate_name=request_body.candidate_name,
                 phone_number=request_body.phone_number,
                 job_title=request_body.job_title,
-                company_id=request_body.company_id,
+                company_id=company_id,
                 job_id=request_body.job_id,
                 language=request_body.language,
                 db=session,

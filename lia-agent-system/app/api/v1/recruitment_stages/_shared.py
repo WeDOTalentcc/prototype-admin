@@ -233,7 +233,6 @@ class InterpretContextRequest(WeDoBaseModel):
     to_stage: str
     action_behavior: str
     prompt: str | None = None
-    company_id: str | None = None
     message_history: list[ChatMessageItem] | None = None
     conversation_id: str | None = Field(None, description="Conversation ID for multi-turn context persistence")
 

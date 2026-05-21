@@ -30,7 +30,6 @@ class AutoScreeningRequest(WeDoBaseModel):
     source: str
     resume_text: str | None = None
     resume_url: str | None = None
-    company_id: str
 
 
 def _wsi_questions_to_screening_response(wsi_questions, request) -> ScreeningQuestionResponse:
@@ -133,7 +132,7 @@ company_id: str = Depends(require_company_id)) -> ScreeningQuestionResponse:
         mode = "full" if request.question_count > 10 else "compact"
         wsi_questions = await wsi_svc.generate_from_simple_inputs(
             skills=request.skills or [],
-            behavioral=[],
+            behavioral=request.behavioral_competencies or [],
             seniority=request.seniority or "pleno",
             job_description=request.job_description,
             mode=mode,
@@ -258,7 +257,7 @@ company_id: str = Depends(require_company_id)):
         task = ScreeningTask(
             candidate_id=request.candidate_id,
             job_id=request.job_id,
-            company_id=request.company_id,
+            company_id=company_id,
             status="pending",
             source=request.source,
             resume_text=request.resume_text,
@@ -268,7 +267,7 @@ company_id: str = Depends(require_company_id)):
 
         logger.info(
             f"Auto-screening task created: {task.id} for candidate={request.candidate_id} "
-            f"job={request.job_id} company={request.company_id}"
+            f"job={request.job_id} company={company_id}"
         )
 
         return JSONResponse(

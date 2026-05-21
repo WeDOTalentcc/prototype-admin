@@ -54,7 +54,6 @@ class SendWhatsAppRequest(WeDoBaseModel):
     message: str = Field(..., description="Message text")
     media_url: str | None = Field(None, description="URL of media to attach")
     metadata: dict[str, Any] | None = Field(default=None, description="Custom metadata")
-    company_id: str | None = Field(None, description="Company ID for multi-tenancy")
     candidate_id: str | None = Field(None, description="Candidate ID for tracking")
     
     class Config:
@@ -62,7 +61,6 @@ class SendWhatsAppRequest(WeDoBaseModel):
             "example": {
                 "to_phone": "+5511999999999",
                 "message": "Olá! Sua entrevista está agendada para amanhã às 10h.",
-                "company_id": "company_123"
             }
         }
 
@@ -74,7 +72,6 @@ class SendWhatsAppTemplateRequest(WeDoBaseModel):
     template_data: dict[str, Any] = Field(..., description="Template variables")
     media_url: str | None = Field(None, description="URL of media to attach")
     metadata: dict[str, Any] | None = Field(default=None, description="Custom metadata")
-    company_id: str | None = Field(None, description="Company ID")
     candidate_id: str | None = Field(None, description="Candidate ID")
     
     class Config:
@@ -104,7 +101,6 @@ class SendInteractiveRequest(WeDoBaseModel):
     footer: str | None = Field(None, description="Message footer")
     buttons: list[InteractiveButton] = Field(..., description="List of buttons (max 3)")
     metadata: dict[str, Any] | None = Field(default=None, description="Custom metadata")
-    company_id: str | None = Field(None, description="Company ID")
     candidate_id: str | None = Field(None, description="Candidate ID")
     
     class Config:

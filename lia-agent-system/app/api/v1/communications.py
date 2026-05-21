@@ -74,7 +74,7 @@ async def create_communication(data: CommunicationCreate, company_id: str = Depe
             attachments=data.attachments,
             sent_by=data.sent_by,
             sent_by_name=data.sent_by_name,
-            company_id=data.company_id,
+            company_id=company_id,
             extra_data=data.extra_data,
         )
         

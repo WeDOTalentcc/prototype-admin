@@ -24,7 +24,6 @@ router = APIRouter(prefix="/wsi/async", tags=["wsi-async"])
 class InviteRequest(WeDoBaseModel):
     candidate_id: str
     job_id: str
-    company_id: str
     expire_hours: int = 72
 
 
@@ -46,7 +45,7 @@ company_id: str = Depends(require_company_id)) -> dict:
         token = await svc.create_session(
             candidate_id=payload.candidate_id,
             job_id=payload.job_id,
-            company_id=payload.company_id,
+            company_id=company_id,
             db=db,
         )
         return {

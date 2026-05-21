@@ -201,7 +201,6 @@ class CreateInterviewWithTeamsRequest(WeDoBaseModel):
     interview_type: str = "technical"
     job_title: str | None = None
     job_vacancy_id: str | None = None
-    company_id: str | None = None
     notes: str | None = None
     additional_attendees: list[dict[str, str]] | None = None
     send_calendar_invites: bool = True
@@ -248,7 +247,7 @@ company_id: str = Depends(require_company_id)):
             interview_type=request.interview_type,
             job_title=request.job_title,
             job_vacancy_id=request.job_vacancy_id,
-            company_id=request.company_id,
+            company_id=company_id,
             notes=request.notes,
             additional_attendees=request.additional_attendees,
             send_calendar_invites=request.send_calendar_invites,
@@ -444,7 +443,6 @@ class SendInterviewInviteRequest(WeDoBaseModel):
     candidate_name: str
     job_title: str
     bookings_link: str
-    company_id: str | None = None
     company_name: str | None = None
     recruiter_name: str | None = None
     interviewer_name: str | None = None
@@ -497,7 +495,7 @@ company_id: str = Depends(require_company_id)):
             candidate_name=request.candidate_name,
             job_title=request.job_title,
             bookings_link=request.bookings_link,
-            company_id=request.company_id,
+            company_id=company_id,
             company_name=request.company_name,
             recruiter_name=request.recruiter_name,
             interviewer_name=request.interviewer_name,
@@ -527,7 +525,6 @@ class SendInterviewConfirmationRequest(WeDoBaseModel):
     job_title: str
     interview_datetime: datetime
     interview_link: str
-    company_id: str | None = None
     company_name: str | None = None
     recruiter_name: str | None = None
     interviewer_name: str | None = None
@@ -573,7 +570,7 @@ company_id: str = Depends(require_company_id)):
             job_title=request.job_title,
             interview_datetime=request.interview_datetime,
             interview_link=request.interview_link,
-            company_id=request.company_id,
+            company_id=company_id,
             company_name=request.company_name,
             recruiter_name=request.recruiter_name,
             interviewer_name=request.interviewer_name,

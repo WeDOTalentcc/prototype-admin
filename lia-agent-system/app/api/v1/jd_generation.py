@@ -18,9 +18,9 @@ router = APIRouter(prefix="/jd", tags=["jd-generation"])
 
 
 class ExtractJDRequest(WeDoBaseModel):
-    """T-1167 (Bug #3) — extrai responsabilidades/skills/comp.comp. de um JD colado em texto livre."""
+    """T-1167 (Bug #3) — extrai responsabilidades/skills/comp.comp. de um JD colado em texto livre.
+    company_id vem do JWT via Depends(require_company_id) — body NÃO carrega tenant."""
     text: str
-    company_id: str
 
 
 class ExtractJDResponse(BaseModel):
@@ -49,7 +49,7 @@ async def extract_jd(
         )
     # T-1167 (Bug #3) — usa SEMPRE o company_id resolvido do JWT pelo Depends.
     # Ignora qualquer company_id vindo no body (anti tenant-spoofing — code review
-    # do architect achou que request.company_id era usado direto, abrindo
+    # do architect achou que company_id era usado direto, abrindo
     # broken tenant isolation contract; require_company_id NÃO faz strict match).
     tenant_id = company_id
     # Reutiliza FairnessGuard input antes de mandar pro LLM.
@@ -118,7 +118,6 @@ class GenerateJDRequest(WeDoBaseModel):
     company_industry: str | None = None
     benefits: list[str] = []
     interview_stages: list[str] = []
-    company_id: str
 
 
 def _build_tags(request: GenerateJDRequest) -> list[str]:
@@ -193,7 +192,7 @@ async def generate_jd(
     audit_svc: AuditService = Depends(get_audit_service),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    _fg_check_input(request, request.company_id)
+    _fg_check_input(request, company_id)
 
     try:
         job_data = {
@@ -215,7 +214,7 @@ company_id: str = Depends(require_company_id)):
         }
         result = await jd_generator_service.generate_full_description(
             job_data=job_data,
-            company_id=request.company_id,
+            company_id=company_id,
         )
         
         result["tags"] = _build_tags(request)
@@ -224,7 +223,7 @@ company_id: str = Depends(require_company_id)):
         # T-1167 / Bug #1 — `_fg_check_output` desativado (ver docstring).
         # Mantém a chamada (retorna None) para manter a forma do fluxo e
         # facilitar reativação futura com Layer 3 semântico se necessário.
-        fg_output = _fg_check_output(result.get("full_description", ""), request.company_id)
+        fg_output = _fg_check_output(result.get("full_description", ""), company_id)
         response = {"success": True, **result}
         if fg_output and getattr(fg_output, "has_warnings", False):
             response["fairness_warning"] = {
@@ -234,7 +233,7 @@ company_id: str = Depends(require_company_id)):
 
         try:
             await audit_svc.log_decision(
-                company_id=request.company_id,
+                company_id=company_id,
                 agent_name="jd_generator",
                 decision_type="generate_jd",
                 action="generate_full_description",
@@ -275,7 +274,7 @@ company_id: str = Depends(require_company_id)):
             # T-1167 / Bug #1 — `_fg_check_output` desativado (retorna None,
             # ver docstring). Chamada mantida para preservar a forma do fluxo
             # e facilitar reativação futura com Layer 3 semântico.
-            fg_output = _fg_check_output(desc, request.company_id)
+            fg_output = _fg_check_output(desc, company_id)
             response = {
                 "success": True,
                 "full_description": desc,
@@ -293,7 +292,7 @@ company_id: str = Depends(require_company_id)):
 
             try:
                 await audit_svc.log_decision(
-                    company_id=request.company_id,
+                    company_id=company_id,
                     agent_name="jd_generator",
                     decision_type="generate_jd",
                     action="generate_description_fallback",

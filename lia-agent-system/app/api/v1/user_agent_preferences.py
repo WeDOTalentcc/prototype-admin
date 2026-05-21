@@ -33,7 +33,6 @@ router = APIRouter(prefix="/user-preferences/agent", tags=["user-preferences"])
 
 class PreferenceUpsertRequest(WeDoBaseModel):
     user_id: str
-    company_id: str
     domain: str
     action_type: str
     auto_confirm: bool
@@ -99,7 +98,7 @@ company_id: str = Depends(require_company_id)):
     pref = await UserAgentPreferenceService.upsert(
         db,
         user_id=data.user_id,
-        company_id=data.company_id,
+        company_id=company_id,
         domain=data.domain,
         action_type=data.action_type,
         auto_confirm=data.auto_confirm,

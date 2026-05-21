@@ -71,7 +71,6 @@ def _verify_ws_token(ws_token: str, session_id: str, tenant_id: str) -> bool:
 
 
 class VoiceStreamStartRequest(WeDoBaseModel):
-    company_id: str
     language: str = "pt-BR"
     system_prompt: str = ""
     voice_name: str = "Aoede"
@@ -93,15 +92,8 @@ async def start_voice_stream_session(
     request: Request,
 company_id: str = Depends(require_company_id)) -> VoiceStreamStartResponse:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    authenticated_tenant = getattr(request.state, "company_id", None) or getattr(
-        request.state, "tenant_id", None
-    )
-    tenant_id = authenticated_tenant or request_body.company_id
-    if authenticated_tenant and request_body.company_id and authenticated_tenant != request_body.company_id:
-        raise HTTPException(
-            status_code=403,
-            detail="company_id does not match authenticated tenant.",
-        )
+    # R4 canonical: company_id from JWT via require_company_id dependency (authoritative)
+    tenant_id = company_id
 
     client_ip = "unknown"
     if request.client:

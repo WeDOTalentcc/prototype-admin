@@ -111,7 +111,6 @@ class WSIQuestionOutput(BaseModel):
 
 class GenerateQuestionsRequest(WeDoBaseModel):
     job_vacancy_id: str | None = None
-    company_id: str | None = None
     job_title: str | None = None
     requirements: list[str] | None = None
     skills: list[str] | None = None

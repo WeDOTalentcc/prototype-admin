@@ -332,7 +332,6 @@ class WizardOrchestratorRequest(WeDoBaseModel):
     current_stage: str
     collected_data: dict[str, Any]
     conversation_history: list[dict[str, str]] | None = None
-    company_id: str
     use_structured_outputs: bool = False
     llm_provider: str | None = "gemini"
 

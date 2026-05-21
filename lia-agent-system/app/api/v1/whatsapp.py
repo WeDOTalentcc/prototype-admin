@@ -371,7 +371,6 @@ class SendMessageRequest(WeDoBaseModel):
     """Request to send a message to a WhatsApp number."""
     phone_number: str
     message: str
-    company_id: str | None = None
     provider: str | None = None
 
 
@@ -399,7 +398,7 @@ company_id: str = Depends(require_company_id)):
         except ValueError:
             raise HTTPException(status_code=400, detail=f"Invalid provider: {request.provider}")
     else:
-        provider = await WhatsAppProviderFactory.get_provider(request.company_id, db)
+        provider = await WhatsAppProviderFactory.get_provider(company_id, db)
     
     result = await provider.send_text_message(
         to=request.phone_number,

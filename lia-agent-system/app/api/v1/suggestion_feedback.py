@@ -26,7 +26,6 @@ logger = logging.getLogger(__name__)
 
 
 class SuggestionFeedbackRequest(WeDoBaseModel):
-    company_id: str
     field_name: str = Field(..., description="Field being suggested: salary, skills, seniority, etc.")
     suggested_value: Any | None = None
     actual_value: Any | None = None
@@ -80,7 +79,7 @@ company_id: str = Depends(require_company_id)):
     try:
         _repo = SuggestionFeedbackRepository(db)
         feedback = await _repo.record(
-            company_id=request.company_id,
+            company_id=company_id,
             field_name=request.field_name,
             suggested_value=request.suggested_value,
             actual_value=request.actual_value,
@@ -91,7 +90,7 @@ company_id: str = Depends(require_company_id)):
 
         logger.info(
             f"SuggestionFeedback: recorded {'accepted' if request.accepted else 'rejected'} "
-            f"for field '{request.field_name}' (company={request.company_id})"
+            f"for field '{request.field_name}' (company={company_id})"
         )
 
         return {

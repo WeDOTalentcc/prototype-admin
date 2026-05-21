@@ -167,7 +167,7 @@ company_id: str = Depends(require_company_id)):
                         for m in request.message_history
                     ]
 
-                company_id = request.company_id or get_user_company_id(current_user)
+                # R2 canonical: company_id from JWT via Depends(require_company_id) — handler scope
                 user_id = str(getattr(current_user, "id", "")) or ""
 
                 conv_id = request.conversation_id or str(_uuid.uuid4())

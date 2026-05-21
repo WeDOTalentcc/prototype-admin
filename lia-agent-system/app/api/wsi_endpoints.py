@@ -63,6 +63,7 @@ class AnalyzeJDRequest(WeDoBaseModel):
     department: str | None = Field(None, description="Department (e.g., Engineering, Product)")
 
 
+# DUPLICATE_OF_INTENT: app/api/v1/skills_catalog.py:147 — legacy wsi_endpoints.py wire shape (Sprint Q.4 cleanup)
 class CompetencySuggestionResponse(BaseModel):
     """Suggested competencies from JD analysis."""
     technical_competencies: list[dict[str, Any]]
@@ -76,6 +77,7 @@ class CompetencySuggestionResponse(BaseModel):
 from app.api.v1.wsi._shared import GenerateQuestionsRequest  # noqa: F401
 
 
+# DUPLICATE_OF_INTENT: app/api/v1/wsi/_shared.py:128 — legacy wsi_endpoints.py wire shape (Sprint Q.4 cleanup)
 class GenerateQuestionsResponse(BaseModel):
     """Generated WSI questions."""
     session_id: str
@@ -83,6 +85,7 @@ class GenerateQuestionsResponse(BaseModel):
     total_questions: int
 
 
+# DUPLICATE_OF_INTENT: app/api/v1/wsi/_shared.py:169 — legacy wsi_endpoints.py wire shape (Sprint Q.4 cleanup)
 class AnalyzeResponseRequest(WeDoBaseModel):
     """Request to analyze a candidate response."""
     session_id: str
@@ -110,6 +113,7 @@ class AnalyzeResponseResponse(BaseModel):
     justification: str
 
 
+# DUPLICATE_OF_INTENT: app/api/v1/interview_notes.py:156 — legacy wsi_endpoints.py wire shape (Sprint Q.4 cleanup)
 class CalculateWSIRequest(WeDoBaseModel):
     """Request to calculate final WSI."""
     session_id: str

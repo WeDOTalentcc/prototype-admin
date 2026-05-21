@@ -107,7 +107,6 @@ company_id: str = Depends(require_company_id)):
 class InterviewGraphStartRequest(WeDoBaseModel):
     candidate_id: str
     job_id: str
-    company_id: str
     interview_level: str = Field(default="standard", pattern="^(quick|standard|full)$")
 
 
@@ -132,14 +131,14 @@ company_id: str = Depends(require_company_id)):
     state = wsi_interview_graph.create_session(
         candidate_id=request.candidate_id,
         job_id=request.job_id,
-        company_id=request.company_id,
+        company_id=company_id,
         interview_level=request.interview_level,
     )
 
     # Pré-carrega contexto da vaga para o grafo (que não tem acesso direto ao DB)
     try:
         _repo = WsiRepository(db)
-        job_row = await _repo.get_job_vacancy_context(request.job_id, request.company_id)
+        job_row = await _repo.get_job_vacancy_context(request.job_id, company_id)
         if job_row:
             state.job_requirements = {
                 "title": job_row[0] or "",

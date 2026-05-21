@@ -26,6 +26,12 @@ class ScreeningQuestionRequest(WeDoBaseModel):
     )
     big_five_profile: BigFiveProfile | None = Field(None, description="Big Five personality profile")
     skills: list[str] = Field(default=[], description="Required technical skills")
+    behavioral_competencies: list[str] = Field(
+        default=[],
+        description="Soft skills / behavioral competencies (alinhado com canonical /api/v1/wsi/generate-questions). "
+                    "Audit 2026-05-20 F6.O3+O6: antes era hardcoded [] no handler — gerava perguntas behavioral usando skills técnicas como fallback. "
+                    "Frontend canonical já manda esse field via /api/v1/wsi/generate-questions; este endpoint legacy agora aceita também (backward-compat: default [] preserva comportamento antigo)."
+    )
     job_description: str | None = Field(None, description="Full job description text")
     question_count: int = Field(default=8, ge=4, le=25, description="Number of questions to generate")
 
@@ -94,7 +100,6 @@ class UnifiedScreeningQuestion(BaseModel):
 
 class WSIScreeningPipelineRequest(WeDoBaseModel):
     """Request for the unified WSI screening pipeline."""
-    company_id: str | None = Field(None, description="Company ID (auto-filled from auth)")
     job_title: str = Field(..., description="Job title")
     department: str | None = Field(None, description="Department")
     seniority: Literal["junior", "pleno", "senior", "lead", "executive"] | None = Field(default=None, description="Seniority level. Se None, será resolvido automaticamente via multi-signal.")

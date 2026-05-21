@@ -43,7 +43,6 @@ class SendEmailRequest(WeDoBaseModel):
     reply_to: str | None = Field(None, description="Reply-to address")
     categories: list[str] | None = Field(default=None, description="Categories for tracking")
     metadata: dict[str, Any] | None = Field(default=None, description="Custom metadata")
-    company_id: str | None = Field(None, description="Company ID for multi-tenancy")
 
 
 class SendTemplateEmailRequest(WeDoBaseModel):
@@ -55,7 +54,6 @@ class SendTemplateEmailRequest(WeDoBaseModel):
     reply_to: str | None = Field(None, description="Reply-to address")
     categories: list[str] | None = Field(default=None, description="Categories")
     metadata: dict[str, Any] | None = Field(default=None, description="Custom metadata")
-    company_id: str | None = Field(None, description="Company ID")
 
 
 class BulkEmailRecipient(BaseModel):
@@ -71,7 +69,6 @@ class SendBulkEmailRequest(WeDoBaseModel):
     body_html: str | None = Field(None, description="HTML body")
     categories: list[str] | None = Field(default=None, description="Categories")
     metadata: dict[str, Any] | None = Field(default=None, description="Custom metadata")
-    company_id: str | None = Field(None, description="Company ID")
 
 
 class EmailSendResult(BaseModel):

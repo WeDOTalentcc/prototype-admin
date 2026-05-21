@@ -42,7 +42,6 @@ class FastTrackState(StrEnum):
 
 
 class FastTrackWizardRequest(WeDoBaseModel):
-    company_id: str
     conversation_id: str | None = None
     state: FastTrackState = FastTrackState.PRE_WIZARD
     user_input: str

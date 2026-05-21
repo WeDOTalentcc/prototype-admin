@@ -46,7 +46,6 @@ company_id: str = Depends(require_company_id)):
     """
     try:
         company_id = get_user_company_id(current_user)
-        request.company_id = company_id
 
         company_questions_raw = []
         if request.include_company_questions:

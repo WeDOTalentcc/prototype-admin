@@ -72,7 +72,6 @@ class CompanyCatalogResponse(BaseModel):
 
 class AddSkillRequest(WeDoBaseModel):
     """Request model for adding a skill to company catalog."""
-    company_id: str
     skill_name: str
     category: str
     default_weight: int = Field(default=3, ge=1, le=5)
@@ -108,7 +107,6 @@ class AddSkillResponse(BaseModel):
 
 class SyncTechStackRequest(WeDoBaseModel):
     """Request model for syncing tech stack."""
-    company_id: str
     tech_stack: list[str] = Field(..., min_items=1)
     
     @validator("tech_stack")
@@ -126,7 +124,6 @@ class SyncTechStackResponse(BaseModel):
 
 class SuggestSkillsRequest(WeDoBaseModel):
     """Request model for skill suggestions."""
-    company_id: str
     job_title: str
     seniority: str | None = None
     department: str | None = None
@@ -168,7 +165,6 @@ class SuggestSkillsResponse(BaseModel):
 
 class RecordSkillUsageRequest(WeDoBaseModel):
     """Request model for recording skill usage."""
-    company_id: str
     skill_name: str
     outcome: str = Field(..., description="'accepted', 'modified', or 'rejected'")
     skill_type: str = Field(default="technical", description="'technical' or 'behavioral'")
@@ -272,7 +268,7 @@ company_id: str = Depends(require_company_id)) -> AddSkillResponse:
         db_service = get_skills_catalog_db_service(db)
         
         result = await db_service.add_skill_to_catalog(
-            company_id=request.company_id,
+            company_id=company_id,
             skill_name=request.skill_name,
             category=request.category,
             subcategory=request.subcategory,
@@ -284,7 +280,7 @@ company_id: str = Depends(require_company_id)) -> AddSkillResponse:
         )
         
         logger.info(
-            f"Added skill '{request.skill_name}' to company {request.company_id} catalog"
+            f"Added skill '{request.skill_name}' to company {company_id} catalog"
         )
         
         return AddSkillResponse(**result)
@@ -317,12 +313,12 @@ company_id: str = Depends(require_company_id)) -> SyncTechStackResponse:
         db_service = get_skills_catalog_db_service(db)
         
         result = await db_service.sync_from_tech_stack(
-            company_id=request.company_id,
+            company_id=company_id,
             tech_stack=request.tech_stack
         )
         
         logger.info(
-            f"Synced tech stack for company {request.company_id}: "
+            f"Synced tech stack for company {company_id}: "
             f"added={result['added']}, updated={result['updated']}, skipped={result['skipped']}"
         )
         
@@ -367,7 +363,7 @@ company_id: str = Depends(require_company_id)) -> SuggestSkillsResponse:
         
         # Get merged suggestions from database
         merged = await db_service.get_merged_suggestions(
-            company_id=request.company_id,
+            company_id=company_id,
             job_title=request.job_title,
             seniority=request.seniority,
             limit=request.limit
@@ -403,7 +399,7 @@ company_id: str = Depends(require_company_id)) -> SuggestSkillsResponse:
         ]
         
         logger.info(
-            f"Generated suggestions for company {request.company_id}, "
+            f"Generated suggestions for company {company_id}, "
             f"job: {request.job_title}: {len(technical_skills)} technical skills, "
             f"{len(behavioral_competencies)} competencies"
         )
@@ -466,7 +462,7 @@ company_id: str = Depends(require_company_id)) -> RecordSkillUsageResponse:
         
         # Record the skill usage
         await db_service.record_skill_usage(
-            company_id=request.company_id,
+            company_id=company_id,
             skill_name=request.skill_name,
             outcome=request.outcome,
             skill_type=request.skill_type,
@@ -487,7 +483,7 @@ company_id: str = Depends(require_company_id)) -> RecordSkillUsageResponse:
         )
         
         logger.info(
-            f"Recorded {request.skill_name} usage for company {request.company_id}: "
+            f"Recorded {request.skill_name} usage for company {company_id}: "
             f"outcome={request.outcome}, job_title={request.job_title}"
         )
         

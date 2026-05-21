@@ -34,7 +34,6 @@ class InviteRequest(WeDoBaseModel):
     candidate_email: str | None = None
     job_id: str
     job_title: str | None = None
-    company_id: str
     company_name: str | None = None
     company_logo_url: str | None = None
     invite_channel: str = "email"

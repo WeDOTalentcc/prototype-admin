@@ -59,7 +59,7 @@ class TeamsWebhookPayload(WeDoBaseModel):
     candidate_phone: str | None = Field(None, description="Candidate phone number")
     vacancy_id: str | None = Field(None, description="Job vacancy ID")
     vacancy_title: str | None = Field(None, description="Job vacancy title")
-    company_id: str | None = Field(None, description="Company ID")
+    company_id: str | None = Field(None, description="Company ID")  # R2-EXEMPT: webhook externo Microsoft Teams (tenant via X-Teams-Signature HMAC + verify_webhook_owner); SKIP_R2 lista classe explicitamente
     recruiter_id: str | None = Field(None, description="Recruiter user ID who performed the action")
     recruiter_name: str | None = Field(None, description="Recruiter name")
     notes: str | None = Field(None, description="Optional notes from recruiter")

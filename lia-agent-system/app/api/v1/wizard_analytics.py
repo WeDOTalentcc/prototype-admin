@@ -24,7 +24,6 @@ logger = logging.getLogger(__name__)
 class StartSessionRequest(WeDoBaseModel):
     """Request to start a wizard session."""
     session_id: str
-    company_id: str
     recruiter_id: str
 
 
@@ -63,7 +62,7 @@ async def start_session(request: StartSessionRequest, company_id: str = Depends(
     try:
         session = wizard_analytics_service.start_session(
             session_id=request.session_id,
-            company_id=request.company_id,
+            company_id=company_id,
             recruiter_id=request.recruiter_id,
         )
         
