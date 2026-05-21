@@ -27,6 +27,7 @@ from app.jobs.tasks.compliance import (  # noqa: F401
     run_lgpd_cleanup_task,
     conversation_ttl_cleanup_task,
     pii_backfill_encrypt_existing_task,
+    pii_backfill_encrypt_interview_offer_existing_task,
     run_retention_cleanup,
     cleanup_expired_working_memory,
 )
@@ -87,6 +88,7 @@ __all__ = [
     "run_lgpd_cleanup_task",
     "conversation_ttl_cleanup_task",
     "pii_backfill_encrypt_existing_task",
+    "pii_backfill_encrypt_interview_offer_existing_task",
     "run_retention_cleanup",
     "cleanup_expired_working_memory",
     # feedback

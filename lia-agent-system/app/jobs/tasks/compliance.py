@@ -694,3 +694,202 @@ def check_dsr_overdue_daily(self) -> dict:
         if self.request.retries >= self.max_retries:
             _emit_dlq_push("dsr.check_overdue_daily", exc)
         raise self.retry(exc=exc, countdown=600)
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# P0.B Phase 2 (audit 2026-05-21): backfill Fernet encryption pra rows
+# pre-migration-160 das colunas PII email em interview + offer_proposal.
+# Pattern canonical: mesma estrutura de pii_backfill_encrypt_existing_task
+# (linha 133+) que faz Candidate / ClientUser / User.
+# ════════════════════════════════════════════════════════════════════════════
+
+
+@celery_app.task(
+    base=TenantAwareTask,
+    name="pii.backfill_encrypt_interview_offer_existing",
+    bind=True,
+    max_retries=2,
+)
+def pii_backfill_encrypt_interview_offer_existing_task(
+    self,
+    batch_size: int = 500,
+    dry_run: bool = False,
+) -> dict:
+    """
+    P0.B Phase 2 (audit 2026-05-21): encrypt existing plaintext PII em
+    interview + interview_feedbacks + offer_proposals.
+
+    Migration 160 adicionou colunas ``*_encrypted`` / ``*_hash`` + flipou
+    raw columns NOT NULL → nullable (transition phase). Esta task encripta
+    os bytes dos rows EXISTENTES (pre-migration) que tem plaintext mas
+    NULL em encrypted column.
+
+    Idempotent: WHERE encrypted IS NULL AND plaintext IS NOT NULL —
+    safe to re-run.
+
+    Tabelas + colunas tratadas:
+      - interviews.candidate_email           → candidate_email_encrypted + hash
+      - interviews.interviewer_email         → interviewer_email_encrypted + hash
+      - interviews.graph_organizer_email     → graph_organizer_email_encrypted (no hash)
+      - interview_feedbacks.interviewer_email → interviewer_email_encrypted + hash
+      - offer_proposals.candidate_email      → candidate_email_encrypted + hash
+
+    Roda apos migration 160 ser aplicada. Pode rodar 1x manual via
+    Celery dispatch OR agendar Beat (separate config). Phase 3 / 4 das
+    migrations futuras (NOT NULL enforcement + drop plaintext) DEPENDEM
+    desta task ter rodado a 100% antes.
+
+    Args:
+        batch_size: rows per batch (default 500).
+        dry_run: log counts sem commit (default False).
+
+    Returns:
+        Dict com per-(table, column) encrypted counts + errors.
+    """
+    import asyncio
+    import re
+
+    async def _run() -> dict:
+        from app.core.database import AsyncSessionLocal
+        from app.shared.encryption.encrypted_field_mixin import _encrypt, _sha256_hash
+        from sqlalchemy import text
+
+        summary: dict = {
+            "dry_run": dry_run,
+            "batch_size": batch_size,
+            "tables": {},
+            "errors": [],
+        }
+
+        # SQL identifier allow-list canonical (mesmo pattern da Phase 1 task).
+        _SAFE_ID_RE = re.compile(r"^[a-z][a-z0-9_]{0,62}$")
+        _ALLOWED_TABLES = frozenset([
+            "interviews",
+            "interview_feedbacks",
+            "offer_proposals",
+        ])
+
+        # (table, plaintext_col, encrypted_col, hash_col_or_None)
+        # hash_col=None → graph_organizer_email (query path improvável).
+        tables_config = [
+            ("interviews", "candidate_email",
+             "candidate_email_encrypted", "candidate_email_hash"),
+            ("interviews", "interviewer_email",
+             "interviewer_email_encrypted", "interviewer_email_hash"),
+            ("interviews", "graph_organizer_email",
+             "graph_organizer_email_encrypted", None),
+            ("interview_feedbacks", "interviewer_email",
+             "interviewer_email_encrypted", "interviewer_email_hash"),
+            ("offer_proposals", "candidate_email",
+             "candidate_email_encrypted", "candidate_email_hash"),
+        ]
+
+        async with AsyncSessionLocal() as db:
+            for table, plain_col, enc_col, hash_col in tables_config:
+                # Defense-in-depth: validate identifier safety even though
+                # tables_config is hardcoded above (canonical anti-injection
+                # pattern from Phase 1 task — mantemos pra futura modificacao).
+                if table not in _ALLOWED_TABLES:
+                    raise ValueError(f"Table '{table}' not in PII backfill allow-list")
+                for col in (plain_col, enc_col, *( [hash_col] if hash_col else [] )):
+                    if not _SAFE_ID_RE.match(col):
+                        raise ValueError(f"Column '{col}' contains invalid characters")
+
+                key = f"{table}.{plain_col}"
+                encrypted_count = 0
+
+                try:
+                    while True:
+                        rows = (await db.execute(
+                            text(
+                                f"SELECT id, {plain_col} FROM {table} "
+                                f"WHERE {enc_col} IS NULL AND {plain_col} IS NOT NULL "
+                                f"LIMIT :limit"
+                            ),
+                            {"limit": batch_size},
+                        )).all()
+
+                        if not rows:
+                            break
+
+                        for row in rows:
+                            enc_val = _encrypt(row[1])
+                            params: dict = {"enc": enc_val, "id": row[0]}
+                            if hash_col:
+                                params["hsh"] = _sha256_hash(row[1])
+                                update_sql = (
+                                    f"UPDATE {table} "
+                                    f"SET {enc_col} = :enc, {hash_col} = :hsh "
+                                    f"WHERE id = :id"
+                                )
+                            else:
+                                update_sql = (
+                                    f"UPDATE {table} "
+                                    f"SET {enc_col} = :enc "
+                                    f"WHERE id = :id"
+                                )
+                            if not dry_run:
+                                await db.execute(text(update_sql), params)
+
+                        if not dry_run:
+                            await db.commit()
+
+                        encrypted_count += len(rows)
+                        logger.info(
+                            "pii.backfill_encrypt_interview_offer_existing%s: "
+                            "%s — encrypted %d rows (batch)",
+                            " (dry-run)" if dry_run else "",
+                            key,
+                            len(rows),
+                        )
+
+                        if len(rows) < batch_size:
+                            break
+
+                    summary["tables"][key] = {"encrypted": encrypted_count}
+
+                except Exception as exc:
+                    logger.error(
+                        "pii.backfill_encrypt_interview_offer_existing: "
+                        "error on %s: %s",
+                        key, exc,
+                    )
+                    summary["errors"].append(f"{key}: {exc}")
+                    try:
+                        await db.rollback()
+                    except Exception:
+                        pass
+
+        return summary
+
+    span = _celery_span(
+        "celery.task_start",
+        "pii.backfill_encrypt_interview_offer_existing",
+    )
+    try:
+        result = asyncio.run(_run())
+        _finish_celery_success(
+            span, "pii.backfill_encrypt_interview_offer_existing",
+        )
+        logger.info(
+            "[pii.backfill_encrypt_interview_offer_existing] %s", result,
+        )
+        from app.shared.resilience.cron_health import record_cron_run
+        record_cron_run("pii.backfill_encrypt_interview_offer_existing")
+        return result
+    except Exception as exc:
+        _finish_celery_failure(
+            span, "pii.backfill_encrypt_interview_offer_existing", exc,
+        )
+        logger.error(
+            "pii.backfill_encrypt_interview_offer_existing falhou: %s", exc,
+        )
+        _emit_celery_retry(
+            "pii.backfill_encrypt_interview_offer_existing",
+            exc, self.request.retries, self.max_retries, 600,
+        )
+        if self.request.retries >= self.max_retries:
+            _emit_dlq_push(
+                "pii.backfill_encrypt_interview_offer_existing", exc,
+            )
+        raise self.retry(exc=exc, countdown=600)
