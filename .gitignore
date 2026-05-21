@@ -120,3 +120,9 @@ lia-agent-system/coverage.json
 coverage.json
 .coverage
 htmlcov/
+
+# Editor/agent backups (audit Configurações 2026-05-21 cleanup)
+# Inclui sufixos: .bak, .bak.<sprint>, .bak.before-<fix>, .bak.<unix-ts>, etc.
+# 65 arquivos limpos em 2026-05-21; pattern previne recidiva.
+*.bak
+*.bak.*
