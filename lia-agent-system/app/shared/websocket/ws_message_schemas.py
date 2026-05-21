@@ -26,7 +26,7 @@ Versionamento (PM-03, Auditoria Rev 4):
 """
 from typing import Any, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 # ─────────────────────────────────────────────────────────────────────────────
 # PM-03 (Audit Rev 4) — versão canônica do contrato WS.

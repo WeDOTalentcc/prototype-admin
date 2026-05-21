@@ -6,7 +6,7 @@ import logging
 from typing import Any
 
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 from app.domains.recruiter_assistant.services.kanban_assistant_service import kanban_assistant_service
 from fastapi import Depends

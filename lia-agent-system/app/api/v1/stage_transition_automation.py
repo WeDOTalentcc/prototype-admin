@@ -15,7 +15,7 @@ import os
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 from app.domains.automation.services.stage_transition_automation import SubStatusPredictor, stage_transition_service
 from app.shared.compliance.audit_service import audit_service  # module-level for test patchability

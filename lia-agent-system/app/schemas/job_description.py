@@ -7,7 +7,7 @@ Schemas para geração de Job Description em duas versões:
 from datetime import datetime
 from enum import Enum, StrEnum
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from app.shared.types import WeDoBaseModel
 
 

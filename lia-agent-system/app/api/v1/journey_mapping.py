@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 from app.domains.journey_mapping.dependencies import get_journey_mapping_repo
 from app.domains.journey_mapping.repositories.journey_mapping_repository import JourneyMappingRepository
