@@ -29,6 +29,7 @@ class BehavioralCompetency(BaseModel):
     weight: Literal["Essencial", "Importante", "Desejável"]
 
 
+# DUPLICATE_OF_INTENT: app/schemas/job_description.py:100 — state-tracking variant with similar 6-field shape (Sprint Q.4: M-bucket pending verify single canonical)
 class InterviewStage(BaseModel):
     """Interview stage details."""
     stage_name: str

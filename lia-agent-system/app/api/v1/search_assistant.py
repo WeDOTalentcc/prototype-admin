@@ -67,7 +67,7 @@ class SuggestionsResponse(BaseModel):
     category_suggestions: dict[str, list[str]] = Field(default_factory=dict)
 
 
-class AnalysisResponse(BaseModel):
+class SearchAnalysisResponse(BaseModel):
     completeness_score: int = Field(ge=0, le=100)
     filled_criteria: list[str] = Field(default_factory=list)
     missing_criteria: list[str] = Field(default_factory=list)
@@ -337,14 +337,14 @@ company_id: str = Depends(require_company_id)):
     )
 
 
-class AnalyzeRequest(WeDoBaseModel):
+class SearchAnalyzeRequest(WeDoBaseModel):
     query: str = Field(..., description="Texto da busca")
     entities: dict[str, Any] = Field(default_factory=dict, description="Entidades parseadas")
 
 
-@router.post("/analyze", response_model=AnalysisResponse)
+@router.post("/analyze", response_model=SearchAnalysisResponse)
 async def analyze_search(
-    request: AnalyzeRequest,
+    request: SearchAnalyzeRequest,
     db: AsyncSession = Depends(get_db), 
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
@@ -364,7 +364,7 @@ company_id: str = Depends(require_company_id)):
     else:
         next_action = "Continue descrevendo o perfil ideal"
     
-    return AnalysisResponse(
+    return SearchAnalysisResponse(
         completeness_score=completeness,
         filled_criteria=filled,
         missing_criteria=missing,

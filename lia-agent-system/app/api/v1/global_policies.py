@@ -19,7 +19,7 @@ from app.core.database import get_db
 from app.domains.policy.repositories.global_policy_repository import GlobalPolicyRepository  # DEPRECATED-IMPORT-EXEMPT: V1 API canonical (PlatformPolicy/GlobalPolicy schema — app.domains.policy é canonical, hiring_policy não cobre platform policies)
 from app.models.global_policies import PlatformPolicy
 from app.schemas.global_policies import (
-    CategoryCount,
+    PolicyCategoryCount,
     CategoryListResponse,
     PolicyAuditLogListResponse,
     PolicyAuditLogResponse,
@@ -88,7 +88,7 @@ async def list_categories(db: AsyncSession = Depends(get_db), company_id: str = 
     try:
         repo = GlobalPolicyRepository(db)
         rows = await repo.list_categories()
-        categories = [CategoryCount(category=r[0], count=r[1], active_count=r[2]) for r in rows]
+        categories = [PolicyCategoryCount(category=r[0], count=r[1], active_count=r[2]) for r in rows]
         return CategoryListResponse(
             categories=categories, total_policies=sum(c.count for c in categories)
         )

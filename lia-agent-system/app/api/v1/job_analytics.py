@@ -78,6 +78,7 @@ class AnalyticsResultResponse(BaseModel):
     error: str | None = None
 
 
+# DUPLICATE_OF_INTENT: app/api/v1/job_vacancies/analytics.py:35 — generic by-stage dict summary; canonical has concrete stage breakdown (screening/interview/offer/hired)
 class FunnelMetrics(BaseModel):
     total_candidates: int
     candidates_by_stage: dict[str, int]

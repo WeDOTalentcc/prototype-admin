@@ -24,6 +24,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/conversations", tags=["conversations"])
 
 
+# DUPLICATE_OF_INTENT: app/schemas/chat.py:31 — REST handler-side response with extra context_type/context_id fields (Sprint Q.4: M-bucket pending merge)
 class ConversationResponse(BaseModel):
     """Response model for a conversation."""
     id: str
@@ -40,6 +41,7 @@ class ConversationResponse(BaseModel):
     updated_at: str | None = None
 
 
+# DUPLICATE_OF_INTENT: app/schemas/chat.py:18 — REST handler-side response with extra intent field (Sprint Q.4: M-bucket pending merge)
 class MessageResponse(BaseModel):
     """Response model for a message."""
     id: str
@@ -59,6 +61,7 @@ class ConversationDetailResponse(BaseModel):
     summary: str | None = None
 
 
+# DUPLICATE_OF_INTENT: app/schemas/chat.py:49 — REST uses offset+limit pagination; canonical uses page+page_size (Sprint Q.4: M-bucket pending merge)
 class ConversationListResponse(BaseModel):
     """List of conversations."""
     conversations: list[ConversationResponse]

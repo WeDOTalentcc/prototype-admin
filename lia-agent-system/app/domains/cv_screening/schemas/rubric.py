@@ -45,6 +45,7 @@ from app.schemas.rubric import JobRequirementResponse  # noqa: F401  (re-export 
 from app.schemas.rubric import RequirementEvaluation  # noqa: F401  (re-export for backward compat)
 
 
+# DUPLICATE_OF_INTENT: app/schemas/rubric.py — domain-internal subset of canonical rubric schema (Sprint Q.1 triagem I bucket)
 class RubricEvaluationResult(BaseModel):
     """Complete rubric evaluation result.
     

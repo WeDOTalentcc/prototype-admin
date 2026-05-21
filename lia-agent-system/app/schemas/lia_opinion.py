@@ -30,7 +30,7 @@ class RecommendationEnum(StrEnum):
     NOT_APPROVED = "not_approved"
 
 
-class ScoreBreakdown(BaseModel):
+class LiaOpinionScoreBreakdown(BaseModel):
     """Detailed score breakdown."""
     skills_match: float | None = None
     experience_match: float | None = None

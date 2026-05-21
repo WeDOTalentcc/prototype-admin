@@ -91,7 +91,7 @@ class PolicyAuditLogListResponse(BaseModel):
     offset: int
 
 
-class CategoryCount(BaseModel):
+class PolicyCategoryCount(BaseModel):
     """Count of policies per category."""
     category: str
     count: int
@@ -100,7 +100,7 @@ class CategoryCount(BaseModel):
 
 class CategoryListResponse(BaseModel):
     """Response schema for category listing with counts."""
-    categories: list[CategoryCount]
+    categories: list[PolicyCategoryCount]
     total_policies: int
 
 

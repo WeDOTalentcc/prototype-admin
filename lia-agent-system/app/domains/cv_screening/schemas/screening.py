@@ -14,6 +14,7 @@ from app.schemas.screening import BigFiveProfile  # noqa: F401  (re-export for b
 from app.schemas.screening import ScreeningQuestionRequest  # noqa: F401  (re-export for backward compat)
 
 
+# DUPLICATE_OF_INTENT: app/schemas/screening.py — re-export pattern (Sprint F.3 #25), fields verified identical
 class ScreeningQuestion(BaseModel):
     id: str = Field(..., description="Unique question identifier")
     text: str = Field(..., description="The question text in Portuguese")
@@ -34,6 +35,7 @@ class ScreeningQuestion(BaseModel):
     order: int = Field(default=0, description="Display order")
 
 
+# DUPLICATE_OF_INTENT: app/schemas/screening.py — re-export pattern (Sprint F.3 #25), fields verified identical
 class ScreeningQuestionResponse(BaseModel):
     questions: list[ScreeningQuestion] = Field(default=[], description="Generated screening questions")
     behavioral_questions: list[ScreeningQuestion] = Field(default=[], description="Behavioral questions grouped")
@@ -43,6 +45,7 @@ class ScreeningQuestionResponse(BaseModel):
     metadata: dict[str, Any] = Field(default={}, description="Generation metadata")
 
 
+# DUPLICATE_OF_INTENT: app/schemas/screening.py — re-export pattern (Sprint F.3 #25), fields verified identical
 class RegenerateQuestionsRequest(WeDoBaseModel):
     context: ScreeningQuestionRequest = Field(..., description="Original job context")
     category: Literal["behavioral", "technical", "cultural"] | None = Field(

@@ -29,6 +29,7 @@ DEFAULT_MAX_QUESTIONS = 12
 
 
 
+# DUPLICATE_OF_INTENT: app/domains/cv_screening/services/wsi_service/models.py — API wire-format subset of canonical WSI question (Sprint Q.1 triagem I bucket)
 class WSIQuestion(BaseModel):
     """WSI question structure."""
     id: str
@@ -49,7 +50,6 @@ from app.shared.types import WeDoBaseModel
 
 class RegenerateQuestionsRequest(WeDoBaseModel):
     """Request to regenerate WSI questions based on full competency lists."""
-    company_id: str
     job_title: str
     current_questions: list[WSIQuestion] = Field(default_factory=list)
     technical_skills: list[str] = Field(default_factory=list)
@@ -202,7 +202,7 @@ company_id: str = Depends(require_company_id)):
             fg_result = check_fairness(
                 {"question": q.question},
                 context="wsi_question_generation",
-                company_id=request.company_id,
+                company_id=company_id,
             )
             if fg_result.is_blocked:
                 logger.warning(
@@ -231,7 +231,7 @@ company_id: str = Depends(require_company_id)):
 
         try:
             await audit_svc.log_decision(
-                company_id=request.company_id or None,
+                company_id=company_id or None,
                 agent_name="wsi_service",
                 decision_type="generate_wsi_questions",
                 action="generate_questions",

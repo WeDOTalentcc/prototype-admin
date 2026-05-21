@@ -72,7 +72,7 @@ class PortalDataRequestResponse(BaseModel):
     vacancy_info: dict[str, Any] | None = None
 
 
-class RequestOTPRequest(WeDoBaseModel):
+class CandidatePortalOTPRequest(WeDoBaseModel):
     """Request to send a new OTP."""
     channel: str = Field(default="email", pattern="^(email|whatsapp)$")
 
@@ -85,7 +85,7 @@ class RequestOTPResponse(BaseModel):
     expires_in_minutes: int = 10
 
 
-class VerifyOTPRequest(WeDoBaseModel):
+class CandidatePortalOTPVerify(WeDoBaseModel):
     """Request to verify OTP code."""
     code: str = Field(..., min_length=6, max_length=6, pattern="^[0-9]{6}$")
 
@@ -342,7 +342,7 @@ async def get_data_request_info(
 @router.post("/{token}/request-otp", response_model=RequestOTPResponse)
 async def request_otp(
     token: str,
-    request_data: RequestOTPRequest,
+    request_data: CandidatePortalOTPRequest,
     request: Request,
     db: AsyncSession = Depends(get_db),
 ):
@@ -408,7 +408,7 @@ async def request_otp(
 @router.post("/{token}/verify-otp", response_model=VerifyOTPResponse)
 async def verify_otp(
     token: str,
-    request_data: VerifyOTPRequest,
+    request_data: CandidatePortalOTPVerify,
     request: Request,
     db: AsyncSession = Depends(get_db),
 ):

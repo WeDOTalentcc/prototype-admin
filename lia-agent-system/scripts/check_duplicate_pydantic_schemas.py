@@ -10,6 +10,12 @@ Quaisquer dos 2 casos é violação ADR-SCHEMAS-001:
 "Cada feature tem UM módulo canonical de schemas. Duplicar nome de classe
 entre arquivos é proibido."
 
+Sprint Q.2: suporte ao marcador `# DUPLICATE_OF_INTENT: <canonical_path>`.
+Quando uma declaração duplicada carrega esse marcador (na linha imediatamente
+acima do `class X(BaseModel):` OU em até 5 linhas acima), ela é considerada
+intentional re-export e NÃO conta como violação. Pattern análogo ao
+`# ADR-001-EXEMPT` de outros sensores.
+
 Output otimizado para LLM: a mensagem inclui o nome da classe, os 2 paths,
 se os fields divergem (com diff), e a ação corretiva.
 
@@ -30,12 +36,18 @@ from pathlib import Path
 from typing import NamedTuple
 
 
+# Sprint Q.2: número máximo de linhas acima da `class X(...)` para procurar marker.
+INTENT_MARKER_LOOKBACK_LINES = 5
+INTENT_MARKER_PREFIX = "# DUPLICATE_OF_INTENT:"
+
+
 class SchemaDecl(NamedTuple):
     """A Pydantic BaseModel class declaration found via AST."""
     name: str
     path: Path
     lineno: int
     fields: tuple[tuple[str, str], ...]  # ((field_name, annotation_str), …)
+    has_intent_marker: bool  # Sprint Q.2: true se há marker # DUPLICATE_OF_INTENT acima
 
 
 def _is_pydantic_base(class_node: ast.ClassDef) -> bool:
@@ -60,6 +72,29 @@ def _extract_fields(class_node: ast.ClassDef) -> tuple[tuple[str, str], ...]:
     return tuple(fields)
 
 
+def _is_intent_marker(line: str) -> bool:
+    """Sprint Q.2: # DUPLICATE_OF_INTENT marker excludes intentional duplicates."""
+    return line.strip().startswith(INTENT_MARKER_PREFIX)
+
+
+def _has_intent_marker_above(
+    source_lines: list[str], class_lineno: int
+) -> bool:
+    """Look up to INTENT_MARKER_LOOKBACK_LINES above the class declaration for
+    a `# DUPLICATE_OF_INTENT: <canonical>` comment. Returns True if found.
+
+    `class_lineno` is 1-indexed (ast.lineno convention).
+    Lines scanned: [class_lineno - INTENT_MARKER_LOOKBACK_LINES, class_lineno - 1].
+    """
+    # Convert 1-indexed lineno to 0-indexed list index
+    class_idx = class_lineno - 1
+    start = max(0, class_idx - INTENT_MARKER_LOOKBACK_LINES)
+    for i in range(start, class_idx):
+        if i < len(source_lines) and _is_intent_marker(source_lines[i]):
+            return True
+    return False
+
+
 def collect_schemas(root: Path) -> list[SchemaDecl]:
     """Walk every *.py under root, collect BaseModel-derived class declarations."""
     out: list[SchemaDecl] = []
@@ -68,28 +103,49 @@ def collect_schemas(root: Path) -> list[SchemaDecl]:
         if any(seg in py_file.parts for seg in skip_segments):
             continue
         try:
-            tree = ast.parse(py_file.read_text(encoding="utf-8"), filename=str(py_file))
+            source = py_file.read_text(encoding="utf-8")
+            tree = ast.parse(source, filename=str(py_file))
         except (SyntaxError, UnicodeDecodeError):
             continue
+        source_lines = source.splitlines()
         for node in ast.walk(tree):
             if isinstance(node, ast.ClassDef) and _is_pydantic_base(node):
+                has_marker = _has_intent_marker_above(source_lines, node.lineno)
                 out.append(
                     SchemaDecl(
                         name=node.name,
                         path=py_file.relative_to(root),
                         lineno=node.lineno,
                         fields=_extract_fields(node),
+                        has_intent_marker=has_marker,
                     )
                 )
     return out
 
 
 def find_duplicates(schemas: list[SchemaDecl]) -> dict[str, list[SchemaDecl]]:
-    """Group by class name, return only names with ≥2 declarations."""
+    """Group by class name, return only names with ≥2 declarations
+    AFTER excluding declarations carrying `# DUPLICATE_OF_INTENT` marker.
+
+    Sprint Q.2: if a group has N declarations and K of them carry the
+    intent marker, the effective count drops to N - K. The group is only
+    reported when the effective count is ≥ 2 (still a real violation),
+    OR when N - K == 1 AND original N ≥ 2 (canonical alone, no violation).
+    """
     by_name: dict[str, list[SchemaDecl]] = defaultdict(list)
     for s in schemas:
         by_name[s.name].append(s)
-    return {n: decls for n, decls in by_name.items() if len(decls) >= 2}
+
+    out: dict[str, list[SchemaDecl]] = {}
+    for n, decls in by_name.items():
+        if len(decls) < 2:
+            continue
+        # Exclude intent-marked declarations from the violation count.
+        # A class is only a violation if there are still 2+ unmarked declarations.
+        unmarked = [d for d in decls if not d.has_intent_marker]
+        if len(unmarked) >= 2:
+            out[n] = decls  # report all decls (marked + unmarked) for context
+    return out
 
 
 def render_report(duplicates: dict[str, list[SchemaDecl]]) -> str:
@@ -102,11 +158,15 @@ def render_report(duplicates: dict[str, list[SchemaDecl]]) -> str:
         "module per feature. Duplicate names between files are a violation —",
         "either drift silently (= bug), or are dead code (= cleanup).",
         "",
+        "Sprint Q.2: declarações com `# DUPLICATE_OF_INTENT: <canonical>` acima",
+        "são consideradas intentional re-export e NÃO contam como violação.",
+        "",
     ]
     for name, decls in sorted(duplicates.items()):
         lines.append(f"── class `{name}` declared in {len(decls)} files ──")
         for d in decls:
-            lines.append(f"  • {d.path}:{d.lineno}  ({len(d.fields)} fields)")
+            marker_tag = " [# DUPLICATE_OF_INTENT]" if d.has_intent_marker else ""
+            lines.append(f"  • {d.path}:{d.lineno}  ({len(d.fields)} fields){marker_tag}")
             for fname, fann in d.fields[:5]:
                 lines.append(f"      - {fname}: {fann}")
             if len(d.fields) > 5:
@@ -136,6 +196,12 @@ def render_report(duplicates: dict[str, list[SchemaDecl]]) -> str:
             )
             lines.append(
                 "    document the divergence in CLAUDE.md."
+            )
+            lines.append(
+                "    OR (intentional re-export): add line above the duplicate:"
+            )
+            lines.append(
+                "      # DUPLICATE_OF_INTENT: <canonical_path> — <reason>"
             )
         lines.append("")
     lines.append(

@@ -89,6 +89,7 @@ class LocationField(BaseModel):
     country: Optional[str] = "Brasil"
 
 
+# DUPLICATE_OF_INTENT: app/schemas/job_vacancy_state.py — extractor internal subset of canonical salary range (Sprint Q.1 triagem I bucket)
 class SalaryRange(BaseModel):
     min: Optional[int] = None
     max: Optional[int] = None

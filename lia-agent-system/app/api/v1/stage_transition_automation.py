@@ -39,6 +39,7 @@ async def get_db_session():
         yield None
 
 
+# DUPLICATE_OF_INTENT: app/api/v1/interview_notes.py:98 — 4-field summary subset for stage-transition automation use (Sprint Q.4: M-bucket; canonical has full 7-field breakdown)
 class WSIScore(BaseModel):
     overall: float | None = None
     technical: float | None = None

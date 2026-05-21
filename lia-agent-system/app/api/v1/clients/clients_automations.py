@@ -22,6 +22,7 @@ from app.shared.types import WeDoBaseModel
 router = APIRouter()
 
 
+# DUPLICATE_OF_INTENT: app/api/v1/recruitment_journey.py:98 — clients-domain automation create (simpler trigger/action shape); canonical is recruitment_journey (Sprint Q.4: M-bucket pending domain reconciliation)
 class AutomationCreate(WeDoBaseModel):
     """Request model for creating an automation."""
     name: str = Field(..., min_length=1, max_length=255)
@@ -32,6 +33,7 @@ class AutomationCreate(WeDoBaseModel):
     config: dict[str, Any] | None = Field(None)
 
 
+# DUPLICATE_OF_INTENT: app/api/v1/recruitment_journey.py:108 — clients-domain automation update (couples with AutomationCreate above)
 class AutomationUpdate(WeDoBaseModel):
     """Request model for updating an automation."""
     name: str | None = Field(None, min_length=1, max_length=255)

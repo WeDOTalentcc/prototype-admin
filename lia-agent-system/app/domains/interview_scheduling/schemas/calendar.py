@@ -18,6 +18,7 @@ from app.schemas.calendar import TimeSlot  # noqa: F401  (re-export for backward
 from app.schemas.calendar import FindMeetingTimeRequest  # noqa: F401  (re-export for backward compat)
 
 
+# DUPLICATE_OF_INTENT: app/schemas/calendar.py — re-export pattern, fields verified identical (Sprint Q.1 triagem I bucket)
 class ScheduleInterviewRequest(WeDoBaseModel):
     """Request to schedule an interview."""
     organizer_email: EmailStr
@@ -36,6 +37,7 @@ class ScheduleInterviewRequest(WeDoBaseModel):
 from app.schemas.calendar import CancelInterviewRequest  # noqa: F401  (re-export for backward compat)
 
 
+# DUPLICATE_OF_INTENT: app/schemas/calendar.py — re-export pattern, fields verified identical (Sprint Q.1 triagem I bucket)
 class RescheduleInterviewRequest(WeDoBaseModel):
     """Request to reschedule an interview."""
     organizer_email: EmailStr

@@ -37,6 +37,7 @@ class APIError(BaseModel):
     details: Optional[dict] = None
 
 
+# DUPLICATE_OF_INTENT: app/shared/api/response.py:25 — legacy envelope success/message/data; canonical is modern ok/data/error/meta
 class APIResponse(BaseModel, Generic[T]):
     """Standard API response envelope.
 

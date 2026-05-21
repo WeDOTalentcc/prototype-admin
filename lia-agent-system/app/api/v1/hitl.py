@@ -35,7 +35,7 @@ class ApprovalRequest(WeDoBaseModel):
     comment: str | None = None
 
 
-class ApprovalResponse(BaseModel):
+class HitlApprovalResponse(BaseModel):
     thread_id: str
     pending_id: str
     approved: bool
@@ -48,7 +48,7 @@ class ApprovalResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 
-@router.post("/{thread_id}/approve", response_model=ApprovalResponse)
+@router.post("/{thread_id}/approve", response_model=HitlApprovalResponse)
 async def approve_hitl_action(
     thread_id: str,
     body: ApprovalRequest,
@@ -83,7 +83,7 @@ company_id: str = Depends(require_company_id)):
         body.approved,
     )
 
-    return ApprovalResponse(
+    return HitlApprovalResponse(
         thread_id=thread_id,
         pending_id=body.pending_id,
         approved=body.approved,

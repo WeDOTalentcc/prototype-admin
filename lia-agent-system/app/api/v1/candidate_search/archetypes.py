@@ -360,12 +360,6 @@ class ClosedJobSuggestionsResponse(BaseModel):
     total: int = 0
 
 
-class ArchetypeFromDescriptionRequest(WeDoBaseModel):
-    """Request para criar arquétipo a partir de descrição."""
-    description: str = Field(..., min_length=20, description="Descrição do perfil ideal")
-    name: str | None = Field(None, description="Nome do arquétipo (opcional, será gerado se não fornecido)")
-
-
 @router.get("/archetypes/suggestions/closed-jobs", response_model=ClosedJobSuggestionsResponse)
 async def get_closed_job_suggestions(
     limit: int = Query(5, ge=1, le=10),

@@ -38,6 +38,7 @@ class ContextSignals(BaseModel):
     nivel_colaboracao: Literal["baixo", "medio", "alto"] = "medio"
 
 
+# DUPLICATE_OF_INTENT: app/schemas/jd_enrichment.py:130 — PT-BR job_creation extractor variant with field names in Portuguese (titulo_padronizado/senioridade_confirmada/responsabilidades); intentional split, canonical is English JD enrichment
 class EnrichedJobDescription(BaseModel):
     """Output of F1.C — LLM JD enrichment.
 

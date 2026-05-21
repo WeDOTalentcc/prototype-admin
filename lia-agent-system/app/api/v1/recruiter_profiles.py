@@ -34,6 +34,7 @@ class RecruiterProfileResponse(BaseModel):
     profile_version: int = 1
 
 
+# DUPLICATE_OF_INTENT: app/schemas/recruiter_profile.py:147 — handler-side personalization update with simpler field set (Sprint Q.4: M-bucket pending field-naming alignment)
 class PersonalizationSettingsUpdate(WeDoBaseModel):
     personalization_enabled: bool | None = None
     data_collection_consent: bool | None = None

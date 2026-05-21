@@ -56,6 +56,7 @@ class AnalyzeTranscriptRequest(WeDoBaseModel):
     interview_type: str = "technical"
 
 
+# DUPLICATE_OF_INTENT: app/api/v1/teams.py — Microsoft Teams webhook validation envelope (Sprint Q.1 triagem I bucket)
 class TeamsWebhookPayload(WeDoBaseModel):
     """Microsoft Teams subscription webhook payload."""
     value: list = []

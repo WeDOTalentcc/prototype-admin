@@ -71,6 +71,7 @@ class WebhookResponse(BaseModel):
     updated_at: str | None = None
 
 
+# DUPLICATE_OF_INTENT: app/schemas/webhook.py — webhook list response wire-format (Sprint Q.1 triagem I bucket)
 class WebhookListResponse(BaseModel):
     """Response for listing webhooks."""
     success: bool

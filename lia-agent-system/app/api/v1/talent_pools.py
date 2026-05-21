@@ -49,7 +49,7 @@ class TalentPoolUpdate(WeDoBaseModel):
     agent_config: dict[str, Any] | None = None
 
 
-class AddCandidatesRequest(WeDoBaseModel):
+class AddCandidatesToPoolRequest(WeDoBaseModel):
     candidate_ids: list[int]
     origin: str = "manual"
 
@@ -265,7 +265,7 @@ company_id: str = Depends(require_company_id)):
 @router.post("/{pool_id}/add_candidates", status_code=201)
 async def add_candidates(
     pool_id: UUID,
-    payload: AddCandidatesRequest,
+    payload: AddCandidatesToPoolRequest,
     db: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)):

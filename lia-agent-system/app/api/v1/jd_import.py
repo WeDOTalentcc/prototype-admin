@@ -93,6 +93,7 @@ class BatchImportResponse(BaseModel):
     errors: list[dict[str, Any]] = []
 
 
+# DUPLICATE_OF_INTENT: app/api/v1/wizard_suggestions.py — wizard suggestion wire-format reused for JD import (Sprint Q.1 triagem I bucket)
 class SuggestionResponse(BaseModel):
     """Response with suggestion data."""
     value: Any

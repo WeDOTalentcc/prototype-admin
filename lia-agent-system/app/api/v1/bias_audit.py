@@ -53,6 +53,7 @@ class DemographicAuditResultResponse(BaseModel):
     eeoc_compliant: bool = True   # D3: Four-Fifths ok AND p >= 0.05
 
 
+# DUPLICATE_OF_INTENT: app/schemas/observability.py:491 — API-side 5-field summary subset of DB-backed canonical response (Sprint Q.4: M-bucket — defer rename until handler converges)
 class BiasAuditReportResponse(BaseModel):
     job_id: str
     evaluated_at: datetime

@@ -72,7 +72,7 @@ class WeightsResponse(BaseModel):
     count: int
 
 
-class DashboardResponse(BaseModel):
+class CalibrationDashboardResponse(BaseModel):
     success: bool
     data: dict[str, Any]
 
@@ -466,7 +466,7 @@ company_id: str = Depends(require_company_id)):
     }
 
 
-@router.get("/dashboard", response_model=DashboardResponse)
+@router.get("/dashboard", response_model=CalibrationDashboardResponse)
 async def get_calibration_dashboard(
     days: int = 30,
     db: AsyncSession = Depends(get_db), 

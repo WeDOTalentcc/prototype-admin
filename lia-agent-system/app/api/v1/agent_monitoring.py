@@ -71,7 +71,7 @@ class ActivityResponse(BaseModel):
     related_candidate_id: str | None = None
 
 
-class AlertResponse(BaseModel):
+class AgentAlertResponse(BaseModel):
     id: str
     type: str
     agent_id: str
@@ -176,13 +176,13 @@ company_id: str = Depends(require_company_id)):
     return [ActivityResponse(**a) for a in activities]
 
 
-@router.get("/alerts", response_model=list[AlertResponse])
+@router.get("/alerts", response_model=list[AgentAlertResponse])
 async def get_proactive_alerts(db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get current proactive alerts requiring attention."""
     service = AgentMonitoringService(db)
     alerts = await service.get_proactive_alerts()
-    return [AlertResponse(**a) for a in alerts]
+    return [AgentAlertResponse(**a) for a in alerts]
 
 
 @router.post("/activities", response_model=ActivityResponse)

@@ -6,6 +6,7 @@ from pydantic import BaseModel, Field
 T = TypeVar("T")
 
 
+# DUPLICATE_OF_INTENT: app/shared/api/response.py — legacy envelope meta with pagination, kept for compat (Sprint Q.1 triagem I bucket)
 class ResponseMeta(BaseModel):
     page: int | None = None
     per_page: int | None = None
