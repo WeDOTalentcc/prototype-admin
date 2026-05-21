@@ -109,7 +109,7 @@ repos:
       - id: agent-compliance-warn
         name: "G7: agent canonical anatomy (warn-only)"
         language: system
-        entry: bash -c "python3 scripts/check_agent_compliance.py 2>&1; exit 0"
+        entry: python3 scripts/check_agent_compliance.py
         files: ^app/domains/.*react_agent\.py$
         pass_filenames: false
         always_run: false
@@ -117,7 +117,7 @@ repos:
       - id: deprecated-rail-a-tools-warn
         name: "Rail A × @deprecated tools sensor (warn-only)"
         language: system
-        entry: bash -c "python3 scripts/check_deprecated_rail_a_tools.py 2>&1; exit 0"
+        entry: python3 scripts/check_deprecated_rail_a_tools.py
         files: ^app/.*\.py$
         pass_filenames: false
         always_run: false
@@ -125,7 +125,7 @@ repos:
       - id: domain-prompt-super-warn
         name: "G-DOMAIN: domain.py super().get_system_prompt() (warn-only)"
         language: system
-        entry: bash -c "python3 scripts/check_domain_prompt_super.py 2>&1; exit 0"
+        entry: python3 scripts/check_domain_prompt_super.py
         files: ^app/domains/.*domain\.py$
         pass_filenames: false
         always_run: false
@@ -213,7 +213,7 @@ repos:
       - id: adr-001-no-sql-inline-services-warn
         name: "ADR-001: no raw SQL inline in services (warn-only Caminho C)"
         language: system
-        entry: bash -c "python3 scripts/check_no_sql_inline_in_services.py 2>&1 | head -10; exit 0"
+        entry: python3 scripts/check_no_sql_inline_in_services.py
         files: ^app/domains/.*/services/.*\.py$
         pass_filenames: false
         always_run: false
@@ -221,7 +221,7 @@ repos:
       - id: adr-001-no-select-in-services-warn
         name: "ADR-001: no select(Model) in services (warn-only Caminho C)"
         language: system
-        entry: bash -c "python3 scripts/check_no_select_in_services.py 2>&1 | head -10; exit 0"
+        entry: python3 scripts/check_no_select_in_services.py
         files: ^app/domains/.*/services/.*\.py$
         pass_filenames: false
         always_run: false
