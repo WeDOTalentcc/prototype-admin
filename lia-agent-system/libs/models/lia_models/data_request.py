@@ -276,7 +276,7 @@ class DataRequestConfig(Base):
     reminder_days = Column(ARRAY(Integer), default=[2, 5])
     max_reminders = Column(Integer, default=2)
     
-    portal_logo_url = Column(String(500), nullable=True)
+    portal_logo_url = Column(Text, nullable=True)
     portal_primary_color = Column(String(7), default="#000000")
     portal_welcome_message = Column(Text, nullable=True)
     portal_thank_you_message = Column(Text, nullable=True)

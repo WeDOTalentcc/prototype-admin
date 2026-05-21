@@ -4,7 +4,7 @@ ClientAccount model for multi-tenant client management.
 Represents a client company that uses the LIA platform.
 """
 from datetime import datetime
-from sqlalchemy import Column, String, DateTime, Boolean, JSON, Integer, Index
+from sqlalchemy import Column, String, DateTime, Boolean, JSON, Integer, Index, Text
 from sqlalchemy.dialects.postgresql import UUID
 import uuid
 import enum
@@ -57,7 +57,7 @@ class ClientAccount(Base):
     account_manager_id = Column(String(255), nullable=True)
     implementation_manager_id = Column(String(255), nullable=True)
     
-    logo_url = Column(String(500), nullable=True)
+    logo_url = Column(Text, nullable=True)
     industry = Column(String(100), nullable=True)
     company_size = Column(String(50), nullable=True)
     

@@ -636,6 +636,74 @@ company_id: str = Depends(require_company_id)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.post("/profile/{profile_id}/logo", response_model=CompanyProfileResponse)
+async def upload_company_logo(
+    profile_id: uuid.UUID,
+    file: UploadFile = File(...),
+    profile_repo: CompanyProfileRepository = Depends(get_company_profile_repo),
+    current_user=Depends(get_current_user_or_demo),
+    company_id: str = Depends(require_company_id),
+):
+    """Upload de arquivo logo da empresa.
+
+    Audit 2026-05-20 Sessão I Step 4 (P1.13 extended):
+    - Recebe multipart/form-data com arquivo de imagem
+    - Valida content-type (PNG/JPG/SVG/WEBP) e tamanho (<500KB)
+    - Encoda em base64 data URL e armazena em company_profiles.logo_url (TEXT)
+    - Migration 152_logo_url_to_text ALTER coluna de String(500) → TEXT
+
+    Multi-tenancy: company_id obrigatório via JWT canonical.
+    """
+    import base64
+
+    # Validate content-type
+    allowed_types = {"image/png", "image/jpeg", "image/jpg", "image/svg+xml", "image/webp"}
+    if file.content_type not in allowed_types:
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                f"Formato '{file.content_type}' não suportado. "
+                "Use PNG, JPG, SVG ou WEBP."
+            ),
+        )
+
+    # Validate size (500KB max)
+    contents = await file.read()
+    max_size = 500 * 1024  # 500KB
+    if len(contents) > max_size:
+        raise HTTPException(
+            status_code=413,
+            detail=(
+                f"Arquivo muito grande ({len(contents) // 1024}KB). "
+                f"Limite: {max_size // 1024}KB."
+            ),
+        )
+
+    # Validate profile exists + tenancy
+    profile = await profile_repo.get_by_id(profile_id)
+    if not profile:
+        raise HTTPException(status_code=404, detail="Company profile not found")
+
+    # Build data URL canonical
+    b64 = base64.b64encode(contents).decode("ascii")
+    data_url = f"data:{file.content_type};base64,{b64}"
+
+    # Persist via repository
+    update_data = {
+        "logo_url": data_url,
+        "updated_at": datetime.utcnow(),
+    }
+    updated = await profile_repo.update(profile_id, update_data)
+    # pii-logs ok: nome de entidade/config
+    logger.info(
+        "Logo uploaded for profile %s (size=%dKB, type=%s)",
+        profile.name,
+        len(contents) // 1024,
+        file.content_type,
+    )
+    return updated
+
+
 @router.get("/profile/{profile_id}/full", response_model=CompanyProfileWithRelations)
 async def get_company_profile_with_relations(
     profile_id: uuid.UUID,

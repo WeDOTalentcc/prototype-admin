@@ -64,7 +64,7 @@ class CompanyProfile(Base):
     name = Column(String(255), nullable=False)
     trading_name = Column(String(255), nullable=True)
     website = Column(String(500), nullable=True)
-    logo_url = Column(String(500), nullable=True)
+    logo_url = Column(Text, nullable=True)
     
     cnpj = Column(String(18), nullable=True)
     industry = Column(String(100), nullable=True)

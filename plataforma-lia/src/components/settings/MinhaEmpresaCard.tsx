@@ -14,6 +14,7 @@ import type { CompanyBenefit } from "@/types/benefits"
 import { WorkforceHubContent } from "./WorkforceHubContent"
 import { CompensationPoliciesListSection } from "./compensation-policies/CompensationPoliciesListSection"
 import { SectionUploadDropZone, type TargetSection } from "./SectionUploadDropZone"
+import { LogoUploadField } from "./LogoUploadField"
 import { InteractiveSurface } from "@/components/ui/interactive-surface"
 
 interface SectionUploadConfig {
@@ -330,6 +331,7 @@ export function MinhaEmpresaCard({
           {block.key !== "workforce" && (
           <div className="space-y-1">
             {block.fields.map((field) => {
+              const isLogoField = field.key === "logo" && block.key === "basic"
               const isActionField = field.key === "import_spreadsheet" || field.key === "handbook" || field.key === "org_chart"
 
               if (isActionField) {
@@ -340,6 +342,24 @@ export function MinhaEmpresaCard({
                 editingField?.block === block.key &&
                 editingField?.field === field.key
               const isUpdated = recentlyUpdated.has(field.key)
+
+              // P1.13 audit 2026-05-20: campo Logo usa upload de arquivo canonical
+              if (isLogoField) {
+                return (
+                  <div
+                    key={field.key}
+                    className="group flex items-center justify-between gap-2 py-1.5 px-1.5 rounded-md hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse/50"
+                  >
+                    <span className={`${textStyles.description} flex-shrink-0 min-w-[120px]`}>
+                      {field.label}
+                    </span>
+                    <LogoUploadField
+                      currentValue={field.value as string | null}
+                      onUploadSuccess={(newUrl) => onSaveField(block.key, field.key, newUrl)}
+                    />
+                  </div>
+                )
+              }
 
               return (
                 <div
