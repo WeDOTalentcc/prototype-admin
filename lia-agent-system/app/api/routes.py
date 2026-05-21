@@ -217,6 +217,7 @@ from app.api.v1.admin_external import router as admin_external_router
 from app.api.v1.admin_circuit_breakers import router as admin_cb_router
 from app.api.v1.admin_dlq import router as admin_dlq_router
 from app.api.v1.admin_lgpd import router as admin_lgpd_router
+from app.api.v1.admin_consent import router as admin_consent_router  # T-21c
 from app.api.v1.incident_response import router as incident_response_router
 from app.api.v1.agent_chat_ws import router as agent_chat_ws_router
 from app.api.v1.agent_chat_sse import router as agent_chat_sse_router
@@ -527,6 +528,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(data_subject_requests.router, prefix="/api/v1", tags=["data-subject-requests"])
     app.include_router(consent_management.router, prefix="/api/v1", tags=["consent-management"])
     app.include_router(granular_consent_router, prefix="/api/v1", tags=["granular-consent"])
+    app.include_router(admin_consent_router, prefix="/api/v1", tags=["Admin - Consent"])  # T-21c
     app.include_router(data_request.router, prefix="/api/v1", tags=["data-requests"])
     app.include_router(admin_lgpd_router, prefix="/api/v1")
     app.include_router(incident_response_router, prefix="/api/v1")
