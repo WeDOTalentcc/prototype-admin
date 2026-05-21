@@ -30,12 +30,10 @@ import { WebhookEventTypesManager } from "@/components/settings/WebhookEventType
 
 export function CatalogsManagementSection() {
   const { user } = useAuth()
-  // P0.G (audit 2026-05-21): auth context User type tem apenas "admin" /
-  // "recruiter" / "viewer". wedotalent_admin é role canonical do backend
-  // (E1 do C1) — frontend ainda não importa o enum estendido. Quando
-  // backfill do User type incluir wedotalent_admin, esta check vira
-  // (user?.role === "admin" || user?.role === "wedotalent_admin").
-  const isAdmin = user?.role === "admin"
+  // C24: User.role enum (auth-service.ts) inclui "wedotalent_admin" como
+  // canonical do backend (C1). Catálogos dinâmicos liberam acesso tanto
+  // para org-admin do cliente quanto para staff WeDOTalent.
+  const isAdmin = user?.role === "admin" || user?.role === "wedotalent_admin"
   // User identifier canonical no frontend é email (User type não tem id).
   const currentUserId = user?.email ?? null
 

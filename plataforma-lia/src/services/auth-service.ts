@@ -9,7 +9,7 @@ export interface User {
   id: string
   email: string
   name: string
-  role: 'admin' | 'recruiter' | 'viewer'
+  role: 'admin' | 'recruiter' | 'viewer' | 'wedotalent_admin'
   is_active: boolean
   created_at: string
   updated_at: string

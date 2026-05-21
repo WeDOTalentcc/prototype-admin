@@ -92,12 +92,10 @@ export function LiaFieldsConfigPanel() {
   // but hiding the tab eliminates the UX confusion ("toggle here breaks
   // everything") and the curiosity-driven escalations.
   const { user } = useAuth()
-  // P0.H followup (audit 2026-05-21): explicit string cast because auth-context
-  // User.role enum doesn't include "wedotalent_admin" yet — that role lives in
-  // backend canonical (E1 gate from C1) but frontend type wasn't backfilled.
-  // String comparison is safe; replace with proper enum extension in a future
-  // pass that also covers CatalogsManagementSection.tsx (same pattern).
-  const canSeeRawYaml = (user?.role as string | undefined) === "wedotalent_admin"
+  // E1 enforcement: User.role enum (auth-service.ts) was extended in C24 to
+  // include "wedotalent_admin" canonical (backend role from C1). Type-safe
+  // comparison replaces the legacy string cast workaround.
+  const canSeeRawYaml = user?.role === "wedotalent_admin"
   const [config, setConfig] = useState<LiaFieldsConfig>(DEFAULT_CONFIG)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)

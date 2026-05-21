@@ -147,7 +147,7 @@ export const useAuthStore = create<AuthStore>()(
             id: String(serverData.id || ''),
             email: String(serverData.email || ''),
             name: String(serverData.name || ''),
-            role: (roleStr === 'admin' || roleStr === 'recruiter' || roleStr === 'viewer') ? roleStr : 'viewer',
+            role: (roleStr === 'admin' || roleStr === 'recruiter' || roleStr === 'viewer' || roleStr === 'wedotalent_admin') ? roleStr : 'viewer',
             is_active: serverData.is_active !== false,
             created_at: String(serverData.created_at || ''),
             updated_at: String(serverData.updated_at || ''),
