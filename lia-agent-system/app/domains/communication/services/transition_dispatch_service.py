@@ -1037,6 +1037,22 @@ class TransitionDispatchService:
                 job_id, str(snap_exc)[:200],
             )
 
+    async def _load_learning_loops_toggles(self, company_id: str) -> dict:
+        """Carrega toggles learning_loops do CompanyHiringPolicy.
+
+        Thin wrapper sobre o helper canonical em
+        ``app.shared.services.learning_loops_toggles`` (single source of
+        truth desde 2026-05-21). Mantemos esta wrapper instance method
+        por compatibility com testes existentes que mockam
+        ``TransitionDispatchService._load_learning_loops_toggles``.
+        Novo código DEVE chamar ``load_learning_loops_toggles(...)``
+        direto do shared module.
+        """
+        from app.shared.services.learning_loops_toggles import (
+            load_learning_loops_toggles,
+        )
+        return await load_learning_loops_toggles(company_id, self.db)
+
     async def _record_wsi_outcomes_for_candidate(
         self,
         company_id: str,
@@ -1051,8 +1067,54 @@ class TransitionDispatchService:
 
         Multi-tenancy: company_id obrigatorio.
         Fail-soft: erro nao bloqueia dispatch.
+
+        P1-4 gate (audit 2026-05-21): respeita o toggle
+        ``learning_loops.wsi_question_effectiveness`` antes de escrever no
+        write path. Default canonical do toggle é ``False`` (Phase 3 opt-in),
+        portanto sem gate o write rodava mesmo quando o recrutador NUNCA
+        optou em registrar. Risco LGPD direto: skill_probed + outcome por
+        candidato hired/rejected é tracking comportamental que requer base
+        legal explícita. Gate no início do método garante fail-closed
+        para qualquer caller (atual ou futuro). Audit log marca o evento
+        de skip para rastreabilidade.
         """
         if not company_id or not vacancy_candidate_id:
+            return
+        toggles = await self._load_learning_loops_toggles(company_id)
+        master_on = toggles.get("enabled", True)
+        wsi_on = toggles.get("wsi_question_effectiveness", False)
+        if not master_on or not wsi_on:
+            logger.info(
+                "[ConclusionHired] WSI effectiveness write SKIPPED — "
+                "master_learning_loops=%s wsi_question_effectiveness=%s "
+                "company_id=%s vc=%s",
+                master_on, wsi_on, company_id, vacancy_candidate_id,
+            )
+            # Audit trail: record that the gate intervened. This is what
+            # allows compliance/SRE to prove later that the system honored
+            # the toggle when asked by a tenant (LGPD Art. 18 access request).
+            try:
+                from app.shared.compliance.audit_service import get_audit_service
+                import uuid as _uuid
+                await get_audit_service().log_action(
+                    trace_id=str(_uuid.uuid4()),
+                    company_id=company_id,
+                    action_type="wsi_effectiveness_write_gated",
+                    actor="hook:conclusion_hired",
+                    target_id=vacancy_candidate_id,
+                    target_type="vacancy_candidate",
+                    metadata={
+                        "master_learning_loops": master_on,
+                        "wsi_question_effectiveness": wsi_on,
+                        "outcome": outcome,
+                        "job_id": job_id,
+                    },
+                )
+            except Exception as _audit_exc:
+                logger.debug(
+                    "[ConclusionHired] audit log of gate skip failed: %s",
+                    str(_audit_exc)[:100],
+                )
             return
         try:
             # Lookup WSI responses do candidato — depende do schema atual.

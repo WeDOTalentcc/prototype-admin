@@ -154,19 +154,18 @@ class BigFiveDepartmentService:
             return None
 
     async def _get_toggles(self, company_id: str) -> dict:
-        """Carrega learning_loops toggles de CompanyHiringPolicy ou defaults."""
-        from lia_models.company_hiring_policy import AUTOMATION_RULES_DEFAULTS
-        defaults = AUTOMATION_RULES_DEFAULTS["learning_loops"]
-        try:
-            repo = HiringPolicyRepository(self.db)
-            policy = await repo.get_by_company(company_id)
-            if policy and policy.automation_rules:
-                return policy.automation_rules.get("learning_loops", defaults)
-        except SQLAlchemyError as exc:
-            logger.warning(
-                "[BigFiveSvc] hiring policy DB error: %s", str(exc)[:100],
-            )
-        return defaults
+        """Carrega learning_loops toggles de CompanyHiringPolicy ou defaults.
+
+        Delega ao helper canonical em
+        ``app.shared.services.learning_loops_toggles`` (single source of
+        truth desde 2026-05-21). Wrapper mantido por compat com chamadas
+        ``self._get_toggles(...)`` existentes; novo código DEVE chamar
+        ``load_learning_loops_toggles(...)`` direto.
+        """
+        from app.shared.services.learning_loops_toggles import (
+            load_learning_loops_toggles,
+        )
+        return await load_learning_loops_toggles(company_id, self.db)
 
     # -- Helpers stability normalizacao ------------------------------------
 
