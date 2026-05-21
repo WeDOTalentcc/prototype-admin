@@ -263,6 +263,8 @@ class SubscriptionSettingsWrapper(BaseModel):
 
 class UsageData(BaseModel):
     """Typed usage data payload in /usage response."""
+    model_config = ConfigDict(extra='forbid')
+
     ai_credits_used: int = 0
     ai_credits_limit: int = 1000
     active_jobs: int = 0

@@ -71,6 +71,8 @@ class PersonalizedFeedbackStatus(StrEnum):
 
 class CandidateContext(BaseModel):
     """Context about the candidate for personalization."""
+    model_config = ConfigDict(extra='forbid')
+
     candidate_id: str
     name: str
     email: str | None = None
@@ -84,6 +86,8 @@ class CandidateContext(BaseModel):
 
 class JobContext(BaseModel):
     """Context about the job position."""
+    model_config = ConfigDict(extra='forbid')
+
     job_id: str
     title: str
     company_name: str | None = None
@@ -95,6 +99,8 @@ class JobContext(BaseModel):
 
 class WSIEvaluationContext(BaseModel):
     """WSI evaluation results for personalization."""
+    model_config = ConfigDict(extra='forbid')
+
     overall_wsi: float = Field(ge=0, le=5)
     technical_wsi: float | None = Field(default=None, ge=0, le=5)
     behavioral_wsi: float | None = Field(default=None, ge=0, le=5)

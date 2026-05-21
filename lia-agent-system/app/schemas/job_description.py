@@ -79,6 +79,8 @@ class Benefit(BaseModel):
 
 class CompensationData(BaseModel):
     """Dados de compensação"""
+    model_config = ConfigDict(extra='forbid')
+
     salary_min: float | None = None
     salary_max: float | None = None
     salary_currency: str = "BRL"

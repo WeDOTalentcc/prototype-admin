@@ -35,6 +35,8 @@ class WSMessageType(str, Enum):
 
 
 class WSMessage(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
     """Standard WebSocket message envelope.
 
     All WS messages SHOULD conform to this shape:

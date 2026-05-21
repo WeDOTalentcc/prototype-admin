@@ -33,6 +33,8 @@ PAGE_TO_CONTEXT_TYPE: dict[str, str] = {
 class UniversalContext(BaseModel):
     """Contexto normalizado — único formato que o MainOrchestrator consome."""
 
+    model_config = ConfigDict(extra='forbid')
+
     model_config = {"arbitrary_types_allowed": True}
 
     message: str = ""

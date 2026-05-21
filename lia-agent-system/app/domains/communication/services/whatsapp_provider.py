@@ -32,6 +32,8 @@ class SendResult(BaseModel):
 
 class IncomingMessage(BaseModel):
     """Unified representation of an incoming WhatsApp message."""
+    model_config = ConfigDict(extra='forbid')
+
     type: str
     message_id: str | None = None
     from_number: str | None = None

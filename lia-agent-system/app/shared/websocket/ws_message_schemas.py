@@ -64,6 +64,8 @@ class WSHelloMessage(BaseModel):
     fecha a conexão (close 4400) se houver mismatch de MAJOR.
     """
 
+    model_config = ConfigDict(extra='forbid')
+
     type: Literal["hello"] = "hello"
     protocol_version: str = Field(
         default=LIA_WS_PROTOCOL_VERSION,
@@ -77,6 +79,8 @@ class WSHelloMessage(BaseModel):
 
 class WSUserMessage(BaseModel):
     """Mensagem de chat enviada pelo cliente ao servidor."""
+
+    model_config = ConfigDict(extra='forbid')
 
     type: Literal["message"] = "message"
     content: str = Field(..., description="Texto da mensagem do usuário")
@@ -232,10 +236,14 @@ def validate_global_ui_action_params(
 
 
 class WSPingMessage(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
     type: Literal["ping"] = "ping"
 
 
 class WSAbortMessage(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
     type: Literal["abort"] = "abort"
 
 
@@ -244,6 +252,8 @@ class WSAbortMessage(BaseModel):
 # ---------------------------------------------------------------------------
 
 class WSConnectedMessage(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
     type: Literal["connected"] = "connected"
     session_id: str
     domain: str
@@ -257,6 +267,8 @@ class WSConnectedMessage(BaseModel):
 class WSThinkingMessage(BaseModel):
     """Indica que o agente está processando. Pode incluir job_id para tarefas async."""
 
+    model_config = ConfigDict(extra='forbid')
+
     type: Literal["thinking"] = "thinking"
     job_id: str | None = Field(
         default=None,
@@ -268,6 +280,8 @@ class WSThinkingMessage(BaseModel):
 class WSTokenMessage(BaseModel):
     """Chunk de streaming — enviado durante geração de token a token."""
 
+    model_config = ConfigDict(extra='forbid')
+
     type: Literal["token"] = "token"
     content: str = Field(..., description="Chunk de texto gerado pelo LLM")
     timestamp: str = ""
@@ -275,6 +289,8 @@ class WSTokenMessage(BaseModel):
 
 class WSResponseMessage(BaseModel):
     """Resposta final completa do agente."""
+
+    model_config = ConfigDict(extra='forbid')
 
     type: Literal["message"] = "message"
     content: str = Field(..., description="Texto completo da resposta")
@@ -291,6 +307,8 @@ class WSResponseMessage(BaseModel):
 
 
 class WSErrorMessage(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
     type: Literal["error"] = "error"
     message: str
     code: str | None = None
@@ -298,5 +316,7 @@ class WSErrorMessage(BaseModel):
 
 
 class WSPongMessage(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
     type: Literal["pong"] = "pong"
     timestamp: str = ""

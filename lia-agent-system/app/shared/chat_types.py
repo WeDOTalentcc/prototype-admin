@@ -15,6 +15,8 @@ from pydantic import BaseModel, Field
 class KanbanStructuredData(BaseModel):
     """Structured data for kanban/pipeline responses."""
 
+    model_config = ConfigDict(extra='forbid')
+
     kind: Literal["kanban"] = "kanban"
     candidates: list[dict[str, Any]] = Field(default_factory=list)
     suggested_actions: list[str] = Field(default_factory=list)
@@ -25,6 +27,8 @@ class KanbanStructuredData(BaseModel):
 class JobsManagementStructuredData(BaseModel):
     """Structured data for job management assistant responses."""
 
+    model_config = ConfigDict(extra='forbid')
+
     kind: Literal["jobs_management"] = "jobs_management"
     state_updates: dict[str, Any] | None = None
     job_id: str | None = None
@@ -32,6 +36,8 @@ class JobsManagementStructuredData(BaseModel):
 
 class TalentStructuredData(BaseModel):
     """Structured data for talent pool / sourcing responses."""
+
+    model_config = ConfigDict(extra='forbid')
 
     kind: Literal["talent"] = "talent"
     candidates: list[dict[str, Any]] = Field(default_factory=list)
@@ -42,6 +48,8 @@ class TalentStructuredData(BaseModel):
 class ScoreStructuredData(BaseModel):
     """Structured data for WSI / scoring responses."""
 
+    model_config = ConfigDict(extra='forbid')
+
     kind: Literal["score"] = "score"
     score_breakdown: dict[str, float] = Field(default_factory=dict)
     confidence: float = 0.0
@@ -50,6 +58,8 @@ class ScoreStructuredData(BaseModel):
 
 class ActionResultStructuredData(BaseModel):
     """Structured data for generic action results."""
+
+    model_config = ConfigDict(extra='forbid')
 
     kind: Literal["action_result"] = "action_result"
     data: dict[str, Any] = Field(default_factory=dict)

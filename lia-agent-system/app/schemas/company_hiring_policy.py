@@ -115,6 +115,8 @@ class PolicyChatMessage(BaseModel):
 
     Multi-tenancy via path /{company_id}/chat + require_company_id_strict_match.
     """
+    model_config = ConfigDict(extra='forbid')
+
     message: str
     user_id: str | None = None
     session_id: str | None = None

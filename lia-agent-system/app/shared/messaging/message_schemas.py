@@ -12,6 +12,8 @@ from pydantic import BaseModel, Field
 class AgentChatMessage(BaseModel):
     """Mensagem de chat despachada pelo WS Gateway para um agente via RabbitMQ."""
 
+    model_config = ConfigDict(extra='forbid')
+
     session_id: str = Field(..., description="ID único da sessão WS")
     user_id: str = Field(..., description="ID do usuário")
     company_id: str = Field(..., description="ID da empresa (multi-tenant)")
@@ -43,6 +45,8 @@ class AgentChatMessage(BaseModel):
 
 class AgentResponseMessage(BaseModel):
     """Resposta do agente, publicada na fila de retorno e encaminhada ao WS Gateway."""
+
+    model_config = ConfigDict(extra='forbid')
 
     session_id: str = Field(..., description="ID da sessão WS de destino")
     content: str = Field(default="", description="Texto da resposta do agente")

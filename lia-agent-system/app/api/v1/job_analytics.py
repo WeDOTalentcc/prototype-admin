@@ -59,6 +59,8 @@ class NaturalQueryRequest(WeDoBaseModel):
 
 
 class ChartData(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+
     type: str
     title: str
     data: Any

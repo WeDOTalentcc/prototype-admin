@@ -702,6 +702,8 @@ class ATSResponseData(BaseModel):
     Replaces the opaque `dict | None` field with a structured model so that
     API consumers receive a documented contract rather than an arbitrary blob.
     """
+    model_config = ConfigDict(extra='forbid')
+
     external_id: str | None = None
     ats_status: str | None = None
     ats_stage: str | None = None

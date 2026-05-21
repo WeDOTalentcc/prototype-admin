@@ -42,6 +42,8 @@ class ToolExecutionContext(BaseModel):
     This context should be provided by the orchestrator from authenticated session data,
     NOT from LLM-generated parameters.
     """
+    model_config = ConfigDict(extra='forbid')
+
     user_id: str
     company_id: str
     permissions: list[str] = []

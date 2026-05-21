@@ -187,6 +187,8 @@ class PersonalizedDefaults(BaseModel):
 
 class RecruiterPersonalizationContext(BaseModel):
     """Full personalization context for a recruiter."""
+    model_config = ConfigDict(extra='forbid')
+
     recruiter_id: str
     profile: RecruiterProfileResponse | None = None
     settings: PersonalizationSettingsResponse | None = None

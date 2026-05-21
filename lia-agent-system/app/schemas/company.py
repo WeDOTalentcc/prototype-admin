@@ -790,6 +790,8 @@ class OnboardingData(BaseModel):
 
     Multi-tenancy via Depends(require_company_id) in submit_onboarding handler.
     """
+    model_config = ConfigDict(extra='forbid')
+
     company_name: str
     trade_name: str | None = None
     cnpj: str | None = None
