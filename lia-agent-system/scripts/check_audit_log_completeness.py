@@ -8,10 +8,11 @@ Regras:
 - R3: decisões human-impacting (rejection/shortlist/ranking) DEVEM ter
   fairness_check_result preenchido
 
-Modo: WARN-ONLY inicial.
+Modo: BLOCKING [PROMOTED Sprint 8 Frente A] — baseline confirmed 0 violations
+2026-05-21. Use `--warn-only` para opt-out (legacy ratchet).
 
 Uso:
-    python scripts/check_audit_log_completeness.py [--strict]
+    python scripts/check_audit_log_completeness.py [--warn-only]
 """
 from __future__ import annotations
 
@@ -27,7 +28,7 @@ AUDIT_CALLS_PATTERN = re.compile(
 )
 
 
-def check(strict: bool = False) -> int:
+def check(strict: bool = True) -> int:
     repo_root = Path(__file__).resolve().parent.parent
     domains_root = repo_root / "app" / "domains"
 
@@ -53,8 +54,9 @@ def check(strict: bool = False) -> int:
                 audit_call_sites.append((rel, i, line.strip()[:100]))
 
                 # Check se demographic_proxies está sendo passado (heuristic)
-                # Look at next 10 lines for "demographic_proxies"
-                lookhead = "\n".join(content.splitlines()[i:i+15])
+                # Look at next 40 lines for "demographic_proxies" (covers
+                # long multi-line write_decision calls with deep kwargs).
+                lookhead = "\n".join(content.splitlines()[i:i+40])
                 if "demographic_proxies" not in lookhead and "AUDIT-NO-DEMO" not in line:
                     violations.append(
                         f"R1 {rel}:{i} — write_decision sem demographic_proxies. "
@@ -78,5 +80,6 @@ def check(strict: bool = False) -> int:
 
 
 if __name__ == "__main__":
-    strict = "--strict" in sys.argv
+    # BLOCKING by default (Sprint 8 Frente A). Opt-out via --warn-only.
+    strict = "--warn-only" not in sys.argv
     sys.exit(check(strict=strict))

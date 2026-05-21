@@ -263,6 +263,7 @@ class SchedulingService:
                     criteria_used=["interview_type", "duration_minutes", "interviewer"],
                     candidate_id=candidate_id,
                     job_vacancy_id=job_vacancy_id,
+                    demographic_proxies={},
                 )
                 await db.commit()
             except Exception as audit_err:

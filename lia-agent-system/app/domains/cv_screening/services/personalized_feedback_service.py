@@ -484,6 +484,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
                     score=request.evaluation.overall_wsi,
                     confidence=0.9,
                     human_review_required=not getattr(request, "auto_send", False),
+                    demographic_proxies={},
                 )
             except Exception as audit_err:
                 logger.warning(f"Audit log failed for personalized_feedback: {audit_err}")
@@ -1244,6 +1245,7 @@ OUTPUT: Just the WhatsApp message text, nothing else."""
                     candidate_id=getattr(record, "candidate_id", None),
                     job_vacancy_id=getattr(record, "job_vacancy_id", None),
                     human_review_required=False,
+                    demographic_proxies={},
                 )
             except Exception as audit_err:
                 logger.warning(f"Audit log failed for feedback_sent: {audit_err}")

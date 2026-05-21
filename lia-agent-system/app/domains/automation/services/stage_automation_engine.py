@@ -455,7 +455,8 @@ class StageAutomationEngine:
                 candidate_id=event.candidate_id,
                 job_vacancy_id=event.vacancy_id,
                 confidence=0.85 if result.get("success") else 0.5,
-                human_review_required=not result.get("executed", False)
+                human_review_required=not result.get("executed", False),
+                demographic_proxies={},
             )
         except Exception as e:
             logger.warning(f"[ENGINE] Failed to log audit: {e}")

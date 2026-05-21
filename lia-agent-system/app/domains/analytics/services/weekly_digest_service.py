@@ -343,7 +343,7 @@ class WeeklyDigestService:
 
         try:
             from app.shared.services.audit_service import AuditService
-            await AuditService.log_decision(
+            await AuditService.log_decision(  # AUDIT-NO-DEMO: recruiter digest delivery (no candidate decision; LGPD Art.20 N/A)
                 decision_type="weekly_digest_delivered",
                 agent="WeeklyDigestService",
                 input_data={"recruiter_id": recruiter_id, "period": digest.get("period", {})},

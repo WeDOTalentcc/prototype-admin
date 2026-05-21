@@ -219,7 +219,7 @@ def _emit_silent_fallback(
         from app.shared.compliance.audit_service import AuditService
 
         if cid:
-            asyncio.create_task(AuditService().log_decision(
+            asyncio.create_task(AuditService().log_decision(  # AUDIT-NO-DEMO: wizard fallback telemetry (job creation flow, no candidate decision; LGPD Art.20 N/A)
                 company_id=cid,
                 agent_name=f"wizard_session:{stage_label}",
                 decision_type="wizard_fallback_invoked",
@@ -791,7 +791,7 @@ class WizardSessionService:
             return
         try:
             from app.shared.compliance.audit_service import AuditService
-            asyncio.create_task(AuditService().log_decision(
+            asyncio.create_task(AuditService().log_decision(  # AUDIT-NO-DEMO: wizard supervisor routing telemetry (job creation flow, no candidate decision; LGPD Art.20 N/A)
                 company_id=cid,
                 agent_name="wizard_supervisor_classifier",
                 decision_type="wizard_supervisor_routed",

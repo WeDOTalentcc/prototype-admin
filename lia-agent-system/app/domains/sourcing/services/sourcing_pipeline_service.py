@@ -444,6 +444,7 @@ class SourcingPipelineService:
             candidate_id=candidate_id,
             job_vacancy_id=str(getattr(job, "id", "") or ""),
             score=score,
+            demographic_proxies={},
         )
 
     async def _build_job_status(
@@ -719,6 +720,7 @@ class SourcingPipelineService:
                             criteria_used=["pipeline_dedup"],
                             candidate_id=str(candidate.id),
                             job_vacancy_id=str(getattr(job, "id", "") or ""),
+                            demographic_proxies={},
                         )
                     except Exception as _exc:
                         logger.debug("[sourcing] audit skip failed: %s", _exc)

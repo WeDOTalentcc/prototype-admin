@@ -342,7 +342,7 @@ class LLMService:
         )
         try:
             if _cid and _audit_svc:
-                await _audit_svc.log_decision(
+                await _audit_svc.log_decision(  # AUDIT-NO-DEMO: LLM call telemetry (infrastructure layer; no candidate decision; LGPD Art.20 N/A)
                     company_id=_cid,
                     action="llm_call",
                     resource_type="llm_provider",
@@ -671,7 +671,7 @@ class LLMService:
         )
         try:
             if _cid and _audit_svc:
-                await _audit_svc.log_decision(
+                await _audit_svc.log_decision(  # AUDIT-NO-DEMO: LLM structured call telemetry (infrastructure layer; no candidate decision; LGPD Art.20 N/A)
                     company_id=_cid,
                     action="llm_call",
                     resource_type="llm_provider",

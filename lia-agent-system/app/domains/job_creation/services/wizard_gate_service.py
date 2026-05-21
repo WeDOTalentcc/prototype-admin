@@ -387,7 +387,7 @@ class WizardGateService:
             return
         try:
             from app.shared.compliance.audit_service import audit_service
-            await audit_service.log_decision(
+            await audit_service.log_decision(  # AUDIT-NO-DEMO: wizard HITL gate (job creation flow, no candidate decision; LGPD Art.20 N/A)
                 company_id=str(company_id),
                 agent_name="wizard_gate_service",
                 decision_type="wizard_step_completed",

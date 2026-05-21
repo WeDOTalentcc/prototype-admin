@@ -68,7 +68,7 @@ def _classify_questions_with_taxonomy(questions: list, llm=None) -> list:
     Fail-soft: erro na classificacao mantem skill_probed=None.
 
     Sprint F.5 perf note: kept sequential (not parallel) because each LLM
-    invoke triggers an audit_service.log_decision coroutine via
+    invoke triggers an audit_service.log_decision coroutine via  # AUDIT-NO-DEMO: docstring text only — no real audit call at this site
     create_tracked_llm callback, and >2 concurrent callbacks corrupt the
     asyncpg pool through a pre-existing event-loop-leak in audit_service.
     The classifier loop adds ~7s but does not block the wizard.

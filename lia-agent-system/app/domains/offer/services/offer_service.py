@@ -380,6 +380,7 @@ class OfferService:
                 criteria_used=["offer_status_transition"],
                 candidate_id=str(proposal.candidate_id) if proposal.candidate_id else None,
                 job_vacancy_id=str(proposal.job_vacancy_id) if proposal.job_vacancy_id else None,
+                demographic_proxies={},
             )
         except Exception as audit_err:
             logger.warning(f"[T-1157] offer cancel audit failed: {audit_err}")
@@ -432,6 +433,7 @@ class OfferService:
                 criteria_used=["offer_status_transition", "send_mode"],
                 candidate_id=str(proposal.candidate_id) if proposal.candidate_id else None,
                 job_vacancy_id=str(proposal.job_vacancy_id) if proposal.job_vacancy_id else None,
+                demographic_proxies={},
             )
         except Exception as audit_err:
             logger.warning(f"[T-1157] offer mark_sent audit failed: {audit_err}")

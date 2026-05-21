@@ -312,6 +312,7 @@ class TranscriptionService:
                         criteria_used=["recording_url", "language_hint"],
                         candidate_id=str(interview.candidate_id) if interview.candidate_id else None,
                         job_vacancy_id=str(interview.job_vacancy_id) if interview.job_vacancy_id else None,
+                        demographic_proxies={},
                     )
                     await db.commit()
                 except Exception as audit_err:
