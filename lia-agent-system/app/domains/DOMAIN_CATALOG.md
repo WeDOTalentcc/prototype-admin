@@ -8,17 +8,22 @@ Classification of all directories under `app/domains/`.
 |------|----------|-------|
 | **Agentic** | Has `domain.py` with `@register_domain`, routable by orchestrator, full DomainPrompt implementation | 13 |
 | **Micro-Action** | Has `domain.py` with `@register_domain`, lightweight (3-4 files), action-oriented stubs | 3 |
-| **Service** | Has `services/` with business logic but no `domain.py` — data access + domain services | 9 |
+| **Service** | Has `services/` with business logic but no `domain.py` — data access + domain services | 11 |
 | **Repository Stub** | Only `__init__.py`, `dependencies.py`, `repositories/` — pure CRUD data access | 30 |
 | **Deprecated** | Scheduled for removal or consolidation | 2 |
 
-Total: 57 directories (excluding `__pycache__`)
+Total: 59 directories (excluding `__pycache__`)
 
 Note: The original audit (DIAGNOSTIC_REPORT_APRIL_2026.md) estimated "10 fully agentic"
 based on a narrower definition (domains with both agents/ and services/). This catalog
 uses the @register_domain decorator as the definitive criterion, yielding 13 agentic + 3
 micro-action = 16 registered domains. The difference reflects agent_studio, job_creation,
 and hiring_policy which register via @register_domain but have simpler internal structure.
+
+Sprint 8 Frente C (2026-05-21): Service count corrected 9 → 11 — `modules` e
+`interview_intelligence` adicionados (anteriormente missing do catalog). Sensor
+`check_stub_invariants.py` agora reconhece SERVICE_DOMAINS canonical e foi promovido
+WARN-ONLY → BLOCKING.
 
 ## Agentic Domains (13)
 
@@ -52,22 +57,34 @@ with minimal implementation (3-4 files, no agents/ or services/ directories).
 | `recruitment_campaign` | recruitment_campaign | 3 | Multi-stage recruitment campaigns |
 | `talent_pool` | talent_pool | 3 | Talent pool management |
 
-## Service Domains (9)
+## Service Domains (11)
 
 Provide data access and business logic services. Not routable by orchestrator.
-Not registered in DomainRegistry.
+Not registered in DomainRegistry. Tracked by sensor `check_stub_invariants.py`
+via `SERVICE_DOMAINS` set.
 
-| Domain | Files | Description |
-|--------|-------|-------------|
-| `ai` | 29 | LLM services, response cache, prompt management |
-| `billing` | 6 | Billing and subscription management |
-| `candidates` | 14 | Candidate CRUD and profile services |
-| `company` | 31 | Company settings and configuration |
-| `credits` | 7 | Credit/token consumption tracking |
-| `integrations_hub` | 10 | Third-party integration management |
-| `lgpd` | 11 | LGPD/GDPR data protection compliance |
-| `recruitment` | 24 | Recruitment process data and workflows |
-| `voice` | 9 | Voice screening services |
+| Domain | Files | Classification | Description |
+|--------|-------|----------------|-------------|
+| `ai` | 29 | service_domain | LLM services, response cache, prompt management |
+| `billing` | 6 | service_domain | Billing and subscription management |
+| `candidates` | 14 | service_domain | Candidate CRUD and profile services |
+| `company` | 31 | service_domain | Company settings and configuration |
+| `credits` | 7 | service_domain | Credit/token consumption tracking |
+| `integrations_hub` | 10 | service_domain | Third-party integration management |
+| `interview_intelligence` | 9 | **promotion_candidate** | Bias detection, comparative analysis (2026 LOC) — agentic potential |
+| `lgpd` | 11 | service_domain | LGPD/GDPR data protection compliance |
+| `modules` | 4 | service_domain | Module gating / feature flags |
+| `recruitment` | 24 | service_domain | Recruitment process data and workflows |
+| `voice` | 9 | **promotion_candidate** | Voice screening services (1725 LOC orchestrator) — agentic potential |
+
+### Service Promotion Candidates (2)
+
+Per ADR-V3.1 + Sprint 8 Frente C audit:
+- `interview_intelligence` — 2026 LOC business logic (bias detector + comparative analysis +
+  strategic opinion). Cross-call from `talent_intelligence/tools/interview_intelligence_tools.py`.
+  Backlog F4+ promotion to agentic domain.
+- `voice` — 1725 LOC `voice_screening_orchestrator` + 334 LOC `voice_service`. Voice screening
+  could become routable agentic domain in future. Backlog F4+.
 
 ## Repository Stubs (30)
 
