@@ -45,3 +45,25 @@ lint:	## Roda ruff + ruff-format check (pre-commit equivalent)
 #   make smoke            # médio, ~34s
 #   make check-all        # tudo, ~35s
 # ──────────────────────────────────────────────────────────────────────────────
+
+# ─── LIA Field Toggles sensors (audit 2026-05-21) ─────────────────────────────
+
+check-lia-sync:	## Schema-sync TS↔Python — 34 canonical fields (~50ms)
+	@echo "▶ LIA field definitions sync TS↔Python (P2-10)"
+	python3 scripts/check_lia_field_definitions_sync.py
+
+check-lia-agents:	## Agentes respeitam lia_field_toggles (anti-regressão P0-1, ~200ms)
+	@echo "▶ Agent respeita helper canonical (P0-1 anti-regressão)"
+	python3 scripts/check_agent_respects_lia_toggles.py
+
+check-policy-gates:	## Contract tests dos 4 policy gates (24 testes, ~6s)
+	@echo "▶ Policy gates contract tests (P0-2 + P1-4 + P1-7 + P1-8 + P1-9)"
+	python3 -m pytest \
+		tests/contract/test_offer_approval_gate.py \
+		tests/contract/test_wsi_effectiveness_gate.py \
+		tests/contract/test_self_scheduling_gate.py \
+		tests/contract/test_lia_field_config_service_canonical.py \
+		--no-header --no-cov -q
+
+check-lia: check-lia-sync check-lia-agents check-policy-gates	## Roda os 3 lia-toggles sensors em sequência (~7s)
+	@echo "✅ All lia field toggles sensors passed"

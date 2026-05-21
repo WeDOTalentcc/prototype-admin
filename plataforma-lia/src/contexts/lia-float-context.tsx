@@ -405,29 +405,70 @@ export function LiaFloatProvider({ children }: { children: ReactNode }) {
     setChatMessages((prev) => [...prev, msg]);
   }, []);
 
-  // Bidirectional sync (Task #712): UI saves in any settings hub broadcast
-  // `lia:settings-updated`. We absorb that into the chat as a silent system
-  // note so LIA's next turn knows the user just changed something via UI.
+  // Bidirectional sync (Task #712 + Paulo 2026-05-21): UI saves in any settings
+  // hub broadcast `lia:settings-updated`. We absorb that into the chat as a
+  // silent system note so LIA's next turn knows the user just changed
+  // something via UI — and can react proactively (e.g. "vi que você definiu
+  // missão como X, quer ajuda com visão alinhada?").
+  //
+  // 2026-05-21 enrichment: include field + value when present in the event
+  // detail. The hook in use-company-settings-cards.ts already broadcasts both;
+  // this template was discarding them and only showing section/method, which
+  // gave LIA no leverage for follow-up. Truncation cap on `value` defends
+  // against huge list/array dumps overwhelming the chat context window.
   useEffect(() => {
     if (typeof window === "undefined") return;
     const onUpdated = (e: Event) => {
       const detail = ((e as CustomEvent).detail || {}) as {
         actionId?: string;
         section?: string;
+        field?: string;
+        value?: unknown;
         url?: string;
         method?: string;
+        source?: string;
         ts?: number;
       };
+      const sectionLabel = detail.section || detail.actionId || "secao";
+      // Format value compactly for chat context. Lists → first 3 + count,
+      // strings → truncate to 200 chars, objects → JSON with 120-char cap.
+      // Goal: enough signal for LIA to reason about the change, never a
+      // wall of text.
+      let valueText = "";
+      if (detail.field && detail.value !== undefined && detail.value !== null) {
+        const v = detail.value;
+        if (Array.isArray(v)) {
+          const head = v.slice(0, 3).map((x) => String(x)).join(", ");
+          valueText = v.length > 3 ? `[${head}, +${v.length - 3}]` : `[${head}]`;
+        } else if (typeof v === "string") {
+          valueText = v.length > 200 ? `${v.slice(0, 200)}…` : v;
+        } else if (typeof v === "object") {
+          try {
+            const j = JSON.stringify(v);
+            valueText = j.length > 120 ? `${j.slice(0, 120)}…` : j;
+          } catch {
+            valueText = "[objeto]";
+          }
+        } else {
+          valueText = String(v);
+        }
+      }
+      const fieldClause = detail.field
+        ? ` · campo "${detail.field}"${valueText ? ` = ${valueText}` : ""}`
+        : "";
       const note: LiaChatMessage = {
         id: `sys-settings-${detail.ts || Date.now()}`,
         sender: "lia",
-        content: `[contexto] Configuracoes atualizadas via UI: ${detail.section || detail.actionId || "secao"} (${detail.method || "PATCH"}).`,
+        content: `[contexto] Recrutador editou via UI: ${sectionLabel}${fieldClause}. Considere reagir proativamente (sugerir complementos, validar consistência, ou continuar silencioso se não houver follow-up útil).`,
         timestamp: formatMessageTime(),
         metadata: {
           system: true,
           source: "settings-sync",
           actionId: detail.actionId,
           section: detail.section,
+          field: detail.field,
+          // value intentionally NOT placed in metadata to avoid double-storage;
+          // it already lives inside `content` for the LLM to consume.
           silent: true,
         },
       };

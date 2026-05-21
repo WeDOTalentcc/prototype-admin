@@ -559,9 +559,20 @@ class CommunicationDispatcher:
         channel is specified, sends to that single channel only.
         
         Applies lia_tone to message content when available.
+
+        P1-5 scope clarification (audit 2026-05-21):
+        ``lia_tone`` controls ONLY outbound message wording (email + WhatsApp
+        bodies dispatched to candidates). It does NOT modify the LIA chat
+        system prompt — that is owned by ``lia_persona.yaml`` (base) and
+        ``tenant_overrides/shared/lia_persona.yaml`` (per-tenant override),
+        both consumed by :class:`SystemPromptBuilder`. The two surfaces are
+        independent on purpose: ``lia_tone`` is a quick formality knob the
+        recruiter flips in Configurações; the persona override is a deeper
+        re-write of how the LIA introduces herself in chat. See CLAUDE.md
+        section "lia_tone canonical precedence" for the canonical reasoning.
         """
         lia_tone = "professional"
-        
+
         if company_id and db:
             try:
                 policy = await get_policy_for_company(company_id, db)
