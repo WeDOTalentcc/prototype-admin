@@ -22,18 +22,12 @@ PLATFORM_TOOLS_REGISTRY: dict[str, str] = {
     "list_jobs": "read",
     "get_job_details": "read",
     "get_candidate_details": "read",
-    "get_pipeline_summary": "read",
-    "search_talent_pool": "read",
-    "get_analytics_summary": "read",
-    "get_company_culture": "read",
-    "get_evaluation_criteria": "read",
     "summarize_context": "read",
     "clarify_request": "read",
     "move_candidate": "write",
     "send_email": "write",
     "update_candidate_field": "write",
     "schedule_interview": "write",
-    "create_note": "write",
 }
 
 

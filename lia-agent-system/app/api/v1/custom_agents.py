@@ -353,7 +353,10 @@ company_id: str = Depends(require_company_id)):
                 latency_ms=elapsed_ms,
                 credits_consumed=credits_consumed,
                 tool_calls=tool_calls,
-                compliance_status="pass",
+                # WT-2022 P0.B fix: deriva de output.metadata.blocked (era ghost metric "pass" hardcoded).
+                # FairnessGuard bloqueia agent em runtime.py:464-472 setando metadata.blocked=True;
+                # antes o log SEMPRE escrevia "pass" — dashboard StudioComplianceView vanity metric.
+                compliance_status=("blocked" if bool((_meta or {}).get("blocked")) else "pass"),
             ))
         except Exception as _log_err:
             logger.warning("[Studio] Execution log persist failed: %s", _log_err)
@@ -1088,8 +1091,16 @@ company_id: str = Depends(require_company_id)):
             raise HTTPException(status_code=400, detail="Descricao bloqueada por padrao de seguranca")
     except HTTPException:
         raise
-    except Exception:
-        pass
+    except Exception as _sec_exc:
+        # WT-2022 P1.A fix (REGRA 4): silent fallback proibido em path critico.
+        logger.error(
+            "SecurityPatterns check FAILED em custom_agents (WT-2022 P1.A fail-closed): %s",
+            str(_sec_exc)[:200],
+        )
+        raise HTTPException(
+            status_code=503,
+            detail="SecurityPatterns temporariamente indisponivel - operacao bloqueada",
+        )
 
     try:
         from app.shared.compliance.fairness_guard import FairnessGuard
@@ -1099,8 +1110,17 @@ company_id: str = Depends(require_company_id)):
             raise HTTPException(status_code=400, detail="Descricao bloqueada por criterios de equidade")
     except HTTPException:
         raise
-    except Exception:
-        pass
+    except Exception as _fg_exc:
+        # WT-2022 P1.A fix (REGRA 4 CLAUDE.md): silent fallback em path critico de IA era PROIBIDO.
+        # FairnessGuard indisponivel = NAO prosseguir (gate eh requisito canonical, nao optional).
+        logger.error(
+            "FairnessGuard check FAILED em path critico custom_agents (WT-2022 P1.A fail-closed): %s",
+            str(_fg_exc)[:200],
+        )
+        raise HTTPException(
+            status_code=503,
+            detail="FairnessGuard temporariamente indisponivel - operacao bloqueada por seguranca",
+        )
 
     # Generate config using audited LLM
     try:
@@ -1116,7 +1136,7 @@ Gere uma configuracao completa de agente no formato JSON com estes campos:
 - suggested_name: nome curto e descritivo (max 50 chars)
 - suggested_role: descricao do papel do agente (max 200 chars)
 - suggested_domain: um de [sourcing, screening, pipeline, analytics, communication, job_management, automation, general]
-- suggested_tools: lista de tools (escolha entre: search_candidates, list_jobs, get_job_details, get_candidate_details, get_pipeline_summary, search_talent_pool, get_analytics_summary, get_company_culture, get_evaluation_criteria, summarize_context, move_candidate, send_email, update_candidate_field, schedule_interview, create_note)
+- suggested_tools: lista de tools (escolha entre: search_candidates, list_jobs, get_job_details, get_candidate_details, summarize_context, clarify_request, move_candidate, send_email, update_candidate_field, schedule_interview)
 - suggested_prompt: system prompt completo para o agente (em portugues, 200-500 chars)
 - suggested_context_level: "full", "standard" ou "minimal"
 - suggested_max_steps: numero entre 5 e 15
