@@ -11,13 +11,14 @@ import uuid
 
 from sqlalchemy import (
     Boolean, CheckConstraint, Column, DateTime, Index,
-    Numeric, String, Text,
+    LargeBinary, Numeric, String, Text,
 )
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from lia_config.database import Base
+from app.shared.encryption.encrypted_field_mixin import EncryptedFieldMixin
 
 
-class OfferProposal(Base):
+class OfferProposal(EncryptedFieldMixin, Base):
     """Carta-oferta estruturada — canonical hybrid (DB-canonical + 4 additions).
 
     Schema source of truth: tabela ``offer_proposals`` no Postgres (canonical).
@@ -44,6 +45,12 @@ class OfferProposal(Base):
         ),
     )
 
+    # P0.B (audit 2026-05-21, migration 160): candidate_email encrypted at rest
+    # via EncryptedFieldMixin canonical. Caller-side: zero mudanca.
+    _pii_encrypt_fields = [
+        ("_candidate_email_raw", "_candidate_email_encrypted", "candidate_email_hash"),
+    ]
+
     # Identidade + tenancy
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     company_id = Column(String(255), nullable=False)
@@ -55,7 +62,11 @@ class OfferProposal(Base):
 
     # Display denormalizado (cache para listagens / cartas)
     candidate_name = Column(String(255), nullable=False)
-    candidate_email = Column(String(255), nullable=True)
+    # P0.B (migration 160): plaintext column kept para dual-write transition.
+    # Access via hybrid_property ``candidate_email`` registered by mixin.
+    _candidate_email_raw = Column("candidate_email", String(255), nullable=True)
+    _candidate_email_encrypted = Column("candidate_email_encrypted", LargeBinary, nullable=True)
+    candidate_email_hash = Column(String(64), nullable=True, index=True)
     job_title = Column(String(255), nullable=True)
 
     # Compensacao
