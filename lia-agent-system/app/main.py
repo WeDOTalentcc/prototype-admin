@@ -96,6 +96,40 @@ async def lifespan(app: FastAPI):
     logger.info(f"Environment: {settings.APP_ENV}")
     logger.info(f"Debug mode: {settings.DEBUG}")
 
+    # ─── ADR-AUTH-001: Required env vars fail-fast (canonical harness) ────
+    # Validates DATABASE_URL, SECRET_KEY, FIELD_ENCRYPTION_KEY, REDIS_URL, etc.
+    # Strict in production (raises). Warn-only in dev/IS_DEVELOPMENT=true.
+    try:
+        import sys as _sys
+        _here = os.path.dirname(os.path.abspath(__file__))
+        _root = os.path.dirname(_here)
+        if _root not in _sys.path:
+            _sys.path.insert(0, _root)
+        from scripts.check_required_env import validate_required_env
+        _is_prod = os.getenv("APP_ENV", "development").lower() in ("production", "prod", "staging")
+        _env_errors = validate_required_env(strict=True)
+        if _env_errors:
+            if _is_prod:
+                _msg = (
+                    f"{len(_env_errors)} required env var(s) missing or malformed "
+                    f"(ADR-AUTH-001 startup check, APP_ENV={os.getenv('APP_ENV')}):\n\n"
+                    + "\n──\n".join(_env_errors)
+                )
+                raise RuntimeError(_msg)
+            logger.warning(
+                "ADR-AUTH-001: %d env var(s) failing canonical check (dev mode — warn only):",
+                len(_env_errors),
+            )
+            for _err in _env_errors:
+                logger.warning("  %s", _err.replace("\n", " | "))
+        else:
+            logger.info("✅ ADR-AUTH-001: all required env vars valid.")
+    except RuntimeError:
+        raise  # re-raise the env validation error in prod
+    except Exception as _env_check_exc:
+        logger.warning("ADR-AUTH-001 env check skipped (import failed): %s", _env_check_exc)
+
+
     # ─── Audit-loop-leak fix (2026-05-20) ────────────────────────────────
     # Capture the running event loop so AuditService can redispatch
     # `_asyncio.run(audit.log_decision(...))` calls from LangGraph sync
@@ -107,6 +141,21 @@ async def lifespan(app: FastAPI):
         logger.warning(
             "[AuditService] register_main_loop failed at startup: %s",
             _loop_reg_exc,
+        )
+
+    # ─── Sprint R.2 (2026-05-21) — aio_pika cross-loop close leak fix ────
+    # Capture the running event loop so `publish_to_exchange()` can
+    # redispatch publishes from LangGraph/Celery worker threads back onto
+    # this loop, reusing the singleton aio_pika connection bound here.
+    try:
+        from app.shared.messaging.rabbitmq_producer import (
+            register_main_loop as _register_mq_loop,
+        )
+        _register_mq_loop()
+    except Exception as _mq_loop_reg_exc:
+        logger.warning(
+            "[RabbitMQProducer] register_main_loop failed at startup: %s",
+            _mq_loop_reg_exc,
         )
 
     
@@ -297,13 +346,20 @@ async def lifespan(app: FastAPI):
     else:
         logging.getLogger("lia.startup").info("LangSmith tracing enabled (lia.startup)")  # R-051
 
-    # ─── Onda 1.F (PLAN_FIX_wizard_memory_loss 2026-05-10) ──────────────────────
+    # ─── Onda 1.F + Sprint R.1 (2026-05-21): AsyncPostgresSaver canonical ───────
     # Startup fail-closed: em production/staging, abortar boot se
     # checkpointer for MemorySaver. Defense-in-depth contra regressao do
-    # bug V1.d (PostgresSaver.from_conn_string + ConnectionPool).
+    # bug V1.d e Task #1161 Bug B (PostgresSaver sync → aget_tuple
+    # NotImplementedError silenciado → MemorySaver → state loss em restart).
+    # Sprint R.1: initialize_checkpointer_async PRECISA rodar antes de
+    # qualquer agente instanciar (LangGraphBase.__init__ chama
+    # get_checkpointer no caminho sync).
     try:
-        from lia_agents_core.checkpointer import get_checkpointer
-        _cp = get_checkpointer()
+        from lia_agents_core.checkpointer import (
+            get_checkpointer,
+            initialize_checkpointer_async,
+        )
+        _cp = await initialize_checkpointer_async()
         _cp_type = type(_cp).__name__ if _cp is not None else "None"
         _app_env = getattr(settings, "APP_ENV", "development")
         _is_prod_like = _app_env in {"production", "staging"}
@@ -516,8 +572,21 @@ async def lifespan(app: FastAPI):
         await rabbitmq_consumer.stop()
     except Exception:
         pass
+    # Sprint R.2: close singleton aio_pika producer connection on main loop
+    try:
+        from app.shared.messaging.rabbitmq_producer import rabbitmq_producer
+        await rabbitmq_producer.close()
+    except Exception:
+        pass
     logger.info("🛑 Shutting down LIA Agent System...")
-    
+
+    # Sprint R.1: close AsyncPostgresSaver pool
+    try:
+        from lia_agents_core.checkpointer import shutdown_checkpointer_async
+        await shutdown_checkpointer_async()
+    except Exception as _cp_exc:
+        logger.warning("[Sprint R.1] erro fechando checkpointer pool: %s", _cp_exc)
+
     try:
         from app.domains.recruiter_assistant.services.monitoring_loop import monitoring_loop
         await monitoring_loop.stop()

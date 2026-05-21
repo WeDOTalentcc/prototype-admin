@@ -1,6 +1,8 @@
 """
 Archetype CRUD, generation (from-search, from-job, from-description), and search routes.
 """
+from __future__ import annotations
+
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, Field
@@ -25,6 +27,15 @@ from ._shared import (
 )
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+
+class ArchetypeFromDescriptionRequest(WeDoBaseModel):
+    """Request to generate an archetype from a text description."""
+    description: str = Field(..., min_length=20, description="Descrição textual do perfil ideal")
+    name: str | None = Field(None, description="Nome personalizado para o arquétipo")
+    emoji: str = Field("🎯", max_length=10)
+
+
+
 
 router = APIRouter()
 
@@ -1269,13 +1280,6 @@ Responda APENAS com o JSON, sem explicações adicionais."""
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Falha ao gerar arquétipo: {str(e)}")
-
-
-class ArchetypeFromDescriptionRequest(WeDoBaseModel):
-    """Request to generate an archetype from a text description."""
-    description: str = Field(..., min_length=20, description="Descrição textual do perfil ideal")
-    name: str | None = Field(None, description="Nome personalizado para o arquétipo")
-    emoji: str = Field("🎯", max_length=10)
 
 
 @router.post("/archetypes/from-description", response_model=ArchetypeGenerationResponse)

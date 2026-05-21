@@ -99,6 +99,21 @@ cd plataforma-lia && npm run test:e2e      # playwright
 cd plataforma-lia && npm run build         # next build
 ```
 
+## Replit dev workflow (Sprint R.3)
+
+`uvicorn` em dev tem `--reload` ativo (config em `.replit`, workflow
+`lia-backend`). Mudanças em arquivos `.py` dentro de `lia-agent-system/`
+auto-disparam restart do processo — não precisa mais kill + nohup
+manual. Watchfiles monitora apenas `lia-agent-system/` via
+`--reload-dir lia-agent-system` para evitar trigger por outros
+artifacts do monorepo.
+
+Prod (deploy via GitHub canonical, responsabilidade do Anderson/time)
+NÃO usa `--reload`. Workflow `.replit` é dev-only.
+
+Sensor: `lia-agent-system/tests/sensors/test_replit_workflow_uvicorn_reload.py`
+trava a presença das flags no `.replit`.
+
 ## Princípios de trabalho
 
 - **Separação total FE/BE.** Frontend consome API REST via proxy. Sem código misto.

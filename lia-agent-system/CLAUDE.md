@@ -660,3 +660,31 @@ LIA_E2E_SENSORS_ENABLED=true \
 ```
 
 Default: skipped (slow + requires live wizard em `localhost:8001`). Run pre-deploy.
+
+### Sprint R.4 — CI bateria 9 wizard sensors nightly
+
+`.github/workflows/wizard-nightly.yml` runs the canonical wizard E2E sensors
+at 06:00 UTC daily (~03:00 BRT). 4 tests (~6 min total) covering:
+- intake stage advancement
+- HITL gate awaiting_confirmation invariant
+- multi-tenancy `company_id` invariant
+- full 6-turn conversation → publish → `job_vacancy_id` populated
+
+Manual trigger: GitHub UI → Actions → "Wizard E2E Sensors (Nightly)" → Run workflow.
+
+Failure indicates wizard regression — **block deploy** until the bateria 9
+goes green again. Scheduled 30 min after `wizard-e2e-cenario-a.yml` (05:30 UTC)
+to escalate LLM load and isolate failure context.
+
+**Secrets required in the GitHub repo settings** (Anderson/team configures
+when merging to canonical):
+- `AI_PROXY_URL` — Anthropic gateway base URL
+- `AI_PROXY_KEY` — Anthropic API key (or proxy key)
+- `FIELD_ENCRYPTION_KEY` — Fernet key for encrypted DB fields
+- `JWT_SECRET_KEY` — secret used by `app.auth.security.create_access_token`
+
+**Meta-sensor:** `tests/sensors/test_ci_wizard_nightly_workflow.py` pins the
+workflow shape — cron schedule, `LIA_E2E_SENSORS_ENABLED="true"` env var,
+pytest invocation of `test_canonical_e2e_sensors.py`, `workflow_dispatch`
+trigger. If any of those drift, the meta-sensor fails locally before the
+nightly silently becomes a green no-op.

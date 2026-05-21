@@ -1,73 +1,71 @@
 """
 LangGraph Checkpointer — persistência de estado entre turnos.
 
-Suporta dois modos:
-1. PostgresSaver+ConnectionPool (canonical) — persiste no PostgreSQL via
-   tabelas nativas LangGraph; pool long-lived gerencia conexões durante a
-   vida do processo FastAPI.
-2. MemorySaver (dev fallback) — in-process, perdido ao reiniciar.
+Sprint R.1 (2026-05-21) — AsyncPostgresSaver substitui PostgresSaver sync.
 
-Selecionado pelo ambiente (APP_ENV):
-  production / staging → PostgresSaver obrigatório; RuntimeError se indisponível.
-  outros               → PostgresSaver preferido; fallback para MemorySaver
-                         com WARNING explícito.
+Problema anterior:
+    ``PostgresSaver`` (sync) NÃO implementa ``aget_tuple``. O wizard
+    (``app/domains/job_creation/graph.py::aresume_with_message``) usa
+    ``await graph.ainvoke(...)``, e LangGraph internamente chama
+    ``await checkpointer.aget_tuple(...)`` no ``AsyncPregelLoop.__aenter__``
+    — ``NotImplementedError`` levantava silenciosamente, fallback ia pra
+    ``MemorySaver``, wizard perdia estado a cada restart do uvicorn.
 
-Uso:
-    saver = get_checkpointer()
-    graph = graph_builder.compile(checkpointer=saver)
+Solução canônica:
+    ``AsyncPostgresSaver`` (langgraph.checkpoint.postgres.aio) implementa
+    ``aget_tuple`` nativamente sobre ``psycopg.AsyncConnection``.
 
-Histórico de correção (Onda 1 — PLAN_FIX_wizard_memory_loss 2026-05-10):
-    BUG ANTERIOR: ``PostgresSaver.from_conn_string(uri)`` retornava um
-    context manager (``Iterator[PostgresSaver]``) em
-    ``langgraph-checkpoint-postgres>=2.0.8``. O código antigo tratava o
-    retorno como saver direto e chamava ``.setup()``, levantando
-    ``AttributeError: '_GeneratorContextManager' object has no attribute
-    'setup'``. O ``except Exception`` em ``get_checkpointer()`` engolia o
-    erro → fallback silencioso para ``MemorySaver`` em TODOS os ambientes.
+Limitação técnica importante:
+    ``AsyncPostgresSaver.__init__`` chama ``asyncio.get_running_loop()`` —
+    PRECISA ser instanciado dentro de um event loop. Setup (``pool.open()``
+    + ``saver.setup()``) também precisa de await.
 
-    FIX CANONICAL: usar ``ConnectionPool`` (psycopg-pool) + construir
-    ``PostgresSaver(pool)`` diretamente. Pool gerencia conexões long-lived,
-    sem fechar no exit do bloco ``with`` — adequado para servidor FastAPI.
+Padrão de uso:
+    1. ``await initialize_checkpointer_async()`` em ``app.main.lifespan``
+       (ANTES de qualquer agente ser construído). Faz open+setup, popula
+       cache.
+    2. ``get_checkpointer()`` em sites de compile (sync) — retorna do cache.
+    3. ``shutdown_checkpointer_async()`` em ``app.main.lifespan`` (FastAPI
+       shutdown hook) — fecha pool.
 
-    Evidência empírica do bug (auditoria 2026-05-10): tabela ``checkpoints``
-    em prod-live tinha TOTAL = 1 row (smoke audit-only) — zero wizards
-    reais haviam persistido em todo o histórico antes deste fix.
+Pool é singleton por processo. Reentrante (chamadas múltiplas ao initialize
+não recriam pool).
+
+Histórico:
+    Onda 1.F (2026-05-10) — corrigiu ``PostgresSaver.from_conn_string`` →
+    ConnectionPool (sync). Mas saver sync não implementa aget_tuple.
+    Sprint R.1 (2026-05-21) — migra para AsyncPostgresSaver + AsyncConnectionPool.
 
 Disciplinas CLAUDE.md aplicadas:
-    - canonical-fix: 2 linhas trocadas (from_conn_string → ConnectionPool +
-      PostgresSaver(pool)). Sem refactor além do necessário.
-    - harness-engineering: GUIDE canonical do pattern + SENSOR via
-      ``tests/integration/test_checkpointer_canonical.py``.
-    - production-quality (ai-architecture + integration-patterns):
-      long-lived pool com min/max size; sem conexão por request.
+    - harness-engineering: REGRA 4 — fallback silent removido; warnings
+      explícitos e exception-on-prod.
+    - production-quality (ai-architecture): long-lived async pool com
+      min/max size; sem conexão por request.
+    - canonical-fix: AsyncPostgresSaver direto, não wrapper extra.
 """
+import asyncio
 import logging
-from typing import Any
+from typing import Any, Optional
 
 from lia_config.config import settings
 
 logger = logging.getLogger(__name__)
 
-# Pool singleton — criado uma vez pelo primeiro _postgres_saver() bem-sucedido
-# e reutilizado pela vida do processo. None até a primeira chamada bem-sucedida.
+# Singletons — populados por ``initialize_checkpointer_async`` e reusados
+# pela vida do processo FastAPI.
 _POOL_SINGLETON: Any = None
+_SAVER_SINGLETON: Any = None
+_SAVER_KIND: str = "uninitialized"  # "async_postgres" | "memory" | "uninitialized"
 
 
 def _supports_async(saver: Any) -> bool:
     """
-    Task #1161 — Bug B root cause guard.
+    Detecta se o saver implementa ``aget_tuple`` (não apenas herda do stub
+    abstrato de ``BaseCheckpointSaver``).
 
-    O wizard (``app/domains/job_creation/graph.py::aresume_with_message``)
-    chama ``await self._graph.ainvoke(Command(resume=...))``. LangGraph,
-    por sua vez, chama ``await checkpointer.aget_tuple(...)`` dentro do
-    ``AsyncPregelLoop.__aenter__``. Se o saver retornado NÃO sobrescrever
-    ``aget_tuple`` (caso do ``PostgresSaver`` sync — que herda o stub
-    abstrato de ``BaseCheckpointSaver``), o resultado é
-    ``NotImplementedError`` silenciado pelo ``_emit_silent_fallback`` do
-    ``wizard_session_service`` — exatamente o sintoma do Task #1161.
-
-    Detecta isso checando se ``aget_tuple`` foi sobrescrito em algum lugar
-    da MRO além da classe abstrata base.
+    Task #1161 (Bug B) — sem essa checagem, ``PostgresSaver`` (sync) passava
+    como "checkpointer válido" mas ``NotImplementedError`` aparecia no
+    runtime async.
     """
     cls = type(saver)
     for ancestor in cls.__mro__:
@@ -78,64 +76,192 @@ def _supports_async(saver: Any) -> bool:
     return False
 
 
-def get_checkpointer() -> Any:
+def _normalize_db_url(db_url: str) -> str:
     """
-    Retorna o checkpointer adequado ao ambiente.
+    Converte URL SQLAlchemy/asyncpg → psycopg3-compatível.
 
-    Em produção / staging (``APP_ENV in {"production", "staging"}``):
-      - PostgresSaver obrigatório; ``RuntimeError`` se indisponível.
-
-    Em desenvolvimento (``APP_ENV != "production" and != "staging"``):
-      - PostgresSaver preferido; fallback para MemorySaver com WARNING.
-
-    Defense in depth: ``app.main.lifespan`` deve abortar boot quando este
-    retornar MemorySaver em APP_ENV não-dev (sensor de boot fail-closed).
-
-    Task #1161 (Bug B root cause): se o saver não suportar
-    ``aget_tuple`` (caso da classe sync ``PostgresSaver``), em DEV cai
-    para ``MemorySaver`` (que é ``InMemorySaver`` e implementa async); em
-    prod-like levanta ``RuntimeError`` exigindo migração para
-    ``AsyncPostgresSaver``.
+    psycopg-pool (sync e async) usa ``conninfo`` formato libpq.
     """
+    return (
+        db_url
+        .replace("postgresql+asyncpg://", "postgresql://")
+        .replace("+asyncpg", "")
+        .replace("postgresql+psycopg2://", "postgresql://")
+        .replace("postgresql+psycopg://", "postgresql://")
+    )
+
+
+async def initialize_checkpointer_async() -> Any:
+    """
+    Inicializa o checkpointer canônico DENTRO de um event loop.
+
+    Deve ser chamado em ``app.main.lifespan`` ANTES de qualquer agente ser
+    instanciado (qualquer ``LangGraphBase.__init__`` chama
+    ``get_checkpointer()``).
+
+    Em production / staging:
+        AsyncPostgresSaver obrigatório; RuntimeError se falhar.
+
+    Em dev:
+        AsyncPostgresSaver preferido; fallback para MemorySaver com
+        WARNING.
+
+    Idempotente — chamadas subsequentes retornam o saver cacheado.
+
+    Returns:
+        AsyncPostgresSaver ou MemorySaver (dev fallback).
+    """
+    global _POOL_SINGLETON, _SAVER_SINGLETON, _SAVER_KIND
+
+    if _SAVER_SINGLETON is not None:
+        return _SAVER_SINGLETON
+
     app_env = getattr(settings, "APP_ENV", "development")
     is_production_like = app_env in {"production", "staging"}
 
     try:
-        saver = _postgres_saver()
+        saver = await _build_async_postgres_saver()
     except Exception as exc:
         if is_production_like:
             raise RuntimeError(
-                f"[Checkpointer] PostgresSaver FALHOU em ambiente {app_env!r} — "
-                f"checkpoints seriam perdidos em restarts. Corrija "
-                f"DATABASE_URL ou verifique langgraph-checkpoint-postgres + "
-                f"psycopg-pool. Causa: {exc}"
+                f"[Checkpointer] AsyncPostgresSaver FALHOU em ambiente "
+                f"{app_env!r} — checkpoints seriam perdidos em restarts. "
+                f"Corrija DATABASE_URL ou verifique "
+                f"langgraph-checkpoint-postgres + psycopg-pool. Causa: {exc}"
             ) from exc
         logger.warning(
-            "[Checkpointer] PostgresSaver indisponivel em ambiente %r (razao: %s). "
-            "Usando MemorySaver — checkpoints NAO persistem entre restarts. "
-            "Em production/staging isso causaria RuntimeError.",
-            app_env,
-            exc,
+            "[Checkpointer] AsyncPostgresSaver indisponivel em ambiente %r "
+            "(razao: %s). Usando MemorySaver — checkpoints NAO persistem "
+            "entre restarts. Em production/staging isso causaria RuntimeError.",
+            app_env, exc,
         )
-        return _memory_saver()
+        _SAVER_SINGLETON = _memory_saver()
+        _SAVER_KIND = "memory"
+        return _SAVER_SINGLETON
 
     if not _supports_async(saver):
+        # Defesa em profundidade: AsyncPostgresSaver SEMPRE implementa
+        # aget_tuple (checked em testes). Se essa branch dispara,
+        # algo regrediu no langgraph-checkpoint-postgres.
         msg = (
-            f"[Checkpointer] {type(saver).__name__} nao implementa aget_tuple "
-            f"(sync-only). O wizard.aresume_with_message usa async ainvoke e "
-            f"langgraph chamaria aget_tuple => NotImplementedError (Task #1161 "
-            f"Bug B). Use AsyncPostgresSaver para producao."
+            f"[Checkpointer] {type(saver).__name__} nao implementa "
+            f"aget_tuple (regressão suspeita em langgraph-checkpoint-postgres). "
+            f"Verificar versão instalada."
         )
         if is_production_like:
             raise RuntimeError(msg)
         logger.warning("%s Fallback dev -> MemorySaver.", msg)
-        return _memory_saver()
+        _SAVER_SINGLETON = _memory_saver()
+        _SAVER_KIND = "memory"
+        return _SAVER_SINGLETON
 
+    _SAVER_SINGLETON = saver
+    _SAVER_KIND = "async_postgres"
+    logger.info(
+        "[Checkpointer] AsyncPostgresSaver+AsyncConnectionPool ativo — "
+        "checkpoints persistem entre restarts (env=%s)", app_env,
+    )
     return saver
 
 
+async def shutdown_checkpointer_async() -> None:
+    """
+    Fecha o pool async (chamado em FastAPI shutdown).
+
+    Idempotente — seguro chamar múltiplas vezes.
+    """
+    global _POOL_SINGLETON, _SAVER_SINGLETON, _SAVER_KIND
+
+    if _POOL_SINGLETON is not None:
+        try:
+            if not getattr(_POOL_SINGLETON, "closed", True):
+                await _POOL_SINGLETON.close()
+                logger.info("[Checkpointer] AsyncConnectionPool fechado")
+        except Exception as exc:
+            logger.warning("[Checkpointer] erro ao fechar pool: %s", exc)
+        finally:
+            _POOL_SINGLETON = None
+            _SAVER_SINGLETON = None
+            _SAVER_KIND = "uninitialized"
+
+
+async def _build_async_postgres_saver() -> Any:
+    """
+    Constrói AsyncPostgresSaver + AsyncConnectionPool dentro do event loop
+    atual.
+
+    Pattern canonical:
+        pool = AsyncConnectionPool(uri, max_size=N, min_size=M, open=False, ...)
+        await pool.open()
+        saver = AsyncPostgresSaver(pool)
+        await saver.setup()  # idempotente — cria tabelas LangGraph se não existirem
+
+    Pool é singleton em ``_POOL_SINGLETON`` (idempotência em reinicio).
+
+    Raises:
+        ImportError: psycopg-pool ou langgraph-checkpoint-postgres ausentes.
+        RuntimeError: pool ou setup() falharam.
+    """
+    global _POOL_SINGLETON
+
+    try:
+        from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+    except ImportError as exc:
+        raise ImportError(
+            "langgraph-checkpoint-postgres nao esta instalado. "
+            "Execute: pip install langgraph-checkpoint-postgres>=3.0.0"
+        ) from exc
+
+    try:
+        from psycopg_pool import AsyncConnectionPool
+    except ImportError as exc:
+        raise ImportError(
+            "psycopg-pool nao esta instalado. "
+            "Execute: pip install psycopg-pool>=3.3.0"
+        ) from exc
+
+    db_url = settings.DATABASE_URL or ""
+    if not db_url:
+        raise RuntimeError(
+            "[Checkpointer] DATABASE_URL nao configurado "
+            "(settings.DATABASE_URL vazio)."
+        )
+    sync_url = _normalize_db_url(db_url)
+
+    try:
+        # Reusa pool se ainda aberto (idempotência)
+        if _POOL_SINGLETON is None or getattr(_POOL_SINGLETON, "closed", True):
+            _POOL_SINGLETON = AsyncConnectionPool(
+                conninfo=sync_url,
+                max_size=20,
+                min_size=2,
+                open=False,  # abrimos explicitamente abaixo (dentro do loop)
+                kwargs={"autocommit": True, "prepare_threshold": 0},
+            )
+            await _POOL_SINGLETON.open()
+            logger.info(
+                "[Checkpointer] AsyncConnectionPool aberto: min=%d max=%d",
+                _POOL_SINGLETON.min_size, _POOL_SINGLETON.max_size,
+            )
+
+        saver = AsyncPostgresSaver(_POOL_SINGLETON)
+        await saver.setup()  # idempotente; cria tabelas LangGraph se necessário
+        return saver
+    except Exception as exc:
+        # Pool pode estar parcialmente inicializado; fecha pra evitar leak
+        try:
+            if _POOL_SINGLETON is not None and not getattr(_POOL_SINGLETON, "closed", True):
+                await _POOL_SINGLETON.close()
+        except Exception:
+            pass
+        _POOL_SINGLETON = None
+        raise RuntimeError(
+            f"AsyncPostgresSaver(AsyncConnectionPool) falhou: {exc}"
+        ) from exc
+
+
 def _memory_saver() -> Any:
-    """Fallback dev-only. NAO usar em production/staging."""
+    """Fallback dev-only. NÃO usar em production/staging."""
     try:
         from langgraph.checkpoint.memory import MemorySaver
         saver = MemorySaver()
@@ -146,87 +272,79 @@ def _memory_saver() -> Any:
         return None
 
 
-def _postgres_saver() -> Any:
+def get_checkpointer() -> Any:
     """
-    Cria PostgresSaver canonical com ConnectionPool long-lived.
+    Retorna o checkpointer canônico (sync API).
 
-    Pattern canonical para FastAPI long-running:
-        pool = ConnectionPool(uri, max_size=N, min_size=M, open=True, ...)
-        saver = PostgresSaver(pool)
-        saver.setup()  # idempotente — cria tabelas LangGraph se nao existirem
+    Pré-requisito: ``initialize_checkpointer_async()`` deve ter sido chamado
+    antes (idealmente em ``app.main.lifespan``).
 
-    O pool e singleton (``_POOL_SINGLETON``) para evitar recriar conexoes em
-    cada call de ``_postgres_saver()`` durante reload uvicorn (importante em
-    dev).
+    Caso seja chamado antes do initialize (e.g., import time em algum agente
+    instanciado precocemente), tenta initialize sync via fallback:
+      - production/staging: RuntimeError (não-recuperável)
+      - dev: MemorySaver fallback com WARNING
 
-    Levanta excecao em caso de falha — caller decide o comportamento.
+    Sites de compile (``graph.compile(checkpointer=saver)``) chamam este;
+    saver retornado é AsyncPostgresSaver no caminho canônico, e usos
+    posteriores via ``await saver.aget_tuple(...)`` funcionam porque
+    AsyncPostgresSaver implementa async nativo.
 
-    Raises:
-        ImportError: psycopg-pool ou langgraph-checkpoint-postgres ausentes.
-        RuntimeError: pool ou setup() falharam.
+    Returns:
+        AsyncPostgresSaver, MemorySaver, ou None se langgraph ausente.
     """
-    global _POOL_SINGLETON
+    global _SAVER_SINGLETON
 
-    try:
-        from langgraph.checkpoint.postgres import PostgresSaver
-    except ImportError as exc:
-        raise ImportError(
-            "langgraph-checkpoint-postgres nao esta instalado. "
-            "Execute: pip install langgraph-checkpoint-postgres>=2.0.8"
-        ) from exc
+    if _SAVER_SINGLETON is not None:
+        return _SAVER_SINGLETON
 
-    try:
-        from psycopg_pool import ConnectionPool
-    except ImportError as exc:
-        raise ImportError(
-            "psycopg-pool nao esta instalado. "
-            "Execute: pip install psycopg-pool>=3.3.0"
-        ) from exc
+    # initialize_checkpointer_async ainda não foi chamado — tentar sync
+    # fallback. Em production/staging isso é erro de boot; em dev cai em
+    # MemorySaver para não derrubar testes/REPL.
+    app_env = getattr(settings, "APP_ENV", "development")
+    is_production_like = app_env in {"production", "staging"}
 
-    db_url = settings.DATABASE_URL or ""
-    # PostgresSaver usa psycopg3 sync via pool; converter async drivers
-    sync_url = (
-        db_url
-        .replace("postgresql+asyncpg://", "postgresql://")
-        .replace("+asyncpg", "")
-        .replace("postgresql+psycopg2://", "postgresql://")
+    if is_production_like:
+        raise RuntimeError(
+            f"[Checkpointer] get_checkpointer() chamado antes de "
+            f"initialize_checkpointer_async() em APP_ENV={app_env!r}. "
+            f"AsyncPostgresSaver precisa de event loop pra inicializar — "
+            f"chame initialize_checkpointer_async() no lifespan da app."
+        )
+
+    logger.warning(
+        "[Checkpointer] get_checkpointer() chamado antes de "
+        "initialize_checkpointer_async() em dev. Retornando MemorySaver "
+        "fallback. Em production/staging isso seria RuntimeError."
     )
-    if not sync_url:
-        raise RuntimeError(
-            "[Checkpointer] DATABASE_URL nao configurado (settings.DATABASE_URL vazio)."
-        )
+    _SAVER_SINGLETON = _memory_saver()
+    return _SAVER_SINGLETON
 
-    try:
-        # Reusa pool existente se ainda aberto (idempotencia em reload uvicorn)
-        if _POOL_SINGLETON is None or getattr(_POOL_SINGLETON, "closed", True):
-            _POOL_SINGLETON = ConnectionPool(
-                conninfo=sync_url,
-                max_size=20,
-                min_size=2,
-                open=True,
-                # autocommit e mandatory para o setup() do PostgresSaver
-                kwargs={"autocommit": True},
-            )
-            logger.info(
-                "[Checkpointer] ConnectionPool criado: min=%d max=%d",
-                _POOL_SINGLETON.min_size, _POOL_SINGLETON.max_size,
-            )
 
-        saver = PostgresSaver(_POOL_SINGLETON)
-        saver.setup()  # idempotente; cria tabelas LangGraph se necessario
-        logger.info(
-            "[Checkpointer] PostgresSaver+ConnectionPool ativo — "
-            "checkpoints persistem entre restarts"
-        )
-        return saver
-    except Exception as exc:
-        # Pool pode estar parcialmente inicializado; fecha para evitar leak
-        try:
-            if _POOL_SINGLETON is not None and not getattr(_POOL_SINGLETON, "closed", True):
-                _POOL_SINGLETON.close()
-        except Exception:
-            pass
-        _POOL_SINGLETON = None
-        raise RuntimeError(
-            f"PostgresSaver(ConnectionPool) falhou: {exc}"
-        ) from exc
+def get_checkpointer_kind() -> str:
+    """
+    Retorna kind do checkpointer ativo: ``async_postgres``, ``memory``,
+    ou ``uninitialized``. Usado por health checks (e.g.,
+    ``app/api/v1/health_langgraph.py``).
+    """
+    return _SAVER_KIND
+
+
+# ───────────────────────────────────────────────────────────────────────────
+# Backward-compat shim para tests legados (Onda 1.F) que mockam
+# ``_postgres_saver`` como sync. Sprint R.1 substituiu por
+# ``_build_async_postgres_saver`` (async). Tests que patcheiam o nome
+# antigo continuam funcionando — basta serem migrados para
+# ``_build_async_postgres_saver`` quando alguém tocar nesses tests.
+# ───────────────────────────────────────────────────────────────────────────
+def _postgres_saver() -> Any:  # pragma: no cover — legacy shim, target de patch em tests
+    """
+    DEPRECATED (Sprint R.1, 2026-05-21): substituído por
+    ``_build_async_postgres_saver`` (async). Mantido apenas como alvo de
+    patch em tests legados (``test_langgraph_native_regression.py``,
+    ``test_langgraph_agents_e2e.py``).
+    """
+    raise NotImplementedError(
+        "_postgres_saver removido em Sprint R.1. Use "
+        "initialize_checkpointer_async() para canonical async ou patch "
+        "_build_async_postgres_saver em tests."
+    )
