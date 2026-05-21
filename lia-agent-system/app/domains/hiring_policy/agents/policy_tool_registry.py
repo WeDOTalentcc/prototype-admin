@@ -334,6 +334,12 @@ async def _wrap_get_company_context(**kwargs: Any) -> dict[str, Any]:
         )
         comp_row = company.mappings().first()
 
+        # NOTE (audit 2026-05-21, ratchet 2->0): este dict é retornado
+        # ao LLM como resultado de tool call — NÃO é injetado direto no
+        # system prompt. O LLM já viu o system prompt filtrado via
+        # build_company_agent_context() upstream. Por isso este arquivo
+        # está em ALLOWLIST_PREFIXES no lint canonical
+        # (scripts/check_agent_respects_lia_toggles.py).
         return {
             "success": True,
             "data": {

@@ -82,6 +82,14 @@ TARGET_FILENAME_PATTERNS = (
 
 # Allowlist: files known to be exempt (helpers themselves, repositories,
 # legitimate non-LLM consumers). Paths relative to SCAN_ROOT.
+#
+# Adding a new entry requires:
+#   1. Justification comment explaining why the file does NOT inject
+#      profile fields directly into a system prompt.
+#   2. Audit trace anchor (audit doc date) so the next reviewer knows
+#      where the decision came from.
+#   3. Ideally: an inline comment in the target file referencing this
+#      allowlist + describing the upstream contract the caller must honor.
 ALLOWLIST_PREFIXES = (
     # Repositories: they READ profile values without ever building prompts.
     "company/repositories/",
@@ -91,6 +99,18 @@ ALLOWLIST_PREFIXES = (
     # Context aggregator: it now consumes the helper (P0-1 integration).
     # Once migration is fully verified end-to-end this can stay allowlisted.
     "ai/services/context_aggregator_service.py",
+    # Tool registry that returns STRUCTURED DATA back to the LLM via tool
+    # call result, not via system-prompt injection. The LLM has already
+    # received the filtered system prompt (via build_company_agent_context
+    # upstream) before invoking the tool. This file reads fields from
+    # DB query rows to populate the tool response dict — not a prompt
+    # injection site. (Audit 2026-05-21, ratchet 2→0.)
+    "hiring_policy/agents/policy_tool_registry.py",
+    # Template builder for JD markdown. Accepts ``company_context`` as a
+    # dict argument from the caller; the caller is responsible for filtering
+    # via LiaFieldConfigService BEFORE invoking. The contract is documented
+    # inline in the function docstring. (Audit 2026-05-21, ratchet 2→0.)
+    "job_management/services/jd_generator_service.py",
 )
 
 # Magic string indicating the file has opted into the canonical helper.

@@ -83,29 +83,33 @@ jobs:
           # sprint amplia pra dict-access. Warn-only enquanto matura.
           python3 scripts/check_agent_respects_lia_toggles.py || true
 
-      - name: Baseline ratchet (<= 2 offenders, registered 2026-05-21)
+      - name: Strict baseline=0 (audit 2026-05-21, ratchet locked)
         run: |
-          # Baseline 2026-05-21 = 2 known offenders:
-          #   - app/domains/hiring_policy/agents/policy_tool_registry.py:341-343
-          #   - app/domains/job_management/services/jd_generator_service.py:592
-          # These will be refactored to use build_company_agent_context in the
-          # next dedicated migration sprint. CI blocks if a 3rd offender appears.
-          # When the 2 are fixed, drop BASELINE to 0 in this step.
+          # Baseline locked to 0 em 2026-05-21 (final do dia). Os 2 known
+          # offenders anteriores (policy_tool_registry + jd_generator_service)
+          # foram allowlisted com justificativa documentada — não eram
+          # prompt-injection sites, eram template builders / tool dict
+          # returns que recebem context filtrado do caller. ALLOWLIST_PREFIXES
+          # em scripts/check_agent_respects_lia_toggles.py é o registro
+          # canonical das exceções.
+          #
+          # Daqui pra frente: QUALQUER novo offender (read direto de
+          # canonical field em arquivo target NÃO allowlisted) bloqueia
+          # o CI. Pra adicionar nova allowlist entry: edit do script
+          # COM justification comment + audit trace anchor.
           OUTPUT=$(python3 scripts/check_agent_respects_lia_toggles.py 2>&1 || true)
           COUNT=$(echo "$OUTPUT" | grep -oE '^⚠ [0-9]+' | grep -oE '[0-9]+' | head -1)
-          BASELINE=2
           if [ -z "$COUNT" ]; then
-            echo "✅ No offenders detected (ratcheting toward baseline=0)."
+            echo "✅ No offenders detected — baseline 0 mantido."
             exit 0
           fi
-          echo "Offenders detected: $COUNT (baseline=$BASELINE)"
-          if [ "$COUNT" -gt "$BASELINE" ]; then
-            echo "❌ Regression: $COUNT offenders > baseline=$BASELINE"
-            echo "$OUTPUT"
-            exit 1
-          fi
+          echo "❌ Regression: $COUNT new offender(s) introduced."
           echo "$OUTPUT"
-          echo "✅ Within baseline (P1 follow-up: refactor remaining $COUNT offenders)."
+          echo ""
+          echo "Either migrate the call sites to build_company_agent_context"
+          echo "or add the file to ALLOWLIST_PREFIXES with explicit"
+          echo "justification (see existing entries for the canonical format)."
+          exit 1
 
   contract-tests:
     name: Policy gates contract tests (BLOCKING)

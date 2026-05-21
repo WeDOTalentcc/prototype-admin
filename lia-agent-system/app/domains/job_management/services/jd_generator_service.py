@@ -574,10 +574,22 @@ Respond ONLY with the JSON."""
         Uses ONLY the data provided — no invented content.
         This is a quick template-based generation for the wizard review stage.
         For LLM-powered generation, use generate_full_description() instead.
-        
+
+        UPSTREAM CONTRACT (audit 2026-05-21, ratchet 2->0):
+        ``company_context`` is a dict-shaped argument received from the caller.
+        The CALLER is responsible for filtering company fields against
+        ``lia_field_toggles`` via
+        :class:`app.domains.cv_screening.services.lia_field_config_service.LiaFieldConfigService`
+        BEFORE invoking this function. Fields the recruiter disabled MUST
+        already be absent / None / empty when arriving here. This function
+        is a TEMPLATE builder — it does not consult toggles itself, by
+        design, to keep the function pure and reusable. The file is
+        ALLOWLISTED in scripts/check_agent_respects_lia_toggles.py.
+
         Args:
             job_data: Dictionary with job criteria (title, skills, requirements, etc.)
-            company_context: Optional company information (about, culture, benefits)
+            company_context: Optional company information (about, culture, benefits).
+                Caller is responsible for filtering via lia_field_toggles.
         
         Returns:
             Formatted job description string in markdown
