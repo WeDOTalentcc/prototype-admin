@@ -317,6 +317,9 @@ class JobWizardGraph:
 
         config = {"configurable": {"thread_id": session_id}}
 
+        # REGRA-4-EXEMPT: LangGraph ainvoke wrapper — except handler sets
+        # result["error"] = str(exc) as canonical inline error envelope.
+        # Downstream code checks result.get("error") before treating as success.
         try:
             result = await self._compiled_lg.ainvoke(state, config=config)
         except Exception as exc:

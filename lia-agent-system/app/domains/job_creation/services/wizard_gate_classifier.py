@@ -227,6 +227,9 @@ class WizardGateClassifier:
         # app/ root is two levels up from this file (services/ → job_creation/ → domains/ → app/)
         app_root = Path(__file__).resolve().parents[3]
         prompt_path = app_root / path_key
+        # REGRA-4-EXEMPT: prompt YAML bootstrap — not LLM I/O. File not found
+        # or parse error falls back to inline canonical prompt baked in code.
+        # Caller (classify) uses the system_prompt regardless of source.
         try:
             data = yaml.safe_load(prompt_path.read_text(encoding="utf-8")) or {}
         except FileNotFoundError:

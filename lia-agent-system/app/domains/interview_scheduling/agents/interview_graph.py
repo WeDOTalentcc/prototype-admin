@@ -228,6 +228,10 @@ class InterviewGraph:
             extra={"session_id": session_id, "graph": "InterviewGraph"},
         )
 
+        # REGRA-4-EXEMPT: LangGraph ainvoke wrapper — except sets
+        # result["workflow_data"]["interview_graph_error"] as canonical inline
+        # error envelope. Audit trail logged. Downstream checks result dict
+        # for the error key, not silent.
         try:
             result = await self._compiled.ainvoke(
                 state,

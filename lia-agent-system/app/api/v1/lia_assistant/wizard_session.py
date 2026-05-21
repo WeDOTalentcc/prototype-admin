@@ -162,6 +162,9 @@ company_id: str = Depends(require_company_id)) -> SessionStateResponse:
 
         completeness = float(calculate_completeness(stage)) if stage else 0.0
     except Exception:
+        # REGRA-4-EXEMPT: progress calc fallback (not LLM I/O). Stage import
+        # failure means we lack the helper to compute completeness — 0.0 is
+        # a sentinel that UI renders as "0% progress" (correct surface).
         completeness = 0.0
     requires_approval = bool(values.get("requires_approval") or values.get("awaiting_approval"))
     conversation = values.get("conversation_messages") or []
