@@ -94,6 +94,27 @@ company_id: str = Depends(require_company_id)):
             twin.id, company_id, idx_exc, exc_info=True,
         )
 
+    # P0-3 chunk 2 audit 2026-05-21: twin creation trail (LGPD Art. 20 — automated decision tool created)
+    try:
+        from app.domains.agent_studio._audit_helper import studio_audit
+        await studio_audit(
+            company_id=company_id,
+            action="studio_twin_create",
+            decision="created",
+            reasoning=[
+                f"Twin name: {body.twin_name}",
+                f"Specialties: {', '.join(body.specialties)}",
+                f"Months indexed: {body.months_back}",
+                f"Decisions indexed: {indexed}",
+                f"Indexing failed: {indexing_failed}",
+            ],
+            actor_user_id=current_user.get("user_id", "system") if isinstance(current_user, dict) else str(getattr(current_user, "id", "")),
+            target_id=str(twin.id),
+            target_type="digital_twin",
+        )
+    except Exception:
+        pass
+
     return {
         "twin_id": str(twin.id),
         "twin_name": twin.twin_name,
@@ -225,6 +246,27 @@ company_id: str = Depends(require_company_id)):
         k=body.k,
         db=db,
     )
+
+    # P0-3 chunk 2 audit 2026-05-21: twin evaluation trail (LGPD Art. 20 — automated decision)
+    try:
+        from app.domains.agent_studio._audit_helper import studio_audit
+        await studio_audit(
+            company_id=company_id,
+            action="studio_twin_evaluate",
+            decision=evaluation.decision,
+            reasoning=[
+                f"Twin ID: {evaluation.twin_id}",
+                f"Score: {evaluation.score}",
+                f"Confidence: {evaluation.confidence}",
+                f"Reasoning excerpt: {(evaluation.reasoning or '')[:200]}",
+            ],
+            target_id=str(evaluation.twin_id),
+            target_type="digital_twin",
+            score=evaluation.score,
+            confidence=evaluation.confidence,
+        )
+    except Exception:
+        pass
 
     return {
         "twin_id": evaluation.twin_id,

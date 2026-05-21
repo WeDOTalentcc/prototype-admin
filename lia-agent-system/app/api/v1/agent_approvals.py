@@ -40,6 +40,21 @@ company_id: str = Depends(require_company_id)):
         )
         await db.commit()
 
+        # P0-3 chunk 2 audit 2026-05-21: approval request trail
+        from app.domains.agent_studio._audit_helper import studio_audit
+        await studio_audit(
+            company_id=current_user.company_id,
+            action="studio_agent_request_approval",
+            decision="requested",
+            reasoning=[
+                f"Approval ID: {approval.id}",
+                f"Agent ID: {agent_id}",
+            ],
+            actor_user_id=str(current_user.id),
+            target_id=str(approval.id),
+            target_type="agent_approval",
+        )
+
         # P2.5a: Notify all admins (non-blocking)
         try:
             from app.services.studio_notification_service import (

@@ -267,6 +267,16 @@ company_id: str = Depends(require_company_id)):
         tool_calls = [a.params.get("tool", "") for a in (output.actions or [])]
 
         _meta = output.metadata or {}
+        # P0-3 chunk 2 audit 2026-05-21
+        from app.domains.agent_studio._audit_helper import studio_audit
+        await studio_audit(
+            company_id=current_user.company_id,
+            action="studio_agent_test",
+            decision="executed",
+            reasoning=[f"Test message: {body.message[:200]}"],
+            actor_user_id=str(current_user.id),
+            target_id=str(agent.id),
+        )
         return TestCustomAgentResponse(
             agent_id=str(agent.id),
             message=body.message,
@@ -475,6 +485,17 @@ company_id: str = Depends(require_company_id)):
         if not listing:
             raise HTTPException(status_code=404, detail="Agent not found")
         await db.commit()
+        # P0-3 chunk 2 audit 2026-05-21: marketplace publish trail
+        from app.domains.agent_studio._audit_helper import studio_audit
+        await studio_audit(
+            company_id=current_user.company_id,
+            action="studio_agent_publish",
+            decision="published",
+            reasoning=[f"Listing {listing.id} published from agent {agent_id}"],
+            actor_user_id=str(current_user.id),
+            target_id=str(listing.id),
+            target_type="marketplace_listing",
+        )
         return MarketplaceListingResponse(**listing.to_dict())
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -525,6 +546,21 @@ company_id: str = Depends(require_company_id)):
             installed_by=str(current_user.id),
         )
         await db.commit()
+        # P0-3 chunk 2 audit 2026-05-21: marketplace install trail
+        from app.domains.agent_studio._audit_helper import studio_audit
+        await studio_audit(
+            company_id=current_user.company_id,
+            action="studio_agent_install",
+            decision="installed",
+            reasoning=[
+                f"Listing ID: {body.listing_id}",
+                f"Installation ID: {installation.id}",
+                f"Installed agent ID: {installation.installed_agent_id}",
+            ],
+            actor_user_id=str(current_user.id),
+            target_id=str(installation.installed_agent_id),
+            target_type="custom_agent",
+        )
         return AgentInstallationResponse(**installation.to_dict())
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -568,6 +604,17 @@ company_id: str = Depends(require_company_id)):
         if not result:
             raise HTTPException(status_code=404, detail="Installation not found")
         await db.commit()
+        # P0-3 chunk 2 audit 2026-05-21: marketplace uninstall trail
+        from app.domains.agent_studio._audit_helper import studio_audit
+        await studio_audit(
+            company_id=current_user.company_id,
+            action="studio_agent_uninstall",
+            decision="uninstalled",
+            reasoning=[f"Installation {installation_id} removed"],
+            actor_user_id=str(current_user.id),
+            target_id=installation_id,
+            target_type="marketplace_installation",
+        )
     except HTTPException:
         raise
     except Exception as e:
@@ -1199,6 +1246,24 @@ Responda APENAS com o JSON, sem texto adicional."""
         # _coalesce protects against the LLM emitting explicit nulls like
         # {"suggested_tools": null} — Pydantic GeneratedAgentConfig also
         # provides a final safety net via its field defaults.
+        # P0-3 chunk 2 audit 2026-05-21: LLM generation trail
+        try:
+            from app.domains.agent_studio._audit_helper import studio_audit
+            await studio_audit(
+                company_id=current_user.company_id,
+                action="studio_agent_generate",
+                decision="generated",
+                reasoning=[
+                    f"Description: {description[:200]}",
+                    f"Suggested name: {config.get('suggested_name', '')[:100]}",
+                    f"Suggested domain: {config.get('suggested_domain', '')}",
+                ],
+                actor_user_id=str(current_user.id),
+                target_id=None,
+                target_type="custom_agent_blueprint",
+            )
+        except Exception:
+            pass
         return GeneratedAgentConfig(
             suggested_name=_coalesce(config.get("suggested_name"), "Novo Agente"),
             suggested_role=_coalesce(config.get("suggested_role"), description[:200]),
@@ -1270,6 +1335,16 @@ company_id: str = Depends(require_company_id)):
             data=clone_data,
         )
         await db.commit()
+        # P0-3 chunk 2 audit 2026-05-21: clone trail
+        from app.domains.agent_studio._audit_helper import studio_audit
+        await studio_audit(
+            company_id=current_user.company_id,
+            action="studio_agent_clone",
+            decision="cloned",
+            reasoning=[f"Cloned from agent {agent_id} as new agent {cloned.id}"],
+            actor_user_id=str(current_user.id),
+            target_id=str(cloned.id),
+        )
         return CustomAgentResponse(**cloned.to_dict())
     except Exception as e:
         await db.rollback()

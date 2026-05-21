@@ -98,6 +98,25 @@ company_id: str = Depends(require_company_id)):
     db.add(agent_template)
     await db.commit()
 
+    # P0-3 chunk 2 audit 2026-05-21: sectoral apply trail
+    try:
+        from app.domains.agent_studio._audit_helper import studio_audit
+        await studio_audit(
+            company_id=current_user.get("company_id", "unknown"),
+            action="studio_sector_apply",
+            decision="applied",
+            reasoning=[
+                f"Sector: {sector}",
+                f"Display name: {template['display_name']}",
+                f"Template ID: {template_id}",
+            ],
+            actor_user_id=current_user.get("user_id", "system"),
+            target_id=template_id,
+            target_type="agent_template",
+        )
+    except Exception:
+        pass
+
     return ApplySectorResponse(
         template_id=template_id,
         name=name,
