@@ -16,7 +16,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.domains.policy.repositories.global_policy_repository import GlobalPolicyRepository
+from app.domains.policy.repositories.global_policy_repository import GlobalPolicyRepository  # DEPRECATED-IMPORT-EXEMPT: V1 API canonical (PlatformPolicy/GlobalPolicy schema — app.domains.policy é canonical, hiring_policy não cobre platform policies)
 from app.models.global_policies import PlatformPolicy
 from app.schemas.global_policies import (
     CategoryCount,

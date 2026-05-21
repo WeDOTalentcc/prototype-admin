@@ -437,7 +437,7 @@ async def lifespan(app: FastAPI):
 
     # Seed PolicyEngine default rules (idempotente — skip-if-exists)
     try:
-        from app.shared.services.policy_engine_service import PolicyEngineService
+        from app.shared.services.policy_engine_service import PolicyEngineService  # DEPRECATED-IMPORT-EXEMPT: Shim canonical em startup boot — PolicyEngineService.load_default_rules() seed idempotente; canonical impl em app.domains.policy.services.policy_engine_service (sem equivalente em hiring_policy)
         _pe_stats = await PolicyEngineService().load_default_rules()
         logger.info(
             f"✅ PolicyEngine rules seeded: "
