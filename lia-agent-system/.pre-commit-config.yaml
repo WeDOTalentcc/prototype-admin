@@ -265,6 +265,13 @@ repos:
         files: ^app/.*\.py$
         pass_filenames: false
 
+      - id: training-data-anonymized
+        name: "T-21 ADR-LGPD-002: training data export DEVE anonymizer (warn-only)"
+        language: system
+        entry: bash -c "python3 scripts/check_training_data_anonymized.py 2>&1; exit 0"
+        files: ^app/domains/analytics/services/training_data_service\.py$
+        pass_filenames: false
+
       - id: audit-log-completeness
         name: "T-20 ADR-035: audit_log demographic proxies (warn-only)"
         language: system
