@@ -24,7 +24,7 @@ import yaml
 from fastapi import APIRouter, Body, Depends, HTTPException
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.auth.dependencies import require_admin
+from app.auth.dependencies import require_admin, require_wedotalent_admin
 from app.auth.models import User
 from app.shared.compliance.audit_service import AuditService
 from app.shared.pii_masking import PII_PATTERNS
@@ -277,7 +277,10 @@ async def list_versions_by_name(
 
 @router.get("/tenant-overrides", response_model=TenantOverrideListResponse)
 async def list_tenant_overrides(
-    current_user: User = Depends(require_admin),
+    # P1-7/E4-prep (2026-05-21): tenant overrides are CROSS-TENANT staff
+    # tooling. Customer-end UserRole.admin no longer has access; only
+    # UserRole.wedotalent_admin can list/read/write/delete YAML overrides.
+    current_user: User = Depends(require_wedotalent_admin),
     company_id: str = Depends(require_company_id),
 ):
     """Lista todos os overrides YAML ativos para o tenant (company_id do JWT).
@@ -309,7 +312,7 @@ async def list_tenant_overrides(
 )
 async def get_tenant_override(
     path: str,
-    current_user: User = Depends(require_admin),
+    current_user: User = Depends(require_wedotalent_admin),
     company_id: str = Depends(require_company_id),
 ):
     """Retorna o conteúdo YAML raw de um override específico."""
@@ -336,23 +339,57 @@ async def get_tenant_override(
 async def put_tenant_override(
     path: str,
     payload: TenantOverridePutRequest = Body(...),
-    current_user: User = Depends(require_admin),
+    # P1-7/E4-prep (2026-05-21): only WeDOTalent staff can write tenant overrides.
+    current_user: User = Depends(require_wedotalent_admin),
     company_id: str = Depends(require_company_id),
 ):
     """Cria ou atualiza override YAML para o tenant.
 
-    Validações canonical:
+    Validações canonical (via :func:`validate_tenant_persona_override`):
       - YAML syntax (yaml.safe_load)
       - metadata.version required (T-05)
+      - Ethics invariants (LGPD / fairness / EU AI Act) — REJEITA 422 se removidos
       - PII scan (warnings — não bloqueia)
-      - Path traversal blocked
+      - Path traversal blocked (em :func:`_resolve_tenant_override_path`)
       - Hot-reload via PromptLoader.invalidate_cache
     """
-    _, version = _validate_yaml_payload(payload.content)
-    warnings = _scan_pii(payload.content)
+    # C3 (audit 2026-05-21): unified validator com ethics-invariants enforcement.
+    # Substitui os antigos ``_validate_yaml_payload`` + ``_scan_pii`` inline.
+    # Mesmo admin WeDOTalent staff não consegue persistir override que apague
+    # blocos de compliance — o gate é fail-closed por design.
+    from app.domains.persona.services.tenant_persona_validator import (
+        validate_tenant_persona_override,
+    )
+    validation = validate_tenant_persona_override(payload.content, path=path)
+    if not validation.is_valid:
+        raise HTTPException(
+            status_code=422,
+            detail={
+                "code": "persona_override_rejected",
+                "message": "Override rejeitado por validador canonical.",
+                "errors": validation.errors,
+                "warnings": validation.warnings,
+            },
+        )
+    version = validation.version or "unknown"
+    warnings = [w.get("message", "") for w in validation.warnings]
 
     file_path = _resolve_tenant_override_path(company_id, path)
     file_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # C4 (audit 2026-05-21): capture before-state para audit diff.
+    # Permite admin WeDOTalent reconstruir history per-tenant (rollback UI).
+    prev_content = ""
+    prev_hash = ""
+    if file_path.exists():
+        try:
+            prev_content = file_path.read_text(encoding="utf-8")
+            import hashlib as _hashlib
+            prev_hash = _hashlib.sha256(prev_content.encode("utf-8")).hexdigest()[:16]
+        except Exception:
+            pass
+    import hashlib as _hashlib
+    new_hash = _hashlib.sha256(payload.content.encode("utf-8")).hexdigest()[:16]
     file_path.write_text(payload.content, encoding="utf-8")
 
     PromptLoader.invalidate_cache(path=path, tenant_id=company_id)
@@ -371,8 +408,13 @@ async def put_tenant_override(
                 f"version={version}",
                 f"size_bytes={len(payload.content.encode(utf-8))}",
                 f"pii_warnings={len(warnings)}",
+                f"prev_hash={prev_hash or new_file}",
+                f"new_hash={new_hash}",
             ],
-            criteria_used=["yaml_syntax", "metadata_version", "pii_scan"],
+            criteria_used=[
+                "yaml_syntax", "metadata_version", "ethics_invariants",
+                "pii_scan",
+            ],
             actor_user_id=str(current_user.id),
             human_review_required=False,
         )
@@ -398,7 +440,7 @@ async def put_tenant_override(
 )
 async def delete_tenant_override(
     path: str,
-    current_user: User = Depends(require_admin),
+    current_user: User = Depends(require_wedotalent_admin),
     company_id: str = Depends(require_company_id),
 ):
     """Remove override (fallback canonical preserved via PromptLoader fail-soft)."""

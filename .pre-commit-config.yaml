@@ -19,3 +19,24 @@ repos:
         stages: [commit-msg]
         pass_filenames: false
         verbose: true
+      - id: lia-field-toggles-sync-warn
+        name: LIA Field Toggles — TS↔Python sync
+        description: |
+          Schema-sync entre DEFAULT_FIELD_TOGGLES (Python) e LIA_FIELD_DEFINITIONS
+          (TypeScript). Audit 2026-05-21 P2-10. Baseline 34/34 in sync — drift
+          aqui é silent + devastating (recruiter configura toggle, backend nao
+          tem row, persistencia vira no-op).
+        entry: python3 lia-agent-system/scripts/check_lia_field_definitions_sync.py
+        language: system
+        pass_filenames: false
+        verbose: true
+      - id: lia-agent-respects-toggles
+        name: Agent respeita lia_field_toggles
+        description: |
+          Anti-regressao P0-1: agentes que injetam company fields em system
+          prompts DEVEM passar pelo helper build_company_agent_context.
+          Baseline=0 — qualquer offender novo eh flag P1 imediato.
+        entry: python3 lia-agent-system/scripts/check_agent_respects_lia_toggles.py
+        language: system
+        pass_filenames: false
+        verbose: true

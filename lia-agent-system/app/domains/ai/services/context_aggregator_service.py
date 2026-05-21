@@ -77,13 +77,32 @@ class AggregatedContext:
     company: CompanyContext
     historical: HistoricalContext
     session: SessionContext
-    
+
     generated_at: datetime = field(default_factory=datetime.utcnow)
-    
+    # P0-1 (audit 2026-05-21): when populated, this string is the canonical
+    # company-context block already filtered by lia_field_toggles + enriched
+    # with lia_instructions. Appended to ``to_prompt_context()`` so wizard
+    # agents respect the recruiter's per-field intent automatically.
+    # Empty string ⇒ legacy unfiltered behavior (back-compat for callers that
+    # do not pass company_id to ``get_full_context``).
+    lia_filtered_prompt: str = ""
+
     def to_prompt_context(self) -> str:
-        """Converte para string formatada para incluir no prompt do LLM."""
+        """Converte para string formatada para incluir no prompt do LLM.
+
+        Bloco "## Contexto da Empresa" inicial é mantido por
+        compatibilidade. Se ``lia_filtered_prompt`` estiver populado (carregado
+        via ``ContextAggregatorService.get_full_context``), ele é APPENDADO
+        ao final como bloco autoritativo. O LLM vê ambos:
+        a versão sumária (legacy) + a versão filtrada por toggles +
+        instructions customizadas do recrutador. Não há conflito — campos
+        que o recrutador desativou simplesmente não aparecem no bloco
+        autoritativo, e o LLM aprende a preferir o autoritativo via
+        wording explícito ("fonte confiável"). Próxima sprint pode remover
+        o bloco legacy quando todos os consumers tiverem migrado.
+        """
         lines = []
-        
+
         lines.append("## Contexto da Empresa")
         lines.append(f"- Nome: {self.company.name}")
         if self.company.industry:
@@ -132,7 +151,17 @@ class AggregatedContext:
         
         if self.session.corrections_made:
             lines.append(f"- Correções feitas: {len(self.session.corrections_made)}")
-        
+
+        # P0-1 append: recruiter-authoritative block built by
+        # LiaFieldConfigService. Empty when caller did not opt in (legacy
+        # behavior) or when company has no profile yet. Separator + header
+        # only emitted when there IS content, so we never leave a hanging
+        # section.
+        if self.lia_filtered_prompt:
+            lines.append("")
+            lines.append("---")
+            lines.append(self.lia_filtered_prompt)
+
         return "\n".join(lines)
 
 
@@ -182,19 +211,42 @@ class ContextAggregatorService:
             stage=stage,
             filled_fields=filled_fields or {}
         )
-        
+
         if filled_fields:
             session_context.current_cargo = filled_fields.get("cargo") or filled_fields.get("title")
             session_context.current_area = filled_fields.get("area") or filled_fields.get("department")
-        
+
+        # P0-1 (audit 2026-05-21): pull the recruiter-authoritative block
+        # (lia_field_toggles + lia_instructions filtered) so wizard agents
+        # automatically respect what the recruiter configured. Failure here
+        # is non-fatal — the helper itself logs and returns "" if anything
+        # goes wrong; we surface that as legacy unfiltered behavior rather
+        # than blowing up the entire wizard session.
+        job_context_for_lia: dict[str, Any] | None = None
+        if filled_fields and (filled_fields.get("cargo") or filled_fields.get("title")):
+            job_context_for_lia = {
+                "title": filled_fields.get("cargo") or filled_fields.get("title"),
+                "department": filled_fields.get("area") or filled_fields.get("department"),
+                "seniority": filled_fields.get("seniority"),
+            }
+        from app.shared.services.lia_agent_context_builder import (
+            build_company_agent_context,
+        )
+        lia_filtered_prompt = await build_company_agent_context(
+            company_id=company_id,
+            db=db,
+            job_context=job_context_for_lia,
+        )
+
         context = AggregatedContext(
             company=company_context,
             historical=historical_context,
-            session=session_context
+            session=session_context,
+            lia_filtered_prompt=lia_filtered_prompt,
         )
-        
+
         self._cache[cache_key] = context
-        
+
         return context
 
     # ADR-001-EXEMPT: cross-domain aggregator that reads from company, departments,

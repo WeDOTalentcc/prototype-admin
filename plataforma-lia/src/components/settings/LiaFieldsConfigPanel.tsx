@@ -19,6 +19,7 @@
 
 import React, { useState, useEffect, useCallback } from "react"
 import { useTranslations } from "next-intl"
+import { useAuth } from "@/contexts/auth-context"
 import {
   Brain,
   Loader2,
@@ -82,6 +83,14 @@ interface TenantOverrideListResponse {
 export function LiaFieldsConfigPanel() {
   const t = useTranslations("settings.liaFields")
   const { companyId, isLoading: isLoadingCompany } = useCompanyId()
+  // E1 (audit 2026-05-21): only WeDOTalent staff (role wedotalent_admin) can
+  // see / edit the raw YAML tenant override tab. Customer-end users — even
+  // their org-level admin — must not have access. This is defense-in-depth:
+  // the backend already enforces the role via require_wedotalent_admin (C2),
+  // but hiding the tab eliminates the UX confusion ("toggle here breaks
+  // everything") and the curiosity-driven escalations.
+  const { user } = useAuth()
+  const canSeeRawYaml = user?.role === "wedotalent_admin"
   const [config, setConfig] = useState<LiaFieldsConfig>(DEFAULT_CONFIG)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -228,10 +237,21 @@ export function LiaFieldsConfigPanel() {
             <Brain className="w-4 h-4 mr-2" />
             {t("tabs.fields", { default: "Campos LIA" })}
           </TabsTrigger>
-          <TabsTrigger value="tenant-override" data-testid="tab-tenant-override">
-            <Code className="w-4 h-4 mr-2" />
-            {t("tabs.tenantOverride", { default: "Tenant Override (YAML)" })}
-          </TabsTrigger>
+          {/*
+            E1 gate: only render the raw-YAML tab for WeDOTalent staff.
+            Backend equivalent gate at app/api/v1/admin_prompts.py uses
+            require_wedotalent_admin — the UI mirrors that posture so the
+            tab is never visible to customer-end roles (admin/recruiter/viewer).
+            When the future admin2.wedotalent.cc UI is built, this entire
+            block migrates there; for now WeDOTalent staff editing in-app
+            is the bridge until that ships.
+          */}
+          {canSeeRawYaml && (
+            <TabsTrigger value="tenant-override" data-testid="tab-tenant-override">
+              <Code className="w-4 h-4 mr-2" />
+              {t("tabs.tenantOverride", { default: "Tenant Override (YAML)" })}
+            </TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="fields" className="space-y-6 mt-4">
@@ -270,9 +290,12 @@ export function LiaFieldsConfigPanel() {
           ))}
         </TabsContent>
 
-        <TabsContent value="tenant-override" className="mt-4">
-          <TenantOverrideYamlEditor />
-        </TabsContent>
+        {/* E1: content rendered only for WeDOTalent staff (same gate as the trigger). */}
+        {canSeeRawYaml && (
+          <TabsContent value="tenant-override" className="mt-4">
+            <TenantOverrideYamlEditor />
+          </TabsContent>
+        )}
       </Tabs>
     </div>
   )
