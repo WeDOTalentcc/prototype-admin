@@ -30,8 +30,9 @@ class OpinionsRepository:
     # ── Read ───────────────────────────────────────────────────────────────
 
     async def get_current_by_candidate(
-        self, candidate_id: UUID, company_id: UUID
+        self, candidate_id: UUID, company_id: UUID | str
     ) -> list[LiaOpinion]:
+        self._require_company_id(str(company_id))
         result = await self.db.execute(
             select(LiaOpinion).where(
                 and_(
@@ -44,8 +45,9 @@ class OpinionsRepository:
         return list(result.scalars().all())
 
     async def get_history_by_candidate(
-        self, candidate_id: UUID, company_id: UUID
+        self, candidate_id: UUID, company_id: UUID | str
     ) -> list[LiaOpinion]:
+        self._require_company_id(str(company_id))
         result = await self.db.execute(
             select(LiaOpinion).where(
                 and_(
@@ -59,13 +61,14 @@ class OpinionsRepository:
     async def list_with_filters(
         self,
         candidate_id: UUID,
-        company_id: UUID,
+        company_id: UUID | str,
         opinion_type: str | None = None,
         job_vacancy_id: UUID | None = None,
         include_history: bool = False,
         page: int = 1,
         page_size: int = 20,
     ) -> tuple[list[LiaOpinion], int]:
+        self._require_company_id(str(company_id))
         conditions = [
             LiaOpinion.candidate_id == candidate_id,
             LiaOpinion.company_id == company_id,
@@ -96,8 +99,9 @@ class OpinionsRepository:
         return list(result.scalars().all()), total
 
     async def get_by_id(
-        self, opinion_id: UUID, company_id: UUID
+        self, opinion_id: UUID, company_id: UUID | str
     ) -> LiaOpinion | None:
+        self._require_company_id(str(company_id))
         result = await self.db.execute(
             select(LiaOpinion).where(
                 and_(
@@ -115,8 +119,9 @@ class OpinionsRepository:
         candidate_id: UUID,
         job_vacancy_id: UUID,
         opinion_type: str,
-        company_id: UUID,
+        company_id: UUID | str,
     ) -> int | None:
+        self._require_company_id(str(company_id))
         result = await self.db.execute(
             select(func.max(LiaOpinion.version)).where(
                 and_(
@@ -132,8 +137,9 @@ class OpinionsRepository:
     async def get_max_version_general(
         self,
         candidate_id: UUID,
-        company_id: UUID,
+        company_id: UUID | str,
     ) -> int | None:
+        self._require_company_id(str(company_id))
         result = await self.db.execute(
             select(func.max(LiaOpinion.version)).where(
                 and_(
@@ -152,8 +158,9 @@ class OpinionsRepository:
         candidate_id: UUID,
         job_vacancy_id: UUID,
         opinion_type: str,
-        company_id: UUID,
+        company_id: UUID | str,
     ) -> None:
+        self._require_company_id(str(company_id))
         await self.db.execute(
             update(LiaOpinion)
             .where(
@@ -171,8 +178,9 @@ class OpinionsRepository:
     async def mark_general_opinions_non_current(
         self,
         candidate_id: UUID,
-        company_id: UUID,
+        company_id: UUID | str,
     ) -> None:
+        self._require_company_id(str(company_id))
         await self.db.execute(
             update(LiaOpinion)
             .where(
@@ -211,13 +219,14 @@ class OpinionsRepository:
     async def get_latest_for_candidate_company(
         self,
         candidate_id,
-        company_id: str,
+        company_id: str | UUID,
     ) -> "LiaOpinion | None":
         """P1-LiaRepo: most recent LiaOpinion for (candidate, company).
 
         Used by _record_bigfive_hire to read ocean_traits without inline
         SQL in the service (ADR-001 compliance).
         """
+        self._require_company_id(str(company_id))
         result = await self.db.execute(
             select(LiaOpinion)
             .where(
@@ -235,13 +244,14 @@ class OpinionsRepository:
         self,
         candidate_id,
         vacancy_id,
-        company_id: str,
+        company_id: str | UUID,
     ) -> "LiaOpinion | None":
         """P1-LiaRepo: most recent is_current LiaOpinion for (candidate,
         vacancy, company).
 
         Used by upsert_ocean_opinion and _persist_lia_opinion_with_ocean.
         """
+        self._require_company_id(str(company_id))
         result = await self.db.execute(
             select(LiaOpinion)
             .where(
@@ -261,7 +271,7 @@ class OpinionsRepository:
         self,
         candidate_id,
         vacancy_id,
-        company_id: str,
+        company_id: str | UUID,
         ocean_traits: dict,
         overall_wsi: float,
         recommendation: str,
@@ -278,6 +288,7 @@ class OpinionsRepository:
         Priority: cv_analysis(0) < text_screening(1) < full_interview(2).
         A full_interview opinion is never downgraded to text_screening.
         """
+        self._require_company_id(str(company_id))
         from datetime import datetime as _dt
 
         existing = await self.get_latest_for_candidate_vacancy(
