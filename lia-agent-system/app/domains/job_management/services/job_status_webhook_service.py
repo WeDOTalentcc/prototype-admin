@@ -66,6 +66,34 @@ class JobStatusWebhookService:
         Returns:
             Result of webhook dispatch
         """
+        # T-10 Fase 4 WIRE canonical (ADR-032): CANCELED outcome learning loop.
+        # Centralizado AQUI (1 site) vs N call sites em bulk_archive/cancel/lifecycle.
+        # Status PT-BR canonical: "Arquivada"/"Cancelada"/"Encerrada" → CANCELED.
+        # "Concluída" → FILLED já wire em mark_filled (Phase 1) — não duplicar.
+        # Fail-soft: helper canonical wire_feedback_outcome nunca raises.
+        _CANCELED_STATUSES = {"arquivada", "cancelada", "encerrada"}
+        if new_status and new_status.lower() in _CANCELED_STATUSES:
+            try:
+                from app.shared.learning.feedback_writer import wire_feedback_outcome
+                await wire_feedback_outcome(
+                    db=db,
+                    domain="job_management",
+                    outcome_type="CANCELED",
+                    company_id=company_id,
+                    job_id=job_id,
+                    context={
+                        "old_status": old_status,
+                        "new_status": new_status,
+                        "changed_by": changed_by,
+                        "wire_source": "job_status_webhook_service.dispatch_status_change",
+                    },
+                )
+            except Exception as _wire_exc:
+                logger.warning(
+                    "[dispatch_status_change] T-10 Fase 4 wire failed (non-blocking): %s",
+                    str(_wire_exc)[:200],
+                )
+
         try:
             webhooks = await self._get_active_webhooks(
                 company_id=company_id,
