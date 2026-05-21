@@ -6,7 +6,7 @@ name: LIA Field Toggles Sensors
 # Sensores:
 #   - check_lia_field_definitions_sync.py — TS↔Python schema-sync (BLOCKING, baseline 0)
 #   - check_agent_respects_lia_toggles.py — agentes leem profile.<field> sem
-#     o helper canonical build_company_agent_context (WARN-ONLY, baseline 0)
+#     o helper canonical build_company_agent_context (BLOCKING, baseline 0)
 #   - tests/contract/test_offer_approval_gate.py
 #   - tests/contract/test_wsi_effectiveness_gate.py
 #   - tests/contract/test_self_scheduling_gate.py
@@ -14,12 +14,14 @@ name: LIA Field Toggles Sensors
 #
 # Baseline 2026-05-21:
 #   schema-sync: 34/34 in sync (BLOCKING — qualquer drift falha o CI)
-#   agent-respect: 0 offenders (WARN-ONLY enquanto heurística matura)
+#   agent-respect: 0 offenders (BLOCKING desde 2026-05-21 — Strict ratchet locked)
 #   contract tests: 24/24 passing
 #
-# Promover agent-respect para BLOCKING quando:
-#   1. heurística capturar dict-access patterns ALÉM de attribute access, E
-#   2. 2 sprints passarem sem novo offender ser introduzido.
+# Promoção BLOCKING aplicada em 2026-05-21 — step "Strict baseline=0"
+# falha o build em qualquer novo offender (allowlist explícita em
+# scripts/check_agent_respects_lia_toggles.py com justification).
+# Step prévio "Anti-regressão P0-1" segue rodando para gerar relatório
+# legível mesmo quando o strict step passa.
 
 on:
   push:
@@ -65,7 +67,7 @@ jobs:
           python3 scripts/check_lia_field_definitions_sync.py
 
   agent-respects-toggles:
-    name: Agent respeita lia_field_toggles (warn-only)
+    name: Agent respeita lia_field_toggles (BLOCKING via strict step)
     runs-on: ubuntu-latest
     defaults:
       run:

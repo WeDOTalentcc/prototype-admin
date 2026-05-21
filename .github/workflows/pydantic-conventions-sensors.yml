@@ -7,16 +7,13 @@ name: Pydantic Conventions + Smoke Test Sensors
 #   - check_pydantic_conventions.py R1+R2+R3+R4 (AST checker, ~1s)
 #   - test_endpoint_smoke.py (contract test, ~34s, requires uvicorn local)
 #
-# Baseline 2026-05-20 (pós Sprint 0 refinement):
-#   R1: 694 violations (legacy, migration gradual Sprint 4+)
-#   R2: 139 violations (request body schemas com company_id, Sprint 4+)
-#   R3: 0 violations ✅ (mantém em 0 — sensor blocking)
-#   R4: 29 violations (anti-pattern x_company_id Header, Sprint 1 refactor)
-#   Smoke test: 1789/1798 passed (99.5%, 9 bugs em backlog)
+# Histórico de baseline:
+#   2026-05-20 (Sprint 0):  R1=694  R2=139  R3=0    R4=29   (warn-only)
+#   2026-05-21 (Wave 3):    R1=0    R2=0    R3=0    R4=0    (BLOCKING ✅)
 #
-# Modo atual: WARN-ONLY. Promover pra BLOCKING quando:
-#   R4 → 0 (após Sprint 1 #40 refactor — REGRA 6 CLAUDE.md)
-#   Smoke test pass rate → 100% (após Sprint 3 DB fixes)
+# Promovido a BLOCKING em 2026-05-21 após Wave 3 atingir baseline 0
+# em todas as 4 regras (commit C25 + C29 + C31 + Sprint 1 #40 refactor).
+# Daqui pra frente: qualquer nova violação bloqueia o CI.
 
 on:
   push:
@@ -33,7 +30,7 @@ concurrency:
 
 jobs:
   pydantic-conventions:
-    name: Pydantic Conventions R1+R2+R3+R4 (AST checker, warn-only)
+    name: Pydantic Conventions R1+R2+R3+R4 (AST checker, BLOCKING)
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -45,21 +42,12 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: R1+R2+R3+R4 — Pydantic Conventions canonical
+      - name: R1+R2+R3+R4 — Pydantic Conventions canonical (BLOCKING, baseline 0)
         run: |
-          # Warn-only inicialmente (baseline: R1=694, R2=139, R3=0, R4=29).
+          # Promoted to BLOCKING after Wave 3 achieved baseline 0 (2026-05-21).
+          # Trajetória: R1 694→0, R2 139→0, R3 0→0, R4 29→0.
+          # QUALQUER nova violação bloqueia o CI. Para bypass legítimo em
+          # branch stale: edite o script para adicionar SKIP_R{1,2,3,4}
+          # entry com justification comment (audit trace anchor obrigatório).
           # Output otimizado pra consumo de LLM (mensagens com fix sugerido em PT-BR).
-          # Promover pra blocking quando R4 → 0 (após Sprint 1).
-          python3 scripts/check_pydantic_conventions.py app/ || true
-
-      - name: R3 specifically (blocking)
-        run: |
-          # R3 (UUID+Path pattern combo) já está em 0 violations.
-          # Falha hard se alguém reintroduzir o anti-pattern.
-          OUTPUT=$(python3 scripts/check_pydantic_conventions.py app/ 2>&1)
-          if echo "$OUTPUT" | grep -q "R3 violation"; then
-            echo "❌ R3 regression detected (UUID+Path pattern combo)"
-            echo "$OUTPUT" | grep -A 10 "R3 violation" | head -20
-            exit 1
-          fi
-          echo "✅ R3 maintained at 0 violations"
+          python3 scripts/check_pydantic_conventions.py app/
