@@ -135,6 +135,7 @@ from lia_models.admin_settings import (
     NOTIFICATION_EVENT_TYPES
 )
 from lia_models.company_training_consent import CompanyTrainingConsent  # T-11 B.1.2 canonical (ADR-RLHF-001)
+from lia_models.bandit_posterior import BanditPosterior  # T-19 Fase 2 canonical (ADR-AB-001)
 from lia_models.communication_settings import (
     CommunicationSettings,
     LGPDConsent,
@@ -525,6 +526,7 @@ __all__ = [
     "CommunicationSettings",
     "LGPDConsent",
     "CompanyTrainingConsent",  # T-11 B.1.2 canonical
+    "BanditPosterior",  # T-19 Fase 2 canonical
     "ConsentType",
     "DEFAULT_COMMUNICATION_SETTINGS",
     "Subscription",

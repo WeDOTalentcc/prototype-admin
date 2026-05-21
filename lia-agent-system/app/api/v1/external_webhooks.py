@@ -263,17 +263,21 @@ async def process_ats_candidate_created(platform: str, payload: dict[str, Any]):
 
 
 async def process_ats_candidate_hired(platform: str, payload: dict[str, Any]):
-    """Handle candidate hired in ATS."""
+    """Handle candidate hired in ATS.
+
+    T-10 Fase 5: wire HIRED_EXTERNAL outcome canonical (ADR-032).
+    Pipeline canonical pós-Fase 5: 6/6 outcomes wired (100% coverage).
+    """
     try:
         from app.domains.analytics.services.activity_service import activity_service
-        
+
         candidate_id = (
-            payload.get("ats_candidate_id") or 
+            payload.get("ats_candidate_id") or
             payload.get("candidate_id")
         )
-        
+
         logger.info(f"[ATS SYNC] Candidate hired in {platform}: {candidate_id}")
-        
+
         await activity_service.log_activity(
             action="candidate_hired_ats",
             entity_type="candidate",
@@ -283,20 +287,94 @@ async def process_ats_candidate_hired(platform: str, payload: dict[str, Any]):
                 "ats_platform": platform
             }
         )
+
+        # T-10 Fase 5 WIRE canonical (ADR-032): HIRED_EXTERNAL outcome learning loop.
+        # Fail-soft via helper canonical (wire_feedback_outcome nunca raises).
+        # Resolves company_id + job_id best-effort from payload — skip se ausentes.
+        _company_id = payload.get("company_id") or payload.get("tenant_id")
+        _job_id = (
+            payload.get("vacancy_id")
+            or payload.get("job_id")
+            or payload.get("position_id")
+        )
+        if _company_id and _job_id:
+            try:
+                from app.shared.learning.feedback_writer import wire_feedback_outcome
+                from lia_config.database import AsyncSessionLocal
+
+                async with AsyncSessionLocal() as _db:
+                    await wire_feedback_outcome(
+                        db=_db,
+                        domain="ats_integration",
+                        outcome_type="HIRED_EXTERNAL",
+                        company_id=str(_company_id),
+                        job_id=str(_job_id),
+                        context={
+                            "ats_platform": platform,
+                            "ats_candidate_id": candidate_id,
+                            "wire_source": "external_webhooks.process_ats_candidate_hired",
+                        },
+                    )
+            except Exception as _wire_exc:
+                logger.warning(
+                    "[ATS SYNC T-10 Fase 5] wire_feedback_outcome failed (non-blocking): %s",
+                    str(_wire_exc)[:200],
+                )
+        else:
+            logger.debug(
+                "[ATS SYNC T-10 Fase 5] skip wire — missing company_id (%s) or job_id (%s)",
+                _company_id, _job_id,
+            )
     except Exception as e:
         logger.error(f"❌ Error processing ATS candidate hired: {e}", exc_info=True)
 
 
 async def process_ats_candidate_rejected(platform: str, payload: dict[str, Any]):
-    """Handle candidate rejected in ATS."""
+    """Handle candidate rejected in ATS.
+
+    T-10 Fase 5 WIRE canonical (ADR-032): REJECTED outcome learning loop.
+    Pattern alinhado com process_ats_candidate_hired wire (same fail-soft logic).
+    """
     try:
         candidate_id = (
-            payload.get("ats_candidate_id") or 
+            payload.get("ats_candidate_id") or
             payload.get("candidate_id")
         )
-        payload.get("rejection_reason") or payload.get("reason")
-        
+        rejection_reason = payload.get("rejection_reason") or payload.get("reason")
+
         logger.info(f"[ATS SYNC] Candidate rejected in {platform}: {candidate_id}")
+
+        # T-10 Fase 5 WIRE canonical: REJECTED outcome via ats_integration domain.
+        _company_id = payload.get("company_id") or payload.get("tenant_id")
+        _job_id = (
+            payload.get("vacancy_id")
+            or payload.get("job_id")
+            or payload.get("position_id")
+        )
+        if _company_id and _job_id:
+            try:
+                from app.shared.learning.feedback_writer import wire_feedback_outcome
+                from lia_config.database import AsyncSessionLocal
+
+                async with AsyncSessionLocal() as _db:
+                    await wire_feedback_outcome(
+                        db=_db,
+                        domain="ats_integration",
+                        outcome_type="REJECTED",
+                        company_id=str(_company_id),
+                        job_id=str(_job_id),
+                        context={
+                            "ats_platform": platform,
+                            "ats_candidate_id": candidate_id,
+                            "rejection_reason": rejection_reason,
+                            "wire_source": "external_webhooks.process_ats_candidate_rejected",
+                        },
+                    )
+            except Exception as _wire_exc:
+                logger.warning(
+                    "[ATS SYNC T-10 Fase 5] wire_feedback_outcome failed (non-blocking): %s",
+                    str(_wire_exc)[:200],
+                )
     except Exception as e:
         logger.error(f"❌ Error processing ATS candidate rejected: {e}", exc_info=True)
 

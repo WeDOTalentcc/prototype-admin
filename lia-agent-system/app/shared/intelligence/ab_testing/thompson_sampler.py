@@ -134,3 +134,123 @@ class ThompsonSampler:
             arm: {"alpha": alpha, "beta": beta, "expected": alpha / (alpha + beta)}
             for arm, (alpha, beta) in self._posteriors.items()
         }
+
+    # ------------------------------------------------------------------
+    # T-19 Fase 2 DB PERSISTENCE canonical (ADR-AB-001)
+    # ------------------------------------------------------------------
+
+    async def load_from_db(
+        self,
+        test_name: str,
+        db,
+        company_id=None,
+    ) -> int:
+        """Populate posteriors from DB (BanditPosterior table).
+
+        Args:
+            test_name: experiment identifier canonical
+            db: AsyncSession from caller
+            company_id: None for global, UUID/str per-tenant
+
+        Returns:
+            Number of posteriors loaded (0 if test_name não existe em DB).
+
+        Pattern canonical: lazy import BanditPosteriorRepository (avoid circular).
+        """
+        try:
+            from app.shared.intelligence.ab_testing.bandit_posterior_repository import (
+                BanditPosteriorRepository,
+            )
+        except ImportError:
+            # Repository may not exist em early sprints — fail-soft
+            return 0
+
+        repo = BanditPosteriorRepository(db)
+        records = await repo.get_all_for_test(test_name, company_id=company_id)
+        for r in records:
+            self._posteriors[r.arm] = (float(r.alpha), float(r.beta))
+        return len(records)
+
+    async def save_to_db(
+        self,
+        test_name: str,
+        db,
+        company_id=None,
+    ) -> int:
+        """UPSERT posteriors para DB (canonical persistence).
+
+        Args:
+            test_name: experiment identifier
+            db: AsyncSession from caller
+            company_id: None for global, UUID/str per-tenant
+
+        Returns:
+            Number of posteriors persisted.
+
+        Pattern canonical:
+        - UPSERT via BanditPosteriorRepository (1 row per arm)
+        - n_observations approximated via (alpha + beta - 2) since prior is (1,1)
+        - Caller commits transaction (repo flushes, não commits)
+        """
+        try:
+            from app.shared.intelligence.ab_testing.bandit_posterior_repository import (
+                BanditPosteriorRepository,
+            )
+        except ImportError:
+            return 0
+
+        repo = BanditPosteriorRepository(db)
+        count = 0
+        for arm, (alpha, beta) in self._posteriors.items():
+            # n_observations = total samples (subtract Beta(1,1) prior)
+            n_obs = max(0, int(round(alpha + beta - 2.0)))
+            await repo.upsert_posterior(
+                test_name=test_name,
+                arm=arm,
+                alpha=alpha,
+                beta=beta,
+                company_id=company_id,
+                n_observations=n_obs,
+            )
+            count += 1
+        return count
+
+    async def increment_arm_and_save(
+        self,
+        test_name: str,
+        arm: str,
+        success: bool,
+        db,
+        company_id=None,
+    ) -> None:
+        """Convenience: increment posterior + persist atomically.
+
+        Pattern canonical canonical pra live bandit updates:
+        - Load existing posterior (or initialize Beta(1,1))
+        - Increment alpha (success) or beta (failure)
+        - UPSERT canonical
+        - Update in-memory state também
+        """
+        try:
+            from app.shared.intelligence.ab_testing.bandit_posterior_repository import (
+                BanditPosteriorRepository,
+            )
+        except ImportError:
+            # Fail-soft: update in-memory only
+            alpha, beta = self._posteriors.get(arm, (1.0, 1.0))
+            if success:
+                alpha += 1.0
+            else:
+                beta += 1.0
+            self._posteriors[arm] = (alpha, beta)
+            return
+
+        repo = BanditPosteriorRepository(db)
+        record = await repo.increment_arm(
+            test_name=test_name,
+            arm=arm,
+            success=success,
+            company_id=company_id,
+        )
+        # Sync in-memory state com DB ground truth
+        self._posteriors[arm] = (float(record.alpha), float(record.beta))
