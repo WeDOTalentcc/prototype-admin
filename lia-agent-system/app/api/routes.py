@@ -1,4 +1,5 @@
 from app.api.v1 import admin_persona
+from app.api.v1 import company_ai_persona
 """
 LIA Route Registry — all API routers registered here.
 Called from app/main.py via register_all_routes(app).
@@ -606,6 +607,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(admin_token_budget.router, prefix="/api/v1", tags=["admin-token-budget"])
     app.include_router(admin_prompts.router, prefix="/api/v1", tags=["admin-prompts"])
     app.include_router(admin_persona.router, prefix="/api/v1", tags=["admin-persona"])
+    app.include_router(company_ai_persona.router, prefix="/api/v1", tags=["company-ai-persona"])
     app.include_router(admin_cb_router, prefix="/api/v1")
     app.include_router(admin_agents_router, prefix="/api/v1")
     app.include_router(admin_external_router, prefix="/api/v1", tags=["admin-external"])
