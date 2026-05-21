@@ -723,6 +723,7 @@ from lia_models.ai_consumption import AiConsumption, AiCreditsBalance
 from lia_models.bias_audit_snapshot import BiasAuditSnapshot
 from lia_models.bigfive_department_profile import BigFiveDepartmentProfile
 from lia_models.client_account import ClientAccount, ClientStatus
+from lia_models.eligibility_question_template import EligibilityQuestionTemplate
 from lia_models.client_user import ClientUser, ClientUserRole, ClientUserStatus
 from lia_models.communication_matrix import CommunicationMatrixEntry, ModuleType, RecipientType, ChannelType
 from lia_models.company_benefit import CompanyBenefit

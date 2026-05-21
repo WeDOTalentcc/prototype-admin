@@ -138,6 +138,7 @@ from app.api.v1 import (
     lia_assistant_vacancy,
     lia_assistant_wizard_stages,
     lia_field_toggles,
+    eligibility_question_templates,
     lia_profile_analysis,
     merge_webhooks,
     microsoft_graph,
@@ -395,6 +396,7 @@ def register_all_routes(app: FastAPI) -> None:
     app.include_router(company_approvers.router, prefix="/api/v1", tags=["company"])
     app.include_router(company_users.router, prefix="/api/v1", tags=["company"])
     app.include_router(lia_field_toggles.router, prefix="/api/v1", tags=["field-toggles"])
+    app.include_router(eligibility_question_templates.router, prefix="/api/v1", tags=["eligibility-question-templates"])
     app.include_router(company_culture.router, prefix="/api/v1", tags=["company-culture"])
     # T2/#994 — legacy ``/company/{enrich,auto-enrich,profile/{id}/generate-evp,
     # analyze-culture}`` routes were relocated from ``company.py`` into
