@@ -94,6 +94,24 @@ class FeedbackRepository:
         min_response_length: int,
     ) -> list[InteractionFeedback]:
         company_id = self._require_company_id(company_id)
+
+        # T-11 B.1.3 CONSENT GATE canonical (ADR-RLHF-001 + ADR-LGPD-002):
+        # Fail-CLOSED — company DEVE ter training_data consent ativo antes
+        # de qualquer query de feedback para export pipeline.
+        # Default = False (LGPD Art. 7: consent must be explicit).
+        from app.domains.lgpd.repositories.company_training_consent_repository import (
+            CompanyTrainingConsentRepository,
+        )
+        consent_repo = CompanyTrainingConsentRepository(self.db)
+        if not await consent_repo.is_active(company_id):
+            import logging as _t11_logging
+            _t11_logging.getLogger(__name__).info(
+                "[FeedbackRepository T-11 B.1.3] CONSENT GATE blocked: "
+                "company_id=%s no active training_data consent — returning [] empty",
+                company_id,
+            )
+            return []
+
         base_conditions = [
             InteractionFeedback.company_id == company_id,
             InteractionFeedback.user_message.isnot(None),
