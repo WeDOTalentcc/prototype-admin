@@ -5,6 +5,22 @@ const WORKOS_SESSION_URL = '/api/auth/workos/session'
 
 export type AuthMethod = 'jwt' | 'sso' | 'dev-auto-login'
 
+/**
+ * WT-2022 P0.RBAC (registrado 2026-05-21):
+ *
+ * `User.role` aqui é a TAXONOMIA CANONICAL de autenticação — vem do JWT/backend.
+ * Valores: `'admin' | 'recruiter' | 'viewer' | 'wedotalent_admin'`.
+ *
+ * É o que `useAuth()` expõe pro app inteiro e o que TODOS os gates de UI
+ * devem consumir (`user?.role === 'wedotalent_admin'` etc.). C1 hotfix
+ * (commit ed25753c4) adicionou `wedotalent_admin` para staff WeDOTalent
+ * que edita tenant_overrides via admin2.wedotalent.cc.
+ *
+ * NÃO confundir com `UserRole` em `src/utils/permissions.ts` /
+ * `src/lib/permissions.ts` — esses são taxonomias LEGADAS de
+ * client-side RBAC, sem consumers externos atualmente. Sistemas paralelos
+ * com semantics diferentes; ver headers desses arquivos para detalhes.
+ */
 export interface User {
   id: string
   email: string

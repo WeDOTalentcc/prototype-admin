@@ -1,3 +1,25 @@
+/**
+ * WT-2022 P0.RBAC (registrado 2026-05-21) — escopo DESTE módulo:
+ *
+ * Este `UserRole` é uma TAXONOMIA DE PERMISSÕES LOCAL ao client-side
+ * PermissionManager (RBAC role-based access control + LIA_ACTIONS_BY_ROLE).
+ * Os 5 valores (`admin | manager | senior_recruiter | recruiter | intern`)
+ * descrevem NÍVEIS DE PERMISSÃO de UI/cliente — NÃO são roles canonical
+ * de autenticação.
+ *
+ * NÃO CONFUNDIR com `User.role` canonical em `src/services/auth-service.ts`:
+ *   - `auth-service.ts` User.role = `'admin' | 'recruiter' | 'viewer' | 'wedotalent_admin'`
+ *     → vem do JWT/backend, é authority. Use para gates de auth no client.
+ *
+ * Status atual deste módulo (2026-05-21): SEM CONSUMERS EXTERNOS.
+ * Apenas `src/utils/permissions.test.ts` (próprio test) e
+ * `src/lib/permissions.ts` (re-export do tipo) referenciam este arquivo.
+ *
+ * Mantido por enquanto (não-deletar sem autorização Paulo). Roadmap:
+ * decidir entre (a) consolidar com `lib/permissions.ts` em um único
+ * RBAC canonical, ou (b) deletar se PermissionManager nunca for
+ * adotado pelo client real.
+ */
 export type UserRole = 'admin' | 'manager' | 'senior_recruiter' | 'recruiter' | 'intern'
 
 export interface User {

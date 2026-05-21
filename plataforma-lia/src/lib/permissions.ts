@@ -1,3 +1,20 @@
+/**
+ * WT-2022 P0.RBAC (registrado 2026-05-21) — escopo DESTE módulo:
+ *
+ * `PERMISSION_CATALOG` + helpers (`canPerform`, `isAdmin`,
+ * `isManagerOrAbove`, etc.) — RBAC permission catalog client-side com
+ * enforcement metadata (server | client-only | both).
+ *
+ * NÃO CONFUNDIR com `User.role` canonical em `src/services/auth-service.ts`:
+ *   - `auth-service.ts` User.role = `'admin' | 'recruiter' | 'viewer' | 'wedotalent_admin'`
+ *     (authority canonical do JWT/backend).
+ *   - `lib/permissions.ts` UserRole (re-export do `utils/permissions.ts`) =
+ *     `'admin' | 'manager' | 'senior_recruiter' | 'recruiter' | 'intern'`
+ *     (níveis de permissão UI; legado RBAC).
+ *
+ * Status (2026-05-21): SEM CONSUMERS EXTERNOS além do próprio módulo.
+ * Não deletar sem autorização Paulo (roadmap consolidação RBAC pendente).
+ */
 import type { UserRole } from '@/utils/permissions'
 
 export type PermissionAction = 'read' | 'write' | 'delete' | 'execute' | '*'
