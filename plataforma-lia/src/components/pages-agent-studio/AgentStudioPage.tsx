@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { TwinsList, EvaluateWithTwinModal } from "@/components/pages-agent-studio/DigitalTwinComponents"
+import { TwinsList, EvaluateWithTwinModal, CreateDigitalTwinModal } from "@/components/pages-agent-studio/DigitalTwinComponents"
 import MultiStrategySearchPanel from "@/components/pages-agent-studio/MultiStrategySearchPanel"
 import CustomAgentsTab from "@/components/pages-agent-studio/CustomAgentsTab"
 import { TemplateGallery, AgentCard as CustomAgentCard, AgentCardSkeleton, AgentDetailsPanel, DeployDialog, ConversationalCreator, TestDebugPanel, ApprovalsList } from "@/components/pages-agent-studio/custom-agents"
@@ -95,6 +95,9 @@ export default function AgentStudioPage({
   const [isLoading, setIsLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [evaluatingTwinId, setEvaluatingTwinId] = useState<string | null>(null)
+  // P0-6 audit 2026-05-21: CreateDigitalTwinModal estava orfão (não montada). Wiring canonical.
+  const [showCreateTwinModal, setShowCreateTwinModal] = useState(false)
+  const [twinsRefreshKey, setTwinsRefreshKey] = useState(0)
   const [deployAgent, setDeployAgent] = useState<CustomAgent | null>(null)
   const [testAgent, setTestAgent] = useState<CustomAgent | null>(null)
   const [detailsAgent, setDetailsAgent] = useState<CustomAgent | null>(null)
@@ -578,7 +581,7 @@ export default function AgentStudioPage({
               title={t("studio.twins.cloneReasoning")}
               subtitle={t("studio.twins.cloneDesc")}
             />
-            <TwinsList onEvaluate={(id) => setEvaluatingTwinId(id)} />
+            <TwinsList onEvaluate={(id) => setEvaluatingTwinId(id)} onCreateTwin={() => setShowCreateTwinModal(true)} refreshKey={twinsRefreshKey} />
           </div>
         )}
 
@@ -602,6 +605,13 @@ export default function AgentStudioPage({
           onClose={() => setEvaluatingTwinId(null)}
         />
       )}
+
+      {/* P0-6 audit 2026-05-21: CreateDigitalTwinModal wired canonical (estava orfão). */}
+      <CreateDigitalTwinModal
+        isOpen={showCreateTwinModal}
+        onClose={() => setShowCreateTwinModal(false)}
+        onCreated={() => { setShowCreateTwinModal(false); setTwinsRefreshKey((k) => k + 1) }}
+      />
 
       {showCreateModal && (
         <CreateAgentModal

@@ -16,7 +16,7 @@ from typing import Optional
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
 
-router = APIRouter(prefix="/api/v1/sourcing", tags=["Multi-Strategy Search"])
+router = APIRouter(prefix="/sourcing", tags=["Multi-Strategy Search"])
 
 
 class MultiStrategyRequest(WeDoBaseModel):

@@ -193,7 +193,8 @@ export default function MultiStrategySearchPanel({
               {t('inMs', { ms: result.elapsed_ms })}
             </span>
           </div>
-          {selectedIds.size > 0 && (
+          {/* P0-7 audit 2026-05-21: hide bulk-action buttons quando handlers não estão wired (era ghost UI). Wave 3 vai criar destination pickers (job/pool/list) e re-habilitar. */}
+          {selectedIds.size > 0 && (onAddToJob || onAddToPool || onAddToList) && (
             <div className="flex items-center gap-2">
               <span className={textStyles.caption}>{t('selected', { count: selectedIds.size })}</span>
               <Button className={buttonStyles.outline} onClick={() => { if (onAddToJob) onAddToJob(Array.from(selectedIds),"") }}>

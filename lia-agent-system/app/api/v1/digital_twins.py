@@ -15,7 +15,7 @@ from typing import Optional
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
 
-router = APIRouter(prefix="/api/v1/digital-twins", tags=["Digital Twins"])
+router = APIRouter(prefix="/digital-twins", tags=["Digital Twins"])
 
 
 class CreateTwinRequest(WeDoBaseModel):
