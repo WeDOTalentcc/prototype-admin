@@ -71,6 +71,81 @@ def _get_canonical_glossary_block() -> str:
 
 _CANONICAL_GLOSSARY_BLOCK = _get_canonical_glossary_block()
 
+
+def _append_ai_persona_override(
+    sections: list[str], ai_persona: dict[str, str],
+) -> None:
+    """Append per-tenant persona override sections to ``sections``.
+
+    Append-only — NEVER mutates the canonical persona base. Two possible
+    sections (each conditional on the field being different from canonical
+    default):
+
+    - **Override de Persona**: instructs the LLM to use the tenant-chosen
+      name when introducing itself, overriding the base which references
+      "LIA". The base remains visible for context but the override takes
+      precedence (LLM instruction prompt priority).
+    - **Tom de Voz Customizado**: appends the textual tone instruction
+      mapped from :data:`TONE_INSTRUCTIONS`.
+
+    Fail-safe on garbage input:
+    - Invalid tone (not in canonical enum) → skip silently (log debug),
+      better LLM with no custom tone than crash.
+    - Missing dict field → fall back to canonical default for that field.
+    - ``ai_persona=None`` / empty dict → caller should not have called us;
+      no-op.
+    """
+    if not ai_persona:
+        return
+    # Local import keeps this builder usable even if persona service has
+    # transient issues (rare circular-import scenarios with shared services).
+    try:
+        from app.domains.persona.services.ai_persona_validator import (
+            DEFAULT_AI_NAME,
+            DEFAULT_AI_TONE,
+            TONE_INSTRUCTIONS,
+        )
+    except Exception as exc:  # noqa: BLE001
+        logger.debug(
+            "[SystemPromptBuilder] ai_persona_validator unavailable; "
+            "skipping persona override. Reason: %s", exc,
+        )
+        return
+
+    name = (ai_persona.get("name") or DEFAULT_AI_NAME).strip()
+    tone = ai_persona.get("tone") or DEFAULT_AI_TONE
+
+    # Name override (only when truly custom)
+    if name and name != DEFAULT_AI_NAME:
+        sections.append(
+            "\n## Override de Persona (per-tenant)\n\n"
+            f"Você é **{name}**, não LIA.\n\n"
+            f"O nome \"LIA\" mencionado no persona base acima é o nome "
+            f"técnico do sistema. Sua identidade pública para este cliente "
+            f"é **{name}**. Quando se apresentar ou se referir a si mesma, "
+            f"use **{name}** — exceto se o usuário perguntar explicitamente "
+            f"sobre o sistema técnico por trás (aí pode mencionar que roda "
+            f"sobre a plataforma WeDOTalent).\n"
+        )
+
+    # Tone instruction (only when canonical AND non-default)
+    if tone != DEFAULT_AI_TONE:
+        instruction = TONE_INSTRUCTIONS.get(tone)
+        if instruction:
+            sections.append(
+                "\n## Tom de Voz Customizado\n\n"
+                f"{instruction}\n\n"
+                "Esta configuração de tom **sobrepõe** o tom padrão descrito "
+                "no persona base. Mantenha as regras de ética e compliance "
+                "inalteradas — apenas o ESTILO de comunicação muda."
+            )
+        else:
+            logger.debug(
+                "[SystemPromptBuilder] ai_persona.tone='%s' não mapeia para "
+                "TONE_INSTRUCTIONS; ignorando.",
+                tone,
+            )
+
 REACT_INSTRUCTIONS = (
     "\n## Protocolo de Raciocinio (ReAct)\n\n"
     "Voce opera em um ciclo de Raciocinio-Acao-Observacao:\n\n"
@@ -105,7 +180,25 @@ class SystemPromptBuilder:
         intent: str = "",
         entities: dict[str, Any] | None = None,
         extra_instructions: str = "",
+        ai_persona: dict[str, str] | None = None,
     ) -> str:
+        """Build the full system prompt.
+
+        ``ai_persona`` (audit 2026-05-21 E2.3): per-tenant override of name
+        + tone. Shape: ``{"name": str, "tone": str}``. When passed:
+
+        - Custom name (not the canonical default ``"LIA"``) → emits a
+          "Override de Persona" section that tells the LLM to use the
+          tenant-chosen name when introducing itself.
+        - Custom tone (not the canonical default ``"profissional"``) →
+          emits a "Tom de Voz Customizado" section with the textual
+          instruction mapped from ``TONE_INSTRUCTIONS``.
+        - Defaults or absence → no new sections; legacy callers unaffected.
+
+        Invariant preserved: the persona base YAML is NEVER mutated. We
+        only APPEND sections. Ethics blocks (LGPD / fairness / EU AI Act)
+        live in the base and remain untouchable.
+        """
         sections: list[str] = []
 
         persona = _load_persona_base()
@@ -119,6 +212,10 @@ class SystemPromptBuilder:
         domain_additions = _load_domain_additions(agent_type)
         if domain_additions:
             sections.append(f"\n## Especialização do Agente ({agent_type})\n{domain_additions}")
+
+        # E2.3 ai_persona override (append-only, never mutates the YAML base)
+        if ai_persona:
+            _append_ai_persona_override(sections, ai_persona)
 
         context_parts: list[str] = []
 
