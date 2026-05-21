@@ -9,6 +9,7 @@ Follows same pattern as JobsAPIClient (httpx, OTT auth, context tracking).
 
 import logging
 import time
+from datetime import datetime, timezone
 from dataclasses import dataclass, field
 from typing import Dict, Any, List, Optional
 
@@ -360,16 +361,20 @@ class JobCreationAPIClient:
             "location", "work_model", "seniority_level", "requirements",
             "responsibilities", "technical_requirements",
             "behavioral_competencies", "status",
+            "created_at", "updated_at",
         ]
+        # Sprint O.2: explicit timestamps (belt-and-suspenders with DB server_default)
+        _now_utc = datetime.now(timezone.utc)
         _params_raw = [
             str(new_id), str(company_id), title, description, department,
             location, work_model, seniority, skills_list, resp_list,
             tech_reqs_jsonb, beh_comp_jsonb, "Rascunho",
+            _now_utc, _now_utc,
         ]
 
         # --- LAYER 5: per-param sanity + ULTRA defensive last-mile coerce ---
         _params = []
-        _safe_scalar_types = (str, int, float, bool, type(None))
+        _safe_scalar_types = (str, int, float, bool, type(None), datetime)
         for _col, _val in zip(_columns, _params_raw):
             if _col in ("requirements", "responsibilities"):
                 # text[] columns - must be list of str
@@ -435,9 +440,11 @@ class JobCreationAPIClient:
                     INSERT INTO job_vacancies
                     (id, company_id, title, description, department, location,
                      work_model, seniority_level, requirements, responsibilities,
-                     technical_requirements, behavioral_competencies, status)
+                     technical_requirements, behavioral_competencies, status,
+                     created_at, updated_at)
                     VALUES
-                    (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s::jsonb, %s)
+                    (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s::jsonb, %s::jsonb, %s,
+                     %s, %s)
                     RETURNING id
                     """,
                     _params,
