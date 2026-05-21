@@ -1686,3 +1686,20 @@ def get_tool_by_name(name: str) -> ToolDefinition | None:
 def get_tool_names() -> list[str]:
     """Return all tool names in the autonomous pool."""
     return list(_TOOL_MAP.keys())
+
+
+# ─── STAGE_TOOLS canonical (CLAUDE.md vacancy preview Phase E) ───────────────
+# Audit 2026-05-20 Sessao G / Tema C: autonomous agent NAO opera em wizard
+# multi-stage como sourcing/wizard/pipeline; por design o autonomous agent
+# decide livremente entre todas as tools. STAGE_TOOLS aqui esta declarado por
+# canonical consistency + para sensor reconhecer o file, mas semanticamente
+# todos os stages contem TODAS as tools (sem restricao por stage).
+
+STAGE_TOOLS: dict[str, list[str]] = {
+    "autonomous": [t.name for t in AUTONOMOUS_TOOL_POOL],
+}
+
+
+def get_autonomous_tools_for_stage(stage: str) -> list[ToolDefinition]:
+    """Por design, autonomous agent acessa todas tools em qualquer stage."""
+    return get_autonomous_tools()

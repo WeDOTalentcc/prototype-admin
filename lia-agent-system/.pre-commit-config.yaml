@@ -272,11 +272,11 @@ repos:
         files: ^app/.*\.py$
         pass_filenames: false
 
-      - id: stage-tools-canonical-warn
-        name: "STAGE_TOOLS canonical (CLAUDE.md vacancy preview Phase E, warn-only — Sessão G)"
+      - id: stage-tools-canonical
+        name: "STAGE_TOOLS canonical (CLAUDE.md vacancy preview Phase E, BLOCKING — promoted Sessão I 2026-05-20)"
         language: system
-        entry: bash -c "python3 scripts/check_stage_tools_canonical.py --warn-only"
-        files: ^app/domains/.*_tool_registry\.py$
+        entry: bash -c "python3 scripts/check_stage_tools_canonical.py"
+        files: ^app/domains/.*(_tool_registry|_stage_context)\.py$
         pass_filenames: false
 
       - id: training-data-anonymized

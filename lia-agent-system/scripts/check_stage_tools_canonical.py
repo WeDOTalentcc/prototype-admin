@@ -42,13 +42,39 @@ from pathlib import Path
 
 
 def _has_stage_tools_export(path: Path) -> bool:
-    """Detect canonical STAGE_TOOLS allowlist export."""
+    """Detect canonical stage filtering — either:
+    - STAGE_TOOLS dict in this file, OR
+    - STAGE_DEFINITIONS dict in adjacent `*_stage_context.py` file
+      (canonical pattern usado em communication, analytics, ats_integration)
+    """
     try:
         source = path.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError):
         return False
-    # Look for STAGE_TOOLS: dict[...] = { or STAGE_TOOLS = {
-    return ("STAGE_TOOLS:" in source) or ("STAGE_TOOLS =" in source)
+    if ("STAGE_TOOLS:" in source) or ("STAGE_TOOLS =" in source):
+        return True
+
+    # Look for adjacent *_stage_context.py
+    domain_dir = path.parent
+    base = path.stem  # e.g. ats_integration_tool_registry
+    domain_prefix = base.replace("_tool_registry", "")
+    candidates = list(domain_dir.glob(f"{domain_prefix}_stage_context.py"))
+    if not candidates:
+        # Fallback: any *_stage_context.py in same dir
+        candidates = list(domain_dir.glob("*_stage_context.py"))
+    for sc_path in candidates:
+        try:
+            sc_source = sc_path.read_text(encoding="utf-8")
+        except (OSError, UnicodeDecodeError):
+            continue
+        if (
+            ("STAGE_DEFINITIONS" in sc_source)
+            or ("STAGE_TOOLS" in sc_source)
+            or ("STAGE_CAPABILITIES" in sc_source)
+        ):
+            return True
+
+    return False
 
 
 def _has_tool_definitions(path: Path) -> bool:

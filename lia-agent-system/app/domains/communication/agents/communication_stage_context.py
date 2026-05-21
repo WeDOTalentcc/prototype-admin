@@ -10,7 +10,7 @@ STAGE_DEFINITIONS: dict[str, Any] = {
             "Entender qual comunicação o usuário deseja enviar: canal, destinatário, "
             "tipo de mensagem. Verificar histórico e rate limit antes de avançar."
         ),
-        "tools": ["get_communication_history", "check_rate_limit"],
+        "tools": ["get_communication_history", "check_rate_limit", "suggest_communication_policy"],
         "next_stages": ["content-preparation", "delivery"],
     },
     "content-preparation": {

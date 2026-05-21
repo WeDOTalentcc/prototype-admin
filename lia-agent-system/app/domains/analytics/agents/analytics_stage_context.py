@@ -42,6 +42,8 @@ STAGE_DEFINITIONS: dict[str, Any] = {
             "generate_candidate_report",
             "get_search_analytics",
             "get_agent_performance",
+            "interpret_fairness_report",
+            "generate_lgpd_audit_summary",
         ],
         "required_fields": [],
         "transition_criteria": "Estágio final — resposta entregue ao recrutador",
