@@ -17,7 +17,7 @@ import {
   Send, Bell, Palette, Lightbulb, TrendingDown, Activity, RotateCcw,
   ChevronLeft, FastForward, SkipForward, RefreshCw, Zap as Lightning,
   MousePointer, Compass, HelpCircle, Rocket,
-  ChevronDown, ChevronUp, Lock, Unlock, Circle, Plug, Shield, Webhook
+  ChevronDown, ChevronUp, Lock, Unlock, Circle, Plug, Shield, Webhook, Sparkles
 } from"lucide-react"
 
 const SECTION_ICON_COLORS: Record<string, string> = {
@@ -43,6 +43,7 @@ function I18nLoadingFallback({ tKey }: { tKey: string }) {
 }
 
 const MinhaEmpresaHub = dynamic(() => import("@/components/settings/MinhaEmpresaHub").then(m => ({ default: m.MinhaEmpresaHub })), { ssr: false, loading: () => <I18nLoadingFallback tKey="company" /> })
+const AiCreditsPage = dynamic(() => import("@/components/pages/ai-credits-page").then(m => ({ default: m.AiCreditsPage })), { ssr: false, loading: () => <I18nLoadingFallback tKey="company" /> })
 const RecruitmentPipelineTab = dynamic(() => import("@/components/settings/RecruitmentPipelineTab").then(m => ({ default: m.RecruitmentPipelineTab })), { ssr: false, loading: () => <I18nLoadingFallback tKey="pipeline" /> })
 const RecruitmentScreeningTab = dynamic(() => import("@/components/settings/RecruitmentScreeningTab").then(m => ({ default: m.RecruitmentScreeningTab })), { ssr: false, loading: () => <I18nLoadingFallback tKey="screening" /> })
 const CommunicationHub = dynamic(() => import("@/components/settings/CommunicationHub").then(m => ({ default: m.CommunicationHub })), { ssr: false, loading: () => <I18nLoadingFallback tKey="communication" /> })
@@ -176,6 +177,16 @@ const getDefaultSections = (): SettingsSection[] => [
     priority: 'medium',
     category: 'integrations',
     estimatedTime: 10,
+  },
+  {
+    id: 'ai-credits',
+    title: 'AI Credits',
+    description: 'Saldo + consumo de creditos LIA por modelo (BYOK + plataforma)',
+    icon: Sparkles,
+    status: 'incomplete',
+    priority: 'medium',
+    category: 'advanced',
+    estimatedTime: 5,
   },
   {
     id: 'webhooks',
@@ -471,6 +482,12 @@ export default function SettingsPageEnhanced() {
         return (
           <ErrorBoundarySection>
             <MinhaEmpresaHub activeSubsection={activeSubsection} />
+          </ErrorBoundarySection>
+        )
+      case 'ai-credits':
+        return (
+          <ErrorBoundarySection>
+            <AiCreditsPage />
           </ErrorBoundarySection>
         )
       case 'pipeline':
