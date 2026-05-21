@@ -313,6 +313,40 @@ class FeedbackLearningService:
                 f"Context: {context_str}"
             )
             
+
+            # T-10 Fase 1 MIRROR (ADR-032): also persist em InteractionFeedback
+            # Desbloqueia training_data_service (RLHF/DPO pipeline) que antes era starving.
+            # Fail-open: mirror falha NAO interrompe SuggestionFeedback canonical.
+            try:
+                from app.domains.analytics.services.feedback_service import FeedbackService
+                from uuid import uuid4
+                _fs = FeedbackService()
+                _ctx = context or {}
+                await _fs.record_feedback(
+                    session_id=_ctx.get("session_id") or str(uuid4()),
+                    company_id=company_id,
+                    user_id=_ctx.get("user_id", "system"),
+                    feedback_type="rating",
+                    feedback_value={
+                        "rating": 1 if accepted else 0,
+                        "feedback_text": f"field={field_name} suggested={suggested_value} actual={actual_value}",
+                        "category": "wizard_suggestion",
+                    },
+                    message_context={
+                        "user_message": f"suggest {field_name}",
+                        "lia_response": str(suggested_value),
+                        "intent": "wizard_suggestion",
+                        "stage": _ctx.get("stage"),
+                        "tools_used": [field_name],
+                    },
+                    db=db,
+                )
+            except Exception as _mirror_exc:
+                self.logger.warning(
+                    "[T-10 mirror] InteractionFeedback mirror falhou - training data pipeline pode degradar: %s",
+                    _mirror_exc, exc_info=True,
+                )
+
             return feedback
             
         except Exception as e:
