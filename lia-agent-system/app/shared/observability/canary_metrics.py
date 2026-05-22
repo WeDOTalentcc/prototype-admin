@@ -271,6 +271,30 @@ def inc_granular_consent_revoke(purpose: str) -> None:
         )
 
 
+
+# Realtime WS voice gate canonical (PLAN_WEBSOCKET_VOICE_GATE 2026-05-22)
+# Pair counters track session lifecycle outcomes (started vs terminated reasons)
+# + per-direction token consumption.
+# Used by app/domains/voice/services/realtime_credit_session.py.
+realtime_session_started_total = _make_counter(
+    "realtime_session_started_total",
+    "Realtime WS sessions started (pre-check passed)",
+    ("company_id_hash",),
+)
+
+realtime_session_terminated_total = _make_counter(
+    "realtime_session_terminated_total",
+    "Realtime WS sessions terminated, by reason",
+    ("reason",),  # normal|credit_exhausted_pre|credit_exhausted_mid|error|timeout
+)
+
+realtime_tokens_consumed_total = _make_counter(
+    "realtime_tokens_consumed_total",
+    "Realtime tokens consumed, by direction",
+    ("direction",),  # input|output
+)
+
+
 __all__ = (
     "ai_credit_exhausted_total",
     "ai_credit_gate_calls_total",
@@ -283,4 +307,7 @@ __all__ = (
     "granular_consent_revoke_per_purpose_total",
     "inc_policy_engine_invocation",
     "inc_granular_consent_revoke",
+    "realtime_session_started_total",
+    "realtime_session_terminated_total",
+    "realtime_tokens_consumed_total",
 )
