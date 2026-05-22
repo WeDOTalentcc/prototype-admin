@@ -165,7 +165,8 @@
   "lint-staged": {
     "src/**/*.{ts,tsx}": [
       "eslint --fix --max-warnings=0",
-      "npx tsc --noEmit --skipLibCheck"
+      "npx tsc --noEmit --skipLibCheck",
+      "node scripts/check_chip_overrides.mjs --no-fail"
     ],
     "src/**/*.{ts,tsx,js,jsx}": [
       "npx biome check --write"

@@ -60,6 +60,14 @@ jobs:
         # (frontend). Blocks if a stage is added in one place but not the other.
         # See .planning/vacancy-pipeline-plan.md > Phase F.
         run: npx tsx scripts/check-vacancy-action-coverage.ts
+      - name: Chips design-system sensor (strict)
+        # Sensor harness 2026-05-22: bloqueia overrides anti-canonical em <Chip>.
+        # Detecta 5 buckets (CTA-style bg, padding excessivo, text-size override,
+        # text-xs warn, font-weight warn). Strict mode — falha PR se errors > 0.
+        # Warn-only ratchet pode ser usado em outros contextos via npm run lint:chips:warn.
+        # Ver scripts/check_chip_overrides.mjs + commits 36cb22fa4/82e92d7dc/fe38f191d.
+        run: npm run lint:chips
+
 
       - name: Multi-tenancy gate sensor (Phase F, warn-only)
         # Walks app/api/v1/*.py and warns on routes missing
