@@ -44,10 +44,13 @@ Resolved 2026-05-22 (decisions implemented):
 - Q6 concurrent cap 5 default ✅ Implemented (Redis-based, per-tenant)
 
 Still pending:
-1. **BYOK strategy** — when tenant brings own OpenAI API key, do WeDOTalent
-   credits still apply, or is BYOK = unmetered? Current defaults assume YES,
-   credits still gate (defense-in-depth against accidental free-tier abuse).
-   TODO: confirm with Anderson + add tenant-flag bypass when needed.
+- Q1 RESOLVED 2026-05-22 (ADR-WT-2027) -- BYOK = track-only mode in
+  ``check_credit_budget`` (Opcao C). Tenant pays provider direct; WeDoTalent
+  still tracks consumption for LGPD Art. 37 + emits ``byok_track_only_total``
+  Grafana counter. Optional ``byok_soft_cap`` per tenant emits
+  ``byok_soft_cap_breached_total`` for alarm without blocking. Backed by
+  ``app.shared.services.byok_detector.is_byok_active`` + sensor
+  ``scripts/check_credit_gate_respects_byok.py``.
 
 2. **SDK vs raw WebSocket** — provider uses ``websockets`` lib (raw). OpenAI
    Python SDK 1.30+ added ``openai.AsyncOpenAI().beta.realtime`` — migrating
