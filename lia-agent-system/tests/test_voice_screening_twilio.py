@@ -1,3 +1,4 @@
+# F-02 P1 fix (audit 2026-05-22): bulk-rename 18 sites app.services.voice_screening_orchestrator -> app.domains.voice.services.voice_screening_orchestrator. Modulo movido para app/domains/voice/services/ em Sprint anterior.
 """
 Tests for Twilio Voice + Gemini screening pipeline.
 
@@ -275,7 +276,7 @@ class TestVoiceScreeningOrchestrator:
 
         mock_checker_cls = MagicMock(return_value=mock_checker_instance)
 
-        import app.services.voice_screening_orchestrator as orch_mod
+        import app.domains.voice.services.voice_screening_orchestrator as orch_mod
 
         original = orch_mod._ConsentCheckerService
         orch_mod._ConsentCheckerService = mock_checker_cls
@@ -307,7 +308,7 @@ class TestVoiceScreeningOrchestrator:
         mock_checker_instance.check_candidate_consent = AsyncMock(return_value=mock_check_result)
         mock_checker_cls = MagicMock(return_value=mock_checker_instance)
 
-        import app.services.voice_screening_orchestrator as orch_mod
+        import app.domains.voice.services.voice_screening_orchestrator as orch_mod
 
         original = orch_mod._ConsentCheckerService
         orch_mod._ConsentCheckerService = mock_checker_cls
@@ -381,7 +382,7 @@ class TestVoiceScreeningOrchestrator:
         mock_svc = MagicMock()
         mock_svc.transcribe_audio = mock_transcribe
 
-        import app.services.voice_screening_orchestrator as orch_mod
+        import app.domains.voice.services.voice_screening_orchestrator as orch_mod
 
         original_get_voice = orch_mod._get_voice_service
         orch_mod._get_voice_service = MagicMock(return_value=mock_svc)
@@ -406,7 +407,7 @@ class TestVoiceScreeningOrchestrator:
 
         with patch.object(orch._tts_service, "synthesize_speech", new=AsyncMock(return_value=fake_mp3)):
             with patch(
-                "app.services.voice_screening_orchestrator.mp3_to_mulaw",
+                "app.domains.voice.services.voice_screening_orchestrator.mp3_to_mulaw",
                 return_value=b"\xff" * 80,
             ) as mock_convert:
                 result = await orch.synthesize_lia_response("Olá!", for_twilio_stream=True)
@@ -424,7 +425,7 @@ class TestVoiceScreeningOrchestrator:
 
         with patch.object(orch._tts_service, "synthesize_speech", new=AsyncMock(return_value=fake_mp3)):
             with patch(
-                "app.services.voice_screening_orchestrator.mp3_to_mulaw"
+                "app.domains.voice.services.voice_screening_orchestrator.mp3_to_mulaw"
             ) as mock_convert:
                 result = await orch.synthesize_lia_response("Olá!", for_twilio_stream=False)
 
@@ -461,7 +462,7 @@ class TestVoiceScreeningOrchestrator:
             "summary": "Candidato com boa experiência técnica.",
         }
 
-        import app.services.voice_screening_orchestrator as orch_mod
+        import app.domains.voice.services.voice_screening_orchestrator as orch_mod
 
         original_analyze = orch_mod._analyze_voice_screening
         original_wsi_orch = orch_mod._WSIVoiceOrchestrator
@@ -514,7 +515,7 @@ class TestVoiceScreeningOrchestrator:
         mock_wsi_orch_instance.process_call_completed = AsyncMock(return_value=mock_wsi_result)
         mock_wsi_orch_cls = MagicMock(return_value=mock_wsi_orch_instance)
 
-        import app.services.voice_screening_orchestrator as orch_mod
+        import app.domains.voice.services.voice_screening_orchestrator as orch_mod
 
         original_wsi_orch = orch_mod._WSIVoiceOrchestrator
         orch_mod._WSIVoiceOrchestrator = mock_wsi_orch_cls
@@ -602,7 +603,7 @@ class TestTwilioVoiceCircuit:
             side_effect=CircuitBreakerError("twilio_voice", 45.0)
         )
 
-        import app.services.voice_screening_orchestrator as orch_module
+        import app.domains.voice.services.voice_screening_orchestrator as orch_module
 
         with patch.object(orch, "verify_consent", new=AsyncMock(return_value=True)):
             with patch.object(orch_module, "TWILIO_VOICE_CIRCUIT", mock_circuit):
@@ -675,7 +676,7 @@ class TestCommunicationDispatcherVoice:
         dispatcher = CommunicationDispatcher()
 
         with patch(
-            "app.services.voice_screening_orchestrator.voice_screening_orchestrator.initiate_call",
+            "app.domains.voice.services.voice_screening_orchestrator.voice_screening_orchestrator.initiate_call",
             side_effect=Exception("Connection error"),
         ):
             result = await dispatcher.make_voice_call(
@@ -698,7 +699,7 @@ class TestCommunicationDispatcherVoice:
         dispatcher = CommunicationDispatcher()
 
         with patch(
-            "app.services.voice_screening_orchestrator.voice_screening_orchestrator.initiate_call",
+            "app.domains.voice.services.voice_screening_orchestrator.voice_screening_orchestrator.initiate_call",
             side_effect=ConsentNotGrantedError("Consent revoked"),
         ):
             with pytest.raises(ConsentNotGrantedError):
@@ -1100,7 +1101,7 @@ class TestSessionDBPersistence:
 
         mock_wsi = {"overall_evaluation": {"overall_score": 80, "recommendation": "interview"}}
 
-        import app.services.voice_screening_orchestrator as orch_mod
+        import app.domains.voice.services.voice_screening_orchestrator as orch_mod
 
         original_analyze = orch_mod._analyze_voice_screening
         original_wsi = orch_mod._WSIVoiceOrchestrator
@@ -1195,6 +1196,9 @@ class TestWSIQuestionsFromDB:
             phone_number="+55110",
             started_at=datetime.utcnow(),
         )
+        # F-02 audit drift fix: code path now does presentation_done check;
+        # set True to bypass _build_fallback_job_presentation and reach scripted Q.
+        session.presentation_done = True
         orch._sessions["sess-wsi-q"] = session
 
         wsi_questions = [
@@ -1238,6 +1242,8 @@ class TestWSIQuestionsFromDB:
             company_id="co1",
             phone_number="+55110",
         )
+        # F-02 audit drift fix: bypass presentation fallback path.
+        session.presentation_done = True
         orch._sessions["sess-fallback"] = session
 
         with patch.object(orch, "_load_wsi_questions_for_session", new=AsyncMock(return_value=[])):
@@ -1325,7 +1331,7 @@ class TestFairnessGuardInVoiceScreening:
         with patch.object(orch, "_load_wsi_questions_for_session", new=AsyncMock(return_value=["Pergunta WSI"])):
             with patch.object(orch, "_get_next_scripted_question", return_value="safe question") as mock_safe:
                 with patch(
-                    "app.services.voice_screening_orchestrator.check_fairness"
+                    "app.domains.voice.services.voice_screening_orchestrator.check_fairness"
                 ) as mock_fairness:
                     blocked_result = FairnessCheckResult(
                         is_blocked=True,
@@ -1344,14 +1350,14 @@ class TestFairnessGuardInVoiceScreening:
 
                     import os
                     with patch.dict(os.environ, {"AI_INTEGRATIONS_GEMINI_API_KEY": "fake", "AI_INTEGRATIONS_GEMINI_BASE_URL": "https://fake.api"}):
-                        with patch("app.services.voice_screening_orchestrator.genai", create=True) as mock_genai:
+                        with patch("app.domains.voice.services.voice_screening_orchestrator.genai", create=True) as mock_genai:
                             mock_client = MagicMock()
                             mock_response = MagicMock()
                             mock_response.text = biased_response
                             mock_client.models.generate_content.return_value = mock_response
                             mock_genai.Client.return_value = mock_client
 
-                            import app.services.voice_screening_orchestrator as orch_mod
+                            import app.domains.voice.services.voice_screening_orchestrator as orch_mod
                             with patch.dict("sys.modules", {"google.genai": mock_genai, "google": MagicMock()}):
                                 result = await orch.generate_lia_response("sess-fairness", "Tenho 25 anos")
 
@@ -1359,14 +1365,14 @@ class TestFairnessGuardInVoiceScreening:
 
     def test_fairness_guard_import_in_orchestrator(self):
         """check_fairness must be importable from voice_screening_orchestrator module."""
-        import app.services.voice_screening_orchestrator as orch_mod
+        import app.domains.voice.services.voice_screening_orchestrator as orch_mod
         assert hasattr(orch_mod, "check_fairness"), (
             "check_fairness must be imported in voice_screening_orchestrator"
         )
 
     def test_anti_sycophancy_import_in_orchestrator(self):
         """ANTI_SYCOPHANCY_OPERATIONAL must be importable from orchestrator module."""
-        import app.services.voice_screening_orchestrator as orch_mod
+        import app.domains.voice.services.voice_screening_orchestrator as orch_mod
         assert hasattr(orch_mod, "ANTI_SYCOPHANCY_OPERATIONAL"), (
             "ANTI_SYCOPHANCY_OPERATIONAL must be imported in voice_screening_orchestrator"
         )
@@ -1401,7 +1407,7 @@ class TestFairnessGuardInVoiceScreening:
                 output.is_blocked = False
                 return output
 
-            with patch("app.services.voice_screening_orchestrator.check_fairness", side_effect=mock_check_fairness):
+            with patch("app.domains.voice.services.voice_screening_orchestrator.check_fairness", side_effect=mock_check_fairness):
                 import os
                 with patch.dict(os.environ, {"AI_INTEGRATIONS_GEMINI_API_KEY": "fake", "AI_INTEGRATIONS_GEMINI_BASE_URL": "https://fake.api"}):
                     with patch("google.genai.Client") as mock_client_cls:
@@ -1483,7 +1489,7 @@ class TestFairnessGuardInVoiceScreening:
         blocked_result.blocked_result = MagicMock(category="gender_bias")
 
         with patch(
-            "app.services.voice_screening_orchestrator.check_fairness",
+            "app.domains.voice.services.voice_screening_orchestrator.check_fairness",
             return_value=blocked_result,
         ):
             result = orch._check_fairness_on_response("biased question", session)
