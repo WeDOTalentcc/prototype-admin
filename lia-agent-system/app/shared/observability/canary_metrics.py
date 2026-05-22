@@ -152,6 +152,31 @@ llm_gate_reconciliation_delta_total = _make_counter(
     ("provider", "sign"),
 )
 
+# ----------------------------------------------------------------------
+# ADR-WT-2027 BYOK Strategy (Opcao C, 2026-05-22).
+# Counter pair tracks BYOK tenant gate behavior:
+# - byok_track_only_total: incremented on EVERY gate call where BYOK is
+#   active (track-only mode). Compared against ai_credit_gate_calls_total
+#   gives the BYOK fraction of overall LLM traffic.
+# - byok_soft_cap_breached_total: incremented when BYOK tenant exceeds
+#   their self-managed soft cap. ALARM signal (track-only, never blocks).
+#   Spike per tenant = tenant should review their cap or LLM call pattern.
+# ----------------------------------------------------------------------
+byok_track_only_total = _make_counter(
+    "byok_track_only_total",
+    "Gate calls where BYOK active so enforcement is track-only (no block). "
+    "ADR-WT-2027 Opcao C, 2026-05-22.",
+    ("service", "provider"),
+)
+
+byok_soft_cap_breached_total = _make_counter(
+    "byok_soft_cap_breached_total",
+    "BYOK tenant breached self-managed soft cap (track-only, NOT blocking). "
+    "Alarm signal; alarm rule should fire on rate > baseline. "
+    "ADR-WT-2027 Opcao C, 2026-05-22.",
+    ("company_id_hash", "service", "provider"),
+)
+
 fairness_guard_skip_total = _make_counter(
     "fairness_guard_skip_total",
     "Count of FairnessGuard fail-soft fallbacks (REGRA 4 violation indicator).",
@@ -333,6 +358,8 @@ __all__ = (
     "ai_credit_gate_calls_total",
     "llm_guards_installed",
     "llm_gate_reconciliation_delta_total",
+    "byok_track_only_total",
+    "byok_soft_cap_breached_total",
     "fairness_guard_skip_total",
     "dsr_overdue_created_total",
     "tasks_cross_tenant_blocked_total",
