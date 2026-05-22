@@ -241,8 +241,8 @@ export function SmartSearchInput(props: SmartSearchInputProps) {
               <Filter className="w-3.5 h-3.5" />
               Filtros
               {(activeFiltersCount > 0 || filledCount > 0) && (
-                <Chip variant="neutral" muted 
-                  className="ml-1 h-4 min-w-4 px-1 flex items-center justify-center text-xs bg-lia-btn-primary-bg text-lia-btn-primary-text"
+                <Chip variant="neutral" muted
+                  className="ml-1 h-4 min-w-4 px-1 flex items-center justify-center text-xs"
                 >
                   {Math.max(activeFiltersCount, filledCount)}
                 </Chip>

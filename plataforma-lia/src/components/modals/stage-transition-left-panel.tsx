@@ -91,9 +91,7 @@ export function StageTransitionLeftPanel({
               {getStageDisplayName(currentStage)}
             </Chip>
             <ChevronRight className="h-4 w-4 text-lia-text-disabled" />
-            <Chip variant="neutral" muted className={cn("text-white",
-              headerColor === 'red' ? 'bg-status-error' : 'bg-lia-btn-primary-bg'
-            )}>
+            <Chip variant={headerColor === 'red' ? 'danger' : 'neutral'}>
               {getStageDisplayName(newStage)}
             </Chip>
           </div>

@@ -400,7 +400,7 @@ export function SharedContent({ hook }: SharedContentProps) {
                                   <Chip
                                     key={skill}
                                     variant="neutral" muted
-                                    className="bg-lia-btn-primary-hover text-lia-text-disabled border-0 text-xs"
+                                    density="relaxed" className="text-lia-text-disabled border-0"
                                   >
                                     {skill}
                                   </Chip>
@@ -408,7 +408,7 @@ export function SharedContent({ hook }: SharedContentProps) {
                                 {candidate.skills.length > 5 && (
                                   <Chip
                                     variant="neutral" muted
-                                    className="bg-lia-btn-primary-hover text-lia-text-secondary border-0 text-xs"
+                                    density="relaxed" className="text-lia-text-secondary border-0"
                                   >
                                     +{candidate.skills.length - 5}
                                   </Chip>
@@ -457,7 +457,7 @@ export function SharedContent({ hook }: SharedContentProps) {
                                     <Chip
                                       key={skill}
                                       variant="neutral" muted
-                                      className="bg-lia-btn-primary-hover text-lia-text-disabled border-0 text-xs"
+                                      density="relaxed" className="text-lia-text-disabled border-0"
                                     >
                                       {skill}
                                     </Chip>

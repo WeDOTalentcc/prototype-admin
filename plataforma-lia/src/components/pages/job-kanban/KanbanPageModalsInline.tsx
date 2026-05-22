@@ -100,9 +100,7 @@ export function KanbanPageModalsInline(state: KanbanPageCoreState) {
                     }`}
                     onClick={() => setSelectedSubStatus(getSuggestedSubStatus(pendingMove.toColumn))}
                   >
-                    <Chip variant="neutral" muted 
-                      className="text-sm px-3 py-1 font-medium border-0 text-lia-text-primary bg-lia-btn-primary-bg"
-                    >
+                    <Chip density="relaxed" variant="neutral" muted>
                       {getAvailableSubStatuses(pendingMove.toColumn).find(s => s.name === getSuggestedSubStatus(pendingMove.toColumn))?.displayName || getSuggestedSubStatus(pendingMove.toColumn)}
                     </Chip>
                   </div>

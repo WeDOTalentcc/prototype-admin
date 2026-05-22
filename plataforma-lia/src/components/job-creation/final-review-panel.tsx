@@ -311,8 +311,9 @@ export function FinalReviewPanel({
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-semibold font-sans">Revisão Final</CardTitle>
           <Chip
+            density="relaxed"
             variant="neutral"
-            className={cn("text-sm font-semibold",
+            className={cn(
               can_publish ?"border-status-success/30 text-status-success" :"border-status-error/30 text-status-error"
             )}
           >

@@ -93,8 +93,11 @@ export default function AjudaPage() {
               <div className="space-y-3">
                 {seniorityLevels.map((item) => (
                   <div key={item.level} className="flex items-start gap-3 p-3 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary">
-                    <Chip variant="neutral" muted 
-                      className="mt-0.5 text-white font-medium px-3 py-1"
+                    <Chip
+                      density="relaxed"
+                      variant="neutral"
+                      muted
+                      className="mt-0.5 text-white"
                       style={{backgroundColor: item.color}}
                     >
                       {item.level}
@@ -261,8 +264,9 @@ export default function AjudaPage() {
                 {bigFiveDimensions.map((dim) => (
                   <div key={dim.trait} className="p-3 rounded-xl bg-lia-bg-secondary dark:bg-lia-bg-secondary border border-lia-border-subtle dark:border-lia-border-subtle">
                     <div className="flex items-start gap-3">
-                      <Chip variant="neutral" muted 
-                        className="mt-0.5 text-white font-bold px-2.5 py-1 text-sm bg-lia-btn-primary-bg"
+                      <Chip
+                        density="relaxed"
+                        variant="info"
                       >
                         {dim.trait}
                       </Chip>
