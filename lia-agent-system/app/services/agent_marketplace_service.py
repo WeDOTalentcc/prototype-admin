@@ -396,7 +396,32 @@ class AgentMarketplaceService:
         agent_id: str,
         company_id: str,
         credits_consumed: int = 0,
+        tokens_input: int = 0,
+        tokens_output: int = 0,
+        pricing_tier: str = "pro",
     ) -> None:
+        """Wave 4 W4-4 audit 2026-05-22: credits_consumed agora suporta calculo
+        real via tokens × price quando tokens > 0. Backward-compat: credits_consumed
+        explicito ainda funciona (passado por agentes free/listing constants).
+
+        Args:
+            credits_consumed: se >0, usa esse valor diretamente (override).
+            tokens_input + tokens_output: se ambos >0 E credits_consumed=0,
+                                          computa via compute_credits canonical.
+            pricing_tier: free/pro/enterprise. Default 'pro'.
+        """
+        # Wave 4 W4-4: compute credits from tokens if not explicitly provided
+        if credits_consumed == 0 and (tokens_input > 0 or tokens_output > 0):
+            try:
+                from app.services.agent_pricing import compute_credits
+                credits_consumed = compute_credits(
+                    tokens_input=tokens_input,
+                    tokens_output=tokens_output,
+                    tier=pricing_tier,
+                )
+            except Exception as e:
+                logger.warning("[agent_pricing] compute_credits failed: %s", e)
+                credits_consumed = 0
         try:
             agent_uuid = uuid.UUID(agent_id)
         except (ValueError, AttributeError):

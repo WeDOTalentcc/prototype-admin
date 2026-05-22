@@ -429,11 +429,16 @@ company_id: str = Depends(require_company_id)):
             if listing and not listing.is_free:
                 credits_consumed = listing.credits_per_execution
 
+        # Wave 4 W4-4 audit 2026-05-22: passar tokens para calculo real
+        _output_meta = output.metadata if isinstance(output.metadata, dict) else {}
         await agent_marketplace_service.record_execution(
             db=db,
             agent_id=str(agent.id),
             company_id=current_user.company_id,
             credits_consumed=credits_consumed,
+            tokens_input=_output_meta.get("tokens_input", 0),
+            tokens_output=_output_meta.get("tokens_output", 0),
+            pricing_tier="pro",
         )
 
         # Persist execution log (GAP B2)
