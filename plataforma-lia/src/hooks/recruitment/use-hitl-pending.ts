@@ -80,13 +80,32 @@ export function useHitlPending(options: UseHitlPendingOptions = {}) {
 
     fetchPending()
 
-    intervalRef.current = setInterval(fetchPending, pollingIntervalMs)
+    // QW4 audit 2026-05-22: visibility guard. Antes, polling de 30s rodava
+    // em toda rota com sidebar mesmo com aba em background. Quando backend
+    // estava lento, saturava event loop do Next dev. Agora: skipa quando
+    // aba hidden, refetch imediato quando user volta.
+    const tick = () => {
+      if (typeof document !== "undefined" && document.visibilityState !== "visible") return
+      fetchPending()
+    }
+    intervalRef.current = setInterval(tick, pollingIntervalMs)
+    const onVisible = () => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        fetchPending()
+      }
+    }
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", onVisible)
+    }
 
     window.addEventListener("hitl:approval_required", handleApprovalRequired)
     window.addEventListener("hitl:approval_resolved", handleApprovalResolved)
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", onVisible)
+      }
       window.removeEventListener("hitl:approval_required", handleApprovalRequired)
       window.removeEventListener("hitl:approval_resolved", handleApprovalResolved)
     }

@@ -226,8 +226,30 @@ export function useNotifications({
   }, [fetchNotifications])
 
   useEffect(() => {
-    const interval = setInterval(fetchNotifications, pollingInterval)
-    return () => clearInterval(interval)
+    // QW4 audit 2026-05-22: visibility guard. Antes, este polling rodava em
+    // toda rota com sidebar montada, mesmo com aba em background. Quando
+    // backend ficava lento, polls saturavam event loop do Next dev server.
+    // Agora: skipa o poll quando aba esta hidden + refetch imediato quando
+    // user volta pra aba (sync inteligente).
+    const tick = () => {
+      if (typeof document !== "undefined" && document.visibilityState !== "visible") return
+      fetchNotifications()
+    }
+    const interval = setInterval(tick, pollingInterval)
+    const onVisible = () => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        fetchNotifications()
+      }
+    }
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", onVisible)
+    }
+    return () => {
+      clearInterval(interval)
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", onVisible)
+      }
+    }
   }, [fetchNotifications, pollingInterval])
 
   return {
