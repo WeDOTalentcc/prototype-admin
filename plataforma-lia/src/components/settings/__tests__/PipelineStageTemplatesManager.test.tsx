@@ -14,9 +14,79 @@
 import React from "react"
 import { describe, test, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, within } from "@testing-library/react"
+import { NextIntlClientProvider } from "next-intl"
 
 import { PipelineStageTemplatesManager } from "../PipelineStageTemplatesManager"
 import type { PipelineStageTemplate } from "@/hooks/pipeline/use-pipeline-stage-templates"
+
+// Mensagens mínimas espelhando `messages/pt-BR.json → settings.catalogs`.
+// Pattern canonical igual ao usado em WebhooksManager.test.tsx — só inclui
+// chaves usadas pelo render coberto. Manter sincronizado se o JSON canonical
+// mudar nomes de chave (valores podem divergir; o teste assere strings PT-BR
+// que o componente exibe).
+const CATALOG_MESSAGES = {
+  settings: {
+    catalogs: {
+      common: {
+        filters: "Filtrar:",
+        filterAll: "Todos",
+        filterAllFeminine: "Todas",
+        filterMaster: "Master canonical",
+        filterCustom: "Customs da empresa",
+        masterChip: "Master canonical",
+        defaultChip: "Default",
+        deprecatedChip: "Deprecated",
+        tryAgain: "Tentar novamente",
+        save: "Salvar",
+        cancel: "Cancelar",
+        edit: "Editar",
+        customize: "Customizar",
+        customizeHint: "Customizar (cria cópia)",
+        delete: "Excluir",
+        deleteAdminOnly: "Excluir (admin only)",
+        customizedMasterFlash: "Master \"{label}\" customizado",
+        countSummary: "{master} master · {custom} custom · {total} total",
+      },
+      pipeline: {
+        title: "Gerenciador de Stages do Pipeline",
+        newButton: "Nova stage",
+        formTitleCreate: "Criar stage nova",
+        formTitleEdit: "Editar stage",
+        confirmDelete: "Excluir stage \"{label}\"?",
+        successCreate: "Stage criada com sucesso",
+        successUpdate: "Stage atualizada",
+        successDelete: "Stage excluída",
+        failCreate: "Falha ao criar stage",
+        failUpdate: "Falha ao atualizar stage",
+        emptyList: "Nenhuma stage nessa categoria.",
+        validationLabel: "Label deve ter pelo menos 2 caracteres",
+        validationKey: "Key deve ser slug minúsculo (a-z, 0-9, _)",
+        placeholderLabel: "Label (ex: Triagem CV)",
+        placeholderKey: "Key (slug: ex: triagem_cv)",
+        placeholderColor: "Color (#06b6d4 ou nome)",
+        placeholderIcon: "Icon (emoji ou nome)",
+        placeholderOrder: "Order (ex: 100)",
+        placeholderSlaHours: "SLA horas (opcional)",
+        placeholderActionBehavior: "Action behavior",
+        placeholderDefaultChannel: "Canal default",
+        labelIsDefault: "Default no pipeline (canonical stages)",
+        labelBehavior: "Behavior:",
+        labelChannel: "Canal:",
+        labelSla: "SLA:",
+        labelOrder: "Order:",
+        labelSubstatusesCount: "{count} substatuses",
+      },
+    },
+  },
+} as const
+
+function renderWithIntl(ui: React.ReactElement) {
+  return render(
+    <NextIntlClientProvider locale="pt-BR" messages={CATALOG_MESSAGES}>
+      {ui}
+    </NextIntlClientProvider>,
+  )
+}
 
 const masterTemplate: PipelineStageTemplate = {
   id: "master-1",
@@ -101,7 +171,7 @@ describe("PipelineStageTemplatesManager — smoke (P0.G #1)", () => {
   })
 
   test("renders Manager card title + lista de templates", () => {
-    render(
+    renderWithIntl(
       <PipelineStageTemplatesManager isAdmin={true} currentUserId="user-self" />,
     )
     expect(
@@ -113,7 +183,7 @@ describe("PipelineStageTemplatesManager — smoke (P0.G #1)", () => {
   })
 
   test("filter chips: clicar 'Master canonical' filtra só masters", () => {
-    render(
+    renderWithIntl(
       <PipelineStageTemplatesManager isAdmin={true} currentUserId="user-self" />,
     )
     // antes: vê custom e master
@@ -127,7 +197,7 @@ describe("PipelineStageTemplatesManager — smoke (P0.G #1)", () => {
   })
 
   test("startCreate: clicar 'Nova stage' abre form de criação", () => {
-    render(
+    renderWithIntl(
       <PipelineStageTemplatesManager isAdmin={true} currentUserId="user-self" />,
     )
     expect(screen.queryByText("Criar stage nova")).not.toBeInTheDocument()
@@ -141,7 +211,7 @@ describe("PipelineStageTemplatesManager — smoke (P0.G #1)", () => {
   })
 
   test("permission gate: isAdmin=false + currentUserId=null esconde edit/delete em customs alheios", () => {
-    render(
+    renderWithIntl(
       <PipelineStageTemplatesManager isAdmin={false} currentUserId={null} />,
     )
 

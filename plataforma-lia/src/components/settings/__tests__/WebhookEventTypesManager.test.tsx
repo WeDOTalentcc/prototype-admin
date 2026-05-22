@@ -14,9 +14,66 @@
 import React from "react"
 import { describe, test, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, within } from "@testing-library/react"
+import { NextIntlClientProvider } from "next-intl"
 
 import { WebhookEventTypesManager } from "../WebhookEventTypesManager"
 import type { WebhookEventType } from "@/hooks/webhooks/use-webhook-event-types"
+
+// Mensagens mínimas espelhando `messages/pt-BR.json → settings.catalogs`.
+const CATALOG_MESSAGES = {
+  settings: {
+    catalogs: {
+      common: {
+        filters: "Filtrar:",
+        filterAll: "Todos",
+        filterAllFeminine: "Todas",
+        filterMaster: "Master canonical",
+        filterCustom: "Customs da empresa",
+        masterChip: "Master canonical",
+        defaultChip: "Default",
+        deprecatedChip: "Deprecated",
+        tryAgain: "Tentar novamente",
+        save: "Salvar",
+        cancel: "Cancelar",
+        edit: "Editar",
+        customize: "Customizar",
+        customizeHint: "Customizar (cria cópia)",
+        delete: "Excluir",
+        deleteAdminOnly: "Excluir (admin only)",
+        customizedMasterFlash: "Master \"{label}\" customizado",
+        countSummary: "{master} master · {custom} custom · {total} total",
+      },
+      webhook: {
+        title: "Gerenciador de Webhook Events",
+        newButton: "Novo event",
+        formTitleCreate: "Criar event type",
+        formTitleEdit: "Editar event type",
+        confirmDelete: "Excluir event type \"{label}\"?",
+        successCreate: "Event type criado",
+        successUpdate: "Event type atualizado",
+        successDelete: "Event type excluído",
+        failCreate: "Falha ao criar",
+        failUpdate: "Falha ao atualizar",
+        emptyList: "Nenhum event type nessa categoria.",
+        validationLabel: "Label deve ter pelo menos 3 caracteres",
+        validationEventType: "Event type deve seguir 'namespace.action' (ex: candidate.applied)",
+        placeholderLabel: "Label (ex: Candidato aplicou em vaga)",
+        placeholderEventType: "Event type (slug: namespace.action — ex: candidate.applied)",
+        placeholderCategory: "Categoria",
+        placeholderDescription: "Descrição (opcional)",
+        labelDeprecated: "Deprecated (não recomendado para novos webhooks)",
+      },
+    },
+  },
+} as const
+
+function renderWithIntl(ui: React.ReactElement) {
+  return render(
+    <NextIntlClientProvider locale="pt-BR" messages={CATALOG_MESSAGES}>
+      {ui}
+    </NextIntlClientProvider>,
+  )
+}
 
 const masterEvent: WebhookEventType = {
   id: "master-1",
@@ -97,7 +154,7 @@ describe("WebhookEventTypesManager — smoke (P0.G #4)", () => {
   })
 
   test("renders Manager card title + lista de event types", () => {
-    render(
+    renderWithIntl(
       <WebhookEventTypesManager isAdmin={true} currentUserId="user-self" />,
     )
     expect(screen.getByText("Gerenciador de Webhook Events")).toBeInTheDocument()
@@ -107,7 +164,7 @@ describe("WebhookEventTypesManager — smoke (P0.G #4)", () => {
   })
 
   test("filter chips: clicar 'Master canonical' filtra só masters", () => {
-    render(
+    renderWithIntl(
       <WebhookEventTypesManager isAdmin={true} currentUserId="user-self" />,
     )
     expect(screen.getByText("Event meu")).toBeInTheDocument()
@@ -120,7 +177,7 @@ describe("WebhookEventTypesManager — smoke (P0.G #4)", () => {
   })
 
   test("startCreate: clicar 'Novo event' abre form de criação", () => {
-    render(
+    renderWithIntl(
       <WebhookEventTypesManager isAdmin={true} currentUserId="user-self" />,
     )
     expect(screen.queryByText("Criar event type")).not.toBeInTheDocument()
@@ -131,7 +188,7 @@ describe("WebhookEventTypesManager — smoke (P0.G #4)", () => {
   })
 
   test("permission gate: isAdmin=false + currentUserId=null esconde edit/delete em customs alheios", () => {
-    render(
+    renderWithIntl(
       <WebhookEventTypesManager isAdmin={false} currentUserId={null} />,
     )
 

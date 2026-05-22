@@ -15,9 +15,13 @@
  * Subscoping: ``payload_schema`` (JSON Schema arbitrário) NAO editavel
  * via este Manager inicial — fica para Manager dedicado JSON Schema editor
  * em sprint futura.
+ *
+ * i18n (Wave 3 followup 2026-05-21): strings PT-BR migradas para
+ * `settings.catalogs.webhook` + `settings.catalogs.common`.
  */
 
 import React, { useMemo, useState } from "react"
+import { useTranslations } from "next-intl"
 import {
   Webhook,
   Plus,
@@ -79,6 +83,8 @@ export function WebhookEventTypesManager({
   isAdmin,
   currentUserId,
 }: WebhookEventTypesManagerProps) {
+  const t = useTranslations("settings.catalogs.webhook")
+  const tc = useTranslations("settings.catalogs.common")
   const {
     eventTypes,
     masterCount,
@@ -148,11 +154,11 @@ export function WebhookEventTypesManager({
 
   async function handleSave() {
     if (!form.label.trim() || form.label.trim().length < 3) {
-      setFormError("Label deve ter pelo menos 3 caracteres")
+      setFormError(t("validationLabel"))
       return
     }
     if (!form.event_type.trim() || !/^[a-z0-9_]+\.[a-z0-9_]+$/.test(form.event_type.trim())) {
-      setFormError("Event type deve seguir 'namespace.action' (ex: candidate.applied)")
+      setFormError(t("validationEventType"))
       return
     }
     setIsSaving(true)
@@ -161,15 +167,15 @@ export function WebhookEventTypesManager({
       if (editingId === "__new__") {
         const created = await createCustom(buildData())
         if (created) {
-          flashSuccess("Event type criado")
+          flashSuccess(t("successCreate"))
           cancelEdit()
-        } else setFormError(error || "Falha ao criar")
+        } else setFormError(error || t("failCreate"))
       } else if (editingId) {
         const updated = await updateEventType(editingId, buildData())
         if (updated) {
-          flashSuccess("Event type atualizado")
+          flashSuccess(t("successUpdate"))
           cancelEdit()
-        } else setFormError(error || "Falha ao atualizar")
+        } else setFormError(error || t("failUpdate"))
       }
     } finally {
       setIsSaving(false)
@@ -178,13 +184,13 @@ export function WebhookEventTypesManager({
 
   async function handleCustomize(template: WebhookEventType) {
     const ok = await customizeMaster(template.id)
-    if (ok) flashSuccess(`Master "${template.data.label}" customizado`)
+    if (ok) flashSuccess(tc("customizedMasterFlash", { label: template.data.label }))
   }
 
   async function handleDelete(template: WebhookEventType) {
-    if (!confirm(`Excluir event type "${template.data.label}"?`)) return
+    if (!confirm(t("confirmDelete", { label: template.data.label }))) return
     const ok = await deleteEventType(template.id)
-    if (ok) flashSuccess("Event type excluído")
+    if (ok) flashSuccess(t("successDelete"))
   }
 
   function canEdit(template: WebhookEventType): boolean {
@@ -214,14 +220,14 @@ export function WebhookEventTypesManager({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <CardTitle className={`${textStyles.h4} flex items-center gap-2`}>
             <Webhook className="w-4 h-4 text-wedo-cyan" />
-            Gerenciador de Webhook Events
+            {t("title")}
           </CardTitle>
           <div className="flex items-center gap-2">
             <Chip variant="neutral" className="text-micro">
-              {masterCount} master · {customCount} custom · {total} total
+              {tc("countSummary", { master: masterCount, custom: customCount, total })}
             </Chip>
             <Button size="sm" onClick={startCreate} disabled={!!editingId}>
-              <Plus className="w-3 h-3 mr-1" /> Novo event
+              <Plus className="w-3 h-3 mr-1" /> {t("newButton")}
             </Button>
           </div>
         </div>
@@ -231,7 +237,7 @@ export function WebhookEventTypesManager({
           <div className="flex items-center gap-2 p-2 bg-status-error/10 rounded-md text-xs text-status-error">
             <AlertCircle className="w-4 h-4" />
             <span>{error}</span>
-            <Button variant="ghost" size="sm" onClick={refetch}>Tentar novamente</Button>
+            <Button variant="ghost" size="sm" onClick={refetch}>{tc("tryAgain")}</Button>
           </div>
         )}
         {successMsg && (
@@ -242,7 +248,7 @@ export function WebhookEventTypesManager({
         )}
 
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs text-lia-text-secondary">Filtrar:</span>
+          <span className="text-xs text-lia-text-secondary">{tc("filters")}</span>
           {(["all", "master", "custom"] as const).map((f) => (
             <button
               key={f}
@@ -253,7 +259,7 @@ export function WebhookEventTypesManager({
                   : "bg-lia-bg-secondary text-lia-text-secondary border border-transparent"
               }`}
             >
-              {f === "all" ? "Todos" : f === "master" ? "Master canonical" : "Customs da empresa"}
+              {f === "all" ? tc("filterAll") : f === "master" ? tc("filterMaster") : tc("filterCustom")}
             </button>
           ))}
         </div>
@@ -263,19 +269,19 @@ export function WebhookEventTypesManager({
             <CardContent className="p-3 space-y-3">
               <div className="flex items-center justify-between">
                 <h5 className={textStyles.h4}>
-                  {editingId === "__new__" ? "Criar event type" : "Editar event type"}
+                  {editingId === "__new__" ? t("formTitleCreate") : t("formTitleEdit")}
                 </h5>
                 <Button variant="ghost" size="sm" onClick={cancelEdit}>
                   <X className="w-3 h-3" />
                 </Button>
               </div>
               <Input
-                placeholder="Label (ex: Candidato aplicou em vaga)"
+                placeholder={t("placeholderLabel")}
                 value={form.label}
                 onChange={(e) => setForm({ ...form, label: e.target.value })}
               />
               <Input
-                placeholder="Event type (slug: namespace.action — ex: candidate.applied)"
+                placeholder={t("placeholderEventType")}
                 value={form.event_type}
                 onChange={(e) => setForm({ ...form, event_type: e.target.value })}
               />
@@ -283,7 +289,7 @@ export function WebhookEventTypesManager({
                 value={form.category}
                 onValueChange={(v) => setForm({ ...form, category: v as EventCategory })}
               >
-                <SelectTrigger><SelectValue placeholder="Categoria" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={t("placeholderCategory")} /></SelectTrigger>
                 <SelectContent>
                   {CATEGORIES.map((c) => (
                     <SelectItem key={c.value} value={c.value}>
@@ -293,7 +299,7 @@ export function WebhookEventTypesManager({
                 </SelectContent>
               </Select>
               <textarea
-                placeholder="Descrição (opcional)"
+                placeholder={t("placeholderDescription")}
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 rows={2}
@@ -305,7 +311,7 @@ export function WebhookEventTypesManager({
                   checked={form.deprecated}
                   onChange={(e) => setForm({ ...form, deprecated: e.target.checked })}
                 />
-                Deprecated (não recomendado para novos webhooks)
+                {t("labelDeprecated")}
               </label>
               {formError && (
                 <div className="text-xs text-status-error flex items-center gap-1">
@@ -313,10 +319,10 @@ export function WebhookEventTypesManager({
                 </div>
               )}
               <div className="flex justify-end gap-2">
-                <Button variant="outline" size="sm" onClick={cancelEdit}>Cancelar</Button>
+                <Button variant="outline" size="sm" onClick={cancelEdit}>{tc("cancel")}</Button>
                 <Button size="sm" onClick={handleSave} disabled={isSaving}>
                   {isSaving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
-                  Salvar
+                  {tc("save")}
                 </Button>
               </div>
             </CardContent>
@@ -326,7 +332,7 @@ export function WebhookEventTypesManager({
         <div className="space-y-2 max-h-content-lg overflow-y-auto">
           {filteredTemplates.length === 0 && (
             <p className="text-xs text-lia-text-secondary text-center py-4">
-              Nenhum event type nessa categoria.
+              {t("emptyList")}
             </p>
           )}
           {filteredTemplates.map((template) => {
@@ -348,12 +354,12 @@ export function WebhookEventTypesManager({
                     )}
                     {template.is_master_template && (
                       <Chip variant="neutral" className="text-micro bg-wedo-purple/15 text-wedo-purple">
-                        Master canonical
+                        {tc("masterChip")}
                       </Chip>
                     )}
                     {d.deprecated && (
                       <Chip variant="neutral" className="text-micro bg-status-error/10 text-status-error">
-                        Deprecated
+                        {tc("deprecatedChip")}
                       </Chip>
                     )}
                   </div>
@@ -363,17 +369,17 @@ export function WebhookEventTypesManager({
                 </div>
                 <div className="flex items-center gap-1">
                   {template.is_master_template && (
-                    <Button variant="ghost" size="sm" onClick={() => handleCustomize(template)} title="Customizar">
+                    <Button variant="ghost" size="sm" onClick={() => handleCustomize(template)} title={tc("customize")}>
                       <Copy className="w-3 h-3" />
                     </Button>
                   )}
                   {canEdit(template) && (
-                    <Button variant="ghost" size="sm" onClick={() => startEdit(template)} title="Editar">
+                    <Button variant="ghost" size="sm" onClick={() => startEdit(template)} title={tc("edit")}>
                       <Pencil className="w-3 h-3" />
                     </Button>
                   )}
                   {canDelete(template) && (
-                    <Button variant="ghost" size="sm" onClick={() => handleDelete(template)} title="Excluir">
+                    <Button variant="ghost" size="sm" onClick={() => handleDelete(template)} title={tc("delete")}>
                       <Trash2 className="w-3 h-3 text-status-error" />
                     </Button>
                   )}

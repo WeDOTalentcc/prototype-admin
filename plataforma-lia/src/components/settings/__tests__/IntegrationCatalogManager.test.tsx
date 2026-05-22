@@ -14,9 +14,69 @@
 import React from "react"
 import { describe, test, expect, vi, beforeEach } from "vitest"
 import { render, screen, fireEvent, within } from "@testing-library/react"
+import { NextIntlClientProvider } from "next-intl"
 
 import { IntegrationCatalogManager } from "../IntegrationCatalogManager"
 import type { IntegrationCatalogEntry } from "@/hooks/integrations/use-integration-catalog"
+
+// Mensagens mínimas espelhando `messages/pt-BR.json → settings.catalogs`.
+const CATALOG_MESSAGES = {
+  settings: {
+    catalogs: {
+      common: {
+        filters: "Filtrar:",
+        filterAll: "Todos",
+        filterAllFeminine: "Todas",
+        filterMaster: "Master canonical",
+        filterCustom: "Customs da empresa",
+        masterChip: "Master canonical",
+        defaultChip: "Default",
+        deprecatedChip: "Deprecated",
+        tryAgain: "Tentar novamente",
+        save: "Salvar",
+        cancel: "Cancelar",
+        edit: "Editar",
+        customize: "Customizar",
+        customizeHint: "Customizar (cria cópia)",
+        delete: "Excluir",
+        deleteAdminOnly: "Excluir (admin only)",
+        customizedMasterFlash: "Master \"{label}\" customizado",
+        countSummary: "{master} master · {custom} custom · {total} total",
+      },
+      integration: {
+        title: "Gerenciador de Integrações",
+        newButton: "Nova integração",
+        formTitleCreate: "Criar integration",
+        formTitleEdit: "Editar integration",
+        confirmDelete: "Excluir integration \"{label}\"?",
+        successCreate: "Integration criada",
+        successUpdate: "Integration atualizada",
+        successDelete: "Integration excluída",
+        failCreate: "Falha ao criar",
+        failUpdate: "Falha ao atualizar",
+        emptyList: "Nenhuma integration nessa categoria.",
+        validationLabel: "Label deve ter pelo menos 2 caracteres",
+        validationProvider: "Provider deve ser slug (a-z, 0-9, _)",
+        validationDescription: "Descrição é obrigatória",
+        placeholderLabel: "Label (ex: HubSpot CRM)",
+        placeholderProvider: "Provider slug (ex: hubspot)",
+        placeholderDescription: "Descrição curta",
+        placeholderCategory: "Categoria",
+        placeholderStatus: "Status",
+        placeholderLogoUrl: "Logo URL (opcional)",
+        placeholderFullDescription: "Descrição completa (opcional)",
+      },
+    },
+  },
+} as const
+
+function renderWithIntl(ui: React.ReactElement) {
+  return render(
+    <NextIntlClientProvider locale="pt-BR" messages={CATALOG_MESSAGES}>
+      {ui}
+    </NextIntlClientProvider>,
+  )
+}
 
 const masterEntry: IntegrationCatalogEntry = {
   id: "master-1",
@@ -102,7 +162,7 @@ describe("IntegrationCatalogManager — smoke (P0.G #3)", () => {
   })
 
   test("renders Manager card title + lista de integrations", () => {
-    render(
+    renderWithIntl(
       <IntegrationCatalogManager isAdmin={true} currentUserId="user-self" />,
     )
     expect(screen.getByText("Gerenciador de Integrações")).toBeInTheDocument()
@@ -112,7 +172,7 @@ describe("IntegrationCatalogManager — smoke (P0.G #3)", () => {
   })
 
   test("filter chips: clicar 'Master canonical' filtra só masters", () => {
-    render(
+    renderWithIntl(
       <IntegrationCatalogManager isAdmin={true} currentUserId="user-self" />,
     )
     expect(screen.getByText("Integração minha")).toBeInTheDocument()
@@ -125,7 +185,7 @@ describe("IntegrationCatalogManager — smoke (P0.G #3)", () => {
   })
 
   test("startCreate: clicar 'Nova integração' abre form de criação", () => {
-    render(
+    renderWithIntl(
       <IntegrationCatalogManager isAdmin={true} currentUserId="user-self" />,
     )
     expect(screen.queryByText("Criar integration")).not.toBeInTheDocument()
@@ -136,7 +196,7 @@ describe("IntegrationCatalogManager — smoke (P0.G #3)", () => {
   })
 
   test("permission gate: isAdmin=false + currentUserId=null esconde edit/delete em customs alheios", () => {
-    render(
+    renderWithIntl(
       <IntegrationCatalogManager isAdmin={false} currentUserId={null} />,
     )
 

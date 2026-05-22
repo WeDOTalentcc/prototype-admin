@@ -14,9 +14,13 @@
  *
  * Subscoping: ``metadata.capabilities`` array NAO editavel via este Manager
  * inicial (form complexo) — fica para Manager dedicado em sprint futura.
+ *
+ * i18n (Wave 3 followup 2026-05-21): strings PT-BR migradas para
+ * `settings.catalogs.integration` + `settings.catalogs.common`.
  */
 
 import React, { useMemo, useState } from "react"
+import { useTranslations } from "next-intl"
 import {
   Plug,
   Plus,
@@ -88,6 +92,8 @@ export function IntegrationCatalogManager({
   isAdmin,
   currentUserId,
 }: IntegrationCatalogManagerProps) {
+  const t = useTranslations("settings.catalogs.integration")
+  const tc = useTranslations("settings.catalogs.common")
   const {
     entries,
     masterCount,
@@ -161,15 +167,15 @@ export function IntegrationCatalogManager({
 
   async function handleSave() {
     if (!form.label.trim() || form.label.trim().length < 2) {
-      setFormError("Label deve ter pelo menos 2 caracteres")
+      setFormError(t("validationLabel"))
       return
     }
     if (!form.provider.trim() || !/^[a-z0-9_]+$/.test(form.provider.trim())) {
-      setFormError("Provider deve ser slug (a-z, 0-9, _)")
+      setFormError(t("validationProvider"))
       return
     }
     if (!form.description.trim()) {
-      setFormError("Descrição é obrigatória")
+      setFormError(t("validationDescription"))
       return
     }
     setIsSaving(true)
@@ -178,15 +184,15 @@ export function IntegrationCatalogManager({
       if (editingId === "__new__") {
         const created = await createCustom(buildData())
         if (created) {
-          flashSuccess("Integration criada")
+          flashSuccess(t("successCreate"))
           cancelEdit()
-        } else setFormError(error || "Falha ao criar")
+        } else setFormError(error || t("failCreate"))
       } else if (editingId) {
         const updated = await updateEntry(editingId, buildData())
         if (updated) {
-          flashSuccess("Integration atualizada")
+          flashSuccess(t("successUpdate"))
           cancelEdit()
-        } else setFormError(error || "Falha ao atualizar")
+        } else setFormError(error || t("failUpdate"))
       }
     } finally {
       setIsSaving(false)
@@ -195,13 +201,13 @@ export function IntegrationCatalogManager({
 
   async function handleCustomize(entry: IntegrationCatalogEntry) {
     const ok = await customizeMaster(entry.id)
-    if (ok) flashSuccess(`Master "${entry.data.label}" customizado`)
+    if (ok) flashSuccess(tc("customizedMasterFlash", { label: entry.data.label }))
   }
 
   async function handleDelete(entry: IntegrationCatalogEntry) {
-    if (!confirm(`Excluir integration "${entry.data.label}"?`)) return
+    if (!confirm(t("confirmDelete", { label: entry.data.label }))) return
     const ok = await deleteEntry(entry.id)
-    if (ok) flashSuccess("Integration excluída")
+    if (ok) flashSuccess(t("successDelete"))
   }
 
   function canEdit(entry: IntegrationCatalogEntry): boolean {
@@ -231,14 +237,14 @@ export function IntegrationCatalogManager({
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <CardTitle className={`${textStyles.h4} flex items-center gap-2`}>
             <Plug className="w-4 h-4 text-wedo-cyan" />
-            Gerenciador de Integrações
+            {t("title")}
           </CardTitle>
           <div className="flex items-center gap-2">
             <Chip variant="neutral" className="text-micro">
-              {masterCount} master · {customCount} custom · {total} total
+              {tc("countSummary", { master: masterCount, custom: customCount, total })}
             </Chip>
             <Button size="sm" onClick={startCreate} disabled={!!editingId}>
-              <Plus className="w-3 h-3 mr-1" /> Nova integração
+              <Plus className="w-3 h-3 mr-1" /> {t("newButton")}
             </Button>
           </div>
         </div>
@@ -248,7 +254,7 @@ export function IntegrationCatalogManager({
           <div className="flex items-center gap-2 p-2 bg-status-error/10 rounded-md text-xs text-status-error">
             <AlertCircle className="w-4 h-4" />
             <span>{error}</span>
-            <Button variant="ghost" size="sm" onClick={refetch}>Tentar novamente</Button>
+            <Button variant="ghost" size="sm" onClick={refetch}>{tc("tryAgain")}</Button>
           </div>
         )}
         {successMsg && (
@@ -259,7 +265,7 @@ export function IntegrationCatalogManager({
         )}
 
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs text-lia-text-secondary">Filtrar:</span>
+          <span className="text-xs text-lia-text-secondary">{tc("filters")}</span>
           {(["all", "master", "custom"] as const).map((f) => (
             <button
               key={f}
@@ -270,7 +276,7 @@ export function IntegrationCatalogManager({
                   : "bg-lia-bg-secondary text-lia-text-secondary border border-transparent"
               }`}
             >
-              {f === "all" ? "Todas" : f === "master" ? "Master canonical" : "Customs da empresa"}
+              {f === "all" ? tc("filterAllFeminine") : f === "master" ? tc("filterMaster") : tc("filterCustom")}
             </button>
           ))}
         </div>
@@ -280,24 +286,24 @@ export function IntegrationCatalogManager({
             <CardContent className="p-3 space-y-3">
               <div className="flex items-center justify-between">
                 <h5 className={textStyles.h4}>
-                  {editingId === "__new__" ? "Criar integration" : "Editar integration"}
+                  {editingId === "__new__" ? t("formTitleCreate") : t("formTitleEdit")}
                 </h5>
                 <Button variant="ghost" size="sm" onClick={cancelEdit}>
                   <X className="w-3 h-3" />
                 </Button>
               </div>
               <Input
-                placeholder="Label (ex: HubSpot CRM)"
+                placeholder={t("placeholderLabel")}
                 value={form.label}
                 onChange={(e) => setForm({ ...form, label: e.target.value })}
               />
               <Input
-                placeholder="Provider slug (ex: hubspot)"
+                placeholder={t("placeholderProvider")}
                 value={form.provider}
                 onChange={(e) => setForm({ ...form, provider: e.target.value })}
               />
               <Input
-                placeholder="Descrição curta"
+                placeholder={t("placeholderDescription")}
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
               />
@@ -306,7 +312,7 @@ export function IntegrationCatalogManager({
                   value={form.category}
                   onValueChange={(v) => setForm({ ...form, category: v as IntegrationCategory })}
                 >
-                  <SelectTrigger><SelectValue placeholder="Categoria" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t("placeholderCategory")} /></SelectTrigger>
                   <SelectContent>
                     {CATEGORIES.map((c) => (
                       <SelectItem key={c.value} value={c.value}>
@@ -319,7 +325,7 @@ export function IntegrationCatalogManager({
                   value={form.status}
                   onValueChange={(v) => setForm({ ...form, status: v as IntegrationStatus })}
                 >
-                  <SelectTrigger><SelectValue placeholder="Status" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder={t("placeholderStatus")} /></SelectTrigger>
                   <SelectContent>
                     {STATUSES.map((s) => (
                       <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
@@ -328,12 +334,12 @@ export function IntegrationCatalogManager({
                 </Select>
               </div>
               <Input
-                placeholder="Logo URL (opcional)"
+                placeholder={t("placeholderLogoUrl")}
                 value={form.logo_url}
                 onChange={(e) => setForm({ ...form, logo_url: e.target.value })}
               />
               <textarea
-                placeholder="Descrição completa (opcional)"
+                placeholder={t("placeholderFullDescription")}
                 value={form.full_description}
                 onChange={(e) => setForm({ ...form, full_description: e.target.value })}
                 rows={3}
@@ -345,10 +351,10 @@ export function IntegrationCatalogManager({
                 </div>
               )}
               <div className="flex justify-end gap-2">
-                <Button variant="outline" size="sm" onClick={cancelEdit}>Cancelar</Button>
+                <Button variant="outline" size="sm" onClick={cancelEdit}>{tc("cancel")}</Button>
                 <Button size="sm" onClick={handleSave} disabled={isSaving}>
                   {isSaving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
-                  Salvar
+                  {tc("save")}
                 </Button>
               </div>
             </CardContent>
@@ -358,7 +364,7 @@ export function IntegrationCatalogManager({
         <div className="space-y-2 max-h-content-lg overflow-y-auto">
           {filteredEntries.length === 0 && (
             <p className="text-xs text-lia-text-secondary text-center py-4">
-              Nenhuma integration nessa categoria.
+              {t("emptyList")}
             </p>
           )}
           {filteredEntries.map((entry) => {
@@ -386,7 +392,7 @@ export function IntegrationCatalogManager({
                     )}
                     {entry.is_master_template && (
                       <Chip variant="neutral" className="text-micro bg-wedo-purple/15 text-wedo-purple">
-                        Master canonical
+                        {tc("masterChip")}
                       </Chip>
                     )}
                   </div>
@@ -394,17 +400,17 @@ export function IntegrationCatalogManager({
                 </div>
                 <div className="flex items-center gap-1">
                   {entry.is_master_template && (
-                    <Button variant="ghost" size="sm" onClick={() => handleCustomize(entry)} title="Customizar">
+                    <Button variant="ghost" size="sm" onClick={() => handleCustomize(entry)} title={tc("customize")}>
                       <Copy className="w-3 h-3" />
                     </Button>
                   )}
                   {canEdit(entry) && (
-                    <Button variant="ghost" size="sm" onClick={() => startEdit(entry)} title="Editar">
+                    <Button variant="ghost" size="sm" onClick={() => startEdit(entry)} title={tc("edit")}>
                       <Pencil className="w-3 h-3" />
                     </Button>
                   )}
                   {canDelete(entry) && (
-                    <Button variant="ghost" size="sm" onClick={() => handleDelete(entry)} title="Excluir">
+                    <Button variant="ghost" size="sm" onClick={() => handleDelete(entry)} title={tc("delete")}>
                       <Trash2 className="w-3 h-3 text-status-error" />
                     </Button>
                   )}
