@@ -15,6 +15,7 @@ This is the "nuclear option" — it intercepts ALL SDK usage regardless
 of whether the caller goes through LLMService or not.
 """
 import functools
+import inspect
 import logging
 import os
 import time
@@ -205,16 +206,20 @@ def _enforce_credit_gate_sync(provider: str, kwargs: dict, *, estimator) -> None
             loop = None
 
         if loop and loop.is_running():
-            # We are being called from inside an async context but on the sync
-            # SDK method (Anthropic.messages.create is sync). Use the existing
-            # loop via run_coroutine_threadsafe-equivalent. Since SDK sync
-            # methods inside async are normally invoked via asyncio.to_thread
-            # already, we run a fresh loop in this thread.
-            new_loop = asyncio.new_event_loop()
-            try:
-                new_loop.run_until_complete(_gated())
-            finally:
-                new_loop.close()
+            # P0 fix (2026-05-22 — REGRA 4 fail-loud, no silent swallow):
+            # caller is in a running event loop but reached the SYNC gate.
+            # This means an async caller hit a sync-patched SDK method —
+            # which after the _patch_messages_api refactor should NEVER
+            # happen for AsyncAnthropic. If it does, the SDK detection in
+            # the patcher regressed; raise loudly so the bug surfaces.
+            raise RuntimeError(
+                "_enforce_credit_gate_sync called from running event loop. "
+                "This is a bug — async caller should hit "
+                "_enforce_credit_gate_async via the async-patched SDK seam. "
+                f"provider={provider} service={service}. "
+                "If you intentionally need sync-in-async, run the sync SDK "
+                "call inside asyncio.to_thread(...)."
+            )
         else:
             asyncio.run(_gated())
 
@@ -228,7 +233,16 @@ def _enforce_credit_gate_sync(provider: str, kwargs: dict, *, estimator) -> None
                 raise
         except ImportError:
             pass
-        # Fail-safe ALLOW for unexpected errors (DB outage, import failure)
+        # REGRA 4 (2026-05-22): re-raise RuntimeError instead of swallowing.
+        # The new fail-loud path in this function raises RuntimeError when
+        # called from a running event loop — that signals a harness bug
+        # (sync-in-async routing) and must surface, NOT be silently turned
+        # into a fail-safe ALLOW (which previously caused the P0 audit
+        # finding: silent bypass of credit gate for AsyncAnthropic).
+        if isinstance(exc, RuntimeError):
+            _emit_gate_call_metric(provider, service, "error")
+            raise
+        # Fail-safe ALLOW for other unexpected errors (DB outage, import failure)
         _emit_gate_call_metric(provider, service, "error")
         logger.warning(
             "[LLM-CreditGate] sync gate failed (fail-safe ALLOW) provider=%s service=%s: %s",
@@ -452,51 +466,99 @@ def _patch_anthropic() -> bool:
 
 
 def _patch_messages_api(client_instance, provider_label: str):
-    """Patch messages.create() and messages.stream() on a client instance."""
+    """Patch messages.create() and messages.stream() on a client instance.
+
+    P0 fix (2026-05-22 — async-from-sync): detects coroutine vs sync via
+    ``inspect.iscoroutinefunction`` and routes each path through the
+    matching gate helper (``_enforce_credit_gate_async`` vs
+    ``_enforce_credit_gate_sync``). Before this fix, AsyncAnthropic's
+    ``messages.create`` was patched with a sync wrapper that called
+    ``_enforce_credit_gate_sync`` from inside the running event loop, which
+    raised RuntimeError that was silently swallowed → fail-safe ALLOW →
+    REGRA 4 violation. Now sync-from-sync and async-from-async only.
+    """
     if not hasattr(client_instance, "messages"):
         return
 
     messages_obj = client_instance.messages
-    
+
     # Only patch once per instance
     if getattr(messages_obj, "_lia_patched", False):
         return
     messages_obj._lia_patched = True
 
     _orig_create = messages_obj.create
+    is_async = inspect.iscoroutinefunction(_orig_create)
 
-    @functools.wraps(_orig_create)
-    def _patched_create(*args, **kwargs):
-        caller = _get_caller()
-        # Wave 3 — credit gate BEFORE PII strip + LLM call (fail-closed on exhaust)
-        company_id = _get_tenant_id()
-        estimated = max(0, int(_estimate_tokens_anthropic(kwargs)))
-        _enforce_credit_gate_sync(provider_label, kwargs, estimator=_estimate_tokens_anthropic)
-        # PII strip messages
-        if "messages" in kwargs:
-            kwargs["messages"] = _strip_pii_from_messages(kwargs["messages"])
-        if "system" in kwargs and isinstance(kwargs["system"], str):
-            kwargs["system"] = _strip_pii(kwargs["system"])
-        
-        model = kwargs.get("model", "unknown")
-        start = time.time()
-        try:
-            result = _orig_create(*args, **kwargs)
-            latency = (time.time() - start) * 1000
-            _audit_log(provider_label, "messages.create", model=model,
-                      latency_ms=latency, caller=caller)
-            # Wave 4 Gap 2 (2026-05-22) -- reconcile estimate vs actual usage.
-            actual = _extract_response_usage_tokens(result)
-            if company_id and actual > 0:
-                _reconcile_sync(company_id, estimated, actual, service=provider_label)
-            return result
-        except Exception as e:
-            latency = (time.time() - start) * 1000
-            _audit_log(provider_label, "messages.create.ERROR", model=model,
-                      latency_ms=latency, caller=caller, error=str(e)[:100])
-            raise
+    if is_async:
+        @functools.wraps(_orig_create)
+        async def _patched_create_async(*args, **kwargs):
+            caller = _get_caller()
+            company_id = _get_tenant_id()
+            estimated = max(0, int(_estimate_tokens_anthropic(kwargs)))
+            await _enforce_credit_gate_async(
+                provider_label, kwargs, estimator=_estimate_tokens_anthropic
+            )
+            if "messages" in kwargs:
+                kwargs["messages"] = _strip_pii_from_messages(kwargs["messages"])
+            if "system" in kwargs and isinstance(kwargs["system"], str):
+                kwargs["system"] = _strip_pii(kwargs["system"])
 
-    messages_obj.create = _patched_create
+            model = kwargs.get("model", "unknown")
+            start = time.time()
+            try:
+                result = await _orig_create(*args, **kwargs)
+                latency = (time.time() - start) * 1000
+                _audit_log(provider_label, "messages.create", model=model,
+                           latency_ms=latency, caller=caller)
+                actual = _extract_response_usage_tokens(result)
+                if company_id and actual > 0:
+                    await reconcile_credits(
+                        company_id, estimated, actual, service=provider_label
+                    )
+                return result
+            except Exception as e:
+                latency = (time.time() - start) * 1000
+                _audit_log(provider_label, "messages.create.ERROR", model=model,
+                           latency_ms=latency, caller=caller, error=str(e)[:100])
+                raise
+
+        messages_obj.create = _patched_create_async
+    else:
+        @functools.wraps(_orig_create)
+        def _patched_create(*args, **kwargs):
+            caller = _get_caller()
+            company_id = _get_tenant_id()
+            estimated = max(0, int(_estimate_tokens_anthropic(kwargs)))
+            _enforce_credit_gate_sync(provider_label, kwargs, estimator=_estimate_tokens_anthropic)
+            if "messages" in kwargs:
+                kwargs["messages"] = _strip_pii_from_messages(kwargs["messages"])
+            if "system" in kwargs and isinstance(kwargs["system"], str):
+                kwargs["system"] = _strip_pii(kwargs["system"])
+
+            model = kwargs.get("model", "unknown")
+            start = time.time()
+            try:
+                result = _orig_create(*args, **kwargs)
+                latency = (time.time() - start) * 1000
+                _audit_log(provider_label, "messages.create", model=model,
+                           latency_ms=latency, caller=caller)
+                actual = _extract_response_usage_tokens(result)
+                if company_id and actual > 0:
+                    _reconcile_sync(company_id, estimated, actual, service=provider_label)
+                return result
+            except Exception as e:
+                latency = (time.time() - start) * 1000
+                _audit_log(provider_label, "messages.create.ERROR", model=model,
+                           latency_ms=latency, caller=caller, error=str(e)[:100])
+                raise
+
+        messages_obj.create = _patched_create
+
+    logger.info(
+        "[LLM-Bootstrap] Patched %s messages.create (%s)",
+        provider_label, "async" if is_async else "sync",
+    )
 
     # Patch stream if it exists
     if hasattr(messages_obj, "stream"):
@@ -505,7 +567,6 @@ def _patch_messages_api(client_instance, provider_label: str):
         @functools.wraps(_orig_stream)
         def _patched_stream(*args, **kwargs):
             caller = _get_caller()
-            # Wave 3 — credit gate BEFORE PII strip + LLM call (fail-closed on exhaust)
             company_id = _get_tenant_id()
             estimated = max(0, int(_estimate_tokens_anthropic(kwargs)))
             _enforce_credit_gate_sync(provider_label, kwargs, estimator=_estimate_tokens_anthropic)
@@ -516,8 +577,6 @@ def _patch_messages_api(client_instance, provider_label: str):
             model = kwargs.get("model", "unknown")
             _audit_log(provider_label, "messages.stream", model=model, caller=caller)
             cm = _orig_stream(*args, **kwargs)
-            # Wave 4 Gap 2 (2026-05-22) -- wrap stream context-manager so we
-            # observe accumulated usage at close() and reconcile.
             return _AnthropicStreamReconciler(cm, company_id, estimated, provider_label)
 
         messages_obj.stream = _patched_stream
