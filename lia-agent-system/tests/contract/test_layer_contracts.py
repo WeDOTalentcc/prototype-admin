@@ -213,14 +213,50 @@ class TestNoShimImports:
     """Regression guard: app.shared.agents.* must not appear anywhere in the codebase."""
 
     def test_no_remaining_shim_imports(self):
+        """Regression guard: 23 historical shim modules deleted by task-124
+        (commit 7419c32ac) must not reappear via imports.
+
+        Modules in app/shared/agents/ that are CANONICAL homes (full impl) are
+        allowed: agent_bus, agent_types, agent_registry, crew_audit, crew_context,
+        crew_examples, crew_executor, crew_models, tenant_aware_agent.
+
+        Only the 23 historical re-export shims are banned.
+        """
         import pathlib
         import re
 
         root = pathlib.Path(__file__).parent.parent.parent
 
-        # Pattern: actual import statements, not docstrings or string literals
-        import_pattern = re.compile(
-            r"^\s*(from|import)\s+app\.shared\.agents",
+        # Historical shim names deleted by task-124 — must never be re-imported.
+        banned_shim_names = (
+            "agent_interface",
+            "agent_scaffold",
+            "autonomy_engine",
+            "base_state_machine",
+            "checkpointer",
+            "confidence",
+            "enhanced_agent_mixin",
+            "execution_log_store",
+            "langgraph_base",
+            "langgraph_react_base",
+            "learning_extractor",
+            "long_term_memory",
+            "memory_integration",
+            "nodes",
+            "observability",
+            "proactive_worker",
+            "react_agent_registry",
+            "react_loop",
+            "sourcing_engagement_nodes",
+            "state_machine",
+            "streaming_callback",
+            "timed_tool_node",
+            "working_memory",
+        )
+        ban_pattern = re.compile(
+            r"^\s*(from|import)\s+app\.shared\.agents\.("
+            + "|".join(banned_shim_names)
+            + r")\b",
             re.MULTILINE,
         )
 
@@ -238,25 +274,57 @@ class TestNoShimImports:
                 source = py_file.read_text(encoding="utf-8", errors="replace")
             except OSError:
                 continue
-            if import_pattern.search(source):
+            if ban_pattern.search(source):
                 relative = py_file.relative_to(root)
                 violations.append(str(relative))
 
         assert violations == [], (
-            f"Found {len(violations)} file(s) still importing from app.shared.agents:\n"
+            f"Found {len(violations)} file(s) importing deleted shim modules from app.shared.agents.*:\n"
             + "\n".join(f"  - {v}" for v in violations)
+            + "\n\nThese modules were deleted by task-124. Import from lia_agents_core directly."
         )
 
     def test_shim_files_do_not_exist(self):
+        """Sensor against re-introduction of re-export shims in app/shared/agents/.
+
+        Canonical homes (NOT shims — full implementations) live here:
+        - agent_bus.py        — AgentBus + AgentEvent pub-sub
+        - agent_types.py      — shared agent type enums
+        - agent_registry.py   — singleton lookup for ReAct agent instances
+        - crew_audit.py       — CrewAuditService audit trail
+        - crew_context.py     — CrewContext dataclass
+        - crew_examples.py    — production handler factories
+        - crew_executor.py    — CrewPlanExecutor
+        - crew_models.py      — crew dataclasses
+        - tenant_aware_agent.py — TenantAwareAgentMixin (804 LOC)
+
+        Any NEW file in this dir must be vetted: is it a shim re-exporting
+        from lia_agents_core (forbidden), or a canonical home (allowed)?
+        Update the allowlist with a comment justifying the addition.
+        """
         import pathlib
 
         agents_dir = pathlib.Path(__file__).parent.parent.parent / "app" / "shared" / "agents"
-        allowed = {"__init__.py", "agent_bus.py", "agent_types.py"}
+        canonical_homes = {
+            "__init__.py",
+            "agent_bus.py",
+            "agent_types.py",
+            "agent_registry.py",
+            "crew_audit.py",
+            "crew_context.py",
+            "crew_examples.py",
+            "crew_executor.py",
+            "crew_models.py",
+            "tenant_aware_agent.py",
+        }
         if not agents_dir.exists():
             return
 
         existing = {p.name for p in agents_dir.iterdir() if p.is_file() and p.suffix == ".py"}
-        unexpected = existing - allowed
+        unexpected = existing - canonical_homes
         assert unexpected == set(), (
-            f"Shim files still present in app/shared/agents/: {unexpected}"
+            f"New files in app/shared/agents/: {unexpected}. "
+            "Verify they are canonical (full impl) and not shims re-exporting "
+            "from lia_agents_core. If canonical, add to the allowlist above "
+            "with a one-line comment."
         )

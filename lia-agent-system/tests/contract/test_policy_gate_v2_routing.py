@@ -31,11 +31,14 @@ def _mock_v2_engine(decision: str = "ALLOW", requires_approval: bool = False):
     engine.evaluate = AsyncMock(
         return_value=SimpleNamespace(
             decision=decision,
+            allowed=(decision == "ALLOW"),
             requires_approval=requires_approval,
+            approval_config=None,
             rate_limit_status=None,
             matching_rule=None,
             matching_rule_id=None,
             evaluation_time_ms=12.3,
+            rules_evaluated=0,
             reason=f"V2 decision={decision}",
         )
     )

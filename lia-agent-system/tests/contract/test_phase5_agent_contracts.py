@@ -151,14 +151,21 @@ class TestCommunicationAgentContract:
         assert "check_rate_limit" in all_tools
 
     def test_communication_tool_descriptions_require_company_id(self):
-        """Todas as tools de comunicação exigem company_id."""
+        """Todas as tools de comunicação exigem company_id via canonical contract.
+
+        Canonical multi-tenancy (CLAUDE.md REGRA #1 + Pydantic R2):
+        company_id NUNCA aparece na description (que vai pro LLM) — vem do JWT
+        via Depends(require_company_id) e é injetado pelo runtime_context.
+        O flag \\`ToolContract.requires_company_id=True\\` é a fonte canonical.
+        """
         from app.domains.communication.agents.communication_tool_registry import (
             get_communication_tools,
         )
         tools = get_communication_tools()
         for tool in tools:
-            assert "company_id" in tool.description, (
-                f"Tool '{tool.name}' deve exigir company_id (multi-tenant)"
+            assert tool.requires_company_id is True, (
+                f"Tool '{tool.name}' deve declarar requires_company_id=True "
+                f"(canonical multi-tenant gate via runtime_context)"
             )
 
 
@@ -195,12 +202,31 @@ class TestATSIntegrationAgentContract:
         sync_tools = [t for t in tools if "sync" in t or "fetch" in t or "validate" in t]
         assert len(sync_tools) > 0
 
-    def test_ats_agent_has_5_tools(self):
+    def test_ats_agent_has_minimum_tools(self):
+        """ATS agent has at least 5 sync tools.
+
+        Originally 5 (sync/fetch/validate/bulk/status). Grew to 8 with integration
+        catalog tools (recommend_by_industry, apply_entry, create_custom).
+        Asserts floor — new canonical tools can be added without breaking the test.
+        """
         from app.domains.ats_integration.agents.ats_integration_tool_registry import (
             get_ats_integration_tools,
         )
         tools = get_ats_integration_tools()
-        assert len(tools) == 5
+        assert len(tools) >= 5, (
+            f"ATS agent must keep at least 5 sync tools, got {len(tools)}"
+        )
+        # Sync surface canonical (audit 2026-05-22): must keep these 5 names.
+        canonical_sync_tool_names = {
+            "sync_candidate_to_ats",
+            "fetch_candidate_from_ats",
+            "validate_ats_fields",
+            "bulk_sync_candidates",
+            "get_sync_status",
+        }
+        actual_names = {t.name for t in tools}
+        missing = canonical_sync_tool_names - actual_names
+        assert not missing, f"Canonical sync tools removed: {missing}"
 
     def test_ats_stage_context_has_provider_detection_stage(self):
         from app.domains.ats_integration.agents.ats_integration_stage_context import (
@@ -209,13 +235,21 @@ class TestATSIntegrationAgentContract:
         assert "provider-detection" in STAGE_DEFINITIONS
 
     def test_ats_tool_descriptions_require_company_id(self):
+        """Todas as tools de ATS exigem company_id via canonical contract.
+
+        Canonical multi-tenancy (CLAUDE.md REGRA #1 + Pydantic R2):
+        company_id NUNCA aparece na description (que vai pro LLM) — vem do JWT
+        via Depends(require_company_id) e é injetado pelo runtime_context.
+        O flag \\`ToolContract.requires_company_id=True\\` é a fonte canonical.
+        """
         from app.domains.ats_integration.agents.ats_integration_tool_registry import (
             get_ats_integration_tools,
         )
         tools = get_ats_integration_tools()
         for tool in tools:
-            assert "company_id" in tool.description, (
-                f"Tool '{tool.name}' deve exigir company_id"
+            assert tool.requires_company_id is True, (
+                f"Tool '{tool.name}' deve declarar requires_company_id=True "
+                f"(canonical multi-tenant gate via runtime_context)"
             )
 
     def test_ats_system_prompt_mentions_gupy_or_pandape(self):

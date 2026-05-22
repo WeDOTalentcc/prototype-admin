@@ -21,12 +21,26 @@ import pytest
 pytestmark = pytest.mark.asyncio
 
 
-# Skip se rodando sem DB (gate para evitar falha em local dev sem fixture)
-_DB_AVAILABLE = bool(os.getenv("TEST_DATABASE_URL") or os.getenv("DATABASE_URL"))
+# Gate: this contract test requires an isolated TEST_DATABASE_URL plus
+# `authenticated_client` and `db_session` fixtures (not yet wired in conftest).
+#
+# Bypassing on DATABASE_URL alone is unsafe: dev DATABASE_URL points to a
+# shared DB; running this would pollute it. Until the integration fixture
+# scaffold lands (tracked TODO below), skip explicitly so the gap is visible
+# rather than disguised as a passing test.
+#
+# Companion sensor remains live: `scripts/check_wsi_calls_log_automated_decision.py`
+# (AST check that the call SITE exists in code — file:line guard).
+_TEST_DB_AVAILABLE = bool(os.getenv("TEST_DATABASE_URL"))
 
 skip_if_no_db = pytest.mark.skipif(
-    not _DB_AVAILABLE,
-    reason="TEST_DATABASE_URL/DATABASE_URL nao definido — skip contract test",
+    not _TEST_DB_AVAILABLE,
+    reason=(
+        "TEST_DATABASE_URL not set OR `authenticated_client`/`db_session` "
+        "fixtures not yet wired (tracked: WT-2022 P0.C wave 2 follow-up). "
+        "AST sensor `scripts/check_wsi_calls_log_automated_decision.py` still "
+        "guards the call-site existence."
+    ),
 )
 
 
