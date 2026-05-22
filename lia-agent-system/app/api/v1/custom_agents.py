@@ -1299,7 +1299,7 @@ Gere uma configuracao completa de agente no formato JSON com estes campos:
 - suggested_name: nome curto e descritivo (max 50 chars)
 - suggested_role: descricao do papel do agente (max 200 chars)
 - suggested_domain: um de [sourcing, screening, pipeline, analytics, communication, job_management, automation, general]
-- suggested_tools: lista de tools (escolha entre: search_candidates, list_jobs, get_job_details, get_candidate_details, summarize_context, clarify_request, move_candidate, send_email, update_candidate_field, schedule_interview)
+- suggested_tools: lista de tools (escolha entre: search_candidates, list_jobs, get_job_details, get_candidate_details, get_evaluation_criteria, summarize_context, clarify_request, move_candidate, send_email, update_candidate_field, schedule_interview)
 - suggested_prompt: system prompt completo para o agente (em portugues, 200-500 chars)
 - suggested_context_level: "full", "standard" ou "minimal"
 - suggested_max_steps: numero entre 5 e 15

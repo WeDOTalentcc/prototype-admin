@@ -734,6 +734,68 @@ async def _wrap_update_status(**kwargs: Any) -> dict[str, Any]:
             },
             "message": f"Status do candidato {candidate_id} atualizado de '{check_row['status']}' para '{status}'.",
         }
+
+@tool_handler("cv_screening")
+async def _wrap_get_evaluation_criteria(**kwargs: Any) -> dict[str, Any]:
+    """Wave 3 #24 audit 2026-05-21: tool real (era ghost P0-5 commit 98a50be64)."""
+    category = kwargs.get("category")
+    limit_raw = kwargs.get("limit", 50)
+    try:
+        limit = max(1, min(200, int(limit_raw)))
+    except (TypeError, ValueError):
+        limit = 50
+
+    logger.info(
+        "[pipeline_tools] get_evaluation_criteria called category=%s limit=%s",
+        category, limit,
+    )
+
+    try:
+        async with AsyncSessionLocal() as session:
+            from app.domains.cv_screening.repositories.evaluation_criteria_repository import (
+                EvaluationCriteriaRepository,
+            )
+
+            repo = EvaluationCriteriaRepository(session)
+            criteria_list = await repo.list_active_by_category(category=category)
+
+            items = [
+                {
+                    "id": str(c.id),
+                    "name": c.name,
+                    "category": c.category,
+                    "subcategory": c.subcategory,
+                    "evaluation_guidelines": c.evaluation_guidelines,
+                    "positive_evidences": c.positive_evidences or [],
+                    "negative_evidences": c.negative_evidences or [],
+                    "effectiveness_score": c.effectiveness_score,
+                    "usage_count": c.usage_count,
+                }
+                for c in criteria_list[:limit]
+            ]
+
+            return {
+                "success": True,
+                "data": {
+                    "criteria": items,
+                    "total": len(items),
+                    "category_filter": category,
+                },
+                "message": (
+                    f"Encontrados {len(items)} criterios"
+                    + (f" na categoria {category}" if category else "")
+                    + "."
+                ),
+            }
+    except Exception as e:
+        logger.error("[pipeline_tools] get_evaluation_criteria failed: %s", e, exc_info=True)
+        return {
+            "success": False,
+            "data": {"criteria": [], "total": 0},
+            "message": f"Erro ao carregar criterios: {type(e).__name__}",
+        }
+
+
 TOOL_DEFINITIONS: list[ToolDefinition] = [
     ToolDefinition(
         name="view_candidate_profile",
@@ -1010,6 +1072,37 @@ TOOL_DEFINITIONS.append(
         },
         output_schema=ToolOutput,
         function=_wrap_generate_report,
+    )
+)
+
+# Wave 3 #24 audit 2026-05-21: re-add get_evaluation_criteria (era removido P0-5
+# por ser ghost; agora implementado como tool real via _wrap_get_evaluation_criteria).
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
+        name="get_evaluation_criteria",
+        description="Retorna catalogo de criterios de avaliacao do produto, opcionalmente filtrado por categoria (technical_skill, behavioral_competency, experience, education, certification, language, responsibility). Use para listar criterios disponiveis antes de avaliar um candidato.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "category": {
+                    "type": "string",
+                    "description": "Categoria do criterio. Opcional.",
+                    "enum": ["technical_skill", "behavioral_competency", "experience", "education", "certification", "language", "responsibility"],
+                },
+                "limit": {
+                    "type": "integer",
+                    "description": "Max resultados (1-200, default 50).",
+                    "minimum": 1,
+                    "maximum": 200,
+                },
+            },
+            "required": [],
+        },
+        affects_candidate_decision=False,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
+        side_effects=["read"],
+        output_schema=ToolOutput,
+        function=_wrap_get_evaluation_criteria,
     )
 )
 

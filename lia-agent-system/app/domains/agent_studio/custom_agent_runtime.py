@@ -24,6 +24,7 @@ PLATFORM_TOOLS_REGISTRY: dict[str, str] = {
     "get_candidate_details": "read",
     "summarize_context": "read",
     "clarify_request": "read",
+    "get_evaluation_criteria": "read",  # Wave 3 #24 audit 2026-05-22: tool REAL implementada
     "move_candidate": "write",
     "send_email": "write",
     "update_candidate_field": "write",
