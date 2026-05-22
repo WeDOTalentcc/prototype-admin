@@ -1977,6 +1977,13 @@ class VoiceScreeningOrchestrator:
                 wsi_available=True,
             )
 
+            # F-19 P1: canonical billing via agent_pricing.compute_voice_credits
+            await self._record_voice_billing(
+                session=session,
+                duration_seconds=duration_seconds,
+                db=db,
+            )
+
             return {
                 "session_id": session_id,
                 "status": "completed",
@@ -2011,6 +2018,78 @@ class VoiceScreeningOrchestrator:
                 "error": str(e),
                 "transcript_length": len(full_transcript),
             }
+
+    async def _record_voice_billing(
+        self,
+        session: VoiceScreeningSession,
+        duration_seconds: int | None,
+        db,
+    ) -> None:
+        """F-19 P1: canonical billing via agent_pricing.compute_voice_credits.
+
+        Voice usa Twilio + Deepgram + Gemini + OpenAI TTS — todos cobram por
+        minuto/tokens, mas voice era billing ghost. Esta funcao computa custo
+        real e registra via agent_marketplace_service.record_execution.
+
+        Best-effort: nunca propaga exception (billing failure NUNCA bloqueia
+        finalize). Log warning para observability.
+
+        NOTA: tokens_input/output sao 0 por enquanto — voice nao traqueia
+        Gemini LLM token metadata ainda. Audio seconds sao capturados
+        canonicalmente. Sprint futura: estender session.llm_tokens_*.
+        """
+        if duration_seconds is None or duration_seconds <= 0:
+            return  # Nada para cobrar
+        try:
+            # Best-effort import (evita hard fail em testes que nao mockam marketplace)
+            from app.services.agent_marketplace_service import agent_marketplace_service
+            from app.services.agent_pricing import compute_voice_credits
+
+            # Pricing tier — default 'pro' ate query canonical do company
+            pricing_tier = await self._resolve_pricing_tier(session.company_id, db)
+
+            credits = compute_voice_credits(
+                total_audio_seconds=duration_seconds,
+                tokens_input=0,  # TODO sprint futura: traquear Gemini LLM tokens
+                tokens_output=0,
+                tier=pricing_tier,
+            )
+
+            if credits > 0 and db is not None:
+                # voice_screening_orchestrator agent_id = sentinel constante
+                await agent_marketplace_service.record_execution(
+                    db=db,
+                    agent_id="voice_screening_orchestrator",
+                    company_id=session.company_id,
+                    credits_consumed=credits,
+                    pricing_tier=pricing_tier,
+                )
+                logger.info(
+                    "[F-19 BILLING] Voice session billed session=%s credits=%d duration=%ds tier=%s",
+                    session.session_id, credits, duration_seconds, pricing_tier,
+                )
+        except Exception as billing_err:
+            logger.warning(
+                "[F-19 BILLING] Voice billing failed (non-blocking) session=%s: %s",
+                session.session_id, billing_err,
+            )
+
+    async def _resolve_pricing_tier(self, company_id: str, db) -> str:
+        """F-19: best-effort lookup company pricing tier; default 'pro'."""
+        if db is None or not company_id:
+            return "pro"
+        try:
+            from sqlalchemy import text
+            row = await db.execute(
+                text("SELECT pricing_tier FROM companies WHERE id = :cid LIMIT 1"),
+                {"cid": company_id},
+            )
+            r = row.first()
+            if r and r[0]:
+                return str(r[0])
+        except Exception:
+            pass
+        return "pro"
 
     async def _log_finalize_screening_audit(
         self,
