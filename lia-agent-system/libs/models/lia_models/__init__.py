@@ -776,3 +776,5 @@ from lia_models.wsi_question_effectiveness import WsiQuestionEffectiveness
 from lia_models.webhook_event_type import WebhookEventType
 from lia_models.alert_rule_template import AlertRuleTemplate
 from lia_models.pipeline_stage_template import PipelineStageTemplate
+from lia_models.company_webhook_secret import CompanyWebhookSecret
+from lia_models.credentials_access_log import CredentialsAccessLog
