@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.auth.dependencies import assert_resource_ownership, get_current_user_or_demo, get_user_company_id
+from app.auth.dependencies import assert_resource_ownership, get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
 from app.models.job_draft import DraftFieldHistory, JobDraft, JobDraftStatus
@@ -193,8 +193,8 @@ company_id: str = Depends(require_company_id)):
     """
     List all job drafts for the user's company with pagination and optional status filter.
     """
-    company_id = get_user_company_id(current_user)
-    
+    # company_id vem do Depends(require_company_id) - JWT canonical
+    # (shadow assignment com get_user_company_id removido 2026-05-22, P1 cleanup)
     conditions = [JobDraft.company_id == company_id]
     
     if status:
@@ -318,8 +318,8 @@ company_id: str = Depends(require_company_id)):
     """
     Create a new job draft from raw input text.
     """
-    company_id = get_user_company_id(current_user)
-    
+    # company_id vem do Depends(require_company_id) - JWT canonical
+    # (shadow assignment com get_user_company_id removido 2026-05-22, P1 cleanup)
     draft = JobDraft(
         company_id=company_id,
         recruiter_id=str(current_user.id),
