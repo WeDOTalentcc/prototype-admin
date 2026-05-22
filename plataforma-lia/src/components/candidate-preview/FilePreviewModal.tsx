@@ -481,7 +481,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                   {/* Indicador do tipo de áudio */}
                   <div className="mb-3 p-2 bg-lia-bg-secondary border border-lia-border-subtle rounded-xl">
                     <div className="flex items-center gap-2">
-                      <Chip variant="neutral" muted className="text-xs px-1.5 py-0.5 bg-lia-btn-primary-bg text-lia-btn-primary-text border-0">
+                      <Chip variant="neutral" muted className="text-xs px-1.5 py-0.5 border-0">
                         {selectedFile.audioType === 'interview' ? 'Entrevista Gravada' : 'Áudio de Triagem'}
                       </Chip>
                       <span className={textStyles.bodySmall}>Duração: {selectedFile.duration || '4:32'}</span>

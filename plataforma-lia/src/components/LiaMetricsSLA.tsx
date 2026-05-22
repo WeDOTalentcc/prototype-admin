@@ -178,7 +178,7 @@ export function LiaMetricsSLA({
               <div className="p-3 bg-wedo-purple/10 dark:bg-lia-bg-secondary rounded-xl">
                 <div className="flex items-center justify-between mb-2">
                   <Clock className="w-5 h-5 text-wedo-purple" />
-                  <Chip variant="neutral" muted className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs">
+                  <Chip variant="neutral" muted className="text-xs">
                     Total
                   </Chip>
                 </div>

@@ -144,7 +144,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                         {t('testLibrary.test1Desc')}
                       </p>
                     </div>
-                    <Chip variant="neutral" muted className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs">{t('testLibrary.badgePopular')}</Chip>
+                    <Chip variant="neutral" muted className="text-xs">{t('testLibrary.badgePopular')}</Chip>
                   </div>
 
                   <div className="bg-lia-bg-secondary rounded-xl p-3 mb-3">
@@ -158,7 +158,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                           <div className="flex items-baseline gap-2">
                             <p className="text-2xl font-semibold text-lia-text-primary">7.4</p>
                             <span className="text-xs text-lia-text-primary">/10</span>
-                            <Chip variant="neutral" muted className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs">
+                            <Chip variant="neutral" muted className="text-xs">
                               <TrendingUp className="w-2.5 h-2.5 mr-0.5" />
                               +0.3
                             </Chip>
@@ -446,7 +446,7 @@ export function TestLibraryModal({ open, onClose, onTestPreview, onTestHistoryOp
                     </div>
                     <div className="flex items-center justify-between text-xs">
                       <span className="text-lia-text-primary">{t('testLibrary.levelLabel')}</span>
-                      <Chip variant="neutral" muted className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs">{t('testLibrary.levelJunior')}</Chip>
+                      <Chip variant="neutral" muted className="text-xs">{t('testLibrary.levelJunior')}</Chip>
                     </div>
                   </div>
 

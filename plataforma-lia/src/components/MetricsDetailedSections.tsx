@@ -236,7 +236,7 @@ export function MetricsDetailedSections({
                 <div className="text-xs text-lia-text-secondary mt-1">SLA: 5 dias</div>
               </div>
               <div className="p-3 bg-wedo-purple/10 dark:bg-lia-bg-secondary rounded-xl">
-                <div className="flex items-center justify-between mb-2"><Clock className="w-5 h-5 text-wedo-purple" /><Chip variant="neutral" muted className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs">Total</Chip></div>
+                <div className="flex items-center justify-between mb-2"><Clock className="w-5 h-5 text-wedo-purple" /><Chip variant="neutral" muted className="text-xs">Total</Chip></div>
                 <div className="text-2xl font-semibold text-lia-text-primary">{avgTimeTotal.toFixed(1)}d</div>
                 <div className="text-xs text-lia-text-secondary mt-1">Tempo Total</div>
                 <div className="text-xs text-lia-text-secondary mt-1">Contato → Entrevista</div>

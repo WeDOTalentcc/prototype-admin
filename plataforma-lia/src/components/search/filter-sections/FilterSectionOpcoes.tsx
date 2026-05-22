@@ -36,7 +36,7 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
 
           <div className="flex items-end justify-between">
             <div>
-              <div className="text-base font-bold text-lia-text-primary">
+              <div className="text-sm font-semibold text-lia-text-primary">
                 {creditEstimate.cost_per_candidate} cred + ${creditEstimate.apify_cost_per_candidate ?? 0.01}
               </div>
               <div className="text-xs text-lia-text-secondary">por candidato (créditos + Apify)</div>

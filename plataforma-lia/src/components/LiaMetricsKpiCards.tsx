@@ -111,7 +111,7 @@ export function LiaMetricsKpiCards({ data }: LiaMetricsKpiCardsProps) {
         <CardContent className="p-3">
           <div className="flex items-center justify-between mb-1">
             <Zap className="w-4 h-4 text-lia-text-secondary" />
-            <Chip variant="neutral" muted className="text-xs px-1.5 py-0.5 bg-lia-btn-primary-bg text-lia-btn-primary-text">
+            <Chip variant="neutral" muted className="text-xs px-1.5 py-0.5">
               {avgLiaScore.toFixed(1)}
             </Chip>
           </div>

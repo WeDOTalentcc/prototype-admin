@@ -105,7 +105,7 @@ export function TemplatesTab({
                 onClick={() => handleChannelFilterChange(key)}
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-medium transition-colors motion-reduce:transition-none ${
                   channelFilter === key
-                    ? 'bg-lia-btn-primary-bg text-lia-btn-primary-text'
+                    ? 'bg-lia-bg-secondary text-lia-text-primary border border-lia-border-default'
                     : 'bg-lia-bg-tertiary text-lia-text-secondary hover:bg-lia-interactive-active dark:bg-lia-bg-elevated'
                 }`}
               >
@@ -230,7 +230,7 @@ export function TemplatesTab({
                                       </div>
                                     </div>
                                   </div>
-                                  <Chip variant="neutral" muted={!template.isActive} className="text-micro flex-shrink-0 bg-lia-btn-primary-bg text-lia-btn-primary-text">
+                                  <Chip variant="neutral" muted={!template.isActive} className="text-micro flex-shrink-0">
                                     {template.isActive ? t("active") : t("inactive")}
                                   </Chip>
                                 </div>
@@ -257,7 +257,7 @@ export function TemplatesTab({
                         <Button variant="ghost" size="sm" onClick={() => setEditingTemplate(null)}>
                           <X className="w-3.5 h-3.5" />
                         </Button>
-                        <Button size="sm" className="py-1.5 px-2 text-xs bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active" onClick={handleSaveTemplate}>
+                        <Button size="sm" className="py-1.5 px-2 text-xs hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active" onClick={handleSaveTemplate}>
                           <Save className="w-3.5 h-3.5 mr-1" />
                           {t("save")}
                         </Button>
@@ -366,7 +366,7 @@ export function TemplatesTab({
                         <Button
                           onClick={handleAdjustWithAI}
                           disabled={isGenerating || !aiPrompt.trim()}
-                          className="gap-1.5 rounded-md py-2 px-3 text-xs min-w-[100px] bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover disabled:bg-lia-border-medium dark:hover:bg-lia-interactive-active dark:disabled:bg-lia-border-medium"
+                          className="gap-1.5 rounded-md py-2 px-3 text-xs min-w-[100px] hover:bg-lia-btn-primary-hover disabled:bg-lia-border-medium dark:hover:bg-lia-interactive-active dark:disabled:bg-lia-border-medium"
                         >
                           {isGenerating ? (
                             <><Loader2 className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none" />{t("adjusting")}</>
@@ -413,7 +413,7 @@ export function TemplatesTab({
                           </label>
                           <div className="flex flex-wrap gap-1.5">
                             {aiResultModal.changesMade.map((change, idx) => (
-                              <Chip variant="neutral" muted key={idx} className="text-xs px-2 py-0.5 rounded-full  dark:bg-status-success dark:text-status-success">
+                              <Chip variant="neutral" muted key={idx} className="text-xs px-2 py-0.5 rounded-full dark:bg-status-success dark:text-status-success">
                                 <Check className="w-3 h-3 mr-1" />
                                 {change}
                               </Chip>
@@ -443,7 +443,7 @@ export function TemplatesTab({
                       </CardContent>
                       <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle p-4 flex items-center justify-end gap-3">
                         <Button variant="outline" onClick={handleCancelAIAdjustment} className="rounded-xl px-4 py-2 text-xs">{t("cancel")}</Button>
-                        <Button onClick={handleConfirmAIAdjustment} className="rounded-xl px-4 py-2 text-xs gap-1.5 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active">
+                        <Button onClick={handleConfirmAIAdjustment} className="rounded-xl px-4 py-2 text-xs gap-1.5 hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active">
                           <Check className="w-3.5 h-3.5" />
                           {t("applyAdjustments")}
                         </Button>

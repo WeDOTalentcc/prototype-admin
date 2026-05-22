@@ -100,7 +100,7 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
                   {t('questionUX2')}
                 </h4>
                 <div className="flex items-center gap-2">
-                  <Chip variant="neutral" muted className="bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-bg-tertiary text-xs">{t('highRelevanceBadge')}</Chip>
+                  <Chip variant="neutral" muted className="dark:bg-lia-bg-tertiary text-xs">{t('highRelevanceBadge')}</Chip>
                   <Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary text-xs">3 min</Chip>
                 </div>
               </div>

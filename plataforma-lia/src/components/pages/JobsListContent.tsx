@@ -179,7 +179,7 @@ export function JobsListContent(props: JobsListContentProps) {
               icon={<Target />}
               trailing={
                 getActiveJobFiltersCount() > 0 ? (
-                  <Chip variant="neutral" muted className="bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-btn-primary-bg ml-1 text-xs font-bold">{getActiveJobFiltersCount()}</Chip>
+                  <Chip variant="neutral" muted className="ml-1 text-xs">{getActiveJobFiltersCount()}</Chip>
                 ) : null
               }
             >
@@ -192,7 +192,7 @@ export function JobsListContent(props: JobsListContentProps) {
               title={t('configureColumns')}
               icon={<ChevronsLeftRight />}
               trailing={
-                <Chip variant="neutral" muted className={`ml-1 text-xs ${showColumnConfig ? 'bg-lia-btn-primary-hover text-white dark:bg-lia-bg-tertiary font-bold' : 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated'}`}>6</Chip>
+                <Chip variant="neutral" muted className={`ml-1 text-xs ${showColumnConfig ? 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated' : 'bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated'}`}>6</Chip>
               }
             >
               {t('columns')}
@@ -276,7 +276,7 @@ export function JobsListContent(props: JobsListContentProps) {
                 </span>
               </div>
               {selectedJobsForBatch.size > 0 && (
-                <Chip variant="neutral" muted className="bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs px-1.5 py-0.5">{selectedJobsForBatch.size}</Chip>
+                <Chip variant="neutral" muted className="text-xs px-1.5 py-0.5">{selectedJobsForBatch.size}</Chip>
               )}
             </div>
           ) : (

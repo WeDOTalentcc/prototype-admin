@@ -156,7 +156,7 @@ export function TestHistoryModal({ open, onClose, testName }: TestHistoryModalPr
                 <div className="flex-1">
                   <div className="flex items-center gap-3 mb-2">
                     <h4 className="font-medium text-lia-text-primary">UX Designer Sênior</h4>
-                    <Chip variant="neutral" muted className="bg-lia-btn-primary-bg text-lia-btn-primary-text dark:bg-lia-bg-tertiary text-xs">{t('testHistory.statusFinished')}</Chip>
+                    <Chip variant="neutral" muted className="dark:bg-lia-bg-tertiary text-xs">{t('testHistory.statusFinished')}</Chip>
                     <span className="text-xs text-lia-text-primary">Sodexo • São Paulo</span>
                   </div>
                   <div className="flex items-center gap-6 text-xs text-lia-text-secondary">
