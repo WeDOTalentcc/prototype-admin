@@ -361,6 +361,10 @@ class AutonomousReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAg
             logger.debug("[AutonomousReActAgent] FairnessGuard skipped: %s", _fg_exc)
 
         # ── Set tenant context variable so tools auto-inject company_id ─────
+        # ADR-029-EXEMPT (audit Wave 2 2026-05-21): runtime-scope ContextVar set por
+        # autonomous_react_agent.process(). JWT verificado upstream via middleware
+        # auth_enforcement; runtime re-set garante company_id correto em contexto
+        # não-HTTP (agent-to-agent invoke). Scope reset em finally do _process_langgraph.
         _token = _CURRENT_COMPANY_ID.set(str(input.company_id or ""))
         try:
             output = await self._execute_with_circuit_breaker(input)

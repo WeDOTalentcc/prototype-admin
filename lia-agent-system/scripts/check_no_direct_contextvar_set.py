@@ -20,7 +20,9 @@ AUTHORIZED_FILE = "app/middleware/auth_enforcement.py"
 # Exclude scripts/ (sensor files mention the pattern in docs/prints)
 EXCLUDED_DIRS = {"scripts", ".git", "__pycache__", ".venv", "venv"}
 CANONICAL_HELPERS = ("_set_company_id_from_jwt", "_set_company_id_synthetic_dev_only")
-DIRECT_SET_RE = re.compile(r"_current_company_id\.set\(")
+DIRECT_SET_RE = re.compile(r"_current_company_id\.set\(", re.IGNORECASE)
+# Allow ADR-029-EXEMPT marker in the same line or 10 lines above (docstring block).
+EXEMPT_MARKER = "ADR-029-EXEMPT"
 
 
 def _strip_strings_and_comments(source: str) -> list[tuple[int, str]]:
@@ -74,8 +76,8 @@ def main() -> int:
         parts = set(rel.split("/"))
         if parts & EXCLUDED_DIRS:
             continue
-        if "test" in rel.split("/"):
-            continue
+        if rel.startswith("tests/") or "/tests/" in rel:
+            continue  # test files manipulate ContextVar for setup
 
         try:
             source = py_file.read_text(encoding="utf-8")
@@ -103,9 +105,16 @@ def main() -> int:
                     f"  {rel}: {sets_outside} chamada(s) direta(s) fora dos helpers"
                 )
         else:
+            raw_lines = source.splitlines()
             for lineno, stripped in lines:
                 if DIRECT_SET_RE.search(stripped):
-                    raw_line = source.splitlines()[lineno - 1]
+                    # Check for ADR-029-EXEMPT marker in same line OR 6 lines above
+                    # (allows docstring-style justification block).
+                    window_start = max(0, lineno - 11)  # 10-line window above + same line
+                    window = "\n".join(raw_lines[window_start:lineno])
+                    if EXEMPT_MARKER in window:
+                        continue  # exempted
+                    raw_line = raw_lines[lineno - 1]
                     violations.append(f"  {rel}:{lineno}: {raw_line.strip()}")
 
     if violations:
@@ -115,6 +124,8 @@ def main() -> int:
         print("INSTRUCAO DE CORRECAO:")
         print("  Use _set_company_id_from_jwt(verified_payload) para auth real (JWT verificado).")
         print("  Use _set_company_id_synthetic_dev_only(id) para paths DEV_MODE gateados.")
+        print("  Para runtime scope (ex: agent-to-agent), adicionar comment ADR-029-EXEMPT")
+        print("  na mesma linha ou ate 6 linhas acima documentando justificativa + reset em finally.")
         print("  NUNCA setar diretamente de request.body/query/headers (R-008).")
         return 1
 

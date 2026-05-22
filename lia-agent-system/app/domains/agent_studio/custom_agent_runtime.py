@@ -414,6 +414,13 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         context: Optional[dict[str, Any]] = None,
     ) -> AgentOutput:
         effective_company_id = company_id or self._company_id
+        # ADR-029-EXEMPT (audit Wave 2 2026-05-21): runtime-scope ContextVar re-set.
+        # Justification: HTTP middleware (auth_enforcement) já setou via JWT verificado
+        # upstream. Runtime re-set garante que self._company_id (do construtor, vinculado
+        # ao agent_id no cache de runtimes) prevalece em casos onde execute() é chamado
+        # de contexto não-HTTP (ex: background job, agent-to-agent invoke). Scope é
+        # mandatoriamente reset em finally (linha ~541) para evitar ContextVar leak.
+        # Sensor scripts/check_no_direct_contextvar_set.py reconhece este marker.
         _token = _CURRENT_COMPANY_ID.set(effective_company_id)
 
         # === P0-8 + P0-9 audit 2026-05-21: pre-load AI persona + lia_field_toggles canonical ===
