@@ -6,8 +6,7 @@ import {
   Brain, Upload, Plus, Star, Users,
   ThumbsUp, ThumbsDown, HelpCircle, ChevronRight, X,
   UserCheck, BookOpen, Lightbulb,
-  FileText, ArrowRight, Info, Loader2
-} from "lucide-react"
+  FileText, ArrowRight, Info, Loader2, AlertCircle} from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
 import { Button } from "@/components/ui/button"
@@ -151,6 +150,8 @@ export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDig
   const [description, setDescription] = useState("")
   const [decisionsFile, setDecisionsFile] = useState<File | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  // Wave 3 #17 audit 2026-05-22: LGPD disclosure step antes do form de criação.
+  const [hasAcceptedDisclosure, setHasAcceptedDisclosure] = useState(false)
   const fileInputRef = React.useRef<HTMLInputElement>(null)
 
   const handleClose = () => {
@@ -158,6 +159,7 @@ export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDig
     setSpecialty("")
     setDescription("")
     setDecisionsFile(null)
+    setHasAcceptedDisclosure(false)
     onClose()
   }
 
@@ -236,6 +238,56 @@ export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDig
           </DialogDescription>
         </DialogHeader>
 
+        {!hasAcceptedDisclosure ? (
+          // Wave 3 #17 audit 2026-05-22: LGPD disclosure step canonical
+          <div className="space-y-4 py-2">
+            <div className="rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 p-4">
+              <div className="flex items-start gap-3">
+                <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                <div className="space-y-2">
+                  <h4 className="text-sm font-semibold text-amber-900 dark:text-amber-300">
+                    Aviso LGPD — Indexação de Decisões Históricas
+                  </h4>
+                  <p className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed">
+                    Esta funcionalidade indexa decisões históricas (aprovações,
+                    rejeições, raciocínios) do avaliador escolhido para que a LIA
+                    aprenda o padrão e ofereça segunda opinião automática.
+                  </p>
+                  <p className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed">
+                    Armazena referências ao candidato (candidate_id) e snapshots
+                    sem PII direta (sem nome), conforme LGPD Art. 6 + Art. 11.
+                    Embeddings derivam do raciocínio do avaliador, não dos dados
+                    pessoais do candidato.
+                  </p>
+                  <p className="text-sm text-amber-800 dark:text-amber-200 leading-relaxed">
+                    Ao confirmar você atesta que (1) candidatos foram informados
+                    sobre análise comportamental no processo (LGPD Art. 11);
+                    (2) o avaliador autorizou uso das decisões como treinamento;
+                    (3) o sistema preserva direito de eliminação (LGPD Art. 18) —
+                    referência no twin é anonimizada via FK SET NULL quando
+                    candidato solicita exclusão.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button
+                className={buttonStyles.secondary}
+                onClick={handleClose}
+                aria-label="Cancelar criação do Digital Twin"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={() => setHasAcceptedDisclosure(true)}
+                className={buttonStyles.primary}
+                aria-label="Confirmo ciência LGPD e continuo para criação"
+              >
+                Confirmo — Continuar
+              </Button>
+            </div>
+          </div>
+        ) : (
         <div className="space-y-4 py-2">
           <div className={formStyles.fieldGroup}>
             <label className={formStyles.labelRequired}>{t("nameLabel")}</label>
@@ -324,8 +376,9 @@ export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDig
             </p>
           </div>
         </div>
+        )}
 
-        <DialogFooter>
+        {hasAcceptedDisclosure && <DialogFooter>
           <Button className={buttonStyles.secondary} onClick={handleClose}>
             {t("cancel")}
           </Button>
@@ -346,7 +399,7 @@ export function CreateDigitalTwinModal({ isOpen, onClose, onCreated }: CreateDig
               </>
             )}
           </Button>
-        </DialogFooter>
+        </DialogFooter>}
       </DialogContent>
     </Dialog>
   )
