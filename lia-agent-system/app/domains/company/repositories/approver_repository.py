@@ -1,8 +1,9 @@
 """ApproverRepository - session-in-constructor pattern."""
 import logging
+from decimal import Decimal
 from uuid import UUID
 
-from sqlalchemy import select
+from sqlalchemy import select, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.company import Approver
@@ -45,6 +46,61 @@ class ApproverRepository:
         await self.db.commit()
         await self.db.refresh(approver)
         return approver
+
+    async def list_for_department(
+        self,
+        company_id: UUID,
+        department_id: UUID | None = None,
+        is_active: bool = True,
+    ) -> list[Approver]:
+        """List approvers per-department OR company-wide.
+
+        P0.D2 (audit Wave 2 2026-05-22): a company-wide approver
+        (``department_id IS NULL``) is always returned regardless of the
+        ``department_id`` filter — they approve across all departments.
+        Per-department approvers are returned only when matched.
+
+        Multi-tenancy: ``company_id`` filter is fail-closed (REGRA 1).
+        Sort by ``level`` (ascending) preserves seniority ordering.
+        """
+        stmt = select(Approver).where(
+            Approver.company_id == company_id,
+            Approver.is_active == is_active,
+            or_(
+                Approver.department_id == department_id,
+                Approver.department_id.is_(None),
+            ),
+        ).order_by(Approver.level)
+        result = await self.db.execute(stmt)
+        return list(result.scalars().all())
+
+    async def list_eligible_for_amount(
+        self,
+        company_id: UUID,
+        department_id: UUID | None,
+        amount: Decimal,
+    ) -> list[Approver]:
+        """Return approvers eligible to approve a given offer amount.
+
+        P0.D2 (audit Wave 2 2026-05-22): amount-threshold routing.
+        ``can_approve_above_amount IS NULL`` = approver pode aprovar
+        qualquer valor (backward-compat). Caso contrário, approver é
+        elegível só quando ``can_approve_above_amount <= amount``
+        (i.e., o threshold dele cobre o valor da oferta).
+
+        Filtering is done in Python (not SQL) because the per-department
+        composition is already in-memory after ``list_for_department``,
+        and the result set is small (< 50 per company in practice).
+        """
+        approvers = await self.list_for_department(
+            company_id, department_id
+        )
+        return [
+            a
+            for a in approvers
+            if a.can_approve_above_amount is None
+            or a.can_approve_above_amount <= amount
+        ]
 
     async def delete(self, approver_id: UUID) -> bool:
         approver = await self.get_by_id(approver_id)

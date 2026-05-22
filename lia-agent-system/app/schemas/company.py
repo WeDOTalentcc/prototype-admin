@@ -1,6 +1,7 @@
 """
 Pydantic schemas for Company Setup endpoints.
 """
+from decimal import Decimal
 from datetime import datetime
 from typing import Any
 from uuid import UUID
@@ -713,10 +714,22 @@ class ApproverBase(BaseModel):
     role: str | None = None
     level: int = 1
     user_id: UUID | None = None
+    # P0.D2 (audit Wave 2 2026-05-22): per-department routing + amount threshold.
+    # Both NULL = backward-compat (company-wide, any-amount approver).
+    department_id: UUID | None = None
+    can_approve_above_amount: Decimal | None = None
 
 
-class ApproverCreate(ApproverBase):
-    pass
+class ApproverCreate(WeDoBaseModel):
+    # R1 canonical: extra=forbid via WeDoBaseModel (audit 2026-05-20 + 2026-05-22).
+    # R2 canonical: NO company_id field — vem do JWT via Depends(require_company_id).
+    user_name: str
+    email: str
+    role: str | None = None
+    level: int = 1
+    user_id: UUID | None = None
+    department_id: UUID | None = None
+    can_approve_above_amount: Decimal | None = None
 
 
 class ApproverUpdate(WeDoBaseModel):
@@ -725,6 +738,8 @@ class ApproverUpdate(WeDoBaseModel):
     role: str | None = None
     level: int | None = None
     user_id: UUID | None = None
+    department_id: UUID | None = None
+    can_approve_above_amount: Decimal | None = None
     is_active: bool | None = None
 
 

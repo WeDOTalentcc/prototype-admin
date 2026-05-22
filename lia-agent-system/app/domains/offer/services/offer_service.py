@@ -299,6 +299,25 @@ def check_salary_warnings(
     return warnings
 
 
+
+class NoEligibleApproverForAmountError(OfferPolicyGateError):
+    """Raised when no approver has a ``can_approve_above_amount`` threshold
+    that covers the offer salary.
+
+    P0.D2 (audit Wave 2 2026-05-22): when the company has configured
+    amount-threshold routing (at least one approver row with
+    ``can_approve_above_amount`` set), every send must route to an
+    approver whose threshold covers the offer salary. If no such
+    approver exists for this amount, the gate refuses send. ``amount``
+    and ``max_configured_threshold`` are exposed so the UX can prompt
+    the admin to configure a higher-tier approver.
+    """
+
+    def __init__(self, message: str, *, amount=None, max_configured_threshold=None):
+        super().__init__(message)
+        self.amount = amount
+        self.max_configured_threshold = max_configured_threshold
+
 class OfferService:
 
     def __init__(self, db: AsyncSession):
@@ -562,6 +581,36 @@ class OfferService:
                 "a politica em Configuracoes > Politicas de Recrutamento > "
                 "Aprovacao Gestor."
             )
+        # --- Gate 1.5: amount-threshold approver routing (P0.D2) -----------
+        # Audit Wave 2 2026-05-22: when the company has at least one
+        # approver row configured with a non-NULL ``can_approve_above_amount``
+        # threshold, the offer salary must be covered by at least one
+        # eligible approver. Backward-compat: if every approver has NULL
+        # threshold (legacy), every approver is eligible -> gate no-op.
+        # Type guard: only fire the gate when salary is a real numeric value.
+        # OfferProposal.salary is Numeric(12,2) -> Decimal at the ORM layer,
+        # but unit tests pass MagicMock proposals where ``salary`` may be a
+        # MagicMock or any non-numeric placeholder. Treating those as
+        # "no salary set" preserves the pre-existing gate semantics
+        # exercised by test_offer_approval_gate.py.
+        from decimal import Decimal as _Decimal
+        salary = getattr(proposal, "salary", None)
+        if isinstance(salary, (int, float, _Decimal)):
+            department_id = getattr(proposal, "department_id", None)
+            if not isinstance(department_id, (str, type(None))) and not hasattr(department_id, "hex"):
+                department_id = None  # ignore MagicMock department_id
+            eligible_ok = await self._has_eligible_approver_for_amount(
+                company_id, department_id, salary,
+            )
+            if not eligible_ok:
+                raise NoEligibleApproverForAmountError(
+                    "Nenhum aprovador configurado pode aprovar este valor. "
+                    "Verifique em Configuracoes > Departamentos > Aprovadores "
+                    "se ha um aprovador cujo limite cobre R$ %s."
+                    % salary,
+                    amount=salary,
+                )
+
         # --- Gate 2: min interviews completed (P1-9) ------------------------
         await self._check_min_interviews_met(proposal, company_id)
 
@@ -710,6 +759,51 @@ class OfferService:
             )
             return False
 
+    async def _has_eligible_approver_for_amount(
+        self,
+        company_id,
+        department_id,
+        amount,
+    ) -> bool:
+        """Return True iff at least one configured approver can approve this amount.
+
+        P0.D2 (audit Wave 2 2026-05-22): wraps
+        :class:`ApproverRepository.list_eligible_for_amount`. NULL
+        ``can_approve_above_amount`` on every row = legacy/backward-compat
+        (no amount routing configured), which always returns True because
+        every approver is eligible.
+
+        Fails CLOSED on repo exception (same trade-off as
+        ``_has_active_approvers``): an offer leaving without a threshold
+        match is higher compliance risk than blocking a legitimate offer
+        while SRE investigates.
+
+        ``amount`` may be ``None`` when the draft has no salary yet — we
+        treat that as 0 (every approver qualifies), keeping the gate
+        forward-permissive for incomplete drafts.
+        """
+        from decimal import Decimal
+        try:
+            if isinstance(company_id, UUID):
+                lookup_id = company_id
+            else:
+                try:
+                    lookup_id = UUID(str(company_id))
+                except (TypeError, ValueError):
+                    lookup_id = company_id  # type: ignore[assignment]
+            amt = Decimal(str(amount)) if amount is not None else Decimal("0")
+            eligible = await self._approver_repo.list_eligible_for_amount(
+                lookup_id, department_id, amt
+            )
+            return len(eligible) > 0
+        except Exception as exc:
+            logger.warning(
+                "[OfferService] _has_eligible_approver_for_amount lookup "
+                "failed; gate fails CLOSED. company_id=%s amount=%s err=%s",
+                company_id, amount, str(exc)[:120],
+            )
+            return False
+
     async def mark_sent(
         self,
         offer_id: UUID,
@@ -759,6 +853,25 @@ class OfferService:
         # completed interview" never drifts between the two enforcement
         # sites.
         await self._check_min_interviews_met(proposal, company_id)
+        # P0.D2 defense-in-depth (audit Wave 2 2026-05-22): if pre-flight
+        # ``check_can_send`` was skipped, enforce amount-threshold here too.
+        # Same reasoning as the approval/min-interviews duplications above:
+        # a caller forgetting the pre-flight cannot bypass the gate.
+        from decimal import Decimal as _Decimal
+        salary = getattr(proposal, "salary", None)
+        if isinstance(salary, (int, float, _Decimal)):
+            department_id = getattr(proposal, "department_id", None)
+            if not isinstance(department_id, (str, type(None))) and not hasattr(department_id, "hex"):
+                department_id = None
+            if not await self._has_eligible_approver_for_amount(
+                company_id, department_id, salary,
+            ):
+                raise NoEligibleApproverForAmountError(
+                    "Nenhum aprovador configurado pode aprovar este valor. "
+                    "Verifique em Configuracoes > Departamentos > Aprovadores "
+                    "se ha um aprovador cujo limite cobre R$ %s." % salary,
+                    amount=salary,
+                )
         proposal.status = "sent"
         # Sprint F.4 #42: send_mode + sent_by_user_id + email_log_id have NO
         # direct canonical columns. Append a multi-channel record to sent_via
