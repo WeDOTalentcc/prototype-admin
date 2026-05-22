@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthHeaders } from "@/lib/api/auth-headers"
 import { z } from 'zod'
 import { validateQuery } from '@/lib/api/validate'
 

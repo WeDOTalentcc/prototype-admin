@@ -1,14 +1,8 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
+import { getAuthHeaders } from "@/lib/api/auth-headers"
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001"
-
-function getAuthHeaders(request: NextRequest): HeadersInit {
-  const h: HeadersInit = { "Content-Type": "application/json" }
-  const a = request.headers.get("Authorization")
-  if (a) h["Authorization"] = a
-  return h
-}
 
 export async function GET(
   request: NextRequest,

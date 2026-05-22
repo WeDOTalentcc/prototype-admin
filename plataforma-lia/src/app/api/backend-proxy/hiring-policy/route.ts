@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthHeaders } from "@/lib/api/auth-headers"
 import { validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 import { cookies } from 'next/headers'
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest) {
 
     const response = await fetch(backendUrl, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(request),
     })
 
     if (!response.ok) {
@@ -70,7 +71,7 @@ export async function PUT(request: NextRequest) {
 
     const response = await fetch(backendUrl, {
       method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(request),
       body: JSON.stringify(body),
     })
 

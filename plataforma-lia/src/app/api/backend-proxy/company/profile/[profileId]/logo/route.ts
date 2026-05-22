@@ -1,16 +1,15 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
+import { getAuthHeaders as canonicalAuthHeaders } from "@/lib/api/auth-headers"
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001"
 
 function getAuthHeaders(request: NextRequest): HeadersInit {
-  const headers: HeadersInit = {}
-  const authHeader = request.headers.get("Authorization")
-  if (authHeader) {
-    headers["Authorization"] = authHeader
-  }
-  // NOTE: Do NOT set Content-Type — fetch must set multipart boundary
-  return headers
+  // Multipart upload: canonical helper sets Content-Type: application/json,
+  // which interferes with FormData boundary auto-detection. Strip it.
+  // Auditoria 2026-05-22: ainda forwarda JWT via canonical (cookie fallback).
+  const { "Content-Type": _ct, ...rest } = canonicalAuthHeaders(request) as Record<string, string>
+  return rest
 }
 
 /**

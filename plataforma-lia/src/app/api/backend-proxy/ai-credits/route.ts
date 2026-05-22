@@ -1,22 +1,12 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthHeaders } from "@/lib/api/auth-headers"
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
 // WT-2022 P0.SEG2: anti-pattern admin_company hardcoded removido.
 // Agora propaga Authorization header (JWT) do request real - backend resolve
 // company_id via tenant_guard.get_verified_company_id (canonical).
-function getAuthHeaders(request: NextRequest): Record<string, string> {
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-  }
-  const authHeader = request.headers.get('authorization')
-  if (authHeader) {
-    headers['Authorization'] = authHeader
-  }
-  return headers
-}
-
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)

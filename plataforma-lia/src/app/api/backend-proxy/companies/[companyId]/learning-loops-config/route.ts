@@ -1,18 +1,8 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from "next/server"
+import { getAuthHeaders } from "@/lib/api/auth-headers"
 
 const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001"
-
-function getAuthHeaders(request: NextRequest): HeadersInit {
-  const headers: HeadersInit = {
-    "Content-Type": "application/json",
-  }
-  const authHeader = request.headers.get("Authorization")
-  if (authHeader) {
-    headers["Authorization"] = authHeader
-  }
-  return headers
-}
 
 /**
  * Backend proxy for Sprint B Phase 1+2 — Learning Loops config.

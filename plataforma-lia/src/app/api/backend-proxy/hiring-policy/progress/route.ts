@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthHeaders } from "@/lib/api/auth-headers"
 import { cookies } from 'next/headers'
 import { verifyAndDecodeSession } from '@/lib/session-crypto'
 
@@ -30,7 +31,7 @@ export async function GET(request: NextRequest) {
 
     const response = await fetch(backendUrl, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(request),
     })
 
     if (!response.ok) {
