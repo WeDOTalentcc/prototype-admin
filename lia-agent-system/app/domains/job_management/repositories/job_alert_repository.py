@@ -77,12 +77,16 @@ class JobAlertRepository:
         *,
         job_id: Any | None = None,
         candidate_id: Any | None = None,
-        company_id: Any | None = None,
     ) -> Alert | None:
-        """Find an active alert. ``company_id`` is optional but recommended
-        for defense-in-depth (REGRA ZERO multi-tenancy)."""
-        # TENANT-EXEMPT: dynamic builder — Alert.company_id == company_id is
-        # appended conditionally below when caller passes it.
+        """Find an active alert.
+
+        Note: Alert model has no ``company_id`` column (intentional — alerts
+        are scoped by user_id/job_id/candidate_id which already carry
+        tenant ownership upstream).
+        """
+        # TENANT-EXEMPT: Alert model has no company_id column; scoping
+        # happens via user_id / job_id / candidate_id which already
+        # encode tenant ownership upstream.
         query = select(Alert).where(
             and_(Alert.alert_type == alert_type, Alert.status == AlertStatus.ACTIVE)
         )
@@ -90,8 +94,6 @@ class JobAlertRepository:
             query = query.where(Alert.job_id == job_id)
         if candidate_id:
             query = query.where(Alert.candidate_id == candidate_id)
-        if company_id:
-            query = query.where(Alert.company_id == company_id)
         result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
@@ -101,34 +103,25 @@ class JobAlertRepository:
         user_id: str | None = None,
         severity: AlertSeverity | None = None,
         limit: int = 50,
-        company_id: Any | None = None,
     ) -> list[Alert]:
-        """List active alerts. ``company_id`` is optional but recommended
-        for defense-in-depth."""
-        # TENANT-EXEMPT: dynamic builder — Alert.company_id appended
-        # conditionally below when caller passes it.
+        # TENANT-EXEMPT: Alert model has no company_id column; scoping
+        # happens via user_id which already encodes tenant ownership
+        # upstream (admin observability surface).
         query = select(Alert).where(Alert.status == AlertStatus.ACTIVE)
         if user_id:
             query = query.where(Alert.user_id == user_id)
         if severity:
             query = query.where(Alert.severity == severity)
-        if company_id:
-            query = query.where(Alert.company_id == company_id)
         query = query.order_by(
             Alert.severity.desc(), Alert.created_at.desc()
         ).limit(limit)
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
-    async def get_alert_by_id(self, alert_id: str, company_id: Any | None = None) -> Alert | None:
-        """Get alert by id. ``company_id`` is optional for backwards-compat,
-        recommended for defense-in-depth (REGRA ZERO)."""
-        # TENANT-EXEMPT: dynamic builder — Alert.company_id appended
-        # conditionally when caller passes it.
-        query = select(Alert).where(Alert.id == alert_id)
-        if company_id:
-            query = query.where(Alert.company_id == company_id)
-        result = await self.db.execute(query)
+    async def get_alert_by_id(self, alert_id: str) -> Alert | None:
+        # TENANT-EXEMPT: Alert model has no company_id column; caller
+        # (job_alert_service) verifies ownership via user_id of the alert.
+        result = await self.db.execute(select(Alert).where(Alert.id == alert_id))
         return result.scalar_one_or_none()
 
     async def severity_counts(self) -> dict[str, int]:
