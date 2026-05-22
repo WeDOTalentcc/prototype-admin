@@ -153,13 +153,12 @@ export function useCommunicationHub(activeSubsection?: string) {
         // silently ignore profile fetch errors
       }
 
-      const headers: HeadersInit = fetchedCompanyId
-        ? { 'X-Company-ID': fetchedCompanyId }
-        : {}
-
+      // CLAUDE.md REGRA 6: nao enviar X-Company-ID header — JWT canonical
+      // (via apiFetch + proxy auth-headers) ja carrega company_id. Header
+      // adicional permite cross-tenant manipulation em get_verified_company_id.
       const [templatesResponse, settingsResponse] = await Promise.all([
         apiFetch(`/api/backend-proxy/email-templates?visibility=recruiter`),
-        apiFetch('/api/backend-proxy/company/communication-settings', { headers })
+        apiFetch('/api/backend-proxy/company/communication-settings')
       ])
 
       if (templatesResponse.ok) {
@@ -224,14 +223,11 @@ export function useCommunicationHub(activeSubsection?: string) {
       setSavingSettings(true)
       setError(null)
 
-      const headers: HeadersInit = { 'Content-Type': 'application/json' }
-      if (companyId) {
-        headers['X-Company-ID'] = companyId
-      }
-
+      // CLAUDE.md REGRA 6: nao enviar X-Company-ID header — JWT canonical
+      // (via apiFetch + proxy auth-headers) ja carrega company_id.
       const response = await apiFetch('/api/backend-proxy/company/communication-settings', {
         method: 'PUT',
-        headers,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           signature,
           sending_hours_start: sendingHours.start,
