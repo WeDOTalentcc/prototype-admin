@@ -18,7 +18,7 @@
 import { useCallback } from "react"
 import useSWR from "swr"
 import { apiFetch } from "@/lib/api/api-fetch"
-import { useAuth } from "@/contexts/auth-context"
+import { useJWTAuth } from "@/contexts/auth-context"
 
 export type AlertPreferenceChannel = "email" | "bell" | "teams" | "whatsapp"
 
@@ -76,7 +76,7 @@ const jsonFetcher = async (url: string): Promise<AlertPreferencesResponse> => {
 }
 
 export function useAlertPreferences() {
-  const { user } = useAuth()
+  const { user } = useJWTAuth()
   const userId = user?.id ?? null
 
   const swrKey = userId
