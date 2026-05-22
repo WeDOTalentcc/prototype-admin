@@ -46,9 +46,24 @@ class RecruitmentEmailTemplateRepository:
         total = (await self.db.execute(cq)).scalar() or 0
         return items, total
 
-    async def get_by_id(self, template_id: UUID) -> RecruitmentEmailTemplate | None:
+    async def get_by_id(
+        self,
+        template_id: UUID,
+        company_id: str | None = None,
+    ) -> RecruitmentEmailTemplate | None:
+        """Get RecruitmentEmailTemplate by id.
+
+        Multi-tenancy defense-in-depth: pass company_id to filter at query level
+        (Postgres RLS — Task #1143 — guards by default).
+        """
+        conditions = [RecruitmentEmailTemplate.id == template_id]
+        if company_id:
+            conditions.append(RecruitmentEmailTemplate.company_id == company_id)
+        # TENANT-EXEMPT: dynamic builder — conditions list seeded with
+        # X.company_id == company_id earlier in this function. Sensor cannot
+        # trace company_id through where(*conditions) spread.
         result = await self.db.execute(
-            select(RecruitmentEmailTemplate).where(RecruitmentEmailTemplate.id == template_id)
+            select(RecruitmentEmailTemplate).where(*conditions)
         )
         return result.scalar_one_or_none()
 

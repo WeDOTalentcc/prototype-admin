@@ -37,17 +37,29 @@ class CommunicationRepository:
         await self.db.commit()
         return result.rowcount  # type: ignore[union-attr]
 
-    async def check_vacancy_saturation(self, vacancy_id: str) -> dict:
+    async def check_vacancy_saturation(
+        self,
+        vacancy_id: str,
+        company_id: str | None = None,
+    ) -> dict:
         """Check if a vacancy pipeline is saturated for screening invites.
 
         Returns a dict with saturation status details.
+        Multi-tenancy defense-in-depth: pass company_id to filter the vacancy
+        lookup at query level (Postgres RLS — Task #1143 — guards by default).
         """
         try:
             vid = uuid_mod.UUID(vacancy_id)
         except (ValueError, TypeError):
             return {"is_saturated": False, "error": "invalid_vacancy_id"}
 
-        result = await self.db.execute(select(JobVacancy).where(JobVacancy.id == vid))
+        conditions = [JobVacancy.id == vid]
+        if company_id:
+            conditions.append(JobVacancy.company_id == company_id)
+        # TENANT-EXEMPT: dynamic builder — conditions list seeded with
+        # JobVacancy.company_id filter (conditional, above). Sensor cannot
+        # trace through where(*conditions) spread.
+        result = await self.db.execute(select(JobVacancy).where(*conditions))
         vacancy = result.scalar_one_or_none()
         if not vacancy:
             return {"is_saturated": False, "error": "vacancy_not_found"}

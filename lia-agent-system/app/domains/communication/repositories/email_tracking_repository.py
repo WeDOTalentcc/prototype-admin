@@ -15,6 +15,15 @@ class EmailTrackingRepository:
         self.db = db
 
     async def get_base_event_by_token(self, token: str) -> EmailTrackingEvent | None:
+        """Get base EmailTrackingEvent by token.
+
+        Token is a globally-unique cryptographically random identifier embedded
+        in tracking pixel URLs (open events) and tracked link URLs (click events).
+        Query happens BEFORE the tenant is known (anonymous pixel/click handler).
+        """
+        # TENANT-EXEMPT: token is a globally-unique cryptographically random
+        # identifier (UNIQUE column). The handler is anonymous (no auth/JWT) —
+        # the tenant is derived FROM the row via EmailTrackingEvent.company_id.
         result = await self.db.execute(
             select(EmailTrackingEvent).where(
                 EmailTrackingEvent.token == token,

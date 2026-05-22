@@ -282,8 +282,13 @@ class ReturnEventService:
                 logger.warning(f"VacancyCandidate not found: {vacancy_candidate_id}")
                 return None
 
+            # Multi-tenancy fail-closed: scope candidate lookup to vc.company_id
+            # (defense-in-depth on top of Postgres RLS — Task #1143).
             candidate_result = await self.db.execute(
-                select(Candidate).where(Candidate.id == vc.candidate_id)
+                select(Candidate).where(
+                    Candidate.id == vc.candidate_id,
+                    Candidate.company_id == vc.company_id,
+                )
             )
             candidate = candidate_result.scalars().first()
             if not candidate:

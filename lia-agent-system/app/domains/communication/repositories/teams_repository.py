@@ -24,6 +24,9 @@ class TeamsRepository:
     async def get_conversation_by_conversation_id(
         self, conversation_id: str
     ) -> TeamsConversation | None:
+        # TENANT-EXEMPT: conversation_id is the Microsoft Teams Conversation ID
+        # (globally unique per Teams tenant — issued by MS Graph). Webhook handler
+        # is anonymous (called by Teams cloud); tenant is derived FROM the row.
         result = await self.db.execute(
             select(TeamsConversation).where(
                 TeamsConversation.conversation_id == conversation_id
@@ -33,6 +36,9 @@ class TeamsRepository:
 
     async def get_conversation_by_teams_id(self, teams_conversation_id: str) -> TeamsConversation | None:
         """Legacy alias — uses teams_conversation_id field."""
+        # TENANT-EXEMPT: teams_conversation_id is MS Teams conversation ID
+        # (globally unique). Same anonymous-webhook rationale as
+        # get_conversation_by_conversation_id above.
         result = await self.db.execute(
             select(TeamsConversation).where(
                 TeamsConversation.teams_conversation_id == teams_conversation_id
@@ -43,6 +49,8 @@ class TeamsRepository:
     async def get_conversation_by_user_id(
         self, user_id: str
     ) -> TeamsConversation | None:
+        # TENANT-EXEMPT: user_id is the MS Teams user identifier (globally unique
+        # via MS Graph). Anonymous-webhook lookup — tenant is derived FROM the row.
         result = await self.db.execute(
             select(TeamsConversation).where(
                 TeamsConversation.user_id == user_id,
@@ -54,6 +62,8 @@ class TeamsRepository:
     async def get_conversation_by_aad_object_id(
         self, aad_object_id: str
     ) -> TeamsConversation | None:
+        # TENANT-EXEMPT: aad_object_id is the Azure AD Object ID (globally unique
+        # via MS Graph). Anonymous-webhook lookup — tenant is derived FROM the row.
         result = await self.db.execute(
             select(TeamsConversation).where(
                 TeamsConversation.user_aad_object_id == aad_object_id,
@@ -175,9 +185,19 @@ class TeamsRepository:
         *,
         action: str | None = None,
         candidate_id: str | None = None,
+        company_id: str | None = None,
         limit: int = 50,
     ) -> list[TeamsActionAuditLog]:
+        """List audit log entries.
+
+        Multi-tenancy defense-in-depth: pass company_id to scope to current tenant.
+        """
+        # TENANT-EXEMPT: dynamic builder — TeamsActionAuditLog.company_id ==
+        # company_id is conditionally appended below. Sensor cannot trace
+        # company_id through variable reassignment.
         query = select(TeamsActionAuditLog)
+        if company_id:
+            query = query.where(TeamsActionAuditLog.company_id == company_id)
         if action:
             query = query.where(TeamsActionAuditLog.action == action)
         if candidate_id:
@@ -204,11 +224,22 @@ class TeamsRepository:
     # ── Legacy compat ───────────────────────────────────────────────────
 
     async def get_conversation_by_candidate(
-        self, candidate_id: str, vacancy_id: str | None = None
+        self,
+        candidate_id: str,
+        vacancy_id: str | None = None,
+        company_id: str | None = None,
     ) -> TeamsConversation | None:
+        """Get TeamsConversation by candidate_id (optionally vacancy_id).
+
+        Multi-tenancy defense-in-depth: pass company_id to filter at query level.
+        """
+        # TENANT-EXEMPT: dynamic builder — TeamsConversation.company_id ==
+        # company_id is conditionally appended below.
         q = select(TeamsConversation).where(
             TeamsConversation.candidate_id == candidate_id
         )
+        if company_id:
+            q = q.where(TeamsConversation.company_id == company_id)
         if vacancy_id:
             q = q.where(TeamsConversation.vacancy_id == vacancy_id)
         result = await self.db.execute(q)

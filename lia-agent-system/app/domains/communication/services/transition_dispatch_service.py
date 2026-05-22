@@ -442,6 +442,10 @@ class TransitionDispatchService:
     async def _load_candidate_data(self, vacancy_candidate_id: str) -> dict[str, Any] | None:
         """Load candidate and vacancy info for template variables."""
         try:
+            # ADR-001-EXEMPT: cross-domain VacancyCandidate single-PK read for
+            # internal _load_candidate_data helper (no caller-side company_id).
+            # Tenant boundary enforced downstream via vc.company_id filter on
+            # Candidate and JobVacancy lookups. Postgres RLS (Task #1143) guards.
             vc_result = await self.db.execute(
                 select(VacancyCandidate).where(
                     VacancyCandidate.id == vacancy_candidate_id
@@ -452,8 +456,12 @@ class TransitionDispatchService:
                 logger.warning(f"VacancyCandidate not found: {vacancy_candidate_id}")
                 return None
 
+            # Multi-tenancy fail-closed: scope Candidate to vc.company_id.
             candidate_result = await self.db.execute(
-                select(Candidate).where(Candidate.id == vc.candidate_id)
+                select(Candidate).where(
+                    Candidate.id == vc.candidate_id,
+                    Candidate.company_id == vc.company_id,
+                )
             )
             candidate = candidate_result.scalars().first()
             if not candidate:
@@ -463,8 +471,12 @@ class TransitionDispatchService:
             job_title = ""
             company_name = ""
             try:
+                # Multi-tenancy fail-closed: scope JobVacancy to vc.company_id.
                 job_result = await self.db.execute(
-                    select(JobVacancy).where(JobVacancy.id == vc.vacancy_id)
+                    select(JobVacancy).where(
+                        JobVacancy.id == vc.vacancy_id,
+                        JobVacancy.company_id == vc.company_id,
+                    )
                 )
                 job = job_result.scalars().first()
                 if job:

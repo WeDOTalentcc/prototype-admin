@@ -46,6 +46,9 @@ class WebhookRepository:
         conditions = [Webhook.company_id == company_id]
         if is_active is not None:
             conditions.append(Webhook.is_active == is_active)
+        # TENANT-EXEMPT: dynamic builder — conditions seeded with
+        # Webhook.company_id == company_id above. Sensor cannot trace company_id
+        # through and_(*conditions) spread.
         result = await self.db.execute(
             select(Webhook)
             .where(and_(*conditions))
@@ -89,6 +92,9 @@ class WebhookRepository:
         ]
         if status_filter:
             conditions.append(WebhookLog.status == status_filter)
+        # TENANT-EXEMPT: dynamic builder — conditions seeded with
+        # WebhookLog.company_id == company_id above. Sensor cannot trace
+        # company_id through and_(*conditions) spread.
         result = await self.db.execute(
             select(WebhookLog)
             .where(and_(*conditions))

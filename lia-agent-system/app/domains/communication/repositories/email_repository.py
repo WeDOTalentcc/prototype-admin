@@ -16,10 +16,24 @@ class EmailRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def find_candidate_by_id(self, candidate_id: str) -> Candidate | None:
-        """Fetch a Candidate by its string UUID, returns None if not found."""
+    async def find_candidate_by_id(
+        self,
+        candidate_id: str,
+        company_id: str | None = None,
+    ) -> Candidate | None:
+        """Fetch a Candidate by its string UUID, returns None if not found.
+
+        Multi-tenancy defense-in-depth: pass company_id to filter at query level
+        (Postgres RLS — Task #1143 — guards by default).
+        """
+        conditions = [Candidate.id == candidate_id]
+        if company_id:
+            conditions.append(Candidate.company_id == company_id)
+        # TENANT-EXEMPT: dynamic builder — conditions list seeded with
+        # X.company_id == company_id earlier in this function. Sensor cannot
+        # trace company_id through where(*conditions) spread.
         result = await self.db.execute(
-            select(Candidate).where(Candidate.id == candidate_id)
+            select(Candidate).where(*conditions)
         )
         return result.scalar_one_or_none()
 

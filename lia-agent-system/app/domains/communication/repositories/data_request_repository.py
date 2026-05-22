@@ -33,10 +33,21 @@ class DataRequestRepository:
         self,
         *,
         candidate_id: UUID,
+        company_id: str | None = None,
         status: DataRequestStatus | None = None,
         include_expired: bool = False,
     ) -> list[DataRequest]:
+        """List DataRequests for a candidate.
+
+        Multi-tenancy defense-in-depth: pass company_id to filter at query level
+        (Postgres RLS — Task #1143 — guards by default).
+        """
+        # TENANT-EXEMPT: dynamic builder — DataRequest.company_id == company_id is
+        # conditionally appended to `query` below. Sensor cannot trace company_id
+        # through variable reassignment.
         query = select(DataRequest).where(DataRequest.candidate_id == candidate_id)
+        if company_id:
+            query = query.where(DataRequest.company_id == company_id)
         if status:
             query = query.where(DataRequest.status == status)
         if not include_expired:
@@ -54,9 +65,19 @@ class DataRequestRepository:
         self,
         *,
         vacancy_id: UUID,
+        company_id: str | None = None,
         status: DataRequestStatus | None = None,
     ) -> list[DataRequest]:
+        """List DataRequests for a vacancy.
+
+        Multi-tenancy defense-in-depth: pass company_id to filter at query level.
+        """
+        # TENANT-EXEMPT: dynamic builder — DataRequest.company_id == company_id is
+        # conditionally appended to `query` below. Sensor cannot trace company_id
+        # through variable reassignment.
         query = select(DataRequest).where(DataRequest.vacancy_id == vacancy_id)
+        if company_id:
+            query = query.where(DataRequest.company_id == company_id)
         if status:
             query = query.where(DataRequest.status == status)
         query = query.order_by(DataRequest.created_at.desc())
@@ -64,6 +85,15 @@ class DataRequestRepository:
         return list(result.scalars().all())
 
     async def get_by_token(self, token: str) -> DataRequest | None:
+        """Get DataRequest by token (cross-tenant lookup — token is globally unique).
+
+        Tokens are 32+ byte cryptographically random strings, globally unique.
+        Used for public anonymous-link landing pages (candidate clicks email link).
+        """
+        # TENANT-EXEMPT: token is a cryptographically random global identifier
+        # (DataRequest.token UNIQUE constraint). The query happens BEFORE the
+        # tenant is known (anonymous landing page handler). Defense via token
+        # entropy + expiration window (DataRequest.expires_at).
         result = await self.db.execute(
             select(DataRequest).where(DataRequest.token == token)
         )
@@ -75,14 +105,23 @@ class DataRequestRepository:
         candidate_id: UUID,
         stage: str,
         statuses: list,
+        company_id: str | None = None,
     ) -> DataRequest | None:
-        query = select(DataRequest).where(
-            and_(
-                DataRequest.candidate_id == candidate_id,
-                DataRequest.trigger_stage == stage,
-                DataRequest.status.in_(statuses),
-            )
-        )
+        """Find pending DataRequest for (candidate_id, stage).
+
+        Multi-tenancy defense-in-depth: pass company_id to filter at query level.
+        """
+        conditions = [
+            DataRequest.candidate_id == candidate_id,
+            DataRequest.trigger_stage == stage,
+            DataRequest.status.in_(statuses),
+        ]
+        if company_id:
+            conditions.append(DataRequest.company_id == company_id)
+        # TENANT-EXEMPT: dynamic builder — conditions list seeded with
+        # DataRequest.company_id filter (conditional, above). Sensor cannot
+        # trace through and_(*conditions) spread.
+        query = select(DataRequest).where(and_(*conditions))
         result = await self.db.execute(query)
         return result.scalar_one_or_none()
 

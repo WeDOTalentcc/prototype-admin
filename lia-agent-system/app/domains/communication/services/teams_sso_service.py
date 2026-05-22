@@ -181,9 +181,13 @@ class TeamsSSOService:
         """Store the AAD ↔ WeDOTalent mapping for future requests."""
         try:
             from lia_models.teams import TeamsConversation
+            # Multi-tenancy fail-closed: scope update to current tenant.
             stmt = (
                 update(TeamsConversation)
-                .where(TeamsConversation.user_id == teams_user_id)
+                .where(
+                    TeamsConversation.user_id == teams_user_id,
+                    TeamsConversation.company_id == company_id,
+                )
                 .values(user_aad_object_id=aad_object_id)
             )
             await db.execute(stmt)

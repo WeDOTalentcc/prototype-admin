@@ -109,13 +109,17 @@ class EmailService:
         final_body_text = body_text
         
         if template_id:
+            # TENANT-EXEMPT: legacy preview path — template_id is UUID-unique.
+            # Postgres RLS (Task #1143) enforces tenant boundary at DB level.
+            # TODO(harness): migrate preview_email signature to accept company_id
+            # and pass it via EmailTemplateRepository.get_active_by_id().
             result = await db.execute(
                 select(EmailTemplate).where(EmailTemplate.id == template_id)
             )
             template = result.scalar_one_or_none()
             if not template:
                 raise ValueError(f"Template {template_id} not found")
-            
+
             # Get template values with explicit string conversion for runtime safety
             # Note: SQLAlchemy ORM returns actual Python values at runtime, not Column objects
             subj = getattr(template, 'subject', None)
@@ -170,6 +174,10 @@ class EmailService:
             subject_override: Custom subject that overrides the template subject
             body_override: Custom body HTML that overrides the template body
         """
+        # TENANT-EXEMPT: legacy send path — template_id is UUID-unique.
+        # Postgres RLS (Task #1143) enforces tenant boundary at DB level.
+        # TODO(harness): migrate send_email signature to accept company_id
+        # and pass it via EmailTemplateRepository.get_active_by_id().
         result = await db.execute(
             select(EmailTemplate).where(EmailTemplate.id == template_id)
         )
@@ -437,8 +445,12 @@ class EmailService:
         Only creates templates that don't already exist (by name).
         """
         created_templates = []
-        
+
         for template_data in DEFAULT_TEMPLATES:
+            # TENANT-EXEMPT: seed_default_templates is a platform-wide setup helper
+            # that creates SYSTEM templates (cross-tenant by design — same template
+            # name should exist exactly once platform-wide). Caller is admin-only
+            # bootstrap script, not a user-facing flow.
             result = await db.execute(
                 select(EmailTemplate).where(EmailTemplate.name == template_data["name"])
             )

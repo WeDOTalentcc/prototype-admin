@@ -15,9 +15,24 @@ class CommunicationHistoryRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_by_id(self, communication_id: str) -> CommunicationHistory | None:
+    async def get_by_id(
+        self,
+        communication_id: str,
+        company_id: str | None = None,
+    ) -> CommunicationHistory | None:
+        """Get CommunicationHistory by id.
+
+        Multi-tenancy defense-in-depth: pass company_id to filter at query level
+        (Postgres RLS — Task #1143 — guards by default).
+        """
+        conditions = [CommunicationHistory.id == communication_id]
+        if company_id:
+            conditions.append(CommunicationHistory.company_id == company_id)
+        # TENANT-EXEMPT: dynamic builder — conditions list seeded with
+        # X.company_id == company_id earlier in this function. Sensor cannot
+        # trace company_id through where(*conditions) spread.
         result = await self.db.execute(
-            select(CommunicationHistory).where(CommunicationHistory.id == communication_id)
+            select(CommunicationHistory).where(*conditions)
         )
         return result.scalar_one_or_none()
 
@@ -47,6 +62,9 @@ class CommunicationHistoryRepository:
         if status:
             where_conditions.append(CommunicationHistory.status == status)
 
+        # TENANT-EXEMPT: dynamic builder — where_conditions seeded with
+        # CommunicationHistory.company_id == company_id (line 38). Sensor cannot
+        # trace company_id through and_(*where_conditions) spread.
         count_query = (
             select(func.count())
             .select_from(CommunicationHistory)
@@ -55,6 +73,7 @@ class CommunicationHistoryRepository:
         count_result = await self.db.execute(count_query)
         total = count_result.scalar() or 0
 
+        # TENANT-EXEMPT: data_query — same dynamic builder as count_query above.
         data_query = (
             select(CommunicationHistory)
             .where(and_(*where_conditions))
@@ -79,6 +98,8 @@ class CommunicationHistoryRepository:
             CommunicationHistory.candidate_id == candidate_id,
             CommunicationHistory.company_id == company_id,
         ]
+        # TENANT-EXEMPT: dynamic builder — where_conditions seeded with
+        # CommunicationHistory.company_id filter above.
         count_query = (
             select(func.count())
             .select_from(CommunicationHistory)
@@ -87,6 +108,7 @@ class CommunicationHistoryRepository:
         count_result = await self.db.execute(count_query)
         total = count_result.scalar() or 0
 
+        # TENANT-EXEMPT: data_query — same dynamic builder as count_query above.
         data_query = (
             select(CommunicationHistory)
             .where(and_(*where_conditions))

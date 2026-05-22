@@ -75,12 +75,15 @@ class WhatsappRepository:
         self,
         candidate_id,
         job_vacancy_id,
+        company_id: str | None = None,
     ):
         """Return the most-recent AWAITING_SCREENING conversation for (candidate, vacancy).
 
         Used by automation_handlers.process_screening_queue and
         handle_recruiter_override_approve to flip the conversation state to
         SCREENING when promoting a queued candidate.
+
+        Multi-tenancy defense-in-depth: pass company_id to filter at query level.
         """
         from sqlalchemy import and_
 
@@ -89,15 +92,18 @@ class WhatsappRepository:
             WhatsAppConversation,
         )
 
+        conditions = [
+            WhatsAppConversation.candidate_id == candidate_id,
+            WhatsAppConversation.job_vacancy_id == job_vacancy_id,
+            WhatsAppConversation.state == ConversationState.AWAITING_SCREENING,
+        ]
+        if company_id:
+            conditions.append(WhatsAppConversation.company_id == company_id)
+        # TENANT-EXEMPT: dynamic builder — conditions list seeded with
+        # WhatsAppConversation.company_id filter (conditional, above).
         result = await self.db.execute(
             select(WhatsAppConversation)
-            .where(
-                and_(
-                    WhatsAppConversation.candidate_id == candidate_id,
-                    WhatsAppConversation.job_vacancy_id == job_vacancy_id,
-                    WhatsAppConversation.state == ConversationState.AWAITING_SCREENING,
-                )
-            )
+            .where(and_(*conditions))
             .order_by(WhatsAppConversation.created_at.desc())
             .limit(1)
         )
