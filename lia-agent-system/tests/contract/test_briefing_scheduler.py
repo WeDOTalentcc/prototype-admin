@@ -68,8 +68,13 @@ def _make_db_with_configs(configs: list[MagicMock]) -> MagicMock:
 # ───────────────────────────────────────────────────────────────────────
 @pytest.mark.asyncio
 async def test_daily_task_filters_by_canonical_frequencies(monkeypatch):
-    """dispatch_daily should call _list_alert_configs_for_frequency with
-    ['daily', 'twice_daily'] — not 'weekly', not 'monthly'."""
+    """dispatch_daily should call _list_tenants_with_briefing_frequency with
+    ['daily', 'twice_daily'] — not 'weekly', not 'monthly'.
+
+    Sprint D+1 partial (2026-05-22): listing function renamed to
+    _list_tenants_with_briefing_frequency (returns dicts with canonical
+    frequency resolved from HiringPolicy preferred / AlertConfig fallback).
+    """
     from app.jobs.tasks import briefing_dispatch as mod
 
     captured_frequencies: list[list[str]] = []
@@ -78,7 +83,7 @@ async def test_daily_task_filters_by_canonical_frequencies(monkeypatch):
         captured_frequencies.append(list(frequencies))
         return []
 
-    monkeypatch.setattr(mod, "_list_alert_configs_for_frequency", fake_list)
+    monkeypatch.setattr(mod, "_list_tenants_with_briefing_frequency", fake_list)
 
     # Replace AsyncSessionLocal with a no-op context manager
     class _FakeSession:
@@ -115,7 +120,7 @@ async def test_weekly_task_filters_by_canonical_frequency(monkeypatch):
         captured.append(list(frequencies))
         return []
 
-    monkeypatch.setattr(mod, "_list_alert_configs_for_frequency", fake_list)
+    monkeypatch.setattr(mod, "_list_tenants_with_briefing_frequency", fake_list)
 
     class _FakeSession:
         async def __aenter__(self):
@@ -149,7 +154,7 @@ async def test_monthly_task_filters_by_canonical_frequency(monkeypatch):
         captured.append(list(frequencies))
         return []
 
-    monkeypatch.setattr(mod, "_list_alert_configs_for_frequency", fake_list)
+    monkeypatch.setattr(mod, "_list_tenants_with_briefing_frequency", fake_list)
 
     class _FakeSession:
         async def __aenter__(self):
@@ -176,19 +181,25 @@ async def test_monthly_task_filters_by_canonical_frequency(monkeypatch):
 @pytest.mark.asyncio
 async def test_skip_when_briefing_frequency_invalid(monkeypatch, caplog):
     """REGRA 4 — frequency not in CANONICAL_FREQUENCIES warns + increments
-    skipped_invalid_frequency, does NOT silently skip."""
+    skipped_invalid_frequency, does NOT silently skip.
+
+    Sprint D+1 partial: _list_tenants_with_briefing_frequency returns dicts
+    {company_id, user_id, frequency, source}. Invalid frequency bypassed
+    the resolver guard means the dict goes straight to the REGRA 4 sentinel.
+    """
     from app.jobs.tasks import briefing_dispatch as mod
 
-    bad_config = _make_alert_config(
-        company_id=str(uuid.uuid4()),
-        user_id=str(uuid.uuid4()),
-        briefing_frequency="hourly",  # not canonical
-    )
+    bad_tenant = {
+        "company_id": str(uuid.uuid4()),
+        "user_id": str(uuid.uuid4()),
+        "frequency": "hourly",  # not canonical
+        "source": "alert_config_legacy",
+    }
 
     async def fake_list(db, frequencies):
-        return [bad_config]
+        return [bad_tenant]
 
-    monkeypatch.setattr(mod, "_list_alert_configs_for_frequency", fake_list)
+    monkeypatch.setattr(mod, "_list_tenants_with_briefing_frequency", fake_list)
 
     metric_calls: list[dict] = []
 
@@ -199,7 +210,7 @@ async def test_skip_when_briefing_frequency_invalid(monkeypatch, caplog):
 
     class _FakeSession:
         async def __aenter__(self):
-            return _make_db_with_configs([bad_config])
+            return _make_db_with_configs([])
 
         async def __aexit__(self, *a):
             return None
@@ -268,22 +279,27 @@ async def test_dispatch_metric_emitted_per_event(monkeypatch):
     """Every iteration of the dispatch loop must emit exactly one metric.
 
     We do NOT assert on the underlying Prometheus client (best-effort);
-    we assert ``_emit_dispatch_metric`` is called once per config row.
+    we assert ``_emit_dispatch_metric`` is called once per dispatched tenant.
+
+    Sprint D+1 partial: _list_tenants_with_briefing_frequency returns
+    dicts {company_id, user_id, frequency, source} with frequency already
+    resolved (HiringPolicy preferred / AlertConfig fallback).
     """
     from app.jobs.tasks import briefing_dispatch as mod
 
     company_a = str(uuid.uuid4())
     user_a = str(uuid.uuid4())
-    cfg = _make_alert_config(
-        company_id=company_a,
-        user_id=user_a,
-        briefing_frequency="daily",
-    )
+    tenant = {
+        "company_id": company_a,
+        "user_id": user_a,
+        "frequency": "daily",
+        "source": "hiring_policy",
+    }
 
     async def fake_list(db, frequencies):
-        return [cfg]
+        return [tenant]
 
-    monkeypatch.setattr(mod, "_list_alert_configs_for_frequency", fake_list)
+    monkeypatch.setattr(mod, "_list_tenants_with_briefing_frequency", fake_list)
 
     metric_calls: list[dict] = []
     monkeypatch.setattr(
@@ -313,7 +329,7 @@ async def test_dispatch_metric_emitted_per_event(monkeypatch):
 
     class _FakeSession:
         async def __aenter__(self):
-            return _make_db_with_configs([cfg])
+            return _make_db_with_configs([])
 
         async def __aexit__(self, *a):
             return None
