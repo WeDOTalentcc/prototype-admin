@@ -56,6 +56,7 @@ from app.shared.services.automated_decision_logger import (
     log_automated_decision,
 )
 from app.shared.compliance.audit_service import AuditService
+from app.shared.prompt_injection import PromptInjectionGuard
 
 try:
     from app.shared.services.gemini_voice_service import get_voice_service as _get_voice_service
@@ -90,6 +91,10 @@ except ImportError:
 from app.domains.ai.services.llm import llm_service as _canonical_llm_service
 
 logger = logging.getLogger(__name__)
+
+# F-08 P0 (audit 2026-05-22): canonical PromptInjectionGuard singleton.
+# Voice path reuses chat canonical (decisão Paulo: NÃO criar voice-specific).
+_voice_injection_guard = PromptInjectionGuard()
 
 
 @dataclass
@@ -1057,6 +1062,79 @@ class VoiceScreeningOrchestrator:
         session = self._sessions.get(session_id)
         if not session:
             return "Desculpe, ocorreu um erro. Podemos encerrar a triagem."
+
+        # F-08 P0 (audit 2026-05-22): PromptInjectionGuard canonical.
+        # Candidate utterance (STT output) DEVE passar pelo guard ANTES de
+        # virar parte do conversation_history enviado ao Gemini.
+        # Fail-CLOSED: guard exception → bloqueia (não vaza raw para LLM).
+        if candidate_utterance and candidate_utterance.strip():
+            _inj_blocked = False
+            _inj_patterns: list[str] = []
+            _inj_risk = "none"
+            try:
+                _inj_result = _voice_injection_guard.check(candidate_utterance)
+                if _inj_result.is_suspicious or _inj_result.risk_level == "high":
+                    _inj_blocked = True
+                    _inj_patterns = list(_inj_result.matched_patterns)
+                    _inj_risk = _inj_result.risk_level
+            except Exception as _inj_exc:
+                # Fail-CLOSED: guard crash → bloqueia mesmo assim.
+                logger.warning(
+                    "[F-08 VOICE GUARD] PromptInjectionGuard crashed, fail-CLOSED "
+                    "session=%s err=%s",
+                    session_id, _inj_exc,
+                )
+                _inj_blocked = True
+                _inj_patterns = ["guard_exception"]
+                _inj_risk = "high"
+
+            if _inj_blocked:
+                logger.warning(
+                    "[F-08 VOICE GUARD] PromptInjection blocked session=%s "
+                    "patterns=%s risk=%s",
+                    session_id, _inj_patterns, _inj_risk,
+                )
+                # Replace any candidate transcript segment with the raw
+                # payload by a safe marker — keeps the LLM's view of
+                # conversation_history sanitized for subsequent turns too.
+                _marker = "[utterance blocked by guard]"
+                for _seg in session.transcript_segments:
+                    if _seg.get("role") == "candidate" and _seg.get("text") == candidate_utterance:
+                        _seg["text"] = _marker
+                        _seg["blocked_reason"] = "prompt_injection"
+                # Audit canonical log (LGPD Art. 20 trail). Best-effort —
+                # don't let audit failure bypass guard.
+                try:
+                    await AuditService().log_decision(
+                        company_id=session.company_id,
+                        agent_name="voice_screening_orchestrator",
+                        decision_type="prompt_injection_blocked",
+                        action="utterance_filtered",
+                        decision="blocked",
+                        reasoning=[
+                            f"session={session_id}",
+                            f"risk={_inj_risk}",
+                            f"patterns={','.join(_inj_patterns)}",
+                        ],
+                        criteria_used=["prompt_injection_guard"],
+                        criteria_ignored=[],
+                        candidate_id=session.candidate_id,
+                        job_vacancy_id=session.job_id,
+                        human_review_required=False,
+                    )
+                except Exception as _audit_exc:
+                    logger.error(
+                        "[F-08] audit log failed session=%s: %s",
+                        session_id, _audit_exc,
+                    )
+                # Fail-CLOSED: return scripted fallback (não invoca LLM).
+                # Load wsi_questions for the fallback if not yet cached.
+                _fallback_qs = getattr(session, "_wsi_questions_cache", None)
+                if _fallback_qs is None:
+                    _fallback_qs = await self._load_wsi_questions_for_session(session_id, db)
+                    if _fallback_qs:
+                        session._wsi_questions_cache = _fallback_qs  # type: ignore[attr-defined]
+                return self._get_next_scripted_question(session, _fallback_qs)
 
         wsi_questions = getattr(session, "_wsi_questions_cache", None)
         has_wsi_questions = True
