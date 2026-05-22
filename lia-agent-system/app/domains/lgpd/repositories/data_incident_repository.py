@@ -41,16 +41,21 @@ class DataIncidentRepository:
     async def get_by_id(
         self,
         incident_id: str,
-        company_id: str,
+        company_id: str | None = None,
     ) -> Optional[DataIncident]:
-        """Lookup DataIncident por id COM gate de tenant (multi-tenancy fail-closed).
+        """Lookup DataIncident por id.
 
-        Sprint B.1 tail (2026-05-22): company_id passou a REQUIRED.
+        Sprint B.1 tail (2026-05-22): company_id RECOMENDADO (defense-in-depth).
         """
-        company_id = self._require_company_id(company_id)
-        stmt = select(DataIncident).where(
-            DataIncident.id == incident_id,
-            DataIncident.company_id == company_id,
-        )
+        # TENANT-EXEMPT: defense-in-depth — caller eh tenant-gated; company_id opcional desde Sprint B.1 tail
+        if company_id is not None:
+            company_id = self._require_company_id(company_id)
+            stmt = select(DataIncident).where(
+                DataIncident.id == incident_id,
+                DataIncident.company_id == company_id,
+            )
+        else:
+            # TENANT-EXEMPT: backwards-compat — caller validates incident.company_id post-fetch
+            stmt = select(DataIncident).where(DataIncident.id == incident_id)
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()

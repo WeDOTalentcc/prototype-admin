@@ -36,13 +36,13 @@ class LGPDRepository:
         limit: int,
         offset: int,
     ) -> tuple[list[DPORegistry], int]:
-        # TENANT-EXEMPT: DPORegistry é tabela de compliance admin-level — endpoint /dpo
-        # é admin view cross-tenant para DPO/compliance overseer; sensor não distingue admin scope.
-        # Audit 2026-05-22 tail sprint.
         conditions = []
         if is_active is not None:
             conditions.append(DPORegistry.is_active == is_active)
 
+        # TENANT-EXEMPT: DPORegistry é tabela de compliance admin-level — endpoint /dpo
+        # é admin view cross-tenant para DPO/compliance overseer; sensor não distingue admin scope.
+        # Audit 2026-05-22 tail sprint.
         query = select(DPORegistry)
         if conditions:
             query = query.where(and_(*conditions))

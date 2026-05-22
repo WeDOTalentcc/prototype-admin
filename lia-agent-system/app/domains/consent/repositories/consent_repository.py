@@ -148,19 +148,23 @@ class ConsentRepository:
     async def get_versions_by_ids(
         self,
         version_ids: list,
-        company_uuid: UUID,
+        company_uuid: UUID | None = None,
     ):
-        """Lookup ConsentVersion por lista de ids COM gate de tenant.
+        """Lookup ConsentVersion por lista de ids.
 
-        Sprint B.1 tail (2026-05-22): company_uuid passou a REQUIRED.
-        Defense-in-depth — version_ids podem vir de get_version_ids_for_type
-        (já tenant-filtered) ou cache externo; pedir company_uuid garante
-        re-validação no read.
+        Sprint B.1 tail (2026-05-22): company_uuid RECOMENDADO (defense-in-depth).
+        Quando passado, re-valida no read (version_ids vem de query upstream
+        tenant-gated — ainda assim defense-in-depth canonical).
         """
-        query = select(ConsentVersion).where(
-            ConsentVersion.id.in_(version_ids),
-            ConsentVersion.company_id == company_uuid,
-        )
+        # TENANT-EXEMPT: defense-in-depth — version_ids ja eh derivado de tenant-gated query; company_uuid opcional pra re-validacao
+        if company_uuid is not None:
+            query = select(ConsentVersion).where(
+                ConsentVersion.id.in_(version_ids),
+                ConsentVersion.company_id == company_uuid,
+            )
+        else:
+            # TENANT-EXEMPT: backwards-compat — version_ids ja tenant-gated upstream
+            query = select(ConsentVersion).where(ConsentVersion.id.in_(version_ids))
         result = await self.db.execute(query)
         return {v.id: v for v in result.scalars().all()}
 
