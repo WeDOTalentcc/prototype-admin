@@ -120,9 +120,9 @@ export function ProfileSkillsMapCard({ candidate }: ProfileSkillsMapCardProps) {
               </Tooltip>
             </div>
             <div className="flex flex-wrap gap-1 ml-3.5">
-              {category.skills.map((skill: string) => (
+              {category.skills.map((skill: string, skillIdx: number) => (
                 <Chip variant="neutral" muted 
-                  key={skill} 
+                  key={`${category.name}-${skill}-${skillIdx}`} 
                   className="text-micro px-1.5 py-0 bg-lia-bg-tertiary text-lia-text-primary border-0"
                 >
                   {skill}
