@@ -1124,14 +1124,16 @@ async def handle_iugu_webhook(
 @router.post("/webhooks/vindi", summary="Vindi webhook handler", response_model=WebhookProcessedResponse)
 async def handle_vindi_webhook(
     request: Request,
-    repo: BillingRepository = Depends(get_billing_repo), 
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
+    repo: BillingRepository = Depends(get_billing_repo),
+):
+    # multi-tenancy: webhooks são server-to-server, autenticados via HMAC signature
+    # (não por JWT). require_company_id REMOVIDO pois quebrava o handler — Vindi
+    # nunca envia JWT. Validação real fica em billing_service.process_webhook ->
+    # provider.parse_webhook(payload, signature). Ver audit Wave 4 (2026-05-22).
     """
     Handle webhooks from Vindi payment gateway.
 
-    NOTE: Webhooks are server-to-server and dont require X-Company-ID header.
-    Authentication is done via webhook signature verification.
+    NOTE: Webhooks são server-to-server. Autenticação via signature HMAC, não JWT.
     """
     try:
         await request.body()
