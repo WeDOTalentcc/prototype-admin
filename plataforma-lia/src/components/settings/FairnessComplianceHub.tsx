@@ -120,13 +120,18 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
     window.open(`/api/backend-proxy/fairness-report/export?format=${format}&days=${period}`,"_blank")
   }
 
-  const totalWarnings = summary ? summary.total_events - summary.total_blocks : 0
+  // Defensive: backend pode retornar payload incompleto (loading inicial, empty
+  // state, ou shape divergente). TS declara number, mas runtime nao garante —
+  // `undefined - undefined = NaN`, e React reclama de "Received NaN for children".
+  const totalEvents = summary?.total_events ?? 0
+  const totalBlocks = summary?.total_blocks ?? 0
+  const totalWarnings = Math.max(0, totalEvents - totalBlocks)
 
-  const chartData = summary?.by_category?.map((c) => ({
+  const chartData = (summary?.by_category ?? []).map((c) => ({
     name: translateCategory(c.category),
-    bloqueios: c.total_blocks,
-    alertas: c.total_warnings,
-  })) || []
+    bloqueios: c.total_blocks ?? 0,
+    alertas: c.total_warnings ?? 0,
+  }))
 
   if (error) {
     return (
@@ -191,7 +196,7 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
                 </div>
                 <span className={textStyles.description}>{t("totalEvents")}</span>
               </div>
-              <p className="text-2xl font-semibold text-lia-text-primary">{summary?.total_events ?? 0}</p>
+              <p className="text-2xl font-semibold text-lia-text-primary">{totalEvents}</p>
             </CardContent>
           </Card>
           <Card className={cardStyles.default}>
@@ -202,7 +207,7 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
                 </div>
                 <span className={textStyles.description}>{t("blocks")}</span>
               </div>
-              <p className="text-2xl font-semibold text-status-error">{summary?.total_blocks ?? 0}</p>
+              <p className="text-2xl font-semibold text-status-error">{totalBlocks}</p>
             </CardContent>
           </Card>
           <Card className={cardStyles.default}>
