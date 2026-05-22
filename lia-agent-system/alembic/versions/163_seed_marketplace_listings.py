@@ -1,6 +1,6 @@
 """seed canonical marketplace listings (Wave 3 audit 2026-05-21)
 
-Revision ID: 163_seed_marketplace
+Revision ID: 163_seed_marketplace_listings
 Revises: 162_workforce_entries_company_id_not_null
 Create Date: 2026-05-21 22:00:00.000000
 
@@ -22,7 +22,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = "163_seed_marketplace"
+revision = "163_seed_marketplace_listings"
 down_revision = "162_workforce_entries_company_id_not_null"
 branch_labels = None
 depends_on = None
