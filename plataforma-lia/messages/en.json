@@ -1855,7 +1855,9 @@
         "agentCreatedDesc": "Now link it to a job or talent pool.",
         "noLinkTitle": "Agent without link",
         "noLinkDesc": "This agent is not linked to a job or talent pool. Link it to navigate.",
-        "errorStatus": "Error changing status"
+        "errorStatus": "Error changing status",
+        "agentCloned": "Agent Cloned",
+        "errorCloning": "Error Cloning"
       },
       "modal": {
         "createTitle": "Create Agent",
@@ -1878,7 +1880,8 @@
         "cancel": "Cancel",
         "creating": "Creating...",
         "createAndCalibrate": "Create and Calibrate"
-      }
+      },
+      "refresh": "Refresh"
     },
     "status": {
       "active": "Active",
@@ -1902,7 +1905,9 @@
       "confidence": "confidence",
       "test": "Test",
       "link": "Link",
-      "activate": "Activate"
+      "activate": "Activate",
+      "clone": "Clone",
+      "moreActions": "More actions"
     },
     "createModal": {
       "titleWithTemplate": "Create Agent — {template}",
@@ -2029,7 +2034,9 @@
       "connectionError": "Connection error",
       "subtitle": "Discover and install agents created by other companies",
       "tryAnotherSearch": "Try another search term",
-      "noAgentsPublished": "The marketplace has no published agents yet"
+      "noAgentsPublished": "The marketplace has no published agents yet",
+      "confirmUninstallTitle": "Uninstall agent?",
+      "viewSwitcher": "Switch view"
     },
     "calibration": {
       "completed": "Calibration completed",
@@ -2525,7 +2532,19 @@
       "auditLogOk": "Audit Log OK",
       "agentFallback": "Agent",
       "defaultAgentName": "New Agent",
-      "toolsLabel": "Tools"
+      "toolsLabel": "Tools",
+      "allowedToolsLabel": "Allowed tools",
+      "confirmRevertTitle": "Revert change?",
+      "contextLevelLabel": "Context level",
+      "creating": "Creating…",
+      "descLabel": "Description",
+      "maxStepsLabel": "Max steps",
+      "nameLabel": "Name",
+      "systemPromptLabel": "System prompt",
+      "temperatureLabel": "Temperature",
+      "templatePreviewDesc": "Inspect the template before using it",
+      "templatePreviewNameHelp": "Agent name based on this template",
+      "templatePreviewTitle": "Preview template"
     },
     "digitalTwin": {
       "active": "Active",
@@ -2554,7 +2573,37 @@
       "digitalTwinEvaluation": "Digital Twin Evaluation",
       "reevaluate": "Re-evaluate",
       "createNew": "New Digital Twin",
-      "twinCount": "{count, plural, =0 {No twins} =1 {1 twin} other {# twins}}"
+      "twinCount": "{count, plural, =0 {No twins} =1 {1 twin} other {# twins}}",
+      "cancel": "Cancel",
+      "create": "Create",
+      "createFirst": "Create first",
+      "creating": "Creating…",
+      "decisionsFormats": "CSV, JSON or XLSX (up to 5 MB)",
+      "decisionsHelp": "Past decisions help calibrate the clone",
+      "decisionsLabel": "Decision history",
+      "decisionsUploadCta": "Upload history",
+      "descHelp": "Agent description text",
+      "descLabel": "Description",
+      "descPlaceholder": "Type description here…",
+      "description": "Description",
+      "errorDesc": "Please try again in a moment",
+      "errorTitle": "An error occurred",
+      "fileTooLargeDesc": "File exceeds the allowed size",
+      "fileTooLargeTitle": "File too large",
+      "headerDesc": "Configure a digital clone of your recruiter",
+      "headerTitle": "Digital Twin",
+      "label": "Label",
+      "nameHelp": "Unique agent name",
+      "nameLabel": "Name",
+      "namePlaceholder": "E.g. Technical screening…",
+      "noExperience": "No previous experience",
+      "specialtyHelp": "Main area of expertise",
+      "specialtyLabel": "Specialty",
+      "specialtyPlaceholder": "E.g. Backend, Data…",
+      "subtitle": "Subtitle",
+      "successDesc": "Operation completed successfully",
+      "successTitle": "Success!",
+      "title": "Title"
     },
     "candidateOrigin": {
       "origins": {
@@ -3550,7 +3599,8 @@
           "cat3": "Practical Experience",
           "cat4": "Time Management",
           "cat5": "Goals"
-        }
+        },
+        "noChannelsEnabled": "No Channels Enabled"
       },
       "textScreening": {
         "title": "WSI Screening (Text)",
@@ -4875,7 +4925,8 @@
         "statusWinner": "Winner identified",
         "statusInProgress": "In progress",
         "statusWaiting": "Awaiting data"
-      }
+      },
+      "alertPreferences": "Alert Preferences"
     },
     "integrations": {
       "tabs": {
@@ -5016,7 +5067,8 @@
       "noResults": "No integrations found",
       "noResultsHint": "Try searching with other terms",
       "authUrlError": "Error getting authorization URL",
-      "googleConnectError": "Error connecting with Google"
+      "googleConnectError": "Error connecting with Google",
+      "companyNotIdentified": "Company Not Identified"
     },
     "page": {
       "title": "Settings",
@@ -5985,7 +6037,27 @@
           "loading": "Loading metrics...",
           "errorLoad": "Failed to load metrics",
           "empty": "No metrics available yet."
-        }
+        },
+        "cancel": "Cancel",
+        "disclaimerAnon": "Disclaimer Anon",
+        "disclaimerCrossBorder": "Disclaimer Cross Border",
+        "disclaimerCustomModel": "Disclaimer Custom Model",
+        "errorGrant": "Error Grant",
+        "grant": "Grant",
+        "grantedAt": "Granted At",
+        "heading": "Heading",
+        "lastUpdated": "Last Updated",
+        "legalBasis": "Legal Basis",
+        "legalBasisLabel": "Legal Basis",
+        "revokeConfirm": "Revoke Confirm",
+        "revokeConfirmBody": "Revoke Confirm Body",
+        "revokeConfirmTitle": "Revoke Confirm",
+        "revokeReason": "Revoke Reason",
+        "revokeReasonLabel": "Revoke Reason",
+        "revokedAt": "Revoked At",
+        "statusActive": "Status Active",
+        "statusInactive": "Status Inactive",
+        "statusLabel": "Status"
       }
     },
     "aiTransparency": {
@@ -6381,7 +6453,8 @@
       "fieldsTotal": "canonical fields available",
       "tabs": {
         "fields": "LIA Fields",
-        "tenantOverride": "Tenant Override (YAML)"
+        "tenantOverride": "Tenant Override (YAML)",
+        "aiPersona": "Ai Persona"
       },
       "tenantOverride": {
         "title": "Tenant Override (YAML)",

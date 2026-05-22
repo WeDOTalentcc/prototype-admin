@@ -1855,7 +1855,9 @@
         "agentCreatedDesc": "Agora vincule a uma vaga ou banco de talentos.",
         "noLinkTitle": "Agente sem vínculo",
         "noLinkDesc": "Este agente não está vinculado a uma vaga ou banco de talentos. Vincule-o para poder navegar.",
-        "errorStatus": "Erro ao alterar status"
+        "errorStatus": "Erro ao alterar status",
+        "agentCloned": "Agent Cloned",
+        "errorCloning": "Error Cloning"
       },
       "modal": {
         "createTitle": "Criar Agente",
@@ -1878,7 +1880,8 @@
         "cancel": "Cancelar",
         "creating": "Criando...",
         "createAndCalibrate": "Criar e Calibrar"
-      }
+      },
+      "refresh": "Refresh"
     },
     "status": {
       "active": "Ativo",
@@ -1902,7 +1905,9 @@
       "confidence": "confianca",
       "test": "Testar",
       "link": "Vincular",
-      "activate": "Ativar"
+      "activate": "Ativar",
+      "clone": "Duplicar",
+      "moreActions": "Mais ações"
     },
     "createModal": {
       "titleWithTemplate": "Criar Agente — {template}",
@@ -2029,7 +2034,9 @@
       "connectionError": "Erro de conexão",
       "subtitle": "Descubra e instale agentes criados por outras empresas",
       "tryAnotherSearch": "Tente outro termo de busca",
-      "noAgentsPublished": "O marketplace ainda não tem agentes publicados"
+      "noAgentsPublished": "O marketplace ainda não tem agentes publicados",
+      "confirmUninstallTitle": "Desinstalar agente?",
+      "viewSwitcher": "Alternar visualização"
     },
     "calibration": {
       "completed": "Calibração concluída",
@@ -2525,7 +2532,19 @@
       "auditLogOk": "Log de Auditoria OK",
       "agentFallback": "Agente",
       "defaultAgentName": "Novo Agente",
-      "toolsLabel": "Ferramentas"
+      "toolsLabel": "Ferramentas",
+      "allowedToolsLabel": "Ferramentas permitidas",
+      "confirmRevertTitle": "Reverter alteração?",
+      "contextLevelLabel": "Nível de contexto",
+      "creating": "Criando…",
+      "descLabel": "Descrição",
+      "maxStepsLabel": "Máximo de passos",
+      "nameLabel": "Nome",
+      "systemPromptLabel": "System prompt",
+      "temperatureLabel": "Temperatura",
+      "templatePreviewDesc": "Inspecione o template antes de usá-lo",
+      "templatePreviewNameHelp": "Nome do agente baseado neste template",
+      "templatePreviewTitle": "Pré-visualizar template"
     },
     "digitalTwin": {
       "active": "Ativo",
@@ -2554,7 +2573,37 @@
       "digitalTwinEvaluation": "Avaliação Digital Twin",
       "reevaluate": "Reavaliar",
       "createNew": "Novo Gêmeo Digital",
-      "twinCount": "{count, plural, =0 {Nenhum gêmeo} =1 {1 gêmeo} other {# gêmeos}}"
+      "twinCount": "{count, plural, =0 {Nenhum gêmeo} =1 {1 gêmeo} other {# gêmeos}}",
+      "cancel": "Cancelar",
+      "create": "Criar",
+      "createFirst": "Criar o primeiro",
+      "creating": "Criando…",
+      "decisionsFormats": "CSV, JSON ou XLSX (até 5 MB)",
+      "decisionsHelp": "Decisões anteriores ajudam a calibrar o clone",
+      "decisionsLabel": "Histórico de decisões",
+      "decisionsUploadCta": "Enviar histórico",
+      "descHelp": "Texto descritivo do agente",
+      "descLabel": "Descrição",
+      "descPlaceholder": "Descreva aqui…",
+      "description": "Descrição",
+      "errorDesc": "Tente novamente em alguns instantes",
+      "errorTitle": "Ocorreu um erro",
+      "fileTooLargeDesc": "O arquivo excede o limite permitido",
+      "fileTooLargeTitle": "Arquivo muito grande",
+      "headerDesc": "Configure um clone digital do seu recrutador",
+      "headerTitle": "Digital Twin",
+      "label": "Rótulo",
+      "nameHelp": "Nome único do agente",
+      "nameLabel": "Nome",
+      "namePlaceholder": "Ex: Triagem técnica…",
+      "noExperience": "Sem experiência prévia",
+      "specialtyHelp": "Área de atuação principal",
+      "specialtyLabel": "Especialidade",
+      "specialtyPlaceholder": "Ex: Backend, Dados…",
+      "subtitle": "Subtítulo",
+      "successDesc": "Operação realizada com sucesso",
+      "successTitle": "Sucesso!",
+      "title": "Título"
     },
     "candidateOrigin": {
       "origins": {
@@ -3550,7 +3599,8 @@
           "cat3": "Experiência Prática",
           "cat4": "Gestão de Tempo",
           "cat5": "Objetivos"
-        }
+        },
+        "noChannelsEnabled": "No Channels Enabled"
       },
       "textScreening": {
         "title": "Triagem WSI (Texto)",
@@ -4875,7 +4925,8 @@
         "statusWinner": "Vencedor identificado",
         "statusInProgress": "Em progresso",
         "statusWaiting": "Aguardando dados"
-      }
+      },
+      "alertPreferences": "Alert Preferences"
     },
     "integrations": {
       "tabs": {
@@ -5016,7 +5067,8 @@
       "noResults": "Nenhuma integração encontrada",
       "noResultsHint": "Tente buscar com outros termos",
       "authUrlError": "Erro ao obter URL de autorização",
-      "googleConnectError": "Erro ao conectar com Google"
+      "googleConnectError": "Erro ao conectar com Google",
+      "companyNotIdentified": "Company Not Identified"
     },
     "page": {
       "title": "Configurações",
@@ -5985,7 +6037,27 @@
           "loading": "Carregando métricas...",
           "errorLoad": "Falha ao carregar métricas",
           "empty": "Nenhuma métrica disponível ainda."
-        }
+        },
+        "cancel": "Cancelar",
+        "disclaimerAnon": "Disclaimer Anon",
+        "disclaimerCrossBorder": "Disclaimer Cross Border",
+        "disclaimerCustomModel": "Disclaimer Custom Model",
+        "errorGrant": "Error Grant",
+        "grant": "Grant",
+        "grantedAt": "Granted At",
+        "heading": "Heading",
+        "lastUpdated": "Last Updated",
+        "legalBasis": "Legal Basis",
+        "legalBasisLabel": "Legal Basis",
+        "revokeConfirm": "Revoke Confirm",
+        "revokeConfirmBody": "Revoke Confirm Body",
+        "revokeConfirmTitle": "Revoke Confirm",
+        "revokeReason": "Revoke Reason",
+        "revokeReasonLabel": "Revoke Reason",
+        "revokedAt": "Revoked At",
+        "statusActive": "Status Active",
+        "statusInactive": "Status Inactive",
+        "statusLabel": "Status"
       }
     },
     "aiTransparency": {
@@ -6381,7 +6453,8 @@
       "fieldsTotal": "campos canonical disponíveis",
       "tabs": {
         "fields": "Campos LIA",
-        "tenantOverride": "Tenant Override (YAML)"
+        "tenantOverride": "Tenant Override (YAML)",
+        "aiPersona": "Ai Persona"
       },
       "tenantOverride": {
         "title": "Tenant Override (YAML)",
