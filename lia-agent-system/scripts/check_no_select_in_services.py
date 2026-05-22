@@ -64,6 +64,39 @@ def is_service_file(path: Path) -> bool:
     )
 
 
+# === Wave 2 audit 2026-05-21: extend coverage para agent layer em app/services/ ===
+# Estes arquivos historicamente escaparam dos sensores ADR-001 porque vivem fora
+# de app/domains/*/services/. Audit Agent B encontrou ~40+ violations entre eles.
+# Wave 3 vai refatorar via repos canonical.
+AGENT_LAYER_SERVICE_FILES = frozenset({
+    "agent_marketplace_service.py",
+    "sourcing_agent_orchestrator.py",
+    "twin_inference_service.py",
+    "twin_knowledge_indexer.py",
+    "agent_approval_service.py",
+    "agent_version_service.py",
+    "multi_strategy_search.py",
+    "agent_deployment_service.py",
+    "agent_quality_evaluator.py",
+    "agent_quality_gate.py",
+})
+
+
+def is_agent_layer_service(path):
+    """Detect app/services/<agent_layer>.py files (audit Wave 2 2026-05-21 extension)."""
+    try:
+        rel = path.relative_to(ROOT)
+    except ValueError:
+        return False
+    parts = rel.parts
+    return (
+        len(parts) == 3
+        and parts[0] == "app"
+        and parts[1] == "services"
+        and parts[2] in AGENT_LAYER_SERVICE_FILES
+    )
+
+
 def has_exempt_marker(src: str) -> bool:
     return EXEMPT_MARKER in src
 
@@ -99,19 +132,48 @@ def main() -> int:
         return 0
 
     candidates = sorted(p for p in SERVICES_DIR.rglob("*.py") if is_service_file(p))
+    # Wave 2 2026-05-21 extension: agent layer em app/services/.
+    # Findings em agent_layer sao warn-only ate Wave 3 refatorar via repos canonical.
+    agent_layer_dir = ROOT / "app" / "services"
+    agent_files = []
+    if agent_layer_dir.exists():
+        agent_files = sorted(
+            p for p in agent_layer_dir.rglob("*.py") if is_agent_layer_service(p)
+        )
+    candidates = candidates + agent_files
+    agent_files_set = set(agent_files)
     findings_by_file: dict[Path, list[tuple[int, str, str]]] = {}
     total = 0
+    blocking_total = 0  # Wave 2 extension: agent_layer findings = warn-only
     for f in candidates:
         f_findings = scan_file(f)
         if f_findings:
             findings_by_file[f] = f_findings
             total += len(f_findings)
+            if f not in agent_files_set:
+                blocking_total += len(f_findings)
 
-    if total == 0:
-        print(
-            f"[ADR-001 select sensor] OK — scanned {len(candidates)} service files, "
-            "0 direct `select(Model)` hits."
-        )
+    if blocking_total == 0:
+        if total > 0:
+            # Agent layer findings present but warn-only
+            agent_findings_count = total - blocking_total
+            print(
+                f"[ADR-001 select sensor] WARN: {agent_findings_count} findings in "
+                f"app/services/ agent layer (warn-only, Wave 3 closes via repos):"
+            )
+            for f, hits in findings_by_file.items():
+                if f in agent_files_set:
+                    for ln, model, snippet in hits[:3]:
+                        try:
+                            rel = f.relative_to(ROOT)
+                        except ValueError:
+                            rel = f
+                        print(f"  {rel}:{ln}: select({model}, ...)")
+        else:
+            print(
+                f"[ADR-001 select sensor] OK — scanned {len(candidates)} service files, "
+                "0 direct `select(Model)` hits."
+            )
         return 0
 
     # Limit per-file output to top 5 findings to keep stderr manageable
