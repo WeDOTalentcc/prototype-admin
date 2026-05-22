@@ -57,6 +57,17 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    # Idempotent: skip creation if table already exists from partial prior run
+    conn = op.get_bind()
+    exists = conn.execute(sa.text(
+        "SELECT 1 FROM pg_tables WHERE tablename = 'credentials_access_logs'"
+    )).scalar()
+    if exists:
+        print(
+            "[171] credentials_access_logs already exists — skipping CREATE "
+            "(idempotent recovery from partial prior run)."
+        )
+        return
     op.create_table(
         "credentials_access_logs",
         sa.Column(
