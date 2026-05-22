@@ -469,6 +469,8 @@ def _patch_messages_api(client_instance, provider_label: str):
     def _patched_create(*args, **kwargs):
         caller = _get_caller()
         # Wave 3 — credit gate BEFORE PII strip + LLM call (fail-closed on exhaust)
+        company_id = _get_tenant_id()
+        estimated = max(0, int(_estimate_tokens_anthropic(kwargs)))
         _enforce_credit_gate_sync(provider_label, kwargs, estimator=_estimate_tokens_anthropic)
         # PII strip messages
         if "messages" in kwargs:
@@ -483,6 +485,10 @@ def _patch_messages_api(client_instance, provider_label: str):
             latency = (time.time() - start) * 1000
             _audit_log(provider_label, "messages.create", model=model,
                       latency_ms=latency, caller=caller)
+            # Wave 4 Gap 2 (2026-05-22) -- reconcile estimate vs actual usage.
+            actual = _extract_response_usage_tokens(result)
+            if company_id and actual > 0:
+                _reconcile_sync(company_id, estimated, actual, service=provider_label)
             return result
         except Exception as e:
             latency = (time.time() - start) * 1000
@@ -500,6 +506,8 @@ def _patch_messages_api(client_instance, provider_label: str):
         def _patched_stream(*args, **kwargs):
             caller = _get_caller()
             # Wave 3 — credit gate BEFORE PII strip + LLM call (fail-closed on exhaust)
+            company_id = _get_tenant_id()
+            estimated = max(0, int(_estimate_tokens_anthropic(kwargs)))
             _enforce_credit_gate_sync(provider_label, kwargs, estimator=_estimate_tokens_anthropic)
             if "messages" in kwargs:
                 kwargs["messages"] = _strip_pii_from_messages(kwargs["messages"])
@@ -507,7 +515,10 @@ def _patch_messages_api(client_instance, provider_label: str):
                 kwargs["system"] = _strip_pii(kwargs["system"])
             model = kwargs.get("model", "unknown")
             _audit_log(provider_label, "messages.stream", model=model, caller=caller)
-            return _orig_stream(*args, **kwargs)
+            cm = _orig_stream(*args, **kwargs)
+            # Wave 4 Gap 2 (2026-05-22) -- wrap stream context-manager so we
+            # observe accumulated usage at close() and reconcile.
+            return _AnthropicStreamReconciler(cm, company_id, estimated, provider_label)
 
         messages_obj.stream = _patched_stream
 
@@ -586,18 +597,36 @@ def _patch_openai_completions(client_instance, provider_label: str):
     if is_async:
         @functools.wraps(_orig)
         async def _patched_async(*args, **kwargs):
+            company_id = _get_tenant_id()
+            estimated = max(0, int(_estimate_tokens_openai(kwargs)))
             await _enforce_credit_gate_async(
                 provider_label, kwargs, estimator=_estimate_tokens_openai
             )
-            return await _orig(*args, **kwargs)
+            response = await _orig(*args, **kwargs)
+            # Wave 4 Gap 2 (2026-05-22) -- streaming returns AsyncStream;
+            # non-streaming returns ChatCompletion with .usage populated.
+            if kwargs.get("stream"):
+                return _OpenAIStreamReconciler(response, company_id, estimated, provider_label, is_async=True)
+            actual = _extract_response_usage_tokens(response)
+            if company_id and actual > 0:
+                await reconcile_credits(company_id, estimated, actual, service=provider_label)
+            return response
         completions.create = _patched_async
     else:
         @functools.wraps(_orig)
         def _patched_sync(*args, **kwargs):
+            company_id = _get_tenant_id()
+            estimated = max(0, int(_estimate_tokens_openai(kwargs)))
             _enforce_credit_gate_sync(
                 provider_label, kwargs, estimator=_estimate_tokens_openai
             )
-            return _orig(*args, **kwargs)
+            response = _orig(*args, **kwargs)
+            if kwargs.get("stream"):
+                return _OpenAIStreamReconciler(response, company_id, estimated, provider_label, is_async=False)
+            actual = _extract_response_usage_tokens(response)
+            if company_id and actual > 0:
+                _reconcile_sync(company_id, estimated, actual, service=provider_label)
+            return response
         completions.create = _patched_sync
 
 
@@ -659,6 +688,289 @@ def _patch_genai_models(client_instance, provider_label: str):
                 )
                 return await _orig_aio(*args, **kwargs)
             aio_models.generate_content = _patched_async
+
+
+
+
+# ---------------------------------------------------------------------------
+# Wave 4 Gap 2 (2026-05-22) -- streaming + tool-use reconciliation hooks
+# ---------------------------------------------------------------------------
+# Pre-call estimation uses ``max_tokens`` ceilings, so streaming and
+# tool-use multi-turn underestimate or overestimate vs actual billing.
+# After each successful SDK call we observe ``response.usage`` (or the
+# final-chunk usage on streams) and adjust the credit ledger via
+# ``reconcile_credits``. Per-turn tool-use is naturally handled because
+# each turn is a separate ``create()`` call going through the same hook.
+
+
+async def reconcile_credits(
+    company_id: str,
+    estimated: int,
+    actual: int,
+    *,
+    service: str,
+) -> None:
+    """Adjust credit ledger after seeing real ``response.usage`` (or stream
+    aggregate). Delta == 0 is a no-op.
+
+    delta > 0 (actual > estimated): we under-charged -> top-up the ledger.
+    delta < 0 (actual < estimated): we over-charged -> refund.
+
+    Fail-safe: any error is logged + swallowed so a Redis/DB outage during
+    reconciliation does NOT propagate into the user-facing LLM call which
+    has already succeeded.
+    """
+    delta = int(actual) - int(estimated)
+    if delta == 0:
+        return
+
+    sign = "positive" if delta > 0 else "negative"
+
+    try:
+        from app.shared.observability.canary_metrics import (
+            llm_gate_reconciliation_delta_total,
+        )
+        if llm_gate_reconciliation_delta_total is not None:
+            try:
+                llm_gate_reconciliation_delta_total.labels(
+                    provider=service, sign=sign
+                ).inc(abs(delta))
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    logger.info(
+        "[LLM-Reconcile] company=%s service=%s estimated=%s actual=%s delta=%s",
+        company_id, service, estimated, actual, delta,
+    )
+
+    if not company_id:
+        return
+
+    try:
+        from lia_config.database import AsyncSessionLocal
+        from sqlalchemy import select
+        from app.models.observability import AiCreditsBalance
+
+        async with AsyncSessionLocal() as db:
+            res = await db.execute(
+                select(AiCreditsBalance).where(
+                    AiCreditsBalance.company_id == company_id
+                )
+            )
+            balance = res.scalar_one_or_none()
+            if balance is None:
+                return
+            current_usage = int(getattr(balance, "current_usage", 0) or 0)
+            balance.current_usage = max(0, current_usage + delta)
+            await db.commit()
+    except Exception as exc:
+        logger.warning(
+            "[LLM-Reconcile] ledger update failed (fail-safe): %s", exc
+        )
+
+
+def _extract_response_usage_tokens(response) -> int:
+    """Best-effort extract input+output tokens from an SDK response object.
+
+    Returns 0 when the shape is unknown (Anthropic/OpenAI/genai vary).
+    """
+    if response is None:
+        return 0
+    try:
+        usage = getattr(response, "usage", None)
+        if usage is None and isinstance(response, dict):
+            usage = response.get("usage")
+        if usage is None:
+            return 0
+
+        def _g(obj, name):
+            if isinstance(obj, dict):
+                return obj.get(name) or 0
+            return getattr(obj, name, 0) or 0
+
+        # Anthropic: input_tokens + output_tokens
+        # OpenAI:    prompt_tokens + completion_tokens
+        # genai:     prompt_token_count + candidates_token_count
+        total = 0
+        for k in ("input_tokens", "prompt_tokens", "prompt_token_count"):
+            total += int(_g(usage, k))
+        for k in ("output_tokens", "completion_tokens", "candidates_token_count"):
+            total += int(_g(usage, k))
+        if total > 0:
+            return total
+        return int(_g(usage, "total_tokens"))
+    except Exception:
+        return 0
+
+
+def _reconcile_sync(company_id: str, estimated: int, actual: int, *, service: str) -> None:
+    """Sync wrapper around reconcile_credits (sync SDK paths)."""
+    if not company_id or actual <= 0:
+        return
+    try:
+        import asyncio
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = None
+        if loop and loop.is_running():
+            new_loop = asyncio.new_event_loop()
+            try:
+                new_loop.run_until_complete(
+                    reconcile_credits(company_id, estimated, actual, service=service)
+                )
+            finally:
+                new_loop.close()
+        else:
+            asyncio.run(
+                reconcile_credits(company_id, estimated, actual, service=service)
+            )
+    except Exception as exc:
+        logger.warning("[LLM-Reconcile] sync wrapper failed (fail-safe): %s", exc)
+
+
+class _AnthropicStreamReconciler:
+    """Wave 4 Gap 2 (2026-05-22) -- proxy that forwards every attribute /
+    iteration / context-manager call to the underlying Anthropic stream
+    context-manager, and triggers reconcile_credits on close() using the
+    stream's ``.usage`` snapshot if available.
+
+    Anthropic ``messages.stream`` returns a ``MessageStreamManager`` used as
+    ``with stream as s: ...``. After ``__exit__`` the stream exposes
+    ``s.get_final_message().usage``. We snapshot at __exit__ and reconcile.
+    """
+
+    def __init__(self, wrapped, company_id: str, estimated: int, service: str):
+        self._wrapped = wrapped
+        self._company_id = company_id
+        self._estimated = estimated
+        self._service = service
+        self._inner = None
+
+    def __getattr__(self, name):
+        return getattr(self._wrapped, name)
+
+    def __enter__(self):
+        self._inner = self._wrapped.__enter__()
+        return self._inner
+
+    def __exit__(self, exc_type, exc, tb):
+        try:
+            return self._wrapped.__exit__(exc_type, exc, tb)
+        finally:
+            try:
+                actual = 0
+                if self._inner is not None and hasattr(self._inner, "get_final_message"):
+                    final = self._inner.get_final_message()
+                    actual = _extract_response_usage_tokens(final)
+                if self._company_id and actual > 0:
+                    _reconcile_sync(
+                        self._company_id, self._estimated, actual,
+                        service=self._service,
+                    )
+            except Exception as _exc:  # noqa: BLE001
+                logger.debug("[LLM-Reconcile] anthropic stream reconcile failed: %s", _exc)
+
+    async def __aenter__(self):
+        self._inner = await self._wrapped.__aenter__()
+        return self._inner
+
+    async def __aexit__(self, exc_type, exc, tb):
+        try:
+            return await self._wrapped.__aexit__(exc_type, exc, tb)
+        finally:
+            try:
+                actual = 0
+                if self._inner is not None and hasattr(self._inner, "get_final_message"):
+                    final = self._inner.get_final_message()
+                    if hasattr(final, "__await__"):
+                        final = await final
+                    actual = _extract_response_usage_tokens(final)
+                if self._company_id and actual > 0:
+                    await reconcile_credits(
+                        self._company_id, self._estimated, actual,
+                        service=self._service,
+                    )
+            except Exception as _exc:  # noqa: BLE001
+                logger.debug("[LLM-Reconcile] anthropic async-stream reconcile failed: %s", _exc)
+
+
+class _OpenAIStreamReconciler:
+    """Wave 4 Gap 2 (2026-05-22) -- iterator/async-iterator proxy that
+    accumulates token usage across stream chunks and reconciles on close.
+
+    OpenAI streaming yields ChatCompletionChunk objects. With
+    ``stream_options={'include_usage': True}`` the final chunk has
+    ``chunk.usage`` populated. We track the max observed so the per-chunk
+    .usage updates monotonically (some SDK versions repeat usage on
+    intermediate chunks).
+    """
+
+    def __init__(self, wrapped, company_id: str, estimated: int, service: str, *, is_async: bool):
+        self._wrapped = wrapped
+        self._company_id = company_id
+        self._estimated = estimated
+        self._service = service
+        self._is_async = is_async
+        self._actual = 0
+        self._closed = False
+
+    def __getattr__(self, name):
+        return getattr(self._wrapped, name)
+
+    def __iter__(self):
+        return self
+
+    def __aiter__(self):
+        return self
+
+    def __next__(self):
+        try:
+            chunk = next(self._wrapped)
+        except StopIteration:
+            self._reconcile_now_sync()
+            raise
+        self._observe_chunk(chunk)
+        return chunk
+
+    async def __anext__(self):
+        try:
+            chunk = await self._wrapped.__anext__()
+        except StopAsyncIteration:
+            await self._reconcile_now_async()
+            raise
+        self._observe_chunk(chunk)
+        return chunk
+
+    def _observe_chunk(self, chunk):
+        try:
+            actual = _extract_response_usage_tokens(chunk)
+            if actual > self._actual:
+                self._actual = actual
+        except Exception:
+            pass
+
+    def _reconcile_now_sync(self):
+        if self._closed:
+            return
+        self._closed = True
+        if self._company_id and self._actual > 0:
+            _reconcile_sync(
+                self._company_id, self._estimated, self._actual,
+                service=self._service,
+            )
+
+    async def _reconcile_now_async(self):
+        if self._closed:
+            return
+        self._closed = True
+        if self._company_id and self._actual > 0:
+            await reconcile_credits(
+                self._company_id, self._estimated, self._actual,
+                service=self._service,
+            )
 
 
 # ---------------------------------------------------------------------------
