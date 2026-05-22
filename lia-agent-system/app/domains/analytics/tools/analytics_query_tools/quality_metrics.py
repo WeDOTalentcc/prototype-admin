@@ -271,6 +271,7 @@ async def get_prediction_metrics(
             if not job:
                 return {"success": False, "message": f"❌ Vaga não encontrada: {job_id}", "error": "job_not_found"}
 
+            # TENANT-EXEMPT: job tenant-gated em L260-267 acima (JobVacancy.company_id == company_id); vc query atrelada ao vacancy_id já validado; defense-in-depth implícita
             vc_result = await db.execute(
                 select(VacancyCandidate, Candidate).join(
                     Candidate, VacancyCandidate.candidate_id == Candidate.id

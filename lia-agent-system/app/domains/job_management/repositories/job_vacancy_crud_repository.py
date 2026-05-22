@@ -16,11 +16,14 @@ class JobVacancyCRUDRepository:
     # ── Search ────────────────────────────────────────────────────────────────
 
     async def search_count(self, search_filter) -> int:
+        # TENANT-EXEMPT: dynamic builder — caller composes ``search_filter``
+        # always with JobVacancy.company_id == X; AST sensor cannot trace.
         count_stmt = select(func.count(JobVacancy.id)).where(search_filter)
         count_result = await self.db.execute(count_stmt)
         return count_result.scalar() or 0
 
     async def search_vacancies(self, search_filter, offset: int, page_size: int):
+        # TENANT-EXEMPT: dynamic builder — see search_count above.
         stmt = (
             select(
                 JobVacancy.id,
@@ -43,7 +46,7 @@ class JobVacancyCRUDRepository:
     async def get_completed_vacancies(self, company_id):
         result = await self.db.execute(
             select(JobVacancy)
-            .where(JobVacancy.status == Concluída)
+            .where(JobVacancy.status == "Concluída")
             .where(JobVacancy.company_id == company_id)
             .order_by(JobVacancy.closed_at.desc())
         )
@@ -68,6 +71,8 @@ class JobVacancyCRUDRepository:
         in system context (background scheduler) without a per-request
         company_id. Caller is responsible for any tenant scoping required.
         """
+        # TENANT-EXEMPT: system-context (sourcing background scheduler);
+        # caller is responsible for any tenant scoping required.
         result = await self.db.execute(
             select(JobVacancy).where(JobVacancy.id == job_vacancy_id)
         )
@@ -78,6 +83,8 @@ class JobVacancyCRUDRepository:
 
         Used by sourcing pipeline (system context, no company filter).
         """
+        # TENANT-EXEMPT: system-context (sourcing background scheduler);
+        # walks all tenants to drive sourcing pipeline.
         result = await self.db.execute(
             select(JobVacancy)
             .where(JobVacancy.status.in_(statuses))
@@ -92,6 +99,8 @@ class JobVacancyCRUDRepository:
         ADR-001 cross-domain read: integration layer fallback when Rails
         is unavailable; Rails owns tenancy at the API gateway.
         """
+        # TENANT-EXEMPT: Rails-adapter fallback; Rails owns tenancy at the
+        # API gateway when the integration is healthy.
         result = await self.db.execute(
             select(JobVacancy).limit(limit).offset(offset)
         )
@@ -151,10 +160,14 @@ class JobVacancyCRUDRepository:
             )
         else:
             search_filter = base_filter
+        # TENANT-EXEMPT: dynamic builder — base_filter always carries
+        # JobVacancy.company_id == company_id (line above).
         count_result = await self.db.execute(
             select(func.count()).select_from(JobVacancy).where(search_filter)
         )
         total = count_result.scalar() or 0
+        # TENANT-EXEMPT: dynamic builder — base_filter always carries
+        # JobVacancy.company_id == company_id.
         rows_result = await self.db.execute(
             select(JobVacancy).where(search_filter)
             .order_by(JobVacancy.created_at.desc())
@@ -214,6 +227,8 @@ class JobVacancyCRUDRepository:
                 )
             )
 
+        # TENANT-EXEMPT: dynamic builder — conditions[0] is always
+        # JobVacancy.company_id == company_id (composed above).
         result = await self.db.execute(
             select(JobVacancy)
             .where(and_(*conditions))
@@ -245,6 +260,8 @@ class JobVacancyCRUDRepository:
 
     async def get_vacancy_by_id_only(self, job_vacancy_id: UUID):
         """Used by job_clone_service.get_job_summary_for_clone — caller scopes."""
+        # TENANT-EXEMPT: caller (job_clone_service) verifies tenant
+        # ownership before invoking; legacy compat surface.
         result = await self.db.execute(
             select(JobVacancy).where(JobVacancy.id == job_vacancy_id)
         )
@@ -289,6 +306,8 @@ class JobVacancyCRUDRepository:
 
     async def get_by_id_only_uuid(self, job_uuid: UUID):
         """Used by outcome_tracker._fetch_job — system context."""
+        # TENANT-EXEMPT: outcome_tracker runs in system-context
+        # (background scheduler), no per-request company_id.
         result = await self.db.execute(
             select(JobVacancy).where(JobVacancy.id == job_uuid)
         )
@@ -298,6 +317,9 @@ class JobVacancyCRUDRepository:
     async def search_by_conditions(self, conditions: list, *, limit: int = 50):
         """Generic conditions-based search used by vacancy_search_service."""
         from sqlalchemy import and_ as _and_
+        # TENANT-EXEMPT: dynamic builder — caller (vacancy_search_service)
+        # composes ``conditions`` always starting with
+        # JobVacancy.company_id == X; AST sensor cannot trace.
         result = await self.db.execute(
             select(JobVacancy)
             .where(_and_(*conditions))

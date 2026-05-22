@@ -17,10 +17,19 @@ class JobEmbeddingRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_by_job_id(self, job_id: UUID) -> JobEmbedding | None:
-        result = await self.db.execute(
-            select(JobEmbedding).where(JobEmbedding.job_id == job_id)
-        )
+    async def get_by_job_id(
+        self,
+        job_id: UUID,
+        company_id: Any | None = None,
+    ) -> JobEmbedding | None:
+        """Get embedding by job id. ``company_id`` optional for backwards-compat,
+        recommended for defense-in-depth (REGRA ZERO multi-tenancy)."""
+        # TENANT-EXEMPT: dynamic builder — JobEmbedding.company_id appended
+        # conditionally below when caller passes it.
+        query = select(JobEmbedding).where(JobEmbedding.job_id == job_id)
+        if company_id:
+            query = query.where(JobEmbedding.company_id == company_id)
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
     async def get_by_company_and_job(

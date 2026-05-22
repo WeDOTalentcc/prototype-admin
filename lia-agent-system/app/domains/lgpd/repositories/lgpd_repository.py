@@ -36,6 +36,9 @@ class LGPDRepository:
         limit: int,
         offset: int,
     ) -> tuple[list[DPORegistry], int]:
+        # TENANT-EXEMPT: DPORegistry é tabela de compliance admin-level — endpoint /dpo
+        # é admin view cross-tenant para DPO/compliance overseer; sensor não distingue admin scope.
+        # Audit 2026-05-22 tail sprint.
         conditions = []
         if is_active is not None:
             conditions.append(DPORegistry.is_active == is_active)
@@ -127,6 +130,7 @@ class LGPDRepository:
         if pending_anpd is not None:
             conditions.append(BreachNotification.notification_sent_to_anpd == (not pending_anpd))
 
+        # TENANT-EXEMPT: dynamic builder — conditions[0] is BreachNotification.company_id == company_id; sensor AST não traça
         query = (
             select(BreachNotification)
             .where(and_(*conditions))
@@ -279,6 +283,7 @@ class LGPDRepository:
             else:
                 conditions.append(AutomatedDecisionExplanation.human_review_completed_at != None)
 
+        # TENANT-EXEMPT: dynamic builder — conditions[0] is AutomatedDecisionExplanation.company_id == company_id (L268); sensor AST não traça
         query = (
             select(AutomatedDecisionExplanation)
             .where(and_(*conditions))

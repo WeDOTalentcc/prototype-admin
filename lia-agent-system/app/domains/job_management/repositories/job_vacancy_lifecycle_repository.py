@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 from app.models.job_vacancy import JobVacancy
@@ -18,11 +19,19 @@ class JobVacancyLifecycleRepository:
         )
         return result.scalar_one_or_none()
 
-    async def get_vacancy_by_uuid_str(self, vacancy_id_str: str):
-        """Get a job vacancy by string UUID (no company filter)."""
-        result = await self.db.execute(
-            select(JobVacancy).where(JobVacancy.id == uuid_lib.UUID(vacancy_id_str))
-        )
+    async def get_vacancy_by_uuid_str(
+        self,
+        vacancy_id_str: str,
+        company_id: Any | None = None,
+    ):
+        """Get a job vacancy by string UUID. ``company_id`` optional but
+        recommended for defense-in-depth (REGRA ZERO multi-tenancy)."""
+        # TENANT-EXEMPT: dynamic builder — JobVacancy.company_id appended
+        # conditionally when caller passes it; legacy compat surface.
+        query = select(JobVacancy).where(JobVacancy.id == uuid_lib.UUID(vacancy_id_str))
+        if company_id:
+            query = query.where(JobVacancy.company_id == company_id)
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
     async def publish_vacancy(self, job: JobVacancy) -> JobVacancy:

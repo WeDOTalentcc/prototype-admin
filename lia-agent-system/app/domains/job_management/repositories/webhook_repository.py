@@ -3,6 +3,7 @@ WebhookRegistration Repository — data access layer for job status webhooks.
 Extracted from app/api/v1/job_status_webhooks.py as part of Phase 2 refactor.
 """
 import logging
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import and_, desc, func, select
@@ -63,27 +64,47 @@ class WebhookRepository:
         await self.db.delete(webhook)
 
     async def list_delivery_logs(
-        self, webhook_id: UUID, *, limit: int = 50, offset: int = 0
+        self,
+        webhook_id: UUID,
+        *,
+        limit: int = 50,
+        offset: int = 0,
+        company_id: Any | None = None,
     ) -> tuple[list[WebhookDeliveryLog], int]:
-        q = (
+        """List delivery logs. ``company_id`` optional but recommended for
+        defense-in-depth (REGRA ZERO multi-tenancy)."""
+        # TENANT-EXEMPT: dynamic builder — WebhookDeliveryLog.company_id
+        # appended conditionally below when caller passes it. Logs are
+        # joined-by-webhook_id which already encodes tenant ownership.
+        log_q = (
             select(WebhookDeliveryLog)
             .where(WebhookDeliveryLog.webhook_id == webhook_id)
-            .order_by(desc(WebhookDeliveryLog.created_at))
+        )
+        if company_id:
+            log_q = log_q.where(WebhookDeliveryLog.company_id == company_id)
+        log_q = (
+            log_q.order_by(desc(WebhookDeliveryLog.created_at))
             .limit(limit)
             .offset(offset)
         )
-        result = await self.db.execute(q)
+        result = await self.db.execute(log_q)
         logs = list(result.scalars().all())
 
-        cq = select(func.count(WebhookDeliveryLog.id)).where(
+        # TENANT-EXEMPT: dynamic builder — see log_q above.
+        count_q = select(func.count(WebhookDeliveryLog.id)).where(
             WebhookDeliveryLog.webhook_id == webhook_id
         )
-        total = (await self.db.execute(cq)).scalar() or 0
+        if company_id:
+            count_q = count_q.where(WebhookDeliveryLog.company_id == company_id)
+        total = (await self.db.execute(count_q)).scalar() or 0
         return logs, total
 
     async def get_all_active_for_event(
         self, event_type: str, company_id: str | None = None
     ) -> list[WebhookRegistration]:
+        # TENANT-EXEMPT: dynamic builder — WebhookRegistration.company_id
+        # appended conditionally when caller passes it; cross-tenant
+        # fan-out is intentional for system-emitted events.
         q = select(WebhookRegistration).where(
             WebhookRegistration.is_active.is_(True),
             WebhookRegistration.event_types.contains([event_type]),

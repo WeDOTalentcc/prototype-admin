@@ -21,6 +21,9 @@ class JobPatternRepository:
     async def find_patterns_with_conditions(
         self, conditions: list[Any], limit: int
     ) -> list[JobPattern]:
+        # TENANT-EXEMPT: dynamic builder — caller (job_pattern_service)
+        # composes ``conditions`` list always starting with
+        # JobPattern.company_id == X; AST sensor cannot trace upstream gate.
         result = await self.db.execute(
             select(JobPattern)
             .where(and_(*conditions))
@@ -34,6 +37,9 @@ class JobPatternRepository:
     async def find_salary_benchmark(
         self, conditions: list[Any]
     ) -> SalaryBenchmark | None:
+        # TENANT-EXEMPT: dynamic builder — caller composes ``conditions``
+        # list always starting with SalaryBenchmark.company_id == X; AST
+        # sensor cannot trace upstream gate.
         result = await self.db.execute(
             select(SalaryBenchmark)
             .where(and_(*conditions))

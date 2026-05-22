@@ -38,7 +38,19 @@ class DataIncidentRepository:
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
 
-    async def get_by_id(self, incident_id: str) -> Optional[DataIncident]:
-        stmt = select(DataIncident).where(DataIncident.id == incident_id)
+    async def get_by_id(
+        self,
+        incident_id: str,
+        company_id: str,
+    ) -> Optional[DataIncident]:
+        """Lookup DataIncident por id COM gate de tenant (multi-tenancy fail-closed).
+
+        Sprint B.1 tail (2026-05-22): company_id passou a REQUIRED.
+        """
+        company_id = self._require_company_id(company_id)
+        stmt = select(DataIncident).where(
+            DataIncident.id == incident_id,
+            DataIncident.company_id == company_id,
+        )
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()

@@ -291,6 +291,9 @@ async def run_cleanup(dry_run: bool = True) -> dict:
 
             if not dry_run and vcs_to_delete:
                 ids = [row.id for row in vcs_to_delete]
+                # CROSS-TENANT-EXEMPT: LGPD retention cleanup job runs system-wide across all tenants;
+                # ids derived from query L283-294 above (scheduled_deletion_at filter is cross-tenant by design).
+                # Each row already has company_id logged for audit. See top-of-file docstring.
                 await db.execute(
                     delete(VacancyCandidate).where(VacancyCandidate.id.in_(ids))
                 )
@@ -332,6 +335,8 @@ async def run_cleanup(dry_run: bool = True) -> dict:
 
             if not dry_run and ai_to_delete:
                 ids = [row.id for row in ai_to_delete]
+                # CROSS-TENANT-EXEMPT: LGPD retention cleanup job runs system-wide across all tenants;
+                # ids derived from cross-tenant scheduled_deletion_at filter (L309-320). See top-of-file docstring.
                 await db.execute(
                     delete(AiConsumption).where(AiConsumption.id.in_(ids))
                 )

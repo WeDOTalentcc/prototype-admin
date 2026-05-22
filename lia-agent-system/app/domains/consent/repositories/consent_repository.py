@@ -36,6 +36,7 @@ class ConsentRepository:
         if is_current is not None:
             conditions.append(ConsentVersion.is_current == is_current)
 
+        # TENANT-EXEMPT: dynamic builder — conditions[0] is ConsentVersion.company_id == company_uuid (L33 above); AST sensor cannot trace dynamic conditions list
         query = (
             select(ConsentVersion)
             .where(and_(*conditions))
@@ -144,8 +145,22 @@ class ConsentRepository:
         result = await self.db.execute(query)
         return [row[0] for row in result.fetchall()]
 
-    async def get_versions_by_ids(self, version_ids: list):
-        query = select(ConsentVersion).where(ConsentVersion.id.in_(version_ids))
+    async def get_versions_by_ids(
+        self,
+        version_ids: list,
+        company_uuid: UUID,
+    ):
+        """Lookup ConsentVersion por lista de ids COM gate de tenant.
+
+        Sprint B.1 tail (2026-05-22): company_uuid passou a REQUIRED.
+        Defense-in-depth — version_ids podem vir de get_version_ids_for_type
+        (já tenant-filtered) ou cache externo; pedir company_uuid garante
+        re-validação no read.
+        """
+        query = select(ConsentVersion).where(
+            ConsentVersion.id.in_(version_ids),
+            ConsentVersion.company_id == company_uuid,
+        )
         result = await self.db.execute(query)
         return {v.id: v for v in result.scalars().all()}
 
@@ -176,6 +191,7 @@ class ConsentRepository:
         if date_to is not None:
             conditions.append(ConsentEvent.created_at <= date_to)
 
+        # TENANT-EXEMPT: dynamic builder — conditions[0] is ConsentEvent.company_id == company_uuid (L165 above); AST sensor cannot trace dynamic conditions list
         query = (
             select(ConsentEvent)
             .where(and_(*conditions))

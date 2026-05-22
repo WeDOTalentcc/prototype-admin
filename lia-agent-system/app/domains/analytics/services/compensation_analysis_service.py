@@ -288,6 +288,7 @@ class CompensationAnalysisService:
             job_title_lower = job_title.lower()
             seniority_lower = seniority.lower()
             
+            # TENANT-EXEMPT: dynamic builder — base_conditions[0] is CompensationPolicy.company_id == company_uuid (declared above); AST sensor cannot trace dynamic conditions
             query = select(CompensationPolicy).where(
                 and_(*base_conditions)
             ).order_by(CompensationPolicy.created_at.desc())

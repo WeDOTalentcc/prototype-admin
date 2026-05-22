@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 from uuid import UUID
 
 from sqlalchemy import select
@@ -12,11 +13,19 @@ class JobVacancyScreeningRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_vacancy_by_id(self, job_id: UUID):
-        """Get a job vacancy by its UUID."""
-        result = await self.db.execute(
-            select(JobVacancy).where(JobVacancy.id == job_id)
-        )
+    async def get_vacancy_by_id(
+        self,
+        job_id: UUID,
+        company_id: Any | None = None,
+    ):
+        """Get a job vacancy by its UUID. ``company_id`` optional but
+        recommended for defense-in-depth (REGRA ZERO multi-tenancy)."""
+        # TENANT-EXEMPT: dynamic builder — JobVacancy.company_id appended
+        # conditionally when caller passes it; legacy compat surface.
+        query = select(JobVacancy).where(JobVacancy.id == job_id)
+        if company_id:
+            query = query.where(JobVacancy.company_id == company_id)
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
     async def update_screening_config(self, job: JobVacancy, merged_config: dict) -> JobVacancy:

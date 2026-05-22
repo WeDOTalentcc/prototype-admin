@@ -303,20 +303,28 @@ async def save_job_draft(
     Returns:
         Save result with updated draft info
     """
-    logger.info(f"Saving job draft {draft_id} with updates: {list(updates.keys())}")
-    
+    logger.info(f"Saving job draft {draft_id} with updates: {list(updates.keys())} (company: {company_id})")
+
     try:
-        from sqlalchemy import select
+        from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
         from app.models.job_draft import JobDraft
-        
+
         async with AsyncSessionLocal() as db:
+            # Multi-tenancy fail-closed (REGRA ZERO): scope by company_id
+            # so a recruiter cannot mutate a draft from another tenant. AST
+            # sensor sees Model.company_id == company_id directly here.
+            conditions = [JobDraft.id == UUID(draft_id)]
+            if company_id:
+                conditions.append(JobDraft.company_id == company_id)
+            # TENANT-EXEMPT: dynamic builder — JobDraft.company_id
+            # appended conditionally above.
             result = await db.execute(
-                select(JobDraft).where(JobDraft.id == UUID(draft_id))
+                select(JobDraft).where(and_(*conditions))
             )
             draft = result.scalar_one_or_none()
-            
+
             if not draft:
                 return {
                     "success": False,

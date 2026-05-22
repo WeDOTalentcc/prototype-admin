@@ -68,6 +68,7 @@ async def get_recruiter_metrics(
 
             job_ids = [j.id for j in jobs]
             if job_ids:
+                # TENANT-EXEMPT: job_ids derivado de query tenant-gated em L44-46 acima (JobVacancy.company_id == company_id); vc query .in_(job_ids) é defense-in-depth implícita
                 vc_result = await db.execute(
                     select(VacancyCandidate).where(
                         VacancyCandidate.vacancy_id.in_(job_ids)

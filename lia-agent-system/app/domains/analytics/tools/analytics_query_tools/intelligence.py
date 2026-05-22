@@ -108,6 +108,7 @@ async def get_ml_predictions(
                 job = job_result.scalar_one_or_none()
 
                 if job:
+                    # TENANT-EXEMPT: job tenant-gated em L101-105 acima (JobVacancy.company_id == company_id); vc atrelado ao vacancy_id derivado da query tenant-safe — defense-in-depth implícita
                     vc_result = await db.execute(
                         select(VacancyCandidate, Candidate).join(
                             Candidate, VacancyCandidate.candidate_id == Candidate.id

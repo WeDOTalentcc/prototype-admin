@@ -93,6 +93,9 @@ class WizardDataPriorityRepository:
     async def list_imported_jds(
         self, filters: list[Any], *, limit: int = 10
     ) -> list[ImportedJobDescription]:
+        # TENANT-EXEMPT: dynamic builder — caller (wizard_data_priority_service)
+        # composes ``filters`` always starting with
+        # ImportedJobDescription.company_id == X; AST sensor cannot trace.
         result = await self.db.execute(
             select(ImportedJobDescription)
             .where(and_(*filters))

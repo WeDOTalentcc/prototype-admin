@@ -29,6 +29,9 @@ class AdminTemplateRepository:
         skip: int = 0,
         limit: int = 50,
     ) -> tuple[list[EmailTemplate], int]:
+        # TENANT-EXEMPT: system templates by definition têm company_id=NULL e são acessados
+        # apenas por admin WeDOTalent (require_admin gate em app/api/v1/admin_templates.py).
+        # Marketplace global pattern (audit 2026-05-22 tail sprint).
         query = select(EmailTemplate).where(EmailTemplate.is_system_template.is_(True))
         count_q = select(func.count(EmailTemplate.id)).where(EmailTemplate.is_system_template.is_(True))
 
@@ -56,6 +59,7 @@ class AdminTemplateRepository:
         return list(result.scalars().all()), total
 
     async def get_system_template_by_id(self, template_id: uuid.UUID) -> EmailTemplate | None:
+        # TENANT-EXEMPT: system template lookup (company_id=NULL by design) — admin-only.
         result = await self.db.execute(
             select(EmailTemplate).where(
                 EmailTemplate.id == template_id,
@@ -65,6 +69,7 @@ class AdminTemplateRepository:
         return result.scalar_one_or_none()
 
     async def get_system_template_by_name(self, name: str, exclude_id: uuid.UUID | None = None) -> EmailTemplate | None:
+        # TENANT-EXEMPT: system template lookup (company_id=NULL by design) — admin-only.
         q = select(EmailTemplate).where(
             EmailTemplate.name == name,
             EmailTemplate.is_system_template.is_(True),

@@ -190,8 +190,11 @@ async def update_job(
                 )
             )
             job = result.scalar_one_or_none()
-            
+
             if not job:
+                # TENANT-EXEMPT: intentional global lookup to distinguish
+                # "job does not exist" from "job belongs to another company".
+                # First query above already enforced tenant scope.
                 job_check = await db.execute(
                     select(JobVacancy).where(JobVacancy.id == UUID(job_id))
                 )
@@ -262,31 +265,43 @@ async def pause_job(
     Returns:
         Result with pause details
     """
-    logger.info(f"⏸️ Pausing job vacancy: {job_id}")
-    
+    context = _extract_context(kwargs)
+    company_id = context.company_id if context else None
+
+    logger.info(f"⏸️ Pausing job vacancy: {job_id} (company: {company_id})")
+
     try:
-        from sqlalchemy import select
+        from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        
+
         async with AsyncSessionLocal() as db:
             try:
                 from app.models.job_vacancy import JobVacancy
-                
+
+                # Multi-tenancy fail-closed (REGRA ZERO): scope by company_id
+                # when context is present so we cannot mutate another tenant's
+                # vacancy. AST sensor sees Model.company_id == company_id
+                # directly here.
+                conditions = [JobVacancy.id == UUID(job_id)]
+                if company_id:
+                    conditions.append(JobVacancy.company_id == company_id)
+                # TENANT-EXEMPT: dynamic builder — JobVacancy.company_id
+                # appended conditionally above.
                 result = await db.execute(
-                    select(JobVacancy).where(JobVacancy.id == UUID(job_id))
+                    select(JobVacancy).where(and_(*conditions))
                 )
                 job = result.scalar_one_or_none()
-                
+
                 if not job:
                     return {
                         "success": False,
                         "message": f"Vaga não encontrada: {job_id}",
                         "error": "job_not_found"
                     }
-                
+
                 job_title = getattr(job, 'title', 'Vaga')
-                
+
                 if hasattr(job, 'status'):
                     job.status = 'pausada'
                 if hasattr(job, 'updated_at'):
@@ -362,8 +377,11 @@ async def close_job(
     Returns:
         Result with close details
     """
-    logger.info(f"🔒 Closing job vacancy: {job_id}, reason: {reason}")
-    
+    context = _extract_context(kwargs)
+    company_id = context.company_id if context else None
+
+    logger.info(f"🔒 Closing job vacancy: {job_id}, reason: {reason} (company: {company_id})")
+
     reason_messages = {
         "filled": "preenchida",
         "cancelled": "cancelada",
@@ -372,30 +390,38 @@ async def close_job(
         "other": "encerrada"
     }
     reason_display = reason_messages.get(reason, reason)
-    
+
     try:
-        from sqlalchemy import select
+        from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        
+
         async with AsyncSessionLocal() as db:
             try:
                 from app.models.job_vacancy import JobVacancy
-                
+
+                # Multi-tenancy fail-closed (REGRA ZERO): scope by company_id
+                # when context is present. AST sensor sees Model.company_id
+                # == company_id directly here.
+                conditions = [JobVacancy.id == UUID(job_id)]
+                if company_id:
+                    conditions.append(JobVacancy.company_id == company_id)
+                # TENANT-EXEMPT: dynamic builder — JobVacancy.company_id
+                # appended conditionally above.
                 result = await db.execute(
-                    select(JobVacancy).where(JobVacancy.id == UUID(job_id))
+                    select(JobVacancy).where(and_(*conditions))
                 )
                 job = result.scalar_one_or_none()
-                
+
                 if not job:
                     return {
                         "success": False,
                         "message": f"Vaga não encontrada: {job_id}",
                         "error": "job_not_found"
                     }
-                
+
                 job_title = getattr(job, 'title', 'Vaga')
-                
+
                 if hasattr(job, 'status'):
                     job.status = 'fechada'
                 if hasattr(job, 'closed_at'):
@@ -404,15 +430,15 @@ async def close_job(
                     job.close_reason = reason
                 if hasattr(job, 'updated_at'):
                     job.updated_at = datetime.utcnow()
-                
+
                 await db.commit()
-                
+
                 try:
                     from app.domains.job_management.services.outcome_tracker import outcome_tracker
-                    company_id = getattr(job, 'company_id', 'demo_company')
+                    job_company_id = company_id or getattr(job, 'company_id', 'demo_company')
                     await outcome_tracker.record_job_close(
                         job_id=job_id,
-                        company_id=company_id,
+                        company_id=job_company_id,
                         reason=reason,
                         hired_candidate_id=hired_candidate_id,
                         db=db,
@@ -488,34 +514,45 @@ async def publish_job(
     Returns:
         Result with publication details
     """
-    logger.info(f"🚀 Publishing job vacancy: {job_id}")
-    
+    context = _extract_context(kwargs)
+    company_id = context.company_id if context else None
+
+    logger.info(f"🚀 Publishing job vacancy: {job_id} (company: {company_id})")
+
     default_channels = ["portal_interno"]
     publish_channels = channels or default_channels
-    
+
     try:
-        from sqlalchemy import select
+        from sqlalchemy import and_, select
 
         from app.core.database import AsyncSessionLocal
-        
+
         async with AsyncSessionLocal() as db:
             try:
                 from app.models.job_vacancy import JobVacancy
-                
+
+                # Multi-tenancy fail-closed (REGRA ZERO): scope by company_id
+                # when context is present. AST sensor sees Model.company_id
+                # == company_id directly here.
+                conditions = [JobVacancy.id == UUID(job_id)]
+                if company_id:
+                    conditions.append(JobVacancy.company_id == company_id)
+                # TENANT-EXEMPT: dynamic builder — JobVacancy.company_id
+                # appended conditionally above.
                 result = await db.execute(
-                    select(JobVacancy).where(JobVacancy.id == UUID(job_id))
+                    select(JobVacancy).where(and_(*conditions))
                 )
                 job = result.scalar_one_or_none()
-                
+
                 if not job:
                     return {
                         "success": False,
                         "message": f"Vaga não encontrada: {job_id}",
                         "error": "job_not_found"
                     }
-                
+
                 job_title = getattr(job, 'title', 'Vaga')
-                
+
                 if hasattr(job, 'status'):
                     job.status = 'publicada'
                 if hasattr(job, 'published_at'):

@@ -32,6 +32,8 @@ class AgentTemplateRepository:
         offset: int = 0,
     ) -> tuple[list, int]:
         AgentTemplate = await self._get_model()
+        # TENANT-EXEMPT: dynamic builder — filter via or_(company_id, is_global) aplicado abaixo
+        # quando company_id is not None. Sensor AST não traça filter em statement separado.
         q = select(AgentTemplate)
         if company_id is not None:
             q = q.where(
@@ -71,11 +73,37 @@ class AgentTemplateRepository:
         total = (await self.db.execute(cq)).scalar() or 0
         return items, total
 
-    async def get_by_id(self, template_id: UUID) -> object | None:
+    async def get_by_id(
+        self,
+        template_id: UUID,
+        company_id: str | None = None,
+    ) -> object | None:
+        """Lookup AgentTemplate por id.
+
+        Sprint B.1 tail (2026-05-22): company_id agora suportado pra restringir
+        ao tenant + global marketplace (company_id IS NULL).
+
+        - company_id=None (legacy/admin): retorna qualquer template (NÃO usar pra clientes).
+        - company_id=<uuid>: retorna apenas templates do tenant OU public WeDO (is_global=True).
+        """
         AgentTemplate = await self._get_model()
-        result = await self.db.execute(
-            select(AgentTemplate).where(AgentTemplate.id == template_id)
-        )
+        from sqlalchemy import or_
+        if company_id is not None:
+            # TENANT-EXEMPT: filter explícito via OR — sensor AST não infere or_(...)
+            result = await self.db.execute(
+                select(AgentTemplate).where(
+                    AgentTemplate.id == template_id,
+                    or_(
+                        AgentTemplate.company_id == company_id,
+                        AgentTemplate.is_global.is_(True),
+                    ),
+                )
+            )
+        else:
+            # TENANT-EXEMPT: admin/legacy lookup sem tenant gate — caller verifica acesso (audit 2026-05-22)
+            result = await self.db.execute(
+                select(AgentTemplate).where(AgentTemplate.id == template_id)
+            )
         return result.scalar_one_or_none()
 
     async def create(self, data: dict) -> object:

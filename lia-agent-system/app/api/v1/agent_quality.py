@@ -116,11 +116,16 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 async def get_evaluation_detail(
     evaluation_id: str,
     db: AsyncSession = Depends(get_db),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    """Retorna detalhe de uma avaliação específica pelo ID."""
+    company_id: str = Depends(require_company_id),
+):
+    """Retorna detalhe de uma avaliação específica pelo ID.
+
+    Multi-tenancy fail-closed (REGRA ZERO): scopes by company_id from JWT
+    so we cannot leak another tenant's evaluation detail.
+    """
     stmt = select(AgentQualityEvaluation).where(
-        AgentQualityEvaluation.id == evaluation_id
+        AgentQualityEvaluation.id == evaluation_id,
+        AgentQualityEvaluation.company_id == company_id,
     )
     result = await db.execute(stmt)
     ev = result.scalar_one_or_none()

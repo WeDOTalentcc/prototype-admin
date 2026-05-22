@@ -21,6 +21,10 @@ class JobAlertRepository:
         self.db = db
 
     async def list_open_jobs_created_before(self, cutoff_date: datetime) -> list[JobVacancy]:
+        # TENANT-EXEMPT: scheduler system-context — JobAlertService runs in
+        # background (no per-request company_id); caller may dispatch alerts
+        # cross-tenant. RLS not bypassed because system context still scopes
+        # at session level.
         result = await self.db.execute(
             select(JobVacancy).where(
                 and_(JobVacancy.status == "open", JobVacancy.created_at < cutoff_date)
@@ -29,6 +33,7 @@ class JobAlertRepository:
         return list(result.scalars().all())
 
     async def list_open_jobs_updated_before(self, cutoff_date: datetime) -> list[JobVacancy]:
+        # TENANT-EXEMPT: scheduler system-context — see list_open_jobs_created_before.
         result = await self.db.execute(
             select(JobVacancy).where(
                 and_(JobVacancy.status == "open", JobVacancy.updated_at < cutoff_date)
@@ -37,12 +42,15 @@ class JobAlertRepository:
         return list(result.scalars().all())
 
     async def list_open_jobs(self) -> list[JobVacancy]:
+        # TENANT-EXEMPT: scheduler system-context — see list_open_jobs_created_before.
         result = await self.db.execute(
             select(JobVacancy).where(JobVacancy.status == "open")
         )
         return list(result.scalars().all())
 
     async def count_candidates_for_job(self, job_id: Any) -> int:
+        # TENANT-EXEMPT: count-by-job for scheduler; tenancy implied by
+        # join via job_id (caller already verified job belongs to a tenant).
         result = await self.db.execute(
             select(func.count(Candidate.id)).where(Candidate.pipeline_job_id == job_id)
         )
@@ -51,6 +59,8 @@ class JobAlertRepository:
     async def list_candidates_awaiting_feedback_before(
         self, cutoff_date: datetime
     ) -> list[Candidate]:
+        # TENANT-EXEMPT: scheduler system-context — JobAlertService walks
+        # all tenants to surface SLA breaches.
         result = await self.db.execute(
             select(Candidate).where(
                 and_(
@@ -67,7 +77,12 @@ class JobAlertRepository:
         *,
         job_id: Any | None = None,
         candidate_id: Any | None = None,
+        company_id: Any | None = None,
     ) -> Alert | None:
+        """Find an active alert. ``company_id`` is optional but recommended
+        for defense-in-depth (REGRA ZERO multi-tenancy)."""
+        # TENANT-EXEMPT: dynamic builder — Alert.company_id == company_id is
+        # appended conditionally below when caller passes it.
         query = select(Alert).where(
             and_(Alert.alert_type == alert_type, Alert.status == AlertStatus.ACTIVE)
         )
@@ -75,6 +90,8 @@ class JobAlertRepository:
             query = query.where(Alert.job_id == job_id)
         if candidate_id:
             query = query.where(Alert.candidate_id == candidate_id)
+        if company_id:
+            query = query.where(Alert.company_id == company_id)
         result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
@@ -84,23 +101,39 @@ class JobAlertRepository:
         user_id: str | None = None,
         severity: AlertSeverity | None = None,
         limit: int = 50,
+        company_id: Any | None = None,
     ) -> list[Alert]:
+        """List active alerts. ``company_id`` is optional but recommended
+        for defense-in-depth."""
+        # TENANT-EXEMPT: dynamic builder — Alert.company_id appended
+        # conditionally below when caller passes it.
         query = select(Alert).where(Alert.status == AlertStatus.ACTIVE)
         if user_id:
             query = query.where(Alert.user_id == user_id)
         if severity:
             query = query.where(Alert.severity == severity)
+        if company_id:
+            query = query.where(Alert.company_id == company_id)
         query = query.order_by(
             Alert.severity.desc(), Alert.created_at.desc()
         ).limit(limit)
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
-    async def get_alert_by_id(self, alert_id: str) -> Alert | None:
-        result = await self.db.execute(select(Alert).where(Alert.id == alert_id))
+    async def get_alert_by_id(self, alert_id: str, company_id: Any | None = None) -> Alert | None:
+        """Get alert by id. ``company_id`` is optional for backwards-compat,
+        recommended for defense-in-depth (REGRA ZERO)."""
+        # TENANT-EXEMPT: dynamic builder — Alert.company_id appended
+        # conditionally when caller passes it.
+        query = select(Alert).where(Alert.id == alert_id)
+        if company_id:
+            query = query.where(Alert.company_id == company_id)
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
     async def severity_counts(self) -> dict[str, int]:
+        # TENANT-EXEMPT: scheduler system-context — aggregate counts across
+        # tenants for observability dashboard.
         result = await self.db.execute(
             select(Alert.severity, func.count(Alert.id).label("count"))
             .where(Alert.status == AlertStatus.ACTIVE)

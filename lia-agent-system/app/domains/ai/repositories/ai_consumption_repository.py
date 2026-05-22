@@ -38,9 +38,20 @@ class AiConsumptionRepository:
         total = (await self.db.execute(cq)).scalar() or 0
         return items, total
 
-    async def get_by_id(self, record_id: UUID) -> AiConsumption | None:
+    async def get_by_id(
+        self,
+        record_id: UUID,
+        company_id: str,
+    ) -> AiConsumption | None:
+        """Lookup AiConsumption por id COM gate de tenant (multi-tenancy fail-closed).
+
+        Sprint B.1 tail (2026-05-22): company_id passou a REQUIRED.
+        """
         result = await self.db.execute(
-            select(AiConsumption).where(AiConsumption.id == record_id)
+            select(AiConsumption).where(
+                AiConsumption.id == record_id,
+                AiConsumption.company_id == company_id,
+            )
         )
         return result.scalar_one_or_none()
 
@@ -84,6 +95,7 @@ class AiConsumptionRepository:
         if model:
             conditions.append(AiConsumption.model == model)
 
+        # TENANT-EXEMPT: dynamic builder — conditions[0] is AiConsumption.company_id == company_uuid (L73 acima); sensor AST não traça dynamic conditions list
         q = (
             select(AiConsumption)
             .where(and_(*conditions))

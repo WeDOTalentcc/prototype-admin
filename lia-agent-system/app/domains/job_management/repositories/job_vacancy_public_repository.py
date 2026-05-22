@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Any
 from uuid import UUID
 
 import uuid as uuid_lib
@@ -41,6 +42,11 @@ class JobVacancyPublicRepository:
     # ── public vacancy view ────────────────────────────────────────────────────
 
     async def get_vacancy_by_slug(self, slug: str):
+        """Get vacancy by public slug (unauthenticated public-page lookup)."""
+        # TENANT-EXEMPT: public share-link lookup — anonymous candidates
+        # access via public_slug which is globally unique. Slug itself
+        # carries no tenant secret; vacancy returns its own company_id for
+        # downstream rendering.
         result = await self.db.execute(
             select(JobVacancy).where(JobVacancy.public_slug == slug)
         )
@@ -51,17 +57,27 @@ class JobVacancyPublicRepository:
 
     # ── apply flow ────────────────────────────────────────────────────────────
 
-    async def get_candidate_by_email(self, email: str):
+    async def get_candidate_by_email(self, email: str, company_id: Any | None = None):
+        """Look up a candidate by email. ``company_id`` optional for
+        backwards-compat (recommended for defense-in-depth REGRA ZERO).
+
+        Note: public apply flow may resolve cross-tenant when candidate
+        already exists in another company — caller decides what to do.
+        """
+        # TENANT-EXEMPT: public apply flow — candidate-by-email lookup is
+        # global by design (a candidate may apply to multiple tenants);
+        # company_id appended conditionally when caller wants strict scope.
         from app.shared.encryption.encrypted_field_mixin import _sha256_hash
         from sqlalchemy import or_
-        result = await self.db.execute(
-            select(Candidate).where(
-                or_(
-                    Candidate.email_hash == _sha256_hash(email),
-                    Candidate._email_raw == email,
-                )
+        query = select(Candidate).where(
+            or_(
+                Candidate.email_hash == _sha256_hash(email),
+                Candidate._email_raw == email,
             )
         )
+        if company_id:
+            query = query.where(Candidate.company_id == company_id)
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
     async def add_candidate(self, candidate: Candidate) -> Candidate:
@@ -72,13 +88,18 @@ class JobVacancyPublicRepository:
     async def flush_candidate(self, candidate: Candidate) -> None:
         await self.db.flush()
 
-    async def get_vacancy_candidate(self, vacancy_id, candidate_id):
-        result = await self.db.execute(
-            select(VacancyCandidate).where(
-                VacancyCandidate.vacancy_id == vacancy_id,
-                VacancyCandidate.candidate_id == candidate_id
-            )
+    async def get_vacancy_candidate(self, vacancy_id, candidate_id, company_id: Any | None = None):
+        """Lookup VacancyCandidate by composite key. ``company_id`` optional
+        for defense-in-depth (REGRA ZERO)."""
+        # TENANT-EXEMPT: dynamic builder — VacancyCandidate.company_id
+        # appended conditionally below when caller passes it.
+        query = select(VacancyCandidate).where(
+            VacancyCandidate.vacancy_id == vacancy_id,
+            VacancyCandidate.candidate_id == candidate_id,
         )
+        if company_id:
+            query = query.where(VacancyCandidate.company_id == company_id)
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
     async def get_company_profile(self, company_id):

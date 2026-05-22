@@ -65,6 +65,7 @@ async def get_activity_summary(
 
             activities["candidates_added"] = 0
 
+            # TENANT-EXEMPT: dynamic builder — conditions[0] is VacancyCandidate.company_id == company_id (next line); .where(and_(*conditions)) aplica filter; sensor AST não traça
             query = select(VacancyCandidate)
             conditions = [VacancyCandidate.company_id == company_id]
 

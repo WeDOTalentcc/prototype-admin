@@ -321,12 +321,16 @@ async def list_automated_decisions(
     # Total count
     from sqlalchemy import func as _func
 
+    # TENANT-EXEMPT: dynamic builder — conditions[0] is always
+    # AutomatedDecisionExplanation.company_id == company_uuid (composed
+    # above at the start of the handler).
     count_result = await db.execute(
         select(_func.count(AutomatedDecisionExplanation.id)).where(and_(*conditions))
     )
     total = int(count_result.scalar() or 0)
 
     # Page
+    # TENANT-EXEMPT: dynamic builder — same as count_result above.
     list_result = await db.execute(
         select(AutomatedDecisionExplanation)
         .where(and_(*conditions))

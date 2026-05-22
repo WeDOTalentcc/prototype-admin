@@ -74,6 +74,9 @@ async def search_jobs(
         from app.models.job_vacancy import JobVacancy
         
         async with AsyncSessionLocal() as db:
+            # TENANT-EXEMPT: dynamic builder — conditions[0] is always
+            # JobVacancy.company_id == company_id (line below). AST sensor
+            # cannot trace upstream tenant gate.
             query = select(JobVacancy)
             conditions = [JobVacancy.company_id == company_id]
             

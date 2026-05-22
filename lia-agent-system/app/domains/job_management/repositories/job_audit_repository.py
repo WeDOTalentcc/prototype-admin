@@ -14,6 +14,9 @@ class JobAuditRepository:
         self.db = db
 
     async def count_for_job(self, where_conditions) -> int:
+        # TENANT-EXEMPT: dynamic builder — caller (job_audit_service)
+        # composes ``where_conditions`` with JobVacancyAuditLog.company_id
+        # filter; AST sensor cannot trace upstream tenant gate.
         result = await self.db.execute(
             select(func.count())
             .select_from(JobVacancyAuditLog)
@@ -24,6 +27,7 @@ class JobAuditRepository:
     async def list_for_job(
         self, where_conditions, *, limit: int, offset: int
     ) -> list[JobVacancyAuditLog]:
+        # TENANT-EXEMPT: dynamic builder — see count_for_job above.
         result = await self.db.execute(
             select(JobVacancyAuditLog)
             .where(where_conditions)

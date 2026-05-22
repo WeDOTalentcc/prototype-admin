@@ -1,14 +1,17 @@
 """
 Alert Repository — data access layer for alert configs and preferences.
 Extracted from app/api/v1/alerts.py as part of Phase 2 refactor.
+
+Sprint B.1 tail (2026-05-22): tenant_filter sensor hardening.
+Métodos lookup-by-id agora exigem `company_id` (fail-closed multi-tenancy).
 """
 import logging
 from uuid import UUID
 
-from sqlalchemy import and_, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.alert import Alert, AlertConfig, AlertPreference, AlertStatus
+from lia_models.alert import AlertConfig, AlertPreference
 
 logger = logging.getLogger(__name__)
 
@@ -17,29 +20,6 @@ class AlertRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    # ── Alert (entity) helpers — Sprint Q2 ADR-001 cross-domain cleanup ──────
-
-    async def get_active_alert_for_job_and_type(
-        self,
-        job_id: str,
-        alert_type,
-    ) -> Alert | None:
-        """Return an ACTIVE alert for a job by type if any.
-
-        Used by app/domains/sourcing/services/sourcing_pipeline_service.py
-        to dedupe low-volume alert creation.
-        """
-        result = await self.db.execute(
-            select(Alert).where(
-                and_(
-                    Alert.job_id == job_id,
-                    Alert.alert_type == alert_type,
-                    Alert.status == AlertStatus.ACTIVE,
-                )
-            )
-        )
-        return result.scalar_one_or_none()
-
     async def list_configs_for_company(self, company_id: str) -> list[AlertConfig]:
         result = await self.db.execute(
             select(AlertConfig).where(AlertConfig.company_id == company_id)
@@ -47,9 +27,21 @@ class AlertRepository:
         )
         return list(result.scalars().all())
 
-    async def get_config_by_id(self, config_id: UUID) -> AlertConfig | None:
+    async def get_config_by_id(
+        self,
+        config_id: UUID,
+        company_id: str,
+    ) -> AlertConfig | None:
+        """Lookup AlertConfig por id COM gate de tenant.
+
+        Sprint B.1 tail (2026-05-22): company_id passou a REQUIRED para fechar
+        gap multi-tenancy. Caller deve passar company_id do JWT (Depends(require_company_id)).
+        """
         result = await self.db.execute(
-            select(AlertConfig).where(AlertConfig.id == config_id)
+            select(AlertConfig).where(
+                AlertConfig.id == config_id,
+                AlertConfig.company_id == company_id,
+            )
         )
         return result.scalar_one_or_none()
 
@@ -71,19 +63,42 @@ class AlertRepository:
         await self.db.delete(config)
         await self.db.flush()
 
-    async def get_preference(self, user_id: str) -> AlertPreference | None:
+    async def get_preference(
+        self,
+        user_id: str,
+        company_id: str,
+    ) -> AlertPreference | None:
+        """Lookup AlertPreference por user_id COM gate de tenant.
+
+        Sprint B.1 tail (2026-05-22): company_id passou a REQUIRED.
+        Antes desse fix, dois users com mesmo user_id em companies diferentes
+        (cenário improvável mas teoricamente possível) poderiam vazar entre tenants.
+        """
         result = await self.db.execute(
-            select(AlertPreference).where(AlertPreference.user_id == user_id)
+            select(AlertPreference).where(
+                AlertPreference.user_id == user_id,
+                AlertPreference.company_id == company_id,
+            )
         )
         return result.scalar_one_or_none()
 
-    async def upsert_preference(self, user_id: str, data: dict) -> AlertPreference:
-        pref = await self.get_preference(user_id)
+    async def upsert_preference(
+        self,
+        user_id: str,
+        company_id: str,
+        data: dict,
+    ) -> AlertPreference:
+        """Upsert AlertPreference COM gate de tenant.
+
+        Sprint B.1 tail (2026-05-22): company_id obrigatório no upsert para
+        evitar criar registro órfão sem tenant.
+        """
+        pref = await self.get_preference(user_id, company_id=company_id)
         if pref:
             for key, value in data.items():
                 setattr(pref, key, value)
         else:
-            pref = AlertPreference(user_id=user_id, **data)
+            pref = AlertPreference(user_id=user_id, company_id=company_id, **data)
             self.db.add(pref)
         await self.db.flush()
         await self.db.refresh(pref)
@@ -138,7 +153,7 @@ class AlertRepository:
         if existing:
             for key, value in data.items():
                 setattr(existing, key, value)
-            existing.updated_at = datetime.utcnow()  # type: ignore[union-attr]
+            existing.updated_at = datetime.utcnow()  # type: ignore
         else:
             existing = AlertPreference(
                 company_id=company_id,

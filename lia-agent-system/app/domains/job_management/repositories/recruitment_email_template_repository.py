@@ -79,6 +79,8 @@ class RecruitmentEmailTemplateRepository:
         template_type: str | None = None,
         is_active: bool | None = None,
     ) -> list[RecruitmentEmailTemplate]:
+        # TENANT-EXEMPT: dynamic builder — RecruitmentEmailTemplate.company_id
+        # filtering composed conditionally below (system templates vs scoped).
         query = select(RecruitmentEmailTemplate)
         if company_id:
             query = query.where(
@@ -100,6 +102,8 @@ class RecruitmentEmailTemplateRepository:
         return list(result.scalars().all())
 
     async def list_system_templates(self) -> list[RecruitmentEmailTemplate]:
+        # TENANT-EXEMPT: system templates are tenant-null by design
+        # (shared catalog).
         result = await self.db.execute(
             select(RecruitmentEmailTemplate).where(
                 and_(
