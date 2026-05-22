@@ -410,6 +410,30 @@ company_id: str = Depends(require_company_id)):
 
         await db.commit()
 
+        # P0-3 chunk 2b audit 2026-05-21: canonical lifecycle audit complementa ExecutionLog ad-hoc
+        # com schema canonical audit_logs (EU AI Act Art. 12 + LGPD Art. 20).
+        try:
+            from app.domains.agent_studio._audit_helper import studio_audit
+            _meta_post = output.metadata or {}
+            _blocked = bool(_meta_post.get("blocked"))
+            await studio_audit(
+                company_id=current_user.company_id,
+                action="studio_agent_execute",
+                decision=("blocked" if _blocked else "executed"),
+                reasoning=[
+                    f"Input message length: {len(body.message)}",
+                    f"Output length: {len(output.message or '')}",
+                    f"Tool calls: {len(tool_calls)}",
+                    f"Latency: {elapsed_ms}ms",
+                    f"Credits consumed: {credits_consumed}",
+                ],
+                actor_user_id=str(current_user.id),
+                target_id=str(agent.id),
+                confidence=output.confidence,
+            )
+        except Exception as _audit_err:
+            logger.warning("[Studio] audit log_decision failed: %s", _audit_err)
+
         # P2.5a: Internal notification (non-blocking)
         try:
             from app.services.studio_notification_service import studio_notification_service
