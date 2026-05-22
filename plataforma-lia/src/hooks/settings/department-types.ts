@@ -31,6 +31,10 @@ export interface Approver {
   role: string;
   level: number;
   isActive: boolean;
+  // P0.D2 (audit Wave 2 2026-05-22): per-department + amount-threshold routing.
+  // Both null = backward-compat (company-wide, any-amount approver).
+  departmentId: string | null;
+  canApproveAboveAmount: number | null;
 }
 
 export interface BehavioralCompetency {
@@ -147,6 +151,8 @@ export interface NewApproverForm {
   email: string;
   role: string;
   level: number;
+  departmentId: string | null;
+  canApproveAboveAmount: number | null;
 }
 
 export const DEFAULT_NEW_DEPARTMENT: NewDepartmentForm = {

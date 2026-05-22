@@ -32,6 +32,10 @@ export interface ApproverSectionProps {
   setNewApprover: React.Dispatch<React.SetStateAction<NewApproverForm>>;
   handleSaveApprover: () => Promise<void>;
   handleDeleteApprover: (id: string) => Promise<void>;
+  // P0.D2 (audit Wave 2 2026-05-22): optional list of departments for the
+  // per-department routing dropdown. When empty/undefined the field falls
+  // back to a text input (UUID string), keeping the component standalone-usable.
+  departments?: Array<{ id: string; name: string }>;
 }
 
 export const ApproverSection = React.memo(function ApproverSection({
@@ -46,6 +50,7 @@ export const ApproverSection = React.memo(function ApproverSection({
   setNewApprover,
   handleSaveApprover,
   handleDeleteApprover,
+  departments,
 }: ApproverSectionProps) {
   const t = useTranslations('settings.approvers');
 
@@ -174,6 +179,81 @@ export const ApproverSection = React.memo(function ApproverSection({
                           ? setEditingApprover({ ...editingApprover, level: parseInt(e.target.value) || 1 })
                           : setNewApprover((prev) => ({ ...prev, level: parseInt(e.target.value) || 1 }))
                       }
+                    />
+                  </div>
+                  {/* P0.D2 (audit Wave 2 2026-05-22): per-department routing */}
+                  <div>
+                    <label className="block text-micro font-medium text-lia-text-secondary mb-1">
+                      Departamento (opcional)
+                    </label>
+                    {departments && departments.length > 0 ? (
+                      <select
+                        data-field="approver-department-id"
+                        data-testid="approver-field-department-id"
+                        className="w-full px-2 py-1.5 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-xs"
+                        value={
+                          (editingApprover
+                            ? editingApprover.departmentId
+                            : newApprover.departmentId) || ""
+                        }
+                        onChange={(e) => {
+                          const val = e.target.value || null;
+                          editingApprover
+                            ? setEditingApprover({ ...editingApprover, departmentId: val })
+                            : setNewApprover((prev) => ({ ...prev, departmentId: val }));
+                        }}
+                      >
+                        <option value="">Empresa toda</option>
+                        {departments.map((d) => (
+                          <option key={d.id} value={d.id}>{d.name}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        data-field="approver-department-id"
+                        data-testid="approver-field-department-id"
+                        className="w-full px-2 py-1.5 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-xs"
+                        placeholder="Empresa toda (deixe em branco)"
+                        value={
+                          (editingApprover
+                            ? editingApprover.departmentId
+                            : newApprover.departmentId) || ""
+                        }
+                        onChange={(e) => {
+                          const val = e.target.value || null;
+                          editingApprover
+                            ? setEditingApprover({ ...editingApprover, departmentId: val })
+                            : setNewApprover((prev) => ({ ...prev, departmentId: val }));
+                        }}
+                      />
+                    )}
+                  </div>
+                  {/* P0.D2: amount-threshold routing */}
+                  <div>
+                    <label className="block text-micro font-medium text-lia-text-secondary mb-1">
+                      Limite de aprovacao (R$, opcional)
+                    </label>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      data-field="approver-can-approve-above-amount"
+                      data-testid="approver-field-can-approve-above-amount"
+                      className="w-full px-2 py-1.5 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-xs"
+                      placeholder="Qualquer valor"
+                      value={
+                        (editingApprover
+                          ? editingApprover.canApproveAboveAmount
+                          : newApprover.canApproveAboveAmount) ?? ""
+                      }
+                      onChange={(e) => {
+                        const raw = e.target.value;
+                        const val = raw === "" ? null : parseFloat(raw);
+                        editingApprover
+                          ? setEditingApprover({ ...editingApprover, canApproveAboveAmount: val })
+                          : setNewApprover((prev) => ({ ...prev, canApproveAboveAmount: val }));
+                      }}
                     />
                   </div>
                 </div>

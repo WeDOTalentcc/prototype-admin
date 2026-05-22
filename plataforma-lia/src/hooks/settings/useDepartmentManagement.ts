@@ -109,6 +109,8 @@ export function useDepartmentManagement({
     email: "",
     role: "",
     level: 1,
+    departmentId: null,
+    canApproveAboveAmount: null,
   });
 
   const isMountedRef = useRef(true);
@@ -397,7 +399,14 @@ export function useDepartmentManagement({
   };
 
   const saveApproverToAPI = async (
-    approver: { userName: string; email: string; role: string; level: number },
+    approver: {
+      userName: string;
+      email: string;
+      role: string;
+      level: number;
+      departmentId: string | null;
+      canApproveAboveAmount: number | null;
+    },
     isNew: boolean,
     id?: string,
   ) => {
@@ -415,6 +424,8 @@ export function useDepartmentManagement({
           email: approver.email,
           role: approver.role,
           level: approver.level,
+          department_id: approver.departmentId,
+          can_approve_above_amount: approver.canApproveAboveAmount,
         }),
       });
 
@@ -451,6 +462,8 @@ export function useDepartmentManagement({
             email: editingApprover.email,
             role: editingApprover.role,
             level: editingApprover.level,
+            departmentId: editingApprover.departmentId,
+            canApproveAboveAmount: editingApprover.canApproveAboveAmount,
           },
           false,
           editingApprover.id,
@@ -478,6 +491,8 @@ export function useDepartmentManagement({
           role: newApprover.role,
           level: newApprover.level,
           isActive: true,
+          departmentId: newApprover.departmentId,
+          canApproveAboveAmount: newApprover.canApproveAboveAmount,
         };
         setApprovers((prev) => [...prev, newApproverData]);
         setSuccessMessage("Aprovador criado com sucesso!");
@@ -491,6 +506,8 @@ export function useDepartmentManagement({
         email: "",
         role: "",
         level: approvers.length + 1,
+        departmentId: null,
+        canApproveAboveAmount: null,
       });
       setShowApproverForm(false);
     }

@@ -145,7 +145,7 @@ export function useCompanyData(): UseCompanyDataResult {
           const approversResult = await approversRes.json();
           if (Array.isArray(approversResult) && approversResult.length > 0) {
             setInitialApprovers(
-              approversResult.map((a: { id: string; user_id?: string; user_name: string; email: string; role?: string; level: number; is_active: boolean }) => ({
+              approversResult.map((a: { id: string; user_id?: string; user_name: string; email: string; role?: string; level: number; is_active: boolean; department_id?: string | null; can_approve_above_amount?: string | number | null }) => ({
                 id: a.id,
                 userId: a.user_id || "",
                 userName: a.user_name,
@@ -153,6 +153,15 @@ export function useCompanyData(): UseCompanyDataResult {
                 role: a.role || "",
                 level: a.level,
                 isActive: a.is_active,
+                // P0.D2 (audit Wave 2 2026-05-22): per-department + amount-threshold.
+                // API may return Decimal as string; coerce to number for the form.
+                departmentId: a.department_id ?? null,
+                canApproveAboveAmount:
+                  a.can_approve_above_amount === null || a.can_approve_above_amount === undefined
+                    ? null
+                    : typeof a.can_approve_above_amount === "string"
+                      ? parseFloat(a.can_approve_above_amount)
+                      : a.can_approve_above_amount,
               })),
             );
           }
