@@ -162,10 +162,18 @@ _ALLOWED_ALERTCONFIG_READERS = {
     # ADR-WT-2025 read-shadow pattern: estes sites mantem write/read legacy
     # ate prod cutover. Allowlist-only para nao adicionar novos sites.
     # Sprint D+1 removera /alerts/config endpoint -> reduzira lista.
-    "app/api/v1/alerts.py",  # REST endpoints GET/PUT /alerts/config (deprecated 2026-05-22)
+    "app/api/v1/alerts.py",  # REST endpoints GET/PUT /alerts/config (deprecated 2026-05-22, sunset 2026-08-22)
     "app/domains/notifications/repositories/alert_repository.py",  # data layer
     "app/domains/company_settings/agents/company_settings_tools_extended.py",  # LLM tool
-    "app/jobs/tasks/briefing_dispatch.py",  # Celery beat le AlertConfig.briefing_frequency (separate semantic do alerts[] catalog Sprint D)
+    # Sprint D+1 partial (2026-05-22): briefing_dispatch.py canonical reader
+    # agora e HiringPolicy.communication_rules.briefing_frequency. AlertConfig
+    # references restantes sao APENAS legacy fallback (narrow scope via
+    # _legacy_alertconfig_briefing_frequency) + user_id discovery temporario
+    # (Sprint D+2 substituira por AlertPreference / user_company_membership).
+    # Telemetria via briefing_dispatch_legacy_alertconfig_read_total counter
+    # mostra quanto tenants ainda dependem do fallback. Quando counter zerar
+    # sustentado pre-sunset (2026-08-22), remover esta entrada + fallback path.
+    "app/jobs/tasks/briefing_dispatch.py",
 }
 
 
