@@ -54,7 +54,7 @@ export function AgentActivityCard({
         />
       </div>
       <div className="flex items-center justify-between">
-        <span className="text-[9px] text-lia-text-disabled">{progress}% {t('processed')}</span>
+        <span className="text-xs text-lia-text-secondary">{progress}% {t('processed')}</span>
         {onViewDetails && (
           <button
             type="button"

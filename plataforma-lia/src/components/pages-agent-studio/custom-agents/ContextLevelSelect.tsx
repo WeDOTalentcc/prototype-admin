@@ -58,7 +58,7 @@ export function ContextLevelSelect({ value, onChange }: ContextLevelSelectProps)
               </span>
               <span className="text-xs font-semibold text-lia-text-primary">{level.label}</span>
             </div>
-            <p className="text-[10px] text-lia-text-disabled leading-tight">{level.desc}</p>
+            <p className="text-xs text-lia-text-secondary leading-tight">{level.desc}</p>
           </button>
         ))}
       </div>

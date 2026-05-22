@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { cardStyles, buttonStyles, textStyles, inputStyles, badgeStyles } from "@/lib/design-tokens"
 import { toast } from "@/lib/toast"
+import { extractErrorMessage } from "@/lib/api/extract-error-message"
 import { BetaBadge } from "@/components/ui/beta-badge"
 import type { AgentCategory } from "./types"
 
@@ -110,13 +111,19 @@ export function ConversationalCreator({ onAgentCreated }: ConversationalCreatorP
           temperature: safeTemperature,
         }),
       })
-      if (!res.ok) throw new Error(tToast('errorCreatingAgent'))
+      if (!res.ok) {
+        // UX-Sprint-A QW#6 Batch 4 (audit 2026-05-21): capturar erro estruturado do backend
+        const errBody = await res.json().catch(() => ({}))
+        throw new Error(extractErrorMessage(errBody, res.status))
+      }
       toast.success(tToast('agentCreated', { name: safeName }), tToast('agentCreatedDesc'))
       setConfig(null)
       setDescription("")
       onAgentCreated()
-    } catch {
-      toast.error(tToast('errorCreatingAgent'))
+    } catch (e) {
+      // UX-Sprint-A QW#6 Batch 4: propagar mensagem real do backend ao recrutador
+      const msg = e instanceof Error ? e.message : tToast('errorCreatingAgent')
+      toast.error(msg)
     } finally {
       setIsCreating(false)
     }

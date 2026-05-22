@@ -185,8 +185,10 @@ export default function AgentStudioPage({
       mutateCustomAgents()
       resetStudio()
       setActiveTab("custom")
-    } catch {
-      toast.error(t("studio.toast.errorCreating"), t("studio.toast.tryAgainShort"))
+    } catch (e) {
+      // UX-Sprint-A QW#6 Batch 4 audit 2026-05-21: capturar e propagar mensagem específica
+      const msg = e instanceof Error ? e.message : t("studio.toast.errorCreating")
+      toast.error(msg, t("studio.toast.tryAgainShort"))
     }
   }
 
@@ -204,8 +206,10 @@ export default function AgentStudioPage({
       })
       toast.success(newStatus === "active" ? t("studio.toast.agentActivated") : t("studio.toast.agentPaused"))
       mutateCustomAgents()
-    } catch {
-      toast.error(t("studio.toast.errorStatus"))
+    } catch (e) {
+      // UX-Sprint-A QW#6 Batch 4 audit 2026-05-21: mensagem real do backend ao invés de genérica
+      const msg = e instanceof Error ? e.message : t("studio.toast.errorStatus")
+      toast.error(msg)
     }
   }
 
@@ -707,11 +711,11 @@ function AgentCard({
                 <BetaBadge />
               </div>
               <div className="flex items-center gap-2 mt-0.5">
-                <span className="text-[10px] text-lia-text-disabled">v{agent.calibration_v}</span>
+                <span className="text-xs text-lia-text-secondary">v{agent.calibration_v}</span>
                 <span className="text-lia-text-disabled">·</span>
                 <div className="flex items-center gap-1">
                   <Clock className="w-3 h-3 text-lia-text-disabled" />
-                  <span className="text-[10px] text-lia-text-disabled">
+                  <span className="text-xs text-lia-text-secondary">
                     {new Date(agent.created_at).toLocaleDateString(undefined, { day: "2-digit", month: "short" })}
                   </span>
                 </div>
@@ -733,7 +737,7 @@ function AgentCard({
               </span>
             ))}
             {(strategy.required_skills.length > 4) && (
-              <span className="px-2 py-0.5 rounded-xl bg-lia-bg-tertiary text-[10px] text-lia-text-disabled">
+              <span className="px-2 py-0.5 rounded-xl bg-lia-bg-tertiary text-xs text-lia-text-secondary">
                 +{strategy.required_skills.length - 4}
               </span>
             )}
@@ -744,15 +748,15 @@ function AgentCard({
         <div className="grid grid-cols-3 gap-2 mb-4">
           <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
             <span className="text-xs font-bold text-lia-text-primary">{agent.profiles_viewed}</span>
-            <span className="text-[9px] text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.analyzed")}</span>
+            <span className="text-xs text-lia-text-secondary uppercase tracking-wider">{t("studio.stats.analyzed")}</span>
           </div>
           <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
             <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">{agent.profiles_approved}</span>
-            <span className="text-[9px] text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.approved")}</span>
+            <span className="text-xs text-lia-text-secondary uppercase tracking-wider">{t("studio.stats.approved")}</span>
           </div>
           <div className="flex flex-col items-center p-2 rounded-lg bg-lia-bg-primary">
             <span className="text-xs font-bold text-lia-text-primary">{approvalRate}%</span>
-            <span className="text-[9px] text-lia-text-disabled uppercase tracking-wider">{t("studio.stats.rate")}</span>
+            <span className="text-xs text-lia-text-secondary uppercase tracking-wider">{t("studio.stats.rate")}</span>
           </div>
         </div>
 

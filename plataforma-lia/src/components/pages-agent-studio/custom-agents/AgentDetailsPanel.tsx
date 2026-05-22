@@ -97,17 +97,17 @@ export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest }: Ag
           <div className={cn(cardStyles.flat, "p-3 flex items-center gap-6")}>
             <div className="text-center">
               <p className="text-lg font-bold font-inter text-lia-text-primary">{agent.total_executions}</p>
-              <p className="text-[10px] text-lia-text-disabled">{t('execLabel')}</p>
+              <p className="text-xs text-lia-text-secondary">{t('execLabel')}</p>
             </div>
             <div className="text-center">
               <p className="text-lg font-bold font-inter text-lia-text-primary">
                 {agent.avg_confidence > 0 ? `${(agent.avg_confidence * 100).toFixed(0)}%` : "-"}
               </p>
-              <p className="text-[10px] text-lia-text-disabled">{t('confidence')}</p>
+              <p className="text-xs text-lia-text-secondary">{t('confidence')}</p>
             </div>
             <div className="text-center">
               <p className="text-lg font-bold font-inter text-lia-text-primary">{deployments.length}</p>
-              <p className="text-[10px] text-lia-text-disabled">{t('links')}</p>
+              <p className="text-xs text-lia-text-secondary">{t('links')}</p>
             </div>
           </div>
 
@@ -147,7 +147,7 @@ export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest }: Ag
                         <p className="text-xs font-medium text-lia-text-primary">
                           {dep.target_name || t('targets.' + dep.target_type) || dep.target_type}
                         </p>
-                        <p className="text-[10px] text-lia-text-disabled">
+                        <p className="text-xs text-lia-text-secondary">
                           {t('triggers.' + dep.trigger_mode) || dep.trigger_mode} · {dep.execution_count} {t('exec')}
                         </p>
                       </div>
