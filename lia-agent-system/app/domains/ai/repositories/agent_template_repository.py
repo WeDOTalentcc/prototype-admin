@@ -84,18 +84,18 @@ class AgentTemplateRepository:
         ao tenant + global marketplace (company_id IS NULL).
 
         - company_id=None (legacy/admin): retorna qualquer template (NÃO usar pra clientes).
-        - company_id=<uuid>: retorna apenas templates do tenant OU public WeDO (is_global=True).
+        - company_id=<uuid>: retorna apenas templates do tenant OU public WeDO (company_id IS NULL = marketplace global).
         """
         AgentTemplate = await self._get_model()
         from sqlalchemy import or_
         if company_id is not None:
-            # TENANT-EXEMPT: filter explícito via OR — sensor AST não infere or_(...)
+            # TENANT-EXEMPT: filter explícito via OR — public templates (company_id IS NULL = WeDO marketplace global) + tenant customs; sensor AST não infere or_(...)
             result = await self.db.execute(
                 select(AgentTemplate).where(
                     AgentTemplate.id == template_id,
                     or_(
                         AgentTemplate.company_id == company_id,
-                        AgentTemplate.is_global.is_(True),
+                        AgentTemplate.company_id.is_(None),
                     ),
                 )
             )

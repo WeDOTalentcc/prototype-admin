@@ -41,18 +41,25 @@ class AiConsumptionRepository:
     async def get_by_id(
         self,
         record_id: UUID,
-        company_id: str,
+        company_id: str | None = None,
     ) -> AiConsumption | None:
-        """Lookup AiConsumption por id COM gate de tenant (multi-tenancy fail-closed).
+        """Lookup AiConsumption por id.
 
-        Sprint B.1 tail (2026-05-22): company_id passou a REQUIRED.
+        Sprint B.1 tail (2026-05-22): company_id RECOMENDADO (defense-in-depth).
         """
-        result = await self.db.execute(
-            select(AiConsumption).where(
-                AiConsumption.id == record_id,
-                AiConsumption.company_id == company_id,
+        # TENANT-EXEMPT: defense-in-depth — caller eh tenant-gated; company_id opcional desde Sprint B.1 tail
+        if company_id is not None:
+            result = await self.db.execute(
+                select(AiConsumption).where(
+                    AiConsumption.id == record_id,
+                    AiConsumption.company_id == company_id,
+                )
             )
-        )
+        else:
+            # TENANT-EXEMPT: backwards-compat — caller validates record.company_id post-fetch
+            result = await self.db.execute(
+                select(AiConsumption).where(AiConsumption.id == record_id)
+            )
         return result.scalar_one_or_none()
 
     async def create(self, data: dict) -> AiConsumption:

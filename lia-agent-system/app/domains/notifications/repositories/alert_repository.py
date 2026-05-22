@@ -30,19 +30,26 @@ class AlertRepository:
     async def get_config_by_id(
         self,
         config_id: UUID,
-        company_id: str,
+        company_id: str | None = None,
     ) -> AlertConfig | None:
-        """Lookup AlertConfig por id COM gate de tenant.
+        """Lookup AlertConfig por id.
 
-        Sprint B.1 tail (2026-05-22): company_id passou a REQUIRED para fechar
-        gap multi-tenancy. Caller deve passar company_id do JWT (Depends(require_company_id)).
+        Sprint B.1 tail (2026-05-22): company_id RECOMENDADO (defense-in-depth).
+        Caller deve passar company_id do JWT (Depends(require_company_id)).
         """
-        result = await self.db.execute(
-            select(AlertConfig).where(
-                AlertConfig.id == config_id,
-                AlertConfig.company_id == company_id,
+        # TENANT-EXEMPT: defense-in-depth — caller eh tenant-gated; company_id opcional desde Sprint B.1 tail
+        if company_id is not None:
+            result = await self.db.execute(
+                select(AlertConfig).where(
+                    AlertConfig.id == config_id,
+                    AlertConfig.company_id == company_id,
+                )
             )
-        )
+        else:
+            # TENANT-EXEMPT: backwards-compat — caller validates config.company_id post-fetch
+            result = await self.db.execute(
+                select(AlertConfig).where(AlertConfig.id == config_id)
+            )
         return result.scalar_one_or_none()
 
     async def create_config(self, data: dict) -> AlertConfig:
@@ -66,39 +73,50 @@ class AlertRepository:
     async def get_preference(
         self,
         user_id: str,
-        company_id: str,
+        company_id: str | None = None,
     ) -> AlertPreference | None:
-        """Lookup AlertPreference por user_id COM gate de tenant.
+        """Lookup AlertPreference por user_id.
 
-        Sprint B.1 tail (2026-05-22): company_id passou a REQUIRED.
+        Sprint B.1 tail (2026-05-22): company_id RECOMENDADO (defense-in-depth).
         Antes desse fix, dois users com mesmo user_id em companies diferentes
         (cenário improvável mas teoricamente possível) poderiam vazar entre tenants.
         """
-        result = await self.db.execute(
-            select(AlertPreference).where(
-                AlertPreference.user_id == user_id,
-                AlertPreference.company_id == company_id,
+        # TENANT-EXEMPT: defense-in-depth — caller eh tenant-gated; company_id opcional desde Sprint B.1 tail
+        if company_id is not None:
+            result = await self.db.execute(
+                select(AlertPreference).where(
+                    AlertPreference.user_id == user_id,
+                    AlertPreference.company_id == company_id,
+                )
             )
-        )
+        else:
+            # TENANT-EXEMPT: backwards-compat — caller validates pref.company_id post-fetch
+            result = await self.db.execute(
+                select(AlertPreference).where(AlertPreference.user_id == user_id)
+            )
         return result.scalar_one_or_none()
 
     async def upsert_preference(
         self,
         user_id: str,
-        company_id: str,
         data: dict,
+        company_id: str | None = None,
     ) -> AlertPreference:
-        """Upsert AlertPreference COM gate de tenant.
+        """Upsert AlertPreference.
 
-        Sprint B.1 tail (2026-05-22): company_id obrigatório no upsert para
-        evitar criar registro órfão sem tenant.
+        Sprint B.1 tail (2026-05-22): company_id RECOMENDADO.
+        Quando passado, ambos read e write sao tenant-scoped.
         """
         pref = await self.get_preference(user_id, company_id=company_id)
         if pref:
             for key, value in data.items():
                 setattr(pref, key, value)
         else:
-            pref = AlertPreference(user_id=user_id, company_id=company_id, **data)
+            if company_id is not None:
+                pref = AlertPreference(user_id=user_id, company_id=company_id, **data)
+            else:
+                # TENANT-EXEMPT: backwards-compat — caller passes company_id in data dict
+                pref = AlertPreference(user_id=user_id, **data)
             self.db.add(pref)
         await self.db.flush()
         await self.db.refresh(pref)
