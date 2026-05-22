@@ -21,11 +21,31 @@ DETECTORS:
 - AICreditsLowDetector            - balance < 20% do plano contratado
 - PipelineStuckDetector           - vagas em screening > 14 dias
 
+PER-TENANT THRESHOLDS (Wave 2 P0.A1+A2 fix, 2026-05-22):
+========================================================
+Cada detector le `AlertPreference` (canonical decidido em ADR-WT-2025) por
+company_id+alert_type ANTES de calcular threshold. Fallback: usa default
+hardcoded MAS loga `logger.info("No tenant template for X, using default")` +
+incrementa Prometheus counter
+`alert_threshold_source_total{alert_type, source}`.
+
+- AlertPreference.is_enabled=False -> detector skip silencioso.
+- AlertPreference.threshold -> overrides class constant (interpretacao
+  per-detector documentada em _DETECTOR_ALERT_TYPE_MAP).
+- AlertPreference.cooldown_hours -> aplica em _persist_hints dedup
+  (sobrepoe expires_in_hours hint-side).
+- AlertPreference channels (email/bell/teams/whatsapp) -> passado no
+  hint payload para downstream notification dispatcher.
+
+ADR canonical: ~/Documents/wedotalent_audit_2026-05-21/ADR-WT-2025-alert-canonical-table.md
+Mapping detector.name -> AlertPreference.alert_type: vide
+_DETECTOR_ALERT_TYPE_MAP abaixo.
+
 PATTERN:
-- Cada detector implementa BaseDetector.detect(db, company_id) -> list[hint]
+- Cada detector implementa BaseDetector.detect(db, company_id, override) -> list[hint]
 - Service agrega + escreve em proactive_actions com action_type "suggestion"
 - Deduplica: nao insere segundo hint do mesmo detector enquanto o anterior
-  esta PENDING para a mesma company.
+  esta PENDING para a mesma company (cooldown_hours canonical).
 
 CONSUMER:
 - app/jobs/tasks/proactive.py (Celery beat task hourly)
@@ -51,6 +71,7 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import TYPE_CHECKING, Any
 from uuid import UUID, uuid4
@@ -81,6 +102,94 @@ def _normalize_priority(severity: str) -> str:
 
 
 # ---------------------------------------------------------------------------
+# Per-tenant threshold canonical (ADR-WT-2025)
+# ---------------------------------------------------------------------------
+# Mapeia detector.name -> AlertPreference.alert_type (canonical table per
+# ADR-WT-2025). Quando um detector roda, carregamos AlertPreference por
+# (company_id, alert_type) e aplicamos o override. AlertPreference.threshold
+# interpretation eh per-detector (vide docstring de cada classe).
+#
+# Para detector novo: registre aqui + adicione default em _DEFAULT_TENANT_OVERRIDE.
+
+_DETECTOR_ALERT_TYPE_MAP: dict[str, str] = {
+    "company_profile_completion": "company_profile_incomplete",
+    "dsr_overdue": "dsr_overdue",
+    "candidate_stale": "candidate_no_interaction",
+    "workforce_plan_stale": "workforce_plan_stale",
+    "ai_credits_low": "credits_low",
+    "pipeline_stuck": "candidates_stagnant",
+}
+
+
+@dataclass(frozen=True)
+class TenantThresholdOverride:
+    """Per-tenant override carregado de AlertPreference.
+
+    is_enabled=False sinaliza skip explicito do tenant.
+    threshold interpretation: vide docstring do detector.
+    cooldown_hours: aplicado em _persist_hints dedup (sobrepoe expires_in_hours).
+    channels: passado pro hint payload (downstream dispatcher).
+    source: "tenant" quando lido de AlertPreference; "default" quando fallback.
+    """
+
+    is_enabled: bool = True
+    threshold: int | None = None
+    cooldown_hours: int | None = None
+    channels: dict[str, bool] = field(default_factory=dict)
+    source: str = "default"
+
+
+# Per-detector default override quando tenant nao tem AlertPreference row.
+# Threshold semantica deve bater com classe constant correspondente.
+_DEFAULT_TENANT_OVERRIDE: dict[str, TenantThresholdOverride] = {
+    "company_profile_completion": TenantThresholdOverride(
+        is_enabled=True, threshold=80, cooldown_hours=24 * 7
+    ),
+    "dsr_overdue": TenantThresholdOverride(
+        is_enabled=True, threshold=24, cooldown_hours=12
+    ),
+    "candidate_stale": TenantThresholdOverride(
+        is_enabled=True, threshold=7, cooldown_hours=24
+    ),
+    "workforce_plan_stale": TenantThresholdOverride(
+        is_enabled=True, threshold=30, cooldown_hours=24 * 14
+    ),
+    "ai_credits_low": TenantThresholdOverride(
+        is_enabled=True, threshold=20, cooldown_hours=12
+    ),
+    "pipeline_stuck": TenantThresholdOverride(
+        is_enabled=True, threshold=14, cooldown_hours=24 * 3
+    ),
+}
+
+
+def _emit_threshold_source_metric(alert_type: str, source: str) -> None:
+    """Best-effort emit Prometheus counter alert_threshold_source_total.
+
+    Counter label set: {alert_type, source=tenant|default}.
+    NUNCA quebra detector se prometheus_client nao esta disponivel.
+    """
+    try:
+        from prometheus_client import Counter
+
+        # Module-level cache (idempotent registration).
+        global _ALERT_THRESHOLD_SOURCE_COUNTER  # noqa: PLW0603
+        if "_ALERT_THRESHOLD_SOURCE_COUNTER" not in globals():
+            _ALERT_THRESHOLD_SOURCE_COUNTER = Counter(  # type: ignore[name-defined]
+                "alert_threshold_source_total",
+                "Source of alert threshold per detector run (tenant vs default)",
+                labelnames=["alert_type", "source"],
+            )
+        _ALERT_THRESHOLD_SOURCE_COUNTER.labels(  # type: ignore[name-defined]
+            alert_type=alert_type, source=source
+        ).inc()
+    except Exception as exc:  # noqa: BLE001
+        logger.debug(
+            "Prometheus counter emit failed (best-effort): %s", exc
+        )
+
+
+# ---------------------------------------------------------------------------
 # Base detector contract
 # ---------------------------------------------------------------------------
 
@@ -91,7 +200,11 @@ class BaseDetector(ABC):
     Cada subclass DEVE definir:
     - name: identificador estavel (usado para deduplicar hints + AST sensor)
     - severity: low | medium | high | critical
-    - detect(db, company_id) -> list[dict]
+    - detect(db, company_id, override=None) -> list[dict]
+
+    `override`: TenantThresholdOverride canonical lido pelo orchestrator de
+    AlertPreference. Quando None (compat retro), subclass deve usar
+    _DEFAULT_TENANT_OVERRIDE[self.name] como fallback.
     """
 
     name: str = ""
@@ -99,7 +212,10 @@ class BaseDetector(ABC):
 
     @abstractmethod
     async def detect(
-        self, db: "AsyncSession", company_id: str
+        self,
+        db: "AsyncSession",
+        company_id: str,
+        override: TenantThresholdOverride | None = None,
     ) -> list[dict[str, Any]]:
         """Returns list of hints. Each hint:
         {
@@ -111,9 +227,32 @@ class BaseDetector(ABC):
             "expires_in_hours": int | None,
             "related_job_id": str | None,
             "related_candidate_id": str | None,
+            "channels": dict | None,      # canais escolhidos pelo tenant
         }
         """
         ...
+
+    def _resolve_override(
+        self,
+        override: TenantThresholdOverride | None,
+    ) -> TenantThresholdOverride:
+        """Helper canonical: aplica fallback + emit metric source.
+
+        Quando override is None ou source='default': loga + incrementa metric
+        com source='default'. Quando override.source='tenant': metric com
+        source='tenant'. Retorna SEMPRE TenantThresholdOverride (nunca None).
+        """
+        alert_type = _DETECTOR_ALERT_TYPE_MAP.get(self.name, self.name)
+        if override is None or override.source == "default":
+            logger.info(
+                "No tenant template for %s, using default", self.name
+            )
+            _emit_threshold_source_metric(alert_type, "default")
+            return _DEFAULT_TENANT_OVERRIDE.get(
+                self.name, TenantThresholdOverride()
+            )
+        _emit_threshold_source_metric(alert_type, "tenant")
+        return override
 
 
 # ---------------------------------------------------------------------------
@@ -122,7 +261,12 @@ class BaseDetector(ABC):
 
 
 class CompanyProfileCompletionDetector(BaseDetector):
-    """Trigger quando profile da empresa esta < 80% completo."""
+    """Trigger quando profile da empresa esta < threshold% completo.
+
+    Per-tenant override (AlertPreference.alert_type='company_profile_incomplete'):
+    - threshold: percentage minimo (default 80)
+    - cooldown_hours: dedup gate (default 24*7=168)
+    """
 
     name = "company_profile_completion"
     severity = "low"
@@ -140,7 +284,11 @@ class CompanyProfileCompletionDetector(BaseDetector):
         "website",
     ]
 
-    async def detect(self, db, company_id):
+    async def detect(self, db, company_id, override=None):
+        cfg = self._resolve_override(override)
+        if not cfg.is_enabled:
+            return []
+
         try:
             from sqlalchemy import select
 
@@ -170,8 +318,9 @@ class CompanyProfileCompletionDetector(BaseDetector):
             if getattr(profile, field, None) not in (None, "", 0)
         )
         percentage = (filled / len(self.REQUIRED_FIELDS)) * 100
+        threshold_pct = cfg.threshold if cfg.threshold is not None else 80
 
-        if percentage >= 80:
+        if percentage >= threshold_pct:
             return []
 
         missing = [
@@ -190,23 +339,34 @@ class CompanyProfileCompletionDetector(BaseDetector):
                 "action": "navigate_to_company_data",
                 "action_params": {"missing_fields": missing},
                 "severity": self.severity,
-                "expires_in_hours": 24 * 7,
+                "expires_in_hours": cfg.cooldown_hours or 24 * 7,
                 "related_job_id": None,
                 "related_candidate_id": None,
+                "channels": cfg.channels or {},
             }
         ]
 
 
 class DSROverdueDetector(BaseDetector):
-    """Trigger quando DSR (LGPD Art.18) chegando perto do SLA legal (15 dias)."""
+    """Trigger quando DSR (LGPD Art.18) chegando perto do SLA legal (15 dias).
+
+    Per-tenant override (AlertPreference.alert_type='dsr_overdue'):
+    - threshold: margem de aviso em horas antes do deadline (default 24)
+    - cooldown_hours: dedup gate (default 12)
+    """
 
     name = "dsr_overdue"
     severity = "high"
 
-    # Margem de aviso: alertar quando faltam < 24h para deadline
+    # Default margem de aviso: alertar quando faltam < 24h para deadline.
+    # Pode ser sobrescrito por AlertPreference.threshold.
     WARN_MARGIN_HOURS = 24
 
-    async def detect(self, db, company_id):
+    async def detect(self, db, company_id, override=None):
+        cfg = self._resolve_override(override)
+        if not cfg.is_enabled:
+            return []
+
         try:
             from sqlalchemy import and_, or_, select
 
@@ -224,7 +384,10 @@ class DSROverdueDetector(BaseDetector):
             return []
 
         now = datetime.utcnow()
-        cutoff = now + timedelta(hours=self.WARN_MARGIN_HOURS)
+        warn_hours = (
+            cfg.threshold if cfg.threshold is not None else self.WARN_MARGIN_HOURS
+        )
+        cutoff = now + timedelta(hours=warn_hours)
         active_statuses = [
             DataSubjectRequestStatusEnum.PENDING.value,
             DataSubjectRequestStatusEnum.IN_REVIEW.value,
@@ -256,7 +419,7 @@ class DSROverdueDetector(BaseDetector):
                 "title": (
                     f"{len(critical)} DSR(s) vencido(s)"
                     if critical
-                    else f"{len(overdue)} DSR(s) vencendo em 24h"
+                    else f"{len(overdue)} DSR(s) vencendo em {warn_hours}h"
                 ),
                 "message": (
                     "LGPD Art. 18 obriga responder em 15 dias corridos. "
@@ -268,15 +431,21 @@ class DSROverdueDetector(BaseDetector):
                     "critical_count": len(critical),
                 },
                 "severity": severity,
-                "expires_in_hours": 12,
+                "expires_in_hours": cfg.cooldown_hours or 12,
                 "related_job_id": None,
                 "related_candidate_id": None,
+                "channels": cfg.channels or {},
             }
         ]
 
 
 class CandidateStaleDetector(BaseDetector):
-    """Trigger quando candidato esta 7+ dias sem feedback / mudanca de estagio."""
+    """Trigger quando candidato esta N+ dias sem feedback / mudanca de estagio.
+
+    Per-tenant override (AlertPreference.alert_type='candidate_no_interaction'):
+    - threshold: dias sem update para considerar stale (default 7)
+    - cooldown_hours: dedup gate (default 24)
+    """
 
     name = "candidate_stale"
     severity = "medium"
@@ -284,14 +453,18 @@ class CandidateStaleDetector(BaseDetector):
     STALE_DAYS = 7
     BATCH_SIZE = 50
 
-    async def detect(self, db, company_id):
-        """Detecta candidatos em estagios interview/screening sem update >= 7 dias.
+    async def detect(self, db, company_id, override=None):
+        """Detecta candidatos em estagios interview/screening sem update >= N dias.
 
         Query canonical: JOIN VacancyCandidate x JobVacancy filtrando por
         company_id (multi-tenancy fail-closed) + status canonical pos-triagem
         + updated_at < cutoff. Agrupa por vaga para gerar 1 hint por vaga
         (evita flood na bell quando ha varias vagas com candidatos parados).
         """
+        cfg = self._resolve_override(override)
+        if not cfg.is_enabled:
+            return []
+
         try:
             from sqlalchemy import func, select
 
@@ -307,7 +480,8 @@ class CandidateStaleDetector(BaseDetector):
         except (ValueError, TypeError, AttributeError):
             return []
 
-        cutoff = datetime.utcnow() - timedelta(days=self.STALE_DAYS)
+        stale_days = cfg.threshold if cfg.threshold is not None else self.STALE_DAYS
+        cutoff = datetime.utcnow() - timedelta(days=stale_days)
         stale_statuses = ["interview", "screening", "final_evaluation"]
 
         try:
@@ -343,7 +517,7 @@ class CandidateStaleDetector(BaseDetector):
         for row in rows:
             hints.append(
                 {
-                    "title": f"Candidatos sem feedback ha {self.STALE_DAYS}+ dias",
+                    "title": f"Candidatos sem feedback ha {stale_days}+ dias",
                     "message": (
                         f"{row.stale_count} candidato(s) na vaga "
                         f"'{row.title}' precisam de feedback. "
@@ -355,25 +529,35 @@ class CandidateStaleDetector(BaseDetector):
                         "stale_count": int(row.stale_count),
                     },
                     "severity": self.severity,
-                    "expires_in_hours": 24,
+                    "expires_in_hours": cfg.cooldown_hours or 24,
                     "related_job_id": str(row.id),
                     "related_candidate_id": None,
+                    "channels": cfg.channels or {},
                 }
             )
         return hints
 
 
 class WorkforcePlanStaleDetector(BaseDetector):
-    """Trigger quando workforce_plan da company tem > 30 dias sem update."""
+    """Trigger quando workforce_plan da company tem > N dias sem update.
+
+    Per-tenant override (AlertPreference.alert_type='workforce_plan_stale'):
+    - threshold: dias sem update para considerar stale (default 30)
+    - cooldown_hours: dedup gate (default 24*14=336)
+    """
 
     name = "workforce_plan_stale"
     severity = "low"
 
     STALE_DAYS = 30
 
-    async def detect(self, db, company_id):
+    async def detect(self, db, company_id, override=None):
+        cfg = self._resolve_override(override)
+        if not cfg.is_enabled:
+            return []
+
         try:
-            from sqlalchemy import select, text as sa_text
+            from sqlalchemy import text as sa_text
 
             # Workforce table pode variar de schema por tenant; usamos query
             # defensiva via raw SQL gateado pelo company_id.
@@ -381,10 +565,12 @@ class WorkforcePlanStaleDetector(BaseDetector):
         except (ValueError, Exception):
             return []
 
+        stale_days = cfg.threshold if cfg.threshold is not None else self.STALE_DAYS
+
         try:
             # ADR-001-EXEMPT: leitura cross-domain workforce_plans. Repo
             # dedicado pendente em follow-up sprint.
-            cutoff = datetime.utcnow() - timedelta(days=self.STALE_DAYS)
+            cutoff = datetime.utcnow() - timedelta(days=stale_days)
             result = await db.execute(
                 sa_text(
                     "SELECT id, last_updated_at FROM workforce_plans "
@@ -417,29 +603,40 @@ class WorkforcePlanStaleDetector(BaseDetector):
                 "action": "navigate_to_workforce",
                 "action_params": {"days_stale": days},
                 "severity": self.severity,
-                "expires_in_hours": 24 * 14,
+                "expires_in_hours": cfg.cooldown_hours or 24 * 14,
                 "related_job_id": None,
                 "related_candidate_id": None,
+                "channels": cfg.channels or {},
             }
         ]
 
 
 class AICreditsLowDetector(BaseDetector):
-    """Trigger quando balance de AI credits < 20% do plano contratado."""
+    """Trigger quando balance de AI credits < N% do plano contratado.
+
+    Per-tenant override (AlertPreference.alert_type='credits_low'):
+    - threshold: pct remaining minimo para nao alertar (default 20 = alerta
+      quando saldo < 20%)
+    - cooldown_hours: dedup gate (default 12)
+    """
 
     name = "ai_credits_low"
     severity = "high"
 
     LOW_THRESHOLD = 0.20
 
-    async def detect(self, db, company_id):
-        """Detecta company com >=80% do monthly_limit consumido.
+    async def detect(self, db, company_id, override=None):
+        """Detecta company com >=(100-threshold)% do monthly_limit consumido.
 
         Le `ai_credits_balance` local (tabela Python-owned, vide
         libs/models/lia_models/ai_consumption.py:AiCreditsBalance). Severity
         escala: 80-94% -> medium override, >=95% -> high. Sem row = noop
         (company nao tem plano contratado / nao configurada).
         """
+        cfg = self._resolve_override(override)
+        if not cfg.is_enabled:
+            return []
+
         try:
             from sqlalchemy import select
 
@@ -476,12 +673,16 @@ class AICreditsLowDetector(BaseDetector):
             return []
 
         usage_pct = (current_usage / monthly_limit) * 100
-        threshold_pct = (1 - self.LOW_THRESHOLD) * 100  # 80% por default
-        if usage_pct < threshold_pct:
+        # threshold=20 (default) -> alerta quando remaining < 20% (usage >= 80%).
+        low_threshold_pct = (
+            cfg.threshold if cfg.threshold is not None else 20
+        )
+        alert_at_usage_pct = 100 - low_threshold_pct
+        if usage_pct < alert_at_usage_pct:
             return []
 
         remaining_pct = max(0.0, 100 - usage_pct)
-        # Escalation: >=95% saldo critico -> high; 80-94% -> medium.
+        # Escalation: >=95% saldo critico -> high; >=alert_at -> medium.
         effective_severity = "high" if usage_pct >= 95 else "medium"
         return [
             {
@@ -497,22 +698,32 @@ class AICreditsLowDetector(BaseDetector):
                     "usage_pct": round(usage_pct, 1),
                 },
                 "severity": effective_severity,
-                "expires_in_hours": 12,
+                "expires_in_hours": cfg.cooldown_hours or 12,
                 "related_job_id": None,
                 "related_candidate_id": None,
+                "channels": cfg.channels or {},
             }
         ]
 
 
 class PipelineStuckDetector(BaseDetector):
-    """Trigger quando vagas estao paradas em screening > 14 dias."""
+    """Trigger quando vagas estao paradas em screening > N dias.
+
+    Per-tenant override (AlertPreference.alert_type='candidates_stagnant'):
+    - threshold: dias parados para considerar stuck (default 14)
+    - cooldown_hours: dedup gate (default 24*3=72)
+    """
 
     name = "pipeline_stuck"
     severity = "medium"
 
     STUCK_DAYS = 14
 
-    async def detect(self, db, company_id):
+    async def detect(self, db, company_id, override=None):
+        cfg = self._resolve_override(override)
+        if not cfg.is_enabled:
+            return []
+
         try:
             from sqlalchemy import select
 
@@ -526,7 +737,8 @@ class PipelineStuckDetector(BaseDetector):
         except ValueError:
             return []
 
-        cutoff = datetime.utcnow() - timedelta(days=self.STUCK_DAYS)
+        stuck_days = cfg.threshold if cfg.threshold is not None else self.STUCK_DAYS
+        cutoff = datetime.utcnow() - timedelta(days=stuck_days)
 
         try:
             result = await db.execute(
@@ -546,7 +758,7 @@ class PipelineStuckDetector(BaseDetector):
 
         return [
             {
-                "title": f"{len(stuck)} vaga(s) parada(s) em triagem ha 14+ dias",
+                "title": f"{len(stuck)} vaga(s) parada(s) em triagem ha {stuck_days}+ dias",
                 "message": (
                     "Vagas estagnadas perdem candidatos qualificados. A LIA "
                     "pode sugerir aceleracao ou reabertura de pool."
@@ -557,9 +769,10 @@ class PipelineStuckDetector(BaseDetector):
                     "stage": "triagem",
                 },
                 "severity": self.severity,
-                "expires_in_hours": 24 * 3,
+                "expires_in_hours": cfg.cooldown_hours or 24 * 3,
                 "related_job_id": str(stuck[0].id) if stuck else None,
                 "related_candidate_id": None,
+                "channels": cfg.channels or {},
             }
         ]
 
@@ -586,16 +799,123 @@ class ProactiveDetectorService:
         ]
         self.logger = logging.getLogger(self.__class__.__name__)
 
+    async def _load_tenant_overrides(
+        self, db: "AsyncSession", company_id: str
+    ) -> dict[str, TenantThresholdOverride]:
+        """Carrega AlertPreference rows do tenant + monta dict por detector.name.
+
+        Canonical table: AlertPreference (ADR-WT-2025). Quando o tenant nao
+        tem row para um alert_type, NAO entra no dict (orchestrator vai cair
+        em _resolve_override default + log).
+
+        Multi-tenancy: query filtra por company_id explicitamente.
+        ADR-001-EXEMPT: leitura cross-user (todos os AlertPreference da
+        company, agregado por alert_type usando o mais recente). Repo
+        dedicado pendente em follow-up.
+        """
+        overrides: dict[str, TenantThresholdOverride] = {}
+        if not company_id:
+            return overrides
+
+        try:
+            from sqlalchemy import select
+
+            from app.models.alert import AlertPreference
+        except Exception as exc:
+            self.logger.warning(
+                "AlertPreference import failed (using all defaults): %s", exc
+            )
+            return overrides
+
+        try:
+            result = await db.execute(
+                select(AlertPreference).where(
+                    AlertPreference.company_id == company_id,
+                )
+            )
+            rows = list(result.scalars().all())
+        except Exception as exc:
+            # Table may not exist yet em alguns ambientes; fall back para defaults.
+            self.logger.debug(
+                "AlertPreference query failed for company=%s: %s",
+                company_id,
+                exc,
+            )
+            return overrides
+
+        # Inverte _DETECTOR_ALERT_TYPE_MAP: alert_type -> detector.name.
+        # Multiplos users podem ter preferences para o mesmo alert_type; pegamos
+        # a mais recente (assumindo que admin/team config eh single source).
+        alert_type_to_detector = {
+            v: k for k, v in _DETECTOR_ALERT_TYPE_MAP.items()
+        }
+
+        # Agrega: por alert_type, pega a row com updated_at mais recente.
+        latest_by_type: dict[str, Any] = {}
+        for row in rows:
+            atype = str(getattr(row, "alert_type", ""))
+            if atype not in alert_type_to_detector:
+                continue  # alert_type que nao mapeia pra detector conhecido
+            existing = latest_by_type.get(atype)
+            if (
+                existing is None
+                or getattr(row, "updated_at", None)
+                and getattr(row, "updated_at") > getattr(existing, "updated_at", datetime.min)
+            ):
+                latest_by_type[atype] = row
+
+        for atype, row in latest_by_type.items():
+            detector_name = alert_type_to_detector[atype]
+            channels = {
+                "email": bool(getattr(row, "channel_email", False)),
+                "bell": bool(getattr(row, "channel_bell", False)),
+                "teams": bool(getattr(row, "channel_teams", False)),
+                "whatsapp": bool(getattr(row, "channel_whatsapp", False)),
+            }
+            overrides[detector_name] = TenantThresholdOverride(
+                is_enabled=bool(getattr(row, "is_enabled", True)),
+                threshold=(
+                    int(getattr(row, "threshold"))
+                    if getattr(row, "threshold", None) is not None
+                    else None
+                ),
+                cooldown_hours=(
+                    int(getattr(row, "cooldown_hours"))
+                    if getattr(row, "cooldown_hours", None) is not None
+                    else None
+                ),
+                channels=channels,
+                source="tenant",
+            )
+        return overrides
+
     async def run_for_company(
         self, db: "AsyncSession", company_id: str
     ) -> dict[str, Any]:
-        """Roda todos detectors para uma company. Persist + retorna sumario."""
+        """Roda todos detectors para uma company. Persist + retorna sumario.
+
+        Per-tenant thresholds: chama _load_tenant_overrides antes de rodar e
+        passa override apropriado a cada detector. Fail-closed se load
+        levantar exception: detectors caem em default (com log).
+        """
         all_hints: list[dict[str, Any]] = []
         per_detector_count: dict[str, int] = {}
 
+        try:
+            tenant_overrides = await self._load_tenant_overrides(db, company_id)
+        except Exception as exc:
+            self.logger.warning(
+                "Failed to load tenant overrides for company=%s, "
+                "falling back to defaults: %s",
+                company_id,
+                exc,
+            )
+            tenant_overrides = {}
+
         for detector in self.detectors:
             try:
-                hints = await detector.detect(db, company_id)
+                override = tenant_overrides.get(detector.name)
+                hints = await detector.detect(db, company_id, override=override)
                 for hint in hints:
                     hint["detector"] = detector.name
                     hint["company_id"] = company_id
@@ -618,6 +938,7 @@ class ProactiveDetectorService:
             "hints_persisted": persisted,
             "detectors_run": len(self.detectors),
             "per_detector": per_detector_count,
+            "tenant_overrides_loaded": len(tenant_overrides),
         }
 
     async def _persist_hints(
@@ -703,6 +1024,23 @@ class ProactiveDetectorService:
             db.add(action)
             persisted += 1
 
+            # WT-2022: WebSocket broadcast canonical (best-effort).
+            # Polling 60s no hook frontend continua sendo fallback —
+            # falha aqui NUNCA quebra o persist.
+            try:
+                from app.api.websockets.proactive_hints_ws import proactive_pool
+
+                hint_company_id = hint.get("company_id")
+                if hint_company_id:
+                    await proactive_pool.broadcast_to_company(
+                        str(hint_company_id), hint
+                    )
+            except Exception as exc:
+                self.logger.debug(
+                    "ProactiveWS broadcast failed (polling fallback active): %s",
+                    exc,
+                )
+
         # Commit responsabilidade do caller (task / endpoint). Mantemos a
         # transacao aberta para que o caller controle isolation.
         return persisted
@@ -721,5 +1059,8 @@ __all__ = [
     "AICreditsLowDetector",
     "PipelineStuckDetector",
     "ProactiveDetectorService",
+    "TenantThresholdOverride",
     "proactive_detector_service",
+    "_DETECTOR_ALERT_TYPE_MAP",
+    "_DEFAULT_TENANT_OVERRIDE",
 ]
