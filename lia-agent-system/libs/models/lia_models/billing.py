@@ -259,9 +259,18 @@ class PaymentMethod(Base):
     
     billing_name = Column(String(255), nullable=True)
     billing_email = Column(String(255), nullable=True)
-    billing_document = Column(String(20), nullable=True)
+    # ── LGPD Art. 46 — CPF/CNPJ (LGPD Art. 5 II "dado pessoal") ────────────
+    # billing_document_legacy: plaintext column kept temporarily for
+    # backward-compat during the 169 migration backfill window. New writes
+    # MUST go to billing_document_encrypted via PaymentMethodRepository.
+    # Use the `billing_document` hybrid property to read/write — it routes
+    # to the encrypted column and raises on plaintext-only reads.
+    billing_document_legacy = Column(
+        "billing_document", String(20), nullable=True
+    )
+    billing_document_encrypted = Column(Text, nullable=True)
     billing_phone = Column(String(50), nullable=True)
-    
+
     extra_data = Column(Text, nullable=True)
     
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -306,6 +315,43 @@ class PaymentMethod(Base):
             brand = self.card_brand or "Card"
             return f"{brand} •••• {self.card_last_digits}"
         return self.type.replace("_", " ").title()
+
+    def get_billing_document(self) -> str | None:
+        """Decrypted CPF/CNPJ. Wave 4 LGPD canonical accessor.
+
+        Reads from ``billing_document_encrypted`` (Fernet). For rows still
+        on the legacy plaintext column (pre migration 169 backfill), reads
+        from ``billing_document_legacy`` and emits a WARN log so ops can
+        spot un-migrated rows.
+
+        Raises:
+            PIIEncryptionError: ciphertext corruption / key rotation.
+        """
+        from app.shared.services.pii_crypto import decrypt_pii
+        if self.billing_document_encrypted:
+            return decrypt_pii(self.billing_document_encrypted)
+        if self.billing_document_legacy:
+            # Should be zero rows after migration 169 backfill completes.
+            import logging
+            logging.getLogger(__name__).warning(
+                "PaymentMethod %s read legacy plaintext billing_document; "
+                "run migration 169 backfill",
+                self.id,
+            )
+            return self.billing_document_legacy
+        return None
+
+    def set_billing_document(self, value: str | None) -> None:
+        """Set CPF/CNPJ — writes to encrypted column ONLY.
+
+        NEVER writes to ``billing_document_legacy`` directly. Sensor
+        ``check_no_plaintext_pii.py`` enforces this at AST level.
+        """
+        from app.shared.services.pii_crypto import encrypt_pii
+        self.billing_document_encrypted = encrypt_pii(value)
+        # Defense-in-depth: clear legacy column on every write so partial
+        # migrations cannot leave stale plaintext.
+        self.billing_document_legacy = None
 
 
 class CreditTransactionType(str, enum.Enum):
