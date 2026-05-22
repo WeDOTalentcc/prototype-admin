@@ -57,7 +57,10 @@ export function AuditLogsPanel() {
   const [total, setTotal] = useState<number>(0)
   const [stats, setStats] = useState<AuditStats | null>(null)
   const [retention, setRetention] = useState<RetentionPolicy[]>([])
-  const [loading, setLoading] = useState(true)
+  // Auditoria 2026-05-22: initial=false. Antes (true) + `if (!companyId) return`
+  // no useEffect deixava spinner eterno se useCompanyId nao resolvesse o JWT.
+  // Agora loading so vira true quando o fetch realmente arranca.
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const [severityFilter, setSeverityFilter] = useState<string>("all")

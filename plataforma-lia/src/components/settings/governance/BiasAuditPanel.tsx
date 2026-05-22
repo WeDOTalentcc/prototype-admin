@@ -62,7 +62,10 @@ export function BiasAuditPanel() {
   const t = useTranslations("settings.governanca.biasAudit")
   const { companyId } = useCompanyId()
   const [logs, setLogs] = useState<FairnessLog[]>([])
-  const [loading, setLoading] = useState(true)
+  // Auditoria 2026-05-22: initial=false. Antes (true) + `if (!companyId) return`
+  // no useEffect deixava spinner eterno se useCompanyId nao resolvesse o JWT.
+  // Agora loading so vira true quando o fetch realmente arranca.
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const [drillJobId, setDrillJobId] = useState<string>("")

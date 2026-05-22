@@ -109,7 +109,10 @@ export function AIPerformancePanel(): React.ReactElement {
   const [activeTab, setActiveTab] = useState<TabId>("experiments")
   const [summary, setSummary] = useState<DashboardSummary | null>(null)
   const [experiments, setExperiments] = useState<Experiment[]>([])
-  const [loading, setLoading] = useState<boolean>(true)
+  // Auditoria 2026-05-22: initial=false. Antes (true) + `if (!companyId) return`
+  // no useEffect deixava spinner eterno se useCompanyId nao resolvesse o JWT.
+  // Agora loading so vira true quando o fetch realmente arranca.
+  const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState<string | null>(null)
   const [selectedExperiment, setSelectedExperiment] = useState<string | null>(null)
   const [posteriors, setPosteriors] = useState<BanditPosterior[]>([])

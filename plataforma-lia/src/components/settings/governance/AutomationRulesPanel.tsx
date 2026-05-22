@@ -33,7 +33,10 @@ export function AutomationRulesPanel() {
   const t = useTranslations("settings.governanca.automationRules")
   const { companyId } = useCompanyId()
   const [rules, setRules] = useState<AutomationRule[]>([])
-  const [loading, setLoading] = useState(true)
+  // Auditoria 2026-05-22: initial=false. Antes (true) + `if (!companyId) return`
+  // no useEffect deixava spinner eterno se useCompanyId nao resolvesse o JWT.
+  // Agora loading so vira true quando o fetch realmente arranca.
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [pending, setPending] = useState<Record<string, boolean>>({})
 
