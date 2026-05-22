@@ -49,7 +49,6 @@ export function AutomationRulesPanel() {
       setError(null)
       try {
         const res = await apiFetch(`/api/backend-proxy/automation-rules/company/${companyId}`,
-          { headers: { "X-Company-ID": companyId! } },
         )
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const data = await res.json()
@@ -79,10 +78,7 @@ export function AutomationRulesPanel() {
       const res = await apiFetch(`/api/backend-proxy/automation-rules/${id}/toggle`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "X-Company-ID": companyId,
-        },
-      })
+          "Content-Type": "application/json" } })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       setRules((curr) =>
         curr.map((r) => {

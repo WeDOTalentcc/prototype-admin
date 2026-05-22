@@ -6,13 +6,14 @@ import {
   Brain, Upload, Plus, Star, Users,
   ThumbsUp, ThumbsDown, HelpCircle, ChevronRight, X,
   UserCheck, BookOpen, Lightbulb,
-  FileText, ArrowRight, Info, Loader2, AlertCircle} from "lucide-react"
+  FileText, ArrowRight, Info, Loader2, AlertCircle, Sparkles} from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Progress } from "@/components/ui/progress"
+import { cn } from "@/lib/utils"
 import {
   textStyles, cardStyles, badgeStyles, buttonStyles, inputStyles, formStyles
 } from "@/lib/design-tokens"
@@ -56,6 +57,73 @@ export function DigitalTwinHeader() {
     />
   )
 }
+
+// Wave 4 W4-5 audit 2026-05-22: banner dismissivel explicando diferencial competitivo
+// (Twin de decisor humano-avaliador eh unico no mercado HR-tech;
+// Eightfold Andromeda eh employee twin = caso de uso diferente).
+export function TwinCompetitiveBanner() {
+  const [dismissed, setDismissed] = React.useState(false)
+
+  React.useEffect(() => {
+    const seen = localStorage.getItem("wedo_twin_competitive_banner_dismissed")
+    if (seen === "1") setDismissed(true)
+  }, [])
+
+  if (dismissed) return null
+
+  const handleDismiss = () => {
+    localStorage.setItem("wedo_twin_competitive_banner_dismissed", "1")
+    setDismissed(true)
+  }
+
+  return (
+    <div
+      className="relative rounded-xl border border-wedo-cyan/30 bg-gradient-to-br from-wedo-cyan/5 to-wedo-purple/5 dark:from-wedo-cyan/10 dark:to-wedo-purple/10 p-4"
+      role="region"
+      aria-label="Diferencial competitivo Gemeos Digitais"
+    >
+      <button
+        type="button"
+        onClick={handleDismiss}
+        className="absolute top-3 right-3 p-1 rounded-md text-lia-text-disabled hover:text-lia-text-primary hover:bg-lia-bg-tertiary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
+        aria-label="Dispensar banner"
+      >
+        <X className="w-3.5 h-3.5" aria-hidden="true" />
+      </button>
+      <div className="flex items-start gap-3 pr-8">
+        <div className="rounded-lg bg-wedo-cyan/15 p-2 flex-shrink-0">
+          <Sparkles className="w-5 h-5 text-wedo-cyan-dark" aria-hidden="true" />
+        </div>
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs font-semibold text-wedo-cyan-dark uppercase tracking-wide">
+              Diferencial WeDOTalent
+            </span>
+            <span className={cn(badgeStyles.default, "text-[10px] font-semibold")}>
+              Unico no mercado HR-tech
+            </span>
+          </div>
+          <h4 className="text-sm font-semibold text-lia-text-primary">
+            Clone o raciocinio do seu melhor entrevistador
+          </h4>
+          <p className="text-xs text-lia-text-secondary leading-relaxed">
+            Diferente do <strong>Eightfold Andromeda</strong> (que clona funcionarios para
+            career planning) ou de assistentes generalistas, o Digital Twin da WeDOTalent
+            cria uma <strong>copia comportamental do seu decisor humano de hiring</strong> —
+            o entrevistador top que voce confia mais. A IA aprende o padrao especifico de
+            avaliacao dele e oferece <strong>segunda opiniao automatica</strong> em novos
+            candidatos, no estilo dele.
+          </p>
+          <p className="text-xs text-lia-text-secondary leading-relaxed">
+            Combinado com PT-BR nativo + LGPD compliance built-in (Art. 18 erasure via
+            FK SET NULL), eh um pacote diferenciador unico globalmente.
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 
 export function DigitalTwinOnboarding() {
   const t = useTranslations("agents.studio.twins")
@@ -534,9 +602,13 @@ export function EvaluateWithTwinModal({
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className={textStyles.h3}>
-            <Brain className="w-5 h-5 inline mr-2 text-wedo-cyan" />
+          <DialogTitle className={cn(textStyles.h3, "flex items-center gap-2 flex-wrap")}>
+            <Brain className="w-5 h-5 text-wedo-cyan" aria-hidden="true" />
             {t("digitalTwinEvaluation")}
+            <span className={cn(badgeStyles.default, "text-[10px] font-semibold ml-1")}>
+              <Sparkles className="w-3 h-3 inline mr-0.5" aria-hidden="true" />
+              Diferencial unico
+            </span>
           </DialogTitle>
           <DialogDescription className="sr-only">{t("evaluationResultDesc")}</DialogDescription>
         </DialogHeader>
@@ -679,6 +751,7 @@ export function TwinsList({ onEvaluate, onCreateTwin, refreshKey = 0 }: TwinsLis
   if (twins.length === 0) {
     return (
       <div className="space-y-6">
+        <TwinCompetitiveBanner />
         <DigitalTwinOnboarding />
         <DigitalTwinEmptyState onCreateTwin={onCreateTwin} />
       </div>

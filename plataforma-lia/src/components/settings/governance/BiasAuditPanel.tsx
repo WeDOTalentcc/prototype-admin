@@ -89,9 +89,7 @@ export function BiasAuditPanel() {
       setLoading(true)
       setError(null)
       try {
-        const res = await apiFetch("/api/backend-proxy/fairness-audit/logs?limit=50", {
-          headers: { "X-Company-ID": companyId! },
-        })
+        const res = await apiFetch("/api/backend-proxy/fairness-audit/logs?limit=50")
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const data = await res.json()
         if (cancelled) return
@@ -119,7 +117,6 @@ export function BiasAuditPanel() {
     setDrillReport(null)
     try {
       const res = await apiFetch(`/api/backend-proxy/bias-audit/job/${encodeURIComponent(jobId.trim())}`,
-        { headers: { "X-Company-ID": companyId } },
       )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data: BiasAuditReport = await res.json()
@@ -137,9 +134,7 @@ export function BiasAuditPanel() {
     setAnnualLoading(true)
     setAnnualError(null)
     try {
-      const res = await apiFetch("/api/backend-proxy/bias-audit/annual", {
-        headers: { "X-Company-ID": companyId },
-      })
+      const res = await apiFetch("/api/backend-proxy/bias-audit/annual")
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data = await res.json()
       const items: AnnualReportSummary[] = Array.isArray(data)
@@ -169,11 +164,8 @@ export function BiasAuditPanel() {
       const res = await apiFetch("/api/backend-proxy/bias-audit/annual/generate", {
         method: "POST",
         headers: {
-          "X-Company-ID": companyId,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ year }),
-      })
+          "Content-Type": "application/json" },
+        body: JSON.stringify({ year }) })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       await loadAnnualReports()
     } catch (err) {
@@ -194,11 +186,8 @@ export function BiasAuditPanel() {
         {
           method: "PATCH",
           headers: {
-            "X-Company-ID": companyId,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ is_public: makePublic }),
-        },
+            "Content-Type": "application/json" },
+          body: JSON.stringify({ is_public: makePublic }) },
       )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       await loadAnnualReports()
@@ -355,8 +344,7 @@ export function BiasAuditPanel() {
 
 function FourFifthsTable({
   report,
-  t,
-}: {
+  t }: {
   report: BiasAuditReport
   t: ReturnType<typeof useTranslations>
 }) {
@@ -400,8 +388,7 @@ function FourFifthsTable({
 function SummaryCard({
   label,
   value,
-  accent,
-}: {
+  accent }: {
   label: string
   value: number | string
   accent?: "warning" | "danger"

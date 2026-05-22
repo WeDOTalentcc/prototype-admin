@@ -47,8 +47,7 @@ const severityChipVariant: Record<string, "neutral" | "info" | "warning" | "dang
   medium: "warning",
   warning: "warning",
   high: "danger",
-  critical: "danger",
-}
+  critical: "danger" }
 
 export function AuditLogsPanel() {
   const t = useTranslations("settings.governanca.auditLogs")
@@ -87,16 +86,14 @@ export function AuditLogsPanel() {
   useEffect(() => {
     if (!companyId) return
     let cancelled = false
-    const headers: HeadersInit = { "X-Company-ID": companyId }
-
     async function load() {
       setLoading(true)
       setError(null)
       try {
         const [logsRes, statsRes, retRes] = await Promise.all([
-          apiFetch(`/api/backend-proxy/audit-logs?${buildQuery()}`, { headers }),
-          apiFetch("/api/backend-proxy/audit-logs/stats", { headers }),
-          apiFetch("/api/backend-proxy/audit-logs/retention-policies", { headers }),
+          apiFetch(`/api/backend-proxy/audit-logs?${buildQuery()}`),
+          apiFetch("/api/backend-proxy/audit-logs/stats"),
+          apiFetch("/api/backend-proxy/audit-logs/retention-policies"),
         ])
         if (!logsRes.ok) throw new Error(`HTTP ${logsRes.status}`)
         const logsData = await logsRes.json()

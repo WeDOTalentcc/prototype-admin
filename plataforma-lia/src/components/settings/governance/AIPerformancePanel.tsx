@@ -126,14 +126,11 @@ export function AIPerformancePanel(): React.ReactElement {
   const [promoting, setPromoting] = useState<string | null>(null)
   const [promoteResult, setPromoteResult] = useState<PromoteResult | null>(null)
 
-  const authHeaders = useMemo<Record<string, string>>(
-    () => {
-      const headers: Record<string, string> = {}
-      if (companyId) headers["X-Company-ID"] = companyId
-      return headers
-    },
-    [companyId],
-  )
+  // Auditoria 2026-05-22: authHeaders ficou vazio depois do Boy Scout que
+  // removeu o X-Company-ID anti-pattern (REGRA 6). Memo mantido pra evitar
+  // tocar os ~5 call-sites `headers: authHeaders` no resto do arquivo. Nao
+  // depende de companyId (JWT canonical via apiFetch + proxy ja resolve auth).
+  const authHeaders = useMemo<Record<string, string>>(() => ({}), [])
 
   // -------------------------------------------------------------------------
   // Load experiments + summary on mount

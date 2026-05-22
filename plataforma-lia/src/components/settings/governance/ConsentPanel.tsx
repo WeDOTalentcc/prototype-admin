@@ -102,7 +102,6 @@ function CandidateGranularConsentTab() {
     try {
       const res = await apiFetch(
         `/api/backend-proxy/consent/granular/${encodeURIComponent(id.trim())}`,
-        { headers: { "X-Company-ID": companyId } },
       )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data: GranularConsentSummary = await res.json()
@@ -122,12 +121,10 @@ function CandidateGranularConsentTab() {
         `/api/backend-proxy/consent/granular/${encodeURIComponent(summary.candidate_id)}/update`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json", "X-Company-ID": companyId },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             updates: { [purpose]: false },
-            source: "governanca-admin",
-          }),
-        },
+            source: "governanca-admin" }) },
       )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       await load(summary.candidate_id)
@@ -292,7 +289,6 @@ function TrainingDataConsentTab() {
     try {
       const res = await apiFetch(
         `/api/backend-proxy/admin/consent/company-training-consent`,
-        { headers: { "X-Company-ID": companyId } },
       )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       const data: CompanyTrainingConsentStatus = await res.json()
@@ -319,12 +315,10 @@ function TrainingDataConsentTab() {
         `/api/backend-proxy/admin/consent/company-training-consent/grant`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json", "X-Company-ID": companyId },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             consent_text: DEFAULT_TRAINING_CONSENT_TEXT,
-            version: "1.0",
-          }),
-        },
+            version: "1.0" }) },
       )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       await load()
@@ -344,9 +338,8 @@ function TrainingDataConsentTab() {
         `/api/backend-proxy/admin/consent/company-training-consent/revoke`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json", "X-Company-ID": companyId },
-          body: JSON.stringify({ reason: revokeReason.trim() }),
-        },
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reason: revokeReason.trim() }) },
       )
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       setRevokeOpen(false)
@@ -511,8 +504,7 @@ function DetailField({
   label,
   value,
   mono,
-  full,
-}: {
+  full }: {
   label: string
   value: string | null | undefined
   mono?: boolean
@@ -556,9 +548,7 @@ function ConsentMetricsTab() {
     setLoading(true)
     setError(null)
     try {
-      const res = await apiFetch(`/api/backend-proxy/consent/stats`, {
-        headers: { "X-Company-ID": companyId },
-      })
+      const res = await apiFetch(`/api/backend-proxy/consent/stats`)
       if (!res.ok) {
         // Endpoint pode não existir ainda — fallback silencioso para [].
         setStats([])
@@ -583,8 +573,7 @@ function ConsentMetricsTab() {
           purpose: t.consent_type,
           granted: t.total_granted ?? 0,
           revoked: t.total_revoked ?? 0,
-          total: (t.total_granted ?? 0) + (t.total_revoked ?? 0),
-        }))
+          total: (t.total_granted ?? 0) + (t.total_revoked ?? 0) }))
       }
       setStats(items)
     } catch (err) {
@@ -643,8 +632,7 @@ function ConsentMetricsTab() {
                     className="h-full -mt-2 bg-wedo-orange"
                     style={{
                       width: `${barWidth * (revokedPct / 100)}%`,
-                      marginLeft: `${barWidth * (grantedPct / 100)}%`,
-                    }}
+                      marginLeft: `${barWidth * (grantedPct / 100)}%` }}
                   />
                 </div>
               </div>
@@ -697,8 +685,7 @@ export function ConsentPanel() {
 function SummaryCard({
   label,
   value,
-  accent,
-}: {
+  accent }: {
   label: string
   value: number | string
   accent?: "success" | "warning"
