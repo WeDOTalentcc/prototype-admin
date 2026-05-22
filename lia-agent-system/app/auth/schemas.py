@@ -76,11 +76,14 @@ class UserUpdate(WeDoBaseModel):
 
 
 class UserManagementCreate(WeDoBaseModel):
-    """Schema for creating users from admin panel."""
+    """Schema for creating users from admin panel.
+
+    Audit Wave 3 (2026-05-21) — REGRA Pydantic R2: company_id NUNCA no
+    request body. Sempre resolvido do JWT via require_company_id no handler.
+    """
     email: EmailStr
     name: str = Field(..., min_length=2, max_length=255)
     role: UserRole = UserRole.viewer
-    company_id: str | None = None
     permissions: list[str] = Field(default_factory=list)
     password: str | None = Field(None, description="Password for the user. If not provided, a default will be used.")
 
@@ -102,12 +105,15 @@ class UserManagementResponse(BaseModel):
 
 
 class UserManagementUpdate(WeDoBaseModel):
-    """Schema for updating a user from admin panel."""
+    """Schema for updating a user from admin panel.
+
+    Audit Wave 3 (2026-05-21) — REGRA Pydantic R2: company_id NUNCA no
+    request body (tenant-bound user, JWT resolve no handler).
+    """
     email: EmailStr | None = None
     name: str | None = Field(None, min_length=2, max_length=255)
     role: UserRole | None = None
     is_active: bool | None = None
-    company_id: str | None = None
     permissions: list[str] | None = None
 
 

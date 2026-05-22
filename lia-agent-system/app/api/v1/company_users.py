@@ -10,7 +10,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.auth.dependencies import get_current_user_or_demo
-from app.auth.models import User
+from app.auth.models import User, UserRole
 from app.auth.schemas import UserManagementCreate, UserManagementResponse, UserManagementUpdate
 from app.shared.tenant_guard import get_verified_company_id
 from app.auth.security import generate_secure_token, get_password_hash
@@ -108,22 +108,16 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 async def list_users(
     company_id: str = Query(..., description="Company ID (required for tenant isolation)"),
     user_repo: UserRepository = Depends(get_user_repo),
-    current_user=Depends(get_current_user_or_demo),
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    """List all users for a company."""
+    # multi-tenancy: query.company_id é validado vs JWT via require_company_id_strict_match
+    """List all users for a company.
+
+    Audit Wave 3 (2026-05-21) — P1.A cleanup: removido dead-code branch
+    de cross-tenant recovery. require_company_id_strict_match já enforça
+    query=JWT antes do handler executar (HTTP 403 retornado pelo gate).
+    """
     if not company_id or company_id in ("default", "unknown"):
         raise HTTPException(status_code=400, detail="Valid company_id is required")
-
-    user_cid = str(current_user.company_id) if current_user and hasattr(current_user, 'company_id') and current_user.company_id else None
-    if user_cid and company_id != user_cid:
-        users = await user_repo.list_for_company(company_id, is_active=None)
-        if not users:
-            return await user_repo.list_for_company(user_cid, is_active=None)
-        user_ids_match = any(str(getattr(u, 'company_id', '')) == user_cid for u in users)
-        if not user_ids_match:
-            raise HTTPException(status_code=403, detail="Access denied: cross-tenant user listing not allowed")
-        return users
 
     try:
         return await user_repo.list_for_company(company_id, is_active=None)
@@ -135,20 +129,36 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 @router.post("/users", response_model=UserManagementResponse, status_code=201)
 async def create_user(
     data: UserManagementCreate,
-    company_id: str | None = Query(None),
+    company_id: str = Query(..., description="Company ID (JWT-validated)"),
     user_repo: UserRepository = Depends(get_user_repo),
     email_svc: EmailService = Depends(get_email_service),
+    current_user=Depends(get_current_user_or_demo),
 _company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    """Create a new user with invitation token."""
+    # multi-tenancy: query.company_id validado vs JWT via require_company_id_strict_match
+    """Create a new user with invitation token.
+
+    Audit Wave 3 (2026-05-21) — P0.B + P0.A:
+    - company_id removido de UserManagementCreate (R2): vem do query (JWT-validated).
+    - Role escalation gate: apenas wedotalent_admin pode atribuir wedotalent_admin.
+      Tenant-admin tentando criar staff WeDOTalent recebe HTTP 403.
+    """
     try:
+        # P0.A — role escalation gate (CLAUDE.md E1)
+        if data.role == UserRole.wedotalent_admin:
+            current_role = getattr(current_user, "role", None) if current_user else None
+            if current_role != UserRole.wedotalent_admin:
+                logger.warning(
+                    f"Role escalation blocked: user={getattr(current_user, 'id', 'unknown')} "
+                    f"tried to assign wedotalent_admin in company={company_id}"
+                )
+                raise HTTPException(
+                    status_code=403,
+                    detail="Only WeDOTalent staff (wedotalent_admin) can assign the wedotalent_admin role",
+                )
+
         existing = await user_repo.get_by_email(data.email)
         if existing:
             raise HTTPException(status_code=400, detail="Email already registered")
-
-        resolved_company_id = data.company_id or company_id
-        if not resolved_company_id:
-            raise HTTPException(status_code=400, detail="company_id is required")
 
         invitation_token = generate_secure_token()
 
@@ -156,7 +166,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "email": data.email,
             "name": data.name,
             "role": data.role,
-            "company_id": resolved_company_id,
+            "company_id": company_id,
             "password_hash": get_password_hash("temporary_placeholder"),
             "is_active": False,
             "email_verified": False,
@@ -173,7 +183,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             variables={"user_name": user.name, "invitation_link": invitation_link},
         )
 
-        logger.info(f"Created user with invitation: {user.id} for company {resolved_company_id}")
+        logger.info(f"Created user with invitation: {user.id} for company {company_id}")
         return user
     except HTTPException:
         raise
@@ -187,12 +197,34 @@ async def update_user(
     user_id: str,
     data: UserManagementUpdate,
     user_repo: UserRepository = Depends(get_user_repo),
+    current_user=Depends(get_current_user_or_demo),
 company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Update a user."""
+    # multi-tenancy: defense-in-depth — company_id JWT + tenant-scoped get_by_id
+    """Update a user.
+
+    Audit Wave 3 (2026-05-21) — P0.C + P0.A:
+    - get_by_id(user_uuid, company_id=company_id): defense-in-depth canonical
+      (CLAUDE.md REGRA 1). RLS já bloqueia cross-tenant, mas scoping explícito
+      elimina warning flood + cumpre defense-in-depth contract.
+    - Role escalation gate (P0.A): apenas wedotalent_admin pode SET role
+      wedotalent_admin via update.
+    """
     try:
+        # P0.A — role escalation gate (CLAUDE.md E1)
+        if data.role == UserRole.wedotalent_admin:
+            current_role = getattr(current_user, "role", None) if current_user else None
+            if current_role != UserRole.wedotalent_admin:
+                logger.warning(
+                    f"Role escalation blocked: user={getattr(current_user, 'id', 'unknown')} "
+                    f"tried to escalate user {user_id} to wedotalent_admin in company={company_id}"
+                )
+                raise HTTPException(
+                    status_code=403,
+                    detail="Only WeDOTalent staff (wedotalent_admin) can assign the wedotalent_admin role",
+                )
+
         user_uuid = uuid.UUID(user_id)
-        user = await user_repo.get_by_id(user_uuid)
+        user = await user_repo.get_by_id(user_uuid, company_id=company_id)
 
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
@@ -225,11 +257,14 @@ async def delete_user(
     user_id: str,
     user_repo: UserRepository = Depends(get_user_repo),
 company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Delete a user."""
+    # multi-tenancy: defense-in-depth — company_id JWT + tenant-scoped get_by_id
+    """Delete a user.
+
+    Audit Wave 3 (2026-05-21) — P0.C: get_by_id passes company_id (defense-in-depth).
+    """
     try:
         user_uuid = uuid.UUID(user_id)
-        user = await user_repo.get_by_id(user_uuid)
+        user = await user_repo.get_by_id(user_uuid, company_id=company_id)
 
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
@@ -254,11 +289,14 @@ async def resend_invitation(
     user_repo: UserRepository = Depends(get_user_repo),
     email_svc: EmailService = Depends(get_email_service),
 company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Resend invitation email to a user who hasn't activated their account yet."""
+    # multi-tenancy: defense-in-depth — company_id JWT + tenant-scoped get_by_id
+    """Resend invitation email to a user who hasn't activated their account yet.
+
+    Audit Wave 3 (2026-05-21) — P0.C: get_by_id passes company_id (defense-in-depth).
+    """
     try:
         user_uuid = uuid.UUID(user_id)
-        user = await user_repo.get_by_id(user_uuid)
+        user = await user_repo.get_by_id(user_uuid, company_id=company_id)
 
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
