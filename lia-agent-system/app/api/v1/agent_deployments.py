@@ -192,8 +192,12 @@ company_id: str = Depends(require_company_id)):
     # Load agent
     from sqlalchemy import select
     from lia_models.custom_agent import CustomAgent
+    # Multi-tenancy fail-closed: explicit company_id filter (REGRA ZERO + B.1).
     agent_result = await db.execute(
-        select(CustomAgent).where(CustomAgent.id == deployment.agent_id)
+        select(CustomAgent).where(
+            CustomAgent.id == deployment.agent_id,
+            CustomAgent.company_id == current_user.company_id,
+        )
     )
     agent = agent_result.scalar_one_or_none()
     if not agent:

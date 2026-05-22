@@ -781,6 +781,9 @@ company_id: str = Depends(require_company_id)):
     from sqlalchemy import select, and_, func
     from lia_models.agent_execution_log import AgentExecutionLog
 
+    # TENANT-EXEMPT: AgentExecutionLog.company_id == current_user.company_id
+    # já é elemento de `base_filter` and_() abaixo (statically guaranteed).
+    # Sensor AST não rastreia through .where(base_filter) indirection.
     base_filter = and_(
         AgentExecutionLog.agent_id == agent_id,
         AgentExecutionLog.company_id == current_user.company_id,
@@ -788,6 +791,7 @@ company_id: str = Depends(require_company_id)):
 
     total = await db.scalar(select(func.count(AgentExecutionLog.id)).where(base_filter))
 
+        # TENANT-EXEMPT: see base_filter and_() acima — company_id já incluso.
     result = await db.execute(
         select(AgentExecutionLog)
         .where(base_filter)
@@ -1059,8 +1063,12 @@ company_id: str = Depends(require_company_id)):
 
     top_blocked_agents = []
     for row in top_blocked_rows:
+        # Multi-tenancy fail-closed: explicit company_id filter (REGRA ZERO + B.1).
         agent_res = await db.execute(
-            select(CustomAgent).where(CustomAgent.id == row.agent_id)
+            select(CustomAgent).where(
+                CustomAgent.id == row.agent_id,
+                CustomAgent.company_id == current_user.company_id,
+            )
         )
         agent = agent_res.scalar_one_or_none()
         top_blocked_agents.append({
@@ -1175,8 +1183,12 @@ company_id: str = Depends(require_company_id)):
     # Enrich top agents with names
     top_agents = []
     for row in top_agent_rows:
+        # Multi-tenancy fail-closed: explicit company_id filter (REGRA ZERO + B.1).
         agent_result = await db.execute(
-            select(CustomAgent).where(CustomAgent.id == row.agent_id)
+            select(CustomAgent).where(
+                CustomAgent.id == row.agent_id,
+                CustomAgent.company_id == current_user.company_id,
+            )
         )
         agent = agent_result.scalar_one_or_none()
         top_agents.append({

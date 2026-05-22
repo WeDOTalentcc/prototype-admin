@@ -125,10 +125,12 @@ async def clear_test_activities(db: AsyncSession = Depends(get_db), company_id: 
     """
     Delete all test activities (those with test- prefixed IDs).
     """
+    # Multi-tenancy fail-closed: explicit company_id filter (REGRA ZERO + B.1).
     stmt = delete(ActivityFeed).where(
-        ActivityFeed.target_id.like("test-%")
+        ActivityFeed.target_id.like("test-%"),
+        ActivityFeed.company_id == company_id,
     )
-    
+
     await db.execute(stmt)
     
     return {

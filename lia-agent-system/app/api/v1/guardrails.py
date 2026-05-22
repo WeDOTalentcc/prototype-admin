@@ -129,7 +129,11 @@ async def get_guardrail(
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Retorna um guardrail pelo ID."""
-    stmt = select(Guardrail).where(Guardrail.id == guardrail_id)
+    # Multi-tenancy fail-closed: explicit company_id filter (REGRA ZERO + B.1).
+    stmt = select(Guardrail).where(
+        Guardrail.id == guardrail_id,
+        Guardrail.company_id == company_id,
+    )
     result = await db.execute(stmt)
     guardrail = result.scalar_one_or_none()
 
@@ -147,7 +151,11 @@ async def update_guardrail(
     current_user: User = Depends(require_admin),
 company_id: str = Depends(require_company_id)):
     """Atualiza um guardrail existente."""
-    stmt = select(Guardrail).where(Guardrail.id == guardrail_id)
+    # Multi-tenancy fail-closed: explicit company_id filter (REGRA ZERO + B.1).
+    stmt = select(Guardrail).where(
+        Guardrail.id == guardrail_id,
+        Guardrail.company_id == company_id,
+    )
     result = await db.execute(stmt)
     guardrail = result.scalar_one_or_none()
 

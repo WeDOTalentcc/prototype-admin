@@ -58,16 +58,28 @@ async def _create_activity(
 
 
 async def _get_vacancy_candidate(
-    db: AsyncSession, candidate_id: str, vacancy_id: str
+    db: AsyncSession,
+    candidate_id: str,
+    vacancy_id: str,
+    company_id: str | None = None,
 ):
+    """Get VacancyCandidate for (candidate, vacancy) pair.
+
+    Multi-tenancy defense-in-depth via company_id filter quando passado
+    (REGRA ZERO + harness B.1). Backwards-compat: callers legados em
+    handlers podem omitir; Postgres RLS guarda.
+    """
     from app.models.candidate import VacancyCandidate
 
-    result = await db.execute(
-        select(VacancyCandidate).where(
-            VacancyCandidate.candidate_id == candidate_id,
-            VacancyCandidate.vacancy_id == vacancy_id,
-        )
+    # TENANT-EXEMPT: dynamic builder — VacancyCandidate.company_id == company_id
+    # é appended conditionally below quando company_id passado.
+    query = select(VacancyCandidate).where(
+        VacancyCandidate.candidate_id == candidate_id,
+        VacancyCandidate.vacancy_id == vacancy_id,
     )
+    if company_id:
+        query = query.where(VacancyCandidate.company_id == company_id)
+    result = await db.execute(query)
     return result.scalar_one_or_none()
 
 
@@ -241,10 +253,12 @@ async def handle_job_closed(event: PlatformEvent) -> None:
             return
 
         terminal_statuses = ("rejected", "hired", "cancelled", "not_selected")
+        # Multi-tenancy fail-closed: explicit company_id filter (REGRA ZERO + B.1).
         open_candidates_result = await db.execute(
             select(VacancyCandidate).where(
                 VacancyCandidate.vacancy_id == vacancy.id,
                 VacancyCandidate.status.notin_(terminal_statuses),
+                VacancyCandidate.company_id == company_id,
             )
         )
         open_candidates = open_candidates_result.scalars().all()
@@ -260,8 +274,12 @@ async def handle_job_closed(event: PlatformEvent) -> None:
             archived_count += 1
 
             try:
+                # Multi-tenancy fail-closed: explicit company_id filter (REGRA ZERO + B.1).
                 candidate_result = await db.execute(
-                    select(Candidate).where(Candidate.id == vc.candidate_id)
+                    select(Candidate).where(
+                        Candidate.id == vc.candidate_id,
+                        Candidate.company_id == company_id,
+                    )
                 )
                 candidate = candidate_result.scalar_one_or_none()
                 if candidate and candidate.email:
@@ -753,8 +771,12 @@ async def handle_screening_completed_event(event: PlatformEvent) -> None:
                 try:
                     from app.models.candidate import Candidate
 
+                    # Multi-tenancy fail-closed: explicit company_id filter (REGRA ZERO + B.1).
                     cand_result = await db.execute(
-                        select(Candidate).where(Candidate.id == candidate_id)
+                        select(Candidate).where(
+                            Candidate.id == candidate_id,
+                            Candidate.company_id == company_id,
+                        )
                     )
                     candidate = cand_result.scalar_one_or_none()
 

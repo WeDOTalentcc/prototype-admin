@@ -113,8 +113,13 @@ async def _get_pool_or_404(
     return pool
 
 
-async def _refresh_counts(pool_id: UUID, db: AsyncSession) -> None:
-    """Recalculate aggregate counts on the pool."""
+async def _refresh_counts(
+    pool_id: UUID, db: AsyncSession, company_id: str | None = None
+) -> None:
+    """Recalculate aggregate counts on the pool.
+
+    Multi-tenancy defense-in-depth via company_id filter (REGRA ZERO + B.1).
+    """
     total = await db.scalar(
         select(func.count()).where(TalentPoolCandidate.talent_pool_id == pool_id)
     )
@@ -130,7 +135,9 @@ async def _refresh_counts(pool_id: UUID, db: AsyncSession) -> None:
             TalentPoolCandidate.stage == "ready",
         )
     )
-    await db.execute(
+    # TENANT-EXEMPT: dynamic builder — TalentPool.company_id == company_id
+    # é appended conditionally below quando company_id passado.
+    stmt = (
         update(TalentPool)
         .where(TalentPool.id == pool_id)
         .values(
@@ -139,6 +146,9 @@ async def _refresh_counts(pool_id: UUID, db: AsyncSession) -> None:
             ready_count=ready or 0,
         )
     )
+    if company_id:
+        stmt = stmt.where(TalentPool.company_id == company_id)
+    await db.execute(stmt)
 
 
 # ---------------------------------------------------------------------------

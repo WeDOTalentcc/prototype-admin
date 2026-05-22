@@ -144,7 +144,13 @@ async def get_sourcing_agent(agent_id: str, db: AsyncSession = Depends(get_tenan
     from lia_models.sourcing_agent import SourcingAgent
     from sqlalchemy import select
 
-    result = await db.execute(select(SourcingAgent).where(SourcingAgent.id == agent_id))
+    # Multi-tenancy fail-closed: explicit company_id filter (REGRA ZERO + B.1).
+    result = await db.execute(
+        select(SourcingAgent).where(
+            SourcingAgent.id == agent_id,
+            SourcingAgent.company_id == company_id,
+        )
+    )
     agent = result.scalar_one_or_none()
     if not agent:
         raise HTTPException(404, "Agent not found")
@@ -242,7 +248,13 @@ async def pause_agent(agent_id: str, db: AsyncSession = Depends(get_tenant_db), 
     from lia_models.sourcing_agent import SourcingAgent
     from sqlalchemy import select
 
-    result = await db.execute(select(SourcingAgent).where(SourcingAgent.id == agent_id))
+    # Multi-tenancy fail-closed: explicit company_id filter (REGRA ZERO + B.1).
+    result = await db.execute(
+        select(SourcingAgent).where(
+            SourcingAgent.id == agent_id,
+            SourcingAgent.company_id == company_id,
+        )
+    )
     agent = result.scalar_one_or_none()
     if not agent:
         raise HTTPException(404, "Agent not found")
@@ -259,7 +271,13 @@ async def resume_agent(agent_id: str, db: AsyncSession = Depends(get_tenant_db),
     from lia_models.sourcing_agent import SourcingAgent
     from sqlalchemy import select
 
-    result = await db.execute(select(SourcingAgent).where(SourcingAgent.id == agent_id))
+    # Multi-tenancy fail-closed: explicit company_id filter (REGRA ZERO + B.1).
+    result = await db.execute(
+        select(SourcingAgent).where(
+            SourcingAgent.id == agent_id,
+            SourcingAgent.company_id == company_id,
+        )
+    )
     agent = result.scalar_one_or_none()
     if not agent:
         raise HTTPException(404, "Agent not found")
