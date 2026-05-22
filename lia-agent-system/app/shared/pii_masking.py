@@ -64,6 +64,51 @@ def mask_pii(text: str) -> str:
     return masked
 
 
+def mask_phone_preserve_tail(phone: str | None) -> str | None:
+    """F-07 P0 LGPD Art. 11: mask phone keeping country code + DDD + last 4 digits.
+
+    Use case: persistent storage (JSONB session state, audit metadata) where
+    operators need partial visibility for debug/support but full number is
+    LGPD-protected. Output example:
+        "+5511999991234"  -> "+55 11 ****1234"
+        "11999991234"      -> "11 ****1234"
+        "+551134567890"    -> "+55 11 ****7890"
+        "1234"              -> "****"
+        ""                   -> ""
+        None                  -> None
+
+    NEVER use mask_pii (regex-based) on phones intended for storage — the
+    full digits are replaced with literal "***PHONE***" sentinel which loses
+    debug-friendly tail. This helper is the canonical for JSONB at-rest masking.
+    """
+    if phone is None:
+        return None
+    s = str(phone).strip()
+    if not s:
+        return s
+
+    has_plus = s.startswith("+")
+    digits = "".join(ch for ch in s if ch.isdigit())
+    if len(digits) <= 4:
+        return "*" * len(digits) if digits else s
+
+    # Preserve last 4. Try to also expose country code (2-3 digits) and DDD (2 digits)
+    # when the number is long enough. Brazilian format: +55 11 9XXXX-XXXX = 13 digits.
+    if len(digits) >= 12:  # +55 + DDD + 9-digit mobile, or international with country+DDD
+        country = digits[:2]
+        ddd = digits[2:4]
+        tail = digits[-4:]
+        prefix = ("+" if has_plus else "") + country
+        return f"{prefix} {ddd} ****{tail}"
+    if len(digits) >= 10:  # DDD + 8/9-digit (no country code)
+        ddd = digits[:2]
+        tail = digits[-4:]
+        return f"{ddd} ****{tail}"
+    # 5-9 digits: just preserve last 4
+    tail = digits[-4:]
+    return f"****{tail}"
+
+
 class PIIMaskingFilter(logging.Filter):
     def filter(self, record: logging.LogRecord) -> bool:
         if isinstance(record.msg, str):

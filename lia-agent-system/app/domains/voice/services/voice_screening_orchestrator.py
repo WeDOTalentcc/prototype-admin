@@ -48,7 +48,7 @@ from app.domains.communication.services.twilio_voice_service import (
 from app.core.config import settings
 from app.shared.services.voice_service import VoiceService
 from app.shared.compliance.fairness_guard_middleware import check_fairness
-from app.shared.pii_masking import mask_pii
+from app.shared.pii_masking import mask_phone_preserve_tail, mask_pii
 from app.shared.prompts.anti_sycophancy_block import ANTI_SYCOPHANCY_OPERATIONAL
 from app.shared.resilience.circuit_breaker import TWILIO_VOICE_CIRCUIT, CircuitBreakerError
 from app.shared.services.automated_decision_logger import (
@@ -164,14 +164,21 @@ class VoiceScreeningOrchestrator:
     # ── Session persistence helpers ──────────────────────────────────────────
 
     def _session_to_state(self, session: "VoiceScreeningSession") -> dict[str, Any]:
-        """Serialize VoiceScreeningSession to JSON-serializable dict for DB storage."""
+        """Serialize VoiceScreeningSession to JSON-serializable dict for DB storage.
+
+        F-07 P0 LGPD Art. 11: phone_number persisted in JSONB is masked
+        (preserve country+DDD+last 4 digits). At-rest masking prevents leak
+        in backups / audit dumps. Plaintext phone is needed only during the
+        active outbound call (in-memory `session.phone_number`).
+        """
         return {
             "session_id": session.session_id,
             "candidate_id": session.candidate_id,
             "candidate_name": session.candidate_name,
             "job_title": session.job_title,
             "company_id": session.company_id,
-            "phone_number": session.phone_number,
+            # F-07 P0 LGPD Art. 11: mask before persisting to JSONB at rest.
+            "phone_number": mask_phone_preserve_tail(session.phone_number),
             "job_id": session.job_id,
             "call_sid": session.call_sid,
             "status": session.status,
