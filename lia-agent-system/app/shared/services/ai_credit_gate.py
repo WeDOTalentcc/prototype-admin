@@ -65,6 +65,7 @@ async def check_credit_budget(
     company_id: str,
     *,
     estimated_tokens: int = 0,
+    audio_duration_seconds: Optional[float] = None,
     fail_safe: bool = True,
     service: Optional[str] = None,
 ) -> dict:
@@ -73,13 +74,30 @@ async def check_credit_budget(
     Args:
         db: AsyncSession
         company_id: tenant scoping
-        estimated_tokens: opcional, soma ao current_usage pra projeção forward
+        estimated_tokens: opcional, soma ao current_usage pra projeção forward.
+            Use para LLM calls clássicos (chat completions, messages.create).
+        audio_duration_seconds: opcional (P1.AIC2, 2026-05-22). Quando informado,
+            é convertido para token-equivalents (Whisper $0.006/min ≈ 2000
+            token-eq/min @ Claude $3/M input baseline) e somado ao
+            estimated_tokens. Use para Whisper STT direct-call sites. Para
+            calls via openai.AsyncOpenAI.audio.transcriptions.create, o
+            monkey-patch no llm_bootstrap deriva a duração do payload bytes
+            sem precisar deste param.
         fail_safe: True default — se DB error, ALLOW (não bloqueia em outage Redis/DB)
         service: identificador de domínio chamador (para métricas/audit). Ex:
-            "intake_extractor", "wsi_question_generator", "anthropic_sdk", etc.
+            "intake_extractor", "wsi_question_generator", "anthropic_sdk",
+            "voice_whisper", "multimodal_vision", etc.
 
     Returns dict {monthly_limit, current_usage, remaining} on success.
     """
+    # P1.AIC2: normalize audio duration → token-equivalents so callers can
+    # use the same budget ledger regardless of price model. The constant
+    # mirrors `_WHISPER_TOKEN_EQ_PER_MINUTE` in `app/shared/llm_bootstrap.py`.
+    if audio_duration_seconds is not None and audio_duration_seconds > 0:
+        estimated_tokens = int(estimated_tokens) + int(
+            round((float(audio_duration_seconds) / 60.0) * 2000)
+        )
+
     try:
         from sqlalchemy import select
         from app.models.observability import AiCreditsBalance
