@@ -76,7 +76,10 @@ interface AgentTrendDayEntry {
 function MonthlyUsageAlert({ percentage }: { percentage: number }) {
   if (percentage >= 100) {
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-status-error/30 bg-status-error/10 px-4 py-3 text-sm text-status-error">
+      <div
+        data-testid="ai-credits-monthly-alert-critical"
+        className="flex items-center gap-2 rounded-lg border border-status-error/30 bg-status-error/10 px-4 py-3 text-sm text-status-error"
+      >
         <AlertTriangle className="h-4 w-4 shrink-0" />
         <span>
           <strong>Limite atingido:</strong> O consumo de IA atingiu 100% do limite mensal. Contate o suporte ou atualize seu plano.
@@ -86,7 +89,10 @@ function MonthlyUsageAlert({ percentage }: { percentage: number }) {
   }
   if (percentage >= 80) {
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-status-warning/30 bg-status-warning/10 px-4 py-3 text-sm text-status-warning">
+      <div
+        data-testid="ai-credits-monthly-alert-warning"
+        className="flex items-center gap-2 rounded-lg border border-status-warning/30 bg-status-warning/10 px-4 py-3 text-sm text-status-warning"
+      >
         <AlertTriangle className="h-4 w-4 shrink-0" />
         <span>
           <strong>Atenção:</strong> {percentage.toFixed(0)}% do limite mensal de IA utilizado. Monitore o consumo para evitar interrupções.
@@ -100,7 +106,10 @@ function MonthlyUsageAlert({ percentage }: { percentage: number }) {
 function DailyUsageAlert({ percentage }: { percentage: number }) {
   if (percentage >= 95) {
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-status-error/30 bg-status-error/10 px-4 py-3 text-sm text-status-error">
+      <div
+        data-testid="ai-credits-daily-alert-critical"
+        className="flex items-center gap-2 rounded-lg border border-status-error/30 bg-status-error/10 px-4 py-3 text-sm text-status-error"
+      >
         <AlertTriangle className="h-4 w-4 shrink-0" />
         <span>
           <strong>Limite diário crítico:</strong> {percentage.toFixed(0)}% do limite diário de tokens atingido. Operações de IA podem ser bloqueadas.
@@ -113,7 +122,10 @@ function DailyUsageAlert({ percentage }: { percentage: number }) {
   }
   if (percentage >= 80) {
     return (
-      <div className="flex items-center gap-2 rounded-lg border border-status-warning/30 bg-status-warning/10 px-4 py-3 text-sm text-status-warning">
+      <div
+        data-testid="ai-credits-daily-alert-warning"
+        className="flex items-center gap-2 rounded-lg border border-status-warning/30 bg-status-warning/10 px-4 py-3 text-sm text-status-warning"
+      >
         <AlertTriangle className="h-4 w-4 shrink-0" />
         <span>
           <strong>Alerta diário:</strong> {percentage.toFixed(0)}% do limite diário consumido. Considere reduzir o uso para evitar bloqueio.
@@ -210,20 +222,30 @@ export function AiCreditsPage({ companyId }: Props) {
   }
 
   return (
-    <div className="space-y-6 p-6">
-      <div className="flex items-center justify-between">
+    <div data-testid="ai-credits-page" className="space-y-6 p-6">
+      <div data-testid="ai-credits-header" className="flex items-center justify-between">
         <div>
           <h1 className="text-lg font-semibold text-lia-text-primary">Consumo de IA</h1>
           <p className="text-xs text-lia-text-tertiary">Monitoramento de tokens e custos do período mensal</p>
         </div>
         <div className="flex items-center gap-2">
           {dailyPct >= 80 && (
-            <Chip variant={dailyPct >= 95 ? 'danger' : 'neutral'} muted={dailyPct < 95} className="text-xs">
+            <Chip
+              data-testid="ai-credits-header-daily-chip"
+              variant={dailyPct >= 95 ? 'danger' : 'neutral'}
+              muted={dailyPct < 95}
+              className="text-xs"
+            >
               Diário: {dailyPct.toFixed(0)}%
             </Chip>
           )}
           {balance && (
-            <Chip variant={alertVariant} muted={alertMuted} className="text-xs">
+            <Chip
+              data-testid="ai-credits-header-monthly-chip"
+              variant={alertVariant}
+              muted={alertMuted}
+              className="text-xs"
+            >
               {usagePct.toFixed(0)}% utilizado
             </Chip>
           )}
@@ -233,8 +255,11 @@ export function AiCreditsPage({ companyId }: Props) {
       {balance && <MonthlyUsageAlert percentage={usagePct} />}
       {summary && <DailyUsageAlert percentage={dailyPct} />}
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Card className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none">
+      <div data-testid="ai-credits-balance-grid" className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <Card
+          data-testid="ai-credits-card-tokens-used"
+          className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none"
+        >
           <CardHeader className="pb-1 pt-4">
             <CardTitle className="flex items-center gap-2 text-xs font-medium text-lia-text-tertiary">
               <Zap className="h-3.5 w-3.5" />
@@ -251,7 +276,10 @@ export function AiCreditsPage({ companyId }: Props) {
           </CardContent>
         </Card>
 
-        <Card className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none">
+        <Card
+          data-testid="ai-credits-card-monthly-projection"
+          className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none"
+        >
           <CardHeader className="pb-1 pt-4">
             <CardTitle className="flex items-center gap-2 text-xs font-medium text-lia-text-tertiary">
               <TrendingUp className="h-3.5 w-3.5" />
@@ -268,7 +296,10 @@ export function AiCreditsPage({ companyId }: Props) {
           </CardContent>
         </Card>
 
-        <Card className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none">
+        <Card
+          data-testid="ai-credits-card-estimated-cost"
+          className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none"
+        >
           <CardHeader className="pb-1 pt-4">
             <CardTitle className="flex items-center gap-2 text-xs font-medium text-lia-text-tertiary">
               <DollarSign className="h-3.5 w-3.5" />
@@ -283,7 +314,10 @@ export function AiCreditsPage({ companyId }: Props) {
           </CardContent>
         </Card>
 
-        <Card className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none">
+        <Card
+          data-testid="ai-credits-card-daily-usage"
+          className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none"
+        >
           <CardHeader className="pb-1 pt-4">
             <CardTitle className="flex items-center gap-2 text-xs font-medium text-lia-text-tertiary">
               <Activity className="h-3.5 w-3.5" />
@@ -302,14 +336,20 @@ export function AiCreditsPage({ companyId }: Props) {
       </div>
 
       {balance && (
-        <Card className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none">
+        <Card
+          data-testid="ai-credits-monthly-progress"
+          className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none"
+        >
           <CardHeader className="pb-2 pt-4">
             <CardTitle className="text-xs font-medium text-lia-text-tertiary">
               Uso do limite mensal — {usagePct.toFixed(1)}%
             </CardTitle>
           </CardHeader>
           <CardContent className="pb-4">
-            <div className="h-2 w-full overflow-hidden rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary">
+            <div
+              data-testid="ai-credits-monthly-progress-bar"
+              className="h-2 w-full overflow-hidden rounded-full bg-lia-bg-tertiary dark:bg-lia-bg-secondary"
+            >
               <div
                 className={`h-full rounded-full transition-[width,height] ${
                   usagePct >= 100
@@ -329,7 +369,10 @@ export function AiCreditsPage({ companyId }: Props) {
         </Card>
       )}
 
-      <Card className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none">
+      <Card
+        data-testid="ai-credits-daily-chart"
+        className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none"
+      >
         <CardHeader className="pb-2 pt-4">
           <CardTitle className="text-xs font-medium text-lia-text-tertiary">
             Consumo diário — últimos 30 dias (tokens em K)
@@ -375,7 +418,10 @@ export function AiCreditsPage({ companyId }: Props) {
       </Card>
 
       {trendChartData.length > 0 && (
-        <Card className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none">
+        <Card
+          data-testid="ai-credits-agent-trend-chart"
+          className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none"
+        >
           <CardHeader className="pb-2 pt-4">
             <CardTitle className="text-xs font-medium text-lia-text-tertiary">
               Tendência por agente — últimos 30 dias (tokens em K)
@@ -423,7 +469,10 @@ export function AiCreditsPage({ companyId }: Props) {
       )}
 
       {agentChartData.length > 0 && (
-        <Card className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none">
+        <Card
+          data-testid="ai-credits-agent-breakdown-chart"
+          className="border border-lia-border-subtle dark:border-lia-border-subtle shadow-none"
+        >
           <CardHeader className="pb-2 pt-4">
             <CardTitle className="text-xs font-medium text-lia-text-tertiary">
               Consumo por agente — breakdown
@@ -468,10 +517,11 @@ export function AiCreditsPage({ companyId }: Props) {
               </BarChart>
             </ResponsiveContainer>
 
-            <div className="mt-4 space-y-1">
+            <div data-testid="ai-credits-agent-breakdown-list" className="mt-4 space-y-1">
               {agentChartData.map((agent) => (
                 <div
                   key={agent.agentType}
+                  data-testid={`ai-credits-agent-row-${agent.agentType}`}
                   className="flex items-center justify-between rounded-lg px-3 py-2 text-sm transition-colors hover:bg-lia-bg-secondary"
                 >
                   <div className="flex items-center gap-2">
