@@ -414,17 +414,13 @@ class VoiceScreeningOrchestrator:
         if db is None:
             return
         try:
-            from sqlalchemy import text as _text
+            # F-13 (audit 2026-05-22): canonical write via WsiRepository (ADR-001).
+            from app.domains.voice.repositories.wsi_repository import WsiRepository
             state_dict = self._session_to_state(session)
             state_json = json.dumps(state_dict)
-            await db.execute(
-                _text("""
-                    UPDATE wsi_sessions
-                    SET voice_session_state = CAST(:state AS jsonb),
-                        updated_at = CURRENT_TIMESTAMP
-                    WHERE id = :session_id
-                """),
-                {"state": state_json, "session_id": session.session_id},
+            await WsiRepository(db).update_voice_session_state(
+                session_id=session.session_id,
+                state_json=state_json,
             )
             await db.commit()
             logger.debug(
@@ -456,19 +452,11 @@ class VoiceScreeningOrchestrator:
         if db is None:
             return None
         try:
-            from sqlalchemy import text as _text
-            result = await db.execute(
-                _text("""
-                    SELECT voice_session_state
-                    FROM wsi_sessions
-                    WHERE id = :session_id
-                      AND voice_session_state IS NOT NULL
-                """),
-                {"session_id": session_id},
-            )
-            row = result.fetchone()
-            if row and row[0]:
-                state = row[0] if isinstance(row[0], dict) else json.loads(row[0])
+            # F-13 (audit 2026-05-22): canonical read via WsiRepository (ADR-001).
+            from app.domains.voice.repositories.wsi_repository import WsiRepository
+            stored = await WsiRepository(db).get_voice_session_state(session_id)
+            if stored:
+                state = stored if isinstance(stored, dict) else json.loads(stored)
                 session = self._state_to_session(state)
                 logger.info(
                     "[VOICE SCREENING] Session recovered from DB: session=%s status=%s",
@@ -495,19 +483,10 @@ class VoiceScreeningOrchestrator:
         if db is None:
             return []
         try:
-            from sqlalchemy import text as _text
-            result = await db.execute(
-                _text("""
-                    SELECT question_text
-                    FROM wsi_questions
-                    WHERE session_id = :session_id
-                    ORDER BY sequence_order
-                """),
-                {"session_id": session_id},
-            )
-            rows = result.fetchall()
-            if rows:
-                questions = [row[0] for row in rows if row[0]]
+            # F-13 (audit 2026-05-22): canonical read via WsiRepository (ADR-001).
+            from app.domains.voice.repositories.wsi_repository import WsiRepository
+            questions = await WsiRepository(db).list_question_texts_for_session(session_id)
+            if questions:
                 logger.info(
                     "[VOICE SCREENING] Loaded %d WSI questions from DB for session=%s",
                     len(questions), session_id,
@@ -551,52 +530,35 @@ class VoiceScreeningOrchestrator:
             )
             return None
         try:
-            from sqlalchemy import text as _text
-
-            query = _text("""
-                SELECT
-                    title,
-                    description,
-                    requirements,
-                    benefits,
-                    work_model,
-                    salary,
-                    location,
-                    employment_type,
-                    seniority_level,
-                    behavioral_competencies
-                FROM job_vacancies
-                WHERE id = :job_id
-                  AND company_id = :company_id
-                LIMIT 1
-            """)
-            params = {"job_id": job_id, "company_id": company_id}
-
-            result = await db.execute(query, params)
-            row = result.fetchone()
-            if not row:
+            # F-13 (audit 2026-05-22): canonical read via JobVacancyCrudRepository (ADR-001).
+            # Multi-tenancy: get_vacancy_by_id_and_company enforces both id + company_id.
+            from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+                JobVacancyCrudRepository,
+            )
+            vacancy = await JobVacancyCrudRepository(db).get_vacancy_by_id_and_company(
+                job_id, company_id,
+            )
+            if not vacancy:
                 logger.info(
                     "[VOICE SCREENING] No job vacancy found for job_id=%s company_id=%s",
                     job_id, company_id,
                 )
                 return None
 
-            (
-                title, description, requirements, benefits, work_model,
-                salary, location, employment_type, seniority_level,
-                behavioral_competencies,
-            ) = row
+            requirements = getattr(vacancy, "requirements", None) or []
+            benefits = getattr(vacancy, "benefits", None) or []
+            behavioral_competencies = getattr(vacancy, "behavioral_competencies", None) or []
 
             context: dict[str, Any] = {
-                "title": title or "",
-                "description": description or "",
+                "title": getattr(vacancy, "title", "") or "",
+                "description": getattr(vacancy, "description", "") or "",
                 "requirements": requirements if isinstance(requirements, list) else [],
                 "benefits": benefits if isinstance(benefits, list) else [],
-                "work_model": work_model or "",
-                "salary": salary or "",
-                "location": location or "",
-                "employment_type": employment_type or "",
-                "seniority_level": seniority_level or "",
+                "work_model": getattr(vacancy, "work_model", "") or "",
+                "salary": getattr(vacancy, "salary", "") or "",
+                "location": getattr(vacancy, "location", "") or "",
+                "employment_type": getattr(vacancy, "employment_type", "") or "",
+                "seniority_level": getattr(vacancy, "seniority_level", "") or "",
                 "behavioral_competencies": (
                     behavioral_competencies
                     if isinstance(behavioral_competencies, list)
@@ -2139,14 +2101,11 @@ class VoiceScreeningOrchestrator:
         if db is None or not company_id:
             return "pro"
         try:
-            from sqlalchemy import text
-            row = await db.execute(
-                text("SELECT pricing_tier FROM companies WHERE id = :cid LIMIT 1"),
-                {"cid": company_id},
-            )
-            r = row.first()
-            if r and r[0]:
-                return str(r[0])
+            # F-13 (audit 2026-05-22): canonical read via TenantRepository (ADR-001).
+            from app.domains.company.repositories.tenant_repository import TenantRepository
+            tier = await TenantRepository(db).get_pricing_tier(company_id)
+            if tier:
+                return tier
         except Exception:
             pass
         return "pro"
@@ -2294,23 +2253,15 @@ class VoiceScreeningOrchestrator:
         Schema: wsi_sessions(id, candidate_id, job_vacancy_id, mode, call_id, status)
         """
         try:
-            from sqlalchemy import text
-
-            await db.execute(
-                text("""
-                    INSERT INTO wsi_sessions (id, candidate_id, job_vacancy_id, mode, call_id, status, created_at, updated_at)
-                    VALUES (:id, :candidate_id, :job_vacancy_id, :mode, :call_id, :status, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-                    ON CONFLICT (id) DO UPDATE
-                        SET call_id = :call_id, status = :status, updated_at = CURRENT_TIMESTAMP
-                """),
-                {
-                    "id": session.session_id,
-                    "candidate_id": session.candidate_id,
-                    "job_vacancy_id": session.job_id or session.session_id,
-                    "mode": "compact",
-                    "call_id": session.call_sid,
-                    "status": "in_progress",
-                },
+            # F-13 (audit 2026-05-22): canonical write via WsiRepository (ADR-001).
+            from app.domains.voice.repositories.wsi_repository import WsiRepository
+            await WsiRepository(db).upsert_voice_session(
+                session_id=session.session_id,
+                candidate_id=session.candidate_id,
+                job_vacancy_id=session.job_id or session.session_id,
+                mode="compact",
+                call_id=session.call_sid,
+                status="in_progress",
             )
             await db.commit()
             logger.info(
@@ -2485,25 +2436,19 @@ class VoiceScreeningOrchestrator:
                 )
                 return
 
+            # F-13 (audit 2026-05-22): canonical write via WsiRepository (ADR-001).
+            from app.domains.voice.repositories.wsi_repository import WsiRepository
+            wsi_repo = WsiRepository(db)
             for idx, q_text in enumerate(question_texts):
-                await db.execute(
-                    text("""
-                        INSERT INTO wsi_questions (id, session_id, competency, framework, question_type,
-                            question_text, weight, sequence_order)
-                        VALUES (:id, :session_id, :competency, :framework, :question_type,
-                                :question_text, :weight, :sequence_order)
-                        ON CONFLICT DO NOTHING
-                    """),
-                    {
-                        "id": str(uuid4()),
-                        "session_id": session.session_id,
-                        "competency": "voice_screening",
-                        "framework": "CBI",
-                        "question_type": "behavioral",
-                        "question_text": q_text,
-                        "weight": 1.0 / len(question_texts),
-                        "sequence_order": idx + 1,
-                    },
+                await wsi_repo.insert_voice_question(
+                    question_id=str(uuid4()),
+                    session_id=session.session_id,
+                    competency="voice_screening",
+                    framework="CBI",
+                    question_type="behavioral",
+                    question_text=q_text,
+                    weight=1.0 / len(question_texts),
+                    sequence_order=idx + 1,
                 )
             await db.commit()
             logger.info(

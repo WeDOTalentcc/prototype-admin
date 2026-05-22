@@ -878,3 +878,134 @@ class WsiRepository:
             },
         )
 
+    # ------------------------------------------------------------------
+    # Voice screening canonical (F-13 ADR-001, audit 2026-05-22)
+    # Replaces inline SQL in voice_screening_orchestrator.py
+    # ------------------------------------------------------------------
+
+    async def update_voice_session_state(
+        self,
+        session_id: str,
+        state_json: str,
+    ) -> None:
+        """F-13: Persist voice session state on wsi_sessions row.
+
+        Caller manages transaction (commit/rollback). The orchestrator
+        runs this inside a per-call best-effort try/except.
+        """
+        await self.db.execute(text("""
+            UPDATE wsi_sessions
+            SET voice_session_state = CAST(:state AS jsonb),
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = :session_id
+        """), {"state": state_json, "session_id": session_id})
+
+    async def get_voice_session_state(self, session_id: str):
+        """F-13: Read voice_session_state column for a session.
+
+        Returns the raw JSONB value (dict when SQLAlchemy decodes) or
+        None when no row / column is null.
+        """
+        result = await self.db.execute(text("""
+            SELECT voice_session_state
+            FROM wsi_sessions
+            WHERE id = :session_id
+              AND voice_session_state IS NOT NULL
+        """), {"session_id": session_id})
+        row = result.fetchone()
+        if not row:
+            return None
+        return row[0]
+
+    async def list_question_texts_for_session(self, session_id: str) -> list[str]:
+        """F-13: Return only question_text strings ordered by sequence_order.
+
+        Lighter than get_questions_for_session (which returns 7 cols);
+        voice orchestrator only needs the texts to feed the LLM.
+        """
+        result = await self.db.execute(text("""
+            SELECT question_text
+            FROM wsi_questions
+            WHERE session_id = :session_id
+            ORDER BY sequence_order
+        """), {"session_id": session_id})
+        return [row[0] for row in result.fetchall() if row[0]]
+
+    async def upsert_voice_session(
+        self,
+        *,
+        session_id: str,
+        candidate_id: str,
+        job_vacancy_id: str,
+        mode: str,
+        call_id: str | None,
+        status: str,
+    ) -> None:
+        """F-13: Compact insert/update of wsi_sessions row used by voice path.
+
+        Distinct from upsert_session (no question_set_*, no screening_type)
+        because voice flow registers a row with minimal fields; the call_id
+        + status are mutable.
+        """
+        await self.db.execute(text("""
+            INSERT INTO wsi_sessions (
+                id, candidate_id, job_vacancy_id, mode, call_id, status,
+                created_at, updated_at
+            )
+            VALUES (
+                :id, :candidate_id, :job_vacancy_id, :mode, :call_id, :status,
+                CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+            )
+            ON CONFLICT (id) DO UPDATE
+                SET call_id = :call_id,
+                    status = :status,
+                    updated_at = CURRENT_TIMESTAMP
+        """), {
+            "id": session_id,
+            "candidate_id": candidate_id,
+            "job_vacancy_id": job_vacancy_id,
+            "mode": mode,
+            "call_id": call_id,
+            "status": status,
+        })
+
+    async def insert_voice_question(
+        self,
+        *,
+        question_id: str,
+        session_id: str,
+        competency: str,
+        framework: str,
+        question_type: str,
+        question_text: str,
+        weight: float,
+        sequence_order: int,
+    ) -> None:
+        """F-13: Insert a single voice-generated WSI question.
+
+        Distinct from insert_question (no expected_signals/scoring_criteria)
+        because voice path stores plain question texts without analytic
+        metadata at insert time — analytics are appended later by
+        wsi_orchestrator hooks.
+        """
+        await self.db.execute(text("""
+            INSERT INTO wsi_questions (
+                id, session_id, competency, framework, question_type,
+                question_text, weight, sequence_order
+            )
+            VALUES (
+                :id, :session_id, :competency, :framework, :question_type,
+                :question_text, :weight, :sequence_order
+            )
+            ON CONFLICT DO NOTHING
+        """), {
+            "id": question_id,
+            "session_id": session_id,
+            "competency": competency,
+            "framework": framework,
+            "question_type": question_type,
+            "question_text": question_text,
+            "weight": weight,
+            "sequence_order": sequence_order,
+        })
+

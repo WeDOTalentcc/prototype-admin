@@ -50,3 +50,28 @@ class TenantRepository:
             )
         )
         return result.scalar_one_or_none()
+
+
+    async def get_pricing_tier(self, company_id: str) -> str | None:
+        """F-13 (audit 2026-05-22): Lookup pricing_tier from companies table.
+
+        Replaces inline SQL in voice_screening_orchestrator._resolve_pricing_tier.
+        Returns None when company not found or column NULL; caller decides
+        the default (currently 'pro' in voice path).
+
+        Uses sa.text() because the `companies` table is Rails-owned and not
+        modeled in SQLAlchemy on the Python side — same rationale as the
+        rest of TenantRepository's cross-stack reads.
+        """
+        # ADR-001-EXEMPT: Rails-owned table not modeled in Python ORM;
+        # tenant scoping enforced by parameter binding.
+        from sqlalchemy import text
+        result = await self.db.execute(
+            text("SELECT pricing_tier FROM companies WHERE id = :cid LIMIT 1"),
+            {"cid": company_id},
+        )
+        row = result.first()
+        if row and row[0]:
+            return str(row[0])
+        return None
+
