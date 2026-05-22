@@ -5,7 +5,7 @@ import logging
 from datetime import datetime
 from typing import Any, cast
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, Query, Response
 from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -168,13 +168,32 @@ DEFAULT_ALERTS = [
 ]
 
 
-@router.get("/config", response_model=AlertConfigResponse)
+@router.get("/config", response_model=AlertConfigResponse, deprecated=True)
 async def get_alert_config(
+    response: Response,
     company_id: str = Depends(get_verified_company_id),
     repo: AlertRepository = Depends(get_alert_repo),
 _company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    """Get current alert configuration. Requires X-Company-ID header for multi-tenant isolation."""
+    """Get current alert configuration. DEPRECATED 2026-05-22 — use /alerts/preferences instead.
+
+    Sunset date: 2026-08-22 (RFC 8594). Continues working but emits Deprecation header.
+    ADR-WT-2025 Sprint D cutover: canonical UI agora le AlertPreference, nao AlertConfig.
+    """
+    # ADR-WT-2025 Sprint D: deprecation headers (RFC 8594 + IETF draft).
+    response.headers["Deprecation"] = "true"
+    response.headers["Sunset"] = "Sat, 22 Aug 2026 00:00:00 GMT"
+    response.headers["Link"] = '</api/v1/alerts/preferences>; rel="successor-version"'
+    logger.warning(
+        "legacy_alert_config_endpoint_read",
+        extra={
+            "company_id": company_id,
+            "deprecated_since": "2026-05-22",
+            "sunset_date": "2026-08-22",
+            "successor": "/api/v1/alerts/preferences",
+            "adr": "ADR-WT-2025",
+        },
+    )
     try:
         config = await repo.get_active_config_for_company(company_id)
 
@@ -195,14 +214,38 @@ _company_gate: str = Depends(require_company_id)):
         raise HTTPException(status_code=500, detail=f"Failed to fetch alert config: {str(e)}")
 
 
-@router.put("/config", response_model=AlertConfigResponse)
+@router.put("/config", response_model=AlertConfigResponse, deprecated=True)
 async def update_alert_config(
     data: AlertConfigRequest,
+    response: Response,
     company_id: str = Depends(get_verified_company_id),
     repo: AlertRepository = Depends(get_alert_repo),
 _company_gate: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
-    """Update alert configuration. Requires X-Company-ID header for multi-tenant isolation."""
+    """Update alert configuration. DEPRECATED 2026-05-22 — use /alerts/preferences instead.
+
+    Sunset date: 2026-08-22 (RFC 8594). Backend continua gravando em AlertConfig
+    (legacy) ate sunset; clientes devem migrar para /alerts/preferences (canonical
+    per ADR-WT-2025). Sprint D+1 removera o handler.
+
+    REGRA 4 (anti silent-fallback): mesmo deprecated, NAO mascarar erro — write
+    legacy precisa continuar fail-loud se falhar.
+    """
+    # ADR-WT-2025 Sprint D: deprecation headers (RFC 8594).
+    response.headers["Deprecation"] = "true"
+    response.headers["Sunset"] = "Sat, 22 Aug 2026 00:00:00 GMT"
+    response.headers["Link"] = '</api/v1/alerts/preferences>; rel="successor-version"'
+    logger.warning(
+        "legacy_alert_config_write",
+        extra={
+            "company_id": company_id,
+            "deprecated_since": "2026-05-22",
+            "sunset_date": "2026-08-22",
+            "successor": "/api/v1/alerts/preferences",
+            "adr": "ADR-WT-2025",
+            "alert_count": len(data.alerts) if data.alerts else 0,
+        },
+    )
     try:
         config = await repo.get_active_config_for_company(company_id)
 
