@@ -78,7 +78,7 @@ async def classify_job(body: ClassifyJobRequest, company_id: str = Depends(requi
 async def classify_and_save(job_id: str, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Classify a job vacancy and save the result to the database."""
-    result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
+    result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id, JobVacancy.company_id == company_id))
     job = result.scalar_one_or_none()
     if not job:
         raise HTTPException(status_code=404, detail="Job vacancy not found")
@@ -124,7 +124,7 @@ async def classify_and_save(job_id: str, db: AsyncSession = Depends(get_db), com
 async def get_qualification(job_id: str, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Get the current qualification level of a job vacancy."""
-    result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
+    result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id, JobVacancy.company_id == company_id))
     job = result.scalar_one_or_none()
     if not job:
         raise HTTPException(status_code=404, detail="Job vacancy not found")
@@ -143,7 +143,7 @@ async def get_qualification(job_id: str, db: AsyncSession = Depends(get_db), com
 async def override_qualification(job_id: str, body: OverrideQualificationRequest, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """Manually override the qualification level of a job vacancy."""
-    result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
+    result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id, JobVacancy.company_id == company_id))
     job = result.scalar_one_or_none()
     if not job:
         raise HTTPException(status_code=404, detail="Job vacancy not found")

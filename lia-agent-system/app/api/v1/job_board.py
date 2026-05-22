@@ -693,7 +693,7 @@ company_id: str = Depends(require_company_id)):
     if request.send_recruiter_summary and request.freeze_job and len(frozen_jobs) > 0:
         try:
             first_job_id = UUID(frozen_jobs[0])
-            query = select(JobVacancy).where(JobVacancy.id == first_job_id)
+            query = select(JobVacancy).where(JobVacancy.id == first_job_id, JobVacancy.company_id == company_id)
             result = await db.execute(query)
             frozen_job = result.scalar_one_or_none()
             

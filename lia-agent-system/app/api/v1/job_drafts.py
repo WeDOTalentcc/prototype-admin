@@ -214,6 +214,7 @@ company_id: str = Depends(require_company_id)):
     total_pages = (total + page_size - 1) // page_size if total > 0 else 1
     offset = (page - 1) * page_size
     
+    # TENANT-EXEMPT: conditions[0] is JobDraft.company_id == company_id (declared above at L198); AST sensor cannot trace dynamic conditions builder
     query = (
         select(JobDraft)
         .where(and_(*conditions))
@@ -245,7 +246,7 @@ company_id: str = Depends(require_company_id)):
     Get a specific job draft with all details.
     """
     result = await db.execute(
-        select(JobDraft).where(JobDraft.id == draft_id)
+        select(JobDraft).where(JobDraft.id == draft_id, JobDraft.company_id == company_id)
     )
     draft = result.scalar_one_or_none()
     
@@ -269,7 +270,7 @@ company_id: str = Depends(require_company_id)):
     Get the field change history for a job draft.
     """
     result = await db.execute(
-        select(JobDraft).where(JobDraft.id == draft_id)
+        select(JobDraft).where(JobDraft.id == draft_id, JobDraft.company_id == company_id)
     )
     draft = result.scalar_one_or_none()
     
@@ -349,7 +350,7 @@ company_id: str = Depends(require_company_id)):
     Partially update a job draft's fields.
     """
     result = await db.execute(
-        select(JobDraft).where(JobDraft.id == draft_id)
+        select(JobDraft).where(JobDraft.id == draft_id, JobDraft.company_id == company_id)
     )
     draft = result.scalar_one_or_none()
     
@@ -428,7 +429,7 @@ company_id: str = Depends(require_company_id)):
     Soft delete a job draft by setting its status to CANCELLED.
     """
     result = await db.execute(
-        select(JobDraft).where(JobDraft.id == draft_id)
+        select(JobDraft).where(JobDraft.id == draft_id, JobDraft.company_id == company_id)
     )
     draft = result.scalar_one_or_none()
     
@@ -463,7 +464,7 @@ company_id: str = Depends(require_company_id)):
     Publish a draft to create a JobVacancy.
     """
     result = await db.execute(
-        select(JobDraft).where(JobDraft.id == draft_id)
+        select(JobDraft).where(JobDraft.id == draft_id, JobDraft.company_id == company_id)
     )
     draft = result.scalar_one_or_none()
     
