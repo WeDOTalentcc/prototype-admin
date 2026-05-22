@@ -3,7 +3,7 @@ Company Setup models for platform configuration.
 """
 from datetime import datetime
 from typing import Optional, List
-from sqlalchemy import Column, String, Integer, DateTime, Text, JSON, Boolean, Float, ForeignKey
+from sqlalchemy import Column, String, Integer, DateTime, Text, JSON, Boolean, Float, ForeignKey, Numeric, Index, CheckConstraint
 from sqlalchemy import text as sa_text
 from sqlalchemy.dialects.postgresql import UUID, ARRAY, JSONB
 from sqlalchemy.orm import relationship
@@ -566,7 +566,21 @@ class Approver(Base):
     
     level = Column(Integer, nullable=False, default=1)
     
+    # P0.D2 (audit Wave 2 2026-05-22): per-department + amount-threshold routing.
+    # NULL department_id = company-wide approver (backward-compat default).
+    # NULL can_approve_above_amount = approver pode aprovar qualquer valor.
+    department_id = Column(UUID(as_uuid=True), ForeignKey("departments.id", ondelete="SET NULL"), nullable=True, index=True)
+    can_approve_above_amount = Column(Numeric(12, 2), nullable=True)
+    
     is_active = Column(Boolean, default=True)
     
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    __table_args__ = (
+        Index("ix_approvers_company_department", "company_id", "department_id"),
+        CheckConstraint(
+            "can_approve_above_amount IS NULL OR can_approve_above_amount >= 0",
+            name="ck_approver_amount_nonneg",
+        ),
+    )
