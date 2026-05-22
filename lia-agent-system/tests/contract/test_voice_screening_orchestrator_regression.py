@@ -377,10 +377,18 @@ class TestPIIRedactionInvariant:
 # ─────────────────────────────────────────────────────────────────────────────
 
 class TestSessionPersistenceRoundTrip:
-    """I7: _session_to_state -> _state_to_session preserves canonical fields."""
+    """I7: _session_to_state -> _state_to_session preserves canonical fields.
+
+    Post-F-07 (commit 5543c6b3f, 2026-05-22): phone_number is masked at rest
+    via mask_phone_preserve_tail. Round-trip is identity for all canonical
+    fields EXCEPT phone_number, which is preserved as its masked form.
+    """
 
     def test_session_state_round_trip_preserves_fields(self, orchestrator):
-        """state -> session -> state is identity for canonical fields."""
+        """state -> session -> state is identity for canonical fields.
+
+        Phone is asserted separately as preserved-as-masked (F-07 canonical).
+        """
         original = VoiceScreeningSession(
             session_id="sess-rt-001",
             candidate_id="cand-rt-001",
@@ -406,9 +414,14 @@ class TestSessionPersistenceRoundTrip:
         rehydrated_state = json.loads(json_str)
         restored = orchestrator._state_to_session(rehydrated_state)
 
+        # F-07 P0 LGPD Art. 11 masking (commit 5543c6b3f): phone_number is
+        # masked via mask_phone_preserve_tail at rest. Round-trip canonical
+        # behavior post-F-07 preserves the MASKED form, not the raw number.
+        # Plaintext phone exists only in-memory during the active outbound call.
+        # Excluded from identity round-trip; asserted separately below.
         canonical_fields = [
             "session_id", "candidate_id", "candidate_name", "job_title",
-            "job_id", "company_id", "phone_number", "call_sid", "status",
+            "job_id", "company_id", "call_sid", "status",
             "language", "consent_verified", "presentation_done",
             "questions_asked", "voice_provider",
         ]
@@ -417,6 +430,13 @@ class TestSessionPersistenceRoundTrip:
                 f"Field {f} did not round-trip: original={getattr(original, f)!r} "
                 f"restored={getattr(restored, f)!r}"
             )
+        # F-07 P0 LGPD Art. 11: phone_number is preserved as MASKED form at rest.
+        from app.shared.pii_masking import mask_phone_preserve_tail
+        assert restored.phone_number == mask_phone_preserve_tail(original.phone_number), (
+            f"phone_number must be masked at rest post-F-07: "
+            f"expected={mask_phone_preserve_tail(original.phone_number)!r} "
+            f"got={restored.phone_number!r}"
+        )
         # transcript_segments preserved as list of dicts
         assert restored.transcript_segments == original.transcript_segments
 
