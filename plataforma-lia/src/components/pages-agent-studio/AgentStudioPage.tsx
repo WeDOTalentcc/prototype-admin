@@ -380,10 +380,19 @@ export default function AgentStudioPage({
                   )
                 })}
                 <button
-                  onClick={() => { setSelectedTemplate(null); setShowCreateModal(true) }}
+                  onClick={() => {
+                    // UX-Sprint-A QW#2 (audit 2026-05-21): CTA "Personalizado / Criar do zero" estava
+                    // abrindo CreateAgentModal (sourcing flow) — label diz CUSTOM mas destino era SOURCING.
+                    // Fix: redirecionar para aba Custom + scroll para ConversationalCreator.
+                    setActiveTab("custom")
+                    setTimeout(() => {
+                      document.getElementById("agent-studio-conversational-creator")
+                        ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                    }, 80)
+                  }}
                   className={cn(
                     "group flex flex-col items-center gap-2.5 p-5 rounded-xl border-2 border-dashed border-lia-border-subtle",
-                    "hover:border-wedo-cyan/40 transition-all duration-200 cursor-pointer"
+                    "hover:border-wedo-cyan/40 transition-colors duration-200 cursor-pointer"
                   )}
                 >
                   <Brain className="w-6 h-6 text-wedo-cyan transition-transform group-hover:scale-110" />
@@ -454,8 +463,9 @@ export default function AgentStudioPage({
               )}
             </section>
 
-            {/* How it works — compact version when agents exist */}
-            {agents.length > 0 && (
+            {/* How it works — compact version when agents exist (UX-Sprint-A QW#14 audit 2026-05-21:
+                mostra apenas quando user tem 1-2 agents ativos — power user com 3+ não precisa de tour). */}
+            {agents.length > 0 && agents.length <= 2 && (
               <section className="rounded-xl border border-lia-border-subtle bg-lia-bg-secondary p-5">
                 <TabSectionHeader
                   className="mb-4"
@@ -527,7 +537,13 @@ export default function AgentStudioPage({
             {/* Template Gallery */}
             <TemplateGallery
               onTemplateSelect={handleTemplateSelect}
-              onCreateManual={() => setShowCreateModal(true)}
+              onCreateManual={() => {
+                // UX-Sprint-A QW#1 (audit 2026-05-21): "Criar do zero" da TemplateGallery (tab Custom)
+                // estava abrindo CreateAgentModal sourcing — wrong flow.
+                // Fix: scroll para ConversationalCreator (que já está nesta mesma tab).
+                document.getElementById("agent-studio-conversational-creator")
+                  ?.scrollIntoView({ behavior: "smooth", block: "start" })
+              }}
             />
 
             {/* Conversational Creator (target do CTA "Criar com IA" — BUG-12) */}

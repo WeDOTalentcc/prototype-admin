@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useCallback } from "react"
+import { toast } from "@/lib/toast"
 import { useTranslations } from "next-intl"
 import {
   Store, Download, Search, Star, Loader2,
@@ -133,10 +134,10 @@ function BrowseMarketplace() {
         loadListings()
       } else {
         const err = await res.json().catch(() => ({ detail: t('errorGeneric') }))
-        alert(err.detail || t('errorInstalling'))
+        toast.error(err.detail || t('errorInstalling'))
       }
     } catch {
-      alert(t('connectionError'))
+      toast.error(t('connectionError'))
     } finally {
       setInstalling(null)
     }
