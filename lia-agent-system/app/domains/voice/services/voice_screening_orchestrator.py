@@ -977,7 +977,60 @@ class VoiceScreeningOrchestrator:
         await self._store_session(session)
         if db is not None and session.session_id:
             await self.persist_session_state(session, db)
+
+        # F-03 P1 (audit 2026-05-22): canonical audit trail. LGPD Art. 20 +
+        # EU AI Act Art. 12 — voice_call_initiated e decisao automatizada com
+        # efeitos significativos (interacao direta com candidato via call).
+        await self._log_initiate_call_audit(session)
+
         return session
+
+    async def _log_initiate_call_audit(self, session: VoiceScreeningSession) -> None:
+        """F-03 P1: registra log_decision canonical pos initiate_call.
+
+        Best-effort: nunca propaga exception (audit failure NUNCA bloqueia call).
+        """
+        try:
+            twilio_circuit_state = "unknown"
+            try:
+                twilio_circuit_state = TWILIO_VOICE_CIRCUIT.state.name
+            except Exception:
+                pass
+
+            if session.status == "initiated" and session.call_sid:
+                action = "outbound_call_placed"
+                decision = "approved"
+            elif session.status == "fallback":
+                action = "fallback_to_chat"
+                decision = "degraded_fallback"
+            else:
+                action = "call_failed"
+                decision = "blocked"
+
+            await AuditService().log_decision(
+                company_id=session.company_id,
+                agent_name="voice_screening_orchestrator",
+                decision_type="voice_call_initiated",
+                action=action,
+                decision=decision,
+                reasoning=[
+                    f"twilio_call_sid={session.call_sid or 'none'}",
+                    f"job_id={session.job_id or 'unscoped'}",
+                    f"candidate_phone_hash={mask_phone_preserve_tail(session.phone_number)}",
+                    f"circuit_state={twilio_circuit_state}",
+                    f"session_status={session.status}",
+                ],
+                criteria_used=["lgpd_consent_verified", "tenant_isolation"],
+                criteria_ignored=list(PROTECTED_CRITERIA_PT),
+                candidate_id=session.candidate_id,
+                job_vacancy_id=session.job_id,
+                human_review_required=False,
+            )
+        except Exception as audit_err:
+            logger.warning(
+                "[F-03 AUDIT-FAIL] initiate_call audit log failed (non-blocking): %s",
+                audit_err,
+            )
 
     async def initiate_voip_session(
         self,
@@ -1916,6 +1969,14 @@ class VoiceScreeningOrchestrator:
             # F-15: writeback to Redis (durable cache for ongoing reads).
             await self._store_session(session)
 
+            # F-03 P1: canonical audit trail (LGPD Art. 20 + EU AI Act Art. 12)
+            await self._log_finalize_screening_audit(
+                session=session,
+                wsi_score=score,
+                duration_seconds=duration_seconds,
+                wsi_available=True,
+            )
+
             return {
                 "session_id": session_id,
                 "status": "completed",
@@ -1934,12 +1995,70 @@ class VoiceScreeningOrchestrator:
             await self.persist_session_state(session, db)
             # F-15: writeback to Redis.
             await self._store_session(session)
+
+            # F-03 P1: canonical audit trail mesmo em failure path
+            await self._log_finalize_screening_audit(
+                session=session,
+                wsi_score=None,
+                duration_seconds=duration_seconds,
+                wsi_available=False,
+                error=str(e),
+            )
+
             return {
                 "session_id": session_id,
                 "status": "analysis_failed",
                 "error": str(e),
                 "transcript_length": len(full_transcript),
             }
+
+    async def _log_finalize_screening_audit(
+        self,
+        session: VoiceScreeningSession,
+        wsi_score,
+        duration_seconds: int | None,
+        wsi_available: bool,
+        error: str | None = None,
+    ) -> None:
+        """F-03 P1: registra log_decision canonical pos finalize_screening.
+
+        Best-effort: nunca propaga exception (audit failure NUNCA bloqueia finalize).
+        """
+        try:
+            if wsi_available and wsi_score not in (None, "?"):
+                action = "wsi_score_computed"
+                decision = "completed"
+            else:
+                action = "session_closed_no_score"
+                decision = "completed_no_score"
+
+            reasoning = [
+                f"session_id={session.session_id}",
+                f"wsi_score={wsi_score if wsi_score is not None else 'none'}",
+                f"transcript_turns={len(session.transcript_segments)}",
+                f"duration_seconds={duration_seconds or 0}",
+            ]
+            if error:
+                reasoning.append(f"error={error[:200]}")
+
+            await AuditService().log_decision(
+                company_id=session.company_id,
+                agent_name="voice_screening_orchestrator",
+                decision_type="voice_screening_finalized",
+                action=action,
+                decision=decision,
+                reasoning=reasoning,
+                criteria_used=["wsi_evaluation_canonical", "fairness_validated_outbound"],
+                criteria_ignored=list(PROTECTED_CRITERIA_PT),
+                candidate_id=session.candidate_id,
+                job_vacancy_id=session.job_id,
+                human_review_required=False,
+            )
+        except Exception as audit_err:
+            logger.warning(
+                "[F-03 AUDIT-FAIL] finalize_screening audit log failed (non-blocking): %s",
+                audit_err,
+            )
 
     async def get_session(self, session_id: str) -> VoiceScreeningSession | None:
         """Get an active screening session by ID.
