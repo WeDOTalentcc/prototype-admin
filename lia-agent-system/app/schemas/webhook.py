@@ -22,9 +22,12 @@ class CreateWebhookRequest(WeDoBaseModel):
 
     @validator("url")
     def validate_url(cls, v):
-        if not v.startswith("https://"):
-            raise ValueError("Webhook URL must use HTTPS")
-        return v
+        # WT-2022 P0.SEG1: SSRF prevention canonical
+        from app.shared.security.url_validator import safe_outbound_url, UnsafeOutboundURLError
+        try:
+            return safe_outbound_url(v, require_https=True)
+        except UnsafeOutboundURLError as exc:
+            raise ValueError(f"Webhook URL bloqueada por seguranca: {exc}")
 
     @validator("events")
     def validate_events(cls, v):
@@ -42,9 +45,14 @@ class UpdateWebhookRequest(WeDoBaseModel):
 
     @validator("url")
     def validate_url(cls, v):
-        if v is not None and not v.startswith("https://"):
-            raise ValueError("Webhook URL must use HTTPS")
-        return v
+        # WT-2022 P0.SEG1: SSRF prevention canonical
+        if v is None:
+            return v
+        from app.shared.security.url_validator import safe_outbound_url, UnsafeOutboundURLError
+        try:
+            return safe_outbound_url(v, require_https=True)
+        except UnsafeOutboundURLError as exc:
+            raise ValueError(f"Webhook URL bloqueada por seguranca: {exc}")
 
     @validator("events")
     def validate_events(cls, v):

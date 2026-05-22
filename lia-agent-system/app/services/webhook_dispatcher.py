@@ -37,8 +37,30 @@ def generate_secret() -> str:
 
 
 def sign_payload(secret: str, body: str) -> str:
-    """Compute HMAC-SHA256 signature of body using secret."""
+    """Compute HMAC-SHA256 signature of body using secret.
+
+    WT-2022 P0.WHK1: para replay protection canonical (Stripe-style), callers
+    devem usar sign_payload_v1 que inclui timestamp. Esta funcao mantida pra
+    backward compat — DEPRECATED, prefer sign_payload_v1.
+    """
     return hmac.new(secret.encode(), body.encode(), hashlib.sha256).hexdigest()
+
+
+def sign_payload_v1(secret: str, body: str, timestamp: int | None = None) -> str:
+    """WT-2022 P0.WHK1: HMAC-SHA256 com timestamp para anti-replay.
+
+    Format: ``v1={hmac(timestamp.body)}``
+    Header sugerido: ``X-WeDO-Signature: t={timestamp},v1={sig}``
+
+    Receivers DEVEM:
+    1. Extrair timestamp do header
+    2. Verificar timestamp > now() - 300s (5min window)
+    3. Recomputar HMAC e comparar com sig
+    """
+    import time
+    ts = timestamp if timestamp is not None else int(time.time())
+    signed_payload = f"{ts}.{body}"
+    return f"v1={hmac.new(secret.encode(), signed_payload.encode(), hashlib.sha256).hexdigest()},t={ts}"
 
 
 class WebhookService:

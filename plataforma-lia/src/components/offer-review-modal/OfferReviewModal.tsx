@@ -71,8 +71,8 @@ export function OfferReviewModal() {
     try {
       const draft = useOfferDraftStore.getState().draft
       if (draft) {
-        const result = await offersApi.sendDraft(draft.id, { user_confirmation: true })
-        setSendResult({ success: result.success ?? true, message: result.message ?? "Proposta enviada!" })
+        const result = await offersApi.sendAuto(draft.id)
+        setSendResult({ success: true, message: result.message ?? "Proposta enviada!" })
       }
     } catch (err) {
       setSendResult({ success: false, message: String(err) })
@@ -163,7 +163,7 @@ export function OfferReviewModal() {
               Envio Manual
             </Button>
             <Button
-              variant="default"
+              variant="secondary"
               size="sm"
               onClick={handleSendAuto}
               disabled={isSaving || isSending || !draft.offered_salary}

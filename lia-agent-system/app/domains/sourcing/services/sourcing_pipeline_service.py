@@ -857,7 +857,9 @@ class SourcingPipelineService:
         """
         tasks_repo = TasksRepository(db)
         existing_task = await tasks_repo.get_active_task_for_job_and_type(
-            str(job.id), TaskType.SOURCING
+            company_id=str(job.company_id),
+            job_id=str(job.id),
+            task_type=TaskType.SOURCING,
         )
         if existing_task:
             return None

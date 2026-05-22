@@ -391,13 +391,16 @@ export function IntegrationDetailDrawer({
                 Configurar no Painel ATS
               </Button>
             ) : (
-              <Button
-                size="sm"
-                className="w-full rounded-md text-xs gap-2"
-              >
-                <ExternalLink className="w-3 h-3" />
-                Configurar Integração
-              </Button>
+              // WT-2022 P1.INT: botao sem onClick removido (era no-op silencioso).
+              // Para reintroduzir, popular integration.configFields + adicionar handler
+              // ou redirecionar para fluxo OAuth/setup especifico do provider.
+              <div className="flex items-start gap-2 px-3 py-2 text-xs text-lia-text-tertiary border border-lia-border-subtle rounded-md">
+                <Info className="w-3 h-3 mt-0.5 flex-shrink-0" />
+                <span>
+                  Configuracao desta integracao ainda nao disponivel pela UI.
+                  Entre em contato com o suporte para habilitar.
+                </span>
+              </div>
             )
           )}
         </div>

@@ -55,9 +55,9 @@ export interface JDEvaluationPanelProps {
   hasQuestions: boolean
   onGenerateQuestions?: () => void
   onEditJD?: () => void
-  onSaveJDInline?: (updates: { description?: string; requirements?: string[]; technicalSkills?: string[]; behavioralCompetencies?: string[] }) => Promise<void>
+  onSaveJDInline?: (updates: { description?: string; responsibilities?: string[]; requirements?: string[]; technicalSkills?: string[]; behavioralCompetencies?: string[] }) => Promise<void>
   onSaveEnrichedJD?: (enrichedJd: EnrichedJD) => Promise<void>
-  onUpdateOfficialJD?: (updates: { description?: string; requirements?: string[]; technicalSkills?: string[]; behavioralCompetencies?: string[] }) => Promise<void>
+  onUpdateOfficialJD?: (updates: { description?: string; responsibilities?: string[]; requirements?: string[]; technicalSkills?: string[]; behavioralCompetencies?: string[] }) => Promise<void>
   onUpdateJobDescription?: (jdText: string) => Promise<void>
   enrichedJd?: EnrichedJD
   isGenerating?: boolean

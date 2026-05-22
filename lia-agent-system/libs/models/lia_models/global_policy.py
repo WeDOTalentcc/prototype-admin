@@ -42,6 +42,7 @@ class GlobalPolicy(Base):
     __tablename__ = "global_policies"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # WT-2022 P0.TENANT: TENANT-EXEMPT - tabela global de policies (scope=PLATFORM, company_id NULL p/ platform-wide; documentado linhas 39-40)
     company_id = Column(String(255), nullable=True, index=True)
     
     name = Column(String(255), nullable=False)

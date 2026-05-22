@@ -38,7 +38,7 @@ export interface UseAuthenticatedUserIdReturn {
 export function useAuthenticatedUserId(): UseAuthenticatedUserIdReturn {
   const { user, isLoading, isAuthenticated } = useAuth()
   return {
-    userId: resolveUserId(user),
+    userId: resolveUserId(user as AuthenticatedUser | null | undefined),
     isReady: !isLoading && isAuthenticated && user != null,
   }
 }

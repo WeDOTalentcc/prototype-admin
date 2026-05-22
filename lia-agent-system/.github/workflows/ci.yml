@@ -463,3 +463,19 @@ jobs:
         run: |
           pip install mypy types-requests --quiet
           mypy app/ --ignore-missing-imports --no-strict-optional 2>&1 | tail -20
+
+      # WT-2022 P0.STAGES — RECRUITMENT_STAGES direct import ratchet
+      # Promovido warn-only → STRICT em 2026-05-21 (baseline 0 sustentado, 10 consumers migrados
+      # pra useRecruitmentStages() ou via @/lib/recruitment/stages-data). Sensor agora exit 1
+      # em qualquer violation. Fix: usar useRecruitmentStages().legacyStages em React, ou
+      # importar normalizeStagesFromHook em utils. Rollback emergencial: --warn-only flag.
+      - name: "G-STAGES: no direct RECRUITMENT_STAGES import (BLOCKING — promoted 2026-05-21)"
+        run: python3 scripts/check_no_recruitment_stages_direct_import.py
+
+      # WT-2022 P3.1 — V1 PolicyEngine reintroduction sensor
+      # Promovido warn-only → STRICT em 2026-05-21 (baseline 0 fora paths exempt;
+      # allowlist EXEMPT_RELATIVE cobre V1 itself + bridges V1↔V2). Sensor exit 1
+      # em qualquer import novo de app.orchestrator.policy_engine.PolicyEngine.
+      # Fix: usar PolicyEngineService (V2) em app/domains/policy/services/.
+      - name: "G-POLICY-V1: no V1 PolicyEngine imports outside allowlist (BLOCKING — promoted 2026-05-21)"
+        run: python3 scripts/check_no_v1_policy_engine.py

@@ -38,10 +38,10 @@ import type { TableCandidate } from"./types"
 import {
   getSubStatusDisplayName,
   SUB_STATUSES,
-  RECRUITMENT_STAGES,
   type SubStatus,
-  type RecruitmentStage
-} from"@/lib/recruitment-stages"
+} from "@/lib/recruitment-stages"
+import { RECRUITMENT_STAGES, type RecruitmentStage } from "@/lib/recruitment/stages-data"
+import { useRecruitmentStages } from "@/hooks/recruitment/use-recruitment-stages"
 import { 
   DataRequestIndicator, 
   type DataRequestStatus, 
@@ -385,10 +385,14 @@ function getSubStatusColors(status?: SubStatus): { bg: string; text: string; bgS
 }
 
 export function SubStatusCell({ stage, subStatus }: { stage?: string; subStatus?: string }) {
+  // WT-2022 P0.SUB_STATUSES: hook canonical-first ANTES de qualquer early return
+  // (Rules of Hooks). Fallback hardcoded preserva back-compat enquanto boot.
+  const { legacySubStatuses } = useRecruitmentStages()
+
   if (!subStatus || !stage) return null
 
   const displayName = getSubStatusDisplayName(stage, subStatus)
-  const subStatuses = SUB_STATUSES[stage] || []
+  const subStatuses = legacySubStatuses[stage] ?? SUB_STATUSES[stage] ?? []
   const subStatusMetadata = subStatuses.find(s => s.name === subStatus)
   const colors = getSubStatusColors(subStatusMetadata)
 
@@ -418,13 +422,16 @@ export function InteractiveSubStatusCell({
   jobVacancyId?: string
   onStatusChange?: (candidateId: string, newSubStatus: string, stage: string, jobVacancyId?: string) => Promise<boolean | void>
 }) {
+  // WT-2022 P0.SUB_STATUSES: hooks SEMPRE no topo (Rules of Hooks). Mesmo
+  // padrao do SubStatusCell — hook canonical-first com fallback hardcoded.
   const [open, setOpen] = useState(false)
   const [isUpdating, setIsUpdating] = useState(false)
-  
+  const { legacySubStatuses } = useRecruitmentStages()
+
   if (!stage) return null
 
   const displayName = subStatus ? getSubStatusDisplayName(stage, subStatus) : 'Sem status'
-  const availableSubStatuses = SUB_STATUSES[stage] || []
+  const availableSubStatuses = legacySubStatuses[stage] ?? SUB_STATUSES[stage] ?? []
   const currentMetadata = availableSubStatuses.find(s => s.name === subStatus)
   const colors = getSubStatusColors(currentMetadata)
 
@@ -533,11 +540,15 @@ export function InteractiveStageCell({
   const [open, setOpen] = useState(false)
   const [selectedStage, setSelectedStage] = useState<string>('')
 
-  const currentStageInfo = RECRUITMENT_STAGES.find(s => s.name === currentStage)
+  // WT-2022 P0.STAGES: hook canonical com fallback transitional ao RECRUITMENT_STAGES estatico
+  const { legacyStages } = useRecruitmentStages()
+  const stages = legacyStages.length > 0 ? legacyStages : RECRUITMENT_STAGES
+
+  const currentStageInfo = stages.find(s => s.name === currentStage)
   const stageDisplayName = currentStageInfo?.displayName || currentStage || 'Sem etapa'
   
   const finalStages = ['hired', 'rejected', 'offer_declined']
-  const activeStages = RECRUITMENT_STAGES.filter(s => s.stageType !== 'standby' && s.stageType !== 'final')
+  const activeStages = stages.filter(s => s.stageType !== 'standby' && s.stageType !== 'final')
 
   const handleConfirm = () => {
     if (!selectedStage) return
@@ -623,7 +634,7 @@ export function InteractiveStageCell({
               </span>
               <ArrowRight className="w-4 h-4 text-lia-text-secondary" />
  <span className={`px-3 py-1.5 rounded-full text-xs font-medium ${selectedStage ? 'dark:text-lia-text-tertiary border border-lia-border-default dark:border-lia-border-default' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
-                {selectedStage ? (RECRUITMENT_STAGES.find(s => s.name === selectedStage)?.displayName || selectedStage) : 'Selecione'}
+                {selectedStage ? (stages.find(s => s.name === selectedStage)?.displayName || selectedStage) : 'Selecione'}
               </span>
             </div>
 
@@ -644,7 +655,7 @@ export function InteractiveStageCell({
                   ))}
                   <div className="px-2 py-1 text-xs font-semibold text-lia-text-secondary mt-2">Etapas Finais</div>
                   {finalStages.map(stageName => {
-                    const stage = RECRUITMENT_STAGES.find(s => s.name === stageName)
+                    const stage = stages.find(s => s.name === stageName)
                     return (
                       <SelectItem key={stageName} value={stageName}>
                         {stage?.displayName || stageName}
@@ -683,9 +694,13 @@ export function InteractiveStageCell({
 
 // Simple stage display cell (non-interactive)
 export function StageCell({ stage }: { stage?: string }) {
+  // WT-2022 P0.STAGES: hook canonical no TOPO (Rules-of-Hooks) antes do early return
+  const { legacyStages } = useRecruitmentStages()
+  const stages = legacyStages.length > 0 ? legacyStages : RECRUITMENT_STAGES
+
   if (!stage) return null
   
-  const stageInfo = RECRUITMENT_STAGES.find(s => s.name === stage)
+  const stageInfo = stages.find(s => s.name === stage)
   const displayName = stageInfo?.displayName || stage
   
   return (

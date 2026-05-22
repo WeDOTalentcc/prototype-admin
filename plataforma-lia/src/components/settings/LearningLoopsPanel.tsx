@@ -30,13 +30,15 @@ interface ToggleDefinition {
   disclosureText?: string
 }
 
-const TOGGLE_DEFS: ToggleDefinition[] = [
-  {
-    key: "enabled",
-    label: "Loops de Aprendizado",
-    description: "Chave mestre — ativa ou desativa todos os loops de aprendizado automaticamente.",
-    defaultValue: true,
-  },
+const MASTER_DEF: ToggleDefinition = {
+  key: "enabled",
+  label: "Loops de Aprendizado",
+  description:
+    "Chave mestre — ativa ou desativa todos os loops de aprendizado automaticamente.",
+  defaultValue: true,
+}
+
+const SUB_TOGGLE_DEFS: ToggleDefinition[] = [
   {
     key: "bigfive_company_culture",
     label: "DNA Cultural da Empresa (Layer 3)",
@@ -76,6 +78,45 @@ const DEFAULT_CONFIG: LearningLoopsConfig = {
   bigfive_department_history: false,
   wsi_question_effectiveness: false,
   jd_similar_suggestion: true,
+}
+
+const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
+  enabled: Brain,
+  bigfive_company_culture: Brain,
+  bigfive_department_history: BarChart2,
+  jd_similar_suggestion: FileText,
+  wsi_question_effectiveness: BookOpen,
+}
+
+function ToggleSwitch({
+  value,
+  label,
+  isDisabled,
+  onClick,
+}: {
+  value: boolean
+  label: string
+  isDisabled: boolean
+  onClick: () => void
+}) {
+  return (
+    <button
+      role="switch"
+      aria-checked={value}
+      aria-label={label}
+      disabled={isDisabled}
+      onClick={onClick}
+      className={`relative flex-shrink-0 inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg ${
+        value ? "bg-lia-btn-primary-bg" : "bg-lia-border-default"
+      } ${isDisabled ? "cursor-not-allowed" : "cursor-pointer"}`}
+    >
+      <span
+        className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-sm transition-transform duration-200 motion-reduce:transition-none ${
+          value ? "translate-x-4" : "translate-x-0.5"
+        }`}
+      />
+    </button>
+  )
 }
 
 function DisclosureModal({
@@ -130,7 +171,7 @@ function DisclosureModal({
   )
 }
 
-function ToggleRow({
+function ToggleCard({
   def,
   value,
   masterEnabled,
@@ -143,20 +184,13 @@ function ToggleRow({
   onToggle: (key: keyof LearningLoopsConfig, newValue: boolean) => void
   isLoading: boolean
 }) {
-  const isDisabled = isLoading || (def.key !== "enabled" && !masterEnabled)
-  const IconMap: Record<string, React.ComponentType<{ className?: string }>> = {
-    enabled: Brain,
-    bigfive_company_culture: Brain,
-    bigfive_department_history: BarChart2,
-    jd_similar_suggestion: FileText,
-    wsi_question_effectiveness: BookOpen,
-  }
-  const Icon = IconMap[def.key] ?? Brain
+  const isDisabled = isLoading || !masterEnabled
+  const Icon = ICON_MAP[def.key] ?? Brain
 
   return (
     <div
-      className={`flex items-start justify-between gap-4 py-3 px-3 rounded-lg transition-colors ${
-        isDisabled ? "opacity-50" : "hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse/40"
+      className={`flex items-start justify-between gap-4 p-4 bg-lia-bg-primary dark:bg-lia-bg-secondary border border-lia-border-default dark:border-lia-border-subtle rounded-xl transition-colors ${
+        isDisabled ? "opacity-50" : ""
       }`}
     >
       <div className="flex items-start gap-3 min-w-0">
@@ -168,22 +202,12 @@ function ToggleRow({
           </p>
         </div>
       </div>
-      <button
-        role="switch"
-        aria-checked={value}
-        aria-label={def.label}
-        disabled={isDisabled}
+      <ToggleSwitch
+        value={value}
+        label={def.label}
+        isDisabled={isDisabled}
         onClick={() => onToggle(def.key, !value)}
-        className={`relative flex-shrink-0 inline-flex h-5 w-9 items-center rounded-full transition-colors duration-200 motion-reduce:transition-none focus:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg ${
-          value ? "bg-lia-btn-primary-bg" : "bg-lia-border-default"
-        } ${isDisabled ? "cursor-not-allowed" : "cursor-pointer"}`}
-      >
-        <span
-          className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow-sm transition-transform duration-200 motion-reduce:transition-none ${
-            value ? "translate-x-4" : "translate-x-0.5"
-          }`}
-        />
-      </button>
+      />
     </div>
   )
 }
@@ -246,7 +270,8 @@ export function LearningLoopsPanel() {
 
   const handleToggle = useCallback(
     (key: keyof LearningLoopsConfig, newValue: boolean) => {
-      const def = TOGGLE_DEFS.find((d) => d.key === key)
+      const def =
+        MASTER_DEF.key === key ? MASTER_DEF : SUB_TOGGLE_DEFS.find((d) => d.key === key)
       if (def?.requiresDisclosure && newValue && def.disclosureText) {
         setPendingToggle({ key, value: newValue, disclosureText: def.disclosureText })
         return
@@ -280,22 +305,39 @@ export function LearningLoopsPanel() {
           onCancel={() => setPendingToggle(null)}
         />
       )}
-      <div className="space-y-1">
-        <div className="mb-3">
-          <p className={`${textStyles.h3} text-lia-text-primary`}>Loops de Aprendizado</p>
-          <p className={`${textStyles.description} text-lia-text-secondary mt-1`}>
-            Configure quais mecanismos de aprendizado automático a LIA usa para melhorar sugestões ao longo do tempo.
-          </p>
+      <div className="space-y-6">
+        {/* Header banner — canonical pattern (LiaFieldsConfigPanel.tsx:212) com master toggle integrado */}
+        <div className="flex items-start justify-between gap-4 p-4 bg-lia-bg-secondary dark:bg-lia-bg-secondary rounded-xl border border-lia-border-subtle">
+          <div className="flex items-start gap-3 min-w-0">
+            <Brain className="w-5 h-5 text-lia-btn-primary-bg shrink-0 mt-0.5" />
+            <div className="space-y-1 min-w-0">
+              <h3 className={textStyles.h3}>{MASTER_DEF.label}</h3>
+              <p className="text-sm text-lia-text-secondary dark:text-lia-text-secondary">
+                Configure quais mecanismos de aprendizado automático a LIA usa para melhorar sugestões ao longo do tempo.
+              </p>
+              <p className="text-xs text-lia-text-secondary dark:text-lia-text-secondary">
+                {MASTER_DEF.description}
+              </p>
+            </div>
+          </div>
+          <ToggleSwitch
+            value={config.enabled}
+            label={MASTER_DEF.label}
+            isDisabled={isLoading}
+            onClick={() => handleToggle(MASTER_DEF.key, !config.enabled)}
+          />
         </div>
+
         {error && (
-          <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-status-error/10 border border-status-error/20 mb-2">
-            <AlertCircle className="w-4 h-4 text-status-error flex-shrink-0" />
-            <p className={`${textStyles.description} text-status-error`}>{error}</p>
+          <div className="flex items-center gap-2 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl">
+            <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
+            <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
           </div>
         )}
-        <div className={`divide-y divide-lia-border-subtle ${isLoading ? "pointer-events-none" : ""}`}>
-          {TOGGLE_DEFS.map((def) => (
-            <ToggleRow
+
+        <div className={`space-y-2 ${isLoading ? "pointer-events-none" : ""}`}>
+          {SUB_TOGGLE_DEFS.map((def) => (
+            <ToggleCard
               key={def.key}
               def={def}
               value={config[def.key]}

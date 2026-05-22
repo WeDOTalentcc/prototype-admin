@@ -47,6 +47,7 @@ class RecruitmentEmailTemplate(Base):
     )
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # WT-2022 P0.TENANT: TENANT-EXEMPT - templates podem ser global default (company_id NULL = template padrao WeDOTalent compartilhado entre tenants)
     company_id = Column(String(255), nullable=True, index=True)
     
     stage_name = Column(String(50), nullable=False, index=True)

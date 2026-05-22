@@ -61,6 +61,7 @@ class SOXAuditLog(Base):
 
     # R-011: company_id para multi-tenancy RLS (nullable durante migração gradual)
     # Será tornado NOT NULL após backfill completo (migration 080)
+    # TENANT-EXEMPT: SOXAuditLog cross-tenant compliance (auditor WeDOTalent ve todos os tenants)
     company_id = Column(UUID(as_uuid=True), nullable=True, index=True)
 
     client_id = Column(String(255), nullable=True, index=True, server_default="system")

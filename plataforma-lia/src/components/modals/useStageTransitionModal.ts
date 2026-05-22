@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { toast } from "sonner"
-import { RECRUITMENT_STAGES, type RecruitmentStage } from "@/lib/recruitment-stages"
+import { type RecruitmentStage } from "@/lib/recruitment/stages-data"
+import { useRecruitmentStages } from "@/hooks/recruitment/use-recruitment-stages"
 import { useCommunicationTemplates, type CommunicationTemplate, type TemplateSituation } from "@/hooks/chat/use-communication-templates"
 import React from "react"
 import {
@@ -47,6 +48,9 @@ export function useStageTransitionModal({
   onConfirm,
   onClose,
 }: StageTransitionActionsModalProps) {
+  // WT-2022 P0.STAGES: pipeline da empresa via hook (drop-in pra lookups)
+  const { legacyStages } = useRecruitmentStages()
+  const stagesForLookup: RecruitmentStage[] = legacyStages
   const [selectedAction, setSelectedAction] = useState<TransitionActionType | null>(null)
   const [channel, setChannel] = useState<'email' | 'whatsapp' | 'both'>('email')
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('')
@@ -213,7 +217,7 @@ export function useStageTransitionModal({
   }
 
   const needsMessageComposition = selectedAction && selectedAction !== 'apenas_mover'
-  const newStageData = RECRUITMENT_STAGES.find(s => s.name === newStage)
+  const newStageData = stagesForLookup.find(s => s.name === newStage)
   const headerColor: 'red' | 'gray' = newStageData?.isRejection ? 'red' : 'gray'
 
   return {

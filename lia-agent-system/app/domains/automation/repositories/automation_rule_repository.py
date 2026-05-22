@@ -1,6 +1,16 @@
 """
-AutomationRule Repository — data access layer for stage automation rules.
+AutomationRule Repository — data access layer for stage_automation_rules.
 Extracted from app/api/v1/automation_rules.py as part of Phase 2 refactor.
+
+WT-2022 P3.2 (2026-05-21): DEPRECATED — esta tabela é UI-legacy. Engine real
+(`stage_automation_engine.py:198`) lê `communication_automations`. Adapter
+`StageRuleAdapter` (em `app/domains/automation/services/stage_rule_adapter.py`)
+faz dual-write entre os dois stores. Não criar novos consumers desta tabela
+sem coordenar com o engine canonical.
+
+Para novas features de automation, usar:
+    from app.domains.automation.repositories.communication_automation_repository
+        import CommunicationAutomationRepository
 """
 import logging
 
@@ -13,6 +23,13 @@ logger = logging.getLogger(__name__)
 
 
 class AutomationRuleRepository:
+    """Data access para `stage_automation_rules` (UI legacy).
+
+    WT-2022 P3.2 deprecated: dual-write canonical acontece no endpoint
+    (`automation_rules.py`) via `StageRuleAdapter`. Este repo permanece
+    sem mudança funcional para preservar contrato com UI legacy.
+    """
+
     def __init__(self, db: AsyncSession):
         self.db = db
 

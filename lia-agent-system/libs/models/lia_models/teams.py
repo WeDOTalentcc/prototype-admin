@@ -19,6 +19,7 @@ class TeamsConversation(Base):
     
     # Multi-tenancy scope (ADR-LGPD-001). Sprint F.3 #43 follow-up: model parity with DB column from migration 097.
     # Nullable in DB (legacy rows pre-migration 097); RLS policy already enforces (company_id IS NULL OR company_id = current).
+    # TENANT-EXEMPT: TeamsConversation legacy pre-migration 097 (RLS policy enforces no DB layer)
     company_id = Column(String(255), nullable=True, index=True)
     
     # Teams identifiers
@@ -131,6 +132,7 @@ class TeamsActionAuditLog(Base):
     # Related entities
     candidate_id = Column(String(255), nullable=True, index=True)
     vacancy_id = Column(String(255), nullable=True, index=True)
+    # TENANT-EXEMPT: TeamsActionAuditLog cross-tenant compliance (admin pode auditar todos)
     company_id = Column(String(255), nullable=True, index=True)
     
     # Audit details

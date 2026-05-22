@@ -1,5 +1,10 @@
 'use client'
 
+// WT-2022 P1.LIB: Biblioteca LIA e showcase estatico ate decisao produto sobre
+// implementar RAG real sobre knowledge_base. usageCount/relatedCommands sao
+// mockados (16 cards hardcoded). TODO: substituir por dados reais OU remover
+// metricas da UI. Banner "Em desenvolvimento" no topo sinaliza ao usuario.
+
 import React, { useState, useMemo } from 'react'
 import { useUIPreferencesStore } from '@/stores/ui-preferences-store'
 import { Button } from"@/components/ui/button"
@@ -197,6 +202,14 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
     <div className="min-h-screen bg-lia-bg-primary dark:bg-lia-bg-primary">
       <div className="p-2.5 max-w-full">
 
+        {/* WT-2022 P1.LIB: banner warning - feature parcialmente implementada */}
+        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6" role="status">
+          <p className="text-sm text-yellow-800">
+            <strong>Em desenvolvimento:</strong> Os comandos abaixo sao exemplos de uso da LIA.
+            Estatisticas de uso e busca dinamica serao habilitadas em versao futura.
+          </p>
+        </div>
+
         {/* Header Simplificado */}
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -329,11 +342,12 @@ export default function LiaLibraryPage({ onNavigate }: LiaLibraryPageProps) {
                       >
                         {categoryInfo.label}
                       </Chip>
-                      {command.usageCount && (
+                      {/* WT-2022 P1.LIB: usageCount escondido ate ter telemetria real. Valores hardcoded (156, 89, ...) eram UX-lie. */}
+                      {/* {command.usageCount && (
                         <span className="text-xs text-lia-text-primary">
                           {command.usageCount} usos
                         </span>
-                      )}
+                      )} */}
                     </div>
                     
                     <div className="flex items-center gap-1">

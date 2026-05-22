@@ -1,6 +1,23 @@
 "use client"
 
 /**
+ * WT-2022 P1.APIFY: STATUS = ORPHAN COMPONENT (verificado 2026-05-21).
+ *
+ * Componente funcional, com backend real (/api/backend-proxy/consumption?path=budget-status
+ * via app/api/v1/consumption.py :: get_budget_status), mas atualmente sem call-site no
+ * frontend (zero imports).
+ *
+ * NAO deletar: backend live + valor real para tenants que usam sourcing Apify.
+ * NAO montar adivinhando: integration-data.ts nao tem entry "apify" (Apify roda do
+ * lado WeDOTalent, nao e integracao cliente-configuravel via UI).
+ *
+ * TODO produto: decidir lugar canonical de mount:
+ *   (a) painel sourcing / dashboard de consumo (provavel correto)
+ *   (b) hub MCPs & APIs com novo entry apify em integration-data.ts
+ *   (c) tab dedicada em "Minha Empresa > Consumo"
+ *
+ * Ate decisao, fica como dead-but-preserved code com referencia explicita aqui.
+ *
  * ApifyConsumptionWidget — visual summary of Apify consumption for the tenant.
  *
  * Data source: GET /api/backend-proxy/consumption?path=budget-status
@@ -149,9 +166,9 @@ export function ApifyConsumptionWidget({ className, autoRefreshMs }: Props) {
                 </span>
                 <Chip
                   variant={
-                    severity === "danger" ? "status-danger"
-                    : severity === "warning" ? "status-warning"
-                    : "status-success"
+                    severity === "danger" ? "danger"
+                    : severity === "warning" ? "warning"
+                    : "success"
                   }
                 >
                   {severity === "danger" ? t("nearLimit")

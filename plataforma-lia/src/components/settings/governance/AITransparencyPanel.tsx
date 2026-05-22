@@ -213,10 +213,7 @@ export function AITransparencyPanel() {
 
   const exportPdf = () => {
     if (!companyId) return
-    window.open(
-      `/api/backend-proxy/ai-transparency/technical-documentation/export?format=pdf`,
-      "_blank",
-    )
+    console.warn("WT-2022 P0.D: Export PDF endpoint not implemented yet")
   }
 
   // --- render ----------------------------------------------------------------

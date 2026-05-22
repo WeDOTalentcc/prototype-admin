@@ -357,3 +357,31 @@ repos:
         entry: bash -c "python3 scripts/check_pipeline_stages_not_hardcoded.py"
         files: ^.*\.(ts|tsx|js|jsx)$
         pass_filenames: false
+
+      - id: no-recruitment-stages-direct-import
+        name: "WT-2022 P0.STAGES: no direct RECRUITMENT_STAGES import (BLOCKING — promoted 2026-05-21, baseline 0)"
+        language: system
+        entry: python3 scripts/check_no_recruitment_stages_direct_import.py
+        files: ^plataforma-lia/src/.*\.(ts|tsx)$
+        pass_filenames: false
+
+      - id: no-v1-policy-engine
+        name: "WT-2022 P3.1: no V1 PolicyEngine imports outside allowlist (BLOCKING — promoted 2026-05-21, baseline 0)"
+        language: system
+        entry: python3 scripts/check_no_v1_policy_engine.py
+        files: ^app/.*\.py$
+        pass_filenames: false
+
+      - id: tenant-columns-not-null
+        name: "WT-2022 P0.TENANT: company_id NOT NULL em models (warn-only, baseline=42 em 2026-05-21)"
+        language: system
+        entry: bash -c "python3 scripts/check_tenant_columns_not_null.py 2>&1 | head -30; exit 0"
+        files: ^libs/models/lia_models/.*\.py$
+        pass_filenames: false
+
+      - id: schema-sync-recruitment-stage
+        name: "WT-2022 P0.STAGES: RecruitmentStage TS<->TS schema sync (warn-only, baseline=0 em 2026-05-21)"
+        language: system
+        entry: python3 scripts/check_schema_sync_recruitment_stage.py
+        files: ^plataforma-lia/src/(lib/recruitment/stages-data\.ts|components/settings/recruitment-journey\.types\.ts)$
+        pass_filenames: false

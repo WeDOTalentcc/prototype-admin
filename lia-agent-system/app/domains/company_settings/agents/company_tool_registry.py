@@ -31,6 +31,24 @@ from app.domains.cv_screening.services.confidence_policy_service import (
     confidence_policy_service,
 )
 
+# WT-2022 Fase 4: tools dedicadas (toggle learning loop, lia_field, DSR action)
+from app.domains.company_settings.agents.company_settings_tools_extended import (
+    _wrap_toggle_learning_loop,
+    _wrap_toggle_lia_field,
+    _wrap_record_dsr_action,
+    VALID_LEARNING_LOOPS,
+    # Fase 4 Extended — 5 tools high-impact
+    _wrap_toggle_communication_alert,
+    _wrap_update_email_signature,
+    _wrap_configure_pipeline_stage,
+    _wrap_configure_screening_questions,
+    _wrap_set_communication_schedule,
+    VALID_ALERT_IDS,
+    VALID_ALERT_CHANNELS,
+    VALID_PIPELINE_ACTIONS,
+    VALID_SCREENING_ACTIONS,
+)
+
 logger = logging.getLogger(__name__)
 
 _fairness_guard = FairnessGuard()
@@ -1059,6 +1077,239 @@ def get_company_settings_tools() -> list[ToolDefinition]:
             output_schema=ToolOutput,
             function=_wrap_get_company_completion,
         ),
+        # ─── WT-2022 Fase 4: tools dedicadas (learning loops, lia_field, DSR) ───
+        ToolDefinition(
+            name="toggle_learning_loop",
+            description=(
+                "WT-2022 Fase 4 — Liga/desliga um learning loop especifico "
+                "(Big5 cultura, Big5 departamento, WSI question effectiveness, "
+                "JD similar suggestion, enabled global). Use quando recrutador "
+                "pedir explicitamente para ativar/desativar aprendizado automatico."
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "loop_name": {
+                        "type": "string",
+                        "enum": sorted(VALID_LEARNING_LOOPS),
+                        "description": "Nome do loop",
+                    },
+                    "value": {"type": "boolean", "description": "True liga, False desliga"},
+                },
+                "required": ["loop_name", "value"],
+            },
+            output_schema=ToolOutput,
+            function=_wrap_toggle_learning_loop,
+        ),
+        ToolDefinition(
+            name="toggle_lia_field",
+            description=(
+                "WT-2022 Fase 4 — Liga/desliga toggle de campo LIA + opcional "
+                "adiciona instrucao customizada. Use quando recrutador pedir "
+                "para LIA respeitar/ignorar campo (mission, vision, tech_stack, "
+                "departments, beneficios, etc) ou customizar instrucao."
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "field_name": {
+                        "type": "string",
+                        "description": "Nome do campo (mission, vision, tech_stack, departments, etc)",
+                    },
+                    "value": {"type": "boolean", "description": "True liga campo, False desliga"},
+                    "instruction": {
+                        "type": "string",
+                        "description": "Opcional: instrucao customizada que LIA aplica quando consumir o campo",
+                    },
+                },
+                "required": ["field_name", "value"],
+            },
+            output_schema=ToolOutput,
+            function=_wrap_toggle_lia_field,
+        ),
+        ToolDefinition(
+            name="record_dsr_action",
+            description=(
+                "WT-2022 Fase 4 — Workflow DSR (data subject request / LGPD) "
+                "via chat: assign, verify-identity, process, complete ou reject. "
+                "Use quando recrutador pedir para marcar DSR como concluido/rejeitado "
+                "ou iniciar processamento."
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "request_id": {"type": "string", "description": "UUID do DSR"},
+                    "action": {
+                        "type": "string",
+                        "enum": ["assign", "verify-identity", "process", "complete", "reject"],
+                    },
+                    "response": {"type": "string", "description": "Required se action=complete"},
+                    "rejection_reason": {"type": "string", "description": "Required se action=reject"},
+                    "assignee_email": {"type": "string", "description": "Required se action=assign"},
+                },
+                "required": ["request_id", "action"],
+            },
+            output_schema=ToolOutput,
+            function=_wrap_record_dsr_action,
+        ),
+        # ─── WT-2022 Fase 4 Extended (5 tools high-impact) ───────────────────
+        ToolDefinition(
+            name="toggle_communication_alert",
+            description=(
+                "WT-2022 Fase 4 — Liga/desliga (ou troca canal de) um alerta de "
+                "comunicacao: sla_warning, interview_reminder, feedback_pending, "
+                "candidate_waiting, anomaly_detected, monthly_goal_at_risk. "
+                "Use quando recrutador pedir para silenciar/ativar alerta ou "
+                "redirecionar canal (email/teams/whatsapp/in_app)."
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "alert_id": {
+                        "type": "string",
+                        "enum": sorted(VALID_ALERT_IDS),
+                        "description": "Identificador canonical do alerta",
+                    },
+                    "enabled": {
+                        "type": "boolean",
+                        "description": "True liga, False desliga (opcional — se omitido mantem estado)",
+                    },
+                    "channel": {
+                        "type": "string",
+                        "enum": sorted(VALID_ALERT_CHANNELS),
+                        "description": "Canal de entrega (email, in_app, teams, whatsapp, both, none)",
+                    },
+                },
+                "required": ["alert_id"],
+            },
+            output_schema=ToolOutput,
+            function=_wrap_toggle_communication_alert,
+        ),
+        ToolDefinition(
+            name="update_email_signature",
+            description=(
+                "WT-2022 Fase 4 — Atualiza assinatura de email (texto e/ou HTML) "
+                "usada nas comunicacoes outbound da empresa. Use quando recrutador "
+                "pedir para mudar/criar assinatura padrao."
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "text": {
+                        "type": "string",
+                        "description": "Assinatura em texto puro (max 4000 chars)",
+                    },
+                    "html": {
+                        "type": "string",
+                        "description": "Assinatura em HTML (max 16000 chars)",
+                    },
+                },
+                "required": [],
+            },
+            output_schema=ToolOutput,
+            function=_wrap_update_email_signature,
+        ),
+        ToolDefinition(
+            name="configure_pipeline_stage",
+            description=(
+                "WT-2022 Fase 4 — CRUD de pipeline stages (etapas do funil de "
+                "recrutamento): create/update/delete/toggle_active. Use quando "
+                "recrutador pedir para criar etapa nova, renomear, reordenar "
+                "ou desativar etapa existente."
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "action": {
+                        "type": "string",
+                        "enum": sorted(VALID_PIPELINE_ACTIONS),
+                        "description": "Tipo de operacao no stage",
+                    },
+                    "stage_data": {
+                        "type": "object",
+                        "description": (
+                            "create: name (req), display_name (req), stage_order, color, "
+                            "icon, description, stage_type, default_channel. "
+                            "update/delete/toggle_active: id (UUID) obrigatorio. "
+                            "toggle_active: is_active (bool) obrigatorio."
+                        ),
+                    },
+                },
+                "required": ["action", "stage_data"],
+            },
+            output_schema=ToolOutput,
+            function=_wrap_configure_pipeline_stage,
+        ),
+        ToolDefinition(
+            name="configure_screening_questions",
+            description=(
+                "WT-2022 Fase 4 — CRUD de perguntas de triagem eligibility "
+                "(CompanyScreeningQuestion): add/update/remove. Use quando "
+                "recrutador pedir para adicionar pergunta de triagem nova, "
+                "editar texto/tipo/eliminatoria, ou remover pergunta."
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "action": {
+                        "type": "string",
+                        "enum": sorted(VALID_SCREENING_ACTIONS),
+                    },
+                    "question_data": {
+                        "type": "object",
+                        "description": (
+                            "add: question_text (req), question_type "
+                            "(text|single_choice|multiple_choice|yes_no|scale), "
+                            "is_eliminatory, is_required, expected_answer, "
+                            "category, options. update/remove: id (UUID) obrigatorio."
+                        ),
+                    },
+                },
+                "required": ["action", "question_data"],
+            },
+            output_schema=ToolOutput,
+            function=_wrap_configure_screening_questions,
+        ),
+        ToolDefinition(
+            name="set_communication_schedule",
+            description=(
+                "WT-2022 Fase 4 — Configura janela LGPD de envio outbound: "
+                "sending_hours_start (6-12), sending_hours_end (18-22), "
+                "respect_weekends, max_messages_per_day (1-50). Use quando "
+                "recrutador pedir para mudar horario permitido de envio, "
+                "ativar/desativar finais de semana, ou limitar mensagens/dia."
+            ),
+            parameters={
+                "type": "object",
+                "properties": {
+                    "sending_hours_start": {
+                        "type": "integer",
+                        "minimum": 6,
+                        "maximum": 12,
+                        "description": "Hora inicio envio (6-12)",
+                    },
+                    "sending_hours_end": {
+                        "type": "integer",
+                        "minimum": 18,
+                        "maximum": 22,
+                        "description": "Hora fim envio (18-22)",
+                    },
+                    "respect_weekends": {
+                        "type": "boolean",
+                        "description": "True nao envia em sabado/domingo",
+                    },
+                    "max_messages_per_day": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 50,
+                        "description": "Limite diario por candidato (1-50)",
+                    },
+                },
+                "required": [],
+            },
+            output_schema=ToolOutput,
+            function=_wrap_set_communication_schedule,
+        ),
     ]
 
 
@@ -1123,11 +1374,37 @@ STAGE_TOOLS: dict[str, list[str]] = {
     "learning-loops": [
         "get_company_profile",
         "get_company_completion",
+        "toggle_learning_loop",
+    ],
+    "instrucoes-lia": [
+        "get_company_profile",
+        "toggle_lia_field",
+    ],
+    "lgpd-candidatos": [
+        "record_dsr_action",
     ],
     "overview": [
         "get_company_profile",
         "get_company_completion",
         "analyze_company_website",
+    ],
+    # ─── WT-2022 Fase 4 Extended subsections ──────────────────────────────
+    "comunicacao-alertas": [
+        "get_company_profile",
+        "toggle_communication_alert",
+        "set_communication_schedule",
+    ],
+    "templates-assinatura": [
+        "get_company_profile",
+        "update_email_signature",
+    ],
+    "pipeline": [
+        "get_company_profile",
+        "configure_pipeline_stage",
+    ],
+    "screening": [
+        "get_company_profile",
+        "configure_screening_questions",
     ],
 }
 

@@ -120,6 +120,7 @@ class CalibrationEvent(Base):
 
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
 
+    # WT-2022 P0.TENANT: TENANT-EXEMPT TENANT-NULLABLE-DELIBERATE - calibration_events aggregated cross-tenant for global ML model improvement (ADR-LGPD-001 anonymization, N>=10 gate em CalibrationRepository)
     company_id = Column(String, nullable=True, index=True)  # multi-tenant isolation
 
     feedback_type = Column(SQLEnum(FeedbackType), nullable=False)
@@ -186,6 +187,7 @@ class CalibrationWeight(Base):
     
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
 
+    # WT-2022 P0.TENANT: TENANT-EXEMPT TENANT-NULLABLE-DELIBERATE - calibration_weights aggregated cross-tenant for global ML weights blending (ADR-LGPD-001 anonymization, sample_count>=10 enforced em CalibrationRepository read path)
     company_id = Column(String, nullable=True, index=True)  # multi-tenant isolation
 
     job_id = Column(String, nullable=True)

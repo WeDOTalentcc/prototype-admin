@@ -57,6 +57,13 @@ class Task(Base):
     priority = Column(SQLEnum(TaskPriority), default=TaskPriority.MEDIUM)
     status = Column(SQLEnum(TaskStatus), default=TaskStatus.PENDING)
     
+    # WT-2022 P0.TASK cross-tenant fix (2026-05-21): tenant scoping column.
+    # TODO migration próxima sprint: backfill por assigned_to_user_id->users.company_id
+    # e then ALTER COLUMN nullable=False. Por ora nullable=True para não quebrar rows legacy,
+    # MAS repo SEMPRE filtra por company_id (defense in depth via Depends(require_company_id)).
+    # WT-2022 P0.TASK migration 161 (2026-05-21): NOT NULL aplicado no DB. Python model alinhado.
+    company_id = Column(String(255), nullable=False, index=True)
+
     created_by_agent = Column(String(50), nullable=True)
     assigned_to_agent = Column(String(50), nullable=True)
     assigned_to_user_id = Column(String, nullable=True)
@@ -94,6 +101,7 @@ class Task(Base):
         """Convert task to dictionary."""
         return {
             "id": self.id,
+            "company_id": self.company_id,
             "title": self.title,
             "description": self.description,
             "task_type": self.task_type.value if self.task_type else None,

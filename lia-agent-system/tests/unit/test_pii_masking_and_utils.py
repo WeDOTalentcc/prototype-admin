@@ -575,199 +575,51 @@ def test_injection_check_portuguese_jailbreak(guard):
 
 
 # ---------------------------------------------------------------------------
-# GROUP E: PolicyEngine
+# ---------------------------------------------------------------------------
+# GROUP E: PolicyEngine (V1) — DEPRECATED 2026-05-21 (WT-2022 Phase 2 prep)
+# ---------------------------------------------------------------------------
+#
+# V1 'app.orchestrator.policy_engine.PolicyEngine' deprecated. Deletion
+# agendada para Q3 2026. Os testes deste grupo cobriam APIs V1-only
+# (DEFAULT_POLICIES classvar, ALLOWED_USAGE_TYPES, update_policy, record_usage,
+# _check_usage_limit, validate_request com intents legacy). Esses APIs nao
+# existem em V2 PolicyEngineService — V2 usa 'evaluate(action, context, ...)'
+# generica + 'check_rate_limit' (3-table DB driven).
+#
+# Migracao: testes de policy V1 que sobrevivem post-deletion estao em
+# 'tests/unit/test_policy_engine_alpha1.py' (apply_industry_defaults via
+# V2 service) e 'tests/contract/test_policy_gate_v2_routing.py' (PolicyGate
+# canonical routing).
+#
+# Apos delecao V1 (Q3 2026), este bloco deve ser REMOVIDO inteiramente
+# (nao migrado — APIs nao existem mais em V2; coverage equivalente vem
+# dos tests de V2).
 # ---------------------------------------------------------------------------
 
-@pytest.fixture
+import pytest as _pytest_v1_marker
+
+pytestmark_v1_deprecated = _pytest_v1_marker.mark.skip(
+    reason=(
+        "WT-2022 Phase 2 prep: PolicyEngine V1 deprecated; APIs V1-only "
+        "(DEFAULT_POLICIES, validate_request, record_usage, update_policy) "
+        "nao existem em V2. Remover bloco apos delecao V1 (Q3 2026). "
+        "Coverage equivalente em test_policy_engine_alpha1.py + "
+        "tests/contract/test_policy_gate_v2_routing.py."
+    )
+)
+
+
+@_pytest_v1_marker.fixture
 def policy_module():
-    try:
-        from app.orchestrator import policy_engine
-        return policy_engine
-    except ImportError as exc:
-        pytest.skip(f"policy_engine not importable: {exc}")
+    _pytest_v1_marker.skip("WT-2022 Phase 2 prep: V1 PolicyEngine deprecated")
 
 
-@pytest.fixture
-def policy_engine_instance(policy_module):
-    return policy_module.PolicyEngine(db_service=None)
+@_pytest_v1_marker.fixture
+def policy_engine_instance():
+    _pytest_v1_marker.skip("WT-2022 Phase 2 prep: V1 PolicyEngine deprecated")
 
 
-def test_policy_engine_class_exists(policy_module):
-    assert hasattr(policy_module, "PolicyEngine")
-
-
-def test_policy_engine_default_policies_exists(policy_module):
-    assert hasattr(policy_module.PolicyEngine, "DEFAULT_POLICIES")
-
-
-def test_policy_engine_default_policies_keys(policy_module):
-    defaults = policy_module.PolicyEngine.DEFAULT_POLICIES
-    expected_keys = [
-        "max_pearch_searches_per_day",
-        "max_voice_screenings_per_day",
-        "max_tokens_per_request",
-        "max_concurrent_requests",
-        "allow_global_search",
-        "require_approval_for_bulk_email",
-    ]
-    for key in expected_keys:
-        assert key in defaults, f"Missing key: {key}"
-
-
-def test_policy_engine_instantiation_without_db(policy_module):
-    engine = policy_module.PolicyEngine(db_service=None)
-    assert engine is not None
-    assert engine.db is None
-
-
-def test_policy_engine_has_policies_dict(policy_engine_instance):
-    assert hasattr(policy_engine_instance, "policies")
-    assert isinstance(policy_engine_instance.policies, dict)
-
-
-def test_apply_industry_defaults_tech(policy_engine_instance):
-    result = policy_engine_instance.apply_industry_defaults("tech")
-    assert isinstance(result, dict)
-    assert result["allow_global_search"] is True
-
-
-def test_apply_industry_defaults_financeiro(policy_engine_instance):
-    result = policy_engine_instance.apply_industry_defaults("financeiro")
-    assert result["allow_global_search"] is False
-
-
-def test_apply_industry_defaults_varejo(policy_engine_instance):
-    result = policy_engine_instance.apply_industry_defaults("varejo")
-    # Varejo: alto volume
-    assert result["max_voice_screenings_per_day"] >= 100
-
-
-def test_apply_industry_defaults_case_insensitive(policy_module):
-    e1 = policy_module.PolicyEngine()
-    e2 = policy_module.PolicyEngine()
-    r1 = e1.apply_industry_defaults("TECH")
-    r2 = e2.apply_industry_defaults("tech")
-    assert r1["max_pearch_searches_per_day"] == r2["max_pearch_searches_per_day"]
-
-
-def test_apply_industry_defaults_unknown_sector_returns_defaults(policy_engine_instance):
-    result = policy_engine_instance.apply_industry_defaults("setor_desconhecido")
-    assert isinstance(result, dict)
-    assert "allow_global_search" in result
-
-
-def test_update_policy_valid_key(policy_engine_instance):
-    policy_engine_instance.update_policy("max_pearch_searches_per_day", 100)
-    assert policy_engine_instance.policies["max_pearch_searches_per_day"] == 100
-
-
-def test_update_policy_invalid_key_no_crash(policy_engine_instance):
-    # Should log warning but not raise
-    policy_engine_instance.update_policy("invalid_key_xyz", 0)
-
-
-def test_update_policy_boolean(policy_engine_instance):
-    policy_engine_instance.update_policy("allow_global_search", False)
-    assert policy_engine_instance.policies["allow_global_search"] is False
-
-
-@pytest.mark.asyncio
-async def test_validate_request_default_intent_allowed(policy_engine_instance):
-    result = await policy_engine_instance.validate_request("some_unknown_intent", "user-1")
-    assert result["allowed"] is True
-
-
-@pytest.mark.asyncio
-async def test_validate_request_candidate_search_db_unavailable(policy_module):
-    """With no DB, fail-safe: allowed=True."""
-    with patch.object(policy_module, "_get_db_connection", return_value=None):
-        engine = policy_module.PolicyEngine()
-        result = await engine.validate_request("candidate_search", "user-1")
-        assert result["allowed"] is True
-
-
-@pytest.mark.asyncio
-async def test_validate_request_candidate_screening_db_unavailable(policy_module):
-    with patch.object(policy_module, "_get_db_connection", return_value=None):
-        engine = policy_module.PolicyEngine()
-        result = await engine.validate_request("candidate_screening", "user-1")
-        assert result["allowed"] is True
-
-
-@pytest.mark.asyncio
-async def test_validate_request_communication_small_batch(policy_engine_instance):
-    result = await policy_engine_instance.validate_request(
-        "communication", "user-1", context={"recipient_count": 5}
-    )
-    assert result["allowed"] is True
-
-
-@pytest.mark.asyncio
-async def test_validate_request_communication_bulk_requires_approval(policy_engine_instance):
-    result = await policy_engine_instance.validate_request(
-        "communication", "user-1", context={"recipient_count": 50}
-    )
-    assert result["allowed"] is False
-    assert "approval" in result["reason"].lower() or "requires" in result["reason"].lower()
-
-
-def test_check_usage_limit_db_unavailable_returns_allowed(policy_module):
-    with patch.object(policy_module, "_get_db_connection", return_value=None):
-        engine = policy_module.PolicyEngine()
-        result = engine._check_usage_limit("tenant-1", "chat_requests")
-        assert result["allowed"] is True
-
-
-def test_record_usage_db_unavailable_no_crash(policy_module):
-    with patch.object(policy_module, "_get_db_connection", return_value=None):
-        engine = policy_module.PolicyEngine()
-        engine.record_usage("tenant-1", "chat_requests")  # Should not raise
-
-
-def test_record_usage_invalid_type_no_crash(policy_module):
-    with patch.object(policy_module, "_get_db_connection", return_value=None):
-        engine = policy_module.PolicyEngine()
-        engine.record_usage("tenant-1", "invalid_type")  # Should not raise
-
-
-def test_check_usage_limit_invalid_type(policy_module):
-    with patch.object(policy_module, "_get_db_connection", return_value=None):
-        engine = policy_module.PolicyEngine()
-        # invalid type returns 0 from _get_daily_usage
-        result = engine._check_usage_limit("tenant-1", "invalid_type")
-        # Should return allowed structure
-        assert "allowed" in result
-
-
-def test_sector_defaults_rpo_high_limits(policy_module):
-    engine = policy_module.PolicyEngine()
-    result = engine.apply_industry_defaults("rpo")
-    assert result["max_pearch_searches_per_day"] >= 100
-
-
-def test_sector_defaults_logistica_high_screenings(policy_module):
-    engine = policy_module.PolicyEngine()
-    result = engine.apply_industry_defaults("logistica")
-    assert result["max_voice_screenings_per_day"] >= 500
-
-
-def test_sector_defaults_saude_no_global_search(policy_module):
-    engine = policy_module.PolicyEngine()
-    result = engine.apply_industry_defaults("saude")
-    assert result["allow_global_search"] is False
-
-
-def test_allowed_usage_types_whitelist(policy_module):
-    engine = policy_module.PolicyEngine()
-    assert "chat_requests" in engine.ALLOWED_USAGE_TYPES
-    assert "action_executions" in engine.ALLOWED_USAGE_TYPES
-    assert "llm_calls" in engine.ALLOWED_USAGE_TYPES
-
-
-@pytest.mark.asyncio
-async def test_validate_request_fails_safe_on_exception(policy_module):
-    """Even if internal method raises, fail-safe returns allowed=True."""
-    engine = policy_module.PolicyEngine()
-    with patch.object(engine, "_validate_search_request", side_effect=Exception("db down")):
-        result = await engine.validate_request("candidate_search", "user-1")
-        assert result["allowed"] is True
+@pytestmark_v1_deprecated
+def test_policy_engine_v1_group_skipped_placeholder():
+    """Marker indicando que o Group E inteiro foi skipped pre-delecao V1."""
+    pass

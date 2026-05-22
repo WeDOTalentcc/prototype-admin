@@ -48,7 +48,8 @@ class BriefingService:
     async def generate_daily_briefing(
         self,
         user_id: str,
-        db: AsyncSession | None = None
+        db: AsyncSession | None = None,
+        company_id: str | None = None,
     ) -> dict[str, Any]:
         """
         Generate a comprehensive daily briefing for a recruiter.
@@ -56,6 +57,9 @@ class BriefingService:
         Args:
             user_id: The recruiter's user ID
             db: Optional database session
+            company_id: Tenant scoping (WT-2022 P0.TASK). Quando ausente,
+                _get_pending_tasks emite warning e cai em path legacy SQL inline.
+                Callers novos devem propagar company_id do JWT/agent context.
             
         Returns:
             Complete briefing data structure
@@ -73,7 +77,7 @@ class BriefingService:
             urgent_actions = await self._get_urgent_actions(db, user_id)
             pipeline_summary = await self._get_pipeline_summary(db, user_id)
             today_schedule = await self._get_today_schedule(db, user_id, today_start, today_end)
-            pending_tasks = await self._get_pending_tasks(db, user_id)
+            pending_tasks = await self._get_pending_tasks(db, user_id, company_id=company_id)
             active_alerts = await self._get_active_alerts(db, user_id)
             recruiter_metrics = await self._get_recruiter_metrics(db, user_id)
             recruiter_benchmark = await self._get_recruiter_benchmark(db, user_id, recruiter_metrics)
@@ -384,11 +388,52 @@ class BriefingService:
     async def _get_pending_tasks(
         self,
         db: AsyncSession,
-        user_id: str
+        user_id: str,
+        company_id: str | None = None,
     ) -> list[dict[str, Any]]:
-        """Get pending tasks for user."""
-        tasks = []
-        
+        """Get pending tasks for user.
+
+        WT-2022 P0.TASK gap fix: usar TasksRepository canonical (ADR-001 +
+        multi-tenancy) em vez de SQL inline cross-tenant. Quando company_id
+        presente, delega ao repo que enforca tenant scoping. Quando ausente
+        (caller legacy), cai no path antigo com warning -- briefing_service e
+        deprecated (removal 2026-07-16), nao quebrar callers nao atualizados.
+        """
+        tasks: list[dict[str, Any]] = []
+
+        if company_id:
+            try:
+                from app.domains.tasks.repositories.tasks_repository import TasksRepository
+                repo = TasksRepository(db)
+                repo_tasks = await repo.get_pending_tasks(
+                    company_id=company_id,
+                    user_id=user_id,
+                    limit=15,
+                )
+                for task in repo_tasks:
+                    tasks.append({
+                        "id": task.id,
+                        "title": task.title,
+                        "description": task.description,
+                        "type": task.task_type.value if task.task_type else "general",
+                        "priority": task.priority.value if task.priority else "medium",
+                        "due_date": task.due_date.isoformat() if task.due_date else None,
+                        "created_at": task.created_at.isoformat() if task.created_at else None,
+                        "related_job_id": task.related_job_id,
+                        "related_candidate_id": task.related_candidate_id,
+                        "created_by_agent": task.created_by_agent,
+                        "is_automated": task.is_automated,
+                    })
+            except Exception as e:
+                logger.warning(f"Error fetching pending tasks via TasksRepository: {e}")
+            return tasks
+
+        # Legacy path (caller nao propagou company_id - cross-tenant gap)
+        logger.warning(
+            "briefing_service._get_pending_tasks: company_id ausente - usando "
+            "path legacy SQL inline cross-tenant (multi-tenancy gap). Caller "
+            "deve propagar company_id do JWT. WT-2022 P0.TASK."
+        )
         try:
             result = await db.execute(
                 select(Task).where(
@@ -406,7 +451,7 @@ class BriefingService:
                     Task.due_date.asc().nullslast()
                 ).limit(15)
             )
-            
+
             for task in result.scalars():
                 tasks.append({
                     "id": task.id,
@@ -423,7 +468,7 @@ class BriefingService:
                 })
         except Exception as e:
             logger.warning(f"Error fetching pending tasks: {e}")
-        
+
         return tasks
     
     async def _get_active_alerts(

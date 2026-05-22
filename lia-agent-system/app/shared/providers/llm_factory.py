@@ -224,6 +224,29 @@ class ProviderContainer:
             expected_output_tokens=expected_output_tokens,
         )
 
+        # WT-2022 P0.AIC1: per-company ai_credits_balance gate (single chokepoint).
+        # check_request_budget_before_llm acima cobre teto per-request (Fase 3).
+        # check_credit_budget cobre teto mensal per-tenant (overage protection).
+        # fail-safe=True por default — outage de DB nao bloqueia LLM call.
+        if company_id is not None:
+            try:
+                from app.shared.services.ai_credit_gate import check_credit_budget, AICreditExhausted
+                from lia_config.database import AsyncSessionLocal
+                async with AsyncSessionLocal() as _credit_db:
+                    await check_credit_budget(
+                        _credit_db,
+                        str(company_id),
+                        estimated_tokens=int(expected_output_tokens or 0),
+                    )
+            except AICreditExhausted:
+                # bubble up — caller (route/agent) decide se converte em 429
+                raise
+            except Exception as _credit_exc:
+                logger.warning(
+                    "[ProviderContainer] ai_credit_gate failed (fail-safe ALLOW): %s",
+                    _credit_exc,
+                )
+
         # DEBT-002 (Sprint 2): canonical tracking inside the factory so ALL callers
         # get observability automatically — no per-caller wiring needed.
         from app.domains.credits.services.token_budget_service import track_llm_usage_start

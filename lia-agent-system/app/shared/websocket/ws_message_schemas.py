@@ -173,6 +173,17 @@ class UIScrollToParams(BaseModel):
     element_id: str = Field(..., min_length=1, max_length=128)
 
 
+class UISettingsOpenTabParams(BaseModel):
+    """`settings_open_tab`: bridge chat → SettingsPageEnhanced (WT-2022 Fase 4).
+
+    Espelha REST path canonical. ``section`` é required mínimo; ``subsection``
+    opcional pra deep-link em sub-aba (e.g., learning-loops).
+    """
+
+    section: str = Field(..., min_length=1, max_length=64)
+    subsection: str | None = Field(default=None, max_length=64)
+
+
 GLOBAL_UI_ACTION_TYPES: tuple[str, ...] = (
     "navigate_to",
     "open_modal",
@@ -180,6 +191,7 @@ GLOBAL_UI_ACTION_TYPES: tuple[str, ...] = (
     "wizard_step",
     "open_panel",
     "scroll_to",
+    "settings_open_tab",  # WT-2022 Fase 4: bridge chat → SettingsPageEnhanced
 )
 """Espelho runtime do `GLOBAL_UI_ACTION_TYPES` em `src/types/ui-action.ts`."""
 
@@ -191,6 +203,7 @@ _UI_ACTION_PARAMS_BY_TYPE: dict[str, type[BaseModel]] = {
     "wizard_step": UIWizardStepParams,
     "open_panel": UIOpenPanelParams,
     "scroll_to": UIScrollToParams,
+    "settings_open_tab": UISettingsOpenTabParams,  # WT-2022 Fase 4
 }
 
 

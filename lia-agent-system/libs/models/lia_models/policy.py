@@ -69,6 +69,7 @@ class BusinessRule(Base):
     __tablename__ = "business_rules"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # TENANT-EXEMPT: BusinessRule com company_id NULL = regra global do sistema (default cross-tenant)
     company_id = Column(UUID(as_uuid=True), nullable=True, index=True)
     
     name = Column(String(255), nullable=False)
@@ -123,6 +124,7 @@ class RateLimitRule(Base):
     __tablename__ = "rate_limit_rules"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # TENANT-EXEMPT: RateLimitRule com company_id NULL = rate limit global do sistema
     company_id = Column(UUID(as_uuid=True), nullable=True, index=True)
     
     name = Column(String(255), nullable=False)
@@ -213,6 +215,7 @@ class EscalationRule(Base):
     __tablename__ = "escalation_rules"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # TENANT-EXEMPT: EscalationRule com company_id NULL = escalation policy global do sistema
     company_id = Column(UUID(as_uuid=True), nullable=True, index=True)
     
     name = Column(String(255), nullable=False)
@@ -270,6 +273,7 @@ class PolicyEvaluationLog(Base):
     __tablename__ = "policy_evaluation_logs"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # TENANT-EXEMPT: PolicyEvaluationLog cross-tenant analytics (auditor WeDOTalent)
     company_id = Column(UUID(as_uuid=True), nullable=True, index=True)
     
     agent_name = Column(String(100), nullable=True)
@@ -326,6 +330,7 @@ class EscalationLog(Base):
     __tablename__ = "escalation_logs"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # TENANT-EXEMPT: EscalationLog cross-tenant compliance (auditor WeDOTalent)
     company_id = Column(UUID(as_uuid=True), nullable=True, index=True)
     
     escalation_rule_id = Column(UUID(as_uuid=True), ForeignKey("escalation_rules.id", ondelete="SET NULL"), nullable=True)

@@ -1,4 +1,4 @@
-import { RECRUITMENT_STAGES, type RecruitmentStage } from "@/lib/recruitment-stages"
+import { RECRUITMENT_STAGES, type RecruitmentStage } from "@/lib/recruitment/stages-data"
 import type { DynamicStage, InterviewStageFromJob, CandidatesDataMap, KanbanCandidate } from "../types"
 import type { SubStatusOption } from "@/components/settings/recruitment-journey.types"
 import { 

@@ -55,6 +55,10 @@ from app.jobs.tasks.ml import (  # noqa: F401
     rebuild_all_domains_task,
     recompute_active_ml_jobs_task,
 )
+from app.jobs.tasks.proactive import (  # noqa: F401  # WT-2022
+    proactive_detect_hints_hourly,
+)
+
 from app.jobs.tasks.voice import (  # noqa: F401
     run_openmic_wsi_pipeline_task,
 )
@@ -98,6 +102,8 @@ __all__ = [
     # followup
     "followup_process_pending_task",
     "wsi_check_abandoned_task",
+    # proactive (WT-2022)
+    "proactive_detect_hints_hourly",
     # memory
     "compress_old_episodes_task",
     # ml

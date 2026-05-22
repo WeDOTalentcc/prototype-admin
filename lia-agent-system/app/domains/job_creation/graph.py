@@ -614,6 +614,65 @@ def intake_node(state: JobCreationState) -> JobCreationState:
             "[JobCreation:intake] F3-1 extraction failed (fail-open): %s", _ex_exc,
         )
 
+    # WT-2022 P0.C: LGPD Art. 20 audit trail para decisão automatizada de intake extraction.
+    # Caller-side wire (intake_extractor.extract é sync; intake_node também é sync — não
+    # pode usar await). Pattern: schedule fire-and-forget coroutine no loop em execução
+    # (LangGraph roda em async runtime). Fail-safe: gap de log NUNCA bloqueia wizard.
+    try:
+        import asyncio
+        _company_id = str(state.get("workspace_id") or state.get("company_id") or "")
+        if _company_id:
+            from app.core.database import async_session_factory
+            from app.shared.services.automated_decision_logger import (
+                PROTECTED_CRITERIA_PT,
+                log_automated_decision,
+            )
+
+            _audit_job_id = str(state.get("job_id")) if state.get("job_id") else None
+            _audit_model = f"intake_extractor_{intake_source}"
+            _audit_explanation = (
+                f"Intake extraction (source={intake_source}, conf={intake_confidence:.2f}): "
+                f"title={parsed_title!r}, seniority={parsed_seniority!r}, "
+                f"location={parsed_location!r}, model={parsed_model!r}."
+            )
+            _audit_conf = float(intake_confidence) if intake_confidence else None
+
+            async def _do_audit_log():
+                try:
+                    async with async_session_factory() as _adl_db:
+                        await log_automated_decision(
+                            db=_adl_db,
+                            company_id=_company_id,
+                            job_id=_audit_job_id,
+                            decision_type="intake_extraction",
+                            ai_model_used=_audit_model,
+                            explanation_text=_audit_explanation,
+                            criteria_used=["title", "seniority", "department", "location", "work_model"],
+                            criteria_ignored=PROTECTED_CRITERIA_PT,
+                            confidence_score=_audit_conf,
+                            review_eligible=True,
+                        )
+                        await _adl_db.commit()
+                except Exception as _inner_exc:  # fail-safe
+                    logger.warning(
+                        "[JobCreation:intake] WT-2022 P0.C inner audit log failed (fail-safe): %s",
+                        _inner_exc,
+                    )
+
+            try:
+                _loop = asyncio.get_running_loop()
+                _loop.create_task(_do_audit_log())
+            except RuntimeError:
+                # Sem loop ativo (testes sync isolados). Pular log — pattern fail-safe.
+                logger.debug(
+                    "[JobCreation:intake] WT-2022 P0.C audit log skipped (no running loop)",
+                )
+    except Exception as _adl_exc:  # fail-safe: log gap não bloqueia wizard
+        logger.warning(
+            "[JobCreation:intake] WT-2022 P0.C audit log scheduling failed (fail-safe): %s",
+            _adl_exc,
+        )
+
     updates: Dict[str, Any] = {
         "current_stage": "intake",
         "raw_input": query,

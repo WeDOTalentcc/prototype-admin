@@ -35,6 +35,7 @@ class CacheEntry(Base):
     
     cache_key = Column(String(512), nullable=False, unique=True, index=True)
     namespace = Column(String(100), nullable=False, index=True)
+    # TENANT-EXEMPT: CacheEntry com company_id NULL = cache global compartilhado (namespace scope)
     company_id = Column(String(255), nullable=True, index=True)
     
     value = Column(JSON, nullable=False)
@@ -79,6 +80,7 @@ class QueryEmbedding(Base):
     query_hash = Column(String(64), nullable=False, index=True)
     
     namespace = Column(String(100), nullable=False, index=True)
+    # TENANT-EXEMPT: QueryEmbedding com company_id NULL = embedding compartilhado entre tenants
     company_id = Column(String(255), nullable=True, index=True)
     
     embedding = Column(ARRAY(Float), nullable=False)

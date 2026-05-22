@@ -8,6 +8,26 @@ Validates requests against:
 - Business rule constraints
 """
 
+# ════════════════════════════════════════════════════════════════════
+# WT-2022 P3.1 DEPRECATED (decisao Paulo 2026-05-21):
+# Esta PolicyEngine (V1) usa DEFAULT_POLICIES hardcoded + tabela api_usage_daily.
+# Implementacao canonical V2 vive em:
+#     app/domains/policy/services/policy_engine_service.py
+# que le 3 tabelas (business_rules, rate_limit_rules, escalation_rules) e e
+# expostas via /api/v1/policy-engine endpoint + PolicyEnginePanel UI.
+#
+# Decisao: matar V1 em proxima sprint. Migration nao trivial porque V1 usa
+# coordinator style (validate_request/validate_search/...) e V2 usa generic
+# evaluate/check_rate_limit/trigger_escalation. Cada caller de V1 precisa ser
+# refatorado individualmente pra usar V2 API.
+#
+# Por ora: V1 continua em runtime path mas instanciacoes geram warning log.
+# Nao usar V1 em codigo novo. Para policy checks novos, usar:
+#     from app.domains.policy.services.policy_engine_service import PolicyEngineService
+# ════════════════════════════════════════════════════════════════════
+
+
+
 import logging
 import os
 from typing import Any
@@ -52,7 +72,31 @@ class PolicyEngine:
     }
     
     def __init__(self, db_service=None):
-        """Initialize Policy Engine with optional database service."""
+        """Initialize Policy Engine V1 (DEPRECATED — WT-2022 P3.1).
+
+        Canonical V2 lives at:
+            app.domains.policy.services.policy_engine_service.PolicyEngineService
+        """
+        # WT-2022 P3.1 (2026-05-21): emit DeprecationWarning RUNTIME real
+        # (não só log). Capturado por:
+        # - pytest -W error::DeprecationWarning
+        # - sensors AST custom (check_no_v1_policy_engine.py futuro)
+        # - linters padrão (ruff DTZ, etc.)
+        import warnings
+        warnings.warn(
+            "PolicyEngine V1 is DEPRECATED (WT-2022 P3.1, decisao Paulo "
+            "2026-05-21). Migrate to PolicyEngineService V2 at "
+            "app.domains.policy.services.policy_engine_service. V1 will be "
+            "removed in a future sprint after callers (orchestrator.py, "
+            "job_creation/policy_gate.py, tests/) migrate.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        # Log paralelo — visivel em prod onde DeprecationWarning é silenciado.
+        logger.warning(
+            "[P3.1 DEPRECATED] PolicyEngine V1 instantiated — migrate to "
+            "PolicyEngineService V2"
+        )
         self.db = db_service
         self.policies = self.DEFAULT_POLICIES.copy()
         self.usage_limits = self.DEFAULT_USAGE_LIMITS.copy()

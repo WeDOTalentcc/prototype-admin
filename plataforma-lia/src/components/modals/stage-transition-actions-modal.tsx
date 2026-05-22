@@ -13,7 +13,7 @@ import {
   Loader2,
 } from "lucide-react"
 import { textStyles } from "@/lib/design-tokens"
-import { RECRUITMENT_STAGES } from "@/lib/recruitment-stages"
+import { useRecruitmentStages } from "@/hooks/recruitment/use-recruitment-stages"
 import { cn } from "@/lib/utils"
 import {
   useStageTransitionModal,
@@ -61,7 +61,9 @@ export function StageTransitionActionsModal(props: StageTransitionActionsModalPr
     regenerateMessage,
   } = useStageTransitionModal(props)
 
-  const newStageData = RECRUITMENT_STAGES.find(s => s.name === newStage)
+  // WT-2022 P0.STAGES: pipeline da empresa via hook
+  const { legacyStages } = useRecruitmentStages()
+  const newStageData = legacyStages.find(s => s.name === newStage)
 
   if (!isOpen || !candidate) return null
 

@@ -183,7 +183,7 @@ company_id: str = Depends(require_company_id)):
                     f"Recebemos sua solicitação de {tipo_label} (LGPD Art. 18).\n\n"
                     f"Número de protocolo: {request.id}\n"
                     f"Prazo de resposta: até {sla_fmt} (15 dias úteis conforme LGPD).\n\n"
-                    f"Você pode acompanhar o status em: https://app.wedotalent.com/candidato/dsr/track/{request.id}\n\n"
+                    f"Você pode acompanhar o status em: https://app.wedotalent.cc/candidato/dsr/track/{request.id}\n\n"
                     f"Em caso de dúvidas: privacidade@wedotalent.com.br\n\n"
                     f"WeDOTalent — Proteção de Dados"
                 ),
@@ -574,7 +574,7 @@ _company_gate: str = Depends(require_company_id)):
                     f"Sua solicitação de {tipo_label} (protocolo {request_id}) foi concluída {sla_status}.\n\n"
                     f"Resposta:\n{data.response}\n\n"
                     f"Caso queira contestar esta resposta, acesse:\n"
-                    f"https://app.wedotalent.com/candidato/dsr/track/{request_id}\n\n"
+                    f"https://app.wedotalent.cc/candidato/dsr/track/{request_id}\n\n"
                     f"WeDOTalent — Proteção de Dados | privacidade@wedotalent.com.br"
                 ),
                 company_id=company_id,

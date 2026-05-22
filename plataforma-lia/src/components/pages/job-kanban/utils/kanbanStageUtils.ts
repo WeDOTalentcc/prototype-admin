@@ -1,7 +1,7 @@
 import {
   RECRUITMENT_STAGES,
   type RecruitmentStage,
-} from "@/lib/recruitment-stages"
+} from "@/lib/recruitment/stages-data"
 
 export interface InterviewStageFromJob {
   stageName: string

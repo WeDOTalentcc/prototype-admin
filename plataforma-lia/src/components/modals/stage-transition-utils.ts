@@ -6,7 +6,7 @@ import {
   ArrowRight,
   ClipboardList,
 } from "lucide-react"
-import { RECRUITMENT_STAGES } from "@/lib/recruitment-stages"
+import { RECRUITMENT_STAGES, type RecruitmentStage } from "@/lib/recruitment/stages-data"
 import type { TemplateSituation } from "@/hooks/chat/use-communication-templates"
 
 export type TransitionActionType = 'email' | 'whatsapp' | 'triagem_wsi' | 'agendar_entrevista' | 'apenas_mover'
@@ -113,8 +113,12 @@ export const COLOR_CLASSES = {
   },
 }
 
-export function getStageDisplayName(stageName: string): string {
-  const stage = RECRUITMENT_STAGES.find(s => s.name === stageName)
+// TODO WT-2022: caller should pass company pipeline stages from useRecruitmentStages()
+export function getStageDisplayName(
+  stageName: string,
+  stages: RecruitmentStage[] = RECRUITMENT_STAGES,
+): string {
+  const stage = stages.find(s => s.name === stageName)
   return stage?.displayName || stageName
 }
 
@@ -135,9 +139,14 @@ export function mapTemplateCategoryToSituations(templateCategory: string): Templ
   }
 }
 
-export function getSuggestedActions(currentStage: string, newStage: string): TransitionAction[] {
+// TODO WT-2022: caller should pass company pipeline stages from useRecruitmentStages()
+export function getSuggestedActions(
+  currentStage: string,
+  newStage: string,
+  stages: RecruitmentStage[] = RECRUITMENT_STAGES,
+): TransitionAction[] {
   const baseActions: TransitionAction[] = []
-  const newStageData = RECRUITMENT_STAGES.find(s => s.name === newStage)
+  const newStageData = stages.find(s => s.name === newStage)
 
   if (newStageData?.isRejection) {
     baseActions.push({

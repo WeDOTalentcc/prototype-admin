@@ -114,8 +114,10 @@ def send_daily_briefing_task(self) -> dict:
 
             for user in users:
                 try:
+                    # WT-2022 P0.TASK: resolve company_id per user (multi-tenancy)
+                    user_company_id = str(user.company_id) if hasattr(user, "company_id") and user.company_id else None
                     briefing = await briefing_service.generate_daily_briefing(
-                        user_id=str(user.id), db=db
+                        user_id=str(user.id), db=db, company_id=user_company_id
                     )
 
                     # Bell notification — best-effort

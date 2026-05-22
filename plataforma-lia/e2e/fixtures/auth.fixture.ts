@@ -106,3 +106,21 @@ export const test = base.extend<AuthFixture>({
 });
 
 export { expect };
+
+// Re-exports to satisfy spec files that import `Page` directly from this module.
+export type { Page } from '@playwright/test';
+
+/**
+ * Standalone helper for spec files that don't use the `authenticatedPage` fixture.
+ * Authenticates via backend POST /api/v1/auth/login, seeds cookies, and navigates to /pt/chat.
+ *
+ * Note: must be called with the actual Page from the test (not the fixture-extended one).
+ * Internally creates an APIRequestContext from the page's context.
+ */
+export async function authenticateAsRecruiter(page: Page): Promise<void> {
+  const context = page.context();
+  const request = context.request;
+  const accessToken = await fetchDemoAccessToken(request);
+  await seedAuthCookies(context, accessToken);
+  await page.goto('/pt/chat', { waitUntil: 'domcontentloaded', timeout: 30_000 });
+}

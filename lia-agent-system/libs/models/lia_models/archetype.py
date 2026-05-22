@@ -40,6 +40,7 @@ class SearchArchetype(Base):
     
     usage_count = Column(Integer, default=0)
     
+    # TENANT-EXEMPT: SearchArchetype com company_id NULL = template publico do marketplace
     company_id = Column(String(100), nullable=True, index=True)
     created_by = Column(String(255), nullable=True)
     

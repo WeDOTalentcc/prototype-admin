@@ -48,6 +48,7 @@ class ATSConnection(Base):
     webhook_secret = Column(String(500), nullable=True)  # Webhook signature verification
     
     # Organization mapping
+    # TENANT-EXEMPT: ATSConnection legacy pre-multi-tenancy; novas linhas sempre setam (RLS via app layer)
     company_id = Column(String(255), nullable=True)  # Internal company ID
     ats_company_id = Column(String(255), nullable=True)  # Company ID in ATS platform
     ats_company_name = Column(String(255), nullable=True)

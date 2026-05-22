@@ -161,6 +161,7 @@ class AlertConfig(Base):
     
     id = Column(String, primary_key=True, default=lambda: str(uuid.uuid4()))
     
+    # TENANT-EXEMPT: AlertConfig com company_id NULL = config global padrao do sistema
     company_id = Column(String, nullable=True)
     user_id = Column(String, nullable=True)
     

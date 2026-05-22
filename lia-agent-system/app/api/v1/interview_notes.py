@@ -156,6 +156,9 @@ class QuestionWithAnswer(BaseModel):
 class CalculateWSIRequest(WeDoBaseModel):
     """Request for calculating WSI score."""
     blocks: list[QuestionBlock]
+    # WT-2022 P0.C (2026-05-21): optional fields para LGPD Art. 20 audit trail
+    candidateId: UUID | None = Field(None, description="Candidate ID for automated decision audit log")
+    jobId: UUID | None = Field(None, description="Job vacancy ID for automated decision audit log")
 
 
 class GenerateParecerRequest(WeDoBaseModel):
@@ -835,7 +838,8 @@ def _create_default_blocks(wsi_level: str | None = None) -> list[QuestionBlock]:
 @router.post("/calculate-wsi", response_model=WSIScore)
 async def calculate_wsi_score(
     request: CalculateWSIRequest,
-    current_user: User = Depends(get_current_active_user), 
+    current_user: User = Depends(get_current_active_user),
+    db: AsyncSession = Depends(get_db),
 company_id: str = Depends(require_company_id)) -> WSIScore:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
@@ -890,7 +894,31 @@ company_id: str = Depends(require_company_id)) -> WSIScore:
         decision, decision_label = _get_wsi_decision(total_wsi)
         
         logger.info(f"Calculated WSI: {total_wsi} - Decision: {decision}")
-        
+
+        # WT-2022 P0.C: LGPD Art. 20 audit trail para decisao automatizada de score
+        try:
+            from app.shared.services.automated_decision_logger import (
+                log_automated_decision, PROTECTED_CRITERIA_PT,
+            )
+            await log_automated_decision(
+                db=db,
+                company_id=company_id,
+                candidate_id=str(request.candidateId) if request.candidateId else None,
+                job_id=str(request.jobId) if request.jobId else None,
+                decision_type="wsi_score",
+                ai_model_used="deterministic_weighted_sum",
+                explanation_text=(
+                    f"WSI={total_wsi} (tech={technical_score:.2f}*0.5 + behav={behavioral_score:.2f}*0.2 "
+                    f"+ gap={gap_analysis_score:.2f}*0.15 + ctx={contextual_score:.2f}*0.15). Decision: {decision}."
+                ),
+                criteria_used=["technical_score", "behavioral_score", "gap_analysis_score", "contextual_score"],
+                criteria_ignored=PROTECTED_CRITERIA_PT,
+                confidence_score=None,  # weighted sum eh deterministico, nao tem confidence
+                review_eligible=True,
+            )
+        except Exception as audit_exc:  # fail-safe: nao bloqueia decisao por log gap
+            logger.warning("WT-2022 P0.C: WSI score audit log failed: %s", audit_exc)
+
         return WSIScore(
             technicalScore=round(technical_score, 2),
             behavioralScore=round(behavioral_score, 2),

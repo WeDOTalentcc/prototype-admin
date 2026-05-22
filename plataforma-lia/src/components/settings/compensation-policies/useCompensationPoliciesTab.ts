@@ -109,12 +109,13 @@ export function useCompensationPoliciesTab() {
         const payload = { ...data, company_id: companyId }
         delete (payload as Record<string, unknown>).id
 
-        const result = await apiFetch(url, {
+        const response = await apiFetch(url, {
           method,
           body: JSON.stringify(payload),
         })
+        const result = (await response.json()) as Record<string, unknown>
 
-        const normalized = normalizePolicy(result as Record<string, unknown>)
+        const normalized = normalizePolicy(result)
         if (isEdit) {
           setPolicies((prev) =>
             prev.map((p) => (p.id === normalized.id ? normalized : p))

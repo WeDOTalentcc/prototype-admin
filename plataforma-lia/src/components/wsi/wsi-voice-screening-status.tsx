@@ -319,7 +319,7 @@ export function WSIVoiceScreeningStatus({
 
                   {status === 'calling' && !isVoipMode && (
                     <p className="text-sm text-lia-text-tertiary mt-2">
-                      {t('voiceScreening.callingPhone', { phone: candidate.phone })}
+                      {t('voiceScreening.callingPhone', { phone: candidate.phone ?? '' })}
                     </p>
                   )}
 

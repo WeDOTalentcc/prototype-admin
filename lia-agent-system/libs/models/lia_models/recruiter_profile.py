@@ -121,6 +121,7 @@ class RecruiterFieldPreference(Base):
     
     recruiter_id = Column(String(255), nullable=False, index=True)
     recruiter_profile_id = Column(UUID(as_uuid=True), nullable=True)
+    # TENANT-EXEMPT: RecruiterFieldPreference legacy; recruiter_id ja scope canonical
     company_id = Column(String(255), nullable=True, index=True)
     field_name = Column(String(100), nullable=False)
     

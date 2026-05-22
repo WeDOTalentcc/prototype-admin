@@ -28,6 +28,7 @@ class HITLPendingAction(Base):
     __tablename__ = "hitl_pending_actions"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # TENANT-EXEMPT: HITLPendingAction inclui admin overrides system-level (cross-tenant)
     company_id = Column(String(255), nullable=True, index=True)
     thread_id = Column(String(255), nullable=False)
     pending_id = Column(String(255), nullable=False, unique=True)
@@ -81,6 +82,7 @@ class HITLAuditTrail(Base):
     __tablename__ = "hitl_audit_trail"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # TENANT-EXEMPT: HITLAuditTrail cross-tenant compliance log (auditor WeDOTalent)
     company_id = Column(String(255), nullable=True, index=True)
     thread_id = Column(String(255), nullable=False)
     pending_id = Column(String(255), nullable=False)

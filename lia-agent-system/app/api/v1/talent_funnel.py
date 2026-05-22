@@ -4,15 +4,16 @@ Endpoints for score analysis, gap analysis, WRF configuration, and pre-WRF filte
 """
 import logging
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.database import get_db
+from app.shared.security.require_company_id import require_company_id
 from app.shared.services.es_score_drop_analyzer import es_score_drop_analyzer
 from app.shared.services.pgv_gap_analyzer import pgv_gap_analyzer
 from app.shared.services.pre_wrf_filter_service import pre_wrf_filter_service
 from app.shared.services.wrf_dynamic_k_service import wrf_dynamic_k_service
-from fastapi import Depends
-from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
@@ -107,9 +108,42 @@ async def get_wrf_config(company_id: str = Depends(require_company_id)):
 
 
 @router.post("/pre-wrf-filter", response_model=None)
-async def pre_wrf_filter(body: PreWRFRequest, company_id: str = Depends(require_company_id)):
+async def pre_wrf_filter(
+    body: PreWRFRequest,
+    company_id: str = Depends(require_company_id),
+    db: AsyncSession = Depends(get_db),
+):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     es_candidates = [c.model_dump() for c in body.es_candidates]
     pgv_candidates = [c.model_dump() for c in body.pgv_candidates]
     result = pre_wrf_filter_service.orchestrate(es_candidates, pgv_candidates, body.qualification_level)
+
+    # WT-2022 P0.C: LGPD Art. 20 audit trail para decisão automatizada de pre-WRF filter
+    try:
+        from app.shared.services.automated_decision_logger import (
+            PROTECTED_CRITERIA_PT,
+            log_automated_decision,
+        )
+        input_total = len(es_candidates) + len(pgv_candidates)
+        passed = result.get("filtered_candidates") if isinstance(result, dict) else None
+        passed_total = len(passed) if isinstance(passed, list) else None
+        await log_automated_decision(
+            db=db,
+            company_id=company_id,
+            decision_type="cv_pre_wrf_filter",
+            ai_model_used="pre_wrf_filter_deterministic",
+            explanation_text=(
+                f"Pre-WRF filter: {input_total} candidatos de entrada"
+                + (f" → {passed_total} aprovados." if passed_total is not None else ".")
+                + f" qualification_level={body.qualification_level}."
+            ),
+            criteria_used=["es_score", "pgv_distance", "qualification_level"],
+            criteria_ignored=PROTECTED_CRITERIA_PT,
+            review_eligible=True,
+        )
+    except Exception as _adl_exc:  # fail-safe: gap de log não bloqueia decisão
+        logger.warning(
+            "WT-2022 P0.C: pre_wrf_filter audit log failed (fail-safe): %s", _adl_exc,
+        )
+
     return result

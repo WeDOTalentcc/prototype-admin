@@ -94,6 +94,7 @@ class TechnicalTest(Base):
     
     is_global = Column(Boolean, default=True, index=True)
     is_active = Column(Boolean, default=True, index=True)
+    # TENANT-EXEMPT: TechnicalTest com is_global=True default => template publico do marketplace
     company_id = Column(String(255), nullable=True, index=True)
     
     created_by = Column(String(255), nullable=True)

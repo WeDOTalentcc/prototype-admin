@@ -18,6 +18,8 @@ class TasksRepository:
 
     async def create_task(
         self,
+        *,
+        company_id: str,  # WT-2022 P0.TASK fix: required tenant scoping
         title: str,
         description: str | None = None,
         task_type: TaskType = TaskType.GENERAL,
@@ -33,7 +35,10 @@ class TasksRepository:
         requires_confirmation: bool = False
     ) -> Task:
         """Create and persist a new task."""
+        if not company_id:
+            raise ValueError("company_id required for tenant scoping (WT-2022 P0.TASK)")
         task = Task(
+            company_id=company_id,
             title=title,
             description=description,
             task_type=task_type,
@@ -55,6 +60,8 @@ class TasksRepository:
 
     async def get_active_task_for_job_and_type(
         self,
+        *,
+        company_id: str,  # WT-2022 P0.TASK fix: required tenant scoping
         job_id: str,
         task_type: TaskType,
     ) -> Task | None:
@@ -63,9 +70,12 @@ class TasksRepository:
         Used by app/domains/sourcing/services/sourcing_pipeline_service.py
         (Sprint Q2 ADR-001 cross-domain cleanup) to dedupe sourcing tasks.
         """
+        if not company_id:
+            raise ValueError("company_id required for tenant scoping (WT-2022 P0.TASK)")
         result = await self.db.execute(
             select(Task).where(
                 and_(
+                    Task.company_id == company_id,
                     Task.related_job_id == job_id,
                     Task.task_type == task_type,
                     Task.status.in_([TaskStatus.PENDING, TaskStatus.IN_PROGRESS]),
@@ -74,9 +84,15 @@ class TasksRepository:
         )
         return result.scalar_one_or_none()
 
-    async def get_task(self, task_id: str) -> Task | None:
-        """Get a task by ID."""
-        result = await self.db.execute(select(Task).where(Task.id == task_id))
+    async def get_task(self, task_id: str, *, company_id: str) -> Task | None:
+        """Get a task by ID, scoped to company_id (WT-2022 P0.TASK fix)."""
+        if not company_id:
+            raise ValueError("company_id required for tenant scoping (WT-2022 P0.TASK)")
+        result = await self.db.execute(
+            select(Task).where(
+                and_(Task.id == task_id, Task.company_id == company_id)
+            )
+        )
         return result.scalar_one_or_none()
 
     async def flush_and_refresh(self, task: Task) -> Task:
@@ -93,14 +109,21 @@ class TasksRepository:
 
     async def get_pending_tasks(
         self,
+        *,
+        company_id: str,  # WT-2022 P0.TASK fix: required tenant scoping
         user_id: str | None = None,
         agent_type: str | None = None,
         priority: TaskPriority | None = None,
         limit: int = 50
     ) -> list[Task]:
         """Get pending/in-progress tasks with optional filters."""
+        if not company_id:
+            raise ValueError("company_id required for tenant scoping (WT-2022 P0.TASK)")
         query = select(Task).where(
-            Task.status.in_([TaskStatus.PENDING, TaskStatus.IN_PROGRESS])
+            and_(
+                Task.company_id == company_id,
+                Task.status.in_([TaskStatus.PENDING, TaskStatus.IN_PROGRESS]),
+            )
         )
         if user_id:
             query = query.where(Task.assigned_to_user_id == user_id)
@@ -116,10 +139,15 @@ class TasksRepository:
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
-    async def get_overdue_tasks(self, user_id: str | None = None) -> list[Task]:
-        """Get all overdue tasks."""
+    async def get_overdue_tasks(
+        self, *, company_id: str, user_id: str | None = None
+    ) -> list[Task]:
+        """Get all overdue tasks (WT-2022 P0.TASK fix: tenant-scoped)."""
+        if not company_id:
+            raise ValueError("company_id required for tenant scoping (WT-2022 P0.TASK)")
         query = select(Task).where(
             and_(
+                Task.company_id == company_id,
                 Task.status.in_([TaskStatus.PENDING, TaskStatus.IN_PROGRESS]),
                 Task.due_date < datetime.utcnow()
             )
@@ -130,12 +158,17 @@ class TasksRepository:
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
-    async def get_tasks_due_today(self, user_id: str | None = None) -> list[Task]:
-        """Get tasks due today."""
+    async def get_tasks_due_today(
+        self, *, company_id: str, user_id: str | None = None
+    ) -> list[Task]:
+        """Get tasks due today (WT-2022 P0.TASK fix: tenant-scoped)."""
+        if not company_id:
+            raise ValueError("company_id required for tenant scoping (WT-2022 P0.TASK)")
         today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
         today_end = today_start + timedelta(days=1)
         query = select(Task).where(
             and_(
+                Task.company_id == company_id,
                 Task.status.in_([TaskStatus.PENDING, TaskStatus.IN_PROGRESS]),
                 Task.due_date >= today_start,
                 Task.due_date < today_end
@@ -147,9 +180,13 @@ class TasksRepository:
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
-    async def get_task_summary(self, user_id: str | None = None) -> dict[str, Any]:
-        """Get summary counts for dashboard."""
-        base_query = select(func.count(Task.id))
+    async def get_task_summary(
+        self, *, company_id: str, user_id: str | None = None
+    ) -> dict[str, Any]:
+        """Get summary counts for dashboard (WT-2022 P0.TASK fix: tenant-scoped)."""
+        if not company_id:
+            raise ValueError("company_id required for tenant scoping (WT-2022 P0.TASK)")
+        base_query = select(func.count(Task.id)).where(Task.company_id == company_id)
         if user_id:
             base_query = base_query.where(Task.assigned_to_user_id == user_id)
 

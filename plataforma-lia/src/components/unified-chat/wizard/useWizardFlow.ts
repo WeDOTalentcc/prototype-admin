@@ -126,7 +126,8 @@ function wizardReducer(state: WizardState, action: WizardAction): WizardState {
   switch (action.type) {
     case "STAGE_UPDATE": {
       const { stage, data, completeness, requires_approval } = action.payload
-      const degraded = extractDegradedStage(stage, data)
+      const safeData: Record<string, unknown> = (data ?? {}) as Record<string, unknown>
+      const degraded = extractDegradedStage(stage, safeData)
       const nextDegraded = degraded
         ? { ...state.degradedStages, [stage]: degraded }
         : state.degradedStages
@@ -134,9 +135,9 @@ function wizardReducer(state: WizardState, action: WizardAction): WizardState {
         ...state,
         active: true,
         currentStage: stage,
-        stageData: data,
+        stageData: safeData,
         completeness,
-        requiresApproval: requires_approval,
+        requiresApproval: requires_approval ?? false,
         stageHistory: buildHistory(state.currentStage, stage, state.stageHistory),
         degradedStages: nextDegraded,
         error: null,

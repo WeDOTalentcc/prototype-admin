@@ -708,6 +708,7 @@ export function useEditJob({ isOpen, job: rawJob, onSave, onClose }: UseEditJobP
     getCategoryColor,
     getWeightColor,
     handleSave,
+    activeCompensationPolicies,
     applyPipelineTemplate,
     fetchPipelineTemplates,
   }

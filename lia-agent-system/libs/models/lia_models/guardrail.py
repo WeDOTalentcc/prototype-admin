@@ -52,6 +52,7 @@ class Guardrail(Base):
     rule = Column(Text, nullable=False)
     blocking_message = Column(Text, nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
+    # TENANT-EXEMPT: Guardrail com company_id NULL = guardrail global do sistema (comentario inline confirma)
     company_id = Column(String(36), nullable=True)  # None = global
     updated_by = Column(String(36), nullable=False, default="system")
     updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)

@@ -2,13 +2,20 @@
 
 import { useCallback } from "react"
 import { type DynamicStage } from "@/components/kanban"
-import { RECRUITMENT_STAGES } from "@/lib/recruitment-stages"
+import { useRecruitmentStages } from "@/hooks/recruitment/use-recruitment-stages"
 
 interface UseKanbanColumnConfigProps {
   dynamicStages: DynamicStage[]
 }
 
 export function useKanbanColumnConfig({ dynamicStages }: UseKanbanColumnConfigProps) {
+  // Canonical pipeline da empresa via /api/backend-proxy/company-pipeline.
+  // Substitui o lookup hardcoded em RECRUITMENT_STAGES (mantido como fallback
+  // transitional quando o backend ainda nao respondeu OU empresa nao configurou).
+  // WT-2022 P0.STAGES: stages tem shape canonical (snake_case);
+  // legacyStages tem shape camelCase (drop-in p/ utils legacy).
+  const { stages: companyPipelineStages, legacyStages: companyPipelineLegacy } =
+    useRecruitmentStages()
   const getColumnStyle = (columnId: string) => {
     // Estilos fixos para etapas conhecidas
     const fixedStyles: Record<string, { bg: string; border: string; dot: string; header: string; accentColor: string }> = {
@@ -82,8 +89,17 @@ export function useKanbanColumnConfig({ dynamicStages }: UseKanbanColumnConfigPr
   const getStageDisplayName = (stageId: string): string => {
     const stage = dynamicStages.find(s => s.id === stageId)
     if (stage) return stage.displayName
-    const recruitmentStage = RECRUITMENT_STAGES.find(s => s.name === stageId)
-    return recruitmentStage?.displayName || stageId
+    // Canonical: usar pipeline da empresa (Configuracoes > Pipeline).
+    const companyStage = companyPipelineStages.find(s => s.name === stageId)
+    if (companyStage?.display_name) return companyStage.display_name
+    // WT-2022 P0.STAGES (pattern example): legacyStages do hook expoe
+    // shape camelCase (mesmo dataset que companyPipelineStages). Util pra
+    // utils legacy que esperam displayName/stageOrder/stageType/isInitial/
+    // isFinal/stageCategory/allowedTransitions. Aqui ainda eh redundante
+    // com a linha anterior (display_name == displayName), mas demonstra
+    // o pattern p/ outros consumers que dependem dos demais fields.
+    const recruitmentStageLegacy = companyPipelineLegacy.find(s => s.name === stageId)
+    return recruitmentStageLegacy?.displayName || stageId
   }
 
   const STAGE_PASTEL_COLORS: Record<string, string> = {

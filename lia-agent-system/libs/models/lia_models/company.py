@@ -368,6 +368,7 @@ class BigFiveRoleProfile(Base):
     __tablename__ = "big_five_role_profiles"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # TENANT-EXEMPT: BigFiveRoleProfile com company_id NULL = template canonical compartilhado
     company_id = Column(UUID(as_uuid=True), ForeignKey("company_profiles.id"), nullable=True)
     
     name = Column(String(255), nullable=False)
@@ -464,6 +465,7 @@ class TechnicalTestTemplate(Base):
     __tablename__ = "technical_test_templates"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # TENANT-EXEMPT: TechnicalTestTemplate com company_id NULL = template publico do marketplace
     company_id = Column(UUID(as_uuid=True), ForeignKey("company_profiles.id"), nullable=True)
     
     name = Column(String(255), nullable=False)
@@ -532,6 +534,7 @@ class GlobalSearchSettings(Base):
     __tablename__ = "global_search_settings"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # TENANT-EXEMPT: GlobalSearchSettings (tabela explicitamente global, nome confirma)
     company_id = Column(String(255), nullable=True, index=True)
     
     default_limit = Column(Integer, default=50)

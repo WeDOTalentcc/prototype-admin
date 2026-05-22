@@ -6,9 +6,7 @@ import { cn } from "@/lib/utils"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
-import {
-  RECRUITMENT_STAGES
-} from "@/lib/recruitment-stages"
+import { RECRUITMENT_STAGES } from "@/lib/recruitment/stages-data"
 import {
   Edit, Plus, CheckCircle, Workflow, FileText, ClipboardList,
   Brain, Lock, Target, Settings, Check, X, ArrowUp, ArrowDown,

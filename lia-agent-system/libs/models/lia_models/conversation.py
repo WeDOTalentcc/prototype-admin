@@ -36,6 +36,7 @@ class Conversation(Base):
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(String(255), nullable=False, index=True)
+    # TENANT-EXEMPT: Conversation legacy pre-multi-tenancy migration 082 (user_id ja scope per-user)
     company_id = Column(String(255), nullable=True, index=True)
     user_role = Column(String(50), default="recruiter")
     

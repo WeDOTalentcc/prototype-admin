@@ -236,7 +236,7 @@ class WorkforceRepository:
     async def get_active_headcounts_filtered(self, company_id=None) -> list[PlannedHeadcount]:
         query = select(PlannedHeadcount).where(
             PlannedHeadcount.is_active == True,
-            PlannedHeadcount.status.in_([planned, pending, in_progress]),
+            PlannedHeadcount.status.in_(["planned", "pending", "in_progress"]),
         )
         if company_id:
             query = query.join(HiringPlan).where(HiringPlan.company_id == company_id)
@@ -247,25 +247,55 @@ class WorkforceRepository:
     # Workforce Entries
     # ------------------------------------------------------------------
 
-    async def get_workforce_entries(self, year: int) -> list[WorkforceEntry]:
+    async def get_workforce_entries(
+        self,
+        year: int,
+        company_id: str,
+    ) -> list[WorkforceEntry]:
+        # WT-2022 P0.WORK fix: required tenant scoping (cross-tenant prevention)
+        if not company_id:
+            raise ValueError("company_id required (WT-2022 P0.WORK)")
         result = await self.db.execute(
             select(WorkforceEntry)
-            .where(WorkforceEntry.is_active == True, WorkforceEntry.year == year)
+            .where(
+                WorkforceEntry.is_active == True,
+                WorkforceEntry.year == year,
+                WorkforceEntry.company_id == company_id,
+            )
             .order_by(WorkforceEntry.month, WorkforceEntry.department)
         )
         return list(result.scalars().all())
 
-    async def get_workforce_entries_for_year(self, year: int) -> list[WorkforceEntry]:
+    async def get_workforce_entries_for_year(
+        self,
+        year: int,
+        company_id: str,
+    ) -> list[WorkforceEntry]:
+        # WT-2022 P0.WORK fix: required tenant scoping
+        if not company_id:
+            raise ValueError("company_id required (WT-2022 P0.WORK)")
         result = await self.db.execute(
-            select(WorkforceEntry).where(WorkforceEntry.year == year)
+            select(WorkforceEntry).where(
+                WorkforceEntry.year == year,
+                WorkforceEntry.company_id == company_id,
+            )
         )
         return list(result.scalars().all())
 
     async def upsert_workforce_entries(
-        self, year: int, entries_data: list[dict]
+        self,
+        year: int,
+        entries_data: list[dict],
+        company_id: str,
     ) -> list[WorkforceEntry]:
+        # WT-2022 P0.WORK fix: required tenant scoping (cross-tenant prevention)
+        if not company_id:
+            raise ValueError("company_id required (WT-2022 P0.WORK)")
         existing_result = await self.db.execute(
-            select(WorkforceEntry).where(WorkforceEntry.year == year)
+            select(WorkforceEntry).where(
+                WorkforceEntry.year == year,
+                WorkforceEntry.company_id == company_id,
+            )
         )
         existing_map: dict[tuple, WorkforceEntry] = {
             (e.month, e.department): e
@@ -273,36 +303,50 @@ class WorkforceRepository:
         }
         now = datetime.utcnow()
         for ed in entries_data:
-            key = (ed[month], ed[department])
+            key = (ed["month"], ed["department"])
             existing = existing_map.get(key)
             if existing:
-                existing.planned = ed[planned]
-                existing.actual = ed[actual]
+                existing.planned = ed["planned"]
+                existing.actual = ed["actual"]
                 existing.updated_at = now
             else:
                 new_entry = WorkforceEntry(
+                    company_id=company_id,
                     year=year,
-                    month=ed[month],
-                    department=ed[department],
-                    planned=ed[planned],
-                    actual=ed[actual],
+                    month=ed["month"],
+                    department=ed["department"],
+                    planned=ed["planned"],
+                    actual=ed["actual"],
                     is_active=True,
                 )
                 self.db.add(new_entry)
         await self.db.commit()
-        return await self.get_workforce_entries(year)
+        return await self.get_workforce_entries(year, company_id)
 
-    async def get_workforce_entry(self, year: int, month: str, department: str) -> WorkforceEntry | None:
+    async def get_workforce_entry(
+        self,
+        year: int,
+        month: str,
+        department: str,
+        company_id: str,
+    ) -> WorkforceEntry | None:
+        # WT-2022 P0.WORK fix: required tenant scoping
+        if not company_id:
+            raise ValueError("company_id required (WT-2022 P0.WORK)")
         result = await self.db.execute(
             select(WorkforceEntry).where(
                 WorkforceEntry.year == year,
                 WorkforceEntry.month == month,
                 WorkforceEntry.department == department,
+                WorkforceEntry.company_id == company_id,
             )
         )
         return result.scalar_one_or_none()
 
     async def create_workforce_entry(self, data: dict) -> WorkforceEntry:
+        # WT-2022 P0.WORK fix: caller MUST include company_id in data dict
+        if not data.get("company_id"):
+            raise ValueError("company_id required in data (WT-2022 P0.WORK)")
         entry = WorkforceEntry(**data)
         self.db.add(entry)
         await self.db.flush()

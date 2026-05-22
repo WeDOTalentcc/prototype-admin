@@ -96,6 +96,33 @@ class AgenticLoop:
             logger.debug("[LIA-A04] No tools registered -- skipping agentic loop")
             return {"response": None, "tool_calls_made": [], "iterations": 0}
 
+        # WT-2022 P0.AIC1: ai_credits_balance gate antes do loop multi-iteracao.
+        # Loop pode rodar ate MAX_TOOL_ITERATIONS chamadas LLM — estima ~3k per iter.
+        # fail-safe ALLOW se DB outage. chokepoint canonical e llm_factory, mas
+        # bail-out cedo aqui economiza iteracoes desperdicadas.
+        try:
+            from app.shared.services.ai_credit_gate import check_credit_budget, AICreditExhausted
+            from lia_config.database import AsyncSessionLocal
+            async with AsyncSessionLocal() as _credit_db:
+                await check_credit_budget(
+                    _credit_db,
+                    str(company_id),
+                    estimated_tokens=int(max_iter) * 3000,
+                )
+        except AICreditExhausted:
+            logger.warning(
+                "[AgenticLoop] AI credit budget exhausted: company=%s — skipping loop",
+                company_id,
+            )
+            return {
+                "response": None,
+                "tool_calls_made": [],
+                "iterations": 0,
+                "blocked_reason": "ai_credit_exhausted",
+            }
+        except Exception as _aic_exc:
+            logger.debug("[AgenticLoop] ai_credit_gate skipped (fail-safe): %s", _aic_exc)
+
         # Build messages list for generate_with_tools
         messages: list[dict] = []
         if conversation_history:

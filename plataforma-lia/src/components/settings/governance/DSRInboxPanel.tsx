@@ -81,7 +81,7 @@ function exportCsv(rows: DSR[]) {
   URL.revokeObjectURL(url)
 }
 
-export function DSRInboxPanel() {
+export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: string } = {}) {
   const t = useTranslations("settings.governanca.dsr")
   const { companyId } = useCompanyId()
   const [items, setItems] = useState<DSR[]>([])
@@ -89,6 +89,8 @@ export function DSRInboxPanel() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string>("all")
+  // WT-2022 P1.B: filter por request_type default (usado quando hub passa defaultRequestType)
+  const [requestTypeFilter] = useState<string | undefined>(defaultRequestType)
   // WT-2022 P2.2: state pra controle de actions (assign/verify-identity/process/complete/reject)
   const [actionLoadingId, setActionLoadingId] = useState<string | null>(null)
   const [refetchSignal, setRefetchSignal] = useState<number>(0)
@@ -102,7 +104,10 @@ export function DSRInboxPanel() {
       setLoading(true)
       setError(null)
       try {
-        const qs = statusFilter !== "all" ? `?status=${statusFilter}` : ""
+        let qs = statusFilter !== "all" ? `?status=${statusFilter}` : ""
+        if (requestTypeFilter) {
+          qs += (qs ? "&" : "?") + `request_type=${requestTypeFilter}`
+        }
         const [listRes, statsRes] = await Promise.all([
           apiFetch(`/api/backend-proxy/data-subject-requests${qs}`, { headers }),
           apiFetch("/api/backend-proxy/data-subject-requests/stats", { headers }),
@@ -337,7 +342,7 @@ export function DSRInboxPanel() {
                           <>
                             <Button
                               type="button"
-                              variant="default"
+                              variant="secondary"
                               size="sm"
                               disabled={actionLoadingId === id}
                               onClick={() => handleDsrAction(id, "complete")}

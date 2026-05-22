@@ -10,7 +10,7 @@ import { useTranslations } from "next-intl"
 export function renderPearchCell(
   candidate: KanbanCandidate,
   columnId: string,
-  t: (key: string, params?: Record<string, unknown>) => string
+  t: (key: string, params?: Record<string, string>) => string
 ): React.ReactNode | undefined {
   switch (columnId) {
     case 'is_open_to_work': {

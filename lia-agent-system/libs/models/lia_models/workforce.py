@@ -136,9 +136,14 @@ class WorkforceEntry(Base):
     __tablename__ = "workforce_entries"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    
-    company_id = Column(UUID(as_uuid=True), nullable=True)
-    
+
+    # WT-2022 P0.WORK: nullable=True por ora (legacy rows pré-fix).
+    # Repository (WorkforceRepository) enforça company_id em TODAS as queries
+    # via WHERE/setter — defense em camada de service. TODO migration:
+    # backfill legacy rows + alterar para nullable=False.
+    # WT-2022 P0.WORK migration 162 (2026-05-21): NOT NULL aplicado no DB. Python model alinhado.
+    company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
+
     year = Column(Integer, nullable=False)
     month = Column(String(10), nullable=False)
     department = Column(String(100), nullable=False)

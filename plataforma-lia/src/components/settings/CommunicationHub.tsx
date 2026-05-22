@@ -1,5 +1,17 @@
 "use client"
 
+/**
+ * WT-2022 P1.COMM: Central de Comunicacao
+ *
+ * Label "Central de Comunicacao" cobre 5 tabs reais (Templates, Signature,
+ * Schedule, Alerts, ABTesting). NAO e label-lie - escopo entregue corresponde
+ * ao prometido. Auditoria 2026-05-21 inicialmente classificou como ghost mas
+ * verificacao confirmou consumers reais para todas as tabs.
+ *
+ * Subtab "Historico de envios" foi descartada por decisao de produto - se for
+ * reintroduzida, criar tab novo aqui + endpoint /api/communication/sent-log.
+ */
+
 import React, { useEffect } from "react"
 import { Mail, Clock, PenTool, Bell, FlaskConical } from "lucide-react"
 import { useTranslations } from "next-intl"
@@ -135,6 +147,12 @@ export function CommunicationHub({ activeSubsection, visibleTabs, stacked }: Com
 
   return (
     <div className="space-y-4">
+      {/* WT-2022 P1.COMM: subtitle descritivo para evitar confusao com hub generico de comunicacao cross-channel. */}
+      {tabs.length > 1 && (
+        <p className="text-xs text-lia-text-tertiary -mt-1 mb-2">
+          Templates, assinatura, horarios, alertas e testes A/B de comunicacao com candidatos.
+        </p>
+      )}
       {tabs.length > 1 && (
       <div className={tabStyles.pillContainer}>
         {tabs.map((tab) => (

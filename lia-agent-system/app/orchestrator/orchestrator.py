@@ -31,7 +31,12 @@ from app.shared.execution import PlanDetector, PlanExecutor
 from app.shared.robustness import CancellationHandler, sanitize_text
 
 from .cascaded_router import CascadedRouter
-from .policy_engine import PolicyEngine
+# WT-2022 P3.1 (2026-05-21): V1 PolicyEngine retirado de runtime path.
+# Orchestrator V1 (deprecated, removed Q3 2026) agora usa PolicyGateService
+# wrappando PolicyEngineService V2. validate() retorna PolicyResult com
+# .to_legacy_dict() para zero-break-contract no call site abaixo.
+from app.domains.policy.services.policy_engine_service import PolicyEngineService
+from app.orchestrator.services.policy_gate_service import PolicyGateService
 from .state_manager import StateManager
 from .task_planner import TaskPlanner
 
@@ -89,7 +94,10 @@ class Orchestrator:
         self.llm_service = llm_service
         self.db_service = db_service
         self.task_planner = TaskPlanner(llm_service)
-        self.policy_engine = PolicyEngine(db_service)
+        # WT-2022 P3.1: PolicyGateService wraps V2 PolicyEngineService.
+        # self.policy_engine kept as legacy alias for compat with .policies access at L633.
+        self.policy_gate = PolicyGateService(policy_engine=PolicyEngineService())
+        self.policy_engine = self.policy_gate  # legacy alias (deprecated)
         self.state_manager = StateManager(db_service)
         self.conversation_memory = conversation_memory
         self.cancellation_handler = CancellationHandler()
@@ -159,7 +167,9 @@ class Orchestrator:
                     return {"success": True, "conversation_id": conversation_id, "intent": intent,
                             "agent": domain_id, "agent_type": domain_id, "confidence": confidence,
                             "from_cache": True, **cached}
-            policy = await self.policy_engine.validate_request(intent, user_id, context=ctx)
+            # WT-2022 P3.1: PolicyGateService.validate retorna PolicyResult; .to_legacy_dict() preserva contrato dict legacy
+            policy_result = await self.policy_gate.validate(intent, user_id, context=ctx)
+            policy = policy_result.to_legacy_dict()
             if not policy["allowed"]:
                 return {"success": False, "message": f"Não foi possível processar: {policy['reason']}",
                         "requires_approval": policy.get("constraints", {}).get("requires_approval", False)}
@@ -630,7 +640,7 @@ class Orchestrator:
         return {"registered_domains": self._domain_registry.list_domains(),
                 "domain_classes": self._domain_registry.list_registered_classes(),
                 "active_conversations": len(self.state_manager.state_store),
-                "policy_config": self.policy_engine.policies,
+                "policy_config": {"engine_version": self.policy_gate.engine_version},  # WT-2022 P3.1
                 "routing_stats": self._cascaded_router.get_stats(),
                 "cache_stats": self._response_cache.get_stats(),
                 "smart_extractor_stats": self._domain_workflow.smart_extractor.get_stats(),

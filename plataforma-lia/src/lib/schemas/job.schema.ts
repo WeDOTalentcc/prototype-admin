@@ -29,7 +29,7 @@ export const jobCreateSchema = z.object({
   skills: z.array(z.string()).optional(),
   languages: z.array(z.string()).optional(),
   remote: z.boolean().optional(),
-  enriched_jd: z.record(z.unknown()).nullable().optional(),
+  enriched_jd: z.record(z.string(), z.unknown()).nullable().optional(),
 }).passthrough().refine(
   (data) => {
     if (data.salary_min != null && data.salary_max != null) {

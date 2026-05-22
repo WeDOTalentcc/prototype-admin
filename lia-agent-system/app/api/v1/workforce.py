@@ -384,9 +384,9 @@ company_id: str = Depends(require_company_id)):
             raise HTTPException(status_code=404, detail="Import job not found")
 
         expected_columns = [
-            title, level, department, target_month, target_year,
-            headcount, salary_min, salary_max, priority,
-            hiring_manager_name, hiring_manager_email, justification,
+            "title", "level", "department", "target_month", "target_year",
+            "headcount", "salary_min", "salary_max", "priority",
+            "hiring_manager_name", "hiring_manager_email", "justification",
         ]
 
         sample_validations = [
@@ -482,7 +482,7 @@ async def download_import_template(company_id: str = Depends(require_company_id)
         csv_content += "Software Engineer,Senior,Engineering,3,2025,2,8000,12000,BRL,CLT,high,John Doe,john@example.com,Team expansion,Develop backend systems\n"
         csv_content += "Product Manager,Pleno,Product,6,2025,1,10000,15000,BRL,CLT,medium,Jane Smith,jane@example.com,New product launch,Lead product development\n"
 
-        buffer = io.BytesIO(csv_content.encode(utf-8))
+        buffer = io.BytesIO(csv_content.encode("utf-8"))
         buffer.seek(0)
 
         return StreamingResponse(
@@ -784,7 +784,8 @@ company_id: str = Depends(require_company_id)):
     """Get simple workforce entries for admin panel."""
     try:
         current_year = year or datetime.now().year
-        entries = await repo.get_workforce_entries(current_year)
+        # WT-2022 P0.WORK fix: pass company_id (cross-tenant prevention)
+        entries = await repo.get_workforce_entries(current_year, company_id=company_id)
 
         if entries:
             return [e.to_dict() for e in entries]
@@ -805,14 +806,17 @@ company_id: str = Depends(require_company_id)):
     try:
         entries_data = [
             {
-                month: e.month,
-                department: e.department,
-                planned: e.planned,
-                actual: e.actual,
+                "month": e.month,
+                "department": e.department,
+                "planned": e.planned,
+                "actual": e.actual,
             }
             for e in data.entries
         ]
-        entries = await repo.upsert_workforce_entries(data.year, entries_data)
+        # WT-2022 P0.WORK fix: pass company_id (cross-tenant prevention)
+        entries = await repo.upsert_workforce_entries(
+            data.year, entries_data, company_id=company_id
+        )
         logger.info(f"Workforce entries saved for year {data.year}")
         return [e.to_dict() for e in entries]
     except Exception as e:
@@ -832,7 +836,7 @@ class WorkforceEntryImportResponse(BaseModel):
 
 def parse_csv_file_workforce(content: bytes) -> list[dict[str, str]]:
     """Parse CSV file content and return list of dictionaries."""
-    text = content.decode(utf-8-sig)
+    text = content.decode("utf-8-sig")
     reader = csv.DictReader(io.StringIO(text))
     return list(reader)
 
@@ -901,7 +905,7 @@ async def download_workforce_entries_import_template(company_id: str = Depends(r
         csv_content += "Comercial,Fev,2025,2,2,New market\n"
         csv_content += "RH,Jan,2025,1,1,Support team\n"
 
-        buffer = io.BytesIO(csv_content.encode(utf-8))
+        buffer = io.BytesIO(csv_content.encode("utf-8"))
         buffer.seek(0)
 
         return StreamingResponse(
@@ -917,10 +921,11 @@ async def download_workforce_entries_import_template(company_id: str = Depends(r
 @router.post("/entries/import", response_model=WorkforceEntryImportResponse)
 async def import_workforce_entries(
     file: UploadFile = File(...),
-    company_id: uuid.UUID | None = Query(None),
     repo: WorkforceRepository = Depends(get_workforce_repo),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
+    company_id: str = Depends(require_company_id),
+):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+    # WT-2022 P0.WORK fix: removed query-param company_id (anti-pattern). JWT-only.
     """
     Simple import for workforce entries from Excel/CSV.
     Expected columns: department, month, year, planned, actual, notes
@@ -947,10 +952,10 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         for idx, row in enumerate(rows, start=2):
             row_errors = []
 
-            department = row.get(department, ).strip()
-            month_str = row.get(month, ).strip()
-            year_str = row.get(year, ).strip()
-            planned_str = row.get(planned, ).strip()
+            department = row.get("department", "").strip()
+            month_str = row.get("month", "").strip()
+            year_str = row.get("year", "").strip()
+            planned_str = row.get("planned", "").strip()
 
             if not department:
                 row_errors.append(f"Row {idx}: Missing required field department")
@@ -965,7 +970,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
                     row_errors.append(f"Row {idx}: planned must be a number")
 
             actual = 0
-            actual_str = row.get(actual, ).strip()
+            actual_str = row.get("actual", "").strip()
             if actual_str:
                 try:
                     actual = int(float(actual_str))
@@ -979,7 +984,7 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
                 except ValueError:
                     row_errors.append(f"Row {idx}: year must be a number")
 
-            notes = row.get(notes, ).strip() or None
+            notes = row.get("notes", "").strip() or None
 
             if row_errors:
                 errors.append({"row": idx, "data": row, "errors": row_errors})
@@ -987,7 +992,9 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
             month_capitalized = month_str.capitalize() if month_str else month_str
 
-            existing = await repo.get_workforce_entry(year, month_capitalized, department)
+            existing = await repo.get_workforce_entry(
+                year, month_capitalized, department, company_id=company_id
+            )
 
             if existing:
                 await repo.update_workforce_entry(existing, planned, actual, notes)
@@ -1004,14 +1011,14 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
                 })
             else:
                 entry_data = {
-                    company_id: company_id,
-                    department: department,
-                    month: month_capitalized,
-                    year: year,
-                    planned: planned,
-                    actual: actual,
-                    notes: notes,
-                    is_active: True,
+                    "company_id": company_id,
+                    "department": department,
+                    "month": month_capitalized,
+                    "year": year,
+                    "planned": planned,
+                    "actual": actual,
+                    "notes": notes,
+                    "is_active": True,
                 }
                 try:
                     entry = await repo.create_workforce_entry(entry_data)

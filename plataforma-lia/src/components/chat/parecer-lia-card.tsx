@@ -21,6 +21,9 @@ interface MarketComparison {
 export interface ParecerLIAData {
   overallNota: number
   completenessNota: number
+  /** Alias canonical (acessado pela UI). Optional pra retro-compat. */
+  overallScore?: number
+  completenessScore?: number
   sections: ParecerSection[]
   marketComparisons?: MarketComparison[]
   timeToFillEstimate?: {
@@ -142,7 +145,7 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
       className
     )}>
       <div className="flex items-start gap-3">
-        <ScoreCircle score={data.overallScore} />
+        <ScoreCircle score={data.overallScore ?? data.overallNota} />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <Brain className="w-4 h-4 text-wedo-cyan flex-shrink-0" />
@@ -150,7 +153,7 @@ export function ParecerLIACard({ data, onAcceptSuggestion, className }: ParecerL
               Parecer LIA
             </span>
           </div>
-          <CompletenessBar score={data.completenessScore} />
+          <CompletenessBar score={data.completenessScore ?? data.completenessNota} />
         </div>
       </div>
 

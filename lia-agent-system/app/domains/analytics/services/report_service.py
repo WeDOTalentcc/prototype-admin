@@ -393,7 +393,8 @@ class ReportService:
         user_name: str,
         company_name: str = "Sua Empresa",
         db: AsyncSession | None = None,
-        send_email: bool = True
+        send_email: bool = True,
+        company_id: str | None = None,  # WT-2022 P0.TASK: tenant scope
     ) -> dict[str, Any]:
         """
         Generate and optionally send daily briefing email.
@@ -417,7 +418,8 @@ class ReportService:
         try:
             briefing_data = await self.briefing_service.generate_daily_briefing(
                 user_id=user_id,
-                db=db
+                db=db,
+                company_id=company_id,  # WT-2022 P0.TASK
             )
             
             template_data = {

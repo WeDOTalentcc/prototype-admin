@@ -144,6 +144,46 @@ export function useUIAction(): UseUIActionReturn {
           return true;
         }
 
+        case "settings_open_tab": {
+          // WT-2022 Fase 4 bridge: 3 tools (toggle_learning_loop,
+          // toggle_lia_field, record_dsr_action) emitem essa action. O
+          // listener canonical fica em SettingsPageEnhanced
+          // (settings-page-enhanced.tsx:327) — abre a section,
+          // expande subsection e (opcional) scroll/highlight no field.
+          const section = params.section;
+          if (typeof section !== "string" || !section) return false;
+          const subsection =
+            typeof params.subsection === "string" ? params.subsection : undefined;
+          const field =
+            typeof params.field === "string" ? params.field : undefined;
+          if (typeof window === "undefined") return false;
+          // 1) Garante que a aba Configurações abra (caso o usuário esteja
+          //    em outra surface) via router push — preserva query params
+          //    pra deep-link share + back/forward funcionar.
+          const qs = new URLSearchParams({ section });
+          if (subsection) qs.set("subsection", subsection);
+          if (field) qs.set("field", field);
+          router.push(`/configuracoes?${qs.toString()}`);
+          // 2) Evento canonical já consumido por SettingsPageEnhanced
+          //    (settings-page-enhanced.tsx:327) — abre tab + highlight
+          //    em paralelo (caso a SettingsPage já esteja montada).
+          window.dispatchEvent(
+            new CustomEvent("lia:settings-action", {
+              detail: {
+                actionId: "settings_open_tab",
+                section,
+                subsection,
+                field,
+                source: "chat",
+              },
+            }),
+          );
+          window.dispatchEvent(
+            new CustomEvent("settings-open-tab", { detail: section }),
+          );
+          return true;
+        }
+
         default:
           // exhaustiveness: caso TS deixe escapar um tipo, runtime falha-soft.
           return false;

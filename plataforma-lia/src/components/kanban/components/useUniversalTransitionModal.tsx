@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useInterpretContext, type InterpretChatMessage as ChatMessage } from '@/hooks/shared/use-interpret-context'
 import { useTransitionContext, type CandidateContext, type JobContext } from '@/hooks/recruitment/use-transition-context'
-import { RECRUITMENT_STAGES } from '@/lib/recruitment-stages'
+import { useRecruitmentStages } from '@/hooks/recruitment/use-recruitment-stages'
 import { isLiaAutoAllowed } from '../utils/action-matrix'
 import { getSubStatusOptionsForBehavior } from '../hooks/use-universal-transition'
 import type { KanbanCandidate } from '../types'
@@ -131,6 +131,8 @@ export function useUniversalTransitionModal({
   jobTitle,
   initialPrompt,
 }: UniversalTransitionModalProps) {
+  // WT-2022 P0.STAGES: pipeline da empresa via hook
+  const { legacyStages: pipelineStages } = useRecruitmentStages()
   const [subStatus, setSubStatus] = useState('')
   const [action, setAction] = useState<'lia_auto' | 'manual' | 'just_move'>('lia_auto')
   const [prompt, setPrompt] = useState('')
@@ -169,7 +171,7 @@ export function useUniversalTransitionModal({
 
   const isSingle = candidates.length === 1
   const candidate = isSingle ? candidates[0] : null
-  const fromStageInfo = RECRUITMENT_STAGES.find(s => s.name === fromStage)
+  const fromStageInfo = pipelineStages.find(s => s.name === fromStage)
   const fromStageDisplayName = fromStageInfo?.displayName || fromStage
   const behaviorConfig = ACTION_BEHAVIOR_CONFIG[currentActionBehavior]
   const isRejectedBatch = selectedToStage === 'rejected' && candidates.length > 1

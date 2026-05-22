@@ -3,13 +3,18 @@ import { NextRequest, NextResponse } from 'next/server'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
-function getAuthHeaders(): Record<string, string> {
-  return {
+// WT-2022 P0.SEG2: anti-pattern admin_company hardcoded removido.
+// Agora propaga Authorization header (JWT) do request real - backend resolve
+// company_id via tenant_guard.get_verified_company_id (canonical).
+function getAuthHeaders(request: NextRequest): Record<string, string> {
+  const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    'X-Company-ID': 'admin_company',
-    'X-User-ID': 'admin_user',
-    'X-User-Role': 'admin'
   }
+  const authHeader = request.headers.get('authorization')
+  if (authHeader) {
+    headers['Authorization'] = authHeader
+  }
+  return headers
 }
 
 export async function GET(request: NextRequest) {
@@ -42,7 +47,7 @@ export async function GET(request: NextRequest) {
 
     const response = await fetch(`${BACKEND_URL}${backendPath}`, {
       method: 'GET',
-      headers: getAuthHeaders(),
+      headers: getAuthHeaders(request),
     })
 
     if (!response.ok) {

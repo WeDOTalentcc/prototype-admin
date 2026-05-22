@@ -1,7 +1,22 @@
 """
 Automation Rules API
 CRUD endpoints for company-specific stage automation rules.
+
+WT-2022 P3.2 (2026-05-21): endpoint DEPRECATED-mas-funcional. UI continua
+escrevendo em `stage_automation_rules` (preserva compat) mas adapter
+`StageRuleAdapter` faz DUAL-WRITE em `communication_automations` (canonical
+engine read source — `stage_automation_engine.py:198`).
+
+Pattern P3.2:
+- CREATE/UPDATE/TOGGLE → grava em stage_automation_rules + espelha em
+  communication_automations
+- DELETE → remove de stage_automation_rules + soft-delete (is_active=False)
+  em communication_automations
+- READ (list/get) → continua só stage_automation_rules (UI legacy contract)
+
+Para novas features, prefira `/api/v1/communication-automations` (canonical).
 """
+import logging
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -11,8 +26,16 @@ from app.core.database import get_db
 from app.domains.automation.repositories.automation_rule_repository import (
     AutomationRuleRepository,
 )
+from app.domains.automation.services.stage_rule_adapter import StageRuleAdapter
 from app.shared.security.require_company_id import require_company_id, require_company_id_strict_match
 from app.shared.types import WeDoBaseModel
+
+logger = logging.getLogger(__name__)
+
+# WT-2022 P3.2 DEPRECATED: endpoint manipula stage_automation_rules; engine
+# real (stage_automation_engine.py:198) lê communication_automations. Adapter
+# `StageRuleAdapter` faz dual-write para garantir consistência durante
+# migration. Para novas features, usar /api/v1/communication-automations.
 
 router = APIRouter(prefix="/automation-rules", tags=["automation-rules"])
 
@@ -95,11 +118,19 @@ async def create_rule(
     db: AsyncSession = Depends(get_db),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Create a new automation rule for a company."""
+    """Create a new automation rule for a company.
+
+    WT-2022 P3.2: dual-write — grava em stage_automation_rules (UI legacy)
+    e espelha em communication_automations (canonical engine read source).
+    """
     repo = AutomationRuleRepository(db)
     data = rule.model_dump()
     data["confidence_threshold"] = str(data["confidence_threshold"])
     new_rule = await repo.create(company_id, data)
+    # P3.2: mirror em communication_automations (non-fatal se falhar)
+    await StageRuleAdapter.upsert_communication_automation_from_stage_rule(
+        db, new_rule
+    )
     return {"success": True, "rule_id": str(new_rule.id), "rule": new_rule.to_dict()}
 
 
@@ -111,7 +142,11 @@ async def update_rule(
     db: AsyncSession = Depends(get_db),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Update an automation rule."""
+    """Update an automation rule.
+
+    WT-2022 P3.2: dual-write — update em stage_automation_rules + espelho em
+    communication_automations.
+    """
     repo = AutomationRuleRepository(db)
     rule = await repo.get_by_id(rule_id, company_id)
     if not rule:
@@ -120,17 +155,28 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
     if "confidence_threshold" in update_data:
         update_data["confidence_threshold"] = str(update_data["confidence_threshold"])
     rule = await repo.update(rule, update_data)
+    # P3.2: mirror update em communication_automations
+    await StageRuleAdapter.upsert_communication_automation_from_stage_rule(
+        db, rule
+    )
     return {"success": True, "rule": rule.to_dict()}
 
 
 @router.delete("/company/{company_id}/{rule_id}", response_model=None)
 async def delete_rule(company_id: str, rule_id: str, db: AsyncSession = Depends(get_db), _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Delete an automation rule."""
+    """Delete an automation rule.
+
+    WT-2022 P3.2: soft-delete em communication_automations mirror ANTES de
+    delete físico em stage_automation_rules (preserva auditabilidade do
+    canonical store).
+    """
     repo = AutomationRuleRepository(db)
     rule = await repo.get_by_id(rule_id, company_id)
     if not rule:
         raise HTTPException(status_code=404, detail="Rule not found")
+    # P3.2: soft-delete mirror antes do delete físico
+    await StageRuleAdapter.soft_delete_mirror(db, rule)
     await repo.delete(rule)
     return {"success": True, "deleted_id": rule_id}
 
@@ -138,12 +184,20 @@ async def delete_rule(company_id: str, rule_id: str, db: AsyncSession = Depends(
 @router.post("/company/{company_id}/toggle/{rule_id}", response_model=None)
 async def toggle_rule(company_id: str, rule_id: str, db: AsyncSession = Depends(get_db), _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Toggle the active status of an automation rule."""
+    """Toggle the active status of an automation rule.
+
+    WT-2022 P3.2: dual-write — toggle propagado para mirror em
+    communication_automations.
+    """
     repo = AutomationRuleRepository(db)
     rule = await repo.get_by_id(rule_id, company_id)
     if not rule:
         raise HTTPException(status_code=404, detail="Rule not found")
     rule = await repo.toggle(rule)
+    # P3.2: propaga is_active para mirror
+    await StageRuleAdapter.upsert_communication_automation_from_stage_rule(
+        db, rule
+    )
     return {"success": True, "is_active": rule.is_active, "rule": rule.to_dict()}
 
 
@@ -154,7 +208,12 @@ async def seed_default_rules(
     db: AsyncSession = Depends(get_db),
 _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Seed default automation rules for a new company."""
+    """Seed default automation rules for a new company.
+
+    WT-2022 P3.2: dual-write — defaults também espelhados em
+    communication_automations para que o engine canonical execute imediatamente
+    a partir do onboarding (sem esperar reconciliação).
+    """
     repo = AutomationRuleRepository(db)
     existing = await repo.list_for_company(company_id)
     if existing and not force:
@@ -164,6 +223,20 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
             "existing_count": len(existing),
         }
     created = await repo.seed_defaults(company_id)
+    # P3.2: espelha defaults recém-criados em communication_automations.
+    # `created` retorna list[str] (trigger_types) — re-fetch para mirror.
+    try:
+        seeded_rules = await repo.list_for_company(company_id)
+        for rule in seeded_rules:
+            await StageRuleAdapter.upsert_communication_automation_from_stage_rule(
+                db, rule
+            )
+    except Exception as e:
+        logger.warning(
+            "[P3.2] seed_defaults mirror failed for company=%s: %s. UI write "
+            "succeeded but engine may not see defaults until reconciliation.",
+            company_id, e,
+        )
     return {"success": True, "rules_created": len(created), "trigger_types": created}
 
 

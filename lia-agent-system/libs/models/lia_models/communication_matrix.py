@@ -69,6 +69,7 @@ class CommunicationMatrixEntry(Base):
     __tablename__ = "communication_matrix_entries"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # TENANT-EXEMPT: CommunicationMatrixEntry com company_id NULL = template canonical default
     company_id = Column(String(255), nullable=True, index=True)
     
     module = Column(String(50), nullable=False, index=True)

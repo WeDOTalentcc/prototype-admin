@@ -99,6 +99,7 @@ async def _create_task(params: dict[str, Any], context: dict[str, Any]):
         priority_str = params.get("priority", "medium")
         task_type_str = params.get("task_type", "general")
         user_id = context.get("user_id") if context else None
+        company_id = context.get("company_id") if context else None  # WT-2022 P0.TASK
 
         due_date_val = _resolve_ptbr_datetime(due_date_str)
 
@@ -129,6 +130,7 @@ async def _create_task(params: dict[str, Any], context: dict[str, Any]):
                 due_date=due_date_val,
                 is_automated=False,
                 requires_confirmation=False,
+                company_id=company_id,  # WT-2022 P0.TASK: propaga do agent context
             )
 
         from app.orchestrator.action_handlers._handler_hooks import log_action_audit
@@ -257,6 +259,7 @@ async def _generate_daily_briefing(params: dict[str, Any], context: dict[str, An
         from app.shared.services.briefing_service import BriefingService
 
         user_id = context.get("user_id") if context else None
+        company_id = context.get("company_id") if context else None  # WT-2022 P0.TASK
         if not user_id:
             return ActionResult(
                 status="error",
@@ -266,7 +269,9 @@ async def _generate_daily_briefing(params: dict[str, Any], context: dict[str, An
 
         briefing_svc = BriefingService()
         async with AsyncSessionLocal() as db:
-            briefing = await briefing_svc.generate_daily_briefing(user_id=user_id, db=db)
+            briefing = await briefing_svc.generate_daily_briefing(
+                user_id=user_id, db=db, company_id=company_id
+            )
 
         summary = briefing.get("summary", {})
         schedule = briefing.get("schedule", [])

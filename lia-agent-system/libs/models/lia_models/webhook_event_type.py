@@ -44,6 +44,7 @@ class WebhookEventType(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
 
     # Multi-tenancy: company_id NULL apenas para is_master_template=True
+    # WT-2022 P0.TENANT: TENANT-EXEMPT - master template global (company_id NULL apenas quando is_master_template=True, curated by WeDOTalent)
     company_id = Column(String(255), nullable=True, index=True)
 
     # is_master_template=True: curated by WeDOTalent, visible to all tenants

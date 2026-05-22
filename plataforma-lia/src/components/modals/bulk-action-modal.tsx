@@ -24,7 +24,8 @@ import {
   Mail
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { RECRUITMENT_STAGES, REJECTION_REASONS, type RecruitmentStage } from '@/lib/recruitment-stages'
+import { REJECTION_REASONS } from '@/lib/recruitment-stages'
+import { RECRUITMENT_STAGES, type RecruitmentStage } from '@/lib/recruitment/stages-data'
 // REJECTION_REASONS kept as fallback for when DB sub-statuses are unavailable
 import type { BulkActionType } from '@/components/ui/bulk-actions-bar'
 

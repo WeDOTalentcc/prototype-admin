@@ -69,20 +69,54 @@ async def schedule_deletion_for_candidate(
     Called when a candidate is rejected or withdrawn so the cleanup job
     knows when to physically delete the record.
 
+    WT-2022 P4.1 wire data_retention granular consent:
+    Se candidato revogou granular consent de data_retention, ACELERA
+    deletion (retention_days=0) em vez de esperar default TTL.
+    Resolve "ghost setting" — antes UI tinha toggle data_retention sem efeito.
+
     Returns the scheduled deletion datetime.
     """
-    days = retention_days or RETENTION_DAYS.get(reason, 90)
-    deletion_at = datetime.utcnow() + timedelta(days=days)
-
     candidate_repo = CandidateRepository(db)
     candidate = await candidate_repo.get_by_id(UUID(candidate_id))
-    if candidate:
-        candidate.scheduled_deletion_at = deletion_at
-        await db.commit()
-        logger.info(
-            "Deletion scheduled",
-            extra={"candidate_id": candidate_id, "deletion_at": deletion_at.isoformat(), "reason": reason},
+    if not candidate:
+        return datetime.utcnow() + timedelta(days=retention_days or RETENTION_DAYS.get(reason, 90))
+
+    # WT-2022 P4.1: Check granular data_retention consent
+    effective_retention_days = retention_days or RETENTION_DAYS.get(reason, 90)
+    try:
+        from app.domains.lgpd.services.granular_consent_consumers import (
+            check_data_retention,
         )
+        retention_consent = await check_data_retention(
+            candidate_id=str(candidate.id),
+            company_id=str(getattr(candidate, "company_id", "")),
+            db=db,
+        )
+        if not retention_consent:
+            # Candidate revogou consent de data_retention — accelerate deletion
+            effective_retention_days = 0
+            logger.info(
+                "WT-2022 P4.1: data_retention consent revoked — accelerating deletion",
+                extra={"candidate_id": candidate_id, "original_days": retention_days or RETENTION_DAYS.get(reason, 90)},
+            )
+    except Exception as exc:
+        logger.warning(
+            "Could not check granular data_retention consent for %s: %s — using default TTL",
+            candidate_id, exc,
+        )
+
+    deletion_at = datetime.utcnow() + timedelta(days=effective_retention_days)
+    candidate.scheduled_deletion_at = deletion_at
+    await db.commit()
+    logger.info(
+        "Deletion scheduled",
+        extra={
+            "candidate_id": candidate_id,
+            "deletion_at": deletion_at.isoformat(),
+            "reason": reason,
+            "retention_days_used": effective_retention_days,
+        },
+    )
 
     return deletion_at
 

@@ -42,10 +42,25 @@ class TaskService:
         due_date: datetime | None = None,
         context: dict[str, Any] | None = None,
         is_automated: bool = False,
-        requires_confirmation: bool = False
+        requires_confirmation: bool = False,
+        company_id: str | None = None,
     ) -> Task:
-        """Create a new task."""
+        """Create a new task.
+
+        WT-2022 P0.TASK gap fix: propagar company_id ao Task model.
+        Endpoint POST /tasks/ recebe company_id no JWT mas service nao passava
+        pro Task object - tasks ficavam company_id=NULL -> invisiveis no list
+        filtrado por tenancy. Param opcional para compat com callers legados
+        (warning emitido quando ausente).
+        """
+        if not company_id:
+            logger.warning(
+                "task_service.create_task chamado sem company_id - Task ficara "
+                "company_id=NULL (multi-tenancy gap). Caller deve passar company_id "
+                "do JWT/agent context. WT-2022 P0.TASK."
+            )
         task = Task(
+            company_id=company_id,
             title=title,
             description=description,
             task_type=task_type,
@@ -72,9 +87,14 @@ class TaskService:
         self,
         db: AsyncSession,
         agent_task: AgentTask,
-        assigned_to_user_id: str | None = None
+        assigned_to_user_id: str | None = None,
+        company_id: str | None = None,
     ) -> Task:
-        """Create a database task from an AgentTask object."""
+        """Create a database task from an AgentTask object.
+
+        WT-2022 P0.TASK gap fix: propagar company_id (do agent_context ou
+        runtime_context do caller) ao Task model via create_task.
+        """
         return await self.create_task(
             db=db,
             title=agent_task.title,
@@ -84,7 +104,8 @@ class TaskService:
             assigned_to_agent=agent_task.assigned_to_agent.value if agent_task.assigned_to_agent else None,
             assigned_to_user_id=assigned_to_user_id,
             due_date=agent_task.due_date,
-            context=agent_task.context
+            context=agent_task.context,
+            company_id=company_id,
         )
 
     async def get_task(self, db: AsyncSession, task_id: str) -> Task | None:

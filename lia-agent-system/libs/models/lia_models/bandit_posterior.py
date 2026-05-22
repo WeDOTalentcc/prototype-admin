@@ -57,6 +57,7 @@ class BanditPosterior(Base):
     n_observations = Column(Integer, nullable=False, default=0)
 
     # Multi-tenancy: NULL = global experiment, UUID = per-company
+    # WT-2022 P0.TENANT: TENANT-EXEMPT TENANT-NULLABLE-DELIBERATE - bandit_posteriors aggregated cross-tenant for thompson sampling efficacy (ADR-LGPD-001 anonymization, NULL=global experiment)
     company_id = Column(UUID(as_uuid=True), nullable=True, index=True)
 
     # Versioning canonical (drift detection se prior schema mudar)

@@ -31,6 +31,7 @@ class AgentCheckpoint(Base):
     agent_type = Column(String(100), nullable=False)
 
     # Multi-tenant isolation
+    # TENANT-EXEMPT: checkpoints de agentes system-level (orchestrator global)
     company_id = Column(String(255), nullable=True, index=True)
 
     # The full serialized state (TypedDict → JSON)

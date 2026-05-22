@@ -51,6 +51,10 @@ class Webhook(Base):
     name = Column(String(256), nullable=False)
     url = Column(String(2048), nullable=False)
     events = Column(ARRAY(String), nullable=False)
+    # WT-2022 P0.SEG3 TODO: migrar secret pra Fernet EncryptedFieldMixin canonical.
+    # Plaintext at-rest viola LGPD breach risk + secret leak risk.
+    # Pattern referência: tenant_llm_configs.providers["api_key"] usa encrypt_value/decrypt_value.
+    # Migration plan: 1) add secret_encrypted LargeBinary; 2) backfill; 3) deprecate secret column.
     secret = Column(String(256), nullable=False)
     is_active = Column(Boolean, default=True, nullable=False)
 

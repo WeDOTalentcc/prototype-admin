@@ -358,6 +358,32 @@ class LLMService:
         except Exception:
             pass  # Audit is non-blocking
 
+        # WT-2022 P0.AIC1: per-company ai_credits_balance gate (defense-in-depth).
+        # llm_factory.ProviderContainer ja faz check no chokepoint principal,
+        # mas tenant_container/global fallback abaixo NAO passa por ProviderContainer.
+        # Wire aqui cobre 100% dos LLM calls do LLMService.generate.
+        # fail-safe=True por default (helper) — outage de DB nao bloqueia LLM.
+        if _cid:
+            try:
+                from app.shared.services.ai_credit_gate import (
+                    AICreditExhausted,
+                    check_credit_budget,
+                )
+                from lia_config.database import AsyncSessionLocal
+                async with AsyncSessionLocal() as _credit_db:
+                    await check_credit_budget(
+                        _credit_db,
+                        str(_cid),
+                        estimated_tokens=int(kwargs.get("max_tokens", 0) or 0),
+                    )
+            except AICreditExhausted:
+                raise  # bubble up — caller (route/agent) converte em 429
+            except Exception as _credit_exc:
+                logger.warning(
+                    "[LLMService] ai_credit_gate failed (fail-safe ALLOW): %s",
+                    _credit_exc,
+                )
+
         # ── Multi-tenant provider routing ──
         # If a tenant ProviderContainer is active, delegate to it instead
         # of using the global provider clients. This enables per-tenant

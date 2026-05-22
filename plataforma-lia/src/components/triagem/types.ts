@@ -39,7 +39,9 @@ export interface TriagemSession {
   expiresAt: string
   startedAt: string | null
   completedAt: string | null
-  wsiFinalNota: number | null
+  wsiFinalNota?: number | null
+  /** Alias canonical em camelCase usado pelos mappers de backend. */
+  wsiFinalScore?: number | null
   recommendation: "approved" | "pending" | "rejected" | null
 }
 

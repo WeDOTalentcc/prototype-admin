@@ -51,7 +51,11 @@ function runFairnessCheck(text: string): string[] {
   return found
 }
 
-async function extractTextFromFile(file: File): Promise<string> {
+// WT-2022 P0.DOC: extracao real do texto delega a backend /api/v1/analysis/file
+// (file_analysis.py:14 - existe e e registrado em routes.py:585). Fix anterior
+// nao propagava Authorization header -> backend retornava 401 e codigo caia em
+// fallback regex docx (extracao parcial/quebrada). Agora reusa o auth da request.
+async function extractTextFromFile(file: File, authHeader: string): Promise<string> {
   const ext = file.name.substring(file.name.lastIndexOf(".")).toLowerCase()
 
   if (ext === ".txt") {
@@ -65,15 +69,26 @@ async function extractTextFromFile(file: File): Promise<string> {
     try {
       const response = await fetch(`${BACKEND_URL}/api/v1/analysis/file`, {
         method: "POST",
+        headers: { Authorization: authHeader },
         body: formData,
       })
 
       if (response.ok) {
         const data = await response.json()
-        return data.extracted_text || data.text || data.content || ""
+        return data.extractedText || data.extracted_text || data.text || data.content || ""
       }
-    } catch {
-      // fallback below
+
+      // REGRA 4 (canonical-standards): falhas em path critico nao podem ser silenciosas.
+      // Log explicito + fallback regex documentado como degradado.
+      console.warn(
+        `[documents/upload] /api/v1/analysis/file returned ${response.status}; ` +
+        `falling back to local regex extraction (degraded quality for ${ext})`
+      )
+    } catch (err) {
+      console.warn(
+        `[documents/upload] fetch to /api/v1/analysis/file failed: ${err}; ` +
+        `falling back to local regex extraction (degraded)`
+      )
     }
 
     if (ext === ".docx") {
@@ -81,6 +96,13 @@ async function extractTextFromFile(file: File): Promise<string> {
       const text = new TextDecoder("utf-8", { fatal: false }).decode(buffer)
       const paragraphs = text.match(/<w:t[^>]*>([^<]+)<\/w:t>/g) || []
       return paragraphs.map(p => p.replace(/<[^>]+>/g, "")).join(" ")
+    }
+
+    // WT-2022 P0.DOC: PDF sem backend disponivel = falha alta (REGRA 4 canonical-standards).
+    // Antes retornava "" silenciosamente e usuario via erro generico "nao foi possivel extrair".
+    // Agora throw para ser convertido em 503 com mensagem clara.
+    if (ext === ".pdf") {
+      throw new Error("PDF_EXTRACTION_UNAVAILABLE")
     }
 
     return ""
@@ -91,6 +113,15 @@ async function extractTextFromFile(file: File): Promise<string> {
 
 export async function POST(request: NextRequest) {
   try {
+    // WT-2022 P0.DOC fix: require Authorization header (era unauthenticated)
+    const auth = request.headers.get("authorization")
+    if (!auth || !auth.startsWith("Bearer ")) {
+      return NextResponse.json(
+        { success: false, error: "Authentication required" },
+        { status: 401 }
+      )
+    }
+
     const formData = await request.formData()
     const file = formData.get("file") as File
     const documentType = (formData.get("document_type") as string) || "general"
@@ -130,11 +161,26 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const extractedText = await extractTextFromFile(file)
+    let extractedText: string
+    try {
+      extractedText = await extractTextFromFile(file, auth)
+    } catch (err) {
+      if (err instanceof Error && err.message === "PDF_EXTRACTION_UNAVAILABLE") {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Extracao de PDF temporariamente indisponivel. Copie e cole o texto do documento manualmente, ou tente novamente em alguns minutos.",
+            code: "pdf_extraction_unavailable",
+          },
+          { status: 503 }
+        )
+      }
+      throw err
+    }
 
     if (!extractedText || extractedText.trim().length < 10) {
       return NextResponse.json(
-        { success: false, error: "Não foi possível extrair texto suficiente do documento." },
+        { success: false, error: "Nao foi possivel extrair texto suficiente do documento." },
         { status: 422 }
       )
     }

@@ -126,7 +126,7 @@ export function useScreeningQuestionsPanel({
       generatePipeline(context)
       setHasGenerated(true)
     }
-  }, [jobTitle, department, seniority, bigFiveProfile, competências, behavioralCompetencies, generatePipeline, hasGenerated, screeningModel, isAffirmative, affirmativeType])
+  }, [jobTitle, department, seniority, bigFiveProfile, skills, behavioralCompetencies, generatePipeline, hasGenerated, screeningModel, isAffirmative, affirmativeType])
 
   const onQuestionsChangeRef = useRef(onQuestionsChange)
   onQuestionsChangeRef.current = onQuestionsChange

@@ -39,6 +39,7 @@ class Goal(Base):
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     user_id = Column(String(255), nullable=False, index=True)
+    # TENANT-EXEMPT: Goal com company_id NULL = personal goal sem dimensao tenant (user-scoped only)
     company_id = Column(UUID(as_uuid=True), ForeignKey("company_profiles.id"), nullable=True)
     
     template_id = Column(String(255), nullable=True)
@@ -102,6 +103,7 @@ class GoalTemplate(Base):
     __tablename__ = "goal_templates"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # TENANT-EXEMPT: GoalTemplate com company_id NULL = template global compartilhado entre tenants
     company_id = Column(UUID(as_uuid=True), ForeignKey("company_profiles.id"), nullable=True)
     
     name = Column(String(255), nullable=False)

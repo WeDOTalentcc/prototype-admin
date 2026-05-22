@@ -190,6 +190,7 @@ class FeatureFlag(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     
     flag_key = Column(String(100), nullable=False, index=True)
+    # WT-2022 P0.TENANT: TENANT-EXEMPT TENANT-NULLABLE-DELIBERATE - feature_flags global rollout (NULL=enabled for ALL companies, UUID=enabled per-company) - anonymized cross-tenant pattern per ADR-LGPD-001
     company_id = Column(String(255), nullable=True, index=True)
     
     is_enabled = Column(Boolean, default=False)

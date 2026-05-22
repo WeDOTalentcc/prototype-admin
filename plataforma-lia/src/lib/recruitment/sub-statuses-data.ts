@@ -535,3 +535,118 @@ export function isApplicationSource(sourceId: string): boolean {
 export function getRejectionReasonsByCategory(category: StatusCategory): RejectionReason[] {
   return REJECTION_REASONS.filter(r => r.category === category)
 }
+
+// ============================================================================
+// WT-2022 P0.SUB_STATUSES — adapter helpers (hook canonical snake_case → legacy)
+// ============================================================================
+
+/**
+ * Shape minimo de SubStatus canonical recebido pelo hook useRecruitmentStages
+ * (vem de /api/backend-proxy/company-pipeline, snake_case).
+ *
+ * Mantenha em sincronia com CanonicalSubStatus em
+ * @/components/settings/recruitment-journey.types.ts (interface SubStatus).
+ * Schema-sync TS pattern: campo novo num lado exige campo no outro.
+ */
+export interface HookSubStatus {
+  id?: string
+  stage_id?: string
+  name: string
+  display_name?: string
+  description?: string
+  is_active?: boolean
+  is_default?: boolean
+  is_waiting?: boolean
+  waiting_for?: string
+  sla_hours?: number
+  sub_status_order?: number
+  color?: string
+  icon?: string
+  // Campos heuristicos opcionais — backend pode nao mandar; resolveSubStatusFlags faz fallback
+  is_approval?: boolean
+  is_rejection?: boolean
+  category?: StatusCategory
+}
+
+/**
+ * Resolve isApproval/isRejection a partir do nome canonical e flags presentes.
+ * Backend (recruitment_sub_statuses) hoje nao tem campos is_approval/is_rejection
+ * explicitos — eles vivem so no SUB_STATUSES hardcoded. Pra back-compat,
+ * checamos a lista canonical hardcoded primeiro; se nao bater, marcamos false.
+ */
+function resolveSubStatusFlags(name: string, stageHint?: string): {
+  isApproval: boolean
+  isRejection: boolean
+} {
+  if (stageHint) {
+    const canonical = SUB_STATUSES[stageHint]?.find((s) => s.name === name)
+    if (canonical) {
+      return {
+        isApproval: canonical.isApproval ?? false,
+        isRejection: canonical.isRejection ?? false,
+      }
+    }
+  }
+  // fallback: varre todos os stages
+  for (const list of Object.values(SUB_STATUSES)) {
+    const found = list.find((s) => s.name === name)
+    if (found) {
+      return {
+        isApproval: found.isApproval ?? false,
+        isRejection: found.isRejection ?? false,
+      }
+    }
+  }
+  return { isApproval: false, isRejection: false }
+}
+
+/**
+ * Normaliza um sub-status canonical (snake_case do backend) pro shape legacy
+ * (camelCase usado por SUB_STATUSES hardcoded + consumers como InteractiveSubStatusCell).
+ *
+ * @example
+ *   const { legacySubStatuses } = useRecruitmentStages()
+ *   const sourcing = legacySubStatuses["sourcing"]
+ *   sourcing[0].displayName // "Identificado"
+ */
+export function normalizeSubStatusFromHook(
+  ss: HookSubStatus,
+  stageHint?: string,
+): SubStatus {
+  const flags = resolveSubStatusFlags(ss.name, stageHint)
+  // waiting_for canonical Python values: candidate|interviewer|manager|hr|system
+  const waitingFor =
+    ss.waiting_for === "candidate" ||
+    ss.waiting_for === "interviewer" ||
+    ss.waiting_for === "manager" ||
+    ss.waiting_for === "hr" ||
+    ss.waiting_for === "system"
+      ? ss.waiting_for
+      : undefined
+  return {
+    name: ss.name,
+    displayName: ss.display_name ?? ss.name,
+    isDefault: ss.is_default ?? false,
+    isWaiting: ss.is_waiting ?? false,
+    isApproval: ss.is_approval ?? flags.isApproval,
+    isRejection: ss.is_rejection ?? flags.isRejection,
+    waitingFor,
+    category: ss.category,
+    icon: ss.icon,
+    color: ss.color,
+  }
+}
+
+/**
+ * Normaliza o mapa {stageName -> HookSubStatus[]} pro shape legacy
+ * {stageName -> SubStatus[]} (camelCase). Use no hook canonical.
+ */
+export function normalizeSubStatusesFromHook(
+  byStage: Record<string, HookSubStatus[]>,
+): Record<string, SubStatus[]> {
+  const result: Record<string, SubStatus[]> = {}
+  for (const [stageName, list] of Object.entries(byStage)) {
+    result[stageName] = list.map((ss) => normalizeSubStatusFromHook(ss, stageName))
+  }
+  return result
+}

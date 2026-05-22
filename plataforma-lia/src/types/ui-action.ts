@@ -65,6 +65,19 @@ export type GlobalUIAction =
       params: {
         element_id: string;
       };
+    }
+  | {
+      // WT-2022 Fase 4: tools `toggle_learning_loop`, `toggle_lia_field`,
+      // `record_dsr_action` retornam essa action para abrir a aba de
+      // Configurações + subsection certa + (opcional) highlight do field.
+      // Bridge: useUIAction dispatcha CustomEvent `lia:settings-action` que
+      // SettingsPageEnhanced escuta (settings-page-enhanced.tsx:327).
+      type: "settings_open_tab";
+      params: {
+        section: string;
+        subsection?: string;
+        field?: string;
+      };
     };
 
 /**
@@ -80,6 +93,7 @@ export const GLOBAL_UI_ACTION_TYPES: readonly GlobalUIActionType[] = [
   "wizard_step",
   "open_panel",
   "scroll_to",
+  "settings_open_tab",
 ] as const;
 
 export function isGlobalUIActionType(type: string): type is GlobalUIActionType {

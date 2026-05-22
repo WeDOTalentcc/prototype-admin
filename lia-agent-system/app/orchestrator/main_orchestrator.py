@@ -249,6 +249,34 @@ class MainOrchestrator:
         self._tenant_context_service = TenantContextService()
         self._plan_service = plan_service
         self._fallback_react_service = fallback_react_service
+
+        # WT-2022 P3.1 (2026-05-21): PolicyGateService default canonical = V2.
+        # Antes: se policy_gate_service is None, Phase 0.5 ficava desligada.
+        # Agora: instancia PolicyGateService(PolicyEngineService()) — V2 engine
+        # é stateless (cache interno + AsyncSessionLocal por chamada), seguro
+        # como singleton no orchestrator.
+        if policy_gate_service is None:
+            try:
+                from app.orchestrator.services.policy_gate_service import (
+                    PolicyGateService,
+                )
+                from app.domains.policy.services.policy_engine_service import (
+                    PolicyEngineService,
+                )
+                policy_gate_service = PolicyGateService(
+                    policy_engine=PolicyEngineService()
+                )
+                logger.info(
+                    "[MainOrchestrator] PolicyGateService initialized with "
+                    "V2 PolicyEngineService (P3.1 canonical)"
+                )
+            except Exception as _e:
+                logger.warning(
+                    "[MainOrchestrator] Failed to initialize default "
+                    "PolicyGateService V2 (%s); policy gate disabled.",
+                    _e,
+                )
+                policy_gate_service = None
         self._policy_gate_service = policy_gate_service
 
     async def process(
@@ -329,6 +357,33 @@ class MainOrchestrator:
                     )
             except Exception as _fg_exc:
                 logger.debug("[MainOrchestrator] FairnessGuard implicit check skipped: %s", _fg_exc)
+
+            # WT-2022 P0.AIC1: defense-in-depth ai_credits_balance gate.
+            # Chokepoint canonical é llm_factory.generate_with_fallback, mas wire-se
+            # aqui tambem pra bail-out cedo (antes de tenant context + routing).
+            # fail-safe ALLOW se DB/Redis em outage.
+            if ctx.company_id is not None:
+                try:
+                    from app.shared.services.ai_credit_gate import check_credit_budget, AICreditExhausted
+                    await check_credit_budget(db, str(ctx.company_id), estimated_tokens=2000)
+                except AICreditExhausted as _aic_exc:
+                    logger.warning(
+                        "[MainOrchestrator] AI credit budget exhausted: company=%s",
+                        ctx.company_id,
+                    )
+                    return ChatResponse(
+                        success=False,
+                        content=(
+                            "Seu pacote de creditos IA do mes esgotou. "
+                            "Entre em contato com seu admin para renovar ou aumentar o plano."
+                        ),
+                        agent_used="ai_credit_gate",
+                        confidence=1.0,
+                        intent_detected="blocked_credit_exhausted",
+                        conversation_id=conv_id,
+                    )
+                except Exception as _aic_exc:
+                    logger.debug("[MainOrchestrator] ai_credit_gate skipped (fail-safe): %s", _aic_exc)
 
             # Enriquecer contexto com informações do tenant
             # R4 (Task T-F): idempotente + paridade com agent_chat_sse.py.

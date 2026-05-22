@@ -1056,7 +1056,50 @@ company_id: str = Depends(require_company_id)):
         candidates = await enrich_and_filter_candidates(db, candidates)
         if request.calculate_lia_score:
             candidates.sort(key=lambda x: x.lia_score or 0, reverse=True)
-        
+
+            # WT-2022 P0.C: LGPD Art. 20 — log uma decisao por candidato rankeado.
+            # AITransparencyPanel le e exibe ao recrutador/candidato pra direito de
+            # revisao. fail-safe (no-op em DB error). Limita pra top 50 pra evitar
+            # custo db excessivo em buscas muito grandes (>1k candidatos).
+            try:
+                from app.shared.services.automated_decision_logger import (
+                    log_automated_decision,
+                    PROTECTED_CRITERIA_PT,
+                )
+                _archetype_id = str(getattr(archetype, "id", "")) or "unknown"
+                _top_n_for_log = candidates[:50]
+                for _rank_pos, _c in enumerate(_top_n_for_log, start=1):
+                    try:
+                        _c_id = getattr(_c, "id", None)
+                        _c_score = getattr(_c, "lia_score", None)
+                        _c_reasoning = getattr(_c, "lia_reasoning", None) or ""
+                        _explanation = (
+                            "Candidato classificado posicao " + str(_rank_pos)
+                            + " com LIA score " + str(_c_score)
+                            + ". Reasoning: " + _c_reasoning[:500]
+                        )
+                        _confidence = (float(_c_score) / 100.0) if _c_score else None
+                        await log_automated_decision(
+                            db=db,
+                            company_id=str(company_id),
+                            candidate_id=str(_c_id) if _c_id else None,
+                            job_id=_archetype_id,
+                            decision_type="candidate_ranking_lia_score",
+                            ai_model_used="lia_score_service",
+                            explanation_text=_explanation,
+                            criteria_used=["skills_match", "experience_years", "seniority_match", "location_match", "title_match"],
+                            criteria_ignored=PROTECTED_CRITERIA_PT,
+                            confidence_score=_confidence,
+                            review_eligible=True,
+                            extra_metadata={"archetype_id": _archetype_id, "rank_position": _rank_pos, "source": getattr(_c, "source", None)},
+                        )
+                    except ValueError:
+                        raise
+                    except Exception as _adl_loop_exc:
+                        logger.debug("[archetypes] log_automated_decision per-candidate skipped: %s", _adl_loop_exc)
+            except Exception as _adl_exc:
+                logger.warning("[archetypes] log_automated_decision batch failed (fail-safe): %s", _adl_exc)
+
         archetype_dto = ArchetypeDTO(
             id=archetype.id,
             name=archetype.name,

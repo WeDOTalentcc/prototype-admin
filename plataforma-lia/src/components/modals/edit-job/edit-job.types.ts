@@ -46,7 +46,7 @@ export interface Job {
   type: string
   seniority: string
   salary: string
-  benefits: string[]
+  benefits: (string | { id?: string; name: string })[]
   status: string
   stage: string
   openDate: string

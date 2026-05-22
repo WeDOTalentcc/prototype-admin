@@ -47,6 +47,7 @@ class AgentActivity(Base):
     
     related_job_id = Column(String(255), nullable=True, index=True)
     related_candidate_id = Column(String(255), nullable=True, index=True)
+    # TENANT-EXEMPT: agent activity log inclui system agents (cross-tenant analytics, ADR-LGPD-001)
     company_id = Column(String(255), nullable=True, index=True)
     
     activity_metadata = Column(JSON, default=dict)

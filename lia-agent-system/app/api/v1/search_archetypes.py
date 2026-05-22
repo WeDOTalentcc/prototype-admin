@@ -1,17 +1,24 @@
 """
-Search Archetypes API - Additional endpoints for archetype management.
+Search Archetypes API - Namespace reservation only.
 
-Note: Core archetype endpoints (list, get, delete, create) are defined in
-candidate_search.py which has the /search prefix. This file provides 
-additional utility endpoints that don't conflict with existing routes.
+WT-2022 P1.ARCH: Este arquivo intencionalmente exporta um APIRouter VAZIO.
+Os endpoints reais de archetypes vivem em:
 
-The main endpoints are:
-- GET /search/archetypes - List all archetypes (in candidate_search.py)
-- POST /search/archetypes - Create archetype (in candidate_search.py)
-- POST /search/archetypes/from-search - Create from search spec (in candidate_search.py)
-- GET /search/archetypes/{id} - Get by ID (in candidate_search.py)
-- DELETE /search/archetypes/{id} - Delete archetype (in candidate_search.py)
+    app/api/v1/candidate_search/archetypes.py   (canonical, prefix /search)
+
+Endpoints reais (canonical):
+- GET    /search/archetypes              list all archetypes
+- POST   /search/archetypes              create archetype
+- POST   /search/archetypes/from-search  create from search spec
+- GET    /search/archetypes/{id}         get by ID
+- DELETE /search/archetypes/{id}         delete archetype
+
+Este arquivo e mantido apenas para evitar import errors em codigo legacy que
+pode referenciar app.api.v1.search_archetypes. Para features novas, NAO adicionar
+rotas aqui - usar candidate_search/archetypes.py.
 """
 from fastapi import APIRouter
 
+# Namespace reservation only - intentionally empty.
+# Real router lives in app/api/v1/candidate_search/archetypes.py
 router = APIRouter()

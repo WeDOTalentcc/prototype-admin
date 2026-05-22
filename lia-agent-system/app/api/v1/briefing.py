@@ -53,7 +53,9 @@ company_id: str = Depends(require_company_id)):
         return {"success": True, "data": _EMPTY_BRIEFING}
 
     try:
-        briefing = await briefing_service.generate_daily_briefing(user_id, db)
+        briefing = await briefing_service.generate_daily_briefing(
+            user_id, db, company_id=company_id  # WT-2022 P0.TASK
+        )
         return {
             "success": True,
             "data": briefing
@@ -76,7 +78,9 @@ company_id: str = Depends(require_company_id)):
     Force refresh the daily briefing.
     """
     try:
-        briefing = await briefing_service.generate_daily_briefing(user_id, db)
+        briefing = await briefing_service.generate_daily_briefing(
+            user_id, db, company_id=company_id  # WT-2022 P0.TASK
+        )
         return {
             "success": True,
             "data": briefing,

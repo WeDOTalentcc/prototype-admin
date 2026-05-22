@@ -406,3 +406,9 @@ export async function quickPublishTechVacancy(page: Page): Promise<void> {
 
 // Re-export para conveniência dos specs
 export { sendWizardMessage, openJobWizard }
+
+/**
+ * Task #1165 — Alias para o login canônico usado em specs novos.
+ * Delega para `authenticateAsRecruiter` (fixture canônica).
+ */
+export { authenticateAsRecruiter as loginAsRecrutador } from '../../fixtures/auth.fixture'

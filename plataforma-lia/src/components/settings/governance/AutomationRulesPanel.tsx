@@ -100,7 +100,24 @@ export function AutomationRulesPanel() {
   if (error) {
     return (
       <div className={cn(cardStyles.default, "p-6 text-status-error")}>
-        {t("errorLoad")}: {error}
+        
+      {/* WT-2022 P3.2: stage_automation_rules eh DEPRECATED. Engine real usa
+          communication_automations (path quente em stage_automation_engine.py:198).
+          Toggles aqui NAO TEM EFEITO ate migration ser completada (Sprint pendente).
+          Decisao Paulo 2026-05-21: matar stage_automation_rules em favor de
+          communication_automations. */}
+      <div className="rounded-md border border-status-warning/40 bg-status-warning/10 p-3 mb-3">
+        <p className="text-xs font-medium text-status-warning">
+          ⚠ Aviso de migracao pendente
+        </p>
+        <p className="text-[11px] text-lia-text-secondary mt-1">
+          Esta tela manipula <code>stage_automation_rules</code> mas o engine de
+          automacao real usa <code>communication_automations</code>. Toggles aqui
+          NAO afetam comportamento de agentes ate migracao ser completada.
+          Tracking: WT-2022 P3.2.
+        </p>
+      </div>
+{t("errorLoad")}: {error}
       </div>
     )
   }

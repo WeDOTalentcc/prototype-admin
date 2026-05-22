@@ -656,14 +656,46 @@ async def upload_company_logo(
     """
     import base64
 
-    # Validate content-type
-    allowed_types = {"image/png", "image/jpeg", "image/jpg", "image/svg+xml", "image/webp"}
+    # Validate content-type (declared header)
+    allowed_types = {"image/png", "image/jpeg", "image/jpg", "image/webp"}
     if file.content_type not in allowed_types:
         raise HTTPException(
             status_code=400,
             detail=(
                 f"Formato '{file.content_type}' não suportado. "
-                "Use PNG, JPG, SVG ou WEBP."
+                "Use PNG, JPG ou WEBP (SVG bloqueado por segurança WT-2022 P0.LOGO)."
+            ),
+        )
+
+    # WT-2022 P0.LOGO fix: magic bytes check (não confiar só em content-type declarado)
+    header = await file.read(12)
+    await file.seek(0)
+
+    PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
+    JPEG_MAGIC = b"\xff\xd8\xff"
+    SVG_PREFIX_XML = b"<?xml"
+    SVG_PREFIX_TAG = b"<svg"
+    RIFF_MAGIC = b"RIFF"
+    WEBP_MARKER = b"WEBP"
+
+    is_png = header.startswith(PNG_MAGIC)
+    is_jpeg = header.startswith(JPEG_MAGIC)
+    is_svg = header.startswith(SVG_PREFIX_XML) or header.startswith(SVG_PREFIX_TAG)
+    is_webp = header.startswith(RIFF_MAGIC) and header[8:12] == WEBP_MARKER
+
+    # WT-2022 P0.LOGO fix: SVG bloqueado por XSS (script tags, foreignObject, etc.)
+    if is_svg:
+        raise HTTPException(
+            status_code=400,
+            detail="SVG não suportado por segurança (WT-2022 P0.LOGO). Use PNG, JPEG ou WEBP.",
+        )
+
+    if not (is_png or is_jpeg or is_webp):
+        raise HTTPException(
+            status_code=400,
+            detail=(
+                "Arquivo não corresponde aos tipos aceitos (PNG/JPEG/WEBP). "
+                "Magic bytes não conferem com a extensão declarada."
             ),
         )
 
@@ -683,6 +715,14 @@ async def upload_company_logo(
     profile = await profile_repo.get_by_id(profile_id)
     if not profile:
         raise HTTPException(status_code=404, detail="Company profile not found")
+
+    # WT-2022 P0.LOGO fix: verify ownership (era cross-tenant write — qualquer recruiter
+    # podia sobrescrever logo de OUTRA company só passando profile_id alheio)
+    if str(profile.company_id) != str(company_id):
+        raise HTTPException(
+            status_code=403,
+            detail="Profile não pertence ao tenant autenticado",
+        )
 
     # Build data URL canonical
     b64 = base64.b64encode(contents).decode("ascii")

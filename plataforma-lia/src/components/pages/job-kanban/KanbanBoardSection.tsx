@@ -111,7 +111,7 @@ export function KanbanBoardSection({ state }: KanbanBoardSectionProps) {
       onApproveFromScreening={handleApproveFromScreening as unknown as Parameters<typeof KanbanColumnRenderer>[0]["onApproveFromScreening"]}
       onRejectFromScreening={handleRejectFromScreening as unknown as Parameters<typeof KanbanColumnRenderer>[0]["onRejectFromScreening"]}
       onManageProposal={(candidate) => {
-        openTransition([candidate], "offer", "hired")
+        openTransition([candidate as unknown as Parameters<typeof openTransition>[0][number]], "offer", "hired")
       }}
       onInlineRename={handleInlineRename}
       onInlineToggleActive={handleInlineToggleActive}

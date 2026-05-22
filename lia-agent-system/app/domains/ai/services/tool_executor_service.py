@@ -156,7 +156,15 @@ class ToolExecutorService:
             except Exception as _scope_exc:
                 self.logger.debug("scope validation skipped: %s", _scope_exc)
 
-        user_permissions = ["admin"]
+        # WT-2022 P0.RBAC1 fix: ler permissions reais do request/user context.
+        # Antes: hardcoded ["admin"] permitia bypass total de RBAC — checkbox UI ghost.
+        user_permissions = (
+            request.context.get("permissions", []) if request.context else []
+        )
+        if not user_permissions and request.context and request.context.get("user_role") == "admin":
+            # Backward compat: se context indica user_role=admin sem permissions explicitas,
+            # mantem comportamento previo apenas para admins (audit trail).
+            user_permissions = ["admin"]
         
         context = ToolExecutionContext(
             user_id=request.user_id,

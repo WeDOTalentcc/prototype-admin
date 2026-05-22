@@ -180,7 +180,7 @@ export function useCandidatesViewComposition(params: UseCandidatesViewCompositio
         else newSet.add(candidateId)
         return newSet
       }),
-    t: tCells,
+    t: tCells as unknown as (key: string, params?: Record<string, unknown>) => string,
   })
 
   const filterSort = useCandidatesFilterSort({

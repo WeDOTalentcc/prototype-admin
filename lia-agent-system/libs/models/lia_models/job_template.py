@@ -34,6 +34,7 @@ class JobTemplate(Base):
     __tablename__ = "job_templates"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
+    # WT-2022 P0.TENANT: TENANT-EXEMPT - is_system templates globais (company_id NULL quando is_system=True; documentado linhas 24-25)
     company_id = Column(UUID(as_uuid=True), nullable=True, index=True)
     parent_template_id = Column(UUID(as_uuid=True), ForeignKey('job_templates.id'), nullable=True)
     

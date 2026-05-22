@@ -104,7 +104,8 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
   // semântica: aqui foco é Art. 20 (revisão de decisão automatizada);
   // Governança lista todos os DSR. Filtro por tipo é refinamento futuro.
   if (activeSubsection === "lgpd-candidatos") {
-    return <DSRInboxPanel />
+    // WT-2022 P1.B: filter Art. 20 (decisão automatizada review)
+    return <DSRInboxPanel defaultRequestType="explanation" />
   }
 
   // Wave 1 Agent #2 (T-18 EU AI Act Annex III, 2026-05-21): subsection

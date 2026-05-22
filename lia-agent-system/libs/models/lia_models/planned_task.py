@@ -74,7 +74,8 @@ class PlannedTask(Base):
     
     related_job_id = Column(String, nullable=True)
     related_candidate_id = Column(String, nullable=True)
-    company_id = Column(String, nullable=True)
+    # WT-2022 P0.PLANNED_TASK migration 166 (2026-05-21): NOT NULL aplicado no DB.
+    company_id = Column(String, nullable=False)
     
     context = Column(JSON, default=dict)
     result = Column(JSON, nullable=True)
@@ -169,7 +170,8 @@ class ExecutionPlan(Base):
     
     status = Column(String(50), default="pending")
     
-    company_id = Column(String, nullable=True)
+    # WT-2022 P0.EXECUTION_PLAN migration 167 (2026-05-21): NOT NULL aplicado no DB.
+    company_id = Column(String, nullable=False)
     created_by = Column(String, nullable=True)
     
     plan_metadata = Column(JSON, default=dict)

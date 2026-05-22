@@ -3,6 +3,14 @@
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { DEFAULT_STAGES } from '@/components/settings/RecruitmentJourneyConfig'
 import type { RecruitmentStage } from '@/components/settings/recruitment-journey.types'
+// WT-2022 P0.STAGES + P0.SUB_STATUSES: adapter import to expose legacy back-compat variants
+import {
+  normalizeStagesFromHook,
+  normalizeSubStatusesFromHook,
+  type RecruitmentStage as LegacyRecruitmentStage,
+  type SubStatus as LegacySubStatus,
+  type HookSubStatus,
+} from '@/lib/recruitment'
 
 export type { RecruitmentStage }
 
@@ -17,6 +25,26 @@ interface UseRecruitmentStagesResult {
   stages: RecruitmentStage[]
   activeStages: RecruitmentStage[]
   interviewStages: RecruitmentStage[]
+  /**
+   * WT-2022 P0.STAGES — stages normalizadas pro shape legacy (camelCase).
+   * Use em consumers transitional que ainda dependem de
+   * {displayName, stageOrder, stageType, isInitial, isFinal, stageCategory,
+   * allowedTransitions} ao inves de importar RECRUITMENT_STAGES direto.
+   */
+  legacyStages: LegacyRecruitmentStage[]
+  /**
+   * WT-2022 P0.SUB_STATUSES — sub-statuses canonical agrupados por stage name
+   * (snake_case, vindo direto de /api/backend-proxy/company-pipeline).
+   * Reflete customizacao de Configuracoes > Pipeline > sub-statuses por estagio.
+   */
+  subStatuses: Record<string, HookSubStatus[]>
+  /**
+   * WT-2022 P0.SUB_STATUSES — sub-statuses normalizados pro shape legacy
+   * (camelCase: displayName/isDefault/isWaiting/isApproval/isRejection).
+   * Use em consumers transitional que ainda dependem do shape SUB_STATUSES
+   * hardcoded de @/lib/recruitment ao inves de importa-lo direto.
+   */
+  legacySubStatuses: Record<string, LegacySubStatus[]>
   isLoading: boolean
   error: string | null
   refetch: () => Promise<void>
@@ -110,10 +138,43 @@ export function useRecruitmentStages(): UseRecruitmentStagesResult {
     return { screeningSLA, shortlistSLA, totalSLA, calculateDeadline }
   }, [activeStages, interviewStages])
 
+  // WT-2022 P0.STAGES: memoized adapter pra back-compat consumers
+  const legacyStages = useMemo(
+    () => normalizeStagesFromHook(stages),
+    [stages]
+  )
+
+  // WT-2022 P0.SUB_STATUSES: extrai sub_statuses canonical por stage name
+  // (snake_case do backend, pronto pra consumers que querem o shape real)
+  const subStatuses = useMemo<Record<string, HookSubStatus[]>>(() => {
+    const map: Record<string, HookSubStatus[]> = {}
+    for (const stage of stages) {
+      const list = stage.sub_statuses
+      if (Array.isArray(list) && list.length > 0) {
+        // Backend ja retorna HookSubStatus-compatible em sub_statuses; cast
+        // pra preservar tipos. is_active filter aplicado pra refletir toggles
+        // de Configuracoes > Pipeline.
+        map[stage.name] = (list as unknown as HookSubStatus[]).filter(
+          (ss) => ss.is_active !== false,
+        )
+      }
+    }
+    return map
+  }, [stages])
+
+  // WT-2022 P0.SUB_STATUSES: legacy camelCase shape pra consumers transitional
+  const legacySubStatuses = useMemo(
+    () => normalizeSubStatusesFromHook(subStatuses),
+    [subStatuses]
+  )
+
   return {
     stages,
     activeStages,
     interviewStages,
+    legacyStages,
+    subStatuses,
+    legacySubStatuses,
     isLoading,
     error,
     refetch: fetchStages,

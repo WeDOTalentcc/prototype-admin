@@ -242,11 +242,16 @@ def _build_default_gate() -> Any:
     inject one. Returns ``None`` if construction fails (e.g., test envs
     without a wired orchestrator). The caller decides what to do then.
     """
+    # WT-2022 P3.1 (2026-05-21): migrated V1 PolicyEngine -> V2 PolicyEngineService
+    # via PolicyGateService(policy_engine=...). PolicyGateService auto-detects
+    # engine_version="v2" pelo metodo canonical .evaluate.
     try:
-        from app.orchestrator.policy_engine import PolicyEngine
+        from app.domains.policy.services.policy_engine_service import (
+            PolicyEngineService,
+        )
         from app.orchestrator.services.policy_gate_service import PolicyGateService
 
-        return PolicyGateService(policy_engine=PolicyEngine())
+        return PolicyGateService(policy_engine=PolicyEngineService())
     except Exception as exc:  # pragma: no cover — defensive
         logger.warning(
             "[WizardPolicyGate] Failed to build default PolicyGateService: %s", exc,

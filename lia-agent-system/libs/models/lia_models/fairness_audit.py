@@ -22,6 +22,7 @@ class FairnessAuditLog(Base):
     __tablename__ = "fairness_audit_log"
 
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # TENANT-EXEMPT: FairnessAuditLog cross-tenant analytics (ADR-LGPD-001 anonimizacao agregada)
     company_id = Column(UUID(as_uuid=True), nullable=True, index=True)
     recruiter_id = Column(UUID(as_uuid=True), nullable=True)
     job_id = Column(UUID(as_uuid=True), nullable=True)

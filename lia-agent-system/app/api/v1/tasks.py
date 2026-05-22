@@ -98,7 +98,8 @@ company_id: str = Depends(require_company_id)):
         due_date=task_data.due_date,
         context=task_data.context,
         is_automated=task_data.is_automated,
-        requires_confirmation=task_data.requires_confirmation
+        requires_confirmation=task_data.requires_confirmation,
+        company_id=company_id,  # WT-2022 P0.TASK: propaga JWT company_id
     )
     return task.to_dict()
 

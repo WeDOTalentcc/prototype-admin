@@ -37,6 +37,7 @@ from app.jobs.tasks import (  # noqa: F401
     feedback_auto_send_task,
     feedback_process_pending_sends_task,
     followup_process_pending_task,
+    proactive_detect_hints_hourly,  # WT-2022
     wsi_check_abandoned_task,
     compress_old_episodes_task,  # celery task name: memory.compress_old_episodes
     run_ragas_evaluate_batch,

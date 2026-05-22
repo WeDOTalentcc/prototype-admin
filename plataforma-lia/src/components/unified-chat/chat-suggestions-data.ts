@@ -11,9 +11,11 @@ export interface QueryExample {
   icon: React.ElementType
   question: string
   category: 'metricas' | 'candidatos' | 'vagas' | 'pipeline' | 'analise' | 'previsao' | 'comparacao'
+  /** descrição livre opcional, usada como tooltip ou hint de busca */
+  description?: string
 }
 
-export const CATEGORY_INFO: Record<string, { icon: React.ElementType }> = {
+export const CATEGORY_INFO: Record<string, { icon: React.ElementType; label?: string }> = {
   metricas: { icon: BarChart3 },
   candidatos: { icon: Users },
   vagas: { icon: Briefcase },

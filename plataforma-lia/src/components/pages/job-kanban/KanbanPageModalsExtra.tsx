@@ -65,7 +65,7 @@ export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
       <CandidateCompareModal
         open={showCompareModal}
         onClose={() => setShowCompareModal(false)}
-        candidates={compareCandidates}
+        candidates={compareCandidates as Parameters<typeof CandidateCompareModal>[0]['candidates']}
         jobId={_jobIdForSL}
         companyId={_companyIdForSL}
       />
@@ -288,7 +288,7 @@ export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
           setShowShareGestorModal(false)
         }}
         shareType="list"
-        title={t('candidatesShareTitle', { title: currentJob?.title ?? t('jobFallback') })}
+        title={t('candidatesShareTitle', { title: (currentJob?.title ?? t('jobFallback')) as string })}
         candidateIds={selectedCandidates.size > 0 ? Array.from(selectedCandidates) : allCandidateIds}
         candidateCount={selectedCandidates.size > 0 ? selectedCandidates.size : allCandidateIds.length}
         onSuccess={() => {

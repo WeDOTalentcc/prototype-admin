@@ -334,6 +334,7 @@ class IncidentReport(Base):
     __tablename__ = "incident_reports"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # WT-2022 P0.TENANT: TENANT-EXEMPT TENANT-NULLABLE-DELIBERATE - incident_reports aggregated cross-tenant for system health metrics (no PII per row, NULL=platform-wide incident)
     company_id = Column(UUID(as_uuid=True), nullable=True, index=True)
     
     incident_type = Column(String(50), nullable=False, index=True)
@@ -392,6 +393,7 @@ class ModelEvaluation(Base):
     __tablename__ = "model_evaluations"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # WT-2022 P0.TENANT: TENANT-EXEMPT TENANT-NULLABLE-DELIBERATE - model_evaluations aggregated cross-tenant for global ML model quality metrics (ADR-LGPD-001 anonymization, NULL=platform-wide eval)
     company_id = Column(UUID(as_uuid=True), nullable=True, index=True)
     
     model_version = Column(String(20), nullable=False, index=True)
@@ -447,6 +449,7 @@ class ComplianceControl(Base):
     __tablename__ = "compliance_controls"
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # WT-2022 P0.TENANT: TENANT-EXEMPT TENANT-NULLABLE-DELIBERATE - compliance_controls global framework definitions (NULL=platform-wide control like LGPD/SOX baseline, UUID=per-company override)
     company_id = Column(UUID(as_uuid=True), nullable=True, index=True)
     
     framework = Column(String(50), nullable=False, index=True)

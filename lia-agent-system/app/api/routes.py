@@ -262,6 +262,7 @@ from app.api.v1.navigation_intent import router as navigation_intent_router
 from app.api.v1.pipeline_orchestrator import router as pipeline_orchestrator_router
 from app.api.v1.pipeline_policy import router as pipeline_policy_router
 from app.api.v1.proactive_actions import router as proactive_actions_router
+from app.api.v1.proactive_hints import router as proactive_hints_router  # WT-2022
 from app.api.v1.rag_search import router as rag_search_router
 from app.api.v1.recruiter_behavior import router as recruiter_behavior_router
 from app.api.v1.salary_benchmark import router as salary_benchmark_router
@@ -504,6 +505,7 @@ def register_all_routes(app: FastAPI) -> None:
     # ── HITL ──────────────────────────────────────────────────────────────────
     app.include_router(hitl_router, prefix="/api/v1", tags=["hitl"])
     app.include_router(proactive_actions_router, prefix="/api/v1")
+    app.include_router(proactive_hints_router, prefix="/api/v1")  # WT-2022
     app.include_router(agent_memory_router, prefix="/api/v1")
     app.include_router(agent_explainability.router, prefix="/api/v1", tags=["agent-explainability"])
 

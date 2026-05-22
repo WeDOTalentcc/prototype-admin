@@ -202,6 +202,8 @@ export interface JobVacancy {
   closed_at?: string
   created_by?: string
   created_by_email?: string
+  /** FK pra company compensation_policies (canonical settings de salário). */
+  compensation_policy_id?: string
 }
 
 export interface JobVacancyCreateRequest {

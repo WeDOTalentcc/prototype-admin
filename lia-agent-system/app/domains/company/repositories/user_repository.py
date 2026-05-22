@@ -25,8 +25,25 @@ class UserRepository:
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
-    async def get_by_id(self, user_id: UUID) -> User | None:
-        result = await self.db.execute(select(User).where(User.id == user_id))
+    async def get_by_id(self, user_id: UUID, company_id: str | None = None) -> User | None:
+        """Lookup user by id.
+
+        WT-2022 P0.RBAC2 fix: agora aceita company_id opcional para enforce
+        tenant scoping. Callers DEVEM passar company_id sempre que possivel
+        (era cross-tenant read antes — knew UUID = read user de outra company).
+        """
+        if company_id is not None:
+            result = await self.db.execute(
+                select(User).where(User.id == user_id, User.company_id == company_id)
+            )
+        else:
+            # Backward compat (legacy callers); log warning pra migrar gradualmente
+            import logging
+            logging.getLogger(__name__).warning(
+                "WT-2022 P0.RBAC2: get_by_id called without company_id "
+                "(tenant scoping skipped — caller deve passar company_id)"
+            )
+            result = await self.db.execute(select(User).where(User.id == user_id))
         return result.scalar_one_or_none()
 
     async def get_by_email(self, email: str) -> User | None:

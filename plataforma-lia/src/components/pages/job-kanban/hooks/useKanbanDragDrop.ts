@@ -2,7 +2,11 @@
 
 import type React from "react"
 import { type KanbanCandidate, type DynamicStage } from "@/components/kanban"
+// WT-2022 P0.SUB_STATUSES: hook canonical-first via useRecruitmentStages.
+// SUB_STATUSES hardcoded mantido apenas como transitional fallback quando
+// backend nao retorna sub_statuses pro stage (boot/timeout/stage custom novo).
 import { SUB_STATUSES, type SubStatus } from "@/lib/recruitment-stages"
+import { useRecruitmentStages } from "@/hooks/recruitment/use-recruitment-stages"
 import { type KanbanJob } from "@/components/pages/job-kanban/types"
 import { type SubStatusOption } from "@/components/settings/recruitment-journey.types"
 
@@ -44,6 +48,11 @@ export function useKanbanDragDrop(ctx: KanbanDragDropContext) {
     job,
   } = ctx
 
+  // WT-2022 P0.SUB_STATUSES: hook canonical no topo (Rules of Hooks).
+  // legacySubStatuses reflete sub-statuses customizados em Configuracoes >
+  // Pipeline (snake_case backend convertido pro shape legacy camelCase).
+  const { legacySubStatuses } = useRecruitmentStages()
+
   const handleDragStart = (e: React.DragEvent<Element>, candidate: KanbanCandidate, fromColumn: string) => {
     setDraggedCandidate({ ...candidate, fromColumn })
     if (e.dataTransfer) e.dataTransfer.effectAllowed = 'move'
@@ -83,6 +92,8 @@ export function useKanbanDragDrop(ctx: KanbanDragDropContext) {
   }
 
   const getAvailableSubStatuses = (toColumn: string): SubStatus[] => {
+    // Prioridade 1: sub_statuses embedded em dynamicStages (vem do mesmo hook
+    // canonical company-pipeline via parent). Cobre stages customizados.
     const stage = dynamicStages.find(s => s.id === toColumn)
     if (stage?.subStatuses?.length) {
       return stage.subStatuses.map((ss: SubStatusOption) => ({
@@ -92,6 +103,12 @@ export function useKanbanDragDrop(ctx: KanbanDragDropContext) {
         isWaiting: ss.is_waiting,
       }))
     }
+    // Prioridade 2: legacySubStatuses do hook canonical (reflete Configuracoes
+    // > Pipeline). Stage names canonical batem com toColumn aqui.
+    const canonical = legacySubStatuses[toColumn]
+    if (canonical?.length) return canonical
+    // Prioridade 3 (fallback transitional): SUB_STATUSES hardcoded — so dispara
+    // se backend nao tem sub_statuses pro stage (boot/timeout/stage novo).
     return SUB_STATUSES[toColumn] || []
   }
 

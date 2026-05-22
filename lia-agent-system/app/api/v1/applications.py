@@ -189,6 +189,32 @@ company_id: str = Depends(require_company_id)):
         candidate.skills_match_percentage = score_result.breakdown.skills_match
         candidate.lia_insights = score_result.to_dict()
 
+        # WT-2022 P0.C: LGPD Art. 20 audit trail para decisao automatizada de score apply-time
+        try:
+            from app.shared.services.automated_decision_logger import (
+                PROTECTED_CRITERIA_PT,
+                log_automated_decision,
+            )
+            await log_automated_decision(
+                db=repo.db,
+                company_id=company_id,
+                candidate_id=str(candidate.id) if candidate.id else None,
+                job_id=str(vacancy_id),
+                decision_type="apply_lia_score",
+                ai_model_used="lia_score_service_deterministic",
+                explanation_text=(
+                    f"Apply-time LIA score={adherence_score:.2f} (skills_match="
+                    f"{score_result.breakdown.skills_match:.2f}). "
+                    f"Matched skills={len(matched_skills)}; missing={len(missing_skills)}."
+                ),
+                criteria_used=["skills_match", "experience_years", "current_title", "location"],
+                criteria_ignored=PROTECTED_CRITERIA_PT,
+                confidence_score=float(adherence_score) / 100.0 if adherence_score else None,
+                review_eligible=True,
+            )
+        except Exception as _audit_exc:  # fail-safe: log gap nao bloqueia apply
+            logger.warning("WT-2022 P0.C: apply lia_score audit log failed: %s", _audit_exc)
+
         if adherence_score < candidate_feedback_service.ADHERENCE_THRESHOLD:
             feedback_result = await candidate_feedback_service.check_and_send_feedback(
                 candidate_id=str(candidate.id),
@@ -411,6 +437,32 @@ company_id: str = Depends(require_company_id)):
         candidate.lia_score = new_adherence_score
         candidate.skills_match_percentage = score_result.breakdown.skills_match
         candidate.lia_insights = score_result.to_dict()
+
+        # WT-2022 P0.C: LGPD Art. 20 audit trail para decisao automatizada de score em resubmit
+        try:
+            from app.shared.services.automated_decision_logger import (
+                PROTECTED_CRITERIA_PT,
+                log_automated_decision,
+            )
+            await log_automated_decision(
+                db=repo.db,
+                company_id=company_id,
+                candidate_id=str(candidate.id) if candidate.id else None,
+                job_id=str(vacancy_id),
+                decision_type="resubmit_lia_score",
+                ai_model_used="lia_score_service_deterministic",
+                explanation_text=(
+                    f"Resubmit LIA score={new_adherence_score:.2f} (anterior="
+                    f"{previous_score:.2f}, melhoria={improvement:+.2f}, skills_match="
+                    f"{score_result.breakdown.skills_match:.2f})."
+                ),
+                criteria_used=["skills_match", "experience_years", "current_title", "location", "seniority"],
+                criteria_ignored=PROTECTED_CRITERIA_PT,
+                confidence_score=float(new_adherence_score) / 100.0 if new_adherence_score else None,
+                review_eligible=True,
+            )
+        except Exception as _audit_exc:  # fail-safe
+            logger.warning("WT-2022 P0.C: resubmit lia_score audit log failed: %s", _audit_exc)
 
         await candidate_feedback_service.mark_resubmit_completed(
             feedback_id=feedback.id,

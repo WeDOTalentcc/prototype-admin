@@ -141,15 +141,29 @@ class CommunicationService:
         """Get current time in Brazil timezone (UTC-3)."""
         return datetime.utcnow() + timedelta(hours=BRAZIL_TZ_OFFSET_HOURS)
     
-    def _is_within_sending_hours(self) -> bool:
-        """Check if current time is within allowed sending hours (8h-20h weekdays)."""
+    def _is_within_sending_hours(self, settings: dict | None = None) -> bool:
+        """Check if current time is within allowed sending hours.
+
+        WT-2022 P0.SCH1: agora tenant-aware. settings dict pode override defaults:
+          - sending_hours_start (int, default 8)
+          - sending_hours_end (int, default 20)
+          - respect_weekends (bool, default True)
+        Backward-compat: settings=None usa defaults canonical.
+        Helper: get_company_communication_settings em
+        app/shared/services/communication_settings_consumer.py.
+        """
         brazil_now = self._get_brazil_now()
-        
-        if brazil_now.weekday() >= 5:
+
+        s = settings or {}
+        respect_weekends = bool(s.get("respect_weekends", True))
+        start_hour = int(s.get("sending_hours_start", self.SENDING_START_HOUR))
+        end_hour = int(s.get("sending_hours_end", self.SENDING_END_HOUR))
+
+        if respect_weekends and brazil_now.weekday() >= 5:
             return False
-        
+
         current_hour = brazil_now.hour
-        return self.SENDING_START_HOUR <= current_hour < self.SENDING_END_HOUR
+        return start_hour <= current_hour < end_hour
     
     def _get_next_sending_window(self) -> datetime:
         """Get the next valid sending window."""
@@ -327,7 +341,12 @@ class CommunicationService:
                     "message": f"Aproximando do limite diário ({messages_today}/{self.MAX_MESSAGES_PER_DAY})"
                 })
 
-            if not self._is_within_sending_hours():
+            # WT-2022 P0.SCH1: tenant-aware sending hours via communication_settings.
+            from app.shared.services.communication_settings_consumer import (
+                get_company_communication_settings,
+            )
+            settings = await get_company_communication_settings(db, company_id)
+            if not self._is_within_sending_hours(settings):
                 next_window = self._get_next_sending_window()
                 result["warnings"].append({
                     "type": "outside_hours",
@@ -704,8 +723,13 @@ class CommunicationService:
                 db.add(log)
                 await db.commit()
                 await db.refresh(log)
-                
-                if not self._is_within_sending_hours():
+
+                # WT-2022 P0.SCH1: tenant-aware sending hours via communication_settings.
+                from app.shared.services.communication_settings_consumer import (
+                    get_company_communication_settings,
+                )
+                settings = await get_company_communication_settings(db, company_id)
+                if not self._is_within_sending_hours(settings):
                     next_window = self._get_next_sending_window()
                     log.status = CommunicationStatus.QUEUED.value
                     log.next_retry_at = next_window
@@ -1404,32 +1428,59 @@ class CommunicationService:
         self,
         db: AsyncSession | None = None
     ) -> dict[str, Any]:
-        """Process messages that were queued for later sending."""
+        """Process messages that were queued for later sending.
+
+        WT-2022 P0.SCH1: tenant-aware sending hours. O gate global (defaults
+        canonical 8h-20h dias úteis) atua como fast-path conservador: se TODOS
+        os tenants estão fora da janela default, pulamos o batch inteiro.
+        Dentro do loop, cada log é re-checado contra communication_settings
+        do tenant específico (`log.company_id`) — tenant com janela estendida
+        (ex: 22h cutoff) pode enviar mesmo quando o default já fechou.
+        """
         if not self._is_within_sending_hours():
             return {
                 "processed": 0,
                 "message": "Outside sending hours"
             }
-        
+
         async with _get_db(db) as db:
             try:
+                from app.shared.services.communication_settings_consumer import (
+                    get_company_communication_settings,
+                )
+
                 now = datetime.utcnow()
-                
+
                 queued_logs = await CommunicationRepository(db).list_queued_logs_for_retry(
                     now=now,
                     queued_status=CommunicationStatus.QUEUED.value,
                     limit=100,
                 )
                 processed = 0
-                
+                skipped_tenant_hours = 0
+                # Cache settings per company_id pra evitar refetch dentro do batch.
+                settings_cache: dict[str, dict] = {}
+
                 for log in queued_logs:
                     recipient = log.candidate_email if log.channel == "email" else log.candidate_phone
-                    
+
                     if not recipient:
                         log.status = CommunicationStatus.FAILED.value
                         log.error_message = "No recipient address"
                         continue
-                    
+
+                    # WT-2022 P0.SCH1: per-tenant sending hours check.
+                    tenant_id = str(log.company_id) if log.company_id else None
+                    if tenant_id:
+                        if tenant_id not in settings_cache:
+                            settings_cache[tenant_id] = await get_company_communication_settings(
+                                db, tenant_id
+                            )
+                        if not self._is_within_sending_hours(settings_cache[tenant_id]):
+                            # Tenant ainda fora da própria janela — re-queue (não falha).
+                            skipped_tenant_hours += 1
+                            continue
+
                     success, msg_id, response = await self._send_with_retry(
                         MessageChannel(log.channel),
                         recipient,
@@ -1452,12 +1503,16 @@ class CommunicationService:
                         log.error_message = response.get("error") if response else "Unknown error"
                 
                 await db.commit()
-                
-                logger.info(f"📤 Processed {processed} queued messages")
-                
+
+                logger.info(
+                    "📤 Processed %d queued messages (skipped_tenant_hours=%d)",
+                    processed, skipped_tenant_hours,
+                )
+
                 return {
                     "processed": processed,
-                    "total_queued": len(queued_logs)
+                    "total_queued": len(queued_logs),
+                    "skipped_tenant_hours": skipped_tenant_hours,
                 }
                 
             except Exception:

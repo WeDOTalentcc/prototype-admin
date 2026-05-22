@@ -297,6 +297,12 @@ celery_app.conf.update(
             "options": {"expires": 3600},
         },
         # Follow-up de convites WSI não abertos — a cada hora (Gap A)
+                # WT-2022 Camada IA Proativa: scheduler-driven hints (1x/hora)
+        "proactive-detect-hints-hourly": {
+            "task": "proactive.detect_hints_hourly",
+            "schedule": crontab(minute=5),  # :05 past every hour (offset de followup :00)
+            "options": {"expires": 3500, "queue": "onboarding_low"},
+        },
         "followup-check-hourly": {
             "task": "followup.process_pending",
             "schedule": crontab(minute=0),  # todo início de hora
