@@ -498,10 +498,23 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
         2. Estágio 1: _validate_deterministic → se falhar, regenera com hint
         3. Estágio 2: _validate_jd_anchor (se jd_text fornecido) → se falhar, regenera com suggestion
         4. Após 3 falhas em qualquer estágio, marca needs_manual_review=True e retorna
+
+        Hardening C.1: chama ``inc_wsi_fallback(framework, "validation_fail")``
+        quando atinge MAX_RETRIES em qualquer estagio (sinal canary REGRA 4 --
+        question gerada com manual_review=True conta como degradation real).
         """
         MAX_RETRIES = 3
         last_question: WSIQuestion | None = None
         improvement_hint: str | None = None
+
+        # Hardening C.1 -- mapping gen_fn -> framework label canonical
+        # (espelha allow-list em app/shared/observability/fallback_metrics.py).
+        _framework_label = {
+            "_generate_cbi_question": "CBI",
+            "_generate_dreyfus_question": "Dreyfus",
+            "_generate_bloom_question": "Bloom",
+            "_generate_bigfive_question": "BigFive",
+        }.get(getattr(gen_fn, "__name__", ""), None)
 
         for attempt in range(1, MAX_RETRIES + 1):
             if improvement_hint:
@@ -529,6 +542,9 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
                         f"WSI F6.8 max retries reached for '{competency.name}'. "
                         "Marking needs_manual_review=True."
                     )
+                    # Hardening C.1 -- REGRA 4 canary signal
+                    if _framework_label:
+                        inc_wsi_fallback(_framework_label, "validation_fail")
                     return question
                 continue
 
@@ -563,6 +579,9 @@ Retorne APENAS JSON válido (sem texto fora do JSON):
                             f"WSI F6.8.1 max retries reached for '{competency.name}'. "
                             "Marking needs_manual_review=True."
                         )
+                        # Hardening C.1 -- REGRA 4 canary signal
+                        if _framework_label:
+                            inc_wsi_fallback(_framework_label, "validation_fail")
                         return question
                     continue
                 # Persiste metadados de ancoragem nos flags (auditável)

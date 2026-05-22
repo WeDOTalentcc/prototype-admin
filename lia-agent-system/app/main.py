@@ -951,6 +951,42 @@ async def app_health_check():
     return RedirectResponse(url="/api/v1/health", status_code=307)
 
 
+# ---------------------------------------------------------------------------
+# Prometheus /metrics endpoint (Hardening C, registrado 2026-05-21)
+# Expose canary metrics (canary_metrics.py + fallback_metrics.py + tenant-aware
+# counters) para scraping por Prometheus / Grafana.
+# Endpoint eh PUBLIC por convencao Prometheus (deploy time deve restringir
+# acesso via firewall ou reverse-proxy basic-auth se exposto publicamente).
+# ---------------------------------------------------------------------------
+@app.get("/metrics", include_in_schema=False)
+async def prometheus_metrics():
+    """Prometheus scrape endpoint.
+
+    Returns text/plain exposition do default REGISTRY. Fail-open: se
+    prometheus_client nao estiver instalado, retorna HTTP 503 com body
+    explicativo (preferivel a 500 silencioso pro scraper).
+    """
+    try:
+        from prometheus_client import (
+            CONTENT_TYPE_LATEST,
+            REGISTRY,
+            generate_latest,
+        )
+        from fastapi.responses import Response
+
+        return Response(
+            content=generate_latest(REGISTRY),
+            media_type=CONTENT_TYPE_LATEST,
+        )
+    except ImportError:  # pragma: no cover -- prometheus_client opcional em dev
+        from fastapi.responses import PlainTextResponse
+
+        return PlainTextResponse(
+            content="prometheus_client not installed",
+            status_code=503,
+        )
+
+
 @app.get("/")
 async def root():
     """Root endpoint with API info."""

@@ -30,6 +30,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.domains.lgpd.repositories.lgpd_consent_repository import (
     LGPDConsentRepository,
 )
+from app.shared.observability.canary_metrics import (
+    inc_granular_consent_revoke,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -253,6 +256,13 @@ class GranularConsentService:
                 revoked_at=now if not given else None,
                 source=source,
             ))
+
+            # Hardening C.3 -- canary signal per-purpose revoke (LGPD UX trust).
+            # Incrementa apenas em revoke (given=False) pra alarme baseado em
+            # spike de revogacao. Purpose passa por whitelist em canary_metrics
+            # pra prevenir cardinality explosion via typos.
+            if not given:
+                inc_granular_consent_revoke(purpose)
 
         await self.db.flush()
         return updated

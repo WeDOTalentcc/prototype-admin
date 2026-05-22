@@ -665,6 +665,22 @@ def check_dsr_overdue_daily(self) -> dict:
                     db.add(alert)
                     summary["alerts_created"] += 1
 
+                    # Hardening C.4 -- canary signal SLA worker LGPD.
+                    # Incrementado por alerta criado (NAO por DSR overdue,
+                    # pra alinhar com nome do counter). Zero por 24h+ pode
+                    # indicar worker travado OU ausencia real de DSRs vencidas.
+                    try:
+                        from app.shared.observability.canary_metrics import (
+                            dsr_overdue_created_total,
+                        )
+                        if dsr_overdue_created_total is not None:
+                            dsr_overdue_created_total.inc()
+                    except Exception as _metric_exc:  # pragma: no cover -- fail-open
+                        logger.debug(
+                            "[dsr.check_overdue] canary metric inc failed (fail-open): %s",
+                            _metric_exc,
+                        )
+
                 except Exception as exc:
                     summary["errors"].append({
                         "dsr_id": str(dsr.id),

@@ -153,3 +153,146 @@ def test_dsr_has_no_labels():
         "dsr_overdue_created_total tem labels inesperados -- "
         f"esperado tuple vazia, got {dsr_overdue_created_total._labelnames}"
     )
+
+
+# ---------------------------------------------------------------------- #
+# 4. Hardening C.2 -- PolicyEngine runtime invocations.
+# ---------------------------------------------------------------------- #
+
+
+def test_policy_engine_invocations_counter_exists():
+    from app.shared.observability.canary_metrics import (
+        policy_engine_runtime_invocations_total,
+    )
+
+    assert policy_engine_runtime_invocations_total is not None, (
+        "policy_engine_runtime_invocations_total eh None -- "
+        "sinal canary Hardening C.2 perdido."
+    )
+
+
+def test_policy_engine_has_method_label():
+    from app.shared.observability.canary_metrics import (
+        policy_engine_runtime_invocations_total,
+    )
+
+    assert "method" in policy_engine_runtime_invocations_total._labelnames, (
+        "policy_engine_runtime_invocations_total perdeu label method "
+        "-- contract break."
+    )
+
+
+def test_policy_engine_inc_helper_increments():
+    from prometheus_client import REGISTRY
+    from app.shared.observability.canary_metrics import (
+        inc_policy_engine_invocation,
+        policy_engine_runtime_invocations_total,
+    )
+
+    initial = (
+        policy_engine_runtime_invocations_total.labels(method="evaluate")
+        ._value.get()
+    )
+    inc_policy_engine_invocation("evaluate")
+    final = REGISTRY.get_sample_value(
+        "policy_engine_runtime_invocations_total", {"method": "evaluate"}
+    )
+    assert final == pytest.approx(initial + 1), (
+        f"Counter nao incrementou: initial={initial} final={final}"
+    )
+
+
+def test_policy_engine_inc_helper_rejects_unknown_method():
+    """Cardinality guard: metodos fora da whitelist NAO incrementam."""
+    from app.shared.observability.canary_metrics import (
+        inc_policy_engine_invocation,
+        policy_engine_runtime_invocations_total,
+    )
+
+    # Acessar labels com valor desconhecido nao cria sample (skipped silently)
+    # Verificamos chamando e confirmando que .labels(method="unknown")
+    # nao foi criado como sample (._value.get() retorna 0 se nunca chamado).
+    inc_policy_engine_invocation("not_a_real_method")
+    # Se o guard funcionou, nenhum sample com method="not_a_real_method"
+    # foi criado. Tentar acessar via labels() criaria o sample com 0,
+    # entao usamos REGISTRY.get_sample_value pra check non-destructive.
+    from prometheus_client import REGISTRY
+    sample = REGISTRY.get_sample_value(
+        "policy_engine_runtime_invocations_total",
+        {"method": "not_a_real_method"},
+    )
+    assert sample is None, (
+        "Cardinality guard falhou: method='not_a_real_method' criou sample. "
+        "inc_policy_engine_invocation deveria rejeitar valores fora da "
+        "whitelist _POLICY_ENGINE_METHODS."
+    )
+
+
+# ---------------------------------------------------------------------- #
+# 5. Hardening C.3 -- LGPD granular consent revoke per purpose.
+# ---------------------------------------------------------------------- #
+
+
+def test_granular_consent_revoke_counter_exists():
+    from app.shared.observability.canary_metrics import (
+        granular_consent_revoke_per_purpose_total,
+    )
+
+    assert granular_consent_revoke_per_purpose_total is not None, (
+        "granular_consent_revoke_per_purpose_total eh None -- "
+        "sinal canary Hardening C.3 perdido."
+    )
+
+
+def test_granular_consent_revoke_has_purpose_label():
+    from app.shared.observability.canary_metrics import (
+        granular_consent_revoke_per_purpose_total,
+    )
+
+    assert (
+        "purpose" in granular_consent_revoke_per_purpose_total._labelnames
+    ), (
+        "granular_consent_revoke_per_purpose_total perdeu label purpose "
+        "-- contract break."
+    )
+
+
+def test_granular_consent_revoke_inc_helper_increments():
+    from prometheus_client import REGISTRY
+    from app.shared.observability.canary_metrics import (
+        inc_granular_consent_revoke,
+        granular_consent_revoke_per_purpose_total,
+    )
+
+    initial = (
+        granular_consent_revoke_per_purpose_total.labels(
+            purpose="ai_screening"
+        )._value.get()
+    )
+    inc_granular_consent_revoke("ai_screening")
+    final = REGISTRY.get_sample_value(
+        "granular_consent_revoke_per_purpose_total",
+        {"purpose": "ai_screening"},
+    )
+    assert final == pytest.approx(initial + 1), (
+        f"Counter nao incrementou: initial={initial} final={final}"
+    )
+
+
+def test_granular_consent_revoke_inc_rejects_unknown_purpose():
+    """Cardinality guard + LGPD: typos NAO podem criar timeseries arbitrarias."""
+    from prometheus_client import REGISTRY
+    from app.shared.observability.canary_metrics import (
+        inc_granular_consent_revoke,
+    )
+
+    inc_granular_consent_revoke("typo_purpose_not_canonical")
+    sample = REGISTRY.get_sample_value(
+        "granular_consent_revoke_per_purpose_total",
+        {"purpose": "typo_purpose_not_canonical"},
+    )
+    assert sample is None, (
+        "Cardinality guard falhou: purpose typo criou sample. "
+        "inc_granular_consent_revoke deveria rejeitar valores fora da "
+        "whitelist _GRANULAR_CONSENT_PURPOSES."
+    )
