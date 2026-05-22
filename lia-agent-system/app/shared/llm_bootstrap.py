@@ -133,6 +133,11 @@ def _infer_service_from_caller() -> str:
         "pluggy",
         "/asyncio/",
         "unittest/",
+        # Pytest entrypoint script (e.g. /path/.pythonlibs/bin/pytest).
+        # The basename `pytest` would otherwise become the inferred service
+        # under test runs — skipping it lets the next-newest application
+        # frame (the actual test file or service module) win.
+        "bin/pytest",
     )
     try:
         # extract_stack returns oldest -> newest; we want the OUTER-most
