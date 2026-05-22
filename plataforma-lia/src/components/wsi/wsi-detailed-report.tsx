@@ -76,7 +76,7 @@ function ReportHeader({ data, candidateName, candidateTitle }: { data: WSIResult
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Chip variant="neutral" muted className={`${decision.badge} text-micro font-medium px-3 py-1 rounded-full`}>
+          <Chip variant="neutral" muted className={`${decision.badge} text-micro font-medium px-1.5 py-0 rounded-full`}>
             {scores.decision ==="approve" || scores.decision ==="approved" ? (
               <><CheckCircle className="w-3.5 h-3.5 mr-1" />{decision.label}</>
             ) : (

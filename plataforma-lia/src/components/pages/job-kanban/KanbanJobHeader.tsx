@@ -136,7 +136,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                       }
                     }
                     const badge = (
-                      <Chip variant="neutral" muted className={`font-semibold whitespace-nowrap text-xs px-2 py-0.5 cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none select-none ${(scrStyles as Record<string, string>)[scrStatus as string] || scrStyles.not_configured}`}>
+                      <Chip variant="neutral" muted className={`whitespace-nowrap text-xs px-2 py-0.5 cursor-pointer hover:opacity-80 transition-opacity motion-reduce:transition-none select-none ${(scrStyles as Record<string, string>)[scrStatus as string] || scrStyles.not_configured}`}>
                         {(scrLabels as Record<string, string>)[scrStatus as string] || t('screeningNA')}
                       </Chip>
                     )
@@ -206,11 +206,11 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                 </div>
                 <div className="flex items-center gap-1.5 flex-wrap mt-1">
                   {(currentJob.status as string) === 'Rascunho' && (
-                    <Chip variant="warning" muted className="bg-status-warning/10 dark:bg-status-warning/20 font-semibold whitespace-nowrap text-micro px-1.5 py-0">
+                    <Chip variant="warning" muted className="bg-status-warning/10 dark:bg-status-warning/20 whitespace-nowrap text-micro px-1.5 py-0">
                       {t('draft')}
                     </Chip>
                   )}
-                  <Chip variant="neutral" muted className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-semibold whitespace-nowrap text-micro px-1.5 py-0">
+                  <Chip variant="neutral" muted className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary whitespace-nowrap text-micro px-1.5 py-0">
                     {currentJob.level as string}
                   </Chip>
                   <Chip variant="neutral" muted className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium capitalize whitespace-nowrap text-micro px-1.5 py-0">

@@ -161,7 +161,7 @@ selectedCandidates.has(candidate.id)
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-lia-text-secondary">Score LIA:</span>
-                  <Chip variant="neutral" muted className={`${getScoreColor(candidate.liaScore)} text-xs font-bold`}>
+                  <Chip variant="neutral" muted className={`${getScoreColor(candidate.liaScore)} text-xs`}>
                     {formatScorePercent(candidate.liaScore)}
                   </Chip>
                 </div>

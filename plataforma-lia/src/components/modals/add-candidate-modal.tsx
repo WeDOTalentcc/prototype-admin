@@ -436,7 +436,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                 </div>
                 <div className="flex flex-wrap gap-2 mt-2">
                   {skills.map((skill) => (
-                    <Chip key={skill} variant="neutral" muted className="px-3 py-1">
+                    <Chip key={skill} variant="neutral" muted className="px-1.5 py-0">
                       {skill}
                       <button
                         onClick={() => handleRemoveSkill(skill)}

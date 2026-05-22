@@ -110,7 +110,7 @@ function ProfileLanguagesCard({ languagesData }: { languagesData: LanguageEntry[
                 {lang.language}
               </span>
               {lang.proficiency && (
-                <Chip variant="neutral" muted className="text-xs px-1.5 py-0 h-4 bg-lia-interactive-active text-lia-text-primary border-lia-border-default font-semibold">
+                <Chip variant="neutral" muted className="text-xs px-1.5 py-0 h-4 bg-lia-interactive-active text-lia-text-primary border-lia-border-default">
                   {lang.proficiency}
                 </Chip>
               )}

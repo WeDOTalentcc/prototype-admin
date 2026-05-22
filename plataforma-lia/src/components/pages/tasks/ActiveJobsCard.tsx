@@ -92,7 +92,7 @@ export function ActiveJobsCard({
               <SlidersHorizontal className="w-3.5 h-3.5" />
               Filtros
               {activeJobFiltersCount > 0 && (
-                <Chip variant="neutral" muted className="ml-1 bg-lia-bg-primary text-lia-text-primary dark:bg-lia-bg-secondary text-xs h-4 px-1 font-semibold">
+                <Chip variant="neutral" muted className="ml-1 bg-lia-bg-primary text-lia-text-primary dark:bg-lia-bg-secondary text-xs h-4 px-1">
                   {activeJobFiltersCount}
                 </Chip>
               )}

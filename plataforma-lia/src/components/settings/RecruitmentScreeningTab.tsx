@@ -173,7 +173,7 @@ export function RecruitmentScreeningTab() {
                       {q.type === 'text' ? t("recruitment.screening.typeText") : q.type === 'yesno' ? t("recruitment.screening.typeYesNo") : t("recruitment.screening.typeScale")}
                     </Chip>
                     {q.required && (
-                      <Chip variant="neutral" className={`text-micro py-0 px-1.5 font-semibold ${!isEditingQuestions ? 'opacity-60' : ''}`}>{t("recruitment.screening.required")}</Chip>
+                      <Chip variant="neutral" className={`text-micro py-0 px-1.5 ${!isEditingQuestions ? 'opacity-60' : ''}`}>{t("recruitment.screening.required")}</Chip>
                     )}
                     {q.is_eliminatory && (
                       <Chip variant="danger" muted className={`text-micro py-0 px-1.5 ${!isEditingQuestions ? 'opacity-60' : ''}`}>

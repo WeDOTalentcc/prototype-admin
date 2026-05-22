@@ -319,7 +319,7 @@ export function FirstAccessManager({ token, onAccessGranted, onAccessDenied }: F
                     <h4 className="lia-title-medium text-lia-text-primary mb-3">
                       {accessData?.companyName}
                     </h4>
-                    <Chip variant="neutral" muted className="lia-bg-mint text-lia-text-primary border-0 px-4 py-2 lia-font-sans font-semibold">
+                    <Chip variant="neutral" muted className="lia-bg-mint text-lia-text-primary border-0 px-1.5 py-0 lia-font-sans">
                       ✓ Convite válido
                     </Chip>
                   </div>

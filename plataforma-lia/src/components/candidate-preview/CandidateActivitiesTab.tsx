@@ -143,12 +143,12 @@ export function CandidateActivitiesTab({
                     </div>
                     <div className="flex items-center gap-1.5">
                       {activity.score && (
-                        <Chip variant={activity.score < 60 ? 'danger' : 'neutral'} muted className={`text-xs px-1.5 py-0 h-4 ${activity.score >= 80 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.score >= 60 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : 'font-medium'}`}>
+                        <Chip variant={activity.score < 60 ? 'danger' : 'neutral'} muted className={`text-xs px-1.5 py-0 h-4 ${activity.score >= 80 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default' : activity.score >= 60 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : 'font-medium'}`}>
                           {formatScorePercent(activity.score)}
                         </Chip>
                       )}
                       {activity.statusLabel && (
-                        <Chip variant={activity.status === 'rejected' ? 'danger' : 'neutral'} muted className={`text-xs px-1.5 py-0 h-4 ${activity.status === 'approved' || activity.status === 'completed' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.status === 'in-progress' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : activity.status === 'rejected' ? 'font-medium' : 'bg-lia-bg-primary text-lia-text-secondary border-lia-border-subtle'}`}>
+                        <Chip variant={activity.status === 'rejected' ? 'danger' : 'neutral'} muted className={`text-xs px-1.5 py-0 h-4 ${activity.status === 'approved' || activity.status === 'completed' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default' : activity.status === 'in-progress' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : activity.status === 'rejected' ? 'font-medium' : 'bg-lia-bg-primary text-lia-text-secondary border-lia-border-subtle'}`}>
                           {activity.statusLabel}
                         </Chip>
                       )}
@@ -214,12 +214,12 @@ export function CandidateActivitiesTab({
                 </div>
                 <div className="flex items-center gap-1.5">
                   {activity.score && (
-                    <Chip variant={activity.score < 60 ? 'danger' : 'neutral'} muted className={`text-xs px-1.5 py-0 h-4 ${activity.score >= 80 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.score >= 60 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : 'font-medium'}`}>
+                    <Chip variant={activity.score < 60 ? 'danger' : 'neutral'} muted className={`text-xs px-1.5 py-0 h-4 ${activity.score >= 80 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default' : activity.score >= 60 ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : 'font-medium'}`}>
                       {formatScorePercent(activity.score)}
                     </Chip>
                   )}
                   {activity.statusLabel && (
-                    <Chip variant={activity.status === 'rejected' ? 'danger' : 'neutral'} muted className={`text-xs px-1.5 py-0 h-4 ${activity.status === 'approved' || activity.status === 'completed' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default font-semibold' : activity.status === 'in-progress' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : activity.status === 'rejected' ? 'font-medium' : 'bg-lia-bg-primary text-lia-text-secondary border-lia-border-subtle'}`}>
+                    <Chip variant={activity.status === 'rejected' ? 'danger' : 'neutral'} muted className={`text-xs px-1.5 py-0 h-4 ${activity.status === 'approved' || activity.status === 'completed' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default' : activity.status === 'in-progress' ? 'bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle font-medium' : activity.status === 'rejected' ? 'font-medium' : 'bg-lia-bg-primary text-lia-text-secondary border-lia-border-subtle'}`}>
                       {activity.statusLabel}
                     </Chip>
                   )}

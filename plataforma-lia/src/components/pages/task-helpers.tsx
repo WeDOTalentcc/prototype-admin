@@ -80,7 +80,7 @@ export const getAlertColor = (type: string) => {
 
 export const getUrgencyBadge = (urgency: string, daysOpen: number) => {
   if (urgency === 'critical') return <Chip variant="danger" className="font-medium">Crítico</Chip>
-  if (urgency === 'urgent') return <Chip variant="warning" className="font-semibold">Urgente</Chip>
+  if (urgency === 'urgent') return <Chip variant="warning">Urgente</Chip>
   if (daysOpen > 30) return <Chip variant="info" className="font-medium">Atenção</Chip>
   return <Chip variant="success">Normal</Chip>
 }

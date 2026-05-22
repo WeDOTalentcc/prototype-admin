@@ -158,7 +158,7 @@ export function JobsListContent(props: JobsListContentProps) {
               ]}
             />
             {selectedJobsForBatch.size > 0 && (
-              <Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default text-xs font-bold">
+              <Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default text-xs">
                 🎯 {selectedJobsForBatch.size}
               </Chip>
             )}

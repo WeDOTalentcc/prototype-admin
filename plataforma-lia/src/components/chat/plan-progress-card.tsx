@@ -135,7 +135,7 @@ function PlanStatusBadge({ status }: { status: ExecutionPlanData["status"] }) {
   }
   const { label, variant, muted } = config[status] || config.pending
   return (
-    <Chip density="compact" variant={variant} muted={muted} className="font-semibold">
+    <Chip density="compact" variant={variant} muted={muted}>
       {label}
     </Chip>
   )
