@@ -67,6 +67,9 @@ from app.jobs.tasks.proactive import (  # noqa: F401  # WT-2022
 from app.jobs.tasks.voice import (  # noqa: F401
     run_openmic_wsi_pipeline_task,
 )
+from app.jobs.tasks.voice_retention import (  # noqa: F401  # F-05 P0 LGPD Art. 16
+    voice_retention_purge_daily_task,
+)
 
 from app.jobs.tasks.health import (  # noqa: F401
     check_dlq_health_task,
