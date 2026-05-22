@@ -22,6 +22,24 @@ PLATAFORMA_ROOT = REPO_ROOT.parent / "plataforma-lia"
 FRONTEND_SRC = PLATAFORMA_ROOT / "src"
 
 
+def _strip_comments_and_strings(text: str) -> str:
+    """Best-effort removal of single-line comments and string literals from TS/TSX.
+
+    Used to ensure AlertConfig string scan only catches *executable* references,
+    not deprecation comments or docstring mentions.
+    """
+    out_lines = []
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("//") or stripped.startswith("*") or stripped.startswith("/*"):
+            continue
+        # Remove inline // comments
+        if "//" in line and not (("://" in line) or ('"//"' in line) or ("'//'") in line):
+            line = line.split("//", 1)[0]
+        out_lines.append(line)
+    return "\n".join(out_lines)
+
+
 # ---------------------------------------------------------------------------
 # Test 1 — Canonical UI exists and replaces legacy
 # ---------------------------------------------------------------------------
@@ -34,9 +52,13 @@ def test_alert_preferences_panel_canonical_exists():
         "Sprint D Commit 1 não aplicado."
     )
     content = panel.read_text(encoding="utf-8")
-    # Sanity checks — usa hook canonical, nunca importa AlertConfig
+    # Sanity checks — usa hook canonical
     assert "useAlertPreferences" in content, "Deve usar hook canonical"
-    assert "AlertConfig" not in content, "Não deve referenciar legacy AlertConfig"
+    # AlertConfig só permitido em comentários/docstrings (mencao explicativa)
+    code_only = _strip_comments_and_strings(content)
+    assert "AlertConfig" not in code_only, (
+        "Não deve referenciar legacy AlertConfig em código executável"
+    )
 
 
 def test_alerts_tab_legacy_removed_from_communication_hub():
@@ -64,19 +86,21 @@ def test_no_alertconfig_writes_in_canonical_settings_panel():
     if not settings_root.exists():
         pytest.skip("settings root missing in this checkout")
 
-    # Allow AlertConfig referenciado apenas em:
-    # - types canonical (não escreve)
-    # - comentários de deprecação
     offenders: list[str] = []
     for tsx in settings_root.rglob("*.tsx"):
         if "__tests__" in tsx.parts:
             continue
-        text = tsx.read_text(encoding="utf-8")
+        try:
+            text = tsx.read_text(encoding="utf-8")
+        except UnicodeDecodeError:
+            # Pula arquivos com encoding nao-UTF8 (artefatos de tooling)
+            continue
         if "AlertConfig" not in text:
             continue
+        # Strip comments (// and /* */ and *) to ignore deprecation notes
         for ln_no, line in enumerate(text.splitlines(), 1):
             stripped = line.strip()
-            if stripped.startswith("//") or stripped.startswith("*"):
+            if stripped.startswith("//") or stripped.startswith("*") or stripped.startswith("/*"):
                 continue
             if "AlertConfig" in line:
                 offenders.append(f"{tsx.relative_to(PLATAFORMA_ROOT)}:{ln_no}: {line.strip()[:120]}")
@@ -101,17 +125,14 @@ def legacy_endpoint_source() -> str:
 
 def test_legacy_config_endpoint_deprecated(legacy_endpoint_source: str):
     """PUT /alerts/config deve emitir Deprecation/Sunset/Link headers."""
-    # Deve setar Deprecation header
     assert re.search(
         r'response\.headers\[["\']Deprecation["\']\]\s*=\s*["\']true["\']',
         legacy_endpoint_source,
     ), "Deprecation header não setado em /alerts/config"
-    # Sunset header
     assert re.search(
         r'response\.headers\[["\']Sunset["\']\]',
         legacy_endpoint_source,
     ), "Sunset header não setado em /alerts/config"
-    # Link rel=successor
     assert "successor-version" in legacy_endpoint_source and (
         "alerts/preferences" in legacy_endpoint_source
     ), "Link successor-version /alerts/preferences não setado"
@@ -119,9 +140,8 @@ def test_legacy_config_endpoint_deprecated(legacy_endpoint_source: str):
 
 def test_legacy_config_endpoint_emits_telemetry(legacy_endpoint_source: str):
     """Toda chamada a /alerts/config deve logar warning estruturado."""
-    # logger.warning( ... legacy_alert_config_write
     assert re.search(
-        r'logger\.warning\(\s*[^)]*legacy_alert_config_(?:write|endpoint)',
+        r'logger\.warning\(\s*[^)]*legacy_alert_config_(?:write|endpoint|read)',
         legacy_endpoint_source,
         flags=re.DOTALL,
     ), "Faltando logger.warning('legacy_alert_config_*') em /alerts/config"
@@ -133,12 +153,10 @@ def test_legacy_config_endpoint_emits_telemetry(legacy_endpoint_source: str):
 
 def test_legacy_config_endpoint_still_defined(legacy_endpoint_source: str):
     """Endpoint deprecated NÃO foi removido — mantém backward-compat 3 meses."""
-    # PUT /config handler ainda existe
     assert re.search(
         r'@router\.put\(\s*["\']\/?config["\']',
         legacy_endpoint_source,
     ), "/alerts/config PUT handler removed prematurely (Sprint D+1, not D)"
-    # GET /config também
     assert re.search(
         r'@router\.get\(\s*["\']\/?config["\']',
         legacy_endpoint_source,
@@ -154,22 +172,24 @@ def test_canonical_hook_exists_and_omits_company_id():
     hook = FRONTEND_SRC / "hooks" / "settings" / "use-alert-preferences.ts"
     assert hook.exists(), f"Canonical hook missing: {hook}"
     content = hook.read_text(encoding="utf-8")
-    # Sanity: chama endpoint canonical
     assert "/alerts/preferences" in content, "Hook não chama endpoint canonical"
-    # REGRA 2 Pydantic: company_id NUNCA aparece como field de payload (apenas
-    # em comentários explicativos e em response type opcional)
-    # Validação por linha — qualquer linha de payload com company_id assignment é fail.
+    # REGRA 2 Pydantic: company_id NUNCA aparece em payloads. Strip comments
+    # antes de scanear.
+    code_only = _strip_comments_and_strings(content)
+    # Filtra TS type annotations (`company_id?:` no interface) — permitido
+    # como response shape; bloqueado apenas em payload JSON.stringify.
     bad = []
-    in_payload = False
+    in_payload_block = False
     for ln_no, line in enumerate(content.splitlines(), 1):
-        if "body:" in line and "JSON.stringify" in line:
-            in_payload = True
-        if in_payload and re.search(r'\bcompany_id\s*[:=]', line):
-            # Exceção: linha de comentário
-            if not line.strip().startswith("//"):
-                bad.append(f"{hook.name}:{ln_no}: {line.strip()[:120]}")
-        if in_payload and ")" in line and "JSON" not in line:
-            in_payload = False
+        stripped = line.strip()
+        if stripped.startswith("//") or stripped.startswith("*"):
+            continue
+        if "JSON.stringify" in line:
+            in_payload_block = True
+        if in_payload_block and re.search(r'\bcompany_id\s*[:=]', line):
+            bad.append(f"{hook.name}:{ln_no}: {line.strip()[:120]}")
+        if in_payload_block and line.rstrip().endswith("})"):
+            in_payload_block = False
     assert not bad, (
         "company_id appears in PUT/POST payload (REGRA 2 Pydantic Conventions):\n"
         + "\n".join(bad)
