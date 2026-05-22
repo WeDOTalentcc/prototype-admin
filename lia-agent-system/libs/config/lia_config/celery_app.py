@@ -174,6 +174,33 @@ def _install_pii_masking_on_worker(**kwargs):
     except Exception:
         pass  # Nunca bloquear inicialização do worker por causa do PII filter
 
+
+@signals.worker_process_init.connect
+def _install_llm_guards_on_worker(**kwargs):
+    """Wave 4 Gap 1 (2026-05-22): install LLM SDK monkey-patches in each
+    Celery worker process so background jobs (Sidekiq-equivalent, drift,
+    insights, ML recompute, WSI etc) ALSO route LLM calls through the
+    ai_credit_gate. FastAPI startup wires this in main.py for the API
+    process; Celery workers are a separate process tree with their own
+    import graph -- if we skipped this, every LLM call from a worker
+    would bypass the universal credit gate.
+
+    install_llm_guards() is idempotent (module-level flag) and safe to
+    call multiple times (re-emits llm_guards_installed gauge to refresh
+    Prometheus timeseries on forked workers).
+    """
+    try:
+        from app.shared.llm_bootstrap import install_llm_guards
+        install_llm_guards(entrypoint='celery')
+    except Exception as exc:  # noqa: BLE001
+        # Nunca bloquear inicialização do worker. Mas LOG ALTO porque
+        # se isso falhar, o worker roda SEM o gate de créditos (bypass).
+        _celery_log.error(
+            "[celery_app] install_llm_guards FAILED on worker init: %s -- LLM gate bypassed in this worker process",
+            exc,
+            exc_info=True,
+        )
+
 _default_exchange = Exchange("lia_tasks", type="direct")
 
 celery_app = Celery(

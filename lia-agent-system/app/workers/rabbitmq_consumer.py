@@ -94,6 +94,20 @@ async def start_consumer() -> None:  # pragma: no cover
     Autenticação: validar `payload["_token"] == os.environ["INTERNAL_SERVICE_TOKEN"]`
     antes de processar (anti-spoofing entre serviços internos).
     """
+    # Wave 4 Gap 1 (2026-05-22): RabbitMQ consumer is a separate process
+    # tree from FastAPI -- if/when this stub becomes real, the LLM guards
+    # MUST be installed in this process too or every orchestrator call from
+    # a RabbitMQ-delivered request bypasses the universal credit gate.
+    # install_llm_guards() is idempotent; safe to call here at startup.
+    try:
+        from app.shared.llm_bootstrap import install_llm_guards
+        install_llm_guards(entrypoint='rabbitmq')
+    except Exception:  # noqa: BLE001
+        logger.exception(
+            '[rabbitmq_consumer] install_llm_guards FAILED -- LLM gate '
+            'bypassed in this process'
+        )
+
     amqp_url = os.environ.get("AMQP_URL")
     if not amqp_url:
         raise NotImplementedError(

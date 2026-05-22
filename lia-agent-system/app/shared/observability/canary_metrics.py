@@ -73,9 +73,11 @@ logger = logging.getLogger(__name__)
 try:
     from prometheus_client import REGISTRY as _PROM_REGISTRY
     from prometheus_client import Counter as _PromCounter
+    from prometheus_client import Gauge as _PromGauge
 except Exception:  # pragma: no cover -- prometheus opcional em dev
     _PROM_REGISTRY = None  # type: ignore[assignment]
     _PromCounter = None  # type: ignore[assignment]
+    _PromGauge = None  # type: ignore[assignment]
 
 
 def _make_counter(name: str, doc: str, labels: tuple[str, ...] | tuple = ()):
@@ -94,6 +96,24 @@ def _make_counter(name: str, doc: str, labels: tuple[str, ...] | tuple = ()):
         return None
 
 
+
+
+def _make_gauge(name: str, doc: str, labels=()):
+    """Cria Gauge Prometheus ou reusa existente. None se lib indisponivel."""
+    if _PromGauge is None or _PROM_REGISTRY is None:
+        return None
+    try:
+        existing = getattr(_PROM_REGISTRY, "_names_to_collectors", {}).get(name)
+        if existing is not None:
+            return existing
+        if labels:
+            return _PromGauge(name, doc, labelnames=labels)
+        return _PromGauge(name, doc)
+    except Exception:
+        logger.debug("canary_metrics: failed to register gauge %s", name, exc_info=True)
+        return None
+
+
 ai_credit_exhausted_total = _make_counter(
     "ai_credit_exhausted_total",
     "Count of ai_credit_gate.check_credit_budget rejections (gate success).",
@@ -108,6 +128,28 @@ ai_credit_gate_calls_total = _make_counter(
     "ai_credit_gate_calls_total",
     "Count of LLM calls intercepted by ai_credit_gate (Wave 3 universal coverage).",
     ("provider", "service", "outcome"),
+)
+
+# Wave 4 follow-up (2026-05-22) - LLM guards installation sanity.
+# Gauge set to 1 by install_llm_guards() once per process (FastAPI startup,
+# Celery worker_process_init, etc). Grafana alarm: any entry point where
+# gauge=0 indicates SDK bypass risk (Gap 1: Celery workers/voice bypass).
+llm_guards_installed = _make_gauge(
+    "llm_guards_installed",
+    "1 = install_llm_guards() ran for this provider in this process. 0 = NEVER ran (alarm).",
+    ("provider", "entrypoint"),
+)
+
+# Wave 4 follow-up (2026-05-22) - streaming/tool-use reconciliation delta.
+# Counts |actual - estimated| token-eq deltas after each LLM call where
+# response.usage was observed. sign=positive when actual > estimated
+# (we under-charged, reconciliation tops up); sign=negative when actual <
+# estimated (we over-charged, reconciliation refunds). Persistent skew
+# in one direction flags estimator drift in _estimate_tokens_*.
+llm_gate_reconciliation_delta_total = _make_counter(
+    "llm_gate_reconciliation_delta_total",
+    "Sum of |actual - estimated| token-eqs from llm gate reconciliation (per provider).",
+    ("provider", "sign"),
 )
 
 fairness_guard_skip_total = _make_counter(
@@ -231,6 +273,9 @@ def inc_granular_consent_revoke(purpose: str) -> None:
 
 __all__ = (
     "ai_credit_exhausted_total",
+    "ai_credit_gate_calls_total",
+    "llm_guards_installed",
+    "llm_gate_reconciliation_delta_total",
     "fairness_guard_skip_total",
     "dsr_overdue_created_total",
     "tasks_cross_tenant_blocked_total",

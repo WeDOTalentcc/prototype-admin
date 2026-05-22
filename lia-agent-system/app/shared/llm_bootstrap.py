@@ -374,13 +374,13 @@ def _is_default_anthropic_base_url(value: object) -> bool:
     return value.rstrip("/") in {u.rstrip("/") for u in _DEFAULT_ANTHROPIC_BASE_URLS}
 
 
-def _patch_anthropic():
+def _patch_anthropic() -> bool:
     """Patch anthropic.Anthropic and AsyncAnthropic constructors + messages."""
     try:
         import anthropic
     except ImportError:
         logger.debug("[LLM-Bootstrap] anthropic not installed, skipping patch")
-        return
+        return False
 
     _orig_init = anthropic.Anthropic.__init__
     _orig_async_init = anthropic.AsyncAnthropic.__init__
@@ -448,6 +448,7 @@ def _patch_anthropic():
     anthropic.Anthropic.__init__ = _patched_init
     anthropic.AsyncAnthropic.__init__ = _patched_async_init
     logger.info("[LLM-Bootstrap] Anthropic SDK patched (API key injection + PII + audit)")
+    return True
 
 
 def _patch_messages_api(client_instance, provider_label: str):
@@ -515,13 +516,13 @@ def _patch_messages_api(client_instance, provider_label: str):
 # OpenAI patches
 # ---------------------------------------------------------------------------
 
-def _patch_openai():
+def _patch_openai() -> bool:
     """Patch openai.OpenAI and AsyncOpenAI constructors."""
     try:
         import openai
     except ImportError:
         logger.debug("[LLM-Bootstrap] openai not installed, skipping patch")
-        return
+        return False
 
     _orig_init = openai.OpenAI.__init__
     _orig_async_init = openai.AsyncOpenAI.__init__
@@ -565,6 +566,7 @@ def _patch_openai():
     openai.OpenAI.__init__ = _patched_init_with_completions
     openai.AsyncOpenAI.__init__ = _patched_async_init
     logger.info("[LLM-Bootstrap] OpenAI SDK patched (API key + audit + credit gate)")
+    return True
 
 
 def _patch_openai_completions(client_instance, provider_label: str):
@@ -603,13 +605,13 @@ def _patch_openai_completions(client_instance, provider_label: str):
 # Google GenAI patches
 # ---------------------------------------------------------------------------
 
-def _patch_genai():
+def _patch_genai() -> bool:
     """Patch google.genai.Client constructor."""
     try:
         from google import genai
     except ImportError:
         logger.debug("[LLM-Bootstrap] google.genai not installed, skipping patch")
-        return
+        return False
 
     _orig_init = genai.Client.__init__
 
@@ -626,6 +628,7 @@ def _patch_genai():
 
     genai.Client.__init__ = _patched_init
     logger.info("[LLM-Bootstrap] Google GenAI SDK patched (API key + audit + credit gate)")
+    return True
 
 
 def _patch_genai_models(client_instance, provider_label: str):
@@ -662,26 +665,82 @@ def _patch_genai_models(client_instance, provider_label: str):
 # Public API
 # ---------------------------------------------------------------------------
 
-def install_llm_guards():
+def install_llm_guards(entrypoint: str = "fastapi") -> dict:
     """
     Install monkey-patches on all LLM SDKs.
-    
-    Call this ONCE at app startup, before any module creates an LLM client.
-    Safe to call multiple times (idempotent).
-    
+
+    Call this ONCE per process at startup, before any module creates an LLM
+    client. Safe to call multiple times (idempotent).
+
+    Wave 4 (Gap 1, 2026-05-22): accept entry-point label so the
+    ``llm_guards_installed{provider,entrypoint}`` gauge fingerprints which
+    processes have the guards active (FastAPI vs Celery vs RabbitMQ vs CLI).
+    Grafana alarm: ``min by(entrypoint)(llm_guards_installed) == 0`` fires
+    when any entrypoint never installed the guards (SDK bypass risk).
+
     Patches:
-      - Anthropic/AsyncAnthropic: API key injection + PII strip + audit
-      - OpenAI/AsyncOpenAI: API key injection + audit
-      - genai.Client: API key injection + audit
+      - Anthropic/AsyncAnthropic: API key injection + PII strip + audit + credit gate
+      - OpenAI/AsyncOpenAI: API key injection + audit + credit gate + audio gate
+      - genai.Client: API key injection + audit + credit gate
+
+    Returns:
+      dict mapping provider -> bool. True = SDK present and patched.
+      False = SDK absent in this venv (still safe -- no bypass possible).
     """
     global _installed
     if _installed:
-        logger.debug("[LLM-Bootstrap] Already installed, skipping")
-        return
+        logger.debug(
+            "[LLM-Bootstrap] Already installed (entrypoint=%s) -- re-emitting gauge",
+            entrypoint,
+        )
+        _emit_guards_installed_gauge(_LAST_INSTALL_STATUS, entrypoint)
+        return dict(_LAST_INSTALL_STATUS)
 
-    logger.info("[LLM-Bootstrap] Installing LLM guards (PII + audit + API key injection)...")
-    _patch_anthropic()
-    _patch_openai()
-    _patch_genai()
+    logger.info(
+        "[LLM-Bootstrap] Installing LLM guards (entrypoint=%s, PII + audit + credit gate + API key injection)...",
+        entrypoint,
+    )
+    status = {
+        "anthropic": _patch_anthropic(),
+        "openai": _patch_openai(),
+        "gemini": _patch_genai(),
+    }
     _installed = True
-    logger.info("[LLM-Bootstrap] All LLM guards installed successfully")
+    _LAST_INSTALL_STATUS.update(status)
+    logger.info(
+        "[LLM-Bootstrap] LLM guards installed: anthropic=%s openai=%s gemini=%s entrypoint=%s",
+        "on" if status["anthropic"] else "sdk-absent",
+        "on" if status["openai"] else "sdk-absent",
+        "on" if status["gemini"] else "sdk-absent",
+        entrypoint,
+    )
+    _emit_guards_installed_gauge(status, entrypoint)
+    return status
+
+
+# ---------------------------------------------------------------------------
+# Wave 4 Gap 1 (2026-05-22) -- LLM guards installation telemetry
+# ---------------------------------------------------------------------------
+
+_LAST_INSTALL_STATUS: dict = {"anthropic": False, "openai": False, "gemini": False}
+
+
+def _emit_guards_installed_gauge(status: dict, entrypoint: str) -> None:
+    """Best-effort emit ``llm_guards_installed{provider, entrypoint}=1`` per
+    successfully-patched provider. SDK absent -> gauge NOT set so Grafana
+    treats the missing series as a separate signal from a present-but-zero.
+    """
+    try:
+        from app.shared.observability.canary_metrics import llm_guards_installed
+        if llm_guards_installed is None:
+            return
+        for provider, ok in status.items():
+            if ok:
+                try:
+                    llm_guards_installed.labels(
+                        provider=provider, entrypoint=entrypoint
+                    ).set(1)
+                except Exception:
+                    pass
+    except Exception:
+        pass  # observability non-blocking

@@ -5,7 +5,7 @@ LIA Agent System - Main FastAPI application.
 # MUST be first import — before anything instantiates Anthropic/OpenAI/GenAI
 from app.shared.llm_bootstrap import install_llm_guards
 
-install_llm_guards()
+install_llm_guards(entrypoint="fastapi")
 
 import logging
 import os
