@@ -552,7 +552,7 @@ def render_report(
     md.append("- 🔴 `integrations` — 7 componentes, **0 data-attrs**")
     md.append("- 🔴 `webhooks` — 2 componentes, **0 data-attrs**")
     md.append("- 🔴 `fairness-compliance` — 2 componentes, **0 data-attrs**")
-    md.append("- 🔴 `ai-credits` — 0 componentes encontrados (vive fora de `settings/`)")
+    md.append("- 🟡 `ai-credits` — agora coberto via HUB_EXTRA_PATHS (AiCreditsPage em `components/pages/`). Read-only dashboard, sem data-field/toggle até BYOK + QuotaSettings UIs serem construídas.")
     md.append("")
     # rank
     md.append("### Top hubs com mais ghosts:\n")
