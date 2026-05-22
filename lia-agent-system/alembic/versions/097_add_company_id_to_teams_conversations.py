@@ -77,6 +77,7 @@ def upgrade() -> None:
 
     # 3. Backfill best-effort via aad_object_id -> users.company_id
     #    Cobre apenas linhas com user_aad_object_id setado e User correspondente.
+    #    CANONICAL-FIX-EXEMPT: ambos azure_ad_object_id e user_aad_object_id sao VARCHAR (Azure AD GUIDs como string). Same-type join seguro sem cast.
     if _table_exists(conn, "users"):
         op.execute(sa.text("""
             UPDATE teams_conversations tc
