@@ -140,7 +140,8 @@ def compute_tool_coverage(allowed_tools: list[str], domain: str) -> float:
     # Wave 3 vai implementar versões reais conforme prioridade do customer interview.)
     read_tools = {"search_candidates", "list_jobs", "get_job_details", "get_candidate_details",
                   "summarize_context", "clarify_request", "get_evaluation_criteria",
-                  "get_pipeline_summary"}
+                  "get_pipeline_summary", "search_talent_pool", "get_company_culture",
+                  "get_analytics_summary"}
     has_read = len(set(allowed_tools) & read_tools)
     score += min(has_read * 7, 35)
 
@@ -148,7 +149,7 @@ def compute_tool_coverage(allowed_tools: list[str], domain: str) -> float:
     # Wave 2 audit: removido create_note (ghost — only existed como action_handler em
     # pipeline_actions.py:21, não registrado como ToolDefinition LLM).
     write_tools = {"move_candidate", "send_email", "update_candidate_field",
-                   "schedule_interview"}
+                   "schedule_interview", "create_note"}
     has_write = len(set(allowed_tools) & write_tools)
     score += min(has_write * 7, 35)
 
