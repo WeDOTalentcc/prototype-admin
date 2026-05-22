@@ -9,7 +9,8 @@ from typing import Dict, Any
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 
-from app.agents.base_agent import AgentType, AgentResponse, TaskPriority
+# W1-002 (2026-05-22): legacy import removed; symbols não usados ou
+# helper foi deletado (create_mock_agent_response sem callers).
 
 
 @pytest.fixture
@@ -142,13 +143,3 @@ def sample_context() -> Dict[str, Any]:
         "session_id": "session-abc",
         "tenant_id": "tenant-001"
     }
-
-
-def create_mock_agent_response(success: bool = True, message: str = "Test", data: Dict = None) -> AgentResponse:
-    """Helper to create mock agent responses."""
-    return AgentResponse(
-        success=success,
-        message=message,
-        data=data or {},
-        suggested_prompts=[]
-    )

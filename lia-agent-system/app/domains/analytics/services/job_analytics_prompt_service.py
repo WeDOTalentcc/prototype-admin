@@ -19,7 +19,7 @@ from typing import Any
 from sqlalchemy import and_, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.agents.base_agent import AgentType
+from app.shared.agents.agent_types import AgentType
 from app.core.database import AsyncSessionLocal
 from lia_models.candidate import VacancyCandidate
 from lia_models.job_vacancy import JobVacancy

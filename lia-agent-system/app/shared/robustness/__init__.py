@@ -7,7 +7,14 @@ This module provides:
 - Input validation with Pydantic
 - Context management utilities
 - Defensive prompt helpers
-- Enhanced base agent and registry
+
+W1-002 cleanup (2026-05-22): removidos exports de:
+- EnhancedBaseAgent, RobustAgentMixin (DEAD CODE — zero subclasses live)
+- EnhancedAgentRegistry, enhanced_registry, RoutingDecision, RoutingTelemetry,
+  FALLBACK_CHAINS (DEAD CODE — zero callers reais; ToolRoutingDecision em
+  lia_agents_core é classe diferente, namespace diferente)
+- handle_agent_errors decorator (DEAD CODE — zero @handle_agent_errors em
+  código vivo; única ocorrência era docstring example)
 """
 
 from app.shared.robustness.context_management import (
@@ -31,20 +38,11 @@ from app.shared.robustness.defensive_prompts import (
     get_defensive_prompt_section,
     get_out_of_scope_response,
 )
-from app.shared.robustness.enhanced_base import EnhancedBaseAgent, RobustAgentMixin
-from app.shared.robustness.enhanced_registry import (
-    FALLBACK_CHAINS,
-    EnhancedAgentRegistry,
-    RoutingDecision,
-    RoutingTelemetry,
-    enhanced_registry,
-)
 from app.shared.robustness.error_handling import (
     AgentError,
     AgentErrorCode,
     AgentErrorResponse,
     create_user_friendly_error,
-    handle_agent_errors,
     raise_missing_entity,
     raise_not_found,
     raise_validation_error,
@@ -95,7 +93,6 @@ __all__ = [
     "AgentError",
     "AgentErrorCode",
     "AgentErrorResponse",
-    "handle_agent_errors",
     "create_user_friendly_error",
     "raise_missing_entity",
     "raise_not_found",
@@ -126,13 +123,6 @@ __all__ = [
     "get_clarification_message",
     "get_out_of_scope_response",
     "format_confirmation_message",
-    "EnhancedBaseAgent",
-    "RobustAgentMixin",
-    "EnhancedAgentRegistry",
-    "RoutingDecision",
-    "RoutingTelemetry",
-    "FALLBACK_CHAINS",
-    "enhanced_registry",
     "ToneFilter",
     "filter_response",
     "validate_response",

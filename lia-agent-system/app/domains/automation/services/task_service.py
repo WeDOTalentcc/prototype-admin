@@ -15,7 +15,7 @@ from typing import Any
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.agents.base_agent import AgentTask
+from app.shared.agents.agent_types import AgentTask
 from app.domains.automation.repositories.task_repository import TaskRepository
 from lia_models.task import Task, TaskPriority, TaskStatus, TaskType
 

@@ -100,7 +100,7 @@ class AgentTestSuite:
         
         try:
             from app.agents.agent_registry import agent_registry
-            from app.agents.base_agent import AgentType
+            from app.shared.agents.agent_types import AgentType
             
             expected_agents = [
                 AgentType.JOB_PLANNER,

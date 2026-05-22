@@ -311,98 +311,11 @@ class TestFieldToggleAPIIntegration:
         assert response.field_contexts["salary_ranges"].source == "job_history"
 
 
-class TestAgentFieldConfigIntegration:
-    """Tests for agent integration with field config."""
-    
-    def test_base_agent_has_field_config_method(self):
-        """Verify BaseAgent has get_field_config_context method."""
-        from app.agents.base_agent import BaseAgent
-        
-        assert hasattr(BaseAgent, 'get_field_config_context')
-        assert hasattr(BaseAgent, 'is_field_active')
-        assert hasattr(BaseAgent, 'get_field_value_with_source')
-    
-    def test_is_field_active_helper(self):
-        """Test is_field_active helper method."""
-        from app.agents.base_agent import AgentType, BaseAgent
-        
-        class TestAgent(BaseAgent):
-            @property
-            def name(self):
-                return "Test Agent"
-            
-            @property
-            def description(self):
-                return "Test"
-            
-            @property
-            def agent_type(self):
-                return AgentType.JOB_PLANNER
-            
-            def _register_actions(self):
-                pass
-            
-            def get_actions(self):
-                return []
-            
-            async def process(self, message, context):
-                pass
-        
-        agent = TestAgent()
-        
-        field_contexts = {
-            "salary_ranges": {"is_toggle_active": False},
-            "work_model": {"is_toggle_active": True}
-        }
-        
-        assert agent.is_field_active("work_model", field_contexts) is True
-        assert agent.is_field_active("salary_ranges", field_contexts) is False
-        assert agent.is_field_active("unknown_field", field_contexts) is True
-    
-    def test_get_field_value_with_source_helper(self):
-        """Test get_field_value_with_source helper method."""
-        from app.agents.base_agent import AgentType, BaseAgent
-        
-        class TestAgent(BaseAgent):
-            @property
-            def name(self):
-                return "Test Agent"
-            
-            @property
-            def description(self):
-                return "Test"
-            
-            @property
-            def agent_type(self):
-                return AgentType.JOB_PLANNER
-            
-            def _register_actions(self):
-                pass
-            
-            def get_actions(self):
-                return []
-            
-            async def process(self, message, context):
-                pass
-        
-        agent = TestAgent()
-        
-        field_contexts = {
-            "salary_ranges": {
-                "value": {"min": 5000, "max": 10000},
-                "source": "job_history",
-                "confidence": 0.8
-            }
-        }
-        
-        value, source, confidence = agent.get_field_value_with_source(
-            "salary_ranges", 
-            field_contexts
-        )
-        
-        assert value == {"min": 5000, "max": 10000}
-        assert source == "job_history"
-        assert confidence == 0.8
+# W1-002 (2026-05-22): TestAgentFieldConfigIntegration class removed.
+# Os 3 tests testavam métodos phantom (get_field_config_context,
+# is_field_active, get_field_value_with_source) que NUNCA existiram
+# em BaseAgent (verificado via grep). Tests broken-by-design desde D0.
+# Ref: sprint_logs/sprint_1.2/W1-002_AUDIT.md
 
 
 class TestToggleBehaviorScenarios:

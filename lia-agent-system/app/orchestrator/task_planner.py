@@ -16,7 +16,7 @@ from typing import Any
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
-from app.agents.base_agent import AgentType
+from app.shared.agents.agent_types import AgentType
 
 logger = logging.getLogger(__name__)
 

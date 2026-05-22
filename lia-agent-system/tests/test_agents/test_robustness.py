@@ -14,7 +14,7 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../..'))
 
-from app.agents.base_agent import AgentType
+from app.shared.agents.agent_types import AgentType
 from app.shared.robustness.intent_schemas import (
     IntentSchema,
     EntityRequirement,

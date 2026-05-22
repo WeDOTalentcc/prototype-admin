@@ -3,21 +3,20 @@ Error Handling - Standardized error management for all agents.
 
 This module provides:
 - Standardized error codes and responses
-- Error wrapping decorator for agent methods
 - User-friendly error messages in Portuguese
+
+W1-002 cleanup (2026-05-22): removido o decorator `handle_agent_errors`
+(linhas 163-246 do legado) — tinha ZERO callers reais e era único
+consumer de `AgentResponse` legacy. Pre-audit:
+sprint_logs/sprint_1.2/W1-002_AUDIT.md.
 """
 import logging
-import traceback
-from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
-from enum import Enum, StrEnum
-from functools import wraps
-from typing import Any, TypeVar
+from enum import StrEnum
+from typing import Any
 
 
 logger = logging.getLogger(__name__)
-
-T = TypeVar('T')
 
 
 class AgentErrorCode(StrEnum):
@@ -49,7 +48,7 @@ class AgentErrorResponse:
     suggested_action: str | None = None
     missing_entities: list = field(default_factory=list)
     context: dict[str, Any] = field(default_factory=dict)
-    
+
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for API responses."""
         return {
@@ -66,7 +65,7 @@ class AgentErrorResponse:
 
 class AgentError(Exception):
     """Base exception for agent errors."""
-    
+
     def __init__(
         self,
         code: AgentErrorCode,
@@ -85,7 +84,7 @@ class AgentError(Exception):
         self.missing_entities = missing_entities or []
         self.context = context or {}
         super().__init__(user_message)
-    
+
     def to_response(self) -> AgentErrorResponse:
         """Convert exception to AgentErrorResponse."""
         return AgentErrorResponse(
@@ -136,11 +135,11 @@ def create_user_friendly_error(
     """Create a user-friendly error response."""
     user_message = USER_FRIENDLY_MESSAGES.get(code, "Ocorreu um erro. Por favor, tente novamente.")
     suggested_action = SUGGESTED_ACTIONS.get(code)
-    
+
     if missing_entities:
         entity_names = ", ".join(missing_entities)
         user_message = f"Preciso que você informe: {entity_names}"
-    
+
     retryable = code in [
         AgentErrorCode.RATE_LIMITED,
         AgentErrorCode.EXTERNAL_SERVICE_ERROR,
@@ -148,7 +147,7 @@ def create_user_friendly_error(
         AgentErrorCode.DATABASE_ERROR,
         AgentErrorCode.TIMEOUT
     ]
-    
+
     return AgentErrorResponse(
         code=code,
         user_message=user_message,
@@ -158,92 +157,6 @@ def create_user_friendly_error(
         missing_entities=missing_entities or [],
         context=context or {}
     )
-
-
-def handle_agent_errors(
-    agent_name: str = "Agent",
-    default_error_code: AgentErrorCode = AgentErrorCode.INTERNAL_ERROR
-):
-    """
-    Decorator to handle errors in agent methods.
-    
-    Wraps async methods with try/except and converts exceptions to AgentErrorResponse.
-    
-    Usage:
-        @handle_agent_errors("JobIntakeAgent")
-        async def process(self, intent, entities, context):
-            ...
-    """
-    def decorator(func: Callable[..., Awaitable[T]]) -> Callable[..., Awaitable[T]]:
-        @wraps(func)
-        async def wrapper(*args, **kwargs):
-            try:
-                return await func(*args, **kwargs)
-            except AgentError as e:
-                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-                logger.warning(f"{agent_name}: AgentError - {e.code.value}: {e.technical_message}")
-                from app.agents.base_agent import AgentResponse
-                return AgentResponse(
-                    success=False,
-                    message=e.user_message,
-                    data=e.to_response().to_dict()
-                )
-            except ValueError as e:
-                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-                logger.warning(f"{agent_name}: ValidationError - {str(e)}")
-                error = create_user_friendly_error(
-                    AgentErrorCode.VALIDATION_ERROR,
-                    technical_message=str(e)
-                )
-                from app.agents.base_agent import AgentResponse
-                return AgentResponse(
-                    success=False,
-                    message=error.user_message,
-                    data=error.to_dict()
-                )
-            except KeyError as e:
-                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-                logger.warning(f"{agent_name}: MissingEntity - {str(e)}")
-                error = create_user_friendly_error(
-                    AgentErrorCode.MISSING_REQUIRED_ENTITY,
-                    technical_message=f"Missing key: {str(e)}",
-                    missing_entities=[str(e)]
-                )
-                from app.agents.base_agent import AgentResponse
-                return AgentResponse(
-                    success=False,
-                    message=error.user_message,
-                    data=error.to_dict(),
-                    requires_user_input=True
-                )
-            except TimeoutError as e:
-                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-                logger.error(f"{agent_name}: Timeout - {str(e)}")
-                error = create_user_friendly_error(
-                    AgentErrorCode.TIMEOUT,
-                    technical_message=str(e)
-                )
-                from app.agents.base_agent import AgentResponse
-                return AgentResponse(
-                    success=False,
-                    message=error.user_message,
-                    data=error.to_dict()
-                )
-            except Exception as e:
-                # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-                logger.error(f"{agent_name}: UnexpectedError - {str(e)}\n{traceback.format_exc()}")
-                error = create_user_friendly_error(
-                    default_error_code,
-                    technical_message=str(e)
-                )
-                from app.agents.base_agent import AgentResponse
-                return AgentResponse(
-                    success=False,
-                    message=error.user_message,
-                    data=error.to_dict()
-                )
-        return wrapper
-    return decorator
 
 
 def raise_missing_entity(entity_name: str, description: str = "") -> None:

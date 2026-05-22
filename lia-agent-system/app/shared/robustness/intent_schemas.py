@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from enum import Enum, StrEnum
 from typing import Any
 
-from app.agents.base_agent import AgentType
+from app.shared.agents.agent_types import AgentType
 
 
 class EntityImportance(StrEnum):
