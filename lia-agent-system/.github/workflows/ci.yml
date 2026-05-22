@@ -480,6 +480,34 @@ jobs:
       - name: "G-POLICY-V1: no V1 PolicyEngine imports outside allowlist (BLOCKING — promoted 2026-05-21)"
         run: python3 scripts/check_no_v1_policy_engine.py
 
+      # WT-2022 P0.TENANT — company_id NOT NULL ratchet
+      # Promovido warn-only → STRICT em 2026-05-21 (baseline 51→0 via 29 TENANT-EXEMPT
+      # markers + 4 alembic migrations NOT NULL backfill). Sensor exit 1 em qualquer
+      # company_id = Column(..., nullable=True) sem marker exempt. Fix: nullable=False
+      # + migration alembic com backfill (pattern alembic/versions/161_tasks_company_id_not_null.py),
+      # ou marker # TENANT-EXEMPT: <razao> se a tabela for legitimamente global.
+      # Rollback emergencial: --warn-only flag preservada.
+      - name: "G-TENANT: company_id NOT NULL em models (BLOCKING — promoted 2026-05-21)"
+        run: python3 scripts/check_tenant_columns_not_null.py
+
+      # T-RATCHET — Pydantic conventions ratchet decremental (R1+R2+R3+R4)
+      # Registrado 2026-05-22. Sensor BLOQUEIA quando current > baseline (regressão).
+      # Quando current < baseline, atualiza baseline file automaticamente (ratchet
+      # decremental). Baseline atual em scripts/baselines/pydantic_baseline.txt.
+      # R1/R3/R4 já em 0 (SKIP absorve canonical defenses); R2 não-zero raw
+      # mas todas violations estão em SKIP_R2 com refactor tickets WAVE3.
+      # Rollback emergencial: --warn-only flag.
+      - name: "T-RATCHET: Pydantic conventions ratchet (BLOCKING)"
+        run: python3 scripts/check_pydantic_conventions.py app --baseline-file scripts/baselines/pydantic_baseline.txt
+
+      # T-RATCHET — Tenant filter ratchet (B.1 sensor)
+      # Registrado 2026-05-22 (sensor já tinha --baseline-file desde 2026-05-20).
+      # BLOCKING: count > baseline (553) = exit 1. Reduction promotes baseline.
+      # Quando count = 0 sustentado, promover sensor a --blocking sem --baseline-file
+      # (lock canonical permanente). Rollback emergencial: --warn-only flag.
+      - name: "T-RATCHET: tenant filter ratchet (BLOCKING)"
+        run: python3 scripts/check_query_has_tenant_filter.py --blocking --baseline-file scripts/baselines/tenant_filter.txt --quiet
+
   # ──────────────────────────────────────────────────────────────────────
   # E2E persistence smoke (Configurações > Minha Empresa / Learning Loops /
   # Schedule). Gap original Paulo 2026-05-21 — round-trip browser-level

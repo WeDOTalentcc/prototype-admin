@@ -42,6 +42,7 @@ Integração canonical:
 """
 from __future__ import annotations
 
+import argparse
 import ast
 import sys
 from dataclasses import dataclass
@@ -475,8 +476,63 @@ def should_skip_file(filepath: Path) -> bool:
     return any(excl in str(filepath) for excl in EXCLUDE_PATHS)
 
 
-def main() -> int:
-    root = Path(sys.argv[1] if len(sys.argv) > 1 else "lia-agent-system/app")
+def load_baseline(baseline_file: Path) -> dict[str, int]:
+    """Parse baseline file no formato 'R1=N\\nR2=N\\nR4=N'. Missing keys → 0."""
+    if not baseline_file.exists():
+        return {}
+    baseline: dict[str, int] = {}
+    try:
+        for line in baseline_file.read_text(encoding="utf-8").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if "=" not in line:
+                continue
+            key, _, val = line.partition("=")
+            try:
+                baseline[key.strip()] = int(val.strip())
+            except ValueError:
+                continue
+    except OSError:
+        return {}
+    return baseline
+
+
+def save_baseline(baseline_file: Path, counts: dict[str, int]) -> None:
+    """Persiste counts em baseline file (formato 'R1=N\\nR2=N\\n...')."""
+    baseline_file.parent.mkdir(parents=True, exist_ok=True)
+    lines = [f"# Pydantic conventions baseline — ratchet decremental",
+             f"# Atualizado automaticamente quando current < baseline.",
+             f"# Sensor BLOQUEIA quando current > baseline (regression).",
+             ""]
+    for rule in sorted(counts):
+        lines.append(f"{rule}={counts[rule]}")
+    baseline_file.write_text("\n".join(lines) + "\n", encoding="utf-8")
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        description="AST checker canonical: convenções Pydantic em request schemas"
+    )
+    parser.add_argument(
+        "scan_dir", nargs="?", default="lia-agent-system/app",
+        help="Diretório a escanear (default: lia-agent-system/app)"
+    )
+    parser.add_argument(
+        "--baseline-file", type=Path, default=None,
+        help="Arquivo de baseline para ratchet decremental (e.g., scripts/baselines/pydantic.txt)"
+    )
+    parser.add_argument(
+        "--update-baseline", action="store_true",
+        help="Grava count atual no baseline file (overwrite) e sai 0. Use só após confirmar redução."
+    )
+    parser.add_argument(
+        "--warn-only", action="store_true",
+        help="Modo warn-only: nunca exit 1 (apenas reporta count e compara com baseline)"
+    )
+    args = parser.parse_args(argv)
+
+    root = Path(args.scan_dir)
     if not root.exists():
         print(f"⚠ Path não existe: {root}")
         return 2
@@ -490,15 +546,33 @@ def main() -> int:
         files_scanned += 1
         all_violations.extend(scan_file(py_file))
 
-    if not all_violations:
-        print(f"✅ Pydantic conventions OK ({files_scanned} arquivos verificados)")
-        return 0
-
-    print(f"❌ {len(all_violations)} violações em {files_scanned} arquivos:\n")
     # Group by rule
     by_rule: dict[str, list[Violation]] = {}
     for v in all_violations:
         by_rule.setdefault(v.rule, []).append(v)
+
+    counts = {rule: len(by_rule.get(rule, [])) for rule in ("R1", "R2", "R3", "R4")}
+
+    # Update-baseline mode: grava counts atuais e sai
+    if args.update_baseline:
+        if not args.baseline_file:
+            print("⚠ --update-baseline requer --baseline-file")
+            return 2
+        save_baseline(args.baseline_file, counts)
+        print(f"✅ Baseline atualizado em {args.baseline_file}:")
+        for rule in sorted(counts):
+            print(f"   {rule}={counts[rule]}")
+        return 0
+
+    if not all_violations:
+        print(f"✅ Pydantic conventions OK ({files_scanned} arquivos verificados)")
+        # Ainda escreve baseline=0 se solicitado via --baseline-file
+        if args.baseline_file and not args.baseline_file.exists():
+            save_baseline(args.baseline_file, counts)
+            print(f"   (baseline inicializado em {args.baseline_file})")
+        return 0
+
+    print(f"❌ {len(all_violations)} violações em {files_scanned} arquivos:\n")
 
     for rule in sorted(by_rule):
         violations = by_rule[rule]
@@ -511,7 +585,48 @@ def main() -> int:
     print(f"\n📊 Resumo: {len(all_violations)} violações total")
     for rule in sorted(by_rule):
         print(f"   {rule}: {len(by_rule[rule])} violação(ões)")
-    return 1
+
+    # Ratchet enforcement
+    if args.baseline_file:
+        baseline = load_baseline(args.baseline_file)
+        if not baseline:
+            # Primeiro run: inicializa baseline com counts atuais
+            save_baseline(args.baseline_file, counts)
+            print(f"\n🌱 Baseline inicializado em {args.baseline_file} com counts atuais.")
+            print(f"   Próximos runs vão bloquear regressão (current > baseline).")
+            return 0 if args.warn_only else 0
+
+        # Compare per-rule
+        regressions = []
+        reductions = []
+        for rule in ("R1", "R2", "R3", "R4"):
+            current = counts.get(rule, 0)
+            base = baseline.get(rule, 0)
+            if current > base:
+                regressions.append((rule, current, base))
+            elif current < base:
+                reductions.append((rule, current, base))
+
+        if regressions:
+            print(f"\n❌ REGRESSÃO detectada (ratchet violado):")
+            for rule, cur, base in regressions:
+                print(f"   {rule}: {cur} > baseline {base} (+{cur - base})")
+            print(f"\n   Para promover NOVO baseline (apenas após confirmar fix):")
+            print(f"   python scripts/check_pydantic_conventions.py --baseline-file {args.baseline_file} --update-baseline")
+            return 0 if args.warn_only else 1
+
+        if reductions:
+            print(f"\n✅ REDUÇÃO detectada — atualizando baseline automaticamente:")
+            for rule, cur, base in reductions:
+                print(f"   {rule}: {cur} < baseline {base} (-{base - cur})")
+            save_baseline(args.baseline_file, counts)
+            return 0
+
+        # No change — baseline match
+        print(f"\n➖ Sem mudança vs baseline (counts == {dict(baseline)})")
+        return 0
+
+    return 0 if args.warn_only else 1
 
 
 if __name__ == "__main__":
