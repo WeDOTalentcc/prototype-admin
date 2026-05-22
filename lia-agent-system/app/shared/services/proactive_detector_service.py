@@ -912,13 +912,53 @@ class ProactiveDetectorService:
             )
             tenant_overrides = {}
 
+        # WT-2022 Wave 2 P0.ALR-1+2 (2026-05-22): wire de
+        # communication_settings.alerts[].enabled — antes esses 5 toggles UI
+        # gravavam no DB mas o detector NAO consultava (ghost setting).
+        try:
+            from app.shared.services.communication_settings_consumer import (
+                get_company_communication_settings,
+                is_alert_enabled,
+                get_alert_channel,
+                inc_communication_skip,
+            )
+            comm_settings = await get_company_communication_settings(db, company_id)
+        except Exception as exc:
+            self.logger.warning(
+                "ProactiveDetector: failed to load tenant comm_settings for %s, "
+                "all detectors run with default-enabled (fail-safe): %s",
+                company_id, exc,
+            )
+            comm_settings = {}
+
+            def is_alert_enabled(_s, _id):  # type: ignore[no-redef]
+                return True
+
+            def get_alert_channel(_s, _id, default="email"):  # type: ignore[no-redef]
+                return default
+
+            def inc_communication_skip(_r):  # type: ignore[no-redef]
+                return None
+
         for detector in self.detectors:
+            # WT-2022 Wave 2 P0.ALR-1: gate per tenant — toggle off pula detector.
+            if not is_alert_enabled(comm_settings, detector.name):
+                self.logger.info(
+                    "Detector %s disabled by tenant settings company=%s — skipping",
+                    detector.name, company_id,
+                )
+                inc_communication_skip("alert_disabled")
+                per_detector_count[detector.name] = -2  # skip sentinel (vs -1 error)
+                continue
+
             try:
                 override = tenant_overrides.get(detector.name)
                 hints = await detector.detect(db, company_id, override=override)
                 for hint in hints:
                     hint["detector"] = detector.name
                     hint["company_id"] = company_id
+                    # WT-2022 Wave 2 P0.ALR-2: anexa channel preferido tenant.
+                    hint["channel"] = get_alert_channel(comm_settings, detector.name)
                 all_hints.extend(hints)
                 per_detector_count[detector.name] = len(hints)
             except Exception as exc:

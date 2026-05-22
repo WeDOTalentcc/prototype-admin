@@ -144,27 +144,61 @@ class CommunicationService:
     def _is_within_sending_hours(self, settings: dict | None = None) -> bool:
         """Check if current time is within allowed sending hours.
 
-        WT-2022 P0.SCH1: agora tenant-aware. settings dict pode override defaults:
+        WT-2022 P0.SCH1 (Wave 2 2026-05-22): tenant-aware com timezone +
+        respect_holidays wired. settings dict pode override defaults:
           - sending_hours_start (int, default 8)
           - sending_hours_end (int, default 20)
           - respect_weekends (bool, default True)
-        Backward-compat: settings=None usa defaults canonical.
+          - respect_holidays (bool, default False) - Wave 2 P0.SCH-1
+          - timezone (str IANA, default America/Sao_Paulo) - Wave 2 P0.SCH-1
+        Backward-compat: settings=None usa defaults canonical (UTC-3 hardcoded).
         Helper: get_company_communication_settings em
         app/shared/services/communication_settings_consumer.py.
         """
-        brazil_now = self._get_brazil_now()
-
         s = settings or {}
+
+        # WT-2022 Wave 2 P0.SCH-1: tenant-aware timezone (default UTC-3 BR).
+        # Helper get_tenant_now le settings["timezone"] e cai em UTC-3 fail-safe.
+        if settings:
+            from app.shared.services.communication_settings_consumer import get_tenant_now
+            now = get_tenant_now(settings)
+        else:
+            now = self._get_brazil_now()
+
         respect_weekends = bool(s.get("respect_weekends", True))
+        respect_holidays = bool(s.get("respect_holidays", False))
         start_hour = int(s.get("sending_hours_start", self.SENDING_START_HOUR))
         end_hour = int(s.get("sending_hours_end", self.SENDING_END_HOUR))
 
-        if respect_weekends and brazil_now.weekday() >= 5:
+        if respect_weekends and now.weekday() >= 5:
             return False
 
-        current_hour = brazil_now.hour
+        # WT-2022 Wave 2 P0.SCH-1: respect_holidays wire (national BR holidays only).
+        # Estaduais/municipais ficam pra proxima sprint (exige UF tenant-aware).
+        if respect_holidays:
+            from app.shared.services.communication_settings_consumer import is_brazilian_holiday
+            if is_brazilian_holiday(now.date()):
+                return False
+
+        current_hour = now.hour
         return start_hour <= current_hour < end_hour
     
+    def _is_holiday_now(self, settings: dict | None = None) -> bool:
+        """WT-2022 Wave 2 P0.SCH-1: check se data atual (tenant tz) é feriado BR.
+
+        Usado pra rotular skip metric (holiday vs outside_hours). Não decide
+        envio — esse é _is_within_sending_hours quem faz.
+        """
+        try:
+            from app.shared.services.communication_settings_consumer import (
+                get_tenant_now,
+                is_brazilian_holiday,
+            )
+            now = get_tenant_now(settings) if settings else self._get_brazil_now()
+            return is_brazilian_holiday(now.date())
+        except Exception:
+            return False
+
     def _get_next_sending_window(self) -> datetime:
         """Get the next valid sending window."""
         brazil_now = self._get_brazil_now()
@@ -341,12 +375,48 @@ class CommunicationService:
                     "message": f"Aproximando do limite diário ({messages_today}/{self.MAX_MESSAGES_PER_DAY})"
                 })
 
-            # WT-2022 P0.SCH1: tenant-aware sending hours via communication_settings.
+            # WT-2022 P0.SCH1 (Wave 2 2026-05-22): tenant-aware settings — sending
+            # hours + cooldown + max_per_candidate + holidays wired in single load.
             from app.shared.services.communication_settings_consumer import (
                 get_company_communication_settings,
+                check_cooldown_hours,
+                check_max_per_candidate,
+                inc_communication_skip,
             )
             settings = await get_company_communication_settings(db, company_id)
+
+            # Cooldown gate (was ghost setting — wired Wave 2).
+            cooldown_ok, cooldown_reason = await check_cooldown_hours(
+                db, candidate_id, company_id, settings
+            )
+            if not cooldown_ok:
+                inc_communication_skip("cooldown")
+                cooldown_h = int(settings.get("cooldown_hours_between_messages", 24) or 24)
+                result["can_send"] = False
+                result["blocks"].append({
+                    "type": "cooldown",
+                    "message": f"Aguarde {cooldown_h}h desde última mensagem (cooldown_hours_between_messages)",
+                })
+
+            # Max-per-candidate rolling 7d window (was ghost setting — wired Wave 2).
+            max_ok, max_reason = await check_max_per_candidate(
+                db, candidate_id, company_id, settings
+            )
+            if not max_ok:
+                inc_communication_skip("max_per_candidate")
+                max_cand = int(settings.get("max_messages_per_candidate", 5) or 5)
+                result["can_send"] = False
+                result["blocks"].append({
+                    "type": "max_per_candidate",
+                    "message": f"Limite máximo de {max_cand} mensagens em 7 dias atingido (max_messages_per_candidate)",
+                })
+
             if not self._is_within_sending_hours(settings):
+                # Sensor: outside_hours / holiday breakdown
+                if settings.get("respect_holidays") and self._is_holiday_now(settings):
+                    inc_communication_skip("holiday")
+                else:
+                    inc_communication_skip("outside_hours")
                 next_window = self._get_next_sending_window()
                 result["warnings"].append({
                     "type": "outside_hours",

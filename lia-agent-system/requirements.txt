@@ -78,6 +78,7 @@ lxml>=5.5.0
 # Calendar
 icalendar==6.0.1
 pytz==2024.2
+holidays==0.97  # WT-2022 P0.SCH-1: Brazilian holidays detection (respect_holidays toggle)
 
 # Google Calendar Integration
 google-api-python-client>=2.151.0
