@@ -157,14 +157,12 @@ class TestMultiTenantBudgetIsolation:
         redis_mock.aclose = AsyncMock()
 
         with patch(
-            "app.services.token_budget_service._get_redis",
+            "app.domains.credits.services.token_budget_service._get_redis",
             new_callable=AsyncMock,
             return_value=redis_mock,
         ):
-            await __import__(
-                "app.services.token_budget_service",
-                fromlist=["check_budget"]
-            ).check_budget("isolated-company", "pro")
+            from app.domains.credits.services.token_budget_service import check_budget
+            await check_budget("isolated-company", "pro")
 
         call_args = redis_mock.get.call_args
         key_used = call_args[0][0]
@@ -179,14 +177,12 @@ class TestMultiTenantBudgetIsolation:
         redis_mock.aclose = AsyncMock()
 
         with patch(
-            "app.services.token_budget_service._get_redis",
+            "app.domains.credits.services.token_budget_service._get_redis",
             new_callable=AsyncMock,
             return_value=redis_mock,
         ):
-            await __import__(
-                "app.services.token_budget_service",
-                fromlist=["increment_usage"]
-            ).increment_usage("isolated-company-2", 500)
+            from app.domains.credits.services.token_budget_service import increment_usage
+            await increment_usage("isolated-company-2", 500)
 
         call_args = redis_mock.incrby.call_args
         key_used = call_args[0][0]
