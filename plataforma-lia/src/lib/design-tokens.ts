@@ -493,6 +493,11 @@ export const kanbanChipStyles = {
   size: {
     comfortable: 'text-micro px-1.5 py-0',
     compact: 'text-[10px] leading-[14px] px-1 py-0',
+    // Audit 2026-05-22: densidade relaxed (12px) para contextos onde
+    // text-micro (10px) era apertado demais (modais, previews, cards de
+    // detalhe). 338 sites tinham override text-xs no className antes —
+    // codemod migra esses para density="relaxed" canonical.
+    relaxed: 'text-xs px-1.5 py-0.5',
   },
   variant: {
     neutral:

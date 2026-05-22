@@ -4,7 +4,7 @@ import * as React from "react"
 import { kanbanChipStyles } from "@/lib/design-tokens"
 import { cn } from "@/lib/utils"
 
-export type ChipDensity = "comfortable" | "compact"
+export type ChipDensity = "comfortable" | "compact" | "relaxed"
 
 export type ChipVariant =
   | "neutral"
@@ -24,8 +24,9 @@ export interface ChipProps extends React.HTMLAttributes<HTMLSpanElement> {
  * so the chip visual language stays in sync with the kanban canonical chip.
  *
  * Densities:
- * - `comfortable` (default): tables, modals, summary cards.
- * - `compact`: dense lists, kanban candidate cards.
+ * - `comfortable` (default): tables, modals, summary cards (10px).
+ * - `compact`: dense lists, kanban candidate cards (10px tight leading).
+ * - `relaxed`: modals, previews, detail cards onde 10px era apertado (12px).
  *
  * Variants follow the semantic palette (neutral/success/warning/danger/info)
  * and respect light/dark tokens automatically.
