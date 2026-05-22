@@ -4,6 +4,7 @@ from app.shared.channels.adapters import (
     MSTeamsChannelAdapter,
     SMSChannelAdapter,
     WhatsAppChannelAdapter,
+    VoiceChannelAdapter,
 )
 from app.shared.channels.channel_adapter import (
     ChannelAdapter,
@@ -29,4 +30,5 @@ __all__ = [
     "SMSChannelAdapter",
     "InAppChannelAdapter",
     "MSTeamsChannelAdapter",
+    "VoiceChannelAdapter",
 ]

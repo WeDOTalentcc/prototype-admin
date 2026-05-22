@@ -10,6 +10,7 @@ class ChannelType(StrEnum):
     SMS = "sms"
     IN_APP = "in_app"
     MS_TEAMS = "ms_teams"
+    VOICE = "voice"  # Sprint 3.4 W4-1 V2: Twilio PSTN/VoIP + Gemini Live, unified
 
 
 class DeliveryStatus(StrEnum):

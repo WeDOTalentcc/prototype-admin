@@ -7,6 +7,7 @@ from app.shared.channels.adapters.in_app_adapter import InAppChannelAdapter
 from app.shared.channels.adapters.sms_adapter import SMSChannelAdapter
 from app.shared.channels.adapters.teams_adapter import MSTeamsChannelAdapter
 from app.shared.channels.adapters.whatsapp_adapter import WhatsAppChannelAdapter
+from app.shared.channels.adapters.voice_adapter import VoiceChannelAdapter
 from app.shared.channels.channel_adapter import (
     ChannelAdapter,
     ChannelMessage,
@@ -40,6 +41,7 @@ class MultiChannelService:
             SMSChannelAdapter(),
             InAppChannelAdapter(),
             MSTeamsChannelAdapter(),
+            VoiceChannelAdapter(),  # Sprint 3.4 W4-1 V2: generic voice (no plugins)
         ]
         for adapter in default_adapters:
             self.register_adapter(adapter)
