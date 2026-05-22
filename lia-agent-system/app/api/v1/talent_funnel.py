@@ -87,12 +87,64 @@ async def analyze_semantic_gap(body: GapAnalysisRequest, company_id: str = Depen
 
 
 @router.post("/wrf-rank", response_model=None)
-async def wrf_rank(body: WRFRankRequest, company_id: str = Depends(require_company_id)):
+async def wrf_rank(
+    body: WRFRankRequest,
+    company_id: str = Depends(require_company_id),
+    db: AsyncSession = Depends(get_db),
+):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     candidates = [c.model_dump() for c in body.candidates]
     ranked = wrf_dynamic_k_service.rank_candidates(candidates, body.qualification_level)
     k = wrf_dynamic_k_service.get_k(body.qualification_level)
     weights = wrf_dynamic_k_service.get_weights(body.qualification_level)
+
+    # WT-2022 P0.C: LGPD Art. 20 + EU AI Act Art. 13 audit trail para ranking
+    # automatizado de candidatos via Weighted Rank Fusion (WRF) dinamico.
+    try:
+        from app.shared.services.automated_decision_logger import (
+            PROTECTED_CRITERIA_PT,
+            log_automated_decision,
+        )
+        candidate_ids = [str(c.id) for c in body.candidates if c.id]
+        top_summary = [
+            {
+                "candidate_id": item.get("id"),
+                "rank": item.get("wrf_rank"),
+                "score": item.get("wrf_score"),
+            }
+            for item in ranked[:10]
+        ]
+        await log_automated_decision(
+            db=db,
+            company_id=company_id,
+            decision_type="candidate_ranking_wrf",
+            ai_model_used="wrf_dynamic_k_service_deterministic",
+            explanation_text=(
+                f"Ranking WRF dinamico: {len(candidates)} candidatos rankeados"
+                f" com qualification_level={body.qualification_level or media},"
+                f" K={k}, weights={weights}."
+            ),
+            criteria_used=[
+                "es_rank",
+                "pgv_rank",
+                "qualification_level",
+                "wrf_dynamic_k",
+                "score_weights",
+            ],
+            criteria_ignored=PROTECTED_CRITERIA_PT,
+            review_eligible=True,
+            extra_metadata={
+                "qualification_level": body.qualification_level,
+                "k_used": k,
+                "weights": weights,
+                "total_ranked": len(ranked),
+                "candidate_ids": candidate_ids,
+                "top_10_ranked": top_summary,
+            },
+        )
+    except Exception as exc:  # noqa: BLE001 - fail-safe, decisao IA nao pode quebrar por log
+        logger.warning("WT-2022 P0.C: wrf_rank audit log failed: %s", exc, exc_info=True)
+
     return {
         "candidates": ranked,
         "k_used": k,

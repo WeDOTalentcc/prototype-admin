@@ -266,6 +266,59 @@ async def rank_candidates(
             ranked = wrf_dynamic_k_service.rank_candidates(candidates_for_ranking, qualification_level)
             ranked = ranked[:limit]
 
+            # WT-2022 P0.C: LGPD Art. 20 + EU AI Act Art. 13 audit trail
+            # para ranking automatizado de candidatos via tool de sourcing.
+            try:
+                from app.shared.services.automated_decision_logger import (
+                    PROTECTED_CRITERIA_PT,
+                    log_automated_decision,
+                )
+                top_summary = [
+                    {
+                        "candidate_id": item.get("id"),
+                        "rank": item.get("wrf_rank"),
+                        "score": item.get("wrf_score"),
+                    }
+                    for item in ranked[:10]
+                ]
+                await log_automated_decision(
+                    db=db,
+                    company_id=company_id,
+                    job_id=vacancy_id,
+                    decision_type="candidate_ranking_wrf_tool",
+                    ai_model_used="wrf_dynamic_k_service_deterministic",
+                    explanation_text=(
+                        f"Sourcing tool rank_candidates: {len(candidates_for_ranking)} candidatos "
+                        f"rankeados (top {len(ranked)}) com qualification_level="
+                        f"{qualification_level or media}"
+                        + (f" para vaga {vacancy_id}." if vacancy_id else ".")
+                    ),
+                    criteria_used=[
+                        "es_rank",
+                        "pgv_rank",
+                        "lia_score",
+                        "wsi_score",
+                        "qualification_level",
+                        "wrf_dynamic_k",
+                    ],
+                    criteria_ignored=PROTECTED_CRITERIA_PT,
+                    review_eligible=True,
+                    extra_metadata={
+                        "qualification_level": qualification_level,
+                        "vacancy_id": vacancy_id,
+                        "candidate_ids_input": candidate_ids,
+                        "total_input": len(candidates_for_ranking),
+                        "total_output": len(ranked),
+                        "top_10_ranked": top_summary,
+                        "caller": "sourcing.tools.query_tools.rank_candidates",
+                    },
+                )
+            except Exception as _audit_exc:  # noqa: BLE001 - fail-safe
+                logger.warning(
+                    "WT-2022 P0.C: rank_candidates tool audit log failed: %s",
+                    _audit_exc, exc_info=True,
+                )
+
             return {
                 "success": True,
                 "message": f"✅ {len(ranked)} candidatos rankeados com WRF.",

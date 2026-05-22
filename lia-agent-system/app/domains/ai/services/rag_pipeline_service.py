@@ -422,6 +422,61 @@ class RAGPipelineService:
                 _rerank_span.set_attribute("wrf_applied", "true")
                 _rerank_span.set_attribute("reranked_count", str(len(merged)))
                 logger.debug("[RAGPipeline] WRF re-ranking applied: %d results", len(merged))
+
+                # WT-2022 P0.C: LGPD Art. 20 + EU AI Act Art. 13 audit trail
+                # para reranking automatizado em RAG pipeline (hot path).
+                # Apenas loga ranking de CANDIDATOS (domain=talent) — outros domains
+                # (jobs/policy/company/general) nao tocam dados de candidatos.
+                if normalized_domain == "talent":
+                    try:
+                        from app.shared.services.automated_decision_logger import (
+                            PROTECTED_CRITERIA_PT,
+                            log_automated_decision,
+                        )
+                        top_summary = [
+                            {
+                                "candidate_id": item.get("id") or item.get("candidate_id"),
+                                "rank": item.get("wrf_rank"),
+                                "score": item.get("wrf_score"),
+                                "hybrid_score": item.get("hybrid_score"),
+                            }
+                            for item in merged[:10]
+                        ]
+                        await log_automated_decision(
+                            db=db,
+                            company_id=company_id,
+                            decision_type="candidate_ranking_rag_rerank",
+                            ai_model_used="rag_pipeline_hybrid_wrf",
+                            explanation_text=(
+                                f"RAG pipeline reranking (talent domain): "
+                                f"{len(merged)} candidatos reranked com hybrid "
+                                f"BM25+semantic+WRF. source={source}, alpha={alpha:.2f}."
+                            ),
+                            criteria_used=[
+                                "bm25_score",
+                                "semantic_score",
+                                "hybrid_score",
+                                "es_rank",
+                                "pgv_rank",
+                                "wrf_score",
+                            ],
+                            criteria_ignored=PROTECTED_CRITERIA_PT,
+                            review_eligible=True,
+                            extra_metadata={
+                                "query_excerpt": (query or "")[:200],
+                                "alpha": alpha,
+                                "source": source,
+                                "domain": normalized_domain,
+                                "total_reranked": len(merged),
+                                "top_10_ranked": top_summary,
+                                "caller": "ai.services.rag_pipeline_service",
+                            },
+                        )
+                    except Exception as _audit_exc:  # noqa: BLE001 - fail-safe
+                        logger.warning(
+                            "WT-2022 P0.C: rag_pipeline reranking audit log failed: %s",
+                            _audit_exc, exc_info=True,
+                        )
             except Exception as _wrf_exc:
                 _rerank_span.set_attribute("wrf_applied", "false")
                 logger.debug("[RAGPipeline] WRF re-ranking skipped: %s", _wrf_exc)
