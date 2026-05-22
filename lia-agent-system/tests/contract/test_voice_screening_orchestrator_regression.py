@@ -545,11 +545,18 @@ class TestSessionRestoration:
     async def test_get_or_restore_session_returns_in_memory_first(
         self, orchestrator, consented_session
     ):
-        """In-memory hit short-circuits DB load."""
+        """In-memory hit short-circuits DB load.
+
+        F-15 (2026-05-22): session is now rehydrated from Redis cache, so
+        identity check (`is`) replaced by field equality. Cache hit still
+        bypasses DB.
+        """
         result = await orchestrator.get_or_restore_session(
             session_id=consented_session.session_id, db=None
         )
-        assert result is consented_session
+        assert result is not None
+        assert result.session_id == consented_session.session_id
+        assert result.candidate_id == consented_session.candidate_id
 
     async def test_get_or_restore_session_returns_none_when_not_found(
         self, orchestrator, mock_db
@@ -594,5 +601,5 @@ class TestSessionRestoration:
         )
         assert result is not None
         assert result.session_id == "restored-001"
-        # Cached in memory
+        # F-15: cached in Redis (via in-memory fallback in tests).
         assert "restored-001" in orchestrator._sessions

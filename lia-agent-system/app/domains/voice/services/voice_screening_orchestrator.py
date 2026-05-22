@@ -132,6 +132,82 @@ class ConsentNotGrantedError(VoiceScreeningOrchestratorError):
     pass
 
 
+class _LegacySessionsShim:
+    """
+    F-15 backward-compat shim: provides dict-like __setitem__/__getitem__/__contains__
+    over the canonical VoiceSessionRedisRepository's in-memory fallback.
+
+    Operates DIRECTLY on the repo's `_memory_fallback` + `_memory_active_index` +
+    `_memory_reverse_index` dicts. SYNCHRONOUS (no asyncio.run nesting) — this
+    is intentional: the shim exists for legacy unit tests that need a sync-dict
+    interface, and Redis is bypassed entirely (tests should use real Redis via
+    explicit fixtures if multi-worker behavior matters).
+
+    Production code MUST NOT use this property. New code uses async
+    `_store_session` / `_fetch_session`.
+    """
+
+    def __init__(self, orchestrator: "VoiceScreeningOrchestrator") -> None:
+        self._orch = orchestrator
+
+    def _store_session_sync(self, session: "VoiceScreeningSession") -> None:
+        """Synchronous in-memory write (mirrors VoiceSessionRedisRepository fallback path)."""
+        import json
+        state = self._orch._session_to_state(session)
+        repo = self._orch._session_repo
+        # Replicate the in-memory fallback writes verbatim.
+        repo._memory_fallback[repo._session_key(session.company_id, session.session_id)] = (
+            json.dumps(state, default=str)
+        )
+        repo._memory_active_index.setdefault(session.company_id, set()).add(session.session_id)
+        repo._memory_reverse_index[session.session_id] = session.company_id
+
+    def _fetch_session_sync(self, session_id: str) -> "VoiceScreeningSession | None":
+        """Synchronous in-memory read with reverse-index resolution."""
+        import json
+        repo = self._orch._session_repo
+        company_id = repo._memory_reverse_index.get(session_id)
+        if not company_id:
+            return None
+        raw = repo._memory_fallback.get(repo._session_key(company_id, session_id))
+        if not raw:
+            return None
+        return self._orch._state_to_session(json.loads(raw))
+
+    def __setitem__(self, session_id: str, session: "VoiceScreeningSession") -> None:
+        if session.session_id != session_id:
+            session.session_id = session_id
+        self._store_session_sync(session)
+
+    def __getitem__(self, session_id: str) -> "VoiceScreeningSession":
+        result = self._fetch_session_sync(session_id)
+        if result is None:
+            raise KeyError(session_id)
+        return result
+
+    def get(self, session_id: str, default=None):
+        result = self._fetch_session_sync(session_id)
+        return result if result is not None else default
+
+    def __contains__(self, session_id: str) -> bool:
+        return self._fetch_session_sync(session_id) is not None
+
+    def __len__(self) -> int:
+        return len(self._orch._session_repo._memory_fallback)
+
+    def values(self):
+        import json
+        for raw in self._orch._session_repo._memory_fallback.values():
+            try:
+                yield self._orch._state_to_session(json.loads(raw))
+            except Exception:
+                continue
+
+    def keys(self):
+        for company_sessions in self._orch._session_repo._memory_active_index.values():
+            yield from company_sessions
+
+
 class VoiceScreeningOrchestrator:
     """
     Orchestrates the end-to-end voice screening pipeline.
@@ -158,13 +234,110 @@ class VoiceScreeningOrchestrator:
     ]
 
     def __init__(self):
-        self._sessions: dict[str, VoiceScreeningSession] = {}
+        # F-15 P0 fix (audit 2026-05-22): _sessions dict in-process era race risk
+        # em FastAPI multi-worker (cada worker dict próprio → callbacks Twilio
+        # iam para worker errado). Substituído por VoiceSessionRedisRepository
+        # canonical com TTL 4h. Repo tem fallback in-memory para dev/testes.
+        # Sessions ativas durante deploy são perdidas (janela <1h tipicamente).
+        from app.domains.voice.repositories.voice_session_redis_repository import (
+            VoiceSessionRedisRepository,
+        )
+        # F-15: each orchestrator gets its OWN repo instance (not the canonical
+        # singleton) so tests have isolated state. Production callers should
+        # use the module-level `voice_screening_orchestrator` singleton.
+        self._session_repo = VoiceSessionRedisRepository()
         self._tts_service = VoiceService()
         # F-01 P0 fix (audit 2026-05-22 AUDIT_VOICE_SCREENING_ORCHESTRATOR.md):
         # canonical llm_service singleton — referenced by generate_lia_response:1109
         # for generate_native_gemini_sync. Era ausente; AttributeError silenciado
         # pelo except genérico → fallback scripted permanente em produção.
         self._llm_service = _canonical_llm_service
+
+    async def _store_session(self, session: "VoiceScreeningSession") -> None:
+        """
+        F-15 canonical: persist session state to Redis (or in-mem fallback).
+        Replaces `self._sessions[session.session_id] = session` direct dict ops.
+        """
+        if not session or not session.session_id or not session.company_id:
+            logger.warning(
+                "[VOICE SCREENING] _store_session called without "
+                "session_id+company_id; skipping (session=%s)",
+                session.session_id if session else None,
+            )
+            return
+        state = self._session_to_state(session)
+        await self._session_repo.save_session_state(
+            company_id=session.company_id,
+            session_id=session.session_id,
+            state=state,
+        )
+
+    @property
+    def _sessions(self) -> "dict[str, VoiceScreeningSession]":
+        """
+        F-15 backward-compat shim for legacy tests.
+
+        Returns a dict-like view backed by the canonical Redis repository's
+        in-memory fallback (active in unit tests where Redis is unavailable).
+        Writes go through __setitem__ which delegates to `_store_session`
+        running synchronously on a fresh event loop.
+
+        Production code must NOT use this property. New code should use
+        `await self._store_session(session)` / `await self._fetch_session(id)`.
+        """
+        return _LegacySessionsShim(self)
+
+    async def _fetch_session(
+        self,
+        session_id: str,
+        company_id: str | None = None,
+        db: Any = None,
+    ) -> "VoiceScreeningSession | None":
+        """
+        F-15 canonical: load session state from Redis.
+        Returns None if not found. Replaces `self._sessions.get(session_id)`.
+
+        Lookup strategy:
+          1. If company_id provided: read Redis directly (fast path, multi-worker safe).
+          2. Else: resolve company_id via reverse index in Redis, then read state.
+             (Multi-tenancy preserved — reverse index stores canonical company_id
+             from session-creation time, never trusts external input.)
+          3. Else if db provided: load from DB; rehydrate Redis cache.
+          4. Else: return None.
+        """
+        if not session_id:
+            return None
+
+        # Step 1: fast path with explicit company_id.
+        resolved_company_id = company_id
+        if not resolved_company_id:
+            # Step 2: resolve via reverse index (session_id → company_id).
+            resolved_company_id = await self._session_repo.find_company_id_for_session(
+                session_id=session_id,
+            )
+
+        if resolved_company_id:
+            state = await self._session_repo.load_session_state(
+                company_id=resolved_company_id,
+                session_id=session_id,
+            )
+            if state is not None:
+                return self._state_to_session(state)
+
+        # Step 3: DB fallback. Rehydrate Redis cache on hit.
+        if db is not None:
+            session = await self._load_session_from_db(session_id, db)
+            if session is not None and session.company_id:
+                try:
+                    await self._store_session(session)
+                except Exception as exc:
+                    logger.warning(
+                        "[VOICE SCREENING] Redis rehydrate failed session=%s: %s",
+                        session_id, exc,
+                    )
+                return session
+
+        return None
 
     # ── Session persistence helpers ──────────────────────────────────────────
 
@@ -800,7 +973,8 @@ class VoiceScreeningOrchestrator:
             session.status = "failed"
             session.error = str(e)
 
-        self._sessions[session.session_id] = session
+        # F-15: persist to Redis (multi-worker safe) + DB (durable).
+        await self._store_session(session)
         if db is not None and session.session_id:
             await self.persist_session_state(session, db)
         return session
@@ -919,7 +1093,8 @@ class VoiceScreeningOrchestrator:
             session.voice_provider = "fallback"
             session.error = str(e)
 
-        self._sessions[session.session_id] = session
+        # F-15: persist to Redis (multi-worker safe) + DB (durable).
+        await self._store_session(session)
         if db is not None:
             await self.persist_session_state(session, db)
         return session
@@ -955,7 +1130,7 @@ class VoiceScreeningOrchestrator:
 
         try:
             wav_data = mulaw_to_wav(audio_data, sample_rate=8000)
-            language = self._get_session_language(session_id)
+            language = await self._get_session_language(session_id)
             text: str | None = None
 
             # Primary STT: Gemini Flash
@@ -1014,13 +1189,18 @@ class VoiceScreeningOrchestrator:
                 masked_text[:100],
             )
 
-            session = self._sessions.get(session_id)
+            # F-15: load from Redis (no company_id available here — pass None,
+            # we rely on session_id PK uniqueness). Falls back to None if not
+            # cached; mutation only happens if Redis has the session.
+            session = await self._fetch_session(session_id)
             if session:
                 session.transcript_segments.append({
                     "text": text,
                     "timestamp": datetime.utcnow().isoformat(),
                     "role": "candidate",
                 })
+                # F-15: write back transcript update to Redis.
+                await self._store_session(session)
 
             return text
 
@@ -1059,10 +1239,34 @@ class VoiceScreeningOrchestrator:
         Returns:
             LIA's next response text (ready for TTS), fairness-checked
         """
-        session = self._sessions.get(session_id)
+        # F-15: load from Redis with reverse-index resolution + DB fallback.
+        session = await self._fetch_session(session_id, db=db)
         if not session:
             return "Desculpe, ocorreu um erro. Podemos encerrar a triagem."
 
+        # F-15: ensure mutations (transcript_segments, questions_asked,
+        # presentation_done) are written back to Redis on every return path.
+        try:
+            return await self._generate_lia_response_inner(
+                session, candidate_utterance, session_id, db,
+            )
+        finally:
+            try:
+                await self._store_session(session)
+            except Exception as _exc:
+                logger.warning(
+                    "[VOICE SCREENING] F-15 Redis writeback failed session=%s: %s",
+                    session_id, _exc,
+                )
+
+    async def _generate_lia_response_inner(
+        self,
+        session: "VoiceScreeningSession",
+        candidate_utterance: str,
+        session_id: str,
+        db,
+    ) -> str:
+        """F-15: extracted body of generate_lia_response to enable try/finally writeback."""
         # F-08 P0 (audit 2026-05-22): PromptInjectionGuard canonical.
         # Candidate utterance (STT output) DEVE passar pelo guard ANTES de
         # virar parte do conversation_history enviado ao Gemini.
@@ -1565,15 +1769,8 @@ class VoiceScreeningOrchestrator:
         Returns:
             Analysis result dict with WSI scores and recommendation
         """
-        session = self._sessions.get(session_id)
-        if not session and db is not None:
-            session = await self._load_session_from_db(session_id, db)
-            if session:
-                self._sessions[session_id] = session
-                logger.info(
-                    "[VOICE SCREENING] Session recovered from DB for finalization: session=%s",
-                    session_id,
-                )
+        # F-15: load from Redis (with reverse-index lookup) + DB fallback.
+        session = await self._fetch_session(session_id, db=db)
         if not session:
             logger.error("[VOICE SCREENING] Session not found: %s", session_id)
             return {"error": "Session not found", "session_id": session_id}
@@ -1661,6 +1858,8 @@ class VoiceScreeningOrchestrator:
             )
 
             await self.persist_session_state(session, db)
+            # F-15: writeback to Redis (durable cache for ongoing reads).
+            await self._store_session(session)
 
             return {
                 "session_id": session_id,
@@ -1678,6 +1877,8 @@ class VoiceScreeningOrchestrator:
             session.status = "analysis_failed"
             session.error = str(e)
             await self.persist_session_state(session, db)
+            # F-15: writeback to Redis.
+            await self._store_session(session)
             return {
                 "session_id": session_id,
                 "status": "analysis_failed",
@@ -1685,18 +1886,23 @@ class VoiceScreeningOrchestrator:
                 "transcript_length": len(full_transcript),
             }
 
-    def get_session(self, session_id: str) -> VoiceScreeningSession | None:
-        """Get an active screening session by ID (in-memory only)."""
-        return self._sessions.get(session_id)
+    async def get_session(self, session_id: str) -> VoiceScreeningSession | None:
+        """Get an active screening session by ID.
+
+        F-15: now async + Redis-backed (multi-worker safe). Resolves company_id
+        via reverse index, then reads canonical state. Returns None if not found.
+        """
+        return await self._fetch_session(session_id)
 
     async def get_or_restore_session(
         self, session_id: str, db=None
     ) -> VoiceScreeningSession | None:
         """
-        Get session from memory or restore from PostgreSQL if not found.
+        Get session from Redis cache or restore from PostgreSQL if not found.
 
-        This supports server-restart recovery: if the session is not in memory
-        (e.g. after a restart), it is loaded from wsi_sessions.voice_session_state.
+        This supports server-restart + multi-worker recovery: if the session is
+        not in Redis (e.g. after a deploy / TTL expiry), it is loaded from
+        wsi_sessions.voice_session_state and rehydrated into Redis.
 
         Args:
             session_id: Screening session ID
@@ -1705,32 +1911,55 @@ class VoiceScreeningOrchestrator:
         Returns:
             VoiceScreeningSession or None if not found anywhere
         """
-        session = self._sessions.get(session_id)
-        if session is not None:
-            return session
+        # F-15: unified path — _fetch_session does Redis-first then DB fallback,
+        # with opportunistic Redis rehydrate on DB hit.
+        return await self._fetch_session(session_id, db=db)
 
-        session = await self._load_session_from_db(session_id, db)
-        if session is not None:
-            self._sessions[session_id] = session
-        return session
-
-    def _get_session_language(self, session_id: str) -> str:
-        session = self._sessions.get(session_id)
+    async def _get_session_language(self, session_id: str) -> str:
+        # F-15: async Redis lookup with reverse-index resolution.
+        session = await self._fetch_session(session_id)
         return session.language if session else "pt-BR"
 
-    def list_active_sessions(self) -> list[dict[str, Any]]:
-        """List all active (non-completed) screening sessions."""
-        return [
-            {
-                "session_id": s.session_id,
-                "candidate_name": mask_pii(s.candidate_name),
-                "job_title": s.job_title,
-                "status": s.status,
-                "started_at": s.started_at.isoformat() if s.started_at else None,
-            }
-            for s in self._sessions.values()
-            if s.status not in ("completed", "failed")
-        ]
+    async def list_active_sessions(
+        self, company_id: str | None = None
+    ) -> list[dict[str, Any]]:
+        """List all active (non-completed) screening sessions.
+
+        F-15: now async + Redis-backed. When company_id provided, scopes the
+        listing to that tenant (canonical multi-tenancy). When None, returns
+        empty list with warning — cross-tenant enumeration is disallowed.
+        """
+        if not company_id:
+            logger.warning(
+                "[VOICE SCREENING] list_active_sessions() called without "
+                "company_id; cross-tenant enumeration disallowed (returning [])"
+            )
+            return []
+
+        session_ids = await self._session_repo.list_active_session_ids(
+            company_id=company_id,
+        )
+        results: list[dict[str, Any]] = []
+        for sid in session_ids:
+            state = await self._session_repo.load_session_state(
+                company_id=company_id, session_id=sid,
+            )
+            if not state:
+                continue
+            status = state.get("status")
+            if status in ("completed", "failed"):
+                continue
+            started_at = state.get("started_at")
+            results.append(
+                {
+                    "session_id": state.get("session_id"),
+                    "candidate_name": mask_pii(state.get("candidate_name", "")),
+                    "job_title": state.get("job_title"),
+                    "status": status,
+                    "started_at": started_at,
+                }
+            )
+        return results
 
     async def _register_wsi_session(
         self,

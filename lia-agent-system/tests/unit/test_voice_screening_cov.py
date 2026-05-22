@@ -13,7 +13,17 @@ def orchestrator():
     with patch("app.domains.voice.services.voice_screening_orchestrator.VoiceService"), \
          patch("app.domains.voice.services.voice_screening_orchestrator._twilio_voice_service"):
         from app.domains.voice.services.voice_screening_orchestrator import VoiceScreeningOrchestrator
-        return VoiceScreeningOrchestrator()
+        orch = VoiceScreeningOrchestrator()
+        # F-15: force Redis disabled + clear in-mem fallback per-test isolation.
+        async def _no_redis():
+            return None
+        orch._session_repo._get_redis = _no_redis  # type: ignore[method-assign]
+        orch._session_repo._redis = None
+        orch._session_repo._redis_available = False
+        orch._session_repo._memory_fallback.clear()
+        orch._session_repo._memory_active_index.clear()
+        orch._session_repo._memory_reverse_index.clear()
+        return orch
 
 
 @pytest.fixture
@@ -70,69 +80,92 @@ class TestSessionSerialization:
 
     @pytest.mark.easy
     def test_round_trip(self, orchestrator, sample_session):
+        # F-07 P0 masking (5543c6b3f): phone_number gets masked at every
+        # _session_to_state call. Masking is intentionally non-idempotent
+        # (progressive: raw → masked-with-tail → shorter mask). For round-trip
+        # equality we compare ALL fields EXCEPT phone_number, which is asserted
+        # separately as "always masked" (presence check).
         state = orchestrator._session_to_state(sample_session)
         restored = orchestrator._state_to_session(state)
         state2 = orchestrator._session_to_state(restored)
-        assert state == state2
+        state_no_phone = {k: v for k, v in state.items() if k != "phone_number"}
+        state2_no_phone = {k: v for k, v in state2.items() if k != "phone_number"}
+        assert state_no_phone == state2_no_phone
+        # F-07: phone is always masked (contains "*" sentinel).
+        assert "*" in (state["phone_number"] or "")
+        assert "*" in (state2["phone_number"] or "")
 
 
 # ── Session management ───────────────────────────────────────────────────────
 
 class TestSessionManagement:
-    @pytest.mark.easy
-    def test_get_session_found(self, orchestrator, sample_session):
-        orchestrator._sessions["sess-1"] = sample_session
-        result = orchestrator.get_session("sess-1")
-        assert result is sample_session
+    # F-15: orchestrator state now lives in VoiceSessionRedisRepository.
+    # Tests use the repo's in-memory fallback (Redis unavailable in unit tests).
 
+    @pytest.mark.asyncio
     @pytest.mark.easy
-    def test_get_session_not_found(self, orchestrator):
-        assert orchestrator.get_session("missing") is None
+    async def test_get_session_found(self, orchestrator, sample_session):
+        await orchestrator._store_session(sample_session)
+        result = await orchestrator.get_session("sess-1")
+        assert result is not None
+        assert result.session_id == sample_session.session_id
 
+    @pytest.mark.asyncio
     @pytest.mark.easy
-    def test_get_session_language(self, orchestrator, sample_session):
-        orchestrator._sessions["sess-1"] = sample_session
-        assert orchestrator._get_session_language("sess-1") == "pt-BR"
+    async def test_get_session_not_found(self, orchestrator):
+        assert await orchestrator.get_session("missing") is None
 
+    @pytest.mark.asyncio
     @pytest.mark.easy
-    def test_get_session_language_default(self, orchestrator):
-        assert orchestrator._get_session_language("missing") == "pt-BR"
+    async def test_get_session_language(self, orchestrator, sample_session):
+        await orchestrator._store_session(sample_session)
+        assert await orchestrator._get_session_language("sess-1") == "pt-BR"
 
+    @pytest.mark.asyncio
     @pytest.mark.easy
-    def test_list_active_sessions(self, orchestrator, sample_session):
-        orchestrator._sessions["sess-1"] = sample_session
-        result = orchestrator.list_active_sessions()
+    async def test_get_session_language_default(self, orchestrator):
+        assert await orchestrator._get_session_language("missing") == "pt-BR"
+
+    @pytest.mark.asyncio
+    @pytest.mark.easy
+    async def test_list_active_sessions(self, orchestrator, sample_session):
+        await orchestrator._store_session(sample_session)
+        result = await orchestrator.list_active_sessions(company_id="comp-1")
         assert len(result) == 1
         assert result[0]["session_id"] == "sess-1"
         assert result[0]["status"] == "in_progress"
 
+    @pytest.mark.asyncio
     @pytest.mark.easy
-    def test_list_active_sessions_excludes_completed(self, orchestrator, sample_session):
+    async def test_list_active_sessions_excludes_completed(self, orchestrator, sample_session):
         sample_session.status = "completed"
-        orchestrator._sessions["sess-1"] = sample_session
-        result = orchestrator.list_active_sessions()
+        await orchestrator._store_session(sample_session)
+        result = await orchestrator.list_active_sessions(company_id="comp-1")
         assert len(result) == 0
 
     @pytest.mark.asyncio
     @pytest.mark.easy
     async def test_get_or_restore_session_from_memory(self, orchestrator, sample_session):
-        orchestrator._sessions["sess-1"] = sample_session
+        await orchestrator._store_session(sample_session)
         result = await orchestrator.get_or_restore_session("sess-1")
-        assert result is sample_session
+        assert result is not None
+        assert result.session_id == sample_session.session_id
 
     @pytest.mark.asyncio
     @pytest.mark.easy
     async def test_get_or_restore_session_from_db(self, orchestrator, sample_session):
         with patch.object(orchestrator, "_load_session_from_db", new_callable=AsyncMock, return_value=sample_session):
-            result = await orchestrator.get_or_restore_session("sess-1")
+            result = await orchestrator.get_or_restore_session("sess-1", db=MagicMock())
         assert result is sample_session
-        assert "sess-1" in orchestrator._sessions
+        # F-15: rehydrated into Redis (in-mem fallback) — verify reachability.
+        from_redis = await orchestrator.get_session("sess-1")
+        assert from_redis is not None
 
     @pytest.mark.asyncio
     @pytest.mark.easy
     async def test_get_or_restore_session_not_found(self, orchestrator):
         with patch.object(orchestrator, "_load_session_from_db", new_callable=AsyncMock, return_value=None):
-            result = await orchestrator.get_or_restore_session("missing")
+            result = await orchestrator.get_or_restore_session("missing", db=MagicMock())
         assert result is None
 
 

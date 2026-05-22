@@ -281,9 +281,12 @@ async def twiml_consent_response(
             ),
             language=language,
         )
-        session = voice_screening_orchestrator.get_session(session_id)
+        # F-15: get_session is now async (Redis-backed, multi-worker safe).
+        session = await voice_screening_orchestrator.get_session(session_id)
         if session:
             session.status = "declined"
+            # F-15: persist mutation back to Redis so other workers see it.
+            await voice_screening_orchestrator._store_session(session)
 
     return _twiml_response(twiml)
 
@@ -384,24 +387,20 @@ async def twiml_call_status(
     )
 
     if CallStatus in ("completed", "failed", "busy", "no-answer", "canceled"):
+        # F-15: in-memory iteration removed (multi-worker unsafe). Use DB lookup
+        # by CallSid as the canonical path — wsi_sessions.call_id is the
+        # globally-unique identifier and works across workers/restarts.
         matched_session = None
-        for active in voice_screening_orchestrator.list_active_sessions():
-            s = voice_screening_orchestrator.get_session(active["session_id"])
-            if s and s.call_sid == CallSid:
-                matched_session = s
-                break
-
-        if not matched_session:
-            from app.core.database import AsyncSessionLocal
-            try:
-                async with AsyncSessionLocal() as db:
-                    from app.domains.voice.repositories.wsi_repository import WsiRepository
-                    wsi_repo = WsiRepository(db)
-                    session_id = await wsi_repo.get_session_id_by_call_sid(CallSid)
-                    if session_id:
-                        matched_session = await voice_screening_orchestrator.get_or_restore_session(session_id, db)
-            except Exception as e:
-                logger.warning("[TWILIO VOICE] DB session lookup by call_sid failed: %s", e)
+        from app.core.database import AsyncSessionLocal
+        try:
+            async with AsyncSessionLocal() as db:
+                from app.domains.voice.repositories.wsi_repository import WsiRepository
+                wsi_repo = WsiRepository(db)
+                session_id = await wsi_repo.get_session_id_by_call_sid(CallSid)
+                if session_id:
+                    matched_session = await voice_screening_orchestrator.get_or_restore_session(session_id, db)
+        except Exception as e:
+            logger.warning("[TWILIO VOICE] DB session lookup by call_sid failed: %s", e)
 
         if matched_session:
             if CallStatus == "completed" and matched_session.status not in (

@@ -111,3 +111,50 @@ def patched_llm_audit_log():
     from unittest.mock import patch as _patch
     with _patch("app.shared.llm_bootstrap._audit_log") as mock_audit:
         yield mock_audit
+
+
+@pytest.fixture(autouse=True)
+def _f15_force_voice_session_repo_inmemory(request):
+    """
+    F-15 P0 (audit 2026-05-22): force VoiceSessionRedisRepository to use the
+    in-memory fallback in tests. Prevents pollution from the canonical Redis
+    singleton (shared client → "Event loop is closed" + cross-test state leak).
+
+    Per-test isolation: clears the in-memory dict before each test starts. New
+    orchestrator instances created inside the test still use the patched
+    `_get_redis` (the patch hooks at the class method level).
+
+    Opt-out: tests that need real Redis can mark with
+    `@pytest.mark.no_voice_redis_isolation`.
+    """
+    # Honor opt-out marker.
+    if request.node.get_closest_marker("no_voice_redis_isolation"):
+        yield
+        return
+
+    try:
+        from app.domains.voice.repositories import voice_session_redis_repository as vsrr
+    except ImportError:
+        yield
+        return
+
+    # Async stub: always returns None → repo uses in-memory fallback paths.
+    async def _no_redis(_self):
+        return None
+
+    original_get_redis = vsrr.VoiceSessionRedisRepository._get_redis
+    vsrr.VoiceSessionRedisRepository._get_redis = _no_redis  # type: ignore[method-assign]
+
+    # Also reset the canonical singleton's in-memory state if it exists,
+    # so cross-test isolation holds for shared instances.
+    if vsrr._voice_session_repository is not None:
+        vsrr._voice_session_repository._memory_fallback.clear()
+        vsrr._voice_session_repository._memory_active_index.clear()
+        vsrr._voice_session_repository._memory_reverse_index.clear()
+        vsrr._voice_session_repository._redis = None
+        vsrr._voice_session_repository._redis_available = False
+
+    yield
+
+    # Restore on test teardown.
+    vsrr.VoiceSessionRedisRepository._get_redis = original_get_redis  # type: ignore[method-assign]
