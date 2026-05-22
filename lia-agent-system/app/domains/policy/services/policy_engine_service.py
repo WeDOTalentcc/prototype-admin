@@ -22,6 +22,9 @@ from app.core.database import AsyncSessionLocal
 from app.domains.policy.repositories.policy_engine_repository import (
     PolicyEngineRepository,
 )
+from app.shared.observability.canary_metrics import (
+    inc_policy_engine_invocation,
+)
 from lia_models.policy import (
     DEFAULT_BUSINESS_RULES,
     DEFAULT_ESCALATION_RULES,
@@ -227,7 +230,10 @@ class PolicyEngineService:
         """
         start_time = time.time()
         rules_evaluated = 0
-        
+
+        # Hardening C.2 -- canary signal for "V2 not called in 24h" alarm
+        inc_policy_engine_invocation("evaluate")
+
         # Safely parse company_id to UUID — invalid strings fall back to no-tenant filter
         _company_uuid: UUID | None = None
         if company_id:
@@ -444,6 +450,10 @@ class PolicyEngineService:
         Returns:
             RateLimitResult with the decision and current counts
         """
+        # Hardening C.2 -- canary signal (emit ANTES de qualquer early-return
+        # downstream pra garantir contagem precisa de invocacoes).
+        inc_policy_engine_invocation("check_rate_limit")
+
         async def _check(db_session: AsyncSession) -> RateLimitResult:
             _engine_repo = PolicyEngineRepository(db_session)
             _company_uuid = UUID(company_id) if company_id else None
@@ -603,8 +613,11 @@ class PolicyEngineService:
         Returns:
             EscalationResult with the outcome
         """
+        # Hardening C.2 -- canary signal antes de any branching.
+        inc_policy_engine_invocation("trigger_escalation")
+
         context = context or {}
-        
+
         async with AsyncSessionLocal() as session:
             try:
                 _engine_repo = PolicyEngineRepository(session)
