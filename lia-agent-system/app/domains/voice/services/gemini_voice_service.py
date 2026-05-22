@@ -24,6 +24,11 @@ except ImportError:
     )
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
+# F-12 P0 fix (audit 2026-05-22): canonical llm_service singleton --
+# self._get_llm_service() era ghost method (nunca definido). Substituido por
+# referencia direta a llm_service canonical (mesmo pattern do F-01).
+from app.domains.ai.services.llm import llm_service as _canonical_llm_service
+
 logger = logging.getLogger(__name__)
 
 
@@ -71,6 +76,12 @@ class GeminiVoiceService:
         # === Tenant-aware Gemini client (LGPD compliance) ===
         from app.shared.tenant_llm_context import get_gemini_client_for_tenant
         self.client = get_gemini_client_for_tenant(company_id)
+
+        # F-12 P0 fix (audit 2026-05-22 AUDIT_VOICE_SCREENING_ORCHESTRATOR.md):
+        # canonical llm_service singleton. Anteriormente lines 130/220/301
+        # chamavam self._get_llm_service() (ghost method nunca definido) ->
+        # AttributeError em toda transcribe_audio/analyze_audio/transcribe_interview.
+        self._llm_service = _canonical_llm_service
 
         logger.info("[GeminiVoiceService] Initialized (tenant-aware)")
     
@@ -127,7 +138,7 @@ Instruções:
 Forneça apenas a transcrição, sem introdução ou explicações."""
         
         try:
-            response = self._get_llm_service().generate_native_gemini_sync(
+            response = self._llm_service.generate_native_gemini_sync(
                 model="gemini-2.5-flash",
                 contents=[
                     prompt,
@@ -217,7 +228,7 @@ Parágrafo 3: Próximos passos ou recomendações (se mencionado)"""
         prompt = prompts.get(analysis_type, prompts["full"])
         
         try:
-            response = self._get_llm_service().generate_native_gemini_sync(
+            response = self._llm_service.generate_native_gemini_sync(
                 model="gemini-2.5-flash",
                 contents=[
                     prompt,
@@ -298,7 +309,7 @@ Para cada pergunta/tópico:
 Sugestões para follow-up ou próximas etapas."""
 
         try:
-            response = self._get_llm_service().generate_native_gemini_sync(
+            response = self._llm_service.generate_native_gemini_sync(
                 model="gemini-2.5-flash",
                 contents=[
                     prompt,
