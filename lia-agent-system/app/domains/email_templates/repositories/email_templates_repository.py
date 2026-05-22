@@ -35,6 +35,8 @@ class EmailTemplatesRepository:
         limit: int = 50,
     ) -> tuple[list[EmailTemplate], int]:
         """Return (items, total) with all filters applied."""
+        # TENANT-EXEMPT: marketplace pattern — or_(company_id, IS NULL) aplicado abaixo quando company_id provided;
+        # IS NULL = system templates marketplace; sensor AST não infere or_(...)
         query = select(EmailTemplate)
 
         if company_id:
@@ -123,10 +125,32 @@ class EmailTemplatesRepository:
         result = await self.db.execute(query)
         return [row[0] for row in result.all()]
 
-    async def get_by_id(self, template_id: uuid_module.UUID) -> EmailTemplate | None:
-        result = await self.db.execute(
-            select(EmailTemplate).where(EmailTemplate.id == template_id)
-        )
+    async def get_by_id(
+        self,
+        template_id: uuid_module.UUID,
+        company_id: str | None = None,
+    ) -> EmailTemplate | None:
+        """Lookup EmailTemplate por id.
+
+        Sprint B.1 tail (2026-05-22): company_id opcional pra defense-in-depth.
+        Prefer get_by_id_for_company para tenant-aware lookup canonical.
+        """
+        # TENANT-EXEMPT: defense-in-depth optional company_id; get_by_id_for_company (L141) é canonical tenant-aware getter; este metodo mantido pra backwards-compat
+        if company_id is not None:
+            result = await self.db.execute(
+                select(EmailTemplate).where(
+                    EmailTemplate.id == template_id,
+                    or_(
+                        EmailTemplate.company_id == company_id,
+                        EmailTemplate.company_id.is_(None),
+                    ),
+                )
+            )
+        else:
+            # TENANT-EXEMPT: backwards-compat — caller responsavel pelo tenant gate
+            result = await self.db.execute(
+                select(EmailTemplate).where(EmailTemplate.id == template_id)
+            )
         return result.scalar_one_or_none()
 
     async def get_by_id_str(self, template_id: str) -> EmailTemplate | None:

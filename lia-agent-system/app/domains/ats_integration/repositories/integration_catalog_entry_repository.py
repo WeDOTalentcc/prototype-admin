@@ -45,6 +45,8 @@ class IntegrationCatalogEntryRepository:
         Optional category filter (JSONB ->>).
         """
         cid = self._require_company_id(company_id)
+        # TENANT-EXEMPT: marketplace pattern — scope_filter abaixo aplica or_(is_master, company_id);
+        # _require_company_id gate fail-closed garante company_id válido. Audit 2026-05-22.
         stmt = select(IntegrationCatalogEntry)
 
         scope_filter = IntegrationCatalogEntry.company_id == cid
@@ -152,6 +154,8 @@ class IntegrationCatalogEntryRepository:
         Snapshot canonical B1 (não sincroniza com master após criação).
         """
         cid = self._require_company_id(company_id)
+        # TENANT-EXEMPT: master template lookup — is_master_template=True garante so masters globais (marketplace);
+        # cid validado acima por _require_company_id; usado pra criar copia tenant-scoped logo abaixo. Audit 2026-05-22.
         master_stmt = select(IntegrationCatalogEntry).where(
             and_(
                 IntegrationCatalogEntry.id == master_id,

@@ -52,6 +52,14 @@ class ATSRepository:
     async def get_active_connections_by_provider(
         self, provider_enum: ATSProvider
     ) -> list[ATSConnection]:
+        """List active connections by provider — CROSS-TENANT.
+
+        CROSS-TENANT-EXEMPT: usado por sync schedulers / background jobs que precisam
+        listar todas as ATSConnections de um provider em todos os tenants (e.g., daily
+        sync orchestrator). Caller é trusted (Celery/Sidekiq), não exposto a API.
+        Audit 2026-05-22.
+        """
+        # CROSS-TENANT-EXEMPT: background sync orchestration — see docstring
         result = await self.db.execute(
             select(ATSConnection).where(
                 ATSConnection.provider == provider_enum,
