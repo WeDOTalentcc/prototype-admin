@@ -640,6 +640,11 @@ def intake_node(state: JobCreationState) -> JobCreationState:
             async def _do_audit_log():
                 try:
                     async with async_session_factory() as _adl_db:
+                        # fire-and-forget audit context (scheduled via
+                        # loop.create_task below); persist errors are logged
+                        # but MUST NOT bubble up — the wizard intake path
+                        # cannot block on the LGPD audit log. P0.C.HELPER
+                        # pattern: caller opts in to silent persist degrade.
                         await log_automated_decision(
                             db=_adl_db,
                             company_id=_company_id,
@@ -651,6 +656,7 @@ def intake_node(state: JobCreationState) -> JobCreationState:
                             criteria_ignored=PROTECTED_CRITERIA_PT,
                             confidence_score=_audit_conf,
                             review_eligible=True,
+                            silent_on_persist_error=True,
                         )
                         await _adl_db.commit()
                 except Exception as _inner_exc:  # fail-safe
