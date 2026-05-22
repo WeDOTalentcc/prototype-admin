@@ -25,6 +25,258 @@ logger = logging.getLogger(__name__)
 _installed = False
 
 
+# ---------------------------------------------------------------------------
+# Wave 3 (2026-05-22) — Universal ai_credit_gate enforcement
+# ---------------------------------------------------------------------------
+# Wraps SDK message creation primitives with a per-call credit gate that reads
+# the tenant company_id from the same ContextVar used by tool_handler and the
+# orchestrator. Closes the coverage gap identified by the AI credits audit
+# (~/Documents/wedotalent_audit_2026-05-21/audit_ai_credits_templates.md):
+# 7+ domain services (intake_extractor, voice_service, interview_scheduling,
+# multimodal_service, agent_quality_evaluator, wsi_question_generator fallback
+# paths, wizard_supervisor_classifier) bypass llm_factory and call the SDK
+# directly. Monkey-patching the SDK constructors here is the single chokepoint
+# that catches all of them universally.
+#
+# Defense-in-depth: gates in llm_factory / orchestrator / agentic_loop stay.
+# This is the floor, not the ceiling.
+
+def _estimate_tokens_anthropic(kwargs: dict) -> int:
+    """Rough estimate of total tokens for an Anthropic messages.create call."""
+    messages = kwargs.get("messages", []) or []
+    prompt_chars = 0
+    for m in messages:
+        content = m.get("content", "") if isinstance(m, dict) else ""
+        if isinstance(content, str):
+            prompt_chars += len(content)
+        elif isinstance(content, list):
+            for block in content:
+                if isinstance(block, dict):
+                    prompt_chars += len(block.get("text", "") or "")
+    system = kwargs.get("system", "")
+    if isinstance(system, str):
+        prompt_chars += len(system)
+    prompt_tokens = prompt_chars // 4  # ~4 chars per token heuristic
+    max_tokens = int(kwargs.get("max_tokens", 1024) or 0)
+    return prompt_tokens + max_tokens
+
+
+def _estimate_tokens_openai(kwargs: dict) -> int:
+    """Rough estimate for openai chat.completions.create."""
+    messages = kwargs.get("messages", []) or []
+    chars = 0
+    for m in messages:
+        if isinstance(m, dict):
+            c = m.get("content", "") or ""
+            if isinstance(c, str):
+                chars += len(c)
+            elif isinstance(c, list):
+                for block in c:
+                    if isinstance(block, dict):
+                        chars += len(block.get("text", "") or "")
+    max_tokens = int(kwargs.get("max_tokens") or kwargs.get("max_completion_tokens") or 1024)
+    return (chars // 4) + max_tokens
+
+
+def _estimate_tokens_genai(kwargs: dict) -> int:
+    """Rough estimate for google.genai generate_content."""
+    contents = kwargs.get("contents") or kwargs.get("content") or ""
+    chars = 0
+    if isinstance(contents, str):
+        chars = len(contents)
+    elif isinstance(contents, list):
+        for c in contents:
+            if isinstance(c, str):
+                chars += len(c)
+            elif isinstance(c, dict):
+                parts = c.get("parts", []) or []
+                for p in parts:
+                    if isinstance(p, dict):
+                        chars += len(p.get("text", "") or "")
+                    elif isinstance(p, str):
+                        chars += len(p)
+    cfg = kwargs.get("config") or kwargs.get("generation_config") or {}
+    if hasattr(cfg, "max_output_tokens"):
+        max_tokens = int(getattr(cfg, "max_output_tokens", 0) or 1024)
+    elif isinstance(cfg, dict):
+        max_tokens = int(cfg.get("max_output_tokens") or 1024)
+    else:
+        max_tokens = 1024
+    return (chars // 4) + max_tokens
+
+
+def _infer_service_from_caller() -> str:
+    """Walk the stack from outer-most to inner-most to find the first
+    application frame and return a coarse service identifier (filename
+    without extension).
+
+    Used as label for ai_credit_gate_calls_total + service param on
+    AICreditExhausted. Keeps cardinality bounded (one label per file).
+
+    Stack-walk order: outermost first. We want the OUTER application frame
+    that initiated the call chain (e.g. wsi_question_generator.py) — not
+    the inner-most non-system frame (which would still be the test runner
+    when invoked under pytest). So we keep the first matching frame and
+    return it.
+    """
+    SKIP_SUBSTRINGS = (
+        "llm_bootstrap",
+        "anthropic/",
+        "openai/",
+        "google/",
+        "site-packages",
+        "_bootstrap",
+        "<frozen",
+        "runpy",
+        "_pytest",
+        "pluggy",
+        "/asyncio/",
+        "unittest/",
+    )
+    try:
+        # extract_stack returns oldest -> newest; we want the OUTER-most
+        # application frame (the one that initiated the LLM call).
+        for frame_info in traceback.extract_stack():
+            fname = frame_info.filename
+            if any(s in fname for s in SKIP_SUBSTRINGS):
+                continue
+            base = fname.rsplit("/", 1)[-1].rsplit(".", 1)[0]
+            if base:
+                return base[:48]
+    except Exception:
+        pass
+    return "unknown"
+
+
+def _emit_gate_call_metric(provider: str, service: str, outcome: str) -> None:
+    """Best-effort emit of ai_credit_gate_calls_total. Non-blocking."""
+    try:
+        from app.shared.observability.canary_metrics import ai_credit_gate_calls_total
+        if ai_credit_gate_calls_total is None:
+            return
+        ai_credit_gate_calls_total.labels(
+            provider=provider, service=service, outcome=outcome
+        ).inc()
+    except Exception:
+        pass
+
+
+def _enforce_credit_gate_sync(provider: str, kwargs: dict, *, estimator) -> None:
+    """Synchronous wrapper around async check_credit_budget. Used for sync SDK
+    methods (anthropic.Anthropic.messages.create). Reads company_id from the
+    ContextVar populated by auth_enforcement middleware.
+
+    Fail-closed for AICreditExhausted (bubbles up). Fail-safe for everything
+    else (logs + allows) — consistent with check_credit_budget default.
+
+    Empty company_id: emits metric `outcome=no_context` and ALLOWS the call.
+    Anti-pattern: hard-failing here would break every test fixture, internal
+    cron, and background job that doesn't go through the HTTP middleware.
+    Defense-in-depth is in llm_factory / orchestrator / agentic_loop.
+    """
+    company_id = _get_tenant_id()
+    service = _infer_service_from_caller()
+    if not company_id:
+        _emit_gate_call_metric(provider, service, "no_context")
+        logger.debug(
+            "[LLM-CreditGate] no company_id in ContextVar (caller=%s, provider=%s) — skipping gate (fail-safe ALLOW)",
+            service, provider,
+        )
+        return
+
+    estimated = max(0, int(estimator(kwargs)))
+    try:
+        import asyncio
+        from app.shared.services.ai_credit_gate import check_credit_budget, AICreditExhausted
+
+        async def _gated():
+            from lia_config.database import AsyncSessionLocal
+            async with AsyncSessionLocal() as _credit_db:
+                await check_credit_budget(
+                    _credit_db,
+                    company_id,
+                    estimated_tokens=estimated,
+                    service=service,
+                )
+
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = None
+
+        if loop and loop.is_running():
+            # We are being called from inside an async context but on the sync
+            # SDK method (Anthropic.messages.create is sync). Use the existing
+            # loop via run_coroutine_threadsafe-equivalent. Since SDK sync
+            # methods inside async are normally invoked via asyncio.to_thread
+            # already, we run a fresh loop in this thread.
+            new_loop = asyncio.new_event_loop()
+            try:
+                new_loop.run_until_complete(_gated())
+            finally:
+                new_loop.close()
+        else:
+            asyncio.run(_gated())
+
+        _emit_gate_call_metric(provider, service, "allowed")
+    except Exception as exc:
+        # AICreditExhausted is a subclass of Exception too — catch first
+        try:
+            from app.shared.services.ai_credit_gate import AICreditExhausted as _AICE
+            if isinstance(exc, _AICE):
+                _emit_gate_call_metric(provider, service, "exhausted")
+                raise
+        except ImportError:
+            pass
+        # Fail-safe ALLOW for unexpected errors (DB outage, import failure)
+        _emit_gate_call_metric(provider, service, "error")
+        logger.warning(
+            "[LLM-CreditGate] sync gate failed (fail-safe ALLOW) provider=%s service=%s: %s",
+            provider, service, exc,
+        )
+
+
+async def _enforce_credit_gate_async(provider: str, kwargs: dict, *, estimator) -> None:
+    """Async variant — used for AsyncAnthropic / AsyncOpenAI / genai.aio."""
+    company_id = _get_tenant_id()
+    service = _infer_service_from_caller()
+    if not company_id:
+        _emit_gate_call_metric(provider, service, "no_context")
+        logger.debug(
+            "[LLM-CreditGate] no company_id in ContextVar (caller=%s, provider=%s) — skipping gate (fail-safe ALLOW)",
+            service, provider,
+        )
+        return
+
+    estimated = max(0, int(estimator(kwargs)))
+    try:
+        from app.shared.services.ai_credit_gate import check_credit_budget, AICreditExhausted
+        from lia_config.database import AsyncSessionLocal
+        async with AsyncSessionLocal() as _credit_db:
+            await check_credit_budget(
+                _credit_db,
+                company_id,
+                estimated_tokens=estimated,
+                service=service,
+            )
+        _emit_gate_call_metric(provider, service, "allowed")
+    except Exception as exc:
+        try:
+            from app.shared.services.ai_credit_gate import AICreditExhausted as _AICE
+            if isinstance(exc, _AICE):
+                _emit_gate_call_metric(provider, service, "exhausted")
+                raise
+        except ImportError:
+            pass
+        _emit_gate_call_metric(provider, service, "error")
+        logger.warning(
+            "[LLM-CreditGate] async gate failed (fail-safe ALLOW) provider=%s service=%s: %s",
+            provider, service, exc,
+        )
+
+
+
+
 def _get_tenant_id() -> str:
     """Get current tenant from contextvar (set by auth middleware)."""
     try:
@@ -215,6 +467,8 @@ def _patch_messages_api(client_instance, provider_label: str):
     @functools.wraps(_orig_create)
     def _patched_create(*args, **kwargs):
         caller = _get_caller()
+        # Wave 3 — credit gate BEFORE PII strip + LLM call (fail-closed on exhaust)
+        _enforce_credit_gate_sync(provider_label, kwargs, estimator=_estimate_tokens_anthropic)
         # PII strip messages
         if "messages" in kwargs:
             kwargs["messages"] = _strip_pii_from_messages(kwargs["messages"])
@@ -244,6 +498,8 @@ def _patch_messages_api(client_instance, provider_label: str):
         @functools.wraps(_orig_stream)
         def _patched_stream(*args, **kwargs):
             caller = _get_caller()
+            # Wave 3 — credit gate BEFORE PII strip + LLM call (fail-closed on exhaust)
+            _enforce_credit_gate_sync(provider_label, kwargs, estimator=_estimate_tokens_anthropic)
             if "messages" in kwargs:
                 kwargs["messages"] = _strip_pii_from_messages(kwargs["messages"])
             if "system" in kwargs and isinstance(kwargs["system"], str):
@@ -296,11 +552,51 @@ def _patch_openai():
             if base_url and "base_url" not in kwargs:
                 kwargs["base_url"] = base_url
         _orig_async_init(self, *args, **kwargs)
+        _patch_openai_completions(self, "openai-async")
         logger.debug("[LLM-Bootstrap] AsyncOpenAI client created, caller=%s", _get_caller())
 
-    openai.OpenAI.__init__ = _patched_init
+    # Patch sync init to also wrap chat completions
+    _orig_init_wrapped = openai.OpenAI.__init__
+    @functools.wraps(_orig_init_wrapped)
+    def _patched_init_with_completions(self, *args, **kwargs):
+        _orig_init_wrapped(self, *args, **kwargs)
+        _patch_openai_completions(self, "openai")
+
+    openai.OpenAI.__init__ = _patched_init_with_completions
     openai.AsyncOpenAI.__init__ = _patched_async_init
-    logger.info("[LLM-Bootstrap] OpenAI SDK patched (API key injection + audit)")
+    logger.info("[LLM-Bootstrap] OpenAI SDK patched (API key + audit + credit gate)")
+
+
+def _patch_openai_completions(client_instance, provider_label: str):
+    """Wave 3 — wrap chat.completions.create with credit gate."""
+    chat = getattr(client_instance, "chat", None)
+    if chat is None:
+        return
+    completions = getattr(chat, "completions", None)
+    if completions is None or getattr(completions, "_lia_credit_patched", False):
+        return
+    completions._lia_credit_patched = True
+
+    _orig = completions.create
+
+    is_async = provider_label.endswith("-async")
+
+    if is_async:
+        @functools.wraps(_orig)
+        async def _patched_async(*args, **kwargs):
+            await _enforce_credit_gate_async(
+                provider_label, kwargs, estimator=_estimate_tokens_openai
+            )
+            return await _orig(*args, **kwargs)
+        completions.create = _patched_async
+    else:
+        @functools.wraps(_orig)
+        def _patched_sync(*args, **kwargs):
+            _enforce_credit_gate_sync(
+                provider_label, kwargs, estimator=_estimate_tokens_openai
+            )
+            return _orig(*args, **kwargs)
+        completions.create = _patched_sync
 
 
 # ---------------------------------------------------------------------------
@@ -325,10 +621,41 @@ def _patch_genai():
             if base_url and "http_options" not in kwargs:
                 kwargs["http_options"] = {"api_version": "", "base_url": base_url}
         _orig_init(self, *args, **kwargs)
+        _patch_genai_models(self, "gemini")
         logger.debug("[LLM-Bootstrap] genai.Client created, caller=%s", _get_caller())
 
     genai.Client.__init__ = _patched_init
-    logger.info("[LLM-Bootstrap] Google GenAI SDK patched (API key injection + audit)")
+    logger.info("[LLM-Bootstrap] Google GenAI SDK patched (API key + audit + credit gate)")
+
+
+def _patch_genai_models(client_instance, provider_label: str):
+    """Wave 3 — wrap models.generate_content + aio.models.generate_content."""
+    models_obj = getattr(client_instance, "models", None)
+    if models_obj is not None and not getattr(models_obj, "_lia_credit_patched", False):
+        models_obj._lia_credit_patched = True
+        _orig = getattr(models_obj, "generate_content", None)
+        if _orig is not None:
+            @functools.wraps(_orig)
+            def _patched_sync(*args, **kwargs):
+                _enforce_credit_gate_sync(
+                    provider_label, kwargs, estimator=_estimate_tokens_genai
+                )
+                return _orig(*args, **kwargs)
+            models_obj.generate_content = _patched_sync
+
+    aio_obj = getattr(client_instance, "aio", None)
+    aio_models = getattr(aio_obj, "models", None) if aio_obj else None
+    if aio_models is not None and not getattr(aio_models, "_lia_credit_patched", False):
+        aio_models._lia_credit_patched = True
+        _orig_aio = getattr(aio_models, "generate_content", None)
+        if _orig_aio is not None:
+            @functools.wraps(_orig_aio)
+            async def _patched_async(*args, **kwargs):
+                await _enforce_credit_gate_async(
+                    provider_label + "-async", kwargs, estimator=_estimate_tokens_genai
+                )
+                return await _orig_aio(*args, **kwargs)
+            aio_models.generate_content = _patched_async
 
 
 # ---------------------------------------------------------------------------

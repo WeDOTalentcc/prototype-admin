@@ -97,7 +97,17 @@ def _make_counter(name: str, doc: str, labels: tuple[str, ...] | tuple = ()):
 ai_credit_exhausted_total = _make_counter(
     "ai_credit_exhausted_total",
     "Count of ai_credit_gate.check_credit_budget rejections (gate success).",
-    ("company_id_hash",),
+    ("company_id_hash", "service"),
+)
+
+# Wave 3 fix (2026-05-22): universal SDK monkey-patch in llm_bootstrap.
+# Increments on EVERY gated LLM call (allowed or denied) to give visibility into
+# coverage gap closure. Compared against ai_credit_exhausted_total it answers
+# 'what fraction of LLM calls hit the gate vs exhausted?'.
+ai_credit_gate_calls_total = _make_counter(
+    "ai_credit_gate_calls_total",
+    "Count of LLM calls intercepted by ai_credit_gate (Wave 3 universal coverage).",
+    ("provider", "service", "outcome"),
 )
 
 fairness_guard_skip_total = _make_counter(

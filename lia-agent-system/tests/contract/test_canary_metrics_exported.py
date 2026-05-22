@@ -65,14 +65,18 @@ def test_tasks_cross_tenant_blocked_counter_exists():
 
 
 def test_ai_credit_counter_increments():
+    # Wave 3 (2026-05-22): counter now has 2 labels (company_id_hash + service).
     from app.shared.observability.canary_metrics import ai_credit_exhausted_total
 
     label_hash = "test_hash_12char"
+    svc = "test_service"
     initial = ai_credit_exhausted_total.labels(
-        company_id_hash=label_hash
+        company_id_hash=label_hash, service=svc
     )._value.get()
-    ai_credit_exhausted_total.labels(company_id_hash=label_hash).inc()
-    final = ai_credit_exhausted_total.labels(company_id_hash=label_hash)._value.get()
+    ai_credit_exhausted_total.labels(company_id_hash=label_hash, service=svc).inc()
+    final = ai_credit_exhausted_total.labels(
+        company_id_hash=label_hash, service=svc
+    )._value.get()
     assert final == pytest.approx(initial + 1), (
         f"Counter nao incrementou: initial={initial} final={final}"
     )

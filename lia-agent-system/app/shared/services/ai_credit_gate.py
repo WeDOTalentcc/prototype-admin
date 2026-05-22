@@ -5,9 +5,13 @@ Decisão Paulo 2026-05-21: require_token_budget dependency cobre <5% dos LLM cal
 (apenas 4 chat endpoints). Agents/orchestrator/screening/scoring/etc chamam LLM
 SEM checar budget → overage descontrolado.
 
-Status (2026-05-21):
-    ✅ Helper canonical criado (este arquivo)
-    ❌ Wire em ~30+ LLM callers fica pra próxima sprint dedicada
+Wave 3 audit (2026-05-21) revelou 7 services bypassando llm_factory chokepoint:
+intake_extractor, voice_service, interview_scheduling_nodes, multimodal_service,
+agent_quality_evaluator, wsi_question_generator (fallback paths), wizard_supervisor_classifier.
+
+Fix definitivo (2026-05-22): monkey-patch global em llm_bootstrap.py envolve SDK
+constructors (anthropic, openai, google.genai) com pre-call gate. Caller-side
+context propagation via ContextVar _current_company_id (já populado pelo auth middleware).
 
 ## Pattern de uso (qualquer caller LLM)
 
@@ -21,22 +25,17 @@ Status (2026-05-21):
 
     # ...prosseguir com LLM call
 
-## Sites canonical pra wire (próxima sprint)
+## Sites canonical wired
 
-- `app/orchestrator/main_orchestrator.py` — entry-point principal
-- `app/agents/*` — todos agents que chamam LLM diretamente
-- `app/domains/cv_screening/services/wsi_service/*`
-- `app/domains/cv_screening/services/pre_wrf_filter_service.py`
-- `app/domains/job_creation/services/intake_extractor.py`
-- `app/domains/cv_parsing/services/*`
-- `app/domains/communication/orchestrator/*`
-- `app/domains/ranking/services/*`
-- `app/shared/providers/llm_factory.py` (idealmente — single chokepoint)
+- `app/orchestrator/main_orchestrator.py:367` — entry-point principal (defense-in-depth)
+- `app/orchestrator/agentic_loop.py:104` — agentic tool loop (defense-in-depth)
+- `app/shared/providers/llm_factory.py:233` — factory chokepoint (defense-in-depth)
+- `app/shared/llm_bootstrap.py` — **UNIVERSAL via SDK monkey-patch** (Wave 3 fix)
 """
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from sqlalchemy.ext.asyncio import AsyncSession
@@ -46,7 +45,19 @@ logger = logging.getLogger(__name__)
 
 class AICreditExhausted(Exception):
     """Raised when company ai_credits_balance.current_usage >= monthly_limit."""
-    pass
+
+    def __init__(
+        self,
+        message: str,
+        *,
+        company_id: Optional[str] = None,
+        remaining: Optional[int] = None,
+        service: Optional[str] = None,
+    ):
+        super().__init__(message)
+        self.company_id = company_id
+        self.remaining = remaining
+        self.service = service
 
 
 async def check_credit_budget(
@@ -55,6 +66,7 @@ async def check_credit_budget(
     *,
     estimated_tokens: int = 0,
     fail_safe: bool = True,
+    service: Optional[str] = None,
 ) -> dict:
     """Check ai_credits_balance per company. Raise AICreditExhausted se esgotado.
 
@@ -63,6 +75,8 @@ async def check_credit_budget(
         company_id: tenant scoping
         estimated_tokens: opcional, soma ao current_usage pra projeção forward
         fail_safe: True default — se DB error, ALLOW (não bloqueia em outage Redis/DB)
+        service: identificador de domínio chamador (para métricas/audit). Ex:
+            "intake_extractor", "wsi_question_generator", "anthropic_sdk", etc.
 
     Returns dict {monthly_limit, current_usage, remaining} on success.
     """
@@ -85,9 +99,13 @@ async def check_credit_budget(
         projected = current_usage + estimated_tokens
 
         if monthly_limit > 0 and projected >= monthly_limit:
+            _emit_exhausted_metric(company_id, service=service)
             raise AICreditExhausted(
                 f"AI credit budget exhausted: usage={current_usage} + estimated={estimated_tokens} "
-                f">= limit={monthly_limit} (company={company_id})"
+                f">= limit={monthly_limit} (company={company_id})",
+                company_id=company_id,
+                remaining=max(0, monthly_limit - current_usage),
+                service=service,
             )
 
         return {
@@ -105,3 +123,26 @@ async def check_credit_budget(
             )
             return {"error": str(exc)[:200], "fail_safe": True}
         raise
+
+
+def _emit_exhausted_metric(company_id: str, *, service: Optional[str] = None) -> None:
+    """Best-effort Prometheus counter emit. Non-blocking."""
+    try:
+        import hashlib
+        from app.shared.observability.canary_metrics import ai_credit_exhausted_total
+        if ai_credit_exhausted_total is None:
+            return
+        cid_hash = hashlib.sha256(company_id.encode("utf-8")).hexdigest()[:12]
+        svc_label = service or "unknown"
+        try:
+            ai_credit_exhausted_total.labels(
+                company_id_hash=cid_hash, service=svc_label
+            ).inc()
+        except (TypeError, ValueError):
+            # Counter declared sem label `service` — fallback compat
+            try:
+                ai_credit_exhausted_total.labels(company_id_hash=cid_hash).inc()
+            except Exception:
+                pass
+    except Exception:
+        pass  # observability é always non-blocking
