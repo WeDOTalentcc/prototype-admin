@@ -215,7 +215,7 @@ export function WebhookEventTypesManager({
   }
 
   return (
-    <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 rounded-xl">
+    <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 rounded-xl" data-testid="webhook-event-types-manager">
       <CardHeader className="pb-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <CardTitle className={`${textStyles.h4} flex items-center gap-2`}>
@@ -226,7 +226,7 @@ export function WebhookEventTypesManager({
             <Chip variant="neutral" className="text-micro">
               {tc("countSummary", { master: masterCount, custom: customCount, total })}
             </Chip>
-            <Button size="sm" onClick={startCreate} disabled={!!editingId}>
+            <Button size="sm" onClick={startCreate} disabled={!!editingId} data-testid="webhook-event-types-new-button">
               <Plus className="w-3 h-3 mr-1" /> {t("newButton")}
             </Button>
           </div>
@@ -265,13 +265,13 @@ export function WebhookEventTypesManager({
         </div>
 
         {editingId && (
-          <Card className="border border-wedo-cyan/30 bg-wedo-cyan/5 rounded-xl">
+          <Card className="border border-wedo-cyan/30 bg-wedo-cyan/5 rounded-xl" data-testid="webhook-event-types-form">
             <CardContent className="p-3 space-y-3">
               <div className="flex items-center justify-between">
                 <h5 className={textStyles.h4}>
                   {editingId === "__new__" ? t("formTitleCreate") : t("formTitleEdit")}
                 </h5>
-                <Button variant="ghost" size="sm" onClick={cancelEdit}>
+                <Button variant="ghost" size="sm" onClick={cancelEdit} data-testid="webhook-event-types-form-close">
                   <X className="w-3 h-3" />
                 </Button>
               </div>
@@ -279,17 +279,19 @@ export function WebhookEventTypesManager({
                 placeholder={t("placeholderLabel")}
                 value={form.label}
                 onChange={(e) => setForm({ ...form, label: e.target.value })}
+                data-field="label"
               />
               <Input
                 placeholder={t("placeholderEventType")}
                 value={form.event_type}
                 onChange={(e) => setForm({ ...form, event_type: e.target.value })}
+                data-field="event_type"
               />
               <Select
                 value={form.category}
                 onValueChange={(v) => setForm({ ...form, category: v as EventCategory })}
               >
-                <SelectTrigger><SelectValue placeholder={t("placeholderCategory")} /></SelectTrigger>
+                <SelectTrigger data-field="category"><SelectValue placeholder={t("placeholderCategory")} /></SelectTrigger>
                 <SelectContent>
                   {CATEGORIES.map((c) => (
                     <SelectItem key={c.value} value={c.value}>
@@ -304,12 +306,14 @@ export function WebhookEventTypesManager({
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 rows={2}
                 className="w-full px-3 py-1.5 text-sm rounded-md border border-lia-border-subtle bg-lia-bg-primary"
+                data-field="description"
               />
               <label className="flex items-center gap-1 text-xs">
                 <input
                   type="checkbox"
                   checked={form.deprecated}
                   onChange={(e) => setForm({ ...form, deprecated: e.target.checked })}
+                  data-toggle="deprecated"
                 />
                 {t("labelDeprecated")}
               </label>
@@ -319,8 +323,8 @@ export function WebhookEventTypesManager({
                 </div>
               )}
               <div className="flex justify-end gap-2">
-                <Button variant="outline" size="sm" onClick={cancelEdit}>{tc("cancel")}</Button>
-                <Button size="sm" onClick={handleSave} disabled={isSaving}>
+                <Button variant="outline" size="sm" onClick={cancelEdit} data-testid="webhook-event-types-form-cancel">{tc("cancel")}</Button>
+                <Button size="sm" onClick={handleSave} disabled={isSaving} data-testid="webhook-event-types-form-save">
                   {isSaving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
                   {tc("save")}
                 </Button>
@@ -329,7 +333,7 @@ export function WebhookEventTypesManager({
           </Card>
         )}
 
-        <div className="space-y-2 max-h-content-lg overflow-y-auto">
+        <div className="space-y-2 max-h-content-lg overflow-y-auto" data-testid="webhook-event-types-list">
           {filteredTemplates.length === 0 && (
             <p className="text-xs text-lia-text-secondary text-center py-4">
               {t("emptyList")}

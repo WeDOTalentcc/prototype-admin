@@ -129,13 +129,13 @@ export function WebhooksManager() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="webhooks-manager">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <WebhookIcon className="w-5 h-5 text-wedo-cyan-dark" />
           <h2 className={textStyles.title}>{t("title")}</h2>
         </div>
-        <Button onClick={() => setCreating(true)} className={buttonStyles.primary}>
+        <Button onClick={() => setCreating(true)} className={buttonStyles.primary} data-testid="webhooks-create-button">
           <Plus className="w-4 h-4 mr-1" /> {t("newWebhook")}
         </Button>
       </div>
@@ -162,9 +162,9 @@ export function WebhooksManager() {
         </Card>
       )}
 
-      <div className="space-y-2">
+      <div className="space-y-2" data-testid="webhooks-list">
         {webhooks.map((wh) => (
-          <Card key={wh.id} className={cardStyles.default}>
+          <Card key={wh.id} className={cardStyles.default} data-testid={`webhook-row-${wh.id}`}>
             <CardContent className="p-4">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
@@ -206,6 +206,7 @@ export function WebhooksManager() {
                     size="sm"
                     onClick={() => handleTest(wh.id)}
                     disabled={testingId === wh.id}
+                    data-testid={`webhook-test-button-${wh.id}`}
                   >
                     {testingId === wh.id ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -213,7 +214,7 @@ export function WebhooksManager() {
                       <Send className="w-3.5 h-3.5" />
                     )}
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => handleDelete(wh.id, wh.name)}>
+                  <Button variant="ghost" size="sm" onClick={() => handleDelete(wh.id, wh.name)} data-testid={`webhook-delete-button-${wh.id}`}>
                     <Trash2 className="w-3.5 h-3.5 text-status-error" />
                   </Button>
                 </div>
@@ -225,7 +226,7 @@ export function WebhooksManager() {
 
       {/* Create dialog */}
       <Dialog open={creating} onOpenChange={(v) => !v && setCreating(false)}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg" data-testid="webhook-create-modal">
           <DialogHeader>
             <DialogTitle>{t("newWebhook")}</DialogTitle>
           </DialogHeader>
@@ -237,6 +238,7 @@ export function WebhooksManager() {
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 placeholder={t("namePlaceholder")}
+                data-field="name"
               />
             </div>
             <div>
@@ -246,11 +248,12 @@ export function WebhooksManager() {
                 value={newUrl}
                 onChange={(e) => setNewUrl(e.target.value)}
                 placeholder={t("urlPlaceholder")}
+                data-field="url"
               />
             </div>
             <div>
               <label className="text-xs font-semibold text-lia-text-primary mb-2 block">{t("events")}</label>
-              <div className="space-y-1.5">
+              <div className="space-y-1.5" data-field="events">
                 {availableEvents.length === 0 && (
                   <p className="text-xs text-lia-text-disabled italic">{t("loading")}</p>
                 )}
@@ -259,6 +262,7 @@ export function WebhooksManager() {
                     <Checkbox
                       checked={newEvents.includes(evt.event_type)}
                       onCheckedChange={() => toggleEvent(evt.event_type)}
+                      data-toggle={`events.${evt.event_type}`}
                     />
                     <span className="text-lia-text-primary">{eventLabel(evt.event_type)}</span>
                     <span className="text-lia-text-disabled font-mono text-[10px]">({evt.event_type})</span>
@@ -268,11 +272,12 @@ export function WebhooksManager() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setCreating(false)}>{t("cancel")}</Button>
+            <Button variant="ghost" onClick={() => setCreating(false)} data-testid="webhook-create-cancel">{t("cancel")}</Button>
             <Button
               onClick={handleCreate}
               disabled={submitting || !newName || !newUrl || newEvents.length === 0}
               className={buttonStyles.primary}
+              data-testid="webhook-create-submit"
             >
               {submitting ? t("creating") : t("create")}
             </Button>
@@ -282,7 +287,7 @@ export function WebhooksManager() {
 
       {/* Show secret dialog (one-time display) */}
       <Dialog open={!!showSecret} onOpenChange={(v) => !v && setShowSecret(null)}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-lg" data-testid="webhook-secret-modal">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <CheckCircle2 className="w-5 h-5 text-status-success" />
@@ -314,6 +319,7 @@ export function WebhooksManager() {
                   size="sm"
                   variant="outline"
                   onClick={() => showSecret && copySecret(showSecret.secret)}
+                  data-testid="webhook-secret-copy"
                 >
                   <Copy className="w-3.5 h-3.5" />
                 </Button>
@@ -321,7 +327,7 @@ export function WebhooksManager() {
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={() => setShowSecret(null)} className={buttonStyles.primary}>
+            <Button onClick={() => setShowSecret(null)} className={buttonStyles.primary} data-testid="webhook-secret-dismiss">
               {t("understood")}
             </Button>
           </DialogFooter>
