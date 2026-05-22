@@ -596,9 +596,14 @@ class OfferService:
         from decimal import Decimal as _Decimal
         salary = getattr(proposal, "salary", None)
         if isinstance(salary, (int, float, _Decimal)):
-            department_id = getattr(proposal, "department_id", None)
+            # Camada 3 Item 3 (2026-05-22, migration 172): OfferProposal now
+            # carries department_id natively (FK -> departments.id). The
+            # pre-migration getattr workaround is removed. The isinstance
+            # guard remains to keep unit tests with MagicMock proposals
+            # green — production rows always satisfy it.
+            department_id = proposal.department_id
             if not isinstance(department_id, (str, type(None))) and not hasattr(department_id, "hex"):
-                department_id = None  # ignore MagicMock department_id
+                department_id = None  # ignore MagicMock department_id in tests
             eligible_ok = await self._has_eligible_approver_for_amount(
                 company_id, department_id, salary,
             )
@@ -860,7 +865,10 @@ class OfferService:
         from decimal import Decimal as _Decimal
         salary = getattr(proposal, "salary", None)
         if isinstance(salary, (int, float, _Decimal)):
-            department_id = getattr(proposal, "department_id", None)
+            # Camada 3 Item 3 (2026-05-22, migration 172): canonical
+            # department_id (FK column). isinstance guard preserves
+            # MagicMock-tolerance for the unit-test surface.
+            department_id = proposal.department_id
             if not isinstance(department_id, (str, type(None))) and not hasattr(department_id, "hex"):
                 department_id = None
             if not await self._has_eligible_approver_for_amount(
