@@ -22,6 +22,11 @@ from app.jobs.tasks.communication import (  # noqa: F401
     send_daily_briefing_task,
     send_weekly_digest_task,
 )
+from app.jobs.tasks.briefing_dispatch import (  # noqa: F401
+    dispatch_daily_briefings,
+    dispatch_weekly_briefings,
+    dispatch_monthly_briefings,
+)
 from app.jobs.tasks.compliance import (  # noqa: F401
     apply_audit_lifecycle_policy,
     run_lgpd_cleanup_task,
@@ -87,6 +92,10 @@ __all__ = [
     "send_bulk_email_task",
     "send_daily_briefing_task",
     "send_weekly_digest_task",
+    # briefing dispatch (frequency-respecting — Wave 3 Camada 3 Item 2)
+    "dispatch_daily_briefings",
+    "dispatch_weekly_briefings",
+    "dispatch_monthly_briefings",
     # compliance
     "apply_audit_lifecycle_policy",
     "run_lgpd_cleanup_task",

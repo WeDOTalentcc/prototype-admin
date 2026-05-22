@@ -318,10 +318,36 @@ celery_app.conf.update(
             "options": {"expires": 7200},
         },
         # Briefing diário às 06h Brasília (UTC-3 → 09h UTC) — P3-1
+        # LEGACY: despacha pra TODOS os users ativos (sem filtro briefing_frequency).
+        # Migration plan: substituir por briefing-dispatch-daily abaixo apos
+        # validacao + comunicacao a tenants.
         "briefing-daily": {
             "task": "briefing.send_daily",
             "schedule": crontab(hour=9, minute=0),  # 06h Brasília / UTC-3
             "options": {"expires": 3600},
+        },
+        # CANONICAL — Wave 3 Camada 3 Item 2: respeita briefing_frequency do
+        # AlertConfig. Daily + twice_daily juntos no mesmo task (twice_daily
+        # eh tratado pelo job em si — dispatcha 2x se preciso baseado em
+        # briefing_hour_local, TBD field).
+        "briefing-dispatch-daily": {
+            "task": "briefing.dispatch_daily",
+            "schedule": crontab(hour=9, minute=0),  # 06h Brasília / UTC-3
+            "options": {"expires": 3600},
+        },
+        # Weekly: segundas-feiras 08h Brasilia (11h UTC). Coincide com
+        # digest.send_weekly legacy, mas dispatcha so para tenants com
+        # briefing_frequency='weekly' (digest sai pra todos).
+        "briefing-dispatch-weekly": {
+            "task": "briefing.dispatch_weekly",
+            "schedule": crontab(hour=11, minute=0, day_of_week=1),  # Mon 08h Brasilia
+            "options": {"expires": 7200},
+        },
+        # Monthly: dia 1 do mes, 08h Brasilia (11h UTC).
+        "briefing-dispatch-monthly": {
+            "task": "briefing.dispatch_monthly",
+            "schedule": crontab(hour=11, minute=0, day_of_month=1),  # 1st @ 08h Brasilia
+            "options": {"expires": 7200},
         },
         # Follow-up de convites WSI não abertos — a cada hora (Gap A)
                 # WT-2022 Camada IA Proativa: scheduler-driven hints (1x/hora)
