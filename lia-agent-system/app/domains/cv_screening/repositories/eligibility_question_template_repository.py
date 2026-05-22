@@ -43,6 +43,9 @@ class EligibilityQuestionTemplateRepository:
         Excludes deleted by default.
         """
         cid = self._require_company_id(company_id)
+        # TENANT-EXEMPT: dynamic builder — filter is_master_template OR company_id == cid
+        # is applied via stmt.where(scope_filter) below; sensor cannot trace chain across
+        # variable reassignment. Multi-tenancy guaranteed by _require_company_id + scope_filter.
         stmt = select(EligibilityQuestionTemplate)
 
         scope_filter = EligibilityQuestionTemplate.company_id == cid
@@ -144,7 +147,10 @@ class EligibilityQuestionTemplateRepository:
 
         Snapshot canonical B1 (não sincroniza com master após criação).
         """
-        cid = self._require_company_id(company_id)
+        cid = self._require_company_id(company_id)  # noqa: F841 (used for downstream create_custom)
+        # TENANT-EXEMPT: querying master template (cross-tenant by design — masters
+        # are platform-wide blueprints, intentionally unscoped). Subsequent create_custom
+        # call writes the copy scoped to cid.
         master_stmt = select(EligibilityQuestionTemplate).where(
             and_(
                 EligibilityQuestionTemplate.id == master_id,

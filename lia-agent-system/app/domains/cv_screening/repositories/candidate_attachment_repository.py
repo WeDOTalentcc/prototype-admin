@@ -15,9 +15,26 @@ class CandidateAttachmentRepository:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def get_by_id(self, attachment_id: str) -> CandidateAttachment | None:
+    async def get_by_id(
+        self,
+        attachment_id: str,
+        company_id: str | None = None,
+    ) -> CandidateAttachment | None:
+        """Get attachment by id, optionally scoped to tenant.
+
+        Multi-tenancy defense-in-depth: pass company_id to enforce tenant filter
+        at query level (defense-in-depth on top of Postgres RLS — Task #1143).
+        When company_id is None, relies on RLS at the DB layer.
+
+        TODO(harness): new callers should always pass company_id; legacy callers
+        in attachment_service still pass None. Migrate them in a follow-up sprint
+        and then change this signature to require company_id.
+        """
+        conditions = [CandidateAttachment.id == attachment_id]
+        if company_id:
+            conditions.append(CandidateAttachment.company_id == company_id)
         result = await self.db.execute(
-            select(CandidateAttachment).where(CandidateAttachment.id == attachment_id)
+            select(CandidateAttachment).where(*conditions)
         )
         return result.scalar_one_or_none()
 
@@ -44,6 +61,10 @@ class CandidateAttachmentRepository:
         if is_active is not None:
             where_conditions.append(CandidateAttachment.is_active == is_active)
 
+        # TENANT-EXEMPT: dynamic builder — where_conditions list is seeded with
+        # CandidateAttachment.company_id == company_id (line 37). Sensor cannot trace
+        # company_id through and_(*where_conditions) spread. Defense-in-depth via
+        # require_company_id raise above + Postgres RLS (Task #1143).
         count_query = (
             select(func.count())
             .select_from(CandidateAttachment)
@@ -52,6 +73,8 @@ class CandidateAttachmentRepository:
         count_result = await self.db.execute(count_query)
         total = count_result.scalar() or 0
 
+        # TENANT-EXEMPT: data_query — same dynamic builder as count_query above.
+        # where_conditions seeded with CandidateAttachment.company_id filter.
         data_query = (
             select(CandidateAttachment)
             .where(and_(*where_conditions))
@@ -78,6 +101,9 @@ class CandidateAttachmentRepository:
             CandidateAttachment.company_id == company_id,
             CandidateAttachment.is_active,
         ]
+        # TENANT-EXEMPT: dynamic builder — where_conditions list is seeded with
+        # CandidateAttachment.company_id == company_id (above). Sensor cannot trace
+        # company_id through and_(*where_conditions) spread.
         count_query = (
             select(func.count())
             .select_from(CandidateAttachment)
@@ -86,6 +112,8 @@ class CandidateAttachmentRepository:
         count_result = await self.db.execute(count_query)
         total = count_result.scalar() or 0
 
+        # TENANT-EXEMPT: data_query — same dynamic builder as count_query above.
+        # where_conditions seeded with CandidateAttachment.company_id filter.
         data_query = (
             select(CandidateAttachment)
             .where(and_(*where_conditions))

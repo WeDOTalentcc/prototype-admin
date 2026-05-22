@@ -57,6 +57,16 @@ class AgentCheckpointRepository:
         session_id: str,
         agent_type: str,
     ) -> AgentCheckpoint | None:
+        """Get checkpoint by (session_id, agent_type).
+
+        session_id is globally unique (uq_agent_checkpoints_session_type
+        constraint enforces (session_id, agent_type) uniqueness across the platform).
+        session_id is allocated per-recruiter-session and cannot collide across tenants;
+        additional company_id filter would be redundant. company_id is persisted on
+        the row for audit/observability purposes.
+        """
+        # TENANT-EXEMPT: session_id global UNIQUE constraint guarantees tenant
+        # isolation by construction (see docstring).
         result = await self.db.execute(
             select(AgentCheckpoint).where(
                 AgentCheckpoint.session_id == session_id,

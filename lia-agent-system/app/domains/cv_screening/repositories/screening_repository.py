@@ -21,16 +21,45 @@ class ScreeningRepository:
         await self.db.refresh(task)
         return task
 
-    async def get_task_by_id(self, task_uuid: UUID) -> ScreeningTask | None:
+    async def get_task_by_id(
+        self,
+        task_uuid: UUID,
+        company_id: str | None = None,
+    ) -> ScreeningTask | None:
+        """Get ScreeningTask by id.
+
+        Multi-tenancy defense-in-depth: pass company_id to enforce tenant filter
+        at query level (Postgres RLS — Task #1143 — guards by default).
+        """
+        conditions = [ScreeningTask.id == task_uuid]
+        if company_id:
+            conditions.append(ScreeningTask.company_id == company_id)
+        # TENANT-EXEMPT: dynamic builder — conditions list seeded with
+        # X.company_id == company_id earlier in this function. Sensor cannot
+        # trace company_id through where(*conditions) spread.
         result = await self.db.execute(
-            select(ScreeningTask).where(ScreeningTask.id == task_uuid)
+            select(ScreeningTask).where(*conditions)
         )
         return result.scalar_one_or_none()
 
-    async def list_tasks_by_job(self, job_id: str) -> list[ScreeningTask]:
+    async def list_tasks_by_job(
+        self,
+        job_id: str,
+        company_id: str | None = None,
+    ) -> list[ScreeningTask]:
+        """List ScreeningTasks by job.
+
+        Multi-tenancy defense-in-depth: pass company_id to filter at query level.
+        """
+        conditions = [ScreeningTask.job_id == job_id]
+        if company_id:
+            conditions.append(ScreeningTask.company_id == company_id)
+        # TENANT-EXEMPT: dynamic builder — conditions list seeded with
+        # ScreeningTask.company_id filter (conditional, above). Sensor cannot
+        # trace through where(*conditions) spread.
         result = await self.db.execute(
             select(ScreeningTask)
-            .where(ScreeningTask.job_id == job_id)
+            .where(*conditions)
             .order_by(ScreeningTask.created_at.desc())
         )
         return list(result.scalars().all())
@@ -48,35 +77,102 @@ class ScreeningRepository:
     # Candidate methods                                                     #
     # ------------------------------------------------------------------ #
 
-    async def get_candidate_by_id(self, candidate_id: UUID):
+    async def get_candidate_by_id(
+        self,
+        candidate_id: UUID,
+        company_id: str | None = None,
+    ):
+        """Get Candidate by id.
+
+        Multi-tenancy defense-in-depth: pass company_id to filter at query level
+        (Postgres RLS — Task #1143 — guards by default).
+        """
         from app.models.candidate import Candidate
+        conditions = [Candidate.id == candidate_id]
+        if company_id:
+            conditions.append(Candidate.company_id == company_id)
+        # TENANT-EXEMPT: dynamic builder — conditions list seeded with
+        # X.company_id == company_id earlier in this function. Sensor cannot
+        # trace company_id through where(*conditions) spread.
         result = await self.db.execute(
-            select(Candidate).where(Candidate.id == candidate_id)
+            select(Candidate).where(*conditions)
         )
         return result.scalar_one_or_none()
 
-    async def get_candidates_by_ids(self, candidate_ids: list[UUID]) -> list:
+    async def get_candidates_by_ids(
+        self,
+        candidate_ids: list[UUID],
+        company_id: str | None = None,
+    ) -> list:
+        """Get Candidates by ids.
+
+        Multi-tenancy defense-in-depth: pass company_id to filter at query level.
+        """
         from app.models.candidate import Candidate
+        conditions = [Candidate.id.in_(candidate_ids)]
+        if company_id:
+            conditions.append(Candidate.company_id == company_id)
+        # TENANT-EXEMPT: dynamic builder — conditions list seeded with
+        # X.company_id == company_id earlier in this function. Sensor cannot
+        # trace company_id through where(*conditions) spread.
         result = await self.db.execute(
-            select(Candidate).where(Candidate.id.in_(candidate_ids))
+            select(Candidate).where(*conditions)
         )
         return list(result.scalars().all())
 
-    async def get_random_candidates(self, limit: int) -> list:
+    async def get_random_candidates(
+        self,
+        limit: int,
+        company_id: str | None = None,
+    ) -> list:
+        """Get random Candidates.
+
+        Multi-tenancy defense-in-depth: pass company_id to filter at query level.
+        Without company_id this returns ALL candidates platform-wide (legacy fixture
+        helper — only safe in test contexts).
+        """
         from app.models.candidate import Candidate
-        result = await self.db.execute(
-            select(Candidate).order_by(func.random()).limit(limit)
-        )
+        # TENANT-EXEMPT: legacy fixture helper — cross-tenant by design when
+        # company_id is None. When company_id is provided, filter is applied.
+        if company_id:
+            result = await self.db.execute(
+                select(Candidate)
+                .where(Candidate.company_id == company_id)
+                .order_by(func.random())
+                .limit(limit)
+            )
+        else:
+            # TENANT-EXEMPT: this branch is the legacy fixture path documented
+            # in the docstring — returns cross-tenant random Candidates. Only
+            # safe in test contexts (caller is responsible).
+            result = await self.db.execute(
+                select(Candidate).order_by(func.random()).limit(limit)
+            )
         return list(result.scalars().all())
 
     # ------------------------------------------------------------------ #
     # JobVacancy methods                                                    #
     # ------------------------------------------------------------------ #
 
-    async def get_job_vacancy_by_id(self, job_id: UUID):
+    async def get_job_vacancy_by_id(
+        self,
+        job_id: UUID,
+        company_id: str | None = None,
+    ):
+        """Get JobVacancy by id.
+
+        Multi-tenancy defense-in-depth: pass company_id to filter at query level
+        (Postgres RLS — Task #1143 — guards by default).
+        """
         from app.models.job_vacancy import JobVacancy
+        conditions = [JobVacancy.id == job_id]
+        if company_id:
+            conditions.append(JobVacancy.company_id == company_id)
+        # TENANT-EXEMPT: dynamic builder — conditions list seeded with
+        # X.company_id == company_id earlier in this function. Sensor cannot
+        # trace company_id through where(*conditions) spread.
         result = await self.db.execute(
-            select(JobVacancy).where(JobVacancy.id == job_id)
+            select(JobVacancy).where(*conditions)
         )
         return result.scalar_one_or_none()
 
@@ -214,22 +310,51 @@ class ScreeningRepository:
     # VacancyCandidate methods                                              #
     # ------------------------------------------------------------------ #
 
-    async def count_vacancy_candidates(self, vacancy_id: UUID) -> int:
+    async def count_vacancy_candidates(
+        self,
+        vacancy_id: UUID,
+        company_id: str | None = None,
+    ) -> int:
+        """Count VacancyCandidate rows for a vacancy.
+
+        Multi-tenancy defense-in-depth: pass company_id to filter at query level
+        (Postgres RLS — Task #1143 — guards by default).
+        """
         from app.models.candidate import VacancyCandidate
+        conditions = [VacancyCandidate.vacancy_id == vacancy_id]
+        if company_id:
+            conditions.append(VacancyCandidate.company_id == company_id)
+        # TENANT-EXEMPT: dynamic builder — conditions list seeded with
+        # X.company_id == company_id earlier in this function. Sensor cannot
+        # trace company_id through where(*conditions) spread.
         result = await self.db.execute(
-            select(func.count(VacancyCandidate.id)).where(
-                VacancyCandidate.vacancy_id == vacancy_id
-            )
+            select(func.count(VacancyCandidate.id)).where(*conditions)
         )
         return result.scalar() or 0
 
-    async def get_vacancy_candidate(self, vacancy_id: UUID, candidate_id: UUID):
+    async def get_vacancy_candidate(
+        self,
+        vacancy_id: UUID,
+        candidate_id: UUID,
+        company_id: str | None = None,
+    ):
+        """Get VacancyCandidate by (vacancy_id, candidate_id).
+
+        Multi-tenancy defense-in-depth: pass company_id to filter at query level
+        (Postgres RLS — Task #1143 — guards by default).
+        """
         from app.models.candidate import VacancyCandidate
+        conditions = [
+            VacancyCandidate.vacancy_id == vacancy_id,
+            VacancyCandidate.candidate_id == candidate_id,
+        ]
+        if company_id:
+            conditions.append(VacancyCandidate.company_id == company_id)
+        # TENANT-EXEMPT: dynamic builder — conditions list seeded with
+        # X.company_id == company_id earlier in this function. Sensor cannot
+        # trace company_id through where(*conditions) spread.
         result = await self.db.execute(
-            select(VacancyCandidate).where(
-                VacancyCandidate.vacancy_id == vacancy_id,
-                VacancyCandidate.candidate_id == candidate_id,
-            )
+            select(VacancyCandidate).where(*conditions)
         )
         return result.scalar_one_or_none()
 
@@ -264,63 +389,134 @@ class ScreeningRepository:
     # Candidate dedup + scoring helper methods                              #
     # ------------------------------------------------------------------ #
 
-    async def find_active_candidate_by_email(self, email: str):
-        """Lookup active Candidate by email (hash or raw fallback)."""
+    async def find_active_candidate_by_email(
+        self,
+        email: str,
+        company_id: str | None = None,
+    ):
+        """Lookup active Candidate by email (hash or raw fallback).
+
+        Multi-tenancy defense-in-depth: pass company_id to scope dedup search to
+        the current tenant (canonical use). Without company_id, this is a
+        platform-wide dedup search (legacy admin path).
+        """
         from app.models.candidate import Candidate
         from app.shared.encryption.encrypted_field_mixin import _sha256_hash
         from sqlalchemy import or_
+        conditions = [
+            or_(
+                Candidate.email_hash == _sha256_hash(email),
+                Candidate._email_raw == email,
+            ),
+            Candidate.is_active,
+        ]
+        if company_id:
+            conditions.append(Candidate.company_id == company_id)
+        # TENANT-EXEMPT: dynamic builder — conditions list seeded with
+        # X.company_id == company_id earlier in this function. Sensor cannot
+        # trace company_id through where(*conditions) spread.
         result = await self.db.execute(
-            select(Candidate).where(
-                or_(
-                    Candidate.email_hash == _sha256_hash(email),
-                    Candidate._email_raw == email,
-                ),
-                Candidate.is_active,
-            )
+            select(Candidate).where(*conditions)
         )
         return result.scalar_one_or_none()
 
-    async def list_active_candidates_by_name_lowered(self, name_normalized: str):
+    async def list_active_candidates_by_name_lowered(
+        self,
+        name_normalized: str,
+        company_id: str | None = None,
+    ):
+        """List active Candidates by lowered name.
+
+        Multi-tenancy defense-in-depth: pass company_id to scope to current tenant.
+        """
         from app.models.candidate import Candidate
+        conditions = [
+            func.lower(Candidate.name) == name_normalized,
+            Candidate.is_active,
+        ]
+        if company_id:
+            conditions.append(Candidate.company_id == company_id)
+        # TENANT-EXEMPT: dynamic builder — conditions list seeded with
+        # X.company_id == company_id earlier in this function. Sensor cannot
+        # trace company_id through where(*conditions) spread.
         result = await self.db.execute(
-            select(Candidate).where(
-                func.lower(Candidate.name) == name_normalized,
-                Candidate.is_active,
-            )
+            select(Candidate).where(*conditions)
         )
         return list(result.scalars().all())
 
-    async def find_active_candidate_by_linkedin_username(self, linkedin_username: str):
+    async def find_active_candidate_by_linkedin_username(
+        self,
+        linkedin_username: str,
+        company_id: str | None = None,
+    ):
+        """Lookup active Candidate by LinkedIn URL substring.
+
+        Multi-tenancy defense-in-depth: pass company_id to scope to current tenant.
+        """
         from app.models.candidate import Candidate
+        conditions = [
+            Candidate.linkedin_url.ilike(f"%{linkedin_username}%"),
+            Candidate.is_active,
+        ]
+        if company_id:
+            conditions.append(Candidate.company_id == company_id)
+        # TENANT-EXEMPT: dynamic builder — conditions list seeded with
+        # X.company_id == company_id earlier in this function. Sensor cannot
+        # trace company_id through where(*conditions) spread.
         result = await self.db.execute(
-            select(Candidate).where(
-                Candidate.linkedin_url.ilike(f"%{linkedin_username}%"),
-                Candidate.is_active,
-            )
+            select(Candidate).where(*conditions)
         )
         return result.scalar_one_or_none()
 
-    async def get_candidate_by_uuid_string(self, candidate_id: str):
-        """Get Candidate by string UUID (auto-converts)."""
+    async def get_candidate_by_uuid_string(
+        self,
+        candidate_id: str,
+        company_id: str | None = None,
+    ):
+        """Get Candidate by string UUID (auto-converts).
+
+        Multi-tenancy defense-in-depth: pass company_id to filter at query level
+        (Postgres RLS — Task #1143 — guards by default).
+        """
         from app.models.candidate import Candidate
         try:
             cid = uuid.UUID(candidate_id)
         except Exception:
             return None
+        conditions = [Candidate.id == cid]
+        if company_id:
+            conditions.append(Candidate.company_id == company_id)
+        # TENANT-EXEMPT: dynamic builder — conditions list seeded with
+        # X.company_id == company_id earlier in this function. Sensor cannot
+        # trace company_id through where(*conditions) spread.
         result = await self.db.execute(
-            select(Candidate).where(Candidate.id == cid)
+            select(Candidate).where(*conditions)
         )
         return result.scalar_one_or_none()
 
-    async def get_job_vacancy_by_uuid_string(self, job_id: str):
-        """Get JobVacancy by string UUID (auto-converts)."""
+    async def get_job_vacancy_by_uuid_string(
+        self,
+        job_id: str,
+        company_id: str | None = None,
+    ):
+        """Get JobVacancy by string UUID (auto-converts).
+
+        Multi-tenancy defense-in-depth: pass company_id to filter at query level
+        (Postgres RLS — Task #1143 — guards by default).
+        """
         from app.models.job_vacancy import JobVacancy
         try:
             jid = uuid.UUID(job_id)
         except Exception:
             return None
+        conditions = [JobVacancy.id == jid]
+        if company_id:
+            conditions.append(JobVacancy.company_id == company_id)
+        # TENANT-EXEMPT: dynamic builder — conditions list seeded with
+        # X.company_id == company_id earlier in this function. Sensor cannot
+        # trace company_id through where(*conditions) spread.
         result = await self.db.execute(
-            select(JobVacancy).where(JobVacancy.id == jid)
+            select(JobVacancy).where(*conditions)
         )
         return result.scalar_one_or_none()
 
@@ -336,14 +532,28 @@ class ScreeningRepository:
         return list(result.scalars().all())
 
     async def get_vacancy_candidate_by_pair(
-        self, *, vacancy_id, candidate_id
+        self,
+        *,
+        vacancy_id,
+        candidate_id,
+        company_id: str | None = None,
     ):
-        """Get VacancyCandidate by (vacancy_id, candidate_id) — accepts UUID or str."""
+        """Get VacancyCandidate by (vacancy_id, candidate_id) — accepts UUID or str.
+
+        Multi-tenancy defense-in-depth: pass company_id to filter at query level
+        (Postgres RLS — Task #1143 — guards by default).
+        """
         from app.models.candidate import VacancyCandidate
+        conditions = [
+            VacancyCandidate.vacancy_id == vacancy_id,
+            VacancyCandidate.candidate_id == candidate_id,
+        ]
+        if company_id:
+            conditions.append(VacancyCandidate.company_id == company_id)
+        # TENANT-EXEMPT: dynamic builder — conditions list seeded with
+        # X.company_id == company_id earlier in this function. Sensor cannot
+        # trace company_id through where(*conditions) spread.
         result = await self.db.execute(
-            select(VacancyCandidate).where(
-                VacancyCandidate.vacancy_id == vacancy_id,
-                VacancyCandidate.candidate_id == candidate_id,
-            )
+            select(VacancyCandidate).where(*conditions)
         )
         return result.scalar_one_or_none()

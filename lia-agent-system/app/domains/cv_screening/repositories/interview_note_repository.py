@@ -50,6 +50,9 @@ class InterviewNoteRepository:
         ]
         if job_id:
             conditions.append(InterviewNote.job_id == uuid.UUID(job_id))
+        # TENANT-EXEMPT: dynamic builder — conditions list is seeded with
+        # InterviewNote.company_id == uuid.UUID(company_id) (above). Sensor cannot
+        # trace company_id through and_(*conditions) spread.
         result = await self.db.execute(
             select(InterviewNote)
             .where(and_(*conditions))

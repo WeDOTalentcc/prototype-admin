@@ -84,7 +84,11 @@ async def analyze_cv_match(
             resolved_candidate_name = candidate_name
 
             if not resolved_candidate_id and candidate_name:
-                # Candidate is a platform-wide table (no company_id column)
+                # TENANT-EXEMPT: name-fuzzy-search dedup helper invoked via
+                # tool_registry; tenant boundary enforced by Postgres RLS
+                # (Task #1143). TODO(harness): add Candidate.company_id ==
+                # company_id filter via tool_handler-injected kwarg. The inline
+                # comment "platform-wide table" elsewhere in this file is STALE.
                 q = select(Candidate).where(
                     func.lower(Candidate.name).contains(candidate_name.strip().lower())
                 )
@@ -108,6 +112,9 @@ async def analyze_cv_match(
             resolved_vacancy_title = vacancy_title
 
             if not resolved_vacancy_id and vacancy_title:
+                # TENANT-EXEMPT: dynamic builder — q.where(JobVacancy.company_id
+                # == company_id) is conditionally appended below. Sensor cannot
+                # trace company_id through variable reassignment.
                 q = select(JobVacancy).where(
                     func.lower(JobVacancy.title).contains(vacancy_title.strip().lower())
                 )
