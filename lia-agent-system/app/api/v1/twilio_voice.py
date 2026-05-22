@@ -424,7 +424,7 @@ async def twiml_call_status(
                 async def _persist_terminal_status(session):
                     from app.core.database import AsyncSessionLocal as _ASL
                     async with _ASL() as _db:
-                        await voice_screening_orchestrator._persist_session_state(session, _db)
+                        await voice_screening_orchestrator.persist_session_state(session, _db)
 
                 asyncio.create_task(_persist_terminal_status(matched_session))
 
@@ -511,7 +511,7 @@ async def audio_stream_websocket(
                                     await wsi_repo.bind_call_sid_to_session(session_id, twilio_call_sid)
                                 except Exception as _bind_err:
                                     logger.warning("[TWILIO VOICE WS] Failed to bind call_sid to wsi_session: %s", _bind_err)
-                            await voice_screening_orchestrator._persist_session_state(session, db)
+                            await voice_screening_orchestrator.persist_session_state(session, db)
 
                         elif event == "media":
                             payload = data.get("media", {}).get("payload", "")
@@ -536,7 +536,7 @@ async def audio_stream_websocket(
 
                                         turns_since_persist += 1
                                         if turns_since_persist >= PERSIST_EVERY_N_TURNS:
-                                            await voice_screening_orchestrator._persist_session_state(session, db)
+                                            await voice_screening_orchestrator.persist_session_state(session, db)
                                             turns_since_persist = 0
 
                                         if lia_response and stream_sid:
@@ -568,7 +568,7 @@ async def audio_stream_websocket(
                                     mime_type="audio/mulaw",
                                 )
                                 audio_buffer.clear()
-                            await voice_screening_orchestrator._persist_session_state(session, db)
+                            await voice_screening_orchestrator.persist_session_state(session, db)
                             break
 
                     elif "bytes" in message:
@@ -594,7 +594,7 @@ async def audio_stream_websocket(
 
             is_voip_session = getattr(session, "phone_number", None) == "voip"
             session_was_active = session.status in ("in_progress", "pending")
-            await voice_screening_orchestrator._persist_session_state(session, db)
+            await voice_screening_orchestrator.persist_session_state(session, db)
             logger.info("[TWILIO VOICE WS] Stream closed session=%s", session_id)
 
             if is_voip_session and session_was_active and session.status not in ("completed", "finalized"):

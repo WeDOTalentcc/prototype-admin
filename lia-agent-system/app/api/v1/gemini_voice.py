@@ -661,7 +661,7 @@ company_id: str = Depends(require_company_id)):
                     orch_session.transcript_segments = session.transcript_segments
                     orch_session.status = "analyzing"
                     orch_session.ended_at = session.ended_at
-                    await voice_screening_orchestrator._persist_session_state(orch_session, db)
+                    await voice_screening_orchestrator.persist_session_state(orch_session, db)
                     await voice_screening_orchestrator.finalize_screening(session_id, db=db)
         except Exception as finalize_err:
             logger.error(

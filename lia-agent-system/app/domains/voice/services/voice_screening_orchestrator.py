@@ -218,8 +218,13 @@ class VoiceScreeningOrchestrator:
             voice_provider=state.get("voice_provider", "twilio"),
         )
 
-    async def _persist_session_state(self, session: "VoiceScreeningSession", db) -> None:
-        """Persist session state to wsi_sessions.voice_session_state (JSONB)."""
+    async def persist_session_state(self, session: "VoiceScreeningSession", db) -> None:
+        """Persist session state to wsi_sessions.voice_session_state (JSONB).
+
+        F-09 P2 fix (audit 2026-05-22): renamed from _persist_session_state to public.
+        _-prefix alias preserved below for backward compat (callers in twilio_voice.py,
+        gemini_voice.py being migrated).
+        """
         if db is None:
             return
         try:
@@ -250,6 +255,15 @@ class VoiceScreeningOrchestrator:
                 "session will not survive restart",
                 session.session_id, e,
             )
+
+    async def _persist_session_state(self, session: "VoiceScreeningSession", db) -> None:
+        """F-09 P2 backward-compat alias. Use persist_session_state (public) for new code.
+
+        Deprecated 2026-05-22. Removal scheduled after callers em twilio_voice.py +
+        gemini_voice.py forem migrados (Sprint 3.2+).
+        """
+        return await self.persist_session_state(session, db)
+
 
     async def _load_session_from_db(self, session_id: str, db) -> Optional["VoiceScreeningSession"]:
         """Try to load a session from wsi_sessions.voice_session_state."""
@@ -686,7 +700,7 @@ class VoiceScreeningOrchestrator:
 
         self._sessions[session.session_id] = session
         if db is not None and session.session_id:
-            await self._persist_session_state(session, db)
+            await self.persist_session_state(session, db)
         return session
 
     async def initiate_voip_session(
@@ -805,7 +819,7 @@ class VoiceScreeningOrchestrator:
 
         self._sessions[session.session_id] = session
         if db is not None:
-            await self._persist_session_state(session, db)
+            await self.persist_session_state(session, db)
         return session
 
     async def process_audio_chunk(
@@ -1150,7 +1164,7 @@ class VoiceScreeningOrchestrator:
                 if is_presentation_turn:
                     session.presentation_done = True
                     # Persist immediately so restart doesn't repeat presentation
-                    await self._persist_session_state(session, db)
+                    await self.persist_session_state(session, db)
                 else:
                     # Only track question progress on actual question turns (not presentation)
                     if has_wsi_questions and not is_last and next_q_index < len(wsi_questions):
@@ -1471,7 +1485,7 @@ class VoiceScreeningOrchestrator:
                 score,
             )
 
-            await self._persist_session_state(session, db)
+            await self.persist_session_state(session, db)
 
             return {
                 "session_id": session_id,
@@ -1488,7 +1502,7 @@ class VoiceScreeningOrchestrator:
             )
             session.status = "analysis_failed"
             session.error = str(e)
-            await self._persist_session_state(session, db)
+            await self.persist_session_state(session, db)
             return {
                 "session_id": session_id,
                 "status": "analysis_failed",

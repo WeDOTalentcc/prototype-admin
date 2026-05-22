@@ -1113,7 +1113,8 @@ class TestSessionDBPersistence:
         async def mock_persist(s, db):
             persist_calls.append(s.status)
 
-        with patch.object(orch, "_persist_session_state", new=mock_persist):
+        # F-09: internal callers migrated to public persist_session_state; patch the public name.
+        with patch.object(orch, "persist_session_state", new=mock_persist):
             try:
                 mock_db = MagicMock()
                 result = await orch.finalize_screening("sess-finalize-persist", db=mock_db)
