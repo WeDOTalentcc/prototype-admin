@@ -159,11 +159,13 @@ def test_alert_preference_canonical_has_all_4_new_default_types():
 # =============================================================================
 
 _ALLOWED_ALERTCONFIG_READERS = {
-    # ADR-WT-2025 read-shadow pattern: estes 3 sites mantem write-back legacy
+    # ADR-WT-2025 read-shadow pattern: estes sites mantem write/read legacy
     # ate prod cutover. Allowlist-only para nao adicionar novos sites.
-    "app/api/v1/alerts.py",  # REST endpoints GET/PUT /alerts/config
+    # Sprint D+1 removera /alerts/config endpoint -> reduzira lista.
+    "app/api/v1/alerts.py",  # REST endpoints GET/PUT /alerts/config (deprecated 2026-05-22)
     "app/domains/notifications/repositories/alert_repository.py",  # data layer
     "app/domains/company_settings/agents/company_settings_tools_extended.py",  # LLM tool
+    "app/jobs/tasks/briefing_dispatch.py",  # Celery beat le AlertConfig.briefing_frequency (separate semantic do alerts[] catalog Sprint D)
 }
 
 
