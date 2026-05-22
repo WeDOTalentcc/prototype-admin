@@ -758,11 +758,16 @@ class VoiceScreeningOrchestrator:
             )
 
         try:
+            # F-23 (audit 2026-05-22): purpose="voice_screening" canonical.
+            # Distinto de "ai_screening" generic para diferenciacao de audit trail
+            # (LGPD Art. 37). PURPOSE_TO_CONSENT_TYPE mapeia para SCREENING por
+            # backward compat — granular consent_type proprio = ticket separado
+            # de refactor cross-domain ConsentCheckerService.
             checker = ConsentCheckerService(db)
             result = await checker.check_candidate_consent(
                 candidate_id=candidate_id,
                 company_id=company_id,
-                purpose="ai_screening",
+                purpose="voice_screening",
             )
 
             if not result.allowed:

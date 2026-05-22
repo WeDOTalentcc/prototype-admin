@@ -42,16 +42,33 @@ class ConsentCheckerService:
     - ai_scoring    → mapeado para SCREENING
     - ai_video_analysis → mapeado para SCREENING
     - ai_comparison → mapeado para SCREENING
+    - voice_screening → mapeado para SCREENING (F-23 audit 2026-05-22:
+      distinto de ai_screening genérico para diferenciação de audit trail
+      LGPD Art. 37; granular consent_type próprio é refactor separado)
     """
 
-    AI_PURPOSES = ["ai_screening", "ai_scoring", "ai_video_analysis", "ai_comparison"]
+    AI_PURPOSES = [
+        "ai_screening",
+        "ai_scoring",
+        "ai_video_analysis",
+        "ai_comparison",
+        # F-23 (audit 2026-05-22 AUDIT_VOICE_SCREENING_ORCHESTRATOR.md):
+        # voice_screening is distinct from generic ai_screening for audit-trail
+        # differentiation (LGPD Art. 37). Both map to SCREENING consent_type for
+        # backward compat — granular table extension is a separate refactor.
+        "voice_screening",
+    ]
 
     # Mapeamento de finalidade de IA para consent_type do LGPDConsent
+    # F-23: voice_screening listed explicitly so future cross-domain
+    # ConsentChecker refactor (separate ticket) can promote voice to its
+    # own consent_type without touching voice orchestrator again.
     PURPOSE_TO_CONSENT_TYPE = {
         "ai_screening": "SCREENING",
         "ai_scoring": "SCREENING",
         "ai_video_analysis": "SCREENING",
         "ai_comparison": "SCREENING",
+        "voice_screening": "SCREENING",  # F-23
     }
 
     def __init__(self, db: AsyncSession):
