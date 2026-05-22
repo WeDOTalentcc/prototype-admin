@@ -4,6 +4,13 @@ WSI block loading, building, and mapping helpers.
 import logging
 from typing import Any
 
+from app.core.config import settings
+from app.shared.runtime_context import RuntimeContext
+from app.shared.services.automated_decision_logger import (
+    PROTECTED_CRITERIA_PT,
+    log_automated_decision,
+)
+
 from ._shared import WSI_BLOCKS_FALLBACK
 
 logger = logging.getLogger(__name__)
@@ -155,6 +162,67 @@ async def _load_or_generate_blocks(
             blocks = _build_wsi_blocks_from_question_set(snapshot)
             if blocks:
                 logger.info(f"[Triagem] Generated {len(generated_qs)} questions via wsi_service for job {job_id}")
+
+                # WT-2022 P0.C wave 2 / LGPD Art. 20 + EU AI Act Art. 13.
+                # Triagem session fallback — wsi_service inline gerou questions
+                # via IA. company_id: prefer job.company_id (FK direto), fallback
+                # RuntimeContext. silent_on_persist_error porque triagem precisa
+                # continuar mesmo se audit falhar (degradacao graciosa).
+                try:
+                    company_id = (
+                        getattr(job, "company_id", None)
+                        or RuntimeContext.from_contextvars().company_id
+                    )
+                    if company_id:
+                        await log_automated_decision(
+                            db=db,
+                            company_id=str(company_id),
+                            job_id=job_id,
+                            decision_type="wsi_triagem_session_fallback",
+                            ai_model_used=getattr(settings, "LLM_PRIMARY_MODEL", "claude-sonnet-4-6"),
+                            explanation_text=(
+                                f'Triagem session: question set versionado ausente para job {job_id}; '
+                                f'wsi_service.generate_screening_questions gerou {len(generated_qs)} '
+                                f'pergunta(s) dinamicamente (mode={mode}, seniority={seniority}). '
+                                f'Competencias: {[c.name for c in competencies]}.'
+                            ),
+                            criteria_used=[
+                                *[f"competency:{c.name}" for c in competencies],
+                                f"seniority:{seniority}",
+                                f"mode:{mode}",
+                                "fallback:triagem_dynamic",
+                            ],
+                            criteria_ignored=list(PROTECTED_CRITERIA_PT),
+                            confidence_score=None,
+                            review_eligible=True,
+                            extra_metadata={
+                                "endpoint": "triagem_session_service.wsi_blocks._load_or_generate_blocks",
+                                "job_id": job_id,
+                                "questions_count": len(generated_qs),
+                                "competencies_count": len(competencies),
+                                "mode": mode,
+                                "seniority": seniority,
+                                "fallback_dynamic": True,
+                                "prompt_template_version": "wsi_F6_pipeline_v2",
+                                "llm_model": getattr(settings, "LLM_PRIMARY_MODEL", "claude-sonnet-4-6"),
+                            },
+                            silent_on_persist_error=True,  # triagem session: nao bloquear
+                        )
+                    else:
+                        logger.warning(
+                            "WT-2022 P0.C wave 2: triagem wsi_blocks sem company_id "
+                            "(job.company_id None, ContextVar vazio). LGPD audit gap job_id=%s",
+                            job_id,
+                        )
+                except ValueError:
+                    raise
+                except Exception as audit_err:
+                    logger.error(
+                        "WT-2022 P0.C wave 2: log_automated_decision falhou em triagem wsi_blocks "
+                        "(LGPD Art. 20 audit gap, job_id=%s): %s",
+                        job_id, audit_err, exc_info=True,
+                    )
+
                 return blocks, None, None
     except Exception as exc:
         logger.warning(f"[Triagem] wsi_service question generation failed for job {job_id}: {exc}")

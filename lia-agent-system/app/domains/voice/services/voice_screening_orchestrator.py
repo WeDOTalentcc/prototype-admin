@@ -45,11 +45,16 @@ from app.domains.communication.services.twilio_voice_service import (
 from app.domains.communication.services.twilio_voice_service import (
     twilio_voice_service as _twilio_voice_service,
 )
+from app.core.config import settings
 from app.shared.services.voice_service import VoiceService
 from app.shared.compliance.fairness_guard_middleware import check_fairness
 from app.shared.pii_masking import mask_pii
 from app.shared.prompts.anti_sycophancy_block import ANTI_SYCOPHANCY_OPERATIONAL
 from app.shared.resilience.circuit_breaker import TWILIO_VOICE_CIRCUIT, CircuitBreakerError
+from app.shared.services.automated_decision_logger import (
+    PROTECTED_CRITERIA_PT,
+    log_automated_decision,
+)
 
 try:
     from app.shared.services.gemini_voice_service import get_voice_service as _get_voice_service
@@ -1654,6 +1659,71 @@ class VoiceScreeningOrchestrator:
                         "[VOICE SCREENING] Generated %d WSI questions dynamically for session=%s",
                         len(question_texts), session.session_id,
                     )
+
+                    # WT-2022 P0.C wave 2 / LGPD Art. 20 + EU AI Act Art. 13.
+                    # Voice screening orchestrator default-competencies fallback.
+                    # session.company_id e source canonical (definido no
+                    # VoiceScreeningSession dataclass L91). silent_on_persist_error=True
+                    # porque voice call e fire-and-forget critico — nao bloquear
+                    # ligacao por audit gap.
+                    try:
+                        company_id = getattr(session, "company_id", None)
+                        if company_id:
+                            await log_automated_decision(
+                                db=db,
+                                company_id=str(company_id),
+                                candidate_id=getattr(session, "candidate_id", None),
+                                job_id=getattr(session, "job_id", None),
+                                decision_type="wsi_voice_orchestrator",
+                                ai_model_used=getattr(settings, "LLM_PRIMARY_MODEL", "claude-sonnet-4-6"),
+                                explanation_text=(
+                                    f'Voice screening orchestrator gerou {len(question_texts)} pergunta(s) '
+                                    f'WSI dinamicamente para session {session.session_id} '
+                                    f'(job_title={session.job_title}). Fallback default-competencies '
+                                    f'(Experiencia, Resolucao, Comunicacao, Trabalho-em-Equipe, Adaptabilidade), '
+                                    f'mode=compact. Versioned question set ausente.'
+                                ),
+                                criteria_used=[
+                                    *[f"competency:{c.name}" for c in default_competencies],
+                                    "seniority:pleno",
+                                    "mode:compact",
+                                    "screening_type:voice",
+                                    "fallback:default_competencies",
+                                ],
+                                criteria_ignored=list(PROTECTED_CRITERIA_PT),
+                                confidence_score=None,
+                                review_eligible=True,
+                                extra_metadata={
+                                    "endpoint": "voice_screening_orchestrator._generate_and_store_wsi_questions",
+                                    "session_id": session.session_id,
+                                    "candidate_id": getattr(session, "candidate_id", None),
+                                    "job_id": getattr(session, "job_id", None),
+                                    "job_title": session.job_title,
+                                    "questions_count": len(question_texts),
+                                    "mode": "compact",
+                                    "seniority": "pleno",
+                                    "screening_type": "voice",
+                                    "default_competencies_used": True,
+                                    "prompt_template_version": "wsi_F6_pipeline_v2",
+                                    "llm_model": getattr(settings, "LLM_PRIMARY_MODEL", "claude-sonnet-4-6"),
+                                    "frameworks_used": sorted({q.framework for q in wsi_questions}),
+                                },
+                                silent_on_persist_error=True,  # voice call: nao bloquear
+                            )
+                        else:
+                            logger.warning(
+                                "WT-2022 P0.C wave 2: voice_screening_orchestrator sem session.company_id. "
+                                "LGPD Art. 20 audit gap session_id=%s",
+                                session.session_id,
+                            )
+                    except ValueError:
+                        raise
+                    except Exception as audit_err:
+                        logger.error(
+                            "WT-2022 P0.C wave 2: log_automated_decision falhou em "
+                            "voice_screening_orchestrator session_id=%s: %s",
+                            session.session_id, audit_err, exc_info=True,
+                        )
                 except Exception as e:
                     logger.warning(
                         "[VOICE SCREENING] WSI dynamic question generation failed for session=%s: %s — "

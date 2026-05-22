@@ -18,6 +18,14 @@ from datetime import datetime
 from typing import Any
 from uuid import uuid4
 
+from app.core.config import settings
+from app.core.database import AsyncSessionLocal
+from app.shared.runtime_context import RuntimeContext
+from app.shared.services.automated_decision_logger import (
+    PROTECTED_CRITERIA_PT,
+    log_automated_decision,
+)
+
 
 logger = logging.getLogger(__name__)
 
@@ -343,10 +351,13 @@ class WizardActionExecutor:
             try:
                 from app.domains.cv_screening.services.wsi_service import WSIService
                 wsi_svc = WSIService()
+                skills_list = draft.get("required_skills", [])
+                behav_list = draft.get("behavioral_competencies", [])
+                seniority_val = draft.get("seniority_level", "pleno")
                 questions_raw = await wsi_svc.generate_from_simple_inputs(
-                    skills=draft.get("required_skills", []),
-                    behavioral=draft.get("behavioral_competencies", []),
-                    seniority=draft.get("seniority_level", "pleno"),
+                    skills=skills_list,
+                    behavioral=behav_list,
+                    seniority=seniority_val,
                     mode="compact",
                 )
                 questions = [
@@ -355,6 +366,71 @@ class WizardActionExecutor:
                 ]
                 q_list = questions if isinstance(questions, list) else [questions]
                 formatted = "\n".join(f"{i+1}. {q}" for i, q in enumerate(q_list[:count]))
+
+                # WT-2022 P0.C wave 2 / LGPD Art. 20 + EU AI Act Art. 13.
+                # wizard_action_executor.generate_wsi_questions — service layer
+                # sem db inject, sem company_id em param. Pega company_id do
+                # ContextVar (RuntimeContext canonical) e abre db scope local.
+                # silent_on_persist_error=True pra nao quebrar wizard UX se DB
+                # audit falhar. Sem company_id, skip log + warn (gap reportado).
+                try:
+                    ctx = RuntimeContext.from_contextvars()
+                    if ctx.company_id:
+                        async with AsyncSessionLocal() as audit_db:
+                            await log_automated_decision(
+                                db=audit_db,
+                                company_id=ctx.company_id,
+                                decision_type="wsi_wizard_action",
+                                ai_model_used=getattr(settings, "LLM_PRIMARY_MODEL", "claude-sonnet-4-6"),
+                                explanation_text=(
+                                    f'Wizard action_executor gerou {len(q_list)} pergunta(s) WSI '
+                                    f'(slice {count}) para draft "{title}" via wsi_service.generate_from_simple_inputs. '
+                                    f'Skills tecnicos: {skills_list}. Comportamentais: {behav_list}. '
+                                    f'Senioridade={seniority_val}, mode=compact, block={block}.'
+                                ),
+                                criteria_used=[
+                                    *[f"skill:{s}" for s in skills_list],
+                                    *[f"behavioral:{b}" for b in behav_list],
+                                    f"seniority:{seniority_val}",
+                                    "mode:compact",
+                                    "action:wizard_generate_wsi",
+                                    *([f"block:{block}"] if block else []),
+                                ],
+                                criteria_ignored=list(PROTECTED_CRITERIA_PT),
+                                confidence_score=None,
+                                review_eligible=True,
+                                extra_metadata={
+                                    "endpoint": "wizard_action_executor.generate_wsi_questions",
+                                    "title": title,
+                                    "session_id": session_id,
+                                    "current_stage": current_stage,
+                                    "questions_count": len(q_list),
+                                    "count_requested": count,
+                                    "mode": "compact",
+                                    "seniority": seniority_val,
+                                    "block": block,
+                                    "action": "wizard_generate_wsi",
+                                    "prompt_template_version": "wsi_F6_pipeline_v2",
+                                    "llm_model": getattr(settings, "LLM_PRIMARY_MODEL", "claude-sonnet-4-6"),
+                                },
+                                silent_on_persist_error=True,
+                            )
+                            await audit_db.commit()
+                    else:
+                        logger.warning(
+                            "WT-2022 P0.C wave 2: wizard_action_executor.generate_wsi_questions "
+                            "sem company_id no ContextVar (session_id=%s). LGPD audit gap.",
+                            session_id,
+                        )
+                except ValueError:
+                    raise
+                except Exception as audit_err:
+                    logger.error(
+                        "WT-2022 P0.C wave 2: log_automated_decision falhou em "
+                        "wizard_action_executor session_id=%s: %s",
+                        session_id, audit_err, exc_info=True,
+                    )
+
                 return WizardActionResult(
                     status="executed",
                     message=f"Perguntas WSI geradas para **{title}**:\n\n{formatted}",
