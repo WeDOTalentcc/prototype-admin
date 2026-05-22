@@ -29,6 +29,7 @@ import pytest
 from app.domains.offer.services.offer_service import (
     ManagerApprovalRequiredError,
     MinInterviewsNotMetError,
+    NoApproverConfiguredError,
     OfferPolicyGateError,
     OfferService,
 )
@@ -42,6 +43,7 @@ def _make_service_with(
     min_interviews_before_offer: int = 0,
     completed_interviews_count: int = 99,
     candidate_id: uuid.UUID | None = None,
+    approvers_configured: int = 1,
 ) -> tuple[OfferService, MagicMock]:
     """Build an OfferService with both repositories and Interview count mocked.
 
@@ -85,6 +87,23 @@ def _make_service_with(
 
     svc = OfferService(db)
     svc._repo = offer_repo
+    # P0.D1 (2026-05-22): inject ApproverRepository mock so the new
+    # ``_has_active_approvers`` gate sees the configured count.
+    approver_repo = MagicMock()
+    approvers_list = [MagicMock() for _ in range(approvers_configured)]
+    approver_repo.list_for_company = AsyncMock(return_value=approvers_list)
+    svc._approver_repo = approver_repo
+    # ApprovalNotificationService mock - records calls; never raises.
+    notifier = MagicMock()
+    notifier.notify_pending_approvers_for_offer = AsyncMock(
+        return_value={
+            "approvers_notified": [str(uuid.uuid4()) for _ in range(approvers_configured)],
+            "approvers_skipped_email_only": [],
+            "count": approvers_configured,
+            "no_approvers_configured": approvers_configured == 0,
+        }
+    )
+    svc._approval_notifier = notifier
     # Patch the HiringPolicyRepository constructor inside the service so it
     # returns our mock instance regardless of the db arg.
     import app.domains.offer.services.offer_service as mod
@@ -275,3 +294,165 @@ async def test_approval_gate_fires_before_interview_gate():
     )
     with pytest.raises(ManagerApprovalRequiredError):
         await svc.check_can_send(uuid.uuid4(), "co-1")
+
+
+# ----------------------------------------------------------------------------
+# P0.D1 - NoApproverConfiguredError + approver notification dispatch
+# ----------------------------------------------------------------------------
+
+
+@pytest.mark.asyncio
+async def test_check_can_send_raises_no_approver_when_table_empty():
+    """Policy ON, draft has no approval_request_id, Approver table is empty
+    -> NoApproverConfiguredError (NOT ManagerApprovalRequiredError).
+
+    Pins P0.D1: until this gate, the ApproverSection in
+    Configuracoes > Departamentos was a ghost setting. The recruiter could
+    set manager_approval_for_offer=ON without ever configuring approvers,
+    and OfferService would either let offers through or raise the wrong
+    error class. We now distinguish: empty approvers table = admin must
+    configure first; non-empty + missing approval_request_id = recruiter
+    must request approval.
+    """
+    svc, _ = _make_service_with(
+        approval_required=True,
+        proposal_approval_request_id=None,
+        approvers_configured=0,
+    )
+    with pytest.raises(NoApproverConfiguredError) as exc_info:
+        await svc.check_can_send(uuid.uuid4(), "co-1")
+    # Message must point at the admin-facing path (Departamentos), not the
+    # recruiter-facing one (Politicas de Recrutamento).
+    msg = str(exc_info.value)
+    assert "Departamentos" in msg
+    assert "aprovador" in msg.lower()
+    assert exc_info.value.reason == "no_approver_configured"
+
+
+@pytest.mark.asyncio
+async def test_check_can_send_raises_manager_approval_when_approvers_present():
+    """Policy ON, no approval_request_id, BUT Approver table has rows.
+    Original P0-2 ManagerApprovalRequiredError still fires - the gate
+    is downstream of the approver-configured check."""
+    svc, _ = _make_service_with(
+        approval_required=True,
+        proposal_approval_request_id=None,
+        approvers_configured=3,
+    )
+    with pytest.raises(ManagerApprovalRequiredError) as exc_info:
+        await svc.check_can_send(uuid.uuid4(), "co-1")
+    assert exc_info.value.reason == "manager_approval_required"
+
+
+@pytest.mark.asyncio
+async def test_check_can_send_notifies_approvers_when_gate_fires():
+    """When ManagerApprovalRequiredError fires AND approvers are configured,
+    the notification dispatch MUST be called exactly once with the
+    proposal-derived context. The gate raise must still happen (caller
+    still sees the structured error) - notification is a side effect.
+    """
+    svc, proposal = _make_service_with(
+        approval_required=True,
+        proposal_approval_request_id=None,
+        approvers_configured=2,
+    )
+    proposal.candidate_name = "Maria Souza"
+    proposal.job_title = "Engenheira de Software Senior"
+    proposal.job_vacancy_id = uuid.uuid4()
+    proposal.created_by = "recruiter-1"
+
+    with pytest.raises(ManagerApprovalRequiredError):
+        await svc.check_can_send(uuid.uuid4(), "co-1")
+
+    svc._approval_notifier.notify_pending_approvers_for_offer.assert_awaited_once()
+    kwargs = svc._approval_notifier.notify_pending_approvers_for_offer.await_args.kwargs
+    assert kwargs["company_id"] == "co-1"
+    assert kwargs["candidate_name"] == "Maria Souza"
+    assert kwargs["job_title"] == "Engenheira de Software Senior"
+    assert kwargs["requested_by_user_id"] == "recruiter-1"
+
+
+@pytest.mark.asyncio
+async def test_check_can_send_does_not_notify_when_no_approvers():
+    """When NoApproverConfiguredError fires (empty table), the notification
+    dispatch MUST NOT be called - there is nobody to notify and the helper
+    would just no-op anyway. Pin this so a future refactor cannot
+    accidentally spam non-existent approvers."""
+    svc, _ = _make_service_with(
+        approval_required=True,
+        proposal_approval_request_id=None,
+        approvers_configured=0,
+    )
+    with pytest.raises(NoApproverConfiguredError):
+        await svc.check_can_send(uuid.uuid4(), "co-1")
+    svc._approval_notifier.notify_pending_approvers_for_offer.assert_not_awaited()
+
+
+@pytest.mark.asyncio
+async def test_check_can_send_swallows_notification_dispatch_error():
+    """Notification dispatch failures are fail-open: a transient DB error
+    in the notifier path must NOT mask the structured ManagerApprovalRequiredError
+    the caller depends on. The gate's job is to BLOCK; the notification is
+    best-effort enrichment.
+    """
+    svc, _ = _make_service_with(
+        approval_required=True,
+        proposal_approval_request_id=None,
+        approvers_configured=1,
+    )
+    async def _boom(**_kw):
+        raise RuntimeError("simulated notification DB outage")
+    svc._approval_notifier.notify_pending_approvers_for_offer = _boom
+    with pytest.raises(ManagerApprovalRequiredError):
+        await svc.check_can_send(uuid.uuid4(), "co-1")
+
+
+@pytest.mark.asyncio
+async def test_mark_sent_blocks_with_no_approver_when_table_empty():
+    """Defense-in-depth: if a caller skips check_can_send, mark_sent also
+    distinguishes NoApproverConfiguredError from ManagerApprovalRequiredError.
+    Pin that the empty-approvers branch fires even when reached via the
+    state-transition path."""
+    svc, proposal = _make_service_with(
+        approval_required=True,
+        proposal_approval_request_id=None,
+        approvers_configured=0,
+    )
+    with pytest.raises(NoApproverConfiguredError):
+        await svc.mark_sent(
+            offer_id=uuid.uuid4(),
+            company_id="co-1",
+            user_id="u-1",
+            send_mode="auto",
+            email_log_id=None,
+        )
+    assert proposal.status == "draft"
+
+
+@pytest.mark.asyncio
+async def test_has_active_approvers_fails_closed_on_repo_error():
+    """Repository outage MUST make ``_has_active_approvers`` return False
+    (fail-closed). The compliance trade-off documented in the helper docstring:
+    blocking a legitimate offer is preferable to letting one out without
+    approver signature."""
+    svc, _ = _make_service_with(approvers_configured=1)
+    async def _boom(*_a, **_kw):
+        raise RuntimeError("simulated approver repo outage")
+    svc._approver_repo.list_for_company = _boom
+    result = await svc._has_active_approvers("co-1")
+    assert result is False
+
+
+@pytest.mark.asyncio
+async def test_no_approver_configured_caught_by_parent_class():
+    """LLM tool catches ``OfferPolicyGateError`` to discriminate via
+    ``.reason``. Pin that the new subclass participates in the family."""
+    svc, _ = _make_service_with(
+        approval_required=True,
+        proposal_approval_request_id=None,
+        approvers_configured=0,
+    )
+    with pytest.raises(OfferPolicyGateError) as exc_info:
+        await svc.check_can_send(uuid.uuid4(), "co-1")
+    assert exc_info.value.reason == "no_approver_configured"
+

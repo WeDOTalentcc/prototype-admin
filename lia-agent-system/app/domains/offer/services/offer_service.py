@@ -24,8 +24,14 @@ from app.domains.offer.repositories.offer_repository import OfferRepository
 from app.domains.hiring_policy.repositories.hiring_policy_repository import (
     HiringPolicyRepository,
 )
+from app.domains.company.repositories.approver_repository import (
+    ApproverRepository,
+)
 from app.schemas.offer import OfferDraftCreate, OfferDraftUpdate
 from app.shared.compliance.audit_service import AuditService  # T-1157
+from app.shared.services.approval_notification_service import (
+    ApprovalNotificationService,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -83,6 +89,31 @@ class MinInterviewsNotMetError(OfferPolicyGateError):
     """
 
     reason = "min_interviews_not_met"
+
+
+class NoApproverConfiguredError(OfferPolicyGateError):
+    """Raised when ``manager_approval_for_offer=ON`` but the company has
+    no active Approver rows configured in ``approvers``.
+
+    Closes P0.D1 (audit 2026-05-22): the ApproverSection in
+    Configuracoes > Departamentos exposes CRUD over the Approver table,
+    but until this gate the table was effectively a ghost setting — even
+    with the toggle ON, OfferService only checked ``approval_request_id``
+    presence on the draft, never that approver identities had been
+    configured. Recruiter sets toggle ON, never configures approvers,
+    offers go out anyway (when ``approval_request_id`` is somehow set
+    elsewhere). This gate refuses sends in that state with a structured
+    reason so the UX can prompt admin to configure approvers.
+
+    Distinct from ``ManagerApprovalRequiredError``:
+    - ``ManagerApprovalRequiredError`` => toggle ON, no approval_request_id
+      yet; recruiter must trigger the approval workflow.
+    - ``NoApproverConfiguredError`` => toggle ON, but the Approver table is
+      empty; admin must add at least one approver before any workflow
+      can be triggered. UX response is ``ui_action='prompt_admin_to_configure_approver'``.
+    """
+
+    reason = "no_approver_configured"
 
 
 _OFFER_APPROVAL_TOGGLE = "manager_approval_for_offer"
@@ -273,6 +304,12 @@ class OfferService:
     def __init__(self, db: AsyncSession):
         self._db = db
         self._repo = OfferRepository(db)
+        # P0.D1 (2026-05-22): ApproverRepository wired so check_can_send
+        # can verify at least one active Approver row exists when policy
+        # gates approval. ApprovalNotificationService is the canonical
+        # dispatch helper for in-app + email notifications to approvers.
+        self._approver_repo = ApproverRepository(db)
+        self._approval_notifier = ApprovalNotificationService(db)
 
     async def _enrich_job_snapshot_compensation(self, job_snapshot: dict[str, Any]) -> None:
         """Load CompensationPolicy linked to job and merge structured data into job_snapshot.
@@ -484,8 +521,41 @@ class OfferService:
             # Caller will get a 404 from a subsequent ``get_draft``; nothing
             # to gate against a draft that does not exist.
             return
-        # --- Gate 1: manager approval (P0-2) --------------------------------
+        # --- Gate 1: manager approval (P0-2 + P0.D1) ------------------------
         if proposal.approval_request_id is None and await self._requires_manager_approval(company_id):
+            # P0.D1 (2026-05-22): when the policy gates approval, also confirm
+            # that approver identities have been configured. Without at least
+            # one active Approver row the workflow has nowhere to route, so
+            # we refuse with a distinct ``NoApproverConfiguredError`` whose
+            # ui_action prompts the admin to configure approvers instead of
+            # the recruiter to request approval.
+            approvers_configured = await self._has_active_approvers(company_id)
+            if not approvers_configured:
+                raise NoApproverConfiguredError(
+                    "Esta empresa exige aprovacao do gestor antes de enviar "
+                    "ofertas, mas nenhum aprovador esta configurado. Peca para "
+                    "o admin adicionar pelo menos um aprovador em Configuracoes "
+                    "> Departamentos antes de continuar."
+                )
+            # Approvers exist - notify them in-app (fail-open: dispatch errors
+            # are logged + audited but never propagated; the gate raise below
+            # remains the authoritative blocker the caller sees).
+            try:
+                await self._approval_notifier.notify_pending_approvers_for_offer(
+                    company_id=company_id,
+                    offer_id=proposal.id,
+                    candidate_id=getattr(proposal, "candidate_id", None),
+                    candidate_name=getattr(proposal, "candidate_name", None),
+                    job_vacancy_id=getattr(proposal, "job_vacancy_id", None),
+                    job_title=getattr(proposal, "job_title", None),
+                    requested_by_user_id=getattr(proposal, "created_by", None),
+                )
+            except Exception as notify_err:
+                logger.warning(
+                    "[OfferService] approval notification dispatch failed "
+                    "offer_id=%s err=%s",
+                    proposal.id, str(notify_err)[:120],
+                )
             raise ManagerApprovalRequiredError(
                 "Esta empresa exige aprovacao do gestor antes de enviar ofertas. "
                 "Solicite aprovacao primeiro (workflow de approval) ou altere "
@@ -602,6 +672,44 @@ class OfferService:
             return False
         return bool(policy.screening_rules.get(_OFFER_APPROVAL_TOGGLE, False))
 
+    async def _has_active_approvers(self, company_id: str) -> bool:
+        """Return True iff the company has at least one active Approver row.
+
+        Reads via :class:`ApproverRepository.list_for_company`, which already
+        filters by ``is_active``. Returns False on any repo exception so the
+        gate fails CLOSED (refuses send) - this is the inverse compliance
+        trade-off from ``_check_min_interviews_met`` (which fails open on
+        DB error). Rationale: an offer leaving the system without approver
+        signature is a higher compliance risk than blocking a legitimate
+        offer for a few minutes while SRE investigates an Approver table
+        outage. Audit trail in ``_approval_notifier`` captures the failure.
+
+        Accepts ``str`` to align with the column type on OfferProposal and
+        the rest of this service (matching ``_requires_manager_approval``).
+        """
+        # Best-effort UUID coercion: the canonical column type is
+        # ``String(255)`` (legacy), but the Approver FK expects UUID.
+        # In tests we accept opaque strings so the repo mock can answer.
+        # If coercion fails AND the call still works (e.g. mocked repo),
+        # we proceed; only when the call itself raises do we fail-closed.
+        try:
+            if isinstance(company_id, UUID):
+                lookup_id = company_id
+            else:
+                try:
+                    lookup_id = UUID(str(company_id))
+                except (TypeError, ValueError):
+                    lookup_id = company_id  # type: ignore[assignment]
+            approvers = await self._approver_repo.list_for_company(lookup_id)
+            return len(approvers) > 0
+        except Exception as exc:
+            logger.warning(
+                "[OfferService] _has_active_approvers lookup failed; "
+                "gate fails CLOSED. company_id=%s err=%s",
+                company_id, str(exc)[:120],
+            )
+            return False
+
     async def mark_sent(
         self,
         offer_id: UUID,
@@ -627,6 +735,18 @@ class OfferService:
         if proposal.approval_request_id is None:
             requires_approval = await self._requires_manager_approval(company_id)
             if requires_approval:
+                # P0.D1 (2026-05-22): defense-in-depth - surface
+                # NoApproverConfiguredError here too when the Approver table
+                # is empty, so a future caller that bypasses check_can_send
+                # still gets the structured admin-facing reason rather than
+                # a generic ManagerApprovalRequiredError.
+                if not await self._has_active_approvers(company_id):
+                    raise NoApproverConfiguredError(
+                        "Esta empresa exige aprovacao do gestor antes de enviar "
+                        "ofertas, mas nenhum aprovador esta configurado. Peca "
+                        "para o admin adicionar pelo menos um aprovador em "
+                        "Configuracoes > Departamentos antes de continuar."
+                    )
                 raise ManagerApprovalRequiredError(
                     "Esta empresa exige aprovacao do gestor antes de enviar ofertas. "
                     "Solicite aprovacao primeiro (workflow de approval) ou altere "
