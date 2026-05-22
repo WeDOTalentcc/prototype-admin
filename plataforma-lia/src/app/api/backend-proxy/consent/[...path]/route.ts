@@ -2,34 +2,18 @@ export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
+import { getAuthHeaders } from '@/lib/api/auth-headers'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
+
+// Auditoria 2026-05-22: getHeaders local antigo so forwardava Authorization
+// se browser explicitamente enviasse, sem fallback pra cookie — usuario logado
+// via cookie WorkOS/lia_access_token caia em 401. Alem disso forwardava
+// X-Company-ID/X-User-ID/X-User-Role (REGRA 6 CLAUDE.md anti-pattern).
+// Wrapper mantido para evitar mudar todas as 4 handlers (GET/POST/PUT/DELETE)
+// abaixo; delega ao canonical (resolve auth de header OU cookies).
 function getHeaders(request: NextRequest): HeadersInit {
-  const headers: HeadersInit = {
-    'Content-Type': 'application/json',
-  }
-
-  const authHeader = request.headers.get('Authorization')
-  if (authHeader) {
-    headers['Authorization'] = authHeader
-  }
-
-  const companyId = request.headers.get('X-Company-ID')
-  if (companyId) {
-    headers['X-Company-ID'] = companyId
-  }
-
-  const userId = request.headers.get('X-User-ID')
-  if (userId) {
-    headers['X-User-ID'] = userId
-  }
-
-  const userRole = request.headers.get('X-User-Role')
-  if (userRole) {
-    headers['X-User-Role'] = userRole
-  }
-
-  return headers
+  return getAuthHeaders(request)
 }
 
 export async function GET(
