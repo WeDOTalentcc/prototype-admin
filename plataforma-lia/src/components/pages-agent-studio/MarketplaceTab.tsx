@@ -69,7 +69,7 @@ export default function MarketplaceTab() {
               key={tab.id}
               onClick={() => setActiveView(tab.id)}
               className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-all",
+                "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
                 activeView === tab.id
                   ? "bg-lia-bg-primary text-lia-text-primary shadow-sm"
                   : "text-lia-text-secondary hover:text-lia-text-primary"
@@ -160,7 +160,7 @@ function BrowseMarketplace() {
               key={key}
               onClick={() => setCategory(key)}
               className={cn(
-                "px-3 py-2 rounded-lg text-xs font-medium transition-all",
+                "px-3 py-2 rounded-lg text-xs font-medium transition-colors",
                 category === key
                   ? "bg-violet-100 dark:bg-violet-950/30 text-violet-700 dark:text-violet-400"
                   : "text-lia-text-secondary hover:bg-lia-bg-tertiary"
@@ -189,7 +189,7 @@ function BrowseMarketplace() {
           {listings.map(listing => (
             <div
               key={listing.id}
-              className="rounded-md border border-lia-border-subtle bg-lia-bg-secondary hover:border-violet-300 dark:hover:border-violet-700 hover:shadow-md transition-all duration-200"
+              className="rounded-md border border-lia-border-subtle bg-lia-bg-secondary hover:border-violet-300 dark:hover:border-violet-700 hover:shadow-md transition-colors duration-200"
             >
               <div className="p-4">
                 <div className="flex items-start justify-between mb-3">

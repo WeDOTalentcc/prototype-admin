@@ -18,6 +18,7 @@ import {
   GraduationCap, BarChart3, Clock
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { getSourcingAgentStatusConfig } from "@/lib/agent-studio/status-config"
 import { toast } from "@/lib/toast"
 import { extractErrorMessage } from "@/lib/api/extract-error-message"
 import { Button } from "@/components/ui/button"
@@ -65,10 +66,14 @@ const SECTOR_COLORS: Record<string, { bg: string; text: string; accent: string; 
   truck: { bg: "bg-emerald-50 dark:bg-emerald-950/20", text: "text-emerald-700 dark:text-emerald-400", accent: "bg-emerald-500", glow: "shadow-emerald-200/50 dark:shadow-emerald-900/30" },
 }
 
-const STATUS_CONFIG_STYLES = {
-  active: { labelKey: "studio.status.active" as const, dot: "bg-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950/30", text: "text-emerald-700 dark:text-emerald-400", pulse: true },
-  paused: { labelKey: "studio.status.paused" as const, dot: "bg-amber-500", bg: "bg-amber-50 dark:bg-amber-950/30", text: "text-amber-700 dark:text-amber-400", pulse: false },
-  completed: { labelKey: "studio.status.completed" as const, dot: "bg-lia-text-disabled", bg: "bg-lia-bg-tertiary", text: "text-lia-text-secondary", pulse: false },
+// UX-Sprint-A QW#18 Batch 3 (audit 2026-05-21): STATUS_CONFIG_STYLES extraído
+// para lib/agent-studio/status-config.ts canonical (deletadas 3 duplicações).
+// Status labels (i18n) precisam continuar locais — sourcing agents usam
+// studio.status.* namespace. Visual config vem do canonical.
+const STATUS_CONFIG_LABELS = {
+  active: "studio.status.active" as const,
+  paused: "studio.status.paused" as const,
+  completed: "studio.status.completed" as const,
 }
 
 const FLOW_STEPS_CONFIG = [
@@ -372,7 +377,7 @@ export default function AgentStudioPage({
                       onClick={() => { setSelectedTemplate(t); setShowCreateModal(true) }}
                       className={cn(
                         "group relative flex flex-col items-center gap-2.5 p-5 rounded-xl border border-lia-border-subtle",
-                        "bg-lia-bg-secondary hover:border-lia-border-medium transition-all duration-200",
+                        "bg-lia-bg-secondary hover:border-lia-border-medium transition-colors duration-200",
                         "hover:shadow-lg cursor-pointer", colors.glow && `hover:${colors.glow}`
                       )}
                     >
@@ -678,7 +683,8 @@ function AgentCard({
   onNavigate: () => void
 }) {
   const t = useTranslations("agents")
-  const status = STATUS_CONFIG_STYLES[agent.status]
+  const status = getSourcingAgentStatusConfig(agent.status)
+  const statusLabelKey = STATUS_CONFIG_LABELS[agent.status as keyof typeof STATUS_CONFIG_LABELS] || "studio.status.completed"
   const strategy = agent.search_strategy as { required_skills?: string[]; exclusions?: string[] }
   const totalReviewed = agent.profiles_approved + agent.profiles_rejected
   const approvalRate = totalReviewed > 0 ? Math.round((agent.profiles_approved / totalReviewed) * 100) : 0
@@ -686,7 +692,7 @@ function AgentCard({
   return (
     <div className={cn(
       "group relative rounded-xl border border-lia-border-subtle bg-lia-bg-secondary",
-      "hover:border-lia-border-medium hover:shadow-md transition-all duration-200"
+      "hover:border-lia-border-medium hover:shadow-md transition-colors duration-200"
     )}>
       <div className="p-4">
         {/* Header */}
@@ -714,7 +720,7 @@ function AgentCard({
           </div>
           <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold", status.bg, status.text)}>
             <div className={cn("w-1.5 h-1.5 rounded-full", status.dot, status.pulse && "animate-pulse")} />
-            {t(status.labelKey)}
+            {t(statusLabelKey)}
           </div>
         </div>
 
@@ -913,7 +919,7 @@ function CreateAgentModal({ initialTemplate, onClose, onCreated }: {
                   key={opt.id}
                   onClick={() => setLinkType(opt.id)}
                   className={cn(
-                    "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition-all",
+                    "flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium border transition-colors",
                     linkType === opt.id
                       ? "border-lia-text-primary bg-lia-bg-tertiary text-lia-text-primary"
                       : "border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
@@ -950,7 +956,7 @@ function CreateAgentModal({ initialTemplate, onClose, onCreated }: {
                   key={n}
                   onClick={() => setCandidatesPerDay(n)}
                   className={cn(
-                    "px-4 py-2 rounded-lg text-xs font-medium border transition-all",
+                    "px-4 py-2 rounded-lg text-xs font-medium border transition-colors",
                     candidatesPerDay === n
                       ? "border-lia-text-primary bg-lia-bg-tertiary text-lia-text-primary"
                       : "border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"
@@ -974,7 +980,7 @@ function CreateAgentModal({ initialTemplate, onClose, onCreated }: {
                   key={opt.id}
                   onClick={() => setNotifyFrequency(opt.id)}
                   className={cn(
-                    "px-3 py-2 rounded-lg text-xs font-medium border transition-all",
+                    "px-3 py-2 rounded-lg text-xs font-medium border transition-colors",
                     notifyFrequency === opt.id
                       ? "border-lia-text-primary bg-lia-bg-tertiary text-lia-text-primary"
                       : "border-lia-border-subtle text-lia-text-secondary hover:bg-lia-bg-secondary"

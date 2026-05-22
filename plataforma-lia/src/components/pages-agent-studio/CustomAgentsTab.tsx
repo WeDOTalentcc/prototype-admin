@@ -8,6 +8,7 @@ import {
   ChevronRight, MoreVertical, Store
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { getCustomAgentStatusConfig } from "@/lib/agent-studio/status-config"
 import { Button } from "@/components/ui/button"
 import { TabSectionHeader } from "@/components/pages-agent-studio/TabSectionHeader"
 import {
@@ -35,11 +36,14 @@ interface CustomAgent {
   temperature?: number
 }
 
-const STATUS_CONFIG: Record<string, { labelKey: string; dot: string; bg: string; text: string }> = {
-  draft: { labelKey: "statusDraft", dot: "bg-lia-text-disabled", bg: "bg-lia-bg-secondary dark:bg-lia-bg-inverse/30", text: "text-lia-text-secondary dark:text-lia-text-tertiary" },
-  active: { labelKey: "statusActive", dot: "bg-emerald-500", bg: "bg-emerald-50 dark:bg-emerald-950/30", text: "text-emerald-700 dark:text-emerald-400" },
-  paused: { labelKey: "statusPaused", dot: "bg-amber-500", bg: "bg-amber-50 dark:bg-amber-950/30", text: "text-amber-700 dark:text-amber-400" },
-  archived: { labelKey: "statusArchived", dot: "bg-red-400", bg: "bg-red-50 dark:bg-red-950/30", text: "text-red-600 dark:text-red-400" },
+// UX-Sprint-A QW#18 Batch 3 (audit 2026-05-21): STATUS_CONFIG extraído para
+// lib/agent-studio/status-config.ts canonical (3 duplicações eliminadas).
+// Label keys mantidas locais para i18n namespace customAgents.
+const STATUS_LABELS = {
+  draft: "statusDraft",
+  active: "statusActive",
+  paused: "statusPaused",
+  archived: "statusArchived",
 }
 
 export default function CustomAgentsTab() {
@@ -142,13 +146,13 @@ export default function CustomAgentsTab() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {agents.map(agent => {
-            const statusConf = STATUS_CONFIG[agent.status] || STATUS_CONFIG.draft
+            const statusConf = getCustomAgentStatusConfig(agent.status)
             return (
               <div
                 key={agent.id}
                 className={cn(
                   "group relative rounded-md border border-lia-border-subtle bg-lia-bg-secondary",
-                  "hover:border-lia-border-medium hover:shadow-md transition-all duration-200"
+                  "hover:border-lia-border-medium hover:shadow-md transition-colors duration-200"
                 )}
               >
                 <div className="p-4">
@@ -164,7 +168,7 @@ export default function CustomAgentsTab() {
                     </div>
                     <div className={cn("flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-semibold", statusConf.bg, statusConf.text)}>
                       <div className={cn("w-1.5 h-1.5 rounded-full", statusConf.dot)} />
-                      {t(statusConf.labelKey)}
+                      {t(STATUS_LABELS[agent.status as keyof typeof STATUS_LABELS])}
                     </div>
                   </div>
 

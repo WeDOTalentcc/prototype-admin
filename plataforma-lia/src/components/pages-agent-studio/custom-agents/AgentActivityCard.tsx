@@ -49,7 +49,7 @@ export function AgentActivityCard({
       {/* Progress bar */}
       <div className="w-full bg-lia-bg-tertiary rounded-full h-1.5">
         <div
-          className="bg-wedo-cyan h-1.5 rounded-full transition-all duration-500"
+          className="bg-wedo-cyan h-1.5 rounded-full transition-colors duration-500"
           style={{ width: `${progress}%` }}
         />
       </div>

@@ -5,6 +5,7 @@ import { Bot, Play, Pause, MoreVertical, Link2, TestTube2 } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { cardStyles, badgeStyles, textStyles } from "@/lib/design-tokens"
+import { getCustomAgentStatusConfig } from "@/lib/agent-studio/status-config"
 import { BetaBadge } from "@/components/ui/beta-badge"
 import type { CustomAgent } from "./types"
 import { safeCategoryKey } from "./types"
@@ -21,14 +22,13 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus }: AgentCard
   const tStatus = useTranslations('agents.status')
   const tCat = useTranslations('agents.customAgents')
 
-  const STATUS_STYLES: Record<string, { label: string; badge: string }> = {
-    draft: { label: tStatus('draft'), badge: badgeStyles.default },
-    active: { label: tStatus('active'), badge: badgeStyles.success },
-    paused: { label: tStatus('paused'), badge: badgeStyles.warning },
-    archived: { label: tStatus('archived'), badge: badgeStyles.error },
+  // UX-Sprint-A QW#18 Batch 3 (audit 2026-05-21): STATUS_STYLES extraído para
+  // lib/agent-studio/status-config.ts canonical. Label fica local (i18n tStatus).
+  const statusConfig = getCustomAgentStatusConfig(agent.status)
+  const statusStyle = {
+    label: tStatus(agent.status as "draft" | "active" | "paused" | "archived") || tStatus("draft"),
+    badge: statusConfig.badge,
   }
-
-  const statusStyle = STATUS_STYLES[agent.status] || STATUS_STYLES.draft
   const category = safeCategoryKey(agent.domain)
   const categoryLabel = tCat('categories.' + category) || agent.domain || 'general'
 

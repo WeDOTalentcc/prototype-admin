@@ -173,7 +173,7 @@ export default function VoiceScreeningButton({
 
                 <div className="w-full bg-lia-interactive-active rounded-full h-1.5">
                   <div
-                    className="bg-lia-bg-inverse h-1.5 rounded-full transition-all"
+                    className="bg-lia-bg-inverse h-1.5 rounded-full transition-colors"
                     style={{ width: `${progress * 100}%` }}
                   />
                 </div>
