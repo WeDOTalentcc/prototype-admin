@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthHeaders } from "@/lib/api/auth-headers"
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
 
@@ -11,12 +12,7 @@ export async function GET(
     const { logId } = await params
     
     const response = await fetch(`${BACKEND_URL}/api/v1/audit-logs/${logId}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Company-ID': request.headers.get('X-Company-ID') || 'platform',
-        'X-User-ID': request.headers.get('X-User-ID') || 'admin_user',
-        'X-User-Role': request.headers.get('X-User-Role') || 'admin'
-      }
+      headers: getAuthHeaders(request)
     })
     
     if (!response.ok) {

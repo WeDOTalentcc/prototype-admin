@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthHeaders } from "@/lib/api/auth-headers"
 import { validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 
@@ -11,12 +12,7 @@ export async function GET(request: NextRequest) {
     const queryString = searchParams.toString()
     
     const response = await fetch(`${BACKEND_URL}/api/v1/audit-logs${queryString ? `?${queryString}` : ''}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Company-ID': request.headers.get('X-Company-ID') || 'platform',
-        'X-User-ID': request.headers.get('X-User-ID') || 'admin_user',
-        'X-User-Role': request.headers.get('X-User-Role') || 'admin'
-      }
+      headers: getAuthHeaders(request)
     })
     
     if (!response.ok) {
@@ -43,12 +39,7 @@ export async function POST(request: NextRequest) {
     
     const response = await fetch(`${BACKEND_URL}/api/v1/audit-logs`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Company-ID': request.headers.get('X-Company-ID') || 'platform',
-        'X-User-ID': request.headers.get('X-User-ID') || 'admin_user',
-        'X-User-Role': request.headers.get('X-User-Role') || 'admin'
-      },
+      headers: getAuthHeaders(request),
       body: JSON.stringify(body)
     })
     
