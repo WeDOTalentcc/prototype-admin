@@ -83,6 +83,11 @@ try:
 except ImportError:
     _WSIVoiceOrchestrator = None  # type: ignore[assignment]
 
+# F-01 P0 fix (audit 2026-05-22): canonical llm_service singleton — used in
+# generate_lia_response.generate_native_gemini_sync. Era ausente do __init__,
+# AttributeError silenciado por except genérico → fallback scripted permanente.
+from app.domains.ai.services.llm import llm_service as _canonical_llm_service
+
 logger = logging.getLogger(__name__)
 
 
@@ -149,6 +154,11 @@ class VoiceScreeningOrchestrator:
     def __init__(self):
         self._sessions: dict[str, VoiceScreeningSession] = {}
         self._tts_service = VoiceService()
+        # F-01 P0 fix (audit 2026-05-22 AUDIT_VOICE_SCREENING_ORCHESTRATOR.md):
+        # canonical llm_service singleton — referenced by generate_lia_response:1109
+        # for generate_native_gemini_sync. Era ausente; AttributeError silenciado
+        # pelo except genérico → fallback scripted permanente em produção.
+        self._llm_service = _canonical_llm_service
 
     # ── Session persistence helpers ──────────────────────────────────────────
 
