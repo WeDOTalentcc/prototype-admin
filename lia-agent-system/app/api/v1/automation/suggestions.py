@@ -290,7 +290,9 @@ company_id: str = Depends(require_company_id)):
     """
     try:
         repo = AISuggestionRepository(db)
-        suggestions = await repo.list_by_vacancy(vacancy_id, status=status)
+        suggestions = await repo.list_by_vacancy(
+            vacancy_id, company_id=company_id, status=status
+        )
         return {
             "success": True,
             "suggestions": [s.to_dict() for s in suggestions]
@@ -312,7 +314,9 @@ company_id: str = Depends(require_company_id)):
     """
     try:
         repo = AISuggestionRepository(db)
-        suggestions = await repo.list_by_candidate(candidate_id, status=status)
+        suggestions = await repo.list_by_candidate(
+            candidate_id, company_id=company_id, status=status
+        )
         return {
             "success": True,
             "suggestions": [s.to_dict() for s in suggestions]
@@ -333,7 +337,7 @@ company_id: str = Depends(require_company_id)):
     """
     try:
         repo = AISuggestionRepository(db)
-        suggestion = await repo.get_by_id(suggestion_id)
+        suggestion = await repo.get_by_id(suggestion_id, company_id=company_id)
 
         if not suggestion:
             raise HTTPException(status_code=404, detail="Suggestion not found")
@@ -376,7 +380,7 @@ company_id: str = Depends(require_company_id)):
     """
     try:
         repo = AISuggestionRepository(db)
-        suggestion = await repo.get_by_id(suggestion_id)
+        suggestion = await repo.get_by_id(suggestion_id, company_id=company_id)
 
         if not suggestion:
             raise HTTPException(status_code=404, detail="Suggestion not found")
