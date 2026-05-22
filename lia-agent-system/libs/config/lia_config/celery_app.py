@@ -298,6 +298,13 @@ celery_app.conf.update(
             "schedule": crontab(day_of_month=1, hour=6, minute=0),  # 03h Brasília / UTC-3
             "options": {"expires": 3600},
         },
+        # F-05 P0 LGPD Art. 16: voice data retention daily at 03:15 UTC (00:15 Brasília)
+        # Paulo approved 2026-05-22: 60d audio / 180d transcript / 365d wsi_score
+        "voice-retention-daily": {
+            "task": "voice.retention_purge_daily",
+            "schedule": crontab(hour=3, minute=15),  # 00:15 Brasília / UTC-3
+            "options": {"expires": 7200, "queue": "onboarding_low"},
+        },
         # LGPD cleanup diário às 02h Brasília (UTC-3 → 05h UTC)
         "lgpd-cleanup-daily": {
             "task": "lgpd.run_cleanup_daily",
