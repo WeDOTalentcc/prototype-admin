@@ -52,7 +52,7 @@ def upgrade() -> None:
                 HAVING COUNT(*) = 1
             ),
             single_company_names AS (
-                SELECT name, MIN(company_id) AS company_id
+                SELECT name, (array_agg(company_id))[1] AS company_id
                 FROM unique_departments
                 GROUP BY name
                 HAVING COUNT(*) = 1
