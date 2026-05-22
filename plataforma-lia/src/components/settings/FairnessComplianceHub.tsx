@@ -139,7 +139,7 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="fairness-dashboard">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -148,7 +148,7 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
         </div>
         <div className="flex items-center gap-3">
           <Select value={period} onValueChange={setPeriod}>
-            <SelectTrigger className="w-[140px]">
+            <SelectTrigger className="w-[140px]" data-testid="fairness-period-select">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -158,10 +158,10 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
               <SelectItem value="365">{t("period365")}</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="sm" onClick={() => handleExport("csv")}>
+          <Button variant="outline" size="sm" onClick={() => handleExport("csv")} data-testid="fairness-export-csv">
             <Download className="w-4 h-4 mr-1.5" /> {t("exportCsv")}
           </Button>
-          <Button variant="outline" size="sm" onClick={() => handleExport("json")}>
+          <Button variant="outline" size="sm" onClick={() => handleExport("json")} data-testid="fairness-export-json">
             <Download className="w-4 h-4 mr-1.5" /> {t("exportJson")}
           </Button>
         </div>
@@ -221,7 +221,7 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
 
       {/* Bar Chart */}
       {!loading && chartData.length > 0 && (
-        <Card className={cardStyles.default}>
+        <Card className={cardStyles.default} data-testid="fairness-drilldown">
           <CardHeader className="pb-2">
             <CardTitle className={textStyles.subtitle}>{t("eventsByCategory")}</CardTitle>
           </CardHeader>
@@ -242,7 +242,7 @@ export function FairnessComplianceHub({ activeSubsection }: FairnessComplianceHu
 
       {/* Recent Incidents Table */}
       {!loading && logs.length > 0 && (
-        <Card className={cardStyles.default}>
+        <Card className={cardStyles.default} data-testid="fairness-incidents">
           <CardHeader className="pb-2">
             <CardTitle className={textStyles.subtitle}>{t("recentIncidents")}</CardTitle>
           </CardHeader>

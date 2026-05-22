@@ -71,7 +71,7 @@ export function StudioComplianceView() {
   if (!data) return null
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="studio-compliance-view">
       {/* Header with period selector */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -79,7 +79,7 @@ export function StudioComplianceView() {
           <h2 className={textStyles.title}>{t("title")}</h2>
         </div>
         <Select value={period} onValueChange={setPeriod}>
-          <SelectTrigger className="w-40">
+          <SelectTrigger className="w-40" data-testid="studio-compliance-period-select">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

@@ -525,6 +525,7 @@ function OverrideModal({
             onChange={(e) => setReason(e.target.value)}
             rows={3}
             data-testid="ai-transparency-override-reason"
+            data-field="override_reason"
             className="w-full rounded-md border border-lia-border-default bg-lia-bg-primary px-2 py-1 text-xs"
           />
         </label>

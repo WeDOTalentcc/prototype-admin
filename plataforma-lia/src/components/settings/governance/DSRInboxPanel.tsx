@@ -252,7 +252,7 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
         </div>
       </div>
 
-      <div className={cn(cardStyles.default, "overflow-x-auto")}>
+      <div className={cn(cardStyles.default, "overflow-x-auto")} data-testid="dsr-inbox-list">
         <table className="min-w-full text-xs">
           <thead className="bg-lia-bg-secondary">
             <tr className="text-left text-lia-text-secondary">
@@ -277,7 +277,7 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
               const id = dsr.id ?? dsr.request_id ?? ""
               const status = (dsr.status ?? "").toLowerCase()
               return (
-                <tr key={id} className="border-t border-lia-border-subtle">
+                <tr key={id} className="border-t border-lia-border-subtle" data-testid={`dsr-row-${id}`}>
                   <td className="px-3 py-2 font-mono text-[11px]">{id.slice(0, 8) || "-"}</td>
                   <td className="px-3 py-2">{dsr.request_type ?? dsr.type ?? "-"}</td>
                   <td className="px-3 py-2">{dsr.subject_email ?? dsr.email ?? "-"}</td>
@@ -309,6 +309,7 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
                               onClick={() => handleDsrAction(id, "assign")}
                               className="h-6 px-2 text-[10px]"
                               title="Atribuir DSR"
+                              data-testid={`dsr-action-assign-${id}`}
                             >
                               Atribuir
                             </Button>
@@ -320,6 +321,7 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
                               onClick={() => handleDsrAction(id, "verify-identity")}
                               className="h-6 px-2 text-[10px]"
                               title="Verificar identidade"
+                              data-testid={`dsr-action-verify-${id}`}
                             >
                               Verificar
                             </Button>
@@ -334,6 +336,7 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
                             onClick={() => handleDsrAction(id, "process")}
                             className="h-6 px-2 text-[10px]"
                             title="Mover para Processing"
+                            data-testid={`dsr-action-process-${id}`}
                           >
                             Processar
                           </Button>
@@ -348,6 +351,7 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
                               onClick={() => handleDsrAction(id, "complete")}
                               className="h-6 px-2 text-[10px]"
                               title="Concluir DSR (executa side-effect real)"
+                              data-testid={`dsr-action-complete-${id}`}
                             >
                               Concluir
                             </Button>
@@ -359,6 +363,7 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
                               onClick={() => handleDsrAction(id, "reject")}
                               className="h-6 px-2 text-[10px]"
                               title="Rejeitar"
+                              data-testid={`dsr-action-reject-${id}`}
                             >
                               Rejeitar
                             </Button>
