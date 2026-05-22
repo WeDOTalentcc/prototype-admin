@@ -10,7 +10,7 @@ from datetime import datetime
 import uuid
 
 from sqlalchemy import (
-    Boolean, CheckConstraint, Column, DateTime, Index,
+    Boolean, CheckConstraint, Column, DateTime, ForeignKey, Index,
     LargeBinary, Numeric, String, Text,
 )
 from sqlalchemy.dialects.postgresql import JSONB, UUID
@@ -39,6 +39,10 @@ class OfferProposal(EncryptedFieldMixin, Base):
         Index("ix_offer_proposals_job_vacancy_id", "job_vacancy_id"),
         Index("ix_offer_proposals_status", "status"),
         Index("ix_offer_proposals_vacancy_candidate_id", "vacancy_candidate_id"),
+        # Camada 3 Item 3 (2026-05-22, migration 172): composite index
+        # for per-department approver lookup hot path in
+        # OfferService._has_eligible_approver_for_amount.
+        Index("ix_offer_proposals_company_department", "company_id", "department_id"),
         CheckConstraint(
             "status IN ('draft','sent','accepted','declined','expired','cancelled')",
             name="chk_offer_status",
@@ -59,6 +63,16 @@ class OfferProposal(EncryptedFieldMixin, Base):
     job_vacancy_id = Column(UUID(as_uuid=True), nullable=True)
     candidate_id = Column(UUID(as_uuid=True), nullable=True)
     vacancy_candidate_id = Column(UUID(as_uuid=True), nullable=True)
+
+    # Camada 3 Item 3 (2026-05-22, migration 172): per-department approver
+    # routing. NULL = offer sem associacao explicita de departamento
+    # (backward-compat). Hot-path indexed em __table_args__ acima
+    # (ix_offer_proposals_company_department).
+    department_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("departments.id", ondelete="SET NULL"),
+        nullable=True,
+    )
 
     # Display denormalizado (cache para listagens / cartas)
     candidate_name = Column(String(255), nullable=False)
