@@ -18,10 +18,19 @@ interface TemplateGalleryProps {
 export function TemplateGallery({ onTemplateSelect, onCreateManual }: TemplateGalleryProps) {
   const t = useTranslations('agents.customAgents')
   const { activeCategory, setActiveCategory } = useAgentStudioStore()
+  // UX-Sprint-A QW#20 Batch 5 (audit 2026-05-21): free-text search local
+  const [searchQuery, setSearchQuery] = React.useState("")
 
-  const filtered = activeCategory === "all"
-    ? AGENT_TEMPLATES
-    : AGENT_TEMPLATES.filter((t) => t.category === activeCategory)
+  // UX-Sprint-A QW#20: filter combinado category + search
+  const filtered = AGENT_TEMPLATES.filter((tmpl) => {
+    const matchesCategory = activeCategory === "all" || tmpl.category === activeCategory
+    const q = searchQuery.trim().toLowerCase()
+    const matchesSearch = !q ||
+      tmpl.name.toLowerCase().includes(q) ||
+      
+      (tmpl.description || "").toLowerCase().includes(q)
+    return matchesCategory && matchesSearch
+  })
 
   return (
     <div className="space-y-5">
@@ -41,6 +50,19 @@ export function TemplateGallery({ onTemplateSelect, onCreateManual }: TemplateGa
           <Icons.Plus className="w-3.5 h-3.5 mr-1.5" />
           {t('createFromScratch')}
         </button>
+      </div>
+
+      {/* UX-Sprint-A QW#20 Batch 5 (audit 2026-05-21): search input para filtrar 15 templates */}
+      <div className="relative">
+        <Icons.Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-lia-text-disabled pointer-events-none" aria-hidden="true" />
+        <input
+          type="search"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder={t('searchPlaceholder')}
+          aria-label={t('searchPlaceholder')}
+          className="w-full pl-9 pr-3 py-2 text-sm border border-lia-border-subtle rounded-lg bg-lia-bg-primary text-lia-text-primary placeholder:text-lia-text-disabled focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg/20"
+        />
       </div>
 
       {/* Category Filters */}
