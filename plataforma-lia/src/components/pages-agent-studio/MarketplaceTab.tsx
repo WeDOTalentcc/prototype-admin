@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from "react"
 import { toast } from "@/lib/toast"
+import { ConfirmAlertDialog } from "@/components/agent-studio/confirm-alert-dialog"
 import { useTranslations } from "next-intl"
 import {
   Store, Download, Search, Star, Loader2,
@@ -279,15 +280,24 @@ function InstalledAgents() {
 
   useEffect(() => { load() }, [load])
 
-  const handleUninstall = async (installationId: string) => {
-    if (!confirm(t('confirmUninstall'))) return
+  // Sprint B QW#4 audit 2026-05-22: state-driven confirm via shadcn AlertDialog
+  const [uninstallTargetId, setUninstallTargetId] = useState<string | null>(null)
+
+  const handleUninstall = (installationId: string) => {
+    setUninstallTargetId(installationId)
+  }
+
+  const confirmUninstall = async () => {
+    if (!uninstallTargetId) return
     try {
-      await fetch(`/api/backend-proxy/agent-marketplace/installations/${installationId}`, {
+      await fetch(`/api/backend-proxy/agent-marketplace/installations/${uninstallTargetId}`, {
         method: "DELETE",
       })
       load()
     } catch (err) {
       console.error("Failed to uninstall:", err)
+    } finally {
+      setUninstallTargetId(null)
     }
   }
 
@@ -344,7 +354,18 @@ function InstalledAgents() {
           </button>
         </div>
       ))}
-    </div>
+          {/* Sprint B QW#4 audit 2026-05-22: ConfirmAlertDialog canonical (era native confirm) */}
+      <ConfirmAlertDialog
+        open={uninstallTargetId !== null}
+        onOpenChange={(open) => !open && setUninstallTargetId(null)}
+        title={t('confirmUninstallTitle') || 'Desinstalar agente?'}
+        description={t('confirmUninstall')}
+        onConfirm={confirmUninstall}
+        confirmLabel={t('uninstall') || 'Desinstalar'}
+        destructive
+      />
+
+      </div>
   )
 }
 
@@ -417,6 +438,6 @@ function BillingView() {
           </table>
         </div>
       )}
-    </div>
+          </div>
   )
 }

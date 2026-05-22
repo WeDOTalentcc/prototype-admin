@@ -67,7 +67,7 @@ export function AgentChatCard({ agent, deploymentCount = 0, onViewDetails }: Age
         <button
           type="button"
           onClick={onViewDetails}
-          className="w-full text-[11px] text-wedo-cyan-dark hover:underline text-left pt-1"
+          className="w-full text-[11px] text-wedo-cyan-dark hover:underline text-left pt-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
         >
           {t('viewDetails')}
         </button>

@@ -111,7 +111,7 @@ export function AgentCreationPreview({ description, onClose, onCreated }: AgentC
           <h3 className={cn(textStyles.subtitle, "text-sm font-semibold")}>{t('newAgent')}</h3>
           <BetaBadge size="sm" />
         </div>
-        <button type="button" onClick={onClose} className="text-lia-text-disabled hover:text-lia-text-secondary">
+        <button type="button" onClick={onClose} className="text-lia-text-disabled hover:text-lia-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30">
           <X className="w-4 h-4" />
         </button>
       </div>

@@ -208,7 +208,7 @@ export default function CalibrationCardModal({
         <DialogDescription className="sr-only">{t('evaluateCandidatesDesc')}</DialogDescription>
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-3">
-          <button onClick={onClose} className="flex items-center gap-1 text-sm text-lia-text-secondary hover:text-lia-text-primary">
+          <button onClick={onClose} className="flex items-center gap-1 text-sm text-lia-text-secondary hover:text-lia-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30">
             <ChevronLeft className="w-4 h-4" /> {t('back')}
           </button>
           <span className={textStyles.caption}>
@@ -243,7 +243,7 @@ export default function CalibrationCardModal({
             <p className="text-xs text-lia-text-secondary text-center">{loadError}</p>
             <button
               onClick={loadCandidates}
-              className="mt-2 px-4 py-2 rounded-lg text-xs font-medium bg-lia-bg-tertiary text-lia-text-primary hover:bg-lia-bg-secondary border border-lia-border-subtle"
+              className="mt-2 px-4 py-2 rounded-lg text-xs font-medium bg-lia-bg-tertiary text-lia-text-primary hover:bg-lia-bg-secondary border border-lia-border-subtle focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
             >
               {t('tryAgain')}
             </button>
@@ -259,7 +259,7 @@ export default function CalibrationCardModal({
             </p>
             <button
               onClick={onClose}
-              className="mt-2 px-4 py-2 rounded-lg text-xs font-medium bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
+              className="mt-2 px-4 py-2 rounded-lg text-xs font-medium bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
             >
               {t('close')}
             </button>
@@ -348,7 +348,7 @@ export default function CalibrationCardModal({
               <div className="flex-1 overflow-y-auto p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h3 className={textStyles.h4}>{t('whyWeMatched')}</h3>
-                  <button className="text-sm text-lia-text-tertiary hover:text-lia-text-secondary flex items-center gap-1">
+                  <button className="text-sm text-lia-text-tertiary hover:text-lia-text-secondary flex items-center gap-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30">
                     <Edit3 className="w-3.5 h-3.5" /> {t('editCriteria')}
                   </button>
                 </div>
@@ -423,7 +423,7 @@ export default function CalibrationCardModal({
           <div className="flex items-center gap-2">
             <button
               onClick={onClose}
-              className="text-sm text-lia-text-tertiary hover:text-lia-text-secondary"
+              className="text-sm text-lia-text-tertiary hover:text-lia-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
             >
               {t('skipCalibration')}
             </button>
@@ -491,7 +491,7 @@ function RejectReasonModal({
           </div>
         </div>
         <div className="flex justify-end mt-3">
-          <button onClick={onClose} className="text-sm text-lia-text-tertiary hover:text-lia-text-secondary">
+          <button onClick={onClose} className="text-sm text-lia-text-tertiary hover:text-lia-text-secondary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30">
             {t('cancel')}
           </button>
         </div>

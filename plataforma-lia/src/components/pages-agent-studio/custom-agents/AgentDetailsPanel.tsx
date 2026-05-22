@@ -191,7 +191,7 @@ export function AgentDetailsPanel({ agent, open, onClose, onDeploy, onTest }: Ag
               type="button"
               onClick={handleClone}
               disabled={isCloning}
-              className="inline-flex items-center justify-center gap-1 px-3 py-2 rounded-md text-xs font-medium text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors"
+              className="inline-flex items-center justify-center gap-1 px-3 py-2 rounded-md text-xs font-medium text-lia-text-secondary hover:bg-lia-bg-tertiary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
             >
               <Copy className="w-3.5 h-3.5" />
               {isCloning ? t('cloning') : t('clone')}

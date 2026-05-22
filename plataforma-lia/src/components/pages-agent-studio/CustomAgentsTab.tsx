@@ -8,6 +8,7 @@ import {
   ChevronRight, MoreVertical, Store
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { ConfirmAlertDialog } from "@/components/agent-studio/confirm-alert-dialog"
 import { getCustomAgentStatusConfig } from "@/lib/agent-studio/status-config"
 import { Button } from "@/components/ui/button"
 import { TabSectionHeader } from "@/components/pages-agent-studio/TabSectionHeader"
@@ -73,13 +74,22 @@ export default function CustomAgentsTab() {
 
   useEffect(() => { loadAgents() }, [loadAgents])
 
-  const handleDelete = async (agentId: string) => {
-    if (!confirm(t('confirmDeleteAgent'))) return
+  // Sprint B QW#4 audit 2026-05-22: state-driven confirm via shadcn AlertDialog
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null)
+
+  const handleDelete = (agentId: string) => {
+    setDeleteTargetId(agentId)
+  }
+
+  const confirmDelete = async () => {
+    if (!deleteTargetId) return
     try {
-      await fetch(`/api/backend-proxy/custom-agents/${agentId}`, { method: "DELETE" })
+      await fetch(`/api/backend-proxy/custom-agents/${deleteTargetId}`, { method: "DELETE" })
       loadAgents()
     } catch (err) {
       console.error("Failed to delete agent:", err)
+    } finally {
+      setDeleteTargetId(null)
     }
   }
 
@@ -274,7 +284,18 @@ export default function CustomAgentsTab() {
           onClose={() => setTestingAgent(null)}
         />
       )}
-    </div>
+          {/* Sprint B QW#4 audit 2026-05-22: ConfirmAlertDialog canonical (era native confirm) */}
+      <ConfirmAlertDialog
+        open={deleteTargetId !== null}
+        onOpenChange={(open) => !open && setDeleteTargetId(null)}
+        title={t('confirmDeleteTitle') || 'Excluir agente?'}
+        description={t('confirmDeleteAgent')}
+        onConfirm={confirmDelete}
+        confirmLabel={t('delete') || 'Excluir'}
+        destructive
+      />
+
+      </div>
   )
 }
 
@@ -555,7 +576,7 @@ function TestAgentModal({ agent, onClose }: { agent: CustomAgent; onClose: () =>
               <p className="text-sm text-lia-text-primary whitespace-pre-wrap">{response}</p>
             </div>
           )}
-        </div>
+      </div>
       </DialogContent>
     </Dialog>
   )

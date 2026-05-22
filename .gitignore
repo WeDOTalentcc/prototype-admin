@@ -47,6 +47,8 @@ Thumbs.db
 # Logs
 *.log
 logs/
+# Allow Next.js dynamic API route subdir matching the literal name "logs"
+!plataforma-lia/src/app/api/backend-proxy/webhooks/[id]/logs/
 
 # Large assets - not for GitHub
 attached_assets/

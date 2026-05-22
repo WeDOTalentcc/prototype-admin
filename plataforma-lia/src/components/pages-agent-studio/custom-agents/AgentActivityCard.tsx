@@ -59,7 +59,7 @@ export function AgentActivityCard({
           <button
             type="button"
             onClick={onViewDetails}
-            className="text-[10px] text-wedo-cyan-dark hover:underline"
+            className="text-[10px] text-wedo-cyan-dark hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
           >
             {t('viewDetailsShort')}
           </button>

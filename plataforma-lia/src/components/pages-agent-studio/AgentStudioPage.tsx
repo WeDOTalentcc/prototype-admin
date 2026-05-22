@@ -192,6 +192,26 @@ export default function AgentStudioPage({
     }
   }
 
+  // Sprint B QW#15 audit 2026-05-22: Clone canonical (era enterrado em drawer)
+  const handleCloneCustomAgent = async (agent: CustomAgent) => {
+    try {
+      const token = localStorage.getItem("auth_token")
+      const res = await fetch(`/api/backend-proxy/custom-agents/${agent.id}/clone`, {
+        method: "POST",
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      })
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}))
+        throw new Error(extractErrorMessage(errBody, res.status))
+      }
+      toast.success(t("studio.toast.agentCloned") || "Agente duplicado com sucesso")
+      mutateCustomAgents()
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : (t("studio.toast.errorCloning") || "Erro ao duplicar agente")
+      toast.error(msg)
+    }
+  }
+
   const handleCustomAgentToggle = async (agent: CustomAgent) => {
     const newStatus = agent.status === "active" ? "paused" : "active"
     try {
@@ -560,6 +580,7 @@ export default function AgentStudioPage({
                         onTest={(a) => { a; setTestAgent(agent) }}
                         onDeploy={(a) => { a; setDeployAgent(agent) }}
                         onToggleStatus={(a) => { handleCustomAgentToggle(a) }}
+                        onClone={handleCloneCustomAgent}
                       />
                     </div>
                   ))}
@@ -800,14 +821,14 @@ function AgentCard({
           </button>
           <button
             onClick={onCalibrate}
-            className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg border border-lia-border-subtle text-xs font-medium text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary transition-colors"
+            className="flex-1 flex items-center justify-center gap-1.5 h-8 rounded-lg border border-lia-border-subtle text-xs font-medium text-lia-text-secondary hover:bg-lia-bg-tertiary hover:text-lia-text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
           >
             <Activity className="w-3.5 h-3.5" />
             {t("studio.card.recalibrate")}
           </button>
           <button
             onClick={onNavigate}
-            className="flex items-center justify-center gap-1 h-8 px-3 rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs font-medium hover:bg-lia-btn-primary-hover transition-colors"
+            className="flex items-center justify-center gap-1 h-8 px-3 rounded-lg bg-lia-btn-primary-bg text-lia-btn-primary-text text-xs font-medium hover:bg-lia-btn-primary-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
           >
             {t("studio.card.view")}
             <ChevronRight className="w-3 h-3" />

@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { cardStyles, badgeStyles, textStyles, buttonStyles } from "@/lib/design-tokens"
 import { toast } from "@/lib/toast"
+import { ConfirmAlertDialog } from "@/components/agent-studio/confirm-alert-dialog"
 import { useAgentVersions } from "@/hooks/agents"
 
 interface VersionHistoryPanelProps {
@@ -20,8 +21,17 @@ export function VersionHistoryPanel({ agentId, currentVersion, onReverted }: Ver
   const { versions, isLoading, mutate } = useAgentVersions(agentId)
   const [revertingVersion, setRevertingVersion] = useState<number | null>(null)
 
-  const handleRevert = async (version: number) => {
-    if (!confirm(t('confirmRevert', { version }))) return
+  // Sprint B QW#4 audit 2026-05-22: state-driven confirm via shadcn AlertDialog
+  const [revertTargetVersion, setRevertTargetVersion] = useState<number | null>(null)
+
+  const handleRevert = (version: number) => {
+    setRevertTargetVersion(version)
+  }
+
+  const confirmRevert = async () => {
+    const version = revertTargetVersion
+    if (version === null) return
+    setRevertTargetVersion(null)
     setRevertingVersion(version)
     try {
       const token = localStorage.getItem("auth_token")
@@ -115,6 +125,16 @@ export function VersionHistoryPanel({ agentId, currentVersion, onReverted }: Ver
           )
         })}
       </div>
-    </div>
+                {/* Sprint B QW#4 audit 2026-05-22: ConfirmAlertDialog canonical */}
+      <ConfirmAlertDialog
+        open={revertTargetVersion !== null}
+        onOpenChange={(open) => !open && setRevertTargetVersion(null)}
+        title={t('confirmRevertTitle') || 'Reverter versão?'}
+        description={revertTargetVersion !== null ? t('confirmRevert', { version: revertTargetVersion }) : ''}
+        onConfirm={confirmRevert}
+        confirmLabel={t('revert') || 'Reverter'}
+      />
+
+      </div>
   )
 }

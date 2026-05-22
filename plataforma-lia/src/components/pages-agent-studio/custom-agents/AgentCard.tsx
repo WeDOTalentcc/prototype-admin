@@ -1,10 +1,17 @@
 "use client"
 
 import React from "react"
-import { Bot, Play, Pause, MoreVertical, Link2, TestTube2 } from "lucide-react"
+import { Bot, Play, Pause, MoreVertical, Link2, TestTube2, Copy } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { cardStyles, badgeStyles, textStyles } from "@/lib/design-tokens"
+// Sprint B QW#15 audit 2026-05-22: 3-dot menu para Clone (era enterrado em drawer)
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { getCustomAgentStatusConfig } from "@/lib/agent-studio/status-config"
 import { BetaBadge } from "@/components/ui/beta-badge"
 import type { CustomAgent } from "./types"
@@ -15,9 +22,11 @@ interface AgentCardProps {
   onTest: (agent: CustomAgent) => void
   onDeploy: (agent: CustomAgent) => void
   onToggleStatus: (agent: CustomAgent) => void
+  /** Sprint B QW#15 audit 2026-05-22: Clone handler — opcional (caller decide se expõe) */
+  onClone?: (agent: CustomAgent) => void
 }
 
-export function AgentCard({ agent, onTest, onDeploy, onToggleStatus }: AgentCardProps) {
+export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: AgentCardProps) {
   const t = useTranslations('agents.card')
   const tStatus = useTranslations('agents.status')
   const tCat = useTranslations('agents.customAgents')
@@ -33,9 +42,31 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus }: AgentCard
   const categoryLabel = tCat('categories.' + category) || agent.domain || 'general'
 
   return (
-    <div className={cn(cardStyles.default, "p-4 flex flex-col gap-3")}>
+    <div className={cn(cardStyles.default, "p-4 flex flex-col gap-3 relative")}>
       {/* Header */}
       <div className="flex items-start justify-between">
+        {/* Sprint B QW#15 audit 2026-05-22: 3-dot menu via DropdownMenu shadcn */}
+        {onClone && (
+          <div className="absolute top-3 right-3">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  type="button"
+                  className="p-1 rounded-md text-lia-text-disabled hover:text-lia-text-primary hover:bg-lia-bg-tertiary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
+                  aria-label={t('moreActions') || 'Mais ações'}
+                >
+                  <MoreVertical className="w-4 h-4" aria-hidden="true" />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-40">
+                <DropdownMenuItem onClick={() => onClone(agent)} className="gap-2 cursor-pointer">
+                  <Copy className="w-3.5 h-3.5" aria-hidden="true" />
+                  {t('clone') || 'Duplicar'}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        )}
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-md bg-wedo-cyan/10 flex items-center justify-center">
             <Bot className="w-4 h-4 text-wedo-cyan-dark" />
