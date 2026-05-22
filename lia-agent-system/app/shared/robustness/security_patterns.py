@@ -454,6 +454,48 @@ SECURITY_PATTERNS: list[dict[str, Any]] = [
 ]
 
 
+
+# W1-005 hardening (2026-05-22) · MAX_INPUT_LENGTH + NFKC normalize
+# Pre-audit: tests/security/test_red_team_c3b_injection_wiring.py
+# Gap: regex compiled sobre texto raw bypassa via full-width unicode.
+# Plus: input > 4000 chars expõe regex DoS.
+import unicodedata as _unicodedata
+
+MAX_INPUT_LENGTH: int = 4000
+"""Threshold acima do qual o input é truncado antes do regex loop.
+
+Mitiga regex DoS sobre payloads gigantes. Truncamento mantém fim do texto
+(onde injection comum aparece) preservando início + cauda.
+4000 bate com v5 prompt_injection_guard.py referência.
+"""
+
+_INVISIBLE_CHARS = (
+    "\u200B"  # ZERO WIDTH SPACE
+    "\u200C"  # ZERO WIDTH NON-JOINER
+    "\u200D"  # ZERO WIDTH JOINER
+    "\u202E"  # RIGHT-TO-LEFT OVERRIDE
+    "\uFEFF"  # ZERO WIDTH NO-BREAK SPACE (BOM)
+    "\u2060"  # WORD JOINER
+)
+_INVISIBLE_RE = re.compile(f"[{re.escape(_INVISIBLE_CHARS)}]")
+
+
+def _normalize_for_detection(text: str) -> str:
+    """Normalize input antes de regex matching (defesa adversarial).
+
+    - NFKC: full-width → ASCII (Ｉｇｎｏｒｅ → Ignore), ligaduras, super/subscripts
+    - Strip caracteres invisiveis: U+200B/200C/200D/202E/FEFF/2060
+
+    NÃO modifica o texto original retornado em SecurityCheckResult.original_input
+    (auditoria preserva o que veio do usuário). Apenas usado internamente
+    para match contra padrões.
+    """
+    if not text:
+        return text
+    normalized = _unicodedata.normalize("NFKC", text)
+    return _INVISIBLE_RE.sub("", normalized)
+
+
 def check_input_security(text: str) -> SecurityCheckResult:
     """
     Check user input against all security patterns.
@@ -475,9 +517,21 @@ def check_input_security(text: str) -> SecurityCheckResult:
     max_confidence = 0.0
     max_risk = RiskLevel.NONE
 
+    # W1-005 (2026-05-22) · adversarial normalize + DoS protection
+    # 1. Trunca payloads gigantes para evitar regex DoS (mantém início + cauda)
+    if len(text) > MAX_INPUT_LENGTH:
+        # Tail é importante (injection comum no fim); mantém 80% início + 20% fim
+        head_len = int(MAX_INPUT_LENGTH * 0.8)
+        tail_len = MAX_INPUT_LENGTH - head_len
+        scan_text = text[:head_len] + text[-tail_len:]
+    else:
+        scan_text = text
+    # 2. NFKC normalize + strip caracteres invisiveis (anti-bypass)
+    normalized = _normalize_for_detection(scan_text)
+
     for pattern_def in SECURITY_PATTERNS:
         for compiled in pattern_def["patterns"]:
-            if compiled.search(text):
+            if compiled.search(normalized):
                 name = pattern_def["name"]
                 category = pattern_def["category"]
                 if name not in matched_names:

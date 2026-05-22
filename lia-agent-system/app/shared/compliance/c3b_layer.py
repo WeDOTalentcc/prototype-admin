@@ -32,8 +32,10 @@ class PreComplianceResult:
     original_message: str
     pii_stripped: bool = False
     fairness_blocked: bool = False
+    injection_blocked: bool = False  # W1-005 (2026-05-22)
     block_reason: str = ""
     fairness_flags: list[str] = field(default_factory=list)
+    injection_categories: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -70,6 +72,33 @@ async def pre_compliance(
     except Exception:
         logger.debug("[C3b] PII strip skipped (silent)")
 
+    # W1-005 (2026-05-22) · PromptInjectionGuard wiring
+    # Pre-audit: tests/security/test_red_team_c3b_injection_wiring.py
+    # Gap original: c3b nunca chamava injection guard. Plus regex DoS + adversarial bypass.
+    injection_blocked = False
+    injection_categories: list[str] = []
+    try:
+        from app.shared.compliance.prompt_injection_guard import PromptInjectionGuard
+        guard = PromptInjectionGuard()
+        ig_result = guard.check(clean)
+        if ig_result.is_blocked:
+            injection_blocked = True
+            injection_categories = list(ig_result.matched_patterns)
+            logger.warning(
+                "[C3b] PromptInjection BLOCKED · company_id=%s domain=%s categories=%s risk=%s",
+                company_id, domain, injection_categories, ig_result.risk_level,
+            )
+            return PreComplianceResult(
+                clean_message=clean,
+                original_message=message,
+                pii_stripped=pii_stripped,
+                injection_blocked=True,
+                block_reason=f"Prompt injection detectado: categorias={injection_categories}, risco={ig_result.risk_level}",
+                injection_categories=injection_categories,
+            )
+    except Exception as exc:
+        logger.warning("[C3b] PromptInjectionGuard skipped — input NOT validated: %s", exc)
+
     fairness_blocked = False
     block_reason = ""
     fairness_flags: list[str] = []
@@ -93,8 +122,10 @@ async def pre_compliance(
         original_message=message,
         pii_stripped=pii_stripped,
         fairness_blocked=fairness_blocked,
+        injection_blocked=injection_blocked,
         block_reason=block_reason,
         fairness_flags=fairness_flags,
+        injection_categories=injection_categories,
     )
 
 
