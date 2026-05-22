@@ -99,6 +99,14 @@ class AiCreditsBalance(Base):
     overage_allowed = Column(Boolean, default=False)
     overage_rate_cents = Column(Integer, default=0)
     
+    # ADR-WT-2027 BYOK Strategy (Opcao C, 2026-05-22)
+    # When tenant brings own API key, gate switches to track-only mode.
+    # byok_active is denormalized from tenant_llm_configs.providers for fast
+    # gate check (refreshed by tenant_llm_context.update_llm_config write path).
+    # byok_soft_cap is tenant-managed alarm (Grafana counter), never blocks.
+    byok_active = Column(Boolean, nullable=False, default=False, server_default="false")
+    byok_soft_cap = Column(Integer, nullable=True)
+    
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
     created_at = Column(DateTime, server_default=func.now())
     
@@ -115,6 +123,8 @@ class AiCreditsBalance(Base):
             "period_end": self.period_end.isoformat() if self.period_end else None,
             "overage_allowed": self.overage_allowed,
             "overage_rate_cents": self.overage_rate_cents,
+            "byok_active": self.byok_active,
+            "byok_soft_cap": self.byok_soft_cap,
             "usage_percentage": round((self.current_usage / self.monthly_limit) * 100, 2) if self.monthly_limit > 0 else 0,
             "remaining_tokens": max(0, self.monthly_limit - self.current_usage),
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
