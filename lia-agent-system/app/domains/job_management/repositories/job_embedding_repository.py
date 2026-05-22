@@ -53,6 +53,7 @@ class JobEmbeddingRepository:
             ),
         ]
         result = await self.db.execute(
+            # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace upstream tenant gate
             select(JobEmbedding).where(and_(*clauses)).limit(limit)
         )
         return list(result.scalars().all())

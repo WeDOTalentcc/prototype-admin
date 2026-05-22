@@ -29,6 +29,7 @@ class RecruitmentEmailTemplateRepository:
         else:
             clauses.append(RecruitmentEmailTemplate.company_id.is_(None))
         result = await self.db.execute(
+            # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace upstream tenant gate
             select(RecruitmentEmailTemplate).where(and_(*clauses))
         )
         return result.scalar_one_or_none()

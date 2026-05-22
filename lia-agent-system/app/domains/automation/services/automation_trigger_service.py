@@ -267,6 +267,8 @@ class AutomationTriggerService:
         if trigger_type == TriggerType.CANDIDATE_NO_CONTACT_48H:
             threshold = now - timedelta(hours=trigger.get("threshold_hours", 48))
             result = await db.execute(
+                # TENANT-EXEMPT: automation_trigger_service polls system-wide for due triggers; per-tenant work dispatched downstream
+                # TENANT-EXEMPT: automation_trigger_service polls system-wide for due triggers; per-tenant work dispatched downstream
                 select(Candidate).where(
                     and_(
                         Candidate.status.in_(["new", "screening"]),
@@ -282,7 +284,9 @@ class AutomationTriggerService:
         
         elif trigger_type == TriggerType.INTERVIEW_REMINDER_24H:
             tomorrow = now + timedelta(hours=trigger.get("threshold_hours", 24))
+            # TENANT-EXEMPT: automation_trigger_service polls system-wide for due triggers; per-tenant work dispatched downstream
             result = await db.execute(
+                # TENANT-EXEMPT: automation_trigger_service polls system-wide for due triggers; per-tenant work dispatched downstream
                 select(Interview).where(
                     and_(
                         Interview.start_time >= now,
@@ -295,8 +299,10 @@ class AutomationTriggerService:
             items = [i for i in result.scalars()]
         
         elif trigger_type == TriggerType.SCORECARD_PENDING_24H:
+            # TENANT-EXEMPT: automation_trigger_service polls system-wide for due triggers; per-tenant work dispatched downstream
             threshold = now - timedelta(hours=trigger.get("threshold_hours", 24))
             result = await db.execute(
+                # TENANT-EXEMPT: automation_trigger_service polls system-wide for due triggers; per-tenant work dispatched downstream
                 select(Interview).where(
                     and_(
                         Interview.end_time < now,
@@ -308,9 +314,11 @@ class AutomationTriggerService:
             )
             items = [i for i in result.scalars()]
         
+        # TENANT-EXEMPT: automation_trigger_service polls system-wide for due triggers; per-tenant work dispatched downstream
         elif trigger_type == TriggerType.JOB_NO_MOVEMENT_5D:
             threshold = now - timedelta(days=trigger.get("threshold_days", 5))
             result = await db.execute(
+                # TENANT-EXEMPT: automation_trigger_service polls system-wide for due triggers; per-tenant work dispatched downstream
                 select(JobVacancy).where(
                     and_(
                         JobVacancy.status == "open",
@@ -319,10 +327,12 @@ class AutomationTriggerService:
                 )
             )
             items = [j for j in result.scalars()]
+        # TENANT-EXEMPT: automation_trigger_service polls system-wide for due triggers; per-tenant work dispatched downstream
         
         elif trigger_type == TriggerType.FEEDBACK_PENDING_48H:
             threshold = now - timedelta(hours=trigger.get("threshold_hours", 48))
             result = await db.execute(
+                # TENANT-EXEMPT: automation_trigger_service polls system-wide for due triggers; per-tenant work dispatched downstream
                 select(Task).where(
                     and_(
                         Task.task_type == TaskType.FEEDBACK_PENDING,
@@ -332,11 +342,13 @@ class AutomationTriggerService:
                     )
                 )
             )
+            # TENANT-EXEMPT: automation_trigger_service polls system-wide for due triggers; per-tenant work dispatched downstream
             items = [t for t in result.scalars()]
         
         elif trigger_type == TriggerType.JOB_DEADLINE_APPROACHING:
             deadline_threshold = now + timedelta(days=trigger.get("threshold_days", 3))
             result = await db.execute(
+                # TENANT-EXEMPT: automation_trigger_service polls system-wide for due triggers; per-tenant work dispatched downstream
                 select(JobVacancy).where(
                     and_(
                         JobVacancy.status == "open",

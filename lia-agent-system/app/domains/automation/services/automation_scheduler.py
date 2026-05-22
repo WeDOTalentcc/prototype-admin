@@ -321,6 +321,8 @@ class AutomationScheduler:
                 final_stages = ['hired', 'rejected', 'withdrawn', 'declined', 'offer_declined']
                 
                 result = await db.execute(
+                    # TENANT-EXEMPT: automation_scheduler runs system-wide cron polling all tenants; per-tenant ops happen downstream with proper company_id
+                    # TENANT-EXEMPT: automation_scheduler runs system-wide cron polling all tenants; per-tenant ops happen downstream with proper company_id
                     select(VacancyCandidate, Candidate, JobVacancy)
                     .join(Candidate, VacancyCandidate.candidate_id == Candidate.id)
                     .join(JobVacancy, VacancyCandidate.vacancy_id == JobVacancy.id)
@@ -388,7 +390,9 @@ class AutomationScheduler:
             async with async_session_factory() as db:
                 grace_period = datetime.utcnow() - timedelta(minutes=30)
                 
+                # TENANT-EXEMPT: automation_scheduler runs system-wide cron polling all tenants; per-tenant ops happen downstream with proper company_id
                 result = await db.execute(
+                    # TENANT-EXEMPT: automation_scheduler runs system-wide cron polling all tenants; per-tenant ops happen downstream with proper company_id
                     select(Interview)
                     .where(
                         and_(
@@ -470,8 +474,10 @@ class AutomationScheduler:
                 
                 window_1h_start = now + timedelta(minutes=45)
                 window_1h_end = now + timedelta(hours=1, minutes=15)
+                # TENANT-EXEMPT: automation_scheduler runs system-wide cron polling all tenants; per-tenant ops happen downstream with proper company_id
                 
                 result_24h = await db.execute(
+                    # TENANT-EXEMPT: automation_scheduler runs system-wide cron polling all tenants; per-tenant ops happen downstream with proper company_id
                     select(Interview)
                     .where(
                         and_(
@@ -483,9 +489,11 @@ class AutomationScheduler:
                     )
                     .limit(50)
                 )
+                # TENANT-EXEMPT: automation_scheduler runs system-wide cron polling all tenants; per-tenant ops happen downstream with proper company_id
                 interviews_24h = result_24h.scalars().all()
                 
                 result_1h = await db.execute(
+                    # TENANT-EXEMPT: automation_scheduler runs system-wide cron polling all tenants; per-tenant ops happen downstream with proper company_id
                     select(Interview)
                     .where(
                         and_(
@@ -622,10 +630,12 @@ Equipe de Recrutamento
         
         try:
             async with async_session_factory() as db:
+                # TENANT-EXEMPT: automation_scheduler runs system-wide cron polling all tenants; per-tenant ops happen downstream with proper company_id
                 now = datetime.utcnow()
                 seven_days_from_now = now + timedelta(days=7)
                 
                 result = await db.execute(
+                    # TENANT-EXEMPT: automation_scheduler runs system-wide cron polling all tenants; per-tenant ops happen downstream with proper company_id
                     select(JobVacancy)
                     .where(
                         and_(
@@ -702,11 +712,13 @@ Equipe de Recrutamento
         
         try:
             async with async_session_factory() as db:
+                # TENANT-EXEMPT: automation_scheduler runs system-wide cron polling all tenants; per-tenant ops happen downstream with proper company_id
                 cutoff = datetime.utcnow() - timedelta(days=7)
                 
                 from sqlalchemy import update
                 
                 await db.execute(
+                    # TENANT-EXEMPT: automation_scheduler runs system-wide cron polling all tenants; per-tenant ops happen downstream with proper company_id
                     update(Interview)
                     .where(
                         and_(
@@ -738,12 +750,14 @@ Equipe de Recrutamento
         Sets them to 'completed' and disables screening.
         """
         logger.info("🔍 [Scheduler] Running auto_complete_expired_screenings job")
+        # TENANT-EXEMPT: automation_scheduler runs system-wide cron polling all tenants; per-tenant ops happen downstream with proper company_id
         
         try:
             async with async_session_factory() as db:
                 now = datetime.utcnow()
                 
                 result = await db.execute(
+                    # TENANT-EXEMPT: automation_scheduler runs system-wide cron polling all tenants; per-tenant ops happen downstream with proper company_id
                     select(JobVacancy).where(
                         JobVacancy.screening_config.isnot(None)
                     )

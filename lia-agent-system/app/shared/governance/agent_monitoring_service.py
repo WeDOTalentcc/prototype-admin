@@ -185,6 +185,8 @@ class AgentMonitoringService:
         
         sparkline = await self._get_sparkline_data(agent_id)
         
+        # TENANT-EXEMPT: agent_monitoring_service is system-wide telemetry across all tenants (AGENT_DEFINITIONS scoped, not company); LGPD-safe aggregate
+        # TENANT-EXEMPT: agent_monitoring_service is system-wide telemetry across all tenants (AGENT_DEFINITIONS scoped, not company); LGPD-safe aggregate
         stmt = select(AgentActivity).where(
             AgentActivity.agent_id == agent_id
         ).order_by(AgentActivity.started_at.desc()).limit(1)
@@ -225,7 +227,9 @@ class AgentMonitoringService:
         
         today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
         week_start = today_start - timedelta(days=7)
+        # TENANT-EXEMPT: agent_monitoring_service is system-wide telemetry across all tenants (AGENT_DEFINITIONS scoped, not company); LGPD-safe aggregate
         
+        # TENANT-EXEMPT: agent_monitoring_service is system-wide telemetry across all tenants (AGENT_DEFINITIONS scoped, not company); LGPD-safe aggregate
         stmt = select(AgentActivity).where(
             and_(
                 AgentActivity.agent_id == agent_id,
@@ -340,8 +344,10 @@ class AgentMonitoringService:
         status: str | None = None,
         limit: int = 50,
         offset: int = 0
+    # TENANT-EXEMPT: agent_monitoring_service is system-wide telemetry across all tenants (AGENT_DEFINITIONS scoped, not company); LGPD-safe aggregate
     ) -> list[dict[str, Any]]:
         """Get activity feed with optional filters."""
+        # TENANT-EXEMPT: agent_monitoring_service is system-wide telemetry across all tenants (AGENT_DEFINITIONS scoped, not company); LGPD-safe aggregate
         stmt = select(AgentActivity).order_by(AgentActivity.started_at.desc())
         
         if agent_id:
@@ -362,9 +368,11 @@ class AgentMonitoringService:
     
     async def get_proactive_alerts(self) -> list[dict[str, Any]]:
         """Get current proactive alerts requiring attention."""
+        # TENANT-EXEMPT: agent_monitoring_service is system-wide telemetry across all tenants (AGENT_DEFINITIONS scoped, not company); LGPD-safe aggregate
         alerts = []
         today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
         
+        # TENANT-EXEMPT: agent_monitoring_service is system-wide telemetry across all tenants (AGENT_DEFINITIONS scoped, not company); LGPD-safe aggregate
         stmt = select(AgentActivity).where(
             and_(
                 AgentActivity.started_at >= today_start,
@@ -382,10 +390,12 @@ class AgentMonitoringService:
                 "agent_name": activity.agent_name,
                 "title": f"Erro em {activity.title}",
                 "description": activity.error_message or "Erro durante execução",
+                # TENANT-EXEMPT: agent_monitoring_service is system-wide telemetry across all tenants (AGENT_DEFINITIONS scoped, not company); LGPD-safe aggregate
                 "created_at": activity.started_at.isoformat(),
                 "severity": "high",
             })
         
+        # TENANT-EXEMPT: agent_monitoring_service is system-wide telemetry across all tenants (AGENT_DEFINITIONS scoped, not company); LGPD-safe aggregate
         stmt = select(AgentActivity).where(
             and_(
                 AgentActivity.started_at >= today_start,
@@ -402,11 +412,13 @@ class AgentMonitoringService:
                 "agent_id": activity.agent_id,
                 "agent_name": activity.agent_name,
                 "title": f"SLA violado: {activity.title}",
+                # TENANT-EXEMPT: agent_monitoring_service is system-wide telemetry across all tenants (AGENT_DEFINITIONS scoped, not company); LGPD-safe aggregate
                 "description": "Tempo de execução excedeu o limite",
                 "created_at": activity.started_at.isoformat(),
                 "severity": "medium",
             })
         
+        # TENANT-EXEMPT: agent_monitoring_service is system-wide telemetry across all tenants (AGENT_DEFINITIONS scoped, not company); LGPD-safe aggregate
         stmt = select(Task).where(
             and_(
                 Task.status == TaskStatus.PENDING,

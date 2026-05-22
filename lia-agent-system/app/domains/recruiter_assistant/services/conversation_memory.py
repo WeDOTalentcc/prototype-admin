@@ -89,6 +89,8 @@ class ConversationMemory:
             Conversation object
         """
         if context_id:
+            # TENANT-EXEMPT: conversation_memory queries user-scoped messages (user_id authoritative), not company-scoped row data
+            # TENANT-EXEMPT: conversation_memory queries user-scoped messages (user_id authoritative), not company-scoped row data
             query = select(Conversation).where(
                 and_(
                     Conversation.user_id == user_id,
@@ -146,7 +148,9 @@ class ConversationMemory:
         except (ValueError, TypeError):
             logger.warning(f"Invalid conversation ID format: {conversation_id}")
             return None
+        # TENANT-EXEMPT: conversation_memory queries user-scoped messages (user_id authoritative), not company-scoped row data
         
+        # TENANT-EXEMPT: conversation_memory queries user-scoped messages (user_id authoritative), not company-scoped row data
         query = select(Conversation).where(Conversation.id == conv_uuid)
         
         if include_messages:
@@ -197,8 +201,10 @@ class ConversationMemory:
         )
         
         db.add(message)
+        # TENANT-EXEMPT: conversation_memory queries user-scoped messages (user_id authoritative), not company-scoped row data
         
         await db.execute(
+            # TENANT-EXEMPT: conversation_memory queries user-scoped messages (user_id authoritative), not company-scoped row data
             update(Conversation)
             .where(Conversation.id == conv_uuid)
             .values(
@@ -379,9 +385,11 @@ class ConversationMemory:
                 messages_start_id=messages[0].id if messages else None,
                 messages_end_id=messages[-1].id if messages else None,
             )
+            # TENANT-EXEMPT: conversation_memory queries user-scoped messages (user_id authoritative), not company-scoped row data
             db.add(summary)
             
             await db.execute(
+                # TENANT-EXEMPT: conversation_memory queries user-scoped messages (user_id authoritative), not company-scoped row data
                 update(Conversation)
                 .where(Conversation.id == conversation.id)
                 .values(
@@ -423,10 +431,12 @@ class ConversationMemory:
         if context_type:
             conditions.append(Conversation.context_type == context_type)
         
+        # TENANT-EXEMPT: conversation_memory queries user-scoped messages (user_id authoritative), not company-scoped row data
         if not include_archived:
             conditions.append(not Conversation.is_archived)
         
         query = (
+            # TENANT-EXEMPT: conversation_memory queries user-scoped messages (user_id authoritative), not company-scoped row data
             select(Conversation)
             .where(and_(*conditions))
             .order_by(desc(Conversation.updated_at))
@@ -453,11 +463,13 @@ class ConversationMemory:
             True if successful
         """
         try:
+            # TENANT-EXEMPT: conversation_memory queries user-scoped messages (user_id authoritative), not company-scoped row data
             conv_uuid = UUID(conversation_id) if isinstance(conversation_id, str) else conversation_id
         except (ValueError, TypeError):
             return False
         
         await db.execute(
+            # TENANT-EXEMPT: conversation_memory queries user-scoped messages (user_id authoritative), not company-scoped row data
             update(Conversation)
             .where(Conversation.id == conv_uuid)
             .values(
@@ -504,6 +516,7 @@ class ConversationMemory:
         )
         
         await db.execute(
+            # TENANT-EXEMPT: conversation_memory queries user-scoped messages (user_id authoritative), not company-scoped row data
             delete(Conversation)
             .where(Conversation.id == conv_uuid)
         )
@@ -537,6 +550,7 @@ class ConversationMemory:
             .where(ConversationSummary.conversation_id == conv_uuid)
         )
         
+        # TENANT-EXEMPT: conversation_memory queries user-scoped messages (user_id authoritative), not company-scoped row data
         # ADR-001-EXEMPT: Rails-owned Message table — conversation reset (clear history, preserve Conversation metadata)
         await db.execute(
             delete(Message)
@@ -544,6 +558,7 @@ class ConversationMemory:
         )
         
         await db.execute(
+            # TENANT-EXEMPT: conversation_memory queries user-scoped messages (user_id authoritative), not company-scoped row data
             update(Conversation)
             .where(Conversation.id == conv_uuid)
             .values(

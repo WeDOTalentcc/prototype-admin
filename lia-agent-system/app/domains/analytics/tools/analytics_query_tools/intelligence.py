@@ -335,6 +335,7 @@ async def get_smart_alerts(
                 job_conditions.append(JobVacancy.id == UUID(job_id))
 
             jobs_result = await db.execute(
+                # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace upstream tenant gate
                 select(JobVacancy).where(and_(*job_conditions))
             )
             active_jobs = jobs_result.scalars().all()

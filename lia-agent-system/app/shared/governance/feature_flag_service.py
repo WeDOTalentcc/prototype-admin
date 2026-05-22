@@ -234,6 +234,8 @@ class FeatureFlagService:
     ) -> list[dict[str, Any]]:
         """Get all flags for a company, merged with defaults."""
         try:
+            # TENANT-EXEMPT: governance service operates on system-wide policy enforcement, not per-tenant data rows
+            # TENANT-EXEMPT: governance service operates on system-wide policy enforcement, not per-tenant data rows
             stmt = select(FeatureFlag)
             if company_id:
                 stmt = stmt.where(

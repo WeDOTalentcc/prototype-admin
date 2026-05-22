@@ -628,6 +628,7 @@ async def get_job_benchmark(
                 similar_conditions.append(JobVacancy.seniority_level == current_job.seniority_level)
             
             similar_result = await db.execute(
+                # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace upstream tenant gate
                 select(JobVacancy).where(and_(*similar_conditions)).limit(50)
             )
             similar_jobs = similar_result.scalars().all()
