@@ -31,6 +31,9 @@ const EMPTY_FORM: Partial<UserData> = {
   status: 'active'
 }
 
+// Canonical sentinel: NO company context = fail-loud, never fall back to 'demo_company' (REGRA 4)
+const NO_COMPANY_CONTEXT_ERROR = 'No company context available — please re-login'
+
 export function useUserManagement() {
   const t = useTranslations("settings")
   const [users, setUsers] = useState<UserData[]>([])
@@ -55,8 +58,13 @@ export function useUserManagement() {
     setIsLoading(true)
     setError(null)
     try {
-      const cid = effectiveCompanyId || 'demo_company'
-      const response = await apiFetch(`/api/backend-proxy/company/users?company_id=${cid}`)
+      if (!effectiveCompanyId) {
+        // Fail-loud per REGRA 4 — no silent demo_company fallback
+        setError(NO_COMPANY_CONTEXT_ERROR)
+        setUsers([])
+        return
+      }
+      const response = await apiFetch(`/api/backend-proxy/company/users?company_id=${effectiveCompanyId}`)
       if (!response.ok) throw new Error('Failed to fetch users')
       const data = await response.json()
       const usersData = Array.isArray(data) ? data : (data.data || data.users || [])
@@ -135,10 +143,13 @@ export function useUserManagement() {
   }, [])
 
   const handleSaveUser = useCallback(async () => {
-    const cid = effectiveCompanyId || 'demo_company'
+    if (!effectiveCompanyId) {
+      setError(NO_COMPANY_CONTEXT_ERROR)
+      return
+    }
     try {
       if (isCreating) {
-        const response = await apiFetch(`/api/backend-proxy/company/users?company_id=${cid}`, {
+        const response = await apiFetch(`/api/backend-proxy/company/users?company_id=${effectiveCompanyId}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -156,7 +167,7 @@ export function useUserManagement() {
         setSuccessMessage(t('users.userCreatedSuccess', { email: formData.email || '' }))
         setTimeout(() => setSuccessMessage(null), 8000)
       } else if (selectedUser) {
-        const response = await apiFetch(`/api/backend-proxy/company/users/${selectedUser.id}?company_id=${cid}`, {
+        const response = await apiFetch(`/api/backend-proxy/company/users/${selectedUser.id}?company_id=${effectiveCompanyId}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -178,10 +189,13 @@ export function useUserManagement() {
   }, [effectiveCompanyId, isCreating, formData, selectedUser, fetchUsers, t])
 
   const handleResendInvitation = useCallback(async (userId: string, userEmail: string) => {
-    const cid = effectiveCompanyId || 'demo_company'
+    if (!effectiveCompanyId) {
+      setError(NO_COMPANY_CONTEXT_ERROR)
+      return
+    }
     setResendingInvite(userId)
     try {
-      const response = await apiFetch(`/api/backend-proxy/company/users/${userId}/resend-invitation?company_id=${cid}`, {
+      const response = await apiFetch(`/api/backend-proxy/company/users/${userId}/resend-invitation?company_id=${effectiveCompanyId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       })
@@ -199,10 +213,13 @@ export function useUserManagement() {
   }, [effectiveCompanyId, t])
 
   const handleDeleteUser = useCallback(async (userId: string) => {
-    const cid = effectiveCompanyId || 'demo_company'
+    if (!effectiveCompanyId) {
+      setError(NO_COMPANY_CONTEXT_ERROR)
+      return
+    }
     if (confirm(t('users.confirmDeleteUser'))) {
       try {
-        const response = await apiFetch(`/api/backend-proxy/company/users/${userId}?company_id=${cid}`, {
+        const response = await apiFetch(`/api/backend-proxy/company/users/${userId}?company_id=${effectiveCompanyId}`, {
           method: 'DELETE'
         })
         if (!response.ok) throw new Error('Failed to delete user')
