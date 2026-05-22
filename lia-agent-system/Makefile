@@ -67,3 +67,16 @@ check-policy-gates:	## Contract tests dos 4 policy gates (24 testes, ~6s)
 
 check-lia: check-lia-sync check-lia-agents check-policy-gates	## Roda os 3 lia-toggles sensors em sequência (~7s)
 	@echo "✅ All lia field toggles sensors passed"
+
+# ─── Cross-Tenant hardening sensors (HARDENING_PLAN.md B.1 + B.2, 2026-05-21) ──
+
+check-tenant-filter:	## B.1: ORM select/update/delete tem .where(.company_id) (warn-only)
+	@echo "▶ B.1 tenant-filter coverage — HARDENING_PLAN 2026-05-21"
+	python3 scripts/check_query_has_tenant_filter.py --quiet
+
+check-client-id-bypass:	## B.2: sentinela "platform" bypass em app/api (BLOCKING)
+	@echo "▶ B.2 client_id sentinel bypass — HARDENING_PLAN 2026-05-21"
+	python3 scripts/check_no_client_id_query_bypass.py
+
+check-cross-tenant: check-tenant-filter check-client-id-bypass	## Roda B.1 + B.2 em sequência (~10s)
+	@echo "✅ Cross-tenant hardening sensors completed"

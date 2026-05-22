@@ -373,9 +373,9 @@ repos:
         pass_filenames: false
 
       - id: tenant-columns-not-null
-        name: "WT-2022 P0.TENANT: company_id NOT NULL em models (warn-only, baseline=42 em 2026-05-21)"
+        name: "WT-2022 P0.TENANT: company_id NOT NULL em models (BLOCKING canonical desde 2026-05-21, baseline=0)"
         language: system
-        entry: bash -c "python3 scripts/check_tenant_columns_not_null.py 2>&1 | head -30; exit 0"
+        entry: python3 scripts/check_tenant_columns_not_null.py
         files: ^libs/models/lia_models/.*\.py$
         pass_filenames: false
 
@@ -384,4 +384,18 @@ repos:
         language: system
         entry: python3 scripts/check_schema_sync_recruitment_stage.py
         files: ^plataforma-lia/src/(lib/recruitment/stages-data\.ts|components/settings/recruitment-journey\.types\.ts)$
+        pass_filenames: false
+
+      - id: query-has-tenant-filter-warn
+        name: "B.1 HARDENING 2026-05-21: ORM queries em models tenant-scoped DEVEM ter .where(company_id) (warn-only, baseline ratchet)"
+        language: system
+        entry: bash -c "python3 scripts/check_query_has_tenant_filter.py --quiet 2>&1; exit 0"
+        files: ^app/.*\.py$
+        pass_filenames: false
+
+      - id: no-client-id-query-bypass
+        name: "B.2 HARDENING 2026-05-21: sentinela platform bypass em app/api (BLOCKING, baseline=0)"
+        language: system
+        entry: python3 scripts/check_no_client_id_query_bypass.py
+        files: ^app/api/.*\.py$
         pass_filenames: false
