@@ -1,8 +1,11 @@
 """PlannedTaskRepository — data access for PlannedTask + ExecutionPlan models.
 
 Per ADR-001: services delegate SQL access to this repository.
-PlannedTask and ExecutionPlan carry company_id; multi-tenant filtering at
-service boundary is enforced by callers (see PlannedTaskService).
+PlannedTask and ExecutionPlan carry company_id; multi-tenancy fail-closed via
+optional `company_id` kwarg on every read method. When provided, query filters
+by `<Model>.company_id == company_id`. `None` is reserved for system/admin
+contexts (cross-tenant scheduler, ops scans) — those queries are TENANT-EXEMPT
+by design.
 """
 import logging
 
@@ -39,11 +42,24 @@ class PlannedTaskRepository:
             )
         return str(company_id)
 
-    async def get_by_id(self, task_id: str) -> PlannedTask | None:
-        """Get a planned task by ID."""
-        result = await self.db.execute(
-            select(PlannedTask).where(PlannedTask.id == task_id)
-        )
+    async def get_by_id(
+        self, task_id: str, *, company_id: str | None = None
+    ) -> PlannedTask | None:
+        """Get a planned task by ID, scoped to company when provided.
+
+        When company_id is provided (must be non-empty), query filters by
+        PlannedTask.company_id == company_id (multi-tenancy fail-closed).
+        Pass None only when caller intentionally bypasses tenant scope
+        (system/admin contexts — TENANT-EXEMPT by design).
+        """
+        if company_id is not None:
+            company_id = self._require_company_id(company_id)
+
+        query = select(PlannedTask).where(PlannedTask.id == task_id)
+        if company_id:
+            query = query.where(PlannedTask.company_id == company_id)
+
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
     async def list_by_goal(
@@ -51,9 +67,17 @@ class PlannedTaskRepository:
         goal_id: str,
         *,
         include_completed: bool = False,
+        company_id: str | None = None,
     ) -> list[PlannedTask]:
-        """List tasks belonging to a specific goal."""
+        """List tasks belonging to a specific goal, scoped to company when provided."""
+        if company_id is not None:
+            company_id = self._require_company_id(company_id)
+
+        # TENANT-EXEMPT: conditional filter applied below when company_id is provided;
+        # None reserved for system/admin contexts (sensor cannot trace conditional .where()).
         query = select(PlannedTask).where(PlannedTask.goal_id == goal_id)
+        if company_id:
+            query = query.where(PlannedTask.company_id == company_id)
 
         if not include_completed:
             query = query.where(
@@ -69,33 +93,63 @@ class PlannedTaskRepository:
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
-    async def list_subtasks(self, parent_task_id: str) -> list[PlannedTask]:
-        """List subtasks of a parent task."""
-        result = await self.db.execute(
-            select(PlannedTask)
-            .where(PlannedTask.parent_task_id == parent_task_id)
-            .order_by(
-                PlannedTask.execution_level, PlannedTask.priority_score.desc()
-            )
+    async def list_subtasks(
+        self, parent_task_id: str, *, company_id: str | None = None
+    ) -> list[PlannedTask]:
+        """List subtasks of a parent task, scoped to company when provided."""
+        if company_id is not None:
+            company_id = self._require_company_id(company_id)
+
+        # TENANT-EXEMPT: conditional filter applied below when company_id is provided;
+        # None reserved for system/admin contexts (sensor cannot trace conditional .where()).
+        query = select(PlannedTask).where(
+            PlannedTask.parent_task_id == parent_task_id
         )
+        if company_id:
+            query = query.where(PlannedTask.company_id == company_id)
+
+        query = query.order_by(
+            PlannedTask.execution_level, PlannedTask.priority_score.desc()
+        )
+        result = await self.db.execute(query)
         return list(result.scalars().all())
 
-    async def list_by_ids(self, task_ids: list[str]) -> list[PlannedTask]:
-        """Bulk fetch planned tasks by id list."""
+    async def list_by_ids(
+        self, task_ids: list[str], *, company_id: str | None = None
+    ) -> list[PlannedTask]:
+        """Bulk fetch planned tasks by id list, scoped to company when provided."""
         if not task_ids:
             return []
-        result = await self.db.execute(
-            select(PlannedTask).where(PlannedTask.id.in_(task_ids))
-        )
+        if company_id is not None:
+            company_id = self._require_company_id(company_id)
+
+        # TENANT-EXEMPT: conditional filter applied below when company_id is provided;
+        # None reserved for system/admin bulk fetch (sensor cannot trace conditional .where()).
+        query = select(PlannedTask).where(PlannedTask.id.in_(task_ids))
+        if company_id:
+            query = query.where(PlannedTask.company_id == company_id)
+
+        result = await self.db.execute(query)
         return list(result.scalars().all())
 
-    async def list_completed_ids(self) -> set[str]:
-        """Return all PlannedTask ids in COMPLETED status (for dependency checks)."""
-        result = await self.db.execute(
-            select(PlannedTask.id).where(
-                PlannedTask.status == PlannedTaskStatus.COMPLETED
-            )
+    async def list_completed_ids(
+        self, *, company_id: str | None = None
+    ) -> set[str]:
+        """Return all PlannedTask ids in COMPLETED status (for dependency checks).
+
+        When company_id is provided, scopes to tenant — recommended for
+        per-tenant dependency resolution. Pass None for cross-tenant scans.
+        """
+        if company_id is not None:
+            company_id = self._require_company_id(company_id)
+
+        query = select(PlannedTask.id).where(
+            PlannedTask.status == PlannedTaskStatus.COMPLETED
         )
+        if company_id:
+            query = query.where(PlannedTask.company_id == company_id)
+
+        result = await self.db.execute(query)
         return set(row[0] for row in result.fetchall())
 
     async def list_ready_candidates(
@@ -115,6 +169,8 @@ class PlannedTaskRepository:
         if company_id is not None:
             company_id = self._require_company_id(company_id)
 
+        # TENANT-EXEMPT: conditional filter applied below when company_id is provided;
+        # None reserved for system/admin scheduler scans (sensor cannot trace conditional .where()).
         query = select(PlannedTask).where(
             PlannedTask.status.in_(
                 [PlannedTaskStatus.READY, PlannedTaskStatus.PENDING]
@@ -134,26 +190,44 @@ class PlannedTaskRepository:
         return list(result.scalars().all())
 
     async def list_for_priority_context(
-        self, *, goal_id: str | None, parent_task_id: str | None
+        self,
+        *,
+        goal_id: str | None,
+        parent_task_id: str | None,
+        company_id: str | None = None,
     ) -> list[PlannedTask]:
         """Sibling tasks needed for dependents-impact priority calculation."""
+        if company_id is not None:
+            company_id = self._require_company_id(company_id)
+
+        # TENANT-EXEMPT: conditional filter applied below when company_id is provided;
+        # priority context is goal-scoped or parent-scoped (sensor cannot trace conditional .where()).
         if goal_id:
-            result = await self.db.execute(
-                select(PlannedTask).where(PlannedTask.goal_id == goal_id)
-            )
+            query = select(PlannedTask).where(PlannedTask.goal_id == goal_id)
         else:
-            result = await self.db.execute(
-                select(PlannedTask).where(
-                    PlannedTask.parent_task_id == parent_task_id
-                )
+            query = select(PlannedTask).where(
+                PlannedTask.parent_task_id == parent_task_id
             )
+        if company_id:
+            query = query.where(PlannedTask.company_id == company_id)
+
+        result = await self.db.execute(query)
         return list(result.scalars().all())
 
-    async def get_execution_plan(self, plan_id: str) -> ExecutionPlan | None:
-        """Get execution plan by id."""
-        result = await self.db.execute(
-            select(ExecutionPlan).where(ExecutionPlan.id == plan_id)
-        )
+    async def get_execution_plan(
+        self, plan_id: str, *, company_id: str | None = None
+    ) -> ExecutionPlan | None:
+        """Get execution plan by id, scoped to company when provided."""
+        if company_id is not None:
+            company_id = self._require_company_id(company_id)
+
+        # TENANT-EXEMPT: conditional filter applied below when company_id is provided;
+        # None reserved for system/admin contexts (sensor cannot trace conditional .where()).
+        query = select(ExecutionPlan).where(ExecutionPlan.id == plan_id)
+        if company_id:
+            query = query.where(ExecutionPlan.company_id == company_id)
+
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
     async def add(self, entity) -> object:

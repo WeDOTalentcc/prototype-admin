@@ -4,6 +4,10 @@ ADR-001-EXEMPT: Task model has no company_id column (legacy non-tenant model).
 All queries are tenant-broad by design; multi-tenancy is enforced at the
 service layer via assigned_to_user_id / related_job_id filtering when
 required by callers.
+
+TENANT-EXEMPT applied per-query below: every `select(Task)` in this file is
+explicitly tenant-broad because the model lacks a company_id column. The
+sensor `scripts/check_query_has_tenant_filter.py` honors these inline markers.
 """
 import logging
 from datetime import datetime, timedelta
@@ -25,6 +29,7 @@ class TaskRepository:
 
     async def get_by_id(self, task_id: str) -> Task | None:
         """Get a task by ID."""
+        # TENANT-EXEMPT: Task model has no company_id column (ADR-001-EXEMPT module-level)
         result = await self.db.execute(select(Task).where(Task.id == task_id))
         return result.scalar_one_or_none()
 
@@ -37,6 +42,8 @@ class TaskRepository:
         limit: int = 50,
     ) -> list[Task]:
         """List pending/in-progress tasks with optional filters."""
+        # TENANT-EXEMPT: Task model has no company_id column (ADR-001-EXEMPT module-level);
+        # tenant scope established via user_id at service layer when required.
         query = select(Task).where(
             Task.status.in_([TaskStatus.PENDING, TaskStatus.IN_PROGRESS])
         )
@@ -58,6 +65,7 @@ class TaskRepository:
 
     async def list_overdue(self, *, user_id: str | None = None) -> list[Task]:
         """List overdue tasks (status pending/in-progress with due_date in past)."""
+        # TENANT-EXEMPT: Task model has no company_id column (ADR-001-EXEMPT module-level)
         query = select(Task).where(
             and_(
                 Task.status.in_([TaskStatus.PENDING, TaskStatus.IN_PROGRESS]),
@@ -76,6 +84,7 @@ class TaskRepository:
         today_start = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
         today_end = today_start + timedelta(days=1)
 
+        # TENANT-EXEMPT: Task model has no company_id column (ADR-001-EXEMPT module-level)
         query = select(Task).where(
             and_(
                 Task.status.in_([TaskStatus.PENDING, TaskStatus.IN_PROGRESS]),
@@ -129,6 +138,8 @@ class TaskRepository:
         now = datetime.utcnow()
         reminder_threshold = now + timedelta(hours=hours_before_due)
 
+        # TENANT-EXEMPT: Task model has no company_id column (ADR-001-EXEMPT module-level);
+        # cron scanner runs cross-tenant by design — tenant scope reapplied at dispatch.
         query = (
             select(Task)
             .where(
@@ -152,6 +163,8 @@ class TaskRepository:
         """List HIGH/CRITICAL tasks overdue beyond threshold and below max escalation."""
         escalation_threshold = datetime.utcnow() - timedelta(hours=overdue_hours)
 
+        # TENANT-EXEMPT: Task model has no company_id column (ADR-001-EXEMPT module-level);
+        # cron scanner runs cross-tenant by design — tenant scope reapplied at escalation dispatch.
         query = (
             select(Task)
             .where(
@@ -176,6 +189,7 @@ class TaskRepository:
         limit: int = 50,
     ) -> list[Task]:
         """List tasks awaiting confirmation."""
+        # TENANT-EXEMPT: Task model has no company_id column (ADR-001-EXEMPT module-level)
         query = select(Task).where(
             and_(
                 Task.status == TaskStatus.PENDING,

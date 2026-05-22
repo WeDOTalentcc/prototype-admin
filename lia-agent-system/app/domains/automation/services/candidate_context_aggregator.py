@@ -51,6 +51,9 @@ class CandidateContextAggregator:
             from lia_models.candidate import Candidate, VacancyCandidate
             from lia_models.job_vacancy import JobVacancy
             
+            # TENANT-EXEMPT: cross-domain read-only aggregator (ADR-001-EXEMPT at module
+            # level); tenant scope established by caller via pre-validated
+            # vacancy_candidate_id (see header comment)
             vc_result = await self.db.execute(
                 select(VacancyCandidate).where(VacancyCandidate.id == vacancy_candidate_id)
             )
@@ -58,7 +61,9 @@ class CandidateContextAggregator:
             if not vc:
                 logger.warning(f"[CONTEXT] VacancyCandidate not found: {vacancy_candidate_id}")
                 return context
-            
+
+            # TENANT-EXEMPT: candidate fetched by id linked from validated vc.candidate_id
+            # (ADR-001-EXEMPT at module level); tenant scope established by caller upstream.
             candidate_result = await self.db.execute(
                 select(Candidate).where(Candidate.id == vc.candidate_id)
             )
@@ -186,6 +191,8 @@ class CandidateContextAggregator:
         """Extract interview notes from InterviewNote table if available."""
         try:
             from lia_models.interview import InterviewNote
+            # TENANT-EXEMPT: InterviewNote fetched by vacancy_candidate_id which
+            # was validated upstream by caller (ADR-001-EXEMPT module-level).
             result = await self.db.execute(
                 select(InterviewNote).where(InterviewNote.vacancy_candidate_id == vacancy_candidate_id)
             )

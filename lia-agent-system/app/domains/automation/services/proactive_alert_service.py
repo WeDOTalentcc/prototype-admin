@@ -974,9 +974,11 @@ class ProactiveAlertService:
                 AlertCondition.IDEAL_CANDIDATE_FOUND, company_id=company_id
             )
 
+            # Multi-tenancy fail-closed: filter by company_id (P0 LGPD fix 2026-05-22)
             result = await db.execute(
                 select(Candidate).where(
                     and_(
+                        Candidate.company_id == company_id,
                         Candidate.is_active,
                         Candidate.lia_score >= threshold.get("threshold_match", 90)
                     )

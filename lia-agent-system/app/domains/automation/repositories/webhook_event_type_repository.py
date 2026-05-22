@@ -43,6 +43,9 @@ class WebhookEventTypeRepository:
         Excludes deleted by default.
         """
         cid = self._require_company_id(company_id)
+        # TENANT-EXEMPT: scope_filter ALWAYS includes WebhookEventType.company_id == cid
+        # (with optional OR is_master_template for canonical master templates visible
+        # cross-tenant). Sensor cannot statically trace the conditional filter.
         stmt = select(WebhookEventType)
 
         scope_filter = WebhookEventType.company_id == cid
@@ -145,6 +148,9 @@ class WebhookEventTypeRepository:
         Snapshot canonical B1 (não sincroniza com master após criação).
         """
         cid = self._require_company_id(company_id)
+        # TENANT-EXEMPT: master templates are canonical cross-tenant resources
+        # (is_master_template=True). Customization clone written under `cid` below
+        # via create_custom() applies tenant isolation on the new record.
         master_stmt = select(WebhookEventType).where(
             and_(
                 WebhookEventType.id == master_id,
