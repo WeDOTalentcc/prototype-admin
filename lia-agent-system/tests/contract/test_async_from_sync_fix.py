@@ -193,3 +193,45 @@ async def test_sync_gate_called_from_running_loop_raises_runtime_error():
             )
     finally:
         _current_company_id.reset(token)
+
+
+# ----------------------------------------------------------------------
+# 5. _is_async_method handles SDK wrappers (Anthropic decorator) correctly.
+# ----------------------------------------------------------------------
+
+def test_is_async_method_detects_anthropic_async_decorator():
+    """Real-world regression: Anthropic SDK wraps `async def create` with
+    `@_utils.required_args(...)` which hides the coroutine status from
+    `inspect.iscoroutinefunction`. `_is_async_method` must look through
+    `__wrapped__` (or fall back to class name `AsyncMessages`).
+    """
+    try:
+        from anthropic.resources.messages import AsyncMessages, Messages
+    except ImportError:
+        pytest.skip("anthropic SDK not installed in this environment")
+
+    from app.shared.llm_bootstrap import _is_async_method
+
+    # Bare functions still defeat iscoroutinefunction but pass _is_async_method
+    # via __wrapped__.
+    assert _is_async_method(AsyncMessages.create) is True, (
+        "Anthropic AsyncMessages.create should be detected via __wrapped__"
+    )
+    assert _is_async_method(Messages.create) is False, (
+        "Anthropic Messages.create (sync) should NOT be detected as async"
+    )
+
+
+def test_is_async_method_handles_plain_callables():
+    """Sanity: plain def, async def, and lambda all classified correctly."""
+    from app.shared.llm_bootstrap import _is_async_method
+
+    def sync_fn():
+        return 1
+
+    async def async_fn():
+        return 1
+
+    assert _is_async_method(sync_fn) is False
+    assert _is_async_method(async_fn) is True
+    assert _is_async_method(lambda: 1) is False
