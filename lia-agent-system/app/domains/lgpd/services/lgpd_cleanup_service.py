@@ -443,12 +443,29 @@ _SECONDARY_PII_TABLES: list[tuple[str, str]] = [
     ("lgpd_consents", "candidate_id"),
     ("candidate_consent_grants", "candidate_id"),
     ("conversation_memories", "user_id"),  # user_id stores candidate_id in chat context
+    # F-06 P0 LGPD Art. 18 VI: voice tables (audit 2026-05-22)
+    # Stores transcripts + audio_url + candidate_id + candidate_name + candidate_phone.
+    # All four cascade explicitly here (defense-in-depth — FK CASCADE alone is fragile
+    # because Rails-owned schemas may drop FKs without coordinating).
+    ("voice_screening_calls", "candidate_id"),
+    ("voice_wsi_results", "candidate_id"),
+    ("wsi_response_analyses", "candidate_id"),
+    # voice_screening_analyses has NO candidate_id column — only screening_call_id FK.
+    # Marker "_cascade_via_fk" signals to _propagate_deletion_to_secondary_stores that
+    # this row is deleted via cascade when voice_screening_calls is removed; no direct
+    # DELETE here. Listed for visibility/regression-guard against silent FK removal.
+    ("voice_screening_analyses", "_cascade_via_fk"),
 ]
 
 # Tables safe for parameterized deletion (extends _ALLOWED_TTL_TABLES)
 _ALLOWED_PROPAGATION_TABLES = frozenset([
     "communication_history", "lgpd_consents", "candidate_consent_grants",
     "conversation_memories",
+    # F-06 P0 LGPD Art. 18 VI: voice tables (mirror _SECONDARY_PII_TABLES)
+    "voice_screening_calls",
+    "voice_wsi_results",
+    "wsi_response_analyses",
+    "voice_screening_analyses",  # cascaded via FK voice_screening_calls (see note above)
 ])
 
 
@@ -473,6 +490,18 @@ async def _propagate_deletion_to_secondary_stores(
         if table_name not in _ALLOWED_PROPAGATION_TABLES:
             continue
         if not _SAFE_TABLE_RE.match(table_name):
+            continue
+
+        # F-06: tables without direct candidate_id (e.g. voice_screening_analyses)
+        # cascade via FK on a parent table that IS in this list. Skip explicit
+        # DELETE here — DB FK CASCADE handles the row removal when parent goes.
+        # Listed in _SECONDARY_PII_TABLES purely as a regression-guard sentinel.
+        if id_col == "_cascade_via_fk":
+            result[f"propagation_{table_name}"] = "cascaded_via_fk"
+            logger.debug(
+                "LGPD propagation: %s relies on FK CASCADE (no direct DELETE)",
+                table_name,
+            )
             continue
 
         try:
