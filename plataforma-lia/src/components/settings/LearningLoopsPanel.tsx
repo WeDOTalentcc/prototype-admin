@@ -216,7 +216,7 @@ export function LearningLoopsPanel() {
   const { companyId } = useCompanyId()
   const [config, setConfig] = useState<LearningLoopsConfig>(DEFAULT_CONFIG)
   const [isLoading, setIsLoading] = useState(false)
-  const [isFetching, setIsFetching] = useState(true)
+  const [isFetching, setIsFetching] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [pendingToggle, setPendingToggle] = useState<{
     key: keyof LearningLoopsConfig

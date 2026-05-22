@@ -50,7 +50,7 @@ const normalizePolicy = (p: Record<string, unknown>): CompensationPolicyRecord =
 export function useCompensationPoliciesTab() {
   const { companyId } = useCompanyId()
   const [policies, setPolicies] = useState<CompensationPolicyRecord[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [editingPolicy, setEditingPolicy] = useState<CompensationPolicyRecord | null>(null)

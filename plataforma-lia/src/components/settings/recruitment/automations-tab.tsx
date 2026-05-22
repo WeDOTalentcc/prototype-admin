@@ -54,7 +54,7 @@ export function AutomationsTab({ onSettingsChange: _onSettingsChange }: { onSett
   const t = useTranslations("settings.recruitment.automationsTab")
   const [selectedView, setSelectedView] = useState<"overview" | "builder" | "templates" | "logs">("overview")
   const [workflows, setWorkflows] = useState<WorkflowItem[]>([])
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const { companyId } = useCompanyId()
