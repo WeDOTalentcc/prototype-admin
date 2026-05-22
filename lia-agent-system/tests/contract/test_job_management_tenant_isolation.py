@@ -44,28 +44,57 @@ def _has_company_id_in_where(source: str, fn_name: str) -> bool:
 
 class TestRailsSyncTenantIsolation:
     """rails_sync endpoints carry company_id via Depends(require_company_id);
-    queries must use it as explicit WHERE filter."""
+    queries must use it as explicit WHERE filter.
+
+    Canonical refactor 2026-05-22: SQL moved from controller to
+    RailsSyncRepository (ADR-001). Sensors now grep BOTH layers:
+    - Controller: must CALL the tenant-scoped repo method (e.g.
+      get_candidate_for_company), proving company_id flows through.
+    - Repository: must execute the WHERE filter explicitly.
+    """
 
     def test_get_candidate_enrichment_filters_company(self):
-        src = _read("app/api/v1/rails_sync.py")
-        # The Candidate query must include Candidate.company_id == company_id
-        assert "Candidate.company_id == company_id" in src, (
-            "rails_sync.py:get_candidate_enrichment MUST filter Candidate by company_id "
-            "(multi-tenancy fail-closed, defense-in-depth on top of RLS)"
+        controller_src = _read("app/api/v1/rails_sync.py")
+        repo_src = _read("app/domains/ats_integration/repositories/rails_sync_repository.py")
+
+        # Controller must delegate to tenant-scoped repo method (ADR-001).
+        assert "get_candidate_for_company(candidate_id, company_id)" in controller_src, (
+            "rails_sync.py:get_candidate_enrichment MUST call "
+            "RailsSyncRepository.get_candidate_for_company(candidate_id, company_id) "
+            "(ADR-001 + multi-tenancy fail-closed)"
+        )
+        # Repository must enforce the WHERE clause.
+        assert "Candidate.company_id == company_id" in repo_src, (
+            "RailsSyncRepository.get_candidate_for_company MUST filter Candidate "
+            "by company_id (multi-tenancy fail-closed, defense-in-depth on top of RLS)"
         )
 
     def test_get_job_intelligence_filters_company(self):
-        src = _read("app/api/v1/rails_sync.py")
-        assert "JobVacancy.company_id == company_id" in src, (
-            "rails_sync.py:get_job_intelligence MUST filter JobVacancy by company_id"
+        controller_src = _read("app/api/v1/rails_sync.py")
+        repo_src = _read("app/domains/ats_integration/repositories/rails_sync_repository.py")
+
+        # Controller must delegate to tenant-scoped repo method.
+        assert "get_job_for_company(job_id, company_id)" in controller_src, (
+            "rails_sync.py:get_job_intelligence MUST call "
+            "RailsSyncRepository.get_job_for_company(job_id, company_id)"
+        )
+        assert "JobVacancy.company_id == company_id" in repo_src, (
+            "RailsSyncRepository.get_job_for_company MUST filter JobVacancy by company_id"
         )
 
     def test_bulk_sync_candidates_filters_company(self):
-        src = _read("app/api/v1/rails_sync.py")
-        # The bulk endpoint must add company_id alongside .in_()
-        assert src.count("Candidate.company_id == company_id") >= 2, (
-            "rails_sync.py: both single-candidate and bulk-sync queries must filter "
-            "by company_id (count >= 2 expected)"
+        controller_src = _read("app/api/v1/rails_sync.py")
+        repo_src = _read("app/domains/ats_integration/repositories/rails_sync_repository.py")
+
+        # Controller must delegate to tenant-scoped bulk repo method.
+        assert "list_candidates_by_ids_for_company(candidate_ids, company_id)" in controller_src, (
+            "rails_sync.py:bulk_sync_candidates MUST call "
+            "RailsSyncRepository.list_candidates_by_ids_for_company(candidate_ids, company_id)"
+        )
+        # Repository must filter Candidate by company_id in BOTH single + bulk paths.
+        assert repo_src.count("Candidate.company_id == company_id") >= 2, (
+            "RailsSyncRepository: both single-candidate and bulk-sync queries must "
+            "filter by company_id (count >= 2 expected)"
         )
 
 

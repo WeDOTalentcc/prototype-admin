@@ -762,6 +762,15 @@ company_id: str = Depends(require_company_id)):
             affirmative_document_types=job_vacancy.affirmative_document_types or [],
             source=job_vacancy.source,
             wizard_stage=job_vacancy.wizard_stage,
+            # Sprint 4 symmetric fix (audit 2026-05-22): INSERT flowed these
+            # 4 fields via model_dump() but response builder still omitted them,
+            # causing test_jobvacancy_post_preserves_all_schema_fields to detect
+            # silent drop. Confidentiality/access-list features were broken in
+            # the POST round-trip until this fix.
+            visibility=job_vacancy.visibility or "public",
+            access_list=job_vacancy.access_list or [],
+            masked_company_name=job_vacancy.masked_company_name,
+            exclude_from_sync=job_vacancy.exclude_from_sync or False,
         )
 
     except HTTPException:

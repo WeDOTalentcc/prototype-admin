@@ -9,6 +9,10 @@ Endpoints:
   GET  /api/v1/rails-sync/jobs/{id}/intelligence       — sourcing, saturation, analytics
   GET  /api/v1/rails-sync/compliance/status             — LGPD, audit summary
   POST /api/v1/rails-sync/bulk-sync/candidates          — batch enrichment
+
+ADR-001 (Repository Pattern): All DB reads delegated to RailsSyncRepository.
+ADR-005 (Response Models): Every endpoint declares Pydantic response_model with
+response_model_exclude_none=True to preserve legacy sparse-payload wire format.
 """
 import logging
 import os
@@ -18,14 +22,27 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import get_db
-from app.models.candidate import Candidate
-from app.models.email_template import EmailTemplate
-from app.models.job_vacancy import JobVacancy
+from app.domains.ats_integration.repositories.rails_sync_repository import (
+    RailsSyncRepository,
+)
 from app.shared.security.require_company_id import require_company_id
+from libs.schemas.ats import (
+    BulkSyncCandidatesResponse,
+    CandidateAIInsights,
+    CandidateEnrichmentItem,
+    CandidateEnrichmentResponse,
+    CandidateWSIData,
+    ComplianceAuditBlock,
+    ComplianceLGPDBlock,
+    ComplianceStatsBlock,
+    ComplianceStatusResponse,
+    JobIntelligenceResponse,
+    JobSaturationData,
+    JobSourcingData,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -78,141 +95,153 @@ def _audit_log(endpoint: str, details: dict[str, Any]) -> None:
     )
 
 
-@router.get("/candidates/{candidate_id}/enrichment")
+def _build_wsi_data(candidate: Any) -> CandidateWSIData:
+    """Sparse WSI block — only includes fields actually present."""
+    kwargs: dict[str, Any] = {}
+    if getattr(candidate, "wsi_score", None) is not None:
+        kwargs["wsi_score"] = candidate.wsi_score
+    if getattr(candidate, "wsi_report", None) is not None:
+        kwargs["wsi_report"] = candidate.wsi_report
+    if getattr(candidate, "screening_result", None) is not None:
+        kwargs["screening_result"] = candidate.screening_result
+    return CandidateWSIData(**kwargs)
+
+
+def _build_ai_insights(candidate: Any) -> CandidateAIInsights:
+    """Sparse AI insights block — only includes fields actually present."""
+    kwargs: dict[str, Any] = {}
+    if getattr(candidate, "ai_summary", None) is not None:
+        kwargs["ai_summary"] = candidate.ai_summary
+    if getattr(candidate, "skills_extracted", None) is not None:
+        kwargs["skills_extracted"] = candidate.skills_extracted
+    if getattr(candidate, "embedding_vector", None) is not None:
+        kwargs["has_embedding"] = True
+    return CandidateAIInsights(**kwargs)
+
+
+@router.get(
+    "/candidates/{candidate_id}/enrichment",
+    response_model=CandidateEnrichmentResponse,
+    response_model_exclude_none=True,
+)
 async def get_candidate_enrichment(
     candidate_id: str,
     request: Request,
     token: str = Depends(verify_rails_token),
     db: AsyncSession = Depends(get_db),
-company_id: str = Depends(require_company_id)) -> dict[str, Any]:
+    company_id: str = Depends(require_company_id),
+) -> CandidateEnrichmentResponse:
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     _check_rate_limit()
     _audit_log("candidates.enrichment", {"candidate_id": candidate_id})
 
-    # multi-tenancy fail-closed: explicit company_id WHERE + Postgres RLS defense-in-depth
-    result = await db.execute(
-        select(Candidate).where(
-            Candidate.id == candidate_id,
-            Candidate.company_id == company_id,
-        )
-    )
-    candidate = result.scalar_one_or_none()
+    # ADR-001: delegate DB access to repository (tenant-scoped fetch).
+    repo = RailsSyncRepository(db)
+    candidate = await repo.get_candidate_for_company(candidate_id, company_id)
     if not candidate:
         raise HTTPException(status_code=404, detail="Candidate not found")
 
-    wsi_data: dict[str, Any] = {}
-    if hasattr(candidate, "wsi_score") and candidate.wsi_score is not None:
-        wsi_data["wsi_score"] = candidate.wsi_score
-    if hasattr(candidate, "wsi_report") and candidate.wsi_report is not None:
-        wsi_data["wsi_report"] = candidate.wsi_report
-    if hasattr(candidate, "screening_result") and candidate.screening_result is not None:
-        wsi_data["screening_result"] = candidate.screening_result
-
-    ai_insights: dict[str, Any] = {}
-    if hasattr(candidate, "ai_summary") and candidate.ai_summary is not None:
-        ai_insights["ai_summary"] = candidate.ai_summary
-    if hasattr(candidate, "skills_extracted") and candidate.skills_extracted is not None:
-        ai_insights["skills_extracted"] = candidate.skills_extracted
-    if hasattr(candidate, "embedding_vector") and candidate.embedding_vector is not None:
-        ai_insights["has_embedding"] = True
-
-    return {
-        "candidate_id": candidate_id,
-        "name": getattr(candidate, "name", None),
-        "email": getattr(candidate, "email", None),
-        "status": getattr(candidate, "status", None),
-        "wsi": wsi_data,
-        "ai_insights": ai_insights,
-        "source": "fastapi",
-        "synced_at": datetime.now(timezone.utc).isoformat(),
-    }
+    return CandidateEnrichmentResponse(
+        candidate_id=candidate_id,
+        name=getattr(candidate, "name", None),
+        email=getattr(candidate, "email", None),
+        status=getattr(candidate, "status", None),
+        wsi=_build_wsi_data(candidate),
+        ai_insights=_build_ai_insights(candidate),
+        synced_at=datetime.now(timezone.utc),
+    )
 
 
-@router.get("/jobs/{job_id}/intelligence")
+@router.get(
+    "/jobs/{job_id}/intelligence",
+    response_model=JobIntelligenceResponse,
+    response_model_exclude_none=True,
+)
 async def get_job_intelligence(
     job_id: str,
     token: str = Depends(verify_rails_token),
     db: AsyncSession = Depends(get_db),
-company_id: str = Depends(require_company_id)) -> dict[str, Any]:
+    company_id: str = Depends(require_company_id),
+) -> JobIntelligenceResponse:
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     _check_rate_limit()
     _audit_log("jobs.intelligence", {"job_id": job_id})
 
-    # multi-tenancy fail-closed: explicit company_id WHERE + Postgres RLS defense-in-depth
-    result = await db.execute(
-        select(JobVacancy).where(
-            JobVacancy.id == job_id,
-            JobVacancy.company_id == company_id,
-        )
-    )
-    job = result.scalar_one_or_none()
+    # ADR-001: delegate DB access to repository (tenant-scoped fetch).
+    repo = RailsSyncRepository(db)
+    job = await repo.get_job_for_company(job_id, company_id)
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
 
-    return {
-        "job_id": job_id,
-        "title": getattr(job, "title", None),
-        "status": getattr(job, "status", None),
-        "company_id": getattr(job, "company_id", None),
-        "sourcing_data": {
-            "channels": getattr(job, "sourcing_channels", []) or [],
-        },
-        "saturation": {
-            "market_available": getattr(job, "market_candidates", None),
-            "saturation_score": getattr(job, "saturation_score", None),
-        },
-        "source": "fastapi",
-        "synced_at": datetime.now(timezone.utc).isoformat(),
-    }
+    return JobIntelligenceResponse(
+        job_id=job_id,
+        title=getattr(job, "title", None),
+        status=getattr(job, "status", None),
+        company_id=getattr(job, "company_id", None),
+        sourcing_data=JobSourcingData(
+            channels=getattr(job, "sourcing_channels", []) or [],
+        ),
+        saturation=JobSaturationData(
+            market_available=getattr(job, "market_candidates", None),
+            saturation_score=getattr(job, "saturation_score", None),
+        ),
+        synced_at=datetime.now(timezone.utc),
+    )
 
 
-@router.get("/compliance/status")
+@router.get(
+    "/compliance/status",
+    response_model=ComplianceStatusResponse,
+    response_model_exclude_none=True,
+)
 async def get_compliance_status(
     token: str = Depends(verify_rails_token),
     db: AsyncSession = Depends(get_db),
-company_id: str = Depends(require_company_id)) -> dict[str, Any]:
+    company_id: str = Depends(require_company_id),
+) -> ComplianceStatusResponse:
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     _check_rate_limit()
     _audit_log("compliance.status", {})
 
-    candidate_count_result = await db.execute(select(func.count(Candidate.id)))
-    total_candidates = candidate_count_result.scalar() or 0
+    # ADR-001: delegate DB access to repository.
+    repo = RailsSyncRepository(db)
+    total_candidates = await repo.count_candidates()
+    total_jobs = await repo.count_jobs()
+    total_templates = await repo.count_email_templates()
 
-    job_count_result = await db.execute(select(func.count(JobVacancy.id)))
-    total_jobs = job_count_result.scalar() or 0
-
-    template_count_result = await db.execute(select(func.count(EmailTemplate.id)))
-    total_templates = template_count_result.scalar() or 0
-
-    return {
-        "lgpd": {
-            "status": "compliant",
-            "data_retention_policy": "365_days",
-            "pii_masking_enabled": True,
-            "consent_tracking": True,
-        },
-        "platform_stats": {
-            "total_candidates": total_candidates,
-            "total_jobs": total_jobs,
-            "total_email_templates": total_templates,
-        },
-        "audit": {
-            "last_check": datetime.now(timezone.utc).isoformat(),
-            "fairness_guard_active": True,
-            "bias_audit_enabled": True,
-            "eu_ai_act_compliance": "in_progress",
-        },
-        "source": "fastapi",
-        "synced_at": datetime.now(timezone.utc).isoformat(),
-    }
+    return ComplianceStatusResponse(
+        lgpd=ComplianceLGPDBlock(
+            status="compliant",
+            data_retention_policy="365_days",
+            pii_masking_enabled=True,
+            consent_tracking=True,
+        ),
+        platform_stats=ComplianceStatsBlock(
+            total_candidates=total_candidates,
+            total_jobs=total_jobs,
+            total_email_templates=total_templates,
+        ),
+        audit=ComplianceAuditBlock(
+            last_check=datetime.now(timezone.utc),
+            fairness_guard_active=True,
+            bias_audit_enabled=True,
+            eu_ai_act_compliance="in_progress",
+        ),
+        synced_at=datetime.now(timezone.utc),
+    )
 
 
-@router.post("/bulk-sync/candidates")
+@router.post(
+    "/bulk-sync/candidates",
+    response_model=BulkSyncCandidatesResponse,
+    response_model_exclude_none=True,
+)
 async def bulk_sync_candidates(
     request: Request,
     token: str = Depends(verify_rails_token),
     db: AsyncSession = Depends(get_db),
-company_id: str = Depends(require_company_id)) -> dict[str, Any]:
+    company_id: str = Depends(require_company_id),
+) -> BulkSyncCandidatesResponse:
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     _check_rate_limit()
 
@@ -238,40 +267,29 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
 
     _audit_log("bulk-sync.candidates", {"count": len(candidate_ids)})
 
-    # multi-tenancy fail-closed: explicit company_id WHERE + Postgres RLS defense-in-depth
-    result = await db.execute(
-        select(Candidate).where(
-            Candidate.id.in_(candidate_ids),
-            Candidate.company_id == company_id,
-        )
-    )
-    candidates = list(result.scalars().all())
+    # ADR-001: delegate DB access to repository (tenant-scoped bulk fetch).
+    repo = RailsSyncRepository(db)
+    candidates = await repo.list_candidates_by_ids_for_company(candidate_ids, company_id)
     found_ids = {str(getattr(c, "id", "")) for c in candidates}
 
-    enrichments = []
-    for c in candidates:
-        wsi_data: dict[str, Any] = {}
-        if hasattr(c, "wsi_score") and c.wsi_score is not None:
-            wsi_data["wsi_score"] = c.wsi_score
-        if hasattr(c, "screening_result") and c.screening_result is not None:
-            wsi_data["screening_result"] = c.screening_result
-
-        enrichments.append({
-            "candidate_id": str(getattr(c, "id", "")),
-            "name": getattr(c, "name", None),
-            "email": getattr(c, "email", None),
-            "status": getattr(c, "status", None),
-            "wsi": wsi_data,
-        })
+    enrichments: list[CandidateEnrichmentItem] = [
+        CandidateEnrichmentItem(
+            candidate_id=str(getattr(c, "id", "")),
+            name=getattr(c, "name", None),
+            email=getattr(c, "email", None),
+            status=getattr(c, "status", None),
+            wsi=_build_wsi_data(c),
+        )
+        for c in candidates
+    ]
 
     missing_ids = [cid for cid in candidate_ids if str(cid) not in found_ids]
 
-    return {
-        "total_requested": len(candidate_ids),
-        "total_found": len(enrichments),
-        "total_missing": len(missing_ids),
-        "enrichments": enrichments,
-        "missing_ids": missing_ids,
-        "source": "fastapi",
-        "synced_at": datetime.now(timezone.utc).isoformat(),
-    }
+    return BulkSyncCandidatesResponse(
+        total_requested=len(candidate_ids),
+        total_found=len(enrichments),
+        total_missing=len(missing_ids),
+        enrichments=enrichments,
+        missing_ids=missing_ids,
+        synced_at=datetime.now(timezone.utc),
+    )
