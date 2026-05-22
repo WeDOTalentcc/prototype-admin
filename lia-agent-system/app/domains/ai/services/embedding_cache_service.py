@@ -141,6 +141,8 @@ class EmbeddingCacheService:
 
             from lia_models.job_vacancy import JobVacancy
 
+            # TENANT-EXEMPT: system-wide warm-up scan (ADR-001-EXEMPT context above),
+            # bounded by limit(100); pre-warms embedding cache across all active vacancies
             stmt = (
                 select(JobVacancy)
                 .where(JobVacancy.status.in_(["active", "Ativa", "published"]))

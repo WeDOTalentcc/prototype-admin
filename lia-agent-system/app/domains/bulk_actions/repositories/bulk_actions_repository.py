@@ -43,6 +43,9 @@ class BulkActionsRepository:
     # ── JobVacancy ──────────────────────────────────────────────────────────
 
     async def get_job_vacancy_by_id(self, vacancy_id: uuid.UUID) -> JobVacancy | None:
+        # TENANT-EXEMPT: session injected via Depends(get_tenant_db) sets Postgres RLS
+        # context per request (app/core/database.py:39); RLS lia_app role enforces
+        # company_id filter at DB layer regardless of explicit WHERE
         result = await self.db.execute(
             select(JobVacancy).where(JobVacancy.id == vacancy_id)
         )

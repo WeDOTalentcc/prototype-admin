@@ -83,6 +83,9 @@ class CandidateContextAggregator:
             
             if include_job_context:
                 try:
+                    # TENANT-EXEMPT: cross-domain read-only aggregator (ADR-001-EXEMPT
+                    # at module level); tenant scope established by caller via
+                    # pre-validated vacancy_candidate_id (see header comment)
                     job_result = await self.db.execute(
                         select(JobVacancy).where(JobVacancy.id == vc.vacancy_id)
                     )
