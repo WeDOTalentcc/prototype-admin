@@ -139,7 +139,8 @@ def compute_tool_coverage(allowed_tools: list[str], domain: str) -> float:
     # — todos eram ghost no runtime e inflavam score artificialmente.
     # Wave 3 vai implementar versões reais conforme prioridade do customer interview.)
     read_tools = {"search_candidates", "list_jobs", "get_job_details", "get_candidate_details",
-                  "summarize_context", "clarify_request", "get_evaluation_criteria"}
+                  "summarize_context", "clarify_request", "get_evaluation_criteria",
+                  "get_pipeline_summary"}
     has_read = len(set(allowed_tools) & read_tools)
     score += min(has_read * 7, 35)
 

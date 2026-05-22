@@ -796,6 +796,79 @@ async def _wrap_get_evaluation_criteria(**kwargs: Any) -> dict[str, Any]:
         }
 
 
+
+@tool_handler("cv_screening")
+async def _wrap_get_pipeline_summary(**kwargs: Any) -> dict[str, Any]:
+    """Wave 3 #25 audit 2026-05-22: tool real (era ghost P0-5 — só existia em
+    recruiter_assistant/kanban_tool_registry, não carregado pelo runtime Studio).
+
+    Retorna resumo do pipeline: contagem por stage + taxa de conversao para hired.
+    Multi-tenant via @tool_handler canonical.
+
+    Args:
+        vacancy_id: opcional (vazio = todas as vagas do tenant)
+
+    Returns:
+        success: bool
+        data: {vacancy_id, total_candidates, stages: {stage: count}, conversion_rate}
+        message: human-readable
+    """
+    vacancy_id = kwargs.get("vacancy_id", "")
+    company_id = kwargs.get("company_id", "")
+
+    logger.info(
+        "[pipeline_tools] get_pipeline_summary called for vacancy=%s",
+        vacancy_id or "all",
+    )
+
+    stages: dict[str, int] = {}
+    total = 0
+    hired = 0
+
+    try:
+        async with AsyncSessionLocal() as session:
+            rows = await session.execute(
+                text("""
+                    SELECT stage, COUNT(*) AS cnt
+                    FROM vacancy_candidates
+                    WHERE (:vid = '' OR vacancy_id::text = :vid)
+                      AND company_id = :cid
+                      AND status != 'rejected'
+                    GROUP BY stage ORDER BY cnt DESC
+                """),
+                {"vid": vacancy_id, "cid": company_id},
+            )
+            for row in rows.mappings():
+                stages[row["stage"]] = int(row["cnt"])
+            total = sum(stages.values())
+
+            hired_row = await session.execute(
+                text("""
+                    SELECT COUNT(*) AS cnt FROM vacancy_candidates
+                    WHERE (:vid = '' OR vacancy_id::text = :vid)
+                      AND company_id = :cid
+                      AND stage ILIKE '%contrat%'
+                """),
+                {"vid": vacancy_id, "cid": company_id},
+            )
+            hired = int((hired_row.mappings().first() or {}).get("cnt", 0))
+    except Exception as e:
+        logger.warning("[pipeline_tools] get_pipeline_summary DB error: %s", e)
+
+    conversion = round(hired / total * 100, 1) if total > 0 else 0.0
+    return {
+        "success": True,
+        "data": {
+            "vacancy_id": vacancy_id or "all",
+            "total_candidates": total,
+            "hired_count": hired,
+            "stages": stages,
+            "conversion_rate": conversion,
+        },
+        "message": f"Pipeline: {total} candidatos em {len(stages)} etapas. Conversao para hire: {conversion}%.",
+    }
+
+
 TOOL_DEFINITIONS: list[ToolDefinition] = [
     ToolDefinition(
         name="view_candidate_profile",
@@ -1103,6 +1176,31 @@ TOOL_DEFINITIONS.append(
         side_effects=["read"],
         output_schema=ToolOutput,
         function=_wrap_get_evaluation_criteria,
+    )
+)
+
+# Wave 3 #25 audit 2026-05-22: re-add get_pipeline_summary (era ghost P0-5
+# por não ser carregado por nenhum registry do runtime; só existia em
+# recruiter_assistant/kanban_tool_registry que custom_agent_runtime não importa).
+TOOL_DEFINITIONS.append(
+    ToolDefinition(
+        name="get_pipeline_summary",
+        description="Retorna resumo do pipeline de recrutamento: contagem de candidatos por etapa, total e taxa de conversao para hire. Use para diagnosticar gargalos do funil e identificar etapas com baixa conversao.",
+        parameters={
+            "type": "object",
+            "properties": {
+                "vacancy_id": {
+                    "type": "string",
+                    "description": "ID da vaga. Opcional. Se omitido retorna pipeline agregado de todas as vagas do tenant.",
+                },
+            },
+            "required": [],
+        },
+        affects_candidate_decision=False,
+        lgpd_legal_basis="LEGITIMATE_INTEREST",
+        side_effects=["read"],
+        output_schema=ToolOutput,
+        function=_wrap_get_pipeline_summary,
     )
 )
 
