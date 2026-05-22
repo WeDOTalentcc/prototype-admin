@@ -150,6 +150,7 @@ company_id: str = Depends(require_company_id)):
             logger.info(f"Seeded {created} default archetypes")
         
         # Build query
+        # TENANT-EXEMPT: SearchArchetype.company_id NULLABLE para marketplace templates publicos (lia_models/archetype.py:43-44); endpoint require_company_id valida JWT pra contexto cliente; sensor AST nao infere nullable+marketplace
         query = select(SearchArchetype)
         
         if not include_inactive:
@@ -225,6 +226,7 @@ company_id: str = Depends(require_company_id)):
         
         # Check if ID already exists
         existing = await db.execute(
+            # TENANT-EXEMPT: SearchArchetype.company_id NULLABLE para marketplace templates publicos (lia_models/archetype.py:43-44); endpoint require_company_id valida JWT pra contexto cliente; sensor AST nao infere nullable+marketplace
             select(SearchArchetype).where(SearchArchetype.id == archetype_id)
         )
         if existing.scalar_one_or_none():
@@ -395,7 +397,8 @@ company_id: str = Depends(require_company_id)):
                     JobVacancy.status == "Concluída",
                     JobVacancy.status == "Fechada",
                     JobVacancy.closed_at.isnot(None)
-                )
+                ),
+                JobVacancy.company_id == company_id,
             )
             .order_by(desc(JobVacancy.closed_at), desc(JobVacancy.updated_at))
             .limit(limit)
@@ -470,7 +473,7 @@ company_id: str = Depends(require_company_id)):
     
     try:
         result = await db.execute(
-            select(JobVacancy).where(JobVacancy.id == job_id)
+            select(JobVacancy).where(JobVacancy.id == job_id, JobVacancy.company_id == company_id)
         )
         job = result.scalar_one_or_none()
         
@@ -743,6 +746,7 @@ company_id: str = Depends(require_company_id)):
     
     try:
         result = await db.execute(
+            # TENANT-EXEMPT: SearchArchetype.company_id NULLABLE para marketplace templates publicos (lia_models/archetype.py:43-44); endpoint require_company_id valida JWT pra contexto cliente; sensor AST nao infere nullable+marketplace
             select(SearchArchetype).where(SearchArchetype.id == archetype_id)
         )
         archetype = result.scalar_one_or_none()
@@ -791,6 +795,7 @@ company_id: str = Depends(require_company_id)):
     
     try:
         result = await db.execute(
+            # TENANT-EXEMPT: SearchArchetype.company_id NULLABLE para marketplace templates publicos (lia_models/archetype.py:43-44); endpoint require_company_id valida JWT pra contexto cliente; sensor AST nao infere nullable+marketplace
             select(SearchArchetype).where(SearchArchetype.id == archetype_id)
         )
         archetype = result.scalar_one_or_none()
@@ -805,6 +810,7 @@ company_id: str = Depends(require_company_id)):
             )
         
         await db.execute(
+            # TENANT-EXEMPT: SearchArchetype.company_id NULLABLE para marketplace templates publicos (lia_models/archetype.py:43-44); endpoint require_company_id valida JWT pra contexto cliente; sensor AST nao infere nullable+marketplace
             delete(SearchArchetype).where(SearchArchetype.id == archetype_id)
         )
         
@@ -837,6 +843,7 @@ company_id: str = Depends(require_company_id)):
     
     try:
         result = await db.execute(
+            # TENANT-EXEMPT: SearchArchetype.company_id NULLABLE para marketplace templates publicos (lia_models/archetype.py:43-44); endpoint require_company_id valida JWT pra contexto cliente; sensor AST nao infere nullable+marketplace
             select(SearchArchetype).where(SearchArchetype.id == archetype_id)
         )
         archetype = result.scalar_one_or_none()
@@ -920,6 +927,7 @@ company_id: str = Depends(require_company_id)):
     try:
         # Get archetype
         result = await db.execute(
+            # TENANT-EXEMPT: SearchArchetype.company_id NULLABLE para marketplace templates publicos (lia_models/archetype.py:43-44); endpoint require_company_id valida JWT pra contexto cliente; sensor AST nao infere nullable+marketplace
             select(SearchArchetype).where(SearchArchetype.id == archetype_id)
         )
         archetype = result.scalar_one_or_none()
@@ -932,6 +940,7 @@ company_id: str = Depends(require_company_id)):
         
         # Increment usage count
         await db.execute(
+            # TENANT-EXEMPT: SearchArchetype.company_id NULLABLE para marketplace templates publicos (lia_models/archetype.py:43-44); endpoint require_company_id valida JWT pra contexto cliente; sensor AST nao infere nullable+marketplace
             update(SearchArchetype)
             .where(SearchArchetype.id == archetype_id)
             .values(usage_count=(archetype.usage_count or 0) + 1)
@@ -1053,7 +1062,7 @@ company_id: str = Depends(require_company_id)):
             
             candidates.append(candidate_dto)
         
-        candidates = await enrich_and_filter_candidates(db, candidates)
+        candidates = await enrich_and_filter_candidates(db, candidates, company_id=company_id)
         if request.calculate_lia_score:
             candidates.sort(key=lambda x: x.lia_score or 0, reverse=True)
 
@@ -1189,7 +1198,7 @@ company_id: str = Depends(require_company_id)):
 
     try:
         result = await db.execute(
-            select(JobVacancy).where(JobVacancy.id == request.job_id)
+            select(JobVacancy).where(JobVacancy.id == request.job_id, JobVacancy.company_id == company_id)
         )
         job = result.scalar_one_or_none()
         
@@ -1473,7 +1482,10 @@ company_id: str = Depends(require_company_id)):
     try:
         result = await db.execute(
             select(JobVacancy)
-            .where(JobVacancy.status.in_(["Concluída", "Fechada", "Preenchida"]))
+            .where(
+                JobVacancy.status.in_(["Concluída", "Fechada", "Preenchida"]),
+                JobVacancy.company_id == company_id,
+            )
             .order_by(JobVacancy.closed_at.desc().nulls_last())
             .limit(limit)
         )

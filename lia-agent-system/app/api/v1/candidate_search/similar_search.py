@@ -111,7 +111,7 @@ company_id: str = Depends(require_company_id)):
     try:
         if request.candidate_id:
             result = await db.execute(
-                select(Candidate).where(Candidate.id == uuid.UUID(request.candidate_id))
+                select(Candidate).where(Candidate.id == uuid.UUID(request.candidate_id), Candidate.company_id == company_id)
             )
             candidate = result.scalar_one_or_none()
             
@@ -179,7 +179,7 @@ company_id: str = Depends(require_company_id)):
         for profile in result.pearch_candidates:
             candidates.append(CandidateSearchResultDTO.from_profile(profile, "pearch"))
         
-        candidates = await enrich_and_filter_candidates(db, candidates)
+        candidates = await enrich_and_filter_candidates(db, candidates, company_id=company_id)
         
         return SimilarSearchResponse(
             reference_profile=reference_profile,

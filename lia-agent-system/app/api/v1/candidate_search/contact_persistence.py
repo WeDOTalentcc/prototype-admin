@@ -99,7 +99,7 @@ company_id: str = Depends(require_company_id)):
     try:
         # Check if candidate already exists by pearch_id
         existing = await db.execute(
-            select(Candidate).where(Candidate.pearch_profile_id == request.pearch_id)
+            select(Candidate).where(Candidate.pearch_profile_id == request.pearch_id, Candidate.company_id == company_id)
         )
         candidate = existing.scalar_one_or_none()
         

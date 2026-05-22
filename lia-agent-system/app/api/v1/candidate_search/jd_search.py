@@ -136,7 +136,7 @@ company_id: str = Depends(require_company_id)):
         for profile in result.pearch_candidates:
             candidates.append(CandidateSearchResultDTO.from_profile(profile, "pearch"))
         
-        candidates = await enrich_and_filter_candidates(db, candidates)
+        candidates = await enrich_and_filter_candidates(db, candidates, company_id=company_id)
         
         return JobDescriptionSearchResponse(
             extracted_criteria=extracted,
@@ -180,7 +180,7 @@ company_id: str = Depends(require_company_id)):
             for profile in result.get_candidates()
         ]
         
-        candidates = await enrich_and_filter_candidates(db, candidates)
+        candidates = await enrich_and_filter_candidates(db, candidates, company_id=company_id)
         
         return SearchResponseDTO(
             query=additional_query,
@@ -236,7 +236,7 @@ company_id: str = Depends(require_company_id)):
             for profile in profiles
         ]
         
-        candidates = await enrich_and_filter_candidates(db, candidates)
+        candidates = await enrich_and_filter_candidates(db, candidates, company_id=company_id)
         
         return SearchResponseDTO(
             query=query,

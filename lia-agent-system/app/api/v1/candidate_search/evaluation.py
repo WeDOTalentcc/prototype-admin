@@ -108,7 +108,7 @@ company_id: str = Depends(require_company_id)):
             try:
                 # Try to find candidate in main table
                 result = await db.execute(
-                    select(Candidate).where(Candidate.id == UUID(candidate_id))
+                    select(Candidate).where(Candidate.id == UUID(candidate_id), Candidate.company_id == company_id)
                 )
                 candidate = result.scalar_one_or_none()
                 
@@ -138,7 +138,8 @@ company_id: str = Depends(require_company_id)):
                     # Try to find in staging table (discovered candidates)
                     staging_result = await db.execute(
                         select(ExternalCandidateProfile).where(
-                            ExternalCandidateProfile.id == UUID(candidate_id)
+                            ExternalCandidateProfile.id == UUID(candidate_id),
+                            ExternalCandidateProfile.company_id == company_id,
                         )
                     )
                     staging_candidate = staging_result.scalar_one_or_none()

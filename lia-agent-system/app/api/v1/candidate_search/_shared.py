@@ -585,7 +585,10 @@ class EvaluateForJobResponse(BaseModel):
 async def enrich_and_filter_candidates(
     db: AsyncSession,
     candidates: list["CandidateSearchResultDTO"],
+    *,
+    company_id: str,
 ) -> list["CandidateSearchResultDTO"]:
+    """Multi-tenancy fail-closed: company_id required to scope candidate enrichment lookups."""
     from uuid import UUID as _UUID
     from sqlalchemy import select
     from lia_models.candidate import Candidate
@@ -661,7 +664,7 @@ async def enrich_and_filter_candidates(
                     pass
             if uuid_ids:
                 result = await db.execute(
-                    select(Candidate).where(Candidate.id.in_(uuid_ids))
+                    select(Candidate).where(Candidate.id.in_(uuid_ids), Candidate.company_id == company_id)
                 )
                 db_candidates = {str(c.id): c for c in result.scalars().all()}
                 for cand in candidates:

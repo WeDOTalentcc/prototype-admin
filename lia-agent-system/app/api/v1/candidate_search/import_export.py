@@ -129,7 +129,8 @@ company_id: str = Depends(require_company_id)):
                     or_(
                         Candidate.pearch_profile_id == candidate_dto.pearch_id,
                         Candidate.linkedin_url == candidate_dto.linkedin_url
-                    )
+                    ),
+                    Candidate.company_id == company_id,
                 ).limit(1)
             )
             existing_candidate = existing_in_main.scalars().first()
@@ -336,7 +337,7 @@ company_id: str = Depends(require_company_id)):
     
     try:
         profile_result = await db.execute(
-            select(ExternalCandidateProfile).where(ExternalCandidateProfile.id == profile_id)
+            select(ExternalCandidateProfile).where(ExternalCandidateProfile.id == profile_id, ExternalCandidateProfile.company_id == company_id)
         )
         profile = profile_result.scalar_one_or_none()
         
@@ -357,13 +358,13 @@ company_id: str = Depends(require_company_id)):
         existing_candidate = None
         if profile.linkedin_url:
             existing_result = await db.execute(
-                select(Candidate).where(Candidate.linkedin_url == profile.linkedin_url)
+                select(Candidate).where(Candidate.linkedin_url == profile.linkedin_url, Candidate.company_id == company_id)
             )
             existing_candidate = existing_result.scalar_one_or_none()
         
         if not existing_candidate and profile.source_profile_id:
             existing_result = await db.execute(
-                select(Candidate).where(Candidate.pearch_profile_id == profile.source_profile_id)
+                select(Candidate).where(Candidate.pearch_profile_id == profile.source_profile_id, Candidate.company_id == company_id)
             )
             existing_candidate = existing_result.scalar_one_or_none()
         

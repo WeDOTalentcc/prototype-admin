@@ -313,7 +313,7 @@ company_id: str = Depends(require_company_id)):
         elif _pearch_is_open and request.search_pearch and not APIFY_SEARCH_FALLBACK_ENABLED:
             _apify_fallback_warning = get_degraded_response("pearch")
         
-        candidates = await enrich_and_filter_candidates(db, candidates)
+        candidates = await enrich_and_filter_candidates(db, candidates, company_id=company_id)
         
         # Rubric evaluation if job_id is provided
         if request.job_id and candidates:
