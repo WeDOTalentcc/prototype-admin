@@ -199,11 +199,24 @@ async def get_calibration_candidates(
     db: AsyncSession = Depends(get_tenant_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Get candidates for the Big Card calibration modal."""
+    """Get candidates for the Big Card calibration modal.
+
+    Fail-loud (REGRA 4 canonical): agent inexistente OU de outro tenant
+    => HTTP 404 explicito (nao 500 com NoResultFound traceback).
+    """
     from app.services.sourcing_agent_orchestrator import sourcing_agent_orchestrator
-    candidates = await sourcing_agent_orchestrator.get_calibration_candidates(
-        agent_id=agent_id, limit=limit, db=db,
-    )
+    try:
+        candidates = await sourcing_agent_orchestrator.get_calibration_candidates(
+            agent_id=agent_id, limit=limit, db=db, company_id=company_id,
+        )
+    except LookupError as exc:
+        # Agent inexistente ou pertencente a outro tenant — fail-loud em log
+        # mas resposta HTTP enxuta (sem leak de existencia cross-tenant).
+        logger.warning(
+            "[sourcing-agents] calibration-candidates 404: agent_id=%s company_id=%s reason=%s",
+            agent_id, company_id, exc,
+        )
+        raise HTTPException(status_code=404, detail="Sourcing agent not found") from exc
     return {"candidates": candidates}
 
 

@@ -183,18 +183,30 @@ class SourcingAgentOrchestrator:
         agent_id: str,
         limit: int = 10,
         db=None,
+        company_id: str | None = None,
     ) -> list[dict]:
         """
         Get initial candidates for the Big Card calibration modal.
 
         Uses the agent's search_strategy to find candidates, then generates
         match_criteria for each (Why we matched this profile).
+
+        Multi-tenancy canonical (2026-05-22): filtra por company_id quando
+        passado. Levanta LookupError quando agent inexistente ou cross-tenant
+        (fail-loud REGRA 4, handler traduz pra HTTP 404).
         """
         from lia_models.sourcing_agent import SourcingAgent
         from sqlalchemy import select
 
-        result = await db.execute(select(SourcingAgent).where(SourcingAgent.id == agent_id))
-        agent = result.scalar_one()
+        stmt = select(SourcingAgent).where(SourcingAgent.id == agent_id)
+        if company_id is not None:
+            stmt = stmt.where(SourcingAgent.company_id == company_id)
+        result = await db.execute(stmt)
+        agent = result.scalar_one_or_none()
+        if agent is None:
+            raise LookupError(
+                f"SourcingAgent agent_id={agent_id} company_id={company_id} not found"
+            )
 
         query = self._strategy_to_query(agent.search_strategy)
 
