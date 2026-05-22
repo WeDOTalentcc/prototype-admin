@@ -107,6 +107,8 @@ export function SubStatusPanel({ stage, isEditMode, onToggleSubStatus }: SubStat
 
               {canManage && (
                 <Switch
+                  data-toggle="is_active"
+                  data-testid={`sub-status-active-toggle-${ss.id}`}
                   checked={ss.is_active ?? true}
                   onCheckedChange={() => handleToggleActive(ss)}
                   disabled={togglingId === ss.id}

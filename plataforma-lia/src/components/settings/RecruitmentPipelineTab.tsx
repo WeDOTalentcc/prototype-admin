@@ -49,7 +49,7 @@ export function RecruitmentPipelineTab() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" data-testid="pipeline-tab-root">
       {error && (
         <div className="px-2 py-1.5 rounded-xl flex items-center gap-2 bg-status-error/10 border border-status-error/30 text-status-error">
           <AlertCircle className="w-4 h-4" />
@@ -75,6 +75,7 @@ export function RecruitmentPipelineTab() {
           {isEditingPipeline ? (
             <>
               <button
+                data-testid="pipeline-edit-cancel"
                 onClick={onCancelEdit}
                 disabled={savingStages}
                 className={actionButtonStyles.smSecondary}
@@ -82,6 +83,7 @@ export function RecruitmentPipelineTab() {
                 {t("recruitment.pipeline.cancel")}
               </button>
               <button
+                data-testid="pipeline-edit-save"
                 onClick={onSave}
                 disabled={!hasStageChanges || savingStages}
                 className={actionButtonStyles.smPrimary}
@@ -101,6 +103,7 @@ export function RecruitmentPipelineTab() {
             </>
           ) : (
             <button
+              data-testid="pipeline-edit-start"
               onClick={onStartEdit}
               className={actionButtonStyles.smOutline}
             >

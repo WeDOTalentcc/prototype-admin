@@ -79,12 +79,13 @@ export function SaturationControlPanel({ stage, isEditMode }: { stage: Recruitme
   const inputClassName = "w-full px-2 py-1.5 text-xs text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg dark:focus:ring-lia-border-subtle focus:border-transparent transition-opacity motion-reduce:transition-none disabled:opacity-50"
 
   return (
-    <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle mt-3 pt-2">
+    <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle mt-3 pt-2" data-testid="saturation-control-panel">
       <InteractiveSurface
         variant="accordion"
         onClick={handleExpand}
         className="flex items-center gap-1.5 justify-start text-xs text-lia-text-secondary hover:text-lia-text-primary !bg-transparent hover:!bg-transparent"
         aria-expanded={expanded}
+        data-testid="saturation-control-toggle"
       >
         {expanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
         <Gauge className="h-3.5 w-3.5" />
@@ -109,6 +110,8 @@ export function SaturationControlPanel({ stage, isEditMode }: { stage: Recruitme
                   </Label>
                   <input
                     type="number"
+                    data-field="threshold_web"
+                    data-testid="saturation-threshold-web"
                     value={settings.threshold_web}
                     onChange={(e) => handleChange('threshold_web', parseInt(e.target.value) || 0)}
                     disabled={!isEditMode}
@@ -124,6 +127,8 @@ export function SaturationControlPanel({ stage, isEditMode }: { stage: Recruitme
                   </Label>
                   <input
                     type="number"
+                    data-field="threshold_sourcing"
+                    data-testid="saturation-threshold-sourcing"
                     value={settings.threshold_sourcing}
                     onChange={(e) => handleChange('threshold_sourcing', parseInt(e.target.value) || 0)}
                     disabled={!isEditMode}
@@ -141,6 +146,8 @@ export function SaturationControlPanel({ stage, isEditMode }: { stage: Recruitme
                     <span className="text-xs text-lia-text-tertiary">+</span>
                     <input
                       type="number"
+                      data-field="unlock_increment"
+                      data-testid="saturation-unlock-increment"
                       value={settings.unlock_increment}
                       onChange={(e) => handleChange('unlock_increment', parseInt(e.target.value) || 0)}
                       disabled={!isEditMode}
@@ -158,6 +165,8 @@ export function SaturationControlPanel({ stage, isEditMode }: { stage: Recruitme
                   <div className="flex items-center gap-1.5">
                     <input
                       type="number"
+                      data-field="unlock_hours"
+                      data-testid="saturation-unlock-hours"
                       value={settings.unlock_hours}
                       onChange={(e) => handleChange('unlock_hours', parseInt(e.target.value) || 0)}
                       disabled={!isEditMode}
@@ -173,6 +182,7 @@ export function SaturationControlPanel({ stage, isEditMode }: { stage: Recruitme
               {isEditMode && dirty && (
                 <div className="flex justify-end">
                   <Button
+                    data-testid="saturation-save"
                     size="sm"
                     onClick={handleSave}
                     disabled={saving}

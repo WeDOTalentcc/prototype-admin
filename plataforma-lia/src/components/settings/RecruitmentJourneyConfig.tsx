@@ -226,7 +226,7 @@ export function RecruitmentJourneyConfig({
   const availableCatalogStages = catalogStages.filter(cs => !stages.some(s => s.name === cs.name))
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="pipeline-journey-root">
       {!hideHeader && (
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -240,12 +240,12 @@ export function RecruitmentJourneyConfig({
           {isEditMode && (
             <Popover open={catalogOpen} onOpenChange={setCatalogOpen}>
               <PopoverTrigger asChild>
-                <Button className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active rounded-xl px-4 py-2 text-xs font-semibold transition-colors motion-reduce:transition-none">
+                <Button data-testid="pipeline-stage-add-trigger" className="bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active rounded-xl px-4 py-2 text-xs font-semibold transition-colors motion-reduce:transition-none">
                   <Plus className="h-4 w-4 mr-2" />
                   {t("addStage")}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent align="end" className="w-80 p-0">
+              <PopoverContent align="end" className="w-80 p-0" data-testid="pipeline-stage-catalog-popover">
                 <div className="p-3 dark:border-lia-border-subtle">
                   <h4 className={`${textStyles.bodyLarge} font-semibold text-lia-text-primary`}>
                     {t("addFromCatalog")}
@@ -276,6 +276,7 @@ export function RecruitmentJourneyConfig({
                     availableCatalogStages.map(cs => (
                       <button
                         key={cs.id}
+                        data-testid={`pipeline-catalog-add-${cs.name}`}
                         onClick={() => handleAddFromCatalog(cs)}
                         className="w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse/50 transition-colors motion-reduce:transition-none text-left"
                       >
@@ -294,6 +295,7 @@ export function RecruitmentJourneyConfig({
                 </div>
                 <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle p-2">
                   <button
+                    data-testid="pipeline-stage-create-custom"
                     onClick={handleAddStage}
                     className="w-full flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse/50 transition-colors motion-reduce:transition-none text-left"
                   >
@@ -327,7 +329,7 @@ export function RecruitmentJourneyConfig({
       {isEditMode ? (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={stages.map(s => s.id)} strategy={verticalListSortingStrategy}>
-            <div className="space-y-3">
+            <div className="space-y-3" data-testid="pipeline-stages-list-edit">
               {stages.map(stage => (
                 <SortableStageCard
                   key={stage.id}
@@ -346,7 +348,7 @@ export function RecruitmentJourneyConfig({
           </SortableContext>
         </DndContext>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-3" data-testid="pipeline-stages-list-readonly">
           {stages.map(stage => <ReadOnlyStageCard key={stage.id} stage={stage} />)}
         </div>
       )}

@@ -257,7 +257,7 @@ export function PipelineStageTemplatesManager({
   }
 
   return (
-    <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 rounded-xl">
+    <Card data-testid="pipeline-stage-templates-manager" className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 rounded-xl">
       <CardHeader className="pb-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <CardTitle className={`${textStyles.h4} flex items-center gap-2`}>
@@ -268,7 +268,7 @@ export function PipelineStageTemplatesManager({
             <Chip variant="neutral" className="text-micro">
               {tc("countSummary", { master: masterCount, custom: customCount, total })}
             </Chip>
-            <Button size="sm" onClick={startCreate} disabled={!!editingId}>
+            <Button data-testid="pipeline-stage-template-create" size="sm" onClick={startCreate} disabled={!!editingId}>
               <Plus className="w-3 h-3 mr-1" /> {t("newButton")}
             </Button>
           </div>
@@ -309,33 +309,41 @@ export function PipelineStageTemplatesManager({
 
         {/* Form */}
         {editingId && (
-          <Card className="border border-wedo-cyan/30 bg-wedo-cyan/5 rounded-xl">
+          <Card data-testid="pipeline-stage-template-form" className="border border-wedo-cyan/30 bg-wedo-cyan/5 rounded-xl">
             <CardContent className="p-3 space-y-3">
               <div className="flex items-center justify-between">
                 <h5 className={textStyles.h4}>
                   {editingId === "__new__" ? t("formTitleCreate") : t("formTitleEdit")}
                 </h5>
-                <Button variant="ghost" size="sm" onClick={cancelEdit}>
+                <Button data-testid="pipeline-stage-template-form-close" variant="ghost" size="sm" onClick={cancelEdit}>
                   <X className="w-3 h-3" />
                 </Button>
               </div>
               <Input
+                data-field="label"
+                data-testid="pipeline-stage-template-field-label"
                 placeholder={t("placeholderLabel")}
                 value={form.label}
                 onChange={(e) => setForm({ ...form, label: e.target.value })}
               />
               <Input
+                data-field="key"
+                data-testid="pipeline-stage-template-field-key"
                 placeholder={t("placeholderKey")}
                 value={form.key}
                 onChange={(e) => setForm({ ...form, key: e.target.value })}
               />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <Input
+                  data-field="color"
+                  data-testid="pipeline-stage-template-field-color"
                   placeholder={t("placeholderColor")}
                   value={form.color}
                   onChange={(e) => setForm({ ...form, color: e.target.value })}
                 />
                 <Input
+                  data-field="icon"
+                  data-testid="pipeline-stage-template-field-icon"
                   placeholder={t("placeholderIcon")}
                   value={form.icon}
                   onChange={(e) => setForm({ ...form, icon: e.target.value })}
@@ -344,12 +352,16 @@ export function PipelineStageTemplatesManager({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <Input
                   type="number"
+                  data-field="order"
+                  data-testid="pipeline-stage-template-field-order"
                   placeholder={t("placeholderOrder")}
                   value={form.order}
                   onChange={(e) => setForm({ ...form, order: e.target.value })}
                 />
                 <Input
                   type="number"
+                  data-field="sla_hours"
+                  data-testid="pipeline-stage-template-field-sla-hours"
                   placeholder={t("placeholderSlaHours")}
                   value={form.sla_hours}
                   onChange={(e) => setForm({ ...form, sla_hours: e.target.value })}
@@ -359,7 +371,7 @@ export function PipelineStageTemplatesManager({
                 value={form.action_behavior}
                 onValueChange={(v) => setForm({ ...form, action_behavior: v as ActionBehavior })}
               >
-                <SelectTrigger><SelectValue placeholder={t("placeholderActionBehavior")} /></SelectTrigger>
+                <SelectTrigger data-field="action_behavior" data-testid="pipeline-stage-template-field-action-behavior"><SelectValue placeholder={t("placeholderActionBehavior")} /></SelectTrigger>
                 <SelectContent>
                   {ACTION_BEHAVIORS.map((b) => (
                     <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>
@@ -370,7 +382,7 @@ export function PipelineStageTemplatesManager({
                 value={form.default_channel}
                 onValueChange={(v) => setForm({ ...form, default_channel: v as DefaultChannel })}
               >
-                <SelectTrigger><SelectValue placeholder={t("placeholderDefaultChannel")} /></SelectTrigger>
+                <SelectTrigger data-field="default_channel" data-testid="pipeline-stage-template-field-default-channel"><SelectValue placeholder={t("placeholderDefaultChannel")} /></SelectTrigger>
                 <SelectContent>
                   {DEFAULT_CHANNELS.map((c) => (
                     <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
@@ -380,6 +392,8 @@ export function PipelineStageTemplatesManager({
               <label className="flex items-center gap-1 text-xs">
                 <input
                   type="checkbox"
+                  data-toggle="is_default_in_pipeline"
+                  data-testid="pipeline-stage-template-toggle-is-default"
                   checked={form.is_default_in_pipeline}
                   onChange={(e) => setForm({ ...form, is_default_in_pipeline: e.target.checked })}
                 />
@@ -391,8 +405,8 @@ export function PipelineStageTemplatesManager({
                 </div>
               )}
               <div className="flex justify-end gap-2">
-                <Button variant="outline" size="sm" onClick={cancelEdit}>{tc("cancel")}</Button>
-                <Button size="sm" onClick={handleSave} disabled={isSaving}>
+                <Button data-testid="pipeline-stage-template-cancel" variant="outline" size="sm" onClick={cancelEdit}>{tc("cancel")}</Button>
+                <Button data-testid="pipeline-stage-template-save" size="sm" onClick={handleSave} disabled={isSaving}>
                   {isSaving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
                   {tc("save")}
                 </Button>
@@ -402,7 +416,7 @@ export function PipelineStageTemplatesManager({
         )}
 
         {/* List */}
-        <div className="space-y-2 max-h-content-lg overflow-y-auto">
+        <div data-testid="pipeline-stage-templates-list" className="space-y-2 max-h-content-lg overflow-y-auto">
           {filteredTemplates.length === 0 && (
             <p className="text-xs text-lia-text-secondary text-center py-4">
               {t("emptyList")}
@@ -413,6 +427,7 @@ export function PipelineStageTemplatesManager({
             return (
               <div
                 key={template.id}
+                data-testid={`pipeline-stage-template-row-${template.id}`}
                 className="flex items-start justify-between gap-2 p-3 bg-lia-bg-secondary/50 rounded-xl border border-lia-border-subtle"
               >
                 <div className="flex-1 min-w-0">
@@ -446,6 +461,7 @@ export function PipelineStageTemplatesManager({
                 <div className="flex items-center gap-1">
                   {template.is_master_template && (
                     <Button
+                      data-testid={`pipeline-stage-template-customize-${template.id}`}
                       variant="ghost" size="sm"
                       onClick={() => handleCustomize(template)}
                       title={tc("customizeHint")}
@@ -454,12 +470,13 @@ export function PipelineStageTemplatesManager({
                     </Button>
                   )}
                   {canEdit(template) && (
-                    <Button variant="ghost" size="sm" onClick={() => startEdit(template)} title={tc("edit")}>
+                    <Button data-testid={`pipeline-stage-template-edit-${template.id}`} variant="ghost" size="sm" onClick={() => startEdit(template)} title={tc("edit")}>
                       <Pencil className="w-3 h-3" />
                     </Button>
                   )}
                   {canDelete(template) && (
                     <Button
+                      data-testid={`pipeline-stage-template-delete-${template.id}`}
                       variant="ghost" size="sm"
                       onClick={() => handleDelete(template)}
                       title={tc("deleteAdminOnly")}

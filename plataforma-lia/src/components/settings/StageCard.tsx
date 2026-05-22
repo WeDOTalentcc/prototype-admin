@@ -45,6 +45,7 @@ export function ReadOnlyStageCard({ stage }: { stage: RecruitmentStage }) {
 
   return (
     <Card
+      data-testid={`pipeline-stage-readonly-${stage.name}`}
       className={`border rounded-md p-4 bg-lia-bg-primary dark:bg-lia-bg-primary ${!stage.isActive ? "opacity-60" : ""} ${isSystemStage ? "border-lia-border-default bg-lia-bg-secondary/50" : "border-lia-border-subtle"}`}
       style={{borderLeft: stage.color ? `4px solid ${stage.color}` : undefined}}
     >
@@ -140,7 +141,7 @@ export function SortableStageCard({
   if (!isEditMode) return <ReadOnlyStageCard stage={stage} />
 
   return (
-    <div ref={combinedRef} style={style}>
+    <div ref={combinedRef} style={style} data-testid={`pipeline-stage-card-${stage.name}`}>
       <Card
         className={`border rounded-md p-4 transition-colors motion-reduce:transition-none duration-200 ${
           isDragging ? "opacity-90 bg-lia-bg-secondary" : "bg-lia-bg-primary hover:border-lia-border-medium dark:bg-lia-bg-secondary dark:hover:border-lia-border-medium"
@@ -167,6 +168,8 @@ export function SortableStageCard({
               {canEditName ? (
                 <input
                   type="text"
+                  data-field="display_name"
+                  data-testid={`pipeline-stage-display-name-${stage.name}`}
                   value={getStageDisplayName(stage)}
                   onChange={(e) => onUpdate(stage.id, { display_name: e.target.value, name: stage.name })}
                   className="flex-1 px-3 py-2 text-base-ui font-medium text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg dark:focus:ring-lia-border-subtle focus:border-transparent transition-colors motion-reduce:transition-none"
@@ -185,6 +188,8 @@ export function SortableStageCard({
                     <Label htmlFor={`active-${stage.id}`} className={textStyles.description}>{t('active')}</Label>
                     <Switch
                       id={`active-${stage.id}`}
+                      data-toggle="is_active"
+                      data-testid={`pipeline-stage-active-toggle-${stage.name}`}
                       checked={stage.isActive}
                       onCheckedChange={(checked: boolean) => onUpdate(stage.id, { isActive: checked })}
                     />
@@ -195,6 +200,8 @@ export function SortableStageCard({
 
             {canEditName && (
               <textarea
+                data-field="notes"
+                data-testid={`pipeline-stage-notes-${stage.name}`}
                 value={stage.notes}
                 onChange={(e) => onUpdate(stage.id, { notes: e.target.value })}
                 placeholder={t('notesPlaceholder')}
@@ -212,6 +219,8 @@ export function SortableStageCard({
                     <input
                       id={`sla-${stage.id}`}
                       type="number"
+                      data-field="sla"
+                      data-testid={`pipeline-stage-sla-${stage.name}`}
                       value={stage.sla}
                       onChange={(e) => onUpdate(stage.id, { sla: parseInt(e.target.value) || 0 })}
                       className="w-14 px-2 py-1 text-xs text-center text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg dark:focus:ring-lia-border-subtle focus:border-transparent transition-colors motion-reduce:transition-none"
@@ -224,6 +233,8 @@ export function SortableStageCard({
                 <div className="flex items-center gap-2">
                   <Label className={textStyles.description}>{t('action')}</Label>
                   <select
+                    data-field="action_behavior"
+                    data-testid={`pipeline-stage-action-behavior-${stage.name}`}
                     value={stage.action_behavior || 'passive'}
                     onChange={(e) => onUpdate(stage.id, { action_behavior: e.target.value })}
                     className="px-2 py-1 text-xs text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg dark:focus:ring-lia-border-subtle focus:border-transparent transition-colors motion-reduce:transition-none"
@@ -244,6 +255,8 @@ export function SortableStageCard({
                 <div className="flex items-center gap-2">
                   <Label className={textStyles.description}>{t('channel')}</Label>
                   <select
+                    data-field="default_channel"
+                    data-testid={`pipeline-stage-default-channel-${stage.name}`}
                     value={stage.default_channel || 'email'}
                     onChange={(e) => onUpdate(stage.id, { default_channel: e.target.value })}
                     className="px-2 py-1 text-xs text-lia-text-primary border border-lia-border-subtle dark:border-lia-border-default rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary focus:outline-none focus:ring-2 focus:ring-lia-btn-primary-bg dark:focus:ring-lia-border-subtle focus:border-transparent transition-colors motion-reduce:transition-none"
@@ -257,6 +270,7 @@ export function SortableStageCard({
 
               {canRemove && (
                 <Button
+                  data-testid={`pipeline-stage-remove-${stage.name}`}
                   variant="ghost"
                   size="sm"
                   onClick={() => onRemove(stage.id)}
