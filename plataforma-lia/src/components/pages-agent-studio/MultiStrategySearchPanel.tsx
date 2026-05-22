@@ -249,7 +249,7 @@ export default function MultiStrategySearchPanel({
                     <td className="py-2 px-3">
                       <div className="flex items-center gap-2">
                         <Avatar className="w-7 h-7">
-                          <AvatarImage src={c.avatar_url || undefined} />
+                          <AvatarImage src={c.avatar_url || undefined} alt={c.name || "Candidato"} />
                           <AvatarFallback>{c.name?.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div>

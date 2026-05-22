@@ -174,7 +174,7 @@ function BrowseMarketplace() {
 
       {isLoading ? (
         <div className="flex items-center justify-center py-16">
-          <Loader2 className="w-6 h-6 animate-spin text-lia-text-disabled" />
+          <Loader2 className="w-6 h-6 animate-spin text-lia-text-disabled" aria-hidden="true" />
         </div>
       ) : listings.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 rounded-md border border-dashed border-lia-border-subtle bg-lia-bg-secondary/50">
@@ -242,7 +242,7 @@ function BrowseMarketplace() {
                   className="w-full gap-2 bg-violet-600 text-white hover:bg-violet-700"
                 >
                   {installing === listing.id ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" />
                   ) : (
                     <Download className="w-3.5 h-3.5" />
                   )}
@@ -294,7 +294,7 @@ function InstalledAgents() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="w-6 h-6 animate-spin text-lia-text-disabled" />
+        <Loader2 className="w-6 h-6 animate-spin text-lia-text-disabled" aria-hidden="true" />
       </div>
     )
   }
@@ -369,7 +369,7 @@ function BillingView() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-16">
-        <Loader2 className="w-6 h-6 animate-spin text-lia-text-disabled" />
+        <Loader2 className="w-6 h-6 animate-spin text-lia-text-disabled" aria-hidden="true" />
       </div>
     )
   }

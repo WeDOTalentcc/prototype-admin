@@ -275,7 +275,7 @@ export default function CalibrationCardModal({
               {/* Candidate header */}
               <div className="flex items-center gap-3 mb-4">
                 <Avatar className="w-12 h-12">
-                  <AvatarImage src={candidate.avatar_url || undefined} />
+                  <AvatarImage src={candidate.avatar_url || undefined} alt={candidate.name || "Candidato"} />
                   <AvatarFallback>{candidate.name?.charAt(0)}</AvatarFallback>
                 </Avatar>
                 <div>

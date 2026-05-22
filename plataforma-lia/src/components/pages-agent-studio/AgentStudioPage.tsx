@@ -209,7 +209,15 @@ export default function AgentStudioPage({
   const activeCount = agents.filter(a => a.status === "active").length
 
   return (
-    <div className="flex-1 flex flex-col h-full overflow-hidden bg-lia-bg-primary">
+    <div id="estudio-main-content" className="flex-1 flex flex-col h-full overflow-hidden bg-lia-bg-primary">
+      {/* UX-Sprint-A QW#9 audit 2026-05-21 (WCAG 2.4.1): skip link para keyboard users
+          pularem header + tabs e ir direto pro main content. Visível só em focus. */}
+      <a
+        href="#estudio-main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:z-50 focus:px-3 focus:py-1.5 focus:bg-lia-btn-primary-bg focus:text-lia-btn-primary-text focus:rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30"
+      >
+        Pular para conteúdo
+      </a>
       <div className="flex-shrink-0 px-4 pt-3 pb-0">
         <div className="flex items-center justify-between mb-2">
           <h1 className="text-lg font-semibold text-lia-text-primary">
@@ -221,8 +229,10 @@ export default function AgentStudioPage({
               size="sm"
               onClick={loadData}
               className="gap-2 text-lia-text-secondary hover:text-lia-text-primary"
+              aria-label={t("studio.refresh")}
+              disabled={isLoading}
             >
-              <RefreshCw className="w-4 h-4" />
+              <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} aria-hidden="true" />
             </Button>
             {/* BUG-12: CTA explícito para o ConversationalCreator (que estava
                 escondido na aba "Custom Agents" sem call-to-action visível).
@@ -415,7 +425,7 @@ export default function AgentStudioPage({
               {isLoading ? (
                 <div className="flex items-center justify-center py-16">
                   <div className="flex flex-col items-center gap-3 text-lia-text-secondary">
-                    <Loader2 className="w-6 h-6 animate-spin" />
+                    <Loader2 className="w-6 h-6 animate-spin" aria-hidden="true" />
                     <span className="text-xs">{t("studio.loading")}</span>
                   </div>
                 </div>
@@ -521,7 +531,21 @@ export default function AgentStudioPage({
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {customAgents.map((agent) => (
-                    <div key={agent.id} onClick={() => setDetailsAgent(agent)} className="cursor-pointer">
+                    <div
+                      key={agent.id}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setDetailsAgent(agent)}
+                      onKeyDown={(e) => {
+                        // UX-Sprint-A QW#11 (WCAG 2.1.1): keyboard accessibility para card
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault()
+                          setDetailsAgent(agent)
+                        }
+                      }}
+                      aria-label={`${agent.name} — ver detalhes`}
+                      className="cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-lia-btn-primary-bg/30 rounded-xl"
+                    >
                       <CustomAgentCard
                         agent={agent}
                         onTest={(a) => { a; setTestAgent(agent) }}
