@@ -126,6 +126,7 @@ class CredentialsAccessLogRepository:
         if until is not None:
             filters.append(CredentialsAccessLog.accessed_at <= until)
 
+        # TENANT-EXEMPT: dynamic builder — filters[0] is CredentialsAccessLog.company_id == company_id (above); _require_company_id gate aplicado em L122
         query = (
             select(CredentialsAccessLog)
             .where(and_(*filters))

@@ -95,6 +95,7 @@ class IntegrationsHubRepository:
         status: str | None = None,
         category: str | None = None,
     ) -> list[tuple[IntegrationConnection, IntegrationProvider]]:
+        # TENANT-EXEMPT: dynamic builder — filters[0] is IntegrationConnection.company_id == company_id (below); .where(and_(*filters)) aplica filter; sensor AST não traça
         query = select(IntegrationConnection, IntegrationProvider).join(
             IntegrationProvider,
             IntegrationConnection.provider_id == IntegrationProvider.id,
@@ -113,24 +114,60 @@ class IntegrationsHubRepository:
         return list(result.all())
 
     async def get_connection_by_id(
-        self, connection_id: str
+        self,
+        connection_id: str,
+        company_id: str | None = None,
     ) -> IntegrationConnection | None:
-        result = await self.db.execute(
-            select(IntegrationConnection).where(
-                IntegrationConnection.id == connection_id
+        """Lookup IntegrationConnection por id.
+
+        Sprint B.1 tail (2026-05-22): company_id RECOMENDADO (defense-in-depth).
+        Quando passado, filtra por tenant. Caller eh tenant-gated.
+        """
+        # TENANT-EXEMPT: defense-in-depth — caller api/v1/integrations_hub.py eh tenant-gated via require_company_id; company_id opcional desde Sprint B.1 tail
+        if company_id is not None:
+            result = await self.db.execute(
+                select(IntegrationConnection).where(
+                    IntegrationConnection.id == connection_id,
+                    IntegrationConnection.company_id == company_id,
+                )
             )
-        )
+        else:
+            # TENANT-EXEMPT: backwards-compat — caller validates connection.company_id post-fetch
+            result = await self.db.execute(
+                select(IntegrationConnection).where(
+                    IntegrationConnection.id == connection_id
+                )
+            )
         return result.scalar_one_or_none()
 
     async def get_connection_with_provider(
-        self, connection_id: str
+        self,
+        connection_id: str,
+        company_id: str | None = None,
     ) -> tuple[IntegrationConnection, IntegrationProvider] | None:
-        result = await self.db.execute(
-            select(IntegrationConnection, IntegrationProvider).join(
-                IntegrationProvider,
-                IntegrationConnection.provider_id == IntegrationProvider.id,
-            ).where(IntegrationConnection.id == connection_id)
-        )
+        """Lookup IntegrationConnection + Provider.
+
+        Sprint B.1 tail (2026-05-22): company_id RECOMENDADO (defense-in-depth).
+        """
+        # TENANT-EXEMPT: defense-in-depth — caller eh tenant-gated; company_id opcional desde Sprint B.1 tail
+        if company_id is not None:
+            result = await self.db.execute(
+                select(IntegrationConnection, IntegrationProvider).join(
+                    IntegrationProvider,
+                    IntegrationConnection.provider_id == IntegrationProvider.id,
+                ).where(
+                    IntegrationConnection.id == connection_id,
+                    IntegrationConnection.company_id == company_id,
+                )
+            )
+        else:
+            # TENANT-EXEMPT: backwards-compat — caller validates connection.company_id post-fetch
+            result = await self.db.execute(
+                select(IntegrationConnection, IntegrationProvider).join(
+                    IntegrationProvider,
+                    IntegrationConnection.provider_id == IntegrationProvider.id,
+                ).where(IntegrationConnection.id == connection_id)
+            )
         return result.first()
 
     async def create_connection(

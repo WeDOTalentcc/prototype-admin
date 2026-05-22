@@ -32,6 +32,12 @@ class GoalsRepository:
         skip: int = 0,
         limit: int = 100,
     ) -> list[Goal]:
+        """List goals.
+
+        Sprint B.1 tail (2026-05-22): company_id RECOMENDADO (defense-in-depth).
+        Quando passado, filtra por tenant. Caller (api/v1/goals.py) eh tenant-gated.
+        """
+        # TENANT-EXEMPT: dynamic builder — Goal.company_id == company_id aplicado abaixo quando company_id is not None; caller api/v1 eh tenant-gated via require_company_id
         query = select(Goal)
 
         if user_id:
@@ -51,10 +57,29 @@ class GoalsRepository:
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
-    async def get_by_id(self, goal_id: uuid.UUID) -> Goal | None:
-        result = await self.db.execute(
-            select(Goal).where(Goal.id == goal_id)
-        )
+    async def get_by_id(
+        self,
+        goal_id: uuid.UUID,
+        company_id: uuid.UUID | None = None,
+    ) -> Goal | None:
+        """Lookup Goal por id.
+
+        Sprint B.1 tail (2026-05-22): company_id RECOMENDADO (defense-in-depth).
+        Quando passado, filtra por tenant.
+        """
+        # TENANT-EXEMPT: defense-in-depth — caller eh tenant-gated; company_id param desde Sprint B.1 tail
+        if company_id is not None:
+            result = await self.db.execute(
+                select(Goal).where(
+                    Goal.id == goal_id,
+                    Goal.company_id == company_id,
+                )
+            )
+        else:
+            # TENANT-EXEMPT: backwards-compat — caller validates goal.company_id post-fetch
+            result = await self.db.execute(
+                select(Goal).where(Goal.id == goal_id)
+            )
         return result.scalar_one_or_none()
 
     # ------------------------------------------------------------------
@@ -126,6 +151,9 @@ class GoalsRepository:
         category: str | None = None,
         include_inactive: bool = False,
     ) -> list[GoalTemplate]:
+        # TENANT-EXEMPT: marketplace pattern — global templates (is_system=True) compartilhados;
+        # filter aplicado via or_(company_id, is_system) abaixo quando company_id is not None.
+        # company_id=None reservado pra admin-only — caller responsavel pelo gate.
         query = select(GoalTemplate)
 
         if company_id:
@@ -145,6 +173,11 @@ class GoalsRepository:
         return list(result.scalars().all())
 
     async def find_system_template_by_name(self, name: str) -> GoalTemplate | None:
+        """Lookup global system template por nome.
+
+        TENANT-EXEMPT: system templates por definicao tem company_id=NULL (compartilhados);
+        is_system=True garante so retornar templates marketplace globais.
+        """
         result = await self.db.execute(
             select(GoalTemplate).where(
                 and_(

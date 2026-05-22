@@ -32,23 +32,64 @@ class JourneyMappingRepository:
         )
         return result.scalar_one_or_none()
 
-    async def get_blueprint(self, blueprint_id: UUID) -> JourneyBlueprint | None:
-        """Get a blueprint by ID without relationships."""
-        result = await self.db.execute(
-            select(JourneyBlueprint).where(JourneyBlueprint.id == blueprint_id)
-        )
+    async def get_blueprint(
+        self,
+        blueprint_id: UUID,
+        company_id: UUID | None = None,
+    ) -> JourneyBlueprint | None:
+        """Get a blueprint by ID without relationships.
+
+        Sprint B.1 tail (2026-05-22): company_id agora opcional pra defense-in-depth.
+        Quando passado, filtra tambem por tenant (recomendado). Quando None,
+        endpoint deve fazer o gate (api/v1/journey_mapping.py).
+        """
+        # TENANT-EXEMPT: caller (api/v1/journey_mapping.py) eh tenant-gated via require_company_id e re-verifica blueprint.company_id antes de operar; defense-in-depth opcional via company_id param desde Sprint B.1 tail
+        if company_id is not None:
+            result = await self.db.execute(
+                select(JourneyBlueprint).where(
+                    JourneyBlueprint.id == blueprint_id,
+                    JourneyBlueprint.company_id == company_id,
+                )
+            )
+        else:
+            # TENANT-EXEMPT: backwards-compat path — caller validates blueprint.company_id post-fetch
+            result = await self.db.execute(
+                select(JourneyBlueprint).where(JourneyBlueprint.id == blueprint_id)
+            )
         return result.scalar_one_or_none()
 
-    async def get_blueprint_with_relations(self, blueprint_id: UUID) -> JourneyBlueprint | None:
-        """Get a blueprint by ID with steps and integrations loaded."""
-        result = await self.db.execute(
-            select(JourneyBlueprint)
-            .options(
-                selectinload(JourneyBlueprint.steps),
-                selectinload(JourneyBlueprint.integrations)
+    async def get_blueprint_with_relations(
+        self,
+        blueprint_id: UUID,
+        company_id: UUID | None = None,
+    ) -> JourneyBlueprint | None:
+        """Get a blueprint by ID with steps and integrations loaded.
+
+        Sprint B.1 tail (2026-05-22): company_id agora opcional pra defense-in-depth.
+        """
+        # TENANT-EXEMPT: caller (api/v1/journey_mapping.py) eh tenant-gated via require_company_id; defense-in-depth opcional via company_id param desde Sprint B.1 tail
+        if company_id is not None:
+            result = await self.db.execute(
+                select(JourneyBlueprint)
+                .options(
+                    selectinload(JourneyBlueprint.steps),
+                    selectinload(JourneyBlueprint.integrations)
+                )
+                .where(
+                    JourneyBlueprint.id == blueprint_id,
+                    JourneyBlueprint.company_id == company_id,
+                )
             )
-            .where(JourneyBlueprint.id == blueprint_id)
-        )
+        else:
+            # TENANT-EXEMPT: backwards-compat path — caller validates blueprint.company_id post-fetch
+            result = await self.db.execute(
+                select(JourneyBlueprint)
+                .options(
+                    selectinload(JourneyBlueprint.steps),
+                    selectinload(JourneyBlueprint.integrations)
+                )
+                .where(JourneyBlueprint.id == blueprint_id)
+            )
         return result.scalar_one_or_none()
 
     async def create_blueprint(self, **kwargs) -> JourneyBlueprint:
@@ -59,11 +100,17 @@ class JourneyMappingRepository:
         return blueprint
 
     async def create_blueprint_with_commit(self, **kwargs) -> JourneyBlueprint:
-        """Create a blueprint, commit, and reload with relationships."""
+        """Create a blueprint, commit, and reload with relationships.
+
+        TENANT-EXEMPT: blueprint.id eh PK recem-criada pelo proprio INSERT acima;
+        kwargs sao injetados via caller (que ja eh tenant-gated). Defense-in-depth
+        opcional via add filter de company_id (skipped: same-session round-trip).
+        """
         blueprint = JourneyBlueprint(**kwargs)
         self.db.add(blueprint)
         await self.db.commit()
         await self.db.refresh(blueprint)
+        # TENANT-EXEMPT: blueprint.id retornado por INSERT do caller tenant-gated; reload das relationships eh same-session
         result = await self.db.execute(
             select(JourneyBlueprint)
             .options(
@@ -144,6 +191,7 @@ class JourneyMappingRepository:
 
         await self.db.commit()
 
+        # TENANT-EXEMPT: blueprint.id retornado por INSERT acima (same-session); blueprint_kwargs vem do caller tenant-gated
         result = await self.db.execute(
             select(JourneyBlueprint)
             .options(

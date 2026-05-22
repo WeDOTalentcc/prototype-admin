@@ -101,6 +101,12 @@ class JobVacanciesAnalyticsRepository:
     async def get_all_vacancy_candidates(
         self, vacancy_id: UUID
     ) -> list[VacancyCandidate]:
+        """List candidates de uma vacancy.
+
+        TENANT-EXEMPT: vacancy_id eh sempre derivado de get_job_by_id_and_company
+        (L25-35 acima) que faz tenant gate; caller eh tenant-gated upstream.
+        """
+        # TENANT-EXEMPT: vacancy_id ja tenant-gated upstream via get_job_by_id_and_company
         result = await self.db.execute(
             select(VacancyCandidate).where(
                 VacancyCandidate.vacancy_id == vacancy_id
@@ -111,6 +117,11 @@ class JobVacanciesAnalyticsRepository:
     async def get_stage_history_for_vacancy(
         self, vacancy_id: UUID
     ) -> list[CandidateStageHistory]:
+        """List stage history de uma vacancy.
+
+        TENANT-EXEMPT: vacancy_id eh tenant-gated upstream via get_job_by_id_and_company.
+        """
+        # TENANT-EXEMPT: vacancy_id ja tenant-gated upstream
         result = await self.db.execute(
             select(CandidateStageHistory)
             .where(CandidateStageHistory.vacancy_id == vacancy_id)
@@ -224,6 +235,11 @@ class JobVacanciesAnalyticsRepository:
     async def get_top_candidates_with_score(
         self, vacancy_id: UUID, limit: int = 5
     ) -> list[tuple[VacancyCandidate, Candidate]]:
+        """Top N candidates by lia_score.
+
+        TENANT-EXEMPT: vacancy_id eh tenant-gated upstream via get_job_by_id_and_company.
+        """
+        # TENANT-EXEMPT: vacancy_id ja tenant-gated upstream
         result = await self.db.execute(
             select(VacancyCandidate, Candidate)
             .join(Candidate, VacancyCandidate.candidate_id == Candidate.id)
