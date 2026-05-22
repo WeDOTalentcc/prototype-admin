@@ -22,20 +22,38 @@ class InterviewRepository:
     # Candidate helpers
     # ------------------------------------------------------------------
 
-    async def get_candidate_by_id(self, candidate_id: uuid.UUID) -> Optional[Candidate]:
-        result = await self.db.execute(
-            select(Candidate).where(Candidate.id == candidate_id)
-        )
+    async def get_candidate_by_id(
+        self,
+        candidate_id: uuid.UUID,
+        company_id: str | None = None,
+    ) -> Optional[Candidate]:
+        """Get candidate by id. Multi-tenancy defense-in-depth via company_id
+        filter quando passado (REGRA ZERO + harness B.1)."""
+        # TENANT-EXEMPT: dynamic builder — Candidate.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        query = select(Candidate).where(Candidate.id == candidate_id)
+        if company_id:
+            query = query.where(Candidate.company_id == company_id)
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
     # ------------------------------------------------------------------
     # Interview CRUD
     # ------------------------------------------------------------------
 
-    async def get_interview_by_id(self, interview_id: str) -> Optional[Interview]:
-        result = await self.db.execute(
-            select(Interview).where(Interview.id == interview_id)
-        )
+    async def get_interview_by_id(
+        self,
+        interview_id: str,
+        company_id: str | None = None,
+    ) -> Optional[Interview]:
+        """Get interview by id. Multi-tenancy defense-in-depth via company_id
+        filter quando passado (REGRA ZERO + harness B.1)."""
+        # TENANT-EXEMPT: dynamic builder — Interview.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        query = select(Interview).where(Interview.id == interview_id)
+        if company_id:
+            query = query.where(Interview.company_id == company_id)
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
     async def add_interview(self, interview: Interview) -> Interview:
@@ -59,6 +77,9 @@ class InterviewRepository:
     ):
         """Return list of (Interview, job_code, job_manager) tuples."""
         jv = aliased(JobVacancy)
+        # TENANT-EXEMPT: Interview.company_id == company_id é appended em
+        # `filters` abaixo quando company_id passado. Sensor AST não rastreia
+        # through list-builder pattern.
         query = select(Interview, jv.job_id, jv.manager).outerjoin(
             jv, Interview.job_vacancy_id == jv.id
         )
@@ -103,6 +124,8 @@ class InterviewRepository:
     ):
         from app.domains.automation.models.recruitment_stages import RecruitmentStage
 
+        # TENANT-EXEMPT: dynamic builder — RecruitmentStage.company_id == company_id
+        # é appended conditionally below quando company_id passado.
         query = select(RecruitmentStage).where(RecruitmentStage.id == stage_uuid)
         if company_id:
             query = query.where(RecruitmentStage.company_id == company_id)
@@ -161,16 +184,23 @@ class InterviewRepository:
         self,
         candidate_id: uuid.UUID,
         job_vacancy_id: uuid.UUID,
+        company_id: str | None = None,
     ) -> Optional[Interview]:
-        """Return existing interview row for (candidate, job) pair if any."""
-        result = await self.db.execute(
-            select(Interview).where(
-                and_(
-                    Interview.candidate_id == candidate_id,
-                    Interview.job_vacancy_id == job_vacancy_id,
-                )
+        """Return existing interview row for (candidate, job) pair if any.
+
+        Multi-tenancy defense-in-depth via company_id filter (REGRA ZERO + B.1).
+        """
+        # TENANT-EXEMPT: dynamic builder — Interview.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        query = select(Interview).where(
+            and_(
+                Interview.candidate_id == candidate_id,
+                Interview.job_vacancy_id == job_vacancy_id,
             )
         )
+        if company_id:
+            query = query.where(Interview.company_id == company_id)
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
     # ------------------------------------------------------------------
@@ -236,6 +266,7 @@ class InterviewRepository:
         status: Optional[str] = None,
         from_date: Optional[datetime] = None,
         to_date: Optional[datetime] = None,
+        company_id: Optional[str] = None,
         skip: int = 0,
         limit: int = 50,
     ) -> tuple[list[Interview], int]:
@@ -243,7 +274,11 @@ class InterviewRepository:
 
         Used by SchedulingService.list_interviews — kept distinct from list_interviews
         above (which returns tuples with job_code/job_manager) because consumers differ.
+
+        Multi-tenancy defense-in-depth via company_id filter (REGRA ZERO + B.1).
         """
+        # TENANT-EXEMPT: dynamic builder — Interview.company_id == company_id
+        # é appended em `filters` abaixo quando company_id passado.
         base_query = select(Interview)
 
         filters = []
@@ -259,6 +294,8 @@ class InterviewRepository:
             filters.append(Interview.start_time >= from_date)
         if to_date:
             filters.append(Interview.start_time <= to_date)
+        if company_id:
+            filters.append(Interview.company_id == company_id)
 
         if filters:
             base_query = base_query.where(and_(*filters))

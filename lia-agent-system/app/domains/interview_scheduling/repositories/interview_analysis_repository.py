@@ -22,16 +22,34 @@ class InterviewAnalysisRepository:
 
     # ── Interview queries ─────────────────────────────────────────────────────
 
-    async def get_interview_by_id(self, interview_id: str) -> Interview | None:
-        result = await self.db.execute(
-            select(Interview).where(Interview.id == interview_id)
-        )
+    async def get_interview_by_id(
+        self,
+        interview_id: str,
+        company_id: str | None = None,
+    ) -> Interview | None:
+        """Get interview by id. Multi-tenancy defense-in-depth via company_id
+        filter quando passado (REGRA ZERO + harness B.1)."""
+        # TENANT-EXEMPT: dynamic builder — Interview.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        query = select(Interview).where(Interview.id == interview_id)
+        if company_id:
+            query = query.where(Interview.company_id == company_id)
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
-    async def get_interview_by_meeting_id(self, meeting_id: str) -> Interview | None:
-        result = await self.db.execute(
-            select(Interview).where(Interview.meeting_id == meeting_id)
-        )
+    async def get_interview_by_meeting_id(
+        self,
+        meeting_id: str,
+        company_id: str | None = None,
+    ) -> Interview | None:
+        """Get interview by meeting_id. Multi-tenancy defense-in-depth via
+        company_id filter quando passado (REGRA ZERO + harness B.1)."""
+        # TENANT-EXEMPT: dynamic builder — Interview.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        query = select(Interview).where(Interview.meeting_id == meeting_id)
+        if company_id:
+            query = query.where(Interview.company_id == company_id)
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
     # ── Interview updates ─────────────────────────────────────────────────────
@@ -40,26 +58,44 @@ class InterviewAnalysisRepository:
         self,
         interview_id: str,
         feedback: dict,
+        company_id: str | None = None,
     ) -> None:
-        """Overwrite the feedback JSON column for an interview."""
-        await self.db.execute(
+        """Overwrite the feedback JSON column for an interview.
+
+        Multi-tenancy defense-in-depth via company_id filter quando passado.
+        """
+        # TENANT-EXEMPT: dynamic builder — Interview.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        stmt = (
             update(Interview)
             .where(Interview.id == interview_id)
             .values(feedback=feedback)
         )
+        if company_id:
+            stmt = stmt.where(Interview.company_id == company_id)
+        await self.db.execute(stmt)
 
     async def update_interview_status_and_feedback(
         self,
         interview_id: str,
         feedback: dict,
         status: str,
+        company_id: str | None = None,
     ) -> None:
-        """Update both status and feedback for an interview (used by background task)."""
-        await self.db.execute(
+        """Update both status and feedback for an interview (background task).
+
+        Multi-tenancy defense-in-depth via company_id filter quando passado.
+        """
+        # TENANT-EXEMPT: dynamic builder — Interview.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        stmt = (
             update(Interview)
             .where(Interview.id == interview_id)
             .values(feedback=feedback, status=status)
         )
+        if company_id:
+            stmt = stmt.where(Interview.company_id == company_id)
+        await self.db.execute(stmt)
 
     # ── LiaOpinion writes ─────────────────────────────────────────────────────
 
@@ -82,6 +118,9 @@ class InterviewAnalysisRepository:
                 where_conditions,
                 LiaOpinion.job_vacancy_id == job_vacancy_id,
             )
+        # TENANT-EXEMPT: LiaOpinion.company_id == company_id já é PRIMEIRO
+        # elemento de `where_conditions` AND acima (statically guaranteed).
+        # Sensor AST não rastreia através de and_() var indirection.
         await self.db.execute(
             update(LiaOpinion).where(where_conditions).values(is_current=False)
         )

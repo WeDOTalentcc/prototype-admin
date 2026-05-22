@@ -44,6 +44,9 @@ class CalendarCredentialsRepository:
         ]
         if provider:
             filters.append(CompanyCalendarCredentials.provider == provider)
+        # TENANT-EXEMPT: company_id já é PRIMEIRO elemento de `filters` acima
+        # (statically guaranteed). Sensor AST não rastreia através de
+        # list-unpacking via *filters.
         result = await self.db.execute(
             select(CompanyCalendarCredentials).where(*filters)
         )

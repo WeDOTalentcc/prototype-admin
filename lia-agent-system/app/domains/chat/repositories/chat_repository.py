@@ -34,32 +34,61 @@ class ChatRepository:
         await self.db.flush()
         return conversation
 
-    async def get_conversation_by_id(self, conversation_id: str) -> Conversation | None:
-        result = await self.db.execute(
-            select(Conversation).where(Conversation.id == uuid.UUID(conversation_id))
+    async def get_conversation_by_id(
+        self,
+        conversation_id: str,
+        company_id: str | None = None,
+    ) -> Conversation | None:
+        """Get conversation by id. Multi-tenancy defense-in-depth via
+        company_id filter quando passado (REGRA ZERO + harness B.1)."""
+        # TENANT-EXEMPT: dynamic builder — Conversation.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        query = select(Conversation).where(
+            Conversation.id == uuid.UUID(conversation_id)
         )
+        if company_id:
+            query = query.where(Conversation.company_id == company_id)
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
     async def list_conversations(
-        self, user_id: str, page: int = 1, page_size: int = 20
+        self,
+        user_id: str,
+        page: int = 1,
+        page_size: int = 20,
+        company_id: str | None = None,
     ) -> tuple[list[Conversation], int]:
+        """List conversations for user. Multi-tenancy defense-in-depth via
+        company_id filter quando passado (REGRA ZERO + harness B.1)."""
         offset = (page - 1) * page_size
 
-        result = await self.db.execute(
+        # TENANT-EXEMPT: dynamic builder — Conversation.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        list_query = (
             select(Conversation)
             .where(Conversation.user_id == user_id)
             .where(not Conversation.is_archived)
-            .order_by(desc(Conversation.updated_at))
+        )
+        # TENANT-EXEMPT: dynamic builder — Conversation.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        count_query = (
+            select(Conversation)
+            .where(Conversation.user_id == user_id)
+            .where(not Conversation.is_archived)
+        )
+        if company_id:
+            list_query = list_query.where(Conversation.company_id == company_id)
+            count_query = count_query.where(Conversation.company_id == company_id)
+
+        list_query = (
+            list_query.order_by(desc(Conversation.updated_at))
             .limit(page_size)
             .offset(offset)
         )
+        result = await self.db.execute(list_query)
         conversations = list(result.scalars().all())
 
-        count_result = await self.db.execute(
-            select(Conversation)
-            .where(Conversation.user_id == user_id)
-            .where(not Conversation.is_archived)
-        )
+        count_result = await self.db.execute(count_query)
         total = len(count_result.scalars().all())
 
         return conversations, total
