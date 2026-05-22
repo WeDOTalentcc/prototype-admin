@@ -16,6 +16,11 @@ from app.models.integration_hub import (
     IntegrationStatus,
     IntegrationSyncLog,
 )
+from app.shared.services.credentials_crypto import (
+    CredentialsEncryptionError,
+    decrypt_credentials,
+    encrypt_credentials,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -136,12 +141,17 @@ class IntegrationsHubRepository:
         sync_frequency: str,
         field_mappings: dict,
     ) -> IntegrationConnection:
+        # P0.D LGPD Art. 46: encrypt credentials BEFORE INSERT.
+        # Plaintext credentials NEVER touch credentials_legacy (the legacy
+        # JSON column) on new writes — only credentials_encrypted is set.
+        encrypted = encrypt_credentials(credentials)
         connection = IntegrationConnection(
             company_id=company_id,
             provider_id=provider_id,
             status=IntegrationStatus.CONNECTING.value,
             auth_type=auth_type,
-            credentials=credentials,
+            credentials_encrypted=encrypted,
+            credentials_legacy=None,
             sync_enabled=sync_enabled,
             sync_direction=sync_direction,
             sync_frequency=sync_frequency,
@@ -170,7 +180,13 @@ class IntegrationsHubRepository:
         if field_mappings is not None:
             connection.field_mappings = field_mappings
         if credentials is not None:
-            connection.credentials = credentials
+            # P0.D LGPD Art. 46: re-encrypt full dict (Fernet ciphertext
+            # is single-blob; partial update is not supported — caller
+            # must pass the full credentials dict).
+            connection.credentials_encrypted = encrypt_credentials(credentials)
+            # Force-clear legacy column (defense in depth — should already
+            # be NULL post-backfill of migration 168).
+            connection.credentials_legacy = None
 
         connection.updated_at = datetime.utcnow()
         await self.db.commit()
@@ -240,3 +256,46 @@ class IntegrationsHubRepository:
             ).where(IntegrationConnection.company_id == company_id)
         )
         return list(result.all())
+
+    # ── Credentials decryption (P0.D LGPD Art. 46) ──────────────────────────
+
+    async def get_decrypted_credentials(
+        self, connection_id: str, company_id: str
+    ) -> dict:
+        """
+        Return decrypted credentials for a connection (fail-loud).
+
+        Multi-tenancy: requires company_id (JWT) and verifies ownership.
+        Returns empty dict if connection has no credentials set.
+
+        Raises
+        ------
+        ValueError
+            If connection is not found, or belongs to a different company,
+            or has a legacy unmigrated row (credentials_legacy populated
+            with credentials_encrypted NULL — should never happen after
+            migration 168 backfill).
+        CredentialsEncryptionError
+            If decryption fails (key rotation, ciphertext corruption).
+        """
+        conn = await self.get_connection_by_id(connection_id)
+        if conn is None:
+            raise ValueError(f"Connection not found: {connection_id}")
+        if str(conn.company_id) != str(company_id):
+            # Defense in depth — caller SHOULD already gate via JWT/RLS,
+            # but never trust callers.
+            raise ValueError("Connection does not belong to this company")
+
+        if conn.credentials_encrypted:
+            return decrypt_credentials(conn.credentials_encrypted)
+
+        if conn.credentials_legacy:
+            # This row was NOT migrated by 168. Refuse to silently expose
+            # plaintext — REGRA 4 (no silent fallback in security path).
+            raise ValueError(
+                f"Connection {connection_id} has legacy unencrypted credentials; "
+                "run migration 168 backfill before consuming via this path."
+            )
+
+        return {}
+

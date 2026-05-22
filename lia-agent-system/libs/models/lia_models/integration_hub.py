@@ -70,7 +70,15 @@ class IntegrationConnection(Base):
     status = Column(String(50), default="not_connected")
     
     auth_type = Column(String(50))
-    credentials = Column(JSON, default={})
+    # ── credentials at-rest encryption (P0.D — Wave 3 audit 2026-05-21, LGPD Art. 46) ──
+    # canonical: credentials_encrypted (Fernet ciphertext of JSON-serialized dict).
+    # legacy: credentials_legacy (was credentials JSON; kept nullable during dual-write
+    #         backfill window; SET NULL post-migration 168 backfill, drop column once
+    #         every row has credentials_encrypted populated).
+    # NEVER access self.credentials_legacy directly — always go via repository
+    # get_decrypted_credentials() to centralize fail-loud behavior.
+    credentials_encrypted = Column("credentials_encrypted", Text, nullable=True)
+    credentials_legacy = Column("credentials", JSON, nullable=True)
     
     sync_enabled = Column(Boolean, default=True)
     sync_direction = Column(String(50), default="bidirectional")
