@@ -46,10 +46,6 @@ LLM_HOSTS = (
 )
 
 ALLOWLIST: set[str] = {
-    # voice_service uses raw httpx for OpenAI Whisper TRANSCRIPTION + TTS,
-    # not chat completions. Those are token-priced separately and tracked
-    # via TokenUsageRepository, not ai_credits_balance. Reviewed 2026-05-22.
-    "app/domains/voice/services/voice_service.py",
     # anthropic_client.py — canonical SDK seam wrapper. The string match is
     # inside the docstring ("https://api.anthropic.com"). The actual call
     # goes through anthropic.Anthropic which the llm_bootstrap monkey-patch
@@ -57,17 +53,17 @@ ALLOWLIST: set[str] = {
     "app/shared/providers/anthropic_client.py",
     # voice_openai_realtime.py — WebSocket connection to OpenAI Realtime API
     # (audio streaming). Not chat completions, token model is different.
-    # TODO Wave 4: separate ai_credits_balance line for realtime audio.
+    # TODO Wave 5: separate ai_credits_balance line for realtime audio.
     # Reviewed 2026-05-22.
     "app/shared/providers/voice_openai_realtime.py",
-    # multimodal_service.py — raw httpx to Anthropic/Gemini for vision +
-    # document analysis. KNOWN GAP (Wave 3 audit, ~/Documents/wedotalent_audit_2026-05-21/audit_ai_credits_templates.md).
-    # TODO Wave 4: refactor to use anthropic.Anthropic / genai.Client SDK
-    # so the bootstrap monkey-patch picks it up automatically. Interim: the
-    # _current_company_id ContextVar is already set by auth middleware for
-    # all HTTP entry points, but raw httpx bypasses both the bootstrap and
-    # ai_credit_gate. Tracked as P1.AIC2.
-    "app/domains/ai/services/multimodal_service.py",
+    # ---------------------------------------------------------------------
+    # P1.AIC2 closure (2026-05-22): voice_service.py and multimodal_service.py
+    # were removed from this allowlist. Both files now route through the
+    # SDK (openai.AsyncOpenAI, anthropic.AsyncAnthropic, google.genai.Client)
+    # so the llm_bootstrap monkey-patch fires transitively. Audio APIs are
+    # additionally gated by _patch_openai_audio with per-minute (Whisper)
+    # and per-char (TTS) token-equivalent estimators.
+    # ---------------------------------------------------------------------
 }
 
 
