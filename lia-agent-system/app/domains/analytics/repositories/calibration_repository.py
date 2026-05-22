@@ -21,7 +21,16 @@ from lia_models.calibration import (
 
 
 class CalibrationRepository:
-    """Repository for calibration loop data access."""
+    """Repository for calibration loop data access.
+
+    # CROSS-TENANT-INTENTIONAL: CalibrationEvent/CalibrationWeight tables
+    # are TENANT-NULLABLE-DELIBERATE per ADR-LGPD-001. Cross-tenant analytics
+    # (divergence detection, agree/disagree counts, weight calibration) are
+    # legitimate aggregate reads — N>=10 hired threshold + decay enforce
+    # anonymization (Art. 12 §1 + ANPD Guia §3). Per-tenant overrides happen
+    # in higher-level service (CalibrationService applies company_id scoping
+    # when computing personalized weights).
+    """
 
     def __init__(self, db: AsyncSession):
         self.db = db

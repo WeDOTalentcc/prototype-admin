@@ -295,8 +295,8 @@ class CandidateStaleDetector(BaseDetector):
         try:
             from sqlalchemy import func, select
 
-            from libs.models.lia_models.candidate import VacancyCandidate
-            from libs.models.lia_models.job_vacancy import JobVacancy
+            from app.models.candidate import VacancyCandidate
+            from app.models.job_vacancy import JobVacancy
         except Exception as exc:
             logger.warning("CandidateStaleDetector import failed: %s", exc)
             return []
@@ -443,7 +443,7 @@ class AICreditsLowDetector(BaseDetector):
         try:
             from sqlalchemy import select
 
-            from libs.models.lia_models.ai_consumption import AiCreditsBalance
+            from app.models.ai_consumption import AiCreditsBalance
         except Exception as exc:
             logger.warning("AICreditsLowDetector import failed: %s", exc)
             return []

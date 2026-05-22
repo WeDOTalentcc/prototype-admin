@@ -880,8 +880,35 @@ class PolicyEngineService:
         """
         Aplica defaults setoriais para política da empresa.
         Delega para PolicyEngine.apply_industry_defaults().
+
+        WT-2022 Phase 2 audit (2026-05-21):
+        --------------------------------------------------------------
+        Esta delegação ao V1 PolicyEngine é instanciação real (não import
+        de constante). O dataset SECTOR_DEFAULTS + DEFAULT_POLICIES vive
+        em `app/orchestrator/policy_engine.py` como classvars do V1.
+
+        Para deletar V1 (Q3 2026), antes:
+          1. Mover SECTOR_DEFAULTS + DEFAULT_POLICIES para
+             `lia_models/policy.py` como constantes módulo-level
+             (CANONICAL_SECTOR_DEFAULTS, CANONICAL_DEFAULT_POLICIES).
+          2. Substituir esta delegação por lookup direto:
+                from lia_models.policy import (
+                    CANONICAL_SECTOR_DEFAULTS,
+                    CANONICAL_DEFAULT_POLICIES,
+                )
+                key = (sector or "").lower().strip()
+                return dict(CANONICAL_SECTOR_DEFAULTS.get(
+                    key, CANONICAL_DEFAULT_POLICIES))
+          3. Mesma substituição em `save_policy_block` abaixo.
+          4. Remover ambos imports V1 (linhas marcadas TODO(WT-2022-P2)).
+          5. Atualizar EXEMPT_RELATIVE em scripts/check_no_v1_policy_engine.py
+             removendo policy_engine_service.py (vira limpo, sem fallback).
+        Ver ADR-WT-2022 Phase 2 checklist para sequência completa.
+        --------------------------------------------------------------
         """
-        from app.orchestrator.policy_engine import PolicyEngine
+        # TODO(WT-2022-P2): substituir por lookup canonical em lia_models.policy
+        # quando V1 for deletado (Q3 2026). Ver docstring.
+        from app.orchestrator.policy_engine import PolicyEngine  # noqa: PolicyEngine-V1-deprecated
         engine = PolicyEngine()
         return engine.apply_industry_defaults(sector)
 
@@ -913,7 +940,13 @@ class PolicyEngineService:
         from sqlalchemy import select
 
         from lia_models.company_hiring_policy import CompanyHiringPolicy
-        from app.orchestrator.policy_engine import PolicyEngine
+        # TODO(WT-2022-P2): substituir esta instanciação V1 por lookup direto em
+        # lia_models.policy.CANONICAL_SECTOR_DEFAULTS quando V1 for deletado
+        # (Q3 2026). Mesmo padrão de `apply_industry_defaults` acima. V1 ainda
+        # vivo no momento desta migration porque SECTOR_DEFAULTS + DEFAULT_POLICIES
+        # ainda vivem como classvars do V1 — internalização é pre-condição da
+        # delecao (ver ADR-WT-2022 Phase 2 checklist).
+        from app.orchestrator.policy_engine import PolicyEngine  # noqa: PolicyEngine-V1-deprecated
 
         engine = PolicyEngine()
         defaults = engine.apply_industry_defaults(sector)

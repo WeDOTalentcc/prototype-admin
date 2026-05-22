@@ -197,6 +197,18 @@ class SourcingAgentOrchestrator:
         agent = result.scalar_one()
 
         query = self._strategy_to_query(agent.search_strategy)
+
+        # Wave 3 sectoral wiring (audit 2026-05-21): enriquece query com prompt
+        # canonical do AgentTemplate quando agent_template_id está setado.
+        # Antes: template content era ghost. Agora: SourcingSearchAgent recebe
+        # contexto sectorial (LGPD compliance, scoring_weights, screening_questions).
+        template_context = await self._load_template_context(agent.agent_template_id, db)
+        if template_context:
+            query = (
+                f"[CONTEXTO SECTORAL]\n{template_context}\n\n"
+                f"[BUSCA ATUAL]\n{query}"
+            )
+
         candidates = []
 
         try:
@@ -385,6 +397,39 @@ class SourcingAgentOrchestrator:
         except Exception as e:
             logger.warning("[SourcingAgent] DB fallback also failed: %s", e)
             return []
+
+    async def _load_template_context(self, template_id: str | None, db) -> str:
+        """Wave 3 sectoral wiring (audit 2026-05-21): carregar AgentTemplate
+        e extrair prompt canonical do system_prompt_yaml.
+
+        Retorna string vazia (degraded gracefully) se template ausente,
+        YAML malformado, ou erro de DB. Logger.warning em qualquer falha
+        para detectar drift em monitoring.
+        """
+        if not template_id:
+            return ""
+        try:
+            from lia_models.agent_template import AgentTemplate
+            from sqlalchemy import select
+            import yaml as _yaml
+
+            res = await db.execute(select(AgentTemplate).where(AgentTemplate.id == template_id))
+            template = res.scalar_one_or_none()
+            if not template or not template.system_prompt_yaml:
+                return ""
+
+            parsed = _yaml.safe_load(template.system_prompt_yaml)
+            if isinstance(parsed, dict):
+                prompt_text = parsed.get("prompt", "")
+                if isinstance(prompt_text, str) and prompt_text.strip():
+                    return prompt_text.strip()
+            return ""
+        except Exception as exc:
+            logger.warning(
+                "[SourcingAgent] template context load failed for template_id=%s: %s",
+                template_id, exc,
+            )
+            return ""
 
     @staticmethod
     def _strategy_to_query(strategy: dict) -> str:

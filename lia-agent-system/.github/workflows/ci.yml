@@ -479,3 +479,55 @@ jobs:
       # Fix: usar PolicyEngineService (V2) em app/domains/policy/services/.
       - name: "G-POLICY-V1: no V1 PolicyEngine imports outside allowlist (BLOCKING — promoted 2026-05-21)"
         run: python3 scripts/check_no_v1_policy_engine.py
+
+  # ──────────────────────────────────────────────────────────────────────
+  # E2E persistence smoke (Configurações > Minha Empresa / Learning Loops /
+  # Schedule). Gap original Paulo 2026-05-21 — round-trip browser-level
+  # complementa sensors estáticos (ADR-001, lint scripts, contract tests).
+  #
+  # Dispara só em PRs que tocam settings UI ou backend de profile/
+  # communication. Roda contra staging (PLAYWRIGHT_BASE_URL env). Falhas
+  # bloqueiam merge — override com `[skip-e2e-persistence]` no commit msg.
+  # ──────────────────────────────────────────────────────────────────────
+  e2e-persistence:
+    name: E2E Settings Persistence
+    runs-on: ubuntu-latest
+    if: |
+      github.event_name != 'schedule' &&
+      !contains(github.event.head_commit.message, '[skip-e2e-persistence]')
+    needs: [test]
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: plataforma-lia
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: plataforma-lia/package-lock.json
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run persistence specs
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ secrets.E2E_BASE_URL || 'https://staging.wedotalent.cc' }}
+          DEV_AUTO_LOGIN_EMAIL: ${{ secrets.E2E_TEST_EMAIL }}
+          DEV_AUTO_LOGIN_PASSWORD: ${{ secrets.E2E_TEST_PASSWORD }}
+          LIA_BACKEND_URL: ${{ secrets.E2E_BACKEND_URL }}
+        run: npx playwright test e2e/tests/settings/persistence/ --reporter=html
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-persistence
+          path: plataforma-lia/playwright-report/
+          retention-days: 14

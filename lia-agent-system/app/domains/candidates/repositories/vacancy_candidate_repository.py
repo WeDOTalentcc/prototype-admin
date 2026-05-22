@@ -134,3 +134,32 @@ class VacancyCandidateRepository:
             .limit(limit)
         )
         return list(result.scalars().all())
+
+    async def list_stale_for_company(
+        self,
+        company_id: str,
+        days_threshold: int = 7,
+        statuses: list[str] | None = None,
+    ) -> list[VacancyCandidate]:
+        """WT-2022 ProactiveDetector: candidates sem feedback X dias.
+
+        Multi-tenancy: filter mandatorio por company_id (NUNCA trust payload).
+        Status default canonical: pos-triagem (interview/screening/final_evaluation).
+        Util consumer: app/shared/services/proactive_detector_service.py.
+        """
+        from datetime import datetime, timedelta
+
+        if statuses is None:
+            statuses = ["interview", "screening", "final_evaluation"]
+        cutoff = datetime.utcnow() - timedelta(days=days_threshold)
+
+        result = await self.db.execute(
+            select(VacancyCandidate)
+            .where(
+                VacancyCandidate.company_id == company_id,
+                VacancyCandidate.updated_at < cutoff,
+                VacancyCandidate.status.in_(statuses),
+            )
+            .order_by(VacancyCandidate.updated_at.asc())
+        )
+        return list(result.scalars().all())
