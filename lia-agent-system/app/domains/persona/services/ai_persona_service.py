@@ -99,7 +99,7 @@ async def update_ai_persona(
           writes coherent).
         - Calls ``HiringPolicyRepository.flush()`` — caller is responsible
           for ``db.commit()``.
-        - Audit log row via ``AuditService.log_decision`` with prev/next diff.
+        - Audit log row via ``AuditService.log_decision`` with prev/next diff.  # AUDIT-NO-DEMO: docstring reference only
     """
     validation = validate_persona(name=name, tone=tone)
     if not validation.is_valid:
@@ -146,6 +146,8 @@ async def update_ai_persona(
             criteria_used=["ai_persona_validator"],
             actor_user_id=actor_user_id,
             human_review_required=False,
+            # AUDIT-NO-DEMO: ai_persona is admin config (name+tone), no candidate decisions involved
+            demographic_proxies={},
         )
     except Exception as exc:  # noqa: BLE001
         logger.warning(
