@@ -40,3 +40,26 @@ repos:
         language: system
         pass_filenames: false
         verbose: true
+      - id: check-no-plaintext-pii
+        name: No plaintext PII writes (LGPD Art. 5 II + 46)
+        description: |
+          BLOCKING. Detecta writes plaintext em PaymentMethod.billing_document
+          (CPF/CNPJ) — único campo PII canonical mapeado em 2026-05-22.
+          Pattern de check_no_plaintext_credentials.py. Escape hatch:
+          # PII-PLAINTEXT-OK: <reason> com audit anchor.
+        entry: python3 lia-agent-system/scripts/check_no_plaintext_pii.py
+        language: system
+        pass_filenames: false
+        verbose: true
+      - id: data-toggle-naming-consistency-warn
+        name: data-toggle UI<->backend field consistency (ratchet)
+        description: |
+          WARN (ratchet baseline 0). Detecta UI data-toggle="X" que NAO
+          tem field correspondente no backend. Wave 4 audit 2026-05-22
+          fechou class de ghost-toggle. Baseline file:
+          lia-agent-system/scripts/baselines/data_toggle_naming.txt.
+          Vide CLAUDE.md "lia_field_toggles canonical pattern".
+        entry: python3 lia-agent-system/scripts/check_data_toggle_matches_persisted_key.py --baseline-file lia-agent-system/scripts/baselines/data_toggle_naming.txt
+        language: system
+        pass_filenames: false
+        verbose: true

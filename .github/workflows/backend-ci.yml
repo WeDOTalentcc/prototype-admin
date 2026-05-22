@@ -1,0 +1,64 @@
+name: Backend CI — PII + Data-Toggle Sensors
+
+# Registrado 2026-05-22 (Wave 4 audit, R1-canonical-fix follow-up).
+# Modelado em .github/workflows/pydantic-conventions-sensors.yml.
+#
+# Sensores:
+#   - check_no_plaintext_pii.py (AST checker, BLOCKING, baseline 0)
+#     Detecta writes plaintext em PaymentMethod.billing_document (CPF/CNPJ).
+#     LGPD Art. 5 II + Art. 46.
+#   - check_data_toggle_matches_persisted_key.py (regex+ratchet, WARN, baseline 0)
+#     Detecta data-toggle="X" sem backend field correspondente. UI<->backend
+#     ghost-toggle class. Vide CLAUDE.md "lia_field_toggles canonical pattern".
+#
+# Histórico de baseline:
+#   2026-05-22 (Wave 4 close): PII=0 (BLOCKING ✅), data-toggle=0 (warn ratchet)
+#
+# Localização: root .github/workflows/ (NÃO em lia-agent-system/.github/),
+# per audit J 2026-05-06 — workflow vive no root para CI alcançar todos os
+# subdirs (lia-agent-system + plataforma-lia + scripts).
+
+on:
+  push:
+    branches: [main, develop, "feat/**", "fix/**"]
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "lia-agent-system/**"
+      - "plataforma-lia/**"
+      - ".github/workflows/backend-ci.yml"
+
+concurrency:
+  group: backend-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pii-and-data-toggle:
+    name: PII + Data-Toggle Sensors (PII blocking, data-toggle warn-ratchet)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Check no plaintext PII (BLOCKING)
+        # Baseline 0 — qualquer write plaintext de CPF/CNPJ em
+        # PaymentMethod.billing_document bloqueia o CI.
+        # LGPD Art. 5 II + Art. 46. Escape hatch documentada:
+        # # PII-PLAINTEXT-OK: <reason> com audit anchor.
+        working-directory: lia-agent-system
+        run: |
+          python3 scripts/check_no_plaintext_pii.py
+
+      - name: Check data-toggle naming consistency (WARN, baseline ratchet)
+        # Baseline file: scripts/baselines/data_toggle_naming.txt (atual: 0).
+        # Sensor falha quando NEW violation > baseline (ratchet-up gate).
+        # continue-on-error: warn-only enquanto não-zero; ainda assim, gate
+        # de aumento dispara red mark visível no PR check.
+        continue-on-error: true
+        working-directory: lia-agent-system
+        run: |
+          python3 scripts/check_data_toggle_matches_persisted_key.py \
+            --baseline-file scripts/baselines/data_toggle_naming.txt
