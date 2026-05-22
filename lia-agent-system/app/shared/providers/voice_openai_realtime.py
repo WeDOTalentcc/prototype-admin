@@ -23,7 +23,11 @@ from app.shared.providers.voice_provider import (
 logger = logging.getLogger(__name__)
 
 OPENAI_REALTIME_URL = "wss://api.openai.com/v1/realtime"
-OPENAI_REALTIME_MODEL = "gpt-4o-realtime-preview"
+# Canonical model 2026-05-22. gpt-4o-realtime-preview was DEPRECATED by OpenAI 2026-05-12.
+# gpt-realtime (GA since 2025-09-08) is the supported successor; gpt-realtime-2 (~20% cheaper) is the
+# next iteration. Do NOT regress to gpt-4o-realtime-preview — covered by sensor
+# scripts/check_realtime_uses_canonical_model.py (BLOCKING).
+OPENAI_REALTIME_MODEL = "gpt-realtime"
 
 
 class _OpenAIRealtimeSession:
