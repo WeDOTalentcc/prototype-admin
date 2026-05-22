@@ -43,7 +43,10 @@
     "generate:wizard-types": "python3 ../lia-agent-system/scripts/generate_wizard_types.py",
     "check:wizard-types": "python3 ../lia-agent-system/scripts/generate_wizard_types.py --check",
     "analyze": "ANALYZE=true pnpm build",
-    "prepare": "husky"
+    "prepare": "husky",
+    "lint:chips": "node scripts/check_chip_overrides.mjs",
+    "lint:chips:warn": "node scripts/check_chip_overrides.mjs --no-fail",
+    "lint:chips:baseline": "node scripts/check_chip_overrides.mjs --baseline"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

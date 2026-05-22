@@ -68,7 +68,7 @@ class InitiateCallRequest(WeDoBaseModel):
     language: str = "pt-BR"
 
 
-class InitiateCallResponse(BaseModel):
+class InitiateCallResponse(WeDoBaseModel):
     """Response from call initiation."""
     success: bool
     session_id: str
@@ -674,7 +674,7 @@ class VoIPTokenRequest(WeDoBaseModel):
     identity: str | None = None
 
 
-class VoIPTokenResponse(BaseModel):
+class VoIPTokenResponse(WeDoBaseModel):
     """Response with Twilio Access Token for the browser VoIP client."""
     token: str
     identity: str

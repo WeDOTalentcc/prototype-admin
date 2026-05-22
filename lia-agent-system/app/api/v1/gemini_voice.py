@@ -80,7 +80,7 @@ class StartSessionRequest(WeDoBaseModel):
     language: str = "pt-BR"
 
 
-class StartSessionResponse(BaseModel):
+class StartSessionResponse(WeDoBaseModel):
     success: bool
     session_id: str
     status: str
