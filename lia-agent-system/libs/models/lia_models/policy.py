@@ -577,3 +577,110 @@ DEFAULT_ESCALATION_RULES = [
         "cooldown_seconds": 86400
     }
 ]
+
+
+# ============================================================================
+# W1-003 (2026-05-22) · Canonical policy budget/quota constants
+# ============================================================================
+#
+# Source-of-truth para defaults setoriais e quotas — internalizadas de
+# `app/orchestrator/policy_engine.py` (V1 deletado em W1-003) para permitir
+# `PolicyEngineService.apply_industry_defaults` + `save_policy_block` ler
+# direto sem instanciar V1.
+#
+# WT-2022 Phase 2 checklist completo (docstring V2 apply_industry_defaults).
+# Pre-audit: sprint_logs/sprint_1.2/W1-003_AUDIT.md.
+#
+# Distinto de `ALPHA1_SECTOR_RULES` em `policy_engine_service.py:47-92`
+# (esse é fairness/HITL/autonomy; este aqui é budget/quota).
+# ============================================================================
+
+
+# Whitelist de usage_type permitido em queries SQL (anti-injection).
+# Origem histórica: V1 PolicyEngine.ALLOWED_USAGE_TYPES (W1-003 cleanup).
+CANONICAL_ALLOWED_USAGE_TYPES: frozenset[str] = frozenset({
+    "chat_requests",
+    "action_executions",
+    "llm_calls",
+})
+
+
+# Quotas default por usage_type (override per tenant via CompanyHiringPolicy).
+# Origem: V1 PolicyEngine.DEFAULT_USAGE_LIMITS.
+CANONICAL_DEFAULT_USAGE_LIMITS: dict[str, int] = {
+    "chat_requests": 1000,
+    "action_executions": 500,
+    "llm_calls": 5000,
+}
+
+
+# Defaults canonical de política (fallback quando setor não reconhecido).
+# Origem: V1 PolicyEngine.DEFAULT_POLICIES.
+CANONICAL_DEFAULT_POLICIES: dict[str, int | bool] = {
+    "max_pearch_searches_per_day": 10,
+    "max_voice_screenings_per_day": 20,
+    "max_tokens_per_request": 50000,
+    "max_concurrent_requests": 5,
+    "allow_global_search": True,
+    "require_approval_for_bulk_email": True,
+}
+
+
+# Defaults por setor — Alpha 1 WeDOTalent (tech, varejo, logistica,
+# financeiro, saude, rpo). Setor desconhecido → CANONICAL_DEFAULT_POLICIES.
+# Origem: V1 PolicyEngine.SECTOR_DEFAULTS.
+# Invariantes-chave (preservadas em W1-003):
+#   - tech.allow_global_search = True
+#   - financeiro.allow_global_search = False (regulatório BCB 498)
+#   - saude.allow_global_search = False
+#   - rpo: maiores limites (RPO = high-volume sourcing)
+CANONICAL_SECTOR_DEFAULTS: dict[str, dict[str, int | bool]] = {
+    "tech": {
+        "max_pearch_searches_per_day": 50,
+        "max_voice_screenings_per_day": 100,
+        "max_tokens_per_request": 100000,
+        "max_concurrent_requests": 10,
+        "allow_global_search": True,
+        "require_approval_for_bulk_email": False,  # tech: menor burocracia
+    },
+    "varejo": {
+        "max_pearch_searches_per_day": 200,
+        "max_voice_screenings_per_day": 500,
+        "max_tokens_per_request": 50000,
+        "max_concurrent_requests": 20,
+        "allow_global_search": True,
+        "require_approval_for_bulk_email": True,
+    },
+    "logistica": {
+        "max_pearch_searches_per_day": 300,
+        "max_voice_screenings_per_day": 1000,
+        "max_tokens_per_request": 50000,
+        "max_concurrent_requests": 30,
+        "allow_global_search": True,
+        "require_approval_for_bulk_email": True,
+    },
+    "financeiro": {
+        "max_pearch_searches_per_day": 20,
+        "max_voice_screenings_per_day": 50,
+        "max_tokens_per_request": 50000,
+        "max_concurrent_requests": 5,
+        "allow_global_search": False,  # regulatório BCB 498
+        "require_approval_for_bulk_email": True,
+    },
+    "saude": {
+        "max_pearch_searches_per_day": 30,
+        "max_voice_screenings_per_day": 80,
+        "max_tokens_per_request": 50000,
+        "max_concurrent_requests": 8,
+        "allow_global_search": False,
+        "require_approval_for_bulk_email": True,
+    },
+    "rpo": {
+        "max_pearch_searches_per_day": 500,
+        "max_voice_screenings_per_day": 2000,
+        "max_tokens_per_request": 100000,
+        "max_concurrent_requests": 50,
+        "allow_global_search": True,
+        "require_approval_for_bulk_email": False,
+    },
+}

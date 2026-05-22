@@ -32,12 +32,14 @@ APP_DIR = ROOT / "app"
 
 # Paths exempt: V1 itself + bridges legacy + V2 fallback path.
 # Caminhos relativos a APP_DIR pra portabilidade (works from any cwd).
-EXEMPT_RELATIVE = {
-    "orchestrator/policy_engine.py",                      # V1 itself
-    "orchestrator/services/policy_gate_service.py",       # bridge V1↔V2
-    "orchestrator/orchestrator.py",                        # legacy orchestrator
-    "domains/job_creation/policy_gate.py",                 # build_default_gate (legacy)
-    "domains/policy/services/policy_engine_service.py",   # V2 fallback to V1
+EXEMPT_RELATIVE: set[str] = {
+    # W1-003 (2026-05-22): V1 PolicyEngine deletado. Allowlist esvaziada.
+    # Mantemos apenas paths de bridge defensive (caso V1 reapareça por
+    # algum revert acidental — sensor avisa antes de propagar). Após
+    # 1 sprint estável (0 violations), remover esses 3 entries.
+    "orchestrator/services/policy_gate_service.py",   # bridge V1↔V2 (histórico)
+    "orchestrator/orchestrator.py",                    # legacy orchestrator (W3-024)
+    "domains/job_creation/policy_gate.py",             # build_default_gate (legacy)
 }
 
 

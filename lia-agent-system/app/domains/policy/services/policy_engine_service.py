@@ -919,11 +919,21 @@ class PolicyEngineService:
         Ver ADR-WT-2022 Phase 2 checklist para sequência completa.
         --------------------------------------------------------------
         """
-        # TODO(WT-2022-P2): substituir por lookup canonical em lia_models.policy
-        # quando V1 for deletado (Q3 2026). Ver docstring.
-        from app.orchestrator.policy_engine import PolicyEngine  # noqa: PolicyEngine-V1-deprecated
-        engine = PolicyEngine()
-        return engine.apply_industry_defaults(sector)
+        # W1-003 (2026-05-22): V1 deletado. Canonical lookup em lia_models.policy.
+        from lia_models.policy import (
+            CANONICAL_DEFAULT_POLICIES,
+            CANONICAL_SECTOR_DEFAULTS,
+        )
+
+        sector_key = (sector or "").lower().strip()
+        defaults = CANONICAL_SECTOR_DEFAULTS.get(
+            sector_key, CANONICAL_DEFAULT_POLICIES
+        )
+        logger.info(
+            f"PolicyEngineService.apply_industry_defaults: "
+            f"sector={sector_key!r} → keys={list(defaults.keys())}"
+        )
+        return dict(defaults)
 
     async def save_policy_block(
         self,
@@ -953,16 +963,16 @@ class PolicyEngineService:
         from sqlalchemy import select
 
         from lia_models.company_hiring_policy import CompanyHiringPolicy
-        # TODO(WT-2022-P2): substituir esta instanciação V1 por lookup direto em
-        # lia_models.policy.CANONICAL_SECTOR_DEFAULTS quando V1 for deletado
-        # (Q3 2026). Mesmo padrão de `apply_industry_defaults` acima. V1 ainda
-        # vivo no momento desta migration porque SECTOR_DEFAULTS + DEFAULT_POLICIES
-        # ainda vivem como classvars do V1 — internalização é pre-condição da
-        # delecao (ver ADR-WT-2022 Phase 2 checklist).
-        from app.orchestrator.policy_engine import PolicyEngine  # noqa: PolicyEngine-V1-deprecated
+        # W1-003 (2026-05-22): V1 deletado. Canonical lookup em lia_models.policy.
+        from lia_models.policy import (
+            CANONICAL_DEFAULT_POLICIES,
+            CANONICAL_SECTOR_DEFAULTS,
+        )
 
-        engine = PolicyEngine()
-        defaults = engine.apply_industry_defaults(sector)
+        sector_key = (sector or "").lower().strip()
+        defaults = dict(
+            CANONICAL_SECTOR_DEFAULTS.get(sector_key, CANONICAL_DEFAULT_POLICIES)
+        )
 
         # Mapeamento sector_defaults → CompanyHiringPolicy blocks
         automation_patch = {

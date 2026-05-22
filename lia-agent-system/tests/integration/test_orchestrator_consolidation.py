@@ -252,7 +252,7 @@ class TestIntentRouterRemoval:
             MockCR.return_value = MagicMock()
             with patch("app.orchestrator.orchestrator.initialize_tools"):
                 with patch("app.orchestrator.orchestrator.TaskPlanner"):
-                    with patch("app.orchestrator.orchestrator.PolicyEngine"):
+                    with patch("app.orchestrator.orchestrator.PolicyEngineService"):  # W1-003 (2026-05-22): V1 deleted; patch V2 service instead
                         with patch("app.orchestrator.orchestrator.StateManager"):
                             with patch("app.orchestrator.orchestrator.DomainRegistry"):
                                 with patch("app.orchestrator.orchestrator.DomainWorkflow"):

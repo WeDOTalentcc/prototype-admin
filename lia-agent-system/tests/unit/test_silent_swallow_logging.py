@@ -71,16 +71,6 @@ def test_cascaded_router_logs_routing_decisions():
     assert logged >= 3, f"cascaded_router.py deveria ter >=3 except logged; encontrou {logged}"
 
 
-def test_policy_engine_logs_db_cleanup():
-    """policy_engine.py:129, 188, 193 — finally cleanup com logger.debug."""
-    from app.orchestrator import policy_engine
-    src = inspect.getsource(policy_engine)
-    # 3 sites: conn.close em _get_daily_usage, conn.rollback + conn.close em record_usage
-    assert src.count("conn.close() in") >= 2 or src.count("conn.close()") >= 3
-    logged = _count_logged_excepts(src)
-    assert logged >= 3, f"policy_engine.py deveria ter >=3 except logged; encontrou {logged}"
-
-
 def test_fairness_guard_swallows_log_warning():
     """Compliance swallows em fairness_guard usam warning (não silent) — LGPD-critical."""
     from app.shared.compliance import fairness_guard
