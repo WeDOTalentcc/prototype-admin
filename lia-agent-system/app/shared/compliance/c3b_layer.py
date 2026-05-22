@@ -33,9 +33,11 @@ class PreComplianceResult:
     pii_stripped: bool = False
     fairness_blocked: bool = False
     injection_blocked: bool = False  # W1-005 (2026-05-22)
+    hate_speech_blocked: bool = False  # W1-007 (2026-05-22)
     block_reason: str = ""
     fairness_flags: list[str] = field(default_factory=list)
     injection_categories: list[str] = field(default_factory=list)
+    hate_speech_category: str = ""
 
 
 @dataclass
@@ -59,6 +61,30 @@ async def pre_compliance(
             clean_message=message,
             original_message=message,
         )
+
+    # W1-007 (2026-05-22) · HateSpeechGuard ANTES de PII strip
+    # PII strip pode alterar slur (e.g., CPF mask) e mascarar hate speech.
+    # Hate check antes preserva integridade do match adversarial.
+    try:
+        from app.shared.compliance.hate_speech_guard import HateSpeechGuard
+        hs_guard = HateSpeechGuard()
+        hs_result = hs_guard.check(message)
+        if hs_result.is_blocked:
+            logger.warning(
+                "[C3b] HateSpeech BLOCKED · company_id=%s domain=%s category=%s adversarial=%s",
+                company_id, domain,
+                hs_result.category.value if hs_result.category else "unknown",
+                hs_result.adversarial_normalization,
+            )
+            return PreComplianceResult(
+                clean_message=message,
+                original_message=message,
+                hate_speech_blocked=True,
+                block_reason=hs_result.educational_message or "Mensagem com conteúdo ofensivo bloqueada.",
+                hate_speech_category=hs_result.category.value if hs_result.category else "",
+            )
+    except Exception as exc:
+        logger.warning("[C3b] HateSpeechGuard skipped — input NOT validated: %s", exc)
 
     clean = message
     pii_stripped = False
@@ -123,9 +149,11 @@ async def pre_compliance(
         pii_stripped=pii_stripped,
         fairness_blocked=fairness_blocked,
         injection_blocked=injection_blocked,
+        hate_speech_blocked=False,
         block_reason=block_reason,
         fairness_flags=fairness_flags,
         injection_categories=injection_categories,
+        hate_speech_category="",
     )
 
 
