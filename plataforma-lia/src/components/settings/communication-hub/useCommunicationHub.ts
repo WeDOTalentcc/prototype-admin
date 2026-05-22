@@ -338,6 +338,23 @@ export function useCommunicationHub(activeSubsection?: string) {
   const saveAlertsConfig = async () => {
     try {
       setSavingAlerts(true)
+      // DEPRECATED 2026-05-22 (ADR-WT-2025 Sprint B+C): AlertsTab UI escreve em
+      // AlertConfig.alerts (legacy JSONB blob). Canonical = AlertPreference per
+      // ADR-WT-2025; proactive_detector_service.py JA le APENAS de AlertPreference.
+      // Migration 170 backfilla rows existentes (read-shadow pattern, 1 release cycle).
+      // Quando backfill confirmar 100% em prod, substituir esta UI por
+      // AlertPreferencesPanel (catalogo 22 alert_types via /alerts/preferences).
+      // Tracking: WT-2026.
+      // Telemetria: emite warning estruturado (greppable em logs FE) para medir
+      // uso residual da UI legacy ate cutover.
+      if (typeof window !== 'undefined' && window.console) {
+        // eslint-disable-next-line no-console
+        console.warn(
+          '[legacy_alert_config_write] ADR-WT-2025: saveAlertsConfig escreve em ' +
+          'AlertConfig.alerts (legacy). Canonical AlertPreference. Substituir UI ' +
+          'apos migration 170 confirmar backfill em prod. Tracking: WT-2026.'
+        )
+      }
       // WT-2022 Wave 2 audit (2026-05-21): tenant via JWT — REGRA 6 CLAUDE.md.
       // Removido X-Company-ID header (anti-pattern); backend usa
       // get_verified_company_id que extrai company_id do Bearer token.

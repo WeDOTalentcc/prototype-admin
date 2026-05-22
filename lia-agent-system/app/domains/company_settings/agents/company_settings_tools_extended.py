@@ -402,7 +402,18 @@ ALERT_ID_TO_LABEL = {
 
 @tool_handler("company_settings")
 async def _wrap_toggle_communication_alert(**kwargs: Any) -> dict[str, Any]:
-    """WT-2022 Fase 4.4: liga/desliga (ou troca canal de) um alerta de comunicação."""
+    """WT-2022 Fase 4.4: liga/desliga (ou troca canal de) um alerta de comunicacao.
+
+    DEPRECATED 2026-05-22 (ADR-WT-2025 Sprint B+C):
+    Esta tool escreve em AlertConfig.alerts (JSONB legacy, 5 alert_ids hardcoded).
+    Canonical eh AlertPreference - proactive_detector_service.py le APENAS de la.
+    Migration alembic 170 backfilla rows legacy -> canonical.
+
+    Read-shadow pattern: mantem write para compat 1 release cycle. Depois
+    de migration 170 confirmar backfill, substituir esta tool por uma que
+    escreve em AlertPreference (via AlertRepository.upsert_preference_by_type).
+    Tracking: WT-2026.
+    """
     alert_id = kwargs.get("alert_id", "")
     enabled = kwargs.get("enabled")
     channel = kwargs.get("channel")
