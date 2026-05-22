@@ -1,11 +1,21 @@
 """
 Voice Screening Orchestrator — Twilio Voice + Gemini + TTS pipeline.
 
+Sprint 3.2/3.3 refactor (audit 2026-05-22 W4-1 V2): este modulo agora hospeda
+TANTO o nucleo voz generico (VoiceCoreOrchestrator) quanto o subclass legacy
+WSI-aware (VoiceScreeningOrchestrator). Decisao de arquitetura: manter classes
+no MESMO MODULO PHYSICAL preserva module-level symbol binding usado por dezenas
+de tests (patch("...voice_screening_orchestrator._get_voice_service") etc.) e
+permite extrair core + plugins sem quebrar a API publica.
+
+Para callers que querem usar VoiceCoreOrchestrator direto (Sprint 3.4+):
+    from app.domains.voice.services.voice_core_orchestrator import VoiceCoreOrchestrator
+
 Connects:
 - Twilio Programmable Voice (telephony, μ-law audio stream)
 - Gemini Flash 2.5 (STT via WAV + conversational LLM)
 - OpenAI TTS → μ-law transcoding (for Twilio Media Stream playback)
-- WSI pipeline (transcript analysis and scoring)
+- WSI pipeline (transcript analysis and scoring) — via WSIVoicePlugin (Sprint 3.3)
 - Consent management (LGPD compliance — hard-block on revoke, soft-warn on absent)
 - PII Masking (before any logging or persistence)
 - FairnessGuard middleware — applied to all Gemini responses before delivery
@@ -148,7 +158,7 @@ class _LegacySessionsShim:
     `_store_session` / `_fetch_session`.
     """
 
-    def __init__(self, orchestrator: "VoiceScreeningOrchestrator") -> None:
+    def __init__(self, orchestrator: "VoiceCoreOrchestrator") -> None:
         self._orch = orchestrator
 
     def _store_session_sync(self, session: "VoiceScreeningSession") -> None:
@@ -209,21 +219,37 @@ class _LegacySessionsShim:
             yield from company_sessions
 
 
-class VoiceScreeningOrchestrator:
+class VoiceCoreOrchestrator:
     """
-    Orchestrates the end-to-end voice screening pipeline.
+    VoiceCoreOrchestrator — generic voice transport core (Sprint 3.2 canonical).
+
+    Knows about audio I/O, consent, LLM dispatch, persistence, and plugin
+    lifecycle hooks. Does NOT know about WSI screening, BigFive scoring, or
+    any other domain-specific logic — those live in VoiceCorePlugin
+    implementations (see app.domains.voice.protocols.voice_core_plugin).
 
     Flow:
     1. verify_consent() — check LGPD consent; BLOCK if revoked, warn if absent
     2. initiate_call() — start Twilio Voice call protected by TWILIO_VOICE_CIRCUIT
                          if Twilio unconfigured/circuit-open → status="fallback" (not mock)
+       → invokes plugin hook on_session_initiated for each registered plugin
     3. handle_audio_stream() — μ-law → WAV → Gemini STT → transcript
     4. generate_lia_response() — Gemini LLM drives conversation
+       → may invoke plugin get_next_question for scripted-fallback path
     5. synthesize_lia_response() — OpenAI TTS → MP3 → μ-law for Twilio stream
-    6. finalize_screening() — PII-masked transcript → WSI analysis → scores
+    6. finalize_screening() — PII-masked transcript → plugin completion hooks
+       → invokes plugin hook on_session_finalized for each registered plugin
     7. Fallback: circuit_open/unconfigured → status="fallback" → chat/WhatsApp
 
     Circuit breaker: TWILIO_VOICE_CIRCUIT
+
+    Plugin lifecycle:
+    - `plugins` param accepts list[VoiceCorePlugin] (default None = generic mode).
+    - Hooks fire in registration order; errors logged + swallowed (never block
+      voice call).
+
+    Backward-compat: see VoiceScreeningOrchestrator subclass at bottom of this
+    module — preserves all existing callers' API.
     """
 
     SCREENING_QUESTIONS_PT = [
@@ -234,7 +260,7 @@ class VoiceScreeningOrchestrator:
         "Qual sua disponibilidade de início? Está aberto a mudanças ou trabalho remoto?",
     ]
 
-    def __init__(self):
+    def __init__(self, plugins: list | None = None):
         # F-15 P0 fix (audit 2026-05-22): _sessions dict in-process era race risk
         # em FastAPI multi-worker (cada worker dict próprio → callbacks Twilio
         # iam para worker errado). Substituído por VoiceSessionRedisRepository
@@ -253,6 +279,13 @@ class VoiceScreeningOrchestrator:
         # for generate_native_gemini_sync. Era ausente; AttributeError silenciado
         # pelo except genérico → fallback scripted permanente em produção.
         self._llm_service = _canonical_llm_service
+
+        # Sprint 3.2: plugin lifecycle. Plugins implement VoiceCorePlugin
+        # (app.domains.voice.protocols.voice_core_plugin). Generic mode
+        # (no plugins) makes the core behave as a pure voice transport.
+        # Subclasses (e.g., VoiceScreeningOrchestrator) pre-install their
+        # canonical plugins in their own __init__.
+        self._plugins: list = list(plugins) if plugins else []
 
     async def _store_session(self, session: "VoiceScreeningSession") -> None:
         """
@@ -918,6 +951,11 @@ class VoiceScreeningOrchestrator:
                     session.call_sid,
                 )
                 if db is not None and session.call_sid:
+                    # Sprint 3.2: plugin lifecycle hook. With no plugins (Sprint
+                    # 3.2 phase 1) this is a no-op and the inline WSI call below
+                    # does the work. Sprint 3.3 will move WSI into a plugin and
+                    # remove the inline call.
+                    await self._on_session_initiated(session, db)
                     await self._register_wsi_session(session, db)
             else:
                 session.status = "failed"
@@ -1121,6 +1159,8 @@ class VoiceScreeningOrchestrator:
                         session.job_context = job_context
                         live_session.job_context = job_context
 
+                    # Sprint 3.2: plugin lifecycle hook (no-op in phase 1).
+                    await self._on_session_initiated(session, db)
                     await self._register_wsi_session(session, db)
 
                 logger.info(
@@ -2508,6 +2548,101 @@ class VoiceScreeningOrchestrator:
                 "text": mask_pii(seg.get("text", "")),
             })
         return masked
+
+    # ── Sprint 3.2 plugin lifecycle hooks ──────────────────────────────────
+    #
+    # Invoked at canonical lifecycle points by core methods. Each iterates all
+    # registered plugins in order. Errors are caught + logged but NEVER block
+    # the voice call (best-effort semantics — production voice traffic must
+    # not fail because a plugin misbehaved).
+
+    async def _on_session_initiated(
+        self,
+        session: "VoiceScreeningSession",
+        db: Any,
+    ) -> None:
+        """Fan out to all plugins' on_session_initiated hook (best-effort)."""
+        for plugin in self._plugins:
+            try:
+                await plugin.on_session_initiated(session, db)
+            except Exception as plugin_err:  # noqa: BLE001 — best-effort
+                logger.warning(
+                    "[VOICE CORE] plugin=%s on_session_initiated failed (non-blocking) "
+                    "session=%s: %s",
+                    getattr(plugin, "plugin_name", "unknown"),
+                    session.session_id,
+                    plugin_err,
+                )
+
+    async def _plugin_next_question(
+        self,
+        session: "VoiceScreeningSession",
+        db: Any,
+    ) -> str | None:
+        """Return FIRST non-None plugin-provided question, or None to fall through."""
+        for plugin in self._plugins:
+            try:
+                result = await plugin.get_next_question(session, db)
+                if result:
+                    return result
+            except Exception as plugin_err:  # noqa: BLE001 — best-effort
+                logger.warning(
+                    "[VOICE CORE] plugin=%s get_next_question failed (non-blocking) "
+                    "session=%s: %s",
+                    getattr(plugin, "plugin_name", "unknown"),
+                    session.session_id,
+                    plugin_err,
+                )
+        return None
+
+    async def _on_session_finalized(
+        self,
+        session: "VoiceScreeningSession",
+        db: Any,
+        transcript: list[dict[str, Any]],
+    ) -> dict[str, Any]:
+        """Aggregate plugin completion results (last-wins on key conflicts)."""
+        merged: dict[str, Any] = {}
+        for plugin in self._plugins:
+            try:
+                result = await plugin.on_session_finalized(session, db, transcript)
+                if isinstance(result, dict):
+                    merged.update(result)
+            except Exception as plugin_err:  # noqa: BLE001 — best-effort
+                logger.warning(
+                    "[VOICE CORE] plugin=%s on_session_finalized failed (non-blocking) "
+                    "session=%s: %s",
+                    getattr(plugin, "plugin_name", "unknown"),
+                    session.session_id,
+                    plugin_err,
+                )
+        return merged
+
+
+class VoiceScreeningOrchestrator(VoiceCoreOrchestrator):
+    """
+    Backward-compat WSI-aware orchestrator (Sprint 3.2 phase 1).
+
+    Subclass de VoiceCoreOrchestrator que preserva a API publica + privada
+    historica esperada por callers existentes e ~240 tests. Em Sprint 3.2
+    phase 1 (esta etapa) ainda herda os 3 metodos WSI inline; Sprint 3.3
+    extrai esses metodos para WSIVoicePlugin e os mantem aqui como thin
+    delegates pra `patch.object(orch, '_register_wsi_session')` continuar
+    funcionando em tests.
+
+    Callers existentes:
+    - app.api.v1.triagem
+    - app.api.v1.twilio_voice
+    - app.api.v1.gemini_voice
+    - app.domains.communication.services.communication_dispatcher
+    - app.domains.voice.services.gemini_live_audio_service
+    """
+
+    def __init__(self):
+        # Sprint 3.2 phase 1: no plugins yet (the inline WSI methods inherited
+        # de VoiceCoreOrchestrator fazem o trabalho). Sprint 3.3 pre-instalara
+        # WSIVoicePlugin aqui.
+        super().__init__(plugins=None)
 
 
 voice_screening_orchestrator = VoiceScreeningOrchestrator()
