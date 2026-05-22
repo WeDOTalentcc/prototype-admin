@@ -5,6 +5,7 @@ import { TwinsList, EvaluateWithTwinModal, CreateDigitalTwinModal } from "@/comp
 import MultiStrategySearchPanel from "@/components/pages-agent-studio/MultiStrategySearchPanel"
 import CustomAgentsTab from "@/components/pages-agent-studio/CustomAgentsTab"
 import { TemplateGallery, AgentCard as CustomAgentCard, AgentCardSkeleton, AgentDetailsPanel, DeployDialog, ConversationalCreator, TestDebugPanel, ApprovalsList } from "@/components/pages-agent-studio/custom-agents"
+import { TemplatePreviewModal } from "@/components/pages-agent-studio/custom-agents/template-preview-modal"
 import { useCustomAgents } from "@/hooks/agents"
 import { useAgentStudioStore } from "@/stores/agent-studio-store"
 import type { CustomAgent, AgentTemplate } from "@/components/pages-agent-studio/custom-agents/types"
@@ -100,6 +101,8 @@ export default function AgentStudioPage({
   const [isLoading, setIsLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
   const [evaluatingTwinId, setEvaluatingTwinId] = useState<string | null>(null)
+  // Sprint B QW#5 audit 2026-05-22: preview modal antes do POST do template
+  const [previewTemplate, setPreviewTemplate] = useState<AgentTemplate | null>(null)
   // P0-6 audit 2026-05-21: CreateDigitalTwinModal estava orfão (não montada). Wiring canonical.
   const [showCreateTwinModal, setShowCreateTwinModal] = useState(false)
   const [twinsRefreshKey, setTwinsRefreshKey] = useState(0)
@@ -155,8 +158,16 @@ export default function AgentStudioPage({
     }
   }
 
-  const handleTemplateSelect = async (template: AgentTemplate) => {
+  // Sprint B QW#5 audit 2026-05-22: NÃO POSTa direto — abre TemplatePreviewModal
+  // pra recruiter revisar config + customizar nome ANTES de criar.
+  // Anti-pattern (POST silencioso) era sev 4 no diagnóstico Nielsen H#5/H#3.
+  const handleTemplateSelect = (template: AgentTemplate) => {
     selectTemplate(template)
+    setPreviewTemplate(template)
+  }
+
+  // Confirmação final do preview — agora sim POSTa
+  const handleTemplateConfirm = async (customized: AgentTemplate) => {
     try {
       const token = localStorage.getItem("auth_token")
       const res = await fetch("/api/backend-proxy/custom-agents", {
@@ -166,27 +177,33 @@ export default function AgentStudioPage({
           ...(token ? { Authorization: `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({
-          name: template.name,
-          role: template.description,
-          description: template.description,
-          system_prompt: template.system_prompt,
-          allowed_tools: template.allowed_tools,
-          domain: template.domain,
-          icon: template.icon,
-          max_steps: template.max_steps,
-          temperature: template.temperature,
-          enable_memory: template.enable_memory,
-          context_level: template.context_level,
-          excluded_tools: template.excluded_tools,
+          name: customized.name,
+          role: customized.description,
+          description: customized.description,
+          system_prompt: customized.system_prompt,
+          allowed_tools: customized.allowed_tools,
+          domain: customized.domain,
+          icon: customized.icon,
+          max_steps: customized.max_steps,
+          temperature: customized.temperature,
+          enable_memory: customized.enable_memory,
+          context_level: customized.context_level,
+          excluded_tools: customized.excluded_tools,
         }),
       })
-      if (!res.ok) throw new Error(t("studio.toast.errorCreating"))
-      toast.success(t("studio.toast.agentCreated", { name: template.name }), t("studio.toast.agentCreatedDesc"))
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}))
+        throw new Error(extractErrorMessage(errBody, res.status))
+      }
+      toast.success(
+        t("studio.toast.agentCreated", { name: customized.name }),
+        t("studio.toast.agentCreatedDesc"),
+      )
+      setPreviewTemplate(null)
       mutateCustomAgents()
       resetStudio()
       setActiveTab("custom")
     } catch (e) {
-      // UX-Sprint-A QW#6 Batch 4 audit 2026-05-21: capturar e propagar mensagem específica
       const msg = e instanceof Error ? e.message : t("studio.toast.errorCreating")
       toast.error(msg, t("studio.toast.tryAgainShort"))
     }
@@ -665,6 +682,14 @@ export default function AgentStudioPage({
           </div>
         )}
       </div>
+
+      {/* Sprint B QW#5 audit 2026-05-22: TemplatePreviewModal — confirm antes de POST */}
+      <TemplatePreviewModal
+        template={previewTemplate}
+        open={previewTemplate !== null}
+        onOpenChange={(o) => { if (!o) setPreviewTemplate(null) }}
+        onConfirm={handleTemplateConfirm}
+      />
 
       {evaluatingTwinId && (
         <EvaluateWithTwinModal

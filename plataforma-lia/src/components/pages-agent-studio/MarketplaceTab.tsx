@@ -4,6 +4,8 @@ import React, { useState, useEffect, useCallback } from "react"
 import { toast } from "@/lib/toast"
 import { ConfirmAlertDialog } from "@/components/agent-studio/confirm-alert-dialog"
 import { useTranslations } from "next-intl"
+// Sprint B QW#17 audit 2026-05-22: shadcn Tabs canonical (era <button> custom sem ARIA)
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import {
   Store, Download, Search, Star, Loader2,
   Package, CreditCard, Trash2, Check, X,
@@ -59,34 +61,35 @@ export default function MarketplaceTab() {
         title={t('title')}
         subtitle={t('subtitle')}
         icon={<Store className="w-4 h-4 text-violet-500" />}
-        actions={
-          <div className="flex gap-1 p-1 bg-lia-bg-secondary rounded-lg">
-            {[
-              { id: "browse" as const, label: t('browse'), icon: Search },
-              { id: "installed" as const, label: t('installed'), icon: Package },
-              { id: "billing" as const, label: t('billing'), icon: CreditCard },
-            ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveView(tab.id)}
-              className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors",
-                activeView === tab.id
-                  ? "bg-lia-bg-primary text-lia-text-primary shadow-sm"
-                  : "text-lia-text-secondary hover:text-lia-text-primary"
-              )}
-            >
-              <tab.icon className="w-3.5 h-3.5" />
-              {tab.label}
-            </button>
-            ))}
-          </div>
-        }
       />
 
-      {activeView === "browse" && <BrowseMarketplace />}
-      {activeView === "installed" && <InstalledAgents />}
-      {activeView === "billing" && <BillingView />}
+      {/* Sprint B QW#17 audit 2026-05-22: shadcn Tabs canonical (Radix com ARIA built-in) */}
+      <Tabs value={activeView} onValueChange={(v) => setActiveView(v as "browse" | "installed" | "billing")}>
+        <TabsList aria-label={t('viewSwitcher') || 'Visão do marketplace'}>
+          <TabsTrigger value="browse" className="gap-1.5">
+            <Search className="w-3.5 h-3.5" aria-hidden="true" />
+            {t('browse')}
+          </TabsTrigger>
+          <TabsTrigger value="installed" className="gap-1.5">
+            <Package className="w-3.5 h-3.5" aria-hidden="true" />
+            {t('installed')}
+          </TabsTrigger>
+          <TabsTrigger value="billing" className="gap-1.5">
+            <CreditCard className="w-3.5 h-3.5" aria-hidden="true" />
+            {t('billing')}
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="browse" className="mt-4">
+          <BrowseMarketplace />
+        </TabsContent>
+        <TabsContent value="installed" className="mt-4">
+          <InstalledAgents />
+        </TabsContent>
+        <TabsContent value="billing" className="mt-4">
+          <BillingView />
+        </TabsContent>
+      </Tabs>
     </div>
   )
 }
