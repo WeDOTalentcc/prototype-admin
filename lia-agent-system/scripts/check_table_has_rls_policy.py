@@ -28,6 +28,7 @@ Allowlist:
 """
 from __future__ import annotations
 
+import argparse
 import re
 import sys
 from pathlib import Path
@@ -103,6 +104,12 @@ def collect_rls_enabled_tables() -> set[str]:
     enabled: set[str] = set()
     if not ALEMBIC_DIR.exists():
         return enabled
+    # Pattern: tuple of (table_name, type_str) inside a list — e.g.
+    # `("consent_versions", "uuid"),` as used by 120/139/173 migrations.
+    tuple_pattern = re.compile(
+        r"""\(\s*["']([a-z_0-9]+)["']\s*,\s*["'][a-z_]+["']\s*\)\s*,?""",
+        re.IGNORECASE,
+    )
     for f in ALEMBIC_DIR.glob("*.py"):
         try:
             src = f.read_text(encoding="utf-8")
@@ -120,6 +127,12 @@ def collect_rls_enabled_tables() -> set[str]:
                     enabled.add(stripped.strip('",').strip())
                 elif stripped.startswith("'") and stripped.endswith("',"):
                     enabled.add(stripped.strip("',").strip())
+                else:
+                    # Tuple pattern: `("table", "uuid"),` used by 120/139/173.
+                    # Parser previously missed these — drove 100 false-positive
+                    # GAP reports in 2026-05-22 audit. Cover them here.
+                    for m in tuple_pattern.finditer(line):
+                        enabled.add(m.group(1).lower())
     return enabled
 
 
@@ -137,8 +150,44 @@ def get_exempt_tables() -> dict[str, str]:
     return exempt
 
 
-def main() -> int:
-    block = "--block" in sys.argv
+def load_baseline(baseline_file: Path) -> int:
+    """Load ratchet baseline count from file. Returns 0 if missing/unparseable."""
+    if not baseline_file.exists():
+        return 0
+    try:
+        return int(baseline_file.read_text(encoding="utf-8").strip())
+    except (ValueError, OSError):
+        return 0
+
+
+def save_baseline(baseline_file: Path, count: int) -> None:
+    """Persist ratchet baseline count for future runs."""
+    baseline_file.parent.mkdir(parents=True, exist_ok=True)
+    baseline_file.write_text(f"{count}\n", encoding="utf-8")
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = argparse.ArgumentParser(
+        description="ADR-030 sensor: RLS coverage on tables with company_id"
+    )
+    parser.add_argument(
+        "--block", "--blocking", dest="block", action="store_true",
+        help="Forca BLOCKING mode (fail se count > baseline)"
+    )
+    parser.add_argument(
+        "--warn-only", action="store_true",
+        help="Forca WARN-ONLY mode (sempre exit 0)"
+    )
+    parser.add_argument(
+        "--baseline-file", type=Path,
+        default=ROOT / "scripts" / "baselines" / "rls_policy.txt",
+        help="Ratchet baseline file (default: scripts/baselines/rls_policy.txt)",
+    )
+    parser.add_argument(
+        "--update-baseline", action="store_true",
+        help="Atualiza baseline com count atual e sai 0 (use apos closing gaps)",
+    )
+    args = parser.parse_args(argv)
 
     tables = collect_tables_with_company_id()
     rls_enabled = collect_rls_enabled_tables()
@@ -162,11 +211,23 @@ def main() -> int:
             continue
         gaps.append((tablename, model_path))
 
+    count = len(gaps)
+    baseline = load_baseline(args.baseline_file)
+
+    if args.update_baseline:
+        save_baseline(args.baseline_file, count)
+        print(
+            f"[ADR-030 sensor] Baseline atualizado em {args.baseline_file}: "
+            f"{count} GAPS"
+        )
+        return 0
+
     print(
         f"[ADR-030 sensor] Inventory: {len(tables)} tables with company_id, "
         f"{len(rls_enabled)} with RLS enabled, {len(exempt)} explicitly exempt, "
         f"{len(transitive)} transitively isolated, "
-        f"{len(allowlisted)} allowlisted, {len(gaps)} GAPS."
+        f"{len(allowlisted)} allowlisted, {count} GAPS "
+        f"(baseline ratchet: {baseline})."
     )
     if allowlisted:
         print(
@@ -180,7 +241,7 @@ def main() -> int:
             f"{sorted(transitive)}"
         )
 
-    if not gaps:
+    if count == 0:
         print(
             "[ADR-030 sensor] OK — every table with company_id has RLS coverage."
         )
@@ -194,19 +255,35 @@ def main() -> int:
         )
 
     print(
-        f"\n[ADR-030 sensor] Summary: {len(gaps)} table(s) with company_id "
+        f"\n[ADR-030 sensor] Summary: {count} table(s) with company_id "
         "but no RLS migration.\n"
         "Per ADR-030 v2: every multi-tenant table SHOULD have RLS deny-by-default.\n"
-        "Add an alembic migration following pattern from 068_rls_deny_by_default.py\n"
-        "or 118_rls_candidates.py.\n"
+        "Add an alembic migration following pattern from 068_rls_deny_by_default.py,\n"
+        "118_rls_candidates.py, 139_t02_rls_high_priority.py, or\n"
+        "173_rls_policy_batch_1.py.\n"
         "If isolation is via FK chain (transitive), add table name to TRANSITIVE_ISOLATION.\n"
-        "If genuinely exempt, add `# RLS-EXEMPT: <reason>` to the model file.\n",
+        "If genuinely exempt, add `# RLS-EXEMPT: <reason>` to the model file.\n"
+        "If sensor false-positive (parser bug), add tablename to scripts/.rls_allowlist.txt\n"
+        "with reason 'RLS applied via <migration_filename>'.\n",
         file=sys.stderr,
     )
 
-    if block:
+    blocking_mode = args.block and not args.warn_only
+
+    if blocking_mode and count > baseline:
+        print(
+            f"\n[ADR-030 sensor] BLOCKING: {count} > baseline {baseline}. "
+            "Corrigir GAP ou ajustar baseline via --update-baseline.",
+            file=sys.stderr,
+        )
         return 1
-    print("[ADR-030 sensor] WARN-ONLY mode — not blocking. Pass --block after Sprint 5.")
+
+    if not blocking_mode:
+        print(
+            "[ADR-030 sensor] WARN-ONLY mode — not blocking. "
+            "Pass --block para promover a BLOCKING (ou via baseline ratchet).",
+            file=sys.stderr,
+        )
     return 0
 
 
