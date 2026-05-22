@@ -9,7 +9,7 @@ import uuid
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import get_current_user
-from app.core.database import get_db
+from app.core.database import get_db, get_tenant_db
 from pydantic import BaseModel, Field
 from typing import Optional
 from app.shared.security.require_company_id import require_company_id
