@@ -70,6 +70,10 @@ class BackgroundJob(Base):
     - Execution history tracking
     """
     __tablename__ = "background_jobs"
+    # QW1 audit 2026-05-22: extend_existing=True evita SQLAlchemy
+    # InvalidRequestError em hot-reload do uvicorn ("Table background_jobs
+    # is already defined") que causava restart-loop e 500s em cascata.
+    __table_args__ = {"extend_existing": True}
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4)
     company_id = Column(UUID(as_uuid=True), nullable=False, index=True)
