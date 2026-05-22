@@ -149,9 +149,17 @@ company_id: str = Depends(require_company_id)):
             # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.info(f"Seeded {created} default archetypes")
         
-        # Build query
-        # TENANT-EXEMPT: SearchArchetype.company_id NULLABLE para marketplace templates publicos (lia_models/archetype.py:43-44); endpoint require_company_id valida JWT pra contexto cliente; sensor AST nao infere nullable+marketplace
-        query = select(SearchArchetype)
+        # Build query — canonical multi-tenancy:
+        # marketplace archetypes (company_id IS NULL, publicos, lia_models/archetype.py:43-44)
+        # + private archetypes do tenant atual (company_id == company_id do JWT)
+        # explicit filter > TENANT-EXEMPT marker (previne private leak entre tenants P1)
+        from sqlalchemy import or_
+        query = select(SearchArchetype).where(
+            or_(
+                SearchArchetype.company_id == company_id,
+                SearchArchetype.company_id.is_(None),  # marketplace publico
+            )
+        )
         
         if not include_inactive:
             query = query.where(SearchArchetype.is_active)
