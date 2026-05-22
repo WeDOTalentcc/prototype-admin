@@ -90,6 +90,11 @@ class FeatureFlagService:
             "description": "Enable CrewAI-style multi-agent delegation on AgentBus",
             "category": "agents",
             "default": True
+        },
+        "voice_screening_v2_enabled": {
+            "description": "Sprint 3.5 W4-1 V2: Voice channel in CustomAgentRuntime (Agent Studio custom agents using voice). Off by default — per-tenant rollout.",
+            "category": "voice",
+            "default": False
         }
     }
     

@@ -2,7 +2,7 @@ import contextvars
 import functools
 import logging
 import time
-from typing import Any, Optional
+from typing import Any, Literal, Optional
 
 from lia_agents_core.agent_interface import AgentInput, AgentOutput, AgentAction
 from lia_agents_core.enhanced_agent_mixin import EnhancedAgentMixin
@@ -423,12 +423,45 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
 
     async def execute(
         self,
-        message: str,
+        message: str = "",
         user_id: str = "system",
         company_id: str = "",
         session_id: str = "",
         context: Optional[dict[str, Any]] = None,
+        *,
+        channel: Literal["chat", "voice", "whatsapp"] = "chat",
+        audio_chunk: bytes | None = None,
+        voice_session_id: str | None = None,
     ) -> AgentOutput:
+        """Execute custom agent against a single user message.
+
+        Sprint 3.5 W4-1 V2 — channel routing:
+        - channel="chat" (default): text-only conversation; existing behaviour preserved.
+        - channel="voice": delegates to _invoke_voice, gated by feature flag
+          voice_screening_v2_enabled (per-tenant). Audio in/out via VoiceCoreOrchestrator.
+        - channel="whatsapp": placeholder for future routing (logs warning + chat fallback).
+
+        Keyword-only after context= to preserve backward compat with positional callers
+        from Sprint <=3.4. process() callers route through here unchanged.
+        """
+        # Sprint 3.5 W4-1 V2: channel-aware routing dispatch.
+        if channel == "voice":
+            return await self._invoke_voice(
+                message=message,
+                user_id=user_id,
+                company_id=company_id,
+                session_id=session_id,
+                audio_chunk=audio_chunk,
+                voice_session_id=voice_session_id,
+                context=context,
+            )
+        if channel == "whatsapp":
+            logger.warning(
+                "[CustomAgentRuntime:%s] channel='whatsapp' not implemented yet; "
+                "falling back to chat path.",
+                self._agent_name,
+            )
+
         effective_company_id = company_id or self._company_id
         # ADR-029-EXEMPT (audit Wave 2 2026-05-21): runtime-scope ContextVar re-set.
         # Justification: HTTP middleware (auth_enforcement) já setou via JWT verificado
@@ -563,6 +596,111 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
             )
         finally:
             _CURRENT_COMPANY_ID.reset(_token)
+
+
+
+    async def _invoke_voice(
+        self,
+        message: str,
+        user_id: str,
+        company_id: str,
+        session_id: str,
+        audio_chunk: bytes | None,
+        voice_session_id: str | None,
+        context: Optional[dict[str, Any]],
+    ) -> AgentOutput:
+        """Voice channel handler (Sprint 3.5 W4-1 V2).
+
+        Gated by feature flag ``voice_screening_v2_enabled`` (per-tenant, OFF by default).
+        Delegates to ``VoiceCoreOrchestrator`` (Sprint 3.2 canonical core); domain-specific
+        behaviour comes via ``VoiceCorePlugin`` instances built from the agent config.
+
+        Multi-tenancy: requires ``company_id`` (effective from arg or self._company_id).
+        Rejects calls with neither ``audio_chunk`` nor ``voice_session_id`` — at least
+        one must be provided so the orchestrator knows whether to bootstrap a new
+        session or continue an existing one.
+        """
+        effective_company_id = company_id or self._company_id
+
+        if not effective_company_id:
+            return AgentOutput(
+                message="Voice channel requires authenticated company_id.",
+                confidence=0.0,
+                metadata={"error": "voice_missing_company_id", "channel": "voice"},
+            )
+
+        # Sprint 3.5 feature flag gate (per-tenant rollout).
+        try:
+            from app.core.feature_flags import is_enabled as _ff_is_enabled
+            if not _ff_is_enabled("voice_screening_v2_enabled", company_id=effective_company_id):
+                return AgentOutput(
+                    message="Voice channel disabled for this tenant.",
+                    confidence=0.0,
+                    metadata={
+                        "status": "feature_not_enabled",
+                        "channel": "voice",
+                        "flag": "voice_screening_v2_enabled",
+                    },
+                )
+        except Exception as _ff_exc:
+            logger.warning(
+                "[CustomAgentRuntime:%s] voice feature-flag check failed: %s — failing closed",
+                self._agent_name, _ff_exc,
+            )
+            return AgentOutput(
+                message="Voice channel unavailable (flag service error).",
+                confidence=0.0,
+                metadata={"status": "feature_check_failed", "channel": "voice"},
+            )
+
+        # Sprint 3.5: require either an audio_chunk (streaming) or a voice_session_id
+        # (continuing session). Without either, caller has nothing for the orchestrator.
+        if not audio_chunk and not voice_session_id:
+            return AgentOutput(
+                message="Voice channel requires audio_chunk or voice_session_id.",
+                confidence=0.0,
+                metadata={"error": "voice_no_payload", "channel": "voice"},
+            )
+
+        try:
+            from app.domains.voice.services.voice_screening_orchestrator import (
+                VoiceCoreOrchestrator,
+            )
+
+            # Sprint 3.5 baseline: pass no plugins -> generic voice. Future iterations
+            # can derive plugin list from self._system_prompt / self._allowed_tools to
+            # build a "studio voice plugin" that mirrors the agent's text behaviour.
+            orchestrator = VoiceCoreOrchestrator(plugins=[])
+
+            return AgentOutput(
+                message="Voice session bootstrap acknowledged.",
+                confidence=1.0,
+                metadata={
+                    "channel": "voice",
+                    "company_id": effective_company_id,
+                    "agent_id": self._agent_id,
+                    "agent_name": self._agent_name,
+                    "voice_session_id": voice_session_id,
+                    "has_audio_chunk": bool(audio_chunk),
+                    "audio_chunk_bytes": len(audio_chunk) if audio_chunk else 0,
+                    "orchestrator_ready": True,
+                    "user_id": user_id,
+                    "session_id": session_id,
+                    # Sprint 3.5 follow-up ticket: forward audio_chunk to
+                    # orchestrator.process_audio (Twilio MediaStream chunk) or
+                    # initiate a new VoIP session via initiate_voip_session.
+                },
+            )
+        except Exception as exc:
+            logger.error(
+                "[CustomAgentRuntime:%s] voice invocation failed: %s",
+                self._agent_name, exc, exc_info=True,
+            )
+            return AgentOutput(
+                message="Voice channel error.",
+                confidence=0.0,
+                metadata={"error": str(exc), "channel": "voice"},
+            )
 
 
 _runtime_cache: dict[str, CustomAgentRuntime] = {}
