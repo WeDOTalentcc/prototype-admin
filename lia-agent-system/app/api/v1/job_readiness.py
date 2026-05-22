@@ -235,6 +235,9 @@ company_id: str = Depends(require_company_id)) -> BoardResponse:
         like = f"%{search.strip()}%"
         filters.append(or_(JobVacancy.title.ilike(like), JobVacancy.job_id.ilike(like)))
 
+    # TENANT-EXEMPT: filters list built dynamically above with
+    # JobVacancy.company_id == company_id as first filter (sensor AST cannot follow
+    # indirection); endpoint gated via Depends(require_company_id)
     stmt = (
         select(JobVacancy)
         .where(and_(*filters))

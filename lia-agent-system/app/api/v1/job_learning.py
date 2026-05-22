@@ -331,6 +331,9 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
             if pattern_type:
                 conditions.append(JobPattern.pattern_type == pattern_type)
             
+            # TENANT-EXEMPT: conditions list built dynamically above with
+            # JobPattern.company_id == UUID(company_id) as first filter (sensor AST
+            # cannot follow indirection); endpoint gated via Depends(require_company_id)
             result = await db.execute(
                 select(JobPattern)
                 .where(and_(*conditions))
