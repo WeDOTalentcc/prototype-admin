@@ -1672,9 +1672,20 @@ class VoiceScreeningOrchestrator:
         )
         return self._check_fairness_on_response(closing, session)
 
+    # F-16 P1 fail-CLOSED safe neutral fallback (Decisao Paulo 2026-05-22).
+    # Constante de modulo para reuso sem recursao em _get_next_scripted_question.
+    _FAIRNESS_SAFE_NEUTRAL_FALLBACK = (
+        "Poderia me contar mais sobre sua experiência profissional "
+        "e como ela se relaciona com esta vaga?"
+    )
+
     def _check_fairness_on_response(self, text: str, session: VoiceScreeningSession) -> str:
         """
-        Run FairnessGuard on any outbound LIA text. Returns safe replacement if blocked.
+        Run FairnessGuard on any outbound LIA text. Returns safe replacement if blocked
+        OU se o engine falhar (F-16 P1 fail-CLOSED, Decisao Paulo 2026-05-22).
+
+        Antes: exception -> texto raw passava (risco fairness violation em outage transitorio).
+        Depois: exception -> safe neutral fallback + audit canonical (LGPD Art. 20 trail).
         """
         try:
             result = check_fairness(
@@ -1688,17 +1699,61 @@ class VoiceScreeningOrchestrator:
                     "session=%s — replacing with neutral prompt",
                     session.session_id,
                 )
-                return (
-                    "Poderia me contar mais sobre sua experiência profissional "
-                    "e como ela se relaciona com esta vaga?"
-                )
+                return self._FAIRNESS_SAFE_NEUTRAL_FALLBACK
+            return text
         except Exception as e:
+            # F-16 P1 fail-CLOSED: nao retornar raw text. Substituir por safe neutral
+            # E registrar audit canonical para LGPD/EU AI Act trail.
             logger.error(
-                "[VOICE SCREENING] FairnessGuard check failed session=%s: %s — "
-                "allowing response (fail-open for availability)",
-                session.session_id, e,
+                "[F-16 FAIL-CLOSED] FairnessGuard check failed session=%s: %s — "
+                "using scripted safe fallback (fail-CLOSED Decisao Paulo 2026-05-22)",
+                session.session_id, e, exc_info=True,
             )
-        return text
+            # Best-effort audit canonical — engine failure exigi rastreabilidade
+            try:
+                import asyncio
+
+                from app.shared.compliance.audit_service import AuditService
+
+                async def _log_canonical():
+                    try:
+                        await AuditService().log_decision(
+                            company_id=session.company_id,
+                            agent_name="voice_screening_orchestrator",
+                            decision_type="fairness_guard_failure",
+                            action="utterance_filtered_failclosed",
+                            decision="blocked_failclosed",
+                            reasoning=[
+                                f"engine_error={type(e).__name__}: {str(e)[:200]}",
+                                f"session={session.session_id}",
+                                f"failclosed_fallback_used=safe_neutral",
+                            ],
+                            criteria_used=["fail_closed_safety", "lgpd_art_20"],
+                            criteria_ignored=[],
+                            candidate_id=session.candidate_id,
+                            job_vacancy_id=session.job_id,
+                            human_review_required=True,
+                        )
+                    except Exception:
+                        # Audit failure must NOT bypass fail-CLOSED behavior
+                        logger.exception("[F-16] Audit log failed (non-blocking)")
+
+                # Schedule audit best-effort: prefer loop.create_task if running, else
+                # spin up isolated loop, else give up silently (fail-CLOSED ja ativo).
+                try:
+                    try:
+                        loop = asyncio.get_running_loop()
+                        loop.create_task(_log_canonical())
+                    except RuntimeError:
+                        # No running loop in current thread — use a one-off
+                        asyncio.run(_log_canonical())
+                except Exception:
+                    # Best-effort: audit failure must not bypass fail-CLOSED
+                    pass
+            except Exception:
+                # Module import failure: still fail-CLOSED, just no audit
+                pass
+            return self._FAIRNESS_SAFE_NEUTRAL_FALLBACK
 
     async def synthesize_lia_response(
         self,
