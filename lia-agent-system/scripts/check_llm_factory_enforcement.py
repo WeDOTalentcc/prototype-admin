@@ -43,6 +43,23 @@ ALLOWLIST = {
     "libs/agents-core/lia_agents_core/langgraph_react_base.py",
     # Training persona export (fixed version, separate from runtime) — se vierem
     "app/shared/prompts/training_persona.py",
+    # Multimodal service — lazy SDK clients gated by bootstrap monkey-patches
+    # (bootstrap.install_monkey_patches() instala interceptors em
+    # anthropic.AsyncAnthropic.messages.create + genai.aio.models.generate_content
+    # ANTES de qualquer instanciacao, garantindo audit trail + tenant-aware
+    # billing mesmo via SDK direto). Razao: Camada multimodal precisa de
+    # SDK nativo para upload de arquivos + base64 image encoding.
+    "app/domains/ai/services/multimodal_service.py",
+    # anthropic_client.py — canonical seam factory que wrappam SDK
+    # (get_chat_anthropic / get_anthropic_client / get_async_anthropic_client).
+    # Espelha o pattern de llm_claude.py (ja allowlisted): este modulo E
+    # a fabrica canonical autorizada de instancias Anthropic.
+    "app/shared/providers/anthropic_client.py",
+    # llm_factory.py — core de create_tracked_llm (Choose Your AI).
+    # E a fabrica canonical autorizada que escolhe provider/model conforme
+    # tenant policy + faz fallback chain. Espelha llm_bootstrap.py
+    # (ja allowlisted): este modulo E a camada Choose Your AI.
+    "app/shared/providers/llm_factory.py",
 }
 
 # Classes bloqueadas. Chave = nome da classe. Valor = mensagem.
