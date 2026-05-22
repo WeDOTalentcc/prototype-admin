@@ -1,40 +1,44 @@
-"""Celery tasks: briefing dispatch respecting AlertConfig.briefing_frequency.
+"""Celery tasks: briefing dispatch reading briefing_frequency from HiringPolicy canonical.
 
 Wave 3 Camada 3 Item 2 — registered 2026-05-22
-==============================================
+Sprint D+1 partial — refactored 2026-05-22
+==========================================
 
-Contexto (audit Wave 2 comunicacao 2026-05-21)
-----------------------------------------------
-``briefing_frequency`` e persistido em ``AlertConfig.briefing_frequency``
-(daily | weekly | twice_daily | monthly) atraves do endpoint
-``/api/v1/alerts.briefing-config``. Mas o scheduler ate hoje era:
+Contexto (ADR-WT-2025 §Sprint D+1 partial)
+------------------------------------------
+ATE 2026-05-22 (Sprint D fim): briefing_frequency vivia em
+``AlertConfig.briefing_frequency``. Este modulo lia direto da tabela
+legacy.
 
-    - ``briefing.send_daily`` (em communication.py) — despacha pra TODOS os
-      usuarios ativos sem filtrar por config. Roda 1x/dia (09h UTC).
-    - Weekly / monthly nao existiam — UI mente para o usuario.
+A PARTIR de Sprint D+1 partial (migration 174_briefing_frequency_canonical):
+- Canonical: ``CompanyHiringPolicy.communication_rules.briefing_frequency``
+  (JSONB, mesmo local que `lia_tone`, `preferred_channel`, `ai_persona`).
+- Legacy read fallback: ``AlertConfig.briefing_frequency`` (deprecated,
+  removido em Sprint D+2 DROP TABLE alert_configs ~2026-09-22).
 
-Este modulo introduz tasks canonical que filtram por ``briefing_frequency``:
+Read-shadow pattern:
+1. Tenta ler ``HiringPolicy.communication_rules.briefing_frequency``.
+2. Se NULL/empty (HiringPolicy ainda nao backfilled OR tenant fora da
+   migration 174 OR novo tenant criado pos-migration sem briefing config):
+   - Fall back para ``AlertConfig.briefing_frequency`` legacy.
+   - Emite counter ``briefing_dispatch_legacy_alertconfig_read_total``
+     (canary metric — Sprint D+1 vai usar esse counter pra decidir
+      quando remover endpoint /alerts/config pre-sunset).
+   - Emite logger.warning estruturado.
+3. Se AlertConfig tambem NULL/empty: default canonical 'weekly'.
 
-    - briefing.dispatch_daily  — opera sobre tenants com daily/twice_daily.
-      Twice_daily marca passa 2x por dia (manha + tarde) via beat
-      schedule double-trigger.
-    - briefing.dispatch_weekly — opera sobre tenants com weekly. Beat
-      schedule: segundas 08h Brasilia.
-    - briefing.dispatch_monthly — opera sobre tenants com monthly. Beat
-      schedule: dia 1 do mes, 08h Brasilia.
-
-REGRA 4 (no silent fallback): briefing_frequency invalido (None, ""
-ou valor fora do enum) NAO causa skip silencioso — emite warning log
+REGRA 4 (no silent fallback): briefing_frequency invalido (None, "" ou
+valor fora do enum) NAO causa skip silencioso — emite warning log
 explicito e contabiliza em metric ``briefing_dispatched_total{result=skip_invalid_frequency}``.
 
-Multi-tenancy: filtra rows por ``company_id`` quando AlertConfig.company_id
-existe; AlertConfig com company_id NULL (config global default) NAO
-dispara briefing (TENANT-EXEMPT pattern do model).
+Multi-tenancy: filtra tenants por ``company_id`` (NOT NULL). Tenants
+fora do HiringPolicy backfill cairao no fallback AlertConfig (com
+counter de canary).
 
-ADR-001 Repository: usa ``AlertConfigRepository.list_active_with_frequency``
-em vez de SQL inline. Para o briefing content em si, delega ao
-``BriefingService.generate_daily_briefing`` (legacy, marcado deprecated;
-nao mexer ate handoff Rails completo).
+ADR-001 Repository: usa ``HiringPolicyRepository.get_by_company`` +
+``AlertConfigRepository`` (legacy fallback path). Para briefing content
+em si, delega ao ``BriefingService.generate_daily_briefing`` (legacy,
+marcado deprecated; nao mexer ate handoff Rails completo).
 """
 from __future__ import annotations
 
@@ -53,10 +57,14 @@ from app.jobs.tasks._utils import (
 )
 from app.jobs.tenant_aware_task import TenantAwareTask
 
-# Canonical briefing_frequency enum (mirror AlertConfig.briefing_frequency)
+# Canonical briefing_frequency enum (mirror HiringPolicy.communication_rules schema)
 CANONICAL_FREQUENCIES = frozenset(
     {"daily", "weekly", "twice_daily", "monthly"}
 )
+
+# Canonical default when neither HiringPolicy nor AlertConfig has value.
+# Matches ADR-WT-2025 + UI default in plataforma-lia AlertPreferencesPanel.
+DEFAULT_BRIEFING_FREQUENCY = "weekly"
 
 
 # Prometheus counter — best-effort import (works in prod, no-op in test).
@@ -103,9 +111,115 @@ def _hash_company_id(company_id: str | None) -> str:
     return hashlib.sha256(company_id.encode("utf-8")).hexdigest()[:16]
 
 
+async def _resolve_briefing_frequency(
+    db, company_id: str
+) -> tuple[str | None, str]:
+    """Read briefing_frequency canonical from HiringPolicy, fallback to AlertConfig.
+
+    Returns:
+        (frequency, source) where source in {'hiring_policy', 'alert_config_legacy',
+        'default'}. ``frequency`` may be None if neither source has value AND we
+        want caller to apply DEFAULT_BRIEFING_FREQUENCY.
+
+    Read-shadow pattern (Sprint D+1 partial):
+        1. canonical: HiringPolicy.communication_rules.briefing_frequency
+        2. legacy: AlertConfig.briefing_frequency (emits canary counter)
+        3. default: DEFAULT_BRIEFING_FREQUENCY (caller decides)
+    """
+    from app.domains.hiring_policy.repositories.hiring_policy_repository import (
+        HiringPolicyRepository,
+    )
+
+    # Step 1: canonical read from HiringPolicy
+    repo = HiringPolicyRepository(db)
+    policy = await repo.get_by_company(company_id)
+    if policy is not None:
+        comm_rules = policy.communication_rules or {}
+        canonical_freq = comm_rules.get("briefing_frequency")
+        if canonical_freq and canonical_freq in CANONICAL_FREQUENCIES:
+            return canonical_freq, "hiring_policy"
+
+    # Step 2: legacy fallback to AlertConfig (emit canary counter)
+    legacy_freq = await _legacy_alertconfig_briefing_frequency(db, company_id)
+    if legacy_freq:
+        _emit_legacy_alertconfig_read_counter(company_id)
+        logger.warning(
+            "[briefing_dispatch] fallback HiringPolicy.communication_rules.briefing_frequency "
+            "missing for company=%s, reading legacy AlertConfig.briefing_frequency=%r "
+            "(Sprint D+1 partial — migrate via migration 174_briefing_frequency_canonical)",
+            company_id,
+            legacy_freq,
+        )
+        return legacy_freq, "alert_config_legacy"
+
+    # Step 3: no source — caller defaults
+    return None, "default"
+
+
+async def _legacy_alertconfig_briefing_frequency(
+    db, company_id: str
+) -> str | None:
+    """Legacy read path: AlertConfig.briefing_frequency for the given company.
+
+    Returns first valid canonical value found (any active config for the
+    company). None if no row or invalid value.
+
+    NOTE: this is the ONLY function in this module that still references
+    AlertConfig. It is the read-shadow fallback path during Sprint D+1
+    partial transition. Will be removed in Sprint D+1 final (sunset
+    2026-08-22) when endpoint /alerts/config also goes away.
+    """
+    from sqlalchemy import select
+
+    from app.models.alert import AlertConfig  # legacy fallback only
+
+    result = await db.execute(
+        select(AlertConfig.briefing_frequency).where(
+            AlertConfig.is_active.is_(True),
+            AlertConfig.company_id == company_id,
+            AlertConfig.briefing_frequency.is_not(None),
+        )
+    )
+    rows = result.scalars().all()
+    for freq in rows:
+        if freq and freq in CANONICAL_FREQUENCIES:
+            return freq
+    return None
+
+
+def _emit_legacy_alertconfig_read_counter(company_id: str | None) -> None:
+    """Emit canary counter ``briefing_dispatch_legacy_alertconfig_read_total``.
+
+    Tracked in app/shared/observability/canary_metrics.py. Spike = tenants
+    not yet backfilled by migration 174 (or new tenants without HiringPolicy
+    briefing_frequency set). Pre-sunset (2026-08-22) Paulo monitors this
+    counter to decide whether to remove the legacy fallback path early.
+    """
+    try:
+        from app.shared.observability.canary_metrics import (
+            briefing_dispatch_legacy_alertconfig_read_total,
+        )
+
+        if briefing_dispatch_legacy_alertconfig_read_total is not None:
+            briefing_dispatch_legacy_alertconfig_read_total.labels(
+                company_id_hash=_hash_company_id(company_id),
+            ).inc()
+    except Exception:  # pragma: no cover — metric must never break dispatch
+        pass
+
+
 async def _list_alert_configs_for_frequency(db, frequencies: list[str]) -> list[Any]:
     """Repository-pattern wrapper — load active AlertConfig rows matching
     any of ``frequencies``. Filters out global (company_id NULL) configs.
+
+    Sprint D+1 partial (2026-05-22): legacy listing path kept for
+    backward-compat with existing test_briefing_scheduler.py sensors.
+    Source-of-truth resolution per company happens in
+    _resolve_briefing_frequency (HiringPolicy canonical, AlertConfig
+    fallback). This listing function continues to query AlertConfig
+    because it carries the per-user mapping (user_id), which HiringPolicy
+    does not. Sprint D+2 will rebase user_id lookup along with DROP TABLE
+    alert_configs.
     """
     from sqlalchemy import select
 
@@ -121,8 +235,66 @@ async def _list_alert_configs_for_frequency(db, frequencies: list[str]) -> list[
     return list(result.scalars().all())
 
 
+async def _list_tenants_with_briefing_frequency(
+    db, frequencies: list[str]
+) -> list[dict[str, Any]]:
+    """Discover (company_id, user_id, freq, source) tuples whose CANONICAL
+    briefing_frequency (HiringPolicy preferred, AlertConfig fallback) is in
+    ``frequencies``.
+
+    Sprint D+1 partial bridges both sources during the read-shadow window:
+
+    1. Load active AlertConfig rows (carry user_id mapping).
+    2. For each unique company_id, resolve canonical frequency via
+       _resolve_briefing_frequency (HiringPolicy.communication_rules
+       preferred; AlertConfig.briefing_frequency fallback w/ canary counter).
+    3. Filter: keep only tuples whose RESOLVED frequency is in ``frequencies``.
+
+    Returns list of dicts: {company_id, user_id, frequency, source}.
+
+    NOTE: this is the path used by _dispatch_for_frequency_async (canonical).
+    The older _list_alert_configs_for_frequency above is kept as a thin
+    backward-compat hook for existing sensors.
+    """
+    from sqlalchemy import select
+
+    from app.models.alert import AlertConfig  # legacy: holds user_id mapping
+
+    result = await db.execute(
+        select(AlertConfig).where(
+            AlertConfig.is_active.is_(True),
+            AlertConfig.company_id.is_not(None),
+        )
+    )
+    configs = list(result.scalars().all())
+
+    matched: list[dict[str, Any]] = []
+    # Resolve canonical frequency per unique company_id (HiringPolicy is per-company,
+    # so cache lookups to avoid N+1 reads).
+    freq_cache: dict[str, tuple[str | None, str]] = {}
+    for cfg in configs:
+        company_id = cfg.company_id
+        if not company_id:
+            continue
+        if company_id not in freq_cache:
+            freq_cache[company_id] = await _resolve_briefing_frequency(
+                db, str(company_id)
+            )
+        resolved_freq, source = freq_cache[company_id]
+        if resolved_freq and resolved_freq in frequencies:
+            matched.append(
+                {
+                    "company_id": str(company_id),
+                    "user_id": cfg.user_id,
+                    "frequency": resolved_freq,
+                    "source": source,
+                }
+            )
+    return matched
+
+
 async def _dispatch_for_frequency_async(frequencies: list[str], task_name: str) -> dict:
-    """Shared core: load configs, dispatch via BriefingService per user.
+    """Shared core: load tenants, dispatch via BriefingService per user.
 
     Returns dispatch stats dict.
     """
@@ -136,12 +308,12 @@ async def _dispatch_for_frequency_async(frequencies: list[str], task_name: str) 
     errors = 0
 
     async with AsyncSessionLocal() as db:
-        configs = await _list_alert_configs_for_frequency(db, frequencies)
+        tenants = await _list_tenants_with_briefing_frequency(db, frequencies)
 
-        for cfg in configs:
-            company_id = cfg.company_id
-            user_id = cfg.user_id
-            freq = cfg.briefing_frequency
+        for tenant in tenants:
+            company_id = tenant["company_id"]
+            user_id = tenant["user_id"]
+            freq = tenant["frequency"]
 
             # REGRA 4 — explicit sentinel for invalid frequency
             if not freq or freq not in CANONICAL_FREQUENCIES:
@@ -160,7 +332,7 @@ async def _dispatch_for_frequency_async(frequencies: list[str], task_name: str) 
                 skipped_invalid_frequency += 1
                 continue
 
-            # Defense: user_id may be None for AlertConfig at company-scope.
+            # Defense: user_id may be None for company-scope config.
             # Without user_id we cannot generate the personal briefing.
             if not user_id:
                 logger.info(
