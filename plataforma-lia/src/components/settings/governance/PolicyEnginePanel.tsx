@@ -97,9 +97,7 @@ export function PolicyEnginePanel() {
       setLoading(true)
       setError(null)
       try {
-        const res = await apiFetch("/api/backend-proxy/policy-engine", {
-          headers: { "X-Company-ID": companyId! },
-        })
+        const res = await apiFetch("/api/backend-proxy/policy-engine")
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
         const data = await res.json()
         if (cancelled) return
@@ -128,7 +126,6 @@ export function PolicyEnginePanel() {
       const url = `/api/backend-proxy/policy-engine/apply-sector?companyId=${companyId}&sector=${sector}`
       const res = await apiFetch(url, {
         method: "POST",
-        headers: { "X-Company-ID": companyId },
       })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       setApplyMsg(t("applySuccess"))
