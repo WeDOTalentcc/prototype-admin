@@ -33,6 +33,7 @@ export function IntegrationCard({ integration, onClick }: IntegrationCardProps) 
         isComingSoon &&"opacity-60 hover:opacity-75"
       )}
       onClick={() => onClick(integration)}
+      data-testid={`integration-card-${integration.id}`}
     >
       <div className="flex items-start gap-3">
         <div
@@ -96,6 +97,7 @@ export function IntegrationCard({ integration, onClick }: IntegrationCardProps) 
                 e.stopPropagation()
                 onClick(integration)
               }}
+              data-testid={`integration-card-action-${integration.id}`}
             >
               <ActionIcon className="w-3 h-3" />
               {actionLabel}

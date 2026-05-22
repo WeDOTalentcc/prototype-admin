@@ -289,13 +289,14 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
   ]
 
   return (
-    <div className="space-y-3">
-      <div className={tabStyles.pillContainer}>
+    <div className="space-y-3" data-testid="integrations-hub">
+      <div className={tabStyles.pillContainer} data-testid="integrations-category-tabs">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={activeTab === tab.id ? tabStyles.pillActive : tabStyles.pill}
+            data-testid={`integrations-tab-${tab.id}`}
           >
             <tab.icon className={tabStyles.pillIcon} />
             {tab.label}
@@ -311,6 +312,7 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 h-9 text-xs"
+            data-testid="integrations-search-input"
           />
         </div>
         <p className={textStyles.caption}>
@@ -319,7 +321,7 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
       </div>
 
       {filteredIntegrations.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center">
+        <div className="flex flex-col items-center justify-center py-16 text-center" data-testid="integrations-empty-state">
           <Search className="w-8 h-8 text-lia-text-tertiary mb-3" />
           <p className={textStyles.subtitle}>
             {t("integrations.noResults")}
@@ -329,9 +331,9 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
           </p>
         </div>
       ) : (
-        <div className="space-y-8">
+        <div className="space-y-8" data-testid="integrations-list">
           {groupedIntegrations.map((group) => (
-            <section key={group.category}>
+            <section key={group.category} data-testid={`integrations-group-${group.category}`}>
               {activeCategory === "all" && (
                 <div className="flex items-center gap-2 mb-3">
                   <span className="text-lia-text-tertiary">

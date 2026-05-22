@@ -232,7 +232,7 @@ export function IntegrationCatalogManager({
   }
 
   return (
-    <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 rounded-xl">
+    <Card className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 rounded-xl" data-testid="integration-catalog-manager">
       <CardHeader className="pb-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <CardTitle className={`${textStyles.h4} flex items-center gap-2`}>
@@ -243,7 +243,7 @@ export function IntegrationCatalogManager({
             <Chip variant="neutral" className="text-micro">
               {tc("countSummary", { master: masterCount, custom: customCount, total })}
             </Chip>
-            <Button size="sm" onClick={startCreate} disabled={!!editingId}>
+            <Button size="sm" onClick={startCreate} disabled={!!editingId} data-testid="integration-catalog-new-button">
               <Plus className="w-3 h-3 mr-1" /> {t("newButton")}
             </Button>
           </div>
@@ -282,13 +282,13 @@ export function IntegrationCatalogManager({
         </div>
 
         {editingId && (
-          <Card className="border border-wedo-cyan/30 bg-wedo-cyan/5 rounded-xl">
+          <Card className="border border-wedo-cyan/30 bg-wedo-cyan/5 rounded-xl" data-testid="integration-catalog-form">
             <CardContent className="p-3 space-y-3">
               <div className="flex items-center justify-between">
                 <h5 className={textStyles.h4}>
                   {editingId === "__new__" ? t("formTitleCreate") : t("formTitleEdit")}
                 </h5>
-                <Button variant="ghost" size="sm" onClick={cancelEdit}>
+                <Button variant="ghost" size="sm" onClick={cancelEdit} data-testid="integration-catalog-form-close">
                   <X className="w-3 h-3" />
                 </Button>
               </div>
@@ -296,23 +296,26 @@ export function IntegrationCatalogManager({
                 placeholder={t("placeholderLabel")}
                 value={form.label}
                 onChange={(e) => setForm({ ...form, label: e.target.value })}
+                data-field="label"
               />
               <Input
                 placeholder={t("placeholderProvider")}
                 value={form.provider}
                 onChange={(e) => setForm({ ...form, provider: e.target.value })}
+                data-field="provider"
               />
               <Input
                 placeholder={t("placeholderDescription")}
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
+                data-field="description"
               />
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <Select
                   value={form.category}
                   onValueChange={(v) => setForm({ ...form, category: v as IntegrationCategory })}
                 >
-                  <SelectTrigger><SelectValue placeholder={t("placeholderCategory")} /></SelectTrigger>
+                  <SelectTrigger data-field="category"><SelectValue placeholder={t("placeholderCategory")} /></SelectTrigger>
                   <SelectContent>
                     {CATEGORIES.map((c) => (
                       <SelectItem key={c.value} value={c.value}>
@@ -325,7 +328,7 @@ export function IntegrationCatalogManager({
                   value={form.status}
                   onValueChange={(v) => setForm({ ...form, status: v as IntegrationStatus })}
                 >
-                  <SelectTrigger><SelectValue placeholder={t("placeholderStatus")} /></SelectTrigger>
+                  <SelectTrigger data-field="status"><SelectValue placeholder={t("placeholderStatus")} /></SelectTrigger>
                   <SelectContent>
                     {STATUSES.map((s) => (
                       <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
@@ -337,6 +340,7 @@ export function IntegrationCatalogManager({
                 placeholder={t("placeholderLogoUrl")}
                 value={form.logo_url}
                 onChange={(e) => setForm({ ...form, logo_url: e.target.value })}
+                data-field="logo_url"
               />
               <textarea
                 placeholder={t("placeholderFullDescription")}
@@ -344,6 +348,7 @@ export function IntegrationCatalogManager({
                 onChange={(e) => setForm({ ...form, full_description: e.target.value })}
                 rows={3}
                 className="w-full px-3 py-1.5 text-sm rounded-md border border-lia-border-subtle bg-lia-bg-primary"
+                data-field="full_description"
               />
               {formError && (
                 <div className="text-xs text-status-error flex items-center gap-1">
@@ -351,8 +356,8 @@ export function IntegrationCatalogManager({
                 </div>
               )}
               <div className="flex justify-end gap-2">
-                <Button variant="outline" size="sm" onClick={cancelEdit}>{tc("cancel")}</Button>
-                <Button size="sm" onClick={handleSave} disabled={isSaving}>
+                <Button variant="outline" size="sm" onClick={cancelEdit} data-testid="integration-catalog-form-cancel">{tc("cancel")}</Button>
+                <Button size="sm" onClick={handleSave} disabled={isSaving} data-testid="integration-catalog-form-save">
                   {isSaving ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
                   {tc("save")}
                 </Button>
@@ -361,7 +366,7 @@ export function IntegrationCatalogManager({
           </Card>
         )}
 
-        <div className="space-y-2 max-h-content-lg overflow-y-auto">
+        <div className="space-y-2 max-h-content-lg overflow-y-auto" data-testid="integration-catalog-list">
           {filteredEntries.length === 0 && (
             <p className="text-xs text-lia-text-secondary text-center py-4">
               {t("emptyList")}

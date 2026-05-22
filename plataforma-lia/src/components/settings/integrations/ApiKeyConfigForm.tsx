@@ -102,7 +102,7 @@ export function ApiKeyConfigForm({
   const isProcessing = status === "testing" || status === "saving"
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" data-testid={`api-key-config-form-${providerId}`}>
       <h4 className={cn(textStyles.label, "mb-2 flex items-center gap-1.5")}>
         <Key className="w-3.5 h-3.5" />
         Chave de API
@@ -121,6 +121,7 @@ export function ApiKeyConfigForm({
               className="h-6 w-6"
               onClick={handleRemove}
               disabled={isProcessing}
+              data-testid={`api-key-remove-${providerId}`}
             >
               <Trash2 className="w-3 h-3 text-lia-text-tertiary hover:text-status-error" />
             </Button>
@@ -172,6 +173,7 @@ export function ApiKeyConfigForm({
           onClick={handleSave}
           disabled={!apiKey.trim() || isProcessing}
           className="w-full rounded-md text-xs gap-2"
+          data-testid={`api-key-save-${providerId}`}
         >
           {isProcessing ? (
             <>

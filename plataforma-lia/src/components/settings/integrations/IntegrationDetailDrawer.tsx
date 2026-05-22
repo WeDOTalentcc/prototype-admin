@@ -164,6 +164,7 @@ export function IntegrationDetailDrawer({
       <SheetContent
         side="right"
         className="w-full sm:max-w-md overflow-y-auto bg-lia-bg-primary dark:bg-lia-bg-secondary border-l border-lia-border-subtle dark:border-lia-border-subtle"
+        data-testid="integration-detail-drawer"
       >
         <SheetHeader className="pb-4 dark:border-lia-border-subtle">
           <div className="flex items-start gap-3">
@@ -338,6 +339,7 @@ export function IntegrationDetailDrawer({
                   onClick={onConnectGoogle}
                   disabled={googleStatus ==="loading"}
                   className="rounded-md text-xs gap-2 w-full"
+                  data-testid="integration-connect-google-button"
                 >
                   {googleStatus ==="loading" ? (
                     <>
@@ -386,6 +388,7 @@ export function IntegrationDetailDrawer({
                   onClose()
                   window.location.href ="/integracoes-ats"
                 }}
+                data-testid="integration-configure-ats-button"
               >
                 <ExternalLink className="w-3 h-3" />
                 Configurar no Painel ATS
