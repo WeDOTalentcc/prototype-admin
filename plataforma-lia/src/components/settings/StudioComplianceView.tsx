@@ -109,7 +109,7 @@ export function StudioComplianceView() {
               <span className="text-xs text-lia-text-secondary">{t("approved")}</span>
             </div>
             <p className="text-2xl font-bold font-inter text-emerald-600">
-              {data.total_executions - data.blocked_executions}
+              {Math.max(0, (data.total_executions ?? 0) - (data.blocked_executions ?? 0))}
             </p>
           </CardContent>
         </Card>

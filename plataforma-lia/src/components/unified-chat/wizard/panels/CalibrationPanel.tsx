@@ -176,7 +176,7 @@ export function CalibrationPanel({ data, onApprove, onReject }: Props) {
             )}
           >
             <CheckCircle className="w-4 h-4" />
-            {canAdvance ? "Calibracao completa — Avancar" : `Faltam ${threshold - approvedCount} perfis`}
+            {canAdvance ? "Calibracao completa — Avancar" : `Faltam ${Math.max(0, (threshold ?? 0) - (approvedCount ?? 0))} perfis`}
           </button>
         </div>
       )}

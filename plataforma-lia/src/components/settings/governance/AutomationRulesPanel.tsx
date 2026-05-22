@@ -135,7 +135,7 @@ export function AutomationRulesPanel() {
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <SummaryCard label={t("totalRules")} value={total} />
         <SummaryCard label={t("activeRules")} value={active} />
-        <SummaryCard label={t("inactiveRules")} value={total - active} />
+        <SummaryCard label={t("inactiveRules")} value={Math.max(0, (total ?? 0) - (active ?? 0))} />
         <SummaryCard label={t("totalExecutions")} value={totalExecs} />
       </div>
 

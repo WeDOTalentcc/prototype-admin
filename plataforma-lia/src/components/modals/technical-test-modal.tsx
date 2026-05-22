@@ -258,7 +258,7 @@ export function TechnicalTestModal({ isOpen, onClose, candidate }: TechnicalTest
                         <span 
                           className={`text-micro ${category.score >= category.avgScore ? 'text-status-success' : 'text-status-error'}`}
                         >
-                          {category.score >= category.avgScore ? '+' : ''}{category.score - category.avgScore}
+                          {category.score >= category.avgScore ? '+' : ''}{((category.score ?? 0) - (category.avgScore ?? 0))}
                         </span>
                       </div>
                     </div>
