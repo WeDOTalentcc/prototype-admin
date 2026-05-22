@@ -4,9 +4,12 @@ import uuid as uuid_mod
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_active_user, get_user_company_id
 from app.auth.models import User
+from app.core.config import settings
+from app.core.database import get_db
 from app.domains.cv_screening.dependencies import get_screening_repo, WSIService, get_wsi_service
 from app.domains.cv_screening.repositories.screening_repository import ScreeningRepository
 from app.models.screening import ScreeningTask
@@ -17,6 +20,10 @@ from app.schemas.screening import (
     ScreeningQuestionResponse,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.services.automated_decision_logger import (
+    PROTECTED_CRITERIA_PT,
+    log_automated_decision,
+)
 from app.shared.types import WeDoBaseModel
 
 logger = logging.getLogger(__name__)
@@ -124,6 +131,7 @@ async def generate_screening_questions(
     request: ScreeningQuestionRequest,
     current_user: User = Depends(get_current_active_user),
     wsi_svc: WSIService = Depends(get_wsi_service),
+    db: AsyncSession = Depends(get_db),
 company_id: str = Depends(require_company_id)) -> ScreeningQuestionResponse:
     try:
         company_id = get_user_company_id(current_user)
@@ -156,6 +164,61 @@ company_id: str = Depends(require_company_id)) -> ScreeningQuestionResponse:
                    f"{len(response.technical_questions)} technical, "
                    f"{len(response.cultural_questions)} cultural")
 
+        # WT-2022 P0.C wave 2 / LGPD Art. 20 + EU AI Act Art. 13 — audit trail.
+        # Cobre /screening/questions (handler high-level, distinto de /wsi/generate-questions
+        # que cobre o pipeline interno). Ambos ficam logados — board de transparência
+        # mostra a decisao IA independente do endpoint usado pelo cliente.
+        try:
+            seniority = request.seniority or "pleno"
+            await log_automated_decision(
+                db=db,
+                company_id=company_id,
+                decision_type="wsi_simple_inputs",
+                ai_model_used=getattr(settings, "LLM_PRIMARY_MODEL", "claude-sonnet-4-6"),
+                explanation_text=(
+                    f'Gerou {response.total_count} pergunta(s) de triagem para a vaga '
+                    f'"{request.title}" (senioridade={seniority}, mode={mode}) via '
+                    "pipeline canonical wsi_service.generate_from_simple_inputs (CBI + Bloom + "
+                    "Dreyfus + BigFive). Skills tecnicos: "
+                    f'{request.skills or []}. Competencias comportamentais: '
+                    f'{request.behavioral_competencies or []}.'
+                ),
+                criteria_used=[
+                    *[f"skill:{s}" for s in (request.skills or [])],
+                    *[f"behavioral:{b}" for b in (request.behavioral_competencies or [])],
+                    f"seniority:{seniority}",
+                    f"mode:{mode}",
+                ],
+                criteria_ignored=list(PROTECTED_CRITERIA_PT),
+                confidence_score=None,
+                review_eligible=True,
+                extra_metadata={
+                    "endpoint": "/screening/questions",
+                    "title": request.title,
+                    "department": request.department,
+                    "questions_count": response.total_count,
+                    "behavioral_count": len(response.behavioral_questions),
+                    "technical_count": len(response.technical_questions),
+                    "cultural_count": len(response.cultural_questions),
+                    "requested_count": request.question_count,
+                    "mode": mode,
+                    "seniority": seniority,
+                    "prompt_template_version": "wsi_F6_pipeline_v2",
+                    "llm_model": getattr(settings, "LLM_PRIMARY_MODEL", "claude-sonnet-4-6"),
+                },
+            )
+        except ValueError:
+            # Compliance gate raised — protected criteria leaked.
+            # Re-raise fail-loud per CLAUDE.md REGRA #2 (LGPD).
+            raise
+        except Exception as audit_err:
+            # Audit gap — log e segue (decisao IA nao deve ser bloqueada).
+            logger.error(
+                "WT-2022 P0.C wave 2: log_automated_decision falhou em /screening/questions "
+                "(LGPD Art. 20 audit gap, title=%s, company=%s): %s",
+                request.title, company_id, audit_err, exc_info=True,
+            )
+
         return response
 
     except Exception as e:
@@ -171,6 +234,7 @@ async def regenerate_questions(
     request: RegenerateQuestionsRequest,
     current_user: User = Depends(get_current_active_user),
     wsi_svc: WSIService = Depends(get_wsi_service),
+    db: AsyncSession = Depends(get_db),
 company_id: str = Depends(require_company_id)) -> list[ScreeningQuestion]:
     try:
         company_id = get_user_company_id(current_user)
@@ -191,10 +255,59 @@ company_id: str = Depends(require_company_id)) -> list[ScreeningQuestion]:
             if request.exclude_ids:
                 filtered = [q for q in filtered if q.id not in request.exclude_ids]
             logger.info(f"Regenerated {len(filtered)} {request.category} questions")
-            return filtered
+            final_questions = filtered
+        else:
+            logger.info(f"Regenerated all {len(response.questions)} questions")
+            final_questions = response.questions
 
-        logger.info(f"Regenerated all {len(response.questions)} questions")
-        return response.questions
+        # WT-2022 P0.C wave 2 / LGPD Art. 20 + EU AI Act Art. 13.
+        # Regenerate gera questions novas via IA — cada chamada produz decisao
+        # automatizada e precisa de audit trail equivalente ao generate.
+        try:
+            seniority = request.context.seniority or "pleno"
+            await log_automated_decision(
+                db=db,
+                company_id=company_id,
+                decision_type="wsi_simple_inputs",
+                ai_model_used=getattr(settings, "LLM_PRIMARY_MODEL", "claude-sonnet-4-6"),
+                explanation_text=(
+                    f'Regenerou {len(final_questions)} pergunta(s) de triagem para a vaga '
+                    f'"{request.context.title}" (senioridade={seniority}, mode=compact, '
+                    f'category_filter={request.category}) via wsi_service.generate_from_simple_inputs. '
+                    f'Skills tecnicos: {request.context.skills or []}.'
+                ),
+                criteria_used=[
+                    *[f"skill:{s}" for s in (request.context.skills or [])],
+                    f"seniority:{seniority}",
+                    "mode:compact",
+                    *([f"category:{request.category}"] if request.category else []),
+                ],
+                criteria_ignored=list(PROTECTED_CRITERIA_PT),
+                confidence_score=None,
+                review_eligible=True,
+                extra_metadata={
+                    "endpoint": "/screening/questions/regenerate",
+                    "title": request.context.title,
+                    "questions_count": len(final_questions),
+                    "category_filter": request.category,
+                    "exclude_ids_count": len(request.exclude_ids or []),
+                    "mode": "compact",
+                    "seniority": seniority,
+                    "operation": "regenerate",
+                    "prompt_template_version": "wsi_F6_pipeline_v2",
+                    "llm_model": getattr(settings, "LLM_PRIMARY_MODEL", "claude-sonnet-4-6"),
+                },
+            )
+        except ValueError:
+            raise
+        except Exception as audit_err:
+            logger.error(
+                "WT-2022 P0.C wave 2: log_automated_decision falhou em /screening/questions/regenerate "
+                "(LGPD Art. 20 audit gap, title=%s, company=%s): %s",
+                request.context.title, company_id, audit_err, exc_info=True,
+            )
+
+        return final_questions
 
     except Exception as e:
         logger.error(f"Error regenerating questions: {e}")

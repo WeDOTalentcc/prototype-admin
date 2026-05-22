@@ -13,11 +13,18 @@ import logging
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field, validator
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
+from app.core.database import get_db
 from app.shared.compliance.audit_service import AuditService, get_audit_service
 from app.shared.compliance.fairness_guard_middleware import check_fairness
 from app.domains.cv_screening.dependencies import WSIService, get_wsi_service
 from app.shared.security.require_company_id import require_company_id
+from app.shared.services.automated_decision_logger import (
+    PROTECTED_CRITERIA_PT,
+    log_automated_decision,
+)
 
 router = APIRouter(prefix="/wsi", tags=["WSI Questions"])
 logger = logging.getLogger(__name__)
@@ -162,6 +169,7 @@ async def generate_wsi_questions(
     request: GenerateQuestionsRequest,
     audit_svc: AuditService = Depends(get_audit_service),
     wsi_svc: WSIService = Depends(get_wsi_service),
+    db: AsyncSession = Depends(get_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
@@ -248,6 +256,57 @@ company_id: str = Depends(require_company_id)):
         except Exception as audit_err:
             logger.warning("GOV-01: audit log failed for WSI generation: %s", audit_err)
 
+        # WT-2022 P0.C wave 2 / LGPD Art. 20 + EU AI Act Art. 13 — canonical
+        # AutomatedDecisionExplanation row (distinto do AuditService.log_decision
+        # acima, que grava agent_decisions). AITransparencyPanel le esta tabela
+        # para exibir decisao IA ao recrutador/DPO/candidato per Art. 20.
+        try:
+            mode = "full" if request.max_questions >= 10 else "compact"
+            seniority = request.seniority or "pleno"
+            await log_automated_decision(
+                db=db,
+                company_id=company_id,
+                decision_type="wsi_legacy_questions",
+                ai_model_used=getattr(settings, "LLM_PRIMARY_MODEL", "claude-sonnet-4-6"),
+                explanation_text=(
+                    f'Gerou {len(filtered_questions)} pergunta(s) WSI para "{request.job_title}" '
+                    f'(senioridade={seniority}, mode={mode}) via /api/v1/wsi/generate-questions '
+                    f'(legacy endpoint). Skills tecnicos: {request.technical_skills}. '
+                    f'Comportamentais: {request.behavioral_competencies}. '
+                    f'{fg_removed} pergunta(s) removida(s) por FairnessGuard.'
+                ),
+                criteria_used=[
+                    *[f"skill:{s}" for s in request.technical_skills],
+                    *[f"behavioral:{b}" for b in request.behavioral_competencies],
+                    f"seniority:{seniority}",
+                    f"mode:{mode}",
+                ],
+                criteria_ignored=list(PROTECTED_CRITERIA_PT),
+                confidence_score=None,
+                review_eligible=True,
+                extra_metadata={
+                    "endpoint": "/wsi/generate-questions",
+                    "job_title": request.job_title,
+                    "questions_count": len(filtered_questions),
+                    "fairness_guard_removed": fg_removed,
+                    "max_questions": request.max_questions,
+                    "mode": mode,
+                    "seniority": seniority,
+                    "block_distribution": block_distribution,
+                    "prompt_template_version": "wsi_F6_pipeline_v2",
+                    "llm_model": getattr(settings, "LLM_PRIMARY_MODEL", "claude-sonnet-4-6"),
+                    "legacy": True,
+                },
+            )
+        except ValueError:
+            raise
+        except Exception as audit_err2:
+            logger.error(
+                "WT-2022 P0.C wave 2: log_automated_decision falhou em /wsi/generate-questions "
+                "(LGPD Art. 20 audit gap, job_title=%s, company=%s): %s",
+                request.job_title, company_id, audit_err2, exc_info=True,
+            )
+
         return QuestionsResponse(
             success=True,
             questions=filtered_questions,
@@ -266,6 +325,7 @@ company_id: str = Depends(require_company_id)):
 async def regenerate_wsi_questions(
     request: RegenerateQuestionsRequest,
     wsi_svc: WSIService = Depends(get_wsi_service),
+    db: AsyncSession = Depends(get_db),
 company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     """
@@ -348,6 +408,59 @@ company_id: str = Depends(require_company_id)):
             request.technical_skills,
             request.behavioral_competencies
         )
+
+        # WT-2022 P0.C wave 2 / LGPD Art. 20 + EU AI Act Art. 13.
+        # Regenerate so chama LLM se added_count > 0; logar quando houve
+        # decisao IA (added_count > 0) — quando so houve drop (added_count=0,
+        # removed_count>0), nao houve IA-generated content novo, mas ainda
+        # vale registrar pra auditabilidade da operacao manage.
+        try:
+            seniority = request.seniority or "pleno"
+            await log_automated_decision(
+                db=db,
+                company_id=company_id,
+                decision_type="wsi_legacy_questions",
+                ai_model_used=getattr(settings, "LLM_PRIMARY_MODEL", "claude-sonnet-4-6"),
+                explanation_text=(
+                    f'Regenerou pool de perguntas WSI para "{request.job_title}" '
+                    f'(senioridade={seniority}). Adicionou {added_count} pergunta(s) novas via '
+                    f'wsi_service, removeu {removed_count} por mudanca de competencias, '
+                    f'mantendo {len(retained_questions)} perguntas no total.'
+                ),
+                criteria_used=[
+                    *[f"skill:{s}" for s in request.technical_skills],
+                    *[f"behavioral:{b}" for b in request.behavioral_competencies],
+                    f"seniority:{seniority}",
+                    "mode:compact",
+                    "operation:regenerate",
+                ],
+                criteria_ignored=list(PROTECTED_CRITERIA_PT),
+                confidence_score=None,
+                review_eligible=True,
+                extra_metadata={
+                    "endpoint": "/wsi/regenerate-questions",
+                    "job_title": request.job_title,
+                    "questions_count": len(retained_questions),
+                    "added_count": added_count,
+                    "removed_count": removed_count,
+                    "max_questions": request.max_questions,
+                    "mode": "compact",
+                    "seniority": seniority,
+                    "operation": "regenerate",
+                    "prompt_template_version": "wsi_F6_pipeline_v2",
+                    "llm_model": getattr(settings, "LLM_PRIMARY_MODEL", "claude-sonnet-4-6"),
+                    "legacy": True,
+                    "ia_invoked": bool(added_count > 0),
+                },
+            )
+        except ValueError:
+            raise
+        except Exception as audit_err:
+            logger.error(
+                "WT-2022 P0.C wave 2: log_automated_decision falhou em /wsi/regenerate-questions "
+                "(LGPD Art. 20 audit gap, job_title=%s, company=%s): %s",
+                request.job_title, company_id, audit_err, exc_info=True,
+            )
 
         return QuestionsResponse(
             success=True,
