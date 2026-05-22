@@ -1906,9 +1906,15 @@ class VoiceScreeningOrchestrator:
 
         masked_segments = self._mask_transcript_segments(session.transcript_segments)
 
+        # F-17 P1 canonical WSI completion strategy: PRIMARY / FALLBACK / SKIP.
+        # Single rastreamento de qual estrategia foi usada (telemetria + audit).
+        wsi_strategy = "skip"  # default: nem PRIMARY nem FALLBACK conseguiram
+        wsi_strategy_error: str | None = None
+
         try:
             wsi_result = None
 
+            # PRIMARY: wsi_voice_orchestrator (canonical full pipeline)
             if _WSIVoiceOrchestrator is not None and session.call_sid:
                 try:
                     wsi_orch = _WSIVoiceOrchestrator()
@@ -1919,37 +1925,56 @@ class VoiceScreeningOrchestrator:
                         db=db,
                     )
                     if wsi_result is not None:
+                        wsi_strategy = "primary"
                         logger.info(
-                            "[VOICE SCREENING] WSI pipeline analysis complete session=%s via wsi_voice_orchestrator",
+                            "[F-17 WSI-STRATEGY] PRIMARY wsi_voice_orchestrator complete session=%s",
                             session_id,
                         )
                 except Exception as wsi_err:
+                    wsi_strategy_error = f"primary_failed: {type(wsi_err).__name__}: {wsi_err}"
                     logger.warning(
-                        "[VOICE SCREENING] wsi_voice_orchestrator failed (session=%s), "
-                        "falling back to analyze_voice_screening: %s",
-                        session_id,
-                        wsi_err,
+                        "[F-17 WSI-STRATEGY] PRIMARY (wsi_voice_orchestrator) failed session=%s, "
+                        "trying FALLBACK: %s",
+                        session_id, wsi_err,
                     )
 
+            # FALLBACK: analyze_voice_screening (standalone LLM)
             if wsi_result is None:
                 analyze_fn = _analyze_voice_screening
                 if analyze_fn is None:
-                    raise ImportError("Neither wsi_voice_orchestrator nor analyze_voice_screening available")
+                    raise ImportError(
+                        "Neither wsi_voice_orchestrator nor analyze_voice_screening available"
+                    )
 
-                wsi_result = await analyze_fn(
-                    transcript=masked_transcript,
-                    transcript_object=masked_segments,
-                    job_title=session.job_title,
-                    candidate_name=None,
-                    duration_seconds=duration_seconds,
-                )
-                logger.info(
-                    "[VOICE SCREENING] Standalone LLM analysis complete session=%s",
-                    session_id,
-                )
+                try:
+                    wsi_result = await analyze_fn(
+                        transcript=masked_transcript,
+                        transcript_object=masked_segments,
+                        job_title=session.job_title,
+                        candidate_name=None,
+                        duration_seconds=duration_seconds,
+                    )
+                    if wsi_result is not None:
+                        wsi_strategy = "fallback"
+                        logger.info(
+                            "[F-17 WSI-STRATEGY] FALLBACK analyze_voice_screening complete session=%s",
+                            session_id,
+                        )
+                except Exception as fallback_err:
+                    if wsi_strategy_error:
+                        wsi_strategy_error = f"{wsi_strategy_error}; fallback_failed: {fallback_err}"
+                    else:
+                        wsi_strategy_error = f"fallback_failed: {fallback_err}"
+                    logger.error(
+                        "[F-17 WSI-STRATEGY] FALLBACK also failed session=%s — SKIP strategy: %s",
+                        session_id, fallback_err,
+                    )
 
             if wsi_result is None:
-                raise RuntimeError("Both WSI pipeline and standalone analysis returned None")
+                # SKIP: ambos falharam. RuntimeError canonical.
+                raise RuntimeError(
+                    f"WSI completion SKIP — both strategies failed: {wsi_strategy_error or 'no diagnostic'}"
+                )
 
             score = (
                 wsi_result.get("overall_evaluation", {}).get("overall_score", "?")
@@ -1975,6 +2000,7 @@ class VoiceScreeningOrchestrator:
                 wsi_score=score,
                 duration_seconds=duration_seconds,
                 wsi_available=True,
+                wsi_strategy=wsi_strategy,
             )
 
             # F-19 P1: canonical billing via agent_pricing.compute_voice_credits
@@ -1990,6 +2016,7 @@ class VoiceScreeningOrchestrator:
                 "duration_seconds": duration_seconds,
                 "transcript_length": len(full_transcript),
                 "wsi_result": session.wsi_result,
+                "wsi_strategy": wsi_strategy,
                 "provider": "twilio_voice_gemini",
             }
 
@@ -2010,6 +2037,7 @@ class VoiceScreeningOrchestrator:
                 duration_seconds=duration_seconds,
                 wsi_available=False,
                 error=str(e),
+                wsi_strategy="skip",
             )
 
             return {
@@ -2017,6 +2045,7 @@ class VoiceScreeningOrchestrator:
                 "status": "analysis_failed",
                 "error": str(e),
                 "transcript_length": len(full_transcript),
+                "wsi_strategy": "skip",
             }
 
     async def _record_voice_billing(
@@ -2098,8 +2127,11 @@ class VoiceScreeningOrchestrator:
         duration_seconds: int | None,
         wsi_available: bool,
         error: str | None = None,
+        wsi_strategy: str = "unknown",
     ) -> None:
         """F-03 P1: registra log_decision canonical pos finalize_screening.
+
+        F-17 P1: agora inclui wsi_strategy no reasoning (primary/fallback/skip).
 
         Best-effort: nunca propaga exception (audit failure NUNCA bloqueia finalize).
         """
@@ -2114,6 +2146,7 @@ class VoiceScreeningOrchestrator:
             reasoning = [
                 f"session_id={session.session_id}",
                 f"wsi_score={wsi_score if wsi_score is not None else 'none'}",
+                f"wsi_strategy={wsi_strategy}",
                 f"transcript_turns={len(session.transcript_segments)}",
                 f"duration_seconds={duration_seconds or 0}",
             ]
