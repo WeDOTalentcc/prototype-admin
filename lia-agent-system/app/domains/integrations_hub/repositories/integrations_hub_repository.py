@@ -16,6 +16,9 @@ from app.models.integration_hub import (
     IntegrationStatus,
     IntegrationSyncLog,
 )
+from app.domains.integrations_hub.repositories.credentials_access_log_repository import (
+    CredentialsAccessLogRepository,
+)
 from app.shared.services.credentials_crypto import (
     CredentialsEncryptionError,
     decrypt_credentials,
@@ -257,10 +260,18 @@ class IntegrationsHubRepository:
         )
         return list(result.all())
 
-    # ── Credentials decryption (P0.D LGPD Art. 46) ──────────────────────────
+    # ── Credentials decryption (P0.D LGPD Art. 46 + Camada 3 Art. 37) ──────
 
     async def get_decrypted_credentials(
-        self, connection_id: str, company_id: str
+        self,
+        connection_id: str,
+        company_id: str,
+        *,
+        access_purpose: str,
+        accessor_user_id: str | None = None,
+        accessor_type: str = "system",
+        client_ip: str | None = None,
+        request_id: str | None = None,
     ) -> dict:
         """
         Return decrypted credentials for a connection (fail-loud).
@@ -268,13 +279,42 @@ class IntegrationsHubRepository:
         Multi-tenancy: requires company_id (JWT) and verifies ownership.
         Returns empty dict if connection has no credentials set.
 
+        LGPD Art. 37 (Wave 3 Camada 3 — 2026-05-22): EVERY decryption
+        attempt writes an audit-trail entry to ``credentials_access_logs``
+        BEFORE the decrypt happens. ``access_purpose`` is REQUIRED so the
+        caller documents *why* the secret material was read (forensic
+        responsibility).
+
+        Parameters
+        ----------
+        connection_id : str
+            UUID of the IntegrationConnection.
+        company_id : str
+            JWT-derived tenant id. Used for ownership check + audit row.
+        access_purpose : str (keyword-only, REQUIRED)
+            Short reason, e.g. ``'webhook_dispatch'``, ``'sync_check'``,
+            ``'manual_test'``, ``'health_check'``. Empty / whitespace
+            raises ValueError.
+        accessor_user_id : str | None
+            Human user id when caller is a request handler. None for
+            system / Celery / agent code paths.
+        accessor_type : str
+            Canonical: ``'human_user'`` | ``'system'`` | ``'agent'`` |
+            ``'celery_task'``. Defaults to ``'system'``.
+        client_ip : str | None
+            Best-effort. ``request.client.host`` when inside a FastAPI
+            handler.
+        request_id : str | None
+            X-Request-ID when inside HTTP scope.
+
         Raises
         ------
         ValueError
-            If connection is not found, or belongs to a different company,
-            or has a legacy unmigrated row (credentials_legacy populated
+            If connection is not found, belongs to a different company,
+            has a legacy unmigrated row (credentials_legacy populated
             with credentials_encrypted NULL — should never happen after
-            migration 168 backfill).
+            migration 168 backfill), OR if ``access_purpose`` is empty /
+            ``accessor_type`` invalid.
         CredentialsEncryptionError
             If decryption fails (key rotation, ciphertext corruption).
         """
@@ -285,6 +325,18 @@ class IntegrationsHubRepository:
             # Defense in depth — caller SHOULD already gate via JWT/RLS,
             # but never trust callers.
             raise ValueError("Connection does not belong to this company")
+
+        # LGPD Art. 37 audit trail — write BEFORE decrypt so attempts
+        # (even failed ones) leave a record.
+        await CredentialsAccessLogRepository(self.db).log_access(
+            company_id=company_id,
+            integration_connection_id=connection_id,
+            accessor_user_id=accessor_user_id,
+            accessor_type=accessor_type,
+            access_purpose=access_purpose,
+            client_ip=client_ip,
+            request_id=request_id,
+        )
 
         if conn.credentials_encrypted:
             return decrypt_credentials(conn.credentials_encrypted)
