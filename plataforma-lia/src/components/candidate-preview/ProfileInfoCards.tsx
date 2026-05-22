@@ -110,7 +110,7 @@ function ProfileLanguagesCard({ languagesData }: { languagesData: LanguageEntry[
                 {lang.language}
               </span>
               {lang.proficiency && (
-                <Chip density="relaxed" variant="neutral" muted className="px-1.5 py-0 h-4 bg-lia-interactive-active text-lia-text-primary border-lia-border-default">
+                <Chip variant="neutral" muted className={cn(badgeStyles.default, 'bg-lia-interactive-active text-lia-text-primary border-lia-border-default')}>
                   {lang.proficiency}
                 </Chip>
               )}
@@ -221,7 +221,7 @@ function ProfilePreferencesCard({ candidate }: { candidate: Record<string, unkno
         {candidate.is_remote !== undefined && (
           <div className="flex items-center justify-between">
             <span className={textStyles.bodySmall}>Aceita Remoto</span>
-            <Chip variant="neutral" muted className={`text-xs px-1.5 py-0 h-4 ${candidate.is_remote ? '' : 'bg-lia-bg-tertiary text-lia-text-primary'}`}>
+            <Chip variant="neutral" muted className={cn(badgeStyles.default, !candidate.is_remote && 'bg-lia-bg-tertiary text-lia-text-primary')}>
               {candidate.is_remote ? 'Sim' : 'Não'}
             </Chip>
           </div>
@@ -229,7 +229,7 @@ function ProfilePreferencesCard({ candidate }: { candidate: Record<string, unkno
         {(candidate.willing_to_relocate !== undefined || candidate.willingToRelocate !== undefined) && (
           <div className="flex items-center justify-between">
             <span className={textStyles.bodySmall}>Aceita Mudança</span>
-            <Chip variant="neutral" muted className={`text-xs px-1.5 py-0 h-4 ${(candidate.willing_to_relocate ?? candidate.willingToRelocate) ? '' : 'bg-lia-bg-tertiary text-lia-text-primary'}`}>
+            <Chip variant="neutral" muted className={cn(badgeStyles.default, !(candidate.willing_to_relocate ?? candidate.willingToRelocate) && 'bg-lia-bg-tertiary text-lia-text-primary')}>
               {(candidate.willing_to_relocate ?? candidate.willingToRelocate) === true ? 'Sim' : 
                (candidate.willing_to_relocate ?? candidate.willingToRelocate) === false ? 'Não' : 
                String(candidate.willing_to_relocate ?? candidate.willingToRelocate)}
@@ -239,7 +239,7 @@ function ProfilePreferencesCard({ candidate }: { candidate: Record<string, unkno
         {candidate.mobility !== undefined && (
           <div className="flex items-center justify-between">
             <span className={textStyles.bodySmall}>Disponibilidade Viagens</span>
-            <Chip variant="neutral" muted className={`text-xs px-1.5 py-0 h-4 ${candidate.mobility ? '' : 'bg-lia-bg-tertiary text-lia-text-primary'}`}>
+            <Chip variant="neutral" muted className={cn(badgeStyles.default, !candidate.mobility && 'bg-lia-bg-tertiary text-lia-text-primary')}>
               {candidate.mobility === true ? 'Sim' : candidate.mobility === false ? 'Não' : String(candidate.mobility)}
             </Chip>
           </div>
@@ -247,7 +247,7 @@ function ProfilePreferencesCard({ candidate }: { candidate: Record<string, unkno
         {candidate.communication_consent !== undefined && (
           <div className="flex items-center justify-between">
             <span className={textStyles.bodySmall}>Consentimento LGPD</span>
-            <Chip variant="neutral" muted className={`text-xs px-1.5 py-0 h-4 ${candidate.communication_consent ? '' : ''}`}>
+            <Chip variant="neutral" muted className={badgeStyles.default}>
               {candidate.communication_consent ? '✓ Consentido' : '✗ Não consentido'}
             </Chip>
           </div>

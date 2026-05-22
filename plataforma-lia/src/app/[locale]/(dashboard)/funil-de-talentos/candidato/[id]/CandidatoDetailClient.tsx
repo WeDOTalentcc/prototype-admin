@@ -5,6 +5,7 @@ import { useRouter } from"next/navigation"
 import { Button } from"@/components/ui/button"
 import { Chip } from "@/components/ui/chip"
 import { Avatar, AvatarFallback, AvatarImage } from"@/components/ui/avatar"
+import { cn } from "@/lib/utils"
 import { Card, CardContent } from"@/components/ui/card"
 import { Tabs, TabsList, TabsTrigger } from"@/components/ui/tabs"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from"@/components/ui/tooltip"
@@ -151,7 +152,7 @@ export default function CandidateProfilePage() {
                     {!!candidate.is_potential && (
                       <Chip density="relaxed" variant="neutral" className="border-wedo-purple/30">Potencial</Chip>
                     )}
-                    <Chip variant="neutral" muted className={`text-xs ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border}`}>
+                    <Chip density="relaxed" variant="neutral" muted className={cn(statusConfig.bg, statusConfig.text, statusConfig.border)}>
                       {statusConfig.label}
                     </Chip>
                     <LiaAnalysisModal

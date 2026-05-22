@@ -1,5 +1,6 @@
 "use client"
 
+import { cn } from "@/lib/utils"
 import { Chip } from "@/components/ui/chip"
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { TabsContent } from"@/components/ui/tabs"
@@ -338,7 +339,7 @@ export function CandidateProfileTab({
           <div>
             <h5 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-1.5">Status</h5>
             <div className="flex flex-wrap gap-1.5">
-              <Chip variant="neutral" className={`text-xs ${candidate.is_active ? '' : 'bg-lia-bg-tertiary text-lia-text-secondary'}`}>
+              <Chip density="relaxed" variant="neutral" className={cn(!candidate.is_active && 'bg-lia-bg-tertiary text-lia-text-secondary')}>
                 {candidate.is_active ? 'Ativo' : 'Inativo'}
               </Chip>
               {candidate.source && (
