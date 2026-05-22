@@ -339,8 +339,10 @@ function ExplainabilityTab({
         </div>
       </div>
       <div className="space-y-3">
-        {statement.sections.map((section) => (
-          <div key={section.id} className={cn(cardStyles.default, "space-y-2 p-4")}>
+        {statement.sections.map((section, index) => (
+          // Defensive: backend pode retornar sections com id ausente/duplicado.
+          // Fallback para index garante uniqueness sem assumir contrato runtime.
+          <div key={section.id || `section-${index}`} className={cn(cardStyles.default, "space-y-2 p-4")}>
             <h2 className={textStyles.h2}>{section.title}</h2>
             <p className={cn(textStyles.body, "whitespace-pre-wrap")}>{section.content}</p>
           </div>

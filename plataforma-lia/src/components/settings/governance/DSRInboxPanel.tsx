@@ -98,7 +98,6 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
   useEffect(() => {
     if (!companyId) return
     let cancelled = false
-    const headers: HeadersInit = { "X-Company-ID": companyId }
 
     async function load() {
       setLoading(true)
@@ -108,9 +107,12 @@ export function DSRInboxPanel({ defaultRequestType }: { defaultRequestType?: str
         if (requestTypeFilter) {
           qs += (qs ? "&" : "?") + `request_type=${requestTypeFilter}`
         }
+        // CLAUDE.md REGRA 6: nao enviar X-Company-ID header — JWT canonical
+        // (via apiFetch + proxy auth-headers) ja carrega company_id. Header
+        // adicional risca cross-tenant divergence em get_verified_company_id.
         const [listRes, statsRes] = await Promise.all([
-          apiFetch(`/api/backend-proxy/data-subject-requests${qs}`, { headers }),
-          apiFetch("/api/backend-proxy/data-subject-requests/stats", { headers }),
+          apiFetch(`/api/backend-proxy/data-subject-requests${qs}`),
+          apiFetch("/api/backend-proxy/data-subject-requests/stats"),
         ])
         if (!listRes.ok) throw new Error(`HTTP ${listRes.status}`)
         const listData = await listRes.json()

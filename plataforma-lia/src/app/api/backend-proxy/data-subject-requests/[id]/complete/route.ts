@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
+import { getAuthHeaders } from "@/lib/api/auth-headers"
 import { validateParams, validateBody } from '@/lib/api/validate'
 import { z } from 'zod'
 
@@ -10,14 +11,6 @@ const routeParamsSchema = z.object({
 })
 
 
-function getAuthHeaders(request: NextRequest): Record<string, string> {
-  return {
-    'Content-Type': 'application/json',
-    'X-Company-ID': request.headers.get('X-Company-ID') || 'platform',
-    'X-User-ID': request.headers.get('X-User-ID') || 'admin_user',
-    'X-User-Role': request.headers.get('X-User-Role') || 'admin'
-  }
-}
 
 const _bodySchema = z.record(z.string(), z.unknown())
 
