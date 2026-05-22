@@ -21,7 +21,7 @@ export function renderScoreCell(
   candidate: KanbanCandidate,
   columnId: string,
   props: ScoreCellsProps,
-  t: (key: string, params?: Record<string, string>) => string
+  t: (key: string, params?: Record<string, unknown>) => string
 ): React.ReactNode | undefined {
   const {
     calculateNotaLiaGeral,

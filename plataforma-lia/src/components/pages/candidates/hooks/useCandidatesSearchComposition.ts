@@ -160,7 +160,7 @@ export function useCandidatesSearchComposition(params: UseCandidatesSearchCompos
     hideViewedCandidatesFilter: params.hideViewedCandidatesFilter,
     talentFunnel: params.talentFunnel as unknown as { addToHistory: (entry: Record<string, unknown>) => void },
     setCandidates: params.setCandidates,
-    setSearchResults: params.setSearchResults as Parameters<typeof useCandidatesSearch>[0]['setSearchResults'],
+    setSearchResults: params.setSearchResults as Parameters<typeof useCandidatesExecuteSearch>[0]['setSearchResults'],
     setHasSearchResults: params.setHasSearchResults,
     setSearchResultsCount: params.setSearchResultsCount,
     setLocalResultsCount: params.setLocalResultsCount,

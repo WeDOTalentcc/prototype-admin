@@ -65,9 +65,9 @@ export function KanbanPageModalsExtra(state: KanbanPageCoreState) {
       <CandidateCompareModal
         open={showCompareModal}
         onClose={() => setShowCompareModal(false)}
-        candidates={compareCandidates as Parameters<typeof CandidateCompareModal>[0]['candidates']}
-        jobId={_jobIdForSL}
-        companyId={_companyIdForSL}
+        candidates={compareCandidates as unknown as React.ComponentProps<typeof CandidateCompareModal>['candidates']}
+        jobId={_jobIdForSL ?? undefined}
+        companyId={_companyIdForSL ?? undefined}
       />
 
       {selectedForCompare.size >= 2 && (
