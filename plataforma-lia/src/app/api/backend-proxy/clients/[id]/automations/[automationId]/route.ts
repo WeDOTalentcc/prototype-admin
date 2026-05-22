@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { validateParams, validateBody } from '@/lib/api/validate'
+import { getAuthHeaders } from '@/lib/api/auth-headers'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
@@ -11,15 +12,6 @@ const routeParamsSchema = z.object({
 })
 
 
-function getAuthHeaders(): Record<string, string> {
-  return {
-    'Content-Type': 'application/json',
-    'X-Company-ID': 'admin_company',
-    'X-User-ID': 'admin_user',
-    'X-User-Role': 'admin'
-  }
-}
-
 const _bodySchema = z.record(z.string(), z.unknown())
 
 export async function PUT(
@@ -27,6 +19,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string; automationId: string }> }
 ) {
   try {
+    const headers = getAuthHeaders(request, true)
     const { id, automationId } = await params
     const paramValidation = validateParams({ id, automationId }, routeParamsSchema)
     if (!paramValidation.success) return paramValidation.response
@@ -35,12 +28,12 @@ export async function PUT(
     if (!bodyResult.success) return bodyResult.response
 
     const body = bodyResult.data
-    
+
     const backendUrl = `${BACKEND_URL}/api/v1/clients/${id}/automations/${automationId}`
-    
+
     const response = await fetch(backendUrl, {
       method: 'PUT',
-      headers: getAuthHeaders(),
+      headers,
       body: JSON.stringify(body),
     })
 
@@ -55,6 +48,9 @@ export async function PUT(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
+    if (error instanceof Error && error.message.includes('Authentication required')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }
@@ -67,15 +63,16 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string; automationId: string }> }
 ) {
   try {
+    const headers = getAuthHeaders(request, true)
     const { id, automationId } = await params
     const paramValidation = validateParams({ id, automationId }, routeParamsSchema)
     if (!paramValidation.success) return paramValidation.response
-    
+
     const backendUrl = `${BACKEND_URL}/api/v1/clients/${id}/automations/${automationId}`
-    
+
     const response = await fetch(backendUrl, {
       method: 'DELETE',
-      headers: getAuthHeaders(),
+      headers,
     })
 
     if (!response.ok) {
@@ -89,6 +86,9 @@ export async function DELETE(
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
+    if (error instanceof Error && error.message.includes('Authentication required')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     return NextResponse.json(
       { error: 'Erro ao conectar com o backend' },
       { status: 500 }
