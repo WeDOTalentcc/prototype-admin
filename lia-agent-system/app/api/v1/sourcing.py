@@ -155,7 +155,7 @@ company_id: str = Depends(require_company_id)):
         )
         boolean_queries = {k: v for k, v in raw_queries.items() if k != "raw_parts"}
     
-    query = select(Candidate).limit(request.limit)
+    query = select(Candidate).where(Candidate.company_id == company_id).limit(request.limit)
     
     conditions = []
     
@@ -255,7 +255,7 @@ company_id: str = Depends(require_company_id)):
     start_time = time.time()
     
     job_result = await db.execute(
-        select(JobVacancy).where(JobVacancy.id == request.job_id)
+        select(JobVacancy).where(JobVacancy.id == request.job_id, JobVacancy.company_id == company_id)
     )
     job = job_result.scalar_one_or_none()
     
@@ -274,10 +274,11 @@ company_id: str = Depends(require_company_id)):
     
     if request.candidate_ids:
         candidates_query = select(Candidate).where(
-            Candidate.id.in_(request.candidate_ids)
+            Candidate.id.in_(request.candidate_ids),
+            Candidate.company_id == company_id,
         ).limit(request.limit)
     else:
-        candidates_query = select(Candidate).limit(request.limit)
+        candidates_query = select(Candidate).where(Candidate.company_id == company_id).limit(request.limit)
     
     candidates_result = await db.execute(candidates_query)
     candidates = candidates_result.scalars().all()
@@ -372,7 +373,7 @@ company_id: str = Depends(require_company_id)):
     Only includes candidates with score >= min_score (default 55%).
     """
     job_result = await db.execute(
-        select(JobVacancy).where(JobVacancy.id == job_id)
+        select(JobVacancy).where(JobVacancy.id == job_id, JobVacancy.company_id == company_id)
     )
     job = job_result.scalar_one_or_none()
     
@@ -393,7 +394,7 @@ company_id: str = Depends(require_company_id)):
         "work_model": job.work_model
     }
     
-    candidates_query = select(Candidate).limit(limit * 3)
+    candidates_query = select(Candidate).where(Candidate.company_id == company_id).limit(limit * 3)
     candidates_result = await db.execute(candidates_query)
     candidates = candidates_result.scalars().all()
     
@@ -522,7 +523,7 @@ company_id: str = Depends(require_company_id)):
     - Scheduled pipeline runs (trigger=scheduled)
     """
     job_result = await db.execute(
-        select(JobVacancy).where(JobVacancy.id == request.job_id)
+        select(JobVacancy).where(JobVacancy.id == request.job_id, JobVacancy.company_id == company_id)
     )
     job = job_result.scalar_one_or_none()
     

@@ -64,7 +64,7 @@ company_id: str = Depends(require_company_id)):
 
         for job_id in request.job_ids:
             try:
-                job_query = select(JobVacancy).where(JobVacancy.id == UUID(job_id))
+                job_query = select(JobVacancy).where(JobVacancy.id == UUID(job_id), JobVacancy.company_id == company_id)
                 result = await db.execute(job_query)
                 job = result.scalar_one_or_none()
 
