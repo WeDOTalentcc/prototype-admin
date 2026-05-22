@@ -371,7 +371,7 @@ company_id: str = Depends(require_company_id)) -> GenerateQuestionsResponse:
         
         # Fetch candidate data (now validated for tenant access)
         candidate_result = await db.execute(
-            select(Candidate).where(Candidate.id == request.candidateId)
+            select(Candidate).where(Candidate.id == request.candidateId, Candidate.company_id == company_id)
         )
         candidate = candidate_result.scalar_one_or_none()
         

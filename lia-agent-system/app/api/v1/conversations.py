@@ -352,7 +352,7 @@ company_id: str = Depends(require_company_id)):
     # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
     from lia_models.conversation import Conversation
     from sqlalchemy import select
-    result = await db.execute(select(Conversation).where(Conversation.id == conversation_id))
+    result = await db.execute(select(Conversation).where(Conversation.id == conversation_id, Conversation.company_id == company_id))
     conversation = result.scalar_one_or_none()
     if not conversation:
         raise HTTPException(status_code=404, detail="Conversation not found")

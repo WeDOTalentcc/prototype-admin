@@ -166,7 +166,7 @@ async def get_twin(twin_id: str, db: AsyncSession = Depends(get_tenant_db), comp
     from lia_models.digital_twin import DigitalTwin
     from sqlalchemy import select
 
-    result = await db.execute(select(DigitalTwin).where(DigitalTwin.id == twin_id))
+    result = await db.execute(select(DigitalTwin).where(DigitalTwin.id == twin_id, DigitalTwin.company_id == company_id))
     twin = result.scalar_one_or_none()
     if not twin:
         raise HTTPException(404, "Twin not found")
