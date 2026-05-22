@@ -19,6 +19,13 @@ from pydantic import BaseModel
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
+from app.shared.runtime_context import RuntimeContext
+from app.shared.services.automated_decision_logger import (
+    PROTECTED_CRITERIA_PT,
+    log_automated_decision,
+)
+
 from app.core.database import AsyncSessionLocal
 from app.domains.cv_screening.services.wsi_service import (
     Competency,
@@ -152,12 +159,13 @@ class WSIVoiceOrchestrator:
         session_id = f"system:{uuid.uuid4()}"
         
         async def _execute_with_db(session: AsyncSession) -> VoiceScreeningResult:
+            ia_invoked_in_voice = False
             try:
                 from app.domains.cv_screening.services.screening_question_set_service import (
                     screening_question_set_service,
                 )
                 active_qs = await screening_question_set_service.get_active_version(session, job_vacancy_id)
-                
+
                 if active_qs and active_qs.questions_snapshot:
                     questions = self._convert_snapshot_to_wsi_questions(active_qs.questions_snapshot)
                     qs_version = active_qs.version
@@ -173,8 +181,9 @@ class WSIVoiceOrchestrator:
                     )
                     qs_version = None
                     qs_id = None
+                    ia_invoked_in_voice = True
                     logger.info(f"No versioned question set found, generated {len(questions)} questions dynamically")
-                
+
                 logger.info(f"📝 {len(questions)} WSI questions ready for session {session_id}")
 
                 await session.execute(text("""
@@ -215,9 +224,77 @@ class WSIVoiceOrchestrator:
                     })
                 
                 await session.commit()
-                
+
                 logger.info(f"💾 WSI session {session_id} saved to database")
-                
+
+                # WT-2022 P0.C wave 2 / LGPD Art. 20 + EU AI Act Art. 13.
+                # Voice screening orchestration. company_id vem do ContextVar
+                # (RuntimeContext canonical pattern — service layer nao recebe
+                # company_id por param). Se ContextVar vazio (chamado fora de
+                # request HTTP, ex: triagem fire-and-forget), passa silent_on_persist_error
+                # pra nao quebrar voice call. Log apenas quando houve invocacao IA
+                # (snapshot ausente).
+                if ia_invoked_in_voice:
+                    try:
+                        ctx = RuntimeContext.from_contextvars()
+                        if ctx.company_id:
+                            await log_automated_decision(
+                                db=session,
+                                company_id=ctx.company_id,
+                                candidate_id=candidate_id,
+                                job_id=job_vacancy_id,
+                                decision_type="wsi_voice_generation",
+                                ai_model_used=getattr(settings, "LLM_PRIMARY_MODEL", "claude-sonnet-4-6"),
+                                explanation_text=(
+                                    f'Gerou {len(questions)} pergunta(s) WSI dinamicamente para voice screening '
+                                    f'session {session_id} (candidate={candidate_id}, job={job_vacancy_id}). '
+                                    f'Mode={mode}, seniority={seniority}, job_title={job_title}. '
+                                    f'Pipeline canonical via wsi_voice_orchestrator (CBI+Bloom+Dreyfus+BigFive). '
+                                    f'Versioned question set ausente — fallback dinamico ativado.'
+                                ),
+                                criteria_used=[
+                                    *[f"competency:{c.name}" for c in competencies],
+                                    f"seniority:{seniority}",
+                                    f"mode:{mode}",
+                                    "screening_type:voice",
+                                ],
+                                criteria_ignored=list(PROTECTED_CRITERIA_PT),
+                                confidence_score=None,
+                                review_eligible=True,
+                                extra_metadata={
+                                    "endpoint": "wsi_voice_orchestrator.start_voice_screening",
+                                    "session_id": session_id,
+                                    "candidate_id": candidate_id,
+                                    "job_vacancy_id": job_vacancy_id,
+                                    "job_title": job_title,
+                                    "questions_count": len(questions),
+                                    "mode": mode,
+                                    "seniority": seniority,
+                                    "screening_type": "voice",
+                                    "enriched_jd": bool(enriched_jd),
+                                    "fallback_dynamic": True,
+                                    "prompt_template_version": "wsi_F6_pipeline_v2",
+                                    "llm_model": getattr(settings, "LLM_PRIMARY_MODEL", "claude-sonnet-4-6"),
+                                    "frameworks_used": sorted({q.framework for q in questions}),
+                                },
+                                silent_on_persist_error=True,  # voice fire-and-forget
+                            )
+                        else:
+                            logger.warning(
+                                "WT-2022 P0.C wave 2: wsi_voice_orchestrator sem company_id no "
+                                "ContextVar (fora de request HTTP). LGPD Art. 20 audit gap session_id=%s",
+                                session_id,
+                            )
+                    except ValueError:
+                        # Compliance gate raised — re-raise fail-loud per LGPD.
+                        raise
+                    except Exception as audit_err:
+                        logger.error(
+                            "WT-2022 P0.C wave 2: log_automated_decision falhou em "
+                            "wsi_voice_orchestrator.start_voice_screening session_id=%s: %s",
+                            session_id, audit_err, exc_info=True,
+                        )
+
                 question_texts = [q.question_text for q in questions]
                 list(set(c.name for c in competencies))
                 

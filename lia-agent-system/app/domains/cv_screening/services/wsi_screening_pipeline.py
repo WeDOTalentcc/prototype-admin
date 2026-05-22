@@ -385,6 +385,10 @@ class WSIScreeningPipeline:
         target_count: int,
         effective_seniority: str = "pleno",
     ) -> list[UnifiedScreeningQuestion]:
+        # WSI-AUDIT-EXEMPT: helper interno do pipeline, sem company_id no scope.
+        # Audit log unificado e gravado uma vez no endpoint /api/v1/wsi/screening-pipeline
+        # (wsi_screening_pipeline_endpoint.py) para cobrir technical + behavioral + Block 1.5 + Block 2.
+        # Granularidade per-block nao agrega valor (mesma decisao IA).
         available_skills = request.technical_skills or []
 
         if not available_skills:
@@ -442,6 +446,10 @@ class WSIScreeningPipeline:
         target_count: int,
         effective_seniority: str = "pleno",
     ) -> list[UnifiedScreeningQuestion]:
+        # WSI-AUDIT-EXEMPT: helper interno do pipeline, sem company_id no scope.
+        # Audit log unificado e gravado uma vez no endpoint /api/v1/wsi/screening-pipeline
+        # (wsi_screening_pipeline_endpoint.py) para cobrir technical + behavioral + Block 1.5 + Block 2.
+        # Granularidade per-block nao agrega valor (mesma decisao IA).
         BIG_FIVE_TRAITS = [
             "Abertura a mudanças",
             "Organização e disciplina",
