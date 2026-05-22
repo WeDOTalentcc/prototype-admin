@@ -137,6 +137,7 @@ export default async function LocaleLayout({
           attribute="class"
           defaultTheme="light"
           enableSystem={false}
+          forcedTheme="light"
           disableTransitionOnChange
           storageKey="wedo-theme"
         >

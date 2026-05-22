@@ -810,9 +810,11 @@ export function Sidebar({ currentPage, onNavigate, recentItems, onRecentItemClic
             <Settings className="w-3 h-3" />
           </Button>
 
-          <div className="flex items-center">
+          {/* Dark mode toggle ocultado — produto está padronizado em light mode (DS v4.2.2).
+              Para reativar: descomentar o bloco abaixo e remover `forcedTheme="light"` do ThemeProvider em src/app/[locale]/layout.tsx. */}
+          {/* <div className="flex items-center">
             <ThemeToggle />
-          </div>
+          </div> */}
 
           <LanguageSwitcher collapsed={isCollapsed && !isTemporaryExpanded} />
 
