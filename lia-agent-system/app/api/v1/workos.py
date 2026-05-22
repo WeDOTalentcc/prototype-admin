@@ -386,6 +386,68 @@ company_id: str = Depends(require_company_id)):
     existing_by_email = await user_repo.get_by_email(user_data.email)
 
     if existing_by_email:
+        # ── Wave 4 audit 2026-05-22: cross-tenant SCIM email collision ────
+        # Pre-fix, this branch silently overwrote workos_directory_id +
+        # is_scim_managed for a user that already belonged to tenant A
+        # when tenant B's SCIM provisioned the same email. Net effect:
+        # tenant B's IdP could hijack tenant A's user record (and any
+        # subsequent SSO login would route the original tenant-A user to
+        # tenant B's directory).
+        #
+        # Policy = REJECT (conservative default). Cross-tenant merges go
+        # through ops manually (admin@wedotalent.cc) after both tenants
+        # consent in writing — never automatic from SCIM.
+        if (
+            existing_by_email.company_id
+            and company_id
+            and existing_by_email.company_id != company_id
+        ):
+            # NEVER log the email in plaintext (LGPD). The audit log entry
+            # records the event with hashed email; the response message
+            # generic.
+            try:
+                import hashlib as _hashlib
+                _email_hash = _hashlib.sha256(
+                    user_data.email.lower().strip().encode("utf-8")
+                ).hexdigest()[:16]
+            except Exception:
+                _email_hash = "hash-failed"
+
+            logger.warning(
+                "SCIM email collision rejected (cross-tenant): "
+                "email_hash=%s existing_tenant=%s scim_tenant=%s",
+                _email_hash,
+                existing_by_email.company_id,
+                company_id,
+            )
+
+            await workos_repo.log_sso_event({
+                "company_id": company_id,
+                "event_type": "scim.user.collision_rejected",
+                "actor_id": user_data.workos_id,
+                "actor_email": user_data.email,
+                "target_id": str(existing_by_email.id),
+                "target_email": user_data.email,
+                "payload": {
+                    "workos_id": user_data.workos_id,
+                    "directory_id": user_data.directory_id,
+                    "scim_tenant": company_id,
+                    "existing_tenant": existing_by_email.company_id,
+                    "action": "rejected_cross_tenant_collision",
+                    "email_hash_prefix": _email_hash,
+                },
+            })
+
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=(
+                    "Email already provisioned in another tenant. "
+                    "Contact admin@wedotalent.cc for cross-tenant user merge."
+                ),
+            )
+
+        # Same-tenant OR existing user has no tenant yet (legacy unassigned):
+        # safe to link.
         update_data = {
             "workos_id": user_data.workos_id,
             "workos_directory_id": user_data.directory_id,
