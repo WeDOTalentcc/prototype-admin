@@ -39,7 +39,7 @@ class ActivityFeedRepository:
         total = count_result.scalar() or 0
 
         data_stmt = (
-            # TENANT-EXEMPT: activity feed scoped via dynamic conditions builder in upstream caller
+            # TENANT-EXEMPT: activity feed scoped via dynamic conditions builder in upstream caller; T-RATCHET tenant_filter
             select(ActivityFeed)
             .where(and_(*where_conditions))
             .order_by(desc(ActivityFeed.created_at))
@@ -51,13 +51,13 @@ class ActivityFeedRepository:
         return activities, total
 
     async def get_by_id(self, activity_id: str) -> ActivityFeed | None:
-        # TENANT-EXEMPT: activity feed scoped via dynamic conditions builder in upstream caller
+        # TENANT-EXEMPT: activity feed scoped via dynamic conditions builder in upstream caller; T-RATCHET tenant_filter
         stmt = select(ActivityFeed).where(ActivityFeed.id == activity_id)
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
 
     async def list_urgent_visible(self) -> list[ActivityFeed]:
-        # TENANT-EXEMPT: activity feed scoped via dynamic conditions builder in upstream caller
+        # TENANT-EXEMPT: activity feed scoped via dynamic conditions builder in upstream caller; T-RATCHET tenant_filter
         stmt = select(ActivityFeed).where(
             and_(
                 ActivityFeed.is_visible,

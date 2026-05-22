@@ -78,7 +78,7 @@ class CompanyLearningRepository:
         if only_promoted:
             conditions.append(CompanySkill.is_promoted)
         stmt = (
-            # TENANT-EXEMPT: company learning aggregates derived per company_id upstream; AST cannot trace
+            # TENANT-EXEMPT: company learning aggregates derived per company_id upstream; AST cannot trace; T-RATCHET tenant_filter
             select(CompanySkill)
             .where(and_(*conditions))
             .order_by(
@@ -137,7 +137,7 @@ class CompanyLearningRepository:
         if only_promoted:
             conditions.append(CompanyResponsibility.is_promoted)
         stmt = (
-            # TENANT-EXEMPT: company learning aggregates derived per company_id upstream; AST cannot trace
+            # TENANT-EXEMPT: company learning aggregates derived per company_id upstream; AST cannot trace; T-RATCHET tenant_filter
             select(CompanyResponsibility)
             .where(and_(*conditions))
             .order_by(
@@ -193,7 +193,7 @@ class CompanyLearningRepository:
         self, job_id: UUID
     ) -> JobOutcome | None:
         """Fetch a single JobOutcome by job_id (caller must already know company)."""
-        # TENANT-EXEMPT: company learning aggregates derived per company_id upstream; AST cannot trace
+        # TENANT-EXEMPT: company learning aggregates derived per company_id upstream; AST cannot trace; T-RATCHET tenant_filter
         stmt = select(JobOutcome).where(JobOutcome.job_id == job_id)
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()

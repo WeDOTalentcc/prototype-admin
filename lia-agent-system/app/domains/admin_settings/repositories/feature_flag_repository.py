@@ -114,7 +114,7 @@ class FeatureFlagRepository:
             conditions.append(FeatureFlag.category == category)
 
         result = await self.db.execute(
-            # TENANT-EXEMPT: feature_flag is global system table; queries filter by flag_key, not tenant
+            # TENANT-EXEMPT: feature_flag is global system table; queries filter by flag_key, not tenant; T-RATCHET tenant_filter
             select(FeatureFlag).where(*conditions).order_by(FeatureFlag.flag_key.asc())
         )
         return list(result.scalars().all())

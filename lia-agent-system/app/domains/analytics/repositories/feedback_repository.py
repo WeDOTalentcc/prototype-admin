@@ -67,7 +67,7 @@ class FeedbackRepository:
         return list(result.scalars().all())
 
     async def find_pattern_by_id(self, pattern_id: UUID) -> LearningPattern | None:
-        # TENANT-EXEMPT: feedback per-user/per-job scope; AST sensor cannot trace dynamic upstream conditions
+        # TENANT-EXEMPT: feedback per-user/per-job scope; AST sensor cannot trace dynamic upstream conditions; T-RATCHET tenant_filter
         stmt = select(LearningPattern).where(LearningPattern.id == pattern_id)
         result = await self.db.execute(stmt)
         return result.scalar_one_or_none()
@@ -129,7 +129,7 @@ class FeedbackRepository:
             base_conditions.append(quality_conditions)
 
         stmt = (
-            # TENANT-EXEMPT: feedback per-user/per-job scope; AST sensor cannot trace dynamic upstream conditions
+            # TENANT-EXEMPT: feedback per-user/per-job scope; AST sensor cannot trace dynamic upstream conditions; T-RATCHET tenant_filter
             select(InteractionFeedback)
             .where(and_(*base_conditions))
             .order_by(InteractionFeedback.created_at.desc())
@@ -194,7 +194,7 @@ class FeedbackRepository:
         self, user_id: str
     ) -> list[WizardFeedback]:
         """List all WizardFeedback rows for a recruiter/user (recruiter-scoped)."""
-        # TENANT-EXEMPT: feedback per-user/per-job scope; AST sensor cannot trace dynamic upstream conditions
+        # TENANT-EXEMPT: feedback per-user/per-job scope; AST sensor cannot trace dynamic upstream conditions; T-RATCHET tenant_filter
         stmt = select(WizardFeedback).where(WizardFeedback.user_id == user_id)
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
@@ -236,7 +236,7 @@ class FeedbackRepository:
             conditions.append(func.lower(WizardFeedback.role).contains(role.lower()))
         if seniority:
             conditions.append(func.lower(WizardFeedback.seniority) == seniority.lower())
-        # TENANT-EXEMPT: analytics tool builds conditions=[Model.company_id==X, ...] then where(and_(*conditions)); AST sensor cannot trace dynamic builder
+        # TENANT-EXEMPT: analytics tool builds conditions=[Model.company_id==X, ...] then where(and_(*conditions)); AST sensor cannot trace dynamic builder; T-RATCHET tenant_filter
         stmt = select(WizardFeedback).where(and_(*conditions))
         result = await self.db.execute(stmt)
         return list(result.scalars().all())
@@ -254,7 +254,7 @@ class FeedbackRepository:
             conditions.append(func.lower(JobOutcome.role).contains(role.lower()))
         if seniority:
             conditions.append(func.lower(JobOutcome.seniority) == seniority.lower())
-        # TENANT-EXEMPT: analytics tool builds conditions=[Model.company_id==X, ...] then where(and_(*conditions)); AST sensor cannot trace dynamic builder
+        # TENANT-EXEMPT: analytics tool builds conditions=[Model.company_id==X, ...] then where(and_(*conditions)); AST sensor cannot trace dynamic builder; T-RATCHET tenant_filter
         stmt = select(JobOutcome).where(and_(*conditions))
         result = await self.db.execute(stmt)
         return list(result.scalars().all())

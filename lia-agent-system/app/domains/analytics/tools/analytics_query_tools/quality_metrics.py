@@ -49,7 +49,7 @@ async def get_stakeholder_metrics(
                 job_conditions.append(JobVacancy.id == UUID(job_id))
 
             jobs_result = await db.execute(
-                # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace upstream tenant gate
+                # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace; T-RATCHET tenant_filter upstream tenant gate
                 select(JobVacancy).where(and_(*job_conditions))
             )
             jobs = jobs_result.scalars().all()
@@ -100,7 +100,7 @@ async def get_stakeholder_metrics(
                 vc_conditions.append(VacancyCandidate.vacancy_id == UUID(job_id))
 
             vc_result = await db.execute(
-                # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace upstream tenant gate
+                # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace; T-RATCHET tenant_filter upstream tenant gate
                 select(VacancyCandidate).where(and_(*vc_conditions))
             )
             vacancy_candidates = vc_result.scalars().all()
@@ -196,7 +196,7 @@ async def get_hiring_quality(
                 conditions.append(JobVacancy.department == department_id)
 
             jobs_result = await db.execute(
-                # TENANT-EXEMPT: analytics tool builds conditions=[Model.company_id==X, ...] then where(and_(*conditions)); AST sensor cannot trace dynamic builder
+                # TENANT-EXEMPT: analytics tool builds conditions=[Model.company_id==X, ...] then where(and_(*conditions)); AST sensor cannot trace dynamic builder; T-RATCHET tenant_filter
                 select(JobVacancy).where(and_(*conditions))
             )
             closed_jobs = jobs_result.scalars().all()

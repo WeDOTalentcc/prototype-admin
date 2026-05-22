@@ -109,7 +109,7 @@ class ObservabilityRepository:
             conditions.append(AIInferenceLog.created_at <= end_date)
 
         query = (
-            # TENANT-EXEMPT: observability per-company log query uses conditions=[Model.company_id==X] + and_(*conditions); AST sensor cannot trace dynamic builder
+            # TENANT-EXEMPT: observability per-company log query uses conditions=[Model.company_id==X] + and_(*conditions); AST sensor cannot trace dynamic builder; T-RATCHET tenant_filter
             select(AIInferenceLog)
             .where(and_(*conditions))
             .order_by(desc(AIInferenceLog.created_at))
@@ -226,7 +226,7 @@ class ObservabilityRepository:
             conditions.append(DataAccessLog.created_at <= end_date)
 
         query = (
-            # TENANT-EXEMPT: observability per-company log query uses conditions=[Model.company_id==X] + and_(*conditions); AST sensor cannot trace dynamic builder
+            # TENANT-EXEMPT: observability per-company log query uses conditions=[Model.company_id==X] + and_(*conditions); AST sensor cannot trace dynamic builder; T-RATCHET tenant_filter
             select(DataAccessLog)
             .where(and_(*conditions))
             .order_by(desc(DataAccessLog.created_at))
@@ -274,7 +274,7 @@ class ObservabilityRepository:
             conditions.append(ConsentRecord.is_active == is_active)
 
         query = (
-            # TENANT-EXEMPT: observability per-company log query uses conditions=[Model.company_id==X] + and_(*conditions); AST sensor cannot trace dynamic builder
+            # TENANT-EXEMPT: observability per-company log query uses conditions=[Model.company_id==X] + and_(*conditions); AST sensor cannot trace dynamic builder; T-RATCHET tenant_filter
             select(ConsentRecord)
             .where(and_(*conditions))
             .order_by(desc(ConsentRecord.created_at))
@@ -305,7 +305,7 @@ class ObservabilityRepository:
             conditions.append(ConsentRecord.is_active == is_active)
 
         query = (
-            # TENANT-EXEMPT: observability per-company log query uses conditions=[Model.company_id==X] + and_(*conditions); AST sensor cannot trace dynamic builder
+            # TENANT-EXEMPT: observability per-company log query uses conditions=[Model.company_id==X] + and_(*conditions); AST sensor cannot trace dynamic builder; T-RATCHET tenant_filter
             select(ConsentRecord)
             .where(and_(*conditions))
             .order_by(desc(ConsentRecord.created_at))
@@ -364,7 +364,7 @@ class ObservabilityRepository:
             conditions.append(IncidentReport.detected_at <= end_date)
 
         query = (
-            # TENANT-EXEMPT: observability per-company log query uses conditions=[Model.company_id==X] + and_(*conditions); AST sensor cannot trace dynamic builder
+            # TENANT-EXEMPT: observability per-company log query uses conditions=[Model.company_id==X] + and_(*conditions); AST sensor cannot trace dynamic builder; T-RATCHET tenant_filter
             select(IncidentReport)
             .where(and_(*conditions))
             .order_by(desc(IncidentReport.created_at))
@@ -480,7 +480,7 @@ class ObservabilityRepository:
             conditions.append(ModelEvaluation.passed == passed)
 
         query = (
-            # TENANT-EXEMPT: observability per-company log query uses conditions=[Model.company_id==X] + and_(*conditions); AST sensor cannot trace dynamic builder
+            # TENANT-EXEMPT: observability per-company log query uses conditions=[Model.company_id==X] + and_(*conditions); AST sensor cannot trace dynamic builder; T-RATCHET tenant_filter
             select(ModelEvaluation)
             .where(and_(*conditions))
             .order_by(desc(ModelEvaluation.created_at))
@@ -581,7 +581,7 @@ class ObservabilityRepository:
             conditions.append(ComplianceControl.risk_level == risk_level)
 
         query = (
-            # TENANT-EXEMPT: observability per-company log query uses conditions=[Model.company_id==X] + and_(*conditions); AST sensor cannot trace dynamic builder
+            # TENANT-EXEMPT: observability per-company log query uses conditions=[Model.company_id==X] + and_(*conditions); AST sensor cannot trace dynamic builder; T-RATCHET tenant_filter
             select(ComplianceControl)
             .where(and_(*conditions))
             .order_by(ComplianceControl.framework, ComplianceControl.control_id)
@@ -805,7 +805,7 @@ class ObservabilityRepository:
             conditions.append(BiasAuditReport.audit_date <= end_date.date())
 
         query = (
-            # TENANT-EXEMPT: observability per-company log query uses conditions=[Model.company_id==X] + and_(*conditions); AST sensor cannot trace dynamic builder
+            # TENANT-EXEMPT: observability per-company log query uses conditions=[Model.company_id==X] + and_(*conditions); AST sensor cannot trace dynamic builder; T-RATCHET tenant_filter
             select(BiasAuditReport)
             .where(and_(*conditions))
             .order_by(desc(BiasAuditReport.audit_date))

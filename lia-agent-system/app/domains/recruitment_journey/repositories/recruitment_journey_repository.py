@@ -160,7 +160,7 @@ class RecruitmentJourneyRepository:
             conditions.append(RecruitmentSLA.stage_name == stage_name)
 
         result = await self.db.execute(
-            # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace
+            # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace; T-RATCHET tenant_filter
             select(RecruitmentSLA).where(and_(*conditions))
         )
         return list(result.scalars().all())
@@ -295,7 +295,7 @@ class RecruitmentJourneyRepository:
             conditions.append(RecruitmentAutomation.is_enabled == is_enabled)
 
         result = await self.db.execute(
-            # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace
+            # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace; T-RATCHET tenant_filter
             select(RecruitmentAutomation).where(and_(*conditions))
         )
         return list(result.scalars().all())

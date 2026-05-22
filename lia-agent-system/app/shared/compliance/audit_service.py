@@ -463,7 +463,7 @@ class AuditService:
             if end_date:
                 where_conditions.append(AuditLog.created_at <= end_date)
 
-            # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace upstream tenant gate
+            # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace; T-RATCHET tenant_filter upstream tenant gate
             query = select(AuditLog).where(and_(*where_conditions)).order_by(desc(AuditLog.created_at)).limit(limit)
 
             result = await session.execute(query)
@@ -870,7 +870,7 @@ class AuditService:
                 if company_id:
                     conditions.append(AuditLog.company_id == company_id)
 
-                # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace
+                # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace; T-RATCHET tenant_filter
                 result = await session.execute(select(AuditLog).where(and_(*conditions)).order_by(AuditLog.created_at))
                 logs = result.scalars().all()
                 return [log.to_dict() for log in logs]

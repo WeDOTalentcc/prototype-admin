@@ -537,7 +537,7 @@ class PredictiveAnalyticsService:
         """Get candidate data from database."""
         try:
             result = await db.execute(
-                # TENANT-EXEMPT: predictive analytics aggregate; cross-tenant model training data, LGPD anonymized per ADR-LGPD-001
+                # TENANT-EXEMPT: predictive analytics aggregate; cross-tenant model training data, LGPD-safe per ADR-LGPD-001 §3 (anonymized aggregate, MIN_SAMPLES gate upstream)
                 select(Candidate).where(Candidate.id == candidate_id)
             )
             candidate = result.scalar_one_or_none()
@@ -566,7 +566,7 @@ class PredictiveAnalyticsService:
         """Get job data from database."""
         try:
             result = await db.execute(
-                # TENANT-EXEMPT: predictive analytics aggregate; cross-tenant model training data, LGPD anonymized per ADR-LGPD-001
+                # TENANT-EXEMPT: predictive analytics aggregate; cross-tenant model training data, LGPD-safe per ADR-LGPD-001 §3 (anonymized aggregate, MIN_SAMPLES gate upstream)
                 select(JobVacancy).where(JobVacancy.id == job_id)
             )
             job = result.scalar_one_or_none()
@@ -597,7 +597,7 @@ class PredictiveAnalyticsService:
         """Get interview data for candidate-job pair."""
         try:
             result = await db.execute(
-                # TENANT-EXEMPT: predictive analytics aggregate; cross-tenant model training data, LGPD anonymized per ADR-LGPD-001
+                # TENANT-EXEMPT: predictive analytics aggregate; cross-tenant model training data, LGPD-safe per ADR-LGPD-001 §3 (anonymized aggregate, MIN_SAMPLES gate upstream)
                 select(Interview).where(
                     and_(
                         Interview.candidate_id == candidate_id,
@@ -707,7 +707,7 @@ class PredictiveAnalyticsService:
         """Get active jobs."""
         try:
             result = await db.execute(
-                # TENANT-EXEMPT: predictive analytics aggregate; cross-tenant model training data, LGPD anonymized per ADR-LGPD-001
+                # TENANT-EXEMPT: predictive analytics aggregate; cross-tenant model training data, LGPD-safe per ADR-LGPD-001 §3 (anonymized aggregate, MIN_SAMPLES gate upstream)
                 select(JobVacancy).where(JobVacancy.status == 'active').limit(10)
             )
             return result.scalars().all()

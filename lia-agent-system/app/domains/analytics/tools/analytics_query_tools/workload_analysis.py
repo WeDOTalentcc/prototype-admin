@@ -43,7 +43,7 @@ async def get_workload_distribution(
             if team_id:
                 conditions.append(JobVacancy.department == team_id)
 
-            # TENANT-EXEMPT: analytics tool builds conditions=[Model.company_id==X, ...] then where(and_(*conditions)); AST sensor cannot trace dynamic builder
+            # TENANT-EXEMPT: analytics tool builds conditions=[Model.company_id==X, ...] then where(and_(*conditions)); AST sensor cannot trace dynamic builder; T-RATCHET tenant_filter
             query = select(JobVacancy).where(and_(*conditions))
             result = await db.execute(query)
             jobs = result.scalars().all()

@@ -37,7 +37,7 @@ class RecruiterProfileRepository:
 
     async def get_profile(self, recruiter_id: str) -> RecruiterProfile | None:
         recruiter_id = self._require_recruiter_id(recruiter_id)
-        # TENANT-EXEMPT: recruiter profile per-user scope; dynamic conditions builder
+        # TENANT-EXEMPT: recruiter profile per-user scope; dynamic conditions builder; T-RATCHET tenant_filter
         stmt = select(RecruiterProfile).where(
             RecruiterProfile.recruiter_id == recruiter_id
         )
@@ -60,7 +60,7 @@ class RecruiterProfileRepository:
         self, recruiter_id: str
     ) -> list[RecruiterFieldPreference]:
         recruiter_id = self._require_recruiter_id(recruiter_id)
-        # TENANT-EXEMPT: recruiter profile per-user scope; dynamic conditions builder
+        # TENANT-EXEMPT: recruiter profile per-user scope; dynamic conditions builder; T-RATCHET tenant_filter
         stmt = select(RecruiterFieldPreference).where(
             RecruiterFieldPreference.recruiter_id == recruiter_id
         )
@@ -71,7 +71,7 @@ class RecruiterProfileRepository:
         self, recruiter_id: str, field_name: str
     ) -> RecruiterFieldPreference | None:
         recruiter_id = self._require_recruiter_id(recruiter_id)
-        # TENANT-EXEMPT: recruiter profile per-user scope; dynamic conditions builder
+        # TENANT-EXEMPT: recruiter profile per-user scope; dynamic conditions builder; T-RATCHET tenant_filter
         stmt = select(RecruiterFieldPreference).where(
             and_(
                 RecruiterFieldPreference.recruiter_id == recruiter_id,

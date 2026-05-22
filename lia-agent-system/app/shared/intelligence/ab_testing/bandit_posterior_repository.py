@@ -49,7 +49,7 @@ class BanditPosteriorRepository:
         else:
             conditions.append(BanditPosterior.company_id == company_id_norm)
 
-        # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace
+        # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace; T-RATCHET tenant_filter
         stmt = select(BanditPosterior).where(and_(*conditions))
         result = await self.db.execute(stmt)
         return result.scalars().first()
@@ -65,7 +65,7 @@ class BanditPosteriorRepository:
         else:
             conditions.append(BanditPosterior.company_id == company_id_norm)
 
-        # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace
+        # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace; T-RATCHET tenant_filter
         stmt = select(BanditPosterior).where(and_(*conditions))
         result = await self.db.execute(stmt)
         return list(result.scalars().all())

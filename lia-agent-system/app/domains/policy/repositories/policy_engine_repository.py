@@ -44,7 +44,7 @@ class PolicyEngineRepository:
             else BusinessRule.company_id.is_(None)
         )
         query = (
-            # TENANT-EXEMPT: policy engine rules support tenant-OR-global semantics via or_(company_id.is_(None), company_id==X); intentional cross-tenant fallback
+            # TENANT-EXEMPT: policy engine rules support tenant-OR-global semantics via or_(company_id.is_(None), company_id==X); intentional cross-tenant fallback (by-design, not bug); T-RATCHET tenant_filter
             select(BusinessRule)
             .where(and_(BusinessRule.is_active, company_clause))
             .order_by(BusinessRule.priority.asc())
@@ -54,7 +54,7 @@ class PolicyEngineRepository:
 
     async def get_business_rule_by_name(self, name: str) -> Optional[BusinessRule]:
         result = await self.db.execute(
-            # TENANT-EXEMPT: policy engine rules support tenant-OR-global semantics via or_(company_id.is_(None), company_id==X); intentional cross-tenant fallback
+            # TENANT-EXEMPT: policy engine rules support tenant-OR-global semantics via or_(company_id.is_(None), company_id==X); intentional cross-tenant fallback (by-design, not bug); T-RATCHET tenant_filter
             select(BusinessRule).where(BusinessRule.name == name)
         )
         return result.scalar_one_or_none()
@@ -76,7 +76,7 @@ class PolicyEngineRepository:
             if company_uuid
             else RateLimitRule.company_id.is_(None)
         )
-        # TENANT-EXEMPT: policy engine rules support tenant-OR-global semantics via or_(company_id.is_(None), company_id==X); intentional cross-tenant fallback
+        # TENANT-EXEMPT: policy engine rules support tenant-OR-global semantics via or_(company_id.is_(None), company_id==X); intentional cross-tenant fallback (by-design, not bug); T-RATCHET tenant_filter
         query = select(RateLimitRule).where(
             and_(
                 RateLimitRule.is_active,
@@ -89,7 +89,7 @@ class PolicyEngineRepository:
 
     async def get_rate_limit_rule_by_name(self, name: str) -> Optional[RateLimitRule]:
         result = await self.db.execute(
-            # TENANT-EXEMPT: policy engine rules support tenant-OR-global semantics via or_(company_id.is_(None), company_id==X); intentional cross-tenant fallback
+            # TENANT-EXEMPT: policy engine rules support tenant-OR-global semantics via or_(company_id.is_(None), company_id==X); intentional cross-tenant fallback (by-design, not bug); T-RATCHET tenant_filter
             select(RateLimitRule).where(RateLimitRule.name == name)
         )
         return result.scalar_one_or_none()
@@ -118,7 +118,7 @@ class PolicyEngineRepository:
         self, rule_id: UUID
     ) -> Optional[EscalationRule]:
         result = await self.db.execute(
-            # TENANT-EXEMPT: policy engine rules support tenant-OR-global semantics via or_(company_id.is_(None), company_id==X); intentional cross-tenant fallback
+            # TENANT-EXEMPT: policy engine rules support tenant-OR-global semantics via or_(company_id.is_(None), company_id==X); intentional cross-tenant fallback (by-design, not bug); T-RATCHET tenant_filter
             select(EscalationRule).where(
                 and_(
                     EscalationRule.id == rule_id,
@@ -142,7 +142,7 @@ class PolicyEngineRepository:
             else EscalationRule.company_id.is_(None)
         )
         query = (
-            # TENANT-EXEMPT: policy engine rules support tenant-OR-global semantics via or_(company_id.is_(None), company_id==X); intentional cross-tenant fallback
+            # TENANT-EXEMPT: policy engine rules support tenant-OR-global semantics via or_(company_id.is_(None), company_id==X); intentional cross-tenant fallback (by-design, not bug); T-RATCHET tenant_filter
             select(EscalationRule)
             .where(
                 and_(
@@ -158,7 +158,7 @@ class PolicyEngineRepository:
 
     async def get_escalation_rule_by_name(self, name: str) -> Optional[EscalationRule]:
         result = await self.db.execute(
-            # TENANT-EXEMPT: policy engine rules support tenant-OR-global semantics via or_(company_id.is_(None), company_id==X); intentional cross-tenant fallback
+            # TENANT-EXEMPT: policy engine rules support tenant-OR-global semantics via or_(company_id.is_(None), company_id==X); intentional cross-tenant fallback (by-design, not bug); T-RATCHET tenant_filter
             select(EscalationRule).where(EscalationRule.name == name)
         )
         return result.scalar_one_or_none()

@@ -35,7 +35,7 @@ class TrustCenterRepository:
 
     async def get_settings_by_slug(self, company_slug: str) -> TrustCenterSettings:
         """Fetch settings by company_slug; raises 404 if not found."""
-        # TENANT-EXEMPT: trust_center settings/resources are global (no tenant scoping by design) or per-company via dynamic conditions builder; LGPD-safe
+        # TENANT-EXEMPT: trust_center settings/resources are global (no tenant scoping by design) or per-company via dynamic conditions builder; LGPD-safe; T-RATCHET tenant_filter
         query = select(TrustCenterSettings).where(
             TrustCenterSettings.company_slug == company_slug
         )
@@ -59,7 +59,7 @@ class TrustCenterRepository:
         conditions = [TrustCenterSettings.company_slug == company_slug]
         if exclude_id is not None:
             conditions.append(TrustCenterSettings.id != exclude_id)
-        # TENANT-EXEMPT: trust_center settings/resources are global (no tenant scoping by design) or per-company via dynamic conditions builder; LGPD-safe
+        # TENANT-EXEMPT: trust_center settings/resources are global (no tenant scoping by design) or per-company via dynamic conditions builder; LGPD-safe; T-RATCHET tenant_filter
         query = select(TrustCenterSettings).where(and_(*conditions))
         result = await self.db.execute(query)
         return result.scalar_one_or_none() is not None
@@ -91,7 +91,7 @@ class TrustCenterRepository:
         if category:
             conditions.append(TrustCenterResource.category == category)
         query = (
-            # TENANT-EXEMPT: trust_center settings/resources are global (no tenant scoping by design) or per-company via dynamic conditions builder; LGPD-safe
+            # TENANT-EXEMPT: trust_center settings/resources are global (no tenant scoping by design) or per-company via dynamic conditions builder; LGPD-safe; T-RATCHET tenant_filter
             select(TrustCenterResource)
             .where(and_(*conditions))
             .order_by(TrustCenterResource.title)
@@ -118,7 +118,7 @@ class TrustCenterRepository:
         if category:
             conditions.append(TrustCenterUpdate.category == category)
         query = (
-            # TENANT-EXEMPT: trust_center settings/resources are global (no tenant scoping by design) or per-company via dynamic conditions builder; LGPD-safe
+            # TENANT-EXEMPT: trust_center settings/resources are global (no tenant scoping by design) or per-company via dynamic conditions builder; LGPD-safe; T-RATCHET tenant_filter
             select(TrustCenterUpdate)
             .where(and_(*conditions))
             .order_by(desc(TrustCenterUpdate.published_at))
@@ -162,7 +162,7 @@ class TrustCenterRepository:
         if category:
             conditions.append(Subprocessor.category == category)
         query = (
-            # TENANT-EXEMPT: trust_center settings/resources are global (no tenant scoping by design) or per-company via dynamic conditions builder; LGPD-safe
+            # TENANT-EXEMPT: trust_center settings/resources are global (no tenant scoping by design) or per-company via dynamic conditions builder; LGPD-safe; T-RATCHET tenant_filter
             select(Subprocessor)
             .where(and_(*conditions))
             .order_by(Subprocessor.name)

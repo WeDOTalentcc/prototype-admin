@@ -630,7 +630,7 @@ async def get_candidate_history(
                     }
             
             vc_result = await db.execute(
-                # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace
+                # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace; T-RATCHET tenant_filter
                 select(VacancyCandidate).where(and_(*conditions))
             )
             all_participations = vc_result.scalars().all()
@@ -1133,7 +1133,7 @@ async def get_market_benchmarks(
             ]
             
             jobs_result = await db.execute(
-                # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace
+                # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace; T-RATCHET tenant_filter
                 select(JobVacancy).where(and_(*conditions))
             )
             jobs = jobs_result.scalars().all()

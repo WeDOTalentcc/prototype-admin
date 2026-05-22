@@ -164,7 +164,7 @@ class ComplianceControlsRepository:
             conditions.append(CompanyComplianceControl.status == status_filter)
 
         query = (
-            # TENANT-EXEMPT: compliance controls catalog (SOX/LGPD) is system-wide reference data, not per-tenant
+            # TENANT-EXEMPT: compliance controls catalog (SOX/LGPD) is system-wide reference data, not per-tenant; T-RATCHET tenant_filter
             select(CompanyComplianceControl)
             .where(and_(*conditions))
             .order_by(desc(CompanyComplianceControl.updated_at))
@@ -252,7 +252,7 @@ class ComplianceControlsRepository:
             conditions.append(ComplianceAudit.audit_type == audit_type)
 
         query = (
-            # TENANT-EXEMPT: compliance controls catalog (SOX/LGPD) is system-wide reference data, not per-tenant
+            # TENANT-EXEMPT: compliance controls catalog (SOX/LGPD) is system-wide reference data, not per-tenant; T-RATCHET tenant_filter
             select(ComplianceAudit)
             .where(and_(*conditions))
             .order_by(desc(ComplianceAudit.created_at))
@@ -330,7 +330,7 @@ class ComplianceControlsRepository:
             conditions.append(SOXControl.test_result == test_result)
 
         query = (
-            # TENANT-EXEMPT: compliance controls catalog (SOX/LGPD) is system-wide reference data, not per-tenant
+            # TENANT-EXEMPT: compliance controls catalog (SOX/LGPD) is system-wide reference data, not per-tenant; T-RATCHET tenant_filter
             select(SOXControl)
             .where(and_(*conditions))
             .order_by(SOXControl.section, SOXControl.control_id)

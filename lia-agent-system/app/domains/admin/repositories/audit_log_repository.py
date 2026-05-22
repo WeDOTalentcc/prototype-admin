@@ -31,7 +31,7 @@ class AuditLogRepository:
         limit: int = 50,
         offset: int = 0,
     ) -> tuple[list[SOXAuditLog], int]:
-        # TENANT-EXEMPT: SOX audit logs are cross-tenant (system-wide compliance trail); LGPD aggregate exemption
+        # TENANT-EXEMPT: SOX audit logs are cross-tenant (system-wide compliance trail); LGPD Art. 7º IX legítimo interesse (immutable compliance trail, NOT aggregate); T-RATCHET tenant_filter
         query = select(SOXAuditLog).order_by(desc(SOXAuditLog.timestamp))
         if conditions:
             query = query.where(and_(*conditions))
@@ -46,7 +46,7 @@ class AuditLogRepository:
         return logs, total
 
     async def get_log_by_id(self, log_id: UUID, company_id: str | None) -> SOXAuditLog | None:
-        # TENANT-EXEMPT: SOX audit logs are cross-tenant (system-wide compliance trail); LGPD aggregate exemption
+        # TENANT-EXEMPT: SOX audit logs are cross-tenant (system-wide compliance trail); LGPD Art. 7º IX legítimo interesse (immutable compliance trail, NOT aggregate); T-RATCHET tenant_filter
         query = select(SOXAuditLog).where(SOXAuditLog.id == log_id)
         if company_id and company_id != "platform":
             query = query.where(SOXAuditLog.client_id == company_id)
@@ -61,7 +61,7 @@ class AuditLogRepository:
         return log
 
     async def export_logs(self, conditions: list, limit: int = 10000) -> list[SOXAuditLog]:
-        # TENANT-EXEMPT: SOX audit logs are cross-tenant (system-wide compliance trail); LGPD aggregate exemption
+        # TENANT-EXEMPT: SOX audit logs are cross-tenant (system-wide compliance trail); LGPD Art. 7º IX legítimo interesse (immutable compliance trail, NOT aggregate); T-RATCHET tenant_filter
         query = select(SOXAuditLog).order_by(desc(SOXAuditLog.timestamp)).limit(limit)
         if conditions:
             query = query.where(and_(*conditions))

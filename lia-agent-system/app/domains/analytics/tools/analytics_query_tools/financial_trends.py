@@ -77,7 +77,7 @@ async def get_cost_metrics(
             ]
 
             jobs_result = await db.execute(
-                # TENANT-EXEMPT: analytics tool builds conditions=[Model.company_id==X, ...] then where(and_(*conditions)); AST sensor cannot trace dynamic builder
+                # TENANT-EXEMPT: analytics tool builds conditions=[Model.company_id==X, ...] then where(and_(*conditions)); AST sensor cannot trace dynamic builder; T-RATCHET tenant_filter
                 select(JobVacancy).where(and_(*conditions))
             )
             closed_jobs = jobs_result.scalars().all()
