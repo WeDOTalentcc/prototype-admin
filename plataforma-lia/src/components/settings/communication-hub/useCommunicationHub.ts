@@ -338,13 +338,12 @@ export function useCommunicationHub(activeSubsection?: string) {
   const saveAlertsConfig = async () => {
     try {
       setSavingAlerts(true)
-      const headers: HeadersInit = { 'Content-Type': 'application/json' }
-      if (companyId) {
-        headers['X-Company-ID'] = companyId
-      }
+      // WT-2022 Wave 2 audit (2026-05-21): tenant via JWT — REGRA 6 CLAUDE.md.
+      // Removido X-Company-ID header (anti-pattern); backend usa
+      // get_verified_company_id que extrai company_id do Bearer token.
       const response = await apiFetch('/api/backend-proxy/alerts/config', {
         method: 'PUT',
-        headers,
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           alerts: alerts.map(a => ({
             id: a.id,
