@@ -18,6 +18,7 @@ from app.auth.dependencies import (
     get_user_company_id,
 )
 from app.auth.models import User
+from app.core.config import settings
 from app.core.database import get_db
 from app.domains.cv_screening.services.wsi_screening_pipeline import wsi_screening_pipeline
 from app.schemas.screening import (
@@ -25,6 +26,10 @@ from app.schemas.screening import (
     WSIScreeningPipelineResponse,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.services.automated_decision_logger import (
+    PROTECTED_CRITERIA_PT,
+    log_automated_decision,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -94,6 +99,65 @@ company_id: str = Depends(require_company_id)):
             f"is_affirmative: {request.is_affirmative}, "
             f"affirmative_type: {request.affirmative_type}"
         )
+
+        # WT-2022 P0.C wave 2 / LGPD Art. 20 + EU AI Act Art. 13.
+        # /api/v1/wsi/screening-pipeline e o entry-point unificado que invoca
+        # _build_technical_block + _build_behavioral_block + Block 1.5 + Block 2.
+        # Logamos UMA decisao agregada por chamada do pipeline — block-by-block
+        # nao tem company_id em scope (sao helpers privados sem dep injection),
+        # entao audit no endpoint cobre o fluxo completo per Art. 20.
+        try:
+            seniority = request.seniority or "pleno"
+            await log_automated_decision(
+                db=db,
+                company_id=company_id,
+                decision_type="wsi_screening_pipeline_iteration",
+                ai_model_used=getattr(settings, "LLM_PRIMARY_MODEL", "claude-sonnet-4-6"),
+                explanation_text=(
+                    f'Pipeline WSI unificada gerou {response.total_count} pergunta(s) para "{request.job_title}" '
+                    f'(senioridade={seniority}, format={request.format}). '
+                    f'Distribuicao por bloco: {response.block_distribution}. '
+                    f'Skills tecnicos: {request.technical_skills}. Comportamentais: {request.behavioral_competencies}. '
+                    f'Affirmative_action={request.is_affirmative} (type={request.affirmative_type}). '
+                    f'Frameworks ativos: Big Five (Block 4), Bloom/Dreyfus (Block 3), CBI (Block 4), eligibility (Block 2).'
+                ),
+                criteria_used=[
+                    *[f"skill:{s}" for s in request.technical_skills],
+                    *[f"behavioral:{b}" for b in request.behavioral_competencies],
+                    f"seniority:{seniority}",
+                    f"format:{request.format}",
+                    f"department:{request.department or 'n/a'}",
+                    *([f"affirmative:{request.affirmative_type}"] if request.is_affirmative else []),
+                ],
+                criteria_ignored=list(PROTECTED_CRITERIA_PT),
+                confidence_score=None,
+                review_eligible=True,
+                extra_metadata={
+                    "endpoint": "/api/v1/wsi/screening-pipeline",
+                    "job_title": request.job_title,
+                    "department": request.department,
+                    "questions_count": response.total_count,
+                    "block_distribution": response.block_distribution,
+                    "company_questions_count": len(company_questions_raw),
+                    "include_company_questions": request.include_company_questions,
+                    "format": request.format,
+                    "seniority": seniority,
+                    "question_count_target": request.question_count,
+                    "is_affirmative": request.is_affirmative,
+                    "affirmative_type": request.affirmative_type,
+                    "frameworks_used": ["BigFive", "Bloom", "Dreyfus", "CBI"],
+                    "prompt_template_version": "wsi_F6_pipeline_v2",
+                    "llm_model": getattr(settings, "LLM_PRIMARY_MODEL", "claude-sonnet-4-6"),
+                },
+            )
+        except ValueError:
+            raise
+        except Exception as audit_err:
+            logger.error(
+                "WT-2022 P0.C wave 2: log_automated_decision falhou em /api/v1/wsi/screening-pipeline "
+                "(LGPD Art. 20 audit gap, job_title=%s, company=%s): %s",
+                request.job_title, company_id, audit_err, exc_info=True,
+            )
 
         return response
 

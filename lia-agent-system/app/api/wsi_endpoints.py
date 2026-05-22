@@ -41,11 +41,17 @@ from app.domains.cv_screening.services.wsi_service import (
     ResponseAnalysis,
     WSIQuestion,
 )
+from app.core.config import settings
 from app.domains.cv_screening.dependencies import WSIService, get_wsi_service
 from app.domains.cv_screening.services.wsi_voice_orchestrator import (
     wsi_voice_orchestrator,
 )
 from app.domains.voice.repositories.wsi_repository import WsiRepository
+from app.shared.security.require_company_id import require_company_id
+from app.shared.services.automated_decision_logger import (
+    PROTECTED_CRITERIA_PT,
+    log_automated_decision,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -250,18 +256,20 @@ async def generate_questions(
     db: AsyncSession = Depends(get_db),
     sqs_svc: ScreeningQuestionSetService = Depends(get_screening_question_set_service),
     wsi_svc: WSIService = Depends(get_wsi_service),
+    company_id: str = Depends(require_company_id),
 ):
     """
     Generate WSI questions for screening session.
-    
+
     This is STEP 2 of WSI workflow.
-    
+
     Saves questions to database with session_id.
     """
     try:
         repo = WsiRepository(db)
         active_qs = await sqs_svc.get_active_version(db, request.job_vacancy_id)
-        
+
+        ia_invoked = False
         if active_qs and active_qs.questions_snapshot:
             questions = _convert_snapshot_to_wsi_questions(active_qs.questions_snapshot)
             qs_version = active_qs.version
@@ -272,7 +280,7 @@ async def generate_questions(
             for comp_dict in request.competencies:
                 comp = Competency(**comp_dict)
                 competencies_list.append(comp)
-            
+
             questions = await wsi_svc.generate_screening_questions(
                 competencies=competencies_list,
                 mode=request.mode,
@@ -282,6 +290,7 @@ async def generate_questions(
             )
             qs_version = None
             qs_id = None
+            ia_invoked = True
             logger.info(f"No versioned question set found, generated {len(questions)} questions dynamically")
 
         await repo.upsert_session(
@@ -294,7 +303,7 @@ async def generate_questions(
             question_set_version=qs_version,
             question_set_id=qs_id,
         )
-        
+
         for idx, question in enumerate(questions):
             await repo.insert_question(
                 question_id=question.id,
@@ -309,8 +318,60 @@ async def generate_questions(
                 sequence_order=idx + 1,
                 is_critical=getattr(question, "is_critical", False),
             )
-        
-        
+
+        # WT-2022 P0.C wave 2 / LGPD Art. 20 + EU AI Act Art. 13.
+        # /api/wsi/generate-questions e o STEP 2 do WSI workflow. So
+        # logamos quando houve invocacao IA (snapshot ausente). Quando
+        # versioned set ja existe, decisao IA original ja foi logada na
+        # criacao desse snapshot.
+        if ia_invoked:
+            try:
+                await log_automated_decision(
+                    db=db,
+                    company_id=company_id,
+                    candidate_id=request.candidate_id,
+                    job_id=request.job_vacancy_id,
+                    decision_type="wsi_legacy_questions",
+                    ai_model_used=getattr(settings, "LLM_PRIMARY_MODEL", "claude-sonnet-4-6"),
+                    explanation_text=(
+                        f'Gerou {len(questions)} pergunta(s) WSI dinamicamente para session '
+                        f'{request.session_id} (job_vacancy_id={request.job_vacancy_id}, '
+                        f'candidate_id={request.candidate_id}) via /api/wsi/generate-questions '
+                        f'(STEP 2 workflow). Mode={request.mode}, seniority={request.seniority}. '
+                        f'Versioned question set ausente — fallback dinamico ativado.'
+                    ),
+                    criteria_used=[
+                        *[f"competency:{c.get('name', '?')}" for c in request.competencies],
+                        f"seniority:{request.seniority}",
+                        f"mode:{request.mode}",
+                    ],
+                    criteria_ignored=list(PROTECTED_CRITERIA_PT),
+                    confidence_score=None,
+                    review_eligible=True,
+                    extra_metadata={
+                        "endpoint": "/api/wsi/generate-questions",
+                        "session_id": request.session_id,
+                        "job_vacancy_id": request.job_vacancy_id,
+                        "candidate_id": request.candidate_id,
+                        "questions_count": len(questions),
+                        "mode": request.mode,
+                        "seniority": request.seniority,
+                        "enriched_jd": bool(request.enriched_jd),
+                        "fallback_dynamic": True,
+                        "prompt_template_version": "wsi_F6_pipeline_v2",
+                        "llm_model": getattr(settings, "LLM_PRIMARY_MODEL", "claude-sonnet-4-6"),
+                        "legacy": True,
+                    },
+                )
+            except ValueError:
+                raise
+            except Exception as audit_err:
+                logger.error(
+                    "WT-2022 P0.C wave 2: log_automated_decision falhou em /api/wsi/generate-questions "
+                    "(LGPD Art. 20 audit gap, session_id=%s, company=%s): %s",
+                    request.session_id, company_id, audit_err, exc_info=True,
+                )
+
         return GenerateQuestionsResponse(
             session_id=request.session_id,
             questions=[q.dict() for q in questions],
