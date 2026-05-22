@@ -55,6 +55,7 @@ from app.shared.services.automated_decision_logger import (
     PROTECTED_CRITERIA_PT,
     log_automated_decision,
 )
+from app.shared.compliance.audit_service import AuditService
 
 try:
     from app.shared.services.gemini_voice_service import get_voice_service as _get_voice_service
@@ -481,6 +482,57 @@ class VoiceScreeningOrchestrator:
                     lines.append(f"Competências comportamentais: {', '.join(comp_names)}")
         return "\n".join(lines) if lines else f"Título da vaga: {job_context.get('title', 'não especificado')}"
 
+    async def _log_consent_audit_safe(
+        self,
+        company_id: str,
+        candidate_id: str,
+        decision: str,
+        reason: str,
+    ) -> None:
+        """F-04 P0 LGPD: Audit canonical trail for every voice consent decision.
+
+        LGPD Art. 7 + Lei 13.853/2019 + EU AI Act Art. 13 exigem trail imutável
+        de toda decisão automatizada de consent (allowed/blocked). Antes deste
+        helper, verify_consent só fazia logger.warning/error — sem persist em
+        audit_logs table (queries forenses + DPO trail impossíveis).
+
+        Best-effort: AuditService.log_decision pode falhar silenciosamente se DB
+        não estiver disponível ou se houver outro problema. Nunca bloqueia o
+        path de consent — apenas garante o trail quando possível.
+
+        Args:
+            company_id: tenant UUID
+            candidate_id: candidato UUID
+            decision: "allowed" | "blocked" (canonical AuditService vocab)
+            reason: motivo legivel (consent_revoked, consent_absent_soft_warning,
+                    consent_check_exception:<ExcType>, etc)
+        """
+        try:
+            await AuditService().log_decision(
+                company_id=company_id,
+                agent_name="voice_screening_orchestrator",
+                decision_type="voice_consent_check",
+                action="consent_verification",
+                decision=decision,
+                reasoning=[f"reason={reason}", "lgpd_art_7_explicit_consent"],
+                criteria_used=["lgpd_art_7_explicit_consent", "tenant_isolation"],
+                criteria_ignored=list(PROTECTED_CRITERIA_PT),
+                candidate_id=candidate_id,
+                human_review_required=False,
+            )
+        except Exception as audit_exc:  # noqa: BLE001
+            # F-04: fail-safe — audit failure NEVER blocks consent path.
+            # Logged with full context for SIEM / forensic reconstruction.
+            logger.error(
+                "[VOICE SCREENING][AUDIT-FAIL] log_decision failed candidate=%s "
+                "decision=%s reason=%s exc=%s",
+                mask_pii(candidate_id),
+                decision,
+                reason,
+                audit_exc,
+                exc_info=True,
+            )
+
     async def verify_consent(
         self,
         candidate_id: str,
@@ -518,6 +570,14 @@ class VoiceScreeningOrchestrator:
                 "for candidate %s. Outbound calls require confirmed LGPD consent (Art. 7).",
                 mask_pii(candidate_id),
             )
+            # F-04 best-effort audit attempt (no db → AuditService can't persist;
+            # we still construct an in-memory log_decision call which falls through to logger).
+            await self._log_consent_audit_safe(
+                company_id=company_id,
+                candidate_id=candidate_id,
+                decision="blocked",
+                reason="no_db_session",
+            )
             raise ConsentNotGrantedError(
                 "Cannot verify LGPD consent: no database session provided. "
                 "Outbound calls require confirmed prior consent (LGPD Art. 7)."
@@ -529,6 +589,12 @@ class VoiceScreeningOrchestrator:
                 "[VOICE SCREENING] BLOCKED: ConsentCheckerService unavailable — cannot verify "
                 "consent for candidate %s. Outbound calls require confirmed consent.",
                 mask_pii(candidate_id),
+            )
+            await self._log_consent_audit_safe(
+                company_id=company_id,
+                candidate_id=candidate_id,
+                decision="blocked",
+                reason="consent_service_unavailable",
             )
             raise ConsentNotGrantedError(
                 "Cannot verify LGPD consent: ConsentCheckerService not available. "
@@ -549,6 +615,12 @@ class VoiceScreeningOrchestrator:
                     mask_pii(candidate_id),
                     company_id,
                 )
+                await self._log_consent_audit_safe(
+                    company_id=company_id,
+                    candidate_id=candidate_id,
+                    decision="blocked",
+                    reason="consent_revoked",
+                )
                 raise ConsentNotGrantedError(
                     "Candidate consent revoked for voice screening (LGPD Art. 18)"
                 )
@@ -560,6 +632,12 @@ class VoiceScreeningOrchestrator:
                     mask_pii(candidate_id),
                     company_id,
                 )
+                await self._log_consent_audit_safe(
+                    company_id=company_id,
+                    candidate_id=candidate_id,
+                    decision="blocked",
+                    reason="consent_absent_soft_warning",
+                )
                 raise ConsentNotGrantedError(
                     "Candidate has not explicitly granted consent for voice screening. "
                     "Outbound calls require confirmed prior consent (LGPD Art. 7)."
@@ -569,6 +647,12 @@ class VoiceScreeningOrchestrator:
                 "[VOICE SCREENING] Consent CONFIRMED for candidate %s company=%s",
                 mask_pii(candidate_id),
                 company_id,
+            )
+            await self._log_consent_audit_safe(
+                company_id=company_id,
+                candidate_id=candidate_id,
+                decision="allowed",
+                reason="explicit_consent_confirmed",
             )
             return True
 
@@ -580,6 +664,12 @@ class VoiceScreeningOrchestrator:
                 "Blocking call — cannot confirm consent.",
                 mask_pii(candidate_id),
                 e,
+            )
+            await self._log_consent_audit_safe(
+                company_id=company_id,
+                candidate_id=candidate_id,
+                decision="blocked",
+                reason=f"consent_check_exception:{type(e).__name__}",
             )
             raise ConsentNotGrantedError(
                 f"Consent check failed with error: {e}. "
