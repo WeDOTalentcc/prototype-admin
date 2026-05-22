@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { validateParams, validateBody } from '@/lib/api/validate'
+import { getAuthHeaders } from '@/lib/api/auth-headers'
 import { z } from 'zod'
 
 const BACKEND_URL = process.env.BACKEND_URL || 'http://127.0.0.1:8001'
@@ -15,27 +16,26 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const headers = getAuthHeaders(request, true)
     const { id } = await params
     const paramValidation = validateParams({ id }, routeParamsSchema)
     if (!paramValidation.success) return paramValidation.response
-    
+
     const response = await fetch(`${BACKEND_URL}/api/v1/policies/${id}`, {
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Company-ID': 'admin_company',
-        'X-User-ID': 'admin_user',
-        'X-User-Role': 'admin'
-      }
+      headers,
     })
-    
+
     if (!response.ok) {
       const error = await response.json().catch(() => ({ detail: 'Unknown error' }))
       return NextResponse.json({ error: error.detail || 'Failed to fetch policy' }, { status: response.status })
     }
-    
+
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
+    if (error instanceof Error && error.message.includes('Authentication required')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -47,6 +47,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const headers = getAuthHeaders(request, true)
     const { id } = await params
     const paramValidation = validateParams({ id }, routeParamsSchema)
     if (!paramValidation.success) return paramValidation.response
@@ -55,26 +56,24 @@ export async function PUT(
     if (!bodyResult.success) return bodyResult.response
 
     const body = bodyResult.data
-    
+
     const response = await fetch(`${BACKEND_URL}/api/v1/policies/${id}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Company-ID': 'admin_company',
-        'X-User-ID': 'admin_user',
-        'X-User-Role': 'admin'
-      },
+      headers,
       body: JSON.stringify(body)
     })
-    
+
     if (!response.ok) {
       const error = await response.json().catch(() => ({ detail: 'Unknown error' }))
       return NextResponse.json({ error: error.detail || 'Failed to update policy' }, { status: response.status })
     }
-    
+
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
+    if (error instanceof Error && error.message.includes('Authentication required')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -84,28 +83,27 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const headers = getAuthHeaders(request, true)
     const { id } = await params
     const paramValidation = validateParams({ id }, routeParamsSchema)
     if (!paramValidation.success) return paramValidation.response
-    
+
     const response = await fetch(`${BACKEND_URL}/api/v1/policies/${id}`, {
       method: 'DELETE',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Company-ID': 'admin_company',
-        'X-User-ID': 'admin_user',
-        'X-User-Role': 'admin'
-      }
+      headers,
     })
-    
+
     if (!response.ok) {
       const error = await response.json().catch(() => ({ detail: 'Unknown error' }))
       return NextResponse.json({ error: error.detail || 'Failed to delete policy' }, { status: response.status })
     }
-    
+
     const data = await response.json()
     return NextResponse.json(data)
   } catch (error) {
+    if (error instanceof Error && error.message.includes('Authentication required')) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
