@@ -165,6 +165,85 @@ def clear_tenant_config_cache(company_id: str = ""):
         _tenant_configs.clear()
 
 
+async def refresh_byok_active_flag(db, company_id: str, providers_dict: dict) -> bool:
+    """Refresh ai_credits_balance.byok_active denormalized flag.
+
+    ADR-WT-2027 (Opcao C, 2026-05-22): the credit gate consults a
+    denormalized boolean on ai_credits_balance instead of re-reading
+    tenant_llm_configs.providers on every LLM call. This helper must be
+    invoked from every write path that adds/removes API keys.
+
+    Args:
+        db: AsyncSession.
+        company_id: tenant scoping.
+        providers_dict: full providers map post-write (after merge with
+            existing). Keys are provider names (anthropic / openai / gemini /
+            ...); each value can be:
+              - dict with non-empty "api_key" -> contributes to BYOK
+              - dict marked {"_remove": True} -> ignored
+              - empty/dict without api_key -> ignored
+
+    Returns:
+        bool: the new byok_active value persisted (True if any provider has
+        a non-masked non-empty api_key).
+    """
+    import logging as _logging
+    _logger = _logging.getLogger(__name__)
+
+    def _has_real_key(prov_data) -> bool:
+        if not isinstance(prov_data, dict):
+            return False
+        if prov_data.get("_remove"):
+            return False
+        key = prov_data.get("api_key")
+        if not key or not isinstance(key, str):
+            return False
+        if not key.strip():
+            return False
+        # masked key returned by GET endpoint (e.g. "sk-abcd...wxyz")
+        if "..." in key:
+            return False
+        return True
+
+    any_byok = any(_has_real_key(p) for p in (providers_dict or {}).values())
+
+    try:
+        from sqlalchemy import select
+        from app.models.ai_consumption import AiCreditsBalance
+
+        result = await db.execute(
+            select(AiCreditsBalance).where(
+                AiCreditsBalance.company_id == company_id
+            )
+        )
+        balance = result.scalar_one_or_none()
+        if balance is None:
+            # No balance row yet -> nothing to denormalize. Gate will treat
+            # as unconfigured; byok detector reads providers fresh on next
+            # call so behavior remains correct.
+            _logger.info(
+                "[BYOK] no ai_credits_balance row for company=%s; flag refresh skipped (byok=%s)",
+                company_id, any_byok,
+            )
+            return any_byok
+
+        if balance.byok_active != any_byok:
+            balance.byok_active = any_byok
+            await db.flush()
+            _logger.info(
+                "[BYOK] refreshed byok_active=%s for company=%s", any_byok, company_id,
+            )
+        return any_byok
+    except Exception as exc:
+        # Fail-safe: don't crash the update flow if denormalization fails.
+        # The byok_detector still has live source of truth via tenant_llm_configs.
+        _logger.warning(
+            "[BYOK] refresh_byok_active_flag failed for company=%s (gate falls back to live detect): %s",
+            company_id, exc, exc_info=True,
+        )
+        return any_byok
+
+
 def get_anthropic_streaming_client_for_tenant(
     company_id: str | None = None,
 ) -> tuple["AsyncAnthropic", str]:

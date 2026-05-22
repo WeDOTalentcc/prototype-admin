@@ -19,7 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
-from app.shared.tenant_llm_context import clear_tenant_config_cache
+from app.shared.tenant_llm_context import clear_tenant_config_cache, refresh_byok_active_flag
 from app.domains.ai.repositories.llm_config_repository import LlmConfigRepository
 from app.domains.admin.repositories.audit_log_repository import AuditLogRepository
 from app.shared.security.require_company_id import require_company_id
@@ -222,6 +222,18 @@ company_id: str = Depends(require_company_id)):
         })
 
         clear_tenant_config_cache(company_id)
+
+        # ADR-WT-2027 Opcao C (2026-05-22): refresh denormalized byok_active
+        # flag on ai_credits_balance so credit gate skip logic stays in sync.
+        # Fail-safe: any error here is logged but does NOT roll back the
+        # config update (gate also has live detect via byok_detector helper).
+        try:
+            await refresh_byok_active_flag(db, company_id, providers_dict)
+        except Exception as _byok_refresh_err:
+            logger.warning(
+                "[LLMConfig] BYOK flag refresh failed for company=%s (non-blocking): %s",
+                company_id, _byok_refresh_err,
+            )
 
         changed_providers = list(request.providers.keys())
         logger.info(
