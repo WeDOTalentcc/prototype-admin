@@ -56,6 +56,7 @@ from app.shared.services.automated_decision_logger import (
     log_automated_decision,
 )
 from app.shared.compliance.audit_service import AuditService
+from app.shared.runtime_context import RuntimeContext
 from app.shared.prompt_injection import PromptInjectionGuard
 
 try:
@@ -702,7 +703,8 @@ class VoiceScreeningOrchestrator:
 
         Args:
             candidate_id: Candidate UUID
-            company_id: Company UUID (tenant)
+            company_id: Company UUID (tenant) — falls back to RuntimeContext.company_id
+                from authenticated JWT (ADR-029 R-008) when caller passes empty.
             db: SQLAlchemy async session. REQUIRED — without it, call is blocked.
 
         Returns:
@@ -711,6 +713,13 @@ class VoiceScreeningOrchestrator:
         Raises:
             ConsentNotGrantedError: If consent cannot be confirmed (any reason)
         """
+        # F-14 (audit 2026-05-22): RuntimeContext fallback when caller forgot
+        # company_id. ADR-029 R-008 canonical pattern — defense-in-depth.
+        # Inline fallback because @with_runtime_context decorator only works
+        # with **kwargs-only handlers (this method has positional signature).
+        if not company_id:
+            ctx = RuntimeContext.from_contextvars()
+            company_id = ctx.company_id or ""
         if db is None:
             logger.error(
                 "[VOICE SCREENING] BLOCKED: No DB session provided — cannot verify consent "
@@ -841,6 +850,10 @@ class VoiceScreeningOrchestrator:
         created with status='fallback' — callers must route to chat/WhatsApp.
         This is an explicit failure, NOT a transparent mock.
 
+        Multi-tenancy: ``company_id`` is required. When the caller passes
+        empty, falls back to ``RuntimeContext.company_id`` from the
+        authenticated JWT (ADR-029 R-008).
+
         Args:
             candidate_id: Candidate UUID
             candidate_name: Candidate's display name
@@ -861,6 +874,11 @@ class VoiceScreeningOrchestrator:
         Raises:
             ConsentNotGrantedError: If consent has been explicitly revoked
         """
+        # F-14 (audit 2026-05-22): RuntimeContext fallback for company_id (ADR-029 R-008).
+        if not company_id:
+            ctx = RuntimeContext.from_contextvars()
+            company_id = ctx.company_id or ""
+
         await self.verify_consent(candidate_id, company_id, db)
 
         session = VoiceScreeningSession(
@@ -1033,6 +1051,11 @@ class VoiceScreeningOrchestrator:
         Raises:
             ConsentNotGrantedError: If consent has been explicitly revoked
         """
+        # F-14 (audit 2026-05-22): RuntimeContext fallback for company_id (ADR-029 R-008).
+        if not company_id:
+            ctx = RuntimeContext.from_contextvars()
+            company_id = ctx.company_id or ""
+
         await self.verify_consent(candidate_id, company_id, db)
 
         session = VoiceScreeningSession(
