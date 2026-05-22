@@ -53,7 +53,7 @@ export function ChatContextPanelPart3({ contextData, onPipelineAction, onClose }
                       <div key={prediction.category} className="p-4 rounded-xl">
                         <div className="flex items-center justify-between mb-3">
                           <h5 className="font-medium text-lia-text-primary">{prediction.category}</h5>
-                          <Chip variant="neutral" className="text-xs">{prediction.confidence}% confiança</Chip>
+                          <Chip density="relaxed" variant="neutral" >{prediction.confidence}% confiança</Chip>
                         </div>
                         <div className="grid grid-cols-2 gap-4 mb-3 text-sm">
                           <div><span className="text-lia-text-secondary">Atual:</span><p className="font-medium">{prediction.current_performance}</p></div>

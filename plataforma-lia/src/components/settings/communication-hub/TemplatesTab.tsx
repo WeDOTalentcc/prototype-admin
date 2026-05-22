@@ -413,7 +413,7 @@ export function TemplatesTab({
                           </label>
                           <div className="flex flex-wrap gap-1.5">
                             {aiResultModal.changesMade.map((change, idx) => (
-                              <Chip variant="neutral" muted key={idx} className="text-xs px-2 py-0.5 rounded-full dark:bg-status-success dark:text-status-success">
+                              <Chip density="relaxed" variant="neutral" muted key={idx} className="px-2 py-0.5 rounded-full dark:bg-status-success dark:text-status-success">
                                 <Check className="w-3 h-3 mr-1" />
                                 {change}
                               </Chip>

@@ -109,7 +109,7 @@ const CandidateCard = ({
               {candidate.name}
             </h4>
             {candidate.lia_score && (
-              <Chip variant="neutral" className="text-xs shrink-0 border-lia-text-primary text-lia-text-secondary">
+              <Chip density="relaxed" variant="neutral" className="shrink-0 border-lia-text-primary text-lia-text-secondary">
                 LIA {candidate.lia_score}%
               </Chip>
             )}
@@ -190,7 +190,7 @@ const JobGroup = ({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <Chip variant="neutral" className="text-xs">
+          <Chip density="relaxed" variant="neutral" >
             {group.candidates.filter(c => c.urgency ==="critical").length} críticos
           </Chip>
           {isExpanded ? (

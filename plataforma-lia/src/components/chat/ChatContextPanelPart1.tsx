@@ -199,11 +199,11 @@ export function ChatContextPanelPart1({ contextData }: Props) {
                 <div className="grid grid-cols-2 gap-6">
                   <div>
                     <h4 className="text-sm font-medium text-lia-text-secondary mb-2">Dias Presenciais</h4>
-                    <div className="flex flex-wrap gap-1">{data.office_days.map((day: string, index: number) => (<Chip key={`${index}-${day}`} variant="neutral" className="text-xs">{day}</Chip>))}</div>
+                    <div className="flex flex-wrap gap-1">{data.office_days.map((day: string, index: number) => (<Chip density="relaxed" key={`${index}-${day}`} variant="neutral" >{day}</Chip>))}</div>
                   </div>
                   <div>
                     <h4 className="text-sm font-medium text-lia-text-secondary mb-2">Home Office</h4>
-                    <div className="flex flex-wrap gap-1">{data.home_office_days.map((day: string, index: number) => (<Chip key={`${index}-${day}`} variant="neutral" className="text-xs">{day}</Chip>))}</div>
+                    <div className="flex flex-wrap gap-1">{data.home_office_days.map((day: string, index: number) => (<Chip density="relaxed" key={`${index}-${day}`} variant="neutral" >{day}</Chip>))}</div>
                   </div>
                 </div>
                 <div><h4 className="text-sm font-medium text-lia-text-secondary mb-2">Benefícios Inclusos</h4><p className="text-sm text-lia-text-secondary">{data.benefits}</p></div>

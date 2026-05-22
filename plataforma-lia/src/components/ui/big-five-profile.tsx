@@ -281,27 +281,27 @@ export function BigFiveProfile({ scores: rawScores, compact = false, showInsight
             <div className="flex flex-wrap gap-1">
               <span className="text-xs text-lia-text-tertiary">Fit:</span>
               {scores.conscientiousness > 70 && (
-                <Chip variant="neutral" className="text-xs px-1.5 py-0 h-4 text-status-success">
+                <Chip density="relaxed" variant="neutral" className="px-1.5 py-0 h-4 text-status-success">
                   Gestão
                 </Chip>
               )}
               {scores.openness > 70 && (
-                <Chip variant="neutral" className="text-xs px-1.5 py-0 h-4 text-status-error">
+                <Chip density="relaxed" variant="neutral" className="px-1.5 py-0 h-4 text-status-error">
                   Inovação
                 </Chip>
               )}
               {scores.extraversion > 70 && (
-                <Chip variant="neutral" className="text-xs px-1.5 py-0 h-4 text-status-warning">
+                <Chip density="relaxed" variant="neutral" className="px-1.5 py-0 h-4 text-status-warning">
                   Liderança
                 </Chip>
               )}
               {scores.agreeableness > 70 && (
-                <Chip variant="neutral" className="text-xs px-1.5 py-0 h-4">
+                <Chip density="relaxed" variant="neutral" className="px-1.5 py-0 h-4">
                   Atendimento
                 </Chip>
               )}
               {scores.neuroticism < 30 && (
-                <Chip variant="neutral" className="text-xs px-1.5 py-0 h-4">
+                <Chip density="relaxed" variant="neutral" className="px-1.5 py-0 h-4">
                   Alta Pressão
                 </Chip>
               )}

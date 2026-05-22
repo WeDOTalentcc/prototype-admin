@@ -423,12 +423,12 @@ export function EmailTemplatesManager() {
                 {template.variables && template.variables.length > 0 && (
                   <div className="flex flex-wrap gap-1 mb-3">
                     {template.variables.slice(0, 3).map((variable) => (
-                      <Chip key={variable} variant="neutral" className="text-xs">
+                      <Chip density="relaxed" key={variable} variant="neutral" >
                         {`{{${variable}}}`}
                       </Chip>
                     ))}
                     {template.variables.length > 3 && (
-                      <Chip variant="neutral" className="text-xs">
+                      <Chip density="relaxed" variant="neutral" >
                         +{template.variables.length - 3}
                       </Chip>
                     )}

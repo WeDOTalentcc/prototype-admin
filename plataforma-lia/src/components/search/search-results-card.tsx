@@ -349,7 +349,7 @@ export function SearchResultsCard({
                       </Tooltip>
                     )}
                     {candidate.is_enriching && (
-                      <Chip variant="info" className="text-xs bg-status-info/10">
+                      <Chip density="relaxed" variant="info" className="bg-status-info/10">
                         <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                         Enriquecendo...
                       </Chip>

@@ -80,7 +80,7 @@ export function CompanyBenefitsSummaryCard({
           <Gift className="w-4 h-4 text-wedo-purple" />
           <span>Benefícios da Empresa</span>
           {highlighted_count && highlighted_count > 0 && (
-            <Chip variant="neutral" className="ml-auto text-xs text-wedo-purple">
+            <Chip density="relaxed" variant="neutral" className="ml-auto text-wedo-purple">
               <Star className="w-3 h-3 mr-1 fill-current" />
               {highlighted_count} em destaque
             </Chip>

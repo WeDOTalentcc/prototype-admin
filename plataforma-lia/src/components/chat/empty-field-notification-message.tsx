@@ -80,7 +80,7 @@ export function EmptyFieldNotificationMessage({
                     Campo vazio: {notification.field_label}
                   </span>
                   {notification.times_reminded > 0 && (
-                    <Chip variant="neutral" className="text-xs">
+                    <Chip density="relaxed" variant="neutral" >
                       Lembrete #{notification.times_reminded + 1}
                     </Chip>
                   )}
@@ -162,7 +162,7 @@ export function EmptyFieldNotificationMessage({
                           <div className="flex items-center gap-2">
                             <span className="text-lg">{getSourceIcon(suggestion.source)}</span>
                             <span className="text-sm font-medium">Sugestão da LIA</span>
-                            <Chip variant="neutral" muted className="text-xs">
+                            <Chip density="relaxed" variant="neutral" muted >
                               {Math.round(suggestion.confidence * 100)}% confiança
                             </Chip>
                           </div>

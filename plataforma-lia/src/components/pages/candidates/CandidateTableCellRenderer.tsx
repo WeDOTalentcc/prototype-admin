@@ -296,7 +296,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
         )
       case "seniority_level":
         return (
-          <Chip variant="neutral" className="text-xs">
+          <Chip density="relaxed" variant="neutral" >
             {candidate.seniority_level || ""}
           </Chip>
         )
@@ -554,7 +554,7 @@ export function createCellRenderer(deps: CellRendererDeps) {
         )
       case "is_blacklisted":
         return candidate.is_blacklisted ? (
-          <Chip variant="neutral" muted className="text-xs">{t ? t('yes') : "Sim"}</Chip>
+          <Chip density="relaxed" variant="neutral" muted >{t ? t('yes') : "Sim"}</Chip>
         ) : (
           <span className="text-xs text-lia-text-primary">{t ? t('no') : "Não"}</span>
         )

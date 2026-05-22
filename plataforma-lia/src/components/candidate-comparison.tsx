@@ -480,12 +480,12 @@ export function CandidateComparison({
                     </h6>
                     <div className="flex flex-wrap gap-1">
                       {candidate.skills.slice(0, 4).map((skill, idx) => (
-                        <Chip key={idx} variant="neutral" muted className="text-xs">
+                        <Chip density="relaxed" key={idx} variant="neutral" muted >
                           {skill}
                         </Chip>
                       ))}
                       {candidate.skills.length > 4 && (
-                        <Chip variant="neutral" className="text-xs">
+                        <Chip density="relaxed" variant="neutral" >
                           +{candidate.skills.length - 4}
                         </Chip>
                       )}

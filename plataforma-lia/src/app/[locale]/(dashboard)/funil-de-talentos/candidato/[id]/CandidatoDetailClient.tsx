@@ -122,12 +122,12 @@ export default function CandidateProfilePage() {
                     </span>
                     {!!candidate.seniority_level && <Chip variant="neutral" muted className={badgeStyles.primary}>{candidate.seniority_level}</Chip>}
                     {!!candidate.years_of_experience && (
-                      <Chip variant="neutral" className="text-xs">{candidate.years_of_experience} anos exp.</Chip>
+                      <Chip density="relaxed" variant="neutral" >{candidate.years_of_experience} anos exp.</Chip>
                     )}
                     {!!candidate.communication_consent && (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Chip variant="success" muted className="text-xs">
+                          <Chip density="relaxed" variant="success" muted >
                             <Shield className="w-3 h-3 mr-1" />LGPD
                           </Chip>
                         </TooltipTrigger>
@@ -137,7 +137,7 @@ export default function CandidateProfilePage() {
                     {!!candidate.is_blacklisted && (
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <Chip variant="danger" muted className="text-xs">⚠️ LCNU</Chip>
+                          <Chip density="relaxed" variant="danger" muted >⚠️ LCNU</Chip>
                         </TooltipTrigger>
                         <TooltipContent>
                           <p className="font-medium">Lista de Candidatos Não Utilizáveis</p>
@@ -146,10 +146,10 @@ export default function CandidateProfilePage() {
                       </Tooltip>
                     )}
                     {!!candidate.is_tech && (
-                      <Chip variant="neutral" className="text-xs bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-default">Tech</Chip>
+                      <Chip density="relaxed" variant="neutral" className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-default">Tech</Chip>
                     )}
                     {!!candidate.is_potential && (
-                      <Chip variant="neutral" className="text-xs  border-wedo-purple/30">Potencial</Chip>
+                      <Chip density="relaxed" variant="neutral" className="border-wedo-purple/30">Potencial</Chip>
                     )}
                     <Chip variant="neutral" muted className={`text-xs ${statusConfig.bg} ${statusConfig.text} ${statusConfig.border}`}>
                       {statusConfig.label}
@@ -239,13 +239,13 @@ export default function CandidateProfilePage() {
                 {/* Right column — work prefs + dates */}
                 <div className="text-right space-y-3 min-w-sidebar-content">
                   <div className="flex flex-wrap gap-1.5 justify-end">
-                    {!!candidate.work_model && <Chip variant="neutral" className="text-xs bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">{String(candidate.work_model)}</Chip>}
-                    {!!candidate.work_mode && <Chip variant="neutral" className="text-xs bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">{String(candidate.work_mode)}</Chip>}
-                    {!!candidate.contract_type && <Chip variant="neutral" className="text-xs bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">{String(candidate.contract_type)}</Chip>}
-                    {!!candidate.is_remote && <Chip variant="neutral" className="text-xs bg-lia-bg-secondary dark:bg-lia-bg-primary text-lia-text-primary border-lia-border-default">🌐 Remoto</Chip>}
-                    {!!candidate.willing_to_relocate && <Chip variant="success" className="text-xs">✈️ Aceita Mudança</Chip>}
-                    {!!candidate.mobility && <Chip variant="neutral" className="text-xs  border-wedo-purple/30">🚗 Mobilidade</Chip>}
-                    {!!candidate.availability && <Chip variant="neutral" className="text-xs bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">{String(candidate.availability)}</Chip>}
+                    {!!candidate.work_model && <Chip density="relaxed" variant="neutral" className="bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">{String(candidate.work_model)}</Chip>}
+                    {!!candidate.work_mode && <Chip density="relaxed" variant="neutral" className="bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">{String(candidate.work_mode)}</Chip>}
+                    {!!candidate.contract_type && <Chip density="relaxed" variant="neutral" className="bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">{String(candidate.contract_type)}</Chip>}
+                    {!!candidate.is_remote && <Chip density="relaxed" variant="neutral" className="bg-lia-bg-secondary dark:bg-lia-bg-primary text-lia-text-primary border-lia-border-default">🌐 Remoto</Chip>}
+                    {!!candidate.willing_to_relocate && <Chip density="relaxed" variant="success" >✈️ Aceita Mudança</Chip>}
+                    {!!candidate.mobility && <Chip density="relaxed" variant="neutral" className="border-wedo-purple/30">🚗 Mobilidade</Chip>}
+                    {!!candidate.availability && <Chip density="relaxed" variant="neutral" className="bg-lia-bg-secondary text-lia-text-primary border-lia-border-subtle">{String(candidate.availability)}</Chip>}
                   </div>
                   <div className="text-xs text-lia-text-secondary space-y-0.5">
                     <p className="font-semibold text-lia-text-primary">Datas</p>

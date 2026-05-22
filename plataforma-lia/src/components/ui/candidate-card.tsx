@@ -183,7 +183,7 @@ export function CandidateCard({
                   </Chip>
                 ))}
                 {skills.length > 6 && (
-                  <Chip variant="neutral" className="text-xs px-2 py-0.5 border-lia-border-subtle text-lia-text-secondary">
+                  <Chip density="relaxed" variant="neutral" className="px-2 py-0.5 border-lia-border-subtle text-lia-text-secondary">
                     +{skills.length - 6}
                   </Chip>
                 )}

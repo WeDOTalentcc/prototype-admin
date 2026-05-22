@@ -36,7 +36,7 @@ export const ActiveAlertsCard = React.memo(function ActiveAlertsCard({
           <div className="flex items-center gap-2">
             <Bell className="w-3.5 h-3.5 text-amber-500" />
             <CardTitle className={`${textStyles.label} font-semibold text-lia-text-primary`}>Alertas Ativos</CardTitle>
-            <Chip variant="neutral" className="text-xs font-inter">
+            <Chip density="relaxed" variant="neutral" className="font-inter">
               {activeAlerts.length}
             </Chip>
           </div>

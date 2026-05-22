@@ -79,7 +79,7 @@ export function CandidatePageHeader({
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-base font-semibold text-lia-text-primary">{_candidate.name as string}</h1>
-                <Chip variant="neutral" className="text-xs px-1.5 py-0">
+                <Chip density="relaxed" variant="neutral" className="px-1.5 py-0">
                   {_candidate.candidateId || _candidate.id}
                 </Chip>
                 <CandidateScoreBadge score={liaScore} format="percent" />

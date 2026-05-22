@@ -143,7 +143,7 @@ selectedCandidates.has(candidate.id)
 
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-lia-text-secondary">Etapa:</span>
-                  <Chip variant="neutral" className="text-xs">
+                  <Chip density="relaxed" variant="neutral" >
                     {availableStages.find(s => s.id === candidate.currentStage)?.name || candidate.currentStage}
                   </Chip>
                 </div>
@@ -162,12 +162,12 @@ selectedCandidates.has(candidate.id)
               <div className="mt-3 pt-3 border-t border-lia-border-subtle dark:border-lia-border-subtle">
                 <div className="flex flex-wrap gap-1">
                   {candidate.skills.slice(0, 3).map((skill) => (
-                    <Chip key={skill} variant="neutral" muted className="text-xs px-1 py-0">
+                    <Chip density="relaxed" key={skill} variant="neutral" muted className="px-1 py-0">
                       {skill}
                     </Chip>
                   ))}
                   {candidate.skills.length > 3 && (
-                    <Chip variant="neutral" className="text-xs px-1 py-0">
+                    <Chip density="relaxed" variant="neutral" className="px-1 py-0">
                       +{candidate.skills.length - 3}
                     </Chip>
                   )}

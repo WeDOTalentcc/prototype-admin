@@ -438,7 +438,7 @@ export function MessageComposer({
                 </label>
                 <div className="flex flex-wrap gap-1.5">
                   {aiResultModal.changesMade.map((change, idx) => (
-                    <Chip variant="neutral" muted key={idx} className="text-xs px-2 py-0.5 rounded-full bg-lia-interactive-active/30 text-wedo-cyan-dark">
+                    <Chip density="relaxed" variant="neutral" muted key={idx} className="px-2 py-0.5 rounded-full bg-lia-interactive-active/30 text-wedo-cyan-dark">
                       <Check className="w-3 h-3 mr-1" />
                       {change}
                     </Chip>

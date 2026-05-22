@@ -147,7 +147,7 @@ export function TechnicalRequirementsPanel({
                               <div className="flex items-center gap-2">
                                 <span className="text-sm font-medium">{req.name}</span>
                                 {req.required && (
-                                  <Chip variant="neutral" muted className="text-xs">
+                                  <Chip density="relaxed" variant="neutral" muted >
                                     Obrigatória
                                   </Chip>
                                 )}

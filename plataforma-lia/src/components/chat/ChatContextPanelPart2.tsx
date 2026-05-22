@@ -52,7 +52,7 @@ export function ChatContextPanelPart2({ contextData }: Props) {
                           <Chip variant="neutral" muted className="bg-status-warning/10 dark:bg-status-warning/20 text-lia-text-primary">Nota: {candidate.score}</Chip>
                         </div>
                         <div className="flex flex-wrap gap-2 mb-2">
-                          {candidate.highlights.map((highlight: string, i: number) => (<Chip key={`hl-${i}`} variant="neutral" className="text-xs border-lia-border-subtle">{highlight}</Chip>))}
+                          {candidate.highlights.map((highlight: string, i: number) => (<Chip density="relaxed" key={`hl-${i}`} variant="neutral" className="border-lia-border-subtle">{highlight}</Chip>))}
                         </div>
                         <p className="text-xs text-lia-text-tertiary">Status: {candidate.status}</p>
                       </div>

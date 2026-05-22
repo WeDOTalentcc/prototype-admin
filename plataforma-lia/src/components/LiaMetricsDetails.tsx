@@ -146,7 +146,7 @@ export function LiaMetricsDetails({
                   <div className="flex items-center justify-between text-xs mb-1">
                     <span className="font-medium text-lia-text-primary">{source.source}</span>
                     <div className="flex items-center gap-2">
-                      <Chip variant="neutral" className="text-xs px-1 py-0">
+                      <Chip density="relaxed" variant="neutral" className="px-1 py-0">
                         {source.count} cand.
                       </Chip>
                       <Chip variant="neutral" muted className={`text-xs px-1 py-0 ${

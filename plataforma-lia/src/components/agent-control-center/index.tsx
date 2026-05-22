@@ -694,7 +694,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                 <h3 className="font-medium font-sans text-lia-text-primary">
                   Atividade Recente
                 </h3>
-                <Chip variant="neutral" className="text-xs border-lia-border-default dark:border-lia-border-default">
+                <Chip density="relaxed" variant="neutral" className="border-lia-border-default dark:border-lia-border-default">
                   {activities.length} eventos
                 </Chip>
               </div>
@@ -798,7 +798,7 @@ export function AgentControlCenter({ className }: AgentControlCenterProps) {
                           {formatTimeAgo(activity.started_at)}
                         </span>
                         {activity.sla_breach && (
-                          <Chip variant="neutral" className="text-xs px-1 py-0">
+                          <Chip density="relaxed" variant="neutral" className="px-1 py-0">
                             SLA
                           </Chip>
                         )}

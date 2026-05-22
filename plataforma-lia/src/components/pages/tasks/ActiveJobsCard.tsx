@@ -56,7 +56,7 @@ export function ActiveJobsCard({
         <div className="flex items-center justify-between">
           <CardTitle className="text-sm font-open-sans font-semibold text-lia-text-primary">Minhas Vagas Ativas</CardTitle>
           <div className="flex items-center gap-2">
-            <Chip variant="neutral" className="text-xs font-inter">
+            <Chip density="relaxed" variant="neutral" className="font-inter">
               {filteredAndSortedJobs.length} vaga{filteredAndSortedJobs.length !== 1 ? 's' : ''}
             </Chip>
           </div>
@@ -92,7 +92,7 @@ export function ActiveJobsCard({
               <SlidersHorizontal className="w-3.5 h-3.5" />
               Filtros
               {activeJobFiltersCount > 0 && (
-                <Chip variant="neutral" muted className="ml-1 bg-lia-bg-primary text-lia-text-primary dark:bg-lia-bg-secondary text-xs h-4 px-1">
+                <Chip density="relaxed" variant="neutral" muted className="ml-1 bg-lia-bg-primary text-lia-text-primary dark:bg-lia-bg-secondary h-4 px-1">
                   {activeJobFiltersCount}
                 </Chip>
               )}
@@ -307,7 +307,7 @@ function ActiveFilterTags({
     <div className="flex items-center gap-2 flex-wrap">
       <span className="text-xs text-lia-text-primary">Filtros ativos:</span>
       {selectedDepartments.map(dept => (
-        <Chip key={dept} variant="neutral" muted className="text-xs flex items-center gap-1 pr-1">
+        <Chip density="relaxed" key={dept} variant="neutral" muted className="flex items-center gap-1 pr-1">
           {dept}
           <button onClick={() => setSelectedDepartments(selectedDepartments.filter(d => d !== dept))} className="hover:bg-lia-border-default dark:hover:bg-lia-border-medium rounded-full p-0.5" aria-label="Remover filtro">
             <X className="w-2.5 h-2.5" />
@@ -315,7 +315,7 @@ function ActiveFilterTags({
         </Chip>
       ))}
       {selectedUrgencies.map(urgency => (
-        <Chip key={urgency} variant="neutral" muted className="text-xs flex items-center gap-1 pr-1">
+        <Chip density="relaxed" key={urgency} variant="neutral" muted className="flex items-center gap-1 pr-1">
           {urgency === 'critical' ? 'Crítico' : urgency === 'urgent' ? 'Urgente' : 'Normal'}
           <button onClick={() => setSelectedUrgencies(selectedUrgencies.filter(u => u !== urgency))} className="hover:bg-lia-border-default dark:hover:bg-lia-border-medium rounded-full p-0.5" aria-label="Remover filtro">
             <X className="w-2.5 h-2.5" />
@@ -323,7 +323,7 @@ function ActiveFilterTags({
         </Chip>
       ))}
       {selectedPublications.map(pub => (
-        <Chip key={pub} variant="neutral" muted className="text-xs flex items-center gap-1 pr-1">
+        <Chip density="relaxed" key={pub} variant="neutral" muted className="flex items-center gap-1 pr-1">
           {pub === 'linkedin' ? 'LinkedIn' : pub === 'site' ? 'Site' : 'Indeed'}
           <button onClick={() => setSelectedPublications(selectedPublications.filter(p => p !== pub))} className="hover:bg-lia-border-default dark:hover:bg-lia-border-medium rounded-full p-0.5" aria-label="Remover filtro">
             <X className="w-2.5 h-2.5" />

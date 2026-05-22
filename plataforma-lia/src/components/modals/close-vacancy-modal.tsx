@@ -525,7 +525,7 @@ export function CloseVacancyModal({
                       {candidate.email || candidate.phone || candidate.stage}
                     </p>
                   </div>
-                  <Chip variant="neutral" className="text-xs">
+                  <Chip density="relaxed" variant="neutral" >
                     {candidate.stage}
                   </Chip>
                 </div>

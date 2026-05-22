@@ -140,7 +140,7 @@ export function ScoreCell({ score, showIcon = true }: { score: number; showIcon?
   const formattedScore = Number.isInteger(score) ? score : score.toFixed(1)
 
   return (
-    <Chip variant="neutral" muted className="text-xs px-1.5 py-0.5" style={getScoreStyle(score)}>
+    <Chip density="relaxed" variant="neutral" muted className="px-1.5 py-0.5" style={getScoreStyle(score)}>
       {showIcon && <Star className="w-2.5 h-2.5 mr-0.5" />}
       {formattedScore}
     </Chip>

@@ -324,7 +324,7 @@ export function SaveCommandModal({ isOpen, onClose, originalCommand, commandResu
               {tags.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {tags.map((tag, index) => (
-                    <Chip key={tag} variant="neutral" muted className="text-xs">
+                    <Chip density="relaxed" key={tag} variant="neutral" muted >
                       {tag}
                       <button
                         onClick={() => handleRemoveTag(tag)}

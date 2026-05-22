@@ -36,7 +36,7 @@ interface JobDescriptionPreviewProps {
 function SuggestionBadge({ isNew }: { isNew: boolean }) {
   if (!isNew) return null;
   return (
-    <Chip variant="neutral" className="ml-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-default dark:border-lia-border-default text-xs">
+    <Chip density="relaxed" variant="neutral" className="ml-2 bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-primary border-lia-border-default dark:border-lia-border-default">
       <Lightbulb className="w-3 h-3 mr-1" />
       Sugerido pela LIA
     </Chip>
@@ -46,7 +46,7 @@ function SuggestionBadge({ isNew }: { isNew: boolean }) {
 function AlertBadge({ message }: { message?: string }) {
   if (!message) return null;
   return (
-    <Chip variant="warning" className="ml-2 text-xs">
+    <Chip density="relaxed" variant="warning" className="ml-2">
       <AlertTriangle className="w-3 h-3 mr-1" />
       {message}
     </Chip>
@@ -305,7 +305,7 @@ export function JobDescriptionPreview({
               {data.compensation.market_comparison && (
                 <p className="flex items-center gap-2">
                   <strong>Comparativa de Mercado:</strong>
-                  <Chip variant="neutral" className="text-xs -dark border-wedo-cyan/30/30">
+                  <Chip density="relaxed" variant="neutral" className="-dark border-wedo-cyan/30/30">
                     {data.compensation.market_comparison}
                   </Chip>
                 </p>

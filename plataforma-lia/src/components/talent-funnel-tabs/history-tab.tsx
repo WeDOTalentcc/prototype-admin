@@ -263,7 +263,7 @@ export function HistoryTab({
                           <Clock className="w-3 h-3" />
                           {formatRelativeTime(item.timestamp, { includeTime: true })}
                         </span>
-                        <Chip variant="neutral" className="h-5 text-xs px-1.5">
+                        <Chip density="relaxed" variant="neutral" className="h-5 px-1.5">
                           {getModeLabel(item.mode)}
                         </Chip>
                         <span className="flex items-center gap-1">

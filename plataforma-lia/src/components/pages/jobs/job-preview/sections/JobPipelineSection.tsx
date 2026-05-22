@@ -362,9 +362,9 @@ export function JobPipelineSection({
                               <span className={`${textStyles.bodySmall}`}>LinkedIn</span>
                             </div>
                             {previewJob.publishedLinkedIn ? (
-                              <Chip variant="neutral" muted className="text-xs bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated">Publicado</Chip>
+                              <Chip density="relaxed" variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated">Publicado</Chip>
                             ) : (
-                              <Chip variant="neutral" muted className="text-xs bg-lia-bg-tertiary text-lia-text-primary">Não publicado</Chip>
+                              <Chip density="relaxed" variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary">Não publicado</Chip>
                             )}
                           </div>
                           <div className="flex items-center justify-between">
@@ -373,9 +373,9 @@ export function JobPipelineSection({
                               <span className={`${textStyles.bodySmall}`}>Site</span>
                             </div>
                             {previewJob.publishedWebsite ? (
-                              <Chip variant="neutral" muted className="text-xs bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated">Publicado</Chip>
+                              <Chip density="relaxed" variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated">Publicado</Chip>
                             ) : (
-                              <Chip variant="neutral" muted className="text-xs bg-lia-bg-tertiary text-lia-text-primary">Não publicado</Chip>
+                              <Chip density="relaxed" variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary">Não publicado</Chip>
                             )}
                           </div>
                           {previewJob.publishedIndeed !== undefined && (
@@ -385,9 +385,9 @@ export function JobPipelineSection({
                                 <span className={`${textStyles.bodySmall}`}>Indeed</span>
                               </div>
                               {previewJob.publishedIndeed ? (
-                                <Chip variant="neutral" muted className="text-xs bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated">Publicado</Chip>
+                                <Chip density="relaxed" variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary dark:bg-lia-bg-elevated">Publicado</Chip>
                               ) : (
-                                <Chip variant="neutral" muted className="text-xs bg-lia-bg-tertiary text-lia-text-primary">Não publicado</Chip>
+                                <Chip density="relaxed" variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary">Não publicado</Chip>
                               )}
                             </div>
                           )}

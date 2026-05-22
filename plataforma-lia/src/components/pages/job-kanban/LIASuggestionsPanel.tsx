@@ -77,7 +77,7 @@ export function LIASuggestionsPanel({ open, onClose, selectedTriagemQuestion }: 
                   <h4 className="text-sm font-medium text-lia-text-primary group-hover:text-lia-text-primary">
                     {pergunta}
                   </h4>
-                  <Chip variant="neutral" muted className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs">
+                  <Chip density="relaxed" variant="neutral" muted className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated">
                     {index === 0 ? t('recommendedBadge') : index === 1 ? t('popularBadge') : t('suggestedBadge')}
                   </Chip>
                 </div>

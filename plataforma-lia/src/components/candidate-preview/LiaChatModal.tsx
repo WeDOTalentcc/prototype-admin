@@ -173,7 +173,7 @@ export function LiaChatModal({
                   {candidate.position} • Nota: {formatScorePercent(candidate.score ?? 0)}
                 </div>
               </div>
-              <Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle text-xs px-2 py-0.5">
+              <Chip density="relaxed" variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle px-2 py-0.5">
                 Foco Individual
               </Chip>
             </div>
@@ -184,7 +184,7 @@ export function LiaChatModal({
         <div className="px-4 py-2 bg-lia-bg-primary/50/50">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-medium text-lia-text-secondary">Ações rápidas sugeridas</span>
-            <Chip variant="neutral" muted className="bg-status-success/15 text-lia-text-primary dark:bg-status-success text-xs px-1.5 py-0.5">
+            <Chip density="relaxed" variant="neutral" muted className="bg-status-success/15 text-lia-text-primary dark:bg-status-success px-1.5 py-0.5">
               Score {formatScorePercent(candidate.score ?? 0)}
             </Chip>
           </div>

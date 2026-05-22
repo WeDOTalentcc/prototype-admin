@@ -283,19 +283,19 @@ export function AdvancedReportExporter({
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
                             <h4 className="font-medium text-lia-text-primary">{template.name}</h4>
-                            <Chip variant="neutral" className="text-xs">
+                            <Chip density="relaxed" variant="neutral" >
                               {template.format.toUpperCase()}
                             </Chip>
                           </div>
                           <p className="text-sm text-lia-text-secondary mb-2">{template.description}</p>
                           <div className="flex flex-wrap gap-1">
                             {template.sections.slice(0, 3).map((section, index) => (
-                              <Chip key={section} variant="neutral" muted className="text-xs">
+                              <Chip density="relaxed" key={section} variant="neutral" muted >
                                 {section}
                               </Chip>
                             ))}
                             {template.sections.length > 3 && (
-                              <Chip variant="neutral" muted className="text-xs">
+                              <Chip density="relaxed" variant="neutral" muted >
                                 +{template.sections.length - 3} mais
                               </Chip>
                             )}

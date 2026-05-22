@@ -158,7 +158,7 @@ export function JobsListContent(props: JobsListContentProps) {
               ]}
             />
             {selectedJobsForBatch.size > 0 && (
-              <Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default text-xs">
+              <Chip density="relaxed" variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default">
                 🎯 {selectedJobsForBatch.size}
               </Chip>
             )}
@@ -179,7 +179,7 @@ export function JobsListContent(props: JobsListContentProps) {
               icon={<Target />}
               trailing={
                 getActiveJobFiltersCount() > 0 ? (
-                  <Chip variant="neutral" muted className="ml-1 text-xs">{getActiveJobFiltersCount()}</Chip>
+                  <Chip density="relaxed" variant="neutral" muted className="ml-1">{getActiveJobFiltersCount()}</Chip>
                 ) : null
               }
             >
@@ -203,7 +203,7 @@ export function JobsListContent(props: JobsListContentProps) {
       <div className="flex-shrink-0 flex items-center justify-between mb-2">
         <div className="text-xs text-lia-text-primary flex items-center gap-3">
           {(searchTerm || selectedDaysFilter !== 'todas') && (
-            <Chip variant="neutral" className="text-xs bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default font-medium">{t('activeFilters')}</Chip>
+            <Chip density="relaxed" variant="neutral" className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default dark:bg-lia-bg-secondary dark:border-lia-border-default font-medium">{t('activeFilters')}</Chip>
           )}
         </div>
         <div className="flex items-center gap-2" />
@@ -276,7 +276,7 @@ export function JobsListContent(props: JobsListContentProps) {
                 </span>
               </div>
               {selectedJobsForBatch.size > 0 && (
-                <Chip variant="neutral" muted className="text-xs px-1.5 py-0.5">{selectedJobsForBatch.size}</Chip>
+                <Chip density="relaxed" variant="neutral" muted className="px-1.5 py-0.5">{selectedJobsForBatch.size}</Chip>
               )}
             </div>
           ) : (

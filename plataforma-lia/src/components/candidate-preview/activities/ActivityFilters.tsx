@@ -35,7 +35,7 @@ export function ActivityFilters({
         <h4 className="text-xs font-medium text-lia-text-primary flex items-center gap-1.5">
           <Activity className="w-3.5 h-3.5 text-lia-text-primary" />
           Feed de Atividades
-          <Chip variant="neutral" muted className="text-xs px-1 py-0">{totalCount}</Chip>
+          <Chip density="relaxed" variant="neutral" muted className="px-1 py-0">{totalCount}</Chip>
         </h4>
         <div className="flex items-center gap-2">
           <select

@@ -149,7 +149,7 @@ export function OnboardingOverview() {
                 </div>
                 <div className="text-right">
                   <p className="text-sm font-medium text-lia-text-primary">{item.dueDate}</p>
-                  <Chip variant="neutral" className="text-xs">
+                  <Chip density="relaxed" variant="neutral" >
                     {item.priority === 'high' ? 'Alta' : item.priority === 'medium' ? 'Média' : 'Baixa'}
                   </Chip>
                 </div>

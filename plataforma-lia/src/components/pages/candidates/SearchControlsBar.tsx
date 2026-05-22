@@ -35,13 +35,13 @@ export function SearchControlsBar({
   return (
     <div data-testid="search-controls-bar" className="flex items-center gap-3">
       {selectedCandidatesForBatch.size > 0 && (
-        <Chip variant="neutral" muted data-testid="batch-selection-count" className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-0 text-xs font-medium">
+        <Chip density="relaxed" variant="neutral" muted data-testid="batch-selection-count" className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-0 font-medium">
           🎯 {selectedCandidatesForBatch.size}
         </Chip>
       )}
 
       {searchSortBy !== 'relevance' && (
-        <Chip variant="neutral" muted className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-0 text-xs font-medium gap-1">
+        <Chip density="relaxed" variant="neutral" muted className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-0 font-medium gap-1">
           <ArrowUpDown className="w-3 h-3" />
           {searchSortBy === 'score_desc' ? t('controls.sortScoreDesc') :
            searchSortBy === 'score_asc' ? t('controls.sortScoreAsc') :

@@ -85,7 +85,7 @@ export function BehavioralCompetenciesPanel({
             <span className="flex items-center gap-2">
               🧠 Competências Comportamentais
             </span>
-            <Chip variant="neutral" muted className="text-xs">
+            <Chip density="relaxed" variant="neutral" muted >
               Média: {getAverageLevel()}
             </Chip>
           </CardTitle>

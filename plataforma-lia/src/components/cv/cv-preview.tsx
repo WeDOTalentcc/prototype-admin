@@ -401,7 +401,7 @@ export function CVPreview({
                 <div className="flex items-center gap-2">
                   <Briefcase className="w-4 h-4 text-lia-text-primary" />
                   <h3 className="font-medium text-sm">Experiências Profissionais</h3>
-                  <Chip variant="neutral" muted className="text-xs">
+                  <Chip density="relaxed" variant="neutral" muted >
                     {editedCV.experiences.length}
                   </Chip>
                 </div>
@@ -423,7 +423,7 @@ export function CVPreview({
                               </p>
                             </div>
                             {exp.is_current && (
-                              <Chip variant="neutral" className="text-xs">Atual</Chip>
+                              <Chip density="relaxed" variant="neutral" >Atual</Chip>
                             )}
                           </div>
                           {exp.description && (
@@ -440,7 +440,7 @@ export function CVPreview({
                 <div className="flex items-center gap-2">
                   <GraduationCap className="w-4 h-4 text-lia-text-primary" />
                   <h3 className="font-medium text-sm">Formação Acadêmica</h3>
-                  <Chip variant="neutral" muted className="text-xs">
+                  <Chip density="relaxed" variant="neutral" muted >
                     {editedCV.education.length}
                   </Chip>
                 </div>

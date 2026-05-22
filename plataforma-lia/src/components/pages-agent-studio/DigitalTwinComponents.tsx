@@ -507,7 +507,7 @@ export function TwinCard({ twin, onEvaluate, onManageTwin }: TwinCardProps) {
             {twin.specialties.length > 0 && (
               <div className="flex gap-1 mt-1 flex-wrap">
                 {twin.specialties.slice(0, 4).map((s) => (
-                  <Chip variant="neutral" muted key={s} className="bg-cyan-50 dark:bg-cyan-950/30 text-wedo-cyan text-xs">
+                  <Chip density="relaxed" variant="neutral" muted key={s} className="bg-cyan-50 dark:bg-cyan-950/30 text-wedo-cyan">
                     {s}
                   </Chip>
                 ))}

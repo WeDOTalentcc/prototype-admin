@@ -128,7 +128,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
                     <h5 className={`${textStyles.label} mb-1`}>Frontend</h5>
                     <div className="flex flex-wrap gap-1">
                       {['React', 'TypeScript', 'Next.js', 'Tailwind CSS'].map((skill, index) => (
-                        <Chip variant="neutral" muted key={skill} className="text-xs bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-0">
+                        <Chip density="relaxed" variant="neutral" muted key={skill} className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-0">
                           {skill}
                         </Chip>
                       ))}
@@ -138,7 +138,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
                     <h5 className="text-xs font-medium text-lia-text-primary mb-2">Backend</h5>
                     <div className="flex flex-wrap gap-2">
                       {['Node.js', 'Python', 'PostgreSQL', 'MongoDB'].map((skill, index) => (
-                        <Chip variant="neutral" muted key={skill} className="text-xs  border-0">
+                        <Chip density="relaxed" variant="neutral" muted key={skill} className="border-0">
                           {skill}
                         </Chip>
                       ))}
@@ -148,7 +148,7 @@ export function CandidatePreviewPanel({ candidate, onClose }: { candidate: Candi
                     <h5 className="text-xs font-medium text-lia-text-primary mb-2">{t('softSkills')}</h5>
                     <div className="flex flex-wrap gap-2">
                       {[t('skillLeadership'), t('skillCommunication'), t('skillTeamwork'), t('skillProblemSolving')].map((skill, index) => (
-                        <Chip variant="neutral" muted key={index} className="text-xs  border-0">
+                        <Chip density="relaxed" variant="neutral" muted key={index} className="border-0">
                           {skill}
                         </Chip>
                       ))}

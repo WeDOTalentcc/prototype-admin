@@ -16,23 +16,23 @@ export function renderPearchCell(
     case 'is_open_to_work': {
       const isOpenToWork = candidate.is_opentowork || candidate.is_open_to_work
       return isOpenToWork ? (
-        <Chip variant="neutral" muted className="text-xs">Open to Work</Chip>
+        <Chip density="relaxed" variant="neutral" muted >Open to Work</Chip>
       ) : <span className="text-xs text-lia-text-disabled">—</span>
     }
 
     case 'is_decision_maker':
       return candidate.is_decision_maker ? (
-        <Chip variant="neutral" muted className="text-xs">Decision Maker</Chip>
+        <Chip density="relaxed" variant="neutral" muted >Decision Maker</Chip>
       ) : <span className="text-xs text-lia-text-disabled">—</span>
 
     case 'is_top_universities':
       return candidate.is_top_universities ? (
-        <Chip variant="neutral" muted className="text-xs bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary">Top University</Chip>
+        <Chip density="relaxed" variant="neutral" muted className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary">Top University</Chip>
       ) : <span className="text-xs text-lia-text-disabled">—</span>
 
     case 'is_hiring':
       return candidate.is_hiring ? (
-        <Chip variant="neutral" muted className="text-xs">{t('pearchHiring')}</Chip>
+        <Chip density="relaxed" variant="neutral" muted >{t('pearchHiring')}</Chip>
       ) : <span className="text-xs text-lia-text-disabled">—</span>
 
     case 'headline':

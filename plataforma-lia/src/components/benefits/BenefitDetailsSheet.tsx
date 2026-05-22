@@ -286,15 +286,15 @@ function BenefitCard({ benefit, isHighlighted = false }: BenefitCardProps) {
 
       <div className="flex flex-wrap gap-1 mt-2">
         {benefit.is_mandatory && (
-          <Chip variant="neutral" muted className="text-xs">Obrigatório</Chip>
+          <Chip density="relaxed" variant="neutral" muted >Obrigatório</Chip>
         )}
         {benefit.is_discount && (
-          <Chip variant="danger" className="text-xs">
+          <Chip density="relaxed" variant="danger" >
             Desconto
           </Chip>
         )}
         {benefit.provider && (
-          <Chip variant="neutral" className="text-xs">{benefit.provider}</Chip>
+          <Chip density="relaxed" variant="neutral" >{benefit.provider}</Chip>
         )}
       </div>
     </div>

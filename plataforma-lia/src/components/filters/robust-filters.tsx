@@ -147,7 +147,7 @@ export function RobustFilters({
                 </span>
               )}
               {activeFiltersCount > 0 && (
-                <Chip variant="neutral" muted className="text-xs">
+                <Chip density="relaxed" variant="neutral" muted >
                   {activeFiltersCount}
                 </Chip>
               )}
@@ -377,7 +377,7 @@ export function RobustFilters({
             Filtros aplicados ({activeFiltersCount}):
           </span>
           {filters.status.map((status) => (
-            <Chip key={status} variant="neutral" muted className="text-xs">
+            <Chip density="relaxed" key={status} variant="neutral" muted >
               {statuses.find(s => s.id === status)?.label}
               <button
                 onClick={() => toggleArrayFilter('status', status)}
@@ -388,7 +388,7 @@ export function RobustFilters({
             </Chip>
           ))}
           {filters.location.map((location) => (
-            <Chip key={location} variant="neutral" muted className="text-xs">
+            <Chip density="relaxed" key={location} variant="neutral" muted >
               📍 {location}
               <button
                 onClick={() => toggleArrayFilter('location', location)}
@@ -399,7 +399,7 @@ export function RobustFilters({
             </Chip>
           ))}
           {filters.skills.map((skill) => (
-            <Chip key={skill} variant="neutral" muted className="text-xs">
+            <Chip density="relaxed" key={skill} variant="neutral" muted >
               🏷️ {skill}
               <button
                 onClick={() => toggleArrayFilter('skills', skill)}

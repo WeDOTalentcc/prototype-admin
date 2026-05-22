@@ -83,7 +83,7 @@ export function ActivityGenericEmailDetails({ activity }: ActivityEmailDetailsPr
             {activity.type === 'email-sent' ? 'Email Enviado' : 'Email Recebido'}
           </h5>
           {activity.details.opened && (
-            <Chip variant="neutral" muted className="text-xs px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-primary">
+            <Chip density="relaxed" variant="neutral" muted className="px-1.5 py-0.5 bg-lia-bg-tertiary text-lia-text-primary">
               ✓ Lido
             </Chip>
           )}
@@ -116,7 +116,7 @@ export function ActivityGenericEmailDetails({ activity }: ActivityEmailDetailsPr
                   <p className={`${textStyles.bodySmall} mb-1`}>📎 Anexos:</p>
                   <div className="flex flex-wrap gap-1">
                     {activity.details.attachments.map((file: string, i: number) => (
-                      <Chip key={`file-${i}`} variant="neutral" className="text-xs px-1.5 py-0.5">
+                      <Chip density="relaxed" key={`file-${i}`} variant="neutral" className="px-1.5 py-0.5">
                         {file}
                       </Chip>
                     ))}

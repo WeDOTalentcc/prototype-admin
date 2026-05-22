@@ -148,7 +148,7 @@ export function ExportTools({ data, className }: ExportToolsProps) {
                   }`}
                 >
                   {format.recommended && (
-                    <Chip variant="neutral" muted className="absolute -top-2 -right-2 bg-wedo-orange text-white text-xs">
+                    <Chip density="relaxed" variant="neutral" muted className="absolute -top-2 -right-2 bg-wedo-orange text-white">
                       Recomendado
                     </Chip>
                   )}

@@ -24,22 +24,22 @@ export function JobListItem({ job, onLIAAction, onNavigate }: JobListItemProps) 
         <div className="flex-1 space-y-1">
           <div className="flex items-center gap-2 flex-wrap">
             <h3 className="font-semibold text-sm text-lia-text-primary">{job.title}</h3>
-            <Chip variant="neutral" className="text-xs">{job.jobId}</Chip>
+            <Chip density="relaxed" variant="neutral" >{job.jobId}</Chip>
             {getUrgencyBadge(job.urgencyLevel, job.daysOpen)}
             {job.publishedLinkedIn && (
-              <Chip variant="neutral" muted className="border-transparent dark:bg-wedo-cyan/20 dark:text-wedo-cyan text-xs flex items-center gap-1 font-medium">
+              <Chip density="relaxed" variant="neutral" muted className="border-transparent dark:bg-wedo-cyan/20 dark:text-wedo-cyan flex items-center gap-1 font-medium">
                 <Linkedin className="w-2.5 h-2.5" />
                 LI
               </Chip>
             )}
             {job.publishedWebsite && (
-              <Chip variant="neutral" muted className="border-transparent dark:bg-wedo-green/20 dark:text-wedo-green text-xs flex items-center gap-1 font-medium">
+              <Chip density="relaxed" variant="neutral" muted className="border-transparent dark:bg-wedo-green/20 dark:text-wedo-green flex items-center gap-1 font-medium">
                 <Globe className="w-2.5 h-2.5" />
                 Site
               </Chip>
             )}
             {job.publishedIndeed && (
-              <Chip variant="neutral" muted className="border-transparent dark:bg-wedo-orange/20 dark:text-wedo-orange text-xs flex items-center gap-1 font-medium">
+              <Chip density="relaxed" variant="neutral" muted className="border-transparent dark:bg-wedo-orange/20 dark:text-wedo-orange flex items-center gap-1 font-medium">
                 <Briefcase className="w-2.5 h-2.5" />
                 Indeed
               </Chip>

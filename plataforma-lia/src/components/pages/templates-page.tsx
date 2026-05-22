@@ -295,7 +295,7 @@ export function TemplatesPage() {
                       <span className="ml-1 capitalize">{template.category}</span>
                     </Chip>
                     {template.isShared && (
-                      <Chip variant="neutral" className="text-xs">
+                      <Chip density="relaxed" variant="neutral" >
                         <Users className="w-3 h-3 mr-1" />
                         Compartilhado
                       </Chip>
@@ -317,7 +317,7 @@ export function TemplatesPage() {
               {/* Tags */}
               <div className="flex flex-wrap gap-1 mb-3">
                 {template.tags.map((tag, index) => (
-                  <Chip key={tag} variant="neutral" className="text-xs">
+                  <Chip density="relaxed" key={tag} variant="neutral" >
                     {tag}
                   </Chip>
                 ))}

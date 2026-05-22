@@ -251,7 +251,7 @@ function CandidateKanbanCard({ candidate, onDragStart, onClick }: CandidateKanba
           {daysUntilStart > 0 && (
             <div className="flex items-center justify-between text-xs">
               <span className="text-lia-text-secondary">Faltam:</span>
-              <Chip variant="neutral" className="text-xs">
+              <Chip density="relaxed" variant="neutral" >
                 {daysUntilStart} dias
               </Chip>
             </div>

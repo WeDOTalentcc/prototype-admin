@@ -29,7 +29,7 @@ export const FilterSectionOpcoes = React.memo(function FilterSectionOpcoes({
               <Zap className="w-3.5 h-3.5 text-lia-text-secondary" />
               <span className="font-medium text-xs">Custo Estimado</span>
             </div>
-            <Chip variant="neutral" className="text-xs px-1.5 py-0.5 border-lia-border-medium text-lia-text-primary">
+            <Chip density="relaxed" variant="neutral" className="px-1.5 py-0.5 border-lia-border-medium text-lia-text-primary">
               Tempo Real
             </Chip>
           </div>

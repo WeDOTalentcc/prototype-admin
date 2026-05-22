@@ -124,7 +124,7 @@ export default function AjudaPage() {
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {["Python","JavaScript","React","Node.js","PostgreSQL","Docker","AWS","Git"].map((skill) => (
-                    <Chip key={skill} variant="neutral" className="text-xs border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary">
+                    <Chip density="relaxed" key={skill} variant="neutral" className="border-lia-btn-primary-bg dark:border-lia-border-subtle bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary dark:text-lia-text-tertiary">
                       {skill}
                     </Chip>
                   ))}
@@ -172,7 +172,7 @@ export default function AjudaPage() {
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {["Nome","Email","Telefone","Experiências profissionais","Educação","Certificações","Idiomas"].map((field) => (
-                    <Chip key={field} variant="success" className="text-xs">
+                    <Chip density="relaxed" key={field} variant="success" >
                       {field}
                     </Chip>
                   ))}

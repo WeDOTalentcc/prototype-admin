@@ -58,7 +58,7 @@ export function TaskModal({ task, isOpen, onClose, onComplete }: TaskModalProps)
             >
               {task.priority ==="high" ?"Alta" : task.priority ==="medium" ?"Média" :"Baixa"}
             </Chip>
-            <Chip variant="neutral" className="text-xs">
+            <Chip density="relaxed" variant="neutral" >
               {task.category}
             </Chip>
           </div>

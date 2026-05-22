@@ -57,7 +57,7 @@ export function LiaMetricsFunnelSection({ data }: LiaMetricsFunnelSectionProps) 
                           <span className="text-xs text-lia-text-secondary">
                             {stage.count}/{stage.total}
                           </span>
-                          <Chip className="text-xs px-1.5 py-0.5" variant="neutral">
+                          <Chip density="relaxed" className="px-1.5 py-0.5" variant="neutral">
                             {stage.rate.toFixed(0)}%
                           </Chip>
                         </div>

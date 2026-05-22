@@ -62,8 +62,8 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
                   {t('questionUX1')}
                 </h4>
                 <div className="flex items-center gap-2">
-                  <Chip variant="neutral" muted className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs">{t('recommendedBadge')}</Chip>
-                  <Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary text-xs">2 min</Chip>
+                  <Chip density="relaxed" variant="neutral" muted className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated">{t('recommendedBadge')}</Chip>
+                  <Chip density="relaxed" variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary">2 min</Chip>
                 </div>
               </div>
               <div className="space-y-1 ml-2 text-xs text-lia-text-secondary">
@@ -100,8 +100,8 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
                   {t('questionUX2')}
                 </h4>
                 <div className="flex items-center gap-2">
-                  <Chip variant="neutral" muted className="dark:bg-lia-bg-tertiary text-xs">{t('highRelevanceBadge')}</Chip>
-                  <Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary text-xs">3 min</Chip>
+                  <Chip density="relaxed" variant="neutral" muted className="dark:bg-lia-bg-tertiary">{t('highRelevanceBadge')}</Chip>
+                  <Chip density="relaxed" variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary">3 min</Chip>
                 </div>
               </div>
               <div className="space-y-1 ml-2 text-xs text-lia-text-secondary">
@@ -138,8 +138,8 @@ export function LIAQuestionsPanel({ open, onClose }: LIAQuestionsPanelProps) {
                   {t('questionUX3')}
                 </h4>
                 <div className="flex items-center gap-2">
-                  <Chip variant="neutral" muted className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated text-xs">{t('conceptualBadge')}</Chip>
-                  <Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary text-xs">2 min</Chip>
+                  <Chip density="relaxed" variant="neutral" muted className="bg-lia-interactive-active text-lia-text-primary dark:bg-lia-bg-elevated">{t('conceptualBadge')}</Chip>
+                  <Chip density="relaxed" variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-primary">2 min</Chip>
                 </div>
               </div>
               <div className="space-y-1 ml-2 text-xs text-lia-text-secondary">

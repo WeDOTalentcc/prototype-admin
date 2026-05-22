@@ -118,7 +118,7 @@ export function CandidatePageActivitiesTab({
             <h4 className="text-sm font-medium text-lia-text-primary flex items-center gap-1.5">
               <Activity className="w-4 h-4 text-lia-text-secondary" />
               Feed de Atividades
-              <Chip variant="neutral" muted className="text-xs px-1.5 py-0">{filteredActivities.length}</Chip>
+              <Chip density="relaxed" variant="neutral" muted className="px-1.5 py-0">{filteredActivities.length}</Chip>
             </h4>
             <div className="flex items-center gap-2">
               <select
@@ -242,7 +242,7 @@ export function CandidatePageActivitiesTab({
             <div className="flex items-center gap-2">
               <Brain className="w-4 h-4 text-wedo-cyan" />
               <CardTitle className="text-sm">Previsão de Próximas Etapas - IA</CardTitle>
-              <Chip variant="neutral" muted className="text-xs px-1.5 py-0.5 bg-wedo-purple text-white">
+              <Chip density="relaxed" variant="neutral" muted className="px-1.5 py-0.5 bg-wedo-purple text-white">
                 Análise Preditiva
               </Chip>
             </div>

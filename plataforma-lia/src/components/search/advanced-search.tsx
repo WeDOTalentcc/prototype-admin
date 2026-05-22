@@ -107,7 +107,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
             <div className="absolute right-2 flex items-center gap-1">
               {activeFiltersCount > 0 && (
                 <div>
-                  <Chip variant="neutral" muted className="text-xs">
+                  <Chip density="relaxed" variant="neutral" muted >
                     {activeFiltersCount}
                   </Chip>
                 </div>
@@ -285,7 +285,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
         >
           <span className="text-xs text-lia-text-secondary">Filtros ativos:</span>
           {filters.categories.map((category) => (
-            <Chip key={category} variant="neutral" muted className="text-xs">
+            <Chip density="relaxed" key={category} variant="neutral" muted >
               {filterCategories.find(c => c.id === category)?.label}
               <button
                 onClick={() => toggleArrayFilter('categories', category)}
@@ -296,7 +296,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
             </Chip>
           ))}
           {filters.types.map((type) => (
-            <Chip key={type} variant="neutral" muted className="text-xs">
+            <Chip density="relaxed" key={type} variant="neutral" muted >
               {filterTypes.find(t => t.id === type)?.label}
               <button
                 onClick={() => toggleArrayFilter('types', type)}
@@ -307,7 +307,7 @@ export function AdvancedSearch({ filters, onFiltersChange, suggestions = [], cla
             </Chip>
           ))}
           {filters.tags.map((tag) => (
-            <Chip key={tag} variant="neutral" muted className="text-xs">
+            <Chip density="relaxed" key={tag} variant="neutral" muted >
               #{tag}
               <button
                 onClick={() => toggleArrayFilter('tags', tag)}

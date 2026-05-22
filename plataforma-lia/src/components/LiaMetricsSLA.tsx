@@ -136,7 +136,7 @@ export function LiaMetricsSLA({
               <div className="p-3 bg-lia-bg-tertiary rounded-xl">
                 <div className="flex items-center justify-between mb-2">
                   <Timer className="w-5 h-5 text-lia-text-secondary" />
-                  <Chip variant="neutral" muted className="bg-status-success text-white text-xs">
+                  <Chip density="relaxed" variant="neutral" muted className="bg-status-success text-white">
                     ✓ No Prazo
                   </Chip>
                 </div>
@@ -150,7 +150,7 @@ export function LiaMetricsSLA({
               <div className="p-3 bg-status-success/10 dark:bg-lia-bg-secondary rounded-xl">
                 <div className="flex items-center justify-between mb-2">
                   <Timer className="w-5 h-5 text-status-success" />
-                  <Chip variant="neutral" muted className="bg-status-success text-white text-xs">
+                  <Chip density="relaxed" variant="neutral" muted className="bg-status-success text-white">
                     ✓ No Prazo
                   </Chip>
                 </div>
@@ -164,7 +164,7 @@ export function LiaMetricsSLA({
               <div className="p-3 bg-status-warning/10 dark:bg-lia-bg-secondary rounded-xl">
                 <div className="flex items-center justify-between mb-2">
                   <Timer className="w-5 h-5 text-status-warning" />
-                  <Chip variant="neutral" muted className="bg-status-warning text-white text-xs">
+                  <Chip density="relaxed" variant="neutral" muted className="bg-status-warning text-white">
                     ⚠ Atenção
                   </Chip>
                 </div>
@@ -178,7 +178,7 @@ export function LiaMetricsSLA({
               <div className="p-3 bg-wedo-purple/10 dark:bg-lia-bg-secondary rounded-xl">
                 <div className="flex items-center justify-between mb-2">
                   <Clock className="w-5 h-5 text-wedo-purple" />
-                  <Chip variant="neutral" muted className="text-xs">
+                  <Chip density="relaxed" variant="neutral" muted >
                     Total
                   </Chip>
                 </div>

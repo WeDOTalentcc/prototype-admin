@@ -187,7 +187,7 @@ export function AsyncJobProgress({
 
         <div className="flex items-center gap-2">
           {usePolling && status !=="completed" && status !=="failed" && (
-            <Chip variant="neutral" className="text-xs px-1.5 py-0 text-lia-text-secondary">
+            <Chip density="relaxed" variant="neutral" className="px-1.5 py-0 text-lia-text-secondary">
               <RefreshCw className="h-2.5 w-2.5 mr-1" />
               polling
             </Chip>

@@ -169,7 +169,7 @@ export function LiaScreeningGuide({ isOpen, onClose, job, candidate }: LiaScreen
               <Chip variant="neutral" >
                 Roteiro Personalizado para {j.str('title')}
               </Chip>
-              <Chip variant="neutral" className="text-xs">
+              <Chip density="relaxed" variant="neutral" >
                 Gerado pela LIA
               </Chip>
             </div>

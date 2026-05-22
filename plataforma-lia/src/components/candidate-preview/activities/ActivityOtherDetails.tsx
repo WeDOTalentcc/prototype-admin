@@ -361,7 +361,7 @@ export function ActivityMiscDetails({ activity }: { activity: ActivityData & { d
               <p className={textStyles.bodySmall}>Documentos Verificados</p>
               <div className="flex flex-wrap gap-1">
                 {activity.details.documentsVerified?.map((doc: string) => (
-                  <Chip key={doc} variant="neutral" className="text-xs px-1.5 py-0">{doc}</Chip>
+                  <Chip density="relaxed" key={doc} variant="neutral" className="px-1.5 py-0">{doc}</Chip>
                 ))}
               </div>
             </div>
@@ -424,7 +424,7 @@ export function ActivityMiscDetails({ activity }: { activity: ActivityData & { d
               {activity.details.technicalQuestions.map((q: Record<string, unknown>, i: number) => (
                 <div key={i} className="flex items-center justify-between">
                   <span className={textStyles.bodySmall}>{String(q.question ?? '')}</span>
-                  <Chip variant="neutral" muted className="text-xs px-1 py-0">{String(q.score ?? 0)}/10</Chip>
+                  <Chip density="relaxed" variant="neutral" muted className="px-1 py-0">{String(q.score ?? 0)}/10</Chip>
                 </div>
               ))}
             </div>

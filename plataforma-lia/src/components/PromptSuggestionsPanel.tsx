@@ -259,7 +259,7 @@ export function PromptSuggestionsPanel({
         <div className="flex items-center gap-2">
           <LIAIcon size="sm" />
           <span className="text-sm font-medium text-lia-text-primary">💡 Sugestões Inteligentes</span>
-          <Chip variant="neutral" className="text-xs">
+          <Chip density="relaxed" variant="neutral" >
             {suggestions.length} disponíveis
           </Chip>
         </div>

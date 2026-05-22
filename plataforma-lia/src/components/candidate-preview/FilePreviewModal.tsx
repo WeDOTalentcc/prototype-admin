@@ -275,7 +275,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                       </p>
                       <div className="flex items-center justify-between mt-2 pt-2 border-t border-lia-border-subtle">
                         <span className={textStyles.bodySmall}>Score Geral</span>
-                        <Chip variant="neutral" muted className="text-xs px-2 py-0.5 bg-status-success text-white" >
+                        <Chip density="relaxed" variant="neutral" muted className="px-2 py-0.5 bg-status-success text-white" >
                           91% - Altamente Recomendado
                         </Chip>
                       </div>
@@ -294,7 +294,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                   {/* Indicador do tipo de vídeo */}
                   <div className="mb-3 p-2 bg-lia-bg-secondary border border-lia-border-subtle rounded-xl">
                     <div className="flex items-center gap-2">
-                      <Chip variant="neutral" muted className="text-xs px-1.5 py-0.5">
+                      <Chip density="relaxed" variant="neutral" muted className="px-1.5 py-0.5">
                         {selectedFile.videoType === 'interview' ? 'Entrevista Gravada' : 'Vídeo de Triagem'}
                       </Chip>
                       <span className={textStyles.bodySmall}>Duração: {selectedFile.duration || '3:45'}</span>
@@ -462,7 +462,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                       </p>
                       <div className="flex items-center justify-between mt-2 pt-2 border-t border-lia-border-subtle">
                         <span className={textStyles.bodySmall}>Score Geral</span>
-                        <Chip variant="neutral" muted className="text-xs px-2 py-0.5 bg-status-success text-white" >
+                        <Chip density="relaxed" variant="neutral" muted className="px-2 py-0.5 bg-status-success text-white" >
                           93% - Altamente Recomendado
                         </Chip>
                       </div>
@@ -481,7 +481,7 @@ export function FilePreviewModal({ showPreview, selectedFile, previewType, onClo
                   {/* Indicador do tipo de áudio */}
                   <div className="mb-3 p-2 bg-lia-bg-secondary border border-lia-border-subtle rounded-xl">
                     <div className="flex items-center gap-2">
-                      <Chip variant="neutral" muted className="text-xs px-1.5 py-0.5 border-0">
+                      <Chip density="relaxed" variant="neutral" muted className="px-1.5 py-0.5 border-0">
                         {selectedFile.audioType === 'interview' ? 'Entrevista Gravada' : 'Áudio de Triagem'}
                       </Chip>
                       <span className={textStyles.bodySmall}>Duração: {selectedFile.duration || '4:32'}</span>

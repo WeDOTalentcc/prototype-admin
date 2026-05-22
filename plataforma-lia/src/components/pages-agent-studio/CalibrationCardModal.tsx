@@ -295,7 +295,7 @@ export default function CalibrationCardModal({
               {candidate.skills?.length > 0 && (
                 <div className="flex flex-wrap gap-1.5 mb-4">
                   {candidate.skills.slice(0, 8).map(skill => (
-                    <Chip variant="neutral" muted key={skill} className="bg-lia-bg-tertiary text-lia-text-secondary text-xs">{skill}</Chip>
+                    <Chip density="relaxed" variant="neutral" muted key={skill} className="bg-lia-bg-tertiary text-lia-text-secondary">{skill}</Chip>
                   ))}
                 </div>
               )}

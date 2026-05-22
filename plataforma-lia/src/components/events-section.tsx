@@ -187,9 +187,9 @@ export function EventsSection() {
 
   const getPriorityBadge = (priority: string) => {
     const badges = {
-      high: <Chip variant="danger" className="text-xs">Urgente</Chip>,
-      medium: <Chip variant="warning" className="text-xs">Média</Chip>,
-      low: <Chip variant="neutral" className="text-xs border-lia-border-subtle text-lia-text-primary dark:border-lia-border-subtle">Baixa</Chip>
+      high: <Chip density="relaxed" variant="danger" >Urgente</Chip>,
+      medium: <Chip density="relaxed" variant="warning" >Média</Chip>,
+      low: <Chip density="relaxed" variant="neutral" className="border-lia-border-subtle text-lia-text-primary dark:border-lia-border-subtle">Baixa</Chip>
     }
     return badges[priority as keyof typeof badges]
   }
@@ -223,7 +223,7 @@ export function EventsSection() {
               {event.title}
             </h4>
             {event.isSuggested && (
- <Chip variant="neutral" className="text-xs border-lia-border-default text-lia-text-secondary">
+ <Chip density="relaxed" variant="neutral" className="border-lia-border-default text-lia-text-secondary">
                 LIA
               </Chip>
             )}
@@ -288,7 +288,7 @@ export function EventsSection() {
               </p>
             </div>
             <div className="flex items-center gap-2">
-              <Chip variant="neutral" className="text-xs border-lia-border-subtle dark:border-lia-border-default px-2 py-1">
+              <Chip density="relaxed" variant="neutral" className="border-lia-border-subtle dark:border-lia-border-default px-2 py-1">
                 <Clock className="w-3 h-3 mr-1" />
                 Hoje
               </Chip>
@@ -380,7 +380,7 @@ export function EventsSection() {
                               {event.title}
                             </h3>
                             {event.isSuggested && (
- <Chip variant="neutral" className="text-xs border-lia-border-default text-lia-text-secondary">
+ <Chip density="relaxed" variant="neutral" className="border-lia-border-default text-lia-text-secondary">
                                 Sugerido pela LIA
                               </Chip>
                             )}

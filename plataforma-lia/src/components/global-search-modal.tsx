@@ -337,7 +337,7 @@ export function GlobalSearchModal({ isOpen, onClose, onNavigate }: GlobalSearchM
                               {result.title}
                             </h3>
                             {result.metadata?.score && (
-                              <Chip variant="neutral" className="text-xs">
+                              <Chip density="relaxed" variant="neutral" >
                                 {result.metadata.score}% match
                               </Chip>
                             )}

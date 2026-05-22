@@ -213,7 +213,7 @@ export function CandidateOnboardingModal({ candidate, onClose }: CandidateOnboar
                       </div>
                       <p className="text-sm text-lia-text-secondary mb-3">{doc.type}</p>
                       {doc.isRequired && (
-                        <Chip variant="neutral" className="text-xs">Obrigatório</Chip>
+                        <Chip density="relaxed" variant="neutral" >Obrigatório</Chip>
                       )}
                     </CardContent>
                   </Card>

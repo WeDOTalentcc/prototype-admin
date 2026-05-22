@@ -28,7 +28,7 @@ export function ActiveFiltersBadge({
 
   return (
     <div data-testid="active-filters-badge" className="mb-1.5 flex items-center gap-2">
-      <Chip variant="neutral" muted data-testid="active-filters-indicator" className="text-xs bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-0">
+      <Chip density="relaxed" variant="neutral" muted data-testid="active-filters-indicator" className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary border-0">
         {t('activeFiltersBadge.activeFilters')}
       </Chip>
       {selectedCandidatesForBatch.size > 0 && (

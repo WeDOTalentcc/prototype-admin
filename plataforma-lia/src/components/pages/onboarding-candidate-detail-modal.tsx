@@ -104,13 +104,13 @@ export function CandidateDetailModal({ candidate, onClose }: CandidateDetailModa
                           <div className="flex items-center justify-between mb-1">
                             <h4 className="font-medium text-lia-text-primary">{task.title}</h4>
                             <div className="flex items-center gap-2">
-                              <Chip variant="neutral" className="text-xs">
+                              <Chip density="relaxed" variant="neutral" >
                                 {task.assignedTo === 'candidate' ? 'Colaborador' :
                                  task.assignedTo === 'hr' ? 'RH' :
                                  task.assignedTo === 'manager' ? 'Gestor' :
                                  task.assignedTo === 'it' ? 'TI' : 'Admin'}
                               </Chip>
-                              <Chip variant={task.priority === 'critical' ? 'danger' : 'neutral'} className="text-xs">
+                              <Chip density="relaxed" variant={task.priority === 'critical' ? 'danger' : 'neutral'} >
                                 {task.priority === 'critical' ? 'Crítica' :
                                  task.priority === 'high' ? 'Alta' :
                                  task.priority === 'medium' ? 'Média' : 'Baixa'}

@@ -82,7 +82,7 @@ const ChatMessageListComponent = memo(function ChatMessageList({
               userName={userDisplayName}
               labelExtra={
                 isCurrentMessage ? (
-                  <Chip variant="neutral" muted className="text-xs border-0">
+                  <Chip density="relaxed" variant="neutral" muted className="border-0">
                     Selecionada
                   </Chip>
                 ) : undefined

@@ -39,7 +39,7 @@ export function ScreeningQuestionsSection({ screeningQuestions, copiedSection, o
                 {section.category}
               </CardTitle>
               <div className="flex items-center gap-2">
-                <Chip variant="neutral" className="text-xs">
+                <Chip density="relaxed" variant="neutral" >
                   {section.questions.length} perguntas
                 </Chip>
                 <Button

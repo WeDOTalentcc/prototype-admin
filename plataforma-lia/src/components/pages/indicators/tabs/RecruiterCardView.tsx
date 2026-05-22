@@ -35,7 +35,7 @@ export function RecruiterCardView({ filteredRecruiters, getStatusColor }: Recrui
                   <p className="text-sm text-lia-text-secondary">
                     {recruiter.role}
                   </p>
-                  <Chip variant="neutral" className="mt-1 text-xs">
+                  <Chip density="relaxed" variant="neutral" className="mt-1">
                     {recruiter.department}
                   </Chip>
                 </div>

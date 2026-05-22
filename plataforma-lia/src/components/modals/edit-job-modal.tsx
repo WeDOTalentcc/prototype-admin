@@ -374,7 +374,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                           </div>
                           <div className="flex flex-wrap gap-1.5">
                             {(formData.accessList || []).map((email, idx) => (
-                              <Chip key={idx} variant="neutral" muted className="text-xs py-1 px-2 bg-lia-bg-primary border border-lia-border-subtle">
+                              <Chip density="relaxed" key={idx} variant="neutral" muted className="py-1 px-2 bg-lia-bg-primary border border-lia-border-subtle">
                                 <UserPlus className="w-3 h-3 mr-1 text-lia-text-disabled" />
                                 {email}
                                 <button
@@ -561,7 +561,7 @@ export function EditJobModal({ isOpen, onClose, job, onSave }: EditJobModalProps
                   </div>
                   <div className="flex flex-wrap gap-1.5">
                     {(formData.languages || []).map((lang, idx) => (
-                      <Chip key={idx} variant="neutral" muted className="text-xs py-1 px-2  border border-wedo-purple/30">
+                      <Chip density="relaxed" key={idx} variant="neutral" muted className="py-1 px-2 border border-wedo-purple/30">
                         {lang.language} ({lang.level})
                         <button
                           onClick={() => removeLanguage(idx)}

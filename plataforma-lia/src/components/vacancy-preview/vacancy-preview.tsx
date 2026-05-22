@@ -312,13 +312,13 @@ export function VacancyPreview({
               {stageDisplay}
             </span>
             {vacancy.imported_from_ats && (
-              <Chip variant="info" muted className="text-xs">
+              <Chip density="relaxed" variant="info" muted >
                 <Database className="w-3 h-3 mr-1" />
                 {vacancy.ats_source_label || t("vacancyCard.atsBadge")}
               </Chip>
             )}
             {vacancy.seniority_level && (
-              <Chip variant="neutral" muted className="text-xs">
+              <Chip density="relaxed" variant="neutral" muted >
                 {vacancy.seniority_level}
               </Chip>
             )}

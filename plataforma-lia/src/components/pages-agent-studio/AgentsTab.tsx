@@ -207,13 +207,13 @@ function AgentPanel({
         {/* Strategy summary */}
         <div className="flex flex-wrap gap-1.5 mb-3">
           {strategy.required_skills?.map(s => (
-            <Chip variant="neutral" muted key={s} className="bg-green-50 text-green-700 text-xs">✅ {s}</Chip>
+            <Chip density="relaxed" variant="neutral" muted key={s} className="bg-green-50 text-green-700">✅ {s}</Chip>
           ))}
           {strategy.exclusions?.map(e => (
-            <Chip variant="neutral" muted key={e} className="bg-red-50 text-red-700 text-xs">❌ {e}</Chip>
+            <Chip density="relaxed" variant="neutral" muted key={e} className="bg-red-50 text-red-700">❌ {e}</Chip>
           ))}
-          {strategy.seniority && <Chip variant="neutral" muted className="bg-blue-50 text-blue-700 text-xs">{strategy.seniority}</Chip>}
-          {strategy.location && <Chip variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-secondary text-xs">{strategy.location}</Chip>}
+          {strategy.seniority && <Chip density="relaxed" variant="neutral" muted className="bg-blue-50 text-blue-700">{strategy.seniority}</Chip>}
+          {strategy.location && <Chip density="relaxed" variant="neutral" muted className="bg-lia-bg-tertiary text-lia-text-secondary">{strategy.location}</Chip>}
         </div>
 
         {/* Stats */}

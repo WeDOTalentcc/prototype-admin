@@ -114,7 +114,7 @@ function DailyUsageAlert({ percentage }: { percentage: number }) {
         <span>
           <strong>Limite diário crítico:</strong> {percentage.toFixed(0)}% do limite diário de tokens atingido. Operações de IA podem ser bloqueadas.
         </span>
-        <Chip variant="danger" className="ml-auto shrink-0 text-xs">
+        <Chip density="relaxed" variant="danger" className="ml-auto shrink-0">
           {percentage.toFixed(0)}%
         </Chip>
       </div>
@@ -130,7 +130,7 @@ function DailyUsageAlert({ percentage }: { percentage: number }) {
         <span>
           <strong>Alerta diário:</strong> {percentage.toFixed(0)}% do limite diário consumido. Considere reduzir o uso para evitar bloqueio.
         </span>
-        <Chip variant="neutral" muted className="ml-auto shrink-0 text-xs">
+        <Chip density="relaxed" variant="neutral" muted className="ml-auto shrink-0">
           {percentage.toFixed(0)}%
         </Chip>
       </div>
@@ -537,7 +537,7 @@ export function AiCreditsPage({ companyId }: Props) {
                     <span>{formatTokens(agent.tokens)} tokens</span>
                     <span>{formatCost(agent.cost)}</span>
                     <span>{agent.operations} ops</span>
-                    <Chip variant="neutral" className="text-xs font-normal">
+                    <Chip density="relaxed" variant="neutral" className="font-normal">
                       {agent.percentage}%
                     </Chip>
                   </div>

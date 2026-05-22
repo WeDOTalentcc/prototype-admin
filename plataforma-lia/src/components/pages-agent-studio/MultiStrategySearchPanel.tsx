@@ -280,7 +280,7 @@ export default function MultiStrategySearchPanel({
                     <td className="py-2 px-3">
                       <div className="flex gap-1 flex-wrap">
                         {c.skills?.slice(0, 4).map(sk => (
-                          <Chip variant="neutral" muted key={sk} className="bg-lia-bg-tertiary text-lia-text-secondary text-xs">{sk}</Chip>
+                          <Chip density="relaxed" variant="neutral" muted key={sk} className="bg-lia-bg-tertiary text-lia-text-secondary">{sk}</Chip>
                         ))}
                       </div>
                     </td>

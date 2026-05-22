@@ -233,11 +233,11 @@ export function WSIScorecard({
 
           <div className="flex items-center gap-2 text-xs text-lia-text-tertiary">
             {latestResult.screening_type === 'voice' ? (
-              <Chip variant="neutral" className="text-xs">
+              <Chip density="relaxed" variant="neutral" >
                 {t('scorecard.voice')}
               </Chip>
             ) : (
-              <Chip variant="neutral" className="text-xs">
+              <Chip density="relaxed" variant="neutral" >
                 {t('scorecard.text')}
               </Chip>
             )}
@@ -270,7 +270,7 @@ export function WSIScorecard({
                       {new Date(result.created_at).toLocaleDateString(locale)}
                     </span>
                   </div>
-                  <Chip variant="neutral" className="text-xs">
+                  <Chip density="relaxed" variant="neutral" >
                     {result.classification}
                   </Chip>
                 </div>

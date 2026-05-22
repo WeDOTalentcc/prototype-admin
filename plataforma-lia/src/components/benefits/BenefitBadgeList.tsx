@@ -196,13 +196,13 @@ export function BenefitBadgeList({
                   
                   <div className="flex flex-wrap gap-1">
                     {benefit.is_mandatory && (
-                      <Chip variant="neutral" muted className="text-xs">Obrigatório</Chip>
+                      <Chip density="relaxed" variant="neutral" muted >Obrigatório</Chip>
                     )}
                     {benefit.is_discount && (
-                      <Chip variant="danger" className="text-xs">Desconto</Chip>
+                      <Chip density="relaxed" variant="danger" >Desconto</Chip>
                     )}
                     {benefit.provider && (
-                      <Chip variant="neutral" className="text-xs">{benefit.provider}</Chip>
+                      <Chip density="relaxed" variant="neutral" >{benefit.provider}</Chip>
                     )}
                   </div>
                 </div>

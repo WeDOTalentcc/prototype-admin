@@ -447,12 +447,12 @@ export function QuickViewModal({ isOpen, onClose, candidate, onNavigateToFull }:
                 <CardContent>
                   <div className="flex flex-wrap gap-1">
                     {candidate.skills.slice(0, 8).map((skill) => (
-                      <Chip key={skill} variant="neutral" muted className="text-xs">
+                      <Chip density="relaxed" key={skill} variant="neutral" muted >
                         {skill}
                       </Chip>
                     ))}
                     {candidate.skills.length > 8 && (
-                      <Chip variant="neutral" className="text-xs">
+                      <Chip density="relaxed" variant="neutral" >
                         +{candidate.skills.length - 8} mais
                       </Chip>
                     )}

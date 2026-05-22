@@ -106,7 +106,7 @@ export function MyTasksCard({
           <div className="flex items-center gap-2">
             <CheckCircle2 className="w-3.5 h-3.5 text-lia-text-primary" />
             <CardTitle className={`${textStyles.label} font-semibold text-lia-text-primary`}>Minhas Tarefas</CardTitle>
-            <Chip variant="neutral" className="text-xs font-inter">
+            <Chip density="relaxed" variant="neutral" className="font-inter">
               {nonInterviewTasks.length + todayInterviews.length}
             </Chip>
           </div>

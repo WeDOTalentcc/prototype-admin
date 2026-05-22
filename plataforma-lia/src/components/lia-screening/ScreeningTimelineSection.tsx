@@ -32,7 +32,7 @@ export function ScreeningTimelineSection() {
                 <div className="font-medium text-lia-text-primary">Preparação (5 min antes)</div>
                 <p className="text-sm text-lia-text-secondary">Revisar currículo, preparar perguntas específicas, configurar ambiente</p>
               </div>
-              <Chip variant="neutral" className="text-xs">5 min</Chip>
+              <Chip density="relaxed" variant="neutral" >5 min</Chip>
             </div>
 
             <div className="flex items-start gap-4">
@@ -43,7 +43,7 @@ export function ScreeningTimelineSection() {
                 <div className="font-medium text-lia-text-primary">Triagem (20-30 min)</div>
                 <p className="text-sm text-lia-text-secondary">Execução da conversa seguindo roteiro estruturado</p>
               </div>
-              <Chip variant="neutral" className="text-xs">25 min</Chip>
+              <Chip density="relaxed" variant="neutral" >25 min</Chip>
             </div>
 
             <div className="flex items-start gap-4">
@@ -54,7 +54,7 @@ export function ScreeningTimelineSection() {
                 <div className="font-medium text-lia-text-primary">Avaliação (5-10 min após)</div>
                 <p className="text-sm text-lia-text-secondary">Análise das respostas, decisão e anotações</p>
               </div>
-              <Chip variant="neutral" className="text-xs">10 min</Chip>
+              <Chip density="relaxed" variant="neutral" >10 min</Chip>
             </div>
 
             <div className="flex items-start gap-4">
@@ -65,7 +65,7 @@ export function ScreeningTimelineSection() {
                 <div className="font-medium text-lia-text-primary">Feedback (24-48h após)</div>
                 <p className="text-sm text-lia-text-secondary">Envio de retorno personalizado ao candidato</p>
               </div>
-              <Chip variant="neutral" className="text-xs">1-2 dias</Chip>
+              <Chip density="relaxed" variant="neutral" >1-2 dias</Chip>
             </div>
           </div>
         </CardContent>

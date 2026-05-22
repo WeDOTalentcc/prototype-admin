@@ -176,7 +176,7 @@ export function CalibrationCard({
                     </a>
                   )}
                   {candidate.lia_score && (
-                    <Chip variant="neutral" muted className="text-xs py-0 px-1.5 bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle">
+                    <Chip density="relaxed" variant="neutral" muted className="py-0 px-1.5 bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle">
                       Score: {candidate.lia_score}
                     </Chip>
                   )}

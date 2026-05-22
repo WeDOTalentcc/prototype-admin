@@ -56,7 +56,7 @@ export function OnboardingTemplates() {
                       <div key={task.id} className="flex items-center gap-2 text-sm">
                         <CheckCircle className={`w-4 h-4 ${task.isCompleted ? 'text-status-success' : 'text-lia-text-secondary'}`} />
                         <span className="text-lia-text-primary">{task.title}</span>
-                        <Chip variant="neutral" className="text-xs">
+                        <Chip density="relaxed" variant="neutral" >
                           {task.type === 'document' ? 'Doc' :
                            task.type === 'meeting' ? 'Reunião' :
                            task.type === 'training' ? 'Treinamento' :

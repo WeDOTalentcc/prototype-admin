@@ -253,7 +253,7 @@ export function PromptSuggestionsPopover({
                 Ações Sugeridas
               </h3>
             </div>
-            <Chip variant="neutral" muted className="text-xs px-1.5 py-0.5">
+            <Chip density="relaxed" variant="neutral" muted className="px-1.5 py-0.5">
               {filteredSuggestions.length} disponíveis
             </Chip>
           </div>

@@ -150,7 +150,7 @@ export const CandidateProfileColumn: React.FC<CandidateProfileColumnProps> = ({ 
                       <div className="flex items-center gap-2 mt-1">
                         <p className="text-sm text-lia-text-primary">{exp.title}</p>
                         {exp.isPromotion && (
-                          <Chip variant="success" muted className="text-xs px-1.5 py-0.5">
+                          <Chip density="relaxed" variant="success" muted className="px-1.5 py-0.5">
                             Promotion
                           </Chip>
                         )}
@@ -202,7 +202,7 @@ export const CandidateProfileColumn: React.FC<CandidateProfileColumnProps> = ({ 
               <h4 className="text-sm font-semibold text-lia-text-primary mb-2">Skills</h4>
               <div className="flex flex-wrap gap-2">
                 {candidate.skills?.map((skill) => (
-                  <Chip key={skill} variant="neutral" className="text-xs">
+                  <Chip density="relaxed" key={skill} variant="neutral" >
                     {skill}
                   </Chip>
                 )) || (
@@ -215,7 +215,7 @@ export const CandidateProfileColumn: React.FC<CandidateProfileColumnProps> = ({ 
                 <h4 className="text-sm font-semibold text-lia-text-primary mb-2">Languages</h4>
                 <div className="flex flex-wrap gap-2">
                   {candidate.languages.map((lang, idx) => (
-                    <Chip key={`lang-${idx}`} variant="neutral" className="text-xs">
+                    <Chip density="relaxed" key={`lang-${idx}`} variant="neutral" >
                       {lang}
                     </Chip>
                   ))}

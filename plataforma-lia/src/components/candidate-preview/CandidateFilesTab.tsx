@@ -36,7 +36,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
           <h4 className="text-xs font-medium text-lia-text-primary flex items-center gap-1.5">
             <FileText className="w-3.5 h-3.5 text-lia-text-primary" />
             Arquivos e Documentos
-            <Chip variant="neutral" muted className="text-xs px-1 py-0">{candidateFiles.length}</Chip>
+            <Chip density="relaxed" variant="neutral" muted className="px-1 py-0">{candidateFiles.length}</Chip>
             {isLoadingFiles && (
               <div className="animate-spin motion-reduce:animate-none rounded-full h-3 w-3 border border-lia-border-medium border-t-lia-border-medium"></div>
             )}
@@ -260,7 +260,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <span className={textStyles.bodySmall}>
                         Enviado há 2 dias
                       </span>
-                      <Chip variant="neutral" muted className="text-xs px-1 py-0 h-3.5 bg-status-error-bg text-status-error" >
+                      <Chip density="relaxed" variant="neutral" muted className="px-1 py-0 h-3.5 bg-status-error-bg text-status-error" >
                         <Tag className="w-2.5 h-2.5 mr-0.5" />
                         Currículo
                       </Chip>
@@ -356,7 +356,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <span className={textStyles.bodySmall}>
                         Enviado hoje
                       </span>
-                      <Chip variant="neutral" muted className="text-xs px-1 py-0 h-3.5 bg-status-success-bg text-status-success" >
+                      <Chip density="relaxed" variant="neutral" muted className="px-1 py-0 h-3.5 bg-status-success-bg text-status-success" >
                         <Tag className="w-2.5 h-2.5 mr-0.5" />
                         Foto
                       </Chip>
@@ -423,7 +423,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <span className={textStyles.bodySmall}>
                         25.4 MB • MP4 • 3:45
                       </span>
-                      <Chip variant="neutral" muted className="text-xs px-1 py-0 h-3.5 bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle">
+                      <Chip density="relaxed" variant="neutral" muted className="px-1 py-0 h-3.5 bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle">
                         <Tag className="w-2.5 h-2.5 mr-0.5" />
                         Triagem
                       </Chip>
@@ -434,7 +434,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <Chip variant="neutral" muted className="text-xs px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">
+                    <Chip density="relaxed" variant="neutral" muted className="px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">
                       Analisado
                     </Chip>
                     <Button
@@ -489,7 +489,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                     <span className="absolute bottom-1 right-1 text-xs text-white bg-black/70 px-1 rounded-full">
                       3:45
                     </span>
-                    <Chip variant="neutral" muted className="absolute top-1 left-1 text-xs px-1.5 py-0.5">
+                    <Chip density="relaxed" variant="neutral" muted className="absolute top-1 left-1 px-1.5 py-0.5">
                       Prescreening
                     </Chip>
                   </div>
@@ -547,7 +547,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <span className={textStyles.bodySmall}>
                         45.2 MB • MP4 • 8:20
                       </span>
-                      <Chip variant="neutral" muted className="text-xs px-1 py-0 h-3.5 bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle">
+                      <Chip density="relaxed" variant="neutral" muted className="px-1 py-0 h-3.5 bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle">
                         <Tag className="w-2.5 h-2.5 mr-0.5" />
                         Entrevista
                       </Chip>
@@ -558,7 +558,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <Chip variant="neutral" muted className="text-xs px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">
+                    <Chip density="relaxed" variant="neutral" muted className="px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">
                       Destaque
                     </Chip>
                     <Button
@@ -603,7 +603,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <span className={textStyles.bodySmall}>
                         120.5 MB • MP4 • 30:15
                       </span>
-                      <Chip variant="neutral" muted className="text-xs px-1 py-0 h-3.5 bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default">
+                      <Chip density="relaxed" variant="neutral" muted className="px-1 py-0 h-3.5 bg-lia-bg-tertiary text-lia-text-primary border-lia-border-default">
                         <Tag className="w-2.5 h-2.5 mr-0.5" />
                         Entrevista
                       </Chip>
@@ -614,7 +614,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <Chip variant="neutral" muted className="text-xs px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">
+                    <Chip density="relaxed" variant="neutral" muted className="px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-primary">
                       Completa
                     </Chip>
                     <Button
@@ -659,7 +659,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <span className={textStyles.bodySmall}>
                         2.8 MB • MP3 • 4:32
                       </span>
-                      <Chip variant="neutral" muted className="text-xs px-1 py-0 h-3.5">
+                      <Chip density="relaxed" variant="neutral" muted className="px-1 py-0 h-3.5">
                         <Tag className="w-2.5 h-2.5 mr-0.5" />
                         Triagem
                       </Chip>
@@ -670,7 +670,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <Chip variant="neutral" muted className="text-xs px-1.5 py-0 h-4">
+                    <Chip density="relaxed" variant="neutral" muted className="px-1.5 py-0 h-4">
                       Transcrito
                     </Chip>
                     <Button
@@ -715,7 +715,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                       <span className={textStyles.bodySmall}>
                         18.5 MB • WAV • 15:20
                       </span>
-                      <Chip variant="neutral" muted className="text-xs px-1 py-0 h-3.5 bg-lia-interactive-active">
+                      <Chip density="relaxed" variant="neutral" muted className="px-1 py-0 h-3.5 bg-lia-interactive-active">
                         <Tag className="w-2.5 h-2.5 mr-0.5" />
                         Entrevista
                       </Chip>
@@ -726,7 +726,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <Chip variant="neutral" muted className="text-xs px-1.5 py-0 h-4">
+                    <Chip density="relaxed" variant="neutral" muted className="px-1.5 py-0 h-4">
                       Pendente
                     </Chip>
                     <Button

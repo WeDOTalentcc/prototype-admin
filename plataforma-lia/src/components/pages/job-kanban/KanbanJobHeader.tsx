@@ -71,7 +71,7 @@ export const KanbanJobHeader = React.memo(function KanbanJobHeader(props: Kanban
                   )}
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Chip variant="neutral" muted className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap text-xs px-2 py-0.5 cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none select-none">
+                      <Chip density="relaxed" variant="neutral" muted className="bg-lia-bg-tertiary border border-lia-border-subtle text-lia-text-primary font-medium whitespace-nowrap px-2 py-0.5 cursor-pointer hover:bg-lia-interactive-hover transition-colors motion-reduce:transition-none select-none">
                         {(((jobEditForm.status || currentJob.status) as string) as string) as string}
                       </Chip>
                     </PopoverTrigger>

@@ -101,7 +101,7 @@ export const ProgressSteps = ({ steps, currentStep }: {
                     {step.label}
                   </span>
                   {isProcessing && (
-                    <Chip variant="neutral" className="text-xs bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-primary border-lia-border-default">
+                    <Chip density="relaxed" variant="neutral" className="bg-lia-interactive-active dark:bg-lia-bg-elevated text-lia-text-primary border-lia-border-default">
                       Em andamento
                     </Chip>
                   )}

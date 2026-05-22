@@ -221,7 +221,7 @@ export function SavedSearchesTab({
               </div>
 
               <div className="flex items-center gap-4 text-xs text-lia-text-primary">
-                <Chip variant="neutral" className="h-5 text-xs px-1.5">
+                <Chip density="relaxed" variant="neutral" className="h-5 px-1.5">
                   {getModeLabel(search.mode)}
                 </Chip>
                 <span className="flex items-center gap-1">

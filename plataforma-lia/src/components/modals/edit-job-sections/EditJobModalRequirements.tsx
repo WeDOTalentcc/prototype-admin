@@ -276,7 +276,7 @@ export function EditJobModalRequirements({
             <Layers className="w-4 h-4 text-lia-text-secondary" />
             <h3 className="text-base-ui font-semibold text-lia-text-primary">Etapas do Processo Seletivo</h3>
             {(formData.interviewStages || []).length > 0 && (
-              <Chip variant="neutral" className="text-xs bg-lia-bg-tertiary border-lia-border-default text-lia-text-secondary">
+              <Chip density="relaxed" variant="neutral" className="bg-lia-bg-tertiary border-lia-border-default text-lia-text-secondary">
                 {(formData.interviewStages || []).length} etapas
               </Chip>
             )}

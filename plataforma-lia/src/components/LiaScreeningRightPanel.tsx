@@ -183,7 +183,7 @@ export function LiaScreeningRightPanel({ currentStep, screeningData, jobData }: 
 
                   <div className="flex flex-wrap gap-1">
                     {((jobData?.benefits as string[]) || ['Benefícios competitivos']).map((benefit: string) => (
-                      <Chip key={benefit} variant="neutral" muted className="text-xs">{benefit}</Chip>
+                      <Chip density="relaxed" key={benefit} variant="neutral" muted >{benefit}</Chip>
                     ))}
                   </div>
                 </div>

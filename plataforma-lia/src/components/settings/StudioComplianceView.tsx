@@ -177,7 +177,7 @@ export function StudioComplianceView() {
                     <span className="text-xs text-lia-text-disabled font-inter">{i + 1}.</span>
                     <span className="text-lia-text-primary">{a.agent_name}</span>
                   </div>
-                  <Chip variant="neutral" muted className="bg-status-warning/15 text-status-warning text-xs">
+                  <Chip density="relaxed" variant="neutral" muted className="bg-status-warning/15 text-status-warning">
                     {t("blocks", { count: a.blocked_count })}
                   </Chip>
                 </div>

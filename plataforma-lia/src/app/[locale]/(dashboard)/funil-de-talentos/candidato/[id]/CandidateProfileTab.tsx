@@ -109,7 +109,7 @@ export function CandidateProfileTab({
           <CardContent className="px-4 pb-4">
             <div className="flex flex-wrap gap-1.5">
               {candidate.technical_skills.map((skill) => (
-                <Chip key={skill} variant="neutral" muted className="text-xs px-2 py-0.5  border-wedo-cyan/20">
+                <Chip density="relaxed" key={skill} variant="neutral" muted className="px-2 py-0.5 border-wedo-cyan/20">
                   {skill}
                 </Chip>
               ))}
@@ -125,7 +125,7 @@ export function CandidateProfileTab({
             <CardTitle className="text-sm font-semibold text-lia-text-primary flex items-center gap-2">
               <Code className="w-4 h-4 text-lia-text-secondary" />
               Mapa de Skills
-              <Chip variant="neutral" muted className="text-xs bg-lia-interactive-active text-lia-text-primary dark:text-lia-text-primary">
+              <Chip density="relaxed" variant="neutral" muted className="bg-lia-interactive-active text-lia-text-primary dark:text-lia-text-primary">
                 {candidate.technical_skills?.length || 0} itens
               </Chip>
             </CardTitle>
@@ -136,7 +136,7 @@ export function CandidateProfileTab({
                 <h5 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-1.5">{category.label}</h5>
                 <div className="flex flex-wrap gap-1.5">
                   {category.skills.map((skill) => (
-                    <Chip key={skill} variant="neutral" className="text-xs px-2 py-0.5 bg-lia-bg-secondary">
+                    <Chip density="relaxed" key={skill} variant="neutral" className="px-2 py-0.5 bg-lia-bg-secondary">
                       {skill}
                     </Chip>
                   ))}
@@ -152,7 +152,7 @@ export function CandidateProfileTab({
                 </h5>
                 <div className="flex flex-wrap gap-1.5">
                   {candidate.soft_skills.map((skill) => (
-                    <Chip key={skill} variant="warning" className="text-xs px-2 py-0.5">
+                    <Chip density="relaxed" key={skill} variant="warning" className="px-2 py-0.5">
                       {skill}
                     </Chip>
                   ))}
@@ -179,7 +179,7 @@ export function CandidateProfileTab({
               {candidate.certifications.map((cert, idx) => {
                 const certName = typeof cert === 'string' ? cert : String((cert as { name?: string }).name || 'Certificação')
                 return (
-                  <Chip key={`cert-${idx}`} variant="neutral" muted className="text-xs px-2 py-1">
+                  <Chip density="relaxed" key={`cert-${idx}`} variant="neutral" muted className="px-2 py-1">
                     {certName}
                   </Chip>
                 )
@@ -309,16 +309,16 @@ export function CandidateProfileTab({
             <h5 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-1.5">Preferências de Trabalho</h5>
             <div className="flex flex-wrap gap-1.5">
               {candidate.is_remote && (
-                <Chip variant="neutral" className="text-xs bg-lia-bg-secondary dark:bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary border-lia-border-default dark:border-lia-border-default">Remoto</Chip>
+                <Chip density="relaxed" variant="neutral" className="bg-lia-bg-secondary dark:bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary border-lia-border-default dark:border-lia-border-default">Remoto</Chip>
               )}
               {candidate.willing_to_relocate && (
-                <Chip variant="success" className="text-xs">Aceita Relocação</Chip>
+                <Chip density="relaxed" variant="success" >Aceita Relocação</Chip>
               )}
               {candidate.work_model_preference && (
-                <Chip variant="neutral" className="text-xs">{candidate.work_model_preference}</Chip>
+                <Chip density="relaxed" variant="neutral" >{candidate.work_model_preference}</Chip>
               )}
               {candidate.contract_type_preference && (
-                <Chip variant="neutral" className="text-xs">{candidate.contract_type_preference}</Chip>
+                <Chip density="relaxed" variant="neutral" >{candidate.contract_type_preference}</Chip>
               )}
             </div>
           </div>
@@ -342,7 +342,7 @@ export function CandidateProfileTab({
                 {candidate.is_active ? 'Ativo' : 'Inativo'}
               </Chip>
               {candidate.source && (
-                <Chip variant="neutral" className="text-xs">{candidate.source}</Chip>
+                <Chip density="relaxed" variant="neutral" >{candidate.source}</Chip>
               )}
             </div>
           </div>
@@ -353,7 +353,7 @@ export function CandidateProfileTab({
               <h5 className="text-xs font-medium text-lia-text-primary dark:text-lia-text-primary mb-1.5">Tags</h5>
               <div className="flex flex-wrap gap-1">
                 {candidate.tags.map((tag) => (
-                  <Chip variant="neutral" muted key={tag} className="text-xs bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-default">
+                  <Chip density="relaxed" variant="neutral" muted key={tag} className="bg-lia-bg-tertiary text-lia-text-primary border-lia-border-subtle dark:bg-lia-bg-secondary dark:text-lia-text-secondary dark:border-lia-border-default">
                     {tag}
                   </Chip>
                 ))}
@@ -433,22 +433,22 @@ export function CandidateProfileTab({
             {/* Badges de Status */}
             <div className="flex flex-wrap gap-1.5">
               {candidate.is_open_to_work && (
-                <Chip variant="success" muted className="text-xs">
+                <Chip density="relaxed" variant="success" muted >
                   ✓ Open to Work
                 </Chip>
               )}
               {candidate.is_decision_maker && (
-                <Chip variant="neutral" muted className="text-xs  border-wedo-purple/30">
+                <Chip density="relaxed" variant="neutral" muted className="border-wedo-purple/30">
                   👔 Decision Maker
                 </Chip>
               )}
               {candidate.is_top_universities && (
-                <Chip variant="warning" muted className="text-xs">
+                <Chip density="relaxed" variant="warning" muted >
                   🎓 Top Universities
                 </Chip>
               )}
               {candidate.is_hiring && (
-                <Chip variant="neutral" muted className="text-xs bg-lia-bg-secondary dark:bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary border-lia-border-default dark:border-lia-border-default">
+                <Chip density="relaxed" variant="neutral" muted className="bg-lia-bg-secondary dark:bg-lia-bg-primary text-lia-text-primary dark:text-lia-text-primary border-lia-border-default dark:border-lia-border-default">
                   📢 Hiring
                 </Chip>
               )}
@@ -547,7 +547,7 @@ export function CandidateProfileTab({
           <CardContent className="px-4 pb-4">
             <div className="flex flex-wrap gap-1.5">
               {candidate.interests!.map((interest: string) => (
-                <Chip key={interest} variant="neutral" className="text-xs px-2 py-0.5  border-wedo-purple/30">
+                <Chip density="relaxed" key={interest} variant="neutral" className="px-2 py-0.5 border-wedo-purple/30">
                   {interest}
                 </Chip>
               ))}
