@@ -44,6 +44,8 @@ class DepartmentRepository:
         include_inactive: bool = False,
     ) -> list[Department]:
         """List departments with optional company scoping and active filter."""
+        # TENANT-EXEMPT: dynamic builder — Department.company_id == company_id
+        # é appended conditionally below quando company_id passado.
         query = select(Department)
         if company_id:
             query = query.where(Department.company_id == company_id)
@@ -53,10 +55,19 @@ class DepartmentRepository:
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
-    async def get_by_id(self, dept_id: UUID) -> Department | None:
-        result = await self.db.execute(
-            select(Department).where(Department.id == dept_id)
-        )
+    async def get_by_id(
+        self,
+        dept_id: UUID,
+        company_id: UUID | None = None,
+    ) -> Department | None:
+        """Get department by id. Multi-tenancy defense-in-depth via company_id
+        filter quando passado (REGRA ZERO + harness B.1)."""
+        # TENANT-EXEMPT: dynamic builder — Department.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        query = select(Department).where(Department.id == dept_id)
+        if company_id:
+            query = query.where(Department.company_id == company_id)
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
     async def create(self, data: dict) -> Department:
@@ -94,8 +105,16 @@ class DepartmentRepository:
         )
         return result.scalar() or 0
 
-    async def list_members(self, dept_id: UUID) -> list[DepartmentMember]:
-        result = await self.db.execute(
+    async def list_members(
+        self,
+        dept_id: UUID,
+        company_id: UUID | None = None,
+    ) -> list[DepartmentMember]:
+        """List active members of a department. Multi-tenancy defense-in-depth
+        via company_id filter quando passado (REGRA ZERO + harness B.1)."""
+        # TENANT-EXEMPT: dynamic builder — DepartmentMember.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        query = (
             select(DepartmentMember)
             .where(
                 DepartmentMember.department_id == dept_id,
@@ -103,6 +122,9 @@ class DepartmentRepository:
             )
             .order_by(DepartmentMember.order, DepartmentMember.name)
         )
+        if company_id:
+            query = query.where(DepartmentMember.company_id == company_id)
+        result = await self.db.execute(query)
         return list(result.scalars().all())
 
     async def add_member(self, data: dict) -> DepartmentMember:
@@ -113,11 +135,19 @@ class DepartmentRepository:
         return member
 
     async def update_member(
-        self, member_id: UUID, data: dict
+        self,
+        member_id: UUID,
+        data: dict,
+        company_id: UUID | None = None,
     ) -> DepartmentMember | None:
-        result = await self.db.execute(
-            select(DepartmentMember).where(DepartmentMember.id == member_id)
-        )
+        """Update department member. Multi-tenancy defense-in-depth via
+        company_id filter quando passado (REGRA ZERO + harness B.1)."""
+        # TENANT-EXEMPT: dynamic builder — DepartmentMember.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        query = select(DepartmentMember).where(DepartmentMember.id == member_id)
+        if company_id:
+            query = query.where(DepartmentMember.company_id == company_id)
+        result = await self.db.execute(query)
         member = result.scalar_one_or_none()
         if not member:
             return None
@@ -128,10 +158,19 @@ class DepartmentRepository:
         await self.db.refresh(member)
         return member
 
-    async def remove_member(self, member_id: UUID) -> bool:
-        result = await self.db.execute(
-            select(DepartmentMember).where(DepartmentMember.id == member_id)
-        )
+    async def remove_member(
+        self,
+        member_id: UUID,
+        company_id: UUID | None = None,
+    ) -> bool:
+        """Remove (soft-delete) member. Multi-tenancy defense-in-depth via
+        company_id filter quando passado (REGRA ZERO + harness B.1)."""
+        # TENANT-EXEMPT: dynamic builder — DepartmentMember.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        query = select(DepartmentMember).where(DepartmentMember.id == member_id)
+        if company_id:
+            query = query.where(DepartmentMember.company_id == company_id)
+        result = await self.db.execute(query)
         member = result.scalar_one_or_none()
         if not member:
             return False

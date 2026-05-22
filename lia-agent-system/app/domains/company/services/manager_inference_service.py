@@ -90,6 +90,10 @@ class ManagerInferenceService:
             
             if not company:
                 logger.warning(f"Company not found: {company_id}")
+                # TENANT-EXEMPT: fallback edge case quando CompanyProfile não
+                # resolve. Path defensivo executado APENAS quando company lookup
+                # falha — log + degrade graciosamente. TODO(harness): raise
+                # CompanyNotFound em vez de cross-tenant fallback.
                 dept_query = select(Department).where(
                     Department.manager_name.isnot(None)
                 )

@@ -43,10 +43,19 @@ class CompanyBenefitRepository:
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
-    async def get_by_id(self, benefit_id: UUID) -> CompanyBenefit | None:
-        result = await self.db.execute(
-            select(CompanyBenefit).where(CompanyBenefit.id == benefit_id)
-        )
+    async def get_by_id(
+        self,
+        benefit_id: UUID,
+        company_id: str | None = None,
+    ) -> CompanyBenefit | None:
+        """Get company-benefit by id. Multi-tenancy defense-in-depth via
+        company_id filter quando passado (REGRA ZERO + harness B.1)."""
+        # TENANT-EXEMPT: dynamic builder — CompanyBenefit.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        query = select(CompanyBenefit).where(CompanyBenefit.id == benefit_id)
+        if company_id:
+            query = query.where(CompanyBenefit.company_id == company_id)
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
     async def get_by_name(self, company_id: str, name: str) -> CompanyBenefit | None:

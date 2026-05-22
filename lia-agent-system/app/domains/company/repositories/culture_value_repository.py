@@ -34,10 +34,19 @@ class CultureValueRepository:
         )
         return list(result.scalars().all())
 
-    async def get_by_id(self, cv_id: UUID) -> CultureValue | None:
-        result = await self.db.execute(
-            select(CultureValue).where(CultureValue.id == cv_id)
-        )
+    async def get_by_id(
+        self,
+        cv_id: UUID,
+        company_id: UUID | None = None,
+    ) -> CultureValue | None:
+        """Get culture value by id. Multi-tenancy defense-in-depth via
+        company_id filter quando passado (REGRA ZERO + harness B.1)."""
+        # TENANT-EXEMPT: dynamic builder — CultureValue.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        query = select(CultureValue).where(CultureValue.id == cv_id)
+        if company_id:
+            query = query.where(CultureValue.company_id == company_id)
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
     async def create(self, data: dict) -> CultureValue:

@@ -20,10 +20,19 @@ class IdealProfileRepository:
         )
         return list(result.scalars().all())
 
-    async def get_by_id(self, ip_id: UUID) -> IdealProfile | None:
-        result = await self.db.execute(
-            select(IdealProfile).where(IdealProfile.id == ip_id)
-        )
+    async def get_by_id(
+        self,
+        ip_id: UUID,
+        company_id: UUID | None = None,
+    ) -> IdealProfile | None:
+        """Get ideal profile by id. Multi-tenancy defense-in-depth via
+        company_id filter quando passado (REGRA ZERO + harness B.1)."""
+        # TENANT-EXEMPT: dynamic builder — IdealProfile.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        query = select(IdealProfile).where(IdealProfile.id == ip_id)
+        if company_id:
+            query = query.where(IdealProfile.company_id == company_id)
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
     async def create(self, data: dict) -> IdealProfile:

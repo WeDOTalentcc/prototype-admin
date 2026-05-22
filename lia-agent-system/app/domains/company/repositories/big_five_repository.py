@@ -67,10 +67,28 @@ class BigFiveRepository:
         )
         return list(result.scalars().all())
 
-    async def get_role_profile(self, rp_id: UUID) -> BigFiveRoleProfile | None:
-        result = await self.db.execute(
-            select(BigFiveRoleProfile).where(BigFiveRoleProfile.id == rp_id)
-        )
+    async def get_role_profile(
+        self,
+        rp_id: UUID,
+        company_id: UUID | None = None,
+    ) -> BigFiveRoleProfile | None:
+        """Get role profile by id. Multi-tenancy defense-in-depth via
+        company_id filter quando passado (REGRA ZERO + harness B.1).
+
+        Note: shared profiles (company_id IS NULL) são default templates;
+        quando company_id é passado, retorna o tenant profile específico.
+        """
+        # TENANT-EXEMPT: dynamic builder — BigFiveRoleProfile.company_id ==
+        # company_id é appended conditionally below quando company_id passado.
+        query = select(BigFiveRoleProfile).where(BigFiveRoleProfile.id == rp_id)
+        if company_id:
+            query = query.where(
+                or_(
+                    BigFiveRoleProfile.company_id == company_id,
+                    BigFiveRoleProfile.company_id.is_(None),
+                )
+            )
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
     async def create_role_profile(self, data: dict) -> BigFiveRoleProfile:

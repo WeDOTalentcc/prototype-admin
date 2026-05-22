@@ -23,10 +23,19 @@ class ApproverRepository:
         )
         return list(result.scalars().all())
 
-    async def get_by_id(self, approver_id: UUID) -> Approver | None:
-        result = await self.db.execute(
-            select(Approver).where(Approver.id == approver_id)
-        )
+    async def get_by_id(
+        self,
+        approver_id: UUID,
+        company_id: UUID | str | None = None,
+    ) -> Approver | None:
+        """Get approver by id. Multi-tenancy defense-in-depth via company_id
+        filter quando passado (REGRA ZERO + harness B.1)."""
+        # TENANT-EXEMPT: dynamic builder — Approver.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        query = select(Approver).where(Approver.id == approver_id)
+        if company_id:
+            query = query.where(Approver.company_id == company_id)
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
     async def create(self, data: dict) -> Approver:

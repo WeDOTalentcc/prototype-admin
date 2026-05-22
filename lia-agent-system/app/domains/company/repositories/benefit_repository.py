@@ -39,16 +39,28 @@ class BenefitRepository:
 
         Used by AI summary endpoint that may aggregate across companies.
         """
+        # TENANT-EXEMPT: dynamic builder — Benefit.company_id == company_id é
+        # appended conditionally below quando company_id passado. AI summary
+        # caller pode legitimamente aggregate across companies.
         query = select(Benefit)
         if company_id is not None:
             query = query.where(Benefit.company_id == company_id)
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
-    async def get_by_id(self, benefit_id: UUID) -> Benefit | None:
-        result = await self.db.execute(
-            select(Benefit).where(Benefit.id == benefit_id)
-        )
+    async def get_by_id(
+        self,
+        benefit_id: UUID,
+        company_id: UUID | None = None,
+    ) -> Benefit | None:
+        """Get benefit by id. Multi-tenancy defense-in-depth via company_id
+        filter quando passado (REGRA ZERO + harness B.1)."""
+        # TENANT-EXEMPT: dynamic builder — Benefit.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        query = select(Benefit).where(Benefit.id == benefit_id)
+        if company_id:
+            query = query.where(Benefit.company_id == company_id)
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
     async def create(self, data: dict) -> Benefit:

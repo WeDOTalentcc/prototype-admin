@@ -53,10 +53,19 @@ class CompensationPolicyRepository:
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
-    async def get_by_id(self, policy_id: UUID) -> CompensationPolicy | None:
-        result = await self.db.execute(
-            select(CompensationPolicy).where(CompensationPolicy.id == policy_id)
-        )
+    async def get_by_id(
+        self,
+        policy_id: UUID,
+        company_id: str | None = None,
+    ) -> CompensationPolicy | None:
+        """Get policy by id. Multi-tenancy defense-in-depth via company_id
+        filter quando passado (REGRA ZERO + harness B.1)."""
+        # TENANT-EXEMPT: dynamic builder — CompensationPolicy.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        query = select(CompensationPolicy).where(CompensationPolicy.id == policy_id)
+        if company_id:
+            query = query.where(CompensationPolicy.company_id == company_id)
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
     async def get_by_name(

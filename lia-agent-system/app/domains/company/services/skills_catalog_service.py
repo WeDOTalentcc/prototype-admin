@@ -674,10 +674,13 @@ class SkillsCatalogService:
         """
         try:
             conditions = [CompanySkill.company_id == company_id]
-            
+
             if only_promoted:
                 conditions.append(CompanySkill.is_promoted)
-            
+
+            # TENANT-EXEMPT: CompanySkill.company_id == company_id é PRIMEIRO
+            # elemento de `conditions` (statically guaranteed). Sensor AST não
+            # rastreia através de and_(*conditions) unpacking.
             stmt = (
                 select(CompanySkill)
                 .where(and_(*conditions))
@@ -825,13 +828,16 @@ class SkillsCatalogDBService:
         """
         try:
             conditions = [CompanySkillsCatalog.company_id == company_id]
-            
+
             if not include_inactive:
                 conditions.append(CompanySkillsCatalog.is_active)
-            
+
             if category:
                 conditions.append(CompanySkillsCatalog.category == category)
-            
+
+            # TENANT-EXEMPT: CompanySkillsCatalog.company_id == company_id é
+            # PRIMEIRO elemento de `conditions` (statically guaranteed). Sensor
+            # AST não rastreia através de and_(*conditions) unpacking.
             stmt = (
                 select(CompanySkillsCatalog)
                 .where(and_(*conditions))
@@ -841,14 +847,16 @@ class SkillsCatalogDBService:
                     CompanySkillsCatalog.skill_name
                 )
             )
-            
+
             result = await self.db.execute(stmt)
             company_skills = result.scalars().all()
-            
+
             competency_conditions = [BehavioralCompetencyCatalog.company_id == company_id]
             if not include_inactive:
                 competency_conditions.append(BehavioralCompetencyCatalog.is_active)
-            
+
+            # TENANT-EXEMPT: BehavioralCompetencyCatalog.company_id == company_id
+            # é PRIMEIRO elemento de `competency_conditions` (statically guaranteed).
             stmt_competencies = (
                 select(BehavioralCompetencyCatalog)
                 .where(and_(*competency_conditions))
