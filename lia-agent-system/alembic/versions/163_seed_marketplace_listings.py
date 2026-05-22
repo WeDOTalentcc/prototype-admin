@@ -114,7 +114,7 @@ SEEDS = [
         "description": "Pesquisa benchmark salarial para vaga com base em dados de mercado.",
         "category": "general",
         "domain": "analytics",
-        "icon": "trending-up",
+        "icon": "trending",
         "tags": [
             "salário",
             "benchmark",
@@ -163,7 +163,7 @@ SEEDS = [
         "description": "Envia acompanhamento automático após entrevistas. Mantém candidato engajado no processo.",
         "category": "communication",
         "domain": "communication",
-        "icon": "message-circle",
+        "icon": "message",
         "tags": [
             "follow-up",
             "engajamento",
@@ -187,7 +187,7 @@ SEEDS = [
         "description": "Prepara processo de onboarding após contratação. Organiza documentos e tarefas iniciais.",
         "category": "general",
         "domain": "general",
-        "icon": "clipboard-check",
+        "icon": "check",
         "tags": [
             "onboarding",
             "contratação",
@@ -211,7 +211,7 @@ SEEDS = [
         "description": "Valida requisitos legais e de compliance do processo seletivo.",
         "category": "screening",
         "domain": "screening",
-        "icon": "shield-check",
+        "icon": "shield",
         "tags": [
             "compliance",
             "lgpd",
@@ -235,7 +235,7 @@ SEEDS = [
         "description": "Compara finalistas lado a lado com ranking objetivo baseado nos critérios da vaga.",
         "category": "screening",
         "domain": "screening",
-        "icon": "git-compare",
+        "icon": "compare",
         "tags": [
             "comparação",
             "ranking",
@@ -259,7 +259,7 @@ SEEDS = [
         "description": "Analisa métricas e gargalos do funil de recrutamento. Identifica onde candidatos estão travando.",
         "category": "general",
         "domain": "analytics",
-        "icon": "bar-chart",
+        "icon": "chart",
         "tags": [
             "analytics",
             "funil",
@@ -288,12 +288,12 @@ def upgrade() -> None:
             INSERT INTO custom_agents (
                 id, company_id, created_by, name, role, description,
                 system_prompt, allowed_tools, domain, icon, status, version,
-                max_steps, temperature, enable_memory, context_level, excluded_tools,
+                config, max_steps, temperature, enable_memory, context_level, excluded_tools,
                 is_marketplace_published, created_at, updated_at
             ) VALUES (
-                :id::uuid, :company_id, :created_by, :name, :role, :description,
+                CAST(:id AS uuid), :company_id, :created_by, :name, :role, :description,
                 :system_prompt, :allowed_tools, :domain, :icon, 'active', 1,
-                :max_steps, :temperature, true, 'full', '{}',
+                '{}'::jsonb, :max_steps, :temperature, true, 'full', '{}',
                 true, NOW(), NOW()
             ) ON CONFLICT (id) DO NOTHING
         """), {
@@ -304,7 +304,7 @@ def upgrade() -> None:
             "role": seed["role"],
             "description": seed["description"],
             "system_prompt": seed["system_prompt"],
-            "allowed_tools": "{" + ",".join(seed["allowed_tools"]) + "}",
+            "allowed_tools": list(seed["allowed_tools"]),
             "domain": seed["domain"],
             "icon": seed["icon"],
             "max_steps": seed["max_steps"],
@@ -319,7 +319,7 @@ def upgrade() -> None:
                 install_count, avg_rating, total_ratings, published_at,
                 created_at, updated_at
             ) VALUES (
-                :id::uuid, :agent_id::uuid, :publisher, :title, :short_desc, :long_desc,
+                CAST(:id AS uuid), CAST(:agent_id AS uuid), :publisher, :title, :short_desc, :long_desc,
                 :category, :tags, 'approved', 1, true,
                 0, 0.0, 0, NOW(),
                 NOW(), NOW()
@@ -332,7 +332,7 @@ def upgrade() -> None:
             "short_desc": seed["description"],
             "long_desc": seed["long_description"],
             "category": seed["category"],
-            "tags": "{" + ",".join(seed["tags"]) + "}",
+            "tags": list(seed["tags"]),
         })
 
 
@@ -340,7 +340,7 @@ def downgrade() -> None:
     """Remove seed listings + agents."""
     conn = op.get_bind()
     for seed in SEEDS:
-        conn.execute(sa.text("DELETE FROM agent_marketplace_listings WHERE id = :id::uuid"),
+        conn.execute(sa.text("DELETE FROM agent_marketplace_listings WHERE id = CAST(:id AS uuid)"),
                      {"id": seed["listing_id"]})
-        conn.execute(sa.text("DELETE FROM custom_agents WHERE id = :id::uuid"),
+        conn.execute(sa.text("DELETE FROM custom_agents WHERE id = CAST(:id AS uuid)"),
                      {"id": seed["agent_id"]})
