@@ -1,7 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from "react"
-import type { AlertConfig, EmailTemplate, AiResultModal } from './CommunicationHub.types'
-import { DEFAULT_ALERTS, TEMPLATE_GROUPS } from './CommunicationHub.constants'
-import { useAlertRuleTemplates, flattenTemplates, type FlatAlertConfig } from '@/hooks/communication/use-alert-rule-templates'
+import type { EmailTemplate, AiResultModal } from './CommunicationHub.types'
+import { TEMPLATE_GROUPS } from './CommunicationHub.constants'
 import { apiFetch } from '@/lib/api/api-fetch'
 
 export function useCommunicationHub(activeSubsection?: string) {
@@ -32,7 +31,6 @@ export function useCommunicationHub(activeSubsection?: string) {
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [savingSettings, setSavingSettings] = useState(false)
-  const [savingAlerts, setSavingAlerts] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
@@ -42,24 +40,6 @@ export function useCommunicationHub(activeSubsection?: string) {
     return () => { isMountedRef.current = false; };
   }, []);
 
-  const [alerts, setAlerts] = useState<AlertConfig[]>(DEFAULT_ALERTS)
-  // Sprint 3 canonical: load catalog dinamico per-tenant via API.
-  // Quando carrega, substitui o seed DEFAULT_ALERTS pelos items canonical.
-  const { templates: alertTemplates, isLoading: alertTemplatesLoading } = useAlertRuleTemplates({ includeMaster: true })
-  useEffect(() => {
-    if (alertTemplatesLoading) return
-    if (!alertTemplates || alertTemplates.length === 0) return
-    const flat: FlatAlertConfig[] = flattenTemplates(alertTemplates)
-    const mapped: AlertConfig[] = flat.map((f) => ({
-      id: f.id,
-      name: f.name,
-      description: f.description,
-      enabled: f.enabled,
-      channel: f.channel,
-    }))
-    setAlerts(mapped)
-  }, [alertTemplates, alertTemplatesLoading])
-  const [briefingFrequency, setBriefingFrequency] = useState<'twice_daily' | 'daily' | 'weekly' | 'monthly'>('daily')
   const [channelFilter, setChannelFilter] = useState<'all' | 'email' | 'whatsapp'>('all')
   const [triggerTypeFilter, setTriggerTypeFilter] = useState<'all' | 'automatic' | 'manual' | 'both'>('all')
   const [searchQuery, setSearchQuery] = useState<string>('')
@@ -68,7 +48,6 @@ export function useCommunicationHub(activeSubsection?: string) {
 
   const [isEditingSignature, setIsEditingSignature] = useState(false)
   const [isEditingSchedule, setIsEditingSchedule] = useState(false)
-  const [isEditingAlerts, setIsEditingAlerts] = useState(false)
 
   const [weeklyDigestEnabled, setWeeklyDigestEnabled] = useState(true)
   const [savingWeeklyDigest, setSavingWeeklyDigest] = useState(false)
@@ -178,10 +157,9 @@ export function useCommunicationHub(activeSubsection?: string) {
         ? { 'X-Company-ID': fetchedCompanyId }
         : {}
 
-      const [templatesResponse, settingsResponse, alertsResponse] = await Promise.all([
+      const [templatesResponse, settingsResponse] = await Promise.all([
         apiFetch(`/api/backend-proxy/email-templates?visibility=recruiter`),
-        apiFetch('/api/backend-proxy/company/communication-settings', { headers }),
-        apiFetch('/api/backend-proxy/alerts/config', { headers })
+        apiFetch('/api/backend-proxy/company/communication-settings', { headers })
       ])
 
       if (templatesResponse.ok) {
@@ -222,21 +200,6 @@ export function useCommunicationHub(activeSubsection?: string) {
         }
       }
 
-      if (alertsResponse.ok) {
-        const alertsResult = await alertsResponse.json()
-        if (alertsResult && Array.isArray(alertsResult.alerts)) {
-          setAlerts(alertsResult.alerts.map((a: Record<string, unknown>) => ({
-            id: a.id,
-            name: a.name,
-            description: a.description,
-            enabled: a.enabled ?? true,
-            channel: a.channel || 'email'
-          })))
-        }
-        if (alertsResult?.briefing_frequency) {
-          setBriefingFrequency(alertsResult.briefing_frequency)
-        }
-      }
 
       try {
         const digestPrefRes = await apiFetch('/api/backend-proxy/digest/weekly/preferences')
@@ -323,69 +286,8 @@ export function useCommunicationHub(activeSubsection?: string) {
     }
   }
 
-  const handleToggleAlert = (id: string) => {
-    setAlerts(prev => prev.map(a =>
-      a.id === id ? { ...a, enabled: !a.enabled } : a
-    ))
-  }
 
-  const handleChangeChannel = (id: string, channel: 'email' | 'teams' | 'both') => {
-    setAlerts(prev => prev.map(a =>
-      a.id === id ? { ...a, channel } : a
-    ))
-  }
 
-  const saveAlertsConfig = async () => {
-    try {
-      setSavingAlerts(true)
-      // DEPRECATED 2026-05-22 (ADR-WT-2025 Sprint B+C): AlertsTab UI escreve em
-      // AlertConfig.alerts (legacy JSONB blob). Canonical = AlertPreference per
-      // ADR-WT-2025; proactive_detector_service.py JA le APENAS de AlertPreference.
-      // Migration 170 backfilla rows existentes (read-shadow pattern, 1 release cycle).
-      // Quando backfill confirmar 100% em prod, substituir esta UI por
-      // AlertPreferencesPanel (catalogo 22 alert_types via /alerts/preferences).
-      // Tracking: WT-2026.
-      // Telemetria: emite warning estruturado (greppable em logs FE) para medir
-      // uso residual da UI legacy ate cutover.
-      if (typeof window !== 'undefined' && window.console) {
-        // eslint-disable-next-line no-console
-        console.warn(
-          '[legacy_alert_config_write] ADR-WT-2025: saveAlertsConfig escreve em ' +
-          'AlertConfig.alerts (legacy). Canonical AlertPreference. Substituir UI ' +
-          'apos migration 170 confirmar backfill em prod. Tracking: WT-2026.'
-        )
-      }
-      // WT-2022 Wave 2 audit (2026-05-21): tenant via JWT — REGRA 6 CLAUDE.md.
-      // Removido X-Company-ID header (anti-pattern); backend usa
-      // get_verified_company_id que extrai company_id do Bearer token.
-      const response = await apiFetch('/api/backend-proxy/alerts/config', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          alerts: alerts.map(a => ({
-            id: a.id,
-            name: a.name,
-            description: a.description,
-            enabled: a.enabled,
-            channel: a.channel
-          })),
-          briefing_frequency: briefingFrequency
-        })
-      })
-
-      if (!response.ok) {
-        throw new Error('Falha ao salvar configuração de alertas')
-      }
-
-      setSuccessMessage('Configuração de alertas salva com sucesso!')
-      { const _t = setTimeout(() => { if (isMountedRef.current) setSuccessMessage(null); }, 3000); }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao salvar')
-      { const _t = setTimeout(() => { if (isMountedRef.current) setError(null); }, 5000); }
-    } finally {
-      setSavingAlerts(false)
-    }
-  }
 
   const handleAdjustWithAI = async () => {
     if (!editingTemplate || !aiPrompt.trim()) return
@@ -482,12 +384,8 @@ export function useCommunicationHub(activeSubsection?: string) {
     loading,
     saving,
     savingSettings,
-    savingAlerts,
     error,
     successMessage,
-    alerts,
-    briefingFrequency,
-    setBriefingFrequency,
     channelFilter,
     triggerTypeFilter,
     setTriggerTypeFilter,
@@ -499,8 +397,6 @@ export function useCommunicationHub(activeSubsection?: string) {
     setIsEditingSignature,
     isEditingSchedule,
     setIsEditingSchedule,
-    isEditingAlerts,
-    setIsEditingAlerts,
     weeklyDigestEnabled,
     savingWeeklyDigest,
     handleToggleWeeklyDigest,
@@ -512,9 +408,6 @@ export function useCommunicationHub(activeSubsection?: string) {
     insertVariableAtCursor,
     fetchData,
     saveCommunicationSettings,
-    handleToggleAlert,
-    handleChangeChannel,
-    saveAlertsConfig,
     handleAdjustWithAI,
     handleConfirmAIAdjustment,
     handleCancelAIAdjustment,

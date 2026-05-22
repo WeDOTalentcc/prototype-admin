@@ -21,7 +21,7 @@ import { useCommunicationHub } from './communication-hub/useCommunicationHub'
 import { TemplatesTab } from './communication-hub/TemplatesTab'
 import { SignatureTab } from './communication-hub/SignatureTab'
 import { ScheduleTab } from './communication-hub/ScheduleTab'
-import { AlertsTab } from './communication-hub/AlertsTab'
+import { AlertPreferencesPanel } from './AlertPreferencesPanel'
 import { ABTestingTab } from './communication-hub/ABTestingTab'
 
 export function CommunicationHub({ activeSubsection, visibleTabs, stacked }: CommunicationHubProps) {
@@ -111,22 +111,7 @@ export function CommunicationHub({ activeSubsection, visibleTabs, stacked }: Com
         )
       case 'alerts':
         return (
-          <AlertsTab
-            successMessage={hub.successMessage}
-            error={hub.error}
-            alerts={hub.alerts}
-            briefingFrequency={hub.briefingFrequency}
-            setBriefingFrequency={hub.setBriefingFrequency}
-            isEditingAlerts={hub.isEditingAlerts}
-            setIsEditingAlerts={hub.setIsEditingAlerts}
-            savingAlerts={hub.savingAlerts}
-            saveAlertsConfig={hub.saveAlertsConfig}
-            handleToggleAlert={hub.handleToggleAlert}
-            handleChangeChannel={hub.handleChangeChannel}
-            weeklyDigestEnabled={hub.weeklyDigestEnabled}
-            savingWeeklyDigest={hub.savingWeeklyDigest}
-            handleToggleWeeklyDigest={hub.handleToggleWeeklyDigest}
-          />
+          <AlertPreferencesPanel />
         )
       case 'abtesting':
         return <ABTestingTab />
