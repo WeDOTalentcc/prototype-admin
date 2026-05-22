@@ -1,3 +1,11 @@
+// DEPRECATED 2026-05-22 (ADR-WT-2025 Sprint B+C):
+// Esta UI escreve em AlertConfig.alerts (JSONB legacy, 5 toggles hardcoded).
+// Canonical é AlertPreference per ADR-WT-2025 — proactive_detector_service.py
+// ja le APENAS de AlertPreference. Migration alembic 170 backfilla rows
+// legacy -> canonical (read-shadow pattern, 1 release cycle).
+// Quando migration 170 confirmar backfill 100% em prod, substituir este componente
+// por AlertPreferencesPanel (UI para catalogo de 22 alert_types via PUT /alerts/preferences).
+// Tracking: WT-2026.
 import React from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Edit, Save, Bell, Clock, Calendar, RefreshCw, Brain, Loader2, AlertCircle, CheckCircle, MessageSquare, BarChart3 } from "lucide-react"
@@ -59,19 +67,22 @@ export function AlertsTab({
               </p>
             </div>
             {!isEditingAlerts ? (
-              <button onClick={() => setIsEditingAlerts(true)} className={actionButtonStyles.smOutline}>
+              <button onClick={() => setIsEditingAlerts(true)} className={actionButtonStyles.smOutline} data-action="edit" data-testid="alerts-edit-button" aria-label="Editar alertas">
                 <Edit className={actionButtonStyles.icon} />
                 {t("common.edit")}
               </button>
             ) : (
               <div className="flex items-center gap-2">
-                <button onClick={() => setIsEditingAlerts(false)} className={actionButtonStyles.smSecondary}>
+                <button onClick={() => setIsEditingAlerts(false)} className={actionButtonStyles.smSecondary} data-action="cancel" data-testid="alerts-cancel-button" aria-label="Cancelar edição de alertas">
                   {t("common.cancel")}
                 </button>
                 <button
                   onClick={async () => { await saveAlertsConfig(); setIsEditingAlerts(false) }}
                   disabled={savingAlerts}
                   className={actionButtonStyles.smPrimary}
+                  data-action="save"
+                  data-testid="alerts-save-button"
+                  aria-label="Salvar alertas"
                 >
                   {savingAlerts ? <Loader2 className={actionButtonStyles.icon} /> : <Save className={actionButtonStyles.icon} />}
                   {t("common.saveChanges")}
@@ -110,6 +121,9 @@ export function AlertsTab({
                     onChange={(e) => handleChangeChannel(alert.id, e.target.value as 'email' | 'teams' | 'both')}
                     disabled={!isEditingAlerts || !alert.enabled}
                     className="text-micro border border-lia-border-subtle dark:border-lia-border-subtle rounded-full px-1.5 py-1 bg-lia-bg-primary dark:bg-lia-bg-secondary text-lia-text-primary disabled:bg-lia-bg-secondary disabled:text-lia-text-secondary"
+                    data-field="channel"
+                    data-testid={`alert-channel-${alert.id}`}
+                    aria-label={`Canal de envio: ${alert.name}`}
                   >
                     <option value="email">{t("alertsSection.channelEmail")}</option>
                     <option value="teams">{t("alertsSection.channelTeams")}</option>
@@ -118,6 +132,11 @@ export function AlertsTab({
                   <button
                     onClick={() => isEditingAlerts && handleToggleAlert(alert.id)}
                     disabled={!isEditingAlerts}
+                    role="switch"
+                    aria-checked={alert.enabled}
+                    aria-label={`Ativar/desativar alerta: ${alert.name}`}
+                    data-toggle={`alert_${alert.id}`}
+                    data-testid={`alert-toggle-${alert.id}`}
                     className={`relative w-9 h-5 rounded-full transition-colors motion-reduce:transition-none disabled:opacity-60 ${alert.enabled ? 'bg-lia-text-secondary' : 'bg-lia-border-subtle'}`}
                   >
                     <span className={`absolute top-0.5 w-4 h-4 bg-lia-bg-secondary rounded-full transition-transform motion-reduce:transition-none ${alert.enabled ? 'left-4' : 'left-0.5'}`} />
@@ -212,6 +231,8 @@ export function AlertsTab({
                 role="switch"
                 aria-checked={weeklyDigestEnabled}
                 aria-label={t("alertsSection.weeklyDigestToggle")}
+                data-toggle="weekly_report_enabled"
+                data-testid="weekly-digest-toggle"
                 className={`relative w-9 h-5 rounded-full transition-colors motion-reduce:transition-none disabled:opacity-60 flex-shrink-0 mt-0.5 ${weeklyDigestEnabled ? 'bg-lia-text-primary' : 'bg-lia-border-subtle'}`}
               >
                 {savingWeeklyDigest ? (
