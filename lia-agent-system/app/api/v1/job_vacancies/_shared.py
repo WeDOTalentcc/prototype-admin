@@ -50,7 +50,7 @@ import logging
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from app.domains.communication.services.teams_service import teams_service
 from libs.messaging.lia_messaging.notification_service import notification_service
@@ -319,6 +319,48 @@ class JobVacancyResponse(BaseModel):
     technical_requirements: list[dict] | None = []
     languages: list[dict] | None = []
     behavioral_competencies: list[dict] | None = []
+
+    # Auditoria 2026-05-22 (P0 — HTTP 500 em GET /job-vacancies):
+    # Vaga seed antiga (Sprint O.2 Validation, id 74f462e9-...) tinha
+    # technical_requirements no formato legacy {"python": true} (dict)
+    # em vez do canonical [{"technology": "python"}] (list of dicts).
+    # Pydantic 2 ResponseValidationError quebrava TODO list() porque
+    # uma row no resultado nao matchava o schema. O dado foi normalizado
+    # diretamente no banco (1 row UPDATE), mas adicionamos este validator
+    # defense-in-depth para que qualquer dado legado/futuro corrompido
+    # nao quebre o endpoint inteiro novamente.
+    @field_validator(
+        "technical_requirements",
+        "languages",
+        "behavioral_competencies",
+        mode="before",
+    )
+    @classmethod
+    def _normalize_list_of_dicts(cls, v):
+        """Coerce legacy/corrupt shapes to list[dict] canonical.
+
+        Aceita:
+          - None / "" / [] → []
+          - list[dict] → passthrough
+          - dict {"skill": true, ...} → [{"technology": "skill"}, ...] (legacy)
+          - lista de strings → [{"technology": s}, ...] (heuristica)
+        """
+        if v is None or v == "" or v == []:
+            return []
+        if isinstance(v, list):
+            # Normalize string items embedded in list
+            out = []
+            for item in v:
+                if isinstance(item, dict):
+                    out.append(item)
+                elif isinstance(item, str):
+                    out.append({"technology": item})
+                # silently drop other types — defense-in-depth
+            return out
+        if isinstance(v, dict):
+            # Legacy: {"python": True, "react": False} → [{"technology": "python"}]
+            return [{"technology": k} for k, val in v.items() if val]
+        return []
     salary: str | None = None
     salary_range: dict | None = None
     bonus_range: dict | None = None
