@@ -282,6 +282,14 @@ DEFAULT_ALERT_PREFERENCES = [
     {"alert_type": "dropout_risk_high", "name": "Risco de Desistência Alto", "description": "Candidato com alto risco de desistência", "is_enabled": True, "threshold": 70, "channels": {"email": True, "bell": True, "teams": True, "whatsapp": True}, "cooldown_hours": 24},
     {"alert_type": "ideal_candidate_found", "name": "Candidato Ideal Encontrado", "description": "Candidato com match acima de 90%", "is_enabled": True, "threshold": 90, "channels": {"email": True, "bell": True, "teams": True, "whatsapp": True}, "cooldown_hours": 0},
     {"alert_type": "ats_sync_failed", "name": "Falha na Sincronização ATS", "description": "Erro na sincronização com sistema ATS", "is_enabled": True, "threshold": 3, "channels": {"email": True, "bell": True, "teams": True, "whatsapp": False}, "cooldown_hours": 2},
+    # ADR-WT-2025 (2026-05-22): catalogo extendido com 4 detector types
+    # declarados em _DETECTOR_ALERT_TYPE_MAP (proactive_detector_service.py).
+    # Cada um tem default em _DEFAULT_TENANT_OVERRIDE. Schema-sync sensor
+    # scripts/check_alert_preferences_schema_sync.py garante 1-1 com TS canonical.
+    {"alert_type": "company_profile_incomplete", "name": "Perfil da Empresa Incompleto", "description": "Alerta quando completeness do perfil da empresa esta abaixo do limite (%)", "is_enabled": True, "threshold": 80, "channels": {"email": False, "bell": True, "teams": False, "whatsapp": False}, "cooldown_hours": 168},
+    {"alert_type": "dsr_overdue", "name": "Solicitacao LGPD Vencendo", "description": "Alerta quando DSR (Data Subject Request) esta proxima do deadline LGPD (horas)", "is_enabled": True, "threshold": 24, "channels": {"email": True, "bell": True, "teams": False, "whatsapp": False}, "cooldown_hours": 12},
+    {"alert_type": "workforce_plan_stale", "name": "Plano de Workforce Desatualizado", "description": "Alerta quando workforce plan nao eh atualizado ha mais de X dias", "is_enabled": True, "threshold": 30, "channels": {"email": False, "bell": True, "teams": False, "whatsapp": False}, "cooldown_hours": 336},
+    {"alert_type": "credits_low", "name": "Creditos IA Baixos", "description": "Alerta quando AI credits remaining cai abaixo do percentual configurado", "is_enabled": True, "threshold": 20, "channels": {"email": True, "bell": True, "teams": True, "whatsapp": False}, "cooldown_hours": 12},
 ]
 
 
