@@ -1495,16 +1495,47 @@ class VoiceScreeningOrchestrator:
                     "Use a metodologia STAR (Situação, Tarefa, Ação, Resultado).\n"
                 )
 
-            # Build the system prompt with full job context and conversational guidance
+            # === F-10 + F-11 (audit 2026-05-22) ===
+            # Build voice system prompt via canonical SystemPromptBuilder so
+            # per-tenant AI Persona (E2.3 name+tone) + lia_field_toggles
+            # filter (build_company_agent_context) are honored in voice.
+            # Pre-fix this surface bypassed both → ghost setting parcial.
+            from app.shared.prompts.voice_system_prompt import (
+                build_voice_system_prompt,
+            )
+
+            try:
+                canonical_prompt = await build_voice_system_prompt(
+                    company_id=session.company_id,
+                    db=db,
+                    job_context=session.job_context,
+                )
+            except Exception as _prompt_err:  # noqa: BLE001
+                # Should be impossible (helper itself catches and degrades),
+                # but defense in depth: voice MUST NOT crash if canonical
+                # build hiccups — fall back to legacy static persona.
+                logger.warning(
+                    "[VOICE SCREENING] build_voice_system_prompt failed for "
+                    "session=%s company=%s; using legacy static persona. Reason: %s",
+                    session.session_id, session.company_id, _prompt_err,
+                )
+                canonical_prompt = (
+                    "Recrutadora inteligente da WeDO Talent. Conduza a triagem por voz "
+                    "com naturalidade, empatia e profissionalismo."
+                )
+
+            # Build the system prompt: canonical persona + lia_field_toggles +
+            # voice-specific block FIRST, then runtime job-context/progress/
+            # fairness/anti-sycophancy. Order matters — LLM weights early
+            # sections more heavily; persona override sits above fairness.
             system_prompt = (
-                f"Recrutadora inteligente da WeDO Talent. Conduza a triagem por voz com naturalidade, "
-                f"empatia e profissionalismo — como uma recrutadora experiente, não como um robô seguindo um script.\n\n"
+                f"{canonical_prompt}\n\n"
+                f"=== CONTEXTO DESTA TRIAGEM ===\n"
                 f"IDIOMA: {session.language}\n\n"
                 f"CANDIDATO: {session.candidate_name}\n"
                 f"{job_context_block}\n"
                 f"PROGRESSO:\n{question_guidance}\n"
-                f"INSTRUÇÕES DE CONDUTA:\n"
-                f"- Respostas curtas e naturais (otimizadas para áudio de voz)\n"
+                f"INSTRUÇÕES DE CONDUTA (runtime):\n"
                 f"- Faça UMA pergunta por vez — nunca empilhe perguntas\n"
                 f"- Valide brevemente a resposta anterior com uma transição natural (ex: 'Entendi!', 'Ótimo, obrigada!')\n"
                 f"- Se o candidato fizer uma pergunta sobre a vaga, responda com base no job description antes de continuar\n"
