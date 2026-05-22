@@ -38,6 +38,11 @@ from ._shared import (
     parse_json_response,
 )
 from app.shared.security.require_company_id import require_company_id
+from app.shared.services.automated_decision_logger import (
+    log_automated_decision,
+    PROTECTED_CRITERIA_PT,
+)
+from app.core.config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -143,6 +148,52 @@ company_id: str = Depends(require_company_id)):
             )
     except Exception as e:
         logger.warning(f"Failed to save to DB: {e}")
+
+    # WT-2022 P0.C / LGPD Art. 20 + EU AI Act Art. 13 — audit trail de decisao automatizada IA.
+    # ADR-LGPD-001 + CLAUDE.md REGRA #2: company_id vem do JWT (require_company_id), nunca do payload.
+    try:
+        await log_automated_decision(
+            db=db,
+            company_id=company_id,
+            job_id=request.job_vacancy_id or None,
+            decision_type="wsi_question_generation",
+            ai_model_used=getattr(settings, "LLM_PRIMARY_MODEL", "claude-sonnet-4-6"),
+            explanation_text=(
+                f"Gerou {len(questions)} pergunta(s) de triagem WSI ({mode}) para a vaga "
+                f'"{job_title}" (senioridade={seniority}) via pipeline canonical '
+                "CBI + Bloom + Dreyfus + BigFive. Skills tecnicos avaliados: "
+                f"{all_skills}. Competencias comportamentais: {behavioral}."
+            ),
+            criteria_used=[
+                *[f"skill:{s}" for s in all_skills],
+                *[f"behavioral:{b}" for b in behavioral],
+                f"seniority:{seniority}",
+                f"mode:{mode}",
+            ],
+            criteria_ignored=list(PROTECTED_CRITERIA_PT),
+            confidence_score=None,  # WSI nao expoe confidence agregado; cada pergunta tem validation_flags
+            review_eligible=True,
+            extra_metadata={
+                "session_id": session_id,
+                "questions_count": len(questions),
+                "mode": mode,
+                "seniority": seniority,
+                "prompt_template_version": "wsi_F6_pipeline_v2",
+                "llm_model": getattr(settings, "LLM_PRIMARY_MODEL", "claude-sonnet-4-6"),
+                "frameworks_used": sorted({wq.framework for wq in wsi_questions}),
+            },
+        )
+    except ValueError:
+        # Compliance gate raised — protected criteria leaked into criteria_used.
+        # Re-raise fail-loud per CLAUDE.md REGRA #2 (LGPD): NUNCA mascarar essa violacao.
+        raise
+    except Exception as exc:
+        # Outros erros: log e segue (audit trail gap, mas decisao IA nao deve ser bloqueada).
+        logger.error(
+            "WT-2022 P0.C: log_automated_decision falhou em /generate-questions "
+            "(LGPD Art. 20 audit gap, session_id=%s): %s",
+            session_id, exc, exc_info=True,
+        )
 
     return GenerateQuestionsResponse(
         session_id=session_id,
