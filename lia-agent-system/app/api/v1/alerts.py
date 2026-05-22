@@ -26,6 +26,38 @@ def get_alert_repo(db: AsyncSession = Depends(get_db)) -> AlertRepository:
     return AlertRepository(db)
 
 
+def _emit_legacy_alerts_config_endpoint_counter(
+    *, method: str, company_id: str | None
+) -> None:
+    """Canary counter for ADR-WT-2025 Sprint D+1 partial.
+
+    Tracks calls to deprecated GET/PUT /alerts/config to drive removal
+    timing decision pre-sunset (2026-08-22). Spike = clients still on
+    legacy API; sustained zero = safe to remove endpoint early.
+
+    Fail-open: never raises (prometheus_client may be absent in dev).
+    """
+    try:
+        import hashlib
+
+        from app.shared.observability.canary_metrics import (
+            legacy_alerts_config_endpoint_calls_total,
+        )
+
+        if legacy_alerts_config_endpoint_calls_total is None:
+            return
+        company_id_hash = (
+            hashlib.sha256(company_id.encode("utf-8")).hexdigest()[:16]
+            if company_id
+            else "unknown"
+        )
+        legacy_alerts_config_endpoint_calls_total.labels(
+            method=method, company_id_hash=company_id_hash
+        ).inc()
+    except Exception:  # pragma: no cover -- canary must never break endpoint
+        pass
+
+
 class AlertResponse(BaseModel):
     """Response model for an alert."""
     id: str
@@ -194,6 +226,8 @@ _company_gate: str = Depends(require_company_id)):
             "adr": "ADR-WT-2025",
         },
     )
+    # ADR-WT-2025 Sprint D+1 partial: canary counter (drives sunset decision).
+    _emit_legacy_alerts_config_endpoint_counter(method="GET", company_id=company_id)
     try:
         config = await repo.get_active_config_for_company(company_id)
 
@@ -246,6 +280,8 @@ _company_gate: str = Depends(require_company_id)):
             "alert_count": len(data.alerts) if data.alerts else 0,
         },
     )
+    # ADR-WT-2025 Sprint D+1 partial: canary counter (drives sunset decision).
+    _emit_legacy_alerts_config_endpoint_counter(method="PUT", company_id=company_id)
     try:
         config = await repo.get_active_config_for_company(company_id)
 

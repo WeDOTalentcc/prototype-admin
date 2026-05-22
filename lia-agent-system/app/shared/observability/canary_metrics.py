@@ -295,6 +295,39 @@ realtime_tokens_consumed_total = _make_counter(
 )
 
 
+# ----------------------------------------------------------------------
+# ADR-WT-2025 Sprint D+1 partial -- legacy /alerts/config endpoint
+# telemetry (sunset 2026-08-22). Counter increments on every call to
+# deprecated GET/PUT /alerts/config. Spike = clients still on legacy
+# API; zero before sunset = safe to remove endpoint early.
+# ----------------------------------------------------------------------
+legacy_alerts_config_endpoint_calls_total = _make_counter(
+    "legacy_alerts_config_endpoint_calls_total",
+    "Calls to deprecated /alerts/config endpoint (sunset 2026-08-22, "
+    "ADR-WT-2025 Sprint D+1). Spike near sunset = clients still on "
+    "legacy; zero pre-sunset = safe to remove endpoint early.",
+    ("method", "company_id_hash"),
+)
+
+# ----------------------------------------------------------------------
+# ADR-WT-2025 Sprint D+1 partial -- briefing dispatch legacy AlertConfig
+# read counter (fallback path). Counter increments whenever briefing
+# dispatch falls back to AlertConfig.briefing_frequency because
+# HiringPolicy.communication_rules.briefing_frequency is missing for
+# the tenant. Spike = tenants not backfilled by migration 174 OR
+# new tenants without briefing config. Drives Sprint D+1 final timing
+# (when this counter hits 0 sustained pre-sunset, safe to remove the
+# fallback path early).
+# ----------------------------------------------------------------------
+briefing_dispatch_legacy_alertconfig_read_total = _make_counter(
+    "briefing_dispatch_legacy_alertconfig_read_total",
+    "briefing_dispatch falls back to legacy alert_configs.briefing_frequency "
+    "because HiringPolicy.communication_rules.briefing_frequency missing. "
+    "ADR-WT-2025 Sprint D+1 partial -- spike = un-backfilled tenants.",
+    ("company_id_hash",),
+)
+
+
 __all__ = (
     "ai_credit_exhausted_total",
     "ai_credit_gate_calls_total",
@@ -310,4 +343,6 @@ __all__ = (
     "realtime_session_started_total",
     "realtime_session_terminated_total",
     "realtime_tokens_consumed_total",
+    "legacy_alerts_config_endpoint_calls_total",
+    "briefing_dispatch_legacy_alertconfig_read_total",
 )
