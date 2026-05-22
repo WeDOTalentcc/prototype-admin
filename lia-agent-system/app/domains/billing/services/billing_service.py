@@ -501,21 +501,32 @@ class BillingService:
         self,
         provider: str,
         payload: dict[str, Any],
-        signature: str | None = None
+        signature: str | None = None,
+        payload_raw: bytes | None = None,
     ) -> dict[str, Any]:
         """
         Process a webhook from the payment gateway.
-        
+
         Args:
             provider: The provider name ('iugu' or 'vindi')
-            payload: The webhook payload
-            signature: Optional webhook signature
-        
+            payload: The webhook payload (parsed JSON).
+            signature: HMAC signature header value. Required for canonical
+                providers — provider.parse_webhook raises
+                WebhookSignatureError if absent/invalid.
+            payload_raw: Raw request body bytes. MUST be the bytes the
+                provider signed (not a re-serialization of ``payload``).
+
         Returns:
-            Dictionary with processing result
+            Dictionary with processing result.
+
+        Raises:
+            WebhookSignatureError: provider signature missing/invalid.
+                Caller (API endpoint) must translate to HTTP 403.
         """
         billing_provider = self.get_provider(provider)
-        parsed = billing_provider.parse_webhook(payload, signature)
+        parsed = billing_provider.parse_webhook(
+            payload, signature, payload_raw=payload_raw
+        )
         
         event_type = parsed.get("event_type", "")
         event_data = parsed.get("data", {})

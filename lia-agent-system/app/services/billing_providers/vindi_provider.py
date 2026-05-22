@@ -7,7 +7,22 @@ Vindi is a Brazilian payment gateway that supports:
 - PIX
 - Recurring subscriptions
 - Multi-gateway processing
+
+Webhook security (Wave 4 audit 2026-05-22)
+──────────────────────────────────────────
+Vindi webhooks são autenticados via HMAC-SHA256 do raw body usando
+``VINDI_WEBHOOK_SECRET`` (preferido) ou ``VINDI_API_KEY`` (fallback)
+como secret. Header: ``X-Vindi-Signature``.
+
+Doc: https://vindi.github.io/api-docs/dist/#!/webhooks
+
+Fail-closed obrigatório (REGRA 4):
+- Signature ausente -> 403
+- Signature inválida -> 403
+- Nenhum secret env -> 403 (NUNCA aceitar webhook em prod sem secret)
 """
+import hashlib
+import hmac
 import logging
 import os
 from datetime import date, datetime
@@ -19,10 +34,43 @@ from app.services.billing_providers.base import (
     BillingResult,
     CustomerData,
     PaymentMethodData,
+    WebhookSignatureError,
 )
 from app.shared.resilience.circuit_breaker import VINDI_CIRCUIT, circuit_breaker_decorator
 
 logger = logging.getLogger(__name__)
+
+
+def _verify_vindi_signature(payload_raw: bytes, signature: str) -> bool:
+    """Verify Vindi webhook signature via HMAC-SHA256.
+
+    Vindi signs the raw request body and sends hex digest in
+    ``X-Vindi-Signature``. We accept ``VINDI_WEBHOOK_SECRET`` (canonical)
+    or fall back to ``VINDI_API_KEY`` to ease ops migration.
+
+    Constant-time comparison via ``hmac.compare_digest`` to resist
+    timing oracles.
+
+    Fail-closed: returns ``False`` on missing payload, missing signature,
+    or missing env secret.
+
+    NEVER logs the secret or the signature value (LGPD/secrets at rest).
+    """
+    if not signature or not payload_raw:
+        return False
+    secret_str = os.environ.get("VINDI_WEBHOOK_SECRET", "") or os.environ.get(
+        "VINDI_API_KEY", ""
+    )
+    if not secret_str:
+        logger.error(
+            "VINDI_WEBHOOK_SECRET (or VINDI_API_KEY fallback) not set — "
+            "webhook validation cannot proceed (fail-closed). "
+            "All Vindi webhooks will be rejected with 403 until configured."
+        )
+        return False
+    secret = secret_str.encode("utf-8")
+    expected = hmac.new(secret, payload_raw, hashlib.sha256).hexdigest()
+    return hmac.compare_digest(expected, signature)
 
 
 class VindiProvider(BillingProviderBase):
@@ -453,11 +501,37 @@ class VindiProvider(BillingProviderBase):
             data={"customer_id": customer_id, "payment_profile_id": payment_method_id}
         )
     
-    def parse_webhook(self, payload: dict[str, Any], signature: str | None = None) -> dict[str, Any]:
-        """Parse Vindi webhook payload."""
+    def parse_webhook(
+        self,
+        payload: dict[str, Any],
+        signature: str | None = None,
+        payload_raw: bytes | None = None,
+    ) -> dict[str, Any]:
+        """Parse Vindi webhook payload after HMAC validation.
+
+        Wave 4 (2026-05-22): mandatory HMAC-SHA256 validation. Pre-Wave-4
+        this method accepted the ``signature`` kwarg but never validated it
+        — a forgery primitive.
+
+        Raises:
+            WebhookSignatureError: signature missing/invalid or
+                ``VINDI_WEBHOOK_SECRET`` unset. Translate to HTTP 403.
+        """
         event_data = payload.get("event", {})
         event_type = event_data.get("type", "")
-        
+
+        if not _verify_vindi_signature(payload_raw or b"", signature or ""):
+            logger.warning(
+                "Vindi webhook rejected: invalid signature",
+                extra={
+                    "event_type": event_type,
+                    "provider": self.provider_name,
+                    "payload_present": payload_raw is not None,
+                    "signature_present": bool(signature),
+                },
+            )
+            raise WebhookSignatureError("Invalid Vindi webhook signature")
+
         event_mapping = {
             "bill_created": "invoice.created",
             "bill_paid": "invoice.paid",
@@ -470,7 +544,7 @@ class VindiProvider(BillingProviderBase):
             "subscription_canceled": "subscription.cancelled",
             "charge_rejected": "invoice.payment_failed",
         }
-        
+
         return {
             "provider": self.provider_name,
             "event_type": event_mapping.get(event_type, event_type),

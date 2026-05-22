@@ -98,10 +98,25 @@ class BillingResult:
     raw_response: dict[str, Any] | None = None
 
 
+class WebhookSignatureError(RuntimeError):
+    """Raised when a webhook signature is missing or invalid.
+
+    Translates to HTTP 403 at the API layer. Fail-loud per REGRA 4 (CLAUDE.md):
+    invalid signature = potential forgery attempt, NEVER silently downgrade
+    to template fallback or accept-as-OK.
+
+    Wave 4 audit 2026-05-22: closes P0 where `signature` param was accepted
+    but never validated in `iugu_provider.parse_webhook` /
+    `vindi_provider.parse_webhook`. Attacker could forge
+    `invoice.payment_failed` -> mark subscription as suspended, OR
+    `invoice.paid` -> grant access to features without payment.
+    """
+
+
 class BillingProviderBase(ABC):
     """
     Abstract base class for billing providers.
-    
+
     Implementations should handle:
     - Customer management
     - Subscription lifecycle
@@ -371,16 +386,30 @@ class BillingProviderBase(ABC):
         pass
     
     @abstractmethod
-    def parse_webhook(self, payload: dict[str, Any], signature: str | None = None) -> dict[str, Any]:
+    def parse_webhook(
+        self,
+        payload: dict[str, Any],
+        signature: str | None = None,
+        payload_raw: bytes | None = None,
+    ) -> dict[str, Any]:
         """
         Parse and validate a webhook payload.
-        
+
         Args:
-            payload: The webhook payload
-            signature: Optional webhook signature for validation
-        
+            payload: The webhook payload (parsed JSON dict).
+            signature: HMAC signature from the provider header
+                (Iugu: ``X-Iugu-Signature``, Vindi: ``X-Vindi-Signature``).
+                Required for canonical providers — fail-loud if missing.
+            payload_raw: Raw request body bytes for HMAC computation.
+                MUST be the exact bytes the provider signed. JSON re-serialization
+                after parsing breaks the signature (whitespace, key order, etc.).
+
         Returns:
-            Parsed webhook data with event type and relevant information
+            Parsed webhook data with event type and relevant information.
+
+        Raises:
+            WebhookSignatureError: signature missing/invalid (canonical providers).
+                Translate to HTTP 403 at the API layer.
         """
         pass
     

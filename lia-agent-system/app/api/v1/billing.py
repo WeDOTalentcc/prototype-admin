@@ -32,6 +32,7 @@ from app.schemas.billing import (
     SubscriptionCreate,
     SubscriptionUpdate,
 )
+from app.services.billing_providers.base import WebhookSignatureError
 from app.domains.billing.services.billing_service import BillingService
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
@@ -1085,36 +1086,50 @@ company_id: str = Depends(require_company_id)):
 @router.post("/webhooks/iugu", summary="Iugu webhook handler", response_model=WebhookProcessedResponse)
 async def handle_iugu_webhook(
     request: Request,
-    repo: BillingRepository = Depends(get_billing_repo), 
+    repo: BillingRepository = Depends(get_billing_repo),
 ):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
+    # multi-tenancy: webhooks são server-to-server, autenticados via HMAC
+    # signature (não por JWT). Validation canonical em
+    # iugu_provider._verify_iugu_signature. Wave 4 audit 2026-05-22 fechou
+    # P0 onde signature era aceita mas nunca conferida.
     """
     Handle webhooks from Iugu payment gateway.
 
-    NOTE: Webhooks are server-to-server and dont require X-Company-ID header.
-    Authentication is done via webhook signature verification.
+    Authentication via HMAC-SHA256 over the raw request body using
+    ``IUGU_API_TOKEN`` as secret. Invalid/missing signature -> HTTP 403.
+    Fail-closed: missing ``IUGU_API_TOKEN`` env var -> 403 (REGRA 4).
     """
+    payload_raw = await request.body()
     try:
-        await request.body()
-        try:
-            payload = await request.json()
-        except Exception:
-            payload = {}
+        import json
+        payload = json.loads(payload_raw.decode("utf-8")) if payload_raw else {}
+    except (ValueError, UnicodeDecodeError):
+        payload = {}
 
-        signature = request.headers.get("X-Iugu-Signature")
+    signature = request.headers.get("X-Iugu-Signature")
 
-        logger.info(f"Received Iugu webhook: {payload.get('event', 'unknown')}")
+    # Log only the event type (no PII, no signature, no payload body).
+    logger.info(f"Received Iugu webhook: {payload.get('event', 'unknown')}")
 
+    try:
         billing_service = BillingService(repo.db)
         result = await billing_service.process_webhook(
             provider="iugu",
             payload=payload,
-            signature=signature
+            signature=signature,
+            payload_raw=payload_raw,
         )
-
         logger.info(f"Processed Iugu webhook: {result}")
-
         return WebhookProcessedResponse(status="ok", processed=True)
+
+    except WebhookSignatureError as exc:
+        # Fail-loud per REGRA 4. Never silently accept on invalid signature.
+        logger.warning(
+            "Iugu webhook rejected with HTTP 403: %s",
+            exc,
+            extra={"event_type": payload.get("event")},
+        )
+        raise HTTPException(status_code=403, detail="Invalid webhook signature") from exc
 
     except Exception as e:
         logger.error(f"Error processing Iugu webhook: {str(e)}", exc_info=True)
@@ -1128,34 +1143,44 @@ async def handle_vindi_webhook(
 ):
     # multi-tenancy: webhooks são server-to-server, autenticados via HMAC signature
     # (não por JWT). require_company_id REMOVIDO pois quebrava o handler — Vindi
-    # nunca envia JWT. Validação real fica em billing_service.process_webhook ->
-    # provider.parse_webhook(payload, signature). Ver audit Wave 4 (2026-05-22).
+    # nunca envia JWT. Validação real em vindi_provider._verify_vindi_signature.
+    # Wave 4 audit 2026-05-22 fechou P0 onde signature era aceita sem ser conferida.
     """
     Handle webhooks from Vindi payment gateway.
 
-    NOTE: Webhooks são server-to-server. Autenticação via signature HMAC, não JWT.
+    Authentication via HMAC-SHA256 over the raw request body using
+    ``VINDI_WEBHOOK_SECRET`` (or ``VINDI_API_KEY`` fallback) as secret.
+    Invalid/missing signature -> HTTP 403. Fail-closed: missing env secret -> 403.
     """
+    payload_raw = await request.body()
     try:
-        await request.body()
-        try:
-            payload = await request.json()
-        except Exception:
-            payload = {}
+        import json
+        payload = json.loads(payload_raw.decode("utf-8")) if payload_raw else {}
+    except (ValueError, UnicodeDecodeError):
+        payload = {}
 
-        signature = request.headers.get("X-Vindi-Signature")
+    signature = request.headers.get("X-Vindi-Signature")
 
-        logger.info(f"Received Vindi webhook: {payload.get('event', 'unknown')}")
+    logger.info(f"Received Vindi webhook: {payload.get('event', 'unknown')}")
 
+    try:
         billing_service = BillingService(repo.db)
         result = await billing_service.process_webhook(
             provider="vindi",
             payload=payload,
-            signature=signature
+            signature=signature,
+            payload_raw=payload_raw,
         )
-
         logger.info(f"Processed Vindi webhook: {result}")
-
         return WebhookProcessedResponse(status="ok", processed=True)
+
+    except WebhookSignatureError as exc:
+        logger.warning(
+            "Vindi webhook rejected with HTTP 403: %s",
+            exc,
+            extra={"event_type": payload.get("event") if isinstance(payload.get("event"), str) else None},
+        )
+        raise HTTPException(status_code=403, detail="Invalid webhook signature") from exc
 
     except Exception as e:
         logger.error(f"Error processing Vindi webhook: {str(e)}", exc_info=True)
