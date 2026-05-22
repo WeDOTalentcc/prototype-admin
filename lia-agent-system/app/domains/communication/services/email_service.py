@@ -209,7 +209,24 @@ class EmailService:
         all_missing = list(set(subject_missing + html_missing))
         if all_missing:
             logger.warning(f"Missing variables in email: {all_missing}")
-        
+
+        # Wave 3 P0.SIG2: append tenant signature canonical (was ghost setting — wired here).
+        # Tenant comes from ContextVar (auth middleware); silent skip if unauthenticated context.
+        try:
+            from app.middleware.auth_enforcement import _current_company_id
+            from app.shared.services.communication_settings_consumer import (
+                get_company_communication_settings,
+                append_signature_to_body,
+            )
+            _company_id = _current_company_id.get("")
+            if _company_id:
+                _settings = await get_company_communication_settings(db, _company_id)
+                rendered_html = append_signature_to_body(rendered_html, _settings, html=True)
+                if rendered_text:
+                    rendered_text = append_signature_to_body(rendered_text, _settings, html=False)
+        except Exception as _sig_exc:
+            logger.debug("[EmailService] signature append skipped: %s", _sig_exc)
+
         email_log = EmailLog(
             id=uuid.uuid4(),
             template_id=template_id if template else None,

@@ -188,7 +188,8 @@ company_id: str = Depends(require_company_id)):
     Get a specific email template by ID.
     """
     try:
-        template = await repo.get_by_id_str(template_id)
+        # Wave 3 P0.TPL1: tenant-aware getter prevents cross-tenant read.
+        template = await repo.get_by_id_for_company(template_id, company_id)
 
         if not template:
             raise HTTPException(status_code=404, detail="Email template not found")
@@ -298,10 +299,19 @@ company_id: str = Depends(require_company_id)):
     Update an existing email template.
     """
     try:
-        template = await repo.get_by_id_str(template_id)
+        # Wave 3 P0.TPL1: tenant-aware getter prevents cross-tenant update.
+        template = await repo.get_by_id_for_company(template_id, company_id)
 
         if not template:
             raise HTTPException(status_code=404, detail="Email template not found")
+
+        # Wave 3 P0.TPL1: system templates (company_id IS NULL) are read-only for tenants.
+        # Only admins via /seed-system-templates can mutate them.
+        if template.company_id is None:
+            raise HTTPException(
+                status_code=403,
+                detail="System templates are read-only. Clone via POST to customize.",
+            )
 
         update_data = template_data.model_dump(exclude_unset=True)
 
@@ -362,10 +372,18 @@ company_id: str = Depends(require_company_id)):
     Delete an email template (soft delete by default).
     """
     try:
-        template = await repo.get_by_id_str(template_id)
+        # Wave 3 P0.TPL1: tenant-aware getter prevents cross-tenant delete.
+        template = await repo.get_by_id_for_company(template_id, company_id)
 
         if not template:
             raise HTTPException(status_code=404, detail="Email template not found")
+
+        # Wave 3 P0.TPL1: system templates (company_id IS NULL) are read-only for tenants.
+        if template.company_id is None:
+            raise HTTPException(
+                status_code=403,
+                detail="System templates cannot be deleted by tenants.",
+            )
 
         if hard_delete:
             await repo.delete(template)

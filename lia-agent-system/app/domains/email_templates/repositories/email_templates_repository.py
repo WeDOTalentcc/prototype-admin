@@ -132,6 +132,34 @@ class EmailTemplatesRepository:
     async def get_by_id_str(self, template_id: str) -> EmailTemplate | None:
         return await self.get_by_id(uuid_module.UUID(template_id))
 
+    async def get_by_id_for_company(
+        self, template_id: str, company_id: str
+    ) -> EmailTemplate | None:
+        """Tenant-aware getter: return template only if owned by company OR is system template (company_id IS NULL).
+
+        Wave 3 audit 2026-05-21 P0.TPL1 fix: previously get_by_id_str returned ANY template
+        regardless of tenant, allowing cross-tenant read/write/delete on /email-templates/{id}
+        endpoints. This canonical getter enforces multi-tenancy at the data layer.
+
+        Returns None when template does not exist OR belongs to another company.
+        Endpoint MUST raise 404 (NOT 403) to avoid leaking existence of foreign templates.
+        """
+        try:
+            uuid_val = uuid_module.UUID(template_id)
+        except (ValueError, TypeError):
+            return None
+
+        result = await self.db.execute(
+            select(EmailTemplate).where(
+                EmailTemplate.id == uuid_val,
+                or_(
+                    EmailTemplate.company_id == company_id,
+                    EmailTemplate.company_id.is_(None),
+                ),
+            )
+        )
+        return result.scalar_one_or_none()
+
     async def create(self, template: EmailTemplate) -> EmailTemplate:
         self.db.add(template)
         await self.db.flush()

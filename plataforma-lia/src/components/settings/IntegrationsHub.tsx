@@ -24,6 +24,7 @@ import {
 import { IntegrationCard } from "./integrations/IntegrationCard"
 import { IntegrationDetailDrawer } from "./integrations/IntegrationDetailDrawer"
 import { useIntegrationCatalog, flattenEntries, type FlatIntegration } from "@/hooks/integrations/use-integration-catalog"
+import { useCurrentCompany } from "@/hooks/company/use-current-company"
 import { apiFetch } from "@/lib/api/api-fetch"
 
 interface LLMConfigData {
@@ -61,6 +62,8 @@ interface IntegrationsHubProps {
 
 export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
   const t = useTranslations("settings")
+  const { companyId, tenantId } = useCurrentCompany()
+  const effectiveCompanyId = tenantId || companyId
   const [activeTab, setActiveTab] = useState(activeSubsection || "all")
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedIntegration, setSelectedIntegration] = useState<Integration | null>(null)
@@ -149,8 +152,13 @@ export function IntegrationsHub({ activeSubsection }: IntegrationsHubProps) {
     setGoogleStatus("loading")
     setErrorMsg(null)
     try {
-      const companyId = "current"
-      const res = await apiFetch(`/api/backend-proxy/calendar/google/auth-url?company_id=${companyId}`)
+      // Audit Wave 3 (2026-05-21) — P0.E: usar useCurrentCompany em vez de literal "current".
+      // Backend resolve company_id do JWT via require_company_id_strict_match, mas
+      // mandar string canonical evita 400/fallback ambíguo.
+      if (!effectiveCompanyId) {
+        throw new Error(t("integrations.companyNotIdentified") || "Empresa não identificada — recarregue a página")
+      }
+      const res = await apiFetch(`/api/backend-proxy/calendar/google/auth-url?company_id=${effectiveCompanyId}`)
       if (!res.ok) {
         const data = await res.json()
         throw new Error(data.detail || t("integrations.authUrlError"))

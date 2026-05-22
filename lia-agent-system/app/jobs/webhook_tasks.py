@@ -33,7 +33,9 @@ def deliver_webhook_task(
     Retries on 4xx/5xx (max 3 retries). Updates webhook stats after each attempt.
     """
     import requests
-    from app.services.webhook_dispatcher import sign_payload
+    # Wave 3 P1.WHK1: prefer sign_payload_v1 (timestamp + replay protection canonical).
+    # Receivers extract t={ts} from X-WeDO-Signature header, verify ts > now()-300s, recompute HMAC.
+    from app.services.webhook_dispatcher import sign_payload, sign_payload_v1
 
     body_dict = {
         "event": event,
@@ -42,12 +44,15 @@ def deliver_webhook_task(
         "delivery_id": self.request.id,
     }
     body = json.dumps(body_dict, sort_keys=True)
-    signature = sign_payload(secret, body)
+    signature_v1 = sign_payload_v1(secret, body)
+    # Backward-compat: keep legacy sig in separate header so old receivers don't break.
+    signature_legacy = sign_payload(secret, body)
 
     headers = {
         "Content-Type": "application/json",
         "X-WeDO-Event": event,
-        "X-WeDO-Signature": signature,
+        "X-WeDO-Signature": signature_v1,
+        "X-WeDO-Signature-Legacy": signature_legacy,
         "X-WeDO-Delivery-Id": str(self.request.id),
         "User-Agent": "WeDOTalent-Webhook/1.0",
     }
