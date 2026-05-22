@@ -134,7 +134,14 @@ class TestVoiceFeatureFlagGate:
         with patch(
             "app.domains.voice.services.voice_screening_orchestrator.VoiceCoreOrchestrator"
         ) as MockOrchestrator:
-            MockOrchestrator.return_value = MagicMock()
+            # Sprint 3.6: orchestrator must expose initiate_voip_session because
+            # audio_chunk-only (no voice_session_id) routes to VoIP bootstrap.
+            MockOrchestrator.return_value = MagicMock(
+                initiate_voip_session=AsyncMock(return_value=MagicMock(
+                    session_id="sess-x", status="initiated",
+                    voice_provider="gemini_live", call_sid=None,
+                )),
+            )
             result = await runtime.execute(
                 message="",
                 company_id="company-uuid-1",
@@ -144,7 +151,7 @@ class TestVoiceFeatureFlagGate:
 
         # Voice handler reached → orchestrator was constructed
         MockOrchestrator.assert_called_once()
-        # Sprint 3.5 baseline metadata
+        # Sprint 3.5 baseline metadata (preserved post-3.6)
         assert result.metadata.get("channel") == "voice"
         assert result.metadata.get("orchestrator_ready") is True
         assert result.metadata.get("has_audio_chunk") is True
@@ -162,7 +169,12 @@ class TestVoiceFeatureFlagGate:
         with patch(
             "app.domains.voice.services.voice_screening_orchestrator.VoiceCoreOrchestrator"
         ) as MockOrchestrator:
-            MockOrchestrator.return_value = MagicMock()
+            MockOrchestrator.return_value = MagicMock(
+                initiate_voip_session=AsyncMock(return_value=MagicMock(
+                    session_id="sess-x", status="initiated",
+                    voice_provider="gemini_live", call_sid=None,
+                )),
+            )
             result = await runtime.execute(
                 message="",
                 company_id="company-uuid-1",
@@ -226,6 +238,8 @@ class TestVoicePayloadValidation:
         with patch(
             "app.domains.voice.services.voice_screening_orchestrator.VoiceCoreOrchestrator"
         ) as MockOrchestrator:
+            # Sprint 3.6: voice_session_id-only path returns directly with
+            # session metadata; no audio_chunk → no audio processing.
             MockOrchestrator.return_value = MagicMock()
             result = await runtime.execute(
                 message="",
@@ -246,22 +260,35 @@ class TestVoicePayloadValidation:
 class TestVoiceHandlerArchitectural:
     @pytest.mark.asyncio
     async def test_invoke_voice_uses_voice_core_orchestrator(self, monkeypatch):
-        """Sprint 3.5: _invoke_voice instantiates VoiceCoreOrchestrator
-        (Sprint 3.2 canonical core), NOT VoiceScreeningOrchestrator."""
+        """Sprint 3.6: _invoke_voice instantiates VoiceCoreOrchestrator with
+        exactly one StudioVoicePlugin (Sprint 3.5 baseline upgraded — no longer
+        an empty plugins list)."""
+        from app.domains.voice.plugins.studio_voice_plugin import StudioVoicePlugin
+
         monkeypatch.setenv("FEATURE_FLAG_VOICE_SCREENING_V2_ENABLED", "1")
 
         runtime = _make_runtime()
         with patch(
             "app.domains.voice.services.voice_screening_orchestrator.VoiceCoreOrchestrator"
         ) as MockOrchestrator:
-            MockOrchestrator.return_value = MagicMock()
+            MockOrchestrator.return_value = MagicMock(
+                initiate_voip_session=AsyncMock(return_value=MagicMock(
+                    session_id="sess-x", status="initiated",
+                    voice_provider="gemini_live", call_sid=None,
+                )),
+            )
             await runtime.execute(
                 message="",
                 company_id="company-uuid-1",
                 channel="voice",
                 audio_chunk=b"\x01",
             )
-            MockOrchestrator.assert_called_once_with(plugins=[])
+            MockOrchestrator.assert_called_once()
+            kwargs = MockOrchestrator.call_args.kwargs
+            assert "plugins" in kwargs
+            plugins = kwargs["plugins"]
+            assert len(plugins) == 1
+            assert isinstance(plugins[0], StudioVoicePlugin)
 
     def test_invoke_voice_does_not_use_legacy_subclass(self):
         """Source sentinel: _invoke_voice must NOT instantiate the WSI-bound

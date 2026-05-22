@@ -57,6 +57,10 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         enable_memory: bool = True,
         excluded_tools: list[str] | None = None,
         context_level: str = "full",
+        initial_greeting: str | None = None,
+        description: str | None = None,
+        persona: dict[str, Any] | None = None,
+        pricing_tier: str = "pro",
     ) -> None:
         super().__init__()
         self._agent_id = agent_id
@@ -71,6 +75,14 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         self._enable_memory = enable_memory
         self._excluded_tools = set(excluded_tools or [])
         self._context_level = context_level if context_level in ("full", "standard", "minimal") else "full"
+        # Sprint 3.6 W4-1 V2: voice plugin config canonical (F-01 pattern).
+        # These were ghost attrs accessed by future code paths; making them
+        # explicit __init__ params so callers (custom_agents API, tests) can
+        # populate per-agent without monkey-patching.
+        self._initial_greeting = initial_greeting
+        self._description = description
+        self._persona = persona or {}
+        self._pricing_tier = pricing_tier
         self._setup_enhanced(domain=f"custom:{agent_name}")
         logger.info(
             "[CustomAgentRuntime] Initialized agent=%s tools=%d max_steps=%d",
@@ -609,11 +621,24 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         voice_session_id: str | None,
         context: Optional[dict[str, Any]],
     ) -> AgentOutput:
-        """Voice channel handler (Sprint 3.5 W4-1 V2).
+        """Voice channel handler (Sprint 3.6 W4-1 V2 — full StudioVoicePlugin wiring).
 
         Gated by feature flag ``voice_screening_v2_enabled`` (per-tenant, OFF by default).
-        Delegates to ``VoiceCoreOrchestrator`` (Sprint 3.2 canonical core); domain-specific
-        behaviour comes via ``VoiceCorePlugin`` instances built from the agent config.
+        Builds a ``StudioVoicePlugin`` from the agent config (system_prompt + allowed_tools
+        + initial_greeting + persona + description) and passes it to
+        ``VoiceCoreOrchestrator`` so the canonical core conversation loop runs with
+        the agent's identity.
+
+        Routing
+        ───────
+        - ``voice_session_id`` present + ``audio_chunk`` present → resume an existing
+          session: process the audio chunk + generate next LIA response.
+        - ``voice_session_id`` present + no audio → continuation handshake (returns
+          session metadata; caller will stream audio in subsequent calls).
+        - No ``voice_session_id`` + ``context["candidate_phone"]`` present → initiate
+          PSTN call via ``orchestrator.initiate_call``.
+        - No ``voice_session_id`` + no phone → initiate VoIP/browser session via
+          ``orchestrator.initiate_voip_session``.
 
         Multi-tenancy: requires ``company_id`` (effective from arg or self._company_id).
         Rejects calls with neither ``audio_chunk`` nor ``voice_session_id`` — at least
@@ -666,29 +691,128 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
             from app.domains.voice.services.voice_screening_orchestrator import (
                 VoiceCoreOrchestrator,
             )
+            from app.domains.voice.plugins.studio_voice_plugin import (
+                StudioVoicePlugin,
+            )
 
-            # Sprint 3.5 baseline: pass no plugins -> generic voice. Future iterations
-            # can derive plugin list from self._system_prompt / self._allowed_tools to
-            # build a "studio voice plugin" that mirrors the agent's text behaviour.
-            orchestrator = VoiceCoreOrchestrator(plugins=[])
+            # Sprint 3.6 W4-1 V2: build canonical Studio voice plugin from
+            # agent config. The plugin owns initial_greeting + summary +
+            # billing + audit hooks. Core orchestrator continues to own the
+            # transport (Twilio / Gemini Live) and LLM conversational loop.
+            ctx = context or {}
+            agent_config: dict[str, Any] = {
+                "system_prompt": self._system_prompt_template,
+                "allowed_tools": list(self._allowed_tools),
+                "initial_greeting": self._initial_greeting,
+                "persona": self._persona,
+                "description": self._description,
+                "pricing_tier": self._pricing_tier,
+            }
+            plugin = StudioVoicePlugin(
+                agent_id=self._agent_id,
+                agent_config=agent_config,
+                company_id=effective_company_id,
+            )
+            orchestrator = VoiceCoreOrchestrator(plugins=[plugin])
+
+            # Routing 1: resume existing voice session.
+            if voice_session_id:
+                response_text: str | None = None
+                transcribed: str | None = None
+                if audio_chunk:
+                    try:
+                        transcribed = await orchestrator.process_audio_chunk(
+                            session_id=voice_session_id,
+                            audio_data=audio_chunk,
+                        )
+                    except Exception as _audio_exc:
+                        logger.warning(
+                            "[CustomAgentRuntime:%s] process_audio_chunk failed: %s",
+                            self._agent_name, _audio_exc,
+                        )
+                    if transcribed:
+                        try:
+                            response_text = await orchestrator.generate_lia_response(
+                                session_id=voice_session_id,
+                                candidate_utterance=transcribed,
+                            )
+                        except Exception as _resp_exc:
+                            logger.warning(
+                                "[CustomAgentRuntime:%s] generate_lia_response failed: %s",
+                                self._agent_name, _resp_exc,
+                            )
+
+                return AgentOutput(
+                    message=response_text or "Voice session bootstrap acknowledged.",
+                    confidence=1.0,
+                    metadata={
+                        "channel": "voice",
+                        "status": "session_resumed",
+                        "company_id": effective_company_id,
+                        "agent_id": self._agent_id,
+                        "agent_name": self._agent_name,
+                        "voice_session_id": voice_session_id,
+                        "session_id": voice_session_id,
+                        "has_audio_chunk": bool(audio_chunk),
+                        "audio_chunk_bytes": len(audio_chunk) if audio_chunk else 0,
+                        "orchestrator_ready": True,
+                        "plugin_name": plugin.plugin_name,
+                        "user_id": user_id,
+                        "transcribed": transcribed,
+                        "lia_response": response_text,
+                    },
+                )
+
+            # Routing 2 + 3: new session — PSTN vs VoIP.
+            candidate_id = ctx.get("candidate_id") or user_id or "anonymous"
+            candidate_name = ctx.get("candidate_name") or "Candidato"
+            candidate_phone = ctx.get("candidate_phone")
+            job_id = ctx.get("job_id")
+            job_title = ctx.get("job_title") or self._description or "Vaga"
+            language = ctx.get("language") or "pt-BR"
+
+            if candidate_phone:
+                session = await orchestrator.initiate_call(
+                    candidate_id=candidate_id,
+                    candidate_name=candidate_name,
+                    phone_number=candidate_phone,
+                    job_title=job_title,
+                    company_id=effective_company_id,
+                    job_id=job_id,
+                    language=language,
+                )
+                is_voip = False
+            else:
+                session = await orchestrator.initiate_voip_session(
+                    candidate_id=candidate_id,
+                    candidate_name=candidate_name,
+                    job_title=job_title,
+                    company_id=effective_company_id,
+                    job_id=job_id,
+                    language=language,
+                )
+                is_voip = True
 
             return AgentOutput(
                 message="Voice session bootstrap acknowledged.",
                 confidence=1.0,
                 metadata={
                     "channel": "voice",
+                    "status": "session_initiated",
                     "company_id": effective_company_id,
                     "agent_id": self._agent_id,
                     "agent_name": self._agent_name,
-                    "voice_session_id": voice_session_id,
+                    "voice_session_id": getattr(session, "session_id", None),
+                    "session_id": getattr(session, "session_id", session_id),
+                    "call_sid": getattr(session, "call_sid", None),
+                    "session_status": getattr(session, "status", None),
+                    "voice_provider": getattr(session, "voice_provider", None),
+                    "is_voip": is_voip,
                     "has_audio_chunk": bool(audio_chunk),
                     "audio_chunk_bytes": len(audio_chunk) if audio_chunk else 0,
                     "orchestrator_ready": True,
+                    "plugin_name": plugin.plugin_name,
                     "user_id": user_id,
-                    "session_id": session_id,
-                    # Sprint 3.5 follow-up ticket: forward audio_chunk to
-                    # orchestrator.process_audio (Twilio MediaStream chunk) or
-                    # initiate a new VoIP session via initiate_voip_session.
                 },
             )
         except Exception as exc:
@@ -720,6 +844,10 @@ def get_or_create_runtime(
     enable_memory: bool = True,
     excluded_tools: list[str] | None = None,
     context_level: str = "full",
+    initial_greeting: str | None = None,
+    description: str | None = None,
+    persona: dict[str, Any] | None = None,
+    pricing_tier: str = "pro",
 ) -> CustomAgentRuntime:
     cache_key = f"{agent_id}:{company_id}"
     if cache_key not in _runtime_cache or force_new:
@@ -736,5 +864,9 @@ def get_or_create_runtime(
             excluded_tools=excluded_tools,
             context_level=context_level,
             company_id=company_id,
+            initial_greeting=initial_greeting,
+            description=description,
+            persona=persona,
+            pricing_tier=pricing_tier,
         )
     return _runtime_cache[cache_key]
