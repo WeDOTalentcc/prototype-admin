@@ -43,9 +43,19 @@ Exit codes
 
 Escape hatch
 ────────────
-Add ``// DATA-TOGGLE-EXEMPT: <ticket>:<reason>`` on the same line as
-``data-toggle="X"`` to whitelist legitimate UI-only toggles (e.g., pure
-client-side UI state with no backend persistence).
+Two ways to whitelist a legitimate UI-only data-toggle (e.g., pure
+client-side UI state with no backend persistence, or UI-namespaced label
+whose payload uses a different canonical name):
+
+1. Inline comment — add ``// DATA-TOGGLE-EXEMPT: <ticket>:<reason>`` on
+   the same line as ``data-toggle="X"``. Works well for plain `.ts`
+   files. Inside JSX/TSX attributes the inline comment is awkward and
+   often re-formatted by Prettier — prefer option 2.
+
+2. Whitelist file — list ``<repo-rel-path>:<toggle>:<reason>`` entries
+   in ``scripts/whitelists/data_toggle_exempt.txt`` (one per line,
+   ``#`` comments and blank lines ignored). Path is relative to the
+   workspace root. The reason field is mandatory and audit-trail.
 
 Usage
 ─────
@@ -75,6 +85,8 @@ BACKEND_PY_ROOTS = [
 
 DATA_TOGGLE_RE = re.compile(r'data-toggle="([A-Za-z_][A-Za-z0-9_]*)"')
 EXEMPT_MARKER_RE = re.compile(r"//\s*DATA-TOGGLE-EXEMPT\b")
+
+WHITELIST_FILE = REPO_ROOT / "scripts" / "whitelists" / "data_toggle_exempt.txt"
 
 # Python: SQLAlchemy Column declarations look like `name = Column(...)` and
 # Pydantic fields look like `name: type = Field(...)` or `name: type`.
@@ -181,6 +193,35 @@ def find_fuzzy_match(toggle: str, names: set[str], max_distance: int = 2) -> str
     return best[1] if best else None
 
 
+def load_whitelist() -> set[tuple[str, str]]:
+    """Load file-based whitelist entries.
+
+    Returns a set of ``(workspace_relative_path, toggle_name)`` tuples.
+    Format per line: ``<rel-path>:<toggle>:<reason>``. ``#``-prefixed
+    and blank lines are ignored. The reason is parsed but currently
+    unused programatically; it exists for audit-trail.
+    """
+    entries: set[tuple[str, str]] = set()
+    if not WHITELIST_FILE.exists():
+        return entries
+    try:
+        text = WHITELIST_FILE.read_text(encoding="utf-8")
+    except OSError:
+        return entries
+    for raw in text.splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        parts = line.split(":", 2)
+        if len(parts) < 2:
+            continue
+        rel_path = parts[0].strip()
+        toggle = parts[1].strip()
+        if rel_path and toggle:
+            entries.add((rel_path, toggle))
+    return entries
+
+
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -188,24 +229,50 @@ def main() -> int:
         action="store_true",
         help="Print violations but exit 0 (ratchet mode).",
     )
+    parser.add_argument(
+        "--baseline-file",
+        type=str,
+        default=None,
+        help=(
+            "Path to a baseline file containing the max expected violation "
+            "count. Sensor exits 1 only when current count exceeds baseline "
+            "(ratchet-up gate)."
+        ),
+    )
     args = parser.parse_args()
 
     names = collect_persistence_names()
     toggles = collect_data_toggles()
+    whitelist = load_whitelist()
 
     if not toggles:
         print("OK no data-toggle literals scanned (frontend tree missing?)")
         return 0
 
     mismatches: list[tuple[Path, int, str, str | None]] = []
+    exempt_count = 0
     for path, lineno, toggle in toggles:
         if toggle in names:
+            continue
+        # File-based whitelist (workspace-relative path + toggle name).
+        try:
+            rel_str = str(path.relative_to(WORKSPACE_ROOT))
+        except ValueError:
+            rel_str = str(path)
+        if (rel_str, toggle) in whitelist:
+            exempt_count += 1
             continue
         suggestion = find_fuzzy_match(toggle, names)
         mismatches.append((path, lineno, toggle, suggestion))
 
     if not mismatches:
-        print(f"OK all {len(toggles)} data-toggle literals match a backend field")
+        suffix = (
+            f" ({exempt_count} whitelisted as UI-only)" if exempt_count else ""
+        )
+        print(
+            f"OK all {len(toggles)} data-toggle literals match a backend "
+            f"field{suffix}"
+        )
         return 0
 
     workspace = WORKSPACE_ROOT
@@ -225,13 +292,44 @@ def main() -> int:
         else:
             print(
                 "    no fuzzy match found — either add the backend field, "
-                "or whitelist with // DATA-TOGGLE-EXEMPT: <ticket>:<reason>"
+                "or whitelist via inline // DATA-TOGGLE-EXEMPT: <ticket>:<reason> "
+                "or scripts/whitelists/data_toggle_exempt.txt entry"
             )
 
     print()
     print("Canonical: every data-toggle attr persisted by UI MUST match a")
     print("backend column / Pydantic field / Zod schema field. Ghost toggles")
     print("break user trust (vide CLAUDE.md 'lia_field_toggles canonical pattern').")
+
+    # Baseline-file ratchet: exit 1 only when current > baseline (new offenders).
+    if args.baseline_file:
+        try:
+            with open(args.baseline_file) as fh:
+                baseline = int(fh.read().strip().splitlines()[0])
+        except FileNotFoundError:
+            print(
+                f"\nbaseline file not found at {args.baseline_file} — "
+                "skipping ratchet gate (treat as warn-only)."
+            )
+            return 0
+        except (ValueError, IndexError):
+            print(
+                f"\nbaseline file at {args.baseline_file} is not a single "
+                "integer on the first line — skipping ratchet gate."
+            )
+            return 0
+        current = len(mismatches)
+        if current > baseline:
+            print(
+                f"\nratchet: {current} violations > baseline {baseline}. "
+                f"Reduce to <= {baseline} or fix the new offender(s) above."
+            )
+            return 1
+        print(
+            f"\nratchet: {current} violations <= baseline {baseline} — OK "
+            "(consider lowering baseline if you closed some)."
+        )
+        return 0
 
     return 0 if args.warn_only else 1
 
