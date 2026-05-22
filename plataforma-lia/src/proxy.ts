@@ -147,7 +147,7 @@ function applyAuthHeaders(request: NextRequest, token: string): NextResponse {
   return NextResponse.next({ request: { headers: requestHeaders } })
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl
 
   if (pathname === '/') {
