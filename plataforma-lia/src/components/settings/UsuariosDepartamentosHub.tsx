@@ -131,11 +131,12 @@ export function UsuariosDepartamentosHub() {
   }
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" data-testid="usuarios-departamentos-hub">
       <div className={tabStyles.pillContainer}>
         {tabs.map((tab) => (
           <button
             key={tab.id}
+            data-testid={`usuarios-departamentos-tab-${tab.id}`}
             onClick={() => setActiveTab(tab.id)}
             className={activeTab === tab.id ? tabStyles.pillActive : tabStyles.pill}
           >

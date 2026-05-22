@@ -77,7 +77,7 @@ export function UserManagement(_props: UserManagementProps) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid="users-management-root">
       {isSCIMEnabled && (
         <Card className="border-wedo-cyan/30 dark:border-wedo-cyan/30">
           <CardContent className="p-3 flex items-start gap-2">
@@ -133,7 +133,7 @@ export function UserManagement(_props: UserManagementProps) {
           </p>
         </div>
         {!isSCIMEnabled && (
-          <Button onClick={handleCreateUser} size="sm" className="gap-1.5">
+          <Button data-testid="users-create-button" onClick={handleCreateUser} size="sm" className="gap-1.5">
             <UserPlus className="w-3.5 h-3.5" />
             {t('newUser')}
           </Button>
@@ -166,6 +166,7 @@ export function UserManagement(_props: UserManagementProps) {
           <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 transform -translate-y-1/2 text-lia-text-secondary" />
           <input
             type="text"
+            data-testid="users-search-input"
             placeholder={t('searchPlaceholder')}
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -174,6 +175,7 @@ export function UserManagement(_props: UserManagementProps) {
         </div>
 
         <select
+          data-testid="users-department-filter"
           value={departmentFilter}
           onChange={(e) => setDepartmentFilter(e.target.value)}
           className="px-2 py-1.5 text-xs border border-lia-border-default rounded-xl focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:bg-lia-bg-elevated dark:border-lia-border-default"
@@ -185,6 +187,7 @@ export function UserManagement(_props: UserManagementProps) {
         </select>
 
         <select
+          data-testid="users-status-filter"
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
           className="px-2 py-1.5 text-xs border border-lia-border-default rounded-xl focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg dark:bg-lia-bg-elevated dark:border-lia-border-default"

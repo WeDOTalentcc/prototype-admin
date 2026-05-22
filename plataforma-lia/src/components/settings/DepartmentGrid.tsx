@@ -50,7 +50,7 @@ export function DepartmentGrid({
 
   return (
     <>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3" data-testid="departments-grid">
         {departments.length === 0 && !showDepartmentForm ? (
           <div className="col-span-2 text-center py-8 text-lia-text-secondary">
             <Network className="w-12 h-12 mx-auto mb-3 opacity-30" />
@@ -65,6 +65,7 @@ export function DepartmentGrid({
           departments.map((dept) => (
             <Card
               key={dept.id}
+              data-testid={`department-card-${dept.id}`}
               className="border border-lia-border-subtle/50 dark:border-lia-border-subtle/50 bg-lia-bg-primary/80 dark:bg-lia-bg-secondary/80 backdrop-blur-sm rounded-xl hover:transition-shadow"
             >
               <CardContent className="p-3">
@@ -86,6 +87,7 @@ export function DepartmentGrid({
                   </div>
                   <div className="flex items-center gap-1">
                     <Button
+                      data-testid={`department-orgchart-${dept.id}`}
                       variant="ghost"
                       size="sm"
                       className="h-7 w-7 p-0 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
@@ -95,6 +97,7 @@ export function DepartmentGrid({
                       <Maximize2 className="w-3.5 h-3.5 text-lia-text-secondary" />
                     </Button>
                     <Button
+                      data-testid={`department-edit-${dept.id}`}
                       variant="ghost"
                       size="sm"
                       className="h-7 w-7 p-0 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
@@ -104,6 +107,7 @@ export function DepartmentGrid({
                       <Edit className="w-3.5 h-3.5" />
                     </Button>
                     <Button
+                      data-testid={`department-delete-${dept.id}`}
                       variant="ghost"
                       size="sm"
                       className="h-7 w-7 p-0 rounded-md text-status-error hover:text-status-error hover:bg-status-error/10"
@@ -138,7 +142,7 @@ export function DepartmentGrid({
         open={!!departmentToDelete}
         onOpenChange={() => setDepartmentToDelete(null)}
       >
-        <AlertDialogContent className="rounded-md">
+        <AlertDialogContent data-testid="department-delete-confirm" className="rounded-md">
           <AlertDialogHeader>
             <AlertDialogTitle className="text-sm font-semibold text-lia-text-primary">
               {t('deleteDepartmentTitle')}
@@ -148,10 +152,11 @@ export function DepartmentGrid({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel className="rounded-md text-xs">
+            <AlertDialogCancel data-testid="department-delete-cancel" className="rounded-md text-xs">
               {t('cancel')}
             </AlertDialogCancel>
             <AlertDialogAction
+              data-testid="department-delete-confirm-action"
               className="rounded-md text-xs bg-status-error hover:bg-status-error"
               onClick={() =>
                 departmentToDelete &&

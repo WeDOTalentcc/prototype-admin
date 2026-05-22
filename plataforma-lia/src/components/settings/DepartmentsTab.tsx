@@ -140,7 +140,7 @@ export function DepartmentsTab({
 
   return (
     <>
-      <div className="space-y-3">
+      <div className="space-y-3" data-testid="departments-tab-root">
         <div className="flex items-center justify-between">
           <div>
             <h3 className="flex items-center gap-2 text-base-ui font-semibold text-lia-text-primary">
@@ -167,6 +167,9 @@ export function DepartmentsTab({
                   setIsEditingDepartments(true);
                 }}
                 className={actionButtonStyles.smOutline}
+                data-action="edit"
+                data-testid="departments-edit-button"
+                aria-label="Editar departamentos"
               >
                 <Edit className={actionButtonStyles.icon} />
                 {t('edit')}
@@ -182,6 +185,9 @@ export function DepartmentsTab({
                   }}
                   disabled={saving}
                   className={actionButtonStyles.smSecondary}
+                  data-action="cancel"
+                  data-testid="departments-cancel-button"
+                  aria-label="Cancelar edição de departamentos"
                 >
                   {t('cancel')}
                 </button>
@@ -192,6 +198,9 @@ export function DepartmentsTab({
                   }}
                   disabled={saving}
                   className={actionButtonStyles.smPrimary}
+                  data-action="save"
+                  data-testid="departments-save-button"
+                  aria-label="Salvar departamentos"
                 >
                   {saving ? (
                     <>
@@ -208,6 +217,9 @@ export function DepartmentsTab({
                 <Button
                   onClick={() => setShowDepartmentForm(true)}
                   size="sm"
+                  data-action="new-department"
+                  data-testid="departments-new-button"
+                  aria-label="Adicionar novo departamento"
                   className="gap-1.5 py-1.5 px-2 text-xs rounded-full bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
                 >
                   <Plus className="w-3.5 h-3.5" />

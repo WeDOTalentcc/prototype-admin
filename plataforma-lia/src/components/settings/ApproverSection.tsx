@@ -50,7 +50,7 @@ export const ApproverSection = React.memo(function ApproverSection({
   const t = useTranslations('settings.approvers');
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3" data-testid="approver-section-root">
       {successMessage && (
         <div className="bg-status-success/10 border border-status-success/30 rounded-xl p-2 flex items-center gap-2 text-status-success text-xs">
           <CheckCircle className="w-3.5 h-3.5" />
@@ -77,6 +77,7 @@ export const ApproverSection = React.memo(function ApproverSection({
               </p>
             </div>
             <Button
+              data-testid="approver-add-button"
               size="sm"
               variant="outline"
               className="gap-1.5 py-1.5 px-2 text-xs rounded-full border-lia-border-subtle dark:border-lia-border-subtle text-lia-text-primary hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
@@ -97,7 +98,7 @@ export const ApproverSection = React.memo(function ApproverSection({
         </CardHeader>
         <CardContent className="p-3 space-y-3">
           {(showApproverForm || editingApprover) && (
-            <Card className="border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl mb-3">
+            <Card data-testid={editingApprover ? 'approver-edit-form' : 'approver-create-form'} className="border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl mb-3">
               <CardContent className="p-3 space-y-2">
                 <h4 className="text-xs font-semibold">
                   {editingApprover ? t("editApprover") : t("newApprover")}
@@ -109,6 +110,8 @@ export const ApproverSection = React.memo(function ApproverSection({
                     </label>
                     <input
                       type="text"
+                      data-field="userName"
+                      data-testid="approver-field-username"
                       className="w-full px-2 py-1.5 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-xs"
                       placeholder={t('namePlaceholder')}
                       value={editingApprover ? editingApprover.userName : newApprover.userName}
@@ -125,6 +128,8 @@ export const ApproverSection = React.memo(function ApproverSection({
                     </label>
                     <input
                       type="email"
+                      data-field="email"
+                      data-testid="approver-field-email"
                       className="w-full px-2 py-1.5 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-xs"
                       placeholder={t('emailPlaceholder')}
                       value={editingApprover ? editingApprover.email : newApprover.email}
@@ -141,6 +146,8 @@ export const ApproverSection = React.memo(function ApproverSection({
                     </label>
                     <input
                       type="text"
+                      data-field="role"
+                      data-testid="approver-field-role"
                       className="w-full px-2 py-1.5 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-xs"
                       placeholder={t('rolePlaceholder')}
                       value={editingApprover ? editingApprover.role : newApprover.role}
@@ -158,6 +165,8 @@ export const ApproverSection = React.memo(function ApproverSection({
                     <input
                       type="number"
                       min="1"
+                      data-field="level"
+                      data-testid="approver-field-level"
                       className="w-full px-2 py-1.5 rounded-full border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-primary dark:bg-lia-bg-secondary text-xs"
                       value={editingApprover ? editingApprover.level : newApprover.level}
                       onChange={(e) =>
@@ -170,6 +179,7 @@ export const ApproverSection = React.memo(function ApproverSection({
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button
+                    data-testid="approver-form-cancel"
                     variant="ghost"
                     size="sm"
                     onClick={() => {
@@ -181,6 +191,7 @@ export const ApproverSection = React.memo(function ApproverSection({
                     {t('cancel')}
                   </Button>
                   <Button
+                    data-testid="approver-form-save"
                     size="sm"
                     onClick={handleSaveApprover}
                     className="py-1.5 px-2 text-xs rounded-full bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"
@@ -211,6 +222,7 @@ export const ApproverSection = React.memo(function ApproverSection({
                 .map((approver) => (
                   <div
                     key={approver.id}
+                    data-testid={`approver-row-${approver.id}`}
                     className="relative flex items-center gap-3 pb-4 last:pb-0"
                   >
                     <div
@@ -246,6 +258,7 @@ export const ApproverSection = React.memo(function ApproverSection({
                             {approver.isActive ? t("active") : t("inactive")}
                           </Chip>
                           <Button
+                            data-testid={`approver-edit-${approver.id}`}
                             variant="ghost"
                             size="sm"
                             className="h-7 w-7 p-0 rounded-xl hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
@@ -254,6 +267,7 @@ export const ApproverSection = React.memo(function ApproverSection({
                             <Edit className="w-3.5 h-3.5" />
                           </Button>
                           <Button
+                            data-testid={`approver-delete-${approver.id}`}
                             variant="ghost"
                             size="sm"
                             className="h-7 w-7 p-0 rounded-md text-status-error hover:text-status-error hover:bg-status-error/10"

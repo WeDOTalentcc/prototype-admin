@@ -62,13 +62,14 @@ export function DepartmentFormCard({
   const t = useTranslations('settings.departments');
 
   return (
-    <Card className="border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl">
+    <Card data-testid={editingDepartment ? 'department-edit-form' : 'department-create-form'} className="border border-lia-border-subtle dark:border-lia-border-subtle bg-lia-bg-secondary dark:bg-lia-bg-secondary/50 rounded-xl">
       <CardContent className="p-3 space-y-2">
         <div className="flex items-center justify-between mb-2">
           <h4 className="text-xs font-semibold text-lia-text-primary">
             {editingDepartment ? t("editDepartment") : t("newDepartment")}
           </h4>
           <Button
+            data-testid="department-form-close"
             variant="ghost"
             size="sm"
             className="h-6 w-6 p-0 rounded-md"
@@ -84,6 +85,8 @@ export function DepartmentFormCard({
             </label>
             <input
               type="text"
+              data-field="name"
+              data-testid="department-field-name"
               value={newDepartment.name}
               onChange={(e) =>
                 setNewDepartment((prev) => ({ ...prev, name: e.target.value }))
@@ -98,6 +101,8 @@ export function DepartmentFormCard({
             </label>
             <input
               type="text"
+              data-field="manager"
+              data-testid="department-field-manager"
               value={newDepartment.manager}
               onChange={(e) =>
                 setNewDepartment((prev) => ({ ...prev, manager: e.target.value }))
@@ -114,6 +119,8 @@ export function DepartmentFormCard({
             </label>
             <input
               type="text"
+              data-field="manager_title"
+              data-testid="department-field-manager-title"
               value={newDepartment.manager_title}
               onChange={(e) =>
                 setNewDepartment((prev) => ({ ...prev, manager_title: e.target.value }))
@@ -128,6 +135,8 @@ export function DepartmentFormCard({
             </label>
             <input
               type="email"
+              data-field="manager_email"
+              data-testid="department-field-manager-email"
               value={newDepartment.manager_email}
               onChange={(e) =>
                 setNewDepartment((prev) => ({ ...prev, manager_email: e.target.value }))
@@ -142,6 +151,8 @@ export function DepartmentFormCard({
             </label>
             <input
               type="text"
+              data-field="manager_phone"
+              data-testid="department-field-manager-phone"
               value={newDepartment.manager_phone}
               onChange={(e) =>
                 setNewDepartment((prev) => ({ ...prev, manager_phone: e.target.value }))
@@ -156,6 +167,8 @@ export function DepartmentFormCard({
             {t('formDescription')}
           </label>
           <textarea
+            data-field="description"
+            data-testid="department-field-description"
             value={newDepartment.description}
             onChange={(e) =>
               setNewDepartment((prev) => ({ ...prev, description: e.target.value }))
@@ -169,11 +182,12 @@ export function DepartmentFormCard({
           <label className="block text-micro font-medium text-lia-text-secondary mb-1">
             {t('formColor')}
           </label>
-          <div className="flex gap-2">
+          <div className="flex gap-2" data-field="color" data-testid="department-field-color">
             {COLOR_OPTIONS.map((color) => (
               <button
                 key={color}
                 type="button"
+                data-testid={`department-color-${color.split(' ')[0]}`}
                 onClick={() =>
                   setNewDepartment((prev) => ({ ...prev, color }))
                 }
@@ -205,6 +219,7 @@ export function DepartmentFormCard({
 
         <div className="flex justify-end gap-2">
           <Button
+            data-testid="department-form-cancel"
             variant="ghost"
             size="sm"
             onClick={handleCancelDepartmentForm}
@@ -213,6 +228,7 @@ export function DepartmentFormCard({
             {t('cancel')}
           </Button>
           <Button
+            data-testid="department-form-save"
             size="sm"
             onClick={handleSaveDepartment}
             className="py-1.5 px-2 text-xs rounded-full bg-lia-btn-primary-bg hover:bg-lia-btn-primary-hover text-lia-btn-primary-text dark:hover:bg-lia-interactive-active"

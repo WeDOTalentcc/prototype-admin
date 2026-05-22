@@ -21,7 +21,7 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
   const inputClass = "w-full py-1.5 px-2 text-xs border border-lia-border-default dark:border-lia-border-default rounded-md bg-lia-bg-primary dark:bg-lia-bg-elevated text-lia-text-primary focus:ring-1 focus:ring-lia-btn-primary-bg/10 focus:border-lia-btn-primary-bg"
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" data-testid={isCreating ? 'user-create-form' : 'user-edit-form'}>
       <div className="flex items-center justify-between">
         <div>
           <h3 className={textStyles.title}>
@@ -31,7 +31,7 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
             {isCreating ? t('formDescriptionNew') : t('formDescriptionEdit')}
           </p>
         </div>
-        <Button variant="outline" size="sm" onClick={onCancel}>
+        <Button data-testid="user-form-cancel-top" variant="outline" size="sm" onClick={onCancel}>
           <X className="w-3.5 h-3.5 mr-1.5" />
           {t('cancel')}
         </Button>
@@ -50,6 +50,8 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
                 <label className={textStyles.label + " block mb-1.5"}>{t('fullName')}</label>
                 <input
                   type="text"
+                  data-field="name"
+                  data-testid="user-field-name"
                   value={formData.name || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
                   className={inputClass}
@@ -61,6 +63,8 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
                 <label className={textStyles.label + " block mb-1.5"}>{t('email')}</label>
                 <input
                   type="email"
+                  data-field="email"
+                  data-testid="user-field-email"
                   value={formData.email || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
                   className={inputClass}
@@ -72,6 +76,8 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
                 <label className={textStyles.label + " block mb-1.5"}>{t('phone')}</label>
                 <input
                   type="tel"
+                  data-field="phone"
+                  data-testid="user-field-phone"
                   value={formData.phone || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
                   className={inputClass}
@@ -83,6 +89,8 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
                 <label className={textStyles.label + " block mb-1.5"}>{t('whatsapp')}</label>
                 <input
                   type="tel"
+                  data-field="whatsapp"
+                  data-testid="user-field-whatsapp"
                   value={formData.whatsapp || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, whatsapp: e.target.value }))}
                   className={inputClass}
@@ -94,6 +102,8 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
                 <label className={textStyles.label + " block mb-1.5"}>{t('location')}</label>
                 <input
                   type="text"
+                  data-field="location"
+                  data-testid="user-field-location"
                   value={formData.location || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, location: e.target.value }))}
                   className={inputClass}
@@ -112,6 +122,8 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
                 <label className={textStyles.label + " block mb-1.5"}>{t('roleFunction')}</label>
                 <input
                   type="text"
+                  data-field="role"
+                  data-testid="user-field-role"
                   value={formData.role || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, role: e.target.value }))}
                   className={inputClass}
@@ -126,6 +138,8 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
                     departments prop deve ser passada pelo parent (UsuariosDepartamentosHub).
                 */}
                 <select
+                  data-field="department"
+                  data-testid="user-field-department"
                   value={formData.department || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
                   className={inputClass}
@@ -153,6 +167,8 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
                 <label className={textStyles.label + " block mb-1.5"}>{t('position')}</label>
                 <input
                   type="text"
+                  data-field="position"
+                  data-testid="user-field-position"
                   value={formData.position || ''}
                   onChange={(e) => setFormData(prev => ({ ...prev, position: e.target.value }))}
                   className={inputClass}
@@ -163,6 +179,8 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
               <div>
                 <label className={textStyles.label + " block mb-1.5"}>{t('status')}</label>
                 <select
+                  data-field="status"
+                  data-testid="user-field-status"
                   value={formData.status || 'active'}
                   onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as typeof prev.status }))}
                   className={inputClass}
@@ -177,6 +195,8 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
                 <label className="flex items-center gap-2">
                   <input
                     type="checkbox"
+                    data-toggle="isManager"
+                    data-testid="user-toggle-is-manager"
                     checked={formData.isManager || false}
                     onChange={(e) => setFormData(prev => ({ ...prev, isManager: e.target.checked }))}
                     className="w-3.5 h-3.5 rounded-xl border-lia-border-default"
@@ -206,6 +226,8 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
                 <label key={permission.id} className="flex items-center gap-1.5">
                   <input
                     type="checkbox"
+                    data-toggle={`permission_${permission.id}`}
+                    data-testid={`user-permission-${permission.id}`}
                     checked={(formData.permissions || []).includes(permission.id)}
                     onChange={(e) => {
                       const permissions = formData.permissions || []
@@ -224,10 +246,10 @@ export function UserForm({ isCreating, formData, setFormData, onSave, onCancel, 
           </div>
 
           <div className="flex justify-end gap-2 mt-6 pt-4 border-t">
-            <Button variant="outline" size="sm" onClick={onCancel}>
+            <Button data-testid="user-form-cancel" variant="outline" size="sm" onClick={onCancel}>
               {t('cancel')}
             </Button>
-            <Button onClick={onSave} size="sm" className="gap-1.5 hover:bg-lia-interactive-hover transition-colors cursor-pointer">
+            <Button data-testid="user-form-save" onClick={onSave} size="sm" className="gap-1.5 hover:bg-lia-interactive-hover transition-colors cursor-pointer">
               <Save className="w-3.5 h-3.5" />
               {isCreating ? t('createUser') : t('saveChanges')}
             </Button>

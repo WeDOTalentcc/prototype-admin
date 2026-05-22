@@ -57,9 +57,9 @@ export function UserList({
 
   if (viewMode === 'cards') {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" data-testid="users-list-cards">
         {filteredUsers.map((user) => (
-          <Card key={user.id} className="rounded-xl hover:transition-shadow">
+          <Card key={user.id} data-testid={`user-card-${user.id}`} className="rounded-xl hover:transition-shadow">
             <CardContent className="p-4">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-2">
@@ -88,6 +88,7 @@ export function UserList({
                 {!isSCIMEnabled && (
                   <div className="flex items-center gap-0.5">
                     <Button
+                      data-testid={`user-card-edit-${user.id}`}
                       variant="ghost"
                       size="sm"
                       onClick={() => onEditUser(user)}
@@ -97,6 +98,7 @@ export function UserList({
                       <Edit className="w-3.5 h-3.5" />
                     </Button>
                     <Button
+                      data-testid={`user-card-delete-${user.id}`}
                       variant="ghost"
                       size="sm"
                       onClick={() => onDeleteUser(user.id)}
@@ -130,6 +132,7 @@ export function UserList({
 
                 {user.status === 'inactive' && (
                   <Button
+                    data-testid={`user-resend-invite-${user.id}`}
                     variant="outline"
                     size="sm"
                     onClick={() => onResendInvitation(user.id, user.email)}
@@ -158,7 +161,7 @@ export function UserList({
   }
 
   return (
-    <Card className="rounded-md">
+    <Card data-testid="users-list-table" className="rounded-md">
       <CardContent className="p-0">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -182,7 +185,7 @@ export function UserList({
             </thead>
             <tbody className="bg-lia-bg-primary dark:bg-lia-bg-secondary divide-y divide-lia-border-subtle dark:divide-lia-border-strong">
               {filteredUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse">
+                <tr key={user.id} data-testid={`user-row-${user.id}`} className="hover:bg-lia-bg-secondary dark:hover:bg-lia-bg-inverse">
                   <td className="px-2 py-1.5 whitespace-nowrap">
                     <div className="flex items-center gap-2">
                       <Avatar className="w-8 h-8">
@@ -218,6 +221,7 @@ export function UserList({
                     <td className="px-2 py-1.5 whitespace-nowrap text-center">
                       <div className="flex items-center justify-center gap-1">
                         <Button
+                          data-testid={`user-row-edit-${user.id}`}
                           variant="ghost"
                           size="sm"
                           onClick={() => onEditUser(user)}
@@ -227,6 +231,7 @@ export function UserList({
                           <Edit className="w-3.5 h-3.5" />
                         </Button>
                         <Button
+                          data-testid={`user-row-delete-${user.id}`}
                           variant="ghost"
                           size="sm"
                           onClick={() => onDeleteUser(user.id)}

@@ -57,12 +57,13 @@ export function MemberSection({
   const td = useTranslations('settings.departments');
 
   return (
-    <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-3 mt-3">
+    <div className="border-t border-lia-border-subtle dark:border-lia-border-subtle pt-3 mt-3" data-testid="member-section-root">
       <div className="flex items-center justify-between mb-2">
         <h5 className="text-xs font-semibold text-lia-text-primary">
           {t('title')}
         </h5>
         <Button
+          data-testid="member-add-button"
           variant="outline"
           size="sm"
           onClick={() => {
@@ -87,6 +88,7 @@ export function MemberSection({
           departmentMembers.map((member) => (
             <div
               key={member.id}
+              data-testid={`member-row-${member.id}`}
               className="flex items-center justify-between p-2 bg-lia-bg-secondary rounded-xl"
             >
               <div className="flex items-center gap-2">
@@ -107,6 +109,7 @@ export function MemberSection({
               {isEditingDepartments && (
                 <div className="flex gap-1">
                   <Button
+                    data-testid={`member-edit-${member.id}`}
                     variant="ghost"
                     size="sm"
                     onClick={() => handleEditMember(member)}
@@ -115,6 +118,7 @@ export function MemberSection({
                     <Edit className="w-3 h-3" />
                   </Button>
                   <Button
+                    data-testid={`member-delete-${member.id}`}
                     variant="ghost"
                     size="sm"
                     onClick={() => handleDeleteMember(member.id)}
@@ -130,13 +134,15 @@ export function MemberSection({
       </div>
 
       {showMemberForm && (
-        <div className="mt-2 p-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary">
+        <div data-testid={editingMember ? 'member-edit-form' : 'member-create-form'} className="mt-2 p-2 border border-lia-border-subtle dark:border-lia-border-subtle rounded-xl bg-lia-bg-primary dark:bg-lia-bg-secondary">
           <h6 className="text-micro font-medium text-lia-text-secondary mb-2">
             {editingMember ? t("editMember") : t("newMember")}
           </h6>
           <div className="grid grid-cols-2 gap-2 mb-2">
             <input
               type="text"
+              data-field="name"
+              data-testid="member-field-name"
               placeholder={t('namePlaceholder')}
               value={newMember.name}
               onChange={(e) =>
@@ -146,6 +152,8 @@ export function MemberSection({
             />
             <input
               type="text"
+              data-field="title"
+              data-testid="member-field-title"
               placeholder={t('titlePlaceholder')}
               value={newMember.title}
               onChange={(e) =>
@@ -155,6 +163,8 @@ export function MemberSection({
             />
             <input
               type="email"
+              data-field="email"
+              data-testid="member-field-email"
               placeholder={t('emailPlaceholder')}
               value={newMember.email}
               onChange={(e) =>
@@ -164,6 +174,8 @@ export function MemberSection({
             />
             <input
               type="text"
+              data-field="phone"
+              data-testid="member-field-phone"
               placeholder={t('phonePlaceholder')}
               value={newMember.phone}
               onChange={(e) =>
@@ -173,6 +185,8 @@ export function MemberSection({
             />
             <input
               type="url"
+              data-field="linkedin_url"
+              data-testid="member-field-linkedin"
               placeholder={t('linkedinPlaceholder')}
               value={newMember.linkedin_url}
               onChange={(e) =>
@@ -181,6 +195,8 @@ export function MemberSection({
               className="w-full px-2 py-1.5 text-xs border border-lia-border-subtle rounded-xl bg-lia-bg-primary focus:ring-2 focus:ring-lia-border-subtle focus:border-lia-border-medium dark:focus:ring-lia-border-strong dark:focus:border-lia-border-medium col-span-2"
             />
             <select
+              data-field="level"
+              data-testid="member-field-level"
               value={newMember.level}
               onChange={(e) =>
                 setNewMember((prev) => ({ ...prev, level: e.target.value }))
@@ -214,6 +230,7 @@ export function MemberSection({
           )}
           <div className="flex justify-end gap-2">
             <Button
+              data-testid="member-form-cancel"
               variant="ghost"
               size="sm"
               onClick={() => {
@@ -228,6 +245,7 @@ export function MemberSection({
               {t('cancel')}
             </Button>
             <Button
+              data-testid="member-form-save"
               size="sm"
               onClick={handleSaveMember}
               className="py-1 px-2 text-micro rounded-full bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover dark:hover:bg-lia-interactive-active"
