@@ -62,8 +62,15 @@ def _build_conversational_prompt(
     return f"{system}\n\nMensagem do usuário: {message}\n\nResponda de forma natural e útil:"
 
 
-async def _get_active_draft_for_user(db: AsyncSession, user_id: str) -> JobDraft | None:
-    """Fetch the most recent active (DRAFT status) JobDraft for a user."""
+async def _get_active_draft_for_user(
+    db: AsyncSession,
+    user_id: str,
+    company_id: str,
+) -> JobDraft | None:
+    """Fetch the most recent active (DRAFT status) JobDraft for a user.
+
+    Multi-tenancy fail-closed: company_id required (caller passes JWT value).
+    """
     try:
         from app.models.job_draft import JobDraftStatus
         result = await db.execute(
@@ -71,6 +78,7 @@ async def _get_active_draft_for_user(db: AsyncSession, user_id: str) -> JobDraft
             .where(
                 and_(
                     JobDraft.recruiter_id == user_id,
+                    JobDraft.company_id == company_id,
                     JobDraft.status == JobDraftStatus.DRAFT,
                 )
             )
@@ -388,12 +396,14 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
 
         from app.models.job_draft import JobDraftStatus
         user_id = str(current_user.id)
+        # multi-tenancy fail-closed: explicit company_id filter
         result = await db.execute(
             select(JobDraft)
             .where(
                 and_(
                     JobDraft.conversation_id == conv_uuid,
                     JobDraft.recruiter_id == user_id,
+                    JobDraft.company_id == company_id,
                     JobDraft.status == JobDraftStatus.DRAFT,
                 )
             )
@@ -425,7 +435,7 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Get the most recent active draft for the current user."""
     user_id = str(current_user.id)
-    draft = await _get_active_draft_for_user(db, user_id)
+    draft = await _get_active_draft_for_user(db, user_id, company_id)
     if draft:
         return {
             "success": True,
@@ -454,11 +464,13 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
 
         from app.models.job_draft import JobDraftStatus
         user_id = str(current_user.id)
+        # multi-tenancy fail-closed: explicit company_id filter
         result = await db.execute(
             select(JobDraft).where(
                 and_(
                     JobDraft.conversation_id == conv_uuid,
                     JobDraft.recruiter_id == user_id,
+                    JobDraft.company_id == company_id,
                 )
             )
         )

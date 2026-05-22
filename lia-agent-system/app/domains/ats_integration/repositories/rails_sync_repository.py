@@ -24,6 +24,8 @@ class RailsSyncRepository:
     # ── Candidate ────────────────────────────────────────────────────────
 
     async def get_candidate(self, candidate_id: str) -> Candidate | None:
+        # TENANT-EXEMPT: rails-sync service-to-service endpoint; Rails passes own
+        # tenant context via service token + RLS at session level (Task #1143)
         result = await self.db.execute(
             select(Candidate).where(Candidate.id == candidate_id)
         )
@@ -32,6 +34,8 @@ class RailsSyncRepository:
     async def list_candidates_by_ids(self, candidate_ids: list[str]) -> list[Candidate]:
         if not candidate_ids:
             return []
+        # TENANT-EXEMPT: rails-sync service-to-service endpoint; Rails passes own
+        # tenant context via service token + RLS at session level (Task #1143)
         result = await self.db.execute(
             select(Candidate).where(Candidate.id.in_(candidate_ids))
         )
@@ -44,6 +48,8 @@ class RailsSyncRepository:
     # ── Job vacancy ──────────────────────────────────────────────────────
 
     async def get_job(self, job_id: str) -> JobVacancy | None:
+        # TENANT-EXEMPT: rails-sync service-to-service endpoint; Rails passes own
+        # tenant context via service token + RLS at session level (Task #1143)
         result = await self.db.execute(
             select(JobVacancy).where(JobVacancy.id == job_id)
         )

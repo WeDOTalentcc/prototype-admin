@@ -89,8 +89,12 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     _check_rate_limit()
     _audit_log("candidates.enrichment", {"candidate_id": candidate_id})
 
+    # multi-tenancy fail-closed: explicit company_id WHERE + Postgres RLS defense-in-depth
     result = await db.execute(
-        select(Candidate).where(Candidate.id == candidate_id)
+        select(Candidate).where(
+            Candidate.id == candidate_id,
+            Candidate.company_id == company_id,
+        )
     )
     candidate = result.scalar_one_or_none()
     if not candidate:
@@ -134,7 +138,13 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     _check_rate_limit()
     _audit_log("jobs.intelligence", {"job_id": job_id})
 
-    result = await db.execute(select(JobVacancy).where(JobVacancy.id == job_id))
+    # multi-tenancy fail-closed: explicit company_id WHERE + Postgres RLS defense-in-depth
+    result = await db.execute(
+        select(JobVacancy).where(
+            JobVacancy.id == job_id,
+            JobVacancy.company_id == company_id,
+        )
+    )
     job = result.scalar_one_or_none()
     if not job:
         raise HTTPException(status_code=404, detail="Job not found")
@@ -228,8 +238,12 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
 
     _audit_log("bulk-sync.candidates", {"count": len(candidate_ids)})
 
+    # multi-tenancy fail-closed: explicit company_id WHERE + Postgres RLS defense-in-depth
     result = await db.execute(
-        select(Candidate).where(Candidate.id.in_(candidate_ids))
+        select(Candidate).where(
+            Candidate.id.in_(candidate_ids),
+            Candidate.company_id == company_id,
+        )
     )
     candidates = list(result.scalars().all())
     found_ids = {str(getattr(c, "id", "")) for c in candidates}
