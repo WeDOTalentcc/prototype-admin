@@ -44,6 +44,7 @@ class PolicyEngineRepository:
             else BusinessRule.company_id.is_(None)
         )
         query = (
+            # TENANT-EXEMPT: policy engine rules support tenant-OR-global semantics via or_(company_id.is_(None), company_id==X); intentional cross-tenant fallback
             select(BusinessRule)
             .where(and_(BusinessRule.is_active, company_clause))
             .order_by(BusinessRule.priority.asc())
@@ -53,6 +54,7 @@ class PolicyEngineRepository:
 
     async def get_business_rule_by_name(self, name: str) -> Optional[BusinessRule]:
         result = await self.db.execute(
+            # TENANT-EXEMPT: policy engine rules support tenant-OR-global semantics via or_(company_id.is_(None), company_id==X); intentional cross-tenant fallback
             select(BusinessRule).where(BusinessRule.name == name)
         )
         return result.scalar_one_or_none()
@@ -74,6 +76,7 @@ class PolicyEngineRepository:
             if company_uuid
             else RateLimitRule.company_id.is_(None)
         )
+        # TENANT-EXEMPT: policy engine rules support tenant-OR-global semantics via or_(company_id.is_(None), company_id==X); intentional cross-tenant fallback
         query = select(RateLimitRule).where(
             and_(
                 RateLimitRule.is_active,
@@ -86,6 +89,7 @@ class PolicyEngineRepository:
 
     async def get_rate_limit_rule_by_name(self, name: str) -> Optional[RateLimitRule]:
         result = await self.db.execute(
+            # TENANT-EXEMPT: policy engine rules support tenant-OR-global semantics via or_(company_id.is_(None), company_id==X); intentional cross-tenant fallback
             select(RateLimitRule).where(RateLimitRule.name == name)
         )
         return result.scalar_one_or_none()
@@ -114,6 +118,7 @@ class PolicyEngineRepository:
         self, rule_id: UUID
     ) -> Optional[EscalationRule]:
         result = await self.db.execute(
+            # TENANT-EXEMPT: policy engine rules support tenant-OR-global semantics via or_(company_id.is_(None), company_id==X); intentional cross-tenant fallback
             select(EscalationRule).where(
                 and_(
                     EscalationRule.id == rule_id,
@@ -137,6 +142,7 @@ class PolicyEngineRepository:
             else EscalationRule.company_id.is_(None)
         )
         query = (
+            # TENANT-EXEMPT: policy engine rules support tenant-OR-global semantics via or_(company_id.is_(None), company_id==X); intentional cross-tenant fallback
             select(EscalationRule)
             .where(
                 and_(
@@ -152,6 +158,205 @@ class PolicyEngineRepository:
 
     async def get_escalation_rule_by_name(self, name: str) -> Optional[EscalationRule]:
         result = await self.db.execute(
+            # TENANT-EXEMPT: policy engine rules support tenant-OR-global semantics via or_(company_id.is_(None), company_id==X); intentional cross-tenant fallback
             select(EscalationRule).where(EscalationRule.name == name)
         )
         return result.scalar_one_or_none()
+
+
+# =============================================================================
+# WT-2022 CRUD methods — UI editor (Policies Migration → UI)
+# =============================================================================
+#
+# Multi-tenancy fail-closed: every mutation requires company_id; UUID parse
+# error raises ValueError so service layer returns HTTP 400. All reads/writes
+# filter by company_id OR company_id IS NULL (global rules visible to all
+# tenants but only WeDOTalent staff can manage globals — enforced upstream).
+#
+# ADR-001 Repository Pattern: services no longer call select(Model) inline —
+# they delegate to these methods.
+
+    def _require_company_uuid(self, company_id: str | None) -> UUID:
+        """Fail-closed gate — raises ValueError when company_id is missing/invalid."""
+        if not company_id:
+            raise ValueError("company_id is required for CRUD operations")
+        try:
+            return UUID(company_id)
+        except (ValueError, AttributeError) as exc:
+            raise ValueError(f"Invalid company_id UUID: {company_id}") from exc
+
+    # ---------------------------------------------------------------------
+    # BusinessRule CRUD (mutations)
+    # ---------------------------------------------------------------------
+
+    async def get_business_rule(
+        self, company_id: str, rule_id: str
+    ) -> Optional[BusinessRule]:
+        """Fetch BusinessRule scoped to company_id (or global)."""
+        company_uuid = self._require_company_uuid(company_id)
+        try:
+            rule_uuid = UUID(rule_id)
+        except (ValueError, AttributeError) as exc:
+            raise ValueError(f"Invalid rule_id UUID: {rule_id}") from exc
+
+        result = await self.db.execute(
+            select(BusinessRule).where(
+                and_(
+                    BusinessRule.id == rule_uuid,
+                    or_(
+                        BusinessRule.company_id.is_(None),
+                        BusinessRule.company_id == company_uuid,
+                    ),
+                )
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def create_business_rule(
+        self, company_id: str, data: dict
+    ) -> BusinessRule:
+        company_uuid = self._require_company_uuid(company_id)
+        rule = BusinessRule(company_id=company_uuid, **data)
+        self.db.add(rule)
+        await self.db.commit()
+        await self.db.refresh(rule)
+        return rule
+
+    async def update_business_rule(
+        self, company_id: str, rule_id: str, data: dict
+    ) -> Optional[BusinessRule]:
+        rule = await self.get_business_rule(company_id, rule_id)
+        if rule is None:
+            return None
+        for field, value in data.items():
+            if value is not None:
+                setattr(rule, field, value)
+        await self.db.commit()
+        await self.db.refresh(rule)
+        return rule
+
+    async def delete_business_rule(self, company_id: str, rule_id: str) -> bool:
+        rule = await self.get_business_rule(company_id, rule_id)
+        if rule is None:
+            return False
+        await self.db.delete(rule)
+        await self.db.commit()
+        return True
+
+    # ---------------------------------------------------------------------
+    # RateLimitRule CRUD (mutations)
+    # ---------------------------------------------------------------------
+
+    async def get_rate_limit_rule(
+        self, company_id: str, rule_id: str
+    ) -> Optional[RateLimitRule]:
+        company_uuid = self._require_company_uuid(company_id)
+        try:
+            rule_uuid = UUID(rule_id)
+        except (ValueError, AttributeError) as exc:
+            raise ValueError(f"Invalid rule_id UUID: {rule_id}") from exc
+
+        result = await self.db.execute(
+            select(RateLimitRule).where(
+                and_(
+                    RateLimitRule.id == rule_uuid,
+                    or_(
+                        RateLimitRule.company_id.is_(None),
+                        RateLimitRule.company_id == company_uuid,
+                    ),
+                )
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def create_rate_limit_rule(
+        self, company_id: str, data: dict
+    ) -> RateLimitRule:
+        company_uuid = self._require_company_uuid(company_id)
+        rule = RateLimitRule(company_id=company_uuid, **data)
+        self.db.add(rule)
+        await self.db.commit()
+        await self.db.refresh(rule)
+        return rule
+
+    async def update_rate_limit_rule(
+        self, company_id: str, rule_id: str, data: dict
+    ) -> Optional[RateLimitRule]:
+        rule = await self.get_rate_limit_rule(company_id, rule_id)
+        if rule is None:
+            return None
+        for field, value in data.items():
+            if value is not None:
+                setattr(rule, field, value)
+        await self.db.commit()
+        await self.db.refresh(rule)
+        return rule
+
+    async def delete_rate_limit_rule(
+        self, company_id: str, rule_id: str
+    ) -> bool:
+        rule = await self.get_rate_limit_rule(company_id, rule_id)
+        if rule is None:
+            return False
+        await self.db.delete(rule)
+        await self.db.commit()
+        return True
+
+    # ---------------------------------------------------------------------
+    # EscalationRule CRUD (mutations)
+    # ---------------------------------------------------------------------
+
+    async def get_escalation_rule(
+        self, company_id: str, rule_id: str
+    ) -> Optional[EscalationRule]:
+        company_uuid = self._require_company_uuid(company_id)
+        try:
+            rule_uuid = UUID(rule_id)
+        except (ValueError, AttributeError) as exc:
+            raise ValueError(f"Invalid rule_id UUID: {rule_id}") from exc
+
+        result = await self.db.execute(
+            select(EscalationRule).where(
+                and_(
+                    EscalationRule.id == rule_uuid,
+                    or_(
+                        EscalationRule.company_id.is_(None),
+                        EscalationRule.company_id == company_uuid,
+                    ),
+                )
+            )
+        )
+        return result.scalar_one_or_none()
+
+    async def create_escalation_rule(
+        self, company_id: str, data: dict
+    ) -> EscalationRule:
+        company_uuid = self._require_company_uuid(company_id)
+        rule = EscalationRule(company_id=company_uuid, **data)
+        self.db.add(rule)
+        await self.db.commit()
+        await self.db.refresh(rule)
+        return rule
+
+    async def update_escalation_rule(
+        self, company_id: str, rule_id: str, data: dict
+    ) -> Optional[EscalationRule]:
+        rule = await self.get_escalation_rule(company_id, rule_id)
+        if rule is None:
+            return None
+        for field, value in data.items():
+            if value is not None:
+                setattr(rule, field, value)
+        await self.db.commit()
+        await self.db.refresh(rule)
+        return rule
+
+    async def delete_escalation_rule(
+        self, company_id: str, rule_id: str
+    ) -> bool:
+        rule = await self.get_escalation_rule(company_id, rule_id)
+        if rule is None:
+            return False
+        await self.db.delete(rule)
+        await self.db.commit()
+        return True

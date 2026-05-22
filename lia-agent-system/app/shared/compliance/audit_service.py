@@ -863,6 +863,7 @@ class AuditService:
                 if company_id:
                     conditions.append(AuditLog.company_id == company_id)
 
+                # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace
                 result = await session.execute(select(AuditLog).where(and_(*conditions)).order_by(AuditLog.created_at))
                 logs = result.scalars().all()
                 return [log.to_dict() for log in logs]

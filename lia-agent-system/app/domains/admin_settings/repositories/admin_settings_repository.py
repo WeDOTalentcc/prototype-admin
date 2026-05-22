@@ -44,6 +44,7 @@ class AdminSettingsRepository:
 
     async def get_role_by_id(self, role_id: UUID) -> AdminRole | None:
         result = await self.db.execute(
+            # TENANT-EXEMPT: AdminRole/AdminUserRole/NotificationPolicy are platform-staff scope (WeDOTalent admin), not customer-tenant
             select(AdminRole).where(AdminRole.id == role_id)
         )
         return result.scalar_one_or_none()
@@ -170,6 +171,7 @@ class AdminSettingsRepository:
 
     async def get_user_role_by_id(self, assignment_id: UUID) -> AdminUserRole | None:
         result = await self.db.execute(
+            # TENANT-EXEMPT: AdminRole/AdminUserRole/NotificationPolicy are platform-staff scope (WeDOTalent admin), not customer-tenant
             select(AdminUserRole).where(AdminUserRole.id == assignment_id)
         )
         return result.scalar_one_or_none()
@@ -195,6 +197,7 @@ class AdminSettingsRepository:
 
     async def get_notification_policy_by_id(self, policy_id: UUID) -> NotificationPolicy | None:
         result = await self.db.execute(
+            # TENANT-EXEMPT: AdminRole/AdminUserRole/NotificationPolicy are platform-staff scope (WeDOTalent admin), not customer-tenant
             select(NotificationPolicy).where(NotificationPolicy.id == policy_id)
         )
         return result.scalar_one_or_none()

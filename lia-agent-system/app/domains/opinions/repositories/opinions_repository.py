@@ -85,12 +85,14 @@ class OpinionsRepository:
 
         # Count total
         count_result = await self.db.execute(
+            # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace
             select(LiaOpinion).where(and_(*conditions))
         )
         total = len(count_result.scalars().all())
 
         # Paginated fetch
         result = await self.db.execute(
+            # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace
             select(LiaOpinion).where(and_(*conditions))
             .order_by(desc(LiaOpinion.created_at))
             .offset((page - 1) * page_size)

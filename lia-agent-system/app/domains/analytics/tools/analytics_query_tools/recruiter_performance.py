@@ -159,6 +159,7 @@ async def get_velocity_metrics(
 
             conditions.append(JobVacancy.closed_at >= start_date)
 
+            # TENANT-EXEMPT: analytics tool builds conditions=[Model.company_id==X, ...] then where(and_(*conditions)); AST sensor cannot trace dynamic builder
             query = select(JobVacancy).where(and_(*conditions))
             result = await db.execute(query)
             closed_jobs = result.scalars().all()
@@ -238,6 +239,7 @@ async def get_efficiency_metrics(
             if job_id:
                 conditions.append(VacancyCandidate.vacancy_id == UUID(job_id))
 
+            # TENANT-EXEMPT: analytics tool builds conditions=[Model.company_id==X, ...] then where(and_(*conditions)); AST sensor cannot trace dynamic builder
             query = select(VacancyCandidate).where(and_(*conditions))
             result = await db.execute(query)
             vacancy_candidates = result.scalars().all()
@@ -341,6 +343,7 @@ async def get_comparative_metrics(
                 if recruiter:
                     conditions.append(JobVacancy.recruiter == recruiter)
 
+                # TENANT-EXEMPT: analytics tool builds conditions=[Model.company_id==X, ...] then where(and_(*conditions)); AST sensor cannot trace dynamic builder
                 jobs_query = select(JobVacancy).where(and_(*conditions))
                 result = await db.execute(jobs_query)
                 jobs = result.scalars().all()

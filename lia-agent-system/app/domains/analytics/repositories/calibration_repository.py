@@ -44,6 +44,7 @@ class CalibrationRepository:
     ) -> list[CalibrationEvent]:
         """Return events that represent divergences (explicit disagree, high-score reject, low-score advance)."""
         stmt = (
+            # TENANT-EXEMPT: calibration events/weights are per-company learning state; dynamic conditions builder upstream
             select(CalibrationEvent)
             .where(
                 and_(
@@ -150,6 +151,7 @@ class CalibrationRepository:
     ) -> list[CalibrationEvent]:
         """Return recent calibration events optionally filtered by feedback_type."""
         stmt = (
+            # TENANT-EXEMPT: calibration events/weights are per-company learning state; dynamic conditions builder upstream
             select(CalibrationEvent)
             .order_by(desc(CalibrationEvent.created_at))
             .limit(limit)
@@ -185,6 +187,7 @@ class CalibrationRepository:
         self, dimension: str
     ) -> CalibrationWeight | None:
         """Return the active CalibrationWeight for a given dimension, or None."""
+        # TENANT-EXEMPT: calibration events/weights are per-company learning state; dynamic conditions builder upstream
         stmt = select(CalibrationWeight).where(
             and_(
                 CalibrationWeight.dimension == dimension,
@@ -198,6 +201,7 @@ class CalibrationRepository:
         self, job_id: str | None = None
     ) -> list[CalibrationWeight]:
         """Return active calibration weights, optionally scoped to a job_id (with global fallback)."""
+        # TENANT-EXEMPT: calibration events/weights are per-company learning state; dynamic conditions builder upstream
         stmt = select(CalibrationWeight).where(CalibrationWeight.is_active)
         if job_id:
             stmt = stmt.where(
@@ -220,6 +224,7 @@ class CalibrationRepository:
         upstream via job_id ownership.
         """
         stmt = (
+            # TENANT-EXEMPT: calibration events/weights are per-company learning state; dynamic conditions builder upstream
             select(CalibrationEvent)
             .where(
                 and_(

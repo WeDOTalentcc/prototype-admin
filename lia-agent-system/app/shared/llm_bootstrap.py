@@ -465,6 +465,36 @@ def _patch_anthropic() -> bool:
     return True
 
 
+def _is_async_method(method) -> bool:
+    """Robust detector: ``inspect.iscoroutinefunction`` returns False for
+    SDK methods wrapped by decorators that don't preserve ``CO_COROUTINE``
+    (e.g., Anthropic's ``_utils.required_args`` decorator wraps an
+    ``async def`` and exposes the real one only via ``__wrapped__``).
+
+    Detection cascade:
+      1. ``inspect.iscoroutinefunction(method)`` — succeeds for unwrapped
+         async functions and ``unittest.mock.AsyncMock``.
+      2. ``inspect.iscoroutinefunction(method.__wrapped__)`` — handles
+         ``functools.wraps``-style decorators on async defs.
+      3. Method class name starts with ``Async`` — final fallback for SDKs
+         that don't expose ``__wrapped__`` (Anthropic's ``AsyncMessages``
+         vs ``Messages`` follows this convention reliably).
+    """
+    if inspect.iscoroutinefunction(method):
+        return True
+    wrapped = getattr(method, "__wrapped__", None)
+    if wrapped is not None and inspect.iscoroutinefunction(wrapped):
+        return True
+    # Final fallback: introspect the owning class. ``self.__class__.__name__``
+    # is the canonical seam (e.g., ``AsyncMessages`` for AsyncAnthropic).
+    self_obj = getattr(method, "__self__", None)
+    if self_obj is not None:
+        cls_name = type(self_obj).__name__
+        if cls_name.startswith("Async"):
+            return True
+    return False
+
+
 def _patch_messages_api(client_instance, provider_label: str):
     """Patch messages.create() and messages.stream() on a client instance.
 
@@ -488,7 +518,7 @@ def _patch_messages_api(client_instance, provider_label: str):
     messages_obj._lia_patched = True
 
     _orig_create = messages_obj.create
-    is_async = inspect.iscoroutinefunction(_orig_create)
+    is_async = _is_async_method(_orig_create)
 
     if is_async:
         @functools.wraps(_orig_create)
@@ -624,14 +654,16 @@ def _patch_openai() -> bool:
                 kwargs["base_url"] = base_url
         _orig_async_init(self, *args, **kwargs)
         _patch_openai_completions(self, "openai-async")
+        _patch_openai_audio(self, "openai-async")
         logger.debug("[LLM-Bootstrap] AsyncOpenAI client created, caller=%s", _get_caller())
 
-    # Patch sync init to also wrap chat completions
+    # Patch sync init to also wrap chat completions + audio
     _orig_init_wrapped = openai.OpenAI.__init__
     @functools.wraps(_orig_init_wrapped)
     def _patched_init_with_completions(self, *args, **kwargs):
         _orig_init_wrapped(self, *args, **kwargs)
         _patch_openai_completions(self, "openai")
+        _patch_openai_audio(self, "openai")
 
     openai.OpenAI.__init__ = _patched_init_with_completions
     openai.AsyncOpenAI.__init__ = _patched_async_init
@@ -687,6 +719,164 @@ def _patch_openai_completions(client_instance, provider_label: str):
                 _reconcile_sync(company_id, estimated, actual, service=provider_label)
             return response
         completions.create = _patched_sync
+
+
+
+# ---------------------------------------------------------------------------
+# OpenAI Audio Gate (Whisper STT + TTS) — P1.AIC2 restored 2026-05-22
+# ---------------------------------------------------------------------------
+# Whisper and TTS are NOT chat-completions — they have distinct token models.
+# Whisper STT is per-audio-minute ($0.006/min ≈ 2000 token-eq @ Claude $3/M).
+# TTS is per-input-character ($0.015/1K chars ≈ 5 token-eq/char).
+# These constants mirror the conversion logic in `ai_credit_gate.py` so the
+# same ledger column is used regardless of price model.
+
+_WHISPER_TOKEN_EQ_PER_MINUTE = 2000  # 60 sec audio → 2000 token-eq
+_TTS_TOKEN_EQ_PER_CHAR = 5            # 1 char text → 5 token-eq
+
+# 96 kbps MP3 / Opus is a sane default for compressed audio sent to Whisper.
+# WAV (uncompressed 16kHz mono 16-bit) at ~256 kbps will under-estimate by ~3×,
+# but the gate is meant to be a budget guardrail not a precise meter; the
+# reconcile path can correct after the SDK returns `duration` in response.
+_AUDIO_BYTES_PER_SECOND_HEURISTIC = 12000  # 96 kbps / 8
+
+
+def _extract_audio_duration(file_arg) -> float | None:
+    """Best-effort audio duration extraction from an openai SDK ``file=`` arg.
+
+    Accepts:
+      - tuples (filename, bytes, mime_type) — SDK file-tuple convention
+      - tuples (filename, bytes) — also valid
+      - raw bytes
+      - file-like objects with ``len()``
+      - objects exposing ``duration_seconds``
+
+    Returns None when no signal is available (estimator returns 0 → gate
+    fails-safe ALLOW). Caller should still set ``audio_duration_seconds``
+    explicitly in kwargs when the value is known precisely.
+    """
+    if file_arg is None:
+        return None
+    if hasattr(file_arg, "duration_seconds"):
+        try:
+            return float(file_arg.duration_seconds)
+        except Exception:
+            pass
+    # SDK file-tuple convention: (filename, bytes[, mime_type])
+    if isinstance(file_arg, tuple) and len(file_arg) >= 2:
+        payload = file_arg[1]
+        if isinstance(payload, (bytes, bytearray, memoryview)):
+            return float(len(payload)) / _AUDIO_BYTES_PER_SECOND_HEURISTIC
+    if isinstance(file_arg, (bytes, bytearray, memoryview)):
+        return float(len(file_arg)) / _AUDIO_BYTES_PER_SECOND_HEURISTIC
+    if hasattr(file_arg, "__len__"):
+        try:
+            return float(len(file_arg)) / _AUDIO_BYTES_PER_SECOND_HEURISTIC
+        except Exception:
+            pass
+    return None
+
+
+def _estimate_tokens_openai_audio_transcription(kwargs: dict) -> int:
+    """Whisper STT: token-eq derived from audio duration.
+
+    Resolution order:
+      1. explicit ``audio_duration_seconds`` kwarg (passed by callers that
+         know the precise duration — e.g., after a probe).
+      2. derived from ``file=`` arg via ``_extract_audio_duration``.
+      3. fallback ``0`` (no signal → estimator yields 0; gate path will
+         still fire but with no budget projection — defense in depth via
+         reconciliation after the SDK returns).
+    """
+    duration_seconds = kwargs.get("audio_duration_seconds")
+    if duration_seconds is None:
+        duration_seconds = _extract_audio_duration(kwargs.get("file"))
+    if duration_seconds is None or duration_seconds <= 0:
+        return 0
+    return int(round((float(duration_seconds) / 60.0) * _WHISPER_TOKEN_EQ_PER_MINUTE))
+
+
+def _estimate_tokens_openai_audio_speech(kwargs: dict) -> int:
+    """TTS: token-eq derived from input text length."""
+    text = kwargs.get("input") or ""
+    if not text:
+        return 0
+    return int(len(text) * _TTS_TOKEN_EQ_PER_CHAR)
+
+
+def _patch_openai_audio(client_instance, provider_label: str):
+    """Wrap audio.transcriptions.create + audio.speech.create with the gate.
+
+    Mirrors ``_patch_openai_completions`` shape: detects sync vs async via
+    ``provider_label.endswith("-async")`` (the constructor patch passes the
+    label consistently). Both methods on the SDK are real attributes on the
+    client (not @property), so ``getattr`` is safe.
+    """
+    audio = getattr(client_instance, "audio", None)
+    if audio is None:
+        logger.debug("[LLM-Bootstrap] %s has no audio API — skip", provider_label)
+        return
+
+    is_async = provider_label.endswith("-async")
+
+    # ---- transcriptions ----
+    transcriptions = getattr(audio, "transcriptions", None)
+    if transcriptions is not None and not getattr(transcriptions, "_lia_credit_patched", False):
+        transcriptions._lia_credit_patched = True
+        _orig_create = transcriptions.create
+
+        if is_async:
+            @functools.wraps(_orig_create)
+            async def _patched_transcription_async(*args, **kwargs):
+                await _enforce_credit_gate_async(
+                    provider_label + "/whisper",
+                    kwargs,
+                    estimator=_estimate_tokens_openai_audio_transcription,
+                )
+                return await _orig_create(*args, **kwargs)
+            transcriptions.create = _patched_transcription_async
+        else:
+            @functools.wraps(_orig_create)
+            def _patched_transcription_sync(*args, **kwargs):
+                _enforce_credit_gate_sync(
+                    provider_label + "/whisper",
+                    kwargs,
+                    estimator=_estimate_tokens_openai_audio_transcription,
+                )
+                return _orig_create(*args, **kwargs)
+            transcriptions.create = _patched_transcription_sync
+
+    # ---- speech (TTS) ----
+    speech = getattr(audio, "speech", None)
+    if speech is not None and not getattr(speech, "_lia_credit_patched", False):
+        speech._lia_credit_patched = True
+        _orig_create = speech.create
+
+        if is_async:
+            @functools.wraps(_orig_create)
+            async def _patched_speech_async(*args, **kwargs):
+                await _enforce_credit_gate_async(
+                    provider_label + "/tts",
+                    kwargs,
+                    estimator=_estimate_tokens_openai_audio_speech,
+                )
+                return await _orig_create(*args, **kwargs)
+            speech.create = _patched_speech_async
+        else:
+            @functools.wraps(_orig_create)
+            def _patched_speech_sync(*args, **kwargs):
+                _enforce_credit_gate_sync(
+                    provider_label + "/tts",
+                    kwargs,
+                    estimator=_estimate_tokens_openai_audio_speech,
+                )
+                return _orig_create(*args, **kwargs)
+            speech.create = _patched_speech_sync
+
+    logger.info(
+        "[LLM-Bootstrap] Patched %s audio (transcriptions + speech, %s)",
+        provider_label, "async" if is_async else "sync",
+    )
 
 
 # ---------------------------------------------------------------------------

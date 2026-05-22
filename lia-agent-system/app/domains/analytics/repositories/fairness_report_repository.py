@@ -75,6 +75,7 @@ class FairnessReportRepository:
         """Return (total_count, rows) for paginated audit log queries."""
         from app.models.fairness_audit import FairnessAuditLog
 
+        # TENANT-EXEMPT: fairness report cross-tenant aggregate; LGPD anonymized per ADR-LGPD-001
         stmt = select(FairnessAuditLog).where(FairnessAuditLog.created_at >= since)
 
         if company_id:

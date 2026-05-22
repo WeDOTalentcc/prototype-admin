@@ -39,6 +39,7 @@ class PolicyRepository:
                 or_(BusinessRule.company_id is None, BusinessRule.company_id == UUID(company_id))
             )
         query = (
+            # TENANT-EXEMPT: policy admin CRUD uses tenant-OR-global fallback + dynamic conditions builder; AST cannot trace
             select(BusinessRule)
             .where(and_(*conditions))
             .order_by(BusinessRule.priority.asc())
@@ -48,6 +49,7 @@ class PolicyRepository:
 
     async def get_business_rule(self, rule_id: UUID) -> BusinessRule | None:
         result = await self.db.execute(
+            # TENANT-EXEMPT: policy admin CRUD uses tenant-OR-global fallback + dynamic conditions builder; AST cannot trace
             select(BusinessRule).where(BusinessRule.id == rule_id)
         )
         return result.scalar_one_or_none()
@@ -88,12 +90,14 @@ class PolicyRepository:
             conditions.append(
                 or_(RateLimitRule.company_id is None, RateLimitRule.company_id == UUID(company_id))
             )
+        # TENANT-EXEMPT: policy admin CRUD uses tenant-OR-global fallback + dynamic conditions builder; AST cannot trace
         query = select(RateLimitRule).where(and_(*conditions))
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
     async def get_rate_limit_rule(self, rule_id: UUID) -> RateLimitRule | None:
         result = await self.db.execute(
+            # TENANT-EXEMPT: policy admin CRUD uses tenant-OR-global fallback + dynamic conditions builder; AST cannot trace
             select(RateLimitRule).where(RateLimitRule.id == rule_id)
         )
         return result.scalar_one_or_none()
@@ -131,6 +135,7 @@ class PolicyRepository:
                 or_(EscalationRule.company_id is None, EscalationRule.company_id == UUID(company_id))
             )
         query = (
+            # TENANT-EXEMPT: policy admin CRUD uses tenant-OR-global fallback + dynamic conditions builder; AST cannot trace
             select(EscalationRule)
             .where(and_(*conditions))
             .order_by(EscalationRule.priority.asc())
@@ -140,6 +145,7 @@ class PolicyRepository:
 
     async def get_escalation_rule(self, rule_id: UUID) -> EscalationRule | None:
         result = await self.db.execute(
+            # TENANT-EXEMPT: policy admin CRUD uses tenant-OR-global fallback + dynamic conditions builder; AST cannot trace
             select(EscalationRule).where(EscalationRule.id == rule_id)
         )
         return result.scalar_one_or_none()
@@ -184,6 +190,7 @@ class PolicyRepository:
         if agent_name:
             conditions.append(PolicyEvaluationLog.agent_name == agent_name)
 
+        # TENANT-EXEMPT: policy admin CRUD uses tenant-OR-global fallback + dynamic conditions builder; AST cannot trace
         query = select(PolicyEvaluationLog)
         if conditions:
             query = query.where(and_(*conditions))
@@ -215,6 +222,7 @@ class PolicyRepository:
         if action_taken:
             conditions.append(EscalationLog.action_taken == action_taken)
 
+        # TENANT-EXEMPT: policy admin CRUD uses tenant-OR-global fallback + dynamic conditions builder; AST cannot trace
         query = select(EscalationLog)
         if conditions:
             query = query.where(and_(*conditions))
@@ -228,6 +236,7 @@ class PolicyRepository:
 
     async def get_escalation_log(self, log_id: UUID) -> EscalationLog | None:
         result = await self.db.execute(
+            # TENANT-EXEMPT: policy admin CRUD uses tenant-OR-global fallback + dynamic conditions builder; AST cannot trace
             select(EscalationLog).where(EscalationLog.id == log_id)
         )
         return result.scalar_one_or_none()

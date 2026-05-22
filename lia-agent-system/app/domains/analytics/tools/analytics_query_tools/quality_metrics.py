@@ -194,6 +194,7 @@ async def get_hiring_quality(
                 conditions.append(JobVacancy.department == department_id)
 
             jobs_result = await db.execute(
+                # TENANT-EXEMPT: analytics tool builds conditions=[Model.company_id==X, ...] then where(and_(*conditions)); AST sensor cannot trace dynamic builder
                 select(JobVacancy).where(and_(*conditions))
             )
             closed_jobs = jobs_result.scalars().all()

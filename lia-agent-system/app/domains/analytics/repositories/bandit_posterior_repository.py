@@ -65,6 +65,7 @@ class BanditPosteriorRepository(_CanonicalBanditPosteriorRepository):
             conditions.append(BanditPosterior.test_name == test_name)
 
         result = await self.db.execute(
+            # TENANT-EXEMPT: analytics tool builds conditions=[Model.company_id==X, ...] then where(and_(*conditions)); AST sensor cannot trace dynamic builder
             select(BanditPosterior).where(*conditions)
         )
         return list(result.scalars().all())

@@ -219,6 +219,7 @@ class OutcomeFeatureEngineer:
             if seniority:
                 conditions.append(JobOutcome.seniority == seniority)
             
+            # TENANT-EXEMPT: query uses dynamic conditions=[Model.company_id==X, ...] builder; AST sensor cannot trace
             stmt = select(JobOutcome).where(and_(*conditions))
             result = await db.execute(stmt)
             outcomes = result.scalars().all()
