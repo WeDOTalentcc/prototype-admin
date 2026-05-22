@@ -178,6 +178,9 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
                     _tool_result = await _fn(*args, **kwargs)
 
                     # === 2.3: FairnessGuard on tool output (bias detection) ===
+                    # Wave 2 audit 2026-05-21: ANTES log-only, output bias passava direto pro LLM.
+                    # AGORA bloqueia o output e retorna sanitized placeholder. LLM recebe sinal
+                    # de bias e raciocina sobre alternativa. Audit trail via logger.warning.
                     try:
                         from app.shared.compliance.fairness_guard import FairnessGuard
                         _fg_out = FairnessGuard()
@@ -186,11 +189,18 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
                             _fg_check = _fg_out.check(_out_text)
                             if _fg_check.is_blocked:
                                 logger.warning(
-                                    "[Studio] FairnessGuard flagged tool output: tool=%s",
-                                    _fn.__name__,
+                                    "[Studio] FairnessGuard BLOCKED tool output: tool=%s category=%s",
+                                    _fn.__name__, _fg_check.category,
                                 )
-                    except Exception:
-                        pass
+                                # Sanitize: replace tool_result com mensagem explicativa pro LLM.
+                                # LLM vê o bloqueio e ajusta raciocínio em vez de propagar bias.
+                                return (
+                                    f"[FairnessGuard bloqueou output do tool {_fn.__name__}: "
+                                    f"categoria={_fg_check.category or 'bias_detectado'}. "
+                                    f"Reformule a consulta sem critérios discriminatórios.]"
+                                )
+                    except Exception as _fg_exc:
+                        logger.warning("[Studio] FairnessGuard check failed: %s", _fg_exc)
 
                     return _tool_result
 

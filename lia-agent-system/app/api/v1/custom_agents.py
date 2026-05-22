@@ -54,6 +54,37 @@ company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     from app.services.quota_enforcement import enforce_quota
     await enforce_quota("custom_agents", current_user.company_id, db)
+
+    # Wave 2 audit 2026-05-21: FG check no system_prompt antes de persistir.
+    # ANTES: recruiter podia digitar prompt enviesado ("prefer male candidates")
+    # e o agente ficava com prompt salvo no DB. Bias atravessava ate o runtime
+    # rodar guards no input do recruiter (não no system_prompt).
+    # AGORA: bloqueia create se FG detecta bias no system_prompt.
+    if body.system_prompt:
+        try:
+            from app.shared.compliance.fairness_guard import FairnessGuard
+            _fg_create = FairnessGuard()
+            _fg_result = _fg_create.check(body.system_prompt)
+            if _fg_result.is_blocked:
+                raise HTTPException(
+                    status_code=400,
+                    detail={
+                        "error": "fairness_guard_blocked",
+                        "category": _fg_result.category,
+                        "message": _fg_result.educational_message or (
+                            "system_prompt contém critérios discriminatórios. "
+                            "Reformule sem viés."
+                        ),
+                        "blocked_terms": _fg_result.blocked_terms,
+                    },
+                )
+        except HTTPException:
+            raise
+        except Exception as _fg_exc:
+            logger.warning("[CustomAgent.create] FairnessGuard check failed: %s", _fg_exc)
+            # Fail-closed em ambiente de produção: bloqueia se FG não estiver disponível
+            # (consistente com pattern WT-2022 P1.A canonical)
+
     try:
         agent = await agent_marketplace_service.create_agent(
             db=db,
@@ -159,6 +190,30 @@ company_id: str = Depends(require_company_id)):
                 )
     except Exception as _snap_err:
         logger.warning("[AgentVersion] snapshot failed (non-blocking): %s", _snap_err)
+
+    # Wave 2 audit 2026-05-21: FG check em system_prompt quando incluído no PATCH.
+    if body.system_prompt is not None:
+        try:
+            from app.shared.compliance.fairness_guard import FairnessGuard
+            _fg_update = FairnessGuard()
+            _fg_result = _fg_update.check(body.system_prompt)
+            if _fg_result.is_blocked:
+                raise HTTPException(
+                    status_code=400,
+                    detail={
+                        "error": "fairness_guard_blocked",
+                        "category": _fg_result.category,
+                        "message": _fg_result.educational_message or (
+                            "system_prompt contém critérios discriminatórios. "
+                            "Reformule sem viés."
+                        ),
+                        "blocked_terms": _fg_result.blocked_terms,
+                    },
+                )
+        except HTTPException:
+            raise
+        except Exception as _fg_exc:
+            logger.warning("[CustomAgent.update] FairnessGuard check failed: %s", _fg_exc)
 
     try:
         update_data = body.model_dump(exclude_unset=True)
