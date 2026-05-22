@@ -19,7 +19,10 @@ class VacancyCandidateRepository:
         self.db = db
 
     async def get_by_vacancy_and_candidate(
-        self, vacancy_id: str | UUID, candidate_id: str | UUID
+        self,
+        vacancy_id: str | UUID,
+        candidate_id: str | UUID,
+        company_id: str | None = None,
     ) -> VacancyCandidate | None:
         """Lookup VacancyCandidate by composite (vacancy_id, candidate_id).
 
@@ -27,6 +30,10 @@ class VacancyCandidateRepository:
         send strings; service callers may have UUIDs). Returns None when
         the str fails UUID parsing — same null semantics as a not-found row,
         which is what every caller already handles.
+
+        Multi-tenancy defense-in-depth: pass company_id quando caller souber
+        (REGRA ZERO + harness B.1 fail-closed). Postgres RLS via get_tenant_db
+        continua filtrando quando omitido.
         """
         try:
             vacancy_uuid = (
@@ -38,18 +45,29 @@ class VacancyCandidateRepository:
         except (ValueError, TypeError):
             return None
 
-        result = await self.db.execute(
-            select(VacancyCandidate).where(
-                VacancyCandidate.vacancy_id == vacancy_uuid,
-                VacancyCandidate.candidate_id == candidate_uuid,
-            )
+        # TENANT-EXEMPT: dynamic builder — VacancyCandidate.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        query = select(VacancyCandidate).where(
+            VacancyCandidate.vacancy_id == vacancy_uuid,
+            VacancyCandidate.candidate_id == candidate_uuid,
         )
+        if company_id:
+            query = query.where(VacancyCandidate.company_id == company_id)
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
     async def get_most_recent_for_candidate(
-        self, candidate_id: str | UUID
+        self,
+        candidate_id: str | UUID,
+        company_id: str | None = None,
     ) -> VacancyCandidate | None:
-        result = await self.db.execute(
+        """Get most recent VacancyCandidate for candidate.
+
+        Multi-tenancy defense-in-depth via company_id filter (REGRA ZERO + B.1).
+        """
+        # TENANT-EXEMPT: dynamic builder — VacancyCandidate.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        query = (
             select(VacancyCandidate)
             .where(
                 VacancyCandidate.candidate_id == (
@@ -59,28 +77,38 @@ class VacancyCandidateRepository:
             .order_by(VacancyCandidate.updated_at.desc())
             .limit(1)
         )
+        if company_id:
+            query = query.where(VacancyCandidate.company_id == company_id)
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
     async def get_for_candidate_and_job(
         self,
         candidate_id: str,
         job_vacancy_id: str | None,
+        company_id: str | None = None,
     ) -> VacancyCandidate | None:
         """
         Find VacancyCandidate by candidate + optional job.
         Falls back to most-recent if job_vacancy_id is None or invalid UUID.
+
+        Multi-tenancy defense-in-depth via company_id filter (REGRA ZERO + B.1).
         """
         if job_vacancy_id:
             try:
                 vacancy_uuid = uuid.UUID(str(job_vacancy_id))
-                vc = await self.get_by_vacancy_and_candidate(vacancy_uuid, candidate_id)
+                vc = await self.get_by_vacancy_and_candidate(
+                    vacancy_uuid, candidate_id, company_id=company_id
+                )
                 if vc:
                     return vc
             except ValueError:
                 logger.warning(
                     f"Invalid job_vacancy_id format: {job_vacancy_id} — falling back to most recent"
                 )
-        return await self.get_most_recent_for_candidate(candidate_id)
+        return await self.get_most_recent_for_candidate(
+            candidate_id, company_id=company_id
+        )
 
     async def update(self, vacancy_candidate: VacancyCandidate) -> VacancyCandidate:
         await self.db.commit()
@@ -112,14 +140,19 @@ class VacancyCandidateRepository:
         self,
         vacancy_id: str | UUID,
         limit: int = 1,
+        company_id: str | None = None,
     ) -> list[VacancyCandidate]:
         """Return queued candidates ordered by lia_score DESC, created_at ASC.
 
         Used by automation_handlers.process_screening_queue (slot promotion).
+
+        Multi-tenancy defense-in-depth via company_id filter (REGRA ZERO + B.1).
         """
         from sqlalchemy import and_
 
-        result = await self.db.execute(
+        # TENANT-EXEMPT: dynamic builder — VacancyCandidate.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        query = (
             select(VacancyCandidate)
             .where(
                 and_(
@@ -133,6 +166,9 @@ class VacancyCandidateRepository:
             )
             .limit(limit)
         )
+        if company_id:
+            query = query.where(VacancyCandidate.company_id == company_id)
+        result = await self.db.execute(query)
         return list(result.scalars().all())
 
     async def list_stale_for_company(

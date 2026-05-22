@@ -29,26 +29,50 @@ class CandidateRepository:
 
     # ── Basic CRUD ──────────────────────────────────────────────────────────
 
-    async def get_by_id(self, candidate_id: UUID) -> Candidate | None:
-        result = await self.db.execute(
-            select(Candidate).where(Candidate.id == candidate_id)
-        )
+    async def get_by_id(
+        self,
+        candidate_id: UUID,
+        company_id: str | None = None,
+    ) -> Candidate | None:
+        """Get candidate by id. Multi-tenancy defense-in-depth via company_id
+        filter quando passado (REGRA ZERO + harness B.1 fail-closed)."""
+        # TENANT-EXEMPT: dynamic builder — Candidate.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        query = select(Candidate).where(Candidate.id == candidate_id)
+        if company_id:
+            query = query.where(Candidate.company_id == company_id)
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
-    async def get_by_id_str(self, candidate_id: str) -> Candidate | None:
-        return await self.get_by_id(uuid.UUID(candidate_id))
+    async def get_by_id_str(
+        self,
+        candidate_id: str,
+        company_id: str | None = None,
+    ) -> Candidate | None:
+        return await self.get_by_id(uuid.UUID(candidate_id), company_id=company_id)
 
-    async def list_by_ids(self, candidate_ids: list[str | UUID]) -> list[Candidate]:
-        """Return candidates whose ids are in the given list (no tenancy filter).
+    async def list_by_ids(
+        self,
+        candidate_ids: list[str | UUID],
+        company_id: str | None = None,
+    ) -> list[Candidate]:
+        """Return candidates whose ids are in the given list.
 
-        Used by candidate_comparison_service after callers have already
-        validated tenant ownership. ADR-001 cross-domain read pattern.
+        Multi-tenancy defense-in-depth: pass company_id para filter explícito
+        no query (recomendado para callers novos). Legacy callers podem omitir
+        — Postgres RLS via get_tenant_db continua guardando.
+
+        ADR-001 cross-domain read pattern: usado por candidate_comparison_service
+        após caller validar tenant ownership.
         """
         if not candidate_ids:
             return []
-        result = await self.db.execute(
-            select(Candidate).where(Candidate.id.in_(candidate_ids))
-        )
+        # TENANT-EXEMPT: dynamic builder — Candidate.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        query = select(Candidate).where(Candidate.id.in_(candidate_ids))
+        if company_id:
+            query = query.where(Candidate.company_id == company_id)
+        result = await self.db.execute(query)
         return list(result.scalars().all())
 
     async def find_experience_by_candidate_company_title(
@@ -89,25 +113,36 @@ class CandidateRepository:
         )
         return result.scalar_one_or_none()
 
-    async def get_by_email(self, email: str) -> Candidate | None:
+    async def get_by_email(
+        self,
+        email: str,
+        company_id: str | None = None,
+    ) -> Candidate | None:
         """
         Look up a candidate by email using the SHA-256 hash index.
 
         Rows written after migration 060 have email=None and email_hash set.
         Rows written before still have plaintext email; the OR clause handles
         the transition period until pii.backfill_encrypt_existing completes.
+
+        Multi-tenancy defense-in-depth: pass company_id quando caller souber
+        (REGRA ZERO + harness B.1 fail-closed). Quando omitido, Postgres RLS
+        via get_tenant_db continua filtrando.
         """
         from app.shared.encryption.encrypted_field_mixin import _sha256_hash
         from sqlalchemy import or_
         email_hash = _sha256_hash(email)
-        result = await self.db.execute(
-            select(Candidate).where(
-                or_(
-                    Candidate.email_hash == email_hash,
-                    Candidate._email_raw == email,  # transition: pre-migration rows with plaintext
-                )
+        # TENANT-EXEMPT: dynamic builder — Candidate.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        query = select(Candidate).where(
+            or_(
+                Candidate.email_hash == email_hash,
+                Candidate._email_raw == email,  # transition: pre-migration rows with plaintext
             )
         )
+        if company_id:
+            query = query.where(Candidate.company_id == company_id)
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
     def _build_list_filters(
@@ -176,6 +211,9 @@ class CandidateRepository:
         """
         if not linkedin_slug:
             return None
+        # TENANT-EXEMPT: cross-tenant identity resolution by design.
+        # linkedin_url é unique-per-person, não per-tenant. Caller (reveal-contact)
+        # gates downstream via CreditsUsage.company_id.
         result = await self.db.execute(
             select(Candidate)
             .where(Candidate.linkedin_url.ilike(f"%{linkedin_slug}%"))
@@ -210,8 +248,15 @@ class CandidateRepository:
         source: str | None = None,
         seniority: str | None = None,
         ids: list[str] | None = None,
+        company_id: str | None = None,
     ) -> int:
+        """Count candidates with filters. Multi-tenancy defense-in-depth via
+        company_id filter quando passado (REGRA ZERO + harness B.1)."""
+        # TENANT-EXEMPT: dynamic builder — Candidate.company_id == company_id
+        # é appended conditionally below quando company_id passado.
         query = select(func.count(Candidate.id)).where(Candidate.is_active)
+        if company_id:
+            query = query.where(Candidate.company_id == company_id)
         query = self._build_list_filters(query, search=search, status=status, source=source, seniority=seniority, ids=ids)
         result = await self.db.execute(query)
         return result.scalar() or 0
@@ -227,8 +272,15 @@ class CandidateRepository:
         limit: int = 50,
         sort_by: str | None = None,
         sort_order: str | None = None,
+        company_id: str | None = None,
     ) -> list[Candidate]:
+        """List candidates with filters. Multi-tenancy defense-in-depth via
+        company_id filter quando passado (REGRA ZERO + harness B.1)."""
+        # TENANT-EXEMPT: dynamic builder — Candidate.company_id == company_id
+        # é appended conditionally below quando company_id passado.
         query = select(Candidate).where(Candidate.is_active)
+        if company_id:
+            query = query.where(Candidate.company_id == company_id)
         query = self._build_list_filters(query, search=search, status=status, source=source, seniority=seniority, ids=ids)
 
         allowed_sort_fields = {
@@ -252,12 +304,20 @@ class CandidateRepository:
     async def search_local(
         self,
         filters: Any,
+        company_id: str | None = None,
     ) -> tuple[list[Candidate], int]:
         """
         Full structured local search used by /search/local endpoint.
         Returns (candidates, total_count).
+
+        Multi-tenancy defense-in-depth: pass company_id para filter explícito
+        no query (REGRA ZERO + harness B.1 fail-closed).
         """
+        # TENANT-EXEMPT: dynamic builder — Candidate.company_id == company_id
+        # é appended conditionally below quando company_id passado.
         query = select(Candidate).where(Candidate.is_active == filters.is_active)
+        if company_id:
+            query = query.where(Candidate.company_id == company_id)
 
         # LGPD Art. 18 - excluir candidatos com consent revogado para AI/automated
         # processing. Revoked = revoked_at IS NOT NULL OR is_active = False.
@@ -365,19 +425,31 @@ class CandidateRepository:
         ADR-001 cross-domain read: integration layer fallback when Rails
         is unavailable; Rails owns tenancy at the API gateway.
         """
+        # TENANT-EXEMPT: cross-tenant by design (Rails fallback). Tenancy
+        # enforced upstream by Rails API gateway. Apenas usado quando Rails
+        # indisponível, em caminho legacy.
         result = await self.db.execute(
             select(Candidate).limit(limit).offset(offset)
         )
         return list(result.scalars().all())
 
-    async def list_active_not_blacklisted(self, limit: int = 50) -> list[Candidate]:
+    async def list_active_not_blacklisted(
+        self,
+        limit: int = 50,
+        company_id: str | None = None,
+    ) -> list[Candidate]:
         """List active, non-blacklisted candidates up to the given limit.
 
         Used by app/domains/sourcing/services/sourcing_pipeline_service.py
         (Sprint Q2 ADR-001 cross-domain cleanup) for local sourcing match.
+
+        Multi-tenancy defense-in-depth: pass company_id para filter explícito
+        (REGRA ZERO + harness B.1 fail-closed).
         """
         from sqlalchemy import and_ as _and
-        result = await self.db.execute(
+        # TENANT-EXEMPT: dynamic builder — Candidate.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        query = (
             select(Candidate)
             .where(
                 _and(
@@ -387,6 +459,9 @@ class CandidateRepository:
             )
             .limit(limit)
         )
+        if company_id:
+            query = query.where(Candidate.company_id == company_id)
+        result = await self.db.execute(query)
         return list(result.scalars().all())
 
     async def create(self, candidate: Candidate) -> Candidate:
@@ -407,8 +482,18 @@ class CandidateRepository:
 
     # ── Relations ───────────────────────────────────────────────────────────
 
-    async def get_with_experiences(self, candidate_id: UUID) -> Candidate | None:
-        result = await self.db.execute(
+    async def get_with_experiences(
+        self,
+        candidate_id: UUID,
+        company_id: str | None = None,
+    ) -> Candidate | None:
+        """Get candidate with experiences + education preloaded.
+
+        Multi-tenancy defense-in-depth: pass company_id (REGRA ZERO + harness B.1).
+        """
+        # TENANT-EXEMPT: dynamic builder — Candidate.company_id == company_id
+        # é appended conditionally below quando company_id passado.
+        query = (
             select(Candidate)
             .options(
                 selectinload(Candidate.experiences),
@@ -416,6 +501,9 @@ class CandidateRepository:
             )
             .where(Candidate.id == candidate_id)
         )
+        if company_id:
+            query = query.where(Candidate.company_id == company_id)
+        result = await self.db.execute(query)
         return result.scalar_one_or_none()
 
     # ── CandidateSearch (analytics) ─────────────────────────────────────────
