@@ -259,8 +259,17 @@ class TestVoiceCoreOrchestratorBackwardCompat:
         """Existing callers do `VoiceScreeningOrchestrator()` — must keep working."""
         orch = VoiceScreeningOrchestrator()
         assert isinstance(orch, VoiceCoreOrchestrator)
-        # Sprint 3.2 phase 1: no plugins pre-installed yet (Sprint 3.3 adds WSI).
-        assert orch._plugins == []
+        # Sprint 3.3: WSIVoicePlugin pre-installed.
+        assert len(orch._plugins) == 1
+        assert orch._plugins[0].plugin_name == "wsi_screening"
+
+    def test_legacy_subclass_has_wsi_delegate_methods(self):
+        """Sprint 3.3: backward-compat delegates for test patches."""
+        orch = VoiceScreeningOrchestrator()
+        # These 3 methods exist on the instance and are patchable.
+        assert callable(orch._register_wsi_session)
+        assert callable(orch._generate_and_store_wsi_questions)
+        assert callable(orch._load_wsi_questions_for_session)
 
     def test_canonical_reexport_module_works(self):
         """`from voice_core_orchestrator import VoiceCoreOrchestrator` works."""

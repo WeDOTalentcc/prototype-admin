@@ -144,7 +144,7 @@ export function JobScreeningSection({
                             return (
                               <div className="flex flex-wrap gap-1.5">
                                 {fallbackSkills.slice(0, 6).map((skill: string) => (
-                                  <Chip variant="neutral" muted key={skill} className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary text-[0.625rem] leading-none px-1.5 py-0.5 font-medium">
+                                  <Chip variant="neutral" muted key={`screening-bucket-1-${skill}`} className="bg-lia-bg-tertiary dark:bg-lia-bg-secondary text-lia-text-secondary text-[0.625rem] leading-none px-1.5 py-0.5 font-medium">
                                     {skill}
                                   </Chip>
                                 ))}
@@ -159,7 +159,7 @@ export function JobScreeningSection({
                                   <span className="text-micro font-medium text-lia-text-tertiary uppercase tracking-wide">Técnicas</span>
                                   <div className="flex flex-wrap gap-1.5 mt-1">
                                     {(technicalSkills as string[]).map((skill: string) => (
-                                      <Chip variant="neutral" muted key={skill} className="bg-wedo-cyan/10 dark:bg-wedo-cyan/30 text-wedo-cyan-dark dark:text-wedo-cyan-dark text-[0.625rem] leading-none px-1.5 py-0.5 font-medium border border-wedo-cyan/30">
+                                      <Chip variant="neutral" muted key={`screening-bucket-2-${skill}`} className="bg-wedo-cyan/10 dark:bg-wedo-cyan/30 text-wedo-cyan-dark dark:text-wedo-cyan-dark text-[0.625rem] leading-none px-1.5 py-0.5 font-medium border border-wedo-cyan/30">
                                         {skill}
                                       </Chip>
                                     ))}
@@ -171,7 +171,7 @@ export function JobScreeningSection({
                                   <span className="text-micro font-medium text-lia-text-tertiary uppercase tracking-wide">Comportamentais</span>
                                   <div className="flex flex-wrap gap-1.5 mt-1">
                                     {(behavioralSkills as string[]).map((skill: string) => (
-                                      <Chip variant="neutral" muted key={skill} className="bg-wedo-purple/10 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple text-[0.625rem] leading-none px-1.5 py-0.5 font-medium border border-wedo-purple/30">
+                                      <Chip variant="neutral" muted key={`screening-bucket-3-${skill}`} className="bg-wedo-purple/10 dark:bg-wedo-purple/30 text-wedo-purple dark:text-wedo-purple text-[0.625rem] leading-none px-1.5 py-0.5 font-medium border border-wedo-purple/30">
                                         {skill}
                                       </Chip>
                                     ))}
@@ -183,7 +183,7 @@ export function JobScreeningSection({
                                   <span className="text-micro font-medium text-lia-text-tertiary uppercase tracking-wide">Responsabilidades</span>
                                   <div className="flex flex-wrap gap-1.5 mt-1">
                                     {(responsibilitySkills as string[]).slice(0, 8).map((skill: string) => (
-                                      <Chip variant="warning" muted key={skill} className="bg-status-warning/10 dark:bg-status-warning/30 text-[0.625rem] leading-none px-1.5 py-0.5 font-medium">
+                                      <Chip variant="warning" muted key={`screening-bucket-4-${skill}`} className="bg-status-warning/10 dark:bg-status-warning/30 text-[0.625rem] leading-none px-1.5 py-0.5 font-medium">
                                         {skill}
                                       </Chip>
                                     ))}

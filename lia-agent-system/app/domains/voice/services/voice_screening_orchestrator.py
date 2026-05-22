@@ -504,33 +504,54 @@ class VoiceCoreOrchestrator:
             )
         return None
 
+    # Sprint 3.3: _load_wsi_questions_for_session IMPLEMENTATION moved to
+    # WSIVoicePlugin (app.domains.voice.plugins.wsi_voice_plugin._load_wsi_questions_for_session_impl).
+    # Method name preserved on the core class as a thin domain-agnostic
+    # dispatcher (delegates to plugins). VoiceScreeningOrchestrator subclass
+    # overrides with an explicit thin delegate for tests that patch the method.
+
     async def _load_wsi_questions_for_session(
-        self, session_id: str, db
+        self, session_id: str, db: Any
     ) -> list[str]:
         """
-        Load WSI question texts from wsi_questions table for the given session.
+        Sprint 3.3: generic dispatcher to plugins providing question pools.
 
-        Returns list of question_text strings ordered by sequence_order.
-        Returns empty list if not found or DB unavailable (caller falls back
-        to SCREENING_QUESTIONS_PT).
+        Backward-compat semantics: same signature + return type as the original
+        method. Generic mode (no plugins, or no plugin with WSI impl) returns
+        [] — caller falls back to scripted SCREENING_QUESTIONS_PT.
+
+        Subclasses override this to provide explicit backward-compat hooks for
+        test patches (see VoiceScreeningOrchestrator._load_wsi_questions_for_session).
         """
-        if db is None:
-            return []
-        try:
-            # F-13 (audit 2026-05-22): canonical read via WsiRepository (ADR-001).
-            from app.domains.voice.repositories.wsi_repository import WsiRepository
-            questions = await WsiRepository(db).list_question_texts_for_session(session_id)
-            if questions:
-                logger.info(
-                    "[VOICE SCREENING] Loaded %d WSI questions from DB for session=%s",
-                    len(questions), session_id,
+        return await self._plugin_load_question_pool(session_id, db)
+
+    async def _plugin_load_question_pool(
+        self, session_id: str, db: Any
+    ) -> list[str]:
+        """
+        Sprint 3.3 helper: domain-agnostic question pool lookup.
+
+        Iterates registered plugins looking for one that exposes
+        `_load_wsi_questions_for_session_impl` (WSIVoicePlugin pattern). Returns
+        the first non-empty result, or [] when no plugin provides questions
+        (generic-mode safe — caller falls back to scripted SCREENING_QUESTIONS_PT).
+        """
+        for plugin in self._plugins:
+            impl = getattr(plugin, "_load_wsi_questions_for_session_impl", None)
+            if impl is None:
+                continue
+            try:
+                questions = await impl(session_id, db)
+                if questions:
+                    return questions
+            except Exception as plugin_err:  # noqa: BLE001 — best-effort
+                logger.warning(
+                    "[VOICE CORE] plugin=%s question pool load failed (non-blocking) "
+                    "session=%s: %s",
+                    getattr(plugin, "plugin_name", "unknown"),
+                    session_id,
+                    plugin_err,
                 )
-                return questions
-        except Exception as e:
-            logger.warning(
-                "[VOICE SCREENING] Failed to load WSI questions for session=%s: %s",
-                session_id, e,
-            )
         return []
 
     async def _fetch_job_context_from_db(
@@ -951,12 +972,12 @@ class VoiceCoreOrchestrator:
                     session.call_sid,
                 )
                 if db is not None and session.call_sid:
-                    # Sprint 3.2: plugin lifecycle hook. With no plugins (Sprint
-                    # 3.2 phase 1) this is a no-op and the inline WSI call below
-                    # does the work. Sprint 3.3 will move WSI into a plugin and
-                    # remove the inline call.
+                    # Sprint 3.3: plugin lifecycle hook owns WSI registration.
+                    # VoiceScreeningOrchestrator subclass pre-installs WSIVoicePlugin;
+                    # its on_session_initiated calls _register_wsi_session_impl
+                    # (the WSI work). Generic VoiceCoreOrchestrator (no plugin) →
+                    # no-op (safe).
                     await self._on_session_initiated(session, db)
-                    await self._register_wsi_session(session, db)
             else:
                 session.status = "failed"
                 session.error = call_result.get("error", "Unknown Twilio error")
@@ -1159,9 +1180,9 @@ class VoiceCoreOrchestrator:
                         session.job_context = job_context
                         live_session.job_context = job_context
 
-                    # Sprint 3.2: plugin lifecycle hook (no-op in phase 1).
+                    # Sprint 3.3: plugin lifecycle hook owns WSI registration
+                    # (see initiate_call sister-comment). Generic mode → no-op.
                     await self._on_session_initiated(session, db)
-                    await self._register_wsi_session(session, db)
 
                 logger.info(
                     "[VOICE SCREENING] VoIP session created via Gemini Live: session=%s",
@@ -1415,7 +1436,9 @@ class VoiceCoreOrchestrator:
                         session_id, _audit_exc,
                     )
                 # Fail-CLOSED: return scripted fallback (não invoca LLM).
-                # Load wsi_questions for the fallback if not yet cached.
+                # Load domain question pool for the fallback if not yet cached.
+                # Sprint 3.3: _plugin_load_question_pool is the canonical
+                # generic-safe dispatcher (delegates to WSIVoicePlugin when present).
                 _fallback_qs = getattr(session, "_wsi_questions_cache", None)
                 if _fallback_qs is None:
                     _fallback_qs = await self._load_wsi_questions_for_session(session_id, db)
@@ -1426,6 +1449,9 @@ class VoiceCoreOrchestrator:
         wsi_questions = getattr(session, "_wsi_questions_cache", None)
         has_wsi_questions = True
         if wsi_questions is None:
+            # Sprint 3.3: _load_wsi_questions_for_session resolves via subclass
+            # delegate (VoiceScreeningOrchestrator) → WSIVoicePlugin impl, OR
+            # _plugin_load_question_pool on generic core (returns []).
             wsi_questions = await self._load_wsi_questions_for_session(session_id, db)
             if wsi_questions:
                 session._wsi_questions_cache = wsi_questions  # type: ignore[attr-defined]
@@ -2305,234 +2331,13 @@ class VoiceCoreOrchestrator:
             )
         return results
 
-    async def _register_wsi_session(
-        self,
-        session: VoiceScreeningSession,
-        db,
-    ) -> None:
-        """
-        Register Twilio call in wsi_sessions table and generate WSI questions.
-
-        1. Creates wsi_sessions row with call_id = Twilio call_sid
-        2. Tries to load versioned question set for the job vacancy
-        3. If none, generates WSI questions dynamically via wsi_service
-        4. Inserts questions into wsi_questions table for use during the call
-
-        Schema: wsi_sessions(id, candidate_id, job_vacancy_id, mode, call_id, status)
-        """
-        try:
-            # F-13 (audit 2026-05-22): canonical write via WsiRepository (ADR-001).
-            from app.domains.voice.repositories.wsi_repository import WsiRepository
-            await WsiRepository(db).upsert_voice_session(
-                session_id=session.session_id,
-                candidate_id=session.candidate_id,
-                job_vacancy_id=session.job_id or session.session_id,
-                mode="compact",
-                call_id=session.call_sid,
-                status="in_progress",
-            )
-            await db.commit()
-            logger.info(
-                "[VOICE SCREENING] WSI session registered: session=%s call_sid=%s",
-                session.session_id,
-                session.call_sid,
-            )
-
-            # Fetch job context eagerly so LIA can present the vaga from the first turn
-            if session.job_context is None and session.job_id:
-                session.job_context = await self._fetch_job_context_from_db(
-                    session.job_id, db, company_id=session.company_id
-                )
-
-            await self._generate_and_store_wsi_questions(session, db)
-
-        except Exception as e:
-            try:
-                await db.rollback()
-            except Exception:
-                pass
-            logger.warning(
-                "[VOICE SCREENING] Failed to register WSI session (non-blocking): %s", e
-            )
-
-    async def _generate_and_store_wsi_questions(
-        self,
-        session: VoiceScreeningSession,
-        db,
-    ) -> None:
-        """
-        Generate WSI questions for a voice session and store them in wsi_questions table.
-
-        Tries (in order):
-        1. Load versioned question set for the job vacancy
-        2. Generate questions dynamically via WSI service using job title as context
-        """
-        try:
-            from uuid import uuid4
-
-            from sqlalchemy import text
-
-            existing = await self._load_wsi_questions_for_session(session.session_id, db)
-            if existing:
-                logger.info(
-                    "[VOICE SCREENING] WSI questions already exist for session=%s (%d questions)",
-                    session.session_id, len(existing),
-                )
-                return
-
-            question_texts = []
-            try:
-                from app.domains.cv_screening.services.screening_question_set_service import (
-                    screening_question_set_service,
-                )
-                job_vacancy_id = session.job_id or session.session_id
-                active_qs = await screening_question_set_service.get_active_version(db, job_vacancy_id)
-                if active_qs and active_qs.questions_snapshot:
-                    question_texts = [
-                        q.get("question_text", q.get("text", ""))
-                        for q in active_qs.questions_snapshot
-                        if q.get("question_text") or q.get("text")
-                    ]
-                    logger.info(
-                        "[VOICE SCREENING] Loaded %d questions from versioned set v%s for session=%s",
-                        len(question_texts), active_qs.version, session.session_id,
-                    )
-            except Exception as e:
-                logger.debug(
-                    "[VOICE SCREENING] Versioned question set not available: %s", e
-                )
-
-            if not question_texts:
-                try:
-                    from app.domains.cv_screening.services.wsi_service import Competency, WSIService
-                    wsi_svc = WSIService()
-                    default_competencies = [
-                        Competency(name="Experiência Relevante", type="technical", weight=0.3, seniority_level="pleno"),
-                        Competency(name="Resolução de Problemas", type="behavioral", weight=0.25, seniority_level="pleno"),
-                        Competency(name="Comunicação", type="behavioral", weight=0.2, seniority_level="pleno"),
-                        Competency(name="Trabalho em Equipe", type="cultural", weight=0.15, seniority_level="pleno"),
-                        Competency(name="Adaptabilidade", type="behavioral", weight=0.1, seniority_level="pleno"),
-                    ]
-                    wsi_questions = await wsi_svc.generate_screening_questions(
-                        competencies=default_competencies,
-                        mode="compact",
-                        job_description=f"Vaga: {session.job_title}",
-                    )
-                    question_texts = [q.question_text for q in wsi_questions if q.question_text]
-                    logger.info(
-                        "[VOICE SCREENING] Generated %d WSI questions dynamically for session=%s",
-                        len(question_texts), session.session_id,
-                    )
-
-                    # WT-2022 P0.C wave 2 / LGPD Art. 20 + EU AI Act Art. 13.
-                    # Voice screening orchestrator default-competencies fallback.
-                    # session.company_id e source canonical (definido no
-                    # VoiceScreeningSession dataclass L91). silent_on_persist_error=True
-                    # porque voice call e fire-and-forget critico — nao bloquear
-                    # ligacao por audit gap.
-                    try:
-                        company_id = getattr(session, "company_id", None)
-                        if company_id:
-                            await log_automated_decision(
-                                db=db,
-                                company_id=str(company_id),
-                                candidate_id=getattr(session, "candidate_id", None),
-                                job_id=getattr(session, "job_id", None),
-                                decision_type="wsi_voice_orchestrator",
-                                ai_model_used=getattr(settings, "LLM_PRIMARY_MODEL", "claude-sonnet-4-6"),
-                                explanation_text=(
-                                    f'Voice screening orchestrator gerou {len(question_texts)} pergunta(s) '
-                                    f'WSI dinamicamente para session {session.session_id} '
-                                    f'(job_title={session.job_title}). Fallback default-competencies '
-                                    f'(Experiencia, Resolucao, Comunicacao, Trabalho-em-Equipe, Adaptabilidade), '
-                                    f'mode=compact. Versioned question set ausente.'
-                                ),
-                                criteria_used=[
-                                    *[f"competency:{c.name}" for c in default_competencies],
-                                    "seniority:pleno",
-                                    "mode:compact",
-                                    "screening_type:voice",
-                                    "fallback:default_competencies",
-                                ],
-                                criteria_ignored=list(PROTECTED_CRITERIA_PT),
-                                confidence_score=None,
-                                review_eligible=True,
-                                extra_metadata={
-                                    "endpoint": "voice_screening_orchestrator._generate_and_store_wsi_questions",
-                                    "session_id": session.session_id,
-                                    "candidate_id": getattr(session, "candidate_id", None),
-                                    "job_id": getattr(session, "job_id", None),
-                                    "job_title": session.job_title,
-                                    "questions_count": len(question_texts),
-                                    "mode": "compact",
-                                    "seniority": "pleno",
-                                    "screening_type": "voice",
-                                    "default_competencies_used": True,
-                                    "prompt_template_version": "wsi_F6_pipeline_v2",
-                                    "llm_model": getattr(settings, "LLM_PRIMARY_MODEL", "claude-sonnet-4-6"),
-                                    "frameworks_used": sorted({q.framework for q in wsi_questions}),
-                                },
-                                silent_on_persist_error=True,  # voice call: nao bloquear
-                            )
-                        else:
-                            logger.warning(
-                                "WT-2022 P0.C wave 2: voice_screening_orchestrator sem session.company_id. "
-                                "LGPD Art. 20 audit gap session_id=%s",
-                                session.session_id,
-                            )
-                    except ValueError:
-                        raise
-                    except Exception as audit_err:
-                        logger.error(
-                            "WT-2022 P0.C wave 2: log_automated_decision falhou em "
-                            "voice_screening_orchestrator session_id=%s: %s",
-                            session.session_id, audit_err, exc_info=True,
-                        )
-                except Exception as e:
-                    logger.warning(
-                        "[VOICE SCREENING] WSI dynamic question generation failed for session=%s: %s — "
-                        "Gemini will generate questions autonomously during the call",
-                        session.session_id, e,
-                    )
-                    return
-
-            if not question_texts:
-                logger.info(
-                    "[VOICE SCREENING] No WSI questions generated for session=%s — "
-                    "Gemini will generate questions autonomously during the call",
-                    session.session_id,
-                )
-                return
-
-            # F-13 (audit 2026-05-22): canonical write via WsiRepository (ADR-001).
-            from app.domains.voice.repositories.wsi_repository import WsiRepository
-            wsi_repo = WsiRepository(db)
-            for idx, q_text in enumerate(question_texts):
-                await wsi_repo.insert_voice_question(
-                    question_id=str(uuid4()),
-                    session_id=session.session_id,
-                    competency="voice_screening",
-                    framework="CBI",
-                    question_type="behavioral",
-                    question_text=q_text,
-                    weight=1.0 / len(question_texts),
-                    sequence_order=idx + 1,
-                )
-            await db.commit()
-            logger.info(
-                "[VOICE SCREENING] Stored %d WSI questions in DB for session=%s",
-                len(question_texts), session.session_id,
-            )
-
-        except Exception as e:
-            try:
-                await db.rollback()
-            except Exception:
-                pass
-            logger.warning(
-                "[VOICE SCREENING] WSI question generation/storage failed (non-blocking) session=%s: %s",
-                session.session_id, e,
-            )
+    # Sprint 3.3: _register_wsi_session + _generate_and_store_wsi_questions
+    # MOVED to WSIVoicePlugin (_register_wsi_session_impl +
+    # _generate_and_store_wsi_questions_impl). VoiceScreeningOrchestrator
+    # subclass (below) keeps thin delegate methods of the same name for
+    # backward compatibility with tests that patch them. Generic
+    # VoiceCoreOrchestrator without a WSI plugin = no WSI registration
+    # (intentional — generic mode is pure voice transport).
 
     @staticmethod
     def _mask_transcript_segments(segments: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -2621,28 +2426,66 @@ class VoiceCoreOrchestrator:
 
 class VoiceScreeningOrchestrator(VoiceCoreOrchestrator):
     """
-    Backward-compat WSI-aware orchestrator (Sprint 3.2 phase 1).
+    Backward-compat WSI-aware orchestrator (Sprint 3.3 final).
 
-    Subclass de VoiceCoreOrchestrator que preserva a API publica + privada
-    historica esperada por callers existentes e ~240 tests. Em Sprint 3.2
-    phase 1 (esta etapa) ainda herda os 3 metodos WSI inline; Sprint 3.3
-    extrai esses metodos para WSIVoicePlugin e os mantem aqui como thin
-    delegates pra `patch.object(orch, '_register_wsi_session')` continuar
-    funcionando em tests.
+    Subclass de VoiceCoreOrchestrator que pre-instala WSIVoicePlugin no
+    constructor e mantem 3 thin delegate methods (_register_wsi_session,
+    _generate_and_store_wsi_questions, _load_wsi_questions_for_session) que
+    encaminham para a plugin. Esses delegates existem PARA PRESERVAR a API
+    privada esperada por ~240 tests que usam
+    `patch.object(orch, '_register_wsi_session', new=AsyncMock())` etc.
 
-    Callers existentes:
+    Callers existentes (todos UNTOUCHED apos Sprint 3.2/3.3):
     - app.api.v1.triagem
     - app.api.v1.twilio_voice
     - app.api.v1.gemini_voice
     - app.domains.communication.services.communication_dispatcher
     - app.domains.voice.services.gemini_live_audio_service
+
+    Para usar o nucleo voz generico (sem WSI hardcoded) em Sprint 3.4+, importar:
+        from app.domains.voice.services.voice_core_orchestrator import VoiceCoreOrchestrator
+        core = VoiceCoreOrchestrator(plugins=[MyCustomPlugin()])
     """
 
     def __init__(self):
-        # Sprint 3.2 phase 1: no plugins yet (the inline WSI methods inherited
-        # de VoiceCoreOrchestrator fazem o trabalho). Sprint 3.3 pre-instalara
-        # WSIVoicePlugin aqui.
-        super().__init__(plugins=None)
+        # Sprint 3.3: pre-install canonical WSI plugin. Lifecycle hook
+        # _on_session_initiated (in initiate_call / initiate_voip_session)
+        # now drives WSI registration via this plugin.
+        from app.domains.voice.plugins.wsi_voice_plugin import WSIVoicePlugin
+        self._wsi_plugin = WSIVoicePlugin(orchestrator=self)
+        super().__init__(plugins=[self._wsi_plugin])
+
+    # ── Sprint 3.3 backward-compat delegates ─────────────────────────────
+    #
+    # These 3 methods existed historically on VoiceScreeningOrchestrator and
+    # are patched by ~240 tests via `patch.object(orch, '_x', new=AsyncMock())`.
+    # Sprint 3.3 moved the IMPLEMENTATIONS to WSIVoicePlugin._*_impl; these
+    # delegates preserve the instance-level API so test patches still take
+    # effect (Python patch.object overrides the bound method directly).
+
+    async def _register_wsi_session(
+        self,
+        session: "VoiceScreeningSession",
+        db,
+    ) -> None:
+        """Backward-compat delegate → WSIVoicePlugin._register_wsi_session_impl."""
+        await self._wsi_plugin._register_wsi_session_impl(session, db)
+
+    async def _generate_and_store_wsi_questions(
+        self,
+        session: "VoiceScreeningSession",
+        db,
+    ) -> None:
+        """Backward-compat delegate → WSIVoicePlugin._generate_and_store_wsi_questions_impl."""
+        await self._wsi_plugin._generate_and_store_wsi_questions_impl(session, db)
+
+    async def _load_wsi_questions_for_session(
+        self,
+        session_id: str,
+        db,
+    ) -> list[str]:
+        """Backward-compat delegate → WSIVoicePlugin._load_wsi_questions_for_session_impl."""
+        return await self._wsi_plugin._load_wsi_questions_for_session_impl(session_id, db)
 
 
 voice_screening_orchestrator = VoiceScreeningOrchestrator()

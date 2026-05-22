@@ -435,8 +435,8 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                   </Button>
                 </div>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  {skills.map((skill) => (
-                    <Chip key={skill} variant="neutral" muted className="px-1.5 py-0">
+                  {skills.map((skill, skillIdx) => (
+                    <Chip key={`skill-${skill}-${skillIdx}`} variant="neutral" muted className="px-1.5 py-0">
                       {skill}
                       <button
                         onClick={() => handleRemoveSkill(skill)}
@@ -456,7 +456,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                     <div className="flex flex-wrap gap-2">
                       {liaAnalysis.suggestedSkills.map((skill: string) => (
                         <Chip
-                          key={skill}
+                          key={`suggested-${skill}`}
                           variant="neutral"
                           className="cursor-pointer hover:bg-lia-interactive-hover"
                           onClick={() => {
@@ -640,7 +640,7 @@ export function AddCandidateModal({ isOpen, onClose, onAdd }: AddCandidateModalP
                       <h4 className="font-semibold mb-3">Habilidades Comportamentais</h4>
                       <div className="space-y-3">
                         {Object.entries(liaAnalysis.softSkills || {}).map(([skill, value]) => (
-                          <div key={skill} className="flex items-center gap-3">
+                          <div key={`skill-row-${skill}`} className="flex items-center gap-3">
                             <span className="text-sm text-lia-text-primary capitalize w-32">
                               {skill === 'communication' ? 'Comunicação' :
                                skill === 'teamwork' ? 'Trabalho em equipe' :
