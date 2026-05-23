@@ -21,6 +21,12 @@ async def execute_analytics_action(
         return await _job_health_check(params, context)
     elif action_id == "analyze_funnel":
         return await _analyze_funnel(params, context)
+    # Recovery #4 (2026-05-23) — restaurado branches perdidos pelo merge incident 02361f41c.
+    # 2 actions canonical pra intents pt-BR "vagas_sem_candidatos" + "listar_candidatos_por_etapa".
+    elif action_id == "vacancies_without_candidates":
+        return await _vacancies_without_candidates(params, context)
+    elif action_id == "list_candidates_by_stage":
+        return await _list_candidates_by_stage(params, context)
     return None
 
 
@@ -365,4 +371,235 @@ async def _analyze_funnel(params: dict[str, Any], context: dict[str, Any]):
             message="Erro ao analisar funil.",
             error_detail=str(e),
             action_type="analyze_funnel",
+        )
+
+
+# ---------------------------------------------------------------------------
+# Recovery #4 (2026-05-23) — handlers restored.
+#
+# 2 helpers perdidos pelo merge commit 02361f41c em 2026-05-01. Cadeia inteira
+# foi destruída em coordenadamente:
+#   - helpers em analytics_actions.py (esses 2 abaixo)
+#   - elif branches em execute_analytics_action (acima)
+#   - entries em intents_config.py ("vagas_sem_candidatos" + "listar_candidatos_por_etapa")
+#
+# Restaurado coordenadamente neste commit. Sem essas 3 peças sincronizadas,
+# LLM/intent matcher não dispara essas actions, e usuários que perguntam
+# "quais vagas estão sem candidatos?" ou "lista candidatos da vaga X na etapa Y"
+# caem em fallback silent.
+#
+# TODO Boy Scout (não escopo deste commit, mas registrado):
+# Queries usam `text(...)` raw SQL — viola ADR-001 Repository Pattern. Quando
+# tocar nessas funções pra refactor, mover queries pra
+# JobVacancyAnalyticsRepository + VacancyCandidateRepository.
+# ---------------------------------------------------------------------------
+async def _vacancies_without_candidates(params, context):
+    from app.orchestrator.action_executor import ActionResult
+    try:
+        from sqlalchemy import text
+
+        from app.core.database import AsyncSessionLocal
+
+        company_id = context.get("company_id") if context else None
+        days = int(params.get("days", 7))
+
+        if not company_id:
+            return ActionResult(
+                status="error",
+                message="Empresa não identificada para consultar vagas sem candidatos.",
+                error_detail="Missing company_id",
+                action_type="vacancies_without_candidates",
+            )
+
+        async with AsyncSessionLocal() as db:
+            from app.core.database import set_tenant_context
+            await set_tenant_context(db, str(company_id))
+
+            result = await db.execute(text("""
+                SELECT j.id, j.title, j.status, j.created_at,
+                       EXTRACT(DAY FROM NOW() - j.created_at)::int as days_open
+                FROM job_vacancies j
+                LEFT JOIN vacancy_candidates vc ON vc.vacancy_id = j.id
+                WHERE vc.id IS NULL
+                  AND j.company_id = :co
+                  AND j.status = 'Ativa'
+                  AND j.created_at < NOW() - INTERVAL '7 days'
+                ORDER BY j.created_at ASC
+                LIMIT 20
+            """), {"co": str(company_id)})
+            rows = result.fetchall()
+
+        if not rows:
+            return ActionResult(
+                status="executed",
+                message=(
+                    "Todas as vagas têm candidatos. "
+                    "Nenhuma vaga ativa está sem candidatos há mais de 7 dias."
+                ),
+                data={"vacancies_without_candidates": [], "days_threshold": days},
+                action_type="vacancies_without_candidates",
+            )
+
+        lines = [f"**{len(rows)} vaga(s) sem candidatos há mais de {days} dias:**\n"]
+        vacancy_list = []
+        for row in rows:
+            lines.append(f"- {row.title} ({row.days_open} dias aberta)")
+            vacancy_list.append({
+                "id": str(row.id),
+                "title": row.title,
+                "status": row.status,
+                "days_open": row.days_open,
+            })
+
+        lines.append(
+            "\nGostaria que eu inicie a triagem ou busca por candidatos para essas vagas?"
+        )
+
+        return ActionResult(
+            status="executed",
+            message="\n".join(lines),
+            data={"vacancies_without_candidates": vacancy_list, "days_threshold": days},
+            action_type="vacancies_without_candidates",
+        )
+    except Exception as e:
+        logger.warning(f"vacancies_without_candidates failed: {e}")
+        from app.orchestrator.action_executor import ActionResult
+        return ActionResult(
+            status="error",
+            message="Erro ao consultar vagas sem candidatos.",
+            error_detail=str(e),
+            action_type="vacancies_without_candidates",
+        )
+
+
+async def _list_candidates_by_stage(params: dict[str, Any], context: dict[str, Any]):
+    """KB-006: List candidates in a specific pipeline stage for a job."""
+    from app.orchestrator.action_executor import ActionResult
+    try:
+        from sqlalchemy import text
+        from app.core.database import AsyncSessionLocal
+
+        job_id = (
+            params.get("job_id")
+            or (context or {}).get("job_id")
+            or (context or {}).get("entity_id")
+            or (context or {}).get("job_vacancy_id")
+        )
+        company_id = (context or {}).get("company_id")
+        stage = params.get("stage") or params.get("to_stage")
+
+        if not job_id:
+            return ActionResult(
+                status="error",
+                message="Vaga não identificada. Informe a vaga para listar candidatos por etapa.",
+                error_detail="Missing job_id",
+                action_type="list_candidates_by_stage",
+            )
+
+        async with AsyncSessionLocal() as db:
+            from app.core.database import set_tenant_context
+            if company_id:
+                await set_tenant_context(db, str(company_id))
+
+            # Build query
+            rows = []
+            for attempt in range(2):
+                try:
+                    if attempt == 0:
+                        if stage:
+                            sql = """
+                                SELECT c.name, c.current_title, vc.stage, vc.score, vc.lia_score
+                                FROM vacancy_candidates vc
+                                JOIN candidates c ON c.id = vc.candidate_id
+                                WHERE vc.job_vacancy_id = CAST(:job_id AS uuid)
+                                  AND LOWER(vc.stage) = LOWER(:stage)
+                            """
+                        else:
+                            sql = """
+                                SELECT c.name, c.current_title, vc.stage, vc.score, vc.lia_score
+                                FROM vacancy_candidates vc
+                                JOIN candidates c ON c.id = vc.candidate_id
+                                WHERE vc.job_vacancy_id = CAST(:job_id AS uuid)
+                            """
+                    else:
+                        # Fallback: try short job_id like V0037
+                        if stage:
+                            sql = """
+                                SELECT c.name, c.current_title, vc.stage, vc.score, vc.lia_score
+                                FROM vacancy_candidates vc
+                                JOIN candidates c ON c.id = vc.candidate_id
+                                JOIN job_vacancies jv ON jv.id = vc.job_vacancy_id
+                                WHERE jv.job_id = :job_id
+                                  AND LOWER(vc.stage) = LOWER(:stage)
+                            """
+                        else:
+                            sql = """
+                                SELECT c.name, c.current_title, vc.stage, vc.score, vc.lia_score
+                                FROM vacancy_candidates vc
+                                JOIN candidates c ON c.id = vc.candidate_id
+                                JOIN job_vacancies jv ON jv.id = vc.job_vacancy_id
+                                WHERE jv.job_id = :job_id
+                            """
+
+                    bind: dict[str, Any] = {"job_id": str(job_id)}
+                    if stage:
+                        bind["stage"] = stage
+                    if company_id:
+                        sql += " AND vc.company_id = CAST(:co AS uuid)"
+                        bind["co"] = str(company_id)
+                    sql += " ORDER BY COALESCE(vc.lia_score, vc.score, 0) DESC LIMIT 50"
+
+                    result = await db.execute(text(sql), bind)
+                    rows = result.fetchall()
+                    break
+                except Exception:
+                    rows = []
+                    continue
+
+        if not rows:
+            stage_label = stage or "qualquer etapa"
+            return ActionResult(
+                status="executed",
+                message=f"Nenhum candidato encontrado na etapa **{stage_label}** para esta vaga.",
+                data={"candidates": [], "job_id": str(job_id), "stage": stage},
+                action_type="list_candidates_by_stage",
+            )
+
+        # Group by stage if no specific stage requested
+        if stage:
+            lines = []
+            for i, row in enumerate(rows, 1):
+                score = row.lia_score or row.score or 0
+                score_str = f" | Score: {score}%" if score else ""
+                lines.append(f"{i}. **{row.name}** — {row.current_title or 'N/A'}{score_str}")
+            stage_label = stage or rows[0].stage
+            msg = f"**Candidatos na etapa {stage_label} ({len(rows)}):**\n\n" + "\n".join(lines)
+        else:
+            from collections import defaultdict
+            by_stage: dict = defaultdict(list)
+            for row in rows:
+                by_stage[row.stage or "Sem etapa"].append(row.name)
+            lines = []
+            for s, names in sorted(by_stage.items()):
+                lines.append(f"**{s}** ({len(names)}): " + ", ".join(names[:5]) + ("..." if len(names) > 5 else ""))
+            msg = f"**Candidatos por etapa ({len(rows)} total):**\n\n" + "\n".join(lines)
+
+        candidates_data = [
+            {"name": row.name, "stage": row.stage, "score": row.lia_score or row.score or 0}
+            for row in rows
+        ]
+        return ActionResult(
+            status="executed",
+            message=msg,
+            data={"candidates": candidates_data, "job_id": str(job_id), "stage": stage, "count": len(rows)},
+            action_type="list_candidates_by_stage",
+        )
+    except Exception as e:
+        logger.warning(f"list_candidates_by_stage failed: {e}")
+        from app.orchestrator.action_executor import ActionResult
+        return ActionResult(
+            status="error",
+            message="Erro ao listar candidatos por etapa.",
+            error_detail=str(e),
+            action_type="list_candidates_by_stage",
         )

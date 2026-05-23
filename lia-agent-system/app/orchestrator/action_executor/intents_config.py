@@ -679,6 +679,32 @@ ACTIONABLE_INTENTS: dict[str, dict[str, Any]] = {
         "param_labels": {},
         "clarification_prompts": {},
     },
+    # Recovery #4 (2026-05-23) — intents pt-BR restaurados após merge incident 02361f41c.
+    # Sem essas 2 entries, LLM não despacha "vagas sem candidatos" nem "candidatos por etapa".
+    "vagas_sem_candidatos": {
+        "domain_id": "analytics",
+        "action_id": "vacancies_without_candidates",
+        "required_params": [],
+        "optional_params": ["days"],
+        "risk_level": "read",
+        "requires_confirmation": False,
+        "param_labels": {"days": "dias"},
+    },
+    "listar_candidatos_por_etapa": {
+        "domain_id": "analytics",
+        "action_id": "list_candidates_by_stage",
+        "required_params": [],
+        "optional_params": ["job_id", "stage"],
+        "risk_level": "low",
+        "requires_confirmation": False,
+        "param_labels": {
+            "job_id": "vaga",
+            "stage": "etapa",
+        },
+        "clarification_prompts": {
+            "job_id": "Para qual vaga você quer listar os candidatos?",
+        },
+    },
     # --- Benefits/PRV intents (Sprint B) ---
     "apply_compensation_policy": {
         "domain_id": "job_management",
