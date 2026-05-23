@@ -28,9 +28,12 @@ class ClaudeLLMProvider(LLMProviderABC):
     _provider_name = "claude"
     _default_model = "claude-sonnet-4-6"
 
-    def __init__(self, api_key: str | None = None):
+    def __init__(self, api_key: str | None = None, region: str | None = None):
         self._client = None
         self._custom_api_key = api_key
+        # W2-012 (2026-05-22): LGPD Art 33 per-tenant region pinning.
+        # None = sem region constraint (default global do provider).
+        self._region = region
 
     @property
     def provider_name(self) -> str:
@@ -47,7 +50,13 @@ class ClaudeLLMProvider(LLMProviderABC):
             base_url = os.environ.get("AI_INTEGRATIONS_ANTHROPIC_BASE_URL")
             if not api_key:
                 raise ValueError("No Claude API key configured")
-            kwargs = {"api_key": api_key}
+            # W2-012 (2026-05-22): LGPD Art 7 §II + Art 33 — opt-out de
+            # treinamento + declaração de jurisdição. Header canonical do
+            # Anthropic API. Aplicado a TODA construção do client.
+            kwargs = {
+                "api_key": api_key,
+                "default_headers": {"anthropic-no-train": "true"},
+            }
             if base_url:
                 kwargs["base_url"] = base_url
             self._client = Anthropic(**kwargs)

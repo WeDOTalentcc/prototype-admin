@@ -22,9 +22,16 @@ class GeminiLLMProvider(LLMProviderABC):
     _provider_name = "gemini"
     _default_model = "gemini-2.5-flash"
     
-    def __init__(self, api_key: str | None = None):
+    def __init__(self, api_key: str | None = None, region: str | None = None):
         self._client = None
         self._custom_api_key = api_key
+        # W2-012 (2026-05-22): LGPD Art 33 per-tenant region pinning.
+        # Default canonical us-central1 (audit recommendation).
+        # Override via env LIA_GEMINI_DEFAULT_REGION.
+        import os as _os_w2012
+        self._region = region or _os_w2012.environ.get(
+            "LIA_GEMINI_DEFAULT_REGION", "us-central1"
+        )
     
     @property
     def provider_name(self) -> str:

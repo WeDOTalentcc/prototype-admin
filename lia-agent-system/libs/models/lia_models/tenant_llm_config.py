@@ -39,6 +39,11 @@ class TenantLLMConfig(Base):
     # Full config blob (for advanced settings)
     config = Column(JSON, default={})
 
+    # W2-012 (2026-05-22): LGPD Art 33 per-tenant region pinning.
+    # NULL = usa default global do provider (us-central1 Gemini, sem header constraint OpenAI/Claude).
+    # Override per-tenant: "us-east-1", "sa-east-1", "southamerica-east1", etc.
+    region = Column(String(50), nullable=True)
+
     is_active = Column(Boolean, default=True)
 
     created_at = Column(DateTime, default=datetime.utcnow)

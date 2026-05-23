@@ -14,9 +14,11 @@ class OpenAILLMProvider(LLMProviderABC):
     _provider_name = "openai"
     _default_model = "gpt-4o"
     
-    def __init__(self, api_key: str | None = None):
+    def __init__(self, api_key: str | None = None, region: str | None = None):
         self._client = None
         self._custom_api_key = api_key
+        # W2-012 (2026-05-22): LGPD Art 33 region pinning.
+        self._region = region
     
     @property
     def provider_name(self) -> str:
@@ -32,7 +34,12 @@ class OpenAILLMProvider(LLMProviderABC):
             api_key = self._custom_api_key or os.environ.get("OPENAI_API_KEY")
             if not api_key:
                 raise ValueError("No OpenAI API key configured")
-            self._client = OpenAI(api_key=api_key)
+            # W2-012 (2026-05-22): LGPD Art 33 — declara residência de
+            # dados via header beta canonical da OpenAI API.
+            self._client = OpenAI(
+                api_key=api_key,
+                default_headers={"OpenAI-Beta": "data-residency=v1"},
+            )
         return self._client
     
     @circuit_breaker_decorator(OPENAI_CIRCUIT)
