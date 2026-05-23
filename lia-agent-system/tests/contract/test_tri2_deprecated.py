@@ -54,44 +54,33 @@ def _grep_callers(symbol: str, paths: list[str]) -> list[str]:
 def test_settings_progress_helpers_no_orphan_callers():
     """
     settings_progress_repository.count_active_* helpers foram DEPRECATED.
-    Endpoint ``app/api/v1/settings_progress.py`` deve NÃO chamar mais.
+    Endpoint ``app/api/v1/settings_progress.py`` não chama mais.
 
-    KNOWN ORPHAN: ``tests/api/v1/test_settings_progress_coverage.py`` testa
-    código deprecated — Sprint cleanup futuro (atualizar test ou deletar).
-    Por enquanto excluído do scope pra não bloquear sensor.
+    Onda 4.1 (2026-05-23): test orphan ``test_settings_progress_coverage.py``
+    DELETADO (8 tests falhando em CI desde merge incident). Zero callers
+    esperados daqui pra frente.
     """
-    _KNOWN_TEST_ORPHANS = {"test_settings_progress_coverage.py"}
     for sym in ["count_active_alert_configs", "count_active_integrations", "count_active_policies"]:
         callers = _grep_callers(sym, ["app/", "tests/"])
-        unexpected = [
-            c for c in callers
-            if not any(orphan in c for orphan in _KNOWN_TEST_ORPHANS)
-        ]
-        assert not unexpected, (
-            f"DEPRECATED helper {sym} tem callers orphan ALÉM do test conhecido: "
-            f"{unexpected}\n"
+        assert not callers, (
+            f"DEPRECATED helper {sym} tem callers orphan: {callers}\n"
             "Endpoint deveria ter sido refatorado consistentemente. Restaurar "
             "helpers OU atualizar callers."
         )
 
 
-def test_teams_proactivity_helpers_only_in_legacy_test():
+def test_teams_proactivity_helpers_no_orphan_callers():
     """
     broadcast_to_channels + _get_channel_refs_for_company DEPRECATED.
-    Único caller esperado é o test orphan ``test_teams_w9_1_group_channel.py``
-    (que provavelmente falha em CI — Sprint cleanup futuro).
+
+    Onda 4.1 (2026-05-23): test orphan ``test_teams_w9_1_group_channel.py``
+    DELETADO. Zero callers esperados.
     """
     for sym in ["broadcast_to_channels", "_get_channel_refs_for_company"]:
         callers = _grep_callers(sym, ["app/", "tests/"])
-        # Filtrar test orphan esperado
-        unexpected = [
-            c for c in callers
-            if "test_teams_w9_1_group_channel" not in c
-        ]
-        assert not unexpected, (
-            f"DEPRECATED helper {sym} tem callers inesperados: {unexpected}\n"
-            "Caller esperado é só test_teams_w9_1_group_channel (orphan). "
-            "Outro caller = regressão coordenada."
+        assert not callers, (
+            f"DEPRECATED helper {sym} tem callers orphan: {callers}\n"
+            "Reaparecimento = regressão coordenada."
         )
 
 
