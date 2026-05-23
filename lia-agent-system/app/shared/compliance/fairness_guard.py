@@ -20,7 +20,26 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-_METRICS_AVAILABLE = False
+# Prometheus counter canonical pattern (vide wizard_session_service.py:42-62 template).
+# Idempotente entre reimports + fail-open se prometheus indisponível.
+try:  # pragma: no cover — exercitado via integração
+    from prometheus_client import Counter as _PromCounter  # type: ignore
+    from prometheus_client import REGISTRY as _PROM_REGISTRY  # type: ignore
+
+    _existing = getattr(_PROM_REGISTRY, "_names_to_collectors", {}).get(
+        "lia_fairness_blocks_total"
+    )
+    if _existing is not None:
+        fairness_blocks_total = _existing
+    else:
+        fairness_blocks_total = _PromCounter(
+            "lia_fairness_blocks_total",
+            "Total de queries bloqueadas pelo FairnessGuard, segmentado por "
+            "categoria discriminatória detectada (LGPD/EU AI Act compliance).",
+            labelnames=("category",),
+        )
+except Exception:  # pragma: no cover — fail-OPEN se prometheus indisponível
+    fairness_blocks_total = None
 
 
 def _normalize_text(text: str) -> str:
@@ -659,7 +678,7 @@ class FairnessGuard:
                 "FairnessGuard BLOCKED query: category=%s, terms=%s, query_len=%d",
                 detected_category, blocked_terms, len(query),
             )
-            if _METRICS_AVAILABLE:
+            if fairness_blocks_total is not None:
                 fairness_blocks_total.labels(category=detected_category).inc()
             return FairnessCheckResult(
                 is_blocked=True,
@@ -1013,7 +1032,7 @@ class FairnessGuard:
                     )
                     break
 
-        if blocked and _METRICS_AVAILABLE:
+        if blocked and fairness_blocks_total is not None:
             try:
                 for _ in blocked:
                     fairness_blocks_total.labels(category="learning_batch").inc()

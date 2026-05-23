@@ -19,7 +19,40 @@ except ImportError:
             return fn
         return decorator
 
-_METRICS_AVAILABLE = False
+# Prometheus metrics canonical pattern (vide wizard_session_service.py:42-62).
+# Idempotente entre reimports + fail-open se prometheus indisponível.
+try:  # pragma: no cover — exercitado via integração
+    from prometheus_client import Counter as _PromCounter  # type: ignore
+    from prometheus_client import Histogram as _PromHistogram  # type: ignore
+    from prometheus_client import REGISTRY as _PROM_REGISTRY  # type: ignore
+
+    _existing_req = getattr(_PROM_REGISTRY, "_names_to_collectors", {}).get(
+        "lia_llm_requests_total"
+    )
+    if _existing_req is not None:
+        llm_requests_total = _existing_req
+    else:
+        llm_requests_total = _PromCounter(
+            "lia_llm_requests_total",
+            "Total de requests LLM segmentado por provider e status (success/error).",
+            labelnames=("provider", "status"),
+        )
+
+    _existing_lat = getattr(_PROM_REGISTRY, "_names_to_collectors", {}).get(
+        "lia_llm_latency_seconds"
+    )
+    if _existing_lat is not None:
+        llm_latency_seconds = _existing_lat
+    else:
+        llm_latency_seconds = _PromHistogram(
+            "lia_llm_latency_seconds",
+            "Latência LLM (segundos) por provider.",
+            labelnames=("provider",),
+        )
+except Exception:  # pragma: no cover — fail-OPEN se prometheus indisponível
+    llm_requests_total = None
+    llm_latency_seconds = None
+
 
 # W2-008 (2026-05-22): Anthropic prompt caching · 50-80% economia em
 # sessions longas. Beta header GA desde Nov/2024 mas mantido por compat.
@@ -151,8 +184,9 @@ class ClaudeLLMProvider(LLMProviderABC):
             status = "error"
             raise
         finally:
-            if _METRICS_AVAILABLE:
+            if llm_requests_total is not None:
                 llm_requests_total.labels(provider="claude", status=status).inc()
+            if llm_latency_seconds is not None:
                 llm_latency_seconds.labels(provider="claude").observe(time.time() - t_start)
 
     @circuit_breaker_decorator(ANTHROPIC_CIRCUIT)
@@ -184,8 +218,9 @@ class ClaudeLLMProvider(LLMProviderABC):
             status = "error"
             raise
         finally:
-            if _METRICS_AVAILABLE:
+            if llm_requests_total is not None:
                 llm_requests_total.labels(provider="claude", status=status).inc()
+            if llm_latency_seconds is not None:
                 llm_latency_seconds.labels(provider="claude").observe(time.time() - t_start)
 
     @circuit_breaker_decorator(ANTHROPIC_CIRCUIT)
@@ -233,8 +268,9 @@ class ClaudeLLMProvider(LLMProviderABC):
             status = "error"
             raise
         finally:
-            if _METRICS_AVAILABLE:
+            if llm_requests_total is not None:
                 llm_requests_total.labels(provider="claude", status=status).inc()
+            if llm_latency_seconds is not None:
                 llm_latency_seconds.labels(provider="claude").observe(time.time() - t_start)
 
     @circuit_breaker_decorator(ANTHROPIC_CIRCUIT)
@@ -264,6 +300,7 @@ class ClaudeLLMProvider(LLMProviderABC):
             status = "error"
             raise
         finally:
-            if _METRICS_AVAILABLE:
+            if llm_requests_total is not None:
                 llm_requests_total.labels(provider="claude", status=status).inc()
+            if llm_latency_seconds is not None:
                 llm_latency_seconds.labels(provider="claude").observe(time.time() - t_start)

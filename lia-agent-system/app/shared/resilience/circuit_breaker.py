@@ -31,7 +31,26 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
-_METRICS_AVAILABLE = False
+# Prometheus gauge canonical pattern (vide wizard_session_service.py:42-62).
+# Idempotente entre reimports + fail-open se prometheus indisponível.
+# Estado encoded em float: 0=closed, 1=half_open, 2=open (vide _CB_STATE_VALUES).
+try:  # pragma: no cover — exercitado via integração
+    from prometheus_client import Gauge as _PromGauge  # type: ignore
+    from prometheus_client import REGISTRY as _PROM_REGISTRY  # type: ignore
+
+    _existing = getattr(_PROM_REGISTRY, "_names_to_collectors", {}).get(
+        "lia_circuit_breaker_state"
+    )
+    if _existing is not None:
+        _cb_state_metric = _existing
+    else:
+        _cb_state_metric = _PromGauge(
+            "lia_circuit_breaker_state",
+            "Circuit breaker state per service: 0=closed, 1=half_open, 2=open.",
+            labelnames=("service",),
+        )
+except Exception:  # pragma: no cover — fail-OPEN se prometheus indisponível
+    _cb_state_metric = None
 
 _CB_STATE_VALUES = {"closed": 0, "half_open": 1, "open": 2}
 
@@ -282,7 +301,7 @@ class CircuitBreaker:
                 _loop.create_task(_notify_circuit_open(self.name))
         except Exception:
             pass
-        if _METRICS_AVAILABLE:
+        if _cb_state_metric is not None:
             _cb_state_metric.labels(service=self.name).set(_CB_STATE_VALUES["open"])
 
     def _transition_to_closed(self):
@@ -294,7 +313,7 @@ class CircuitBreaker:
         self._stats.state_changes += 1
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Circuit breaker '{self.name}' is now CLOSED")
-        if _METRICS_AVAILABLE:
+        if _cb_state_metric is not None:
             _cb_state_metric.labels(service=self.name).set(_CB_STATE_VALUES["closed"])
     
     def reset(self):
