@@ -29,19 +29,12 @@ from __future__ import annotations
 import subprocess
 from pathlib import Path
 
-# Exceções TEMPORÁRIAS descobertas durante setup do sensor em 2026-05-23.
-# Cada uma DEVE ter:
+# Empty pós-Recovery #9 — orphan resolvido (W2-010-B canonical merge).
+# Cada exceção futura DEVE ter:
 #   - Path do test file
-#   - TODO indicando qual Recovery # vai limpar
+#   - TODO indicando qual Recovery/PR vai limpar
 #   - Comentário com investigação preliminar
-_EXPECTED_COLLECTION_FAILURES: set[str] = {
-    # TODO Recovery #9 — `ats_sync_service.py`: módulo
-    # `app.domains.ats_integration.services.ats_clients.wedotalent_rails`
-    # não existe no codebase atual. Provável vítima do merge incident
-    # 02361f41c (ats_sync_service.py perdeu 317 linhas e 9 métodos).
-    # Decidir no Recovery #9: restaurar módulo OU deletar test.
-    "tests/contract/test_wedotalent_rails_client_contract.py",
-}
+_EXPECTED_COLLECTION_FAILURES: set[str] = set()
 
 
 def test_pytest_collect_only_has_no_errors():

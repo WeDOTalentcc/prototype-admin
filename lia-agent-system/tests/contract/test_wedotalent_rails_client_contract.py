@@ -28,7 +28,8 @@ import respx
 os.environ.setdefault("RAILS_API_URL", "http://rails.test")
 os.environ.setdefault("RAILS_API_TOKEN", "test-token")
 
-from app.domains.ats_integration.services.ats_clients.wedotalent_rails import (  # noqa: E402
+# Recovery #9 (2026-05-23): WeDOTalentATSClient movido em W2-010-B (commit 840d952b3) pra canonical home.
+from app.shared.integration.rails_client import (  # noqa: E402
     RailsAPIResponse,
     WeDOTalentATSClient,
 )
@@ -40,7 +41,7 @@ def _no_sleep(monkeypatch):
     async def _instant(_seconds):
         return None
     monkeypatch.setattr(
-        "app.domains.ats_integration.services.ats_clients.wedotalent_rails.asyncio.sleep",
+        "app.shared.integration.rails_client.asyncio.sleep",
         _instant,
     )
 
