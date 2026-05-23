@@ -1,6 +1,7 @@
 "use client"
 
 import { textStyles, badgeStyles } from '@/lib/design-tokens'
+import { cn } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
 import {
