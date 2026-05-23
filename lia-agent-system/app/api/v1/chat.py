@@ -236,7 +236,6 @@ async def send_message(
     current_user: User = Depends(get_current_user_or_demo),
     repo: ChatRepository = Depends(get_chat_repo),
 company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Send a message to LIA and get response.
 
@@ -247,7 +246,7 @@ company_id: str = Depends(require_company_id)):
 
     # Create or get conversation
     if not conversation_id:
-        conversation = await repo.create_conversation(user_id)
+        conversation = await repo.create_conversation(user_id, company_id)
         conversation_id = str(conversation.id)
     else:
         conversation = await repo.get_conversation_by_id(conversation_id)
@@ -436,7 +435,6 @@ async def send_message_with_attachments(
     current_user: User = Depends(get_current_user_or_demo),
     repo: ChatRepository = Depends(get_chat_repo),
 company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Send a message to LIA with file attachments and/or audio.
     Uses the same conversation flow as send_message with attachment metadata.
@@ -479,7 +477,7 @@ company_id: str = Depends(require_company_id)):
 
     user_id = str(current_user.id)
     if not conversation_id:
-        conversation = await repo.create_conversation(user_id)
+        conversation = await repo.create_conversation(user_id, company_id)
         conversation_id = str(conversation.id)
     else:
         conversation = await repo.get_conversation_by_id(conversation_id)
@@ -597,7 +595,6 @@ async def list_conversations(
     page_size: int = 20,
     repo: ChatRepository = Depends(get_chat_repo),
 company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     List user's conversations.
     """
@@ -663,7 +660,6 @@ company_id: str = Depends(require_company_id)):
     }
     """
     await manager.connect(user_id, websocket)
-    company_id = None
 
     try:
         while True:
@@ -693,7 +689,7 @@ company_id: str = Depends(require_company_id)):
 
                 # Create or get conversation
                 if not conversation_id:
-                    conversation = await repo.create_conversation(user_id)
+                    conversation = await repo.create_conversation(user_id, company_id)
                     conversation_id = str(conversation.id)
                 else:
                     conversation = await repo.get_conversation_by_id(conversation_id)
@@ -911,7 +907,6 @@ async def stream_message(
     current_user: User = Depends(get_current_user_or_demo),
     repo: ChatRepository = Depends(get_chat_repo),
 company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Stream LIA response as SSE (Server-Sent Events).
 
@@ -933,7 +928,7 @@ company_id: str = Depends(require_company_id)):
 
     # Create or retrieve conversation
     if not conversation_id:
-        conversation = await repo.create_conversation(user_id)
+        conversation = await repo.create_conversation(user_id, company_id)
         conversation_id = str(conversation.id)
     else:
         conversation = await repo.get_conversation_by_id(conversation_id)
@@ -1039,7 +1034,6 @@ async def direct_candidate_field_update(
     current_user: User = Depends(get_current_user_or_demo),
     repo: ChatRepository = Depends(get_chat_repo),
 company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Structured endpoint to update one or more candidate fields directly.
     Used by the CV upload closed-loop confirmation flow to avoid
@@ -1182,7 +1176,6 @@ async def set_chat_context(
     current_user: User = Depends(get_current_user_or_demo),
     repo: ChatRepository = Depends(get_chat_repo),
 company_id: str = Depends(require_company_id)):
-    # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Notify the orchestrator that the chat context has changed.
 
     The frontend calls this whenever the user navigates to a page that should

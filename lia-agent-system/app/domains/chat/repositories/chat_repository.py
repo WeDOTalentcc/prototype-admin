@@ -24,9 +24,22 @@ class ChatRepository:
     # Conversation helpers
     # ------------------------------------------------------------------
 
-    async def create_conversation(self, user_id: str) -> Conversation:
+    async def create_conversation(self, user_id: str, company_id: str) -> Conversation:
+        """Create new conversation for user under tenant company_id.
+
+        company_id is REQUIRED — conversations table has RLS policy that
+        rejects INSERT with NULL company_id (asyncpg.InsufficientPrivilegeError).
+        Per CLAUDE.md REGRA 1 multi-tenancy + ADR-001 §3 fail-closed.
+        """
+        if not company_id:
+            raise ValueError(
+                "company_id is required (multi-tenancy fail-closed). "
+                "conversations table has RLS policy — INSERT without "
+                "company_id raises InsufficientPrivilegeError at runtime."
+            )
         conversation = Conversation(
             user_id=user_id,
+            company_id=company_id,
             user_role="recruiter",
             status="active",
         )
