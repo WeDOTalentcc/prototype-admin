@@ -831,8 +831,13 @@ class LiaFieldConfigService:
         if value is None:
             source = DataSource.MARKET_BENCHMARK
             confidence = 0.5
-            # ORCHESTRATOR-GHOST-EXEMPT: BUG-C4-B — _get_market_benchmark defined only in intelligent_data_orchestrator.py, missing here. C.4 sensor flagged 2026-05-23. Tracking ticket pending — production code raises AttributeError if this branch executes.
-            value = self._get_market_benchmark(field_key, job_context, company_profile)
+            # BUG-C4-B fix (2026-05-23): the canonical impl is _from_market_benchmark
+            # (defined ~line 431 with matching 3-arg signature). The prior call to
+            # self._get_market_benchmark(...) was a stale rename never propagated;
+            # that name only exists in IntelligentDataOrchestrator with a totally
+            # different signature (zero-arg lazy loader), so delegation would not
+            # work. Use the canonical sibling method directly.
+            value = self._from_market_benchmark(field_key, job_context, company_profile)
         
         label = FIELD_LABELS.get(field_key, field_key)
         source_explanation = self._get_source_explanation(source, field_key)
