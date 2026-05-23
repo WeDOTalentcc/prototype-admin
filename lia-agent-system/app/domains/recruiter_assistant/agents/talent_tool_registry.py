@@ -4,6 +4,10 @@ Talent Tool Registry - Exposes talent funnel tools to the ReAct loop.
 Wraps talent funnel operations into ToolDefinition format so the ReActLoop
 can autonomously decide which tools to call for candidate analysis and
 management.
+
+ADR-001: All SQL queries delegated to canonical repositories.
+- CandidateRepository: PII-touching queries (candidates table)
+- VacancyCandidateRepository: vacancy_candidates aggregations
 """
 import logging
 import uuid
@@ -11,9 +15,10 @@ from typing import Any
 
 from lia_agents_core.tool_adapter import ToolDefinition
 from lia_agents_core.tool_adapter import ToolOutput
-from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
+from app.domains.candidates.repositories.candidate_repository import CandidateRepository
+from app.domains.candidates.repositories.vacancy_candidate_repository import VacancyCandidateRepository
 from app.shared.compliance.fairness_guard import FairnessGuard
 
 from app.shared.tool_handler import tool_handler
@@ -28,76 +33,28 @@ async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
     """Search candidates by skills, experience, location."""
     query = kwargs.get("query", "")
     filters = kwargs.get("filters", {})
-    company_id = kwargs.get("company_id", "")  # P0.A canonical: was extracted but unused
+    company_id = kwargs.get("company_id", "")
     limit = int(kwargs.get("limit", 20))
-    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[talent_tools] search_candidates called: query={query} filters={filters}")
 
     results = []
     total = 0
     try:
-        async with AsyncSessionLocal() as session:
-            location = filters.get("location", "") if isinstance(filters, dict) else ""
-            min_exp = filters.get("min_experience", 0) if isinstance(filters, dict) else 0
+        location = filters.get("location", "") if isinstance(filters, dict) else ""
+        min_exp = filters.get("min_experience", 0) if isinstance(filters, dict) else 0
 
-            rows = await session.execute(
-                text("""
-                    SELECT id, name, current_title, location_city, location_state,
-                           technical_skills, years_of_experience, lia_score,
-                           skills_match_percentage, status
-                    FROM candidates
-                    WHERE is_active = true
-                      AND (company_id IS NULL OR company_id = :company_id)
-                      AND (:query = ''
-                           OR name ILIKE :qlike
-                           OR current_title ILIKE :qlike
-                           OR :query = ANY(technical_skills))
-                      AND (:location = '' OR location_city ILIKE :lloc OR location_state ILIKE :lloc)
-                      AND (years_of_experience IS NULL OR years_of_experience >= :min_exp)
-                    ORDER BY lia_score DESC NULLS LAST, created_at DESC
-                    LIMIT :lim
-                """),
-                {
-                    "query": query,
-                    "qlike": f"%{query}%",
-                    "location": location,
-                    "lloc": f"%{location}%",
-                    "min_exp": min_exp,
-                    "lim": limit,
-                    "company_id": company_id,
-                },
+        async with AsyncSessionLocal() as db:
+            repo = CandidateRepository(db)
+            data = await repo.search_by_skills_and_experience(
+                company_id=company_id,
+                query=query,
+                location=location,
+                min_experience=min_exp,
+                limit=limit,
             )
-            for row in rows.mappings():
-                results.append({
-                    "id": str(row["id"]),
-                    "name": row["name"],
-                    "current_title": row["current_title"],
-                    "location": f"{row['location_city'] or ''}, {row['location_state'] or ''}".strip(", "),
-                    "skills": row["technical_skills"] or [],
-                    "years_of_experience": row["years_of_experience"],
-                    "lia_score": row["lia_score"],
-                    "match_percentage": row["skills_match_percentage"],
-                    "status": row["status"],
-                })
-
-            count_row = await session.execute(
-                text("""
-                    SELECT COUNT(*) AS total FROM candidates
-                    WHERE is_active = true
-                      AND (company_id IS NULL OR company_id = :company_id)
-                      AND (:query = ''
-                           OR name ILIKE :qlike
-                           OR current_title ILIKE :qlike
-                           OR :query = ANY(technical_skills))
-                      AND (:location = '' OR location_city ILIKE :lloc OR location_state ILIKE :lloc)
-                      AND (years_of_experience IS NULL OR years_of_experience >= :min_exp)
-                """),
-                {"query": query, "qlike": f"%{query}%", "location": location,
-                 "lloc": f"%{location}%", "min_exp": min_exp, "company_id": company_id},
-            )
-            total = int((count_row.mappings().first() or {}).get("total", len(results)))
+        results = data["results"]
+        total = data["total"]
     except Exception as e:
-        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[talent_tools] search_candidates DB error: {e}")
 
     return {
@@ -119,55 +76,22 @@ async def _wrap_list_candidates(**kwargs: Any) -> dict[str, Any]:
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
     limit = int(kwargs.get("limit", 20))
-    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[talent_tools] list_candidates called: status={status} vacancy={vacancy_id} limit={limit}")
 
     candidates = []
     total = 0
     try:
-        async with AsyncSessionLocal() as session:
-            rows = await session.execute(
-                text("""
-                    SELECT vc.id AS vc_id, vc.vacancy_id, vc.candidate_id,
-                           vc.status, vc.stage, vc.lia_score, vc.match_percentage,
-                           vc.created_at,
-                           c.name, c.current_title, c.location_city, c.technical_skills
-                    FROM vacancy_candidates vc
-                    JOIN candidates c ON c.id = vc.candidate_id
-                    WHERE (:status = 'all' OR vc.status = :status)
-                      AND (:vid = '' OR vc.vacancy_id::text = :vid)
-                      AND (:cid = '' OR vc.company_id = :cid)
-                    ORDER BY vc.lia_score DESC NULLS LAST, vc.created_at DESC
-                    LIMIT :lim
-                """),
-                {"status": status, "vid": vacancy_id, "cid": company_id, "lim": limit},
+        async with AsyncSessionLocal() as db:
+            repo = VacancyCandidateRepository(db)
+            data = await repo.list_for_talent_funnel(
+                company_id=company_id,
+                status=status,
+                vacancy_id=vacancy_id,
+                limit=limit,
             )
-            for row in rows.mappings():
-                candidates.append({
-                    "id": str(row["candidate_id"]),
-                    "name": row["name"],
-                    "current_title": row["current_title"],
-                    "location": row["location_city"],
-                    "skills": row["technical_skills"] or [],
-                    "status": row["status"],
-                    "stage": row["stage"],
-                    "lia_score": row["lia_score"],
-                    "match_percentage": row["match_percentage"],
-                    "applied_at": str(row["created_at"]) if row["created_at"] else None,
-                })
-
-            count_row = await session.execute(
-                text("""
-                    SELECT COUNT(*) AS total FROM vacancy_candidates vc
-                    WHERE (:status = 'all' OR vc.status = :status)
-                      AND (:vid = '' OR vc.vacancy_id::text = :vid)
-                      AND (:cid = '' OR vc.company_id = :cid)
-                """),
-                {"status": status, "vid": vacancy_id, "cid": company_id},
-            )
-            total = int((count_row.mappings().first() or {}).get("total", len(candidates)))
+        candidates = data["candidates"]
+        total = data["total"]
     except Exception as e:
-        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[talent_tools] list_candidates DB error: {e}")
 
     return {
@@ -186,90 +110,25 @@ async def _wrap_list_candidates(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
     """View complete candidate profile including education and work history."""
     candidate_id = kwargs.get("candidate_id", "")
-    company_id = kwargs.get("company_id", "")  # P0.A canonical: PII (email+salary+gender) leak gate
-    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
+    company_id = kwargs.get("company_id", "")
     logger.info(f"[talent_tools] view_candidate_profile called for candidate={candidate_id}")
 
     profile: dict[str, Any] = {"candidate_id": candidate_id, "profile_loaded": False}
     try:
-        async with AsyncSessionLocal() as session:
-            row = await session.execute(
-                text("""
-                    SELECT id, name, email, current_title, current_company,
-                           seniority_level, years_of_experience,
-                           technical_skills, soft_skills, certifications,
-                           location_city, location_state, location_country,
-                           lia_score, skills_match_percentage,
-                           status, is_active, linkedin_url,
-                           self_introduction, work_history, languages,
-                           salary_expectation_clt, salary_expectation_pj,
-                           work_model_preference, is_remote, willing_to_relocate,
-                           gender, source
-                    FROM candidates
-                    WHERE id = :cid
-                      AND (company_id IS NULL OR company_id = :company_id)
-                """),
-                {"cid": candidate_id, "company_id": company_id},
+        async with AsyncSessionLocal() as db:
+            repo = CandidateRepository(db)
+            data = await repo.get_full_profile(
+                candidate_id=candidate_id,
+                company_id=company_id,
             )
-            data = row.mappings().first()
-            if not data:
-                return {
-                    "success": False,
-                    "data": {"candidate_id": candidate_id},
-                    "message": f"Candidato {candidate_id} nao encontrado.",
-                }
-
-            # Busca formação acadêmica na tabela candidate_education
-            edu_rows = await session.execute(
-                text("""
-                    SELECT institution, degree, field_of_study, start_year, end_year, is_current
-                    FROM candidate_education
-                    WHERE candidate_id = :cid
-                    ORDER BY end_year DESC NULLS FIRST, start_year DESC NULLS FIRST
-                """),
-                {"cid": candidate_id},
-            )
-            education = [
-                {
-                    "institution": r["institution"],
-                    "degree": r["degree"],
-                    "field_of_study": r["field_of_study"],
-                    "period": f"{r['start_year'] or '?'} - {'atual' if r['is_current'] else (r['end_year'] or '?')}",
-                }
-                for r in edu_rows.mappings()
-            ]
-
-            profile = {
-                "candidate_id": str(data["id"]),
-                "name": data["name"],
-                "email": data["email"],
-                "current_title": data["current_title"],
-                "current_company": data["current_company"],
-                "seniority_level": data["seniority_level"],
-                "years_of_experience": data["years_of_experience"],
-                "technical_skills": data["technical_skills"] or [],
-                "soft_skills": data["soft_skills"] or [],
-                "certifications": data["certifications"] or [],
-                "location": f"{data['location_city'] or ''}, {data['location_country'] or ''}".strip(", "),
-                "lia_score": data["lia_score"],
-                "match_percentage": data["skills_match_percentage"],
-                "status": data["status"],
-                "linkedin_url": data["linkedin_url"],
-                "summary": data["self_introduction"],
-                "languages": data["languages"],
-                "work_history": data["work_history"] or [],
-                "education": education,
-                "salary_expectation_clt": data["salary_expectation_clt"],
-                "salary_expectation_pj": data["salary_expectation_pj"],
-                "work_model": data["work_model_preference"],
-                "is_remote": data["is_remote"],
-                "willing_to_relocate": data["willing_to_relocate"],
-                "gender": data["gender"],
-                "source": data["source"],
-                "profile_loaded": True,
+        if not data:
+            return {
+                "success": False,
+                "data": {"candidate_id": candidate_id},
+                "message": f"Candidato {candidate_id} nao encontrado.",
             }
+        profile = data
     except Exception as e:
-        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[talent_tools] view_candidate_profile DB error: {e}")
 
     return {
@@ -283,7 +142,6 @@ async def _wrap_view_candidate_profile(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_compare_candidates(**kwargs: Any) -> dict[str, Any]:
     """Compare 2+ candidates side by side."""
     candidate_ids = kwargs.get("candidate_ids", [])
-    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[talent_tools] compare_candidates called: candidates={len(candidate_ids)}")
     return {
         "success": True,
@@ -295,48 +153,27 @@ async def _wrap_compare_candidates(**kwargs: Any) -> dict[str, Any]:
         },
         "message": f"Comparacao de {len(candidate_ids)} candidatos concluida.",
     }
+
 @tool_handler("talent")
 async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
     """Rank candidates by fit score for a job."""
     vacancy_id = kwargs.get("vacancy_id", "")
     criteria = kwargs.get("criteria", "fit_score")
-    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
+    company_id = kwargs.get("company_id", "")
     logger.info(f"[talent_tools] rank_candidates called: vacancy={vacancy_id} criteria={criteria}")
 
-    order_by = "match" if criteria == "skills" else "score"
     ranking = []
-    async with AsyncSessionLocal() as session:
-        rows = await session.execute(
-            text("""
-                SELECT vc.candidate_id, vc.status, vc.stage,
-                       vc.lia_score, vc.match_percentage,
-                       c.name, c.current_title, c.technical_skills
-                FROM vacancy_candidates vc
-                JOIN candidates c ON c.id = vc.candidate_id
-                WHERE vc.vacancy_id::text = :vid
-                  AND vc.status != 'rejected'
-                ORDER BY
-                  CASE
-                    WHEN :order_by = 'match' THEN vc.match_percentage
-                    WHEN :order_by = 'score' THEN vc.lia_score
-                    ELSE vc.lia_score
-                  END DESC NULLS LAST
-                LIMIT 50
-            """),
-            {"vid": vacancy_id, "order_by": order_by},
-        )
-        for position, row in enumerate(rows.mappings(), start=1):
-            ranking.append({
-                "position": position,
-                "candidate_id": str(row["candidate_id"]),
-                "name": row["name"],
-                "current_title": row["current_title"],
-                "skills": row["technical_skills"] or [],
-                "lia_score": row["lia_score"],
-                "match_percentage": row["match_percentage"],
-                "status": row["status"],
-                "stage": row["stage"],
-            })
+    try:
+        async with AsyncSessionLocal() as db:
+            repo = VacancyCandidateRepository(db)
+            ranking = await repo.rank_for_job(
+                vacancy_id=vacancy_id,
+                company_id=company_id,
+                criteria=criteria,
+            )
+    except Exception as e:
+        logger.warning(f"[talent_tools] rank_candidates DB error: {e}")
+
     return {
         "success": True,
         "data": {
@@ -353,10 +190,10 @@ async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("talent")
 async def _wrap_analyze_skills(**kwargs: Any) -> dict[str, Any]:
     """Analyze skill match between candidate and job requirements."""
+    from sqlalchemy import text
     candidate_id = kwargs.get("candidate_id", "")
     vacancy_id = kwargs.get("vacancy_id", "")
-    company_id = kwargs.get("company_id", "")  # P0.A canonical: tenant gate
-    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
+    company_id = kwargs.get("company_id", "")
     logger.info(f"[talent_tools] analyze_skills called: candidate={candidate_id} vacancy={vacancy_id}")
 
     matched_skills: list[str] = []
@@ -366,12 +203,13 @@ async def _wrap_analyze_skills(**kwargs: Any) -> dict[str, Any]:
 
     try:
         async with AsyncSessionLocal() as session:
-            c_row = await session.execute(
-                text("SELECT technical_skills, soft_skills FROM candidates WHERE id = :cid AND (company_id IS NULL OR company_id = :company_id)"),
-                {"cid": candidate_id, "company_id": company_id},
+            cand_repo = CandidateRepository(session)
+            vc_repo = VacancyCandidateRepository(session)
+
+            candidate_skills = await cand_repo.get_skill_set(
+                candidate_id=candidate_id,
+                company_id=company_id,
             )
-            c_data = c_row.mappings().first()
-            candidate_skills = set(s.lower() for s in ((c_data or {}).get("technical_skills") or []))
 
             if vacancy_id:
                 v_row = await session.execute(
@@ -391,19 +229,12 @@ async def _wrap_analyze_skills(**kwargs: Any) -> dict[str, Any]:
                     missing_skills = sorted(required_skills - candidate_skills)
                     extra_skills = sorted(candidate_skills - required_skills)
                     match_percentage = round(len(matched_skills) / len(required_skills) * 100, 1)
-                    # Persist match_percentage on vacancy_candidate if record exists
-                    await session.execute(
-                        text("""
-                            UPDATE vacancy_candidates
-                            SET match_percentage = :mp
-                            WHERE candidate_id = :cid AND vacancy_id::text = :vid
-                        """),
-                        {"mp": match_percentage, "cid": candidate_id, "vid": vacancy_id},
+                    await vc_repo.update_match_percentage(
+                        candidate_id=candidate_id,
+                        vacancy_id=vacancy_id,
+                        match_percentage=match_percentage,
                     )
-                    await session.commit()
     except Exception as e:
-        # rollback handled automatically by `async with AsyncSessionLocal()`
-        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[talent_tools] analyze_skills DB error: {e}")
 
     return {
@@ -424,75 +255,57 @@ async def _wrap_analyze_skills(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_recommend_actions(**kwargs: Any) -> dict[str, Any]:
     """Generate action recommendations for candidates based on real scores and status."""
     candidate_ids = kwargs.get("candidate_ids", [])
-    company_id = kwargs.get("company_id", "")  # P0.A canonical: batch tenant gate
-    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
+    company_id = kwargs.get("company_id", "")
     logger.info(f"[talent_tools] recommend_actions called: candidates={len(candidate_ids)}")
 
-    # P0.D canonical (audit 2026-05-21, harness REGRA 4): flags pra surface
-    # explicito quando DB query falha e caimos no template stock. Antes:
-    # except Exception retornava {"action": "review_profile"} pra cada
-    # candidato com {"success": True} — recrutador via "recomendacoes
-    # geradas pela LIA" sem saber que era template generico (DB error
-    # mascarado). Agora: caller pode checar fallback_used e renderizar
-    # UI degraded.
     recommendations: list[dict[str, Any]] = []
     try:
         if candidate_ids:
-            async with AsyncSessionLocal() as session:
-                rows = await session.execute(
-                    text("""
-                        SELECT id, name, status, lia_score, skills_match_percentage,
-                               last_contacted_at, last_activity_at
-                        FROM candidates
-                        WHERE id = ANY(:ids::uuid[])
-                          AND (company_id IS NULL OR company_id = :company_id)
-                    """),
-                    {"ids": candidate_ids, "company_id": company_id},
+            async with AsyncSessionLocal() as db:
+                repo = CandidateRepository(db)
+                rows = await repo.list_for_recommendations(
+                    candidate_ids=candidate_ids,
+                    company_id=company_id,
                 )
-                for row in rows.mappings():
-                    score = row["lia_score"] or 0
-                    match = row["skills_match_percentage"] or 0
-                    status = row["status"] or "new"
-                    actions = []
+            for row in rows:
+                score = row["lia_score"] or 0
+                match = row["skills_match_percentage"] or 0
+                status = row["status"] or "new"
+                actions = []
 
-                    if score >= 4.2 and status in ("new", "sourced"):
-                        actions.append({"action": "advance_to_screening", "priority": "high",
-                                        "reason": f"Score LIA alto ({score:.1f}/5). Mover para triagem imediatamente."})
-                    elif score >= 3.5:
-                        actions.append({"action": "schedule_interview", "priority": "medium",
-                                        "reason": f"Bom score ({score:.1f}/5). Agendar entrevista inicial."})
-                    elif score < 3.0 and score > 0:
-                        actions.append({"action": "review_or_reject", "priority": "low",
-                                        "reason": f"Score baixo ({score:.1f}/5). Revisar criterios ou desqualificar."})
+                if score >= 4.2 and status in ("new", "sourced"):
+                    actions.append({"action": "advance_to_screening", "priority": "high",
+                                    "reason": f"Score LIA alto ({score:.1f}/5). Mover para triagem imediatamente."})
+                elif score >= 3.5:
+                    actions.append({"action": "schedule_interview", "priority": "medium",
+                                    "reason": f"Bom score ({score:.1f}/5). Agendar entrevista inicial."})
+                elif score < 3.0 and score > 0:
+                    actions.append({"action": "review_or_reject", "priority": "low",
+                                    "reason": f"Score baixo ({score:.1f}/5). Revisar criterios ou desqualificar."})
 
-                    if match >= 80:
-                        actions.append({"action": "highlight_as_top_match", "priority": "high",
-                                        "reason": f"Match de skills excelente ({match:.0f}%)."})
-                    elif match < 50 and match > 0:
-                        actions.append({"action": "verify_requirements", "priority": "medium",
-                                        "reason": f"Match de skills baixo ({match:.0f}%). Verificar se requisitos sao corretos."})
+                if match >= 80:
+                    actions.append({"action": "highlight_as_top_match", "priority": "high",
+                                    "reason": f"Match de skills excelente ({match:.0f}%)."})
+                elif match < 50 and match > 0:
+                    actions.append({"action": "verify_requirements", "priority": "medium",
+                                    "reason": f"Match de skills baixo ({match:.0f}%). Verificar se requisitos sao corretos."})
 
-                    if not row["last_contacted_at"] and status != "new":
-                        actions.append({"action": "send_initial_contact", "priority": "medium",
-                                        "reason": "Candidato nunca foi contactado."})
+                if not row["last_contacted_at"] and status != "new":
+                    actions.append({"action": "send_initial_contact", "priority": "medium",
+                                    "reason": "Candidato nunca foi contactado."})
 
-                    if not actions:
-                        actions.append({"action": "review_profile", "priority": "low",
-                                        "reason": "Revisar perfil completo para determinar proximo passo."})
+                if not actions:
+                    actions.append({"action": "review_profile", "priority": "low",
+                                    "reason": "Revisar perfil completo para determinar proximo passo."})
 
-                    recommendations.append({
-                        "candidate_id": str(row["id"]),
-                        "name": row["name"],
-                        "current_status": status,
-                        "lia_score": score,
-                        "actions": actions,
-                    })
+                recommendations.append({
+                    "candidate_id": str(row["id"]),
+                    "name": row["name"],
+                    "current_status": status,
+                    "lia_score": score,
+                    "actions": actions,
+                })
     except Exception as e:
-        # P0.D canonical: NAO silenciar. Log exception completa (com stack)
-        # pra ops/oncall ter contexto, e retorna envelope EXPLICITO com
-        # fallback_used=True pro caller saber que recomendacoes vem de
-        # template stock (nao do DB).
-        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.exception(
             "[talent_tools] recommend_actions DB error; returning stock fallback. error=%s",
             e,
@@ -509,8 +322,6 @@ async def _wrap_recommend_actions(**kwargs: Any) -> dict[str, Any]:
                 "recommendations": fallback_recommendations,
             },
             "message": f"Recomendacoes geradas para {len(fallback_recommendations)} candidatos.",
-            # P0.D canonical: envelope EXPLICITO de fallback. Caller pode
-            # renderizar UI degraded ou fila pra revisao manual.
             "fallback_used": True,
             "needs_manual_review": True,
             "fallback_reason": f"{type(e).__name__}: {e}",
@@ -524,9 +335,6 @@ async def _wrap_recommend_actions(**kwargs: Any) -> dict[str, Any]:
             "recommendations": recommendations,
         },
         "message": f"Recomendacoes geradas para {len(recommendations)} candidatos.",
-        # P0.D canonical: path normal — explicit False pra distinguir do
-        # envelope de fallback acima. Defaults preservam back-compat com
-        # callers que nao checam esses campos.
         "fallback_used": False,
         "needs_manual_review": False,
         "fallback_reason": None,
@@ -536,6 +344,7 @@ async def _wrap_recommend_actions(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("talent")
 async def _wrap_create_shortlist(**kwargs: Any) -> dict[str, Any]:
     """Create a shortlist (CandidateList) from selected candidates."""
+    from app.domains.candidates.repositories.short_list_repository import ShortListRepository
     candidate_ids = kwargs.get("candidate_ids", [])
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id")
@@ -544,32 +353,20 @@ async def _wrap_create_shortlist(**kwargs: Any) -> dict[str, Any]:
         f"[talent_tools] create_shortlist called: candidates={len(candidate_ids)} vacancy={vacancy_id}"
     )
     async with AsyncSessionLocal() as session:
-        shortlist_id = str(uuid.uuid4())
+        repo = ShortListRepository(session)
         list_name = f"Shortlist vaga {vacancy_id}" if vacancy_id else "Shortlist LIA"
-        await session.execute(
-            text("""
-                INSERT INTO candidate_lists (id, company_id, name, description, created_by, is_active)
-                VALUES (:id, :cid, :name, :desc, :created_by, true)
-            """),
-            {
-                "id": shortlist_id,
-                "cid": company_id,
-                "name": list_name,
-                "desc": f"Criada automaticamente pelo agente LIA. Vaga: {vacancy_id}",
-                "created_by": created_by,
-            },
+        description = f"Criada automaticamente pelo agente LIA. Vaga: {vacancy_id}"
+        record = await repo.create(
+            company_id=company_id,
+            name=list_name,
+            description_encoded=description,
+            created_by=created_by,
         )
+        shortlist_id = str(record.id)
         added = 0
         for cid in candidate_ids:
             try:
-                await session.execute(
-                    text("""
-                        INSERT INTO candidate_list_members (id, list_id, candidate_id, added_by, source)
-                        VALUES (:id, :lid, :cid, :added_by, 'agent')
-                        ON CONFLICT DO NOTHING
-                    """),
-                    {"id": str(uuid.uuid4()), "lid": shortlist_id, "cid": cid, "added_by": created_by},
-                )
+                await repo.add_member(list_id=record.id, candidate_id=cid)
                 added += 1
             except Exception:
                 pass
@@ -585,14 +382,14 @@ async def _wrap_create_shortlist(**kwargs: Any) -> dict[str, Any]:
         },
         "message": f"Shortlist criada com {added} candidatos (id: {shortlist_id}).",
     }
+
 @tool_handler("talent")
 async def _wrap_export_report(**kwargs: Any) -> dict[str, Any]:
     """Export analysis report — generates a traceable report ID with candidate summary."""
     report_type = kwargs.get("report_type", "general")
     candidate_ids = kwargs.get("candidate_ids", [])
     vacancy_id = kwargs.get("vacancy_id", "")
-    company_id = kwargs.get("company_id", "")  # P0.A canonical: tenant gate
-    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
+    company_id = kwargs.get("company_id", "")
     logger.info(f"[talent_tools] export_report called: type={report_type} candidates={len(candidate_ids)}")
 
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
@@ -600,27 +397,20 @@ async def _wrap_export_report(**kwargs: Any) -> dict[str, Any]:
 
     try:
         if candidate_ids:
-            async with AsyncSessionLocal() as session:
-                rows = await session.execute(
-                    text("""
-                        SELECT name, current_title, lia_score, skills_match_percentage, status
-                        FROM candidates
-                        WHERE id = ANY(:ids::uuid[])
-                          AND (company_id IS NULL OR company_id = :company_id)
-                        ORDER BY lia_score DESC NULLS LAST
-                    """),
-                    {"ids": candidate_ids, "company_id": company_id},
+            async with AsyncSessionLocal() as db:
+                repo = CandidateRepository(db)
+                entries = await repo.list_for_report(
+                    candidate_ids=candidate_ids,
+                    company_id=company_id,
                 )
-                entries = [dict(r) for r in rows.mappings()]
-                scores = [e["lia_score"] for e in entries if e["lia_score"]]
-                summary = {
-                    "count": len(entries),
-                    "avg_lia_score": round(sum(scores) / len(scores), 2) if scores else None,
-                    "top_candidate": entries[0]["name"] if entries else None,
-                    "entries": entries,
-                }
+            scores = [e["lia_score"] for e in entries if e["lia_score"]]
+            summary = {
+                "count": len(entries),
+                "avg_lia_score": round(sum(scores) / len(scores), 2) if scores else None,
+                "top_candidate": entries[0]["name"] if entries else None,
+                "entries": entries,
+            }
     except Exception as e:
-        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[talent_tools] export_report DB error: {e}")
 
     return {
@@ -641,7 +431,6 @@ async def _wrap_export_report(**kwargs: Any) -> dict[str, Any]:
 async def _wrap_check_search_fairness(**kwargs: Any) -> dict[str, Any]:
     search_criteria = kwargs.get("search_criteria", "")
     kwargs.get("context", "talent_search")
-    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[talent_tools] check_search_fairness called: criteria='{search_criteria[:60]}...'")
 
     if not search_criteria.strip():
@@ -686,7 +475,6 @@ async def _wrap_check_search_fairness(**kwargs: Any) -> dict[str, Any]:
                 }
             semantic_warnings = semantic_result.soft_warnings or []
         except Exception as sem_err:
-            # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.debug(f"[talent_tools] semantic check skipped: {sem_err}")
 
         all_warnings = implicit_warnings + [w for w in semantic_warnings if w not in implicit_warnings]
@@ -702,12 +490,6 @@ async def _wrap_check_search_fairness(**kwargs: Any) -> dict[str, Any]:
             + (f" {len(all_warnings)} alertas de vies implicito." if all_warnings else ""),
         }
     except Exception as e:
-        # P0 LGPD (audit 2026-05-20 — sensor check_no_silent_llm_fallback):
-        # REGRA 4 CLAUDE.md — fail-CLOSED em fairness check. Anteriormente
-        # retornava success=True + is_fair=True mesmo no erro, mascarando
-        # falha e potencialmente liberando criterio com vies. Agora retorna
-        # success=False + needs_manual_review=True; agente deve parar e pedir
-        # review humano.
         logger.exception(
             "[talent_tools] check_search_fairness FAILED -- failing CLOSED"
         )
@@ -742,38 +524,16 @@ async def _wrap_get_talent_pool_benchmarks(**kwargs: Any) -> dict[str, Any]:
     stage_distribution: dict[str, int] = {}
 
     try:
-        async with AsyncSessionLocal() as session:
-            result = await session.execute(
-                text("""
-                    SELECT
-                        COUNT(*) AS total,
-                        AVG(CASE WHEN score IS NOT NULL THEN score ELSE 0 END) AS avg_score
-                    FROM vacancy_candidates
-                    WHERE (:vid = '' OR vacancy_id = :vid)
-                      AND company_id = :cid
-                """),
-                {"vid": vacancy_id, "cid": company_id},
+        async with AsyncSessionLocal() as db:
+            repo = VacancyCandidateRepository(db)
+            data = await repo.get_pool_benchmarks(
+                company_id=company_id,
+                vacancy_id=vacancy_id,
             )
-            row = result.mappings().first()
-            if row:
-                pool_size = int(row["total"] or 0)
-                avg_score = round(float(row["avg_score"] or 0), 1)
-
-            stage_result = await session.execute(
-                text("""
-                    SELECT stage, COUNT(*) AS cnt
-                    FROM vacancy_candidates
-                    WHERE (:vid = '' OR vacancy_id = :vid)
-                      AND company_id = :cid
-                    GROUP BY stage
-                    ORDER BY cnt DESC
-                """),
-                {"vid": vacancy_id, "cid": company_id},
-            )
-            for srow in stage_result.mappings():
-                stage_distribution[str(srow["stage"])] = int(srow["cnt"])
+        pool_size = data["pool_size"]
+        avg_score = data["avg_score"]
+        stage_distribution = data["stage_distribution"]
     except Exception as e:
-        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[talent_tools] SQL error in get_talent_pool_benchmarks: {e}")
 
     market_benchmarks = {
@@ -811,28 +571,16 @@ async def _wrap_check_pool_health(**kwargs: Any) -> dict[str, Any]:
     stagnant_count = 0
 
     try:
-        async with AsyncSessionLocal() as session:
-            pool_result = await session.execute(
-                text("""
-                    SELECT
-                        COUNT(*) AS total,
-                        AVG(CASE WHEN score IS NOT NULL THEN score ELSE 0 END) AS avg_score,
-                        COUNT(*) FILTER (
-                            WHERE updated_at < NOW() - INTERVAL '14 days'
-                        ) AS stagnant
-                    FROM vacancy_candidates
-                    WHERE (:vid = '' OR vacancy_id = :vid)
-                      AND company_id = :cid
-                """),
-                {"vid": vacancy_id, "cid": company_id},
+        async with AsyncSessionLocal() as db:
+            repo = VacancyCandidateRepository(db)
+            data = await repo.get_pool_health(
+                company_id=company_id,
+                vacancy_id=vacancy_id,
             )
-            row = pool_result.mappings().first()
-            if row:
-                pool_size = int(row["total"] or 0)
-                avg_score = round(float(row["avg_score"] or 0), 1)
-                stagnant_count = int(row["stagnant"] or 0)
+        pool_size = data["pool_size"]
+        avg_score = data["avg_score"]
+        stagnant_count = data["stagnant_count"]
     except Exception as e:
-        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[talent_tools] SQL error in check_pool_health: {e}")
 
     if pool_size < 5:
@@ -1074,37 +822,22 @@ TOOL_DEFINITIONS: list[ToolDefinition] = [
 
 @tool_handler("talent")
 async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
-    """P3-B: Gera relatório de talentos com métricas do período."""
+    """P3-B: Gera relatorio de talentos com metricas do periodo."""
     report_type = kwargs.get("report_type", "summary")
     period = kwargs.get("period", "month")
     company_id = kwargs.get("company_id", "")
     period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
-    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[talent_tools] generate_report called: type={report_type} period={period}")
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
     summary: dict[str, Any] = {}
     try:
-        async with AsyncSessionLocal() as session:
-            row = await session.execute(
-                text("""
-                    SELECT
-                        COUNT(*) AS total,
-                        COUNT(*) FILTER (WHERE status = 'approved') AS approved,
-                        COUNT(*) FILTER (WHERE status = 'rejected') AS rejected
-                    FROM applications
-                    WHERE company_id = :cid
-                      AND created_at > NOW() - MAKE_INTERVAL(days => :days)
-                """),
-                {"cid": company_id, "days": period_days},
+        async with AsyncSessionLocal() as db:
+            repo = CandidateRepository(db)
+            summary = await repo.get_applications_summary(
+                company_id=company_id,
+                period_days=period_days,
             )
-            data = row.mappings().first() or {}
-            summary = {
-                "total_applications": int(data.get("total") or 0),
-                "approved": int(data.get("approved") or 0),
-                "rejected": int(data.get("rejected") or 0),
-            }
     except Exception as e:
-        # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[talent_tools] generate_report DB error: {e}")
     return {
         "success": True,
@@ -1174,6 +907,5 @@ def get_talent_tools(stage: str = "") -> list[ToolDefinition]:
 
     tool_names = STAGE_TOOLS.get(stage, list(_TOOL_MAP.keys()))
     tools = [_TOOL_MAP[name] for name in tool_names if name in _TOOL_MAP]
-    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.debug(f"[talent_tools] Stage '{stage}' tools: {[t.name for t in tools]}")
     return tools

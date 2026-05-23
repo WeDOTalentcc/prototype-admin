@@ -581,3 +581,292 @@ class CandidateRepository:
         )
         total = count_result.scalar() or 0
         return items, total
+
+
+    # ── ADR-001 W1-004-B: methods migrated from talent_tool_registry ──────────
+
+    @staticmethod
+    def _require_company_id(company_id: str | None) -> str:
+        """Fail-closed multi-tenancy gate. Raises if company_id is empty/None."""
+        if not company_id:
+            raise ValueError(
+                "company_id is required (multi-tenancy invariant fail-closed)"
+            )
+        return company_id
+
+    async def search_by_skills_and_experience(
+        self,
+        company_id: str,
+        query: str = "",
+        location: str = "",
+        min_experience: int = 0,
+        limit: int = 20,
+    ) -> dict:
+        """Search candidates by query text, location, and minimum experience.
+
+        LGPD Art. 11 — dados sensiveis.
+        `gender` e dado sensivel per LGPD Art. 11 caput. Acesso permitido
+        por base legal: Art. 11 para2 I (consentimento explicito do titular) —
+        consent coletado no onboarding do candidato (tabela consent_records,
+        purpose='diversity_analytics').
+        NAO usar `gender` para scoring/ranking. Use apenas para analytics
+        de diversidade agregados (N >= 10, Art. 12 para1).
+
+        Multi-tenancy: company_id validated via _require_company_id fail-closed.
+        """
+        from sqlalchemy import text as sa_text
+        cid = self._require_company_id(company_id)
+        rows = await self.db.execute(
+            sa_text("""
+                SELECT id, name, current_title, location_city, location_state,
+                       technical_skills, years_of_experience, lia_score,
+                       skills_match_percentage, status
+                FROM candidates
+                WHERE is_active = true
+                  AND company_id = :company_id
+                  AND (:query = ''
+                       OR name ILIKE :qlike
+                       OR current_title ILIKE :qlike
+                       OR :query = ANY(technical_skills))
+                  AND (:location = '' OR location_city ILIKE :lloc OR location_state ILIKE :lloc)
+                  AND (years_of_experience IS NULL OR years_of_experience >= :min_exp)
+                ORDER BY lia_score DESC NULLS LAST, created_at DESC
+                LIMIT :lim
+            """),
+            {
+                "company_id": cid,
+                "query": query,
+                "qlike": f"%{query}%",
+                "location": location,
+                "lloc": f"%{location}%",
+                "min_exp": min_experience,
+                "lim": limit,
+            },
+        )
+        results = []
+        for row in rows.mappings():
+            results.append({
+                "id": str(row["id"]),
+                "name": row["name"],
+                "current_title": row["current_title"],
+                "location": f"{row['location_city'] or ''}, {row['location_state'] or ''}".strip(", "),
+                "skills": row["technical_skills"] or [],
+                "years_of_experience": row["years_of_experience"],
+                "lia_score": row["lia_score"],
+                "match_percentage": row["skills_match_percentage"],
+                "status": row["status"],
+            })
+
+        count_row = await self.db.execute(
+            sa_text("""
+                SELECT COUNT(*) AS total FROM candidates
+                WHERE is_active = true
+                  AND company_id = :company_id
+                  AND (:query = '' OR name ILIKE :qlike OR current_title ILIKE :qlike
+                       OR :query = ANY(technical_skills))
+                  AND (:location = '' OR location_city ILIKE :lloc OR location_state ILIKE :lloc)
+                  AND (years_of_experience IS NULL OR years_of_experience >= :min_exp)
+            """),
+            {
+                "company_id": cid,
+                "query": query,
+                "qlike": f"%{query}%",
+                "location": location,
+                "lloc": f"%{location}%",
+                "min_exp": min_experience,
+            },
+        )
+        total = int((count_row.mappings().first() or {}).get("total", len(results)))
+        return {"results": results, "total": total}
+
+    async def get_full_profile(
+        self,
+        candidate_id: str,
+        company_id: str,
+    ) -> dict | None:
+        """Get full candidate profile including education records.
+
+        LGPD Art. 11 — dados sensiveis.
+        `gender` e dado sensivel per LGPD Art. 11 caput. Acesso permitido
+        por base legal: Art. 11 para2 I (consentimento explicito do titular) —
+        consent coletado no onboarding do candidato (tabela consent_records,
+        purpose='diversity_analytics').
+        NAO usar `gender` para scoring/ranking. Use apenas para analytics
+        de diversidade agregados (N >= 10, Art. 12 para1).
+
+        Multi-tenancy: company_id validated via _require_company_id fail-closed.
+        """
+        from sqlalchemy import text as sa_text
+        cid = self._require_company_id(company_id)
+        row = await self.db.execute(
+            sa_text("""
+                SELECT id, name, email, current_title, current_company,
+                       seniority_level, years_of_experience,
+                       technical_skills, soft_skills, certifications,
+                       location_city, location_state, location_country,
+                       lia_score, skills_match_percentage,
+                       status, is_active, linkedin_url,
+                       self_introduction, work_history, languages,
+                       salary_expectation_clt, salary_expectation_pj,
+                       work_model_preference, is_remote, willing_to_relocate,
+                       gender, source
+                FROM candidates
+                WHERE id = :cid
+                  AND company_id = :company_id
+            """),
+            {"cid": candidate_id, "company_id": cid},
+        )
+        data = row.mappings().first()
+        if not data:
+            return None
+
+        edu_rows = await self.db.execute(
+            sa_text("""
+                SELECT institution, degree, field_of_study, start_year, end_year, is_current
+                FROM candidate_education
+                WHERE candidate_id = :cid
+                ORDER BY end_year DESC NULLS FIRST, start_year DESC NULLS FIRST
+            """),
+            {"cid": candidate_id},
+        )
+        education = []
+        for r in edu_rows.mappings():
+            end_label = "atual" if r["is_current"] else (r["end_year"] or "?")
+            education.append({
+                "institution": r["institution"],
+                "degree": r["degree"],
+                "field_of_study": r["field_of_study"],
+                "period": f"{r['start_year'] or '?'} - {end_label}",
+            })
+
+        return {
+            "candidate_id": str(data["id"]),
+            "name": data["name"],
+            "email": data["email"],
+            "current_title": data["current_title"],
+            "current_company": data["current_company"],
+            "seniority_level": data["seniority_level"],
+            "years_of_experience": data["years_of_experience"],
+            "technical_skills": data["technical_skills"] or [],
+            "soft_skills": data["soft_skills"] or [],
+            "certifications": data["certifications"] or [],
+            "location": f"{data['location_city'] or ''}, {data['location_country'] or ''}".strip(", "),
+            "lia_score": data["lia_score"],
+            "match_percentage": data["skills_match_percentage"],
+            "status": data["status"],
+            "linkedin_url": data["linkedin_url"],
+            "summary": data["self_introduction"],
+            "languages": data["languages"],
+            "work_history": data["work_history"] or [],
+            "education": education,
+            "salary_expectation_clt": data["salary_expectation_clt"],
+            "salary_expectation_pj": data["salary_expectation_pj"],
+            "work_model": data["work_model_preference"],
+            "is_remote": data["is_remote"],
+            "willing_to_relocate": data["willing_to_relocate"],
+            "gender": data["gender"],
+            "source": data["source"],
+            "profile_loaded": True,
+        }
+
+    async def list_for_recommendations(
+        self,
+        candidate_ids: list[str],
+        company_id: str,
+    ) -> list[dict]:
+        """Get candidate score/status data for recommendation generation.
+
+        Multi-tenancy: company_id validated via _require_company_id fail-closed.
+        NAO incluir gender no retorno — nao e relevante para recomendacoes.
+        """
+        from sqlalchemy import text as sa_text
+        cid = self._require_company_id(company_id)
+        if not candidate_ids:
+            return []
+        rows = await self.db.execute(
+            sa_text("""
+                SELECT id, name, status, lia_score, skills_match_percentage,
+                       last_contacted_at, last_activity_at
+                FROM candidates
+                WHERE id = ANY(:ids::uuid[])
+                  AND company_id = :company_id
+            """),
+            {"ids": candidate_ids, "company_id": cid},
+        )
+        return [dict(r) for r in rows.mappings()]
+
+    async def list_for_report(
+        self,
+        candidate_ids: list[str],
+        company_id: str,
+    ) -> list[dict]:
+        """Get candidates for report generation (name, title, score, status).
+
+        Multi-tenancy: company_id validated via _require_company_id fail-closed.
+        """
+        from sqlalchemy import text as sa_text
+        cid = self._require_company_id(company_id)
+        if not candidate_ids:
+            return []
+        rows = await self.db.execute(
+            sa_text("""
+                SELECT name, current_title, lia_score, skills_match_percentage, status
+                FROM candidates
+                WHERE id = ANY(:ids::uuid[])
+                  AND company_id = :company_id
+                ORDER BY lia_score DESC NULLS LAST
+            """),
+            {"ids": candidate_ids, "company_id": cid},
+        )
+        return [dict(r) for r in rows.mappings()]
+
+    async def get_skill_set(
+        self,
+        candidate_id: str,
+        company_id: str,
+    ) -> set:
+        """Get candidate technical skills as lowercase set.
+
+        Multi-tenancy: company_id validated via _require_company_id fail-closed.
+        """
+        from sqlalchemy import text as sa_text
+        cid = self._require_company_id(company_id)
+        row = await self.db.execute(
+            sa_text(
+                "SELECT technical_skills FROM candidates "
+                "WHERE id = :cid AND company_id = :company_id"
+            ),
+            {"cid": candidate_id, "company_id": cid},
+        )
+        data = row.mappings().first()
+        return {s.lower() for s in ((data or {}).get("technical_skills") or [])}
+
+    async def get_applications_summary(
+        self,
+        company_id: str,
+        period_days: int = 30,
+    ) -> dict:
+        """Get application counts for report generation.
+
+        Multi-tenancy: company_id validated via _require_company_id fail-closed.
+        """
+        from sqlalchemy import text as sa_text
+        cid = self._require_company_id(company_id)
+        row = await self.db.execute(
+            sa_text("""
+                SELECT
+                    COUNT(*) AS total,
+                    COUNT(*) FILTER (WHERE status = 'approved') AS approved,
+                    COUNT(*) FILTER (WHERE status = 'rejected') AS rejected
+                FROM applications
+                WHERE company_id = :cid
+                  AND created_at > NOW() - MAKE_INTERVAL(days => :days)
+            """),
+            {"cid": cid, "days": period_days},
+        )
+        data = row.mappings().first() or {}
+        return {
+            "total_applications": int(data.get("total") or 0),
+            "approved": int(data.get("approved") or 0),
+            "rejected": int(data.get("rejected") or 0),
+        }

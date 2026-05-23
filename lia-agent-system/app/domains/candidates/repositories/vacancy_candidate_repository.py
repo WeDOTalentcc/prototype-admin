@@ -199,3 +199,218 @@ class VacancyCandidateRepository:
             .order_by(VacancyCandidate.updated_at.asc())
         )
         return list(result.scalars().all())
+
+    # ── ADR-001 W1-004-B: methods migrated from talent_tool_registry ──────────
+
+    @staticmethod
+    def _require_company_id(company_id: str | None) -> str:
+        """Fail-closed multi-tenancy gate. Raises if company_id is empty/None."""
+        if not company_id:
+            raise ValueError(
+                "company_id is required (multi-tenancy invariant fail-closed)"
+            )
+        return company_id
+
+    async def list_for_talent_funnel(
+        self,
+        company_id: str,
+        status: str = "all",
+        vacancy_id: str = "",
+        limit: int = 20,
+    ) -> dict:
+        """List candidates in the funnel with status and vacancy filters.
+
+        Multi-tenancy: company_id validated via _require_company_id fail-closed.
+        """
+        from sqlalchemy import text as sa_text
+        cid = self._require_company_id(company_id)
+        rows = await self.db.execute(
+            sa_text("""
+                SELECT vc.id AS vc_id, vc.vacancy_id, vc.candidate_id,
+                       vc.status, vc.stage, vc.lia_score, vc.match_percentage,
+                       vc.created_at,
+                       c.name, c.current_title, c.location_city, c.technical_skills
+                FROM vacancy_candidates vc
+                JOIN candidates c ON c.id = vc.candidate_id
+                WHERE (:status = 'all' OR vc.status = :status)
+                  AND (:vid = '' OR vc.vacancy_id::text = :vid)
+                  AND vc.company_id = :cid
+                ORDER BY vc.lia_score DESC NULLS LAST, vc.created_at DESC
+                LIMIT :lim
+            """),
+            {"status": status, "vid": vacancy_id, "cid": cid, "lim": limit},
+        )
+        candidates = []
+        for row in rows.mappings():
+            candidates.append({
+                "id": str(row["candidate_id"]),
+                "name": row["name"],
+                "current_title": row["current_title"],
+                "location": row["location_city"],
+                "skills": row["technical_skills"] or [],
+                "status": row["status"],
+                "stage": row["stage"],
+                "lia_score": row["lia_score"],
+                "match_percentage": row["match_percentage"],
+                "applied_at": str(row["created_at"]) if row["created_at"] else None,
+            })
+
+        count_row = await self.db.execute(
+            sa_text("""
+                SELECT COUNT(*) AS total FROM vacancy_candidates vc
+                WHERE (:status = 'all' OR vc.status = :status)
+                  AND (:vid = '' OR vc.vacancy_id::text = :vid)
+                  AND vc.company_id = :cid
+            """),
+            {"status": status, "vid": vacancy_id, "cid": cid},
+        )
+        total = int((count_row.mappings().first() or {}).get("total", len(candidates)))
+        return {"candidates": candidates, "total": total}
+
+    async def rank_for_job(
+        self,
+        vacancy_id: str,
+        company_id: str,
+        criteria: str = "fit_score",
+        limit: int = 50,
+    ) -> list[dict]:
+        """Rank non-rejected candidates for a vacancy by score or match.
+
+        Multi-tenancy: company_id validated via _require_company_id fail-closed.
+        """
+        from sqlalchemy import text as sa_text
+        cid = self._require_company_id(company_id)
+        order_by = "match" if criteria == "skills" else "score"
+        rows = await self.db.execute(
+            sa_text("""
+                SELECT vc.candidate_id, vc.status, vc.stage,
+                       vc.lia_score, vc.match_percentage,
+                       c.name, c.current_title, c.technical_skills
+                FROM vacancy_candidates vc
+                JOIN candidates c ON c.id = vc.candidate_id
+                WHERE vc.vacancy_id::text = :vid
+                  AND vc.company_id = :cid
+                  AND vc.status != 'rejected'
+                ORDER BY
+                  CASE
+                    WHEN :order_by = 'match' THEN vc.match_percentage
+                    WHEN :order_by = 'score' THEN vc.lia_score
+                    ELSE vc.lia_score
+                  END DESC NULLS LAST
+                LIMIT :lim
+            """),
+            {"vid": vacancy_id, "cid": cid, "order_by": order_by, "lim": limit},
+        )
+        ranking = []
+        for position, row in enumerate(rows.mappings(), start=1):
+            ranking.append({
+                "position": position,
+                "candidate_id": str(row["candidate_id"]),
+                "name": row["name"],
+                "current_title": row["current_title"],
+                "skills": row["technical_skills"] or [],
+                "lia_score": row["lia_score"],
+                "match_percentage": row["match_percentage"],
+                "status": row["status"],
+                "stage": row["stage"],
+            })
+        return ranking
+
+    async def update_match_percentage(
+        self,
+        candidate_id: str,
+        vacancy_id: str,
+        match_percentage: float,
+    ) -> None:
+        """Persist match_percentage on vacancy_candidate record.
+
+        No company_id required here — caller must gate on company_id before calling.
+        Composite (candidate_id, vacancy_id) uniquely identifies the record.
+        """
+        from sqlalchemy import text as sa_text
+        await self.db.execute(
+            sa_text("""
+                UPDATE vacancy_candidates
+                SET match_percentage = :mp
+                WHERE candidate_id = :cid AND vacancy_id::text = :vid
+            """),
+            {"mp": match_percentage, "cid": candidate_id, "vid": vacancy_id},
+        )
+        await self.db.commit()
+
+    async def get_pool_benchmarks(
+        self,
+        company_id: str,
+        vacancy_id: str = "",
+    ) -> dict:
+        """Get pool size, avg score, and stage distribution for benchmarks.
+
+        Multi-tenancy: company_id validated via _require_company_id fail-closed.
+        """
+        from sqlalchemy import text as sa_text
+        cid = self._require_company_id(company_id)
+        result = await self.db.execute(
+            sa_text("""
+                SELECT
+                    COUNT(*) AS total,
+                    AVG(CASE WHEN score IS NOT NULL THEN score ELSE 0 END) AS avg_score
+                FROM vacancy_candidates
+                WHERE (:vid = '' OR vacancy_id::text = :vid)
+                  AND company_id = :cid
+            """),
+            {"vid": vacancy_id, "cid": cid},
+        )
+        row = result.mappings().first()
+        pool_size = int(row["total"] or 0) if row else 0
+        avg_score = round(float(row["avg_score"] or 0), 1) if row else 0.0
+
+        stage_result = await self.db.execute(
+            sa_text("""
+                SELECT stage, COUNT(*) AS cnt
+                FROM vacancy_candidates
+                WHERE (:vid = '' OR vacancy_id::text = :vid)
+                  AND company_id = :cid
+                GROUP BY stage
+                ORDER BY cnt DESC
+            """),
+            {"vid": vacancy_id, "cid": cid},
+        )
+        stage_distribution = {}
+        for srow in stage_result.mappings():
+            stage_distribution[str(srow["stage"])] = int(srow["cnt"])
+
+        return {"pool_size": pool_size, "avg_score": avg_score, "stage_distribution": stage_distribution}
+
+    async def get_pool_health(
+        self,
+        company_id: str,
+        vacancy_id: str = "",
+    ) -> dict:
+        """Get pool health metrics: size, avg score, stagnant count.
+
+        Multi-tenancy: company_id validated via _require_company_id fail-closed.
+        """
+        from sqlalchemy import text as sa_text
+        cid = self._require_company_id(company_id)
+        result = await self.db.execute(
+            sa_text("""
+                SELECT
+                    COUNT(*) AS total,
+                    AVG(CASE WHEN score IS NOT NULL THEN score ELSE 0 END) AS avg_score,
+                    COUNT(*) FILTER (
+                        WHERE updated_at < NOW() - INTERVAL '14 days'
+                    ) AS stagnant
+                FROM vacancy_candidates
+                WHERE (:vid = '' OR vacancy_id::text = :vid)
+                  AND company_id = :cid
+            """),
+            {"vid": vacancy_id, "cid": cid},
+        )
+        row = result.mappings().first()
+        if row:
+            return {
+                "pool_size": int(row["total"] or 0),
+                "avg_score": round(float(row["avg_score"] or 0), 1),
+                "stagnant_count": int(row["stagnant"] or 0),
+            }
+        return {"pool_size": 0, "avg_score": 0.0, "stagnant_count": 0}
