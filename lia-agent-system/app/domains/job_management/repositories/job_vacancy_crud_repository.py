@@ -828,6 +828,49 @@ class JobVacancyCRUDRepository:
         )
         return result.fetchone() is not None
 
+
+    # ── ADR-001 W1-004-C: new methods migrated from recruiter_assistant services ──
+
+    async def get_recruiter_id(self, job_id: str, company_id: str) -> "str | None":
+        """Retorna recruiter_id de uma vaga (para notificacoes).
+
+        Multi-tenancy: company_id validated via _require_company_id fail-closed.
+        """
+        from sqlalchemy import text as _text
+        cid = self._require_company_id(company_id)
+        result = await self.db.execute(
+            _text(
+                "SELECT recruiter_id FROM job_vacancies "
+                "WHERE id::text = :jid AND company_id = :company_id LIMIT 1"
+            ),
+            {"jid": job_id, "company_id": cid},
+        )
+        row = result.fetchone()
+        return str(row[0]) if row and row[0] else None
+
+    async def get_jobs_near_deadline(self, company_id: str, days_ahead: int = 7) -> "list[dict]":
+        """Vagas com deadline nos proximos N dias.
+
+        Multi-tenancy: company_id validated via _require_company_id fail-closed.
+        """
+        from sqlalchemy import text as _text
+        cid = self._require_company_id(company_id)
+        result = await self.db.execute(
+            _text("""
+            SELECT id, title, deadline,
+                   EXTRACT(DAY FROM deadline - NOW())::int AS days_remaining
+            FROM job_vacancies
+            WHERE company_id = :company_id
+              AND status NOT IN ('fechada', 'cancelada')
+              AND deadline IS NOT NULL
+              AND deadline < NOW() + INTERVAL '1 day' * :days_ahead
+              AND deadline > NOW()
+            ORDER BY deadline ASC
+            """),
+            {"company_id": cid, "days_ahead": days_ahead}
+        )
+        return [dict(r) for r in result.mappings().fetchall()]
+
 # Backwards-compatible alias: callers in app/domains/analytics + app/domains/sourcing
 # import "JobVacancyCrudRepository" (PascalCase) — pre-existing in the codebase.
 # Real class name is JobVacancyCRUDRepository (all-caps CRUD). Alias avoids

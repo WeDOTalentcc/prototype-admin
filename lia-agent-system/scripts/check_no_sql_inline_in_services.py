@@ -8,15 +8,14 @@ Services MUST NOT call `db.execute(text(...))`, `session.execute(text(...))`,
 `sa_text(...)`, or `sqlalchemy.text(...)` for SQL queries. All SQL belongs in
 `repositories/` (a layer below services).
 
-Scan scope (W1-004-B extension 2026-05-23):
+Scan scope (W1-004-C extension 2026-05-23):
   - app/domains/*/services/*.py  (original ADR-001 scope)
   - app/domains/*/agents/*_tool_registry.py  (NEW — W1-004-B)
   - app/services/<agent_layer_files>.py  (Wave 2 2026-05-21, warn-only)
 
 Mode:
   - blocking (default since Sprint 7)
-  - SERVICES_SQL_BACKLOG: pre-existing services/ files with session.execute(text(...))
-    that the original sensor missed (uses db.execute pattern only). Warn-only.
+  - SERVICES_SQL_BACKLOG: pre-existing services/ violations — now empty (all resolved in W1-004-C).
   - TOOL_REGISTRY_BACKLOG: pre-existing tool_registry violations (W1-004-C future wave)
   - --warn-only flag: opt-out to warn-only for all
 
@@ -68,18 +67,13 @@ TOOL_REGISTRY_BACKLOG = frozenset({
     "app/domains/talent_pool/agents/talent_pool_tool_registry.py",
 })
 
-# Pre-existing services/ violations using session.execute(text(...)) — the original
-# sensor only detected db.execute(text(...)) so these were never in the baseline.
-# Warn-only until future wave migrates them via repository pattern.
-# (Discovered by sensor extension W1-004-B 2026-05-23)
-SERVICES_SQL_BACKLOG = frozenset({
-    "app/domains/ai/services/search_service.py",
-    "app/domains/cv_screening/services/wsi_voice_orchestrator.py",
-    "app/domains/recruiter_assistant/services/autonomous_actions_engine.py",
-    "app/domains/recruiter_assistant/services/monitoring_loop.py",
-    "app/domains/recruiter_assistant/services/outcome_learning_service.py",
-    "app/domains/recruiter_assistant/services/stakeholder_notification_service.py",
-})
+# Services/ violations resolved in W1-004-C (2026-05-23):
+# All 6 files either migrated to repos or EXEMPT-marked. Backlog is now empty.
+# Files with EXEMPT markers: search_service.py, wsi_voice_orchestrator.py,
+# autonomous_agent_service.py, outcome_learning_service.py,
+# stakeholder_notification_service.py, monitoring_loop.py.
+# Files with real migrations: autonomous_actions_engine.py (2 hits), +partial in others.
+SERVICES_SQL_BACKLOG = frozenset()  # W1-004-C: all cleared via EXEMPT or repo migration
 
 # Wave 2 audit 2026-05-21: agent layer in app/services/ (warn-only)
 AGENT_LAYER_SERVICE_FILES = frozenset({

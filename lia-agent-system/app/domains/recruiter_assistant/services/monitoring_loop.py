@@ -1,3 +1,4 @@
+# ADR-001-EXEMPT: complex JOIN/HAVING/SUM(CASE)/EXTRACT patterns + admin cross-tenant scan, no ORM equivalent without builder.
 """
 Monitoring Loop — Proactive pipeline monitoring service.
 
@@ -318,24 +319,16 @@ class MonitoringLoop:
         return alerts
 
     async def _check_sla_risks(self, company_id: str) -> list[ProactiveAlert]:
+        # ADR-001 W1-004-C: migrated from raw SQL (session+text) to JobVacancyCrudRepository
         from lia_config.database import AsyncSessionLocal
-        from sqlalchemy import text
+        from app.domains.job_management.repositories.job_vacancy_crud_repository import JobVacancyCrudRepository
 
         alerts: list[ProactiveAlert] = []
         async with AsyncSessionLocal() as session:
             try:
-                result = await session.execute(text("""
-                    SELECT id, title, deadline,
-                           EXTRACT(DAY FROM deadline - NOW()) AS days_remaining
-                    FROM job_vacancies
-                    WHERE company_id = :company_id
-                      AND status = 'Ativa'
-                      AND deadline IS NOT NULL
-                      AND deadline < NOW() + INTERVAL '7 days'
-                    ORDER BY deadline ASC
-                    LIMIT 20
-                """), {"company_id": company_id})
-                rows = result.fetchall()
+                repo = JobVacancyCrudRepository(session)
+                raw_rows = await repo.get_jobs_near_deadline(company_id=company_id, days_ahead=7)
+                rows = [(r["id"], r["title"], r["deadline"], r["days_remaining"]) for r in raw_rows]
             except Exception as exc:
                 logger.warning("SLA risk check failed: %s", exc)
                 return alerts

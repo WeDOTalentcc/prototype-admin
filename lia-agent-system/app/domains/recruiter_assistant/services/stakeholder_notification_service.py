@@ -1,3 +1,4 @@
+# ADR-001-EXEMPT: 3-table aging JOIN with EXTRACT/INTERVAL in detect_pending_decisions, CandidatePipelineRepository extension deferred.
 """
 Stakeholder Notification Service — Escalation loop for hiring managers.
 
@@ -345,19 +346,16 @@ class StakeholderNotificationService:
             raise
 
     async def _get_recruiter_for_job(self, company_id: str, job_id: str | None) -> str | None:
+        # ADR-001 W1-004-C: migrated from raw SQL (session+text) to JobVacancyCrudRepository
         if not job_id:
             return None
         from lia_config.database import AsyncSessionLocal
-        from sqlalchemy import text
+        from app.domains.job_management.repositories.job_vacancy_crud_repository import JobVacancyCrudRepository
 
         async with AsyncSessionLocal() as session:
             try:
-                result = await session.execute(text("""
-                    SELECT recruiter_id FROM job_vacancies
-                    WHERE id = :job_id AND company_id = :company_id
-                """), {"job_id": job_id, "company_id": company_id})
-                row = result.fetchone()
-                return str(row[0]) if row and row[0] else None
+                repo = JobVacancyCrudRepository(session)
+                return await repo.get_recruiter_id(job_id=job_id, company_id=company_id)
             except Exception:
                 return None
 

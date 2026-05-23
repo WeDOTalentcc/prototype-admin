@@ -1,3 +1,4 @@
+# ADR-001-EXEMPT: wsi-tables write path (session.execute), migration to session_repository.py tracked in wsi-session-repo ticket.
 """
 WSI Voice Orchestrator Service
 

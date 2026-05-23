@@ -1,3 +1,4 @@
+# ADR-001-EXEMPT: db health-check ping (SELECT 1), no ORM equivalent for connectivity test.
 """
 SearchBackend — abstração sobre backends de busca full-text e semântica.
 

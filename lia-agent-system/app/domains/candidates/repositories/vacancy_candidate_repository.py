@@ -414,3 +414,66 @@ class VacancyCandidateRepository:
                 "stagnant_count": int(row["stagnant"] or 0),
             }
         return {"pool_size": 0, "avg_score": 0.0, "stagnant_count": 0}
+
+    # ── ADR-001 W1-004-C: new methods migrated from services ──────────────────
+
+    async def get_lia_score(self, candidate_id: str, vacancy_id: str, company_id: str) -> float:
+        """Score LIA para um candidato numa vaga específica.
+
+        Multi-tenancy: company_id validated via _require_company_id fail-closed.
+        """
+        from sqlalchemy import text as _text
+        self._require_company_id(company_id)
+        result = await self.db.execute(
+            _text("""
+            SELECT COALESCE(lia_score, match_percentage, 0.5)
+            FROM vacancy_candidates
+            WHERE candidate_id::text = :cid
+              AND vacancy_id::text = :vid
+              AND company_id = :company_id
+            LIMIT 1
+            """),
+            {"cid": candidate_id, "vid": vacancy_id, "company_id": company_id}
+        )
+        row = result.fetchone()
+        return float(row[0]) if row else 0.5
+
+    async def get_latest_lia_score(self, candidate_id: str, company_id: str) -> float:
+        """Score LIA mais recente para um candidato (qualquer vaga).
+
+        Multi-tenancy: company_id validated via _require_company_id fail-closed.
+        """
+        from sqlalchemy import text as _text
+        self._require_company_id(company_id)
+        result = await self.db.execute(
+            _text("""
+            SELECT COALESCE(lia_score, match_percentage, 0.5)
+            FROM vacancy_candidates
+            WHERE candidate_id::text = :cid
+              AND company_id = :company_id
+            ORDER BY created_at DESC LIMIT 1
+            """),
+            {"cid": candidate_id, "company_id": company_id}
+        )
+        row = result.fetchone()
+        return float(row[0]) if row else 0.5
+
+    async def append_note(self, candidate_id: str, company_id: str, note: str) -> bool:
+        """Adiciona nota a um vacancy_candidate (COALESCE append).
+
+        Multi-tenancy: company_id validated via _require_company_id fail-closed.
+        Returns True if at least one row was updated.
+        """
+        from sqlalchemy import text as _text
+        self._require_company_id(company_id)
+        result = await self.db.execute(
+            _text("""
+            UPDATE vacancy_candidates
+            SET notes = COALESCE(notes, '') || :separator || :note,
+                updated_at = NOW()
+            WHERE candidate_id::text = :cid AND company_id = :company_id
+            """),
+            {"cid": candidate_id, "company_id": company_id, "note": note, "separator": "\n---\n"}
+        )
+        await self.db.commit()
+        return result.rowcount > 0

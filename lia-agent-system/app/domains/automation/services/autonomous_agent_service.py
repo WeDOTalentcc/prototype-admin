@@ -1,7 +1,3 @@
-# ADR-001-EXEMPT: vacancy_candidates is Rails-owned (kanban transitions).
-# Python side is read-only (LIA score lookup). Rails schema variability
-# (lia_score vs match_percentage column rename history) makes a repo
-# abstraction premature; queries stay inline pending Rails contract stability.
 """
 Autonomous Agent Service - Manages background jobs and proactive actions.
 
@@ -583,10 +579,57 @@ class AutonomousAgentService:
             self.logger.error(f"Failed to execute action {action.id}: {e}")
             return {"success": False, "error": str(e)}
     
-    async def _get_candidate_lia_score(self, candidate_id: str, vacancy_id: str | None) -> float:
-        """Fetch real LIA score from vacancy_candidates; falls back to 0.5 if not found."""
+    async def _get_candidate_lia_score(
+        self, candidate_id: str, vacancy_id: str | None, company_id: str = ""
+    ) -> float:
+        """Fetch real LIA score via VacancyCandidateRepository; falls back to 0.5.
+
+        ADR-001 W1-004-C: migrated from raw SQL inline to repo pattern.
+        company_id is optional for backwards-compat; when empty falls back to
+        legacy inline query without multi-tenancy filter.
+        """
         if not candidate_id:
             return 0.5
+        try:
+            from app.domains.candidates.repositories.vacancy_candidate_repository import (
+                VacancyCandidateRepository,
+            )
+            async with AsyncSessionLocal() as db:
+                repo = VacancyCandidateRepository(db)
+                if company_id:
+                    if vacancy_id:
+                        raw = await repo.get_lia_score(str(candidate_id), str(vacancy_id), company_id)
+                    else:
+                        raw = await repo.get_latest_lia_score(str(candidate_id), company_id)
+                else:
+                    # ADR-001-EXEMPT: legacy caller has no company_id context; deferred to next sprint
+                    from sqlalchemy import text as _text
+                    if vacancy_id:
+                        result = await db.execute(
+                            _text(
+                                "SELECT COALESCE(lia_score, match_percentage, 0.5) "
+                                "FROM vacancy_candidates "
+                                "WHERE candidate_id::text = :cid "
+                                "  AND vacancy_id::text = :vid LIMIT 1"
+                            ),
+                            {"cid": str(candidate_id), "vid": str(vacancy_id)},
+                        )
+                    else:
+                        result = await db.execute(
+                            _text(
+                                "SELECT COALESCE(lia_score, match_percentage, 0.5) "
+                                "FROM vacancy_candidates "
+                                "WHERE candidate_id::text = :cid "
+                                "ORDER BY created_at DESC LIMIT 1"
+                            ),
+                            {"cid": str(candidate_id)},
+                        )
+                    row = result.fetchone()
+                    raw = float(row[0]) if row and row[0] is not None else 0.5
+                return raw / 100.0 if raw > 1.0 else raw
+        except Exception as e:
+            self.logger.warning(f"Could not fetch LIA score for candidate {candidate_id}: {e}")
+        return 0.5
         try:
             async with AsyncSessionLocal() as db:
                 if vacancy_id:

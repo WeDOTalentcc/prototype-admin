@@ -233,29 +233,21 @@ class AutonomousActionsEngine:
         return handlers.get(action_type)
 
     async def _handle_flag_stale(self, action: AutonomousAction) -> dict[str, Any]:
+        # ADR-001 W1-004-C: migrated from raw SQL (session+text) to VacancyCandidateRepository
         from lia_config.database import AsyncSessionLocal
-        from sqlalchemy import text
+        from app.domains.candidates.repositories.vacancy_candidate_repository import VacancyCandidateRepository
+        from datetime import datetime, timezone
 
         async with AsyncSessionLocal() as session:
-            try:
-                await session.execute(text("""
-                    UPDATE vacancy_candidates
-                    SET notes = COALESCE(notes, '') || :flag_note
-                    WHERE id = (
-                        SELECT id FROM vacancy_candidates
-                        WHERE candidate_id = :candidate_id
-                          AND company_id = :company_id
-                        LIMIT 1
-                    )
-                """), {
-                    "candidate_id": action.target_id,
-                    "company_id": action.company_id,
-                    "flag_note": f"\n[LIA Auto] Candidato flaggado como parado em {datetime.now(timezone.utc).strftime('%Y-%m-%d')}",
-                })
-                await session.commit()
-            except Exception as exc:
-                logger.warning("Flag stale candidate failed: %s", exc)
-                return {"flagged": False, "error": str(exc)}
+            repo = VacancyCandidateRepository(session)
+            flag_note = f"\n[LIA Auto] Candidato flaggado como parado em {datetime.now(timezone.utc).strftime('%Y-%m-%d')}"
+            success = await repo.append_note(
+                candidate_id=action.target_id,
+                company_id=action.company_id,
+                note=flag_note,
+            )
+            if not success:
+                return {"flagged": False, "error": "candidate not found"}
         return {"flagged": True, "candidate_id": action.target_id}
 
     async def _handle_send_reminder(self, action: AutonomousAction) -> dict[str, Any]:
@@ -284,26 +276,20 @@ class AutonomousActionsEngine:
         return await self._handle_send_reminder(action)
 
     async def _handle_update_notes(self, action: AutonomousAction) -> dict[str, Any]:
+        # ADR-001 W1-004-C: migrated from raw SQL (session+text) to VacancyCandidateRepository
         note = action.params.get("note", action.description)
         from lia_config.database import AsyncSessionLocal
-        from sqlalchemy import text
+        from app.domains.candidates.repositories.vacancy_candidate_repository import VacancyCandidateRepository
 
         async with AsyncSessionLocal() as session:
-            try:
-                await session.execute(text("""
-                    UPDATE vacancy_candidates
-                    SET notes = COALESCE(notes, '') || :note
-                    WHERE candidate_id = :candidate_id
-                      AND company_id = :company_id
-                """), {
-                    "candidate_id": action.target_id,
-                    "company_id": action.company_id,
-                    "note": f"\n[LIA] {note}",
-                })
-                await session.commit()
-            except Exception as exc:
-                logger.warning("Update notes failed: %s", exc)
-                return {"updated": False, "error": str(exc)}
+            repo = VacancyCandidateRepository(session)
+            success = await repo.append_note(
+                candidate_id=action.target_id,
+                company_id=action.company_id,
+                note=f"\n[LIA] {note}",
+            )
+            if not success:
+                return {"updated": False, "error": "candidate not found"}
         return {"updated": True}
 
     async def _handle_notify_hm(self, action: AutonomousAction) -> dict[str, Any]:

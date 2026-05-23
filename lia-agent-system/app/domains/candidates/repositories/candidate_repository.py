@@ -870,3 +870,40 @@ class CandidateRepository:
             "approved": int(data.get("approved") or 0),
             "rejected": int(data.get("rejected") or 0),
         }
+
+    # ── ADR-001 W1-004-C: new method migrated from outcome_learning_service ──
+
+    async def get_candidate_with_job_context(
+        self, candidate_id: str, company_id: str, job_id: str = None
+    ) -> dict | None:
+        """Candidato + contexto da vaga para outcome learning.
+
+        Multi-tenancy: company_id validated via _require_company_id fail-closed.
+
+        NOTE: f-string is safe here because job_join and SELECT fields are
+        constructed internally from boolean flag — NOT from user input.
+        SQL parameters use parameterized bindings (:cid, :company_id, :job_id).
+        """
+        from sqlalchemy import text as _text
+        self._require_company_id(company_id)
+        params = {"cid": candidate_id, "company_id": company_id}
+        job_join = ""
+        job_select = "NULL AS job_title, NULL AS job_id"
+        if job_id:
+            job_join = "LEFT JOIN job_vacancies jv ON jv.id::text = :job_id"
+            job_select = "jv.title AS job_title, jv.id AS job_id"
+            params["job_id"] = job_id
+        result = await self.db.execute(
+            _text(f"""
+            SELECT c.id, c.name, c.email, c.company_id,
+                   {job_select}
+            FROM candidates c
+            {job_join}
+            WHERE c.id::text = :cid
+              AND (c.company_id IS NULL OR c.company_id = :company_id)
+            LIMIT 1
+            """),
+            params
+        )
+        row = result.mappings().fetchone()
+        return dict(row) if row else None

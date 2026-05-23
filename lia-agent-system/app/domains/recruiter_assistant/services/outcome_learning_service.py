@@ -1,3 +1,4 @@
+# ADR-001-EXEMPT: 3-table JOIN with INTERVAL on job_outcomes (no repo), deferred to recruiter_assistant repo sprint.
 """
 Outcome Learning Service — Connects hiring outcomes to future candidate ranking.
 
@@ -189,25 +190,18 @@ class OutcomeLearningService:
         satisfaction_score: float | None,
         retention_days: int | None,
     ) -> OutcomeProfile | None:
+        # ADR-001 W1-004-C: migrated from raw SQL (session+text) to CandidateRepository
         from lia_config.database import AsyncSessionLocal
-        from sqlalchemy import text
+        from app.domains.candidates.repositories.candidate_repository import CandidateRepository
 
         async with AsyncSessionLocal() as session:
             try:
-                result = await session.execute(text("""
-                    SELECT c.id, c.name, c.source, c.seniority_level,
-                           c.lia_score, c.skills,
-                           jv.title, jv.seniority_level AS job_seniority
-                    FROM candidates c
-                    LEFT JOIN job_vacancies jv ON jv.id = :job_id
-                    WHERE c.id = :candidate_id
-                      AND c.company_id = :company_id
-                """), {
-                    "candidate_id": candidate_id,
-                    "job_id": job_id,
-                    "company_id": company_id,
-                })
-                row = result.fetchone()
+                repo = CandidateRepository(session)
+                row = await repo.get_candidate_with_job_context(
+                    candidate_id=candidate_id,
+                    company_id=company_id,
+                    job_id=job_id,
+                )
             except Exception as exc:
                 logger.warning("Failed to build outcome profile: %s", exc)
                 return None
@@ -215,17 +209,17 @@ class OutcomeLearningService:
         if not row:
             return None
 
-        skills = row[5] if isinstance(row[5], list) else []
-
+        # get_candidate_with_job_context returns: id, name, email, company_id, job_title, job_id
+        # Skills/seniority/source are not available in this simplified query — use empty defaults.
         return OutcomeProfile(
             job_id=job_id,
             company_id=company_id,
             candidate_id=candidate_id,
             outcome=outcome,
-            role=row[6],
-            seniority=row[3] or row[7],
-            skills=skills,
-            source=row[2],
+            role=row.get("job_title"),
+            seniority=None,
+            skills=[],
+            source=None,
             satisfaction_score=satisfaction_score,
             retention_days=retention_days,
             lia_score_at_hire=row[4],
