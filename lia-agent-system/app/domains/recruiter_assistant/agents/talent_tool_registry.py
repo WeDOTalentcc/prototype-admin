@@ -19,6 +19,7 @@ from lia_agents_core.tool_adapter import ToolOutput
 from app.core.database import AsyncSessionLocal
 from app.domains.candidates.repositories.candidate_repository import CandidateRepository
 from app.domains.candidates.repositories.vacancy_candidate_repository import VacancyCandidateRepository
+from app.domains.job_management.repositories.job_vacancy_crud_repository import JobVacancyCrudRepository
 from app.shared.compliance.fairness_guard import FairnessGuard
 
 from app.shared.tool_handler import tool_handler
@@ -190,7 +191,6 @@ async def _wrap_rank_candidates(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("talent")
 async def _wrap_analyze_skills(**kwargs: Any) -> dict[str, Any]:
     """Analyze skill match between candidate and job requirements."""
-    from sqlalchemy import text
     candidate_id = kwargs.get("candidate_id", "")
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
@@ -212,12 +212,10 @@ async def _wrap_analyze_skills(**kwargs: Any) -> dict[str, Any]:
             )
 
             if vacancy_id:
-                v_row = await session.execute(
-                    text("SELECT technical_requirements FROM job_vacancies WHERE id = :vid"),
-                    {"vid": vacancy_id},
-                )
-                v_data = v_row.mappings().first()
-                tech_reqs = (v_data or {}).get("technical_requirements") or []
+                jv_repo = JobVacancyCrudRepository(session)
+                vacancy = await jv_repo.get_vacancy_by_id(vacancy_id)
+                # ADR-001: use JobVacancyCrudRepository instead of raw SQL (W1-004-B)
+                tech_reqs = (vacancy.technical_requirements if vacancy else None) or []
                 required_skills = set()
                 for req in (tech_reqs if isinstance(tech_reqs, list) else []):
                     tech = (req.get("technology") or "").lower()

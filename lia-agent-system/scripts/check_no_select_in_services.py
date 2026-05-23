@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Sensor: services/ MUST NOT use `select(Model)` directly (ADR-001).
+"""Sensor: services/ AND agents/*_tool_registry.py MUST NOT use `select(Model)` directly (ADR-001).
 
 ADR-001 — Repository Pattern (canonized 2026-05-06)
 ====================================================================
@@ -17,15 +17,19 @@ Allowed in services:
 - `select(*)` raw star (no model — could be subquery, column list)
 - `select(some_subquery)` lowercase variable (typically a CTE/aliased)
 
+Scan scope (W1-004-B extension 2026-05-23):
+  - app/domains/*/services/*.py  (original ADR-001 scope)
+  - app/domains/*/agents/*_tool_registry.py  (NEW — W1-004-B)
+  - app/services/<agent_layer_files>.py  (Wave 2 2026-05-21, warn-only)
+
 Mode:
-  - warn (default — Sprint 5.1 baseline; ~494 pre-existing hits across
-    services. Caminho C policy applies)
-  - --block after Sprint 5.4 backfill
+  - blocking (default since Sprint 8 — services/ and migrated tool_registries)
+  - warn-only for pre-existing tool_registry backlog (W1-004-C future wave)
+  - --warn-only flag: opt-out to warn-only for all
 
 Allowlist:
   - tests/, scripts/, alembic/, migrations/
   - Files marked `# ADR-001-EXEMPT: <reason>`
-  - `app/domains/*/services/*.py` only
 """
 from __future__ import annotations
 
@@ -37,7 +41,6 @@ ROOT = Path(__file__).resolve().parents[1]
 SERVICES_DIR = ROOT / "app" / "domains"
 
 # Pattern: `select(SomeCapitalizedClass)` — heuristic for ORM model select
-# Allows: `select(*)`, `select(some_subq)`, `select(func.count())`
 SELECT_MODEL_PATTERN = re.compile(r"\bselect\s*\(\s*([A-Z][A-Za-z0-9_]*)\s*[,)]")
 
 # Excluded class names — common false positives that aren't models
@@ -47,6 +50,43 @@ EXCLUDED_NAMES = frozenset({
 })
 
 EXEMPT_MARKER = "ADR-001-EXEMPT"
+
+# W1-004-B: 3 migrated tool_registries that are BLOCKING (must have 0 select(Model) calls).
+MIGRATED_TOOL_REGISTRIES = frozenset({
+    "app/domains/recruiter_assistant/agents/kanban_tool_registry.py",
+    "app/domains/recruiter_assistant/agents/jobs_mgmt_tool_registry.py",
+    "app/domains/recruiter_assistant/agents/talent_tool_registry.py",
+})
+
+# W1-004-C backlog: pre-existing select(Model) violations in tool_registries.
+# Warn-only until migrated in future waves.
+TOOL_REGISTRY_BACKLOG = frozenset({
+    "app/domains/company_settings/agents/company_tool_registry.py",
+    "app/domains/cv_screening/agents/pipeline_tool_registry.py",
+    "app/domains/hiring_policy/agents/policy_tool_registry.py",
+    "app/domains/job_management/agents/wizard_tool_registry.py",
+    "app/domains/pipeline/agents/pipeline_tool_registry.py",
+    "app/domains/sourcing/agents/diversity_tool_registry.py",
+    "app/domains/sourcing/agents/nurture_sequence_tool_registry.py",
+    "app/domains/sourcing/agents/passive_pipeline_tool_registry.py",
+    "app/domains/sourcing/agents/referral_tool_registry.py",
+    "app/domains/sourcing/agents/sourcing_tool_registry.py",
+    "app/domains/talent_pool/agents/talent_pool_tool_registry.py",
+})
+
+# === Wave 2 audit 2026-05-21: extend coverage para agent layer em app/services/ ===
+AGENT_LAYER_SERVICE_FILES = frozenset({
+    "agent_marketplace_service.py",
+    "sourcing_agent_orchestrator.py",
+    "twin_inference_service.py",
+    "twin_knowledge_indexer.py",
+    "agent_approval_service.py",
+    "agent_version_service.py",
+    "multi_strategy_search.py",
+    "agent_deployment_service.py",
+    "agent_quality_evaluator.py",
+    "agent_quality_gate.py",
+})
 
 
 def is_service_file(path: Path) -> bool:
@@ -64,25 +104,23 @@ def is_service_file(path: Path) -> bool:
     )
 
 
-# === Wave 2 audit 2026-05-21: extend coverage para agent layer em app/services/ ===
-# Estes arquivos historicamente escaparam dos sensores ADR-001 porque vivem fora
-# de app/domains/*/services/. Audit Agent B encontrou ~40+ violations entre eles.
-# Wave 3 vai refatorar via repos canonical.
-AGENT_LAYER_SERVICE_FILES = frozenset({
-    "agent_marketplace_service.py",
-    "sourcing_agent_orchestrator.py",
-    "twin_inference_service.py",
-    "twin_knowledge_indexer.py",
-    "agent_approval_service.py",
-    "agent_version_service.py",
-    "multi_strategy_search.py",
-    "agent_deployment_service.py",
-    "agent_quality_evaluator.py",
-    "agent_quality_gate.py",
-})
+def is_tool_registry_file(path: Path) -> bool:
+    """`app/domains/*/agents/*_tool_registry.py` — W1-004-B scope extension."""
+    try:
+        rel = path.relative_to(ROOT)
+    except ValueError:
+        return False
+    parts = rel.parts
+    return (
+        len(parts) >= 5
+        and parts[0] == "app"
+        and parts[1] == "domains"
+        and parts[3] == "agents"
+        and parts[-1].endswith("_tool_registry.py")
+    )
 
 
-def is_agent_layer_service(path):
+def is_agent_layer_service(path: Path) -> bool:
     """Detect app/services/<agent_layer>.py files (audit Wave 2 2026-05-21 extension)."""
     try:
         rel = path.relative_to(ROOT)
@@ -95,6 +133,13 @@ def is_agent_layer_service(path):
         and parts[1] == "services"
         and parts[2] in AGENT_LAYER_SERVICE_FILES
     )
+
+
+def get_relative_key(path: Path) -> str:
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return str(path)
 
 
 def has_exempt_marker(src: str) -> bool:
@@ -121,9 +166,6 @@ def scan_file(path: Path) -> list[tuple[int, str, str]]:
 
 
 def main() -> int:
-    # Sprint 8 batch 2 (2026-05-07): promoted to blocking by default after
-    # sensor reached 0 violations via 8 parallel-agent dispatches across all
-    # service domains. Use --warn-only to opt out for legacy ratchet.
     warn_only = "--warn-only" in sys.argv
     block = not warn_only
 
@@ -131,73 +173,100 @@ def main() -> int:
         print(f"[ADR-001 select sensor] WARN: {SERVICES_DIR} does not exist")
         return 0
 
-    candidates = sorted(p for p in SERVICES_DIR.rglob("*.py") if is_service_file(p))
-    # Wave 2 2026-05-21 extension: agent layer em app/services/.
-    # Findings em agent_layer sao warn-only ate Wave 3 refatorar via repos canonical.
+    # === Collect all files in scan scope ===
+    service_files = sorted(p for p in SERVICES_DIR.rglob("*.py") if is_service_file(p))
+    tool_registry_files = sorted(p for p in SERVICES_DIR.rglob("*.py") if is_tool_registry_file(p))
+
     agent_layer_dir = ROOT / "app" / "services"
-    agent_files = []
+    agent_layer_files: list[Path] = []
     if agent_layer_dir.exists():
-        agent_files = sorted(
+        agent_layer_files = sorted(
             p for p in agent_layer_dir.rglob("*.py") if is_agent_layer_service(p)
         )
-    candidates = candidates + agent_files
-    agent_files_set = set(agent_files)
-    findings_by_file: dict[Path, list[tuple[int, str, str]]] = {}
-    total = 0
-    blocking_total = 0  # Wave 2 extension: agent_layer findings = warn-only
-    for f in candidates:
-        f_findings = scan_file(f)
-        if f_findings:
-            findings_by_file[f] = f_findings
-            total += len(f_findings)
-            if f not in agent_files_set:
-                blocking_total += len(f_findings)
 
-    if blocking_total == 0:
-        if total > 0:
-            # Agent layer findings present but warn-only
-            agent_findings_count = total - blocking_total
-            print(
-                f"[ADR-001 select sensor] WARN: {agent_findings_count} findings in "
-                f"app/services/ agent layer (warn-only, Wave 3 closes via repos):"
-            )
-            for f, hits in findings_by_file.items():
-                if f in agent_files_set:
-                    for ln, model, snippet in hits[:3]:
-                        try:
-                            rel = f.relative_to(ROOT)
-                        except ValueError:
-                            rel = f
-                        print(f"  {rel}:{ln}: select({model}, ...)")
+    all_candidates = service_files + tool_registry_files + agent_layer_files
+    agent_layer_set = set(agent_layer_files)
+
+    print(
+        f"[ADR-001 select sensor] Scanning {len(service_files)} service files + "
+        f"{len(tool_registry_files)} tool_registry files + "
+        f"{len(agent_layer_files)} agent-layer service files"
+    )
+
+    # === Scan and categorize ===
+    blocking_violations: dict[Path, list[tuple[int, str, str]]] = {}
+    backlog_violations: dict[Path, list[tuple[int, str, str]]] = {}
+    agent_layer_violations: dict[Path, list[tuple[int, str, str]]] = {}
+
+    for f in all_candidates:
+        f_findings = scan_file(f)
+        if not f_findings:
+            continue
+        rel_key = get_relative_key(f)
+        if f in agent_layer_set:
+            agent_layer_violations[f] = f_findings
+        elif rel_key in TOOL_REGISTRY_BACKLOG:
+            backlog_violations[f] = f_findings
         else:
-            print(
-                f"[ADR-001 select sensor] OK — scanned {len(candidates)} service files, "
-                "0 direct `select(Model)` hits."
-            )
+            blocking_violations[f] = f_findings
+
+    blocking_count = sum(len(v) for v in blocking_violations.values())
+    backlog_count = sum(len(v) for v in backlog_violations.values())
+    agent_layer_count = sum(len(v) for v in agent_layer_violations.values())
+
+    # === Print backlog summary (warn-only) ===
+    if backlog_violations:
+        print(
+            f"\n[ADR-001 select sensor] WARN (backlog W1-004-C): "
+            f"{backlog_count} select(Model) violations in {len(backlog_violations)} tool_registry files "
+            f"(warn-only until migrated):"
+        )
+        for f, hits in sorted(backlog_violations.items(), key=lambda x: str(x[0])):
+            rel = get_relative_key(f)
+            print(f"  {rel}: {len(hits)} select(Model) calls")
+
+    # === Print agent layer summary (warn-only) ===
+    if agent_layer_violations:
+        print(
+            f"\n[ADR-001 select sensor] WARN (Wave 3): "
+            f"{agent_layer_count} violations in app/services/ agent layer (warn-only):"
+        )
+        for f, hits in agent_layer_violations.items():
+            rel = get_relative_key(f)
+            for ln, model, snippet in hits[:3]:
+                print(f"  {rel}:{ln}: select({model}, ...)")
+
+    # === Handle blocking violations ===
+    if blocking_count == 0:
+        scanned_total = len(all_candidates)
+        print(
+            f"\n[ADR-001 select sensor] OK — 0 blocking violations across services + migrated tool_registries "
+            f"({scanned_total} files scanned total)."
+        )
         return 0
 
-    # Limit per-file output to top 5 findings to keep stderr manageable
-    for f, hits in findings_by_file.items():
-        rel = f.relative_to(ROOT)
+    # Print blocking violations
+    for f, hits in sorted(blocking_violations.items(), key=lambda x: str(x[0])):
+        rel = get_relative_key(f)
         for ln, model, snippet in hits[:5]:
             print(f"[ADR-001 select] {rel}:{ln}: select({model}, ...)")
         if len(hits) > 5:
-            print(f"[ADR-001 select] {rel}: ... (+{len(hits) - 5} more in same file)")
+            print(f"[ADR-001 select] {rel}: ... (+{len(hits) - 5} more)")
 
     print(
-        f"\n[ADR-001 select sensor] Summary: {total} `select(Model)` hits across "
-        f"{len(findings_by_file)} service files (of {len(candidates)} scanned).\n"
+        f"\n[ADR-001 select sensor] Summary: {blocking_count} `select(Model)` hits across "
+        f"{len(blocking_violations)} files.\n"
         "Per ADR-001: ORM queries go to repositories. Move `select(Model)` calls\n"
         "into the corresponding domain's repositories/ layer.\n\n"
-        "Caminho C policy: legacy hits stay warn-only; new code must be clean.\n"
-        "Add `# ADR-001-EXEMPT: <reason>` comment for legitimate exceptions.\n",
+        "For tool_registry files: either migrate (W1-004-C) or add to TOOL_REGISTRY_BACKLOG.\n"
+        "Add `# ADR-001-EXEMPT: <reason>` for legitimate exceptions.\n",
         file=sys.stderr,
     )
 
     if block:
-        print("[ADR-001 select sensor] BLOCKING mode (default since Sprint 8) — failing build.")
+        print("[ADR-001 select sensor] BLOCKING mode — failing build.")
         return 1
-    print("[ADR-001 select sensor] WARN-ONLY mode (opt-out via --warn-only flag).")
+    print("[ADR-001 select sensor] WARN-ONLY mode (--warn-only flag).")
     return 0
 
 

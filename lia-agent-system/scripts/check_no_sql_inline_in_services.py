@@ -1,35 +1,28 @@
 #!/usr/bin/env python3
-"""Sensor: services/ MUST NOT contain raw SQL inline (ADR-001).
+"""Sensor: services/ AND agents/*_tool_registry.py MUST NOT contain raw SQL inline (ADR-001).
 
 ADR-001 — Repository Pattern (canonized 2026-05-06)
 ====================================================================
 
-Services MUST NOT call `db.execute(text(...))`, `sa_text(...)`, or
-`sqlalchemy.text(...)` for SQL queries. All SQL belongs in
-`repositories/` (a layer below services). Cross-domain reads also via
-the corresponding domain's repository, not raw SQL in the consuming
-service.
+Services MUST NOT call `db.execute(text(...))`, `session.execute(text(...))`,
+`sa_text(...)`, or `sqlalchemy.text(...)` for SQL queries. All SQL belongs in
+`repositories/` (a layer below services).
 
-Why:
-- Multi-tenancy guard placement (`_require_company_id`) only works
-  in the repository layer
-- SQL refactor / DB migration safety (single chokepoint)
-- Easier mocking in unit tests
-- DB driver portability
+Scan scope (W1-004-B extension 2026-05-23):
+  - app/domains/*/services/*.py  (original ADR-001 scope)
+  - app/domains/*/agents/*_tool_registry.py  (NEW — W1-004-B)
+  - app/services/<agent_layer_files>.py  (Wave 2 2026-05-21, warn-only)
 
 Mode:
-  - warn (default — Sprint 5.1 baseline ratchet, ~36 pre-existing hits
-    documented as Caminho C policy)
-  - --block after Sprint 5.4 backfill of 3 zero-repo domains
+  - blocking (default since Sprint 7)
+  - SERVICES_SQL_BACKLOG: pre-existing services/ files with session.execute(text(...))
+    that the original sensor missed (uses db.execute pattern only). Warn-only.
+  - TOOL_REGISTRY_BACKLOG: pre-existing tool_registry violations (W1-004-C future wave)
+  - --warn-only flag: opt-out to warn-only for all
 
 Allowlist:
   - tests/, scripts/, alembic/, migrations/
-  - Files marked `# ADR-001-EXEMPT: <reason>` (legitimate SQL inline,
-    e.g. Rails-owned table with schema variability)
-  - Service files NOT under `app/domains/*/services/` (only domains)
-
-This sensor uses pure regex — fast (~50ms across 200 files). AST would
-catch slight formatting variations but adds dependency without value.
+  - Files marked `# ADR-001-EXEMPT: <reason>`
 """
 from __future__ import annotations
 
@@ -42,14 +35,65 @@ SERVICES_DIR = ROOT / "app" / "domains"
 
 # Patterns that indicate raw SQL in a service file
 PATTERNS = (
-    re.compile(r"\bdb\.execute\s*\(\s*(?:sa\.)?text\s*\("),       # db.execute(text("..."))
-    re.compile(r"\bsa_text\s*\("),                                 # sa_text("...")
-    re.compile(r"\bsqlalchemy\.text\s*\("),                        # sqlalchemy.text("...")
-    re.compile(r"\bdb\.execute\s*\(\s*\"\"\""),                    # db.execute("""SELECT ...""")
-    re.compile(r"\bdb\.execute\s*\(\s*'''"),                       # db.execute('''SELECT ...''')
+    re.compile(r"\bdb\.execute\s*\(\s*(?:sa\.)?text\s*\("),        # db.execute(text("..."))
+    re.compile(r"\bsa_text\s*\("),                                  # sa_text("...")
+    re.compile(r"\bsqlalchemy\.text\s*\("),                         # sqlalchemy.text("...")
+    re.compile(r"\bdb\.execute\s*\(\s*\"\"\""),                     # db.execute("""...""")
+    re.compile(r"\bdb\.execute\s*\(\s*'''"),                        # db.execute('''...''')
+    re.compile(r"\bsession\.execute\s*\(\s*(?:sa\.)?text\s*\("),    # session.execute(text(...))
 )
 
 EXEMPT_MARKER = "ADR-001-EXEMPT"
+
+# W1-004-B: 3 migrated tool_registries — BLOCKING (must stay at 0 violations).
+MIGRATED_TOOL_REGISTRIES = frozenset({
+    "app/domains/recruiter_assistant/agents/kanban_tool_registry.py",
+    "app/domains/recruiter_assistant/agents/jobs_mgmt_tool_registry.py",
+    "app/domains/recruiter_assistant/agents/talent_tool_registry.py",
+})
+
+# W1-004-C backlog: pre-existing SQL inline in tool_registries.
+# Warn-only until migrated in future waves.
+TOOL_REGISTRY_BACKLOG = frozenset({
+    "app/domains/company_settings/agents/company_tool_registry.py",
+    "app/domains/cv_screening/agents/pipeline_tool_registry.py",
+    "app/domains/hiring_policy/agents/policy_tool_registry.py",
+    "app/domains/job_management/agents/wizard_tool_registry.py",
+    "app/domains/pipeline/agents/pipeline_tool_registry.py",
+    "app/domains/sourcing/agents/diversity_tool_registry.py",
+    "app/domains/sourcing/agents/nurture_sequence_tool_registry.py",
+    "app/domains/sourcing/agents/passive_pipeline_tool_registry.py",
+    "app/domains/sourcing/agents/referral_tool_registry.py",
+    "app/domains/sourcing/agents/sourcing_tool_registry.py",
+    "app/domains/talent_pool/agents/talent_pool_tool_registry.py",
+})
+
+# Pre-existing services/ violations using session.execute(text(...)) — the original
+# sensor only detected db.execute(text(...)) so these were never in the baseline.
+# Warn-only until future wave migrates them via repository pattern.
+# (Discovered by sensor extension W1-004-B 2026-05-23)
+SERVICES_SQL_BACKLOG = frozenset({
+    "app/domains/ai/services/search_service.py",
+    "app/domains/cv_screening/services/wsi_voice_orchestrator.py",
+    "app/domains/recruiter_assistant/services/autonomous_actions_engine.py",
+    "app/domains/recruiter_assistant/services/monitoring_loop.py",
+    "app/domains/recruiter_assistant/services/outcome_learning_service.py",
+    "app/domains/recruiter_assistant/services/stakeholder_notification_service.py",
+})
+
+# Wave 2 audit 2026-05-21: agent layer in app/services/ (warn-only)
+AGENT_LAYER_SERVICE_FILES = frozenset({
+    "agent_marketplace_service.py",
+    "sourcing_agent_orchestrator.py",
+    "twin_inference_service.py",
+    "twin_knowledge_indexer.py",
+    "agent_approval_service.py",
+    "agent_version_service.py",
+    "multi_strategy_search.py",
+    "agent_deployment_service.py",
+    "agent_quality_evaluator.py",
+    "agent_quality_gate.py",
+})
 
 
 def is_service_file(path: Path) -> bool:
@@ -68,26 +112,24 @@ def is_service_file(path: Path) -> bool:
     )
 
 
-# === Wave 2 audit 2026-05-21: extend coverage para agent layer em app/services/ ===
-# Estes arquivos historicamente escaparam dos sensores ADR-001 porque vivem fora
-# de app/domains/*/services/. Audit Agent B encontrou ~40+ violations entre eles.
-# Wave 3 vai refatorar via repos canonical.
-AGENT_LAYER_SERVICE_FILES = frozenset({
-    "agent_marketplace_service.py",
-    "sourcing_agent_orchestrator.py",
-    "twin_inference_service.py",
-    "twin_knowledge_indexer.py",
-    "agent_approval_service.py",
-    "agent_version_service.py",
-    "multi_strategy_search.py",
-    "agent_deployment_service.py",
-    "agent_quality_evaluator.py",
-    "agent_quality_gate.py",
-})
+def is_tool_registry_file(path: Path) -> bool:
+    """`app/domains/*/agents/*_tool_registry.py` — W1-004-B scope extension."""
+    try:
+        rel = path.relative_to(ROOT)
+    except ValueError:
+        return False
+    parts = rel.parts
+    return (
+        len(parts) >= 5
+        and parts[0] == "app"
+        and parts[1] == "domains"
+        and parts[3] == "agents"
+        and parts[-1].endswith("_tool_registry.py")
+    )
 
 
-def is_agent_layer_service(path):
-    """Detect app/services/<agent_layer>.py files (audit Wave 2 2026-05-21 extension)."""
+def is_agent_layer_service(path: Path) -> bool:
+    """Detect app/services/<agent_layer>.py files (audit Wave 2 2026-05-21)."""
     try:
         rel = path.relative_to(ROOT)
     except ValueError:
@@ -99,6 +141,13 @@ def is_agent_layer_service(path):
         and parts[1] == "services"
         and parts[2] in AGENT_LAYER_SERVICE_FILES
     )
+
+
+def get_relative_key(path: Path) -> str:
+    try:
+        return str(path.relative_to(ROOT))
+    except ValueError:
+        return str(path)
 
 
 def has_exempt_marker(src: str) -> bool:
@@ -124,10 +173,6 @@ def scan_file(path: Path) -> list[tuple[int, str]]:
 
 
 def main() -> int:
-    # Sprint 7 (2026-05-07): promoted to blocking by default after sensor reached
-    # 0 violations via Sprint 6 ScreeningQuestionSetRepository + WsiRepository
-    # extension + Sprint 7 top-5 select() refactor. Use --warn-only to opt out
-    # for legacy ratchet on branches that haven't caught up.
     warn_only = "--warn-only" in sys.argv
     block = not warn_only
 
@@ -135,70 +180,112 @@ def main() -> int:
         print(f"[ADR-001 SQL sensor] WARN: {SERVICES_DIR} does not exist")
         return 0
 
-    candidates = sorted(p for p in SERVICES_DIR.rglob("*.py") if is_service_file(p))
-    # Wave 2 2026-05-21 extension: agent layer em app/services/.
-    # Esses sao "warn-only" mesmo em block mode — Wave 3 vai fechar via repos canonical.
+    # Collect all files in scan scope
+    service_files = sorted(p for p in SERVICES_DIR.rglob("*.py") if is_service_file(p))
+    tool_registry_files = sorted(p for p in SERVICES_DIR.rglob("*.py") if is_tool_registry_file(p))
+
     agent_layer_dir = ROOT / "app" / "services"
-    agent_files = []
+    agent_layer_files: list[Path] = []
     if agent_layer_dir.exists():
-        agent_files = sorted(
+        agent_layer_files = sorted(
             p for p in agent_layer_dir.rglob("*.py") if is_agent_layer_service(p)
         )
-    candidates = candidates + agent_files
-    agent_files_set = set(agent_files)
-    findings_by_file: dict[Path, list[tuple[int, str]]] = {}
-    total = 0
-    blocking_total = 0  # Wave 2 extension: agent_layer findings count as warn-only
-    for f in candidates:
-        f_findings = scan_file(f)
-        if f_findings:
-            findings_by_file[f] = f_findings
-            total += len(f_findings)
-            if f not in agent_files_set:
-                blocking_total += len(f_findings)
 
-    if blocking_total == 0:
-        if total > 0:
-            # Agent layer findings exist but are warn-only — print briefly + exit 0
-            agent_findings_count = total - blocking_total
-            print(f"[ADR-001] WARN: {agent_findings_count} findings in app/services/ agent layer (warn-only, Wave 3 close):")
-            for f, items in findings_by_file.items():
-                if f in agent_files_set:
-                    for ln, txt in items[:2]:  # show first 2 per file
-                        try:
-                            rel_f = f.relative_to(ROOT)
-                        except ValueError:
-                            rel_f = f
-                        print(f"  {rel_f}:{ln}: {txt}")
-        return 0
-    # Replaced original `if total == 0:` block — original below is now dead but kept for compatibility
-    if False:
+    all_candidates = service_files + tool_registry_files + agent_layer_files
+    agent_layer_set = set(agent_layer_files)
+
+    print(
+        f"[ADR-001 SQL sensor] Scanning {len(service_files)} service files + "
+        f"{len(tool_registry_files)} tool_registry files + "
+        f"{len(agent_layer_files)} agent-layer service files"
+    )
+
+    # Scan and categorize violations
+    blocking_violations: dict[Path, list[tuple[int, str]]] = {}
+    backlog_tool_violations: dict[Path, list[tuple[int, str]]] = {}
+    backlog_service_violations: dict[Path, list[tuple[int, str]]] = {}
+    agent_layer_violations: dict[Path, list[tuple[int, str]]] = {}
+
+    for f in all_candidates:
+        f_findings = scan_file(f)
+        if not f_findings:
+            continue
+        rel_key = get_relative_key(f)
+        if f in agent_layer_set:
+            agent_layer_violations[f] = f_findings
+        elif rel_key in TOOL_REGISTRY_BACKLOG:
+            backlog_tool_violations[f] = f_findings
+        elif rel_key in SERVICES_SQL_BACKLOG:
+            backlog_service_violations[f] = f_findings
+        else:
+            blocking_violations[f] = f_findings
+
+    blocking_count = sum(len(v) for v in blocking_violations.values())
+    backlog_tool_count = sum(len(v) for v in backlog_tool_violations.values())
+    backlog_svc_count = sum(len(v) for v in backlog_service_violations.values())
+    agent_layer_count = sum(len(v) for v in agent_layer_violations.values())
+
+    # Print backlog summaries (warn-only)
+    if backlog_tool_violations:
         print(
-            f"[ADR-001 SQL sensor] OK — scanned {len(candidates)} service files, "
-            "0 raw SQL inline."
+            f"\n[ADR-001 SQL sensor] WARN (backlog W1-004-C): "
+            f"{backlog_tool_count} violations in {len(backlog_tool_violations)} tool_registry files "
+            f"(warn-only until migrated):"
+        )
+        for f, hits in sorted(backlog_tool_violations.items(), key=lambda x: str(x[0])):
+            rel = get_relative_key(f)
+            print(f"  {rel}: {len(hits)} SQL inline blocks")
+
+    if backlog_service_violations:
+        total_svc = sum(len(v) for v in backlog_service_violations.values())
+        print(
+            f"\n[ADR-001 SQL sensor] WARN (services backlog, session.execute pattern): "
+            f"{total_svc} violations in {len(backlog_service_violations)} service files "
+            f"(pre-existing, warn-only):"
+        )
+        for f, hits in sorted(backlog_service_violations.items(), key=lambda x: str(x[0])):
+            rel = get_relative_key(f)
+            print(f"  {rel}: {len(hits)} SQL inline blocks")
+
+    if agent_layer_violations:
+        print(
+            f"\n[ADR-001 SQL sensor] WARN (Wave 3 app/services/): "
+            f"{agent_layer_count} violations (warn-only):"
+        )
+        for f, hits in agent_layer_violations.items():
+            rel = get_relative_key(f)
+            for ln, txt in hits[:2]:
+                print(f"  {rel}:{ln}: {txt}")
+
+    # Handle blocking violations
+    if blocking_count == 0:
+        scanned_total = len(all_candidates)
+        print(
+            f"\n[ADR-001 SQL sensor] OK — 0 blocking violations across services + tool_registries "
+            f"({scanned_total} files scanned total)."
         )
         return 0
 
-    for f, hits in findings_by_file.items():
-        rel = f.relative_to(ROOT)
+    print(f"\n[ADR-001 SQL sensor] BLOCKING VIOLATIONS ({blocking_count} hits):", file=sys.stderr)
+    for f, hits in sorted(blocking_violations.items(), key=lambda x: str(x[0])):
+        rel = get_relative_key(f)
         for ln, snippet in hits:
-            print(f"[ADR-001 SQL] {rel}:{ln}: {snippet}")
+            print(f"[ADR-001 SQL] {rel}:{ln}: {snippet}", file=sys.stderr)
 
     print(
-        f"\n[ADR-001 SQL sensor] Summary: {total} raw SQL hits across "
-        f"{len(findings_by_file)} service files (of {len(candidates)} scanned).\n"
+        f"\n[ADR-001 SQL sensor] Summary: {blocking_count} blocking raw SQL hits across "
+        f"{len(blocking_violations)} files.\n"
         "Per ADR-001: services MUST NOT call db.execute(text(...)) — move SQL\n"
         "to a repository in the same domain (`app/domains/<domain>/repositories/`).\n\n"
-        "Caminho C policy: legacy hits stay warn-only; new code must be clean.\n"
-        "Add `# ADR-001-EXEMPT: <reason>` comment for legitimate exceptions\n"
-        "(e.g. Rails-owned tables with schema variability).\n",
+        "For tool_registry files: either migrate (W1-004-C) or add to TOOL_REGISTRY_BACKLOG.\n"
+        "For services: add to SERVICES_SQL_BACKLOG or add `# ADR-001-EXEMPT: <reason>`.\n",
         file=sys.stderr,
     )
 
     if block:
-        print("[ADR-001 SQL sensor] BLOCKING mode (default since Sprint 7) — failing build.")
+        print("[ADR-001 SQL sensor] BLOCKING mode — failing build.")
         return 1
-    print("[ADR-001 SQL sensor] WARN-ONLY mode (opt-out via --warn-only flag).")
+    print("[ADR-001 SQL sensor] WARN-ONLY mode (--warn-only flag).")
     return 0
 
 
