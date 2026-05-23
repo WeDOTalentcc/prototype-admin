@@ -24,23 +24,15 @@ interface Props {
   contextType?: ChatContextType;
 }
 
-const SETTINGS_CHIPS = [
-  {
-    label: "Completar perfil da empresa",
-    command: "Quero completar o perfil da minha empresa",
-    icon: Building,
-  },
-  {
-    label: "Importar planilha",
-    command: "Quero importar uma planilha de colaboradores",
-    icon: FileSpreadsheet,
-  },
-  {
-    label: "Analisar website",
-    command: "Analise o website da minha empresa e extraia informacoes",
-    icon: Globe,
-  },
-];
+// P1-5 (Fase B 2026-05-23): keys de SETTINGS_CHIPS movidas pra i18n.
+// SETTINGS_CHIP_DEFS carrega apenas o icon (TS-only, nao i18n-able). Labels
+// e commands sao resolvidos via t() dentro do componente. Mantem icon+key
+// pareados em uma estrutura unica pra evitar drift entre array e JSON.
+const SETTINGS_CHIP_DEFS = [
+  { key: "profile", icon: Building },
+  { key: "spreadsheet", icon: FileSpreadsheet },
+  { key: "website", icon: Globe },
+] as const;
 
 export function UnifiedChatEmptyState({
   mode,
@@ -49,6 +41,7 @@ export function UnifiedChatEmptyState({
 }: Props) {
   const isCompact = mode === "sidebar" || mode === "floating";
   const t = useTranslations("chat");
+  const tSettings = useTranslations("chat.emptyState.settings");
 
   if (contextType === "settings_config") {
     return (
@@ -76,11 +69,10 @@ export function UnifiedChatEmptyState({
             isCompact ? "text-base" : "text-xl",
           )}
         >
-          Configure sua empresa
+          {tSettings("heading")}
         </h2>
         <p className="text-sm text-lia-text-secondary text-center max-w-[280px]">
-          Me conte sobre sua empresa e eu vou preencher os dados
-          automaticamente.
+          {tSettings("subtitle")}
         </p>
 
         <div
@@ -89,20 +81,24 @@ export function UnifiedChatEmptyState({
             isCompact ? "max-w-[280px]" : "max-w-[400px]",
           )}
         >
-          {SETTINGS_CHIPS.map((chip) => (
-            <button
-              key={chip.command}
-              onClick={() => onSuggestionClick(chip.command)}
-              className="flex items-center gap-3 p-3 rounded-md text-left border border-lia-border-subtle bg-lia-bg-primary hover:bg-lia-bg-secondary hover:border-wedo-cyan/30 transition-all"
-            >
-              <div className="p-1.5 rounded-md bg-wedo-cyan/10 text-wedo-cyan flex-shrink-0">
-                <chip.icon className="w-4 h-4" />
-              </div>
-              <span className="text-sm font-medium text-lia-text-primary">
-                {chip.label}
-              </span>
-            </button>
-          ))}
+          {SETTINGS_CHIP_DEFS.map((chip) => {
+            const label = tSettings(`chips.${chip.key}.label`);
+            const command = tSettings(`chips.${chip.key}.command`);
+            return (
+              <button
+                key={chip.key}
+                onClick={() => onSuggestionClick(command)}
+                className="flex items-center gap-3 p-3 rounded-md text-left border border-lia-border-subtle bg-lia-bg-primary hover:bg-lia-bg-secondary hover:border-wedo-cyan/30 transition-all"
+              >
+                <div className="p-1.5 rounded-md bg-wedo-cyan/10 text-wedo-cyan flex-shrink-0">
+                  <chip.icon className="w-4 h-4" />
+                </div>
+                <span className="text-sm font-medium text-lia-text-primary">
+                  {label}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </div>
     );

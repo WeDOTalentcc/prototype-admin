@@ -471,6 +471,26 @@
     "greetingEvening": "Good evening",
     "iAmLia": "I'm LIA.",
     "helpHint": "Type /help to see all features",
+    "emptyState": {
+      "settings": {
+        "heading": "Set up your company",
+        "subtitle": "Tell me about your company and I'll fill in the data automatically.",
+        "chips": {
+          "profile": {
+            "label": "Complete company profile",
+            "command": "I want to complete my company's profile"
+          },
+          "spreadsheet": {
+            "label": "Import spreadsheet",
+            "command": "I want to import an employee spreadsheet"
+          },
+          "website": {
+            "label": "Analyze website",
+            "command": "Analyze my company's website and extract information"
+          }
+        }
+      }
+    },
     "scrollLeft": "Scroll left",
     "scrollRight": "Scroll right",
     "suggestionCount": "{label} — {count} suggestion",

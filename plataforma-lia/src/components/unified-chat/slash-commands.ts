@@ -187,6 +187,11 @@ export const SLASH_COMMANDS: readonly SlashCommand[] = [
     subtitle: "Use com @candidato — enviar feedback estruturado",
     icon: MessageSquare,
     dropdownPrefill: "/feedback @",
+    // P1-2 (Fase B 2026-05-23): bare `/feedback` (sem @target) agora dispara
+    // mensagem de clarificacao em vez de no-op silencioso. Pattern espelha
+    // `/buscar` bare — completa o loop de discoverability do dropdown.
+    buildBareMessage: () =>
+      "Quero registrar feedback de um candidato. Pra qual candidato? (use @ pra mencionar)",
     buildMentionMessage: (mention) => `Enviar feedback para: ${mention}`,
     showInDropdown: true,
   },
@@ -198,6 +203,10 @@ export const SLASH_COMMANDS: readonly SlashCommand[] = [
     subtitle: "Use com @candidato — agendar entrevista",
     icon: Calendar,
     dropdownPrefill: "/agendar @",
+    // P1-2 (Fase B 2026-05-23): bare `/agendar` (sem @target) dispara
+    // clarificacao em vez de no-op. LIA pede candidato e horario.
+    buildBareMessage: () =>
+      "Quero agendar uma entrevista. Pra qual candidato e quando? (use @ pra mencionar)",
     buildMentionMessage: (mention) => `Agendar entrevista com: ${mention}`,
     showInDropdown: true,
   },

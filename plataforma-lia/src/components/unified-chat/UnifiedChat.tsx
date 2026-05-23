@@ -478,23 +478,20 @@ export function UnifiedChat({
 
   const handleSuggestionClick = useCallback(
     (prompt: string, metadata?: ChatSuggestionMetadata) => {
-      setInputText(prompt);
-      // setTimeout 100ms é workaround para renderizar setInputText antes do
-      // send (evita race com input que ainda não recebeu o valor visualmente).
-      setTimeout(() => {
-        // PR-A (FE-H03): quando vem do Rail A, passa `domain_hint` como
-        // `domain` e a metadata completa como 4º arg. O orchestrator usa
-        // `context.metadata.intent_hint` como guide para routing determinístico.
-        // Chamadas sem metadata (slash, mention, manual) seguem inalteradas.
-        const domain = metadata?.domain_hint;
-        sendChatMessage(
-          prompt,
-          domain,
-          undefined,
-          metadata as Record<string, unknown> | undefined,
-        );
-        setInputText("");
-      }, 100);
+      // P1-4 (Fase B 2026-05-23): removido setTimeout 100ms — race-condition
+      // workaround era hack visual desnecessário. sendChatMessage usa `prompt`
+      // diretamente como argument, não depende do state input ter renderizado.
+      // PR-A (FE-H03): quando vem do Rail A, passa `domain_hint` como
+      // `domain` e a metadata completa como 4º arg. O orchestrator usa
+      // `context.metadata.intent_hint` como guide para routing determinístico.
+      // Chamadas sem metadata (slash, mention, manual) seguem inalteradas.
+      sendChatMessage(
+        prompt,
+        metadata?.domain_hint,
+        undefined,
+        metadata as Record<string, unknown> | undefined,
+      );
+      setInputText("");
     },
     [sendChatMessage],
   );

@@ -471,6 +471,26 @@
     "greetingEvening": "Boa noite",
     "iAmLia": "Sou a LIA.",
     "helpHint": "Digite /ajuda para ver todas as funcionalidades",
+    "emptyState": {
+      "settings": {
+        "heading": "Configure sua empresa",
+        "subtitle": "Me conte sobre sua empresa e eu vou preencher os dados automaticamente.",
+        "chips": {
+          "profile": {
+            "label": "Completar perfil da empresa",
+            "command": "Quero completar o perfil da minha empresa"
+          },
+          "spreadsheet": {
+            "label": "Importar planilha",
+            "command": "Quero importar uma planilha de colaboradores"
+          },
+          "website": {
+            "label": "Analisar website",
+            "command": "Analise o website da minha empresa e extraia informações"
+          }
+        }
+      }
+    },
     "scrollLeft": "Rolar para a esquerda",
     "scrollRight": "Rolar para a direita",
     "suggestionCount": "{label} — {count} sugestão",
