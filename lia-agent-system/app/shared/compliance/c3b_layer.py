@@ -14,6 +14,48 @@ logger = logging.getLogger(__name__)
 
 _C3B_DISABLED = os.environ.get("LIA_DISABLE_C3B", "0") == "1"
 
+# W3-016 (2026-05-23): audit event quando kill-switch ativo em prod/staging.
+# Compliance posture: bypass C3b deve ser auditável + visível em alarmes.
+_C3B_DISABLED_AUDIT_EMITTED = False
+
+
+async def _emit_c3b_disabled_audit_once() -> None:
+    """Emit audit event uma única vez quando _C3B_DISABLED=True em prod/staging.
+
+    Idempotente · não-bloqueante · fail-safe (audit failure NUNCA crasha c3b).
+    """
+    global _C3B_DISABLED_AUDIT_EMITTED
+    if _C3B_DISABLED_AUDIT_EMITTED or not _C3B_DISABLED:
+        return
+    env = os.environ.get("APP_ENV", "development")
+    if env not in ("production", "prod", "staging"):
+        # Dev: warn-only, sem audit cost
+        _C3B_DISABLED_AUDIT_EMITTED = True
+        logger.warning("[C3b] LIA_DISABLE_C3B=1 em ambiente %s — warn-only", env)
+        return
+    try:
+        from app.shared.compliance.audit_service import audit_service
+        await audit_service.log_decision(
+            company_id="system",
+            agent_name="c3b_layer",
+            decision_type="compliance_disabled",
+            action="kill_switch_active",
+            decision=f"LIA_DISABLE_C3B=1 in {env}",
+            reasoning=[
+                f"C3b compliance layer DISABLED em ambiente {env!r}",
+                "Toda call a pre_compliance/post_compliance vira passthrough",
+                "Audit emitido 1x na primeira call após boot (idempotente)",
+            ],
+            criteria_used=["LIA_DISABLE_C3B", "APP_ENV"],
+        )
+        logger.warning(
+            "[C3b] LIA_DISABLE_C3B=1 em prod/staging · audit event emitido"
+        )
+    except Exception as exc:
+        logger.error("[C3b] Audit emit failed (non-blocking): %s", exc)
+    finally:
+        _C3B_DISABLED_AUDIT_EMITTED = True
+
 _FAIRNESS_DOMAINS = frozenset({
     "recruitment",
     "talent_ranking",
@@ -57,6 +99,8 @@ async def pre_compliance(
     domain: str,
 ) -> PreComplianceResult:
     if _C3B_DISABLED:
+        # W3-016: emit kill-switch audit (once, fail-safe)
+        await _emit_c3b_disabled_audit_once()
         return PreComplianceResult(
             clean_message=message,
             original_message=message,
@@ -159,14 +203,27 @@ async def pre_compliance(
 
 async def post_compliance(response: str, ctx: ComplianceContext) -> str:
     if _C3B_DISABLED:
+        # W3-016: emit kill-switch audit (once, fail-safe)
+        await _emit_c3b_disabled_audit_once()
         return response
 
+    # W3-015 (2026-05-23): wire FactChecker result em audit metadata + warn
+    # quando inaccurate_claims > 0. Antes: result era descartado (só log).
+    fc_metadata: dict = {}
+    fc_inaccurate = 0
     try:
         from app.shared.compliance.fact_checker import FactChecker
         fc = FactChecker()
-        fc.check_response(response, {"domain": ctx.domain})
-    except Exception:
-        logger.debug("[C3b] FactChecker skipped (silent)")
+        fc_result = fc.check_response(response, {"domain": ctx.domain})
+        fc_metadata = fc_result.to_metadata()
+        fc_inaccurate = fc_result.inaccurate_claims
+        if fc_inaccurate > 0:
+            logger.warning(
+                "[C3b] FactChecker found %d inaccurate claim(s) in domain=%s",
+                fc_inaccurate, ctx.domain,
+            )
+    except Exception as exc:
+        logger.debug("[C3b] FactChecker skipped (silent): %s", exc)
 
     try:
         from app.shared.compliance.audit_service import audit_service
@@ -175,8 +232,16 @@ async def post_compliance(response: str, ctx: ComplianceContext) -> str:
             agent_name=ctx.agent_id or "c3b_layer",
             decision_type="generate_feedback",
             action=f"c3b_post_compliance:{ctx.domain}",
-            decision="logged",
-            reasoning=["C3b post-compliance audit log"],
+            decision=(
+                f"fact_check_inaccurate={fc_inaccurate}"
+                if fc_inaccurate > 0 else "logged"
+            ),
+            reasoning=[
+                "C3b post-compliance audit log",
+                *([
+                    f"FactChecker flagged {fc_inaccurate} inaccurate claim(s)"
+                ] if fc_inaccurate > 0 else []),
+            ],
             criteria_used=[ctx.domain],
         )
     except Exception:
