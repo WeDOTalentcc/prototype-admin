@@ -181,3 +181,42 @@ def test_not_in_default_fallback_order():
         "DeepSeek deve ser opt-in only (tenant ativa explicitamente via primary_provider "
         "ou custom fallback_order). NÃO deve estar em FALLBACK_ORDER default."
     )
+
+
+# --- W2-011 gap P1 fix: cascade router deepseek routing ---
+
+
+def test_provider_for_model_deepseek_routing():
+    """_provider_for_model deve retornar 'deepseek' para modelos deepseek-* (gap P1)."""
+    from app.orchestrator.llm_cascade import LLMCascadeRouter
+
+    assert LLMCascadeRouter._provider_for_model("deepseek-chat") == "deepseek"
+    assert LLMCascadeRouter._provider_for_model("deepseek-coder") == "deepseek"
+    assert LLMCascadeRouter._provider_for_model("deepseek-r1") == "deepseek"
+    assert LLMCascadeRouter._provider_for_model("DeepSeek-V3") == "deepseek"
+
+
+def test_provider_for_model_deepseek_no_regression():
+    """Outros providers não devem regredir após adição da branch deepseek."""
+    from app.orchestrator.llm_cascade import LLMCascadeRouter
+
+    assert LLMCascadeRouter._provider_for_model("gemini-pro") == "gemini"
+    assert LLMCascadeRouter._provider_for_model("gemini-1.5-flash") == "gemini"
+    assert LLMCascadeRouter._provider_for_model("gpt-4o") == "openai"
+    assert LLMCascadeRouter._provider_for_model("gpt-3.5-turbo") == "openai"
+    assert LLMCascadeRouter._provider_for_model("openai-o1") == "openai"
+    assert LLMCascadeRouter._provider_for_model("claude-3-opus") == "claude"
+    assert LLMCascadeRouter._provider_for_model("claude-3-5-sonnet") == "claude"
+
+
+def test_llm_provider_literal_includes_deepseek():
+    """LLMProvider Literal deve incluir 'deepseek' (type safety W2-011)."""
+    import typing
+    from app.domains.ai.services.llm import LLMProvider
+
+    args = typing.get_args(LLMProvider)
+    assert "deepseek" in args, f"'deepseek' not in LLMProvider: {args}"
+    # Providers originais não devem ter sido removidos
+    assert "claude" in args
+    assert "openai" in args
+    assert "gemini" in args

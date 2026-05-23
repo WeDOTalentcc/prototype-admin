@@ -207,6 +207,7 @@ class LLMCascadeRouter:
         Mapeamento:
           gemini-* → "gemini"
           gpt-* / openai-* → "openai"
+          deepseek-* → "deepseek"
           qualquer outro (claude-*) → "claude"
         """
         name = model_name.lower()
@@ -214,6 +215,8 @@ class LLMCascadeRouter:
             return "gemini"
         if "gpt" in name or "openai" in name:
             return "openai"
+        if "deepseek" in name:
+            return "deepseek"
         return "claude"
 
     async def _call_model(
@@ -227,6 +230,7 @@ class LLMCascadeRouter:
         O provider é derivado do nome do modelo via _provider_for_model:
           gemini-* → provider="gemini"
           gpt-* / openai-* → provider="openai"
+          deepseek-* → provider="deepseek"
           qualquer outro → provider="claude"
         """
         base_prompt = system_prompt_override or _ROUTING_PROMPT

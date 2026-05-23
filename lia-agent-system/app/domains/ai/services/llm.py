@@ -29,7 +29,7 @@ T = TypeVar("T", bound=BaseModel)
 
 logger = logging.getLogger(__name__)
 
-LLMProvider = Literal["claude", "openai", "gemini"]
+LLMProvider = Literal["claude", "openai", "gemini", "deepseek"]
 
 MAX_TOOL_CALLS_PER_REQUEST = settings.REACT_MAX_TOOL_CALLS
 
