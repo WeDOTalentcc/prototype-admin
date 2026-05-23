@@ -65,7 +65,7 @@ MIGRATED_TOOL_REGISTRIES = frozenset({
 # + no select(Model) violations remain in policy_tool_registry.
 TOOL_REGISTRY_BACKLOG = frozenset({
     # company_tool_registry.py — removed 2026-05-23 W1-004-D: no select(Model) violations found; text() migrated/EXEMPT
-    "app/domains/cv_screening/agents/pipeline_tool_registry.py",
+    # cv_screening/pipeline_tool_registry.py — removed 2026-05-23 Wave C-3 Agent G: no select(Model) violations found; text() EXEMPT-marked
     # policy_tool_registry.py — removed 2026-05-23: no select(Model) violations; text() migrated/EXEMPT
     # wizard_tool_registry.py — removed 2026-05-23: MIGRATE 1 to JobVacancyCrudRepository.get_by_id_strict_company
     # pipeline_tool_registry.py — removed 2026-05-23 Wave C-2 Agent F: 8 SQL blocks migrated to repos + 4 EXEMPT markers; 0 select(Model) violations found
@@ -73,6 +73,7 @@ TOOL_REGISTRY_BACKLOG = frozenset({
     # passive_pipeline_tool_registry.py — removed 2026-05-23 W1-004-D: no select(Model) violations found; text() 1 MIGRATE + 2 EXEMPT
     # sourcing_tool_registry.py — removed 2026-05-23: no select() violations; was pre-emptive
     # talent_pool_tool_registry.py — removed W1-004-E: 6 select(TalentPool*) MIGRATED to TalentPoolRepository + TalentPoolCandidateRepository (0 inline remaining)
+    # backlog zerado em 2026-05-23 (Wave C-3 Agent G)
 })
 
 # === Wave 2 audit 2026-05-21: extend coverage para agent layer em app/services/ ===

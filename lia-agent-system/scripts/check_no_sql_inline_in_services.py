@@ -59,12 +59,13 @@ MIGRATED_TOOL_REGISTRIES = frozenset({
 # removed — MIGRATE 1+2 to repos + EXEMPT markers on remaining analytics SQL.
 TOOL_REGISTRY_BACKLOG = frozenset({
     # company_tool_registry.py — removed 2026-05-23 W1-004-D: 3 MIGRATE to CompanyProfileRepository + 1 EXEMPT marker
-    "app/domains/cv_screening/agents/pipeline_tool_registry.py",
+    # cv_screening/pipeline_tool_registry.py — removed 2026-05-23 Wave C-3 Agent G: 1 EXEMPT marker (generate_report analytics aggregation from applications table)
     # policy_tool_registry.py — removed 2026-05-23: MIGRATE 1+2 to HiringPolicyRepository + EXEMPT markers
     # wizard_tool_registry.py — removed 2026-05-23: MIGRATE 1 to JobVacancyCrudRepository + EXEMPT markers
     # pipeline_tool_registry.py — removed 2026-05-23 Wave C-2 Agent F: 8 MIGRATE to 4 repos (CandidatePipelineRepository, LiaOpinionRepository, StageRepository, RecruiterPreferencesRepository) + 4 EXEMPT markers
     # passive_pipeline_tool_registry.py — removed 2026-05-23 W1-004-D: 1 MIGRATE to PassiveCandidateRepository + 2 EXEMPT markers
     # talent_pool_tool_registry.py — removed W1-004-E: 6 MIGRATE to TalentPoolRepository + TalentPoolCandidateRepository + 1 EXEMPT marker (move_candidates_to_vacancy)
+    # backlog zerado em 2026-05-23 (Wave C-3 Agent G)
 })
 
 # Services/ violations resolved in W1-004-C (2026-05-23):

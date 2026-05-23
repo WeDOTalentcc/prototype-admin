@@ -1448,6 +1448,7 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     summary: dict[str, Any] = {}
     try:
         async with AsyncSessionLocal() as session:
+            # ADR-001-EXEMPT: multi-table analytics aggregation (funnel counts by status from applications table) — complex FILTER aggregate, repo extension deferred to dedicated analytics repo
             row = await session.execute(text("""
                 SELECT COUNT(*) AS total,
                     COUNT(*) FILTER (WHERE status = 'screening') AS screening,
