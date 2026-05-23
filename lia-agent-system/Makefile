@@ -80,3 +80,42 @@ check-client-id-bypass:	## B.2: sentinela "platform" bypass em app/api (BLOCKING
 
 check-cross-tenant: check-tenant-filter check-client-id-bypass	## Roda B.1 + B.2 em sequência (~10s)
 	@echo "✅ Cross-tenant hardening sensors completed"
+
+# ─── Recovery sensors (Audit 2026-05-23 — merge incident 02361f41c) ──────────
+# Sensores BLOCKING criados durante recovery dos 10 arquivos Tipo A afetados
+# pelo merge commit 02361f41c (1/mai/2026, 994 files, -34328 LOC silenciosas).
+# Cada sensor bloqueia regressão futura do trabalho recuperado em Recovery
+# #1 a #10. Detalhes: ~/Documents/Python/AUDIT_DEEP_2026-05-23.md.
+
+check-recoveries:	## Recovery sensors (Audit 2026-05-23) — 40+ tests BLOCKING (~120s)
+	@echo "▶ Recovery sensors (merge incident 02361f41c anti-regression)"
+	python3 -m pytest \
+		tests/contract/test_lia_feedback_contract.py \
+		tests/contract/test_no_collection_errors.py \
+		tests/contract/test_wsi_audit_trail_contract.py \
+		tests/contract/test_analytics_actions_contract.py \
+		tests/contract/test_job_actions_contract.py \
+		tests/contract/test_candidate_actions_migration.py \
+		tests/contract/test_teams_bridge_contract.py \
+		tests/contract/test_interview_graph_fairness_contract.py \
+		tests/contract/test_rails_client_canonical_home.py \
+		tests/contract/test_wedotalent_rails_client_contract.py \
+		tests/contract/test_policy_migration.py \
+		tests/api/test_lia_feedback_hardening.py \
+		--no-header --no-cov -q --tb=short
+
+check-recoveries-fast:	## Recovery sensors EXCETO no_collection (que demora ~90s, ~10s sem ele)
+	@echo "▶ Recovery sensors fast (skip no_collection_errors)"
+	python3 -m pytest \
+		tests/contract/test_lia_feedback_contract.py \
+		tests/contract/test_wsi_audit_trail_contract.py \
+		tests/contract/test_analytics_actions_contract.py \
+		tests/contract/test_job_actions_contract.py \
+		tests/contract/test_candidate_actions_migration.py \
+		tests/contract/test_teams_bridge_contract.py \
+		tests/contract/test_interview_graph_fairness_contract.py \
+		tests/contract/test_rails_client_canonical_home.py \
+		tests/contract/test_wedotalent_rails_client_contract.py \
+		tests/contract/test_policy_migration.py \
+		tests/api/test_lia_feedback_hardening.py \
+		--no-header --no-cov -q --tb=short

@@ -82,6 +82,40 @@ jobs:
             --cov-fail-under=50 \
             -q --tb=short --no-header
 
+      # Recovery sensors (Audit 2026-05-23 — merge incident 02361f41c
+      # anti-regression). Step DEDICADO pra visibilidade no GitHub Actions UI.
+      # Esses sensors também rodam no step anterior via `pytest tests/`, mas
+      # ter step separado garante que regressão em recovery aparece com label
+      # explícito (não fica enterrado em 1657 testes).
+      # Referências:
+      #   - ~/Documents/Python/AUDIT_DEEP_2026-05-23.md (incident root cause)
+      #   - ~/Documents/Python/RECOVERY_AUDIT_MATRIX.md (10 arquivos Tipo A)
+      #   - Makefile target `make check-recoveries`
+      - name: Recovery sensors (merge incident 02361f41c anti-regression)
+        run: |
+          python -m pytest \
+            tests/contract/test_lia_feedback_contract.py \
+            tests/contract/test_wsi_audit_trail_contract.py \
+            tests/contract/test_analytics_actions_contract.py \
+            tests/contract/test_job_actions_contract.py \
+            tests/contract/test_candidate_actions_migration.py \
+            tests/contract/test_teams_bridge_contract.py \
+            tests/contract/test_interview_graph_fairness_contract.py \
+            tests/contract/test_rails_client_canonical_home.py \
+            tests/contract/test_wedotalent_rails_client_contract.py \
+            tests/contract/test_policy_migration.py \
+            tests/api/test_lia_feedback_hardening.py \
+            --no-header --no-cov -q --tb=short
+
+      # Test orphan detection sensor (Recovery #2). Roda pytest --collect-only
+      # e bloqueia se algum test file fica com ImportError silencioso —
+      # mesmo padrão do test_dev_auto_login_tenant.py que ficou 22 dias broken.
+      # Step separado porque é mais lento (~90s) que os contract tests.
+      - name: Test orphan detection (Recovery #2 sensor)
+        run: |
+          python -m pytest tests/contract/test_no_collection_errors.py \
+            --no-header --no-cov -q --tb=short
+
       - name: Security scan (bandit)
         continue-on-error: true
         run: |
