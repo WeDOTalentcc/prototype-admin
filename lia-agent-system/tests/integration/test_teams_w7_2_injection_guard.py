@@ -69,7 +69,7 @@ class TestBridgeInjectionGuard:
             patch.object(bridge, "_resolve_company_id", new=AsyncMock(return_value="co1")),
             patch(f"{_SEC_MODULE}.check_input_security", return_value=_allowed()),
             patch(
-                "app.orchestrator.registry.get_orchestrator_instance",
+                "app.orchestrator.execution.registry.get_orchestrator_instance",
                 return_value=mock_orch,
             ),
         ):
@@ -95,7 +95,7 @@ class TestBridgeInjectionGuard:
 class TestCascadedRouterInjectionGuard:
     @pytest.mark.asyncio
     async def test_blocks_injection_returns_security_blocked_source(self):
-        from app.orchestrator.cascaded_router import CascadedRouter
+        from app.orchestrator.routing.cascaded_router import CascadedRouter
 
         router = CascadedRouter.__new__(CascadedRouter)
         router._stats = {"total": 0}
@@ -114,7 +114,7 @@ class TestCascadedRouterInjectionGuard:
 
     @pytest.mark.asyncio
     async def test_safe_message_does_not_stop_at_guard(self):
-        from app.orchestrator.cascaded_router import CascadedRouter
+        from app.orchestrator.routing.cascaded_router import CascadedRouter
 
         router = CascadedRouter.__new__(CascadedRouter)
         router._stats = {"total": 0}

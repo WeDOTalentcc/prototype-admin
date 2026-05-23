@@ -15,7 +15,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 # ── Helper: build a CascadedRouter with minimal mocks ─────────────────────
 def _make_router():
-    from app.orchestrator.cascaded_router import CascadedRouter, RouteResult
+    from app.orchestrator.routing.cascaded_router import CascadedRouter, RouteResult
 
     router = CascadedRouter.__new__(CascadedRouter)
     router._cache_max_size = 100
@@ -50,7 +50,7 @@ class TestWizardDomainOverride:
         wizard_result.confidence = 0.9
         router.fast.match.return_value = wizard_result
 
-        with patch("app.orchestrator.cascaded_router.settings") as mock_settings:
+        with patch("app.orchestrator.routing.cascaded_router.settings") as mock_settings:
             mock_settings.ROUTER_FAST_CONFIDENCE_THRESHOLD = 0.7
             result = router._wizard_domain_override("criar uma vaga para dev", "job_management")
 
@@ -61,7 +61,7 @@ class TestWizardDomainOverride:
         router, RouteResult = _make_router()
         router.fast.match.return_value = None
 
-        with patch("app.orchestrator.cascaded_router.settings") as mock_settings:
+        with patch("app.orchestrator.routing.cascaded_router.settings") as mock_settings:
             mock_settings.ROUTER_FAST_CONFIDENCE_THRESHOLD = 0.7
             result = router._wizard_domain_override("candidatos no funil", "job_management")
 
@@ -75,7 +75,7 @@ class TestWizardDomainOverride:
         low_conf_result.confidence = 0.4  # below threshold
         router.fast.match.return_value = low_conf_result
 
-        with patch("app.orchestrator.cascaded_router.settings") as mock_settings:
+        with patch("app.orchestrator.routing.cascaded_router.settings") as mock_settings:
             mock_settings.ROUTER_FAST_CONFIDENCE_THRESHOLD = 0.7
             result = router._wizard_domain_override("criar vaga", "sourcing")
 
@@ -86,7 +86,7 @@ class TestWizardDomainOverride:
         router, RouteResult = _make_router()
         router.fast.match.side_effect = RuntimeError("fast router unavailable")
 
-        with patch("app.orchestrator.cascaded_router.settings") as mock_settings:
+        with patch("app.orchestrator.routing.cascaded_router.settings") as mock_settings:
             mock_settings.ROUTER_FAST_CONFIDENCE_THRESHOLD = 0.7
             result = router._wizard_domain_override("criar vaga", "job_management")
 
@@ -100,7 +100,7 @@ class TestWizardDomainOverride:
         non_wiz_result.confidence = 0.95
         router.fast.match.return_value = non_wiz_result
 
-        with patch("app.orchestrator.cascaded_router.settings") as mock_settings:
+        with patch("app.orchestrator.routing.cascaded_router.settings") as mock_settings:
             mock_settings.ROUTER_FAST_CONFIDENCE_THRESHOLD = 0.7
             result = router._wizard_domain_override("mover candidato", "job_management")
 
@@ -113,7 +113,7 @@ class TestLRUEvictionOnWizardOverride:
     @pytest.mark.asyncio
     async def test_stale_lru_entry_evicted_for_wizard_message(self):
         """LRU has stale job_management entry → evicted → falls through to Tier 2."""
-        from app.orchestrator.cascaded_router import CascadedRouter, RouteResult
+        from app.orchestrator.routing.cascaded_router import CascadedRouter, RouteResult
         import hashlib
 
         router = MagicMock(spec=CascadedRouter)

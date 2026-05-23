@@ -1,6 +1,6 @@
 """Coverage tests for wizard_state.py — WizardState dataclass pure methods."""
 import pytest
-from app.orchestrator.wizard_state import (
+from app.orchestrator.guards.wizard_state import (
     WizardState,
     _redis_key,
     update_wizard_state_from_draft,

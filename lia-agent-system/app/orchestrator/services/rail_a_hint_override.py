@@ -41,7 +41,7 @@ import logging
 from typing import TYPE_CHECKING, Final
 
 if TYPE_CHECKING:
-    from app.orchestrator.cascaded_router import RouteResult
+    from app.orchestrator.routing.cascaded_router import RouteResult
 
 logger = logging.getLogger(__name__)
 
@@ -95,7 +95,7 @@ def build_hint_route(domain_id: str, intent_id: str | None) -> RouteResult:
     Lazy import de ``RouteResult`` para evitar circular dependency.
     Returns intent_details as a plain dict for backward-compat (callers use .get()).
     """
-    from app.orchestrator.cascaded_router import RouteResult
+    from app.orchestrator.routing.cascaded_router import RouteResult
 
     return RouteResult(
         domain_id=domain_id,

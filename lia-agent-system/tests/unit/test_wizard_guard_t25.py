@@ -10,7 +10,7 @@ Skill canônica: harness-engineering [sensor computacional].
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from app.orchestrator.cascaded_router import CascadedRouter, RouteResult
+from app.orchestrator.routing.cascaded_router import CascadedRouter, RouteResult
 
 
 # ────────────────────────────────────────────────────────────────────────

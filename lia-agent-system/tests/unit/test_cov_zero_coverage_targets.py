@@ -560,7 +560,7 @@ class TestRemainingZeroCoverageImports:
         _try_import("app.jobs.webhook_tasks")
 
     def test_orchestrator_observability(self):
-        _try_import("app.orchestrator._observability")
+        _try_import("app.orchestrator.observability._observability")
 
     def test_usage_tracking_callback(self):
         _try_import("app.shared.observability.usage_tracking_callback")

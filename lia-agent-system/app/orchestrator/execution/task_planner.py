@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 # See: app/orchestrator/main_orchestrator._is_plan_service_enabled()
 #
 # Usage pattern:
-#   from app.orchestrator.main_orchestrator import _is_plan_service_enabled
+#   from app.orchestrator.execution.main_orchestrator import _is_plan_service_enabled
 #   if _is_plan_service_enabled():
 #       plan = task_planner.plan(request)
 #   else:

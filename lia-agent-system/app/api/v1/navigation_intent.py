@@ -11,7 +11,7 @@ Used by the LIA Float panel to suggest contextual navigation.
 from fastapi import APIRouter
 from pydantic import BaseModel, Field
 
-from app.orchestrator.navigation_intent import detect_navigation_intent
+from app.orchestrator.context.navigation_intent import detect_navigation_intent
 from fastapi import Depends
 from app.shared.types import WeDoBaseModel
 

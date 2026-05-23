@@ -102,7 +102,7 @@ class LLMCascadeRouter:
         """
         total_start = time.time()
         if request_id is None:
-            from app.orchestrator.tenant_budget import generate_request_id
+            from app.orchestrator.guards.tenant_budget import generate_request_id
             request_id = generate_request_id()
 
         cost_accumulator: list[tuple[str, int]] = []
@@ -272,7 +272,7 @@ class LLMCascadeRouter:
         if not company_id or tokens <= 0:
             return
         try:
-            from app.orchestrator.tenant_budget import tenant_budget
+            from app.orchestrator.guards.tenant_budget import tenant_budget
             tokens_in = tokens // 2
             tokens_out = tokens - tokens_in
             cost_usd = _estimate_cost(model, tokens_in, tokens_out)
@@ -300,7 +300,7 @@ class LLMCascadeRouter:
         if not company_id or not attempts:
             return
         try:
-            from app.orchestrator.tenant_budget import tenant_budget
+            from app.orchestrator.guards.tenant_budget import tenant_budget
             tokens_total = sum(t for _, t in attempts)
             total_cost = 0.0
             for model_name, toks in attempts:

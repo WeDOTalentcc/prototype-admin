@@ -68,7 +68,7 @@ class TestGateEarlyExit:
 
     @pytest.mark.asyncio
     async def test_no_intent_hint_returns_none(self):
-        from app.orchestrator.rail_a_capability_check import check_rail_a_capability
+        from app.orchestrator.guards.rail_a_capability_check import check_rail_a_capability
 
         result = await check_rail_a_capability(
             context={"source": "rail_a", "metadata": {}},
@@ -81,7 +81,7 @@ class TestGateEarlyExit:
     @pytest.mark.asyncio
     async def test_source_not_rail_a_returns_none(self):
         """source != rail_a: gate never fires, even with valid intent_hint."""
-        from app.orchestrator.rail_a_capability_check import check_rail_a_capability
+        from app.orchestrator.guards.rail_a_capability_check import check_rail_a_capability
 
         result = await check_rail_a_capability(
             context={
@@ -97,7 +97,7 @@ class TestGateEarlyExit:
     @pytest.mark.asyncio
     async def test_unknown_intent_hint_returns_none(self):
         """intent_hint not in capability_map -> returns None (LLM fallthrough)."""
-        from app.orchestrator.rail_a_capability_check import check_rail_a_capability
+        from app.orchestrator.guards.rail_a_capability_check import check_rail_a_capability
 
         result = await check_rail_a_capability(
             context=_rail_a_ctx("completely_unknown_intent_xyz"),
@@ -110,7 +110,7 @@ class TestGateEarlyExit:
     @pytest.mark.asyncio
     async def test_empty_context_does_not_crash(self):
         """Empty context dict: gate returns None, does not raise."""
-        from app.orchestrator.rail_a_capability_check import check_rail_a_capability
+        from app.orchestrator.guards.rail_a_capability_check import check_rail_a_capability
 
         result = await check_rail_a_capability(
             context={},
@@ -149,7 +149,7 @@ class TestFEOnlyCards:
         but still has routing_layer=navigate or modal=FE-only in the golden dataset.
         Either update routing_layer to chat_cap_map or remove from capability_map.
         """
-        from app.orchestrator.rail_a_capability_check import check_rail_a_capability
+        from app.orchestrator.guards.rail_a_capability_check import check_rail_a_capability
 
         result = await check_rail_a_capability(
             context=_rail_a_ctx(intent_hint),
@@ -190,7 +190,7 @@ class TestLLMFallbackCards:
         Update golden dataset routing_layer from chat_llm_fallback to chat_cap_map,
         and ensure the new capability_map entry is correct.
         """
-        from app.orchestrator.rail_a_capability_check import check_rail_a_capability
+        from app.orchestrator.guards.rail_a_capability_check import check_rail_a_capability
 
         result = await check_rail_a_capability(
             context=_rail_a_ctx(intent_hint),
@@ -222,7 +222,7 @@ class TestNonChatExecutable:
         ],
     )
     async def test_returns_open_modal(self, intent_hint, expected_modal_id):
-        from app.orchestrator.rail_a_capability_check import check_rail_a_capability
+        from app.orchestrator.guards.rail_a_capability_check import check_rail_a_capability
 
         result = await check_rail_a_capability(
             context=_rail_a_ctx(intent_hint),
@@ -247,7 +247,7 @@ class TestNonChatExecutable:
     @pytest.mark.asyncio
     async def test_non_chat_executable_skips_db(self):
         """Non-chat-executable must not touch the DB at all."""
-        from app.orchestrator.rail_a_capability_check import check_rail_a_capability
+        from app.orchestrator.guards.rail_a_capability_check import check_rail_a_capability
 
         mock_db = AsyncMock()
         result = await check_rail_a_capability(
@@ -280,7 +280,7 @@ class TestChatExecutableNoEntity:
         Sensor message: if this fails, entity_required was accidentally added
         to a tenant-wide intent in capability_map.yaml. Remove the entity entry.
         """
-        from app.orchestrator.rail_a_capability_check import check_rail_a_capability
+        from app.orchestrator.guards.rail_a_capability_check import check_rail_a_capability
 
         result = await check_rail_a_capability(
             context=_rail_a_ctx(intent_hint),
@@ -317,7 +317,7 @@ class TestEntityResolutionNotFound:
     )
     async def test_entity_not_found_returns_navigate(self, intent_hint, card_id):
         """Entity not found -> gate returns not_found response with navigate_to action."""
-        from app.orchestrator.rail_a_capability_check import check_rail_a_capability
+        from app.orchestrator.guards.rail_a_capability_check import check_rail_a_capability
 
         not_found = MagicMock()
         not_found.resolved = False
@@ -359,7 +359,7 @@ class TestEntityResolutionNotFound:
     @pytest.mark.asyncio
     async def test_entity_ambiguous_returns_disambiguation(self):
         """Ambiguous entity -> gate returns disambiguation choices, domain=entity_resolver."""
-        from app.orchestrator.rail_a_capability_check import check_rail_a_capability
+        from app.orchestrator.guards.rail_a_capability_check import check_rail_a_capability
 
         ambiguous = MagicMock()
         ambiguous.resolved = False
@@ -398,7 +398,7 @@ class TestEntityResolutionResolved:
     @pytest.mark.asyncio
     async def test_resolved_enriches_context(self):
         """First entity resolves -> context enriched with entity_id before further processing."""
-        from app.orchestrator.rail_a_capability_check import check_rail_a_capability
+        from app.orchestrator.guards.rail_a_capability_check import check_rail_a_capability
 
         resolved = MagicMock()
         resolved.resolved = True

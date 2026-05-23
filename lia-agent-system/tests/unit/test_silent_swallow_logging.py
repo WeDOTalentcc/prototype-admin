@@ -48,7 +48,7 @@ def test_pipeline_actions_logs_dateutil_swallow():
 
 def test_main_orchestrator_logs_persist_and_summary_swallows():
     """main_orchestrator.py:395 e :1004 usam logger.warning (perda crítica)."""
-    from app.orchestrator import main_orchestrator
+    from app.orchestrator.execution import main_orchestrator
     src = inspect.getsource(main_orchestrator)
     # Buscar warnings específicos
     assert "_persist_response failed" in src, "site 395 deveria loggar _persist_response failure"
@@ -57,14 +57,14 @@ def test_main_orchestrator_logs_persist_and_summary_swallows():
 
 def test_orchestrator_logs_summary_swallow():
     """orchestrator.py:329 usa logger.warning para update_summary."""
-    from app.orchestrator import orchestrator
+    from app.orchestrator.legacy import orchestrator
     src = inspect.getsource(orchestrator)
     assert "update_summary failed" in src, "site 329 deveria loggar update_summary failure"
 
 
 def test_cascaded_router_logs_routing_decisions():
     """cascaded_router.py:454, 680, 758 — 3 sites de routing."""
-    from app.orchestrator import cascaded_router
+    from app.orchestrator.routing import cascaded_router
     src = inspect.getsource(cascaded_router)
     # Esperado pelo menos 3 except logged adicionais aos pre-existentes
     logged = _count_logged_excepts(src)

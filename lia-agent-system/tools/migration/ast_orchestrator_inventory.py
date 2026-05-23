@@ -24,7 +24,7 @@ REPO_ROOT = Path("/home/runner/workspace/lia-agent-system")
 
 # Targets to detect (V1 = orchestrator.py, NOT main_orchestrator.py)
 V1_MODULE_PATHS = {
-    "app.orchestrator.orchestrator",
+    "app.orchestrator.legacy.orchestrator",
 }
 # Modules where importing "Orchestrator" name means V1
 V1_AMBIGUOUS_PARENTS = {

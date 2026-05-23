@@ -11,7 +11,7 @@ Why constants instead of decorators in Sprint I?
 - Sprint III applies the decorators using these constants
 
 Usage (Sprint III):
-    from app.orchestrator._observability import V1_SPANS, V2_SPANS
+    from app.orchestrator.observability._observability import V1_SPANS, V2_SPANS
     from app.shared.observability.tracing import trace_span
 
     class Orchestrator:

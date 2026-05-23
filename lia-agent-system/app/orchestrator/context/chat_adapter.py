@@ -13,8 +13,8 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from app.orchestrator.context_adapter import ContextAdapter, UniversalContext
-from app.orchestrator.main_orchestrator import MainOrchestrator
+from app.orchestrator.context.context_adapter import ContextAdapter, UniversalContext
+from app.orchestrator.execution.main_orchestrator import MainOrchestrator
 
 logger = logging.getLogger(__name__)
 

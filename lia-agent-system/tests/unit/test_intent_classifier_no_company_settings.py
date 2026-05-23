@@ -128,7 +128,7 @@ def test_company_settings_intents_constant_contract():
     congela seu conteúdo: se alguém adicionar/remover valores sem revisar
     `docs/audit/chat-runtime-audit.md`, o teste falha e força revisão.
     """
-    from app.orchestrator.main_orchestrator import _COMPANY_SETTINGS_INTENTS
+    from app.orchestrator.execution.main_orchestrator import _COMPANY_SETTINGS_INTENTS
 
     assert _COMPANY_SETTINGS_INTENTS == COMPANY_SETTINGS_LOWERCASE, (
         f"_COMPANY_SETTINGS_INTENTS mudou. Esperado: "
@@ -160,7 +160,7 @@ def test_decide_agent_type_does_not_hijack_create_job_intent():
     (ex.: benefits_catalog_empty), mas o roteamento NÃO pode desviar para
     company_settings.
     """
-    from app.orchestrator.main_orchestrator import _decide_agent_type_from_hints
+    from app.orchestrator.execution.main_orchestrator import _decide_agent_type_from_hints
 
     class _FakeHint:
         def __init__(self, type: str, severity: str = "info"):
@@ -199,7 +199,7 @@ def test_decide_agent_type_routes_when_intent_explicitly_company_settings():
     contexto de página /settings/*) seta ctx.intent='company_settings' —
     mesmo SEM hints.
     """
-    from app.orchestrator.main_orchestrator import _decide_agent_type_from_hints
+    from app.orchestrator.execution.main_orchestrator import _decide_agent_type_from_hints
 
     for intent in ("company_settings", "configure_company", "settings_config", "hiring_policy"):
         agent_type, _, _ = _decide_agent_type_from_hints([], intent=intent)
@@ -217,7 +217,7 @@ def test_decide_agent_type_routes_when_intent_explicitly_company_settings():
 
 def test_decide_agent_type_routes_on_blocking_severity():
     """Hints warning/critical de onboarding desviam mesmo sem intent."""
-    from app.orchestrator.main_orchestrator import _decide_agent_type_from_hints
+    from app.orchestrator.execution.main_orchestrator import _decide_agent_type_from_hints
 
     class _FakeHint:
         def __init__(self, type: str, severity: str):

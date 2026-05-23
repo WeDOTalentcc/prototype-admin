@@ -1576,7 +1576,7 @@ Como posso ajudar mais?"""
 @pytest.fixture
 def orchestrator(mock_llm_service, mock_db_session):
     """Orchestrator configurado para testes."""
-    with patch('app.orchestrator.orchestrator.Orchestrator') as MockOrchestrator:
+    with patch('app.orchestrator.legacy.orchestrator.Orchestrator') as MockOrchestrator:
         mock_orch = MagicMock()
         
         async def mock_process(user_id: str, message: str, **kwargs):

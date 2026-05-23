@@ -142,11 +142,11 @@ class TestEquivalenceWithV1:
         """V1 instance para comparação direta."""
         from unittest.mock import AsyncMock, MagicMock, patch
 
-        from app.orchestrator.orchestrator import Orchestrator
+        from app.orchestrator.legacy.orchestrator import Orchestrator
 
         mock_llm = MagicMock()
         mock_llm.complete = AsyncMock(return_value={"content": "ok"})
-        with patch("app.orchestrator.orchestrator.response_cache_service") as mc:
+        with patch("app.orchestrator.legacy.orchestrator.response_cache_service") as mc:
             mc.is_enabled.return_value = False
             mc.get_stats.return_value = {}
             return Orchestrator(llm_service=mock_llm)

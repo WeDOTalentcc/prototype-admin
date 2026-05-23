@@ -18,7 +18,7 @@ from app.orchestrator.action_executor.intents_config import (
     VALID_PIPELINE_STAGES,
 )
 
-from app.orchestrator.intent_types import OrchestratorIntentResult
+from app.orchestrator.context.intent_types import OrchestratorIntentResult
 
 
 # ---------------------------------------------------------------------------

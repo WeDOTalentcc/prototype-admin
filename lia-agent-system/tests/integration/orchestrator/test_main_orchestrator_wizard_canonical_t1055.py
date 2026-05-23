@@ -16,8 +16,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from app.orchestrator.main_orchestrator import MainOrchestrator
-from app.orchestrator.context_adapter import UniversalContext
+from app.orchestrator.execution.main_orchestrator import MainOrchestrator
+from app.orchestrator.context.context_adapter import UniversalContext
 
 
 def _ctx(message: str, conversation_id: str = "conv-T1055") -> UniversalContext:

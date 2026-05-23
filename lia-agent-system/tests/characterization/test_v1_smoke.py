@@ -20,7 +20,7 @@ class TestV1ImportAndStructure:
 
     def test_v1_module_importable(self):
         """V1 (orchestrator.py) deve ser importável apesar do DeprecationWarning."""
-        from app.orchestrator import orchestrator as v1_module
+        from app.orchestrator.legacy import orchestrator as v1_module
 
         assert v1_module is not None
         assert hasattr(v1_module, "Orchestrator"), (
@@ -29,7 +29,7 @@ class TestV1ImportAndStructure:
 
     def test_v1_class_has_expected_public_methods(self):
         """V1 deve ter os 12 métodos públicos mapeados no plano de migração."""
-        from app.orchestrator.orchestrator import Orchestrator
+        from app.orchestrator.legacy.orchestrator import Orchestrator
 
         expected_methods = {
             "process_request",
@@ -57,7 +57,7 @@ class TestV1ImportAndStructure:
 
     def test_v1_class_has_expected_internal_methods(self):
         """V1 deve ter os métodos privados/heurísticos críticos para extração no Sprint II."""
-        from app.orchestrator.orchestrator import Orchestrator
+        from app.orchestrator.legacy.orchestrator import Orchestrator
 
         expected_internal = {
             "_handle_directly",  # LIA-A04 fallback ReAct
@@ -79,7 +79,7 @@ class TestV1ImportAndStructure:
 
     def test_v1_marked_as_deprecated(self):
         """V1 deve manter marcação LIA-D06 DEPRECATED até Sprint V."""
-        import app.orchestrator.orchestrator as v1_module
+        import app.orchestrator.legacy.orchestrator as v1_module
 
         docstring = inspect.getsourcefile(v1_module)
         assert docstring, "V1 module deve ser inspecionável"

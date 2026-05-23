@@ -188,7 +188,7 @@ def test_not_in_default_fallback_order():
 
 def test_provider_for_model_deepseek_routing():
     """_provider_for_model deve retornar 'deepseek' para modelos deepseek-* (gap P1)."""
-    from app.orchestrator.llm_cascade import LLMCascadeRouter
+    from app.orchestrator.routing.llm_cascade import LLMCascadeRouter
 
     assert LLMCascadeRouter._provider_for_model("deepseek-chat") == "deepseek"
     assert LLMCascadeRouter._provider_for_model("deepseek-coder") == "deepseek"
@@ -198,7 +198,7 @@ def test_provider_for_model_deepseek_routing():
 
 def test_provider_for_model_deepseek_no_regression():
     """Outros providers não devem regredir após adição da branch deepseek."""
-    from app.orchestrator.llm_cascade import LLMCascadeRouter
+    from app.orchestrator.routing.llm_cascade import LLMCascadeRouter
 
     assert LLMCascadeRouter._provider_for_model("gemini-pro") == "gemini"
     assert LLMCascadeRouter._provider_for_model("gemini-1.5-flash") == "gemini"

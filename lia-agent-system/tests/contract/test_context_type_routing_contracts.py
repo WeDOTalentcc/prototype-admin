@@ -105,19 +105,19 @@ class TestContextAdapterMapping:
     """PAGE_TO_CONTEXT_TYPE deve cobrir os domínios usados pelo float."""
 
     def test_wizard_maps_to_job_management(self):
-        from app.orchestrator.context_adapter import PAGE_TO_CONTEXT_TYPE
+        from app.orchestrator.context.context_adapter import PAGE_TO_CONTEXT_TYPE
         assert PAGE_TO_CONTEXT_TYPE.get("wizard") == "job_management"
 
     def test_general_maps_to_general(self):
-        from app.orchestrator.context_adapter import PAGE_TO_CONTEXT_TYPE
+        from app.orchestrator.context.context_adapter import PAGE_TO_CONTEXT_TYPE
         assert PAGE_TO_CONTEXT_TYPE.get("general") == "general"
 
     def test_talent_maps_to_talent_funnel(self):
-        from app.orchestrator.context_adapter import PAGE_TO_CONTEXT_TYPE
+        from app.orchestrator.context.context_adapter import PAGE_TO_CONTEXT_TYPE
         assert PAGE_TO_CONTEXT_TYPE.get("talent") == "talent_funnel"
 
     def test_pipeline_maps_to_pipeline(self):
-        from app.orchestrator.context_adapter import PAGE_TO_CONTEXT_TYPE
+        from app.orchestrator.context.context_adapter import PAGE_TO_CONTEXT_TYPE
         assert PAGE_TO_CONTEXT_TYPE.get("pipeline") == "pipeline"
 
 
@@ -130,7 +130,7 @@ class TestUniversalContextContract:
     """UniversalContext deve aceitar context_type passado pelo float."""
 
     def test_universal_context_accepts_general(self):
-        from app.orchestrator.context_adapter import UniversalContext
+        from app.orchestrator.context.context_adapter import UniversalContext
         ctx = UniversalContext(
             message="olá",
             user_id="u1",
@@ -140,7 +140,7 @@ class TestUniversalContextContract:
         assert ctx.context_type == "general"
 
     def test_universal_context_accepts_job_management(self):
-        from app.orchestrator.context_adapter import UniversalContext
+        from app.orchestrator.context.context_adapter import UniversalContext
         ctx = UniversalContext(
             message="criar vaga",
             user_id="u1",
@@ -150,13 +150,13 @@ class TestUniversalContextContract:
         assert ctx.context_type == "job_management"
 
     def test_universal_context_default_is_general(self):
-        from app.orchestrator.context_adapter import UniversalContext
+        from app.orchestrator.context.context_adapter import UniversalContext
         ctx = UniversalContext(message="test", user_id="u1", company_id="c1")
         assert ctx.context_type == "general"
 
     def test_universal_context_has_conversation_id_optional(self):
         """Float sempre passa conversation_id — deve ser Optional."""
-        from app.orchestrator.context_adapter import UniversalContext
+        from app.orchestrator.context.context_adapter import UniversalContext
         ctx = UniversalContext(message="test", user_id="u1", company_id="c1")
         assert ctx.conversation_id is None
         ctx2 = UniversalContext(

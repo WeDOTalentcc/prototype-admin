@@ -129,11 +129,11 @@ def test_try_init_otlp_returns_false_when_no_endpoint():
 
 def test_cascaded_router_has_trace_span():
     import inspect
-    from app.orchestrator.cascaded_router import CascadedRouter
+    from app.orchestrator.routing.cascaded_router import CascadedRouter
     src = inspect.getsource(CascadedRouter.route)
     # The decorator is applied, so the original function should be wrapped
     assert "router.route" in inspect.getsource(
-        sys.modules["app.orchestrator.cascaded_router"]
+        sys.modules["app.orchestrator.routing.cascaded_router"]
     )
 
 

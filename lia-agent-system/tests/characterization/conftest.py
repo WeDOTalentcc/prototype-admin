@@ -43,7 +43,7 @@ def _silence_lia_d06_deprecation():
         warnings.filterwarnings(
             "ignore",
             category=DeprecationWarning,
-            module="app.orchestrator.orchestrator",
+            module="app.orchestrator.legacy.orchestrator",
         )
         yield
 
@@ -172,12 +172,12 @@ def v1_with_minimal_mocks():
         - test_is_tool_allowed (lookup com tool_registry real)
         - test_get_available_tools (filtro com tool_registry real)
     """
-    from app.orchestrator.orchestrator import Orchestrator
+    from app.orchestrator.legacy.orchestrator import Orchestrator
 
     mock_llm = MagicMock()
     mock_llm.complete = AsyncMock(return_value={"content": "ok", "tokens": 5})
 
-    with patch("app.orchestrator.orchestrator.response_cache_service") as mock_cache:
+    with patch("app.orchestrator.legacy.orchestrator.response_cache_service") as mock_cache:
         mock_cache.is_enabled.return_value = False
         mock_cache.get_stats.return_value = {"hits": 0, "misses": 0, "size": 0}
         v1 = Orchestrator(llm_service=mock_llm, db_service=None)
@@ -209,12 +209,12 @@ def v1_with_all_internal_mocks():
         - test_context_overrides_routing (hardcoded mapping)
         - test_policy_denied_returns_failure (policy gate)
     """
-    from app.orchestrator.orchestrator import Orchestrator
+    from app.orchestrator.legacy.orchestrator import Orchestrator
 
     mock_llm = MagicMock()
     mock_llm.complete = AsyncMock(return_value={"content": "ok", "tokens": 5})
 
-    with patch("app.orchestrator.orchestrator.response_cache_service") as mock_cache:
+    with patch("app.orchestrator.legacy.orchestrator.response_cache_service") as mock_cache:
         mock_cache.is_enabled.return_value = False
         mock_cache.get_stats.return_value = {"hits": 0, "misses": 0}
 
@@ -235,7 +235,7 @@ def v1_with_all_internal_mocks():
         )
 
         # cascaded_router — RouteResult previsível
-        from app.orchestrator.cascaded_router import RouteResult
+        from app.orchestrator.routing.cascaded_router import RouteResult
         v1._cascaded_router = MagicMock()
         v1._cascaded_router.route = AsyncMock(
             return_value=RouteResult(

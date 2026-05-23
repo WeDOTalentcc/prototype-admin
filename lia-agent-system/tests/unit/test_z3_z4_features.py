@@ -123,14 +123,14 @@ system_prompt: |
 
 class TestTenantBudgetCostAlerts:
     def test_send_budget_alert_method_exists(self):
-        from app.orchestrator.tenant_budget import TenantBudget
+        from app.orchestrator.guards.tenant_budget import TenantBudget
         budget = TenantBudget()
         assert hasattr(budget, "_send_budget_alert")
 
     @pytest.mark.asyncio
     async def test_send_budget_alert_fail_safe(self):
         """_send_budget_alert deve ser fail-safe mesmo sem notification_service."""
-        from app.orchestrator.tenant_budget import TenantBudget
+        from app.orchestrator.guards.tenant_budget import TenantBudget
         budget = TenantBudget()
         # Should not raise even when notification_service is unavailable
         await budget._send_budget_alert("test_company", "Alerta: 80% consumido", 0.80)
@@ -138,7 +138,7 @@ class TestTenantBudgetCostAlerts:
     @pytest.mark.asyncio
     async def test_check_and_record_calls_alert_on_threshold(self):
         """check_and_record deve disparar alerta quando ratio >= threshold."""
-        from app.orchestrator.tenant_budget import TenantBudget
+        from app.orchestrator.guards.tenant_budget import TenantBudget
 
         budget = TenantBudget(monthly_limit=100)
         budget._alert_threshold = 0.80

@@ -59,7 +59,7 @@ class TestSubagentForSourcing:
 
 class TestFastRouterSourcingPatterns:
     def _router(self):
-        from app.orchestrator.fast_router import FastRouter
+        from app.orchestrator.routing.fast_router import FastRouter
         return FastRouter()
 
     def test_sourcing_planner_criterios(self):
@@ -97,13 +97,13 @@ class TestFastRouterSourcingPatterns:
 
 class TestCascadedRouterSourcingDomains:
     def test_all_sourcing_subagents_in_map(self):
-        from app.orchestrator.cascaded_router import AGENT_TYPE_TO_DOMAIN
+        from app.orchestrator.routing.cascaded_router import AGENT_TYPE_TO_DOMAIN
         for domain in ("sourcing_planner", "sourcing_search", "sourcing_enrich", "sourcing_engagement"):
             assert domain in AGENT_TYPE_TO_DOMAIN, f"{domain} not in AGENT_TYPE_TO_DOMAIN"
             assert AGENT_TYPE_TO_DOMAIN[domain] == "sourcing"
 
     def test_original_sourcing_still_present(self):
-        from app.orchestrator.cascaded_router import AGENT_TYPE_TO_DOMAIN
+        from app.orchestrator.routing.cascaded_router import AGENT_TYPE_TO_DOMAIN
         assert "sourcing" in AGENT_TYPE_TO_DOMAIN
         assert AGENT_TYPE_TO_DOMAIN["sourcing"] == "sourcing"
 
@@ -136,6 +136,6 @@ class TestAgentModelConfigSourcing:
 
 class TestLLMCascadeRoutingPrompt:
     def test_sourcing_subdomains_in_prompt(self):
-        from app.orchestrator.llm_cascade import _ROUTING_PROMPT
+        from app.orchestrator.routing.llm_cascade import _ROUTING_PROMPT
         for subdomain in ("sourcing_planner", "sourcing_search", "sourcing_enrich", "sourcing_engagement"):
             assert subdomain in _ROUTING_PROMPT, f"{subdomain} not in _ROUTING_PROMPT"

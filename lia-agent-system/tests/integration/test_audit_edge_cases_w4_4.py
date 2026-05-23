@@ -29,7 +29,7 @@ class TestOrchestratorAuditIsConditional:
 
     def test_orchestrator_audit_is_conditional_on_entity_id(self):
         """main_orchestrator.py:1585 conditions audit on entity_id presence."""
-        import app.orchestrator.main_orchestrator as mod
+        import app.orchestrator.execution.main_orchestrator as mod
         src = inspect.getsource(mod)
         assert "_should_audit = bool(" in src
         assert (

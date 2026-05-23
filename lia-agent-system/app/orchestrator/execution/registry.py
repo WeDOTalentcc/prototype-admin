@@ -3,7 +3,7 @@ Orchestrator singleton registry -- shared neutral location.
 Avoids circular imports between app.api and app.domains.
 
 Usage:
-    from app.orchestrator.registry import get_orchestrator_instance, set_orchestrator_instance
+    from app.orchestrator.execution.registry import get_orchestrator_instance, set_orchestrator_instance
 """
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ import logging
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from app.orchestrator.orchestrator import Orchestrator
+    from app.orchestrator.legacy.orchestrator import Orchestrator
 
 logger = logging.getLogger(__name__)
 

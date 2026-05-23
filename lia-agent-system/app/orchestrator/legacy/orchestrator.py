@@ -30,15 +30,15 @@ from app.domains.workflow import DomainWorkflow
 from app.shared.execution import PlanDetector, PlanExecutor
 from app.shared.robustness import CancellationHandler, sanitize_text
 
-from app.orchestrator.cascaded_router import CascadedRouter
+from app.orchestrator.routing.cascaded_router import CascadedRouter
 # WT-2022 P3.1 (2026-05-21): V1 PolicyEngine retirado de runtime path.
 # Orchestrator V1 (deprecated, removed Q3 2026) agora usa PolicyGateService
 # wrappando PolicyEngineService V2. validate() retorna PolicyResult com
 # .to_legacy_dict() para zero-break-contract no call site abaixo.
 from app.domains.policy.services.policy_engine_service import PolicyEngineService
 from app.orchestrator.services.policy_gate_service import PolicyGateService
-from app.orchestrator.state_manager import StateManager
-from app.orchestrator.task_planner import TaskPlanner
+from app.orchestrator.execution.state_manager import StateManager
+from app.orchestrator.execution.task_planner import TaskPlanner
 
 try:
     from app.api.v1.ws_manager import ws_manager as _ws_manager

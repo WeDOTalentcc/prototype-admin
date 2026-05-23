@@ -12,8 +12,8 @@ from pydantic import BaseModel, Field
 
 from app.api.orchestrator_routes import get_main_orchestrator
 from app.dependencies.token_budget import require_token_budget
-from app.orchestrator.context_adapter import ContextAdapter
-from app.orchestrator.main_orchestrator import MainOrchestrator
+from app.orchestrator.context.context_adapter import ContextAdapter
+from app.orchestrator.execution.main_orchestrator import MainOrchestrator
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
 

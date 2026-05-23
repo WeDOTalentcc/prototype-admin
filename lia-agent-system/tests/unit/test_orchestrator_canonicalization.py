@@ -19,7 +19,7 @@ def test_legacy_orchestrator_module_emits_deprecation_on_import():
     # Force re-import so the module-level warn fires even if already cached
     import sys
 
-    mod_name = "app.orchestrator.orchestrator"
+    mod_name = "app.orchestrator.legacy.orchestrator"
     # Remove from cache to ensure the module-level code runs
     sys.modules.pop(mod_name, None)
 
@@ -76,7 +76,7 @@ def test_orchestrator_routes_orchestrator_alias_is_main_orchestrator():
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
         import app.api.orchestrator_routes as routes
-        from app.orchestrator.main_orchestrator import MainOrchestrator
+        from app.orchestrator.execution.main_orchestrator import MainOrchestrator
 
     assert routes.Orchestrator is MainOrchestrator, (
         "orchestrator_routes.Orchestrator must be an alias for MainOrchestrator "

@@ -102,7 +102,7 @@ def audit():
     )
 
     print("\n[3/6] Carregando mapping AGENT_TYPE_TO_DOMAIN…")
-    from app.orchestrator.domain_mappings import AGENT_TYPE_TO_DOMAIN, DEFAULT_DOMAIN
+    from app.orchestrator.routing.domain_mappings import AGENT_TYPE_TO_DOMAIN, DEFAULT_DOMAIN
     REPORT["agent_type_mapping"] = dict(AGENT_TYPE_TO_DOMAIN)
     REPORT["default_domain"] = DEFAULT_DOMAIN
     unknown_targets = sorted({

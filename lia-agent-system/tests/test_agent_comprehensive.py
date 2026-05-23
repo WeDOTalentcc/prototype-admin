@@ -139,7 +139,7 @@ class AgentTestSuite:
         ]
         
         try:
-            from app.orchestrator.fast_router import FastRouter
+            from app.orchestrator.routing.fast_router import FastRouter
             router = FastRouter()
 
             for message, expected_intent, expected_agent in test_intents:

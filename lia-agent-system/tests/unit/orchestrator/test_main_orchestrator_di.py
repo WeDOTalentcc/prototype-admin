@@ -16,7 +16,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from app.orchestrator.main_orchestrator import MainOrchestrator
+from app.orchestrator.execution.main_orchestrator import MainOrchestrator
 
 
 class TestBackwardCompatibility:

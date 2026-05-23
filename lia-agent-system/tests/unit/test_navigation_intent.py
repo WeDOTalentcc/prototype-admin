@@ -5,7 +5,7 @@ Covers: detect(), page routing, confidence calc, edge cases,
 multi-keyword scoring, singleton, public API function.
 """
 import pytest
-from app.orchestrator.navigation_intent import (
+from app.orchestrator.context.navigation_intent import (
     NavigationIntentDetector,
     NavigationIntentResult,
     detect_navigation_intent,
@@ -250,8 +250,8 @@ class TestPublicAPI:
         assert result.page == "Vagas"
 
     def test_singleton_detector_is_same_object(self):
-        from app.orchestrator.navigation_intent import _detector as d1
-        from app.orchestrator.navigation_intent import _detector as d2
+        from app.orchestrator.context.navigation_intent import _detector as d1
+        from app.orchestrator.context.navigation_intent import _detector as d2
         assert d1 is d2
 
     def test_singleton_returns_correct_page(self):

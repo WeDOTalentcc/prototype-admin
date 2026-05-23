@@ -1053,7 +1053,7 @@ def test_pr5_a2_fast_router_routes_prefill_section_tag():
     )
 
     # Hardcoded fallback (defense in depth).
-    from app.orchestrator import fast_router as fr_mod
+    from app.orchestrator.routing import fast_router as fr_mod
 
     hardcoded = fr_mod._HARDCODED_DOMAIN_PATTERNS.get("company_settings", [])
     assert any("prefill_section" in p for p in hardcoded), (

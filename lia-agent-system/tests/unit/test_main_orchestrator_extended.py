@@ -10,8 +10,8 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from typing import Any
 
-from app.orchestrator.context_adapter import UniversalContext
-from app.orchestrator.main_orchestrator import (
+from app.orchestrator.context.context_adapter import UniversalContext
+from app.orchestrator.execution.main_orchestrator import (
     MainOrchestrator,
     ChatResponse,
 )
@@ -173,8 +173,8 @@ class TestConversationIdGeneration:
         mock_orch.process_request = AsyncMock(
             return_value=make_orchestrator_result()
         )
-        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store, \
-             patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae:
+        with patch("app.orchestrator.execution.main_orchestrator.pending_action_store") as mock_store, \
+             patch("app.orchestrator.execution.main_orchestrator.action_executor") as mock_ae:
             mock_store.get.return_value = None
             mock_ae.try_execute = AsyncMock(return_value=make_action_result(status="not_actionable"))
 
@@ -189,8 +189,8 @@ class TestConversationIdGeneration:
         mock_orch.process_request = AsyncMock(
             return_value=make_orchestrator_result()
         )
-        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store, \
-             patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae:
+        with patch("app.orchestrator.execution.main_orchestrator.pending_action_store") as mock_store, \
+             patch("app.orchestrator.execution.main_orchestrator.action_executor") as mock_ae:
             mock_store.get.return_value = None
             mock_ae.try_execute = AsyncMock(return_value=make_action_result(status="not_actionable"))
 
@@ -215,8 +215,8 @@ class TestStreamingCallback:
         )
         streaming_cb = AsyncMock()
 
-        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store, \
-             patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae:
+        with patch("app.orchestrator.execution.main_orchestrator.pending_action_store") as mock_store, \
+             patch("app.orchestrator.execution.main_orchestrator.action_executor") as mock_ae:
             mock_store.get.return_value = None
             mock_ae.try_execute = AsyncMock(return_value=make_action_result(status="not_actionable"))
 
@@ -233,8 +233,8 @@ class TestStreamingCallback:
         mock_orch.process_request = AsyncMock(
             return_value=make_orchestrator_result()
         )
-        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store, \
-             patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae:
+        with patch("app.orchestrator.execution.main_orchestrator.pending_action_store") as mock_store, \
+             patch("app.orchestrator.execution.main_orchestrator.action_executor") as mock_ae:
             mock_store.get.return_value = None
             mock_ae.try_execute = AsyncMock(return_value=make_action_result(status="not_actionable"))
 
@@ -258,8 +258,8 @@ class TestPhase1NeedsConfirmation:
             pending_id="pa-123"
         )
 
-        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store, \
-             patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae:
+        with patch("app.orchestrator.execution.main_orchestrator.pending_action_store") as mock_store, \
+             patch("app.orchestrator.execution.main_orchestrator.action_executor") as mock_ae:
             mock_store.get.return_value = None
             mock_ae.try_execute = AsyncMock(return_value=mock_exec_result)
 
@@ -277,8 +277,8 @@ class TestPhase1NeedsConfirmation:
             message="Para qual etapa deseja mover o candidato?",
         )
 
-        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store, \
-             patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae:
+        with patch("app.orchestrator.execution.main_orchestrator.pending_action_store") as mock_store, \
+             patch("app.orchestrator.execution.main_orchestrator.action_executor") as mock_ae:
             mock_store.get.return_value = None
             mock_ae.try_execute = AsyncMock(return_value=mock_exec_result)
 

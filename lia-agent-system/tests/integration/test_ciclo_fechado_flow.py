@@ -53,7 +53,7 @@ def _make_pending_state(
     missing_params: list | None = None,
     collected_params: dict | None = None,
 ) -> "PendingActionState":
-    from app.orchestrator.pending_action import PendingActionState
+    from app.orchestrator.execution.pending_action import PendingActionState
     return PendingActionState(
         pending_id=str(uuid.uuid4()),
         intent="mover_candidato",

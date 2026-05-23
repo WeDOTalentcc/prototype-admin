@@ -151,7 +151,7 @@ class TestFairnessGuardOrchestrator:
     @pytest.mark.asyncio
     async def test_discriminatory_query_blocked(self):
         """Query discriminatória deve ser bloqueada antes das fases de processamento."""
-        from app.orchestrator.main_orchestrator import MainOrchestrator, ChatResponse
+        from app.orchestrator.execution.main_orchestrator import MainOrchestrator, ChatResponse
 
         mock_orchestrator = MagicMock()
         main_orch = MainOrchestrator(mock_orchestrator)
@@ -174,7 +174,7 @@ class TestFairnessGuardOrchestrator:
     @pytest.mark.asyncio
     async def test_non_discriminatory_query_passes(self):
         """Query não-discriminatória deve passar pelo FairnessGuard."""
-        from app.orchestrator.main_orchestrator import MainOrchestrator, ChatResponse
+        from app.orchestrator.execution.main_orchestrator import MainOrchestrator, ChatResponse
 
         mock_orchestrator = MagicMock()
         mock_orchestrator.process_request = AsyncMock(return_value={
@@ -193,17 +193,17 @@ class TestFairnessGuardOrchestrator:
         with patch.object(main_orch._fairness_guard, "check", return_value=mock_fg_blocked):
             with patch.object(main_orch._fairness_guard, "check_implicit_bias", return_value=mock_fg_implicit):
                 with patch(
-                    "app.orchestrator.main_orchestrator.pending_action_store"
+                    "app.orchestrator.execution.main_orchestrator.pending_action_store"
                 ) as mock_pas:
                     mock_pas.get.return_value = None
                     with patch(
-                        "app.orchestrator.main_orchestrator.action_executor"
+                        "app.orchestrator.execution.main_orchestrator.action_executor"
                     ) as mock_ae:
                         mock_ae_result = MagicMock()
                         mock_ae_result.status = "not_actionable"
                         mock_ae.try_execute = AsyncMock(return_value=mock_ae_result)
                         with patch(
-                            "app.orchestrator.main_orchestrator.candidate_list_store"
+                            "app.orchestrator.execution.main_orchestrator.candidate_list_store"
                         ) as mock_cls:
                             mock_cls.set = AsyncMock()
                             ctx = self._make_ctx("Quem são os melhores candidatos para a vaga?")
@@ -214,7 +214,7 @@ class TestFairnessGuardOrchestrator:
     @pytest.mark.asyncio
     async def test_fairness_guard_initialized_in_main_orchestrator(self):
         """FairnessGuard deve ser inicializado no __init__ do MainOrchestrator."""
-        from app.orchestrator.main_orchestrator import MainOrchestrator
+        from app.orchestrator.execution.main_orchestrator import MainOrchestrator
         from app.shared.compliance.fairness_guard import FairnessGuard
 
         mock_orchestrator = MagicMock()

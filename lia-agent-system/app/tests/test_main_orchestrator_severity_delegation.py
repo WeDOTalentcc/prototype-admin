@@ -15,13 +15,13 @@ from __future__ import annotations
 
 import pytest
 
-from app.orchestrator.main_orchestrator import (
+from app.orchestrator.execution.main_orchestrator import (
     _BLOCKING_HINT_SEVERITIES,
     _COMPANY_SETTINGS_INTENTS,
     _ONBOARDING_HINT_TYPES,
     _decide_agent_type_from_hints,
 )
-from app.orchestrator.precondition_checker import ProactiveHint
+from app.orchestrator.guards.precondition_checker import ProactiveHint
 
 
 def _hint(type_: str, severity: str) -> ProactiveHint:

@@ -6,7 +6,7 @@ validação de IDOR, e conversão para orchestrator context.
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from app.orchestrator.context_adapter import (
+from app.orchestrator.context.context_adapter import (
     ContextAdapter,
     UniversalContext,
     PAGE_TO_CONTEXT_TYPE,

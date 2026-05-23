@@ -44,7 +44,7 @@ def test_settings_has_vector_cache_enabled():
 # ── 4. VectorSemanticCache usa threshold do settings ─────────────────────────
 
 def test_vector_cache_uses_settings_threshold():
-    from app.orchestrator.vector_semantic_cache import VectorSemanticCache
+    from app.orchestrator.memory.vector_semantic_cache import VectorSemanticCache
     with patch("lia_config.config.settings") as mock_settings:
         mock_settings.ROUTER_VECTOR_SIMILARITY_THRESHOLD = 0.85
         cache = VectorSemanticCache()
@@ -54,7 +54,7 @@ def test_vector_cache_uses_settings_threshold():
 # ── 5. VectorSemanticCache aceita threshold explícito ────────────────────────
 
 def test_vector_cache_accepts_explicit_threshold():
-    from app.orchestrator.vector_semantic_cache import VectorSemanticCache
+    from app.orchestrator.memory.vector_semantic_cache import VectorSemanticCache
     cache = VectorSemanticCache(similarity_threshold=0.75)
     assert cache.threshold == 0.75
 
@@ -62,8 +62,8 @@ def test_vector_cache_accepts_explicit_threshold():
 # ── 6. CascadedRouter desabilita Tier 3 quando flag=False ─────────────────────
 
 def test_router_disables_vector_cache_when_flag_false():
-    from app.orchestrator.cascaded_router import CascadedRouter
-    with patch("app.orchestrator.cascaded_router.settings") as mock_settings:
+    from app.orchestrator.routing.cascaded_router import CascadedRouter
+    with patch("app.orchestrator.routing.cascaded_router.settings") as mock_settings:
         mock_settings.ROUTER_VECTOR_CACHE_ENABLED = False
         mock_settings.ROUTER_VECTOR_SIMILARITY_THRESHOLD = 0.92
         mock_settings.ROUTER_CACHE_MAX_SIZE = 1000
@@ -76,9 +76,9 @@ def test_router_disables_vector_cache_when_flag_false():
 # ── 7. CascadedRouter passa threshold correto ao VectorSemanticCache ─────────
 
 def test_router_passes_threshold_to_vector_cache():
-    from app.orchestrator.cascaded_router import CascadedRouter
-    with patch("app.orchestrator.cascaded_router.settings") as mock_settings, \
-         patch("app.orchestrator.vector_semantic_cache.VectorSemanticCache") as MockVSC:
+    from app.orchestrator.routing.cascaded_router import CascadedRouter
+    with patch("app.orchestrator.routing.cascaded_router.settings") as mock_settings, \
+         patch("app.orchestrator.memory.vector_semantic_cache.VectorSemanticCache") as MockVSC:
         mock_settings.ROUTER_VECTOR_CACHE_ENABLED = True
         mock_settings.ROUTER_VECTOR_SIMILARITY_THRESHOLD = 0.88
         mock_settings.ROUTER_CACHE_MAX_SIZE = 1000
@@ -93,8 +93,8 @@ def test_router_passes_threshold_to_vector_cache():
 
 @pytest.mark.asyncio
 async def test_router_skips_tier3_when_disabled():
-    from app.orchestrator.cascaded_router import CascadedRouter
-    from app.orchestrator.fast_router import FastRouter
+    from app.orchestrator.routing.cascaded_router import CascadedRouter
+    from app.orchestrator.routing.fast_router import FastRouter
 
     fast_router = MagicMock(spec=FastRouter)
     fast_router.match.return_value = MagicMock(
@@ -130,7 +130,7 @@ async def test_router_skips_tier3_when_disabled():
 @pytest.mark.asyncio
 async def test_near_miss_logging_fires_within_margin(caplog):
     import logging
-    from app.orchestrator.vector_semantic_cache import VectorSemanticCache
+    from app.orchestrator.memory.vector_semantic_cache import VectorSemanticCache
 
     cache = VectorSemanticCache(similarity_threshold=0.92)
 
@@ -153,7 +153,7 @@ async def test_near_miss_logging_fires_within_margin(caplog):
          patch.object(cache, "_get_db", _fake_get_db), \
          patch("lia_config.config.settings") as mock_s:
         mock_s.ROUTER_VECTOR_NEAR_MISS_LOG_MARGIN = 0.05
-        with caplog.at_level(logging.DEBUG, logger="app.orchestrator.vector_semantic_cache"):
+        with caplog.at_level(logging.DEBUG, logger="app.orchestrator.memory.vector_semantic_cache"):
             result = await cache._query_similar([0.1, 0.2, 0.3])
 
     assert result is None

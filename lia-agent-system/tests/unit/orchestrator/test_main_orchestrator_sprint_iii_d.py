@@ -16,7 +16,7 @@ from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
-from app.orchestrator.main_orchestrator import (
+from app.orchestrator.execution.main_orchestrator import (
     MainOrchestrator,
     _is_fallback_react_enabled,
 )

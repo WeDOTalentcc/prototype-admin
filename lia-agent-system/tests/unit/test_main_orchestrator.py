@@ -7,8 +7,8 @@ import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 from typing import Any
 
-from app.orchestrator.context_adapter import UniversalContext
-from app.orchestrator.main_orchestrator import (
+from app.orchestrator.context.context_adapter import UniversalContext
+from app.orchestrator.execution.main_orchestrator import (
     MainOrchestrator,
     ChatResponse,
     _get_suggested_prompts,
@@ -95,7 +95,7 @@ class TestMainOrchestratorPhase2:
         ctx = make_ctx()
         mock_db = MagicMock()
 
-        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae,              patch("app.domains.recruiter_assistant.services.conversation_memory.conversation_memory", mock_mem):
+        with patch("app.orchestrator.execution.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.execution.main_orchestrator.action_executor") as mock_ae,              patch("app.domains.recruiter_assistant.services.conversation_memory.conversation_memory", mock_mem):
             mock_store.get.return_value = None
             mock_ae.try_execute = AsyncMock(return_value=MagicMock(status="not_actionable"))
 
@@ -114,7 +114,7 @@ class TestMainOrchestratorPhase2:
         )
         mock_mem = _patch_conversation_memory()
 
-        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae,              patch("app.domains.recruiter_assistant.services.conversation_memory.conversation_memory", mock_mem):
+        with patch("app.orchestrator.execution.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.execution.main_orchestrator.action_executor") as mock_ae,              patch("app.domains.recruiter_assistant.services.conversation_memory.conversation_memory", mock_mem):
             mock_store.get.return_value = None
             mock_ae.try_execute = AsyncMock(return_value=MagicMock(status="not_actionable"))
 
@@ -131,7 +131,7 @@ class TestMainOrchestratorPhase2:
         mock_orch.process_request = AsyncMock(side_effect=Exception("DB timeout"))
         mock_mem = _patch_conversation_memory()
 
-        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae,              patch("app.domains.recruiter_assistant.services.conversation_memory.conversation_memory", mock_mem):
+        with patch("app.orchestrator.execution.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.execution.main_orchestrator.action_executor") as mock_ae,              patch("app.domains.recruiter_assistant.services.conversation_memory.conversation_memory", mock_mem):
             mock_store.get.return_value = None
             mock_ae.try_execute = AsyncMock(return_value=MagicMock(status="not_actionable"))
 
@@ -164,7 +164,7 @@ class TestMainOrchestratorPendingAction:
         mock_exec_result.action_type = "mover_candidato"
         mock_exec_result.pending_action_id = None
 
-        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.main_orchestrator.is_confirmation", return_value=True),              patch("app.orchestrator.main_orchestrator.ACTIONABLE_INTENTS", {"mover_candidato": {}}),              patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae:
+        with patch("app.orchestrator.execution.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.execution.main_orchestrator.is_confirmation", return_value=True),              patch("app.orchestrator.execution.main_orchestrator.ACTIONABLE_INTENTS", {"mover_candidato": {}}),              patch("app.orchestrator.execution.main_orchestrator.action_executor") as mock_ae:
 
             mock_store.get.return_value = mock_pending
             mock_ae._execute_action = AsyncMock(return_value=mock_exec_result)
@@ -183,7 +183,7 @@ class TestMainOrchestratorPendingAction:
         mock_pending = MagicMock()
         mock_pending.awaiting_confirmation = True
 
-        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.main_orchestrator.is_confirmation", return_value=False),              patch("app.orchestrator.main_orchestrator.is_rejection", return_value=True):
+        with patch("app.orchestrator.execution.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.execution.main_orchestrator.is_confirmation", return_value=False),              patch("app.orchestrator.execution.main_orchestrator.is_rejection", return_value=True):
 
             mock_store.get.return_value = mock_pending
             orch = MainOrchestrator(mock_orch)
@@ -200,7 +200,7 @@ class TestMainOrchestratorPendingAction:
         mock_orch.process_request = AsyncMock(return_value=make_orchestrator_result())
         mock_mem = _patch_conversation_memory()
 
-        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae,              patch("app.domains.recruiter_assistant.services.conversation_memory.conversation_memory", mock_mem):
+        with patch("app.orchestrator.execution.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.execution.main_orchestrator.action_executor") as mock_ae,              patch("app.domains.recruiter_assistant.services.conversation_memory.conversation_memory", mock_mem):
             mock_store.get.return_value = None
             mock_ae.try_execute = AsyncMock(return_value=MagicMock(status="not_actionable"))
 
@@ -225,7 +225,7 @@ class TestMainOrchestratorActionExecutor:
         mock_exec_result = MagicMock()
         mock_exec_result.status = "not_actionable"
 
-        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae,              patch("app.domains.recruiter_assistant.services.conversation_memory.conversation_memory", mock_mem):
+        with patch("app.orchestrator.execution.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.execution.main_orchestrator.action_executor") as mock_ae,              patch("app.domains.recruiter_assistant.services.conversation_memory.conversation_memory", mock_mem):
             mock_store.get.return_value = None
             mock_ae.try_execute = AsyncMock(return_value=mock_exec_result)
 
@@ -245,7 +245,7 @@ class TestMainOrchestratorActionExecutor:
         mock_exec_result.action_type = "mover_candidato"
         mock_exec_result.pending_action_id = None
 
-        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae:
+        with patch("app.orchestrator.execution.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.execution.main_orchestrator.action_executor") as mock_ae:
 
             mock_store.get.return_value = None
             mock_ae.try_execute = AsyncMock(return_value=mock_exec_result)
@@ -264,7 +264,7 @@ class TestMainOrchestratorActionExecutor:
         mock_orch.process_request = AsyncMock(return_value=make_orchestrator_result())
         mock_mem = _patch_conversation_memory()
 
-        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae,              patch("app.domains.recruiter_assistant.services.conversation_memory.conversation_memory", mock_mem):
+        with patch("app.orchestrator.execution.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.execution.main_orchestrator.action_executor") as mock_ae,              patch("app.domains.recruiter_assistant.services.conversation_memory.conversation_memory", mock_mem):
             mock_store.get.return_value = None
             mock_ae.try_execute = AsyncMock(side_effect=Exception("AE failed"))
 
@@ -286,7 +286,7 @@ class TestMainOrchestratorMultiTenant:
         mock_orch.process_request = AsyncMock(return_value=make_orchestrator_result())
         mock_mem = _patch_conversation_memory()
 
-        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae,              patch("app.domains.recruiter_assistant.services.conversation_memory.conversation_memory", mock_mem):
+        with patch("app.orchestrator.execution.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.execution.main_orchestrator.action_executor") as mock_ae,              patch("app.domains.recruiter_assistant.services.conversation_memory.conversation_memory", mock_mem):
             mock_store.get.return_value = None
             mock_ae.try_execute = AsyncMock(return_value=MagicMock(status="not_actionable"))
 
@@ -336,7 +336,7 @@ class TestFairnessSoftWarnings:
         mock_orch.process_request = AsyncMock(return_value=make_orchestrator_result())
         mock_mem = _patch_conversation_memory()
 
-        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae,              patch("app.domains.recruiter_assistant.services.conversation_memory.conversation_memory", mock_mem),              patch("app.orchestrator.main_orchestrator.FairnessGuard") as MockFG:
+        with patch("app.orchestrator.execution.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.execution.main_orchestrator.action_executor") as mock_ae,              patch("app.domains.recruiter_assistant.services.conversation_memory.conversation_memory", mock_mem),              patch("app.orchestrator.execution.main_orchestrator.FairnessGuard") as MockFG:
 
             mock_fg_instance = MagicMock()
             mock_fg_result = MagicMock()
@@ -362,7 +362,7 @@ class TestFairnessSoftWarnings:
         mock_orch.process_request = AsyncMock(return_value=make_orchestrator_result())
         mock_mem = _patch_conversation_memory()
 
-        with patch("app.orchestrator.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.main_orchestrator.action_executor") as mock_ae,              patch("app.domains.recruiter_assistant.services.conversation_memory.conversation_memory", mock_mem),              patch("app.orchestrator.main_orchestrator.FairnessGuard") as MockFG:
+        with patch("app.orchestrator.execution.main_orchestrator.pending_action_store") as mock_store,              patch("app.orchestrator.execution.main_orchestrator.action_executor") as mock_ae,              patch("app.domains.recruiter_assistant.services.conversation_memory.conversation_memory", mock_mem),              patch("app.orchestrator.execution.main_orchestrator.FairnessGuard") as MockFG:
 
             mock_fg_instance = MagicMock()
             mock_fg_result = MagicMock()

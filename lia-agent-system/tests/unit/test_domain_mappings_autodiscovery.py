@@ -16,7 +16,7 @@ import pytest
 def _ensure_domains_loaded():
     # Import side-effect: registers all domains via @register_domain.
     import app.domains  # noqa: F401
-    from app.orchestrator.domain_mappings import reset_mapping_cache
+    from app.orchestrator.routing.domain_mappings import reset_mapping_cache
     reset_mapping_cache()
     yield
     reset_mapping_cache()
@@ -29,7 +29,7 @@ def _registered_domain_ids() -> set[str]:
 
 def test_no_orphan_agent_types():
     """Every alias in AGENT_TYPE_TO_DOMAIN must point to a registered domain."""
-    from app.orchestrator.domain_mappings import AGENT_TYPE_TO_DOMAIN
+    from app.orchestrator.routing.domain_mappings import AGENT_TYPE_TO_DOMAIN
 
     registered = _registered_domain_ids()
     orphans = {
@@ -45,7 +45,7 @@ def test_no_orphan_agent_types():
 
 def test_every_domain_id_is_self_mapped():
     """Each registered domain must appear in the mapping under its own id."""
-    from app.orchestrator.domain_mappings import AGENT_TYPE_TO_DOMAIN
+    from app.orchestrator.routing.domain_mappings import AGENT_TYPE_TO_DOMAIN
 
     missing = []
     for domain_id in _registered_domain_ids():
@@ -57,7 +57,7 @@ def test_every_domain_id_is_self_mapped():
 def test_declared_aliases_are_present():
     """Every alias declared via `agent_aliases` must resolve to its domain."""
     from app.domains.registry import _DOMAIN_REGISTRY
-    from app.orchestrator.domain_mappings import AGENT_TYPE_TO_DOMAIN
+    from app.orchestrator.routing.domain_mappings import AGENT_TYPE_TO_DOMAIN
 
     mismatches: list[tuple[str, str, str | None]] = []
     for domain_id, cls in _DOMAIN_REGISTRY.items():
@@ -116,7 +116,7 @@ LEGACY_ALIAS_CONTRACT: dict[str, str] = {
 
 def test_legacy_alias_contract_preserved():
     """No legacy agent-type alias may regress after the auto-discovery refactor."""
-    from app.orchestrator.domain_mappings import AGENT_TYPE_TO_DOMAIN, resolve_domain
+    from app.orchestrator.routing.domain_mappings import AGENT_TYPE_TO_DOMAIN, resolve_domain
 
     missing = {
         alias: expected
@@ -137,7 +137,7 @@ def test_legacy_alias_contract_preserved():
 
 def test_resolve_domain_uses_autodiscovered_mapping():
     """resolve_domain() should leverage the auto-built mapping."""
-    from app.orchestrator.domain_mappings import DEFAULT_DOMAIN, resolve_domain
+    from app.orchestrator.routing.domain_mappings import DEFAULT_DOMAIN, resolve_domain
 
     # Direct domain id resolves to itself when registered.
     assert resolve_domain("sourcing") == "sourcing"

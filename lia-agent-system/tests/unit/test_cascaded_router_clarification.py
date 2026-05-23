@@ -15,7 +15,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from dataclasses import dataclass, field
 from typing import Optional, List
 
-from app.orchestrator.cascaded_router import (
+from app.orchestrator.routing.cascaded_router import (
     CascadedRouter,
     RouteResult,
     _build_clarification_question,
@@ -93,7 +93,7 @@ async def test_clarification_when_all_tiers_fail():
 @pytest.mark.asyncio
 async def test_no_clarification_when_fast_router_succeeds():
     """Fast router match com alta confiança não deve gerar clarification."""
-    from app.orchestrator.fast_router import FastRouteResult
+    from app.orchestrator.routing.fast_router import FastRouteResult
 
     fast_hit = FastRouteResult(
         domain_id="job_management",

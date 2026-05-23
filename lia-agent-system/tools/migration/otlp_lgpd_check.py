@@ -44,7 +44,7 @@ APP_DIR = REPO_ROOT / "app"
 
 # Importar lista canônica de FORBIDDEN patterns
 sys.path.insert(0, str(REPO_ROOT))
-from app.orchestrator._observability import FORBIDDEN_SPAN_ATTR_PATTERNS  # noqa: E402
+from app.orchestrator.observability._observability import FORBIDDEN_SPAN_ATTR_PATTERNS  # noqa: E402
 
 # Lower-case lookup para case-insensitive match
 FORBIDDEN_LOWER = {p.lower() for p in FORBIDDEN_SPAN_ATTR_PATTERNS}

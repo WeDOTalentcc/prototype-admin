@@ -6,7 +6,7 @@ pronomes via WorkingMemory, ConversationState novos campos.
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from app.orchestrator.memory_resolver import (
+from app.orchestrator.memory.memory_resolver import (
     MemoryResolver,
     memory_resolver,
     is_pagination_request,

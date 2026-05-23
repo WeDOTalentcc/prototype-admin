@@ -19,22 +19,22 @@ class TestIsPlanServiceEnabled:
     def test_disabled_by_default(self, monkeypatch):
         """LIA_V2_USE_PLAN_SERVICE not set → False."""
         monkeypatch.delenv("LIA_V2_USE_PLAN_SERVICE", raising=False)
-        from app.orchestrator.main_orchestrator import _is_plan_service_enabled
+        from app.orchestrator.execution.main_orchestrator import _is_plan_service_enabled
         assert _is_plan_service_enabled() is False
 
     def test_enabled_when_true(self, monkeypatch):
         monkeypatch.setenv("LIA_V2_USE_PLAN_SERVICE", "true")
-        from app.orchestrator.main_orchestrator import _is_plan_service_enabled
+        from app.orchestrator.execution.main_orchestrator import _is_plan_service_enabled
         assert _is_plan_service_enabled() is True
 
     def test_enabled_when_1(self, monkeypatch):
         monkeypatch.setenv("LIA_V2_USE_PLAN_SERVICE", "1")
-        from app.orchestrator.main_orchestrator import _is_plan_service_enabled
+        from app.orchestrator.execution.main_orchestrator import _is_plan_service_enabled
         assert _is_plan_service_enabled() is True
 
     def test_disabled_when_false(self, monkeypatch):
         monkeypatch.setenv("LIA_V2_USE_PLAN_SERVICE", "false")
-        from app.orchestrator.main_orchestrator import _is_plan_service_enabled
+        from app.orchestrator.execution.main_orchestrator import _is_plan_service_enabled
         assert _is_plan_service_enabled() is False
 
 
@@ -89,7 +89,7 @@ class TestPlanExecuteOrchestratorWiring:
         detect_called = []
 
         with patch(
-            "app.orchestrator.main_orchestrator._is_plan_service_enabled",
+            "app.orchestrator.execution.main_orchestrator._is_plan_service_enabled",
             return_value=True,
         ):
             # We verify that when the flag is on, detection IS attempted.
@@ -100,7 +100,7 @@ class TestPlanExecuteOrchestratorWiring:
                 side_effect=lambda q: (detect_called.append(q), None)[1],
             ):
                 # Import to check _is_plan_service_enabled is wired in the routing path
-                from app.orchestrator.main_orchestrator import _is_plan_service_enabled
+                from app.orchestrator.execution.main_orchestrator import _is_plan_service_enabled
                 assert _is_plan_service_enabled() is True
 
         # The wiring test verifies the flag function is properly placed
@@ -110,7 +110,7 @@ class TestPlanExecuteOrchestratorWiring:
     async def test_phase13_not_called_when_flag_disabled(self, monkeypatch):
         """With LIA_V2_USE_PLAN_SERVICE=false, PlanDetector is NOT called."""
         monkeypatch.setenv("LIA_V2_USE_PLAN_SERVICE", "false")
-        from app.orchestrator.main_orchestrator import _is_plan_service_enabled
+        from app.orchestrator.execution.main_orchestrator import _is_plan_service_enabled
         assert _is_plan_service_enabled() is False
 
 

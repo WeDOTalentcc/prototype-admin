@@ -34,7 +34,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Final
 
 if TYPE_CHECKING:
-    from app.orchestrator.cascaded_router import RouteResult
+    from app.orchestrator.routing.cascaded_router import RouteResult
 
 
 # Mapping canônico: context_type (string do FE) → domain_id (interno)
@@ -99,7 +99,7 @@ def build_override_route(domain_id: str) -> RouteResult:
         'context_type_override'
     """
     # Lazy import — evita circular deps + reduz custo de import-time
-    from app.orchestrator.cascaded_router import RouteResult
+    from app.orchestrator.routing.cascaded_router import RouteResult
 
     return RouteResult(
         domain_id=domain_id,

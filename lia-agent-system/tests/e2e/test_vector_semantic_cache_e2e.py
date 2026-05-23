@@ -13,7 +13,7 @@ Camada 3 (Integração) da pirâmide — embedding e pgvector mockados.
 import pytest
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from app.orchestrator.vector_semantic_cache import VectorSemanticCache
+from app.orchestrator.memory.vector_semantic_cache import VectorSemanticCache
 
 
 # ---------------------------------------------------------------------------

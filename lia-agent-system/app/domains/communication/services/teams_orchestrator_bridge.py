@@ -68,7 +68,7 @@ class TeamsOrchestratorBridge:
         Returns orchestrator result dict.
         """
         # Import from shared registry -- avoids circular import (domain->api)
-        from app.orchestrator.registry import get_orchestrator_instance
+        from app.orchestrator.execution.registry import get_orchestrator_instance
 
         text = (activity.get("text") or "").strip()
         if not text:

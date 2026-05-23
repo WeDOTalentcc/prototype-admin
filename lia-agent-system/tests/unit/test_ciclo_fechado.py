@@ -134,7 +134,7 @@ class TestBuildResponseFromAction:
 # ---------------------------------------------------------------------------
 
 from app.api.v1.chat import handle_action_flow
-from app.orchestrator.pending_action import PendingActionState, pending_action_store
+from app.orchestrator.execution.pending_action import PendingActionState, pending_action_store
 
 
 def _make_user(company_id: str = "company-123"):

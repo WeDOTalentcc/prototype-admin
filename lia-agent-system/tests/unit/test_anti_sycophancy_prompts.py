@@ -40,7 +40,7 @@ class TestAntiSycophancyPresenca:
         assert "VERIFICACAO DE PREMISSAS" in WIZARD_SYSTEM_PROMPT
 
     def test_orchestrator_system_prompt_tem_anti_sycophancy(self):
-        from app.orchestrator.orchestrator import _LIA_SYSTEM_PROMPT
+        from app.orchestrator.legacy.orchestrator import _LIA_SYSTEM_PROMPT
         prompt_lower = _LIA_SYSTEM_PROMPT.lower()
         assert "anti-sycophancy" in prompt_lower or "sycophancy" in prompt_lower
 

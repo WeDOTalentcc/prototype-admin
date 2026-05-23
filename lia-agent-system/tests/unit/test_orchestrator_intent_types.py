@@ -1,6 +1,6 @@
 """Tests for OrchestratorIntentResult typed dataclass."""
 import pytest
-from app.orchestrator.intent_types import OrchestratorIntentResult
+from app.orchestrator.context.intent_types import OrchestratorIntentResult
 
 
 def test_basic_creation():

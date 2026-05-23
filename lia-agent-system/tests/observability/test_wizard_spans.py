@@ -13,7 +13,7 @@ from typing import Any, Iterable
 
 import pytest
 
-from app.orchestrator._observability import WIZARD_SPANS
+from app.orchestrator.observability._observability import WIZARD_SPANS
 from app.shared.observability import tracing as _tracing
 from app.shared.observability.span_validation import (
     WIZARD_REQUIRED_SPAN_ATTRS,

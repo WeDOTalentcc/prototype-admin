@@ -14,13 +14,13 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, Uplo
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
-from app.orchestrator.domain_mappings import resolve_domain
+from app.orchestrator.routing.domain_mappings import resolve_domain
 
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.shared.compliance.c3b_layer import pre_compliance, post_compliance, ComplianceContext
 from app.domains.chat.dependencies import get_chat_repo
-from app.orchestrator.chat_adapter import ChatAdapter
+from app.orchestrator.context.chat_adapter import ChatAdapter
 from app.api.orchestrator_routes import get_main_orchestrator
 
 UPLOAD_DIR = Path(os.getenv("LIA_UPLOAD_DIR", "/tmp/lia_uploads"))
@@ -44,9 +44,9 @@ from app.orchestrator.action_executor import (
     is_confirmation,
     is_rejection,
 )
-from app.orchestrator.pending_action import PendingActionState, pending_action_store
+from app.orchestrator.execution.pending_action import PendingActionState, pending_action_store
 
-from app.orchestrator.context_adapter import UniversalContext
+from app.orchestrator.context.context_adapter import UniversalContext
 from app.schemas.chat import (
     ChatResponse,
     ConversationListResponse,

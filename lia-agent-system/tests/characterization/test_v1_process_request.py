@@ -219,7 +219,7 @@ class TestProcessRequestAutonomousIntercept:
 
     @pytest.mark.asyncio
     async def test_autonomous_domain_returns_response_from_route(self, v1_with_all_internal_mocks):
-        from app.orchestrator.cascaded_router import RouteResult
+        from app.orchestrator.routing.cascaded_router import RouteResult
         v1_with_all_internal_mocks._cascaded_router.route = AsyncMock(
             return_value=RouteResult(
                 domain_id="autonomous",

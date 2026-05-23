@@ -222,7 +222,7 @@ def test_inlined_constants_match_orchestrator_canonical_values():
 
     Code review follow-up (task #861).
     """
-    from app.orchestrator._observability import (
+    from app.orchestrator.observability._observability import (
         FORBIDDEN_SPAN_ATTR_PATTERNS as canonical_forbidden,
         REQUIRED_SPAN_ATTRS as canonical_required,
     )
@@ -233,11 +233,11 @@ def test_inlined_constants_match_orchestrator_canonical_values():
 
     assert tuple(inlined_required) == tuple(canonical_required), (
         "span_validation.REQUIRED_SPAN_ATTRS drifted from "
-        "app.orchestrator._observability.REQUIRED_SPAN_ATTRS. Either update "
+        "app.orchestrator.observability._observability.REQUIRED_SPAN_ATTRS. Either update "
         "both, or remove the inline copy in span_validation.py."
     )
     assert set(inlined_forbidden) == set(canonical_forbidden), (
         "span_validation.FORBIDDEN_SPAN_ATTR_PATTERNS drifted from "
-        "app.orchestrator._observability.FORBIDDEN_SPAN_ATTR_PATTERNS. "
+        "app.orchestrator.observability._observability.FORBIDDEN_SPAN_ATTR_PATTERNS. "
         "Either update both, or remove the inline copy in span_validation.py."
     )

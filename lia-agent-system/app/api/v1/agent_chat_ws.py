@@ -1057,7 +1057,7 @@ company_id: str = Depends(require_company_id)):
             # Verifica se o domínio precisa de clarificação antes de invocar agente
             if active_domain in ("auto", "recruiter_assistant", ""):
                 try:
-                    from app.orchestrator.cascaded_router import CascadedRouter
+                    from app.orchestrator.routing.cascaded_router import CascadedRouter
                     _router = CascadedRouter()
                     route = await _router.route(
                         message=content,
@@ -1398,7 +1398,7 @@ async def http_chat_message(req: HTTPChatRequest, request: Request, company_id: 
 
     if active_domain in ("auto", "recruiter_assistant", ""):
         try:
-            from app.orchestrator.cascaded_router import CascadedRouter
+            from app.orchestrator.routing.cascaded_router import CascadedRouter
             _router = CascadedRouter()
             route = await _router.route(
                 message=content, context=context, session_id=session_id,

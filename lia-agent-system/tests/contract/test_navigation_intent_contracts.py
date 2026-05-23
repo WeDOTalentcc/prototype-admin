@@ -104,38 +104,38 @@ class TestNavigationIntentDetector:
     """Testa o detector de intenção baseado em keywords."""
 
     def test_detect_vagas_keywords(self):
-        from app.orchestrator.navigation_intent import detect_navigation_intent
+        from app.orchestrator.context.navigation_intent import detect_navigation_intent
         result = detect_navigation_intent("quero ver as vagas abertas")
         assert result.page == "Vagas"
         assert result.confidence >= 0.65
 
     def test_detect_candidatos_keywords(self):
-        from app.orchestrator.navigation_intent import detect_navigation_intent
+        from app.orchestrator.context.navigation_intent import detect_navigation_intent
         result = detect_navigation_intent("listar candidatos disponíveis")
         assert result.page in ("Funil de Talentos",)
         assert result.confidence >= 0.65
 
     def test_detect_painel_keywords(self):
-        from app.orchestrator.navigation_intent import detect_navigation_intent
+        from app.orchestrator.context.navigation_intent import detect_navigation_intent
         result = detect_navigation_intent("abrir painel de controle")
         # Deve detectar "Painel de Controle" ou ter confidence baixa
         if result.confidence >= 0.65:
             assert result.page is not None
 
     def test_detect_irrelevant_message_low_confidence(self):
-        from app.orchestrator.navigation_intent import detect_navigation_intent
+        from app.orchestrator.context.navigation_intent import detect_navigation_intent
         result = detect_navigation_intent("olá como vai")
         # Mensagem irrelevante deve ter confidence baixa
         assert result.confidence < 0.65 or result.page is None
 
     def test_detect_empty_message_returns_null_page(self):
-        from app.orchestrator.navigation_intent import detect_navigation_intent
+        from app.orchestrator.context.navigation_intent import detect_navigation_intent
         result = detect_navigation_intent("")
         # Sem keywords, page deve ser None ou confidence baixa
         assert result.page is None or result.confidence < 0.65
 
     def test_detect_result_has_all_fields(self):
-        from app.orchestrator.navigation_intent import detect_navigation_intent
+        from app.orchestrator.context.navigation_intent import detect_navigation_intent
         result = detect_navigation_intent("ver vagas")
         assert hasattr(result, "page")
         assert hasattr(result, "confidence")
@@ -143,12 +143,12 @@ class TestNavigationIntentDetector:
         assert hasattr(result, "matched_pattern")
 
     def test_detect_confidence_bounded_0_to_1(self):
-        from app.orchestrator.navigation_intent import detect_navigation_intent
+        from app.orchestrator.context.navigation_intent import detect_navigation_intent
         result = detect_navigation_intent("vagas candidatos painel dashboard")
         assert 0.0 <= result.confidence <= 1.0
 
     def test_detect_multiple_keywords_increases_confidence(self):
-        from app.orchestrator.navigation_intent import detect_navigation_intent
+        from app.orchestrator.context.navigation_intent import detect_navigation_intent
         # Single keyword
         r1 = detect_navigation_intent("vaga")
         # Multiple keywords from same group
@@ -156,12 +156,12 @@ class TestNavigationIntentDetector:
         assert r2.confidence >= r1.confidence
 
     def test_detect_kanban_keywords(self):
-        from app.orchestrator.navigation_intent import detect_navigation_intent
+        from app.orchestrator.context.navigation_intent import detect_navigation_intent
         result = detect_navigation_intent("ver kanban do pipeline")
         assert result.confidence >= 0.0  # at minimum returns a result
 
     def test_detect_case_insensitive(self):
-        from app.orchestrator.navigation_intent import detect_navigation_intent
+        from app.orchestrator.context.navigation_intent import detect_navigation_intent
         r1 = detect_navigation_intent("VAGAS ABERTAS")
         r2 = detect_navigation_intent("vagas abertas")
         # ambos devem detectar a mesma página

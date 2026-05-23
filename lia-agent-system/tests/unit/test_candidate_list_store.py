@@ -11,7 +11,7 @@ from app.shared.memory.candidate_list_store import (
     LIST_TTL_SECONDS,
     KEY_PREFIX,
 )
-from app.orchestrator.memory_resolver import MemoryResolver
+from app.orchestrator.memory.memory_resolver import MemoryResolver
 
 
 # ---------------------------------------------------------------------------

@@ -166,7 +166,7 @@ class TestEquivalenceWithV1Inline:
         }
         _domain_override = _CONTEXT_TYPE_DOMAIN_OVERRIDE.get(_ctx_type)
         if _domain_override:
-            from app.orchestrator.cascaded_router import RouteResult
+            from app.orchestrator.routing.cascaded_router import RouteResult
             return RouteResult(
                 domain_id=_domain_override,
                 confidence=1.0,

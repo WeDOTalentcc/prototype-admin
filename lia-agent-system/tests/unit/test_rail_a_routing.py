@@ -64,7 +64,7 @@ def capability_map():
 @pytest.fixture(scope="module")
 def fast_router():
     """Instantiate the FastRouter."""
-    from app.orchestrator.fast_router import FastRouter
+    from app.orchestrator.routing.fast_router import FastRouter
     return FastRouter()
 
 

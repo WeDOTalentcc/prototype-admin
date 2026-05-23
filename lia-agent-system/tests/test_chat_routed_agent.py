@@ -7,7 +7,7 @@ identifier again.
 """
 from __future__ import annotations
 
-from app.orchestrator.chat_adapter import ChatAdapter
+from app.orchestrator.context.chat_adapter import ChatAdapter
 
 
 class _FakeChatResponse:

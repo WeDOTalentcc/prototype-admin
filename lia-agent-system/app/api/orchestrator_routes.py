@@ -11,9 +11,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 # UC-P1-23: Use canonical MainOrchestrator - legacy Orchestrator is deprecated.
-from app.orchestrator.main_orchestrator import MainOrchestrator, get_main_orchestrator
-from app.orchestrator.orchestrator import Orchestrator as _LegacyOrchestrator
-from app.orchestrator.registry import get_orchestrator_instance, set_orchestrator_instance
+from app.orchestrator.execution.main_orchestrator import MainOrchestrator, get_main_orchestrator
+from app.orchestrator.legacy.orchestrator import Orchestrator as _LegacyOrchestrator
+from app.orchestrator.execution.registry import get_orchestrator_instance, set_orchestrator_instance
 
 # Backward-compat alias so type hints in this file still read naturally
 Orchestrator = MainOrchestrator

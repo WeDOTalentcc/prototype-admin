@@ -75,9 +75,9 @@ class TestHandleDirectly:
         )
 
         # Patch tool_registry para evitar dependência real
-        with patch("app.orchestrator.orchestrator.tool_registry") as mock_registry:
+        with patch("app.orchestrator.legacy.orchestrator.tool_registry") as mock_registry:
             mock_registry.list_tools.return_value = []
-            with patch("app.orchestrator.orchestrator.get_all_tool_schemas", return_value=[]):
+            with patch("app.orchestrator.legacy.orchestrator.get_all_tool_schemas", return_value=[]):
                 result = await v1_with_minimal_mocks._handle_directly(
                     intent="general_chat",
                     message="oi tudo bem",

@@ -11,7 +11,7 @@ from datetime import date
 
 import pytest
 
-from app.orchestrator.semantic_cache import _cache_key as semantic_cache_key
+from app.orchestrator.memory.semantic_cache import _cache_key as semantic_cache_key
 from app.shared.cache_strategy import CacheDomain, CacheStrategy
 from app.shared.exceptions.tenant_errors import InvalidCompanyIdError
 from app.shared.prompt_experiment import PromptExperiment, PromptVariant
@@ -127,7 +127,7 @@ def test_cache_strategy_build_key_includes_company_id() -> None:
 
 def test_cascaded_router_tier1_lru_key_includes_company_id() -> None:
     """In-process LRU cache must not collide across tenants either."""
-    from app.orchestrator.cascaded_router import CascadedRouter
+    from app.orchestrator.routing.cascaded_router import CascadedRouter
 
     router = CascadedRouter.__new__(CascadedRouter)  # avoid __init__ side effects
     msg = "criar uma vaga de backend pleno"

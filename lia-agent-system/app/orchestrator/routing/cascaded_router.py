@@ -20,11 +20,11 @@ from pathlib import Path
 from typing import Any
 
 from app.core.config import settings
-from app.orchestrator.domain_mappings import AGENT_TYPE_TO_DOMAIN, resolve_domain
-from app.orchestrator.fast_router import FastRouter
-from app.orchestrator.semantic_cache import SemanticCache
+from app.orchestrator.routing.domain_mappings import AGENT_TYPE_TO_DOMAIN, resolve_domain
+from app.orchestrator.routing.fast_router import FastRouter
+from app.orchestrator.memory.semantic_cache import SemanticCache
 from app.shared.tracing import get_tracer, trace_span
-from app.orchestrator.intent_types import OrchestratorIntentResult
+from app.orchestrator.context.intent_types import OrchestratorIntentResult
 
 logger = logging.getLogger(__name__)
 
@@ -169,7 +169,7 @@ class CascadedRouter:
             if not settings.ROUTER_VECTOR_CACHE_ENABLED:
                 logger.debug("[CascadedRouter] Tier 3 (vector cache) desabilitado via ROUTER_VECTOR_CACHE_ENABLED=false")
                 return None
-            from app.orchestrator.vector_semantic_cache import VectorSemanticCache
+            from app.orchestrator.memory.vector_semantic_cache import VectorSemanticCache
             return VectorSemanticCache(
                 similarity_threshold=settings.ROUTER_VECTOR_SIMILARITY_THRESHOLD,
             )
@@ -273,7 +273,7 @@ class CascadedRouter:
                 "tier_name": "tier0_memory_resolve", "service": "cascaded_router",
             }) as _t0_span:
                 try:
-                    from app.orchestrator.memory_resolver import memory_resolver
+                    from app.orchestrator.memory.memory_resolver import memory_resolver
                     resolved_message, was_resolved = await memory_resolver.resolve(
                         message=message,
                         session_id=session_id,
@@ -933,7 +933,7 @@ class CascadedRouter:
         the cascade router call so that different users see different system prompts.
         """
         try:
-            from app.orchestrator.llm_cascade import llm_cascade_router
+            from app.orchestrator.routing.llm_cascade import llm_cascade_router
 
             ab_system_prompt: str | None = None
             if ab_variant_id:

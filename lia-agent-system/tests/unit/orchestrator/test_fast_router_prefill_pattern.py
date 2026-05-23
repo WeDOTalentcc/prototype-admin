@@ -10,8 +10,8 @@ from __future__ import annotations
 
 import pytest
 
-from app.orchestrator import fast_router as fr_mod
-from app.orchestrator.fast_router import FastRouter, _COMPILED_PATTERNS
+from app.orchestrator.routing import fast_router as fr_mod
+from app.orchestrator.routing.fast_router import FastRouter, _COMPILED_PATTERNS
 
 
 @pytest.fixture(scope="module", autouse=True)

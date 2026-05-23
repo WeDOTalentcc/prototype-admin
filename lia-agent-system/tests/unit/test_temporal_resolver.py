@@ -15,7 +15,7 @@ def setup_module(module):
 
 class TestTemporalGranularity:
     def test_granularity_values(self):
-        from app.orchestrator.temporal_resolver import TemporalGranularity
+        from app.orchestrator.context.temporal_resolver import TemporalGranularity
         assert TemporalGranularity.DAY == "day"
         assert TemporalGranularity.WEEK == "week"
         assert TemporalGranularity.MONTH == "month"
@@ -26,7 +26,7 @@ class TestTemporalGranularity:
 
 class TestTemporalResult:
     def test_as_iso_range(self):
-        from app.orchestrator.temporal_resolver import TemporalResult, TemporalGranularity
+        from app.orchestrator.context.temporal_resolver import TemporalResult, TemporalGranularity
         today = date(2026, 4, 4)
         result = TemporalResult(
             original="hoje",
@@ -38,7 +38,7 @@ class TestTemporalResult:
         assert result.as_iso_range() == "2026-04-04/2026-04-04"
 
     def test_as_iso_range_week(self):
-        from app.orchestrator.temporal_resolver import TemporalResult, TemporalGranularity
+        from app.orchestrator.context.temporal_resolver import TemporalResult, TemporalGranularity
         result = TemporalResult(
             original="esta semana",
             resolved_start=date(2026, 3, 30),
@@ -51,7 +51,7 @@ class TestTemporalResult:
 
 class TestTemporalResolverCore:
     def setup_method(self):
-        from app.orchestrator.temporal_resolver import TemporalResolver
+        from app.orchestrator.context.temporal_resolver import TemporalResolver
         self.today = date(2026, 4, 4)  # Saturday
         self.resolver = TemporalResolver(reference_date=self.today)
 
@@ -81,7 +81,7 @@ class TestTemporalResolverCore:
     def test_esta_semana(self):
         r = self.resolver.resolve("esta semana candidatos")
         assert r is not None
-        from app.orchestrator.temporal_resolver import TemporalGranularity
+        from app.orchestrator.context.temporal_resolver import TemporalGranularity
         assert r.granularity == TemporalGranularity.WEEK
 
     def test_semana_passada(self):
@@ -98,7 +98,7 @@ class TestTemporalResolverCore:
     def test_este_mes(self):
         r = self.resolver.resolve("este mês resultado")
         assert r is not None
-        from app.orchestrator.temporal_resolver import TemporalGranularity
+        from app.orchestrator.context.temporal_resolver import TemporalGranularity
         assert r.granularity == TemporalGranularity.MONTH
         assert r.resolved_start.day == 1
         assert r.resolved_start.month == self.today.month
@@ -139,7 +139,7 @@ class TestTemporalResolverCore:
         assert r is not None
         assert r.resolved_start == date(2026, 1, 1)
         assert r.resolved_end == date(2026, 1, 31)
-        from app.orchestrator.temporal_resolver import TemporalGranularity
+        from app.orchestrator.context.temporal_resolver import TemporalGranularity
         assert r.granularity == TemporalGranularity.EXACT
         assert r.confidence == 1.0
 
@@ -170,7 +170,7 @@ class TestTemporalResolverCore:
 
 class TestResolveAll:
     def setup_method(self):
-        from app.orchestrator.temporal_resolver import TemporalResolver
+        from app.orchestrator.context.temporal_resolver import TemporalResolver
         self.today = date(2026, 4, 4)
         self.resolver = TemporalResolver(reference_date=self.today)
 
@@ -197,7 +197,7 @@ class TestResolveAll:
 
 class TestTemporalResolverNoRef:
     def test_default_reference_is_today(self):
-        from app.orchestrator.temporal_resolver import TemporalResolver
+        from app.orchestrator.context.temporal_resolver import TemporalResolver
         resolver = TemporalResolver()
         today = date.today()
         r = resolver.resolve("hoje")
@@ -205,7 +205,7 @@ class TestTemporalResolverNoRef:
         assert r.resolved_start == today
 
     def test_december_month_end(self):
-        from app.orchestrator.temporal_resolver import TemporalResolver
+        from app.orchestrator.context.temporal_resolver import TemporalResolver
         resolver = TemporalResolver(reference_date=date(2026, 12, 15))
         r = resolver.resolve("este mês")
         assert r is not None

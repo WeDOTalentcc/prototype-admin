@@ -36,8 +36,8 @@ from app.orchestrator.action_executor import (
     is_rejection,
     resolve_candidate_from_context,
 )
-from app.orchestrator.context_adapter import UniversalContext
-from app.orchestrator.pending_action import pending_action_store
+from app.orchestrator.context.context_adapter import UniversalContext
+from app.orchestrator.execution.pending_action import pending_action_store
 from app.shared.services.tenant_context_service import TenantContextService
 from app.shared.compliance.fairness_guard import FairnessGuard
 from app.shared.robustness.security_patterns import check_input_security, get_block_response
@@ -482,7 +482,7 @@ class MainOrchestrator:
             # Non-chat-executable intents (add_candidate, interview_scheduling) return
             # ui_action immediately — no LLM call needed.
             try:
-                from app.orchestrator.rail_a_capability_check import check_rail_a_capability
+                from app.orchestrator.guards.rail_a_capability_check import check_rail_a_capability
                 _cap_result = await check_rail_a_capability(
                     context=ctx.extra or {},
                     message=message_text,
@@ -660,7 +660,7 @@ class MainOrchestrator:
             import os as _os_flag
             if _os_flag.getenv("LIA_AGENTIC_LOOP", "true").lower() not in ("false", "0"):
                 try:
-                    from app.orchestrator.agentic_loop import agentic_loop
+                    from app.orchestrator.execution.agentic_loop import agentic_loop
 
                     # LIA-LLM-1: Respect Choose Your AI — use tenant's chat provider
                     _agentic_provider = "claude"
@@ -1324,7 +1324,7 @@ class MainOrchestrator:
             return None
         try:
             from app.domains.ai.services.response_cache_service import response_cache_service
-            from app.orchestrator.fast_router import FastRouter
+            from app.orchestrator.routing.fast_router import FastRouter
             _fast = FastRouter()
             _fast_match = _fast.match(ctx.message or "")
             _detected_domain = _fast_match.domain_id if _fast_match else None
@@ -1632,7 +1632,7 @@ class MainOrchestrator:
             return result
 
         try:
-            from app.orchestrator.tasting_engine import tasting_engine, format_tasting_block
+            from app.orchestrator.legacy.tasting_engine import tasting_engine, format_tasting_block
 
             detected_intent = result.get("intent_detected", result.get("intent", "")) or ""
             detected_domain = result.get("agent_used", result.get("domain_id", "")) or ""

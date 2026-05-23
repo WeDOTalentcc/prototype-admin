@@ -49,4 +49,4 @@ class TestOtlpLgpdGate:
         """Tool importa FORBIDDEN_SPAN_ATTR_PATTERNS de _observability.py."""
         source = TOOL_PATH.read_text()
         assert "FORBIDDEN_SPAN_ATTR_PATTERNS" in source
-        assert "from app.orchestrator._observability import" in source
+        assert "from app.orchestrator.observability._observability import" in source

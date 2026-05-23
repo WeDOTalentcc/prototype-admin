@@ -619,9 +619,9 @@ class TestAutonomousReActAgentUnit:
     @pytest.mark.asyncio
     async def test_legacy_fallback_low_confidence_falls_to_tier6(self):
         """Legacy LLM fallback low-confidence result must not be returned — Tier 6 should be invoked."""
-        with patch("app.orchestrator.cascaded_router.FastRouter"), \
-             patch("app.orchestrator.cascaded_router.SemanticCache"):
-            from app.orchestrator.cascaded_router import CascadedRouter, RouteResult
+        with patch("app.orchestrator.routing.cascaded_router.FastRouter"), \
+             patch("app.orchestrator.routing.cascaded_router.SemanticCache"):
+            from app.orchestrator.routing.cascaded_router import CascadedRouter, RouteResult
 
             router = CascadedRouter.__new__(CascadedRouter)
             router._memory_cache = {}
@@ -889,9 +889,9 @@ class TestCascadedRouterTier6:
 
     def test_cascaded_router_has_autonomous_stats(self):
         """CascadedRouter._stats should have 'autonomous_hits' key."""
-        with patch("app.orchestrator.cascaded_router.FastRouter"), \
-             patch("app.orchestrator.cascaded_router.SemanticCache"):
-            from app.orchestrator.cascaded_router import CascadedRouter
+        with patch("app.orchestrator.routing.cascaded_router.FastRouter"), \
+             patch("app.orchestrator.routing.cascaded_router.SemanticCache"):
+            from app.orchestrator.routing.cascaded_router import CascadedRouter
             router = CascadedRouter.__new__(CascadedRouter)
             router._memory_cache = {}
             router._stats = {
@@ -911,9 +911,9 @@ class TestCascadedRouterTier6:
     @pytest.mark.asyncio
     async def test_route_via_autonomous_agent_returns_none_on_error(self):
         """_route_via_autonomous_agent should return None on import/runtime errors."""
-        with patch("app.orchestrator.cascaded_router.FastRouter"), \
-             patch("app.orchestrator.cascaded_router.SemanticCache"):
-            from app.orchestrator.cascaded_router import CascadedRouter
+        with patch("app.orchestrator.routing.cascaded_router.FastRouter"), \
+             patch("app.orchestrator.routing.cascaded_router.SemanticCache"):
+            from app.orchestrator.routing.cascaded_router import CascadedRouter
             router = CascadedRouter.__new__(CascadedRouter)
             router._stats = {"autonomous_hits": 0, "total": 0}
 
@@ -931,9 +931,9 @@ class TestCascadedRouterTier6:
     @pytest.mark.asyncio
     async def test_route_via_autonomous_agent_low_confidence_returns_none(self):
         """If agent returns confidence < 0.5, router should return None (go to clarification)."""
-        with patch("app.orchestrator.cascaded_router.FastRouter"), \
-             patch("app.orchestrator.cascaded_router.SemanticCache"):
-            from app.orchestrator.cascaded_router import CascadedRouter
+        with patch("app.orchestrator.routing.cascaded_router.FastRouter"), \
+             patch("app.orchestrator.routing.cascaded_router.SemanticCache"):
+            from app.orchestrator.routing.cascaded_router import CascadedRouter
             router = CascadedRouter.__new__(CascadedRouter)
 
             mock_output = MagicMock()
@@ -962,9 +962,9 @@ class TestCascadedRouterTier6:
     @pytest.mark.asyncio
     async def test_route_via_autonomous_agent_success(self):
         """If agent returns confidence >= 0.5, router returns RouteResult with domain='autonomous'."""
-        with patch("app.orchestrator.cascaded_router.FastRouter"), \
-             patch("app.orchestrator.cascaded_router.SemanticCache"):
-            from app.orchestrator.cascaded_router import CascadedRouter
+        with patch("app.orchestrator.routing.cascaded_router.FastRouter"), \
+             patch("app.orchestrator.routing.cascaded_router.SemanticCache"):
+            from app.orchestrator.routing.cascaded_router import CascadedRouter
             router = CascadedRouter.__new__(CascadedRouter)
 
             mock_output = MagicMock()
@@ -996,9 +996,9 @@ class TestCascadedRouterTier6:
     @pytest.mark.asyncio
     async def test_tier5_low_confidence_falls_through_to_tier6(self):
         """When Tier 5 returns confidence below threshold, Tier 6 must be invoked (not returned)."""
-        with patch("app.orchestrator.cascaded_router.FastRouter"), \
-             patch("app.orchestrator.cascaded_router.SemanticCache"):
-            from app.orchestrator.cascaded_router import CascadedRouter, RouteResult
+        with patch("app.orchestrator.routing.cascaded_router.FastRouter"), \
+             patch("app.orchestrator.routing.cascaded_router.SemanticCache"):
+            from app.orchestrator.routing.cascaded_router import CascadedRouter, RouteResult
 
             router = CascadedRouter.__new__(CascadedRouter)
             router._memory_cache = {}
@@ -1070,9 +1070,9 @@ class TestCascadedRouterTier6:
     @pytest.mark.asyncio
     async def test_tier5_high_confidence_does_not_invoke_tier6(self):
         """When Tier 5 returns confidence above threshold, Tier 6 must NOT be invoked."""
-        with patch("app.orchestrator.cascaded_router.FastRouter"), \
-             patch("app.orchestrator.cascaded_router.SemanticCache"):
-            from app.orchestrator.cascaded_router import CascadedRouter, RouteResult
+        with patch("app.orchestrator.routing.cascaded_router.FastRouter"), \
+             patch("app.orchestrator.routing.cascaded_router.SemanticCache"):
+            from app.orchestrator.routing.cascaded_router import CascadedRouter, RouteResult
 
             router = CascadedRouter.__new__(CascadedRouter)
             router._memory_cache = {}
@@ -1256,10 +1256,10 @@ class TestOrchestratorTier6Wiring:
         mock_route.intent_details = {"response": autonomous_response}
 
         try:
-            from app.orchestrator.orchestrator import Orchestrator
+            from app.orchestrator.legacy.orchestrator import Orchestrator
 
             with patch(
-                "app.orchestrator.orchestrator.CascadedRouter.route",
+                "app.orchestrator.legacy.orchestrator.CascadedRouter.route",
                 new_callable=AsyncMock,
                 return_value=mock_route,
             ):
@@ -1296,11 +1296,11 @@ class TestOrchestratorTier6Wiring:
         mock_agent_output.metadata = {}
 
         try:
-            from app.orchestrator.cascaded_router import CascadedRouter
+            from app.orchestrator.routing.cascaded_router import CascadedRouter
             router = CascadedRouter.__new__(CascadedRouter)
 
             with patch(
-                "app.orchestrator.cascaded_router.CascadedRouter._route_via_autonomous_agent",
+                "app.orchestrator.routing.cascaded_router.CascadedRouter._route_via_autonomous_agent",
                 new_callable=AsyncMock,
             ) as mock_autonomous:
                 mock_route = MagicMock()
@@ -1323,7 +1323,7 @@ class TestOrchestratorTier6Wiring:
         before delegating to a non-autonomous domain handler."""
         try:
             import inspect
-            from app.orchestrator.orchestrator import Orchestrator
+            from app.orchestrator.legacy.orchestrator import Orchestrator
             source = inspect.getsource(Orchestrator.process_request)
             autonomous_check_pos = source.find('domain_id == "autonomous"')
             assert autonomous_check_pos != -1, (
@@ -1344,7 +1344,7 @@ class TestOrchestratorTier6Wiring:
         from unittest.mock import AsyncMock, MagicMock, patch
 
         try:
-            from app.orchestrator.cascaded_router import CascadedRouter
+            from app.orchestrator.routing.cascaded_router import CascadedRouter
 
             with patch.dict(os.environ, {"AUTONOMOUS_REACT_ENABLED": "false"}):
                 router = CascadedRouter.__new__(CascadedRouter)
@@ -1374,7 +1374,7 @@ class TestOrchestratorTier6Wiring:
     def test_cascaded_router_stats_include_autonomous_hits(self):
         """CascadedRouter stats dict must contain 'autonomous_hits' counter."""
         try:
-            from app.orchestrator.cascaded_router import CascadedRouter
+            from app.orchestrator.routing.cascaded_router import CascadedRouter
             import inspect
             source = inspect.getsource(CascadedRouter)
             assert "autonomous_hits" in source, (

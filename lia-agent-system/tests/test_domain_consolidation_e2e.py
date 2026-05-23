@@ -85,7 +85,7 @@ class TestFastRouterNormalization:
     """Verify FastRouter outputs canonical domain IDs."""
 
     def setup_method(self):
-        from app.orchestrator.fast_router import FastRouter
+        from app.orchestrator.routing.fast_router import FastRouter
         self.router = FastRouter()
 
     def test_job_management_routing(self):
@@ -150,7 +150,7 @@ class TestFastRouterNormalization:
 
     def test_all_normalized_ids_are_canonical(self):
         """Every possible FastRouter result should use a canonical domain ID."""
-        from app.orchestrator.fast_router import DOMAIN_PATTERNS, normalize_domain_id
+        from app.orchestrator.routing.fast_router import DOMAIN_PATTERNS, normalize_domain_id
         canonical_ids = {
             "sourcing", "job_management", "cv_screening",
             "communication", "analytics", "interview_scheduling",
@@ -168,7 +168,7 @@ class TestCascadedRouterMapping:
 
     def test_agent_type_to_domain_canonical(self):
         """All AGENT_TYPE_TO_DOMAIN values should be canonical domain IDs."""
-        from app.orchestrator.cascaded_router import AGENT_TYPE_TO_DOMAIN
+        from app.orchestrator.routing.cascaded_router import AGENT_TYPE_TO_DOMAIN
         canonical_ids = {
             "sourcing", "job_management", "cv_screening",
             "communication", "analytics", "interview_scheduling",
@@ -178,19 +178,19 @@ class TestCascadedRouterMapping:
             assert domain_id in canonical_ids, f"Agent type '{agent_type}' maps to non-canonical '{domain_id}'"
 
     def test_wsi_evaluator_maps_to_cv_screening(self):
-        from app.orchestrator.cascaded_router import AGENT_TYPE_TO_DOMAIN
+        from app.orchestrator.routing.cascaded_router import AGENT_TYPE_TO_DOMAIN
         assert AGENT_TYPE_TO_DOMAIN["wsi_evaluator"] == "cv_screening"
 
     def test_interviewer_maps_to_interview_scheduling(self):
-        from app.orchestrator.cascaded_router import AGENT_TYPE_TO_DOMAIN
+        from app.orchestrator.routing.cascaded_router import AGENT_TYPE_TO_DOMAIN
         assert AGENT_TYPE_TO_DOMAIN["interviewer"] == "interview_scheduling"
 
     def test_task_planner_maps_to_automation(self):
-        from app.orchestrator.cascaded_router import AGENT_TYPE_TO_DOMAIN
+        from app.orchestrator.routing.cascaded_router import AGENT_TYPE_TO_DOMAIN
         assert AGENT_TYPE_TO_DOMAIN["task_planner"] == "automation"
 
     def test_analytics_maps_to_analytics(self):
-        from app.orchestrator.cascaded_router import AGENT_TYPE_TO_DOMAIN
+        from app.orchestrator.routing.cascaded_router import AGENT_TYPE_TO_DOMAIN
         assert AGENT_TYPE_TO_DOMAIN["analytics"] == "analytics"
         assert AGENT_TYPE_TO_DOMAIN["analyst_feedback"] == "analytics"
 
@@ -202,7 +202,7 @@ class TestFullPipelineE2E:
 
     @pytest.fixture
     def setup_pipeline(self):
-        from app.orchestrator.fast_router import FastRouter
+        from app.orchestrator.routing.fast_router import FastRouter
         from app.domains.registry import DomainRegistry
         from app.domains.base import DomainContext
         return FastRouter(), DomainRegistry(), DomainContext
@@ -332,7 +332,7 @@ class TestCascadedRouterE2E:
 
     @pytest.mark.asyncio
     async def test_cascaded_fast_routing(self):
-        from app.orchestrator.cascaded_router import CascadedRouter
+        from app.orchestrator.routing.cascaded_router import CascadedRouter
         router = CascadedRouter()
         result = await router.route("criar vaga de desenvolvedor senior")
         assert result.domain_id == "job_management"
@@ -342,7 +342,7 @@ class TestCascadedRouterE2E:
     @pytest.mark.asyncio
     async def test_cascaded_default_fallback(self):
         from unittest.mock import AsyncMock, patch as mock_patch
-        from app.orchestrator.cascaded_router import CascadedRouter
+        from app.orchestrator.routing.cascaded_router import CascadedRouter
         router = CascadedRouter()
         # Mock LLM cascade to return None so clarification_needed path is exercised
         # Fase 2: o fallback agora emite clarification em vez de retornar silenciosamente
@@ -356,7 +356,7 @@ class TestCascadedRouterE2E:
 
     @pytest.mark.asyncio
     async def test_cascaded_memory_cache(self):
-        from app.orchestrator.cascaded_router import CascadedRouter
+        from app.orchestrator.routing.cascaded_router import CascadedRouter
         router = CascadedRouter()
         result1 = await router.route("analisar cv do candidato")
         result2 = await router.route("analisar cv do candidato")
@@ -368,7 +368,7 @@ class TestCascadedRouterE2E:
     @pytest.mark.asyncio
     async def test_cascaded_normalized_ids(self):
         """CascadedRouter should return canonical domain IDs."""
-        from app.orchestrator.cascaded_router import CascadedRouter
+        from app.orchestrator.routing.cascaded_router import CascadedRouter
         canonical_ids = {
             "sourcing", "job_management", "cv_screening",
             "communication", "analytics", "interview_scheduling",

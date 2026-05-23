@@ -17,7 +17,7 @@ class TestLLMCascadePIIStrip:
     @pytest.mark.asyncio
     async def test_cpf_stripped_from_routing_prompt(self):
         """CPF no user message deve ser substituído antes do LLM call."""
-        from app.orchestrator.llm_cascade import LLMCascadeRouter
+        from app.orchestrator.routing.llm_cascade import LLMCascadeRouter
 
         router = LLMCascadeRouter()
         captured_prompts: list[str] = []
@@ -28,7 +28,7 @@ class TestLLMCascadePIIStrip:
 
         with (
             patch(
-                "app.orchestrator.llm_cascade.llm_service.generate",
+                "app.orchestrator.routing.llm_cascade.llm_service.generate",
                 side_effect=_fake_generate,
             ),
             patch(
@@ -47,7 +47,7 @@ class TestLLMCascadePIIStrip:
     @pytest.mark.asyncio
     async def test_email_stripped_from_routing_prompt(self):
         """Email no user message deve ser substituído antes do LLM call."""
-        from app.orchestrator.llm_cascade import LLMCascadeRouter
+        from app.orchestrator.routing.llm_cascade import LLMCascadeRouter
 
         router = LLMCascadeRouter()
         captured_prompts: list[str] = []
@@ -58,7 +58,7 @@ class TestLLMCascadePIIStrip:
 
         with (
             patch(
-                "app.orchestrator.llm_cascade.llm_service.generate",
+                "app.orchestrator.routing.llm_cascade.llm_service.generate",
                 side_effect=_fake_generate,
             ),
             patch(
@@ -76,7 +76,7 @@ class TestLLMCascadePIIStrip:
     @pytest.mark.asyncio
     async def test_pii_strip_failure_falls_back_to_original(self):
         """Se strip_pii_for_llm_prompt levantar exceção, deve fazer fail-open e continuar."""
-        from app.orchestrator.llm_cascade import LLMCascadeRouter
+        from app.orchestrator.routing.llm_cascade import LLMCascadeRouter
 
         router = LLMCascadeRouter()
         called = []
@@ -87,7 +87,7 @@ class TestLLMCascadePIIStrip:
 
         with (
             patch(
-                "app.orchestrator.llm_cascade.llm_service.generate",
+                "app.orchestrator.routing.llm_cascade.llm_service.generate",
                 side_effect=_fake_generate,
             ),
             patch(
@@ -104,7 +104,7 @@ class TestLLMCascadePIIStrip:
     @pytest.mark.asyncio
     async def test_safe_message_passes_through_unchanged(self):
         """Mensagem sem PII deve ser enviada ao LLM sem modificação."""
-        from app.orchestrator.llm_cascade import LLMCascadeRouter
+        from app.orchestrator.routing.llm_cascade import LLMCascadeRouter
 
         router = LLMCascadeRouter()
         captured: list[str] = []
@@ -117,7 +117,7 @@ class TestLLMCascadePIIStrip:
 
         with (
             patch(
-                "app.orchestrator.llm_cascade.llm_service.generate",
+                "app.orchestrator.routing.llm_cascade.llm_service.generate",
                 side_effect=_fake_generate,
             ),
             patch(

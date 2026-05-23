@@ -552,7 +552,7 @@ async def performance_metrics():
     """
     from app.domains.ai.services.prompt_version_registry import prompt_version_registry
     from app.domains.ai.services.response_cache_service import response_cache_service
-    from app.orchestrator.main_orchestrator import get_perf_summary
+    from app.orchestrator.execution.main_orchestrator import get_perf_summary
 
     perf = get_perf_summary()
     cache_stats = response_cache_service.get_stats()

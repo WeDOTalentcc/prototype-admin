@@ -32,7 +32,7 @@ COMPANY_SETTINGS_PROMPTS = [
 class TestCompanySettingsFastRouter:
     @pytest.mark.parametrize("prompt", COMPANY_SETTINGS_PROMPTS)
     def test_prompt_routes_to_company_settings(self, prompt: str) -> None:
-        from app.orchestrator.fast_router import FastRouter
+        from app.orchestrator.routing.fast_router import FastRouter
 
         router = FastRouter()
         result = router.match(prompt)
@@ -45,7 +45,7 @@ class TestCompanySettingsFastRouter:
 
     def test_company_settings_domain_present_in_yaml_load(self) -> None:
         """The YAML load path must expose 'company_settings' as a domain."""
-        from app.orchestrator.fast_router import DOMAIN_PATTERNS
+        from app.orchestrator.routing.fast_router import DOMAIN_PATTERNS
 
         assert "company_settings" in DOMAIN_PATTERNS
         assert len(DOMAIN_PATTERNS["company_settings"]) >= 5
@@ -57,6 +57,6 @@ class TestCompanySettingsDomainMapping:
         ["company_settings", "company_profile", "company_config"],
     )
     def test_agent_type_resolves_to_company_settings(self, agent_type: str) -> None:
-        from app.orchestrator.domain_mappings import resolve_domain
+        from app.orchestrator.routing.domain_mappings import resolve_domain
 
         assert resolve_domain(agent_type) == "company_settings"

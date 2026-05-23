@@ -20,8 +20,8 @@ from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
-from app.orchestrator.context_adapter import UniversalContext
-from app.orchestrator.main_orchestrator import ChatResponse, MainOrchestrator
+from app.orchestrator.context.context_adapter import UniversalContext
+from app.orchestrator.execution.main_orchestrator import ChatResponse, MainOrchestrator
 
 
 # ─── Helpers ──────────────────────────────────────────────────────────────
@@ -97,7 +97,7 @@ class TestRailACapabilityGateWired:
         }
 
         with patch(
-            "app.orchestrator.rail_a_capability_check.check_rail_a_capability",
+            "app.orchestrator.guards.rail_a_capability_check.check_rail_a_capability",
             new=AsyncMock(return_value=cap_result),
         ) as mock_cap:
             result = await orch.process(ctx, mock_db)
@@ -134,7 +134,7 @@ class TestRailACapabilityGateWired:
         }
 
         with patch(
-            "app.orchestrator.rail_a_capability_check.check_rail_a_capability",
+            "app.orchestrator.guards.rail_a_capability_check.check_rail_a_capability",
             new=AsyncMock(return_value=cap_result),
         ):
             result = await orch.process(ctx, mock_db)
@@ -163,7 +163,7 @@ class TestRailACapabilityGateWired:
         }
 
         with patch(
-            "app.orchestrator.rail_a_capability_check.check_rail_a_capability",
+            "app.orchestrator.guards.rail_a_capability_check.check_rail_a_capability",
             new=AsyncMock(return_value=cap_result),
         ):
             result = await orch.process(ctx, mock_db)
@@ -182,20 +182,20 @@ class TestRailACapabilityGateWired:
 
         # capability_map retorna None → chat_executable=True → pipeline normal
         with patch(
-            "app.orchestrator.rail_a_capability_check.check_rail_a_capability",
+            "app.orchestrator.guards.rail_a_capability_check.check_rail_a_capability",
             new=AsyncMock(return_value=None),
         ) as mock_cap, patch(
-            "app.orchestrator.main_orchestrator.pending_action_store"
+            "app.orchestrator.execution.main_orchestrator.pending_action_store"
         ) as mock_store, patch(
-            "app.orchestrator.main_orchestrator.action_executor"
+            "app.orchestrator.execution.main_orchestrator.action_executor"
         ) as mock_ae, patch(
             "app.domains.recruiter_assistant.services.conversation_memory.conversation_memory",
             AsyncMock(),
         ), patch(
-            "app.orchestrator.main_orchestrator.get_tenant_llm_config",
+            "app.orchestrator.execution.main_orchestrator.get_tenant_llm_config",
             new=AsyncMock(return_value=None),
         ), patch(
-            "app.orchestrator.agentic_loop.agentic_loop.run",
+            "app.orchestrator.execution.agentic_loop.agentic_loop.run",
             new=AsyncMock(return_value=None),
         ):
             mock_store.get.return_value = None
@@ -221,20 +221,20 @@ class TestRailACapabilityGateWired:
         mock_db = MagicMock()
 
         with patch(
-            "app.orchestrator.rail_a_capability_check.check_rail_a_capability",
+            "app.orchestrator.guards.rail_a_capability_check.check_rail_a_capability",
             new=AsyncMock(side_effect=RuntimeError("DB unavailable")),
         ) as mock_cap, patch(
-            "app.orchestrator.main_orchestrator.pending_action_store"
+            "app.orchestrator.execution.main_orchestrator.pending_action_store"
         ) as mock_store, patch(
-            "app.orchestrator.main_orchestrator.action_executor"
+            "app.orchestrator.execution.main_orchestrator.action_executor"
         ) as mock_ae, patch(
             "app.domains.recruiter_assistant.services.conversation_memory.conversation_memory",
             AsyncMock(),
         ), patch(
-            "app.orchestrator.main_orchestrator.get_tenant_llm_config",
+            "app.orchestrator.execution.main_orchestrator.get_tenant_llm_config",
             new=AsyncMock(return_value=None),
         ), patch(
-            "app.orchestrator.agentic_loop.agentic_loop.run",
+            "app.orchestrator.execution.agentic_loop.agentic_loop.run",
             new=AsyncMock(return_value=None),
         ):
             mock_store.get.return_value = None
@@ -264,20 +264,20 @@ class TestRailACapabilityGateWired:
         mock_db = MagicMock()
 
         with patch(
-            "app.orchestrator.rail_a_capability_check.check_rail_a_capability",
+            "app.orchestrator.guards.rail_a_capability_check.check_rail_a_capability",
             new=AsyncMock(return_value=None),
         ) as mock_cap, patch(
-            "app.orchestrator.main_orchestrator.pending_action_store"
+            "app.orchestrator.execution.main_orchestrator.pending_action_store"
         ) as mock_store, patch(
-            "app.orchestrator.main_orchestrator.action_executor"
+            "app.orchestrator.execution.main_orchestrator.action_executor"
         ) as mock_ae, patch(
             "app.domains.recruiter_assistant.services.conversation_memory.conversation_memory",
             AsyncMock(),
         ), patch(
-            "app.orchestrator.main_orchestrator.get_tenant_llm_config",
+            "app.orchestrator.execution.main_orchestrator.get_tenant_llm_config",
             new=AsyncMock(return_value=None),
         ), patch(
-            "app.orchestrator.agentic_loop.agentic_loop.run",
+            "app.orchestrator.execution.agentic_loop.agentic_loop.run",
             new=AsyncMock(return_value=None),
         ):
             mock_store.get.return_value = None
@@ -316,20 +316,20 @@ class TestRailACapabilityGateWired:
         # Mesmo que check_rail_a_capability seja chamado, source não é rail_a
         # → deve retornar None → pipeline normal
         with patch(
-            "app.orchestrator.rail_a_capability_check.check_rail_a_capability",
+            "app.orchestrator.guards.rail_a_capability_check.check_rail_a_capability",
             new=AsyncMock(return_value=None),  # gate auto-filtra source
         ) as mock_cap, patch(
-            "app.orchestrator.main_orchestrator.pending_action_store"
+            "app.orchestrator.execution.main_orchestrator.pending_action_store"
         ) as mock_store, patch(
-            "app.orchestrator.main_orchestrator.action_executor"
+            "app.orchestrator.execution.main_orchestrator.action_executor"
         ) as mock_ae, patch(
             "app.domains.recruiter_assistant.services.conversation_memory.conversation_memory",
             AsyncMock(),
         ), patch(
-            "app.orchestrator.main_orchestrator.get_tenant_llm_config",
+            "app.orchestrator.execution.main_orchestrator.get_tenant_llm_config",
             new=AsyncMock(return_value=None),
         ), patch(
-            "app.orchestrator.agentic_loop.agentic_loop.run",
+            "app.orchestrator.execution.agentic_loop.agentic_loop.run",
             new=AsyncMock(return_value=None),
         ):
             mock_store.get.return_value = None

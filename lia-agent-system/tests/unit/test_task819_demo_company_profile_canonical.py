@@ -158,7 +158,7 @@ async def test_completeness_check_ignores_website_when_canonical_fields_filled()
     `incomplete_company_profile`. Website has its own dedicated hint
     (`company_website_missing`).
     """
-    from app.orchestrator.precondition_checker import PreConditionChecker
+    from app.orchestrator.guards.precondition_checker import PreConditionChecker
 
     # Canonical row: name + industry + company_size all set; website NULL.
     fake_row = ("[DEMO] WeDo Talent", "Recursos Humanos / Tecnologia", "Medium")
@@ -186,7 +186,7 @@ async def test_completeness_check_ignores_website_when_canonical_fields_filled()
 @pytest.mark.asyncio
 async def test_completeness_check_still_flags_truly_missing_canonical_fields():
     """Negative test: when canonical fields are actually empty, they are reported."""
-    from app.orchestrator.precondition_checker import PreConditionChecker
+    from app.orchestrator.guards.precondition_checker import PreConditionChecker
 
     fake_row = (None, "", None)  # all 3 canonical fields blank
     fake_result = MagicMock()
@@ -215,7 +215,7 @@ async def test_completeness_check_still_flags_truly_missing_canonical_fields():
 @pytest.mark.asyncio
 async def test_completeness_check_sql_does_not_select_website():
     """SQL of the completeness check must not even SELECT website — defense in depth."""
-    from app.orchestrator.precondition_checker import PreConditionChecker
+    from app.orchestrator.guards.precondition_checker import PreConditionChecker
 
     captured: dict[str, str] = {}
 

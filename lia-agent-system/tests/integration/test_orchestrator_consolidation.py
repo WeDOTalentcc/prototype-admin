@@ -47,7 +47,7 @@ def mock_orchestrator():
 
 @pytest.fixture
 def universal_context_factory():
-    from app.orchestrator.context_adapter import UniversalContext
+    from app.orchestrator.context.context_adapter import UniversalContext
 
     def _make(
         message: str = "Olá, preciso de ajuda",
@@ -77,7 +77,7 @@ class TestChatResponseContract:
     """Verify the ChatResponse Pydantic schema remains unchanged."""
 
     def test_chat_response_required_fields(self):
-        from app.orchestrator.main_orchestrator import ChatResponse
+        from app.orchestrator.execution.main_orchestrator import ChatResponse
 
         resp = ChatResponse(success=True, content="Test")
         assert resp.success is True
@@ -93,7 +93,7 @@ class TestChatResponseContract:
         assert resp.needs_params is False
 
     def test_chat_response_from_orchestrator_result(self):
-        from app.orchestrator.main_orchestrator import ChatResponse
+        from app.orchestrator.execution.main_orchestrator import ChatResponse
 
         result = {
             "success": True,
@@ -116,7 +116,7 @@ class TestChatResponseContract:
         assert "score_breakdown" in resp.structured_data
 
     def test_chat_response_from_action_result(self):
-        from app.orchestrator.main_orchestrator import ChatResponse
+        from app.orchestrator.execution.main_orchestrator import ChatResponse
         from app.orchestrator.action_executor import ActionResult
 
         ar = ActionResult(
@@ -141,11 +141,11 @@ class TestFairnessGuardPreCheck:
     async def test_fairness_guard_blocks_before_orchestrator(
         self, mock_orchestrator, mock_db, universal_context_factory
     ):
-        from app.orchestrator.main_orchestrator import MainOrchestrator
+        from app.orchestrator.execution.main_orchestrator import MainOrchestrator
 
         ctx = universal_context_factory(message="Prefiro contratar só homens brancos")
 
-        with patch("app.orchestrator.main_orchestrator.FairnessGuard") as MockFG:
+        with patch("app.orchestrator.execution.main_orchestrator.FairnessGuard") as MockFG:
             mock_fg = MagicMock()
             block_result = MagicMock()
             block_result.is_blocked = True
@@ -170,11 +170,11 @@ class TestFairnessGuardPreCheck:
     async def test_soft_warning_does_not_block(
         self, mock_orchestrator, mock_db, universal_context_factory
     ):
-        from app.orchestrator.main_orchestrator import MainOrchestrator
+        from app.orchestrator.execution.main_orchestrator import MainOrchestrator
 
         ctx = universal_context_factory(message="Prefiro candidatos mais jovens")
 
-        with patch("app.orchestrator.main_orchestrator.FairnessGuard") as MockFG:
+        with patch("app.orchestrator.execution.main_orchestrator.FairnessGuard") as MockFG:
             mock_fg = MagicMock()
             safe_result = MagicMock()
             safe_result.is_blocked = False
@@ -234,8 +234,8 @@ class TestActionExecutorPhase:
 
 class TestIntentRouterRemoval:
     def test_cascaded_router_has_no_intent_router_param(self):
-        from app.orchestrator.cascaded_router import CascadedRouter
-        from app.orchestrator.fast_router import FastRouter
+        from app.orchestrator.routing.cascaded_router import CascadedRouter
+        from app.orchestrator.routing.fast_router import FastRouter
         import inspect
 
         sig = inspect.signature(CascadedRouter.__init__)
@@ -243,21 +243,21 @@ class TestIntentRouterRemoval:
 
     def test_orchestrator_init_does_not_pass_intent_router(self):
         """Verify Orchestrator._init_cascaded_router does not pass intent_router."""
-        from app.orchestrator.orchestrator import Orchestrator
+        from app.orchestrator.legacy.orchestrator import Orchestrator
 
         mock_llm = MagicMock()
         mock_llm.claude = MagicMock()
 
-        with patch("app.orchestrator.orchestrator.CascadedRouter") as MockCR:
+        with patch("app.orchestrator.legacy.orchestrator.CascadedRouter") as MockCR:
             MockCR.return_value = MagicMock()
-            with patch("app.orchestrator.orchestrator.initialize_tools"):
-                with patch("app.orchestrator.orchestrator.TaskPlanner"):
-                    with patch("app.orchestrator.orchestrator.PolicyEngineService"):  # W1-003 (2026-05-22): V1 deleted; patch V2 service instead
-                        with patch("app.orchestrator.orchestrator.StateManager"):
-                            with patch("app.orchestrator.orchestrator.DomainRegistry"):
-                                with patch("app.orchestrator.orchestrator.DomainWorkflow"):
-                                    with patch("app.orchestrator.orchestrator.PlanDetector"):
-                                        with patch("app.orchestrator.orchestrator.PlanExecutor"):
+            with patch("app.orchestrator.legacy.orchestrator.initialize_tools"):
+                with patch("app.orchestrator.legacy.orchestrator.TaskPlanner"):
+                    with patch("app.orchestrator.legacy.orchestrator.PolicyEngineService"):  # W1-003 (2026-05-22): V1 deleted; patch V2 service instead
+                        with patch("app.orchestrator.legacy.orchestrator.StateManager"):
+                            with patch("app.orchestrator.legacy.orchestrator.DomainRegistry"):
+                                with patch("app.orchestrator.legacy.orchestrator.DomainWorkflow"):
+                                    with patch("app.orchestrator.legacy.orchestrator.PlanDetector"):
+                                        with patch("app.orchestrator.legacy.orchestrator.PlanExecutor"):
                                             try:
                                                 Orchestrator(llm_service=mock_llm)
                                             except Exception:
@@ -343,7 +343,7 @@ class TestFastRouterCoverage:
     """Verify FastRouter + LLM Cascade covers the intent mappings IntentRouter had."""
 
     def test_fast_router_sourcing_patterns(self):
-        from app.orchestrator.fast_router import FastRouter
+        from app.orchestrator.routing.fast_router import FastRouter
 
         router = FastRouter()
         result = router.match("Buscar candidatos Python sênior")
@@ -351,7 +351,7 @@ class TestFastRouterCoverage:
         assert "sourcing" in result.domain_id
 
     def test_fast_router_cv_screening_patterns(self):
-        from app.orchestrator.fast_router import FastRouter
+        from app.orchestrator.routing.fast_router import FastRouter
 
         router = FastRouter()
         result = router.match("Faça a triagem dos candidatos")
@@ -359,7 +359,7 @@ class TestFastRouterCoverage:
         assert "cv_screening" in result.domain_id or "screening" in result.domain_id.lower()
 
     def test_fast_router_job_management_patterns(self):
-        from app.orchestrator.fast_router import FastRouter
+        from app.orchestrator.routing.fast_router import FastRouter
 
         router = FastRouter()
         result = router.match("Criar uma nova vaga para desenvolvedor")
@@ -367,7 +367,7 @@ class TestFastRouterCoverage:
         assert result.domain_id == "job_management"
 
     def test_fast_router_scheduling_patterns(self):
-        from app.orchestrator.fast_router import FastRouter
+        from app.orchestrator.routing.fast_router import FastRouter
 
         router = FastRouter()
         result = router.match("Agendar entrevista com Maria amanhã")
@@ -375,14 +375,14 @@ class TestFastRouterCoverage:
         assert "interview" in result.domain_id or "scheduling" in result.domain_id.lower()
 
     def test_fast_router_analytics_patterns(self):
-        from app.orchestrator.fast_router import FastRouter
+        from app.orchestrator.routing.fast_router import FastRouter
 
         router = FastRouter()
         result = router.match("Gerar relatório de KPIs do funil")
         assert result is not None
 
     def test_fast_router_communication_patterns(self):
-        from app.orchestrator.fast_router import FastRouter
+        from app.orchestrator.routing.fast_router import FastRouter
 
         router = FastRouter()
         result = router.match("Enviar email para candidato João")
@@ -434,7 +434,7 @@ class TestPendingActionFlow:
 
 class TestContextAdapterShapes:
     def test_from_rest_sets_context_type(self):
-        from app.orchestrator.context_adapter import ContextAdapter
+        from app.orchestrator.context.context_adapter import ContextAdapter
 
         ctx = ContextAdapter.from_rest(
             message="teste",
@@ -446,7 +446,7 @@ class TestContextAdapterShapes:
         assert ctx.channel == "rest"
 
     def test_from_job_chat_sets_job_context_type(self):
-        from app.orchestrator.context_adapter import ContextAdapter
+        from app.orchestrator.context.context_adapter import ContextAdapter
 
         mock_req = MagicMock()
         mock_req.message = "Qual o pipeline dessa vaga?"
@@ -458,7 +458,7 @@ class TestContextAdapterShapes:
         assert ctx.entity_id == "job-1"
 
     def test_to_orchestrator_context_includes_candidates(self):
-        from app.orchestrator.context_adapter import UniversalContext
+        from app.orchestrator.context.context_adapter import UniversalContext
 
         ctx = UniversalContext(
             message="teste",
@@ -510,7 +510,7 @@ class TestMainOrchestratorPipeline:
     async def test_non_actionable_message_reaches_phase2(
         self, mock_orchestrator, mock_db, universal_context_factory
     ):
-        from app.orchestrator.main_orchestrator import MainOrchestrator, ChatResponse
+        from app.orchestrator.execution.main_orchestrator import MainOrchestrator, ChatResponse
 
         ctx = universal_context_factory(message="O que é a metodologia WSI?")
         orch = MainOrchestrator(mock_orchestrator)
@@ -543,7 +543,7 @@ class TestMainOrchestratorPipeline:
     async def test_error_in_pipeline_returns_error_response(
         self, mock_orchestrator, mock_db, universal_context_factory
     ):
-        from app.orchestrator.main_orchestrator import MainOrchestrator
+        from app.orchestrator.execution.main_orchestrator import MainOrchestrator
 
         ctx = universal_context_factory(message="teste erro")
         orch = MainOrchestrator(mock_orchestrator)
@@ -561,28 +561,28 @@ class TestChatResponseFallbackMapping:
     """Contract tests for ChatResponse.from_orchestrator_result() key fallback chain."""
 
     def test_response_key_takes_priority(self):
-        from app.orchestrator.main_orchestrator import ChatResponse
+        from app.orchestrator.execution.main_orchestrator import ChatResponse
 
         result = {"response": "from_response", "message": "from_message", "content": "from_content"}
         resp = ChatResponse.from_orchestrator_result(result, conv_id="test-1")
         assert resp.content == "from_response"
 
     def test_message_key_fallback_when_no_response(self):
-        from app.orchestrator.main_orchestrator import ChatResponse
+        from app.orchestrator.execution.main_orchestrator import ChatResponse
 
         result = {"message": "orchestrator_message", "content": "from_content", "success": True}
         resp = ChatResponse.from_orchestrator_result(result, conv_id="test-2")
         assert resp.content == "orchestrator_message"
 
     def test_content_key_final_fallback(self):
-        from app.orchestrator.main_orchestrator import ChatResponse
+        from app.orchestrator.execution.main_orchestrator import ChatResponse
 
         result = {"content": "from_content", "success": True}
         resp = ChatResponse.from_orchestrator_result(result, conv_id="test-3")
         assert resp.content == "from_content"
 
     def test_empty_string_when_all_keys_missing(self):
-        from app.orchestrator.main_orchestrator import ChatResponse
+        from app.orchestrator.execution.main_orchestrator import ChatResponse
 
         result = {"success": True, "intent": "general"}
         resp = ChatResponse.from_orchestrator_result(result, conv_id="test-4")
@@ -593,7 +593,7 @@ class TestChatResponseFallbackMapping:
         Orchestrator.process_request() returns a dict with 'message' key.
         from_orchestrator_result must not drop it.
         """
-        from app.orchestrator.main_orchestrator import ChatResponse
+        from app.orchestrator.execution.main_orchestrator import ChatResponse
 
         orchestrator_style_result = {
             "message": "Olá! Posso ajudar com candidatos.",

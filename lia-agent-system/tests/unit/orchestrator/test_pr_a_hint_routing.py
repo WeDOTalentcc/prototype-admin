@@ -15,7 +15,7 @@ Testa o pipeline FE→BE para hints de routing emitidos pelo Rail A:
 Skill: lia-testing PARTE 1 (TDD red→green) + harness-engineering
 (computational guide canônico).
 """
-from app.orchestrator.context_adapter import ContextAdapter
+from app.orchestrator.context.context_adapter import ContextAdapter
 from app.orchestrator.services.rail_a_hint_override import (
     OVERRIDE_SOURCE,
     TRUSTED_SOURCE,
@@ -238,7 +238,7 @@ def test_cascaded_router_tier_0_0_curto_circuita_com_hint_valido(monkeypatch):
     monkeypatch.setattr(
         DomainRegistry, "list_domains", lambda self: ["job_management"]
     )
-    from app.orchestrator.cascaded_router import CascadedRouter
+    from app.orchestrator.routing.cascaded_router import CascadedRouter
 
     router = CascadedRouter()
     context = {
@@ -259,7 +259,7 @@ def test_cascaded_router_tier_0_0_curto_circuita_com_hint_valido(monkeypatch):
 def test_cascaded_router_sem_hint_segue_tiers_normalmente(monkeypatch):
     """Sem hint válido, CascadedRouter cai nos tiers 0-4 normalmente."""
     import asyncio
-    from app.orchestrator.cascaded_router import CascadedRouter
+    from app.orchestrator.routing.cascaded_router import CascadedRouter
 
     router = CascadedRouter()
     # Keyword forte → fastrouter resolve para job_management

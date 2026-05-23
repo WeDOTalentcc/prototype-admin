@@ -86,7 +86,7 @@ async def clean_vector_cache(dry_run: bool = True) -> int:
 async def flush_redis_routing_cache() -> int:
     """Flush all route_cache:* keys from Redis."""
     try:
-        from app.orchestrator.semantic_cache import SemanticCache
+        from app.orchestrator.memory.semantic_cache import SemanticCache
         cache = SemanticCache()
         # Task #1144: flush_all() now requires an explicit scope (tenant or
         # pattern) to prevent accidental cross-tenant wipes. This script is

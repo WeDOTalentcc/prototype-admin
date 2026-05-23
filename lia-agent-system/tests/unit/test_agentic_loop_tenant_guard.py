@@ -21,7 +21,7 @@ def _make_loop_with_deps():
     Instantiate AgenticLoop and inject fake deps so _ensure_deps() is a no-op.
     Returns (loop, mock_tool_executor).
     """
-    from app.orchestrator.agentic_loop import AgenticLoop
+    from app.orchestrator.execution.agentic_loop import AgenticLoop
 
     loop = AgenticLoop()
 

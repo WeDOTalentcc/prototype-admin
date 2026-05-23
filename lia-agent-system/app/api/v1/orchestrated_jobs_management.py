@@ -28,7 +28,7 @@ from app.orchestrator.action_executor import (
     is_confirmation,
     is_rejection,
 )
-from app.orchestrator.pending_action import PendingActionState, pending_action_store
+from app.orchestrator.execution.pending_action import PendingActionState, pending_action_store
 from fastapi import Depends
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel

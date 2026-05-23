@@ -309,7 +309,7 @@ company_id: str = Depends(require_company_id)):
             except Exception as _pin_exc:
                 logger.debug("[SSEChat] wizard_session_pin skipped: %s", _pin_exc)
             try:
-                from app.orchestrator.cascaded_router import CascadedRouter
+                from app.orchestrator.routing.cascaded_router import CascadedRouter
                 _router = CascadedRouter()
                 route = await _router.route(
                     message=content, context=context, session_id=session_id,

@@ -29,7 +29,7 @@ def _make_route_result(
     clarification_question: Optional[str] = None,
     clarification_options: Optional[list] = None,
 ):
-    from app.orchestrator.cascaded_router import RouteResult
+    from app.orchestrator.routing.cascaded_router import RouteResult
     return RouteResult(
         domain_id=domain_id,
         confidence=confidence,
@@ -49,7 +49,7 @@ def _make_router_with_mocks(
     llm_result=None,
 ):
     """Cria CascadedRouter com todos os tiers mockados."""
-    from app.orchestrator.cascaded_router import CascadedRouter
+    from app.orchestrator.routing.cascaded_router import CascadedRouter
 
     router = CascadedRouter()
 
@@ -304,7 +304,7 @@ class TestCascadedRouterStats:
     @pytest.mark.asyncio
     async def test_get_stats_returns_dict(self):
         """get_stats() retorna dicionário com contadores."""
-        from app.orchestrator.cascaded_router import CascadedRouter
+        from app.orchestrator.routing.cascaded_router import CascadedRouter
         router = CascadedRouter()
         stats = router.get_stats()
         assert isinstance(stats, dict)
@@ -312,7 +312,7 @@ class TestCascadedRouterStats:
     @pytest.mark.asyncio
     async def test_stats_keys_present(self):
         """Stats contém chaves esperadas."""
-        from app.orchestrator.cascaded_router import CascadedRouter
+        from app.orchestrator.routing.cascaded_router import CascadedRouter
         router = CascadedRouter()
         stats = router.get_stats()
         for key in ("memory_hits", "fast_hits"):
