@@ -1,6 +1,12 @@
-"""
-Company Assessments API endpoints.
-Big Five personality questions/role-profiles and Technical test questions/templates.
+"""Company assessments (Big Five + Technical) API.
+
+Onda 4.2c-G-C (2026-05-23): big_five_questions e technical_questions
+sao pools GLOBAIS (sem coluna company_id) usados por TODAS empresas.
+Mutacoes (PUT/DELETE) sao restritas a UserRole.wedotalent_admin via
+require_wedotalent_admin_role helper.
+
+Decisao produto pendente: migrar pra per-tenant ou manter global
+staff-only (default atual).
 """
 import logging
 import uuid
@@ -8,10 +14,34 @@ from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
+from app.auth.dependencies import get_current_active_user
+from app.auth.models import User, UserRole
 from app.domains.company.dependencies import (
     get_big_five_repo,
     get_technical_test_repo,
 )
+
+
+def require_wedotalent_admin_role(
+    current_user: User = Depends(get_current_active_user),
+) -> User:
+    """Onda 4.2c-G-C (2026-05-23): role gate pra mutacoes em pools globais.
+
+    big_five_questions e technical_questions sao tabelas GLOBAIS sem
+    coluna company_id. Qualquer mutacao afeta TODAS as empresas. Apenas
+    staff WeDOTalent (wedotalent_admin) pode mutar.
+
+    Tenant admin/recruiter/viewer: 403 Forbidden.
+    """
+    if current_user.role != UserRole.wedotalent_admin:
+        raise HTTPException(
+            status_code=403,
+            detail=(
+                "Only WeDOTalent staff can modify global assessment question pools. "
+                "Contact WeDOTalent support to request changes."
+            ),
+        )
+    return current_user
 from app.domains.company.repositories.big_five_repository import BigFiveRepository
 from app.domains.company.repositories.technical_test_repository import TechnicalTestRepository
 from app.schemas.company import (
@@ -85,9 +115,11 @@ async def update_big_five_question(
     question_id: uuid.UUID,
     data: BigFiveQuestionUpdate,
     bf_repo: BigFiveRepository = Depends(get_big_five_repo),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Update a Big Five question."""
+    # Onda 4.2c-P0-8 (2026-05-23): role gate — pool global, so staff WeDOTalent.
+    _staff: User = Depends(require_wedotalent_admin_role),
+    company_id: str = Depends(require_company_id),
+):
+    """Update a Big Five question (global pool, staff-only)."""
     try:
         update_data = data.model_dump(exclude_unset=True)
         update_data["updated_at"] = datetime.utcnow()
@@ -106,9 +138,11 @@ company_id: str = Depends(require_company_id)):
 async def delete_big_five_question(
     question_id: uuid.UUID,
     bf_repo: BigFiveRepository = Depends(get_big_five_repo),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Soft delete a Big Five question."""
+    # Onda 4.2c-P0-8 (2026-05-23): role gate — pool global, so staff WeDOTalent.
+    _staff: User = Depends(require_wedotalent_admin_role),
+    company_id: str = Depends(require_company_id),
+):
+    """Soft delete a Big Five question (global pool, staff-only)."""
     try:
         deleted = await bf_repo.delete_question(question_id)
         if not deleted:
@@ -246,9 +280,11 @@ async def update_technical_question(
     question_id: uuid.UUID,
     data: TechnicalQuestionUpdate,
     tt_repo: TechnicalTestRepository = Depends(get_technical_test_repo),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Update a technical question."""
+    # Onda 4.2c-P0-9 (2026-05-23): role gate — pool global, so staff WeDOTalent.
+    _staff: User = Depends(require_wedotalent_admin_role),
+    company_id: str = Depends(require_company_id),
+):
+    """Update a technical question (global pool, staff-only)."""
     try:
         update_data = data.model_dump(exclude_unset=True)
         update_data["updated_at"] = datetime.utcnow()
@@ -267,9 +303,11 @@ company_id: str = Depends(require_company_id)):
 async def delete_technical_question(
     question_id: uuid.UUID,
     tt_repo: TechnicalTestRepository = Depends(get_technical_test_repo),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Soft delete a technical question."""
+    # Onda 4.2c-P0-9 (2026-05-23): role gate — pool global, so staff WeDOTalent.
+    _staff: User = Depends(require_wedotalent_admin_role),
+    company_id: str = Depends(require_company_id),
+):
+    """Soft delete a technical question (global pool, staff-only)."""
     try:
         deleted = await tt_repo.delete_question(question_id)
         if not deleted:
