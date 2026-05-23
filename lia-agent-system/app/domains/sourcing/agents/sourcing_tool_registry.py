@@ -51,6 +51,7 @@ async def _wrap_suggest_skills(**kwargs: Any) -> dict[str, Any]:
     if not role:
         return {"success": False, "data": {}, "message": "Parametro 'role' e obrigatorio."}
 
+    # ADR-001-EXEMPT: skills frequency analytics aggregation (COUNT + unnest) for suggestion — complex GROUP BY, not abstractable to repo method
     async with AsyncSessionLocal() as session:
         result = await session.execute(
             text("""
@@ -141,6 +142,7 @@ async def _wrap_search_candidates(**kwargs: Any) -> dict[str, Any]:
 
     count_query = f"SELECT COUNT(*) as total FROM candidates WHERE {where_clause}"
 
+    # ADR-001-EXEMPT: dynamic candidate search builder with explicit filter allowlist — canonically documented per pre-existing CROSS-TENANT-EXEMPT markers in file
     async with AsyncSessionLocal() as session:
         count_result = await session.execute(text(count_query), params)
         total = count_result.scalar() or 0
@@ -1246,6 +1248,7 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
     summary: dict[str, Any] = {}
     try:
+        # ADR-001-EXEMPT: generate_report aggregation over applications table — multi-filter COUNT, not abstractable to simple repo method
         async with AsyncSessionLocal() as session:
             row = await session.execute(text("""
                 SELECT COUNT(*) AS total,

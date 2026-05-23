@@ -66,9 +66,9 @@ TOOL_REGISTRY_BACKLOG = frozenset({
     "app/domains/hiring_policy/agents/policy_tool_registry.py",
     "app/domains/job_management/agents/wizard_tool_registry.py",
     "app/domains/pipeline/agents/pipeline_tool_registry.py",
-    "app/domains/sourcing/agents/diversity_tool_registry.py",
+    # diversity_tool_registry.py — removed 2026-05-23: no select() violations; was pre-emptive
     "app/domains/sourcing/agents/passive_pipeline_tool_registry.py",
-    "app/domains/sourcing/agents/sourcing_tool_registry.py",
+    # sourcing_tool_registry.py — removed 2026-05-23: no select() violations; was pre-emptive
     "app/domains/talent_pool/agents/talent_pool_tool_registry.py",
 })
 

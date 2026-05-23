@@ -53,15 +53,15 @@ MIGRATED_TOOL_REGISTRIES = frozenset({
 
 # W1-004-C backlog: pre-existing SQL inline in tool_registries.
 # Warn-only until migrated in future waves.
+# W1-004-A (2026-05-23): diversity_tool_registry + sourcing_tool_registry removed from backlog
+# after full EXEMPT marker coverage (ADR-001-EXEMPT on all SQL inline blocks).
 TOOL_REGISTRY_BACKLOG = frozenset({
     "app/domains/company_settings/agents/company_tool_registry.py",
     "app/domains/cv_screening/agents/pipeline_tool_registry.py",
     "app/domains/hiring_policy/agents/policy_tool_registry.py",
     "app/domains/job_management/agents/wizard_tool_registry.py",
     "app/domains/pipeline/agents/pipeline_tool_registry.py",
-    "app/domains/sourcing/agents/diversity_tool_registry.py",
     "app/domains/sourcing/agents/passive_pipeline_tool_registry.py",
-    "app/domains/sourcing/agents/sourcing_tool_registry.py",
     "app/domains/talent_pool/agents/talent_pool_tool_registry.py",
 })
 

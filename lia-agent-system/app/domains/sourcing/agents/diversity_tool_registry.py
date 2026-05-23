@@ -153,6 +153,7 @@ async def _wrap_diversity_search_candidates(**kwargs: Any) -> dict[str, Any]:
 
     count_query = f"SELECT COUNT(*) as total FROM candidates WHERE {where_clause}"
 
+    # ADR-001-EXEMPT: diversity search with _ALLOWED_DIVERSITY_GROUPS allowlist + CASE ORDER BY bound params — LGPD Art.5 sensitive data, dynamic CASE not abstractable to repo without recreating same logic; FairnessGuard wraps output
     async with AsyncSessionLocal() as session:
         try:
             count_result = await session.execute(text(count_query), params)
@@ -173,6 +174,7 @@ async def _wrap_diversity_search_candidates(**kwargs: Any) -> dict[str, Any]:
                 ORDER BY lia_score DESC NULLS LAST
                 LIMIT :lim OFFSET :off
             """
+            # ADR-001-EXEMPT: diversity search fallback (no diversidade_autodeclarada col) — same LGPD Art.5 exemption as main block above
             result = await session.execute(text(simple_query), params)
             rows = result.mappings().all()
             total = len(rows)
@@ -281,6 +283,7 @@ async def _wrap_diversity_get_pool_metrics(**kwargs: Any) -> dict[str, Any]:
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
 
+    # ADR-001-EXEMPT: Four-Fifths Rule metrics aggregation — multi-step COUNT with fairness calculation, not abstractable to simple repo method
     async with AsyncSessionLocal() as session:
         try:
             # P0.A canonical: diversity metrics MUST be tenant-scoped (LGPD
