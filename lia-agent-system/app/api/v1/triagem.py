@@ -1,3 +1,44 @@
+"""
+Triagem REST endpoints (recrutador admin + candidato público).
+
+AUTH MATRIX canonical (Sprint 4 B.1, 2026-05-23):
+
+| Endpoint                                  | Auth          | Tenant resolution                |
+|-------------------------------------------|---------------|----------------------------------|
+| POST /api/v1/triagem/invite               | JWT obrigatório | company_id from JWT (REGRA 2)  |
+| GET  /api/v1/triagem/{token}              | PUBLIC (token) | session.company_id              |
+| POST /api/v1/triagem/{token}/message      | PUBLIC (token) | session.company_id              |
+| GET  /api/v1/triagem/{token}/history      | PUBLIC (token) | session.company_id              |
+| POST /api/v1/triagem/{token}/complete     | PUBLIC (token) | session.company_id              |
+| POST /api/v1/triagem/{token}/request-call | PUBLIC (token) | session.company_id              |
+| POST /api/v1/triagem/{token}/start        | PUBLIC (token) | session.company_id              |
+| POST /api/v1/triagem/{token}/audio        | PUBLIC (token) | session.company_id              |
+| POST /api/v1/triagem/{token}/tts          | PUBLIC (token) | session.company_id              |
+| POST /api/v1/triagem/{token}/tts/{msg_id} | PUBLIC (token) | session.company_id              |
+| GET  /api/v1/triagem/{token}/voice-status | PUBLIC (token) | session.company_id              |
+| POST /api/v1/triagem/{token}/voip-start   | PUBLIC (token) | session.company_id              |
+
+Por que candidato anônimo: candidato recebe link (email/WhatsApp) e abre sem
+estar logado na plataforma. JWT só existe para recrutador interno.
+
+Token canonical: UUID v4 gerado em create_session (uuid.uuid4(), 36 chars,
+não-guessable). Validado em validate_token: 404 not_found / 410 expired /
+409 already_completed.
+
+Multi-tenancy (sem JWT mas com isolation):
+- session.company_id é set em create_session a partir do JWT do recrutador
+- TriagemRepository.get_session_by_token filtra por token único (não cross-tenant)
+- Postgres RLS no nível de query (Task #1143) garante company_id correto
+  setado em SET app.company_id quando services usam o session.company_id
+
+Middleware: app/middleware/auth_enforcement.py — PUBLIC_REGEX_PATHS contém
+regex para `/api/v1/triagem/{uuid-v4}(/{verb})?` (não matchea /invite nem
+malformados).
+
+Refs:
+- AUDIT_CANDIDATE_CHAT_PUBLIC_2026-05-23.md (P0 production blocker descoberta)
+- Sprint 4 B.1 (Paulo decisão 2026-05-23 — Replit canonical produção)
+"""
 import logging
 import re
 from typing import Any
@@ -46,8 +87,9 @@ async def get_triagem_session(
     token: str,
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+):
+    # multi-tenancy: tenant resolved via session.company_id (set at invite time by
+    # authenticated recruiter). Token = UUID v4 in URL is the auth credential. (B.1 2026-05-23)
     config = await triagem_svc.get_session_config(repo.db, token)
 
     if config is None:
@@ -72,8 +114,9 @@ async def send_message(
     request: SendMessageRequest,
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+):
+    # multi-tenancy: tenant resolved via session.company_id (set at invite time by
+    # authenticated recruiter). Token = UUID v4 in URL is the auth credential. (B.1 2026-05-23)
     validation = await triagem_svc.validate_token(repo.db, token)
 
     if not validation.get("valid"):
@@ -104,8 +147,9 @@ async def get_history(
     token: str,
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+):
+    # multi-tenancy: tenant resolved via session.company_id (set at invite time by
+    # authenticated recruiter). Token = UUID v4 in URL is the auth credential. (B.1 2026-05-23)
     result = await triagem_svc.get_history(repo.db, token)
 
     if result.get("error") == "not_found":
@@ -119,8 +163,9 @@ async def complete_triagem(
     token: str,
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+):
+    # multi-tenancy: tenant resolved via session.company_id (set at invite time by
+    # authenticated recruiter). Token = UUID v4 in URL is the auth credential. (B.1 2026-05-23)
     validation = await triagem_svc.validate_token(repo.db, token)
 
     if not validation.get("valid"):
@@ -215,8 +260,9 @@ async def request_phone_call(
     request: RequestCallRequest,
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+):
+    # multi-tenancy: tenant resolved via session.company_id (set at invite time by
+    # authenticated recruiter). Token = UUID v4 in URL is the auth credential. (B.1 2026-05-23)
     """Request an automated phone call from LIA to the candidate via Twilio Voice."""
     validation = await triagem_svc.validate_token(repo.db, token)
 
@@ -260,8 +306,9 @@ async def start_triagem(
     request: StartSessionRequest | None = None,
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+):
+    # multi-tenancy: tenant resolved via session.company_id (set at invite time by
+    # authenticated recruiter). Token = UUID v4 in URL is the auth credential. (B.1 2026-05-23)
     validation = await triagem_svc.validate_token(repo.db, token)
 
     if not validation.get("valid"):
@@ -290,8 +337,9 @@ async def transcribe_audio(
     question_index: int | None = Form(None),
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+):
+    # multi-tenancy: tenant resolved via session.company_id (set at invite time by
+    # authenticated recruiter). Token = UUID v4 in URL is the auth credential. (B.1 2026-05-23)
     """Transcribe candidate audio using OpenAI Whisper STT."""
     validation = await triagem_svc.validate_token(repo.db, token)
     if not validation.get("valid"):
@@ -344,8 +392,9 @@ async def synthesize_speech(
     request: TTSRequest,
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+):
+    # multi-tenancy: tenant resolved via session.company_id (set at invite time by
+    # authenticated recruiter). Token = UUID v4 in URL is the auth credential. (B.1 2026-05-23)
     """Generate TTS audio for a triagem question using OpenAI TTS."""
     validation = await triagem_svc.validate_token(repo.db, token)
     if not validation.get("valid"):
@@ -377,8 +426,9 @@ async def synthesize_message_speech(
     message_id: str,
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+):
+    # multi-tenancy: tenant resolved via session.company_id (set at invite time by
+    # authenticated recruiter). Token = UUID v4 in URL is the auth credential. (B.1 2026-05-23)
     """Generate TTS audio on demand for a specific LIA message."""
     validation = await triagem_svc.validate_token(repo.db, token)
     if not validation.get("valid"):
@@ -405,8 +455,9 @@ async def voice_status(
     token: str,
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+):
+    # multi-tenancy: tenant resolved via session.company_id (set at invite time by
+    # authenticated recruiter). Token = UUID v4 in URL is the auth credential. (B.1 2026-05-23)
     """Check availability of voice services (STT/TTS) for the session."""
     validation = await triagem_svc.validate_token(repo.db, token)
     if not validation.get("valid"):
@@ -427,8 +478,9 @@ async def voip_start(
     token: str,
     repo: TriagemRepository = Depends(get_triagem_repo),
     triagem_svc: TriagemSessionService = Depends(get_triagem_service),
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+):
+    # multi-tenancy: tenant resolved via session.company_id (set at invite time by
+    # authenticated recruiter). Token = UUID v4 in URL is the auth credential. (B.1 2026-05-23)
     """
     Initiate a VoIP (browser call) screening session.
 

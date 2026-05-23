@@ -216,6 +216,20 @@ PUBLIC_REGEX_PATHS: tuple[_re.Pattern[str], ...] = (
     _re.compile(r"^/api/v1/scheduling/link/[A-Za-z0-9_\-]{16,128}$"),
     # POST /api/v1/scheduling/link/{token}/confirm
     _re.compile(r"^/api/v1/scheduling/link/[A-Za-z0-9_\-]{16,128}/confirm$"),
+    # Sprint 4 B.1 (Paulo 2026-05-23) — candidate-facing triagem endpoints.
+    # Resolução de tenant via session_token (UUID v4, não-guessable, expires_at
+    # validado). Candidato anônimo acessa o link sem JWT. Multi-tenancy:
+    # company_id é lido de session.company_id (set no create_session do recrutador
+    # autenticado), NUNCA do request. Audit: AUDIT_CANDIDATE_CHAT_PUBLIC_2026-05-23.md
+    # Endpoints admin /triagem/invite e /triagem/voice/* permanecem JWT-only
+    # (NÃO matchados pelo regex — só caem nas paths {token}/<verb> abaixo).
+    #
+    # Token = UUID v4 (36 chars: 8-4-4-4-12). Regex aceita formato canonical apenas.
+    _re.compile(
+        r"^/api/v1/triagem/"
+        r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+        r"(/[A-Za-z0-9_\-/]+)?$"
+    ),
 )
 
 
