@@ -56,6 +56,8 @@ _company_gate: str = Depends(require_company_id)) -> dict:
             force_scenario=payload.scenario,
         )
         return result
+    except HTTPException:
+        raise
     except Exception as exc:
         logger.error("candidates/compare erro: %s", exc)
         raise HTTPException(

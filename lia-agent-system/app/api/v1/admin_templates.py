@@ -109,6 +109,8 @@ company_id: str = Depends(require_company_id)):
         )
         logger.info(f"Listed {len(templates)} system templates")
         return SystemTemplateListResponse(total=total, items=[template_to_response(t) for t in templates])
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing system templates: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

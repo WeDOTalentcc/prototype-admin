@@ -119,6 +119,8 @@ company_id: str = Depends(require_company_id)):
         questions = await sq_repo.list_for_company(effective_company_id)
 
         return [q.to_dict() for q in questions]
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing screening questions: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -154,6 +156,8 @@ company_id: str = Depends(require_company_id)):
             "message": "Screening question created",
             "data": new_question.to_dict()
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating screening question: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -232,6 +236,8 @@ company_id: str = Depends(require_company_id)):
             "message": "Screening questions updated",
             "data": [q.to_dict() for q in updated_questions if q.is_active]
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error updating screening questions: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

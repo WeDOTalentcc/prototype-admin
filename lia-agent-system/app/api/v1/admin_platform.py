@@ -162,6 +162,8 @@ company_id: str = Depends(require_company_id)):
                 "steps": steps,
             },
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"[onboard-client] Error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -189,6 +191,8 @@ async def get_onboarding_status(_admin: User = Depends(require_admin), company_i
                 "clients": [],
             },
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"[onboarding-status] Error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

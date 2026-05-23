@@ -144,6 +144,8 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
             )
             for r in records
         ]
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching recent executions for company {company_id}: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch recent executions")
@@ -155,6 +157,8 @@ async def get_company_stats(company_id: str, current_user: User = Depends(get_cu
     try:
         stats = await store.get_stats(company_id)
         return StatsResponse(**stats)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching stats for company {company_id}: {e}")
         raise HTTPException(status_code=500, detail="Failed to fetch stats")

@@ -91,6 +91,8 @@ async def adjust_questions(request: AdjustQuestionsRequest, company_id: str = De
         return result
     except ValueError as e:
         raise HTTPException(status_code=429, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error adjusting WSI questions: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -111,6 +113,8 @@ async def evaluate_jd(request: EvaluateJDRequest, company_id: str = Depends(requ
             description=request.description
         )
         return result
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error evaluating JD: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -156,6 +160,8 @@ async def save_questions(request: SaveQuestionsRequest, company_id: str = Depend
             iteration_reset=iteration_reset,
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error saving WSI questions for job {request.job_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))

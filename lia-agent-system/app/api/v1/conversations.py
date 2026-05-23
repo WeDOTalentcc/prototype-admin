@@ -149,6 +149,8 @@ company_id: str = Depends(require_company_id)):
             offset=offset,
             limit=limit,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing conversations: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -267,6 +269,8 @@ company_id: str = Depends(require_company_id)):
             created_at=conversation.created_at.isoformat() if conversation.created_at else None,
             updated_at=conversation.updated_at.isoformat() if conversation.updated_at else None,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating conversation: {e}")
         await db.rollback()
@@ -307,6 +311,8 @@ company_id: str = Depends(require_company_id)):
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error adding message: {e}")
         await db.rollback()
@@ -336,6 +342,8 @@ company_id: str = Depends(require_company_id)):
             "summary": summary,
             "updated": summary is not None,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error updating summary: {e}")
         await db.rollback()
@@ -478,6 +486,8 @@ company_id: str = Depends(require_company_id)):
         )
         
         return context
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting conversation context: {e}")
         raise HTTPException(status_code=500, detail=str(e))

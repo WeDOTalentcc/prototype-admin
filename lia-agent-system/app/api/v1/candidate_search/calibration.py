@@ -223,6 +223,8 @@ company_id: str = Depends(require_company_id)):
             min_feedbacks_required=min_feedbacks
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         await repo.rollback()
         logger.error(f"Calibration feedback failed: {e}", exc_info=True)
@@ -302,6 +304,8 @@ company_id: str = Depends(require_company_id)):
             message=f"Sessão de calibração iniciada com {len(candidates)} candidatos. Avalie cada um com like ou dislike para liberar o sourcing automático."
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         await repo.rollback()
         logger.error(f"Start calibration failed: {e}", exc_info=True)
@@ -377,6 +381,8 @@ company_id: str = Depends(require_company_id)):
             min_feedbacks_required=min_feedbacks
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Get calibration status failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Get calibration status failed: {str(e)}")
@@ -414,6 +420,8 @@ company_id: str = Depends(require_company_id)):
             suggested_actions=result.get("suggested_actions", [])
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Vacancy goal check failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Vacancy goal check failed: {str(e)}")
@@ -657,6 +665,8 @@ company_id: str = Depends(require_company_id)):
             "message": goal_result.get("message", "")
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Get vacancy candidates count failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Get vacancy candidates count failed: {str(e)}")

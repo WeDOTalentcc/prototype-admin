@@ -288,6 +288,8 @@ company_id: str = Depends(require_company_id)):
             message=f"Updated {successful} candidates to status '{request.new_status}'"
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         await repo.rollback()
         logger.error(f"Bulk update status failed: {e}", exc_info=True)
@@ -899,6 +901,8 @@ company_id: str = Depends(require_company_id)):
             message=f"Successfully {delete_type} {successful} candidates"
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         await repo.rollback()
         logger.error(f"Bulk delete failed: {e}", exc_info=True)
@@ -968,6 +972,8 @@ company_id: str = Depends(require_company_id)):
             message=f"Added tags {tags} to {successful} candidates"
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         await repo.rollback()
         logger.error(f"Bulk add tags failed: {e}", exc_info=True)
@@ -1037,6 +1043,8 @@ company_id: str = Depends(require_company_id)):
             message=f"Removed tags {tags} from {successful} candidates"
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         await repo.rollback()
         logger.error(f"Bulk remove tags failed: {e}", exc_info=True)

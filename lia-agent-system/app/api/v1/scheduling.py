@@ -185,6 +185,8 @@ company_id: str = Depends(require_company_id)):
 
         return interview_to_response(interview)
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to create interview: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -259,6 +261,8 @@ company_id: str = Depends(require_company_id)):
             teams_metadata=teams_metadata
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to create interview with Teams: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -298,6 +302,8 @@ company_id: str = Depends(require_company_id)):
             items=[interview_to_response(i) for i in interviews]
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to list interviews: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -352,6 +358,8 @@ company_id: str = Depends(require_company_id)):
 
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to update interview: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -386,6 +394,8 @@ company_id: str = Depends(require_company_id)):
 
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to cancel interview: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -512,6 +522,8 @@ company_id: str = Depends(require_company_id)):
             error=result.get("error")
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to send interview invite: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -587,6 +599,8 @@ company_id: str = Depends(require_company_id)):
             error=result.get("error")
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to send interview confirmation: {e}")
         raise HTTPException(status_code=500, detail=str(e))

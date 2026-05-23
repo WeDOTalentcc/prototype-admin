@@ -117,6 +117,8 @@ company_id: str = Depends(require_company_id)):
         
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"❌ Transcription failed: {e}")
         raise HTTPException(status_code=500, detail=f"Transcription failed: {str(e)}")
@@ -172,6 +174,8 @@ company_id: str = Depends(require_company_id)):
         
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"❌ Analysis failed: {e}")
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
@@ -237,6 +241,8 @@ company_id: str = Depends(require_company_id)):
         
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"❌ Interview analysis failed: {e}")
         raise HTTPException(status_code=500, detail=f"Interview analysis failed: {str(e)}")

@@ -565,6 +565,8 @@ company_id: str = Depends(require_company_id)):
             "items": items
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing shared searches: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

@@ -155,6 +155,8 @@ async def get_available_commands(company_id: str = Depends(require_company_id)):
         return CommandsResponse(
             commands=[CommandInfo(**cmd) for cmd in commands]
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting available commands: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -191,6 +193,8 @@ company_id: str = Depends(require_company_id)):
             metadata=result.metadata,
             error=result.error
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error executing command: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -230,6 +234,8 @@ company_id: str = Depends(require_company_id)):
             metadata=result.metadata,
             error=result.error
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error processing natural query: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -309,6 +315,8 @@ company_id: str = Depends(require_company_id)):
             metadata=result.metadata,
             error=result.error
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error comparing jobs: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

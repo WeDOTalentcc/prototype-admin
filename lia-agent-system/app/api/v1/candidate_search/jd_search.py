@@ -149,6 +149,8 @@ company_id: str = Depends(require_company_id)):
             search_time_seconds=(result.local_search_time or 0) + (result.pearch_search_time or 0)
         )
     
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Job description search failed: {str(e)}")
 
@@ -194,6 +196,8 @@ company_id: str = Depends(require_company_id)):
     
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Refine failed: {str(e)}")
 
@@ -245,6 +249,8 @@ company_id: str = Depends(require_company_id)):
             total_count=len(candidates)
         )
     
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Local search failed: {str(e)}")
 

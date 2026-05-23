@@ -155,6 +155,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             ],
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing email templates: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -173,6 +175,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             visibility=visibility,
         )
         return {"categories": categories, "total": len(categories)}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing email template categories: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -281,6 +285,8 @@ company_id: str = Depends(require_company_id)):
             updated_at=cast(datetime, template.updated_at) if template.updated_at else datetime.utcnow(),
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error creating email template: {e}", exc_info=True)
@@ -431,6 +437,8 @@ company_id: str = Depends(require_company_id)):
 
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error previewing email: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -602,6 +610,8 @@ company_id: str = Depends(require_company_id)):
             ],
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing email logs: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -644,6 +654,8 @@ company_id: str = Depends(require_company_id)):
             message=f"Created {len(created_templates)} default templates" if created_templates else "All default templates already exist",
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error seeding default templates: {e}", exc_info=True)
@@ -673,6 +685,8 @@ company_id: str = Depends(require_company_id)):
             "message": f"Successfully cloned {result['cloned_count']} templates for client {client_id}",
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error cloning templates for client {client_id}: {e}", exc_info=True)
@@ -702,6 +716,8 @@ company_id: str = Depends(require_company_id)):
             "message": f"Created {result['created']} templates, skipped {result['skipped']} (already exist)",
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error seeding system templates: {e}", exc_info=True)

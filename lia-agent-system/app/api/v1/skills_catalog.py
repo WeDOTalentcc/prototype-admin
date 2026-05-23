@@ -243,6 +243,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         
         return CompanyCatalogResponse(**catalog)
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error retrieving catalog for company {company_id}: {e}")
         raise HTTPException(
@@ -285,6 +287,8 @@ company_id: str = Depends(require_company_id)) -> AddSkillResponse:
         
         return AddSkillResponse(**result)
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error adding skill to catalog: {e}")
         raise HTTPException(
@@ -324,6 +328,8 @@ company_id: str = Depends(require_company_id)) -> SyncTechStackResponse:
         
         return SyncTechStackResponse(**result)
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error syncing tech stack: {e}")
         raise HTTPException(
@@ -413,6 +419,8 @@ company_id: str = Depends(require_company_id)) -> SuggestSkillsResponse:
             total_suggestions=merged.get("total_suggestions", 0),
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error suggesting skills: {e}")
         raise HTTPException(
@@ -494,6 +502,8 @@ company_id: str = Depends(require_company_id)) -> RecordSkillUsageResponse:
             outcome=request.outcome,
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error recording skill usage: {e}")
         raise HTTPException(
@@ -533,6 +543,8 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
             "recommended_skill_count": suggestions.get("recommended_skill_count"),
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error getting static suggestions for {job_title}: {e}")
@@ -572,6 +584,8 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
             "results": results,
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error searching skills for query '{q}': {e}")
         raise HTTPException(

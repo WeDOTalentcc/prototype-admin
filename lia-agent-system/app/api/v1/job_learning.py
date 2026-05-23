@@ -124,6 +124,8 @@ async def get_wizard_suggestions(request: WizardSuggestionsRequest, company_id: 
         
         return suggestions
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting wizard suggestions: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -148,6 +150,8 @@ async def get_salary_suggestion(request: SalarySuggestionRequest, company_id: st
         
         return suggestion
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting salary suggestion: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -173,6 +177,8 @@ async def get_skills_recommendation(request: SkillsRecommendationRequest, compan
         
         return recommendation
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting skills recommendation: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -196,6 +202,8 @@ async def get_behavioral_recommendation(request: BehavioralRecommendationRequest
         
         return recommendation
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting behavioral recommendation: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -221,6 +229,8 @@ async def predict_time_to_fill(request: TimeFillPredictionRequest, company_id: s
         
         return prediction
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error predicting time-to-fill: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -243,6 +253,8 @@ async def get_success_profile(request: SimilarJobsRequest, company_id: str = Dep
         
         return profile
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting success profile: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -270,6 +282,8 @@ async def find_similar_jobs(request: SimilarJobsRequest, company_id: str = Depen
             "count": len(patterns),
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error finding similar jobs: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -297,6 +311,8 @@ async def record_job_outcome(request: JobOutcomeRequest, company_id: str = Depen
             "message": "Outcome recorded and patterns updated",
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error recording job outcome: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -351,6 +367,8 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
                 "count": len(patterns),
             }
             
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing patterns: {e}")
         raise HTTPException(status_code=500, detail=str(e))

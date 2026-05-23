@@ -87,6 +87,8 @@ company_id: str = Depends(require_company_id)):
     try:
         data = await repo.get_balance(company_id)
         return CreditBalanceResponse(**data)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("[Credits] Error fetching balance for %s: %s", company_id, e)
         raise HTTPException(status_code=500, detail="Error fetching credit balance")
@@ -130,6 +132,8 @@ company_id: str = Depends(require_company_id)):
         return CreditBalanceResponse(**data)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("[Credits] Error adding credits for %s: %s", company_id, e)
         raise HTTPException(status_code=500, detail="Error adding credits")
@@ -234,6 +238,8 @@ company_id: str = Depends(require_company_id)):
     try:
         txs = await repo.get_transactions(company_id, limit, offset)
         return txs
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("[Credits] Error fetching transactions for %s: %s", company_id, e)
         raise HTTPException(status_code=500, detail="Error fetching transactions")

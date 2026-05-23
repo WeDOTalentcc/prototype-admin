@@ -62,6 +62,8 @@ company_id: str = Depends(require_company_id)):
             "stages": stages_with_substatus,
             "total": len(stages_with_substatus)
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing stages: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -356,6 +358,8 @@ company_id: str = Depends(require_company_id)):
         items = [{"stage_id": item.stage_id, "new_order": item.new_order} for item in payload.stages]
         await stage_repo.reorder(items)
         return {"success": True, "reordered": len(payload.stages)}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error reordering stages: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

@@ -221,6 +221,8 @@ company_id: str = Depends(require_company_id)) -> SkillConfirmationResponse:
                 is_promoted=False,
                 message=f"Skill '{request.skill_name}' rejeitada" if success else "Erro ao rejeitar skill"
             )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error confirming skill: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -260,6 +262,8 @@ company_id: str = Depends(require_company_id)) -> ResponsibilityConfirmationResp
                 is_promoted=False,
                 message="Responsabilidade rejeitada"
             )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error confirming responsibility: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -285,6 +289,8 @@ company_id: str = Depends(require_company_id)) -> LearningContextResponse:
             patterns=context.patterns,
             success_rate=context.success_rate
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting learning context: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -332,6 +338,8 @@ company_id: str = Depends(require_company_id)) -> JobOutcomeResponse:
     except ValueError as e:
         logger.error(f"Invalid job outcome value: {e}")
         raise HTTPException(status_code=400, detail=f"Invalid outcome value: {e}")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error recording job outcome: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -363,6 +371,8 @@ company_id: str = Depends(require_company_id)) -> OutcomeInsightsResponse:
             message=insights.get("message"),
             error=insights.get("error")
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting outcome insights: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -404,6 +414,8 @@ company_id: str = Depends(require_company_id)) -> StageFeedbackResponse:
             was_modified=result.get("was_modified"),
             error=result.get("error")
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error recording stage feedback: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -429,6 +441,8 @@ company_id: str = Depends(require_company_id)) -> LearningDashboardResponse:
             learning_health=dashboard.get("learning_health"),
             error=dashboard.get("error")
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting learning dashboard: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -449,6 +463,8 @@ company_id: str = Depends(require_company_id)) -> SkillsDeduplicatedResponse:
             exclude_already_selected=request.exclude_already_selected
         )
         return SkillsDeduplicatedResponse(skills=skills, total=len(skills))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting deduplicated skills: {e}")
         raise HTTPException(status_code=500, detail=str(e))

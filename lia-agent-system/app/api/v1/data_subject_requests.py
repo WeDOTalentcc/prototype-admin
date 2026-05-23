@@ -256,6 +256,8 @@ company_id: str = Depends(require_company_id)):
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         await repo.rollback()
         logger.error("Error creating data subject request: %s", e, exc_info=True)
@@ -334,6 +336,8 @@ _company_gate: str = Depends(require_company_id)):
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Error getting data subject request stats: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -375,6 +379,8 @@ _company_gate: str = Depends(require_company_id)):
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Error listing data subject requests: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

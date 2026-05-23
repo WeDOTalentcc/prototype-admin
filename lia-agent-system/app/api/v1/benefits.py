@@ -155,6 +155,8 @@ company_id: str = Depends(require_company_id)):
             by_category=by_category
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching benefit templates: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -198,6 +200,8 @@ company_id: str = Depends(require_company_id)):
             "total": len(BENEFIT_TEMPLATES_DATA)
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         await db.rollback()
         logger.error(f"Error seeding benefit templates: {e}")
@@ -359,6 +363,8 @@ async def download_benefits_import_template(company_id: str = Depends(require_co
             }
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error generating benefits import template: {e}")
         raise HTTPException(status_code=500, detail=str(e))

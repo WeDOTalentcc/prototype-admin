@@ -782,6 +782,8 @@ company_id: str = Depends(require_company_id)):
             },
             "ranking": ranking,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"F11-6 vacancy ranking failed for {job_vacancy_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -831,6 +833,8 @@ company_id: str = Depends(require_company_id)):
             "total": total,
             "overall_wsi": round(cand_score * 2, 2),
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"F11-6 candidate ranking failed for {candidate_id}/{job_vacancy_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

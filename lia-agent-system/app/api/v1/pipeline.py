@@ -42,6 +42,8 @@ company_id: str = Depends(require_company_id)):
             limit=limit
         )
         return result
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching stale candidates: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

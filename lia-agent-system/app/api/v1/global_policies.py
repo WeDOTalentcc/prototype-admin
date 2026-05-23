@@ -76,6 +76,8 @@ company_id: str = Depends(require_company_id)):
             policies=[PolicyResponse(**p.to_dict()) for p in policies],
             total=total, limit=limit, offset=offset,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing policies: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -92,6 +94,8 @@ async def list_categories(db: AsyncSession = Depends(get_db), company_id: str = 
         return CategoryListResponse(
             categories=categories, total_policies=sum(c.count for c in categories)
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing categories: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -214,6 +218,8 @@ async def seed_default_policies(db: AsyncSession = Depends(get_db), company_id: 
             skipped=skipped,
             message=f"Created {created} policies, skipped {skipped} existing policies",
         )
+    except HTTPException:
+        raise
     except Exception as e:
         await db.rollback()
         logger.error(f"Error seeding policies: {e}", exc_info=True)

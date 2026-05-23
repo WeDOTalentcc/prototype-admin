@@ -54,6 +54,8 @@ async def invalidate_jd_cache(company_id: str, _company_gate: str = Depends(requ
             "entries_cleared": count,
             "cache_service": "jd_template_cache"
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"[CACHE INVALIDATION] Error invalidating JD cache for company={company_id}: {e}", exc_info=True)
         raise HTTPException(
@@ -86,6 +88,8 @@ async def get_jd_cache_metrics(company_id: str = Depends(require_company_id)):
             "service": "jd_template_cache",
             "metrics": metrics
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"[CACHE METRICS] Error retrieving metrics: {e}", exc_info=True)
         raise HTTPException(
@@ -115,6 +119,8 @@ async def reset_jd_cache_metrics(company_id: str = Depends(require_company_id)):
             "message": "JD cache metrics reset",
             "service": "jd_template_cache"
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"[CACHE METRICS] Error resetting metrics: {e}", exc_info=True)
         raise HTTPException(
@@ -145,6 +151,8 @@ async def get_embedding_cache_stats(company_id: str = Depends(require_company_id
             "service": "embedding_cache",
             "stats": stats
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"[EMBEDDING CACHE] Error retrieving stats: {e}", exc_info=True)
         raise HTTPException(
@@ -174,6 +182,8 @@ async def clear_embedding_cache(company_id: str = Depends(require_company_id)):
             "message": "Embedding cache cleared",
             "service": "embedding_cache"
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"[EMBEDDING CACHE] Error clearing cache: {e}", exc_info=True)
         raise HTTPException(

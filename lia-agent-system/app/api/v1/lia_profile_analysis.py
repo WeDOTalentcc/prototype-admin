@@ -166,6 +166,8 @@ async def generate_profile_analysis(request: ProfileAnalysisRequest, company_id:
             candidate_id=request.candidate_id
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         print(f"Error generating profile analysis: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to generate analysis: {str(e)}")
@@ -222,6 +224,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             company_id=new_analysis.company_id,
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error saving profile analysis: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to save analysis: {str(e)}")
@@ -273,6 +277,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             has_detailed_bullets=has_detailed_bullets
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching candidate analyses: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to fetch analyses: {str(e)}")

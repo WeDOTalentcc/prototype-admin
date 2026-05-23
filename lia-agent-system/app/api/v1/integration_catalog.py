@@ -125,6 +125,8 @@ async def create_entry(
             current_user.id if current_user else "unknown",
         )
         return entry
+    except HTTPException:
+        raise
     except Exception as e:
         await db.rollback()
         logger.exception("Failed to create integration catalog entry")
@@ -164,6 +166,8 @@ async def update_entry(
         )
         await db.commit()
         return updated
+    except HTTPException:
+        raise
     except Exception as e:
         await db.rollback()
         logger.exception("Failed to update integration catalog entry")

@@ -57,6 +57,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             dept.headcount = await dept_repo.count_members(dept.id)
 
         return departments
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing departments: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -261,6 +263,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             managers=[ManagerResponse(**m) for m in managers],
             total_count=len(managers),
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing managers: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -302,6 +306,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
                 "email": None,
                 "message": "Gestor não encontrado na estrutura da empresa. Você pode adicionar manualmente.",
             }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error inferring manager email: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -374,6 +380,8 @@ async def download_departments_import_template(company_id: str = Depends(require
         buffer.seek(0)
         return StreamingResponse(buffer, media_type="text/csv; charset=utf-8",
                                  headers={"Content-Disposition": "attachment; filename=template_departamentos.csv"})
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error generating departments import template: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -399,6 +407,8 @@ async def download_members_import_template(company_id: str = Depends(require_com
         buffer.seek(0)
         return StreamingResponse(buffer, media_type="text/csv; charset=utf-8",
                                  headers={"Content-Disposition": "attachment; filename=template_colaboradores.csv"})
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error generating members import template: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -426,6 +436,8 @@ async def download_benefits_import_template(company_id: str = Depends(require_co
         buffer.seek(0)
         return StreamingResponse(buffer, media_type="text/csv; charset=utf-8",
                                  headers={"Content-Disposition": "attachment; filename=template_beneficios.csv"})
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error generating benefits import template: {e}")
         raise HTTPException(status_code=500, detail=str(e))

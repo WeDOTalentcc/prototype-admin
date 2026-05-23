@@ -54,6 +54,8 @@ company_id: str = Depends(require_company_id)) -> dict:
             "expires_in_hours": payload.expire_hours,
             "status": "created",
         }
+    except HTTPException:
+        raise
     except Exception as exc:
         logger.error("[WSI Async] create_invite failed: %s", exc)
         raise HTTPException(status_code=500, detail="Erro ao criar convite WSI assíncrono")

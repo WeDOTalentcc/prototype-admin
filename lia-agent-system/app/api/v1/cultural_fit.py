@@ -37,6 +37,8 @@ _company_gate: str = Depends(require_company_id)) -> dict:
             db=db,
         )
         return result.to_dict()
+    except HTTPException:
+        raise
     except Exception as exc:
         logger.error("[cultural-fit] Erro: %s", exc)
         raise HTTPException(status_code=500, detail="Erro ao calcular fit cultural")

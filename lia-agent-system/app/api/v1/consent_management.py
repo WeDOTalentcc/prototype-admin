@@ -102,6 +102,8 @@ _company_gate: str = Depends(require_company_id)):
         return ConsentVersionResponse(**version.to_dict())
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Invalid data: {str(e)}")
+    except HTTPException:
+        raise
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error creating consent version: {e}", exc_info=True)
@@ -140,6 +142,8 @@ _company_gate: str = Depends(require_company_id)):
             limit=limit,
             offset=offset,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing consent versions: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -315,6 +319,8 @@ _company_gate: str = Depends(require_company_id)):
         )
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Invalid data: {str(e)}")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing consent events: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -536,6 +542,8 @@ _company_gate: str = Depends(require_company_id)):
             by_type=by_type,
             by_channel=by_channel,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting consent stats: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

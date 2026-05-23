@@ -112,6 +112,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             search_time_ms=result.search_time_ms,
             metadata=result.metadata,
         )
+    except HTTPException:
+        raise
     except Exception as exc:
         logger.error(
             "[RAGSearch] Erro inesperado: %s (q=%r, company_id=%r)",

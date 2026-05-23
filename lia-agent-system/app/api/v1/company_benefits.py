@@ -211,6 +211,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             search=search,
         )
         return [_to_response(b) for b in benefits]
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing company benefits: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -231,6 +233,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created company benefit: {new_benefit.name} for company: {effective_company_id}")
         return _to_response(new_benefit)
+    except HTTPException:
+        raise
     except Exception as e:
         await db.rollback()
         logger.error(f"Error creating company benefit: {e}")
@@ -265,6 +269,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
                 or seniority_level in (b.seniority_levels or "")
             ]
         return [_to_response(b) for b in benefits]
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing active company benefits: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -288,6 +294,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         repo = CompanyBenefitRepository(db)
         benefits = await repo.list_for_company(effective_company_id, active_only=True)
         return [_to_response(b) for b in benefits if b.is_highlighted]
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing highlighted company benefits: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -389,6 +397,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "formatted_text": formatted_text,
             "benefits": benefits_list,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting company benefits summary: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -497,6 +507,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "created": created_count,
             "total": created_count,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         await db.rollback()
         logger.error(f"Error seeding default benefits: {e}")

@@ -204,6 +204,8 @@ company_id: str = Depends(require_company_id)):
             default_count=default_count
         )
     
+    except HTTPException:
+        raise
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error listing archetypes: {e}")
@@ -352,6 +354,8 @@ company_id: str = Depends(require_company_id)):
             message=f"Arquétipo '{archetype.name}' criado com sucesso com {len(extracted_tags)} tags extraídas"
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error creating archetype from search: {e}")
@@ -453,6 +457,8 @@ company_id: str = Depends(require_company_id)):
             total=len(suggestions)
         )
     
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting closed job suggestions: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -1518,6 +1524,8 @@ company_id: str = Depends(require_company_id)):
             total=len(suggestions)
         )
     
+    except HTTPException:
+        raise
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error fetching archetype suggestions: {e}")

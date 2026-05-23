@@ -35,6 +35,8 @@ _company_gate: str = Depends(require_company_id)) -> dict:
             company_id=company_id,
         )
         return benchmark.to_dict()
+    except HTTPException:
+        raise
     except Exception as exc:
         logger.error("[salary-benchmark] Erro: %s", exc)
         raise HTTPException(status_code=500, detail="Erro ao buscar benchmark salarial")

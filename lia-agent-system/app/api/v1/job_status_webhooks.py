@@ -236,6 +236,8 @@ async def list_webhooks(
             total=total
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing webhooks: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

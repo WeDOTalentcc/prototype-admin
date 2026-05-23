@@ -140,6 +140,8 @@ company_id: str = Depends(require_company_id)):
             total_count=len(items)
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing screening questions: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -192,6 +194,8 @@ company_id: str = Depends(require_company_id)):
             updated_at=question.updated_at.isoformat() if question.updated_at else None
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating screening question: {e}", exc_info=True)
         await db.rollback()
@@ -298,6 +302,8 @@ company_id: str = Depends(require_company_id)):
         
         return {"success": True, "message": "Questions reordered successfully"}
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error reordering screening questions: {e}", exc_info=True)
         await db.rollback()
@@ -354,6 +360,8 @@ company_id: str = Depends(require_company_id)):
             "created_count": created_count
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error seeding screening questions: {e}", exc_info=True)
         await db.rollback()

@@ -527,6 +527,8 @@ async def orchestrated_jobs_management(request: OrchestratedJobsManagementReques
             conversation_id=conv_id,
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"[JobsManagement] Error: {e}")
         raise HTTPException(

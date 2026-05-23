@@ -163,6 +163,8 @@ company_id: str = Depends(require_company_id)):
             "success": True,
             "data": result
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting notifications: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -183,6 +185,8 @@ company_id: str = Depends(require_company_id)):
             "success": True,
             "data": summary
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting notification summary: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -216,6 +220,8 @@ company_id: str = Depends(require_company_id)):
             "success": True,
             "data": notification
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating notification: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -260,6 +266,8 @@ company_id: str = Depends(require_company_id)):
             "success": True,
             "message": f"{count} notifica\u00e7\u00f5es marcadas como lidas"
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error marking all as read: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -388,6 +396,8 @@ company_id: str = Depends(require_company_id)):
                 "results": results
             }
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error sending recruiter action notification: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -411,6 +421,8 @@ company_id: str = Depends(require_company_id)):
                 "urgent_count": summary.get("urgent_count", 0)
             }
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting unread count: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -439,6 +451,8 @@ company_id: str = Depends(require_company_id)):
             "success": True,
             "data": result
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting chat notifications: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -483,6 +497,8 @@ company_id: str = Depends(require_company_id)):
             "success": True,
             "message": f"{count} notifica\u00e7\u00f5es marcadas como entregues"
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error marking chat notifications as delivered: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -541,6 +557,8 @@ company_id: str = Depends(require_company_id)):
             "success": True,
             "data": result
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error sending multi-channel notification: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -641,6 +659,8 @@ company_id: str = Depends(require_company_id)):
                 ]
             }
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error triggering proactive check: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -666,6 +686,8 @@ company_id: str = Depends(require_company_id)):
             "success": True,
             "data": history
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting alert history: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -727,6 +749,8 @@ async def get_alert_thresholds(company_id: str = Depends(require_company_id)):
             "success": True,
             "data": thresholds
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting thresholds: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -966,6 +990,8 @@ Recrutador: {request.recruiter_name or request.recruiter_email}
             "errors": errors if errors else None
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error sending job created notification: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

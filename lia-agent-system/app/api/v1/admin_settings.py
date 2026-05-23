@@ -131,6 +131,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "success": True,
             "data": [role.to_dict() for role in roles],
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing roles: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -158,6 +160,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "success": True,
             "data": role.to_dict(),
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating role: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -246,6 +250,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "message": f"Initialized {len(created_roles)} default roles",
             "created_roles": created_roles,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error initializing default roles: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -271,6 +277,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "success": True,
             "data": [a.to_dict() for a in assignments],
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing user roles: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -367,6 +375,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "data": [p.to_dict() for p in policies],
             "event_types": NOTIFICATION_EVENT_TYPES,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing notification policies: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -398,6 +408,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "success": True,
             "data": policy.to_dict(),
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating notification policy: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -483,6 +495,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "success": True,
             "data": settings.to_dict(),
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting security settings: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -521,6 +535,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "success": True,
             "data": settings.to_dict(),
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error updating security settings: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -569,6 +585,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
                 "total_pages": (total + page_size - 1) // page_size,
             },
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting audit logs: {e}")
         raise HTTPException(status_code=500, detail=str(e))

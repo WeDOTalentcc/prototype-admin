@@ -60,6 +60,8 @@ company_id: str = Depends(require_company_id)):
             "success": True,
             "data": briefing
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("briefing.generate_failed user_id=%s error=%s", user_id, e, exc_info=True)
         raise HTTPException(
@@ -86,6 +88,8 @@ company_id: str = Depends(require_company_id)):
             "data": briefing,
             "message": "Briefing atualizado com sucesso"
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error refreshing briefing: {e}")
         raise HTTPException(status_code=500, detail=str(e))

@@ -69,6 +69,8 @@ company_id: str = Depends(require_company_id)):
 
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error exporting PDF report: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -120,6 +122,8 @@ company_id: str = Depends(require_company_id)):
 
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error exporting Excel report: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

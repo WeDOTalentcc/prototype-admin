@@ -108,6 +108,8 @@ company_id: str = Depends(require_company_id)) -> DriftBatchResponse:
     try:
         summary = await run_drift_check_all_companies(db, notify_user_id)
         return DriftBatchResponse(status="completed", **summary)
+    except HTTPException:
+        raise
     except Exception as exc:
         logger.error("drift/run-batch erro: %s", exc)
         raise HTTPException(status_code=500, detail="Erro ao executar drift batch")
@@ -133,6 +135,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
     try:
         status = await model_drift_service.evaluate(db, company_id)
         return _to_response(status)
+    except HTTPException:
+        raise
     except Exception as exc:
         logger.error("drift/status erro company=%s: %s", company_id, exc)
         raise HTTPException(status_code=500, detail="Erro ao calcular drift status")

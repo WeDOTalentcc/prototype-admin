@@ -123,6 +123,8 @@ async def create_template(
             current_user.id if current_user else "unknown",
         )
         return template
+    except HTTPException:
+        raise
     except Exception as e:
         await db.rollback()
         logger.exception("Failed to create pipeline stage template")
@@ -162,6 +164,8 @@ async def update_template(
         )
         await db.commit()
         return updated
+    except HTTPException:
+        raise
     except Exception as e:
         await db.rollback()
         logger.exception("Failed to update pipeline stage template")

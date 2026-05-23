@@ -72,6 +72,8 @@ async def start_session(request: StartSessionRequest, company_id: str = Depends(
             "started_at": session.started_at.isoformat(),
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error starting session: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -89,6 +91,8 @@ async def track_stage_change(request: StageChangeRequest, company_id: str = Depe
         
         return {"success": True}
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error tracking stage change: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -109,6 +113,8 @@ async def track_field_update(request: FieldUpdateRequest, company_id: str = Depe
         
         return {"success": True}
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error tracking field update: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -127,6 +133,8 @@ async def track_suggestion(request: SuggestionTrackRequest, company_id: str = De
         
         return {"success": True}
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error tracking suggestion: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -150,6 +158,8 @@ async def complete_session(request: CompleteSessionRequest, company_id: str = De
             "metrics": metrics,
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error completing session: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -170,6 +180,8 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         
         return metrics
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting company metrics: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -192,6 +204,8 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         
         return metrics
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting recruiter metrics: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -212,6 +226,8 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         
         return breakdown
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting stage breakdown: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -232,6 +248,8 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
         
         return effectiveness
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting suggestion effectiveness: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -277,6 +295,8 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
             "generated_at": datetime.utcnow().isoformat(),
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting dashboard data: {e}")
         raise HTTPException(status_code=500, detail=str(e))

@@ -129,6 +129,8 @@ async def create_event_type(
             current_user.id if current_user else "unknown",
         )
         return record
+    except HTTPException:
+        raise
     except Exception as e:
         await db.rollback()
         logger.exception("Failed to create webhook event type")
@@ -172,6 +174,8 @@ async def update_event_type(
         )
         await db.commit()
         return updated
+    except HTTPException:
+        raise
     except Exception as e:
         await db.rollback()
         logger.exception("Failed to update webhook event type")

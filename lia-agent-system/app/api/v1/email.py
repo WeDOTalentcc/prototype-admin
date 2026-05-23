@@ -119,6 +119,8 @@ company_id: str = Depends(require_company_id)):
             smtp_configured=False,
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to queue email: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -167,6 +169,8 @@ company_id: str = Depends(require_company_id)):
             items=items,
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to get email history: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -210,6 +214,8 @@ company_id: str = Depends(require_company_id)):
             items=items,
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to get email history: {e}")
         raise HTTPException(status_code=500, detail=str(e))

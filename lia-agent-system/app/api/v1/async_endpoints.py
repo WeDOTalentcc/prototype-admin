@@ -60,6 +60,8 @@ async def run_triagem_batch(req: TriagemBatchRequest, company_id: str = Depends(
         )
         estimate = max(10, len(req.candidate_ids) * 2)
         return _build_response(task, "cv_screening", company_id, estimate)
+    except HTTPException:
+        raise
     except Exception as exc:
         logger.error("Falha ao enfileirar triagem: %s", exc)
         raise HTTPException(status_code=500, detail="Erro ao enfileirar triagem")
@@ -92,6 +94,8 @@ async def start_wsi_interview(req: WSIInterviewRequest, company_id: str = Depend
             },
         )
         return _build_response(task, "interview_scheduling", company_id, 1800)
+    except HTTPException:
+        raise
     except Exception as exc:
         logger.error("Falha ao enfileirar WSI interview: %s", exc)
         raise HTTPException(status_code=500, detail="Erro ao iniciar entrevista WSI")
@@ -123,6 +127,8 @@ async def search_candidates_async(req: SourcingSearchRequest, company_id: str = 
             },
         )
         return _build_response(task, "sourcing", company_id, 60)
+    except HTTPException:
+        raise
     except Exception as exc:
         logger.error("Falha ao enfileirar sourcing search: %s", exc)
         raise HTTPException(status_code=500, detail="Erro ao enfileirar busca de candidatos")
@@ -158,6 +164,8 @@ async def send_bulk_email(req: BulkEmailRequest, company_id: str = Depends(requi
         )
         estimate = max(10, len(req.recipients) // 10)
         return _build_response(task, "communication", company_id, estimate)
+    except HTTPException:
+        raise
     except Exception as exc:
         logger.error("Falha ao enfileirar bulk email: %s", exc)
         raise HTTPException(status_code=500, detail="Erro ao enfileirar envio de emails")

@@ -182,6 +182,8 @@ async def predict_substatus(request: PredictSubStatusRequest, company_id: str = 
         
         return PredictSubStatusResponse(**result)
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error predicting substatus: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -214,6 +216,8 @@ async def generate_message(request: GenerateMessageRequest, company_id: str = De
         
         return GenerateMessageResponse(**result)
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error generating message: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -259,6 +263,8 @@ async def regenerate_for_substatus(request: RegenerateMessageRequest, company_id
             metadata=result.get('metadata', {})
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error regenerating message: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -290,6 +296,8 @@ async def get_available_actions(request: GetActionsRequest, company_id: str = De
             actions=[TransitionAction(**action) for action in actions]
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting actions: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -334,6 +342,8 @@ async def get_substatus_options(stage: str, company_id: str = Depends(require_co
             ]
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting substatus options: {e}")
         raise HTTPException(status_code=500, detail=str(e))

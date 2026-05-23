@@ -550,6 +550,8 @@ company_id: str = Depends(require_company_id)):
 
         return FeedbackAnalyticsDTO(**analytics)
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting feedback analytics: {e}")
         raise HTTPException(status_code=500, detail=f"Erro ao obter analytics: {str(e)}")

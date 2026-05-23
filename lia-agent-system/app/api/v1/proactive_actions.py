@@ -97,6 +97,8 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
             )
             for a in actions
         ]
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting pending actions: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -131,6 +133,8 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
             )
             for a in actions
         ]
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting action history: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -153,6 +157,8 @@ company_id: str = Depends(require_company_id)):
             message="Ação aceita com sucesso" if result.get("success") else result.get("error", "Erro"),
             execution_result=result.get("execution_result"),
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error accepting action: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -174,6 +180,8 @@ company_id: str = Depends(require_company_id)):
             action_id=action_id,
             message="Ação rejeitada" if result.get("success") else result.get("error", "Erro"),
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error rejecting action: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -213,6 +221,8 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
             )
             for a in actions
         ]
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting proactive feed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -244,6 +254,8 @@ async def trigger_pipeline_monitor(company_id: str, _company_gate: str = Depends
             actions_created=stats.get("actions_created", 0),
             notifications_sent=stats.get("notifications_sent", 0),
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error triggering monitor: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -269,6 +281,8 @@ async def list_plan_templates(company_id: str = Depends(require_company_id)):
                 ))
         
         return templates
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing templates: {e}")
         raise HTTPException(status_code=500, detail=str(e))

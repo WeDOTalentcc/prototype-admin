@@ -255,6 +255,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             search=search,
         )
         return [_to_response(p) for p in policies]
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing compensation policies: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -286,6 +288,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             f"for company: {effective_company_id}"
         )
         return _to_response(new_policy)
+    except HTTPException:
+        raise
     except Exception as e:
         await db.rollback()
         logger.error(f"Error creating compensation policy: {e}")
@@ -422,6 +426,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "created": created_count,
             "total": created_count,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         await db.rollback()
         logger.error(f"Error seeding default policies: {e}")

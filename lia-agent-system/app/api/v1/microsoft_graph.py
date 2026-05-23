@@ -145,6 +145,8 @@ async def create_teams_meeting(request: CreateTeamsMeetingRequest, company_id: s
             dial_in_url=meeting.dial_in_url
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to create Teams meeting: {e}")
         raise HTTPException(
@@ -190,6 +192,8 @@ company_id: str = Depends(require_company_id)):
             "end_time": result.get("endDateTime")
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to create standalone meeting: {e}")
         raise HTTPException(
@@ -227,6 +231,8 @@ company_id: str = Depends(require_company_id)):
             "web_link": event.web_link
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to get calendar event: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -254,6 +260,8 @@ company_id: str = Depends(require_company_id)):
         
         return {"status": "cancelled", "event_id": event_id}
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to cancel event: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -280,6 +288,8 @@ async def list_bookings_businesses(company_id: str = Depends(require_company_id)
             for b in businesses
         ]
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to list Bookings businesses: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -306,6 +316,8 @@ async def list_bookings_services(business_id: str, company_id: str = Depends(req
             for s in services
         ]
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to list Bookings services: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -324,6 +336,8 @@ async def get_booking_page_url(business_id: str, company_id: str = Depends(requi
         url = await microsoft_graph_service.get_booking_page_url(business_id)
         return {"booking_page_url": url}
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to get booking page URL: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -360,6 +374,8 @@ async def create_bookings_appointment(request: CreateBookingsAppointmentRequest,
             "join_web_url": result.get("joinWebUrl")
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to create Bookings appointment: {e}")
         raise HTTPException(status_code=500, detail=str(e))

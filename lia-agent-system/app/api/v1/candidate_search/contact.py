@@ -348,6 +348,8 @@ company_id: str = Depends(require_company_id)):
             message="Tipo de reveal inválido"
         )
     
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Falha ao revelar contato: {str(e)}")
 

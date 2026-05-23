@@ -100,6 +100,8 @@ company_id: str = Depends(require_company_id)) -> DefaultTemplateListResponse:
         templates, total = await repo.list_templates(conditions=conditions, limit=limit, offset=offset)
         logger.info(f"Listed {len(templates)} default templates (total: {total})")
         return DefaultTemplateListResponse(total=total, items=[_to_response(t) for t in templates])
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing default templates: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to list default templates: {str(e)}")

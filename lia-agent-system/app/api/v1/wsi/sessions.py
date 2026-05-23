@@ -94,6 +94,8 @@ company_id: str = Depends(require_company_id)):
                 for r in results
             ]
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to get results: {e}")
         raise HTTPException(status_code=500, detail=str(e))

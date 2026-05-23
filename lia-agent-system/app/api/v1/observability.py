@@ -97,6 +97,8 @@ _company_gate: str = Depends(require_company_id)):
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting AI inference stats: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -136,6 +138,8 @@ _company_gate: str = Depends(require_company_id)):
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing AI inference logs: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -196,6 +200,8 @@ _company_gate: str = Depends(require_company_id)):
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting data access stats: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -237,6 +243,8 @@ _company_gate: str = Depends(require_company_id)):
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing data access logs: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -270,6 +278,8 @@ _company_gate: str = Depends(require_company_id)):
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing consent records: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -300,6 +310,8 @@ _company_gate: str = Depends(require_company_id)):
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting candidate consents: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -333,6 +345,8 @@ _company_gate: str = Depends(require_company_id)):
         return ConsentRecordResponse(**consent.to_dict())
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating consent record: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -400,6 +414,8 @@ _company_gate: str = Depends(require_company_id)):
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing incidents: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -428,6 +444,8 @@ _company_gate: str = Depends(require_company_id)):
         return IncidentReportResponse(**incident.to_dict())
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating incident: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -538,6 +556,8 @@ _company_gate: str = Depends(require_company_id)):
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting evaluation summary: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -575,6 +595,8 @@ _company_gate: str = Depends(require_company_id)):
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing model evaluations: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -600,6 +622,8 @@ _company_gate: str = Depends(require_company_id)):
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting compliance summary: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -635,6 +659,8 @@ _company_gate: str = Depends(require_company_id)):
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing compliance controls: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -750,6 +776,8 @@ _company_gate: str = Depends(require_company_id)):
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting dashboard data: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -805,6 +833,8 @@ _company_gate: str = Depends(require_company_id)):
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting bias audit summary: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -842,6 +872,8 @@ _company_gate: str = Depends(require_company_id)):
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing bias audits: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -920,6 +952,8 @@ _company_gate: str = Depends(require_company_id)):
         return BiasAuditReportResponse(**audit.to_dict())
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating bias audit: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

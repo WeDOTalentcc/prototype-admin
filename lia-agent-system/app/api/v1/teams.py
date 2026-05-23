@@ -637,6 +637,8 @@ company_id: str = Depends(require_company_id)):
             "limit": limit,
             "logs": [log.to_dict() for log in logs]
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error retrieving audit logs: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Error retrieving audit logs: {str(e)}")
@@ -959,6 +961,8 @@ _company_gate: str = Depends(require_company_id)):
             "deadline_notifications_sent": deadlines_sent,
             "total": stalled_sent + deadlines_sent,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"[Teams] proactivity check error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -986,6 +990,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             estimated_score=estimated_score,
         )
         return {"sent": sent}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"[Teams] notify_new_candidate error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -1017,6 +1023,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             recruiter_teams_id=recruiter_teams_id,
         )
         return {"sent": sent}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"[Teams] notify_screening_complete error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

@@ -128,6 +128,8 @@ company_id: str = Depends(require_company_id)):
             is_active=config.is_active,
             region=config.region,  # W2-012-B (2026-05-23): per-tenant region pinning
         )
+    except HTTPException:
+        raise
     except Exception as e:
         # REGRA 4 (CLAUDE.md): NEVER silently return fabricated config — fail-loud.
         # Previous version returned a fake "success" LLMConfigResponse with empty
@@ -277,6 +279,8 @@ company_id: str = Depends(require_company_id)):
             logger.warning("[LLMConfig] Audit log write failed (non-blocking): %s", audit_err)
 
         return {"status": "updated", "company_id": company_id}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("[LLMConfig] Update error: %s", e)
         raise HTTPException(500, f"Failed to update config: {e}")

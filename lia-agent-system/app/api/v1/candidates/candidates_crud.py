@@ -229,6 +229,8 @@ company_id: str = Depends(require_company_id)):
             "source": "local",
             "items": [_serialize_candidate(c) for c in candidates],
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing candidates: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -361,6 +363,8 @@ company_id: str = Depends(require_company_id)):
             "message": "Candidate created successfully",
             "enrichment_scheduled": enrichment_scheduled,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating candidate: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

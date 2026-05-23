@@ -386,6 +386,8 @@ async def request_otp(
     if request_data.channel == "email" and candidate and candidate.email:
         try:
             logger.info(f"Sending OTP to candidate_id={candidate.id} via email for data request {data_request.id}")
+        except HTTPException:
+            raise
         except Exception as e:
             logger.error(f"Failed to send OTP email: {e}")
             raise HTTPException(status_code=500, detail="Erro ao enviar código por e-mail")
@@ -393,6 +395,8 @@ async def request_otp(
     elif request_data.channel == "whatsapp" and candidate and candidate.phone:
         try:
             logger.info(f"Sending OTP to candidate_id={candidate.id} via WhatsApp for data request {data_request.id}")
+        except HTTPException:
+            raise
         except Exception as e:
             logger.error(f"Failed to send OTP WhatsApp: {e}")
             raise HTTPException(status_code=500, detail="Erro ao enviar código por WhatsApp")

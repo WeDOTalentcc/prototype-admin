@@ -110,6 +110,8 @@ _company_gate: str = Depends(require_company_id)):
             db, company_id, start_date, end_date
         )
         return ConsumptionReportResponse(**report)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Error generating consumption report: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to generate consumption report")
@@ -128,6 +130,8 @@ _company_gate: str = Depends(require_company_id)):
             db, company_id, year, month
         )
         return InvoiceDataResponse(**data)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Error generating invoice data: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to generate invoice data")
@@ -153,6 +157,8 @@ _company_gate: str = Depends(require_company_id)):
             usage_percentage=usage_pct,
             exchange_rate=APIFY_USD_TO_BRL_RATE,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Error getting budget status: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to get budget status")
@@ -167,6 +173,8 @@ _company_gate: str = Depends(require_company_id)):
     try:
         data = await ConsumptionReportService.get_dashboard(db, company_id)
         return DashboardResponse(**data)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Error generating dashboard: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to generate consumption dashboard")
@@ -181,6 +189,8 @@ _company_gate: str = Depends(require_company_id)):
     try:
         data = await ConsumptionReportService.get_tenant_summary(db, company_id=company_id)
         return TenantSummaryResponse(**data)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Error generating tenant summary: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to generate tenant summary")
@@ -205,6 +215,8 @@ _company_gate: str = Depends(require_company_id)):
             db, target_company_id, year, month
         )
         return DetailedInvoiceResponse(**data)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Error generating detailed invoice: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to generate detailed invoice")
@@ -219,6 +231,8 @@ _company_gate: str = Depends(require_company_id)):
     try:
         data = await ConsumptionReportService.get_pricing_analytics(db, company_id)
         return PricingAnalyticsResponse(**data)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Error generating pricing analytics: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to generate pricing analytics")

@@ -144,6 +144,8 @@ async def get_delivery_status(message_id: str, current_user: User = Depends(get_
             status=status.value,
             found=True,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(
             f"[MULTI_CHANNEL_API] Erro ao verificar status: {e}", exc_info=True
@@ -157,6 +159,8 @@ async def list_available_channels(current_user: User = Depends(get_current_user_
     try:
         channels = await multi_channel_service.get_available_channels()
         return ChannelStatusResponse(channels=channels)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(
             f"[MULTI_CHANNEL_API] Erro ao listar canais: {e}", exc_info=True

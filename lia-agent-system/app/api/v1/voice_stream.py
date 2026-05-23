@@ -169,6 +169,8 @@ company_id: str = Depends(require_company_id)) -> VoiceStreamStartResponse:
             ws_token=ws_token,
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("[VOICE STREAM] Start session error: %s", e)
         raise HTTPException(status_code=500, detail=str(e))

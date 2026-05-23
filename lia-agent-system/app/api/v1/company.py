@@ -596,6 +596,8 @@ company_id: str = Depends(require_company_id)):
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created company profile: {profile.name} (client_account_id={resolved_client_id})")
         return profile
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating company profile: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -833,6 +835,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         stats["completion_percentage"] = round((completed_steps / 7) * 100)
 
         return stats
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting company stats: {e}")
         raise HTTPException(status_code=500, detail=str(e))

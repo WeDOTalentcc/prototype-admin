@@ -393,6 +393,8 @@ company_id: str = Depends(require_company_id)):
         
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating data request: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -413,6 +415,8 @@ company_id: str = Depends(require_company_id)):
         company_id = _get_company_id()
         config = await data_request_service.get_or_create_config(db, company_id)
         return config
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting config: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -439,6 +443,8 @@ company_id: str = Depends(require_company_id)):
         updates = request.model_dump(exclude_unset=True)
         config = await data_request_service.update_config(db, company_id, updates)
         return config
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error updating config: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -486,6 +492,8 @@ company_id: str = Depends(require_company_id)):
                 allow_data_deletion=config.lgpd_allow_data_deletion if config.lgpd_allow_data_deletion is not None else True,  # type: ignore[union-attr]
             ),
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error updating collection settings: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -514,6 +522,8 @@ company_id: str = Depends(require_company_id)):
                 allow_data_deletion=config.lgpd_allow_data_deletion if config.lgpd_allow_data_deletion is not None else True,  # type: ignore[union-attr]
             ),
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting collection settings: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -555,6 +565,8 @@ company_id: str = Depends(require_company_id)):
             )
             for t in templates
         ]
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing templates: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -612,6 +624,8 @@ company_id: str = Depends(require_company_id)):
             created_at=template.created_at,
             updated_at=template.updated_at,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating template: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -661,6 +675,8 @@ company_id: str = Depends(require_company_id)):
         )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error updating template: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -682,6 +698,8 @@ company_id: str = Depends(require_company_id)):
         return None
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error deleting template: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -703,6 +721,8 @@ company_id: str = Depends(require_company_id)):
         company_id = _get_company_id()
         fields = await data_request_service.list_fields(db, company_id, include_defaults)
         return [FieldResponse(**f) for f in fields]
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing fields: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -841,6 +861,8 @@ company_id: str = Depends(require_company_id)):
         )
         
         return TriggerConfigResponse(**config)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting vacancy triggers: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -927,6 +949,8 @@ company_id: str = Depends(require_company_id)):
             "fields": trigger_config.get("fields", []),
             "fields_count": len(trigger_config.get("fields", [])),
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting stage trigger: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -975,6 +999,8 @@ company_id: str = Depends(require_company_id)):
         return None
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error cancelling data request: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -1000,6 +1026,8 @@ company_id: str = Depends(require_company_id)):
         return ResendNotificationResponse(**result)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error resending notification: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -1022,6 +1050,8 @@ company_id: str = Depends(require_company_id)):
         return result
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error checking status: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -1147,6 +1177,8 @@ company_id: str = Depends(require_company_id)):
         )
         
         return result
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error processing WhatsApp message: {e}")
         raise HTTPException(status_code=500, detail=str(e))

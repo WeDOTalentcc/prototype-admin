@@ -439,6 +439,8 @@ _company_gate: str = Depends(require_company_id)):
         company_uuid = UUID(company_id)
         resource = await repo.create_resource(company_uuid, resource_data.model_dump())
         return TrustCenterResourceResponse(**resource.to_dict())
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating resource: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -456,6 +458,8 @@ _company_gate: str = Depends(require_company_id)):
         company_uuid = UUID(company_id)
         subprocessor = await repo.create_subprocessor(company_uuid, subprocessor_data.model_dump())
         return SubprocessorResponse(**subprocessor.to_dict())
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating subprocessor: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -477,6 +481,8 @@ _company_gate: str = Depends(require_company_id)):
             is_published=update_data.is_published,
         )
         return TrustCenterUpdateResponse(**update.to_dict())
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating update: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

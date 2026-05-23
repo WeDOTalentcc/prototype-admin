@@ -266,6 +266,8 @@ company_id: str = Depends(require_company_id)) -> FeatureFlagResponse:
             rollout_percentage=result.get("rollout_percentage"),
             error=result.get("error")
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error setting feature flag: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -292,6 +294,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "company_id": company_id,
             "category": category
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting feature flags: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -317,6 +321,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "is_enabled": is_enabled,
             "company_id": company_id
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error checking feature flag: {e}")
         raise HTTPException(status_code=500, detail=str(e))

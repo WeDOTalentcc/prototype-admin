@@ -171,6 +171,8 @@ _company_gate: str = Depends(require_company_id)):
     """Get AI usage summary for the current billing period (alias for /usage)."""
     try:
         return await _get_usage_summary_data(company_id, db)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting usage summary: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -185,6 +187,8 @@ _company_gate: str = Depends(require_company_id)):
     """Get AI usage summary for the current billing period."""
     try:
         return await _get_usage_summary_data(company_id, db)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting usage summary: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -238,6 +242,8 @@ _company_gate: str = Depends(require_company_id)):
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid client ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting client usage: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -288,6 +294,8 @@ _company_gate: str = Depends(require_company_id)):
             period_start=start_date.isoformat() if start_date else None,
             period_end=end_date.isoformat() if end_date else None
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting usage history: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -335,6 +343,8 @@ _company_gate: str = Depends(require_company_id)):
             total_tokens=grand_total_tokens,
             total_operations=grand_total_ops
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting usage by agent: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -369,6 +379,8 @@ _company_gate: str = Depends(require_company_id)):
             data=data,
             total_days=len(dates_seen),
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting agent daily trend: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -416,6 +428,8 @@ _company_gate: str = Depends(require_company_id)):
     """Get AI usage grouped by day (alias for /by-day)."""
     try:
         return await _get_daily_usage_data(days, company_id, db)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting daily usage: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -431,6 +445,8 @@ _company_gate: str = Depends(require_company_id)):
     """Get AI usage grouped by day for charts."""
     try:
         return await _get_daily_usage_data(days, company_id, db)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting usage by day: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -462,6 +478,8 @@ _company_gate: str = Depends(require_company_id)):
         balance.current_usage = current_usage
         
         return BalanceResponse(**balance.to_dict())
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting balance: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -506,6 +524,8 @@ _company_gate: str = Depends(require_company_id)):
         return AiConsumptionResponse(**consumption.to_dict())
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Invalid ID format: {e}")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error recording consumption: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -546,6 +566,8 @@ _company_gate: str = Depends(require_company_id)):
         return BalanceResponse(**balance.to_dict())
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid client ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error updating limits: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -612,6 +634,8 @@ _company_gate: str = Depends(require_company_id)) -> dict[str, Any]:
         }
         
         return usage
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting user usage: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -647,6 +671,8 @@ _company_gate: str = Depends(require_company_id)) -> dict[str, Any]:
         usage["real_time"] = real_time
         
         return usage
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting company usage: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -679,6 +705,8 @@ _company_gate: str = Depends(require_company_id)) -> dict[str, Any]:
         usage["default_limits"] = DEFAULT_LIMITS
         
         return usage
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting agents usage: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -705,6 +733,8 @@ _company_gate: str = Depends(require_company_id)) -> dict[str, Any]:
             "limits": limits,
             "token_prices": TOKEN_PRICES
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting limits: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -763,6 +793,8 @@ _company_gate: str = Depends(require_company_id)) -> dict[str, Any]:
                 "company_usage_percentage": company_usage.get("usage_percentage", 0)
             }
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error checking limits: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -789,6 +821,8 @@ _company_gate: str = Depends(require_company_id)) -> dict[str, Any]:
             company_id=company_id,
             window_minutes=window_minutes
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting real-time usage: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

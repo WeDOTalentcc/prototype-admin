@@ -90,6 +90,8 @@ _company_gate: str = Depends(require_company_id)):
             total_rate_limit_rules=len(rate_limit_rules),
             total_escalation_rules=len(escalation_rules),
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing policies: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -120,6 +122,8 @@ _company_gate: str = Depends(require_company_id)):
         )
         rule = await repo.create_business_rule(rule)
         return BusinessRuleResponse(**rule.to_dict())
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating business rule: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -218,6 +222,8 @@ _company_gate: str = Depends(require_company_id)):
         )
         rule = await repo.create_rate_limit_rule(rule)
         return RateLimitRuleResponse(**rule.to_dict())
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating rate limit rule: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -272,6 +278,8 @@ _company_gate: str = Depends(require_company_id)):
         )
         rule = await repo.create_escalation_rule(rule)
         return EscalationRuleResponse(**rule.to_dict())
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating escalation rule: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -333,6 +341,8 @@ _company_gate: str = Depends(require_company_id)):
             evaluation_time_ms=result.evaluation_time_ms,
             rules_evaluated=result.rules_evaluated,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error evaluating policy: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -355,6 +365,8 @@ _company_gate: str = Depends(require_company_id)):
             increment=data.increment,
         )
         return RateLimitCheckResponse(**result.to_dict())
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error checking rate limit: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -376,6 +388,8 @@ _company_gate: str = Depends(require_company_id)):
             company_id=company_id,
         )
         return EscalationTriggerResponse(**result.to_dict())
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error triggering escalation: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -420,6 +434,8 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
             db=repo.db,
         )
         return result
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error applying sector defaults for {company_id}: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -454,6 +470,8 @@ company_id: str = Depends(require_company_id)):
             escalation_rules_skipped=stats["escalation_rules_skipped"],
             message=f"Seeded {total_created} rules, skipped {total_skipped} existing rules",
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error seeding policies: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -481,6 +499,8 @@ _company_gate: str = Depends(require_company_id)):
             offset=offset,
         )
         return [PolicyEvaluationLogResponse(**log.to_dict()) for log in logs]
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting evaluation logs: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -506,6 +526,8 @@ _company_gate: str = Depends(require_company_id)):
             offset=offset,
         )
         return [EscalationLogResponse(**log.to_dict()) for log in logs]
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting escalation logs: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

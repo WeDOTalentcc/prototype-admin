@@ -108,6 +108,8 @@ async def candidate_chat(request_data: CandidateChatRequest, request: Request, c
                 "domain": "candidate_self_service",
             }
         )
+    except HTTPException:
+        raise
     except Exception as exc:
         logger.error("[CandidatePortal] chat error candidate_id=%s: %s", candidate_id, exc)
         raise HTTPException(status_code=500, detail="Erro interno. Tente novamente.")
@@ -174,6 +176,8 @@ async def list_candidate_applications(candidate_token: str, company_id: str = De
             logger.debug("[CandidatePortal] audit log failed: %s", audit_exc)
 
         return APIResponse.ok(data=data)
+    except HTTPException:
+        raise
     except Exception as exc:
         logger.error("[CandidatePortal] list_applications error candidate_id=%s: %s", candidate_id, exc)
         raise HTTPException(status_code=500, detail="Erro ao buscar candidaturas.")

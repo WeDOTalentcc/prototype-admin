@@ -331,6 +331,8 @@ company_id: str = Depends(require_company_id)):
         }
     except CycleDetectedError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

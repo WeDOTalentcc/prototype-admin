@@ -237,6 +237,8 @@ company_id: str = Depends(require_company_id)) -> ResetSessionResponse:
                 "awaiting_approval": False,
             },
         )
+    except HTTPException:
+        raise
     except Exception as exc:
         logger.error(
             "[wizard_session.reset] checkpointer write failed thread=%s reason=%s",

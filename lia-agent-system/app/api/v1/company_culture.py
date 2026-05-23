@@ -598,6 +598,8 @@ company_id: str = Depends(require_company_id)):
         profiles = await repo.list_profiles(skip=skip, limit=limit)
         return profiles
 
+    except HTTPException:
+        raise
     except Exception as e:
         # Task #1161 (Bug C): full traceback + no internal leak.
         logger.exception("Error listing culture profiles")
@@ -793,6 +795,8 @@ company_id: str = Depends(require_company_id)):
             enriched_culture=enriched_culture,
             errors=errors,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         # Task #1161 (Bug C): full traceback + no internal leak.
         logger.exception("Error enriching company profile")
@@ -1278,6 +1282,8 @@ Responda APENAS em formato JSON válido com a seguinte estrutura:
             sources_analyzed=sources_analyzed,
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         # Task #1161 (Bug C): full traceback + no internal leak.
         logger.exception("Error analyzing company culture")

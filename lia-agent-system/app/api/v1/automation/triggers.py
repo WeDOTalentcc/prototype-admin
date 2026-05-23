@@ -102,6 +102,8 @@ async def get_automation_triggers(company_id: str = Depends(require_company_id))
                 "total": len(triggers)
             }
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting triggers: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -147,6 +149,8 @@ company_id: str = Depends(require_company_id)):
             "success": True,
             "data": result
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error checking triggers: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -171,6 +175,8 @@ async def get_automation_status(company_id: str = Depends(require_company_id)):
                 "disabled_triggers": len(triggers) - enabled_count
             }
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting automation status: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -238,6 +244,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
                 }
             }
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting stage suggestions: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -698,6 +706,8 @@ company_id: str = Depends(require_company_id)):
             }
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"Error triggering event '{request.event_type}': {e}", exc_info=True)

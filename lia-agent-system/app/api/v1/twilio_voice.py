@@ -135,6 +135,8 @@ async def initiate_voice_screening(
                 "detail": str(e),
             },
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("[TWILIO VOICE API] Initiate call error: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
@@ -761,6 +763,8 @@ async def generate_voip_token(request_body: VoIPTokenRequest, ) -> VoIPTokenResp
             session_id=request_body.session_id,
             voip_available=False,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("[TWILIO VOIP] Token generation failed: %s", e)
         raise HTTPException(status_code=500, detail=f"Failed to generate VoIP token: {e}")

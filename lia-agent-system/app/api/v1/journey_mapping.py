@@ -349,6 +349,8 @@ company_id: str = Depends(require_company_id)):
         )
         return blueprint
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error completing wizard: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -396,6 +398,8 @@ company_id: str = Depends(require_company_id)):
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created journey blueprint: {blueprint.name} for company {company_id}")
         return blueprint
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating journey blueprint: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -467,6 +471,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
         steps = await repo.list_steps(blueprint_id)
         return steps
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching journey steps: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -489,6 +495,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created journey step: {step.name}")
         return step
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating journey step: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -568,6 +576,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
         integrations = await repo.list_integrations(blueprint_id)
         return integrations
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching journey integrations: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -590,6 +600,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created journey integration: {integration.name}")
         return integration
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating journey integration: {e}")
         raise HTTPException(status_code=500, detail=str(e))

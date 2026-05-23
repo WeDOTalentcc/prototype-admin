@@ -826,6 +826,8 @@ company_id: str = Depends(require_company_id)):
             insights=insights
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching job vacancies stats overview: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -1091,6 +1093,8 @@ company_id: str = Depends(require_company_id)):
 
     try:
         rows = await repo.get_pipeline_overview(company_id)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching pipeline pulse: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Internal error fetching pipeline data")
@@ -1135,6 +1139,8 @@ company_id: str = Depends(require_company_id)):
 
     try:
         rows = await repo.get_pipeline_overview_enriched(company_id, candidates_per_stage)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching pipeline overview: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -1412,6 +1418,8 @@ company_id: str = Depends(require_company_id)):
     try:
         jobs = await repo.get_all_company_jobs(company_id)
         candidate_counts = await repo.get_candidate_counts_by_vacancy_for_company(company_id)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching jobs for lifecycle overview: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

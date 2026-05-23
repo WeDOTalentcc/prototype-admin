@@ -85,6 +85,8 @@ company_id: str = Depends(require_company_id)):
         return report
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating report: {str(e)}")
 
@@ -105,6 +107,8 @@ company_id: str = Depends(require_company_id)):
         return report
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating comparison: {str(e)}")
 
@@ -162,6 +166,8 @@ company_id: str = Depends(require_company_id)):
             "email_id": result.get("email_id"),
             "error": result.get("email_error")
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error sending daily briefing: {str(e)}")
 
@@ -193,6 +199,8 @@ async def send_weekly_report(request: WeeklyReportSendRequest, company_id: str =
             "emails_sent": result.get("emails_sent", []),
             "emails_failed": result.get("emails_failed", [])
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error sending weekly report: {str(e)}")
 
@@ -224,6 +232,8 @@ async def send_monthly_report(request: MonthlyReportSendRequest, company_id: str
             "emails_sent": result.get("emails_sent", []),
             "emails_failed": result.get("emails_failed", [])
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error sending monthly report: {str(e)}")
 
@@ -254,6 +264,8 @@ company_id: str = Depends(require_company_id)):
         return HTMLResponse(content=result.get("html_content", ""))
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating preview: {str(e)}")
 
@@ -279,5 +291,7 @@ company_id: str = Depends(require_company_id)):
         return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating preview: {str(e)}")

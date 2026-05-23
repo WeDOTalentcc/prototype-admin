@@ -99,6 +99,8 @@ company_id: str = Depends(require_company_id)):
             search_id=uuid.UUID(str(search_record.id)),
             credits_consumed=0,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Local search failed: {e}")
         raise HTTPException(status_code=500, detail=f"Local search failed: {str(e)}")
@@ -146,6 +148,8 @@ company_id: str = Depends(require_company_id)):
         return result
     except ValueError as e:
         raise HTTPException(status_code=500, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Candidate search failed: {e}")
         raise HTTPException(status_code=500, detail="Candidate search failed")
@@ -168,6 +172,8 @@ company_id: str = Depends(require_company_id)):
         return await pearch_svc.search_candidates(request=req, timeout=timeout)
     except ValueError as e:
         raise HTTPException(status_code=500, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Candidate search failed: {e}")
         raise HTTPException(status_code=500, detail="Candidate search failed")
@@ -188,6 +194,8 @@ company_id: str = Depends(require_company_id)):
         )
     except ValueError as e:
         raise HTTPException(status_code=500, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Job description search failed: {e}")
         raise HTTPException(status_code=500, detail="Job description search failed")

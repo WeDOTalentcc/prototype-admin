@@ -134,6 +134,8 @@ async def update_company_ai_persona(
                 "errors": errors,
             },
         )
+    except HTTPException:
+        raise
     except Exception as exc:  # noqa: BLE001
         logger.exception("[ai_persona] unexpected error updating persona")
         await db.rollback()

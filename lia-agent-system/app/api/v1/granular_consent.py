@@ -95,6 +95,8 @@ _company_gate: str = Depends(require_company_id)) -> GranularConsentSummaryRespo
                 for c in summary.consents
             ],
         )
+    except HTTPException:
+        raise
     except Exception as exc:
         logger.error("granular_consent/%s erro: %s", candidate_id, exc)
         raise HTTPException(status_code=500, detail="Erro ao buscar consentimentos")
@@ -149,6 +151,8 @@ _company_gate: str = Depends(require_company_id)) -> dict:
                 for c in updated
             ],
         }
+    except HTTPException:
+        raise
     except Exception as exc:
         logger.error("granular_consent/%s/update erro: %s", candidate_id, exc)
         raise HTTPException(status_code=500, detail="Erro ao atualizar consentimentos")

@@ -485,6 +485,8 @@ async def regenerate_response(
     assistant_row.extra_data = md
     try:
         await db.commit()
+    except HTTPException:
+        raise
     except Exception:
         await db.rollback()
         logger.exception("Failed to stamp regenerated metadata")

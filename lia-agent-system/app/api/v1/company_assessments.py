@@ -55,6 +55,8 @@ company_id: str = Depends(require_company_id)):
         if not include_inactive:
             questions = [q for q in questions if q.is_active]
         return questions[skip: skip + limit]
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing Big Five questions: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -71,6 +73,8 @@ company_id: str = Depends(require_company_id)):
         question = await bf_repo.create_question(data.model_dump())
         logger.info(f"Created Big Five question for trait: {question.trait}")
         return question
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating Big Five question: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -138,6 +142,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         if not include_inactive:
             profiles = [p for p in profiles if p.is_active]
         return profiles
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing Big Five role profiles: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -155,6 +161,8 @@ company_id: str = Depends(require_company_id)):
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created Big Five role profile: {profile.name}")
         return profile
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating Big Five role profile: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -208,6 +216,8 @@ company_id: str = Depends(require_company_id)):
         if not include_inactive:
             questions = [q for q in questions if q.is_active]
         return questions[skip: skip + limit]
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing technical questions: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -224,6 +234,8 @@ company_id: str = Depends(require_company_id)):
         question = await tt_repo.create_question(data.model_dump())
         logger.info(f"Created technical question: {question.title}")
         return question
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating technical question: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -292,6 +304,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         if not include_inactive:
             templates = [t for t in templates if t.is_active]
         return templates
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing technical templates: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -309,6 +323,8 @@ company_id: str = Depends(require_company_id)):
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created technical template: {template.name}")
         return template
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating technical template: {e}")
         raise HTTPException(status_code=500, detail=str(e))

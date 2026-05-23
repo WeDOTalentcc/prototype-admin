@@ -121,6 +121,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
     try:
         return await user_repo.list_for_company(company_id, is_active=None)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing users: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -363,6 +365,8 @@ company_id: str = Depends(require_company_id)):
 
         logger.info(f"Listed {len(user_responses)} users for company {company_id}")
         return CompanyUsersListResponse(users=user_responses, total=len(user_responses))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing company users: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -500,6 +504,8 @@ Qual opção você prefere?"""
             catalog_status=CatalogStatusResponse(**status),
             prefill_data=prefill_data,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting smart wizard greeting: {e}")
         raise HTTPException(status_code=500, detail=str(e))

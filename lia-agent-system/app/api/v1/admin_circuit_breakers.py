@@ -109,6 +109,8 @@ async def list_circuit_breakers(_user=Depends(require_admin), company_id: str = 
             ),
             "circuits": status,
         }
+    except HTTPException:
+        raise
     except Exception as exc:
         logger.error("[CircuitBreakerAdmin] Erro ao listar circuits: %s", exc)
         raise HTTPException(status_code=500, detail=str(exc))

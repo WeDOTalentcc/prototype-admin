@@ -76,6 +76,8 @@ company_id: str = Depends(require_company_id)):
         else:
             base["message"] = "Candidate marked as viewed"
         return base
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error marking candidate as viewed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -106,6 +108,8 @@ company_id: str = Depends(require_company_id)):
             ],
             "candidate_ids": [v.candidate_id for v in viewed_list],
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing viewed candidates: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -187,6 +191,8 @@ company_id: str = Depends(require_company_id)):
                 "created_at": favorite.created_at.isoformat() if favorite.created_at else None,
                 "message": "Candidate added to favorites",
             }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error toggling favorite: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -249,6 +255,8 @@ company_id: str = Depends(require_company_id)):
             ],
             "candidate_ids": [f.candidate_id for f in favorites_list],
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing favorites: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -323,6 +331,8 @@ company_id: str = Depends(require_company_id)):
                 "created_at": hidden.created_at.isoformat() if hidden.created_at else None,
                 "message": "Candidate hidden",
             }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error toggling hidden: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -351,6 +361,8 @@ company_id: str = Depends(require_company_id)):
             ],
             "candidate_ids": [h.candidate_id for h in hidden_list],
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing hidden candidates: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

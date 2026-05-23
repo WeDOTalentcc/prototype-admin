@@ -88,6 +88,8 @@ _company_gate: str = Depends(require_company_id)) -> dict:
     try:
         weights = await service.get_weights_for_job(db, job_id, company_id)
         return weights.to_dict()
+    except HTTPException:
+        raise
     except Exception as exc:
         logger.error("ml-feedback/weights erro: %s", exc)
         raise HTTPException(status_code=500, detail="Erro ao buscar pesos adaptativos")

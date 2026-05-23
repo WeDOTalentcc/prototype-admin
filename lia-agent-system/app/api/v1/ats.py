@@ -150,6 +150,8 @@ company_id: str = Depends(require_company_id)):
             for conn in connections
         ]
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"❌ Failed to list ATS connections: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -603,6 +605,8 @@ company_id: str = Depends(require_company_id)):
             for job in jobs
         ]
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"❌ Failed to list sync jobs: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -645,6 +649,8 @@ company_id: str = Depends(require_company_id)):
             for candidate in candidates
         ]
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"❌ Failed to list ATS candidates: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -1100,6 +1106,8 @@ company_id: str = Depends(require_company_id)):
             for log in logs
         ]
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"❌ Failed to list webhook logs: {e}")
         raise HTTPException(status_code=500, detail=str(e))

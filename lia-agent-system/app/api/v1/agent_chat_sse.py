@@ -194,6 +194,8 @@ company_id: str = Depends(require_company_id)):
             else:
                 await hitl_service.reject(req.pending_id, user_id)
             return {"status": "ok", "approved": req.approved}
+        except HTTPException:
+            raise
         except Exception as exc:
             logger.error("[SSEAction] HITL action failed: %s", exc)
             raise HTTPException(status_code=500, detail="Failed to process approval")

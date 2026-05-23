@@ -316,6 +316,8 @@ company_id: str = Depends(require_company_id)):
             block_distribution=block_distribution
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error generating WSI questions: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -471,6 +473,8 @@ company_id: str = Depends(require_company_id)):
             quality_warnings=warnings
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error regenerating WSI questions: {e}")
         raise HTTPException(status_code=500, detail=str(e))

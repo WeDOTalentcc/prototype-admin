@@ -66,6 +66,8 @@ async def extract_jd(
         )
     try:
         extracted = await jd_parser_service.extract_requirements(text, company_id=tenant_id)
+    except HTTPException:
+        raise
     except Exception as exc:
         # Log técnico só no servidor; resposta genérica para não vazar internals.
         logger.exception("[extract_jd] parser failed")

@@ -42,6 +42,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             db=db,
         )
         return {"success": True, "recruiter_id": recruiter_id, "data": summary}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"get_recruiter_summary failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Erro ao calcular métricas do recrutador")
@@ -73,6 +75,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "critical": sum(1 for b in backlog if b["is_critical"]),
             "data": backlog,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"get_recruiter_backlog failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Erro ao buscar backlog do recrutador")
@@ -100,6 +104,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             db=db,
         )
         return {"success": True, **result}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"get_recruiter_benchmark failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Erro ao calcular benchmark do recrutador")

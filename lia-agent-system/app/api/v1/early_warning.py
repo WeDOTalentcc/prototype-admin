@@ -51,6 +51,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "summary": summary,
             "data": candidates,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"get_early_warning failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Erro ao calcular Early Warning Score")

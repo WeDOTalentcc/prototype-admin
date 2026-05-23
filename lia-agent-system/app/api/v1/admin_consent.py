@@ -184,6 +184,8 @@ async def grant_company_training_consent(
     except ValueError as exc:
         logger.error("[T-21c] grant_consent failed company=%s err=%s", company_id, exc)
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except HTTPException:
+        raise
     except Exception as exc:  # pragma: no cover — defensive
         logger.exception("[T-21c] grant_consent unexpected company=%s", company_id)
         await db.rollback()
@@ -261,6 +263,8 @@ async def revoke_company_training_consent(
     except ValueError as exc:
         logger.error("[T-21c] revoke_consent failed company=%s err=%s", company_id, exc)
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except HTTPException:
+        raise
     except Exception as exc:  # pragma: no cover — defensive
         logger.exception("[T-21c] revoke_consent unexpected company=%s", company_id)
         await db.rollback()

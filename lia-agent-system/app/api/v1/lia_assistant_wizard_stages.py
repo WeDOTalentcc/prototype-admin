@@ -278,6 +278,8 @@ company_id: str = Depends(require_company_id)) -> Stage8CandidateSearchResponse:
             },
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error in Stage 8 candidate search: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -330,6 +332,8 @@ company_id: str = Depends(require_company_id)) -> Stage8SearchFeedbackResponse:
             acceptance_rate=acceptance_rate,
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error recording Stage 8 feedback: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -466,6 +470,8 @@ company_id: str = Depends(require_company_id)) -> Stage9CalibrationResponse:
             learning_enhanced=learning_enhanced,
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error in Stage 9 evaluation: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -552,6 +558,8 @@ company_id: str = Depends(require_company_id)) -> Stage9CalibrateFeedbackRespons
             updated_acceptance_rate=acceptance_rate,
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error in Stage 9 calibration: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -672,6 +680,8 @@ company_id: str = Depends(require_company_id)) -> Stage10ActiveSourcingResponse:
             sources_used=sources_used,
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error in Stage 10 active sourcing: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -713,6 +723,8 @@ company_id: str = Depends(require_company_id)) -> Stage10OutreachResponse:
             outreach_ids=outreach_ids if outreach_ids else None
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error in Stage 10 outreach: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -779,6 +791,8 @@ company_id: str = Depends(require_company_id)) -> Stage10FeedbackResponse:
             patterns_updated=patterns_updated
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error in Stage 10 feedback: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

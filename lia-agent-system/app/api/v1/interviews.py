@@ -242,6 +242,8 @@ company_id: str = Depends(require_company_id)):
             "end_time": interview.end_time.isoformat(),
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Failed to schedule interview: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
@@ -415,6 +417,8 @@ company_id: str = Depends(require_company_id)):
 
     except ValueError as ve:
         raise HTTPException(status_code=404, detail=str(ve))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Failed to complete interview: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
@@ -497,6 +501,8 @@ async def check_availability(request: CheckAvailabilityRequest, company_id: str 
             "total_slots": len(available_slots),
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Failed to check availability: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
@@ -627,6 +633,8 @@ Retorne APENAS o corpo do email (sem assunto), formatado em HTML simples.
             "candidate_name": request.candidate_name,
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Failed to generate email template: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
@@ -740,6 +748,8 @@ IMPORTANTE: Retorne APENAS o JSON válido sem texto adicional.
                 as_teams_meeting=True,
                 notes=extracted.get("notes"),
             )
+        except HTTPException:
+            raise
         except Exception as calendar_error:
             logger.error("Calendar service failed: %s", calendar_error)
             raise HTTPException(
@@ -878,6 +888,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "count": len(candidate_ids),
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Failed to get shortlisted candidates: %s", e)
         raise HTTPException(status_code=500, detail=str(e))
@@ -915,6 +927,8 @@ company_id: str = Depends(require_company_id)):
             }
             for s in stages
         ]
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Failed to get interview stages: %s", e)
         raise HTTPException(status_code=500, detail="Error fetching stages")

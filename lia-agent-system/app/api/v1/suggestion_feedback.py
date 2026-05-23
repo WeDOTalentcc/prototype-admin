@@ -98,6 +98,8 @@ company_id: str = Depends(require_company_id)):
             "feedback_id": str(feedback.id),
             "accepted": request.accepted,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to record suggestion feedback: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -133,6 +135,8 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
             overall_acceptance_rate=round(accepted_total / total, 4) if total > 0 else 0.0,
             by_field=by_field,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to get suggestion stats: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -168,6 +172,8 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
             )
             for adj in adjustments_raw
         ]
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to get learned adjustments: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

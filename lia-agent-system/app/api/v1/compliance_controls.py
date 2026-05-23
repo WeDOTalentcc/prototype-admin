@@ -73,6 +73,8 @@ company_id: str = Depends(require_company_id)):
             limit=limit,
             offset=offset,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing control library: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -99,6 +101,8 @@ company_id: str = Depends(require_company_id)):
             related_controls=data.related_controls or [],
         )
         return ControlLibraryResponse(**control.to_dict())
+    except HTTPException:
+        raise
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error creating control library entry: {e}", exc_info=True)
@@ -126,6 +130,8 @@ company_id: str = Depends(require_company_id)):
             limit=limit,
             offset=offset,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting controls by framework: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -167,6 +173,8 @@ _company_gate: str = Depends(require_company_id)):
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing company controls: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -310,6 +318,8 @@ _company_gate: str = Depends(require_company_id)):
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing audits: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -338,6 +348,8 @@ _company_gate: str = Depends(require_company_id)):
         return ComplianceAuditResponse(**audit.to_dict())
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error creating audit: {e}", exc_info=True)
@@ -409,6 +421,8 @@ _company_gate: str = Depends(require_company_id)):
         ))
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting compliance dashboard: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -442,6 +456,8 @@ _company_gate: str = Depends(require_company_id)):
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing SOX controls: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -470,6 +486,8 @@ _company_gate: str = Depends(require_company_id)):
         return SOXControlResponse(**control.to_dict())
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error creating SOX control: {e}", exc_info=True)
@@ -758,6 +776,8 @@ company_id: str = Depends(require_company_id)):
             sox_controls=sox_count,
             total_controls=total,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error seeding control library: {e}", exc_info=True)

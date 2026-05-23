@@ -47,6 +47,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         if not include_inactive:
             values = [v for v in values if v.is_active]
         return values
+    except HTTPException:
+        raise
     except Exception as e:
         # Task #1161 (Bug C): preserve full traceback (was hidden by f-string
         # of `str(e)`) and do not leak internal error message to the client.
@@ -67,6 +69,8 @@ _company_gate: str = Depends(require_company_id)):
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created culture value: {cv.name}")
         return cv
+    except HTTPException:
+        raise
     except Exception as e:
         # Task #1161 (Bug C): full traceback + no internal leak.
         logger.exception("Error creating culture value")
@@ -140,6 +144,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         if not include_inactive:
             profiles = [p for p in profiles if p.is_active]
         return profiles
+    except HTTPException:
+        raise
     except Exception as e:
         # Task #1161 (Bug C): full traceback + no internal leak.
         logger.exception("Error listing ideal profiles")
@@ -159,6 +165,8 @@ _company_gate: str = Depends(require_company_id)):
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created ideal profile: {profile.name}")
         return profile
+    except HTTPException:
+        raise
     except Exception as e:
         # Task #1161 (Bug C): full traceback + no internal leak.
         logger.exception("Error creating ideal profile")

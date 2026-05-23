@@ -147,6 +147,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             total=len(templates),
             items=[template_to_response(t) for t in templates]
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing recruitment email templates: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -311,6 +313,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             created_count=len(created_templates),
             templates=[template_to_response(t) for t in created_templates]
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error seeding templates: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -334,6 +338,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             created_count=len(created_templates),
             templates=[template_to_response(t) for t in created_templates]
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error cloning templates: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

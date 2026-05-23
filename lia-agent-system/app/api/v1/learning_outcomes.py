@@ -143,6 +143,8 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
             )
             for o in outcomes
         ]
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to list outcomes: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -173,6 +175,8 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
             avg_candidates_screened=round(float(avg_row[2]), 1) if avg_row and avg_row[2] else None,
             avg_candidates_interviewed=round(float(avg_row[3]), 1) if avg_row and avg_row[3] else None,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to get outcome stats: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -201,6 +205,8 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
             patterns.append(pattern)
 
         return patterns
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to get outcome patterns: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

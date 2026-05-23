@@ -113,6 +113,8 @@ company_id: str = Depends(require_company_id)):
     except ValueError as e:
         await db.rollback()
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         await db.rollback()
         logger.error("Error creating custom agent: %s", e, exc_info=True)
@@ -343,6 +345,8 @@ company_id: str = Depends(require_company_id)):
             tokens_output=_meta.get("tokens_output", 0),
             model_used=_meta.get("model_used", ""),
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Error testing custom agent: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=f"Test execution failed: {e}")
@@ -545,6 +549,8 @@ company_id: str = Depends(require_company_id)):
             model_used=_meta.get("model_used", ""),
             metadata=_meta,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         await db.rollback()
         logger.error("Error executing custom agent: %s", e, exc_info=True)
@@ -648,6 +654,8 @@ company_id: str = Depends(require_company_id)):
         return AgentInstallationResponse(**installation.to_dict())
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         await db.rollback()
         logger.error("Error installing agent: %s", e, exc_info=True)
@@ -824,6 +832,8 @@ company_id: str = Depends(require_company_id)):
             db=db, company_id=company_id, days=days,
         )
         return consumption
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Error fetching studio consumption: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to fetch studio consumption")
@@ -858,6 +868,8 @@ company_id: str = Depends(require_company_id)):
                 "active_campaigns": 0,
             }
         return quota.to_dict()
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Error fetching studio quota: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to fetch studio quota")
@@ -944,6 +956,8 @@ company_id: str = Depends(require_company_id)):
     except ValueError as e:
         await db.rollback()
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         await db.rollback()
         logger.error("[AgentVersion] revert failed: %s", e, exc_info=True)
@@ -1389,6 +1403,8 @@ Responda APENAS com o JSON, sem texto adicional."""
             suggested_temperature=0.5,
             reasoning="Configuracao padrao gerada como fallback.",
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Error generating agent config: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=f"Erro ao gerar configuracao: {e}")
@@ -1442,6 +1458,8 @@ company_id: str = Depends(require_company_id)):
             target_id=str(cloned.id),
         )
         return CustomAgentResponse(**cloned.to_dict())
+    except HTTPException:
+        raise
     except Exception as e:
         await db.rollback()
         logger.error("Error cloning agent: %s", e, exc_info=True)

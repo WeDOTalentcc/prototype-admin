@@ -163,6 +163,8 @@ company_id: str = Depends(require_company_id)):
                 is_new=True
             )
     
+    except HTTPException:
+        raise
     except Exception as e:
         await db.rollback()
         logger.error(f"Error persisting revealed contact: {e}")

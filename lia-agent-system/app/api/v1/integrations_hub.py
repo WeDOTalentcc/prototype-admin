@@ -173,6 +173,8 @@ company_id: str = Depends(require_company_id)):
 
         return [_provider_to_response(p) for p in providers]
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to list providers: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -210,6 +212,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         )
         return [_connection_to_response(conn, provider) for conn, provider in rows]
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to list connections: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -414,6 +418,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             for log in logs
         ]
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to get sync logs: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -456,6 +462,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             connections_by_category=connections_by_category,
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to get integration health: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -539,6 +547,8 @@ company_id: str = Depends(require_company_id)):
             tips=tips,
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to get AI recommendations: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -557,6 +567,8 @@ company_id: str = Depends(require_company_id)):
             "message": f"Seeded {len(providers)} providers",
             "providers": [_provider_to_response(p).dict() for p in providers],
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to seed providers: {e}")
         raise HTTPException(status_code=500, detail=str(e))

@@ -74,6 +74,8 @@ _company_gate: str = Depends(require_company_id)):
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting LGPD stats: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -97,6 +99,8 @@ _company_gate: str = Depends(require_company_id)):
             limit=limit,
             offset=offset,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing DPO entries: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -149,6 +153,8 @@ _company_gate: str = Depends(require_company_id)):
         return DPORegistryResponse(**dpo.to_dict())
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating DPO registry: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -212,6 +218,8 @@ _company_gate: str = Depends(require_company_id)):
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing breach notifications: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -267,6 +275,8 @@ _company_gate: str = Depends(require_company_id)):
         return BreachNotificationResponse(**breach.to_dict())
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid company ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating breach notification: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -422,6 +432,8 @@ _company_gate: str = Depends(require_company_id)):
         )
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing automated decisions: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -477,6 +489,8 @@ _company_gate: str = Depends(require_company_id)):
         return AutomatedDecisionResponse(**decision.to_dict())
     except ValueError:
         raise HTTPException(status_code=400, detail="Invalid ID format")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating automated decision: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

@@ -276,6 +276,8 @@ company_id: str = Depends(require_company_id)):
             message=f"Salvos {len(imported_ids)} candidatos descobertos em staging. {len(updated_ids)} atualizados. {len(skipped_ids)} já existiam."
         )
     
+    except HTTPException:
+        raise
     except Exception as e:
         await db.rollback()
         logger.error(f"Error importing candidates to staging: {e}")

@@ -85,6 +85,8 @@ company_id: str = Depends(require_company_id)):
             "items": items,
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing candidate lists: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -120,6 +122,8 @@ company_id: str = Depends(require_company_id)):
             "candidate_count": 0,
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating candidate list: {e}", exc_info=True)
         await repo.rollback()

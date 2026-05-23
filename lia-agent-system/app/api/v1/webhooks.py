@@ -52,6 +52,8 @@ company_id: str = Depends(require_company_id)):
     except ValueError as e:
         await db.rollback()
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         await db.rollback()
         logger.error("Error creating webhook: %s", e, exc_info=True)
@@ -138,6 +140,8 @@ company_id: str = Depends(require_company_id)):
             payload=test_payload,
         )
         return {"queued": True, "message": "Test event queued for delivery"}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Error queueing test webhook: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to queue test event")

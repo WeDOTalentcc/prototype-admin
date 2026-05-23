@@ -144,6 +144,8 @@ company_id: str = Depends(require_company_id)):
             total_overdue_reviews=total_overdue,
             last_updated=datetime.utcnow(),
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting health check summary: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -205,6 +207,8 @@ company_id: str = Depends(require_company_id)):
             media_type="text/csv",
             headers={"Content-Disposition": f"attachment; filename={filename}"},
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error exporting health check: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -223,6 +227,8 @@ company_id: str = Depends(require_company_id)):
             skipped_count=skipped_count,
             message=f"Created {created_count} items, skipped {skipped_count} existing",
         )
+    except HTTPException:
+        raise
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error seeding health check items: {e}", exc_info=True)
@@ -242,6 +248,8 @@ company_id: str = Depends(require_company_id)):
             skipped_count=skipped_count,
             message=f"Synced from library: Created {created_count} items, skipped {skipped_count} existing",
         )
+    except HTTPException:
+        raise
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error syncing from control library: {e}", exc_info=True)
@@ -401,6 +409,8 @@ company_id: str = Depends(require_company_id)):
             offset=offset,
             has_more=(offset + len(items)) < total,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing health check items: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

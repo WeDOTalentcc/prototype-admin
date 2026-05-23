@@ -423,6 +423,8 @@ async def process_queue(job_id: UUID, request: ProcessQueueRequest, db: AsyncSes
             promoted_count=len(promoted),
             promoted_candidates=promoted,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error processing queue: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

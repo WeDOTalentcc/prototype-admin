@@ -1166,3 +1166,35 @@ STANDARD_STAGE_CATALOG = [
         "default_sub_statuses": ["reprovado_triagem", "reprovado_entrevista", "reprovado_teste", "reprovado_gestor", "reprovado_referencias", "reprovado_outro"],
     },
 ]
+
+
+# ─── Onda 2.2 fix (2026-05-23) ────────────────────────────────────────────
+# Aliases + catalogos faltantes que stage_transition_automation.py importa.
+
+SUB_STATUSES = CANONICAL_SUB_STATUSES
+
+REJECTION_REASONS: list[dict] = [
+    {"code": "reprovado_triagem",      "display_name": "Reprovado em Triagem",      "category": "screening"},
+    {"code": "reprovado_entrevista",   "display_name": "Reprovado em Entrevista",   "category": "interview"},
+    {"code": "reprovado_teste",        "display_name": "Reprovado em Teste",        "category": "test"},
+    {"code": "reprovado_gestor",       "display_name": "Reprovado pelo Gestor",     "category": "manager"},
+    {"code": "reprovado_referencias",  "display_name": "Reprovado em Referências",  "category": "references"},
+    {"code": "perfil_inadequado",      "display_name": "Perfil Inadequado",         "category": "screening"},
+    {"code": "experiencia_insuficiente", "display_name": "Experiência Insuficiente", "category": "screening"},
+    {"code": "salario_incompativel",   "display_name": "Salário Incompatível",      "category": "negotiation"},
+    {"code": "localizacao_incompativel", "display_name": "Localização Incompatível", "category": "logistics"},
+    {"code": "fit_cultural",           "display_name": "Falta de Fit Cultural",     "category": "culture"},
+    {"code": "reprovado_outro",        "display_name": "Outro Motivo",              "category": "other"},
+]
+
+OFFER_DECLINE_REASONS: list[dict] = [
+    {"code": "salario_baixo",            "display_name": "Salário abaixo do esperado"},
+    {"code": "beneficios_insuficientes", "display_name": "Pacote de benefícios insuficiente"},
+    {"code": "contraproposta_atual",     "display_name": "Contraproposta da empresa atual"},
+    {"code": "outra_oferta",             "display_name": "Aceitou outra oferta"},
+    {"code": "localizacao",              "display_name": "Localização/Trajeto"},
+    {"code": "modelo_trabalho",          "display_name": "Modelo de trabalho (presencial/híbrido/remoto)"},
+    {"code": "carreira_diferente",       "display_name": "Mudança de área/carreira"},
+    {"code": "questoes_pessoais",        "display_name": "Questões pessoais"},
+    {"code": "outro",                    "display_name": "Outro motivo"},
+]

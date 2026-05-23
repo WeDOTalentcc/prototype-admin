@@ -348,7 +348,7 @@ company_id: str = Depends(require_company_id)) -> GenerateQuestionsResponse:
     """
     try:
         company_id = get_user_company_id(current_user)
-        logger.info(f"Generating interview questions for job {request.jobId}, "
+        logger.info(f"Generating interview questions for job {request.job_vacancy_id}, "
                    f"candidate {request.candidateId} - company: {company_id}")
         
         # SECURITY: First validate tenant access to candidate
@@ -409,11 +409,11 @@ company_id: str = Depends(require_company_id)) -> GenerateQuestionsResponse:
         screening_context = ""
         
         # Fetch REAL job vacancy data if provided
-        if request.jobId:
+        if request.job_vacancy_id:
             job_result = await db.execute(
                 select(JobVacancy).where(
                     and_(
-                        JobVacancy.id == request.jobId,
+                        JobVacancy.id == request.job_vacancy_id,
                         JobVacancy.company_id == company_id
                     )
                 )
@@ -423,14 +423,14 @@ company_id: str = Depends(require_company_id)) -> GenerateQuestionsResponse:
             if not job_vacancy:
                 raise HTTPException(
                     status_code=404, 
-                    detail=f"Job vacancy {request.jobId} not found or not accessible"
+                    detail=f"Job vacancy {request.job_vacancy_id} not found or not accessible"
                 )
             
             # Validate candidate is linked to this vacancy (tenant scoping)
             vc_check = await db.execute(
                 select(VacancyCandidate).where(
                     and_(
-                        VacancyCandidate.vacancy_id == request.jobId,
+                        VacancyCandidate.vacancy_id == request.job_vacancy_id,
                         VacancyCandidate.candidate_id == request.candidateId,
                         VacancyCandidate.company_id == company_id
                     )
@@ -501,7 +501,7 @@ company_id: str = Depends(require_company_id)) -> GenerateQuestionsResponse:
                 select(LiaOpinion).where(
                     and_(
                         LiaOpinion.candidate_id == request.candidateId,
-                        LiaOpinion.job_vacancy_id == request.jobId,
+                        LiaOpinion.job_vacancy_id == request.job_vacancy_id,
                         LiaOpinion.company_id == company_id,
                         LiaOpinion.is_current
                     )
@@ -699,6 +699,8 @@ Responda em formato JSON com a estrutura:
             generatedAt=datetime.utcnow()
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error generating interview questions: {e}")
         raise HTTPException(
@@ -904,7 +906,7 @@ company_id: str = Depends(require_company_id)) -> WSIScore:
                 db=db,
                 company_id=company_id,
                 candidate_id=str(request.candidateId) if request.candidateId else None,
-                job_id=str(request.jobId) if request.jobId else None,
+                job_id=str(request.job_vacancy_id) if request.job_vacancy_id else None,
                 decision_type="wsi_score",
                 ai_model_used="deterministic_weighted_sum",
                 explanation_text=(
@@ -929,6 +931,8 @@ company_id: str = Depends(require_company_id)) -> WSIScore:
             decisionLabel=decision_label
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error calculating WSI score: {e}")
         raise HTTPException(
@@ -1054,6 +1058,8 @@ Responda em formato JSON:
             fairness_warnings=guard_result.soft_warnings,
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error generating interview parecer: {e}")
         raise HTTPException(
@@ -1107,6 +1113,8 @@ company_id: str = Depends(require_company_id)) -> InterviewNoteCreateResponse:
             createdAt=note.created_at,
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating interview note: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to create interview note: {str(e)}")

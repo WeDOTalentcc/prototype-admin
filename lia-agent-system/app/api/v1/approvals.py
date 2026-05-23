@@ -162,6 +162,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         )
         return to_response(approval)
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating approval request: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -202,6 +204,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
 
         return [to_response(a) for a in approvals]
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing approval requests: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -222,6 +226,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
         )
         return [to_response(a) for a in approvals]
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing pending approvals: {e}")
         raise HTTPException(status_code=500, detail=str(e))

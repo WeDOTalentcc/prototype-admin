@@ -59,6 +59,8 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
             ],
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching detected patterns: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -105,6 +107,8 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
             "skills": promoted,
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching promoted skills: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -147,6 +151,8 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
             ],
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching success profiles: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -170,6 +176,8 @@ _company_gate: str = Depends(require_company_id_strict_match("path.company_id"))
             "promotion": promotion_result,
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error triggering pattern detection: {e}")
         raise HTTPException(status_code=500, detail=str(e))

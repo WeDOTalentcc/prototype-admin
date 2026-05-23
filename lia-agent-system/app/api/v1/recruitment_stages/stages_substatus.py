@@ -164,6 +164,8 @@ company_id: str = Depends(require_company_id)):
         await sub_status_repo.soft_delete(uuid.UUID(sub_status_id))
 
         return {"success": True, "deleted": sub_status_id}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error deleting sub-status: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

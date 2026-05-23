@@ -98,6 +98,8 @@ company_id: str = Depends(require_company_id)):
     except ValueError as e:
         await db.rollback()
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         await db.rollback()
         logger.error("Error requesting approval: %s", e, exc_info=True)
@@ -216,6 +218,8 @@ company_id: str = Depends(require_company_id)):
     except ValueError as e:
         await db.rollback()
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         await db.rollback()
         logger.error("Error reviewing approval: %s", e, exc_info=True)

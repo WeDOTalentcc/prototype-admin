@@ -100,6 +100,8 @@ _company_gate: str = Depends(require_company_id)):
             period_end=date_to,
             top_actions=stats["top_actions"],
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting audit stats: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -151,6 +153,8 @@ _company_gate: str = Depends(require_company_id)):
             media_type="text/csv",
             headers={"Content-Disposition": f"attachment; filename={filename}"},
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error exporting audit logs: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -167,6 +171,8 @@ async def list_retention_policies(db: AsyncSession = Depends(get_db), company_id
             policies=[AuditRetentionPolicyResponse(**p.to_dict()) for p in policies],
             total=len(policies),
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing retention policies: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -184,6 +190,8 @@ async def seed_retention_policies(db: AsyncSession = Depends(get_db), company_id
             skipped_count=skipped_count,
             message=f"Created {created_count} policies, skipped {skipped_count} existing",
         )
+    except HTTPException:
+        raise
     except Exception as e:
         await db.rollback()
         logger.error(f"Error seeding retention policies: {e}", exc_info=True)
@@ -276,6 +284,8 @@ _company_gate: str = Depends(require_company_id)):
             offset=offset,
             has_more=(offset + limit) < total,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing audit logs: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -327,6 +337,8 @@ company_id: str = Depends(require_company_id)):
             "retention_until": retention_until,
         })
         return AuditLogResponse(**log.to_dict())
+    except HTTPException:
+        raise
     except Exception as e:
         await db.rollback()
         logger.error(f"Error creating audit log: {e}", exc_info=True)

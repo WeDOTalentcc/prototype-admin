@@ -248,6 +248,42 @@ company_id: str = Depends(require_company_id)):
     }
 
 
+# ─── Static path BEFORE /{template_id} catch-all ──────────────────────────
+# Onda 2.2 fix (2026-05-23): FastAPI evaluates routes in declaration order.
+# /{template_id} would match "brazilian-market" first and try UUID() → 500.
+# Static paths sob /job-templates devem vir ANTES do catch-all.
+@router.get("/brazilian-market", response_model=None)
+async def get_brazilian_market_templates(company_id: str = Depends(require_company_id)):
+    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+    """
+    Get all curated Brazilian market templates.
+
+    Returns templates without database lookup - useful for preview/documentation.
+    """
+    from app.data.loader import get_brazilian_templates as _get_br
+    BRAZILIAN_TEMPLATES = _get_br()
+
+    return {
+        "success": True,
+        "count": len(BRAZILIAN_TEMPLATES),
+        "templates": [
+            {
+                "id": t["id"],
+                "title": t["title"],
+                "department": t.get("department"),
+                "seniority": t.get("seniority"),
+                "location": t.get("location"),
+                "work_model": t.get("work_model"),
+                "skills_count": len(t.get("technical_skills", [])),
+                "behavioral_count": len(t.get("behavioral_competencies", [])),
+                "wsi_questions_count": len(t.get("wsi_questions", [])),
+                "salary_range": f"R$ {t.get('salary_min', 0)//1000}k - {t.get('salary_max', 0)//1000}k"
+            }
+            for t in BRAZILIAN_TEMPLATES
+        ]
+    }
+
+
 @router.get("/{template_id}", response_model=TemplateResponse)
 async def get_template(
     template_id: str,
@@ -430,35 +466,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
     }
 
 
-@router.get("/brazilian-market", response_model=None)
-async def get_brazilian_market_templates(company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """
-    Get all curated Brazilian market templates.
-    
-    Returns templates without database lookup - useful for preview/documentation.
-    """
-    from app.data.loader import get_brazilian_templates as _get_br; BRAZILIAN_TEMPLATES = _get_br()
-    
-    return {
-        "success": True,
-        "count": len(BRAZILIAN_TEMPLATES),
-        "templates": [
-            {
-                "id": t["id"],
-                "title": t["title"],
-                "department": t.get("department"),
-                "seniority": t.get("seniority"),
-                "location": t.get("location"),
-                "work_model": t.get("work_model"),
-                "skills_count": len(t.get("technical_skills", [])),
-                "behavioral_count": len(t.get("behavioral_competencies", [])),
-                "wsi_questions_count": len(t.get("wsi_questions", [])),
-                "salary_range": f"R$ {t.get('salary_min', 0)//1000}k - {t.get('salary_max', 0)//1000}k"
-            }
-            for t in BRAZILIAN_TEMPLATES
-        ]
-    }
+# Note: GET /brazilian-market handler moved above @router.get("/{template_id}")
+# to avoid FastAPI route ordering collision (Onda 2.2 fix 2026-05-23).
 
 
 @router.post("/import/esco", response_model=None)

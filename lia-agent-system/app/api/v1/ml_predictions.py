@@ -133,6 +133,8 @@ company_id: str = Depends(require_company_id)):
             model_version=prediction.model_version
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
 
@@ -215,6 +217,8 @@ company_id: str = Depends(require_company_id)):
             factors=prediction.factors
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
 
@@ -260,6 +264,8 @@ company_id: str = Depends(require_company_id)):
             confidence_level=prediction.confidence_level
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
 
@@ -292,6 +298,8 @@ company_id: str = Depends(require_company_id)):
             confidence=insights["confidence"]
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Insights failed: {str(e)}")
 

@@ -78,6 +78,8 @@ company_id: str = Depends(require_company_id)):
         raise HTTPException(status_code=403, detail=str(e))
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error transitioning candidate: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -135,6 +137,8 @@ company_id: str = Depends(require_company_id)):
             "history": history,
             "total": len(history)
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting candidate history: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -258,6 +262,8 @@ company_id: str = Depends(require_company_id)):
             ai_powered=False,
             layer=1,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error interpreting transition context: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

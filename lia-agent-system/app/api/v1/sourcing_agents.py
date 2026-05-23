@@ -102,6 +102,8 @@ company_id: str = Depends(require_company_id)):
         query = query.order_by(SourcingAgent.created_at.desc())
         result = await db.execute(query)
         agents = result.scalars().all()
+    except HTTPException:
+        raise
     except Exception as exc:
         logger.error(
             "sourcing_agents.list_failed company_id=%s job_id=%s talent_pool_id=%s status=%s error=%s",

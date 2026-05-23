@@ -59,6 +59,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             skip=skip,
             limit=limit,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing hiring plans: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -76,6 +78,8 @@ company_id: str = Depends(require_company_id)):
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created hiring plan: {plan.name} for fiscal year {plan.fiscal_year}")
         return plan
+    except HTTPException:
+        raise
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error creating hiring plan: {e}")
@@ -490,6 +494,8 @@ async def download_import_template(company_id: str = Depends(require_company_id)
             media_type="text/csv",
             headers={"Content-Disposition": "attachment; filename=workforce_import_template.csv"},
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error generating import template: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -608,6 +614,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             by_priority=by_priority,
             positions_at_risk=positions_at_risk,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting workforce stats: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -662,6 +670,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "total_upcoming": sum(t["total_positions"] for t in timeline),
             "months_covered": months_ahead,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting hiring timeline: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -739,6 +749,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "summary": summary,
             "generated_at": datetime.utcnow().isoformat(),
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting workforce alerts: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -819,6 +831,8 @@ company_id: str = Depends(require_company_id)):
         )
         logger.info(f"Workforce entries saved for year {data.year}")
         return [e.to_dict() for e in entries]
+    except HTTPException:
+        raise
     except Exception as e:
         await repo.rollback()
         logger.error(f"Error saving workforce entries: {e}")
@@ -913,6 +927,8 @@ async def download_workforce_entries_import_template(company_id: str = Depends(r
             media_type="text/csv",
             headers={"Content-Disposition": "attachment; filename=workforce_entries_import_template.csv"},
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error generating workforce entries import template: {e}")
         raise HTTPException(status_code=500, detail=str(e))

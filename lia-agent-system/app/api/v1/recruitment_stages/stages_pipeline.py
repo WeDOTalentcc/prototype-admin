@@ -94,6 +94,8 @@ company_id: str = Depends(require_company_id)):
             "stages_created": len(stages),
             "ats_mappings_created": ats_mappings_created
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error initializing stages: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -146,6 +148,8 @@ company_id: str = Depends(require_company_id)):
         )
         return {"success": True, "inserted": inserted_total}
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("[sync_canonical] error: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -161,6 +165,8 @@ company_id: str = Depends(require_company_id)):
         effective_company_id = get_user_company_id(current_user)
         pipeline = await _get_company_pipeline(effective_company_id, stage_repo, sub_status_repo)
         return {"pipeline": pipeline, "total": len(pipeline)}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting company pipeline: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

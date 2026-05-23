@@ -110,6 +110,8 @@ company_id: str = Depends(require_company_id)):
             execution_plan=getattr(chat_response, "execution_plan", None),
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"[TalentChat] Error: {e}", exc_info=True)
         raise HTTPException(

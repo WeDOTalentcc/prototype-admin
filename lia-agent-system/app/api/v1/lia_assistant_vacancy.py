@@ -96,6 +96,8 @@ company_id: str = Depends(require_company_id)) -> VacancySearchResponse:
             message=message
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error in Fast Track vacancy search: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -149,6 +151,8 @@ company_id: str = Depends(require_company_id)) -> VacancyCriteriaExtractionRespo
             message=message
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error extracting vacancy criteria: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

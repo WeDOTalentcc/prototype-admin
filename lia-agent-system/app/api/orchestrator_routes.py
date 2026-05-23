@@ -131,6 +131,8 @@ company_id: str = Depends(require_company_id)):
             error=result.get("error")
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"❌ Orchestrator API error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -233,6 +235,8 @@ async def execute_tool(request: ExecuteToolRequest, company_id: str = Depends(re
             affected_entities=result.affected_entities
         )
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"❌ Tool execution error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

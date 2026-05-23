@@ -52,6 +52,8 @@ async def analyze_candidates(request: AnalysisRequest, company_id: str = Depends
     except ValueError as e:
         logger.error(f"Configuration error: {e}")
         raise HTTPException(status_code=503, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Analysis failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")

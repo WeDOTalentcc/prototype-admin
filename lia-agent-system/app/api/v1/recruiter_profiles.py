@@ -108,6 +108,8 @@ company_id: str = Depends(require_company_id)):
             experience_level=profile.experience_level or "beginner",
             profile_version=profile.profile_version or 1,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting recruiter profile: {e}")
         raise HTTPException(status_code=500, detail="Error retrieving profile")
@@ -137,6 +139,8 @@ company_id: str = Depends(require_company_id)):
             allow_behavior_learning=settings.allow_behavior_learning,
             preferred_language=settings.preferred_language or "pt-BR",
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting settings: {e}")
         raise HTTPException(status_code=500, detail="Error retrieving settings")
@@ -173,6 +177,8 @@ company_id: str = Depends(require_company_id)):
             allow_behavior_learning=settings.allow_behavior_learning,
             preferred_language=settings.preferred_language or "pt-BR",
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error updating settings: {e}")
         raise HTTPException(status_code=500, detail="Error updating settings")
@@ -210,6 +216,8 @@ company_id: str = Depends(require_company_id)):
             )
             for p in preferences
         ]
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting field preferences: {e}")
         raise HTTPException(status_code=500, detail="Error retrieving field preferences")
@@ -239,6 +247,8 @@ company_id: str = Depends(require_company_id)):
             field_adjustments=thresholds.get("field_adjustments", {}),
             experience_adjustment=thresholds.get("experience_adjustment", 0.0),
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting thresholds: {e}")
         raise HTTPException(status_code=500, detail="Error calculating thresholds")
@@ -280,6 +290,8 @@ company_id: str = Depends(require_company_id)):
         )
         
         return {"recorded": True, "event_id": str(event.id)}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error recording event: {e}")
         raise HTTPException(status_code=500, detail="Error recording event")
@@ -308,6 +320,8 @@ company_id: str = Depends(require_company_id)):
             "experience_level": profile.experience_level,
             "wizard_mode": profile.wizard_mode,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error recalculating profile: {e}")
         raise HTTPException(status_code=500, detail="Error recalculating profile")
@@ -330,6 +344,8 @@ company_id: str = Depends(require_company_id)):
         )
         
         return {"deleted": True, "message": "All personalization data has been deleted"}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error deleting data: {e}")
         raise HTTPException(status_code=500, detail="Error deleting personalization data")

@@ -111,6 +111,8 @@ _company_gate: str = Depends(require_company_id)) -> BiasAuditReportResponse:
             db, job_id, company_id=UUID(company_id)
         )
         return _to_response(report)
+    except HTTPException:
+        raise
     except Exception as exc:
         logger.error("bias_audit/job/%s erro: %s", job_id, exc)
         raise HTTPException(status_code=500, detail="Erro ao calcular auditoria de viés")
@@ -139,6 +141,8 @@ _company_gate: str = Depends(require_company_id)):
             "history": [s.to_dict() for s in snapshots],
             "count": len(snapshots),
         }
+    except HTTPException:
+        raise
     except Exception as exc:
         logger.error("bias_audit/job/%s/history erro: %s", job_id, exc)
         raise HTTPException(status_code=500, detail="Erro ao buscar histórico de auditoria")

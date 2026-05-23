@@ -161,6 +161,8 @@ company_id: str = Depends(require_company_id)):
 
         return response
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error in WSI screening pipeline: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

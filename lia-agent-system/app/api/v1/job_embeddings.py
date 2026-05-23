@@ -94,6 +94,8 @@ async def create_embedding(request: CreateEmbeddingRequest, company_id: str = De
         
         return result
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating embedding: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -126,6 +128,8 @@ async def find_similar_jobs(request: SimilarJobsRequest, company_id: str = Depen
             "count": len(similar_jobs)
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error finding similar jobs: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -159,6 +163,8 @@ async def get_fast_track_suggestions(request: FastTrackRequest, company_id: str 
             "message": f"Found {len(suggestions)} Fast Track options" if suggestions else "No similar jobs found yet"
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting Fast Track suggestions: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -220,6 +226,8 @@ async def batch_process_embeddings(request: BatchProcessRequest, company_id: str
         
         return result
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error batch processing embeddings: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -238,6 +246,8 @@ async def get_embedding_stats(company_id: str, _company_gate: str = Depends(requ
             **stats
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting embedding stats: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -277,6 +287,8 @@ async def record_fast_track_usage(request: FastTrackUsageRequest, company_id: st
         )
         return result
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error recording Fast Track usage: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -303,6 +315,8 @@ async def update_job_outcome(request: OutcomeUpdateRequest, company_id: str = De
         )
         return result
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error updating job outcome: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -325,6 +339,8 @@ async def get_fast_track_insights(company_id: str, _company_gate: str = Depends(
         insights = await job_embedding_service.get_fast_track_insights(company_id)
         return insights
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting Fast Track insights: {e}")
         raise HTTPException(status_code=500, detail=str(e))

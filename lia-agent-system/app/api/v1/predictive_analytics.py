@@ -68,6 +68,8 @@ company_id: str = Depends(require_company_id)):
             "success": True,
             "data": dashboard
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error generating dashboard: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -102,6 +104,8 @@ company_id: str = Depends(require_company_id)):
             "success": True,
             "data": prediction
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error predicting hiring probability: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -127,6 +131,8 @@ company_id: str = Depends(require_company_id)):
             "success": True,
             "data": prediction
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error predicting hiring probability: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -159,6 +165,8 @@ company_id: str = Depends(require_company_id)):
             "success": True,
             "data": prediction
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error predicting time to fill: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -182,6 +190,8 @@ company_id: str = Depends(require_company_id)):
             "success": True,
             "data": prediction
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error predicting time to fill: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -214,6 +224,8 @@ company_id: str = Depends(require_company_id)):
             "success": True,
             "data": prediction
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error predicting dropout risk: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -239,6 +251,8 @@ company_id: str = Depends(require_company_id)):
             "success": True,
             "data": prediction
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error predicting dropout risk: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -271,6 +285,8 @@ company_id: str = Depends(require_company_id)):
             "success": True,
             "data": forecast
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error generating pipeline forecast: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -296,6 +312,8 @@ company_id: str = Depends(require_company_id)):
             "success": True,
             "data": forecast
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error generating pipeline forecast: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

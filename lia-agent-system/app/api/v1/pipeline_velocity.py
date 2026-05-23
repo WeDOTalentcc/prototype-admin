@@ -54,6 +54,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "success": True,
             "data": metrics,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"pipeline_velocity endpoint error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Erro ao calcular métricas de velocidade")
@@ -85,6 +87,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "total": len(bottlenecked),
             "data": bottlenecked,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"velocity_bottlenecks endpoint error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Erro ao buscar candidatos em gargalo")

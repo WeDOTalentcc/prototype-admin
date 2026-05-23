@@ -152,6 +152,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "templates": [t.to_dict() for t in templates],
             "total": len(templates),
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing templates: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -174,6 +176,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             is_default=is_default,
         )
         return {"template": template.to_dict(), "message": "Template created successfully"}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating template: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -251,6 +255,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "count": len(names),
             "templates": names,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error initializing templates: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -275,6 +281,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "slas": [s.to_dict() for s in slas],
             "total": len(slas),
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing SLAs: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -294,6 +302,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             sla_data["stage_id"] = uuid.UUID(sla_data["stage_id"])
         sla = await repo.create_sla(company_id=uuid.UUID(company_id), data=sla_data)
         return {"sla": sla.to_dict(), "message": "SLA created successfully"}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating SLA: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -371,6 +381,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "count": len(names),
             "slas": names,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error initializing SLAs: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -403,6 +415,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "limit": limit,
             "offset": offset,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting SLA violations: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -429,6 +443,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "automations": [a.to_dict() for a in automations],
             "total": len(automations),
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing automations: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -448,6 +464,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             data=data.dict(),
         )
         return {"automation": automation.to_dict(), "message": "Automation created successfully"}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating automation: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -537,6 +555,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "count": len(names),
             "automations": names,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error initializing automations: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -605,6 +625,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "company_template": company_template.to_dict() if company_template else None,
             "all_types": [t.value for t in TemplateType],
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error suggesting template: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -668,6 +690,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
                 "most_violated_stages": list(set([v.stage_name for v in violations[:5]])),
             },
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error optimizing SLA: {e}")
         raise HTTPException(status_code=500, detail=str(e))

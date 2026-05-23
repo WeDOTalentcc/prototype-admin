@@ -259,6 +259,8 @@ async def analyze_search_results(request: AnalyzeSearchRequest, company_id: str 
             narrative=analytics.get("narrative")
         )
     
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Search analysis failed: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")

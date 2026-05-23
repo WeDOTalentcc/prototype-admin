@@ -377,6 +377,8 @@ async def generate_questions(
             questions=[q.dict() for q in questions],
             total_questions=len(questions)
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to generate questions: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to generate questions: {str(e)}")
@@ -444,6 +446,8 @@ async def analyze_response(
             final_score=analysis.final_score,
             justification=analysis.justification
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to analyze response: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to analyze response: {str(e)}")
@@ -515,6 +519,8 @@ async def calculate_wsi(
             classification=wsi_result.classification,
             percentile=wsi_result.percentile
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to calculate WSI: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to calculate WSI: {str(e)}")
@@ -603,6 +609,8 @@ async def get_candidate_results(
                 for r in results
             ]
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to get candidate results: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to get candidate results: {str(e)}")
@@ -747,6 +755,8 @@ async def get_vacancy_ranking(
                 for r in rows
             ]
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to get vacancy ranking: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to get vacancy ranking: {str(e)}")
@@ -774,6 +784,8 @@ async def get_candidate_ranking_in_vacancy(
             "total": int(row[1]),
             "overall_wsi": float(row[2])
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to get candidate ranking: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to get candidate ranking: {str(e)}")
@@ -841,6 +853,8 @@ async def start_voice_screening(
             status=result.status,
             questions_generated=result.questions_generated
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to start voice screening: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to start voice screening: {str(e)}")
@@ -1244,6 +1258,8 @@ Responda APENAS com JSON válido:
     except json.JSONDecodeError as e:
         logger.error(f"Failed to parse LLM response as JSON: {e}")
         raise HTTPException(status_code=500, detail="Failed to parse AI response")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to generate screening questions: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to generate screening questions: {str(e)}")
@@ -1437,6 +1453,8 @@ async def get_candidates_wsi_scores(
             }
 
         return {"candidates": candidates}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to get candidates WSI scores: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Failed to get candidates WSI scores: {str(e)}")

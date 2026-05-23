@@ -83,6 +83,8 @@ company_id: str = Depends(require_company_id)):
             has_minimum_data=report.has_minimum_data,
             recommendations=report.recommendations,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting data quality: {e}")
         raise HTTPException(status_code=500, detail="Error assessing data quality")
@@ -127,6 +129,8 @@ company_id: str = Depends(require_company_id)):
             "correlations_count": len(context.correlations),
             "time_to_fill_prediction": context.time_to_fill_prediction,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting intelligence context: {e}")
         raise HTTPException(status_code=500, detail="Error building intelligence context")
@@ -166,6 +170,8 @@ company_id: str = Depends(require_company_id)):
             adjustments_applied=adjustments,
             confidence_adjustment=confidence_adj,
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error adjusting field: {e}")
         raise HTTPException(status_code=500, detail="Error applying pattern adjustment")
@@ -210,6 +216,8 @@ company_id: str = Depends(require_company_id)):
             "insights": enhancements.get("insights", []),
             "warnings": enhancements.get("warnings", []),
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting wizard enhancements: {e}")
         raise HTTPException(status_code=500, detail="Error generating wizard enhancements")
@@ -260,6 +268,8 @@ company_id: str = Depends(require_company_id)):
                 "sample_size": profile.sample_size,
             },
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting success profile: {e}")
         raise HTTPException(status_code=500, detail="Error retrieving success profile")
@@ -309,6 +319,8 @@ company_id: str = Depends(require_company_id)):
             ],
             "count": len(correlations),
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting correlations: {e}")
         raise HTTPException(status_code=500, detail="Error retrieving correlations")

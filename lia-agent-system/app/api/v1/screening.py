@@ -221,6 +221,8 @@ company_id: str = Depends(require_company_id)) -> ScreeningQuestionResponse:
 
         return response
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error generating screening questions: {e}")
         raise HTTPException(
@@ -309,6 +311,8 @@ company_id: str = Depends(require_company_id)) -> list[ScreeningQuestion]:
 
         return final_questions
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error regenerating questions: {e}")
         raise HTTPException(
@@ -387,6 +391,8 @@ company_id: str = Depends(require_company_id)):
             status_code=202,
             content={"task_id": str(task.id), "status": "pending"},
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to create auto-screening task: {e}")
         await repo.rollback()
@@ -402,6 +408,8 @@ company_id: str = Depends(require_company_id)):
     try:
         tasks = await repo.list_tasks_by_job(job_id)
         return {"job_id": job_id, "tasks": [t.to_dict() for t in tasks], "total": len(tasks)}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to list screening tasks for job {job_id}: {e}")
         raise HTTPException(status_code=500, detail="Failed to list screening tasks")

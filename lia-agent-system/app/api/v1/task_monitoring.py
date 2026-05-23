@@ -63,6 +63,8 @@ async def submit_task(request: TaskSubmitRequest, current_user: User = Depends(g
             metadata=request.metadata,
         )
         return {"task_id": task_id, "status": "submitted"}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to submit task: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -74,6 +76,8 @@ async def get_stats(current_user: User = Depends(get_current_user_or_demo), comp
     try:
         manager = EnhancedTaskManager.get_instance()
         return await manager.get_enhanced_stats()
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to get stats: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -101,6 +105,8 @@ company_id: str = Depends(require_company_id)):
             offset=offset,
         )
         return {"tasks": history, "count": len(history), "limit": limit, "offset": offset}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to get task history: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -118,6 +124,8 @@ company_id: str = Depends(require_company_id)):
         scheduler = TaskScheduler.get_instance()
         schedules = await scheduler.list_schedules(active_only=active_only, limit=limit, offset=offset)
         return {"schedules": schedules, "count": len(schedules)}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to list schedules: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -143,6 +151,8 @@ async def create_schedule(request: ScheduleCreateRequest, current_user: User = D
         return {"schedule": schedule, "status": "created"}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to create schedule: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -179,6 +189,8 @@ company_id: str = Depends(require_company_id)):
             resolved=resolved, domain_id=domain_id, limit=limit, offset=offset
         )
         return {"entries": entries, "count": len(entries)}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Failed to list DLQ: {e}")
         raise HTTPException(status_code=500, detail=str(e))

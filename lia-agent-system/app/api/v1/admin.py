@@ -252,6 +252,8 @@ company_id: str = Depends(require_company_id)):
             "message": f"Seeding completed. Created: {total_created}, Skipped: {total_skipped}",
             "results": results,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Seeding failed: %s", str(e))
         raise HTTPException(
@@ -281,6 +283,8 @@ company_id: str = Depends(require_company_id)):
             "message": f"Task templates seeded. Created: {results['created']}, Skipped: {results['skipped']}",
             "results": results,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Task template seeding failed: %s", str(e))
         raise HTTPException(
@@ -310,6 +314,8 @@ company_id: str = Depends(require_company_id)):
             "message": f"Alert rules seeded. Created: {results['created']}, Skipped: {results['skipped']}",
             "results": results,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Alert rule seeding failed: %s", str(e))
         raise HTTPException(

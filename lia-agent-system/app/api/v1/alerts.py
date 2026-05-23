@@ -243,6 +243,8 @@ _company_gate: str = Depends(require_company_id)):
             alerts=DEFAULT_ALERTS,
             briefing_frequency="daily"
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching alert config: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to fetch alert config: {str(e)}")
@@ -307,6 +309,8 @@ _company_gate: str = Depends(require_company_id)):
             alerts=cast(list[dict[Any, Any]], updated.alerts),
             briefing_frequency=cast(str, updated.briefing_frequency)
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error updating alert config: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -407,6 +411,8 @@ _company_gate: str = Depends(require_company_id)):
             "user_id": user_id,
             "company_id": company_id
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching alert preferences: {e}")
         raise HTTPException(status_code=500, detail=f"Failed to fetch alert preferences: {str(e)}")

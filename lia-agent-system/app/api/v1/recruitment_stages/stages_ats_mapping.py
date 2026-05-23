@@ -41,6 +41,8 @@ company_id: str = Depends(require_company_id)):
             "mappings": [m.to_dict() for m in mappings],
             "total": len(mappings)
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing ATS mappings: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -71,6 +73,8 @@ company_id: str = Depends(require_company_id)):
         })
 
         return new_mapping.to_dict()
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating ATS mapping: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -94,6 +98,8 @@ company_id: str = Depends(require_company_id)):
         await ats_repo.soft_delete(uuid.UUID(mapping_id))
 
         return {"success": True, "deleted": mapping_id}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error deleting ATS mapping: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))

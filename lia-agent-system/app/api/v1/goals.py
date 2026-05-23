@@ -127,6 +127,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             limit=limit,
         )
         return goals
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing goals: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -172,6 +174,8 @@ company_id: str = Depends(require_company_id)):
                 grouped[goal.period].append(goal_data)
 
         return grouped
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting goals for user {user_id}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -218,6 +222,8 @@ company_id: str = Depends(require_company_id)):
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created goal: {goal.name} for user {goal.user_id}")
         return goal
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating goal: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -287,6 +293,8 @@ company_id: str = Depends(require_company_id)):
             "message": f"Created {len(created_goals)} goals",
             "goals": [GoalResponse.model_validate(g) for g in created_goals],
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating goals in bulk: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -308,6 +316,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             include_inactive=include_inactive,
         )
         return templates
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error listing goal templates: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -326,6 +336,8 @@ company_id: str = Depends(require_company_id)):
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.info(f"Created goal template: {template.name}")
         return template
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error creating goal template: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -431,6 +443,8 @@ company_id: str = Depends(require_company_id)):
             "created": created,
             "skipped": skipped,
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error seeding goal templates: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -524,6 +538,8 @@ async def download_goals_import_template(company_id: str = Depends(require_compa
             media_type="text/csv",
             headers={"Content-Disposition": "attachment; filename=goals_import_template.csv"},
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error generating goals import template: {e}")
         raise HTTPException(status_code=500, detail=str(e))

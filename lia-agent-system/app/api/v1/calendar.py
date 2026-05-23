@@ -92,6 +92,8 @@ async def check_availability(request: AvailabilityRequest, company_id: str = Dep
             for slot in slots
         ]
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error checking availability: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -115,6 +117,8 @@ async def find_meeting_times(request: FindMeetingTimeRequest, company_id: str = 
         
         return suggestions
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error finding meeting times: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -178,6 +182,8 @@ company_id: str = Depends(require_company_id)):
             "event": event
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error scheduling interview: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -234,6 +240,8 @@ async def reschedule_interview(request: RescheduleInterviewRequest, company_id: 
             "event": updated_event
         }
         
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error rescheduling interview: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -321,6 +329,8 @@ async def google_check_availability(request: GoogleAvailabilityRequest, company_
             end=request.end,
         )
         return {"slots": [s.to_dict() for s in slots]}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Error checking Google Calendar availability: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -350,6 +360,8 @@ async def google_schedule_interview(request: GoogleScheduleInterviewRequest, com
             organizer_email=request.organizer_email,
         )
         return {"status": "scheduled", "event": event}
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Error scheduling Google Calendar interview: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -526,6 +538,8 @@ async def google_oauth_callback(
 
     except ImportError:
         raise HTTPException(status_code=500, detail="google-auth-oauthlib required. pip install google-auth-oauthlib")
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Error in Google OAuth callback: %s", e, exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
@@ -736,6 +750,8 @@ async def microsoft_oauth_status(
         async with AsyncSessionLocal() as db:
             repo = CalendarCredentialsRepository(db)
             creds = await repo.get_credentials(uuid.UUID(company_id), "microsoft")
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -791,6 +807,8 @@ async def google_oauth_status(
         async with AsyncSessionLocal() as db:
             repo = CalendarCredentialsRepository(db)
             creds = await repo.get_credentials(uuid.UUID(company_id), "google")
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

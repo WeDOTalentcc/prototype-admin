@@ -61,6 +61,8 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             "suggestions": [s.to_dict() for s in suggestions]
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error fetching pending suggestions: {e}", exc_info=True)
         raise HTTPException(
@@ -219,6 +221,8 @@ company_id: str = Depends(require_company_id)):
             "failed_ids": failed_ids
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error in bulk approve: {e}", exc_info=True)
         raise HTTPException(
@@ -270,6 +274,8 @@ company_id: str = Depends(require_company_id)):
             "rejection_reason": request.reason
         }
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error in bulk reject: {e}", exc_info=True)
         raise HTTPException(
@@ -297,6 +303,8 @@ company_id: str = Depends(require_company_id)):
             "success": True,
             "suggestions": [s.to_dict() for s in suggestions]
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting AI suggestions by vacancy: {e}")
         raise HTTPException(status_code=500, detail=str(e))
@@ -321,6 +329,8 @@ company_id: str = Depends(require_company_id)):
             "success": True,
             "suggestions": [s.to_dict() for s in suggestions]
         }
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Error getting AI suggestions by candidate: {e}")
         raise HTTPException(status_code=500, detail=str(e))
