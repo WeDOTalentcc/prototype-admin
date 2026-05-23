@@ -1,12 +1,15 @@
 /**
  * CreateAgentWizard — types canonical
  *
- * UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 T1+T3:
+ * UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 T1+T3+T4:
  * - T1: unifica os ~9 CTAs "Criar Agente" espalhados nas tabs do Estudio
  *   em um único wizard goal-first.
  * - T3: promove "Criar com IA" de BETA-escondido para hero CTA do passo 2,
  *   chamando POST /api/backend-proxy/custom-agents/generate (que mapeia
  *   pra POST /api/v1/custom-agents/generate-from-description no FastAPI).
+ * - T4: aceita `initialConfig` (template_id + goal + nome pre-populado)
+ *   para o pattern clone-first do TemplateClonePanel. Quando presente,
+ *   o wizard pula goal+approach e abre direto no step 3 (Configurar).
  *
  * Os modais existentes (CreateAgentModal sourcing, CreateDigitalTwinModal,
  * TemplatePreviewModal) seguem montados como entry-points alternativos.
@@ -42,6 +45,26 @@ export interface GeneratedConfigPreview {
   reasoning?: string
 }
 
+/**
+ * T4 — Clone-first pre-population.
+ *
+ * Passado por TemplateClonePanel quando o recruiter clica "Clonar e customizar".
+ * Quando `templateId` está presente, o wizard:
+ *   1. Pula step 1 (goal já inferido da categoria do template)
+ *   2. Pula step 2 (approach='template' já decidido)
+ *   3. Abre direto step 3 (Configurar) com nome "(cópia)" e campos populados
+ *
+ * Não substitui `initialGoal` — quando ambos vierem, `initialConfig` ganha.
+ */
+export interface CreateAgentInitialConfig {
+  goal?: AgentGoal
+  approach?: AgentApproach
+  templateId?: string
+  name?: string
+  description?: string
+  aiDescription?: string
+}
+
 export interface CreateAgentWizardProps {
   open: boolean
   onClose: () => void
@@ -49,6 +72,11 @@ export interface CreateAgentWizardProps {
   onCreated?: (agentId: string) => void
   /** Optional pre-selected goal — when opened from a goal-specific CTA. */
   initialGoal?: AgentGoal
+  /**
+   * T4 — clone-first pre-population. When `templateId` is set, wizard skips
+   * goal+approach and opens at step 3 (Configurar). See {@link CreateAgentInitialConfig}.
+   */
+  initialConfig?: CreateAgentInitialConfig
 }
 
 /**
@@ -110,4 +138,41 @@ export function filterTemplatesByGoal(
   )
 
   return tagFiltered.length > 0 ? tagFiltered : inCategory
+}
+
+/**
+ * T4 — Infer a goal from a template's category/tags for clone-first flow.
+ *
+ * When TemplateClonePanel clones a template into the wizard, we pre-populate
+ * `goal` so the wizard's downstream steps (config + preview) keep contextual
+ * copy + behavior. Falls back to "outro" for ambiguous templates.
+ */
+export function inferGoalFromTemplate(template: AgentTemplate): AgentGoal {
+  const tags = (template.tags ?? []).map((t) => t.toLowerCase())
+
+  // Tag-based heuristics first (more specific than category)
+  if (tags.some((t) => ["cultura", "valores", "soft-skills"].includes(t))) {
+    return "screening_cultural"
+  }
+  if (tags.some((t) => ["whatsapp", "voz", "voice", "comunicacao"].includes(t))) {
+    return "voz_whatsapp"
+  }
+  if (tags.some((t) => ["sourcing", "passivo", "linkedin", "pool"].includes(t))) {
+    return "sourcing_ativo"
+  }
+  if (tags.some((t) => ["triagem", "screening", "tech", "volume"].includes(t))) {
+    return "triagem_inicial"
+  }
+
+  // Category fallback
+  switch (template.category) {
+    case "screening":
+      return "triagem_inicial"
+    case "sourcing":
+      return "sourcing_ativo"
+    case "communication":
+      return "voz_whatsapp"
+    default:
+      return "outro"
+  }
 }

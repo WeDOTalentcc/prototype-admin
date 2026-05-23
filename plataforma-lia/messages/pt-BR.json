@@ -2548,7 +2548,15 @@
       "temperatureLabel": "Temperatura",
       "templatePreviewDesc": "Inspecione o template antes de usá-lo",
       "templatePreviewNameHelp": "Nome do agente baseado neste template",
-      "templatePreviewTitle": "Pré-visualizar template"
+      "templatePreviewTitle": "Pré-visualizar template",
+      "noToolsConfigured": "Nenhuma ferramenta configurada",
+      "personaLabel": "Persona / Domínio",
+      "categoryLabel": "Categoria",
+      "configLabel": "Configuração",
+      "memoryLabel": "Memória habilitada",
+      "memoryYes": "Sim",
+      "memoryNo": "Não",
+      "cloneAndCustomize": "Clonar e customizar"
     },
     "digitalTwin": {
       "active": "Ativo",

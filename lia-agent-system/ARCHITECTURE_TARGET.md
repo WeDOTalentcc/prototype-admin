@@ -332,3 +332,45 @@ Apos todas as fases, testar:
 Documento aprovado em 2026-04-12.
 Implementacao inicia por Fases 1 e 2 em paralelo.
 Feature flags garantem rollout seguro.
+
+
+---
+
+## 2026-05-23 · Wave 1+2 + Sprint X.A progress
+
+**Wave 1 Compliance Emergencial · 100% closed (7/7)**
+- W1-001 Agent registry canonical (Phase A) · `5a2c883b4`
+- W1-002 BaseAgent legacy delete · `2cf3aef1e` · −517 LOC
+- W1-003 PolicyEngine V1 delete · `4b697255b` · −176 LOC
+- W1-004 ToolExecutor governance (Phase A · Steps 2/7/8) · `293ea1c85`
+- W1-005 PromptInjectionGuard hardening · `b4e08cfd7`
+- W1-006 Audit hash chain (part 1) · `6a33cd63b` + `42c96c175`
+- W1-007 HateSpeechGuard pt-BR 5 layers · `c4330566a`
+
+**Sprint 2.1 · 100% closed (2/2)**
+- W2-008 Anthropic prompt caching · `d5965e214` · 50-80% LLM cost economy
+- W2-012 LGPD Art 33 region pinning (Phase A) · `bc7a64e27`
+
+**Sprint 2.2 · 100% closed (1/1)**
+- W2-009 Idempotency-Key Rails mutations · `9f9d9aba0`
+
+**Sprint 2.3 · Phase A**
+- W2-010 Canonical Rails client + OTel (Phase A) · `4a3339701`
+
+**Sprint X.A Quick Wins (Wave 3+4) · em progresso**
+- W3-013 Sentry PII 3→12 patterns · `6f9afca35`
+- W3-015 FactChecker result wired em c3b post · `ebd6d2381`
+- W3-016 LIA_DISABLE_C3B audit event · `ebd6d2381`
+- W3-026 partial ToolDefinition.version · `511b14047`
+- W3-028 LangSmith fail-fast em prod · `6f9afca35`
+- W3-029 Grafana counter names sensor · `511b14047`
+- W3-030 OutboxDrainerWorker lifespan wiring · `b3a6acf7f`
+- W4-031 requirements.txt deps pin · `b3a6acf7f`
+- W4-033 Dead code purge · `ac3f2caad` · −188,739 LOC
+
+**Stats acumulados:** 20 items canonical · 14+ sensores BLOCKING ·
+~140 TDD tests verde · −188k LOC líquido pós-W4-033.
+
+Pre-audit framework: 4 parallel agents recon antes de Wave 3 revelou
+diagnostic over-stated 14× recorrente — items canonical são
+significativamente menores que diagnostic sugere.

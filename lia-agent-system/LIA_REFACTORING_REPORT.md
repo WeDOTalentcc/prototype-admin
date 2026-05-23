@@ -427,3 +427,43 @@ Buscar nos logs estes prefixos para validar features:
 > **Arquivos modificados:** 52
 > **Arquivos novos:** 10
 > **Linhas de codigo de mudancas:** ~3.500
+
+
+---
+
+## 2026-05-23 · Wave 1+2 + Sprint X.A refactoring summary
+
+Refactor summary aplicado entre 2026-05-22 e 2026-05-23:
+
+| Sprint | Items | LOC Δ | Notas |
+|---|---|---|---|
+| Wave 1 (Compliance) | 7 (W1-001 → W1-007) | net +274 (sensores + tests) | -693 cleanup + +967 governance |
+| Sprint 2.1 | 2 (W2-008, W2-012) | +945 | Prompt caching + region pinning |
+| Sprint 2.2 | 1 (W2-009) | +389 | Idempotency-Key |
+| Sprint 2.3 | 1 (W2-010 Phase A) | +551 | Canonical Rails client + OTel |
+| Sprint X.A | 9 (W3-013/015/016/026p/028/029/030, W4-031/033) | -187,939 NET | W4-033 sozinho -188,739 |
+| **TOTAL** | **20 items** | **~-185k LOC** | **~140 TDD tests verde, 14+ sensores BLOCKING** |
+
+### Padrão recorrente do audit-first workflow
+- W1-002 diagnostic 2d → real 0.5d (4×)
+- W2-010 diagnostic 8d/2310 LOC → real 2.5h/~160 LOC (45×)
+- W4-033 diagnostic 1d/2k LOC → real 25min/188k LOC
+
+Audit profunda antes de cada item revelou: diagnostic é HIPOTESE,
+auditoria é VERDADE. Padrão: scope é over-stated; LOC é under-counted.
+
+### Sensores adicionados (anti-regressão permanente)
+- check_no_legacy_base_agent.py (W1-002)
+- check_no_v1_policy_engine.py (W1-003)
+- check_governance_executor_wired.py (W1-004)
+- check_c3b_wires_injection_guard.py (W1-005)
+- check_audit_hash_chain_exists.py (W1-006)
+- check_hate_speech_guard_wired.py (W1-007)
+- check_yaml_decorator_coherence.py + check_agents_registry_paths.py (W1-001)
+- check_lgpd_region_pinning.py (W2-012)
+- check_anthropic_prompt_caching.py (W2-008)
+- check_idempotency_key_in_rails_clients.py (W2-009)
+- check_rails_client_canonical_home.py (W2-010)
+- check_outbox_worker_wired.py (W3-030)
+- check_grafana_counter_names.py (W3-029)
+- check_no_bak_files.py (W4-033)

@@ -5,7 +5,11 @@ import { TwinsList, EvaluateWithTwinModal, CreateDigitalTwinModal } from "@/comp
 import MultiStrategySearchPanel from "@/components/pages-agent-studio/MultiStrategySearchPanel"
 import CustomAgentsTab from "@/components/pages-agent-studio/CustomAgentsTab"
 import { TemplateGallery, AgentCard as CustomAgentCard, AgentCardSkeleton, AgentDetailsPanel, DeployDialog, ConversationalCreator, TestDebugPanel, ApprovalsList } from "@/components/pages-agent-studio/custom-agents"
-import { TemplatePreviewModal } from "@/components/pages-agent-studio/custom-agents/template-preview-modal"
+// UX_AUDIT T4 (2026-05-21): TemplateClonePanel substitui TemplatePreviewModal como
+// entry-point primário do TemplateGallery (clone-first / HubSpot Breeze).
+// TemplatePreviewModal (Sprint B QW#5) preservado como export de custom-agents/
+// para outros entry-points que queiram um confirm-rápido sem o wizard.
+import { TemplateClonePanel } from "@/components/pages-agent-studio/template-clone"
 import { useCustomAgents } from "@/hooks/agents"
 import { useAgentStudioStore } from "@/stores/agent-studio-store"
 import type { CustomAgent, AgentTemplate } from "@/components/pages-agent-studio/custom-agents/types"
@@ -27,8 +31,8 @@ import { BetaBadge } from "@/components/ui/beta-badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { PageTabNavigation } from "@/components/ui/page-tab-navigation"
 import { TabSectionHeader } from "@/components/pages-agent-studio/TabSectionHeader"
-import { CreateAgentWizard } from "@/components/pages-agent-studio/create-agent-wizard"
-import type { AgentGoal } from "@/components/pages-agent-studio/create-agent-wizard"
+import { CreateAgentWizard, inferGoalFromTemplate } from "@/components/pages-agent-studio/create-agent-wizard"
+import type { AgentGoal, CreateAgentInitialConfig } from "@/components/pages-agent-studio/create-agent-wizard"
 import { useTranslations } from "next-intl"
 
 interface SourcingAgent {
@@ -102,16 +106,21 @@ export default function AgentStudioPage({
   const [templates, setTemplates] = useState<SectorTemplate[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
-  // UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 T1+T3: wizard goal-first unico
+  // UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 T1+T3+T4: wizard goal-first unico
   // (substitui as ~9 CTAs "Criar Agente" espalhadas pelas tabs).
+  // T4: aceita initialConfig (template_id + goal) para clone-first do TemplateClonePanel.
   const [wizardOpen, setWizardOpen] = useState(false)
   const [wizardInitialGoal, setWizardInitialGoal] = useState<AgentGoal | undefined>(undefined)
-  const openWizard = (goal?: AgentGoal) => {
+  const [wizardInitialConfig, setWizardInitialConfig] = useState<CreateAgentInitialConfig | undefined>(undefined)
+  const openWizard = (goal?: AgentGoal, config?: CreateAgentInitialConfig) => {
     setWizardInitialGoal(goal)
+    setWizardInitialConfig(config)
     setWizardOpen(true)
   }
   const [evaluatingTwinId, setEvaluatingTwinId] = useState<string | null>(null)
-  // Sprint B QW#5 audit 2026-05-22: preview modal antes do POST do template
+  // UX_AUDIT T4 (2026-05-21): previewTemplate aciona TemplateClonePanel (Sheet lateral).
+  // Sprint B QW#5 (Dialog confirm) preservado em TemplatePreviewModal, mas não montado
+  // a partir do TemplateGallery — o clone-first é o pattern canonical agora.
   const [previewTemplate, setPreviewTemplate] = useState<AgentTemplate | null>(null)
   // P0-6 audit 2026-05-21: CreateDigitalTwinModal estava orfão (não montada). Wiring canonical.
   const [showCreateTwinModal, setShowCreateTwinModal] = useState(false)
@@ -120,7 +129,7 @@ export default function AgentStudioPage({
   const [testAgent, setTestAgent] = useState<CustomAgent | null>(null)
   const [detailsAgent, setDetailsAgent] = useState<CustomAgent | null>(null)
   const { agents: customAgents, mutate: mutateCustomAgents } = useCustomAgents()
-  const { selectTemplate, reset: resetStudio } = useAgentStudioStore()
+  const { selectTemplate } = useAgentStudioStore()
   const [selectedTemplate, setSelectedTemplate] = useState<SectorTemplate | null>(null)
   // UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 T2: 5 tabs -> 3 tabs canonical.
   // - "my-agents" consolida Captacao + Personalizados + Gemeos via sub-tabs.
@@ -225,59 +234,37 @@ export default function AgentStudioPage({
     }
   }
 
-  // Sprint B QW#5 audit 2026-05-22: NÃO POSTa direto — abre TemplatePreviewModal
-  // pra recruiter revisar config + customizar nome ANTES de criar.
-  // Anti-pattern (POST silencioso) era sev 4 no diagnóstico Nielsen H#5/H#3.
+  // UX_AUDIT T4 (2026-05-21) — clone-first pattern HubSpot Breeze:
+  // template click NÃO cria agente (era POST direto Sprint B QW#5 com Dialog
+  // confirm). Em vez disso abre TemplateClonePanel (Sheet lateral direito) com
+  // preview rico. Sheet → "Clonar e customizar" → CreateAgentWizard com
+  // initialConfig pré-populado, skip pra step 3.
+  // Anti-pattern original (POST silencioso) era sev 4 no diagnóstico Nielsen H#5/H#3.
   const handleTemplateSelect = (template: AgentTemplate) => {
     selectTemplate(template)
     setPreviewTemplate(template)
   }
 
-  // Confirmação final do preview — agora sim POSTa
-  const handleTemplateConfirm = async (customized: AgentTemplate) => {
-    try {
-      const token = localStorage.getItem("auth_token")
-      const res = await fetch("/api/backend-proxy/custom-agents", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          name: customized.name,
-          role: customized.description,
-          description: customized.description,
-          system_prompt: customized.system_prompt,
-          allowed_tools: customized.allowed_tools,
-          domain: customized.domain,
-          icon: customized.icon,
-          max_steps: customized.max_steps,
-          temperature: customized.temperature,
-          enable_memory: customized.enable_memory,
-          context_level: customized.context_level,
-          excluded_tools: customized.excluded_tools,
-        }),
-      })
-      if (!res.ok) {
-        const errBody = await res.json().catch(() => ({}))
-        throw new Error(extractErrorMessage(errBody, res.status))
-      }
-      toast.success(
-        t("studio.toast.agentCreated", { name: customized.name }),
-        t("studio.toast.agentCreatedDesc"),
-      )
-      setPreviewTemplate(null)
-      mutateCustomAgents()
-      resetStudio()
-      // UX T2: novo agente custom criado a partir do template -> ir para
-      // Meus Agentes > Personalizados (era setActiveTab("custom") na taxonomia antiga).
-      setActiveTab("my-agents")
-      setMySubTab("personalizados")
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : t("studio.toast.errorCreating")
-      toast.error(msg, t("studio.toast.tryAgainShort"))
-    }
+  // T4: ao confirmar clone no TemplateClonePanel, fecha o Sheet e abre o wizard
+  // com initialConfig pré-populado. Wizard pula goal+approach (vê initialConfig.templateId)
+  // e abre direto step 3 (Configurar). Nome default "<Nome> (cópia)" — recruiter pode editar.
+  const handleCloneTemplate = (template: AgentTemplate) => {
+    const inferredGoal = inferGoalFromTemplate(template)
+    setPreviewTemplate(null)
+    openWizard(inferredGoal, {
+      goal: inferredGoal,
+      approach: "template",
+      templateId: template.id,
+      name: `${template.name} (cópia)`,
+      description: template.description,
+    })
   }
+
+  // UX_AUDIT T4 (2026-05-21): handleTemplateConfirm removido — antes (Sprint B QW#5)
+  // o TemplatePreviewModal POSTava direto após confirm rápido. Agora o fluxo passa
+  // por TemplateClonePanel → CreateAgentWizard, que faz o POST com customizações.
+  // O TemplatePreviewModal continua exportado de custom-agents/ como componente
+  // disponível para outros entry-points que queiram fluxo confirm-rápido sem wizard.
 
   // Sprint B QW#15 audit 2026-05-22: Clone canonical (era enterrado em drawer)
   const handleCloneCustomAgent = async (agent: CustomAgent) => {
@@ -755,12 +742,15 @@ export default function AgentStudioPage({
         )}
       </div>
 
-      {/* Sprint B QW#5 audit 2026-05-22: TemplatePreviewModal — confirm antes de POST */}
-      <TemplatePreviewModal
+      {/* UX_AUDIT T4 (2026-05-21): TemplateClonePanel substitui TemplatePreviewModal
+          como entry-point primário do TemplateGallery. Sheet lateral direito com
+          preview rico → "Clonar e customizar" abre wizard com initialConfig pré-populado.
+          O TemplatePreviewModal continua exportado de custom-agents/ para outros fluxos. */}
+      <TemplateClonePanel
         template={previewTemplate}
         open={previewTemplate !== null}
-        onOpenChange={(o) => { if (!o) setPreviewTemplate(null) }}
-        onConfirm={handleTemplateConfirm}
+        onClose={() => setPreviewTemplate(null)}
+        onClone={handleCloneTemplate}
       />
 
       {evaluatingTwinId && (
@@ -799,13 +789,16 @@ export default function AgentStudioPage({
       <CreateAgentWizard
         open={wizardOpen}
         initialGoal={wizardInitialGoal}
+        initialConfig={wizardInitialConfig}
         onClose={() => {
           setWizardOpen(false)
           setWizardInitialGoal(undefined)
+          setWizardInitialConfig(undefined)
         }}
         onCreated={(agentId) => {
           setWizardOpen(false)
           setWizardInitialGoal(undefined)
+          setWizardInitialConfig(undefined)
           mutateCustomAgents()
           loadData()
           if (agentId) onStartCalibration?.(agentId)

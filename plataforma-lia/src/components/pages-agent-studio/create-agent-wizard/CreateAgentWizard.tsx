@@ -3,7 +3,7 @@
 /**
  * CreateAgentWizard — unified goal-first entry-point for agent creation.
  *
- * UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 — T1 + T3.
+ * UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 — T1 + T3 + T4.
  *
  * T1 (transformacao): substitui os ~9 CTAs "Criar Agente / Criar com IA /
  * Criar do zero / Criar primeiro agente" espalhados em 5 tabs
@@ -15,6 +15,12 @@
  * "Recomendado" e descricao em linguagem natural. Endpoint backing
  * (POST /api/backend-proxy/custom-agents/generate -> FastAPI
  * /api/v1/custom-agents/generate-from-description) ja existia.
+ *
+ * T4 (clone-first / HubSpot Breeze pattern): aceita `initialConfig` com
+ * `templateId` (vindo do TemplateClonePanel). Quando presente, o wizard
+ * pula goal+approach e abre direto no step 3 (Configurar) com nome
+ * "(cópia)" e config do template ja populada. Recruiter customiza ANTES
+ * de criar — vs o pattern antigo "criou primeiro, customiza depois".
  *
  * Steps:
  *   1. GoalStep        — escolher objetivo (5 opcoes canonical)
@@ -60,6 +66,7 @@ import { PreviewStep } from "./steps/PreviewStep"
 import type {
   AgentApproach,
   AgentGoal,
+  CreateAgentInitialConfig,
   CreateAgentWizardProps,
   GeneratedConfigPreview,
   WizardConfig,
@@ -110,11 +117,59 @@ function canProceed(
   return true
 }
 
-export function CreateAgentWizard({ open, onClose, onCreated, initialGoal }: CreateAgentWizardProps) {
-  const [step, setStep] = useState(1)
-  const [goal, setGoal] = useState<AgentGoal | null>(initialGoal ?? null)
-  const [approach, setApproach] = useState<AgentApproach | null>(null)
-  const [config, setConfig] = useState<WizardConfig>(EMPTY_CONFIG)
+/**
+ * T4 — derive starting step + state from optional `initialConfig`.
+ *
+ * When TemplateClonePanel passes a templateId (clone-first flow), we jump
+ * the wizard straight to step 3 (Configurar) with the template's config
+ * pre-populated. Otherwise the wizard starts at step 1 (goal selection)
+ * just like before.
+ */
+function deriveInitialState(
+  initialGoal: AgentGoal | undefined,
+  initialConfig: CreateAgentInitialConfig | undefined,
+): {
+  step: number
+  goal: AgentGoal | null
+  approach: AgentApproach | null
+  config: WizardConfig
+} {
+  if (initialConfig?.templateId) {
+    // Clone-first: skip goal + approach, open at Configurar
+    const goal = initialConfig.goal ?? initialGoal ?? "outro"
+    return {
+      step: 3,
+      goal,
+      approach: initialConfig.approach ?? "template",
+      config: {
+        name: initialConfig.name ?? "",
+        description: initialConfig.description ?? "",
+        templateId: initialConfig.templateId,
+        aiDescription: initialConfig.aiDescription ?? "",
+      },
+    }
+  }
+
+  return {
+    step: 1,
+    goal: initialGoal ?? null,
+    approach: null,
+    config: EMPTY_CONFIG,
+  }
+}
+
+export function CreateAgentWizard({
+  open,
+  onClose,
+  onCreated,
+  initialGoal,
+  initialConfig,
+}: CreateAgentWizardProps) {
+  const initial = deriveInitialState(initialGoal, initialConfig)
+  const [step, setStep] = useState(initial.step)
+  const [goal, setGoal] = useState<AgentGoal | null>(initial.goal)
+  const [approach, setApproach] = useState<AgentApproach | null>(initial.approach)
+  const [config, setConfig] = useState<WizardConfig>(initial.config)
   const [aiPreview, setAiPreview] = useState<GeneratedConfigPreview | null>(null)
   const [isGeneratingAI, setIsGeneratingAI] = useState(false)
   const [aiError, setAiError] = useState<string | null>(null)
@@ -122,19 +177,21 @@ export function CreateAgentWizard({ open, onClose, onCreated, initialGoal }: Cre
 
   // Reset when wizard re-opens (UX-Sprint-A QW#11 audit pattern: wizards
   // sempre limpam state ao abrir pra evitar carry-over confuso entre
-  // sessoes diferentes de criacao).
+  // sessoes diferentes de criacao). T4: respeita `initialConfig` para
+  // clone-first abrir no step 3.
   useEffect(() => {
     if (open) {
-      setStep(1)
-      setGoal(initialGoal ?? null)
-      setApproach(null)
-      setConfig(EMPTY_CONFIG)
+      const next = deriveInitialState(initialGoal, initialConfig)
+      setStep(next.step)
+      setGoal(next.goal)
+      setApproach(next.approach)
+      setConfig(next.config)
       setAiPreview(null)
       setAiError(null)
       setIsGeneratingAI(false)
       setIsCreating(false)
     }
-  }, [open, initialGoal])
+  }, [open, initialGoal, initialConfig])
 
   const handleGenerateAI = async () => {
     if (config.aiDescription.trim().length < 10) return
@@ -264,7 +321,11 @@ export function CreateAgentWizard({ open, onClose, onCreated, initialGoal }: Cre
   }
 
   const handleNext = () => setStep((s) => Math.min(s + 1, 4))
-  const handleBack = () => setStep((s) => Math.max(s - 1, 1))
+  // T4 clone-first: quando o wizard começou no step 3 (initialConfig.templateId),
+  // o "Voltar" não deve voltar para steps 1/2 — não há goal/approach selecionável
+  // pelo usuário nesse fluxo. Limita o piso ao step inicial.
+  const minStep = initialConfig?.templateId ? 3 : 1
+  const handleBack = () => setStep((s) => Math.max(s - 1, minStep))
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
@@ -332,7 +393,7 @@ export function CreateAgentWizard({ open, onClose, onCreated, initialGoal }: Cre
 
         <DialogFooter className="flex items-center justify-between gap-2">
           <div>
-            {step > 1 && (
+            {step > minStep && (
               <Button
                 variant="ghost"
                 onClick={handleBack}
