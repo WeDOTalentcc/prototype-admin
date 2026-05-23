@@ -17,7 +17,7 @@ import logging
 from datetime import datetime, timedelta
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import Request, APIRouter, Depends, HTTPException, Query, status
 
 from app.domains.data_subject.dependencies import get_data_subject_repo
 from app.domains.data_subject.repositories.data_subject_repository import (
@@ -124,11 +124,68 @@ def _make_audit_entry(action: str, user_id: str | None = None, details: dict | N
     }
 
 
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# W3-017 (2026-05-23): DSR public POST rate-limit · IP-based sliding window.
+# LGPD Art 18 endpoint público sem auth → vulnerável a spam/DoS sem este guard.
+# Threshold: 5 requests/min per IP. Excede → HTTP 429.
+# ─────────────────────────────────────────────────────────────────────────────
+
+_DSR_RATE_LIMIT_PER_IP_PER_MIN = 5
+
+
+async def _dsr_rate_limit_check(request: Request) -> None:
+    """Rate limit by client IP for DSR public POST endpoint.
+
+    Raises HTTPException(429) when over threshold.
+    Uses canonical RateLimiter (Redis ZSET + in-memory fallback).
+    """
+    try:
+        from app.middleware.rate_limiter import rate_limiter
+    except ImportError:
+        # Fail-open if rate_limiter unavailable (dev/test env)
+        return
+
+    client_ip = (
+        request.client.host if request.client else "anonymous"
+    )
+    # Use canonical sliding window via rate_limiter._redis_sliding_window
+    # Composite key: dsr:public:<ip>
+    key = f"dsr:public:{client_ip}"
+    try:
+        allowed, current_count = await rate_limiter._redis_sliding_window(
+            key, _DSR_RATE_LIMIT_PER_IP_PER_MIN, window_sec=60
+        )
+        if not allowed:
+            logger.warning(
+                "[DSR] Rate limit exceeded · ip=%s count=%d",
+                client_ip, current_count,
+            )
+            raise HTTPException(
+                status_code=429,
+                detail=(
+                    f"Too many DSR requests from this IP "
+                    f"(>{_DSR_RATE_LIMIT_PER_IP_PER_MIN}/min). "
+                    "Aguarde 1 minuto antes de retentar."
+                ),
+                headers={"Retry-After": "60"},
+            )
+    except HTTPException:
+        raise
+    except Exception as exc:
+        # Fail-open · rate_limiter erro NÃO bloqueia DSR (LGPD Art 18 rights protection)
+        logger.warning("[DSR] Rate limit check skipped (fail-open): %s", exc)
+
+
 @router.post("/", response_model=DataSubjectRequestPublicCreate, status_code=status.HTTP_201_CREATED, summary="Create data subject request (public)")
 async def create_data_subject_request(
+    request: Request,  # W3-017 (2026-05-23): for IP-based rate limit
     data: DataSubjectRequestCreate,
     repo: DataSubjectRepository = Depends(get_data_subject_repo),
 company_id: str = Depends(require_company_id)):
+    # W3-017 (2026-05-23): public endpoint, no auth → IP rate limit
+    await _dsr_rate_limit_check(request)
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """
     Create a new data subject request (public endpoint - no authentication required).

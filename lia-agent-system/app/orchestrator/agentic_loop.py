@@ -15,6 +15,11 @@ import asyncio
 import json
 import logging
 import os
+from app.shared.compliance.c3b_layer import (  # W3-014 (2026-05-23)
+    pre_compliance as _c3b_pre,
+    post_compliance as _c3b_post,
+    ComplianceContext as _C3bCtx,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -89,6 +94,33 @@ class AgenticLoop:
             )
             return {"response": None, "tool_calls_made": [], "iterations": 0}
 
+        # W3-014 (2026-05-23): c3b pre_compliance ANTES do LLM loop.
+        # Strip PII, FairnessGuard L3, HateSpeech, PromptInjection (W1-005/007).
+        # Mensagem bloqueada → returna early sem invocar LLM.
+        try:
+            _c3b_pre_result = await _c3b_pre(
+                message=user_message,
+                company_id=company_id,
+                domain="agentic_loop",
+            )
+            if _c3b_pre_result.hate_speech_blocked or _c3b_pre_result.injection_blocked:
+                logger.warning(
+                    "[AgenticLoop] c3b pre_compliance BLOCKED · hate=%s injection=%s",
+                    _c3b_pre_result.hate_speech_blocked,
+                    _c3b_pre_result.injection_blocked,
+                )
+                return {
+                    "response": _c3b_pre_result.block_reason or "Mensagem bloqueada por compliance",
+                    "tool_calls_made": [],
+                    "iterations": 0,
+                    "blocked_reason": "c3b_compliance",
+                }
+            # Use clean_message (PII stripped) downstream
+            user_message = _c3b_pre_result.clean_message or user_message
+        except Exception as _c3b_exc:
+            # Fail-open · c3b failure NÃO bloqueia execução (defense-in-depth)
+            logger.warning("[AgenticLoop] c3b pre_compliance skipped: %s", _c3b_exc)
+
         max_iter = max_iterations or MAX_TOOL_ITERATIONS
         tool_schemas = self.get_tool_schemas(provider)
 
@@ -162,8 +194,21 @@ class AgenticLoop:
 
             # --- If LLM responded with text (no tool call), done ---
             if not llm_response.is_tool_call:
+                # W3-014 (2026-05-23): c3b post_compliance · FactChecker + audit log
+                # antes de retornar pro caller. Fail-safe (não bloqueia em error).
+                _final_response = llm_response.text_response or ""
+                try:
+                    _c3b_ctx = _C3bCtx(
+                        company_id=company_id or "unknown",
+                        user_id=user_id or "unknown",
+                        domain="agentic_loop",
+                        agent_id="agentic_loop",
+                    )
+                    _final_response = await _c3b_post(_final_response, _c3b_ctx)
+                except Exception as _c3b_exc:
+                    logger.warning("[AgenticLoop] c3b post_compliance skipped: %s", _c3b_exc)
                 return {
-                    "response": llm_response.text_response,
+                    "response": _final_response,
                     "tool_calls_made": tool_calls_made,
                     "iterations": iteration + 1,
                 }
