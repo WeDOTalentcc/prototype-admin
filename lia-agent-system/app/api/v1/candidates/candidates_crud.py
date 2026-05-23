@@ -3,9 +3,16 @@ CRUD endpoints for candidates: list, get, create, update, stage-update, delete, 
 """
 import uuid
 from datetime import datetime
-from typing import Optional
+from typing import Annotated, Optional
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Path, Query, Request
+from sqlalchemy import text
+
+from libs.models.lia_models.candidate import (
+    CandidateExperience,
+    CandidateEducation,
+)
+DUAL_ID_PATH_PATTERN = r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"
 from app.auth.dependencies import get_current_user_or_demo
 
 from ._shared import (
@@ -36,6 +43,14 @@ from app.shared.rails_migration.deprecation import enforce_candidates_deprecatio
 from app.schemas.envelope import ResponseEnvelope, ok_envelope
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+
+def _assert_tenant_scope(candidate, current_user) -> None:
+    """Multi-tenant guard — ensures candidate belongs to current user company."""
+    cu_company = getattr(current_user, "company_id", None)
+    cand_company = getattr(candidate, "company_id", None)
+    if cu_company and cand_company and str(cu_company) != str(cand_company):
+        raise HTTPException(status_code=403, detail="Candidate does not belong to your company")
+
 
 # MIGRATION_PLAN item 7.2 — Python CRUD deprecated in favor of Rails (ats-api-copia).
 #
@@ -583,6 +598,113 @@ company_id: str = Depends(require_company_id)):
     except Exception as e:
         logger.error(f"Error updating candidate stage: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.put("/{candidate_id}/experiences", response_model=None)
+async def update_candidate_experiences(
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    payload: list[dict],
+    request: Request = None,  # type: ignore[assignment]
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+    current_user: User = Depends(get_current_user_or_demo),
+):
+    """Replace candidate's experiences (work history) with the provided array.
+
+    Used by F5 D7 edit pattern via EditArrayItemModal in ProfileExperienceSection.
+    Multi-tenant via _assert_tenant_scope. Replace-all semantics:
+    delete all existing experiences + insert new ones with sequence_order
+    matching array index.
+    """
+    try:
+        candidate = await candidate_repo.get_by_id_str(candidate_id)
+        if not candidate:
+            raise HTTPException(status_code=404, detail="Candidate not found")
+        _assert_tenant_scope(candidate, current_user)
+
+        async with AsyncSessionLocal() as db:
+            await db.execute(
+                text("DELETE FROM candidate_experiences WHERE candidate_id = CAST(:cid AS uuid)"),
+                {"cid": str(candidate.id)},
+            )
+            for idx, exp in enumerate(payload or []):
+                if not isinstance(exp, dict):
+                    continue
+                db.add(CandidateExperience(
+                    candidate_id=candidate.id,
+                    company_name=str(exp.get("company") or exp.get("company_name") or "Empresa"),
+                    title=str(exp.get("title") or "")[:255] if exp.get("title") else None,
+                    start_date=str(exp.get("start_date") or exp.get("startDate") or "")[:50] or None,
+                    end_date=str(exp.get("end_date") or exp.get("endDate") or "")[:50] or None,
+                    description=exp.get("description"),
+                    location=str(exp.get("location") or "")[:255] or None,
+                    is_current=bool(exp.get("is_current") or exp.get("isCurrent")),
+                    sequence_order=idx,
+                ))
+            await db.commit()
+
+        logger.info(f"Updated {len(payload or [])} experiences for candidate {candidate_id}")
+        return {"success": True, "count": len(payload or []), "message": "Experiences updated successfully"}
+    except HTTPException:
+        raise
+    except Exception:
+        _rid = getattr(request.state, "request_id", "unknown") if request else "unknown"
+        logger.exception(
+            "[update_candidate_experiences] failed request_id=%s candidate_id=%s",
+            _rid, candidate_id,
+        )
+        raise HTTPException(status_code=500, detail="Falha ao atualizar experiencias do candidato.")
+
+
+@router.put("/{candidate_id}/education", response_model=None)
+async def update_candidate_education(
+    candidate_id: Annotated[str, Path(pattern=DUAL_ID_PATH_PATTERN)],
+    payload: list[dict],
+    request: Request = None,  # type: ignore[assignment]
+    candidate_repo: CandidateRepository = Depends(get_candidate_repo),
+    current_user: User = Depends(get_current_user_or_demo),
+):
+    """Replace candidate's education entries with the provided array.
+
+    Used by F5 D7 edit pattern via EditArrayItemModal in ProfileEducationSection.
+    Multi-tenant via _assert_tenant_scope. Replace-all semantics.
+    """
+    try:
+        candidate = await candidate_repo.get_by_id_str(candidate_id)
+        if not candidate:
+            raise HTTPException(status_code=404, detail="Candidate not found")
+        _assert_tenant_scope(candidate, current_user)
+
+        async with AsyncSessionLocal() as db:
+            await db.execute(
+                text("DELETE FROM candidate_education WHERE candidate_id = CAST(:cid AS uuid)"),
+                {"cid": str(candidate.id)},
+            )
+            for idx, edu in enumerate(payload or []):
+                if not isinstance(edu, dict):
+                    continue
+                db.add(CandidateEducation(
+                    candidate_id=candidate.id,
+                    institution=str(edu.get("institution") or edu.get("school") or "Instituição"),
+                    degree=str(edu.get("degree") or "")[:100] or None,
+                    field_of_study=str(edu.get("field_of_study") or edu.get("fieldOfStudy") or "")[:255] or None,
+                    start_date=str(edu.get("start_date") or edu.get("startDate") or "")[:50] or None,
+                    end_date=str(edu.get("end_date") or edu.get("endDate") or "")[:50] or None,
+                    description=edu.get("description"),
+                    sequence_order=idx,
+                ))
+            await db.commit()
+
+        logger.info(f"Updated {len(payload or [])} education entries for candidate {candidate_id}")
+        return {"success": True, "count": len(payload or []), "message": "Education updated successfully"}
+    except HTTPException:
+        raise
+    except Exception:
+        _rid = getattr(request.state, "request_id", "unknown") if request else "unknown"
+        logger.exception(
+            "[update_candidate_education] failed request_id=%s candidate_id=%s",
+            _rid, candidate_id,
+        )
+        raise HTTPException(status_code=500, detail="Falha ao atualizar formacao do candidato.")
 
 
 @router.delete("/{candidate_id}", response_model=None)

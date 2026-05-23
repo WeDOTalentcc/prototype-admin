@@ -44,14 +44,27 @@ export function useCandidateArrayUpdate<T>(
       }
       setSaving(true)
       try {
-        const response = await fetch("/api/backend-proxy/chat/actions/candidate-field-update", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            candidate_id: candidateId,
-            fields: { [fieldName]: newArray },
-          }),
-        })
+        // F6 Item 3: dedicated REST endpoints for canonical arrays.
+        // Falls back to candidate-field-update for other fields.
+        const dedicatedEndpoint = (
+          fieldName === "work_history" ? `/api/backend-proxy/candidates/${candidateId}/experiences` :
+          fieldName === "education" ? `/api/backend-proxy/candidates/${candidateId}/education` :
+          null
+        )
+        const response = dedicatedEndpoint
+          ? await fetch(dedicatedEndpoint, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(newArray),
+            })
+          : await fetch("/api/backend-proxy/chat/actions/candidate-field-update", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                candidate_id: candidateId,
+                fields: { [fieldName]: newArray },
+              }),
+            })
         if (!response.ok) {
           const errBody = (await response.json().catch(() => ({}))) as { detail?: string; error?: string }
           const msg = errBody.detail ?? errBody.error ?? `Erro ${response.status} ao salvar ${fieldName}`
