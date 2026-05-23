@@ -476,9 +476,9 @@ repos:
         pass_filenames: false
 
       - id: few-shot-yaml-schema
-        name: "W4-038: few_shot_examples YAML schema canonical (warn-only baseline)"
+        name: "W4-038: few_shot_examples YAML schema canonical (BLOCKING — baseline 0)"
         language: system
-        entry: python3 scripts/check_few_shot_yaml_schema.py
+        entry: python3 scripts/check_few_shot_yaml_schema.py --blocking
         files: ^app/prompts/(domains/|tenants/.*/domains/).*\.yaml$
         pass_filenames: false
 
