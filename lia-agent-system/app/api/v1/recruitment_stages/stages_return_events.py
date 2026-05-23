@@ -1,6 +1,6 @@
 """
-Return event endpoints:
-- GET  /transition/return-event/stream   (SSE streaming)
+Return event endpoints (post-transition candidate completion signals).
+
 - POST /transition/return-event          (process single event)
 - POST /transition/return-event/bulk     (process multiple events)
 - GET  /transition/return-event/recent   (polling)
@@ -36,16 +36,23 @@ router = APIRouter(tags=["Recruitment Stages - Return Events"])
 @router.get("/transition/return-event/stream", response_model=None)
 async def stream_return_events(
     job_id: str | None = None,
-    company_id: str | None = None,
     current_user: User = Depends(get_current_active_user),
-_company_gate: str = Depends(require_company_id)):
+    company_id: str = Depends(require_company_id),
+):
+    """SSE stream return events.
+
+    Onda 4.2b-P0-9 (2026-05-23): removido company_id como query param que
+    sobrescrevia o JWT. Antes user passava ?company_id=other-tenant-uuid e
+    streamava activity feed de outra empresa (LGPD critical).
+    company_id agora vem APENAS do JWT (Depends).
+    """
     from sqlalchemy import and_ as sa_and
     from sqlalchemy import select as sa_select
 
     from app.core.database import async_session_factory
     from app.models.activity_feed import ActivityFeed
 
-    effective_company_id = company_id or get_user_company_id(current_user)
+    effective_company_id = company_id
 
     async def event_generator():
         last_check = datetime.utcnow()
@@ -139,6 +146,24 @@ company_id: str = Depends(require_company_id)):
     - All other events → only update sub-status (no stage change)
     """
     try:
+        # Onda 4.2b-P0-10 (2026-05-23): cross-tenant pre-check.
+        # Antes user empresa A podia disparar event em candidato empresa B
+        # (offer_accepted → auto-move pra hired + notificacao).
+        from sqlalchemy import select as sa_select
+        from app.models.candidate import VacancyCandidate
+
+        vc_check = await stage_repo.db.execute(
+            sa_select(VacancyCandidate.id).where(
+                VacancyCandidate.id == request.vacancy_candidate_id,
+                VacancyCandidate.company_id == company_id,
+            )
+        )
+        if not vc_check.scalar_one_or_none():
+            raise HTTPException(
+                status_code=404,
+                detail="Candidate not found in this tenant",
+            )
+
         service = ReturnEventService(stage_repo.db)
         result = await service.process_event(
             vacancy_candidate_id=request.vacancy_candidate_id,
@@ -184,10 +209,31 @@ company_id: str = Depends(require_company_id)):
     Process multiple return events in batch.
     Useful for webhook payloads that report multiple candidate completions at once.
     """
+    # Onda 4.2b-P0-10 (2026-05-23): cross-tenant pre-check em batch.
+    from sqlalchemy import select as sa_select
+    from app.models.candidate import VacancyCandidate
+
+    requested_ids = [event.vacancy_candidate_id for event in request.events]
+    tenant_check = await stage_repo.db.execute(
+        sa_select(VacancyCandidate.id).where(
+            VacancyCandidate.id.in_(requested_ids),
+            VacancyCandidate.company_id == company_id,
+        )
+    )
+    allowed_ids = {str(r[0]) for r in tenant_check.all()}
+
     results = []
     service = ReturnEventService(stage_repo.db)
 
     for event in request.events:
+        if str(event.vacancy_candidate_id) not in allowed_ids:
+            results.append({
+                "vacancy_candidate_id": event.vacancy_candidate_id,
+                "event_type": event.event_type,
+                "success": False,
+                "error": "Candidate not in your tenant",
+            })
+            continue
         try:
             result = await service.process_event(
                 vacancy_candidate_id=event.vacancy_candidate_id,
@@ -223,19 +269,26 @@ company_id: str = Depends(require_company_id)):
 async def get_recent_return_events(
     since: str | None = Query(None, description="ISO timestamp to fetch events since"),
     job_id: str | None = Query(None),
-    company_id: str | None = Query(None, description="Company ID for scoping"),
     limit: int = Query(20, ge=1, le=100),
     current_user: User = Depends(get_current_active_user),
     stage_repo: RecruitmentStageRepository = Depends(get_stage_repo),
-_company_gate: str = Depends(require_company_id_strict_match("query.company_id"))):
-    """Get recent return events for polling/real-time updates."""
+    company_id: str = Depends(require_company_id),
+):
+    """Get recent return events for polling/real-time updates.
+
+    Onda 4.2b-P0-11 (2026-05-23): removido company_id query param + filter
+    NULL (was dead code). Antes vazava events de TODAS empresas misturados
+    (LGPD critical). Agora filtra por JWT company_id.
+    """
     try:
         from sqlalchemy import select as sa_select
 
         from app.models.activity_feed import ActivityFeed
 
         query = sa_select(ActivityFeed).where(
-            ActivityFeed.activity_type.like("return_event_%")  # type: ignore[union-attr]
+            ActivityFeed.activity_type.like("return_event_%"),  # type: ignore[union-attr]
+            # Onda 4.2b-P0-11 (2026-05-23): filtro tenant obrigatorio.
+            ActivityFeed.extra_data["company_id"].as_string() == company_id,
         )
 
         if since:
@@ -246,9 +299,10 @@ _company_gate: str = Depends(require_company_id_strict_match("query.company_id")
             except ValueError:
                 pass
 
-        effective_company_id = company_id or get_user_company_id(current_user)
-        if effective_company_id:
-            pass
+        if job_id:
+            query = query.where(
+                ActivityFeed.extra_data["job_id"].as_string() == job_id
+            )
 
         query = query.order_by(ActivityFeed.created_at.desc()).limit(limit)  # type: ignore[union-attr]
 
