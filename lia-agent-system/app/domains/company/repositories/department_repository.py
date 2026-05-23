@@ -1,6 +1,3 @@
-"""
-DepartmentRepository - session-in-constructor pattern.
-"""
 import logging
 from uuid import UUID
 
@@ -77,8 +74,17 @@ class DepartmentRepository:
         await self.db.refresh(dept)
         return dept
 
-    async def update(self, dept_id: UUID, data: dict) -> Department | None:
-        dept = await self.get_by_id(dept_id)
+    async def update(
+        self,
+        dept_id: UUID,
+        data: dict,
+        company_id: UUID | None = None,
+    ) -> Department | None:
+        """Update department. Onda 4.2a-P0.1 (2026-05-23): adicionado
+        company_id pra defense-in-depth multi-tenancy. Quando passado,
+        rejeita update se dept pertence a outro tenant (cross-tenant guard).
+        """
+        dept = await self.get_by_id(dept_id, company_id=company_id)
         if not dept:
             return None
         for key, value in data.items():
@@ -88,8 +94,16 @@ class DepartmentRepository:
         await self.db.refresh(dept)
         return dept
 
-    async def delete(self, dept_id: UUID) -> bool:
-        dept = await self.get_by_id(dept_id)
+    async def delete(
+        self,
+        dept_id: UUID,
+        company_id: UUID | None = None,
+    ) -> bool:
+        """Soft delete. Onda 4.2a-P0.1 (2026-05-23): adicionado company_id
+        pra prevenir cross-tenant deletes (user empresa A nao deve poder
+        deletar dept_id da empresa B).
+        """
+        dept = await self.get_by_id(dept_id, company_id=company_id)
         if not dept:
             return False
         dept.is_active = False

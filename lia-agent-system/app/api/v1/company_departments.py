@@ -1,7 +1,4 @@
 """
-Company Departments API endpoints.
-Handles CRUD for departments, members, managers, and import templates.
-"""
 import csv
 import io
 import logging
@@ -99,12 +96,14 @@ async def update_department(
     data: DepartmentUpdate,
     dept_repo: DepartmentRepository = Depends(get_department_repo),
 company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+    # Onda 4.2a-P0.1 (2026-05-23): company_id passa ao repo pra cross-tenant guard.
     """Update a department."""
     try:
         update_data = data.model_dump(exclude_unset=True)
         update_data["updated_at"] = datetime.utcnow()
-        department = await dept_repo.update(department_id, update_data)
+        department = await dept_repo.update(
+            department_id, update_data, company_id=uuid.UUID(company_id),
+        )
         if not department:
             raise HTTPException(status_code=404, detail="Department not found")
         return department
@@ -112,7 +111,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating department: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.delete("/departments/{department_id}", response_model=None)
@@ -120,10 +119,12 @@ async def delete_department(
     department_id: uuid.UUID,
     dept_repo: DepartmentRepository = Depends(get_department_repo),
 company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+    # Onda 4.2a-P0.1 (2026-05-23): company_id passa ao repo pra cross-tenant guard.
     """Soft delete a department."""
     try:
-        deleted = await dept_repo.delete(department_id)
+        deleted = await dept_repo.delete(
+            department_id, company_id=uuid.UUID(company_id),
+        )
         if not deleted:
             raise HTTPException(status_code=404, detail="Department not found")
         return {"success": True, "message": "Department deleted"}
@@ -131,7 +132,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error deleting department: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.get("/departments/{department_id}/members", response_model=list[DepartmentMemberResponse])
@@ -195,12 +196,14 @@ async def update_department_member(
     data: DepartmentMemberUpdate,
     dept_repo: DepartmentRepository = Depends(get_department_repo),
 company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+    # Onda 4.2a-P0.1 (2026-05-23): company_id passa ao repo pra cross-tenant guard.
     """Update a department member."""
     try:
         update_data = data.model_dump(exclude_unset=True)
         update_data["updated_at"] = datetime.utcnow()
-        member = await dept_repo.update_member(member_id, update_data)
+        member = await dept_repo.update_member(
+            member_id, update_data, company_id=uuid.UUID(company_id),
+        )
         if not member:
             raise HTTPException(status_code=404, detail="Department member not found")
         return member
@@ -208,7 +211,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error updating department member: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.delete("/members/{member_id}", response_model=None)
@@ -216,10 +219,12 @@ async def delete_department_member(
     member_id: uuid.UUID,
     dept_repo: DepartmentRepository = Depends(get_department_repo),
 company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
+    # Onda 4.2a-P0.1 (2026-05-23): company_id passa ao repo pra cross-tenant guard.
     """Soft delete a department member."""
     try:
-        deleted = await dept_repo.remove_member(member_id)
+        deleted = await dept_repo.remove_member(
+            member_id, company_id=uuid.UUID(company_id),
+        )
         if not deleted:
             raise HTTPException(status_code=404, detail="Department member not found")
         return {"success": True, "message": "Department member deleted"}
@@ -227,7 +232,7 @@ company_id: str = Depends(require_company_id)):
         raise
     except Exception as e:
         logger.error(f"Error deleting department member: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 # =============================================
