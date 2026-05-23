@@ -1,11 +1,9 @@
-"""
-
-# ADR-001-EXEMPT: Pipeline service performs cross-domain reads (Candidate,
 # JobVacancy) for recruiter pipeline visualization. Tenant scope established
 # by caller via authenticated session.
 # TODO Sprint 6: refactor to use existing CandidateRepository +  # R-048: needs owner + ticket
 # JobVacancyCRUDRepository explicitly.
 
+"""
 Pipeline Service - Manages stale candidates and pipeline health.
 
 This service identifies candidates that need attention:
@@ -88,7 +86,8 @@ class PipelineService:
         self,
         db: AsyncSession | None = None,
         stale_days: int | None = None,
-        limit: int = 50
+        limit: int = 50,
+        company_id: str | None = None,
     ) -> dict[str, Any]:
         """
         Get candidates that have been inactive for X days.
@@ -112,8 +111,13 @@ class PipelineService:
         try:
             final_statuses = ['hired', 'rejected', 'Contratado', 'Rejeitado', 'Reprovado', 'Desistente']
             
+            # Onda 4.2b-P0-2 (2026-05-23): filtro company_id obrigatorio.
+            tenant_filter = (
+                [Candidate.company_id == company_id] if company_id else []
+            )
             query = select(Candidate).where(
                 and_(
+                    *tenant_filter,
                     Candidate.is_active,
                     ~Candidate.status.in_(final_statuses),
                     or_(
@@ -131,8 +135,13 @@ class PipelineService:
             result = await db.execute(query)
             candidates = result.scalars().all()
             
+            # Onda 4.2b-P0-2 (2026-05-23): JobVacancy tambem precisa filtro tenant.
+            jobs_tenant_filter = (
+                [JobVacancy.company_id == company_id] if company_id else []
+            )
             jobs_query = select(JobVacancy).where(
-                JobVacancy.status.in_(["Ativa", "Publicada", "open", "active"])
+                *jobs_tenant_filter,
+                JobVacancy.status.in_(["Ativa", "Publicada", "open", "active"]),
             )
             jobs_result = await db.execute(jobs_query)
             jobs = {str(j.id): j for j in jobs_result.scalars().all()}
@@ -251,31 +260,48 @@ class PipelineService:
         self,
         candidate_id: str,
         action_id: str,
-        db: AsyncSession | None = None
+        db: AsyncSession | None = None,
+        company_id: str | None = None,
     ) -> dict[str, Any]:
         """
         Execute a pipeline action on a candidate.
-        
+
+        Onda 4.2b-P0-1 (2026-05-23): adicionado company_id obrigatorio pra
+        cross-tenant guard. Antes user de empresa A podia rejeitar/contratar
+        candidato de empresa B passando o ID (LGPD critical).
+
         Args:
             candidate_id: The candidate's UUID
             action_id: The action to execute
             db: Database session
-            
+            company_id: Tenant scope (REQUIRED — fail-closed multi-tenancy)
+
         Returns:
             Result of the action
         """
+        if not company_id:
+            raise ValueError(
+                "company_id is required (multi-tenancy invariant fail-closed). "
+                "Onda 4.2b-P0-1 fix — execute_pipeline_action antes permitia "
+                "cross-tenant write em candidatos de outras empresas."
+            )
+
         should_close = False
         if db is None:
             db = AsyncSessionLocal()
             should_close = True
-        
+
         try:
             import uuid as uuid_module
+            # Onda 4.2b-P0-1: filtro company_id obrigatorio.
             result = await db.execute(
-                select(Candidate).where(Candidate.id == uuid_module.UUID(candidate_id))
+                select(Candidate).where(
+                    Candidate.id == uuid_module.UUID(candidate_id),
+                    Candidate.company_id == company_id,
+                )
             )
             candidate = result.scalar_one_or_none()
-            
+
             if not candidate:
                 return {"success": False, "error": "Candidato não encontrado"}
             

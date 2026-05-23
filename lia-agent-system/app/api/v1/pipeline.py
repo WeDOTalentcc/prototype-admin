@@ -1,6 +1,3 @@
-"""
-Pipeline API endpoints - Stale candidates and pipeline health management.
-"""
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
@@ -36,17 +33,19 @@ company_id: str = Depends(require_company_id)):
     Returns candidates grouped by job vacancy with suggested actions.
     """
     try:
+        # Onda 4.2b-P0-2 (2026-05-23): company_id obrigatorio cross-tenant.
         result = await pipeline_service.get_stale_candidates(
             db=db,
             stale_days=stale_days,
-            limit=limit
+            limit=limit,
+            company_id=company_id,
         )
         return result
     except HTTPException:
         raise
     except Exception as e:
         logger.error(f"Error fetching stale candidates: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail="Internal server error")
 
 
 @router.post("/action", response_model=None)
@@ -63,10 +62,12 @@ company_id: str = Depends(require_company_id)):
     advance_stage, send_offer, confirm_hire, reject_candidate, etc.
     """
     try:
+        # Onda 4.2b-P0-1 (2026-05-23): company_id obrigatorio cross-tenant.
         result = await pipeline_service.execute_pipeline_action(
             candidate_id=request.candidate_id,
             action_id=request.action_id,
-            db=db
+            db=db,
+            company_id=company_id,
         )
         
         if not result.get("success"):
@@ -75,7 +76,8 @@ company_id: str = Depends(require_company_id)):
         try:
             _is_gate_action = request.action_id in ("advance_stage", "reject_candidate", "send_offer", "confirm_hire")
             await audit_svc.log_decision(
-                company_id=None,
+                # Onda 4.2b-P1-7 (2026-05-23): audit trail tem company_id real.
+                company_id=company_id,
                 agent_name="pipeline_module",
                 decision_type="move_stage",
                 action=request.action_id,
