@@ -146,6 +146,19 @@ def _is_plan_service_enabled() -> bool:
     Default: False (backward-compatible). Set LIA_V2_USE_PLAN_SERVICE=true
     to enable PlanService-based orchestration (Sprint III-B rollout).
     """
+    # W3-023 (2026-05-23): canary log pra Plan&Execute promotion.
+    # Pre-flip telemetry: detect quem está usando LIA_V2_USE_PLAN_SERVICE=true.
+    # Quando count em prod estabilizar >0 por 1 sprint, flip default safe.
+    import os as _os_w3023
+    _flag_v3 = _os_w3023.environ.get("LIA_V2_USE_PLAN_SERVICE", "").lower() in ("true", "1", "yes")
+    _env_w3023 = _os_w3023.environ.get("APP_ENV", "development")
+    if _flag_v3 and _env_w3023 in ("production", "prod", "staging"):
+        # Emit em log.info pra Sentry breadcrumb visibility
+        import logging as _log_w3023
+        _log_w3023.getLogger(__name__).info(
+            "[W3-023 CANARY] LIA_V2_USE_PLAN_SERVICE=true ativo em %s · Plan&Execute path",
+            _env_w3023,
+        )
     import os as _os
     raw = _os.environ.get("LIA_V2_USE_PLAN_SERVICE", "false").lower()
     return raw in ("1", "true", "yes")

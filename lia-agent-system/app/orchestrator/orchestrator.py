@@ -86,6 +86,16 @@ from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
 
 class Orchestrator:
     def __init__(self, llm_service, db_service=None):
+        # W3-024 (2026-05-23): canary log · legacy Orchestrator instanciado.
+        # Pre-deletion telemetry · Q3 2026 deletion target requires zero callers.
+        import os as _os_w3024
+        _env_w3024 = _os_w3024.environ.get("APP_ENV", "development")
+        if _env_w3024 in ("production", "prod", "staging"):
+            logger.info(
+                "[W3-024 CANARY] Legacy Orchestrator instantiated in %s · "
+                "track caller migration progress.",
+                _env_w3024,
+            )
         _lia_warnings.warn(
             "[LIA-D06] Orchestrator is deprecated. Use MainOrchestrator instead.",
             DeprecationWarning,
