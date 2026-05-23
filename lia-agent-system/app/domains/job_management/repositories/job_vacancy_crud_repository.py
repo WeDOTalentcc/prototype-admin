@@ -329,6 +329,505 @@ class JobVacancyCRUDRepository:
         return list(result.scalars().all())
 
 
+
+    # ── Multi-tenancy fail-closed helper ──────────────────────────────────────
+
+    @staticmethod
+    def _require_company_id(company_id: str | None) -> str:
+        """Fail-closed multi-tenancy gate. Raises if company_id is empty/None."""
+        if not company_id:
+            raise ValueError(
+                "company_id is required (multi-tenancy invariant fail-closed)"
+            )
+        return company_id
+
+    # ── ADR-001 W1-004-B: methods migrated from jobs_mgmt_tool_registry ──────
+
+    async def get_recruitment_benchmarks(
+        self,
+        company_id: str,
+        period_days: int = 90,
+    ) -> dict:
+        """Aggregated hiring stats: avg TTF, fill rate, active/total/filled counts.
+
+        Returns dict with keys: avg_ttf_days, fill_rate, active_jobs,
+        total_jobs, filled_jobs.
+        """
+        from sqlalchemy import text as _text
+
+        cid = self._require_company_id(company_id)
+        result = await self.db.execute(
+            _text("""
+                SELECT
+                    AVG(EXTRACT(EPOCH FROM (updated_at - created_at)) / 86400)
+                        AS avg_ttf,
+                    COUNT(*) FILTER (WHERE status = 'closed') AS filled,
+                    COUNT(*) FILTER (WHERE status = 'active') AS active,
+                    COUNT(*) AS total
+                FROM job_vacancies
+                WHERE company_id = :company_id
+                  AND created_at > NOW() - MAKE_INTERVAL(days => :days)
+            """),
+            {"company_id": cid, "days": period_days},
+        )
+        row = result.mappings().first() or {}
+        ttf = round(float(row.get("avg_ttf") or 0), 1)
+        filled = int(row.get("filled") or 0)
+        active = int(row.get("active") or 0)
+        total = int(row.get("total") or 0)
+        fill_rate = round((filled / total * 100) if total > 0 else 0, 1)
+        return {
+            "avg_ttf_days": ttf,
+            "fill_rate": fill_rate,
+            "active_jobs": active,
+            "total_jobs": total,
+            "filled_jobs": filled,
+        }
+
+    async def list_jobs_with_candidate_count(
+        self,
+        company_id: str,
+        status: str = "all",
+        department: str = "all",
+        limit: int = 30,
+    ) -> dict:
+        """Vacancy list with candidate counts per stage.
+
+        Returns dict with keys: jobs (list), total.
+        """
+        from sqlalchemy import text as _text
+
+        cid = self._require_company_id(company_id)
+        rows = await self.db.execute(
+            _text("""
+                SELECT id, title, status, priority, department, location,
+                       created_at, deadline, company_id,
+                       (SELECT COUNT(*) FROM vacancy_candidates vc
+                        WHERE vc.vacancy_id = jv.id) AS candidate_count,
+                       EXTRACT(DAY FROM NOW() - created_at)::int AS days_open
+                FROM job_vacancies jv
+                WHERE (:status = 'all' OR status ILIKE :status_val)
+                  AND (:dept = 'all' OR department ILIKE :dept_val)
+                  AND company_id = :company_id
+                ORDER BY
+                    CASE priority WHEN 'alta' THEN 1 WHEN 'média' THEN 2 ELSE 3 END,
+                    created_at DESC
+                LIMIT :lim
+            """),
+            {
+                "status": status,
+                "status_val": f"%{status}%",
+                "dept": department,
+                "dept_val": f"%{department}%",
+                "company_id": cid,
+                "lim": limit,
+            },
+        )
+        jobs = []
+        for row in rows.mappings():
+            jobs.append({
+                "id": str(row["id"]),
+                "title": row["title"],
+                "status": row["status"],
+                "priority": row["priority"],
+                "department": row["department"],
+                "location": row["location"],
+                "candidate_count": int(row["candidate_count"] or 0),
+                "days_open": int(row["days_open"] or 0),
+                "deadline": str(row["deadline"]) if row["deadline"] else None,
+            })
+        count_row = await self.db.execute(
+            _text("""
+                SELECT COUNT(*) AS total FROM job_vacancies
+                WHERE (:status = 'all' OR status ILIKE :status_val)
+                  AND (:dept = 'all' OR department ILIKE :dept_val)
+                  AND company_id = :company_id
+            """),
+            {
+                "status": status,
+                "status_val": f"%{status}%",
+                "dept": department,
+                "dept_val": f"%{department}%",
+                "company_id": cid,
+            },
+        )
+        total = int((count_row.mappings().first() or {}).get("total", len(jobs)))
+        return {"jobs": jobs, "total": total}
+
+    async def get_job_details_with_days_open(
+        self,
+        job_id: str,
+        company_id: str,
+    ) -> dict | None:
+        """Single job details including days_open + candidate counts by status.
+
+        Returns None if not found. Otherwise returns dict with job fields +
+        candidates_total + candidates_by_status.
+        """
+        from sqlalchemy import text as _text
+
+        cid = self._require_company_id(company_id)
+        row_result = await self.db.execute(
+            _text("""
+                SELECT id, title, status, priority, department, location,
+                       description, requirements, technical_requirements,
+                       salary_range, benefits, created_at, deadline,
+                       recruiter, manager, company_id,
+                       EXTRACT(DAY FROM NOW() - created_at)::int AS days_open
+                FROM job_vacancies
+                WHERE id = :job_id AND company_id = :company_id
+            """),
+            {"job_id": job_id, "company_id": cid},
+        )
+        data = row_result.mappings().first()
+        if not data:
+            return None
+        counts = await self.db.execute(
+            _text("""
+                SELECT status, COUNT(*) AS cnt
+                FROM vacancy_candidates
+                WHERE vacancy_id = :job_id AND company_id = :company_id
+                GROUP BY status
+            """),
+            {"job_id": job_id, "company_id": cid},
+        )
+        by_status = {r["status"]: int(r["cnt"]) for r in counts.mappings()}
+        total_candidates = sum(by_status.values())
+        return {
+            "job_id": str(data["id"]),
+            "title": data["title"],
+            "status": data["status"],
+            "priority": data["priority"],
+            "department": data["department"],
+            "location": data["location"],
+            "description": (data["description"] or "")[:500],
+            "technical_requirements": data["technical_requirements"],
+            "salary_range": data["salary_range"],
+            "recruiter": data["recruiter"],
+            "manager": data["manager"],
+            "deadline": str(data["deadline"]) if data["deadline"] else None,
+            "days_open": int(data["days_open"] or 0),
+            "candidates_total": total_candidates,
+            "candidates_by_status": by_status,
+        }
+
+    async def get_portfolio_metrics(
+        self,
+        company_id: str,
+        period_days: int = 30,
+    ) -> dict:
+        """Aggregate portfolio health metrics.
+
+        Returns dict with keys: total_active, total_paused, total_closed,
+        total_draft, total, avg_time_to_hire, fill_rate.
+        """
+        from sqlalchemy import text as _text
+
+        cid = self._require_company_id(company_id)
+        row_result = await self.db.execute(
+            _text("""
+                SELECT
+                    COUNT(*) FILTER (WHERE status ILIKE '%ativa%' OR status ILIKE '%active%')
+                        AS total_active,
+                    COUNT(*) FILTER (WHERE status ILIKE '%pausada%' OR status ILIKE '%paused%')
+                        AS total_paused,
+                    COUNT(*) FILTER (WHERE status ILIKE '%conclu%' OR status ILIKE '%closed%')
+                        AS total_closed,
+                    COUNT(*) FILTER (WHERE status ILIKE '%rascunho%' OR status ILIKE '%draft%')
+                        AS total_draft,
+                    COUNT(*) AS total,
+                    AVG(EXTRACT(EPOCH FROM (updated_at - created_at)) / 86400)
+                        FILTER (WHERE status ILIKE '%conclu%' OR status ILIKE '%closed%')
+                        AS avg_ttf
+                FROM job_vacancies
+                WHERE company_id = :company_id
+                  AND created_at > NOW() - MAKE_INTERVAL(days => :days)
+            """),
+            {"company_id": cid, "days": period_days},
+        )
+        data = row_result.mappings().first() or {}
+        total = int(data.get("total") or 0)
+        closed = int(data.get("total_closed") or 0)
+        return {
+            "total_active": int(data.get("total_active") or 0),
+            "total_paused": int(data.get("total_paused") or 0),
+            "total_closed": closed,
+            "total_draft": int(data.get("total_draft") or 0),
+            "total": total,
+            "avg_time_to_hire": round(float(data.get("avg_ttf") or 0), 1),
+            "fill_rate": round(closed / total * 100, 1) if total > 0 else 0.0,
+        }
+
+    async def compare_jobs_by_ids(
+        self,
+        job_ids: list[str],
+        company_id: str,
+    ) -> list[dict]:
+        """Side-by-side job comparison with candidate stats.
+
+        Returns list of dicts with id, title, status, priority, department,
+        days_open, candidate_count, avg_lia_score, rejected_count.
+        """
+        from sqlalchemy import text as _text
+
+        cid = self._require_company_id(company_id)
+        if not job_ids:
+            return []
+        rows = await self.db.execute(
+            _text("""
+                SELECT jv.id, jv.title, jv.status, jv.priority, jv.department,
+                       jv.created_at, jv.deadline,
+                       EXTRACT(DAY FROM NOW() - jv.created_at)::int AS days_open,
+                       COUNT(vc.id) AS candidate_count,
+                       AVG(vc.lia_score) AS avg_score,
+                       COUNT(vc.id) FILTER (WHERE vc.status = 'rejected') AS rejected_count
+                FROM job_vacancies jv
+                LEFT JOIN vacancy_candidates vc ON vc.vacancy_id = jv.id
+                      AND vc.company_id = :company_id
+                WHERE jv.id = ANY(:ids::uuid[])
+                  AND jv.company_id = :company_id
+                GROUP BY jv.id
+                ORDER BY jv.created_at DESC
+            """),
+            {"ids": job_ids, "company_id": cid},
+        )
+        result = []
+        for row in rows.mappings():
+            result.append({
+                "id": str(row["id"]),
+                "title": row["title"],
+                "status": row["status"],
+                "priority": row["priority"],
+                "department": row["department"],
+                "days_open": int(row["days_open"] or 0),
+                "candidate_count": int(row["candidate_count"] or 0),
+                "avg_lia_score": round(float(row["avg_score"] or 0), 1),
+                "rejected_count": int(row["rejected_count"] or 0),
+            })
+        return result
+
+    async def get_sla_status(
+        self,
+        company_id: str,
+        job_id: str = "",
+    ) -> dict:
+        """SLA compliance status for active jobs.
+
+        Returns dict with keys: overdue_jobs, at_risk_jobs, compliant_count,
+        overall_status.
+        """
+        from sqlalchemy import text as _text
+
+        cid = self._require_company_id(company_id)
+        rows = await self.db.execute(
+            _text("""
+                SELECT id, title, status, deadline,
+                       EXTRACT(DAY FROM NOW() - created_at)::int AS days_open,
+                       EXTRACT(DAY FROM deadline - NOW())::int AS days_to_deadline
+                FROM job_vacancies
+                WHERE (status ILIKE '%ativa%' OR status ILIKE '%active%')
+                  AND (:jid = '' OR id::text = :jid)
+                  AND company_id = :company_id
+            """),
+            {"jid": job_id, "company_id": cid},
+        )
+        overdue_jobs: list[dict] = []
+        at_risk_jobs: list[dict] = []
+        compliant_count = 0
+        for row in rows.mappings():
+            dtd = row["days_to_deadline"]
+            entry = {
+                "id": str(row["id"]),
+                "title": row["title"],
+                "days_open": int(row["days_open"] or 0),
+                "days_to_deadline": int(dtd) if dtd is not None else None,
+            }
+            if dtd is not None and dtd < 0:
+                overdue_jobs.append({**entry, "overdue_days": abs(int(dtd))})
+            elif dtd is not None and dtd <= 7:
+                at_risk_jobs.append({**entry, "urgency": "high"})
+            elif dtd is not None and dtd <= 14:
+                at_risk_jobs.append({**entry, "urgency": "medium"})
+            else:
+                compliant_count += 1
+        overall = (
+            "overdue" if overdue_jobs
+            else ("at_risk" if at_risk_jobs else "compliant")
+        )
+        return {
+            "overdue_jobs": overdue_jobs,
+            "at_risk_jobs": at_risk_jobs,
+            "compliant_count": compliant_count,
+            "overall_status": overall,
+        }
+
+    async def get_bottleneck_analysis(
+        self,
+        company_id: str,
+        department: str = "all",
+    ) -> list[dict]:
+        """Stage bottleneck analysis: stagnant candidates, long-open jobs, low scores.
+
+        Returns list of dicts with job_id, title, department, days_open,
+        total_candidates, issues.
+        """
+        from sqlalchemy import text as _text
+
+        cid = self._require_company_id(company_id)
+        rows = await self.db.execute(
+            _text("""
+                SELECT jv.id, jv.title, jv.department,
+                       EXTRACT(DAY FROM NOW() - jv.created_at)::int AS days_open,
+                       COUNT(vc.id) AS total_candidates,
+                       COUNT(vc.id) FILTER (
+                           WHERE vc.updated_at < NOW() - INTERVAL '14 days'
+                       ) AS stagnant_count,
+                       AVG(vc.lia_score) AS avg_score
+                FROM job_vacancies jv
+                LEFT JOIN vacancy_candidates vc ON vc.vacancy_id = jv.id
+                WHERE (jv.status ILIKE '%ativa%' OR jv.status ILIKE '%active%')
+                  AND (:dept = 'all' OR jv.department ILIKE :dept_val)
+                  AND jv.company_id = :company_id
+                GROUP BY jv.id
+                HAVING COUNT(vc.id) > 0
+                ORDER BY stagnant_count DESC, days_open DESC
+                LIMIT 20
+            """),
+            {"dept": department, "dept_val": f"%{department}%", "company_id": cid},
+        )
+        bottlenecks = []
+        for row in rows.mappings():
+            stagnant = int(row["stagnant_count"] or 0)
+            total = int(row["total_candidates"] or 0)
+            days = int(row["days_open"] or 0)
+            issues: list[dict] = []
+            if stagnant > 0 and total > 0:
+                pct = stagnant / total * 100
+                if pct > 30:
+                    issues.append({
+                        "type": "high_stagnation",
+                        "severity": "high",
+                        "detail": (
+                            f"{stagnant}/{total} candidatos parados >14 dias "
+                            f"({pct:.0f}%)"
+                        ),
+                    })
+            if days > 60:
+                issues.append({
+                    "type": "long_time_open",
+                    "severity": "medium",
+                    "detail": f"Vaga aberta ha {days} dias (benchmark: 35 dias)",
+                })
+            avg_score = round(float(row["avg_score"] or 0), 1)
+            if 0 < avg_score < 3.0:
+                issues.append({
+                    "type": "low_quality_pool",
+                    "severity": "high",
+                    "detail": f"Score medio baixo ({avg_score}/5)",
+                })
+            if issues:
+                bottlenecks.append({
+                    "job_id": str(row["id"]),
+                    "title": row["title"],
+                    "department": row["department"],
+                    "days_open": days,
+                    "total_candidates": total,
+                    "issues": issues,
+                })
+        return bottlenecks
+
+    async def get_report_summary(
+        self,
+        company_id: str,
+        period_days: int = 30,
+    ) -> dict:
+        """Comprehensive report data: total, active, closed, avg TTF.
+
+        Returns dict with keys: total_jobs, active, closed, avg_ttf_days.
+        """
+        from sqlalchemy import text as _text
+
+        cid = self._require_company_id(company_id)
+        row_result = await self.db.execute(
+            _text("""
+                SELECT
+                    COUNT(*) AS total,
+                    COUNT(*) FILTER (WHERE status ILIKE '%ativa%') AS active,
+                    COUNT(*) FILTER (WHERE status ILIKE '%conclu%') AS closed,
+                    AVG(EXTRACT(EPOCH FROM (updated_at - created_at)) / 86400)
+                        FILTER (WHERE status ILIKE '%conclu%') AS avg_ttf
+                FROM job_vacancies
+                WHERE company_id = :company_id
+                  AND created_at > NOW() - MAKE_INTERVAL(days => :days)
+            """),
+            {"company_id": cid, "days": period_days},
+        )
+        data = row_result.mappings().first() or {}
+        return {
+            "total_jobs": int(data.get("total") or 0),
+            "active": int(data.get("active") or 0),
+            "closed": int(data.get("closed") or 0),
+            "avg_ttf_days": round(float(data.get("avg_ttf") or 0), 1),
+        }
+
+    async def update_priority(
+        self,
+        job_id: str,
+        company_id: str,
+        priority: str,
+    ) -> dict | None:
+        """Update job priority. Returns previous+new priority or None if not found.
+
+        Returns dict with previous_priority and new_priority, or None.
+        """
+        from sqlalchemy import text as _text
+
+        cid = self._require_company_id(company_id)
+        prev = await self.db.execute(
+            _text(
+                "SELECT priority FROM job_vacancies "
+                "WHERE id = :job_id AND company_id = :company_id"
+            ),
+            {"job_id": job_id, "company_id": cid},
+        )
+        prev_row = prev.mappings().first()
+        if not prev_row:
+            return None
+        await self.db.execute(
+            _text(
+                "UPDATE job_vacancies SET priority = :priority, updated_at = NOW() "
+                "WHERE id = :job_id AND company_id = :company_id"
+            ),
+            {"priority": priority, "job_id": job_id, "company_id": cid},
+        )
+        return {
+            "previous_priority": prev_row["priority"],
+            "new_priority": priority,
+        }
+
+    async def update_status(
+        self,
+        job_id: str,
+        company_id: str,
+        new_status: str,
+    ) -> bool:
+        """Update job status. Returns True if row found and updated, False otherwise.
+
+        Used by jobs_mgmt_tool_registry for pause/reopen/close.
+        """
+        from sqlalchemy import text as _text
+
+        cid = self._require_company_id(company_id)
+        result = await self.db.execute(
+            _text("""
+                UPDATE job_vacancies SET status = :new_status, updated_at = NOW()
+                WHERE id = :job_id AND company_id = :company_id
+                RETURNING status
+            """),
+            {"new_status": new_status, "job_id": job_id, "company_id": cid},
+        )
+        return result.fetchone() is not None
+
 # Backwards-compatible alias: callers in app/domains/analytics + app/domains/sourcing
 # import "JobVacancyCrudRepository" (PascalCase) — pre-existing in the codebase.
 # Real class name is JobVacancyCRUDRepository (all-caps CRUD). Alias avoids

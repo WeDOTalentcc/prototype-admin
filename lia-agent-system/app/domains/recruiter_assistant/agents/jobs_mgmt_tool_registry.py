@@ -3,6 +3,9 @@ Jobs Management Tool Registry - Exposes job portfolio tools to the ReAct loop.
 
 Wraps job management operations into ToolDefinition format so the ReActLoop
 can autonomously decide which tools to call for portfolio management.
+
+ADR-001 W1-004-B Commit 3: all SQL inline blocks migrated to
+JobVacancyCRUDRepository. No AsyncSessionLocal() calls remain here.
 """
 import logging
 import uuid
@@ -10,12 +13,13 @@ from typing import Any
 
 from lia_agents_core.tool_adapter import ToolDefinition
 from lia_agents_core.tool_adapter import ToolOutput
-from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
 from app.domains.hiring_policy.agents.policy_tool_registry import INDUSTRY_BENCHMARKS
+from app.domains.job_management.repositories.job_vacancy_crud_repository import (
+    JobVacancyCrudRepository,
+)
 from app.shared.compliance.fairness_guard import FairnessGuard
-
 from app.shared.tool_handler import tool_handler
 
 logger = logging.getLogger(__name__)
@@ -32,37 +36,23 @@ async def _wrap_get_recruitment_benchmarks(**kwargs: Any) -> dict[str, Any]:
         f"company={company_id} period={period_days}d"
     )
 
-    ttf = 0.0
-    fill_rate = 0.0
-    active_jobs = 0
-    total_jobs = 0
-    filled_jobs = 0
-
+    benchmarks: dict[str, Any] = {}
     try:
-        async with AsyncSessionLocal() as session:
-            result = await session.execute(
-                text("""
-                    SELECT
-                        AVG(EXTRACT(EPOCH FROM (updated_at - created_at)) / 86400) AS avg_ttf,
-                        COUNT(*) FILTER (WHERE status = 'closed') AS filled,
-                        COUNT(*) FILTER (WHERE status = 'active') AS active,
-                        COUNT(*) AS total
-                    FROM job_vacancies
-                    WHERE company_id = :cid
-                      AND created_at > NOW() - MAKE_INTERVAL(days => :days)
-                """),
-                {"cid": company_id, "days": period_days},
+        async with AsyncSessionLocal() as db:
+            repo = JobVacancyCrudRepository(db)
+            benchmarks = await repo.get_recruitment_benchmarks(
+                company_id=company_id,
+                period_days=period_days,
             )
-            row = result.mappings().first()
-            if row:
-                ttf = round(float(row["avg_ttf"] or 0), 1)
-                filled_jobs = int(row["filled"] or 0)
-                active_jobs = int(row["active"] or 0)
-                total_jobs = int(row["total"] or 0)
-                fill_rate = round((filled_jobs / total_jobs * 100) if total_jobs > 0 else 0, 1)
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] SQL error in get_recruitment_benchmarks: {e}")
+
+    ttf = benchmarks.get("avg_ttf_days", 0.0)
+    fill_rate = benchmarks.get("fill_rate", 0.0)
+    active_jobs = benchmarks.get("active_jobs", 0)
+    total_jobs = benchmarks.get("total_jobs", 0)
+    filled_jobs = benchmarks.get("filled_jobs", 0)
 
     market_benchmarks = INDUSTRY_BENCHMARKS.get("technology", {})
     market_ttf = market_benchmarks.get("avg_time_to_fill_days", 35)
@@ -101,7 +91,10 @@ async def _wrap_get_recruitment_benchmarks(**kwargs: Any) -> dict[str, Any]:
             "comparison_with_market": comparison,
         },
         "sources": market_sources + ["Dados internos da empresa (historico de vagas)"],
-        "message": f"Benchmarks de recrutamento carregados para empresa {company_id or 'N/A'} ({period_days} dias).",
+        "message": (
+            f"Benchmarks de recrutamento carregados para empresa "
+            f"{company_id or 'N/A'} ({period_days} dias)."
+        ),
     }
 
 
@@ -113,60 +106,32 @@ async def _wrap_list_jobs(**kwargs: Any) -> dict[str, Any]:
     limit = int(kwargs.get("limit", 30))
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] list_jobs called: status={status} department={department}")
-    jobs = []
+
+    jobs: list[dict] = []
     total = 0
     try:
-        async with AsyncSessionLocal() as session:
-            rows = await session.execute(
-                text("""
-                    SELECT id, title, status, priority, department, location,
-                           created_at, deadline, company_id,
-                           (SELECT COUNT(*) FROM vacancy_candidates vc
-                            WHERE vc.vacancy_id = jv.id) AS candidate_count,
-                           EXTRACT(DAY FROM NOW() - created_at)::int AS days_open
-                    FROM job_vacancies jv
-                    WHERE (:status = 'all' OR status ILIKE :status_val)
-                      AND (:dept = 'all' OR department ILIKE :dept_val)
-                      AND company_id = :cid
-                    ORDER BY
-                        CASE priority WHEN 'alta' THEN 1 WHEN 'média' THEN 2 ELSE 3 END,
-                        created_at DESC
-                    LIMIT :lim
-                """),
-                {"status": status, "status_val": f"%{status}%",
-                 "dept": department, "dept_val": f"%{department}%",
-                 "cid": company_id, "lim": limit},
+        async with AsyncSessionLocal() as db:
+            repo = JobVacancyCrudRepository(db)
+            result = await repo.list_jobs_with_candidate_count(
+                company_id=company_id,
+                status=status,
+                department=department,
+                limit=limit,
             )
-            for row in rows.mappings():
-                jobs.append({
-                    "id": str(row["id"]),
-                    "title": row["title"],
-                    "status": row["status"],
-                    "priority": row["priority"],
-                    "department": row["department"],
-                    "location": row["location"],
-                    "candidate_count": int(row["candidate_count"] or 0),
-                    "days_open": int(row["days_open"] or 0),
-                    "deadline": str(row["deadline"]) if row["deadline"] else None,
-                })
-            count_row = await session.execute(
-                text("""
-                    SELECT COUNT(*) AS total FROM job_vacancies
-                    WHERE (:status = 'all' OR status ILIKE :status_val)
-                      AND (:dept = 'all' OR department ILIKE :dept_val)
-                      AND company_id = :cid
-                """),
-                {"status": status, "status_val": f"%{status}%",
-                 "dept": department, "dept_val": f"%{department}%", "cid": company_id},
-            )
-            total = int((count_row.mappings().first() or {}).get("total", len(jobs)))
+            jobs = result["jobs"]
+            total = result["total"]
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] list_jobs DB error: {e}")
+
     return {
         "success": True,
-        "data": {"status_filter": status, "department_filter": department,
-                 "total_jobs": total, "jobs": jobs},
+        "data": {
+            "status_filter": status,
+            "department_filter": department,
+            "total_jobs": total,
+            "jobs": jobs,
+        },
         "message": f"{total} vagas encontradas (status={status}, departamento={department}).",
     }
 
@@ -177,56 +142,27 @@ async def _wrap_view_job_details(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")  # P0.A canonical: tenant gate
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] view_job_details called for job={job_id}")
-    async with AsyncSessionLocal() as session:
-        row = await session.execute(
-            text("""
-                SELECT id, title, status, priority, department, location,
-                       description, requirements, technical_requirements,
-                       salary_range, benefits, created_at, deadline,
-                       recruiter, manager, company_id,
-                       EXTRACT(DAY FROM NOW() - created_at)::int AS days_open
-                FROM job_vacancies
-                WHERE id = :jid AND company_id = :company_id
-            """),
-            {"jid": job_id, "company_id": company_id},
-        )
-        data = row.mappings().first()
-        if not data:
-            return {"success": False, "data": {}, "message": f"Vaga {job_id} nao encontrada."}
 
-        counts = await session.execute(
-            text("""
-                SELECT status, COUNT(*) AS cnt
-                FROM vacancy_candidates
-                WHERE vacancy_id = :jid AND company_id = :company_id
-                GROUP BY status
-            """),
-            {"jid": job_id, "company_id": company_id},
+    async with AsyncSessionLocal() as db:
+        repo = JobVacancyCrudRepository(db)
+        data = await repo.get_job_details_with_days_open(
+            job_id=job_id,
+            company_id=company_id,
         )
-        by_status = {r["status"]: int(r["cnt"]) for r in counts.mappings()}
-        total_candidates = sum(by_status.values())
 
-        return {
-            "success": True,
-            "data": {
-                "job_id": str(data["id"]),
-                "title": data["title"],
-                "status": data["status"],
-                "priority": data["priority"],
-                "department": data["department"],
-                "location": data["location"],
-                "description": (data["description"] or "")[:500],
-                "technical_requirements": data["technical_requirements"],
-                "salary_range": data["salary_range"],
-                "recruiter": data["recruiter"],
-                "manager": data["manager"],
-                "deadline": str(data["deadline"]) if data["deadline"] else None,
-                "days_open": int(data["days_open"] or 0),
-                "candidates_total": total_candidates,
-                "candidates_by_status": by_status,
-            },
-            "message": f"Detalhes da vaga '{data['title']}' carregados. {total_candidates} candidatos.",
-        }
+    if not data:
+        return {"success": False, "data": {}, "message": f"Vaga {job_id} nao encontrada."}
+
+    return {
+        "success": True,
+        "data": data,
+        "message": (
+            f"Detalhes da vaga '{data['title']}' carregados. "
+            f"{data['candidates_total']} candidatos."
+        ),
+    }
+
+
 @tool_handler("jobs_mgmt")
 async def _wrap_get_portfolio_metrics(**kwargs: Any) -> dict[str, Any]:
     period = kwargs.get("period", "month")
@@ -234,45 +170,27 @@ async def _wrap_get_portfolio_metrics(**kwargs: Any) -> dict[str, Any]:
     period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] get_portfolio_metrics called: period={period}")
+
     metrics: dict[str, Any] = {}
     try:
-        async with AsyncSessionLocal() as session:
-            row = await session.execute(
-                text("""
-                    SELECT
-                        COUNT(*) FILTER (WHERE status ILIKE '%ativa%' OR status ILIKE '%active%') AS total_active,
-                        COUNT(*) FILTER (WHERE status ILIKE '%pausada%' OR status ILIKE '%paused%') AS total_paused,
-                        COUNT(*) FILTER (WHERE status ILIKE '%conclu%' OR status ILIKE '%closed%') AS total_closed,
-                        COUNT(*) FILTER (WHERE status ILIKE '%rascunho%' OR status ILIKE '%draft%') AS total_draft,
-                        COUNT(*) AS total,
-                        AVG(EXTRACT(EPOCH FROM (updated_at - created_at)) / 86400)
-                            FILTER (WHERE status ILIKE '%conclu%' OR status ILIKE '%closed%') AS avg_ttf
-                    FROM job_vacancies
-                    WHERE company_id = :cid
-                      AND created_at > NOW() - MAKE_INTERVAL(days => :days)
-                """),
-                {"cid": company_id, "days": period_days},
+        async with AsyncSessionLocal() as db:
+            repo = JobVacancyCrudRepository(db)
+            metrics = await repo.get_portfolio_metrics(
+                company_id=company_id,
+                period_days=period_days,
             )
-            data = row.mappings().first() or {}
-            total = int(data.get("total") or 0)
-            closed = int(data.get("total_closed") or 0)
-            metrics = {
-                "period": period,
-                "total_active": int(data.get("total_active") or 0),
-                "total_paused": int(data.get("total_paused") or 0),
-                "total_closed": closed,
-                "total_draft": int(data.get("total_draft") or 0),
-                "total": total,
-                "avg_time_to_hire": round(float(data.get("avg_ttf") or 0), 1),
-                "fill_rate": round(closed / total * 100, 1) if total > 0 else 0.0,
-            }
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] get_portfolio_metrics DB error: {e}")
+
     return {
         "success": True,
-        "data": metrics,
-        "message": f"Metricas do portfolio ({period}): {metrics.get('total_active', 0)} ativas, fill rate {metrics.get('fill_rate', 0)}%.",
+        "data": {**metrics, "period": period},
+        "message": (
+            f"Metricas do portfolio ({period}): "
+            f"{metrics.get('total_active', 0)} ativas, "
+            f"fill rate {metrics.get('fill_rate', 0)}%."
+        ),
     }
 
 
@@ -282,46 +200,26 @@ async def _wrap_compare_jobs(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")  # P0.A canonical: batch tenant gate
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] compare_jobs called: jobs={job_ids}")
-    comparison = []
+
+    comparison: list[dict] = []
     try:
-        if job_ids:
-            async with AsyncSessionLocal() as session:
-                rows = await session.execute(
-                    text("""
-                        SELECT jv.id, jv.title, jv.status, jv.priority, jv.department,
-                               jv.created_at, jv.deadline,
-                               EXTRACT(DAY FROM NOW() - jv.created_at)::int AS days_open,
-                               COUNT(vc.id) AS candidate_count,
-                               AVG(vc.lia_score) AS avg_score,
-                               COUNT(vc.id) FILTER (WHERE vc.status = 'rejected') AS rejected_count
-                        FROM job_vacancies jv
-                        LEFT JOIN vacancy_candidates vc ON vc.vacancy_id = jv.id
-                              AND vc.company_id = :company_id
-                        WHERE jv.id = ANY(:ids::uuid[])
-                          AND jv.company_id = :company_id
-                        GROUP BY jv.id
-                        ORDER BY jv.created_at DESC
-                    """),
-                    {"ids": job_ids, "company_id": company_id},
-                )
-                for row in rows.mappings():
-                    comparison.append({
-                        "id": str(row["id"]),
-                        "title": row["title"],
-                        "status": row["status"],
-                        "priority": row["priority"],
-                        "department": row["department"],
-                        "days_open": int(row["days_open"] or 0),
-                        "candidate_count": int(row["candidate_count"] or 0),
-                        "avg_lia_score": round(float(row["avg_score"] or 0), 1),
-                        "rejected_count": int(row["rejected_count"] or 0),
-                    })
+        async with AsyncSessionLocal() as db:
+            repo = JobVacancyCrudRepository(db)
+            comparison = await repo.compare_jobs_by_ids(
+                job_ids=job_ids,
+                company_id=company_id,
+            )
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] compare_jobs DB error: {e}")
+
     return {
         "success": True,
-        "data": {"job_ids": job_ids, "comparison_count": len(comparison), "comparison": comparison},
+        "data": {
+            "job_ids": job_ids,
+            "comparison_count": len(comparison),
+            "comparison": comparison,
+        },
         "message": f"Comparacao de {len(comparison)} vagas concluida.",
     }
 
@@ -332,53 +230,40 @@ async def _wrap_check_sla(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] check_sla called: job={job_id or 'all'}")
-    overdue_jobs = []
-    at_risk_jobs = []
-    compliant_count = 0
+
+    sla: dict[str, Any] = {
+        "overdue_jobs": [],
+        "at_risk_jobs": [],
+        "compliant_count": 0,
+        "overall_status": "compliant",
+    }
     try:
-        async with AsyncSessionLocal() as session:
-            rows = await session.execute(
-                text("""
-                    SELECT id, title, status, deadline,
-                           EXTRACT(DAY FROM NOW() - created_at)::int AS days_open,
-                           EXTRACT(DAY FROM deadline - NOW())::int AS days_to_deadline
-                    FROM job_vacancies
-                    WHERE (status ILIKE '%ativa%' OR status ILIKE '%active%')
-                      AND (:jid = '' OR id::text = :jid)
-                      AND company_id = :cid
-                """),
-                {"jid": job_id, "cid": company_id},
+        async with AsyncSessionLocal() as db:
+            repo = JobVacancyCrudRepository(db)
+            sla = await repo.get_sla_status(
+                company_id=company_id,
+                job_id=job_id,
             )
-            for row in rows.mappings():
-                dtd = row["days_to_deadline"]
-                entry = {"id": str(row["id"]), "title": row["title"],
-                         "days_open": int(row["days_open"] or 0),
-                         "days_to_deadline": int(dtd) if dtd is not None else None}
-                if dtd is not None and dtd < 0:
-                    overdue_jobs.append({**entry, "overdue_days": abs(int(dtd))})
-                elif dtd is not None and dtd <= 7:
-                    at_risk_jobs.append({**entry, "urgency": "high"})
-                elif dtd is not None and dtd <= 14:
-                    at_risk_jobs.append({**entry, "urgency": "medium"})
-                else:
-                    compliant_count += 1
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] check_sla DB error: {e}")
 
-    overall = "overdue" if overdue_jobs else ("at_risk" if at_risk_jobs else "compliant")
     return {
         "success": True,
         "data": {
             "job_id": job_id or "all",
-            "sla_status": overall,
-            "overdue": len(overdue_jobs),
-            "at_risk": len(at_risk_jobs),
-            "compliant": compliant_count,
-            "overdue_jobs": overdue_jobs,
-            "at_risk_jobs": at_risk_jobs,
+            "sla_status": sla["overall_status"],
+            "overdue": len(sla["overdue_jobs"]),
+            "at_risk": len(sla["at_risk_jobs"]),
+            "compliant": sla["compliant_count"],
+            "overdue_jobs": sla["overdue_jobs"],
+            "at_risk_jobs": sla["at_risk_jobs"],
         },
-        "message": f"SLA: {len(overdue_jobs)} vencidas, {len(at_risk_jobs)} em risco, {compliant_count} ok.",
+        "message": (
+            f"SLA: {len(sla['overdue_jobs'])} vencidas, "
+            f"{len(sla['at_risk_jobs'])} em risco, "
+            f"{sla['compliant_count']} ok."
+        ),
     }
 
 
@@ -388,63 +273,27 @@ async def _wrap_analyze_bottlenecks(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] analyze_bottlenecks called: department={department}")
-    bottlenecks = []
+
+    bottlenecks: list[dict] = []
     try:
-        async with AsyncSessionLocal() as session:
-            rows = await session.execute(
-                text("""
-                    SELECT jv.id, jv.title, jv.department,
-                           EXTRACT(DAY FROM NOW() - jv.created_at)::int AS days_open,
-                           COUNT(vc.id) AS total_candidates,
-                           COUNT(vc.id) FILTER (
-                               WHERE vc.updated_at < NOW() - INTERVAL '14 days'
-                           ) AS stagnant_count,
-                           AVG(vc.lia_score) AS avg_score
-                    FROM job_vacancies jv
-                    LEFT JOIN vacancy_candidates vc ON vc.vacancy_id = jv.id
-                    WHERE (jv.status ILIKE '%ativa%' OR jv.status ILIKE '%active%')
-                      AND (:dept = 'all' OR jv.department ILIKE :dept_val)
-                      AND (:cid = '' OR jv.company_id = :cid)
-                    GROUP BY jv.id
-                    HAVING COUNT(vc.id) > 0
-                    ORDER BY stagnant_count DESC, days_open DESC
-                    LIMIT 20
-                """),
-                {"dept": department, "dept_val": f"%{department}%", "cid": company_id},
+        async with AsyncSessionLocal() as db:
+            repo = JobVacancyCrudRepository(db)
+            bottlenecks = await repo.get_bottleneck_analysis(
+                company_id=company_id,
+                department=department,
             )
-            for row in rows.mappings():
-                stagnant = int(row["stagnant_count"] or 0)
-                total = int(row["total_candidates"] or 0)
-                days = int(row["days_open"] or 0)
-                issues = []
-                if stagnant > 0 and total > 0:
-                    pct = stagnant / total * 100
-                    if pct > 30:
-                        issues.append({"type": "high_stagnation", "severity": "high",
-                                       "detail": f"{stagnant}/{total} candidatos parados >14 dias ({pct:.0f}%)"})
-                if days > 60:
-                    issues.append({"type": "long_time_open", "severity": "medium",
-                                   "detail": f"Vaga aberta ha {days} dias (benchmark: 35 dias)"})
-                avg_score = round(float(row["avg_score"] or 0), 1)
-                if 0 < avg_score < 3.0:
-                    issues.append({"type": "low_quality_pool", "severity": "high",
-                                   "detail": f"Score medio baixo ({avg_score}/5)"})
-                if issues:
-                    bottlenecks.append({
-                        "job_id": str(row["id"]),
-                        "title": row["title"],
-                        "department": row["department"],
-                        "days_open": days,
-                        "total_candidates": total,
-                        "issues": issues,
-                    })
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] analyze_bottlenecks DB error: {e}")
+
     return {
         "success": True,
-        "data": {"department": department, "bottlenecks": bottlenecks,
-                 "total_identified": len(bottlenecks), "analysis_complete": True},
+        "data": {
+            "department": department,
+            "bottlenecks": bottlenecks,
+            "total_identified": len(bottlenecks),
+            "analysis_complete": True,
+        },
         "message": f"{len(bottlenecks)} gargalos identificados no departamento '{department}'.",
     }
 
@@ -456,42 +305,58 @@ async def _wrap_pause_job(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] pause_job called: job={job_id} reason={reason}")
-    async with AsyncSessionLocal() as session:
-        result = await session.execute(
-            text("""
-                UPDATE job_vacancies SET status = 'Pausada', updated_at = NOW()
-                WHERE id = :jid AND company_id = :cid
-                RETURNING status
-            """),
-            {"jid": job_id, "cid": company_id},
+
+    async with AsyncSessionLocal() as db:
+        repo = JobVacancyCrudRepository(db)
+        found = await repo.update_status(
+            job_id=job_id,
+            company_id=company_id,
+            new_status="Pausada",
         )
-        if not result.fetchone():
-            return {"success": False, "data": {}, "message": f"Vaga {job_id} nao encontrada ou sem permissao."}
-        await session.commit()
-    return {"success": True,
-            "data": {"job_id": job_id, "new_status": "Pausada", "reason": reason},
-            "message": f"Vaga {job_id} pausada com sucesso."}
+        if not found:
+            return {
+                "success": False,
+                "data": {},
+                "message": f"Vaga {job_id} nao encontrada ou sem permissao.",
+            }
+        await db.commit()
+
+    return {
+        "success": True,
+        "data": {"job_id": job_id, "new_status": "Pausada", "reason": reason},
+        "message": f"Vaga {job_id} pausada com sucesso.",
+    }
+
+
 @tool_handler("jobs_mgmt")
 async def _wrap_reopen_job(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
     company_id = kwargs.get("company_id", "")
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] reopen_job called: job={job_id}")
-    async with AsyncSessionLocal() as session:
-        result = await session.execute(
-            text("""
-                UPDATE job_vacancies SET status = 'Ativa', updated_at = NOW()
-                WHERE id = :jid AND company_id = :cid
-                RETURNING status
-            """),
-            {"jid": job_id, "cid": company_id},
+
+    async with AsyncSessionLocal() as db:
+        repo = JobVacancyCrudRepository(db)
+        found = await repo.update_status(
+            job_id=job_id,
+            company_id=company_id,
+            new_status="Ativa",
         )
-        if not result.fetchone():
-            return {"success": False, "data": {}, "message": f"Vaga {job_id} nao encontrada ou sem permissao."}
-        await session.commit()
-    return {"success": True,
-            "data": {"job_id": job_id, "new_status": "Ativa"},
-            "message": f"Vaga {job_id} reaberta com sucesso."}
+        if not found:
+            return {
+                "success": False,
+                "data": {},
+                "message": f"Vaga {job_id} nao encontrada ou sem permissao.",
+            }
+        await db.commit()
+
+    return {
+        "success": True,
+        "data": {"job_id": job_id, "new_status": "Ativa"},
+        "message": f"Vaga {job_id} reaberta com sucesso.",
+    }
+
+
 @tool_handler("jobs_mgmt")
 async def _wrap_close_job(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
@@ -499,47 +364,68 @@ async def _wrap_close_job(**kwargs: Any) -> dict[str, Any]:
     company_id = kwargs.get("company_id", "")
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] close_job called: job={job_id} reason={reason}")
-    async with AsyncSessionLocal() as session:
-        result = await session.execute(
-            text("""
-                UPDATE job_vacancies SET status = 'Concluída', updated_at = NOW()
-                WHERE id = :jid AND company_id = :cid
-                RETURNING status
-            """),
-            {"jid": job_id, "cid": company_id},
+
+    async with AsyncSessionLocal() as db:
+        repo = JobVacancyCrudRepository(db)
+        found = await repo.update_status(
+            job_id=job_id,
+            company_id=company_id,
+            new_status="Concluída",
         )
-        if not result.fetchone():
-            return {"success": False, "data": {}, "message": f"Vaga {job_id} nao encontrada ou sem permissao."}
-        await session.commit()
-    return {"success": True,
-            "data": {"job_id": job_id, "new_status": "Concluída", "reason": reason},
-            "message": f"Vaga {job_id} fechada com sucesso."}
+        if not found:
+            return {
+                "success": False,
+                "data": {},
+                "message": f"Vaga {job_id} nao encontrada ou sem permissao.",
+            }
+        await db.commit()
+
+    return {
+        "success": True,
+        "data": {"job_id": job_id, "new_status": "Concluída", "reason": reason},
+        "message": f"Vaga {job_id} fechada com sucesso.",
+    }
+
+
 @tool_handler("jobs_mgmt")
 async def _wrap_update_priority(**kwargs: Any) -> dict[str, Any]:
     job_id = kwargs.get("job_id", "")
     priority = kwargs.get("priority", "média")
     company_id = kwargs.get("company_id", "")
-    priority_map = {"high": "alta", "medium": "média", "low": "baixa",
-                    "alta": "alta", "média": "média", "baixa": "baixa"}
+    priority_map = {
+        "high": "alta", "medium": "média", "low": "baixa",
+        "alta": "alta", "média": "média", "baixa": "baixa",
+    }
     priority_pt = priority_map.get(priority.lower(), priority)
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] update_priority called: job={job_id} priority={priority_pt}")
-    async with AsyncSessionLocal() as session:
-        prev = await session.execute(
-            text("SELECT priority FROM job_vacancies WHERE id = :jid AND company_id = :cid"),
-            {"jid": job_id, "cid": company_id},
+
+    async with AsyncSessionLocal() as db:
+        repo = JobVacancyCrudRepository(db)
+        result = await repo.update_priority(
+            job_id=job_id,
+            company_id=company_id,
+            priority=priority_pt,
         )
-        prev_row = prev.mappings().first()
-        if not prev_row:
-            return {"success": False, "data": {}, "message": f"Vaga {job_id} nao encontrada."}
-        await session.execute(
-            text("UPDATE job_vacancies SET priority = :p, updated_at = NOW() WHERE id = :jid AND company_id = :cid"),
-            {"p": priority_pt, "jid": job_id, "cid": company_id},
-        )
-        await session.commit()
-    return {"success": True,
-            "data": {"job_id": job_id, "previous_priority": prev_row["priority"], "new_priority": priority_pt},
-            "message": f"Prioridade da vaga {job_id} atualizada para '{priority_pt}'."}
+        if result is None:
+            return {
+                "success": False,
+                "data": {},
+                "message": f"Vaga {job_id} nao encontrada.",
+            }
+        await db.commit()
+
+    return {
+        "success": True,
+        "data": {
+            "job_id": job_id,
+            "previous_priority": result["previous_priority"],
+            "new_priority": priority_pt,
+        },
+        "message": f"Prioridade da vaga {job_id} atualizada para '{priority_pt}'.",
+    }
+
+
 @tool_handler("jobs_mgmt")
 async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     report_type = kwargs.get("report_type", "summary")
@@ -548,39 +434,33 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     period_days = {"week": 7, "month": 30, "quarter": 90}.get(period, 30)
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[jobs_mgmt_tools] generate_report called: type={report_type} period={period}")
+
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
     summary: dict[str, Any] = {}
     try:
-        async with AsyncSessionLocal() as session:
-            row = await session.execute(
-                text("""
-                    SELECT
-                        COUNT(*) AS total,
-                        COUNT(*) FILTER (WHERE status ILIKE '%ativa%') AS active,
-                        COUNT(*) FILTER (WHERE status ILIKE '%conclu%') AS closed,
-                        AVG(EXTRACT(EPOCH FROM (updated_at - created_at)) / 86400)
-                            FILTER (WHERE status ILIKE '%conclu%') AS avg_ttf
-                    FROM job_vacancies
-                    WHERE company_id = :cid
-                      AND created_at > NOW() - MAKE_INTERVAL(days => :days)
-                """),
-                {"cid": company_id, "days": period_days},
+        async with AsyncSessionLocal() as db:
+            repo = JobVacancyCrudRepository(db)
+            summary = await repo.get_report_summary(
+                company_id=company_id,
+                period_days=period_days,
             )
-            data = row.mappings().first() or {}
-            summary = {
-                "total_jobs": int(data.get("total") or 0),
-                "active": int(data.get("active") or 0),
-                "closed": int(data.get("closed") or 0),
-                "avg_ttf_days": round(float(data.get("avg_ttf") or 0), 1),
-            }
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[jobs_mgmt_tools] generate_report DB error: {e}")
+
     return {
         "success": True,
-        "data": {"report_type": report_type, "period": period,
-                 "report_id": report_id, "generated": True, "summary": summary},
-        "message": f"Relatorio '{report_type}' gerado (id: {report_id}). {summary.get('total_jobs', 0)} vagas no periodo.",
+        "data": {
+            "report_type": report_type,
+            "period": period,
+            "report_id": report_id,
+            "generated": True,
+            "summary": summary,
+        },
+        "message": (
+            f"Relatorio '{report_type}' gerado (id: {report_id}). "
+            f"{summary.get('total_jobs', 0)} vagas no periodo."
+        ),
     }
 
 
@@ -619,7 +499,9 @@ async def _wrap_validate_job_action_fairness(**kwargs: Any) -> dict[str, Any]:
 
         semantic_warnings = []
         try:
-            semantic_result = await _fairness_guard.check_semantic(action_description, context=f"job_action_{action_type}")
+            semantic_result = await _fairness_guard.check_semantic(
+                action_description, context=f"job_action_{action_type}"
+            )
             if semantic_result.is_blocked:
                 return {
                     "success": True,
@@ -631,14 +513,19 @@ async def _wrap_validate_job_action_fairness(**kwargs: Any) -> dict[str, Any]:
                         "educational_message": semantic_result.educational_message,
                         "soft_warnings": implicit_warnings + (semantic_result.soft_warnings or []),
                     },
-                    "message": f"Acao BLOQUEADA por vies semantico: {semantic_result.educational_message}",
+                    "message": (
+                        f"Acao BLOQUEADA por vies semantico: "
+                        f"{semantic_result.educational_message}"
+                    ),
                 }
             semantic_warnings = semantic_result.soft_warnings or []
         except Exception as sem_err:
             # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.debug(f"[jobs_mgmt_tools] semantic check skipped: {sem_err}")
 
-        all_warnings = implicit_warnings + [w for w in semantic_warnings if w not in implicit_warnings]
+        all_warnings = implicit_warnings + [
+            w for w in semantic_warnings if w not in implicit_warnings
+        ]
 
         return {
             "success": True,
@@ -708,14 +595,28 @@ async def _wrap_get_pipeline_prediction_jobs_mgmt(**kwargs: Any) -> dict[str, An
         interpretation = (
             f"{summary.get('total_active_vacancies', 0)} vagas ativas. "
             f"{len(at_risk)} em risco de não fechar: "
-            + (", ".join(f"'{v['vacancy_title']}' ({v['closure_probability']}%)" for v in at_risk[:3]) or "nenhuma")
+            + (
+                ", ".join(
+                    f"'{v['vacancy_title']}' ({v['closure_probability']}%)"
+                    for v in at_risk[:3]
+                )
+                or "nenhuma"
+            )
             + f". {len(near)} prestes a fechar: "
-            + (", ".join(f"'{v['vacancy_title']}' ({v['closure_probability']}%)" for v in near[:3]) or "nenhuma")
+            + (
+                ", ".join(
+                    f"'{v['vacancy_title']}' ({v['closure_probability']}%)"
+                    for v in near[:3]
+                )
+                or "nenhuma"
+            )
             + "."
         )
     result["success"] = True
     result["interpretation"] = interpretation
     return result
+
+
 TOOL_DEFINITIONS: list[ToolDefinition] = [
     ToolDefinition(
         affects_candidate_decision=True,
@@ -949,6 +850,4 @@ def get_jobs_mgmt_tools(stage: str = "") -> list[ToolDefinition]:
 
     tool_names = STAGE_TOOLS.get(stage, list(_TOOL_MAP.keys()))
     tools = [_TOOL_MAP[name] for name in tool_names if name in _TOOL_MAP]
-    # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
-    logger.debug(f"[jobs_mgmt_tools] Stage '{stage}' tools: {[t.name for t in tools]}")
     return tools
