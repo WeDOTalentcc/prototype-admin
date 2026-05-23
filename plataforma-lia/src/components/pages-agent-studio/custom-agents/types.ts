@@ -85,6 +85,8 @@ export interface CustomAgent {
   enable_memory: boolean
   context_level: ContextLevel
   excluded_tools: string[]
+  /** Sprint 3.7 W4-1: per-agent voice flag (default OFF). Cliente toggles via UI. */
+  voice_enabled?: boolean
   total_executions: number
   avg_confidence: number
   last_executed_at: string | null

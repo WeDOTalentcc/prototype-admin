@@ -1,7 +1,7 @@
 "use client"
 
 import React from "react"
-import { Bot, Play, Pause, MoreVertical, Link2, TestTube2, Copy } from "lucide-react"
+import { Bot, Play, Pause, MoreVertical, Link2, TestTube2, Copy, Phone, PhoneCall } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { cardStyles, badgeStyles, textStyles } from "@/lib/design-tokens"
@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { getCustomAgentStatusConfig } from "@/lib/agent-studio/status-config"
 import { BetaBadge } from "@/components/ui/beta-badge"
+import { Switch } from "@/components/ui/switch"
+import { useToggleAgentVoice, useInitiateVoiceCall } from "@/hooks/agent-studio/use-agent-voice"
 import type { CustomAgent } from "./types"
 import { safeCategoryKey } from "./types"
 
@@ -28,6 +30,10 @@ interface AgentCardProps {
 
 export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: AgentCardProps) {
   const t = useTranslations('agents.card')
+  // Sprint 3.7 W4-1: per-agent voice toggle + initiate hooks
+  const toggleVoice = useToggleAgentVoice(agent.id)
+  const initiateVoice = useInitiateVoiceCall(agent.id)
+  const voiceEnabled = Boolean(agent.voice_enabled)
   const tStatus = useTranslations('agents.status')
   const tCat = useTranslations('agents.customAgents')
 
@@ -101,6 +107,37 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
             <span className="text-lia-text-disabled ml-1">{t('confidence')}</span>
           </div>
         )}
+      </div>
+
+      {/* Sprint 3.7 W4-1: Voice toggle + Iniciar chamada */}
+      <div className="flex items-center justify-between gap-2 pt-2 border-t border-lia-border-subtle">
+        <div className="flex items-center gap-2 text-xs">
+          <Phone className="w-3.5 h-3.5 text-lia-text-disabled" aria-hidden="true" />
+          <span className="text-lia-text-secondary">{t('voice') || 'Voz'}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              if (!voiceEnabled) return
+              initiateVoice.trigger({ candidate_id: "" })
+            }}
+            disabled={!voiceEnabled || initiateVoice.isMutating}
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-wedo-cyan-dark hover:bg-wedo-cyan/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            aria-label={voiceEnabled ? (t('startVoiceCall') || 'Iniciar chamada de voz') : (t('voiceDisabled') || 'Voz desabilitada neste agente')}
+            data-testid="agent-card-initiate-voice"
+          >
+            <PhoneCall className="w-3.5 h-3.5" aria-hidden="true" />
+            {t('startCall') || 'Iniciar chamada'}
+          </button>
+          <Switch
+            checked={voiceEnabled}
+            disabled={toggleVoice.isMutating}
+            onCheckedChange={(next) => toggleVoice.trigger(next)}
+            aria-label={voiceEnabled ? (t('disableVoice') || 'Desabilitar voz no agente ' + agent.name) : (t('enableVoice') || 'Habilitar voz no agente ' + agent.name)}
+            data-testid="agent-card-voice-toggle"
+          />
+        </div>
       </div>
 
       {/* Actions */}
