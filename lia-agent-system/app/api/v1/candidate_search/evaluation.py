@@ -12,7 +12,6 @@ from ._shared import (
     CVParserService,
     CandidateProfile,
     CandidateSearchResultDTO,
-    CreditEstimateDTO,
     EducationDTO,
     EvaluateForJobRequest,
     EvaluateForJobResponse,

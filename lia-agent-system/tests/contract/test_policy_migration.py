@@ -71,26 +71,18 @@ def test_canonical_hiring_policy_modules_exist():
             )
 
 
-def test_legacy_policy_module_still_importable_via_shim():
+def test_legacy_policy_shim_removed():
     """
-    Shim em ``app/agents/policy_setup_agent.py`` deve continuar importável
-    enquanto não chegar Sprint VI cleanup.
-
-    Quando Sprint VI remover, atualizar sensor pra esperar ImportError + ADR
-    documentando cleanup.
+    W4-033 (2026-05-23) removeu o shim ``app/agents/policy_setup_agent.py``.
+    Zero callers de produção confirmados antes da deleção.
+    Sensor atualizado: verifica que o shim NÃO existe.
     """
-    # Suppress DeprecationWarning pra teste limpo
-    import warnings
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", DeprecationWarning)
-        from app.agents.policy_setup_agent import (  # noqa: F401
-            PolicySetupAgent,
-            policy_setup_agent,
-        )
-
-    # Singleton instance deve existir
-    assert policy_setup_agent is not None, (
-        "policy_setup_agent singleton ausente. Shim em app/agents/ broken."
+    import importlib.util
+    spec = importlib.util.find_spec("app.agents.policy_setup_agent")
+    assert spec is None, (
+        "Shim app/agents/policy_setup_agent.py foi restaurado indevidamente. "
+        "W4-033 deletou este shim (zero callers confirmados 2026-05-23). "
+        "Use app.domains.hiring_policy.agents.policy_react_agent diretamente."
     )
 
 

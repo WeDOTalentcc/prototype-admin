@@ -67,54 +67,25 @@ class TestCanonicalAgentTypesLocation:
         assert action.name == "n"
 
 
-class TestLegacyBaseAgentShimBehavior:
-    """app/agents/base_agent.py NÃO pode mais ter BaseAgent ABC legacy."""
+class TestLegacyBaseAgentShimRemoved:
+    """W4-033 (2026-05-23): shim app/agents/base_agent.py foi DELETADO."""
 
-    def test_legacy_module_does_not_export_baseagent_abc(self) -> None:
-        """
-        Shim de retrocompat pode re-exportar enums (AgentType, TaskPriority etc.)
-        com DeprecationWarning, mas NÃO o `BaseAgent(ABC)` legacy com
-        process(intent, entities, context) — esse foi pra `lia_agents_core`.
-        """
-        import warnings
+    def test_legacy_shim_does_not_exist(self) -> None:
+        """W4-033 deletou o shim — confirma que não existe mais no filesystem."""
+        import importlib.util
+        spec = importlib.util.find_spec("app.agents.base_agent")
+        assert spec is None, (
+            "Shim app/agents/base_agent.py foi restaurado indevidamente. "
+            "W4-033 deletou este shim (zero callers confirmados). "
+            "Use app.shared.agents.agent_types para AgentType/TaskPriority/etc."
+        )
 
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore", DeprecationWarning)
-            from app.agents import base_agent as legacy_mod
-
-        # Enums podem persistir via shim
-        assert hasattr(legacy_mod, "AgentType"), "Shim deve re-exportar AgentType enum"
-
-        # Legacy BaseAgent ABC com process(intent,entities,context) NÃO deve existir
-        # nem como classe própria nem via re-export
-        if hasattr(legacy_mod, "BaseAgent"):
-            from lia_agents_core.agent_interface import BaseAgent as CanonicalBaseAgent
-
-            # Se BaseAgent existe no shim, DEVE ser o canonical (não o legacy)
-            assert legacy_mod.BaseAgent is CanonicalBaseAgent, (
-                "BaseAgent exposto pelo shim deve ser o canonical do "
-                "lia_agents_core.agent_interface, não o legacy ABC."
-            )
-
-    def test_legacy_module_emits_deprecation_warning(self) -> None:
-        """Import direto do shim deve emitir DeprecationWarning."""
-        import importlib
-        import warnings
-
-        # Force reload to capture warning
-        import app.agents.base_agent
-        importlib.reload(app.agents.base_agent)
-
-        with warnings.catch_warnings(record=True) as w:
-            warnings.simplefilter("always")
-            importlib.reload(app.agents.base_agent)
-            deprecation_warns = [
-                warn for warn in w if issubclass(warn.category, DeprecationWarning)
-            ]
-            assert len(deprecation_warns) >= 1, (
-                "Shim deve emitir DeprecationWarning indicando que canonical é "
-                "app.shared.agents.agent_types"
-            )
+    def test_canonical_symbols_remain_accessible(self) -> None:
+        """Símbolos que o shim re-exportava continuam acessíveis via canonical."""
+        from app.shared.agents.agent_types import (  # noqa: F401
+            AgentType, TaskPriority, TaskStatus, AgentAction, AgentTask,
+        )
+        assert AgentType.ORCHESTRATOR.value == "orchestrator"
 
 
 class TestNoLegacyImportsInLiveCode:
@@ -132,9 +103,7 @@ class TestNoLegacyImportsInLiveCode:
                 continue
             for path in root.rglob("*.py"):
                 rel = path.relative_to(REPO_ROOT)
-                # Skip o próprio shim + caches
-                if str(rel) == "app/agents/base_agent.py":
-                    continue
+                # Skip caches — shim deletado em W4-033
                 if "__pycache__" in path.parts:
                     continue
                 try:
