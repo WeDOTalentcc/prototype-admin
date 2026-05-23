@@ -734,7 +734,9 @@
       "clearSearch": "Limpar busca",
       "all": "Todas",
       "noResults": "Nenhuma consulta encontrada",
-      "hint": "Clique para inserir no prompt"
+      "hint": "Clique para inserir no prompt",
+      "dynamicTitle": "Sugestões para você agora",
+      "dynamicLoading": "Carregando sugestões personalizadas..."
     },
     "contextPanel": {
       "title": "Contexto da Conversa",

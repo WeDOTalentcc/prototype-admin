@@ -734,7 +734,9 @@
       "clearSearch": "Clear search",
       "all": "All",
       "noResults": "No queries found",
-      "hint": "Click to insert into prompt"
+      "hint": "Click to insert into prompt",
+      "dynamicTitle": "Suggestions for you now",
+      "dynamicLoading": "Loading personalized suggestions..."
     },
     "contextPanel": {
       "title": "Conversation Context",

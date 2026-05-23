@@ -1,17 +1,39 @@
 "use client"
 
-import React, { useState } from "react"
-import { Search, X } from "lucide-react"
+import React, { useEffect, useState } from "react"
+import { Briefcase, Clock, FileText, Plus, Search, Sparkles, TrendingUp, Users, X, type LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useTranslations } from 'next-intl'
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { QUERY_EXAMPLES, CATEGORY_INFO } from "./chat-suggestions-data"
+import {
+  fetchDynamicSuggestions,
+  type SuggestionCard as DynamicSuggestionCard,
+} from "@/services/lia-api/suggestions-api"
 
 interface ChatSuggestionsPanelProps {
   isOpen: boolean
   onClose: () => void
   onSelectQuery: (query: string) => void
   mode: "sidebar" | "floating" | "fullscreen" | "minimized"
+}
+
+// P1-3 (Fase B 2026-05-23): mapeia icon string do backend pra LucideIcon
+// component. Default = Sparkles (fallback visual gentil quando backend
+// retorna icon name desconhecido — sem quebrar a UI).
+const DYNAMIC_ICON_MAP: Record<string, LucideIcon> = {
+  Briefcase,
+  Clock,
+  FileText,
+  Plus,
+  Search,
+  Sparkles,
+  TrendingUp,
+  Users,
+}
+
+function getDynamicIcon(iconName: string): LucideIcon {
+  return DYNAMIC_ICON_MAP[iconName] ?? Sparkles
 }
 
 export function ChatSuggestionsPanel({
@@ -25,6 +47,38 @@ export function ChatSuggestionsPanel({
   const tc = useTranslations('chat.queryCategories')
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [searchTerm, setSearchTerm] = useState('')
+
+  // P1-3 (Fase B 2026-05-23): sugestoes dinamicas via GET /lia/suggestions.
+  // Fallback gracioso: se API falhar OU retornar lista vazia, panel mostra
+  // SO os QUERY_EXAMPLES estaticos (comportamento pre-P1-3).
+  const [dynamicSuggestions, setDynamicSuggestions] = useState<DynamicSuggestionCard[]>([])
+  const [isLoadingDynamic, setIsLoadingDynamic] = useState(false)
+
+  useEffect(() => {
+    if (!isOpen) return
+    let cancelled = false
+    setIsLoadingDynamic(true)
+    fetchDynamicSuggestions(6)
+      .then((res) => {
+        if (cancelled) return
+        setDynamicSuggestions(res.suggestions ?? [])
+      })
+      .catch((err) => {
+        // Fail-quiet — panel ainda funciona com estaticos.
+        // Log pra debugging mas NAO toast (UX nao precisa ver erro de panel).
+        if (!cancelled) {
+          // eslint-disable-next-line no-console
+          console.warn("[ChatSuggestionsPanel] dynamic suggestions failed:", err)
+          setDynamicSuggestions([])
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingDynamic(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [isOpen])
 
   const translatedQueries = QUERY_EXAMPLES.map(q => ({
     ...q,
@@ -135,6 +189,60 @@ export function ChatSuggestionsPanel({
         mode === "fullscreen" ? "h-[260px]" : "h-[180px]"
       )}>
         <div className="p-2 space-y-1">
+          {/* P1-3 (Fase B): sugestoes dinamicas baseadas no estado real
+              da empresa. Aparece SO se backend retornou cards + nao filtrado
+              por categoria/search (mantem context original quando user esta
+              refinando). */}
+          {dynamicSuggestions.length > 0 && !activeCategory && !searchTerm && (
+            <div className="mb-2">
+              <div className="flex items-center gap-1.5 px-1 pb-1.5">
+                <Sparkles className="w-3 h-3 text-wedo-cyan" />
+                <span className="text-[10px] font-medium uppercase tracking-wide text-lia-text-secondary">
+                  {t('dynamicTitle')}
+                </span>
+              </div>
+              {dynamicSuggestions.map((card) => {
+                const Icon = getDynamicIcon(card.icon)
+                return (
+                  <button
+                    key={`dyn-${card.id}`}
+                    onClick={() => handleSelectQuery(card.title)}
+                    className="w-full px-2.5 py-2 text-left transition-colors motion-reduce:transition-none rounded-md group flex items-center gap-2 hover:bg-lia-bg-secondary border border-transparent hover:border-wedo-cyan/30"
+                  >
+                    <div
+                      className={cn(
+                        "p-1 rounded-md flex-shrink-0",
+                        card.priority === "high"
+                          ? "bg-wedo-cyan/10 text-wedo-cyan"
+                          : "bg-lia-bg-tertiary text-lia-text-tertiary",
+                      )}
+                    >
+                      <Icon className="w-3 h-3" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <span className="block text-xs leading-snug text-lia-text-primary truncate">
+                        {card.title}
+                      </span>
+                      <span className="block text-[10px] leading-tight text-lia-text-tertiary truncate">
+                        {card.description}
+                      </span>
+                    </div>
+                  </button>
+                )
+              })}
+              <div className="mt-1 mb-1 mx-1 border-t border-lia-border-subtle" />
+            </div>
+          )}
+
+          {isLoadingDynamic && dynamicSuggestions.length === 0 && !activeCategory && !searchTerm && (
+            <div className="mb-2 px-1 pb-1.5 flex items-center gap-1.5">
+              <Sparkles className="w-3 h-3 text-lia-text-tertiary animate-pulse" />
+              <span className="text-[10px] text-lia-text-tertiary">
+                {t('dynamicLoading')}
+              </span>
+            </div>
+          )}
+
           {filteredQueries.map((query) => (
             <button
               key={query.id}
