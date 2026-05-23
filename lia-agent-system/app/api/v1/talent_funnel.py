@@ -34,7 +34,7 @@ class CandidateInput(WeDoBaseModel):
 
 class ScoreDropRequest(WeDoBaseModel):
     candidates: list[CandidateInput]
-    qualification_level: str | None = Field("media", pattern="^(alta|media|baixa)$")
+    qualification_level: str | None = Field('media', pattern="^(alta|media|baixa)$")
 
 
 class GapAnalysisRequest(WeDoBaseModel):
@@ -121,7 +121,7 @@ async def wrf_rank(
             ai_model_used="wrf_dynamic_k_service_deterministic",
             explanation_text=(
                 f"Ranking WRF dinamico: {len(candidates)} candidatos rankeados"
-                f" com qualification_level={body.qualification_level or media},"
+                f" com qualification_level={body.qualification_level or 'media'},"
                 f" K={k}, weights={weights}."
             ),
             criteria_used=[

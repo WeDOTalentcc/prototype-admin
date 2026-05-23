@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel, EmailStr
 
 from app.auth.dependencies import get_current_user_or_demo, get_user_company_id
+from lia_models.candidate import VacancyCandidate
 from app.auth.models import User
 from app.domains.communication.services.email_providers import get_email_provider
 from app.domains.shared_searches.dependencies import get_shared_search_repo

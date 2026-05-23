@@ -27,6 +27,7 @@ from typing import Any
 
 from pydantic import BaseModel, Field
 
+from app.shared.chat_types import StructuredDataAdapter
 from app.orchestrator.action_executor import (
     ACTIONABLE_INTENTS,
     ActionResult,

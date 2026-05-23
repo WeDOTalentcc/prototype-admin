@@ -525,7 +525,7 @@ class JobEmbeddingService:
                     "with_embeddings": stats["with_embeddings"],
                     "templates": stats["templates"],
                     "coverage_percent": round(
-                        (with_embedding.scalar() or 0) / max(total.scalar() or 1, 1) * 100, 1
+                        (stats["with_embeddings"] or 0) / max(stats["total_jobs"] or 1, 1) * 100, 1
                     )
                 }
                 

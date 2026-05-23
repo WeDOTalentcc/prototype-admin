@@ -290,7 +290,7 @@ async def tracking_webhook(
                         await ab_service.record_metric(
                             test_name=ab_test,
                             variant_name=ab_variant,
-                            session_id=sg_message_id,
+                            session_id=message_id,
                             company_id=company_id,
                             metric_name=f"email_{mapped_type}",
                             metric_value=1.0,

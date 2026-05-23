@@ -290,7 +290,7 @@ async def rank_candidates(
                     explanation_text=(
                         f"Sourcing tool rank_candidates: {len(candidates_for_ranking)} candidatos "
                         f"rankeados (top {len(ranked)}) com qualification_level="
-                        f"{qualification_level or media}"
+                        f"{qualification_level or 'media'}"
                         + (f" para vaga {vacancy_id}." if vacancy_id else ".")
                     ),
                     criteria_used=[

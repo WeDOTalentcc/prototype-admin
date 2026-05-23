@@ -259,7 +259,7 @@ class CandidateSelfServiceAgent(TenantAwareAgentMixin, LangGraphReActBase, Enhan
 
         # LGPD Art. 20: log explanation request if candidate triggered it (fire-and-forget)
         try:
-            await self._log_lgpd_request_if_triggered(output, context if isinstance(context, dict) else {})
+            await self._log_lgpd_request_if_triggered(output, getattr(output, "context", {}) if isinstance(getattr(output, "context", None), dict) else {})
         except Exception:
             pass
 

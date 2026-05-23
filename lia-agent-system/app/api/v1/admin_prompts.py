@@ -158,7 +158,7 @@ def _resolve_tenant_override_path(company_id: str, path: str) -> Path:
 
 
 def _read_override_metadata(file_path: Path, logical_path: str) -> TenantOverrideEntry:
-    raw = file_path.read_text(encoding="utf-8")
+    raw = file_path.read_text(encoding='utf-8')
     try:
         data = yaml.safe_load(raw)
     except yaml.YAMLError:
@@ -406,9 +406,9 @@ async def put_tenant_override(
             reasoning=[
                 f"path={path}",
                 f"version={version}",
-                f"size_bytes={len(payload.content.encode(utf-8))}",
+                f"size_bytes={len(payload.content.encode('utf-8'))}",
                 f"pii_warnings={len(warnings)}",
-                f"prev_hash={prev_hash or new_file}",
+                f"prev_hash={prev_hash or 'first_version'}",
                 f"new_hash={new_hash}",
             ],
             criteria_used=[

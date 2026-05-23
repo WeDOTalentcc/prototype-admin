@@ -779,7 +779,7 @@ _VOICE_PROVIDER_MAP: dict[str, str] = {
 def get_voice_provider_for_tenant(
     tenant_id: str | None = None,
     primary_provider: str | None = None,
-) -> "VoiceStreamProviderABC":
+) -> "VoiceStreamProviderABC":  # noqa: F821 (forward ref string)
     """
     Get the appropriate VoiceStreamProvider for a tenant based on their LLM config.
 

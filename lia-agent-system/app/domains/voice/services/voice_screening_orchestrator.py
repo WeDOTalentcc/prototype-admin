@@ -1902,6 +1902,7 @@ class VoiceCoreOrchestrator:
 
                 from app.shared.compliance.audit_service import AuditService
 
+                _err_captured = e  # closure capture (e is deleted on except exit)
                 async def _log_canonical():
                     try:
                         await AuditService().log_decision(
@@ -1911,7 +1912,7 @@ class VoiceCoreOrchestrator:
                             action="utterance_filtered_failclosed",
                             decision="blocked_failclosed",
                             reasoning=[
-                                f"engine_error={type(e).__name__}: {str(e)[:200]}",
+                                f"engine_error={type(_err_captured).__name__}: {str(_err_captured)[:200]}",
                                 f"session={session.session_id}",
                                 f"failclosed_fallback_used=safe_neutral",
                             ],

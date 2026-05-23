@@ -11,6 +11,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
 from app.auth.dependencies import get_current_user_or_demo
 from app.auth.models import User
 from app.core.database import get_db
@@ -240,7 +241,6 @@ async def _handle_jobs_management_query(
         jobs_text = "\n".join(jobs_lines) if jobs_lines else "Nenhuma vaga encontrada para esta empresa."
         scope_note = f"vagas selecionadas ({total})" if context_ids else f"últimas {total} vagas"
 
-        from app.shared.prompts.system_prompt_builder import SystemPromptBuilder
 
         _jobs_data = (
             f"=== DADOS REAIS DAS VAGAS ({scope_note}) ===\n"

@@ -247,7 +247,7 @@ async def refresh_byok_active_flag(db, company_id: str, providers_dict: dict) ->
 
 def get_anthropic_streaming_client_for_tenant(
     company_id: str | None = None,
-) -> tuple["AsyncAnthropic", str]:
+) -> tuple["AsyncAnthropic", str]:  # noqa: F821 (forward ref string)
     """Return (AsyncAnthropic client, model_name) respecting tenant Choose Your AI.
 
     LIA-LLM-1 (Choose Your AI enforcement): Used by SSE/streaming endpoints

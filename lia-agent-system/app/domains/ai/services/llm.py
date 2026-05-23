@@ -676,10 +676,6 @@ class LLMService:
         Raises:
             ValueError: If structured output parsing fails
         """
-        # E6: PII stripping
-        strip_pii_for_llm_prompt(prompt)
-
-        
         # === E6: PII stripping (LGPD Art. 12 / EU AI Act Art. 13) ===
         # Strip PII from each user/assistant message content before sending to provider.
         for _msg in messages:

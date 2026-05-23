@@ -84,7 +84,7 @@ class RailsCompanyResolutionError(Exception):
 
 async def resolve_company_from_rails_user(
     user_id: int,
-    ats_client: "WeDOTalentATSClient",
+    ats_client: "WeDOTalentATSClient",  # noqa: F821 (forward ref string)
 ) -> str:
     """
     Resolve company_id/account from a Rails user_id via /v1/me.

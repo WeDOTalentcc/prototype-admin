@@ -337,7 +337,7 @@ company_id: str = Depends(require_company_id)):
             message=body.message,
             response=output.message,
             confidence=output.confidence,
-            tool_calls=tool_calls,
+            tool_calls=_meta.get("tool_calls", []),
             execution_time_ms=elapsed_ms,
             tokens_input=_meta.get("tokens_input", 0),
             tokens_output=_meta.get("tokens_output", 0),
@@ -459,7 +459,7 @@ company_id: str = Depends(require_company_id)):
                 model_used=_meta.get("model_used", ""),
                 latency_ms=elapsed_ms,
                 credits_consumed=credits_consumed,
-                tool_calls=tool_calls,
+                tool_calls=_meta.get("tool_calls", []),
                 # WT-2022 P0.B fix: deriva de output.metadata.blocked (era ghost metric "pass" hardcoded).
                 # FairnessGuard bloqueia agent em runtime.py:464-472 setando metadata.blocked=True;
                 # antes o log SEMPRE escrevia "pass" — dashboard StudioComplianceView vanity metric.
@@ -483,7 +483,7 @@ company_id: str = Depends(require_company_id)):
                 reasoning=[
                     f"Input message length: {len(body.message)}",
                     f"Output length: {len(output.message or '')}",
-                    f"Tool calls: {len(tool_calls)}",
+                    f"Tool calls: {len(_meta.get('tool_calls', []) or [])}",
                     f"Latency: {elapsed_ms}ms",
                     f"Credits consumed: {credits_consumed}",
                 ],

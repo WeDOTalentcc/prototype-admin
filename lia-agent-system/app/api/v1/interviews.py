@@ -7,6 +7,7 @@ from datetime import datetime, timedelta
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query, Request
 from app.shared.providers.llm_factory import get_provider_for_tenant
+from app.domains.analytics.services.activity_service import activity_service as activity_svc
 from pydantic import BaseModel, EmailStr
 
 from app.domains.interview_scheduling.dependencies import get_interview_repo

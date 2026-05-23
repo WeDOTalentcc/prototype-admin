@@ -91,7 +91,7 @@ async def hubspot_webhook(request: Request, ):
                 prop_value = event.get("propertyValue", "")
                 if prop_value == "closedwon":
                     logger.info(
-                        f"[hubspot-webhook] Deal {event.get(objectId)} closed won — "
+                        f"[hubspot-webhook] Deal {event.get('objectId')} closed won — "
                         f"triggering client creation"
                     )
                     # TODO: call clients_crud.create_client + workos provisioning  # R-048: needs owner + ticket
