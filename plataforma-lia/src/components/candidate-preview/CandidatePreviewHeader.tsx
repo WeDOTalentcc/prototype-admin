@@ -71,10 +71,10 @@ function ContactField({ kind, value, candidateId, onSaved }: ContactFieldProps) 
     }
     setSaving(true)
     try {
-      const res = await fetch(`/api/backend-proxy/rh/candidates/${candidateId}`, {
+      const res = await fetch(`/api/backend-proxy/candidates/${candidateId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ candidate: { [fieldName]: trimmed || null } }),
+        body: JSON.stringify({ [fieldName]: trimmed || null }),
       })
       if (!res.ok) {
         const body = await res.json().catch(() => ({}))
