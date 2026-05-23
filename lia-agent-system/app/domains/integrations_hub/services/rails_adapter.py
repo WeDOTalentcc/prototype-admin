@@ -520,6 +520,108 @@ class RailsAdapter:
             return int(rails_id)
         return None
 
+    async def _resolve_rails_job_id(self, job_id: str) -> int | None:
+        """Resolve a job ID (bigint or fork UUID) to a Rails bigint ID.
+
+        Onda 2.1 fix (2026-05-23): espelho de ``_resolve_rails_candidate_id``
+        pra jobs. Sumiu no merge incident (W2-009 dual-ID idempotency broken
+        em camada Rails). Sem isso, retries com UUID vs bigint hashavam pra
+        keys diferentes → operação dupla em produção (ADR 003 violation).
+
+        Lookup via ``GET /v1/jobs?fork_uuid=<uuid>`` em Rails. Cached per-
+        request via client session.
+
+        Returns:
+            Rails bigint id se resolvível; None se job sem fork_uuid em Rails
+            (pre-backfill) ou se Rails indisponível.
+        """
+        direct = self._to_rails_id(job_id)
+        if direct is not None:
+            return direct
+
+        if not self._looks_like_uuid(job_id):
+            return None
+
+        client = await self._get_rails_client()
+        if not client:
+            return None
+
+        lookup = getattr(client, "find_job_by_fork_uuid", None)
+        if not callable(lookup):
+            logger.debug(
+                "[RailsAdapter] Rails client has no find_job_by_fork_uuid — "
+                "falling back to None for UUID %s",
+                job_id,
+            )
+            return None
+
+        try:
+            data = await lookup(job_id)
+        except Exception as exc:
+            logger.warning(
+                "[RailsAdapter] job fork_uuid lookup failed for %s: %s", job_id, exc
+            )
+            return None
+
+        if not data:
+            return None
+        rails_id = data.get("id") if isinstance(data, dict) else None
+        if isinstance(rails_id, int):
+            return rails_id
+        if isinstance(rails_id, str) and rails_id.isdigit():
+            return int(rails_id)
+        return None
+
+    async def _resolve_rails_application_id(self, application_id: str) -> int | None:
+        """Resolve an application (apply) ID (bigint or fork UUID) to Rails bigint.
+
+        Onda 2.1 fix (2026-05-23): terceiro espelho — junto com candidate
+        e job resolvers, completa o canonical dual-ID pattern.
+
+        Lookup via ``GET /v1/applications?fork_uuid=<uuid>`` em Rails.
+
+        Returns:
+            Rails bigint id se resolvível; None se application sem fork_uuid
+            em Rails ou se Rails indisponível.
+        """
+        direct = self._to_rails_id(application_id)
+        if direct is not None:
+            return direct
+
+        if not self._looks_like_uuid(application_id):
+            return None
+
+        client = await self._get_rails_client()
+        if not client:
+            return None
+
+        lookup = getattr(client, "find_application_by_fork_uuid", None)
+        if not callable(lookup):
+            logger.debug(
+                "[RailsAdapter] Rails client has no find_application_by_fork_uuid — "
+                "falling back to None for UUID %s",
+                application_id,
+            )
+            return None
+
+        try:
+            data = await lookup(application_id)
+        except Exception as exc:
+            logger.warning(
+                "[RailsAdapter] application fork_uuid lookup failed for %s: %s",
+                application_id, exc,
+            )
+            return None
+
+        if not data:
+            return None
+        rails_id = data.get("id") if isinstance(data, dict) else None
+        if isinstance(rails_id, int):
+            return rails_id
+        if isinstance(rails_id, str) and rails_id.isdigit():
+            return int(rails_id)
+        return None
+
     async def get_candidate_from_rails_only(self, candidate_id: str) -> dict | None:
         """Fetch candidate from Rails only — no local DB fallback.
 
@@ -842,7 +944,11 @@ class RailsAdapter:
         return None
 
     async def update_job(self, job_id: str, job_data: dict) -> dict | None:
-        """Update job: Rails first, local DB fallback."""
+        """Update job: Rails first, local DB fallback.
+
+        Onda 2.1: usa _resolve_rails_job_id pra canonicalizar UUID → bigint
+        (W2-009 dual-ID idempotency).
+        """
         rails_data = {}
         for fork_field, rails_field in JOB_FORK_TO_RAILS.items():
             if fork_field in job_data and rails_field != "id":
@@ -850,9 +956,9 @@ class RailsAdapter:
 
         client = await self._get_rails_client()
         if client:
-            rails_id = self._to_rails_id(job_id)
+            rails_id = await self._resolve_rails_job_id(job_id)
             if rails_id is None:
-                logger.warning("[RailsAdapter] update_job: non-integer ID %r — skipping Rails", job_id)
+                logger.warning("[RailsAdapter] update_job: unresolvable ID %r — skipping Rails", job_id)
                 return None
             try:
                 result = await client.update_job(rails_id, rails_data)
@@ -864,12 +970,12 @@ class RailsAdapter:
         return None
 
     async def delete_job(self, job_id: str) -> bool:
-        """Delete job from Rails."""
+        """Delete job from Rails (Onda 2.1: dual-ID resolve)."""
         client = await self._get_rails_client()
         if client:
-            rails_id = self._to_rails_id(job_id)
+            rails_id = await self._resolve_rails_job_id(job_id)
             if rails_id is None:
-                logger.warning("[RailsAdapter] delete_job: non-integer ID %r — skipping Rails", job_id)
+                logger.warning("[RailsAdapter] delete_job: unresolvable ID %r — skipping Rails", job_id)
                 return False
             try:
                 return await client.delete_job(rails_id)
@@ -894,12 +1000,12 @@ class RailsAdapter:
         return []
 
     async def get_apply(self, apply_id: str) -> dict | None:
-        """Get a single apply from Rails."""
+        """Get a single apply from Rails (Onda 2.1: dual-ID resolve)."""
         client = await self._get_rails_client()
         if client:
-            rails_id = self._to_rails_id(apply_id)
+            rails_id = await self._resolve_rails_application_id(apply_id)
             if rails_id is None:
-                logger.warning("[RailsAdapter] get_apply: non-integer ID %r — skipping Rails", apply_id)
+                logger.warning("[RailsAdapter] get_apply: unresolvable ID %r — skipping Rails", apply_id)
                 return None
             try:
                 data = await client.get_apply(rails_id)
@@ -910,14 +1016,14 @@ class RailsAdapter:
         return None
 
     async def create_apply(self, candidate_id: str, job_id: str) -> dict | None:
-        """Create an apply in Rails."""
+        """Create an apply in Rails (Onda 2.1: dual-ID resolve for both IDs)."""
         client = await self._get_rails_client()
         if client:
-            cand_rails_id = self._to_rails_id(candidate_id)
-            job_rails_id = self._to_rails_id(job_id)
+            cand_rails_id = await self._resolve_rails_candidate_id(candidate_id)
+            job_rails_id = await self._resolve_rails_job_id(job_id)
             if cand_rails_id is None or job_rails_id is None:
                 logger.warning(
-                    "[RailsAdapter] create_apply: non-integer IDs candidate=%r job=%r — skipping Rails",
+                    "[RailsAdapter] create_apply: unresolvable IDs candidate=%r job=%r — skipping Rails",
                     candidate_id, job_id,
                 )
                 return None
@@ -930,12 +1036,12 @@ class RailsAdapter:
         return None
 
     async def update_apply(self, apply_id: str, apply_data: dict) -> dict | None:
-        """Update an apply in Rails."""
+        """Update an apply in Rails (Onda 2.1: dual-ID resolve)."""
         client = await self._get_rails_client()
         if client:
-            rails_id = self._to_rails_id(apply_id)
+            rails_id = await self._resolve_rails_application_id(apply_id)
             if rails_id is None:
-                logger.warning("[RailsAdapter] update_apply: non-integer ID %r — skipping Rails", apply_id)
+                logger.warning("[RailsAdapter] update_apply: unresolvable ID %r — skipping Rails", apply_id)
                 return None
             try:
                 data = await client.update_apply(rails_id, apply_data)
@@ -947,14 +1053,54 @@ class RailsAdapter:
 
     # ---- Selective Processes ----
 
+    async def _resolve_reference_id_by_type(
+        self,
+        reference_type: str | None,
+        reference_id: str | None,
+    ) -> int | None:
+        """Resolve a reference_id (UUID/bigint) to Rails bigint based on type.
+
+        Onda 2.1 helper (2026-05-23): dispatcher canonical pra reference-
+        typed APIs (list_messages, send_message). Mapping:
+          - Job/job        → _resolve_rails_job_id
+          - Apply/apply    → _resolve_rails_application_id
+          - Candidate/candidate → _resolve_rails_candidate_id
+          - Outros types   → fallback bigint passthrough (legacy compat)
+
+        Returns:
+            Bigint resolvido OU None se reference_id ausente/unresolvable.
+        """
+        if not reference_id:
+            return None
+
+        type_lower = (reference_type or "").lower()
+        if type_lower in ("job", "vacancy"):
+            return await self._resolve_rails_job_id(reference_id)
+        if type_lower in ("apply", "application"):
+            return await self._resolve_rails_application_id(reference_id)
+        if type_lower == "candidate":
+            return await self._resolve_rails_candidate_id(reference_id)
+
+        # Unknown type → legacy bigint passthrough (no fork_uuid lookup)
+        return self._to_rails_id(reference_id)
+
     async def list_selective_processes(
         self, job_id: str | None = None
     ) -> list[dict]:
-        """List selective processes (pipeline stages) from Rails."""
+        """List selective processes (pipeline stages) from Rails.
+
+        Onda 2.1: resolve job_id UUID → bigint antes do call Rails.
+        Unresolvable UUID retorna [] sem chamar Rails.
+        """
         client = await self._get_rails_client()
         if client:
             try:
-                job_id_int = int(job_id) if job_id and job_id.isdigit() else None
+                job_id_int: int | None = None
+                if job_id is not None:
+                    job_id_int = await self._resolve_rails_job_id(job_id)
+                    # UUID unresolvable → return early sem chamar Rails
+                    if job_id_int is None and self._looks_like_uuid(job_id):
+                        return []
                 results = await client.list_selective_processes(job_id=job_id_int)
                 if results:
                     return [rails_selective_process_to_fork(r) for r in results]
@@ -971,11 +1117,13 @@ class RailsAdapter:
         reference_type: str | None = None,
         reference_id: str | None = None,
     ) -> list[dict]:
-        """List messages from Rails."""
+        """List messages from Rails (Onda 2.1: type-based dual-ID resolve)."""
         client = await self._get_rails_client()
         if client:
             try:
-                ref_id_int = int(reference_id) if reference_id and reference_id.isdigit() else None
+                ref_id_int = await self._resolve_reference_id_by_type(
+                    reference_type, reference_id
+                )
                 results = await client.list_messages(
                     page=page,
                     limit=limit,
@@ -997,11 +1145,13 @@ class RailsAdapter:
         parent_message_id: str | None = None,
         metadata: dict | None = None,
     ) -> dict | None:
-        """Send a message via Rails."""
+        """Send a message via Rails (Onda 2.1: type-based dual-ID resolve)."""
         client = await self._get_rails_client()
         if client:
             try:
-                ref_id_int = int(reference_id) if reference_id and reference_id.isdigit() else None
+                ref_id_int = await self._resolve_reference_id_by_type(
+                    reference_type, reference_id
+                )
                 parent_id_int = int(parent_message_id) if parent_message_id and parent_message_id.isdigit() else None
                 result = await client.send_message(
                     content=content,
