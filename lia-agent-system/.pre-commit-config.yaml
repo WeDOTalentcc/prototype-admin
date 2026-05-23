@@ -447,6 +447,13 @@ repos:
         files: ^alembic/versions/176_audit_hash_chain\.py$
         pass_filenames: false
 
+      - id: audit-append-only-triggers
+        name: "W1-006 part 2: audit_execution_metadata é append-only (UPDATE/DELETE/TRUNCATE bloqueados) (BLOCKING)"
+        language: system
+        entry: python3 scripts/check_audit_append_only_triggers.py
+        files: ^alembic/versions/180_audit_append_only_triggers\.py$
+        pass_filenames: false
+
       - id: governance-executor-wired
         name: "W1-004: ToolExecutor wirou Step 2 (company_id) + Step 7 (audit) + Step 8 (metrics) (BLOCKING)"
         language: system
