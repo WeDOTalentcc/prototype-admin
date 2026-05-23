@@ -1932,7 +1932,13 @@
       "enableVoice": "Habilitar voz no agente {name}",
       "voip": "Voz no navegador (VoIP)",
       "enableVoip": "Habilitar voz no navegador (VoIP) no agente {name}",
-      "disableVoip": "Desabilitar voz no navegador (VoIP) no agente {name}"
+      "disableVoip": "Desabilitar voz no navegador (VoIP) no agente {name}",
+      "triagemInvite": "Convite triagem",
+      "enableTriagemInvite": "Habilitar criação de convites de triagem no agente {name}",
+      "disableTriagemInvite": "Desabilitar criação de convites de triagem no agente {name}",
+      "sendInvite": "Enviar convite",
+      "sendTriagemInvite": "Enviar convite triagem",
+      "triagemInviteDisabled": "Convite triagem desabilitado neste agente"
     },
     "createModal": {
       "titleWithTemplate": "Criar Agente — {template}",

@@ -1932,7 +1932,13 @@
       "enableVoice": "Enable voice for agent {name}",
       "voip": "Browser voice (VoIP)",
       "enableVoip": "Enable browser voice (VoIP) on agent {name}",
-      "disableVoip": "Disable browser voice (VoIP) on agent {name}"
+      "disableVoip": "Disable browser voice (VoIP) on agent {name}",
+      "triagemInvite": "Triagem invite",
+      "enableTriagemInvite": "Enable triagem invite creation on agent {name}",
+      "disableTriagemInvite": "Disable triagem invite creation on agent {name}",
+      "sendInvite": "Send invite",
+      "sendTriagemInvite": "Send triagem invite",
+      "triagemInviteDisabled": "Triagem invite disabled for this agent"
     },
     "createModal": {
       "titleWithTemplate": "Create Agent — {template}",

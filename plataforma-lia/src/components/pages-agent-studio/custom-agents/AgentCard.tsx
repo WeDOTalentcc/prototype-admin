@@ -13,6 +13,7 @@ import {
   PhoneCall,
   MessageCircle,
   Mic,
+  Send,
 } from "lucide-react"
 import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
@@ -30,6 +31,7 @@ import { Switch } from "@/components/ui/switch"
 import { useToggleAgentVoice, useInitiateVoiceCall } from "@/hooks/agent-studio/use-agent-voice"
 import { useToggleAgentWhatsApp } from "@/hooks/agent-studio/use-agent-whatsapp"
 import { useToggleAgentChannel } from "@/hooks/agent-studio/use-agent-channel"
+import { useInitiateAgentTriagemInvite } from "@/hooks/agent-studio/use-agent-triagem-invite"
 import type { CustomAgent } from "./types"
 import { safeCategoryKey } from "./types"
 
@@ -99,12 +101,16 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
   const toggleWhatsApp = useToggleAgentWhatsApp(agent.id)
   const toggleVoice = useToggleAgentVoice(agent.id)
   const toggleVoip = useToggleAgentChannel(agent.id, 'voip')
+  // Workstream A 2026-05-23: 4o toggle — capability "convite triagem".
+  const toggleTriagemInvite = useToggleAgentChannel(agent.id, 'triagem_invite')
   const initiateVoice = useInitiateVoiceCall(agent.id)
+  const initiateTriagemInvite = useInitiateAgentTriagemInvite(agent.id)
 
-  // Backward compat: voip=false; voice=false; whatsapp=false.
+  // Backward compat: voip=false; voice=false; whatsapp=false; triagem_invite=false.
   const whatsappEnabled = Boolean(agent.whatsapp_enabled)
   const voiceEnabled = Boolean(agent.voice_enabled)
   const voipEnabled = Boolean(agent.voip_enabled)
+  const triagemInviteEnabled = Boolean(agent.triagem_invite_enabled)
 
   const tStatus = useTranslations('agents.status')
   const tCat = useTranslations('agents.customAgents')
@@ -233,6 +239,35 @@ export function AgentCard({ agent, onTest, onDeploy, onToggleStatus, onClone }: 
         ariaOn={t('enableVoip', { name: agent.name }) || `Habilitar voz no navegador (VoIP) no agente ${agent.name}`}
         ariaOff={t('disableVoip', { name: agent.name }) || `Desabilitar voz no navegador (VoIP) no agente ${agent.name}`}
         testId="agent-card-voip-toggle"
+      />
+
+      {/* 4. Convite triagem — Workstream A 2026-05-23. */}
+      {/* Capability: cria token unico + URL publica /triagem/{token} entregue via email/WhatsApp. */}
+      <ChannelToggleRow
+        icon={Send}
+        label={t('triagemInvite') || 'Convite triagem'}
+        enabled={triagemInviteEnabled}
+        disabled={toggleTriagemInvite.isMutating}
+        onToggle={(next) => toggleTriagemInvite.trigger(next)}
+        ariaOn={t('enableTriagemInvite', { name: agent.name }) || `Habilitar criacao de convites de triagem no agente ${agent.name}`}
+        ariaOff={t('disableTriagemInvite', { name: agent.name }) || `Desabilitar criacao de convites de triagem no agente ${agent.name}`}
+        testId="agent-card-triagem-invite-toggle"
+        trailing={
+          <button
+            type="button"
+            onClick={() => {
+              if (!triagemInviteEnabled) return
+              initiateTriagemInvite.trigger({ candidate_id: "", job_id: "" })
+            }}
+            disabled={!triagemInviteEnabled || initiateTriagemInvite.isMutating}
+            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium text-wedo-cyan-dark hover:bg-wedo-cyan/10 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            aria-label={triagemInviteEnabled ? (t('sendTriagemInvite') || 'Enviar convite triagem') : (t('triagemInviteDisabled') || 'Convite triagem desabilitado')}
+            data-testid="agent-card-initiate-triagem-invite"
+          >
+            <Send className="w-3.5 h-3.5" aria-hidden="true" />
+            {t('sendInvite') || 'Enviar convite'}
+          </button>
+        }
       />
 
       {/* Actions */}

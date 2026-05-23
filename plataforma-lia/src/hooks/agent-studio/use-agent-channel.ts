@@ -32,15 +32,16 @@ import useSWRMutation from 'swr/mutation'
 
 // ───────────────────────────── tipos canonical ─────────────────────────────
 
-export type AgentChannel = 'whatsapp' | 'voice' | 'voip'
+export type AgentChannel = 'whatsapp' | 'voice' | 'voip' | 'triagem_invite'
 
 export interface ChannelEnableResponse {
   agent_id: string
   // Backend retorna SEMPRE o flag específico do canal (voice_enabled, voip_enabled, etc).
-  // O hook expõe a chave canonical e tolera as 3 formas — TS união discriminada.
+  // O hook expõe a chave canonical e tolera as 4 formas — TS união discriminada.
   voice_enabled?: boolean
   voip_enabled?: boolean
   whatsapp_enabled?: boolean
+  triagem_invite_enabled?: boolean
 }
 
 // ───────────────────────────── fetch helper ────────────────────────────────
@@ -86,7 +87,9 @@ async function mutationFetcher<TBody, TResponse>(
  *   toggleVoip.trigger(true)  // → habilita voz no navegador
  */
 export function useToggleAgentChannel(agentId: string, channel: AgentChannel) {
-  const url = `/api/backend-proxy/agent-studio/agents/${encodeURIComponent(agentId)}/${channel}/enabled`
+  // Workstream A 2026-05-23: triagem_invite usa kebab-case na URL (REST canonical).
+  const urlSegment = channel === 'triagem_invite' ? 'triagem-invite' : channel
+  const url = `/api/backend-proxy/agent-studio/agents/${encodeURIComponent(agentId)}/${urlSegment}/enabled`
   const bodyKey = `${channel}_enabled` as const
   return useSWRMutation<ChannelEnableResponse, Error, string, boolean>(
     url,

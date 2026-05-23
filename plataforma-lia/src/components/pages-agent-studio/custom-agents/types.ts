@@ -110,6 +110,8 @@ export interface CustomAgent {
   /** W-Channels-A (2026-05-23): per-agent chat lateral interno — default ON (backward compat). */
   /** T5a UX Transformação 5: per-agent WhatsApp flag (default OFF). Cliente toggles via UI. */
   whatsapp_enabled?: boolean
+  /** Workstream A 2026-05-23: per-agent capability "criar convite triagem" (default OFF). */
+  triagem_invite_enabled?: boolean
   total_executions: number
   avg_confidence: number
   last_executed_at: string | null
