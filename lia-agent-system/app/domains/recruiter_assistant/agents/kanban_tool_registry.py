@@ -11,7 +11,6 @@ from typing import Any
 
 from lia_agents_core.tool_adapter import ToolDefinition
 from lia_agents_core.tool_adapter import ToolOutput
-from sqlalchemy import text
 
 from app.core.database import AsyncSessionLocal
 from app.shared.compliance.fairness_guard import FairnessGuard
@@ -400,43 +399,31 @@ async def _wrap_get_pipeline_velocity(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("kanban")
 async def _wrap_get_pipeline_summary(**kwargs: Any) -> dict[str, Any]:
     """Get overall pipeline summary with candidate counts per stage."""
+    # W1-004-B (2026-05-23): SQL inline → RecruiterMetricsRepository (ADR-001).
+    from app.domains.recruiter_assistant.repositories.recruiter_metrics_repository import (
+        RecruiterMetricsRepository,
+    )
+
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
     logger.info(f"[kanban_tools] get_pipeline_summary called for vacancy={vacancy_id or 'all'}")
+
     stages: dict[str, int] = {}
     total = 0
+    hired = 0
     try:
         async with AsyncSessionLocal() as session:
-            rows = await session.execute(
-                text("""
-                    SELECT stage, COUNT(*) AS cnt
-                    FROM vacancy_candidates
-                    WHERE (:vid = '' OR vacancy_id::text = :vid)
-                      AND company_id = :cid
-                      AND status != 'rejected'
-                    GROUP BY stage ORDER BY cnt DESC
-                """),
-                {"vid": vacancy_id, "cid": company_id},
+            repo = RecruiterMetricsRepository(session)
+            result = await repo.count_candidates_per_stage(
+                vacancy_id=vacancy_id, company_id=company_id
             )
-            for row in rows.mappings():
-                stages[row["stage"]] = int(row["cnt"])
-            total = sum(stages.values())
-
-            hired_row = await session.execute(
-                text("""
-                    SELECT COUNT(*) AS cnt FROM vacancy_candidates
-                    WHERE (:vid = '' OR vacancy_id::text = :vid)
-                      AND company_id = :cid
-                      AND stage ILIKE '%contrat%'
-                """),
-                {"vid": vacancy_id, "cid": company_id},
-            )
-            hired = int((hired_row.mappings().first() or {}).get("cnt", 0))
+        stages = result["per_stage"]
+        total = sum(stages.values())
+        hired = result["hired_count"]
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[kanban_tools] get_pipeline_summary DB error: {e}")
-        hired = 0
 
     conversion = round(hired / total * 100, 1) if total > 0 else 0.0
     return {
@@ -450,6 +437,11 @@ async def _wrap_get_pipeline_summary(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("kanban")
 async def _wrap_get_stage_metrics(**kwargs: Any) -> dict[str, Any]:
     """Get metrics for a specific pipeline stage."""
+    # W1-004-B (2026-05-23): SQL inline → RecruiterMetricsRepository (ADR-001).
+    from app.domains.recruiter_assistant.repositories.recruiter_metrics_repository import (
+        RecruiterMetricsRepository,
+    )
+
     stage = kwargs.get("stage", "")
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
@@ -458,31 +450,15 @@ async def _wrap_get_stage_metrics(**kwargs: Any) -> dict[str, Any]:
     metrics: dict[str, Any] = {"stage": stage, "vacancy_id": vacancy_id or "all"}
     try:
         async with AsyncSessionLocal() as session:
-            row = await session.execute(
-                text("""
-                    SELECT COUNT(*) AS cnt,
-                           AVG(EXTRACT(EPOCH FROM (NOW() - updated_at)) / 86400) AS avg_days,
-                           AVG(lia_score) AS avg_score
-                    FROM vacancy_candidates
-                    WHERE stage ILIKE :stage_val
-                      AND (:vid = '' OR vacancy_id::text = :vid)
-                      AND company_id = :cid
-                """),
-                {"stage_val": f"%{stage}%", "vid": vacancy_id, "cid": company_id},
+            repo = RecruiterMetricsRepository(session)
+            data = await repo.get_stage_metrics(
+                stage=stage, vacancy_id=vacancy_id, company_id=company_id
             )
-            data = row.mappings().first() or {}
-            count = int(data.get("cnt") or 0)
-            avg_days = round(float(data.get("avg_days") or 0), 1)
-            avg_score = round(float(data.get("avg_score") or 0), 1)
-            bottleneck_risk = "high" if avg_days > 14 else ("medium" if avg_days > 7 else "low")
-            metrics = {
-                "stage": stage,
-                "vacancy_id": vacancy_id or "all",
-                "candidate_count": count,
-                "avg_time_days": avg_days,
-                "avg_lia_score": avg_score,
-                "bottleneck_risk": bottleneck_risk,
-            }
+        metrics = {
+            "stage": stage,
+            "vacancy_id": vacancy_id or "all",
+            **data,
+        }
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[kanban_tools] get_stage_metrics DB error: {e}")
@@ -496,6 +472,11 @@ async def _wrap_get_stage_metrics(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("kanban")
 async def _wrap_list_stage_candidates(**kwargs: Any) -> dict[str, Any]:
     """List candidates in a specific stage."""
+    # W1-004-B (2026-05-23): SQL inline → CandidatePipelineRepository (ADR-001).
+    from app.domains.recruiter_assistant.repositories.candidate_pipeline_repository import (
+        CandidatePipelineRepository,
+    )
+
     stage = kwargs.get("stage", "")
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
@@ -508,42 +489,10 @@ async def _wrap_list_stage_candidates(**kwargs: Any) -> dict[str, Any]:
         return {"error": "company_id is required", "success": False}
     try:
         async with AsyncSessionLocal() as session:
-            rows = await session.execute(
-                text("""
-                    SELECT vc.candidate_id, vc.stage, vc.status, vc.lia_score, vc.match_percentage,
-                           vc.updated_at,
-                           EXTRACT(DAY FROM NOW() - vc.updated_at)::int AS days_in_stage,
-                           c.name, c.current_title, c.technical_skills
-                    FROM vacancy_candidates vc
-                    JOIN candidates c ON c.id = vc.candidate_id
-                    WHERE vc.stage ILIKE :stage_val
-                      AND (:vid = '' OR vc.vacancy_id::text = :vid)
-                      AND vc.company_id = :cid
-                    ORDER BY vc.lia_score DESC NULLS LAST
-                    LIMIT :lim
-                """),
-                {"stage_val": f"%{stage}%", "vid": vacancy_id, "cid": company_id, "lim": limit},
+            repo = CandidatePipelineRepository(session)
+            candidates, total = await repo.list_candidates_in_stage(
+                vacancy_id=vacancy_id, company_id=company_id, stage=stage, limit=limit
             )
-            for row in rows.mappings():
-                candidates.append({
-                    "id": str(row["candidate_id"]),
-                    "name": row["name"],
-                    "current_title": row["current_title"],
-                    "skills": row["technical_skills"] or [],
-                    "stage": row["stage"],
-                    "status": row["status"],
-                    "lia_score": row["lia_score"],
-                    "match_percentage": row["match_percentage"],
-                    "days_in_stage": int(row["days_in_stage"] or 0),
-                })
-            count_row = await session.execute(
-                text("""SELECT COUNT(*) AS total FROM vacancy_candidates
-                        WHERE stage ILIKE :stage_val
-                          AND (:vid = '' OR vacancy_id::text = :vid)
-                          AND company_id = :cid"""),
-                {"stage_val": f"%{stage}%", "vid": vacancy_id, "cid": company_id},
-            )
-            total = int((count_row.mappings().first() or {}).get("total", len(candidates)))
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[kanban_tools] list_stage_candidates DB error: {e}")
@@ -602,6 +551,11 @@ async def _wrap_analyze_stage(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("kanban")
 async def _wrap_identify_bottlenecks(**kwargs: Any) -> dict[str, Any]:
     """Identify bottlenecks across the pipeline."""
+    # W1-004-B (2026-05-23): SQL inline → RecruiterMetricsRepository (ADR-001).
+    from app.domains.recruiter_assistant.repositories.recruiter_metrics_repository import (
+        RecruiterMetricsRepository,
+    )
+
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
@@ -610,32 +564,21 @@ async def _wrap_identify_bottlenecks(**kwargs: Any) -> dict[str, Any]:
     critical_stages = []
     try:
         async with AsyncSessionLocal() as session:
-            rows = await session.execute(
-                text("""
-                    SELECT stage,
-                           COUNT(*) AS cnt,
-                           AVG(EXTRACT(EPOCH FROM (NOW() - updated_at)) / 86400) AS avg_days,
-                           COUNT(*) FILTER (WHERE updated_at < NOW() - INTERVAL '14 days') AS stagnant
-                    FROM vacancy_candidates
-                    WHERE (:vid = '' OR vacancy_id::text = :vid)
-                      AND company_id = :cid
-                      AND status != 'rejected'
-                    GROUP BY stage
-                    ORDER BY avg_days DESC
-                """),
-                {"vid": vacancy_id, "cid": company_id},
+            repo = RecruiterMetricsRepository(session)
+            all_stage_metrics = await repo.get_stage_bottleneck_metrics(
+                vacancy_id=vacancy_id, company_id=company_id
             )
-            for row in rows.mappings():
-                avg_days = round(float(row["avg_days"] or 0), 1)
-                stagnant = int(row["stagnant"] or 0)
-                cnt = int(row["cnt"] or 0)
-                if avg_days > 14 or (cnt > 0 and stagnant / cnt > 0.3):
-                    entry = {"stage": row["stage"], "candidate_count": cnt,
-                             "avg_days": avg_days, "stagnant_count": stagnant,
-                             "severity": "high" if avg_days > 21 else "medium"}
-                    bottlenecks.append(entry)
-                    if entry["severity"] == "high":
-                        critical_stages.append(row["stage"])
+        for row in all_stage_metrics:
+            avg_days = row["avg_days"]
+            stagnant = row["stagnant_count"]
+            cnt = row["candidate_count"]
+            if avg_days > 14 or (cnt > 0 and stagnant / cnt > 0.3):
+                entry = {"stage": row["stage"], "candidate_count": cnt,
+                         "avg_days": avg_days, "stagnant_count": stagnant,
+                         "severity": "high" if avg_days > 21 else "medium"}
+                bottlenecks.append(entry)
+                if entry["severity"] == "high":
+                    critical_stages.append(row["stage"])
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[kanban_tools] identify_bottlenecks error: {e}", exc_info=True)
@@ -653,6 +596,11 @@ async def _wrap_identify_bottlenecks(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("kanban")
 async def _wrap_get_candidate_aging(**kwargs: Any) -> dict[str, Any]:
     """Get aging report for candidates stuck in stages."""
+    # W1-004-B (2026-05-23): SQL inline → CandidatePipelineRepository (ADR-001).
+    from app.domains.recruiter_assistant.repositories.candidate_pipeline_repository import (
+        CandidatePipelineRepository,
+    )
+
     stage = kwargs.get("stage", "")
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
@@ -664,33 +612,11 @@ async def _wrap_get_candidate_aging(**kwargs: Any) -> dict[str, Any]:
         return {"error": "company_id is required", "success": False}
     try:
         async with AsyncSessionLocal() as session:
-            rows = await session.execute(
-                text("""
-                    SELECT vc.candidate_id, vc.stage, vc.status, vc.lia_score,
-                           EXTRACT(DAY FROM NOW() - vc.updated_at)::int AS days_stuck,
-                           c.name, c.current_title
-                    FROM vacancy_candidates vc
-                    JOIN candidates c ON c.id = vc.candidate_id
-                    WHERE vc.updated_at < NOW() - MAKE_INTERVAL(days => :threshold)
-                      AND vc.status NOT IN ('rejected', 'hired')
-                      AND (:stage = '' OR vc.stage ILIKE :stage_val)
-                      AND (:vid = '' OR vc.vacancy_id::text = :vid)
-                      AND vc.company_id = :cid
-                    ORDER BY days_stuck DESC
-                    LIMIT 50
-                """),
-                {"threshold": days_threshold, "stage": stage, "stage_val": f"%{stage}%",
-                 "vid": vacancy_id, "cid": company_id},
+            repo = CandidatePipelineRepository(session)
+            aging_candidates = await repo.get_aging_candidates(
+                vacancy_id=vacancy_id, company_id=company_id,
+                threshold_days=days_threshold, stage=stage
             )
-            for row in rows.mappings():
-                aging_candidates.append({
-                    "id": str(row["candidate_id"]),
-                    "name": row["name"],
-                    "current_title": row["current_title"],
-                    "stage": row["stage"],
-                    "days_stuck": int(row["days_stuck"] or 0),
-                    "lia_score": row["lia_score"],
-                })
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[kanban_tools] get_candidate_aging DB error: {e}")
@@ -733,6 +659,11 @@ async def _wrap_compare_stages(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("kanban")
 async def _wrap_suggest_movements(**kwargs: Any) -> dict[str, Any]:
     """Suggest candidate movements based on score and aging."""
+    # W1-004-B (2026-05-23): SQL inline → CandidatePipelineRepository (ADR-001).
+    from app.domains.recruiter_assistant.repositories.candidate_pipeline_repository import (
+        CandidatePipelineRepository,
+    )
+
     stage = kwargs.get("stage", "")
     vacancy_id = kwargs.get("vacancy_id", "")
     company_id = kwargs.get("company_id", "")
@@ -743,41 +674,29 @@ async def _wrap_suggest_movements(**kwargs: Any) -> dict[str, Any]:
         return {"error": "company_id is required", "success": False}
     try:
         async with AsyncSessionLocal() as session:
-            rows = await session.execute(
-                text("""
-                    SELECT vc.candidate_id, vc.stage, vc.lia_score, vc.match_percentage,
-                           EXTRACT(DAY FROM NOW() - vc.updated_at)::int AS days_in_stage,
-                           c.name
-                    FROM vacancy_candidates vc
-                    JOIN candidates c ON c.id = vc.candidate_id
-                    WHERE vc.status NOT IN ('rejected', 'hired')
-                      AND (:stage = '' OR vc.stage ILIKE :stage_val)
-                      AND (:vid = '' OR vc.vacancy_id::text = :vid)
-                      AND vc.company_id = :cid
-                    ORDER BY vc.lia_score DESC NULLS LAST
-                    LIMIT 30
-                """),
-                {"stage": stage, "stage_val": f"%{stage}%", "vid": vacancy_id, "cid": company_id},
+            repo = CandidatePipelineRepository(session)
+            rows = await repo.get_candidates_for_movement_suggestion(
+                vacancy_id=vacancy_id, company_id=company_id, stage=stage
             )
-            for row in rows.mappings():
-                score = row["lia_score"] or 0
-                days = int(row["days_in_stage"] or 0)
-                action = None
-                if score >= 4.2:
-                    action = {"type": "advance", "reason": f"Score alto ({score:.1f}/5) — avancar para proxima etapa"}
-                elif days > 14:
-                    action = {"type": "follow_up", "reason": f"Parado ha {days} dias — fazer follow-up ou tomar decisao"}
-                elif score < 3.0 and score > 0:
-                    action = {"type": "disqualify", "reason": f"Score baixo ({score:.1f}/5) — considerar desqualificacao"}
-                if action:
-                    suggestions.append({
-                        "candidate_id": str(row["candidate_id"]),
-                        "name": row["name"],
-                        "current_stage": row["stage"],
-                        "lia_score": score,
-                        "days_in_stage": days,
-                        "suggested_action": action,
-                    })
+        for row in rows:
+            score = row["lia_score"]
+            days = row["days_in_stage"]
+            action = None
+            if score >= 4.2:
+                action = {"type": "advance", "reason": f"Score alto ({score:.1f}/5) — avancar para proxima etapa"}
+            elif days > 14:
+                action = {"type": "follow_up", "reason": f"Parado ha {days} dias — fazer follow-up ou tomar decisao"}
+            elif score < 3.0 and score > 0:
+                action = {"type": "disqualify", "reason": f"Score baixo ({score:.1f}/5) — considerar desqualificacao"}
+            if action:
+                suggestions.append({
+                    "candidate_id": row["candidate_id"],
+                    "name": row["name"],
+                    "current_stage": row["stage"],
+                    "lia_score": score,
+                    "days_in_stage": days,
+                    "suggested_action": action,
+                })
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.error(f"[kanban_tools] suggest_movements error: {e}", exc_info=True)
@@ -793,6 +712,11 @@ async def _wrap_suggest_movements(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("kanban")
 async def _wrap_batch_move_candidates(**kwargs: Any) -> dict[str, Any]:
     """Move multiple candidates to a target stage (real DB UPDATE)."""
+    # W1-004-B (2026-05-23): SQL inline → RecruiterMetricsRepository (ADR-001).
+    from app.domains.recruiter_assistant.repositories.recruiter_metrics_repository import (
+        RecruiterMetricsRepository,
+    )
+
     candidate_ids = kwargs.get("candidate_ids", [])
     target_stage = kwargs.get("target_stage", "")
     vacancy_id = kwargs.get("vacancy_id", "")
@@ -805,18 +729,11 @@ async def _wrap_batch_move_candidates(**kwargs: Any) -> dict[str, Any]:
     moved = 0
     try:
         async with AsyncSessionLocal() as session:
-            result = await session.execute(
-                text("""
-                    UPDATE vacancy_candidates
-                    SET stage = :stage, updated_at = NOW()
-                    WHERE candidate_id = ANY(:ids::uuid[])
-                      AND (:vid = '' OR vacancy_id::text = :vid)
-                      AND company_id = :cid
-                """),
-                {"stage": target_stage, "ids": candidate_ids, "vid": vacancy_id, "cid": company_id},
+            repo = RecruiterMetricsRepository(session)
+            moved = await repo.bulk_update_candidate_stage(
+                vacancy_id=vacancy_id, company_id=company_id,
+                candidate_ids=candidate_ids, new_stage=target_stage
             )
-            moved = result.rowcount
-            await session.commit()
     except Exception as e:
         # rollback handled automatically by `async with AsyncSessionLocal()`
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
@@ -905,6 +822,11 @@ async def _wrap_generate_pipeline_report(**kwargs: Any) -> dict[str, Any]:
 @tool_handler("kanban")
 async def _wrap_view_candidate_full_profile(**kwargs: Any) -> dict[str, Any]:
     """View complete candidate profile including education, work history and scores."""
+    # W1-004-B (2026-05-23): SQL inline → CandidatePipelineRepository (ADR-001).
+    from app.domains.recruiter_assistant.repositories.candidate_pipeline_repository import (
+        CandidatePipelineRepository,
+    )
+
     candidate_id = kwargs.get("candidate_id", "")
     company_id = kwargs.get("company_id", "")  # P0.A canonical: PII (email+salary+gender) leak gate
     # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
@@ -913,79 +835,17 @@ async def _wrap_view_candidate_full_profile(**kwargs: Any) -> dict[str, Any]:
     profile: dict[str, Any] = {"candidate_id": candidate_id, "profile_loaded": False}
     try:
         async with AsyncSessionLocal() as session:
-            row = await session.execute(
-                text("""
-                    SELECT id, name, email, current_title, current_company,
-                           seniority_level, years_of_experience,
-                           technical_skills, soft_skills, certifications,
-                           location_city, location_state, location_country,
-                           lia_score, skills_match_percentage,
-                           status, is_active, linkedin_url,
-                           self_introduction, work_history, languages,
-                           salary_expectation_clt, salary_expectation_pj,
-                           work_model_preference, is_remote, willing_to_relocate,
-                           gender
-                    FROM candidates
-                    WHERE id = :cid
-                      AND (company_id IS NULL OR company_id = :company_id)
-                """),
-                {"cid": candidate_id, "company_id": company_id},
+            repo = CandidatePipelineRepository(session)
+            data = await repo.get_candidate_full_profile(
+                candidate_id=candidate_id, company_id=company_id
             )
-            data = row.mappings().first()
-            if not data:
-                return {
-                    "success": False,
-                    "data": {"candidate_id": candidate_id},
-                    "message": f"Candidato {candidate_id} nao encontrado.",
-                }
-
-            edu_rows = await session.execute(
-                text("""
-                    SELECT institution, degree, field_of_study, start_year, end_year, is_current
-                    FROM candidate_education
-                    WHERE candidate_id = :cid
-                    ORDER BY end_year DESC NULLS FIRST, start_year DESC NULLS FIRST
-                """),
-                {"cid": candidate_id},
-            )
-            education = [
-                {
-                    "institution": r["institution"],
-                    "degree": r["degree"],
-                    "field_of_study": r["field_of_study"],
-                    "period": f"{r['start_year'] or '?'} - {'atual' if r['is_current'] else (r['end_year'] or '?')}",
-                }
-                for r in edu_rows.mappings()
-            ]
-
-            profile = {
-                "candidate_id": str(data["id"]),
-                "name": data["name"],
-                "email": data["email"],
-                "current_title": data["current_title"],
-                "current_company": data["current_company"],
-                "seniority_level": data["seniority_level"],
-                "years_of_experience": data["years_of_experience"],
-                "technical_skills": data["technical_skills"] or [],
-                "soft_skills": data["soft_skills"] or [],
-                "certifications": data["certifications"] or [],
-                "location": f"{data['location_city'] or ''}, {data['location_country'] or ''}".strip(", "),
-                "lia_score": data["lia_score"],
-                "match_percentage": data["skills_match_percentage"],
-                "status": data["status"],
-                "linkedin_url": data["linkedin_url"],
-                "summary": data["self_introduction"],
-                "languages": data["languages"],
-                "work_history": data["work_history"] or [],
-                "education": education,
-                "salary_expectation_clt": data["salary_expectation_clt"],
-                "salary_expectation_pj": data["salary_expectation_pj"],
-                "work_model": data["work_model_preference"],
-                "is_remote": data["is_remote"],
-                "willing_to_relocate": data["willing_to_relocate"],
-                "gender": data["gender"],
-                "profile_loaded": True,
+        if not data:
+            return {
+                "success": False,
+                "data": {"candidate_id": candidate_id},
+                "message": f"Candidato {candidate_id} nao encontrado.",
             }
+        profile = data
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[kanban_tools] view_candidate_full_profile DB error: {e}")
