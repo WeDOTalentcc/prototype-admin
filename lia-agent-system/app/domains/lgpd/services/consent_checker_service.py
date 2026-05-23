@@ -38,13 +38,22 @@ class ConsentCheckerService:
     Serviço de verificação de consentimento LGPD por finalidade.
 
     Finalidades suportadas:
-    - ai_screening  → mapeado para SCREENING
-    - ai_scoring    → mapeado para SCREENING
-    - ai_video_analysis → mapeado para SCREENING
-    - ai_comparison → mapeado para SCREENING
-    - voice_screening → mapeado para SCREENING (F-23 audit 2026-05-22:
-      distinto de ai_screening genérico para diferenciação de audit trail
-      LGPD Art. 37; granular consent_type próprio é refactor separado)
+    - ai_screening      → SCREENING            (chat / CV / generic AI)
+    - ai_scoring        → SCREENING            (idem — backward compat)
+    - ai_video_analysis → SCREENING            (idem)
+    - ai_comparison     → SCREENING            (idem)
+    - voice_screening   → VOICE_SCREENING      (P1 2026-05-23 granular)
+    - whatsapp_screening → WHATSAPP_INTERACTION (P1 2026-05-23 granular)
+
+    P1 cross-domain consent ticket (2026-05-23): voice + whatsapp ganham
+    consent_type próprio para isolation. Revogar voice consent NÃO revoga
+    chat consent (rows separadas no DB). Diferenciação de audit trail
+    completa (LGPD Art. 37 + Resolução CD/ANPD nº 2/2022).
+
+    Backward compat OBRIGATÓRIO:
+    - 'SCREENING' rows existentes no DB continuam válidos (default)
+    - Callers que usam ai_screening/ai_scoring NÃO mudam comportamento
+    - Apenas voice + whatsapp ganham granularidade
     """
 
     AI_PURPOSES = [
@@ -54,21 +63,25 @@ class ConsentCheckerService:
         "ai_comparison",
         # F-23 (audit 2026-05-22 AUDIT_VOICE_SCREENING_ORCHESTRATOR.md):
         # voice_screening is distinct from generic ai_screening for audit-trail
-        # differentiation (LGPD Art. 37). Both map to SCREENING consent_type for
-        # backward compat — granular table extension is a separate refactor.
+        # differentiation (LGPD Art. 37). P1 2026-05-23 — promoted to granular
+        # consent_type VOICE_SCREENING (no longer collapses into SCREENING).
         "voice_screening",
+        # P1 ticket #3 (2026-05-23): WhatsApp interaction granular consent.
+        "whatsapp_screening",
     ]
 
-    # Mapeamento de finalidade de IA para consent_type do LGPDConsent
-    # F-23: voice_screening listed explicitly so future cross-domain
-    # ConsentChecker refactor (separate ticket) can promote voice to its
-    # own consent_type without touching voice orchestrator again.
+    # Mapeamento de finalidade de IA para consent_type do LGPDConsent.
+    # P1 ticket #3 (2026-05-23): voice + whatsapp promovidos a consent_types
+    # granulares. Demais purposes ficam em SCREENING (backward compat).
     PURPOSE_TO_CONSENT_TYPE = {
         "ai_screening": "SCREENING",
         "ai_scoring": "SCREENING",
         "ai_video_analysis": "SCREENING",
         "ai_comparison": "SCREENING",
-        "voice_screening": "SCREENING",  # F-23
+        # P1 #3: granular consent_types (isolation — revogar voice NÃO
+        # revoga chat; audit trail diferenciado).
+        "voice_screening": "VOICE_SCREENING",
+        "whatsapp_screening": "WHATSAPP_INTERACTION",
     }
 
     def __init__(self, db: AsyncSession):
