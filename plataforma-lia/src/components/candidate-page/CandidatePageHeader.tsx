@@ -18,6 +18,7 @@ type CandidateRecord = {
   name: string
   id?: string
   candidateId?: string
+  headline?: string
   avatar_url?: string
   avatar?: string
   phone?: string
@@ -92,6 +93,18 @@ export function CandidatePageHeader({
                 </Chip>
                 <CandidateScoreBadge score={liaScore} format="percent" />
               </div>
+              {editable && (
+                <div className="text-xs text-lia-text-secondary mt-0.5">
+                  <EditableField
+                    value={(_candidate.headline as string | undefined) ?? ""}
+                    onSave={handleSave("headline")}
+                    label="headline"
+                    placeholder="Headline profissional"
+                    saving={isSaving?.("headline") ?? false}
+                    emptyDisplay="Adicionar headline"
+                  />
+                </div>
+              )}
               <div className="flex items-center gap-2 text-xs text-lia-text-secondary">
                 {editable ? (
                   <EditableField

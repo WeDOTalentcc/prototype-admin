@@ -159,7 +159,8 @@ export function CandidatePage({
         </div>
 
         <div className="flex-1 overflow-y-auto bg-lia-bg-primary dark:bg-lia-bg-primary">
-          <div className="max-w-7xl mx-auto p-6">
+          {/* F6 Item 4: max-width responsivo. modal mode=full-width (kanban overlay); page mode=max-w-4xl centered (better leitura em viewport grande). */}
+          <div className={mode === "page" ? "max-w-4xl mx-auto p-6" : "max-w-7xl mx-auto p-6"}>
             {core.activeTab === "profile" && (
               <CandidatePreviewProfileTab
                 candidate={candidate}

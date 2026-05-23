@@ -11,9 +11,17 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 ALLOWED_DIRECT_FIELDS = {
-    "phone", "email", "linkedin_url", "current_title",
-    "current_company", "location_city", "location_state",
+    # Identity / contact
+    "phone", "email", "linkedin_url", "github_url", "portfolio_url",
+    # Profile narrative (added 2026-05-23 F6 — non-LGPD)
+    "headline", "self_introduction",
+    # Professional context
+    "current_title", "current_company", "seniority_level", "years_of_experience",
+    # Location
+    "location_city", "location_state",
+    # Compensation
     "salary_expectation_clt", "salary_expectation_pj",
+    # Work preferences
     "work_model_preference", "languages",
 }
 
@@ -42,6 +50,29 @@ FIELD_ALIASES = {
     "cidade": "location_city",
     "estado": "location_state",
     "salário clt": "salary_expectation_clt",
+    # Added 2026-05-23 F6 — non-LGPD fields aliases
+    "github": "github_url",
+    "portfólio": "portfolio_url",
+    "portfolio": "portfolio_url",
+    "site": "portfolio_url",
+    "website": "portfolio_url",
+    "headline": "headline",
+    "título": "headline",
+    "titulo": "headline",
+    "chamada": "headline",
+    "resumo": "self_introduction",
+    "summary": "self_introduction",
+    "sobre": "self_introduction",
+    "bio": "self_introduction",
+    "biografia": "self_introduction",
+    "apresentação": "self_introduction",
+    "experiência": "years_of_experience",
+    "experiencia": "years_of_experience",
+    "anos de experiência": "years_of_experience",
+    "anos de experiencia": "years_of_experience",
+    "senioridade": "seniority_level",
+    "nível": "seniority_level",
+    "nivel": "seniority_level",
     "salario clt": "salary_expectation_clt",
     "salário pj": "salary_expectation_pj",
     "salario pj": "salary_expectation_pj",
