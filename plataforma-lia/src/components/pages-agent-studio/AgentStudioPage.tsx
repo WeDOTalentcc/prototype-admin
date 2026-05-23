@@ -14,6 +14,7 @@ import { useCustomAgents } from "@/hooks/agents"
 import { useAgentStudioStore } from "@/stores/agent-studio-store"
 import type { CustomAgent, AgentTemplate } from "@/components/pages-agent-studio/custom-agents/types"
 import MarketplaceTab from "@/components/pages-agent-studio/MarketplaceTab"
+import { QuotaMeter } from "@/components/pages-agent-studio/QuotaMeter"
 import {
   Bot, Plus, Play, Pause, Briefcase, Database,
   Factory, HeartPulse, ShoppingCart, Code, Truck, Brain,
@@ -388,6 +389,13 @@ export default function AgentStudioPage({
           </div>
         )}
 
+        {/* QuotaMeter (feedforward audit harness 2026-05-23):
+            mostra X / Y por recurso pra cliente ver uso antes de bater limit.
+            Backend já expunha /studio/quota, agora frontend consome.
+            Modelo canonical WeDOTalent pay-first sales-led — CTA é "Falar com
+            Account Manager" via mailto. */}
+        <QuotaMeter className="mt-2" />
+
         {agents.length > 0 && (
           <div className="flex items-center gap-6 mt-2 mb-1">
             <div className="flex items-center gap-2">
@@ -653,9 +661,9 @@ export default function AgentStudioPage({
                     >
                       <CustomAgentCard
                         agent={agent}
-                        onTest={(a) => { a; setTestAgent(agent) }}
-                        onDeploy={(a) => { a; setDeployAgent(agent) }}
-                        onToggleStatus={(a) => { handleCustomAgentToggle(a) }}
+                        onTest={() => setTestAgent(agent)}
+                        onDeploy={() => setDeployAgent(agent)}
+                        onToggleStatus={(a) => handleCustomAgentToggle(a)}
                         onClone={handleCloneCustomAgent}
                       />
                     </div>
