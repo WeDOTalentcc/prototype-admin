@@ -137,6 +137,11 @@ class VoiceScreeningSession:
     # compute_voice_credits — antes era hardcoded 0 (billing ghost).
     llm_tokens_input: int = 0
     llm_tokens_output: int = 0
+    # C.2 ticket (2026-05-23): canonical metadata field for plugin annotations
+    # (e.g. studio_agent_id, plugin_name). Previously attached via setattr by
+    # StudioVoicePlugin — works in-memory but did not survive Redis JSONB
+    # round-trip. Now first-class field + serialized in _session_to_state.
+    metadata: dict[str, Any] = field(default_factory=dict)
 
 
 class VoiceScreeningOrchestratorError(Exception):
@@ -415,6 +420,8 @@ class VoiceCoreOrchestrator:
             # in Redis for cross-process billing read in finalize_screening.
             "llm_tokens_input": session.llm_tokens_input,
             "llm_tokens_output": session.llm_tokens_output,
+            # C.2: persist plugin metadata round-trip (studio_agent_id, etc.).
+            "metadata": dict(session.metadata) if session.metadata else {},
         }
 
     def _state_to_session(self, state: dict[str, Any]) -> "VoiceScreeningSession":
@@ -450,6 +457,8 @@ class VoiceCoreOrchestrator:
             # in Redis that pre-date token tracking.
             llm_tokens_input=int(state.get("llm_tokens_input", 0) or 0),
             llm_tokens_output=int(state.get("llm_tokens_output", 0) or 0),
+            # C.2: backward compat for legacy sessions in Redis without metadata.
+            metadata=dict(state.get("metadata", {}) or {}),
         )
 
     async def persist_session_state(self, session: "VoiceScreeningSession", db) -> None:
