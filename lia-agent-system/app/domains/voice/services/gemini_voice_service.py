@@ -11,7 +11,7 @@ import os
 # R-056: lazy import for optional Google dependency
 try:
     from google import genai
-    from google.genai import types
+    from google.genai import types  # W3-027-EXEMPT: optional module-level import for type availability — client via llm_service canonical
     _GOOGLE_GENAI_AVAILABLE = True
 except ImportError:
     genai = None  # type: ignore[assignment]

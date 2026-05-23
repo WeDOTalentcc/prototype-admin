@@ -303,7 +303,7 @@ company_id: str = Depends(require_company_id)):
             result = response.text
 
         elif request.provider == "claude":
-            from anthropic import AsyncAnthropic
+            from anthropic import AsyncAnthropic  # ADR-LLM-001-EXEMPT: BYOK validation endpoint — testa chave do usuario, nao pode usar factory  # W3-027-EXEMPT: BYOK validation endpoint — testa chave raw do usuario, nao pode usar factory
             client = AsyncAnthropic(api_key=request.api_key)
             model = request.model or "claude-sonnet-4-6"
             response = await client.messages.create(
@@ -313,7 +313,7 @@ company_id: str = Depends(require_company_id)):
             result = response.content[0].text
 
         elif request.provider == "openai":
-            from openai import AsyncOpenAI
+            from openai import AsyncOpenAI  # ADR-LLM-001-EXEMPT: BYOK validation endpoint — testa chave do usuario, nao pode usar factory  # W3-027-EXEMPT: BYOK validation endpoint — testa chave raw do usuario, nao pode usar factory
             client = AsyncOpenAI(api_key=request.api_key)
             model = request.model or "gpt-4o"
             response = await client.chat.completions.create(
@@ -325,7 +325,7 @@ company_id: str = Depends(require_company_id)):
         elif request.provider == "deepseek":
             # W2-011 (2026-05-23): DeepSeek API é OpenAI-compatible — reusa SDK
             # com base_url=https://api.deepseek.com/v1
-            from openai import AsyncOpenAI
+            from openai import AsyncOpenAI  # ADR-LLM-001-EXEMPT: BYOK validation endpoint — testa chave do usuario, nao pode usar factory  # W3-027-EXEMPT: BYOK validation endpoint — testa chave raw do usuario, nao pode usar factory
             client = AsyncOpenAI(
                 api_key=request.api_key,
                 base_url="https://api.deepseek.com/v1",

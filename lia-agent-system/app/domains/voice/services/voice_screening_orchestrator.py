@@ -1501,7 +1501,7 @@ class VoiceCoreOrchestrator:
                 )
 
         try:
-            from google.genai import types
+            from google.genai import types  # W3-027-EXEMPT: google.genai.types for type building — client via get_gemini_client_for_tenant
 
             # === Tenant-aware Gemini client (LGPD compliance) ===
             try:

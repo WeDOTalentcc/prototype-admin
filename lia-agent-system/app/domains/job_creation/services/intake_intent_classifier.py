@@ -240,7 +240,7 @@ class IntakeIntentClassifier:
             return None
 
         try:
-            from anthropic import Anthropic  # type: ignore
+            from anthropic import Anthropic  # type: ignore  # W3-027-EXEMPT: tool_choice forcing (tool_choice={'type':'tool','name':...}) not exposed by factory API
         except ImportError:  # pragma: no cover — anthropic é dep oficial
             return None
 

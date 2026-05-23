@@ -268,7 +268,7 @@ class TeamsOrchestratorBridge:
                 return {"success": False, "message": "Imagem vazia ou inacessivel."}
 
             try:
-                from google.genai import types as _gtypes
+                from google.genai import types as _gtypes  # W3-027-EXEMPT: google.genai.types for Part.from_bytes type building only — llm call via llm_service
                 from app.domains.ai.services.llm import llm_service
 
                 prompt = (
@@ -375,7 +375,7 @@ class TeamsOrchestratorBridge:
                 }
 
             try:
-                from google.genai import types as _gtypes
+                from google.genai import types as _gtypes  # W3-027-EXEMPT: google.genai.types for Part.from_bytes type building only — llm call via llm_service
                 from app.domains.ai.services.llm import llm_service
 
                 prompt = (

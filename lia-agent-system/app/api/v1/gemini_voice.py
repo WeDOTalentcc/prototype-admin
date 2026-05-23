@@ -351,7 +351,7 @@ company_id: str = Depends(require_company_id)):
         import os
 
         from google import genai
-        from google.genai import types
+        from google.genai import types  # W3-027-EXEMPT: google.genai.types import for Gemini Live config building, client via get_gemini_client_for_tenant
 
         # === Tenant-aware Gemini client (LGPD compliance) ===
         try:

@@ -432,7 +432,7 @@ class WizardGateClassifier:
     ) -> dict[str, Any]:
         """Chama Claude Haiku com tool-use forçado. Retorna dict do tool input."""
         try:
-            from anthropic import Anthropic  # type: ignore
+            from anthropic import Anthropic  # type: ignore  # W3-027-EXEMPT: tool_choice forcing (tool_choice={'type':'tool','name':...}) not exposed by factory API
         except ImportError as exc:  # pragma: no cover — anthropic é dep oficial
             raise RuntimeError("anthropic SDK not installed") from exc
 

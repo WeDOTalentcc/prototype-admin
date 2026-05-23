@@ -22,7 +22,7 @@ from app.shared.providers.llm_factory import get_provider_for_tenant
 # The service uses LLMProviderFactory internally (Task #93), but older tests
 # reference the Anthropic SDK class directly via patch(module.Anthropic).
 try:
-    from anthropic import Anthropic  # noqa: F401
+    from anthropic import Anthropic  # noqa: F401  # W3-027-EXEMPT: compat alias for test patching (noqa F401) — production LLM via LLMProviderFactory
 except ImportError:  # pragma: no cover
     Anthropic = None  # type: ignore[assignment,misc]
 

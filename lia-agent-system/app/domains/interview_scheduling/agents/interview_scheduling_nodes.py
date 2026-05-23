@@ -4,7 +4,7 @@ LangGraph nodes for interview scheduling conversational workflow.
 import json
 import logging
 try:
-    from anthropic import AsyncAnthropic  # noqa: F401 — module-level for test patching
+    from anthropic import AsyncAnthropic  # noqa: F401 — module-level for test patching  # W3-027-EXEMPT: compat alias for test patching (noqa F401) — production LLM via get_provider_for_tenant
 except ImportError:
     AsyncAnthropic = None  # type: ignore[assignment,misc]
 from datetime import date, datetime, timedelta

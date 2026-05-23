@@ -124,17 +124,20 @@ class MultimodalService:
         self._genai_client = None
 
     async def _get_anthropic_client(self):
-        """Lazy-build AsyncAnthropic SDK client (bootstrap gates messages.create)."""
+        """Lazy-build Anthropic client via canonical factory (W3-027)."""
         if self._anthropic_client is None:
-            from anthropic import AsyncAnthropic
-            self._anthropic_client = AsyncAnthropic(api_key=self.anthropic_key)
+            from app.shared.providers.llm_factory import get_provider_for_tenant
+            from app.shared.providers.llm_provider import LLMProviderABC
+            container = get_provider_for_tenant(primary_provider="claude")
+            self._anthropic_client = container.get("claude")
         return self._anthropic_client
 
     async def _get_genai_client(self):
-        """Lazy-build google.genai.Client (bootstrap gates aio.models.generate_content)."""
+        """Lazy-build Gemini client via canonical factory (W3-027)."""
         if self._genai_client is None:
-            from google import genai
-            self._genai_client = genai.Client(api_key=self.google_key)
+            from app.shared.providers.llm_factory import get_provider_for_tenant
+            container = get_provider_for_tenant(primary_provider="gemini")
+            self._genai_client = container.get("gemini")
         return self._genai_client
 
     async def close(self):
@@ -355,7 +358,7 @@ class MultimodalService:
         )
 
         try:
-            from google.genai import types as genai_types
+            from google.genai import types as genai_types  # W3-027-EXEMPT: google.genai.types for type building only — client via _get_genai_client()
         except ImportError:
             logger.error("google-genai not installed; cannot run video analysis")
             return self._generate_video_analysis_placeholder(video_url, analysis_type)
