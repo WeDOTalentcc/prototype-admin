@@ -95,6 +95,11 @@ class FeatureFlagService:
             "description": "Sprint 3.5 W4-1 V2: Voice channel in CustomAgentRuntime (Agent Studio custom agents using voice). Off by default — per-tenant rollout.",
             "category": "voice",
             "default": False
+        },
+        "tier6_canary_enabled": {
+            "description": "W4-041 (2026-05-23): Tier 6 (AutonomousReActAgent fallback) canary gate. Off by default; per-tenant rollout via rollout_percentage. Quando off OU random > rollout_percentage, CascadedRouter pula Tier 6 e cai em clarification. Mitigation contra regressão silenciosa de agente cross-domain em produção.",
+            "category": "routing",
+            "default": False
         }
     }
     

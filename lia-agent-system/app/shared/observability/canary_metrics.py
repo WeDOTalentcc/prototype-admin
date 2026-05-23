@@ -373,3 +373,13 @@ __all__ = (
     "legacy_alerts_config_endpoint_calls_total",
     "briefing_dispatch_legacy_alertconfig_read_total",
 )
+
+
+# W4-041 (2026-05-23): Tier 6 canary gate observability.
+# Spike em invocations + flag_state=off = users sendo gated out (canary working).
+# Spike em flag_state=on com baixa hit rate downstream = Tier 6 underperforming.
+tier6_invocations_total = _make_counter(
+    "tier6_invocations_total",
+    "Count of Tier 6 (AutonomousReActAgent) gate evaluations in CascadedRouter.",
+    ("company_id_hash", "flag_state"),
+)

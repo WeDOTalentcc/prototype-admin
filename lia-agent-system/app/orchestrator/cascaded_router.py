@@ -626,8 +626,38 @@ class CascadedRouter:
                 logger.error("CascadedRouter: LLM cascade failed: %s", e)
 
         # Tier 6 — AutonomousReActAgent (cross-domain fallback antes de clarification)
+        # W4-041 (2026-05-23): canary gate per-tenant feature flag.
+        # AUTONOMOUS_REACT_ENABLED env var = global toggle (legacy infra).
+        # tier6_canary_enabled flag = per-tenant rollout (rollout_percentage no DB).
+        # AMBOS precisam ser true. Quando off OR fora do canary %, pula direto pra clarification.
         import os as _os
-        if _os.getenv("AUTONOMOUS_REACT_ENABLED", "false").lower() == "true":
+        _tier6_env_enabled = _os.getenv("AUTONOMOUS_REACT_ENABLED", "false").lower() == "true"
+        _tier6_flag_enabled = False
+        if _tier6_env_enabled:
+            try:
+                from app.core.feature_flags import is_enabled as _ff_is_enabled
+                _tier6_tenant = (context or {}).get("company_id") if context else None
+                _tier6_flag_enabled = _ff_is_enabled("tier6_canary_enabled", company_id=_tier6_tenant)
+            except Exception as _ff_exc:
+                logger.warning("CascadedRouter Tier 6 flag check failed: %s", _ff_exc)
+                _tier6_flag_enabled = False
+
+            # Canary metric: invocation tracking (gate ON = entered Tier 6 path)
+            try:
+                from app.shared.observability.canary_metrics import tier6_invocations_total
+                if tier6_invocations_total is not None:
+                    import hashlib
+                    _tier6_cid_hash = (
+                        hashlib.sha256((_tier6_tenant or "anon").encode()).hexdigest()[:12]
+                    )
+                    tier6_invocations_total.labels(
+                        company_id_hash=_tier6_cid_hash,
+                        flag_state="on" if _tier6_flag_enabled else "off",
+                    ).inc()
+            except Exception:
+                pass  # fail-open metrics
+
+        if _tier6_env_enabled and _tier6_flag_enabled:
             async with _tracer.start_span("router.tier6_autonomous_react", attributes={
                 "tier_name": "tier6_autonomous_react", "service": "cascaded_router", "match_type": "autonomous_agent",
             }) as _t6_span:
