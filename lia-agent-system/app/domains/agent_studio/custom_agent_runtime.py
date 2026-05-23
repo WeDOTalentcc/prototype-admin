@@ -441,7 +441,7 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         session_id: str = "",
         context: Optional[dict[str, Any]] = None,
         *,
-        channel: Literal["chat", "voice", "whatsapp"] = "chat",
+        channel: Literal["in_app", "chat", "voice", "voip", "whatsapp"] = "in_app",
         audio_chunk: bytes | None = None,
         voice_session_id: str | None = None,
         sender_phone: str | None = None,
@@ -461,8 +461,28 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         Keyword-only after context= to preserve backward compat with positional callers
         from Sprint <=3.4. process() callers route through here unchanged.
         """
+        # W-Channels-A canonical (2026-05-23): aceita alias legacy "chat" → "in_app"
+        # com DeprecationWarning. Manter compat com callers Sprint 3.5 anteriores.
+        if channel == "chat":
+            import warnings
+            warnings.warn(
+                "channel='chat' is deprecated; use channel='in_app' (W-Channels-A 2026-05-23)",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            channel = "in_app"
+
+        # W-Channels-A: voice agora significa PSTN. voip = VoIP browser/Gemini Live.
+        # Ambos resolvem para o mesmo _invoke_voice handler que faz routing interno
+        # (PSTN vs VoIP) baseado em context["candidate_phone"]. A separação de flag
+        # acontece dentro de _invoke_voice respeitando voice_enabled vs voip_enabled.
+
         # Sprint 3.5 W4-1 V2: channel-aware routing dispatch.
-        if channel == "voice":
+        if channel in ("voice", "voip"):
+            # Pass intended mode forward so _invoke_voice can validate the right
+            # per-agent flag (voice_enabled for PSTN, voip_enabled for VoIP).
+            _voice_ctx = dict(context) if context else {}
+            _voice_ctx.setdefault("voice_mode", "voip" if channel == "voip" else "pstn")
             return await self._invoke_voice(
                 message=message,
                 user_id=user_id,
@@ -470,7 +490,7 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
                 session_id=session_id,
                 audio_chunk=audio_chunk,
                 voice_session_id=voice_session_id,
-                context=context,
+                context=_voice_ctx,
             )
         if channel == "whatsapp":
             return await self._invoke_whatsapp(
@@ -818,6 +838,10 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
                     "session_status": getattr(session, "status", None),
                     "voice_provider": getattr(session, "voice_provider", None),
                     "is_voip": is_voip,
+                    # W-Channels-A (2026-05-23): expose canonical voice_mode for downstream
+                    # observers (audit, billing, frontend status). Sourced from context (set
+                    # in execute() dispatch) with fallback to is_voip flag.
+                    "voice_mode": (ctx.get("voice_mode") if isinstance(ctx, dict) else None) or ("voip" if is_voip else "pstn"),
                     "has_audio_chunk": bool(audio_chunk),
                     "audio_chunk_bytes": len(audio_chunk) if audio_chunk else 0,
                     "orchestrator_ready": True,
