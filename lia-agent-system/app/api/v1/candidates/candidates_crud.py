@@ -8,12 +8,13 @@ from typing import Annotated, Optional
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Path, Query, Request
 from sqlalchemy import text
 
-from libs.models.lia_models.candidate import (
+from app.models.candidate import (
     CandidateExperience,
     CandidateEducation,
 )
 DUAL_ID_PATH_PATTERN = r"^(?:[0-9a-fA-F-]{36}|[0-9]+)$"
 from app.auth.dependencies import get_current_user_or_demo
+from app.auth.models import User
 
 from ._shared import (
     ActivityService,
