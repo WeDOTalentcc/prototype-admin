@@ -27,6 +27,8 @@ import { BetaBadge } from "@/components/ui/beta-badge"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog"
 import { PageTabNavigation } from "@/components/ui/page-tab-navigation"
 import { TabSectionHeader } from "@/components/pages-agent-studio/TabSectionHeader"
+import { CreateAgentWizard } from "@/components/pages-agent-studio/create-agent-wizard"
+import type { AgentGoal } from "@/components/pages-agent-studio/create-agent-wizard"
 import { useTranslations } from "next-intl"
 
 interface SourcingAgent {
@@ -100,6 +102,14 @@ export default function AgentStudioPage({
   const [templates, setTemplates] = useState<SectorTemplate[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showCreateModal, setShowCreateModal] = useState(false)
+  // UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 T1+T3: wizard goal-first unico
+  // (substitui as ~9 CTAs "Criar Agente" espalhadas pelas tabs).
+  const [wizardOpen, setWizardOpen] = useState(false)
+  const [wizardInitialGoal, setWizardInitialGoal] = useState<AgentGoal | undefined>(undefined)
+  const openWizard = (goal?: AgentGoal) => {
+    setWizardInitialGoal(goal)
+    setWizardOpen(true)
+  }
   const [evaluatingTwinId, setEvaluatingTwinId] = useState<string | null>(null)
   // Sprint B QW#5 audit 2026-05-22: preview modal antes do POST do template
   const [previewTemplate, setPreviewTemplate] = useState<AgentTemplate | null>(null)
@@ -280,29 +290,17 @@ export default function AgentStudioPage({
             >
               <RefreshCw className={cn("w-4 h-4", isLoading && "animate-spin")} aria-hidden="true" />
             </Button>
-            {/* BUG-12: CTA explícito para o ConversationalCreator (que estava
-                escondido na aba "Custom Agents" sem call-to-action visível).
-                Clicar troca para a aba e dá scroll até o componente. */}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setActiveTab("custom")
-                // Aguarda render da aba antes de scrollar
-                setTimeout(() => {
-                  document.getElementById("agent-studio-conversational-creator")
-                    ?.scrollIntoView({ behavior: "smooth", block: "start" })
-                }, 80)
-              }}
-              className="gap-2"
-            >
-              <Wand2 className="w-4 h-4" />
-              Criar com IA
-            </Button>
+            {/* UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 T1: CTA unico "Criar agente" abre
+                CreateAgentWizard (goal-first onboarding). Substitui o par
+                "Criar com IA" (BUG-12, escondido na tab Custom) + "Criar Agente"
+                (sourcing modal) que confundia o usuario com 2 entry-points
+                diferentes ali no mesmo header. Agora ha 1 CTA -> 1 wizard -> 1 fluxo
+                que internamente cobre IA (T3 hero), templates e custom manual. */}
             <Button
               size="sm"
-              onClick={() => setShowCreateModal(true)}
+              onClick={() => openWizard()}
               className="gap-2 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
+              data-testid="header-create-agent-cta"
             >
               <Plus className="w-4 h-4" />
               {t("studio.createAgent")}
@@ -436,20 +434,12 @@ export default function AgentStudioPage({
                   )
                 })}
                 <button
-                  onClick={() => {
-                    // UX-Sprint-A QW#2 (audit 2026-05-21): CTA "Personalizado / Criar do zero" estava
-                    // abrindo CreateAgentModal (sourcing flow) — label diz CUSTOM mas destino era SOURCING.
-                    // Fix: redirecionar para aba Custom + scroll para ConversationalCreator.
-                    setActiveTab("custom")
-                    setTimeout(() => {
-                      document.getElementById("agent-studio-conversational-creator")
-                        ?.scrollIntoView({ behavior: "smooth", block: "start" })
-                    }, 80)
-                  }}
+                  onClick={() => openWizard("outro")}
                   className={cn(
                     "group flex flex-col items-center gap-2.5 p-5 rounded-xl border-2 border-dashed border-lia-border-subtle",
                     "hover:border-wedo-cyan/40 transition-colors duration-200 cursor-pointer"
                   )}
+                  data-testid="templates-custom-create-cta"
                 >
                   <Brain className="w-6 h-6 text-wedo-cyan transition-transform group-hover:scale-110" />
                   <div className="text-center">
@@ -486,8 +476,9 @@ export default function AgentStudioPage({
                   </p>
                   <Button
                     size="sm"
-                    onClick={() => setShowCreateModal(true)}
+                    onClick={() => openWizard("sourcing_ativo")}
                     className="gap-2 bg-lia-btn-primary-bg text-lia-btn-primary-text hover:bg-lia-btn-primary-hover"
+                    data-testid="sourcing-empty-create-cta"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     {t("studio.createFirstAgent")}
@@ -609,11 +600,11 @@ export default function AgentStudioPage({
             <TemplateGallery
               onTemplateSelect={handleTemplateSelect}
               onCreateManual={() => {
-                // UX-Sprint-A QW#1 (audit 2026-05-21): "Criar do zero" da TemplateGallery (tab Custom)
-                // estava abrindo CreateAgentModal sourcing — wrong flow.
-                // Fix: scroll para ConversationalCreator (que já está nesta mesma tab).
-                document.getElementById("agent-studio-conversational-creator")
-                  ?.scrollIntoView({ behavior: "smooth", block: "start" })
+                // UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 T1: "Criar do zero" agora abre
+                // CreateAgentWizard com goal=outro. Substitui o scroll-to-ConversationalCreator
+                // (UX-Sprint-A QW#1) que era um hack semantic — agora o usuario tem o
+                // mesmo onboarding goal-first em qualquer ponto de entrada.
+                openWizard("outro")
               }}
             />
 
@@ -720,6 +711,25 @@ export default function AgentStudioPage({
           }}
         />
       )}
+
+      {/* UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 T1+T3: wizard goal-first unico.
+          Mounted conditionally (open=wizardOpen) — segue regra "conditional
+          mount" do CLAUDE.md de defense-in-depth contra Rules of Hooks. */}
+      <CreateAgentWizard
+        open={wizardOpen}
+        initialGoal={wizardInitialGoal}
+        onClose={() => {
+          setWizardOpen(false)
+          setWizardInitialGoal(undefined)
+        }}
+        onCreated={(agentId) => {
+          setWizardOpen(false)
+          setWizardInitialGoal(undefined)
+          mutateCustomAgents()
+          loadData()
+          if (agentId) onStartCalibration?.(agentId)
+        }}
+      />
     </div>
   )
 }
