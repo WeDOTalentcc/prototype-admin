@@ -90,46 +90,22 @@ async def _wrap_get_pipeline_benchmarks(**kwargs: Any) -> dict[str, Any]:
     company_averages = {}
 
     try:
-        async with AsyncSessionLocal() as session:
-            if vacancy_id:
-                # P0.A canonical: aggregation must not span tenants. company_id
-                # already extracted at handler entry (line ~83).
-                stage_result = await session.execute(
-                    text("""
-                        SELECT stage,
-                               AVG(EXTRACT(EPOCH FROM (updated_at - created_at)) / 86400) AS avg_days,
-                               COUNT(*) AS candidates
-                        FROM vacancy_candidates
-                        WHERE vacancy_id = :vid
-                          AND company_id = :company_id
-                        GROUP BY stage
-                    """),
-                    {"vid": vacancy_id, "company_id": company_id},
-                )
-                for row in stage_result.mappings():
-                    per_stage_metrics[row["stage"]] = {
-                        "avg_days": round(float(row["avg_days"] or 0), 1),
-                        "candidates": int(row["candidates"]),
-                    }
+        # W1-004-B (2026-05-23): SQL inline → RecruiterMetricsRepository (ADR-001).
+        # _require_company_id fail-closed garante zero cross-tenant aggregation.
+        from app.domains.recruiter_assistant.repositories.recruiter_metrics_repository import (
+            RecruiterMetricsRepository,
+        )
 
-            if company_id:
-                company_result = await session.execute(
-                    text("""
-                        SELECT vc.stage,
-                               AVG(EXTRACT(EPOCH FROM (vc.updated_at - vc.created_at)) / 86400) AS avg_days,
-                               COUNT(*) AS candidates
-                        FROM vacancy_candidates vc
-                        JOIN job_vacancies jv ON jv.id = vc.vacancy_id
-                        WHERE jv.company_id = :cid
-                        GROUP BY vc.stage
-                    """),
-                    {"cid": company_id},
+        async with AsyncSessionLocal() as session:
+            repo = RecruiterMetricsRepository(session)
+            if vacancy_id:
+                per_stage_metrics = await repo.avg_days_per_stage_for_vacancy(
+                    vacancy_id=vacancy_id, company_id=company_id
                 )
-                for row in company_result.mappings():
-                    company_averages[row["stage"]] = {
-                        "avg_days": round(float(row["avg_days"] or 0), 1),
-                        "candidates": int(row["candidates"]),
-                    }
+            if company_id:
+                company_averages = await repo.avg_days_per_stage_for_company(
+                    company_id=company_id
+                )
     except Exception as e:
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[kanban_tools] SQL error in get_pipeline_benchmarks: {e}")
