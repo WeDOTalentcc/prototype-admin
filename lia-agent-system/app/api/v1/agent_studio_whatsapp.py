@@ -125,20 +125,15 @@ async def _load_agent_for_company(
 ) -> CustomAgent:
     """Load CustomAgent + 404 if not found in this tenant.
 
-    ADR-001-EXEMPT: SQL inline justificado — espelha o pattern de
-    ``app/api/v1/agent_studio_voice.py:_load_agent_for_company`` (mesma
-    justificativa: não existe ``CustomAgentRepository`` no codebase).
-    Tracking: Sprint 4 refactor — extrair ``CustomAgentRepository``
-    consolidando todas as chamadas inline em ``app/api/v1/custom_agents.py``,
-    ``agent_studio_voice.py`` e este arquivo.
+    C.5 (2026-05-23): delegates to canonical CustomAgentRepository
+    (ADR-001 compliant). Previously had inline select(CustomAgent) under
+    the legacy exempt marker.
     """
-    result = await db.execute(
-        select(CustomAgent).where(
-            CustomAgent.id == agent_id,
-            CustomAgent.company_id == company_id,
-        )
+    from app.domains.agent_studio.repositories.custom_agent_repository import (
+        CustomAgentRepository,
     )
-    agent = result.scalar_one_or_none()
+    repo = CustomAgentRepository(db)
+    agent = await repo.get_by_id(agent_id=agent_id, company_id=company_id)
     if agent is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

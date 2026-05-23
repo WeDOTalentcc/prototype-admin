@@ -91,16 +91,16 @@ async def _load_agent_for_company(
 ) -> CustomAgent:
     """Fetch a custom agent scoped to ``company_id`` (multi-tenancy fail-closed).
 
-    Idêntico ao helper privado de ``agent_studio_voice.py`` /
-    ``agent_studio_whatsapp.py``. Mantemos uma cópia local para evitar import
-    cíclico sem extrair um shared util (overkill pra 6 linhas).
+    C.5 (2026-05-23): delegates to canonical CustomAgentRepository
+    (ADR-001 compliant). Previously had local copy of `select(CustomAgent)`
+    inline (mirror of voice/whatsapp endpoints) — repository consolidates
+    the 3 sites now.
     """
-    stmt = select(CustomAgent).where(
-        CustomAgent.id == agent_id,
-        CustomAgent.company_id == company_id,
+    from app.domains.agent_studio.repositories.custom_agent_repository import (
+        CustomAgentRepository,
     )
-    result = await db.execute(stmt)
-    agent = result.scalar_one_or_none()
+    repo = CustomAgentRepository(db)
+    agent = await repo.get_by_id(agent_id=agent_id, company_id=company_id)
     if agent is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
