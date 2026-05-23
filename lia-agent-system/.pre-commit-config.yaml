@@ -502,3 +502,10 @@ repos:
         entry: python3 scripts/check_no_bak_files.py
         files: ^.*\.bak\..*$
         pass_filenames: false
+
+      - id: voice-stt-pii-strip
+        name: "W3-018: voice STT transcript_segments usa strip_pii_for_llm_prompt (BLOCKING, P0 LGPD)"
+        language: system
+        entry: python3 scripts/check_voice_stt_pii_strip.py
+        files: ^app/domains/voice/services/(voice_screening_orchestrator|gemini_live_audio_service)\.py$
+        pass_filenames: false

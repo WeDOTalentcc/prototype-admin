@@ -58,7 +58,7 @@ from app.domains.communication.services.twilio_voice_service import (
 from app.core.config import settings
 from app.shared.services.voice_service import VoiceService
 from app.shared.compliance.fairness_guard_middleware import check_fairness
-from app.shared.pii_masking import mask_phone_preserve_tail, mask_pii
+from app.shared.pii_masking import mask_phone_preserve_tail, mask_pii, strip_pii_for_llm_prompt
 from app.shared.prompts.anti_sycophancy_block import ANTI_SYCOPHANCY_OPERATIONAL
 from app.shared.resilience.circuit_breaker import TWILIO_VOICE_CIRCUIT, CircuitBreakerError
 from app.shared.services.automated_decision_logger import (
@@ -1298,8 +1298,11 @@ class VoiceCoreOrchestrator:
             # cached; mutation only happens if Redis has the session.
             session = await self._fetch_session(session_id)
             if session:
+                # W3-018 (2026-05-23): PII strip ANTES de armazenar.
+                # transcript_segments é lido em conversation_history (linha 1606)
+                # enviado ao Gemini LLM — armazenar raw vaza PII pra LLM.
                 session.transcript_segments.append({
-                    "text": text,
+                    "text": strip_pii_for_llm_prompt(text),
                     "timestamp": datetime.utcnow().isoformat(),
                     "role": "candidate",
                 })
@@ -1692,7 +1695,9 @@ class VoiceCoreOrchestrator:
                         session.questions_asked.append(lia_text[:200])
 
                 session.transcript_segments.append({
-                    "text": lia_text,
+                    # W3-018: defense-in-depth · LIA response também pode
+                    # ter PII (echo de candidate, name/email mention).
+                    "text": strip_pii_for_llm_prompt(lia_text),
                     "timestamp": datetime.utcnow().isoformat(),
                     "role": "lia",
                 })
@@ -1801,7 +1806,8 @@ class VoiceCoreOrchestrator:
             q = self._check_fairness_on_response(q, session)
             session.questions_asked.append(q)
             session.transcript_segments.append({
-                "text": q,
+                # W3-018: canned questions são low-PII mas mantém pattern
+                "text": strip_pii_for_llm_prompt(q),
                 "timestamp": datetime.utcnow().isoformat(),
                 "role": "lia",
             })

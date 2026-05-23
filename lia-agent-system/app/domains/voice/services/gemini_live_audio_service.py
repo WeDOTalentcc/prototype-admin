@@ -26,7 +26,7 @@ from typing import Any
 from uuid import uuid4
 
 from app.shared.compliance.fairness_guard_middleware import check_fairness
-from app.shared.pii_masking import mask_pii
+from app.shared.pii_masking import mask_pii, strip_pii_for_llm_prompt
 from app.shared.prompts.anti_sycophancy_block import ANTI_SYCOPHANCY_OPERATIONAL
 
 logger = logging.getLogger(__name__)
@@ -247,8 +247,11 @@ class GeminiLiveAudioService:
             return
 
         masked_text = mask_pii(text)
+        # W3-018 (2026-05-23): PII strip ANTES de armazenar em
+        # transcript_segments — evita vazamento via conversation_history
+        # de volta ao Gemini LLM. masked_text continua sendo usado em log.
         session.transcript_segments.append({
-            "text": text,
+            "text": strip_pii_for_llm_prompt(text),
             "timestamp": datetime.utcnow().isoformat(),
             "role": "candidate",
         })
@@ -280,8 +283,9 @@ class GeminiLiveAudioService:
             return None
 
         masked_text = mask_pii(text)
+        # W3-018: defense-in-depth · LIA response também strip.
         session.transcript_segments.append({
-            "text": text,
+            "text": strip_pii_for_llm_prompt(text),
             "timestamp": datetime.utcnow().isoformat(),
             "role": "lia",
         })
