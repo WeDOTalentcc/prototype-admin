@@ -55,12 +55,50 @@ PII_PATTERNS: list[tuple[Pattern, str]] = [
 ]
 
 
+# P1 C (2026-05-23): UUID v4 guard pattern compartilhado por mask_pii e
+# strip_pii_for_llm_prompt — single source of truth.
+#
+# Por que aqui (não junto da definição original lá embaixo)?
+# `mask_pii` precisa de _UUID_V4_PATTERN definido ANTES dela. A definição
+# original em strip_pii_for_llm_prompt fica DEPOIS de mask_pii (ordem do
+# arquivo). Centralizamos a definição aqui e removemos a duplicata abaixo.
+_UUID_V4_PATTERN: Pattern = re.compile(
+    r'\b[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b',
+    re.IGNORECASE,
+)
+
+
 def mask_pii(text: str) -> str:
+    """Mask PII em log strings preservando UUID v4 (P1 C, ref: backlog 2026-05-23).
+
+    Aplica mesmo guard-token pattern de `strip_pii_for_llm_prompt`: UUIDs v4
+    viram placeholders opacos antes de aplicar PII regex e voltam depois.
+    Garante invariante "UUID v4 nunca é PII" — protege tenant_id em logs
+    `[LLM-AUDIT]` contra falso-positivo do `PHONE_BR_PATTERN`
+    (`\\d{4}[-\\s]?\\d{4}\\b` casa segmentos internos de UUIDs).
+    """
     if not text:
         return text
-    masked = text
+
+    # ── UUID v4 guard via reversible placeholder ──
+    _uuid_map: dict[str, str] = {}
+
+    def _shield(match: "re.Match") -> str:
+        uid = match.group(0)
+        # \x00 é seguro: nunca aparece em logs reais e é transparente para
+        # todos os regexes de PII (que casam dígitos/pontuação ASCII).
+        token = f"\x00UUID{len(_uuid_map)}\x00"
+        _uuid_map[token] = uid
+        return token
+
+    masked = _UUID_V4_PATTERN.sub(_shield, text)
+
     for pattern, replacement in PII_PATTERNS:
         masked = pattern.sub(replacement, masked)
+
+    # Restaura UUIDs
+    for token, uid in _uuid_map.items():
+        masked = masked.replace(token, uid)
     return masked
 
 
@@ -192,19 +230,6 @@ _LLM_PROMPT_PII_PATTERNS: list[tuple[Pattern, str]] = [
     (_AGE_EXPLICIT_PATTERN, "[IDADE REMOVIDA]"),
     (_ADDRESS_BAIRRO_PATTERN, "[ENDEREÇO REMOVIDO]"),
 ]
-
-
-# R1 (Task T-F): UUID v4 canônico — usado para proteger identificadores de tenant
-# (ex: company_id da Demo Company `00000000-0000-4000-a000-000000000001`) contra
-# o `PHONE_BR_PATTERN`, que casa `\d{4}[-\s]?\d{4}` e historicamente destruía
-# o UUID em `[TELEFONE REMOVIDO]-[TELEFONE REMOVIDO]-a000-00[TELEFONE REMOVIDO]`.
-# Origem do bug "LIA pergunta company_id no chat" (3ª recorrência). Fix canônico
-# via guard-token: substituímos UUIDs por placeholders únicos antes do strip e
-# restauramos depois — preserva a invariante "UUID v4 nunca é PII".
-_UUID_V4_PATTERN: Pattern = re.compile(
-    r'\b[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\b',
-    re.IGNORECASE,
-)
 
 
 def strip_pii_for_llm_prompt(text: str) -> str:
