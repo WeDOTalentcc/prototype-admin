@@ -116,8 +116,12 @@ class ProviderContainer:
         primary_provider: str | None = None,
         fallback_order: list[str] | None = None,
         provider_api_keys: dict[str, str] | None = None,
+        region: str | None = None,
     ) -> None:
         self._tenant_id = tenant_id
+        # W2-012-B (2026-05-23): per-tenant region pinning (LGPD Art 33).
+        # None = sem region constraint (default global do provider).
+        self._region = region
         self._primary = primary_provider or os.environ.get("LLM_DEFAULT_PROVIDER", "claude")
         raw_order = fallback_order or list(FALLBACK_ORDER)
         self._fallback_order = [self._primary] + [
@@ -154,15 +158,20 @@ class ProviderContainer:
                 )
             tenant_key = self._api_keys.get(provider_name)
             if tenant_key:
+                # W2-012-B: pass region (None se sem constraint)
                 self._instances[provider_name] = global_providers[provider_name](
-                    api_key=tenant_key
+                    api_key=tenant_key,
+                    region=self._region,
                 )
                 logger.info(
                     "[ProviderContainer] tenant=%s created provider=%s with tenant key",
                     self._tenant_id, provider_name,
                 )
             else:
-                self._instances[provider_name] = global_providers[provider_name]()
+                # W2-012-B: pass region even sem tenant key
+                self._instances[provider_name] = global_providers[provider_name](
+                    region=self._region,
+                )
                 logger.debug(
                     "[ProviderContainer] tenant=%s created provider=%s with system key",
                     self._tenant_id, provider_name,
@@ -453,6 +462,8 @@ class TenantProviderRegistry:
             primary = config.get("primary_provider", "gemini")
             fallback = config.get("fallback_order", list(FALLBACK_ORDER))
             providers_cfg = config.get("providers", {})
+            # W2-012-B (2026-05-23): LGPD Art 33 per-tenant region from DB
+            tenant_region = config.get("region")
 
             self.remove_container(tenant_id)
 
@@ -465,6 +476,7 @@ class TenantProviderRegistry:
                     for name, prov in providers_cfg.items()
                     if prov.get("api_key")
                 },
+                region=tenant_region,
             )
             key = tenant_id or "__global__"
             self._containers[key] = container

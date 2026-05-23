@@ -45,6 +45,8 @@ interface LLMConfigData {
   providers: Record<string, ProviderConfigData>
   routing: Record<string, string>
   is_active: boolean
+  // W2-012-B (2026-05-23): LGPD Art 33 per-tenant region pinning
+  region?: string | null
 }
 
 interface IntegrationDetailDrawerProps {
@@ -72,6 +74,30 @@ export function IntegrationDetailDrawer({
   llmConfig,
   onConfigSaved,
 }: IntegrationDetailDrawerProps) {
+  const handleSaveRegion = useCallback(async (newRegion: string | null) => {
+    // W2-012-B (2026-05-23): salva region per-tenant. LGPD Art 33.
+    if (!integration) return { success: false, message:"Integração não selecionada" }
+    try {
+      const currentConfig = await apiFetch("/api/backend-proxy/llm-config").then(r => r.json())
+      const res = await apiFetch("/api/backend-proxy/llm-config", {
+        method:"PUT",
+        headers: {"Content-Type":"application/json" },
+        body: JSON.stringify({
+          primary_provider: currentConfig.primary_provider ||"gemini",
+          fallback_order: currentConfig.fallback_order || ["gemini","claude","openai"],
+          providers: currentConfig.providers || {},
+          routing: currentConfig.routing || { chat:"gemini", embedding:"gemini", screening:"gemini", voice:"gemini" },
+          region: newRegion,
+        }),
+      })
+      if (!res.ok) return { success: false, message:"Erro ao salvar região" }
+      onConfigSaved?.()
+      return { success: true, message:"Região atualizada" }
+    } catch {
+      return { success: false, message:"Erro de conexão" }
+    }
+  }, [integration, onConfigSaved])
+
   const handleSaveApiKey = useCallback(async (apiKey: string) => {
     if (!integration) return { success: false, message:"Integração não selecionada" }
     try {
@@ -87,6 +113,7 @@ export function IntegrationDetailDrawer({
             [integration.id]: { provider: integration.id, api_key: apiKey, is_active: true },
           },
           routing: currentConfig.routing || { chat:"gemini", embedding:"gemini", screening:"gemini", voice:"gemini" },
+          region: currentConfig.region ?? null,  // W2-012-B: preserva region existente
         }),
       })
 

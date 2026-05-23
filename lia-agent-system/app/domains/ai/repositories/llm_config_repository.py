@@ -99,6 +99,7 @@ class LlmConfigRepository:
         providers_dict: dict,
         routing: dict,
         created_by: str,
+        region: str | None = None,
     ):
         """Create or update TenantLLMConfig; return instance (no flush — caller commits).
         API keys are encrypted before persisting. Handles provider removal."""
@@ -114,6 +115,9 @@ class LlmConfigRepository:
             config.primary_provider = primary_provider
             config.fallback_order = fallback_order
             config.routing = routing
+            # W2-012-B (2026-05-23): region update path
+            if region is not None:
+                config.region = region
         else:
             encrypted_providers = _encrypt_provider_keys(providers_dict)
             config = TenantLLMConfig(
@@ -123,6 +127,7 @@ class LlmConfigRepository:
                 providers=encrypted_providers,
                 routing=routing,
                 created_by=created_by,
+                region=region,  # W2-012-B (2026-05-23): LGPD Art 33 region pinning
             )
             self.db.add(config)
 

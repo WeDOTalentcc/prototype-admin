@@ -53,6 +53,10 @@ class LLMConfigRequest(WeDoBaseModel):
     fallback_order: list[str] = Field(default=["gemini", "claude", "openai"])
     providers: dict[str, ProviderConfig] = Field(default={})
     routing: RoutingConfig = RoutingConfig()
+    # W2-012-B (2026-05-23): LGPD Art 33 per-tenant region pinning.
+    # None = usa default global do provider (us-central1 Gemini etc.).
+    # Override: "us-east-1", "sa-east-1", "southamerica-east1".
+    region: str | None = None
 
 class LLMConfigResponse(BaseModel):
     company_id: str
@@ -61,6 +65,8 @@ class LLMConfigResponse(BaseModel):
     providers: dict[str, Any]  # API keys masked
     routing: dict[str, str]
     is_active: bool
+    # W2-012-B (2026-05-23): per-tenant region (None = global default)
+    region: str | None = None
 
 class TestProviderRequest(WeDoBaseModel):
     provider: str
@@ -99,6 +105,7 @@ company_id: str = Depends(require_company_id)):
                 providers={},
                 routing={"chat": "gemini", "embedding": "gemini", "screening": "gemini", "voice": "gemini"},
                 is_active=True,
+                region=None,  # W2-012-B (2026-05-23): empty config = global default
             )
 
         masked_providers = {}
@@ -119,6 +126,7 @@ company_id: str = Depends(require_company_id)):
             providers=masked_providers,
             routing=config.routing or {},
             is_active=config.is_active,
+            region=config.region,  # W2-012-B (2026-05-23): per-tenant region pinning
         )
     except Exception as e:
         # REGRA 4 (CLAUDE.md): NEVER silently return fabricated config — fail-loud.
@@ -195,6 +203,7 @@ company_id: str = Depends(require_company_id)):
             providers_dict=providers_dict,
             routing=request.routing.dict(),
             created_by=str(current_user.id),
+            region=request.region,  # W2-012-B (2026-05-23): LGPD Art 33 region pinning
         )
 
         # Audit log

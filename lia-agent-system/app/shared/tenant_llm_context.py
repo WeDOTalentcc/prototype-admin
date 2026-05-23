@@ -68,6 +68,7 @@ async def get_tenant_llm_config(company_id: str) -> dict | None:
                     "fallback_order": row.fallback_order or ["gemini", "claude", "openai"],
                     "providers": row.providers or {},
                     "routing": row.routing or {},
+                    "region": row.region,  # W2-012-B (2026-05-23): LGPD Art 33 per-tenant region
                 }
                 _tenant_configs[company_id] = config
                 return config
