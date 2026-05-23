@@ -206,7 +206,20 @@ class ToolExecutor:
         
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         self.logger.info(f"Executing tool: {tool_name} with params: {list(parameters.keys())}")
-        
+
+        # W1-004 Step 2 (multi-tenancy fail-closed) · company_id obrigatório.
+        # Sem context.company_id, tool executa sem isolamento de tenant.
+        # NOTA: audit log skipped (context inválido); metrics + log_execution
+        # ainda firam via _emit_governance_signals.
+        if context is None or not context.company_id:
+            result = ToolResult(
+                success=False,
+                error="company_id required for tool execution (multi-tenancy fail-closed)",
+                tool_name=tool_name,
+            )
+            self._emit_governance_signals(tool_name, parameters, result, context, agent_type, conversation_id)
+            return result
+
         tool = self.registry.get_tool(tool_name)
         if not tool:
             result = ToolResult(
@@ -214,7 +227,7 @@ class ToolExecutor:
                 error=f"Tool not found: {tool_name}",
                 tool_name=tool_name
             )
-            self._log_execution(tool_name, parameters, result, agent_type, conversation_id)
+            self._emit_governance_signals(tool_name, parameters, result, context, agent_type, conversation_id)
             return result
         
         if tool.allowed_agents and agent_type and agent_type not in tool.allowed_agents:
@@ -223,7 +236,7 @@ class ToolExecutor:
                 error=f"Agent '{agent_type}' not authorized for tool '{tool_name}'",
                 tool_name=tool_name
             )
-            self._log_execution(tool_name, parameters, result, agent_type, conversation_id)
+            self._emit_governance_signals(tool_name, parameters, result, context, agent_type, conversation_id)
             return result
         
         validation_error = self._validate_parameters(parameters, tool.parameters_schema)
@@ -233,7 +246,7 @@ class ToolExecutor:
                 error=validation_error,
                 tool_name=tool_name
             )
-            self._log_execution(tool_name, parameters, result, agent_type, conversation_id)
+            self._emit_governance_signals(tool_name, parameters, result, context, agent_type, conversation_id)
             return result
         
         try:
@@ -284,7 +297,8 @@ class ToolExecutor:
                 tool_name=tool_name
             )
         
-        self._log_execution(tool_name, parameters, result, agent_type, conversation_id)
+        # W1-004 · centraliza audit (Step 7) + metrics (Step 8) + observability log.
+        self._emit_governance_signals(tool_name, parameters, result, context, agent_type, conversation_id)
         return result
     
     async def execute_batch(
@@ -326,6 +340,72 @@ class ToolExecutor:
         
         return results
     
+    def _emit_metrics(
+        self,
+        tool_name: str,
+        *,
+        success: bool,
+        elapsed_ms: float,
+    ) -> None:
+        """W1-004 Step 8 (canary metric hook) · emite metric por execute call.
+
+        Sobrescrever em subclass pra exportar pra Prometheus/StatsD/etc.
+        Default: log.debug (zero side-effect em prod sem exporter wired).
+        """
+        self.logger.debug(
+            "tool.metric name=%s success=%s elapsed_ms=%.1f",
+            tool_name, success, elapsed_ms,
+        )
+
+    def _emit_governance_signals(
+        self,
+        tool_name: str,
+        parameters: dict[str, Any],
+        result: ToolResult,
+        context: "ToolExecutionContext | None",
+        agent_type: str | None,
+        conversation_id: str | None,
+    ) -> None:
+        """W1-004 helper · emite audit log + metrics + execution log per call.
+
+        Centraliza Step 7 (audit) + Step 8 (metrics) + log de observability
+        para evitar duplicação em múltiplos early-returns. Audit é fail-safe
+        (NUNCA bloqueia tool execution) e usa asyncio.create_task pra non-blocking.
+        """
+        # Step 7 (audit log) — só com context válido (company_id required)
+        if context is not None and context.company_id:
+            try:
+                audit_svc = get_audit_service()
+                asyncio.create_task(
+                    audit_svc.log_action(
+                        trace_id=context.session_id or "unknown",
+                        company_id=context.company_id,
+                        action_type="tool_call",
+                        actor=context.user_id,
+                        target_id=tool_name,
+                        target_type="tool",
+                        metadata={
+                            "agent_type": agent_type,
+                            "conversation_id": conversation_id,
+                            "elapsed_ms": result.execution_time_ms,
+                            "success": result.success,
+                            "error": result.error,
+                        },
+                    )
+                )
+            except Exception as _audit_exc:
+                self.logger.debug("audit log skipped: %s", _audit_exc)
+
+        # Step 8 (metrics)
+        self._emit_metrics(
+            tool_name,
+            success=result.success,
+            elapsed_ms=result.execution_time_ms,
+        )
+
+        # Observability log
+        self._log_execution(tool_name, parameters, result, agent_type, conversation_id)
+
     def _log_execution(
         self,
         tool_name: str,
