@@ -55,11 +55,13 @@ MIGRATED_TOOL_REGISTRIES = frozenset({
 # Warn-only until migrated in future waves.
 # W1-004-A (2026-05-23): diversity_tool_registry + sourcing_tool_registry removed from backlog
 # after full EXEMPT marker coverage (ADR-001-EXEMPT on all SQL inline blocks).
+# W1-004-C Agent-B (2026-05-23): hiring_policy/policy_tool_registry + job_management/wizard_tool_registry
+# removed — MIGRATE 1+2 to repos + EXEMPT markers on remaining analytics SQL.
 TOOL_REGISTRY_BACKLOG = frozenset({
     "app/domains/company_settings/agents/company_tool_registry.py",
     "app/domains/cv_screening/agents/pipeline_tool_registry.py",
-    "app/domains/hiring_policy/agents/policy_tool_registry.py",
-    "app/domains/job_management/agents/wizard_tool_registry.py",
+    # policy_tool_registry.py — removed 2026-05-23: MIGRATE 1+2 to HiringPolicyRepository + EXEMPT markers
+    # wizard_tool_registry.py — removed 2026-05-23: MIGRATE 1 to JobVacancyCrudRepository + EXEMPT markers
     "app/domains/pipeline/agents/pipeline_tool_registry.py",
     "app/domains/sourcing/agents/passive_pipeline_tool_registry.py",
     "app/domains/talent_pool/agents/talent_pool_tool_registry.py",

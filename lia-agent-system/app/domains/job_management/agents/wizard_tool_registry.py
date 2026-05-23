@@ -106,24 +106,22 @@ async def _load_vacancy_or_error(
     Multi-tenancy: company_id is the *agent context* value the wizard
     passes per session — never from LLM-generated args. The repo method
     enforces the WHERE company_id = :id clause on the SQL query.
+
+    ADR-001 W1-004-C: migrated from inline select() to repo method.
     """
     if not vacancy_id:
         return {"error": "vacancy_id required", "is_error": True}
     if not company_id:
         return {"error": "company_id missing from agent context", "is_error": True}
 
-    from sqlalchemy import select as sa_select
-    from lia_models.job_vacancy import JobVacancy
+    # ADR-001 W1-004-C MIGRATE 1: uses JobVacancyCrudRepository.get_by_id_strict_company
+    # instead of inline select(JobVacancy). Fail-closed via _require_company_id.
+    from app.domains.job_management.repositories.job_vacancy_crud_repository import JobVacancyCrudRepository
 
     async with AsyncSessionLocal() as db:
         try:
-            res = await db.execute(
-                sa_select(JobVacancy).where(
-                    JobVacancy.id == vacancy_id,
-                    JobVacancy.company_id == company_id,
-                )
-            )
-            job = res.scalar_one_or_none()
+            repo = JobVacancyCrudRepository(db)
+            job = await repo.get_by_id_strict_company(vacancy_id, company_id)
         except Exception as e:
             # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
             logger.error(f"[wizard_tools] vacancy load error: {e}", exc_info=True)
@@ -426,6 +424,8 @@ async def _wrap_get_salary_benchmarks(**kwargs: Any) -> dict[str, Any]:
     logger.info(f"[wizard_tools] get_salary_benchmarks called for title={job_title}, seniority={seniority}")
 
     internal_avg: dict[str, Any] | None = None
+    # ADR-001-EXEMPT: salary benchmark aggregation (AVG/MIN/MAX by role+dept GROUP BY) —
+    # analytics query, not abstractable to simple repo method without over-engineering.
     try:
         from app.core.database import AsyncSessionLocal
 
@@ -758,6 +758,8 @@ async def _wrap_generate_report(**kwargs: Any) -> dict[str, Any]:
     report_id = f"rpt_{uuid.uuid4().hex[:12]}"
     summary: dict[str, Any] = {}
     try:
+        # ADR-001-EXEMPT: report aggregation (COUNT/FILTER by status, MAKE_INTERVAL) —
+        # analytics query, not abstractable to simple repo method without over-engineering.
         async with AsyncSessionLocal() as session:
             row = await session.execute(sql_text("""
                 SELECT COUNT(*) AS total,

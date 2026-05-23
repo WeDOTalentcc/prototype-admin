@@ -60,11 +60,14 @@ MIGRATED_TOOL_REGISTRIES = frozenset({
 
 # W1-004-C backlog: pre-existing select(Model) violations in tool_registries.
 # Warn-only until migrated in future waves.
+# W1-004-C Agent-B (2026-05-23): hiring_policy/policy_tool_registry + job_management/wizard_tool_registry
+# removed — MIGRATE 1 (_load_vacancy_or_error → JobVacancyCrudRepository.get_by_id_strict_company)
+# + no select(Model) violations remain in policy_tool_registry.
 TOOL_REGISTRY_BACKLOG = frozenset({
     "app/domains/company_settings/agents/company_tool_registry.py",
     "app/domains/cv_screening/agents/pipeline_tool_registry.py",
-    "app/domains/hiring_policy/agents/policy_tool_registry.py",
-    "app/domains/job_management/agents/wizard_tool_registry.py",
+    # policy_tool_registry.py — removed 2026-05-23: no select(Model) violations; text() migrated/EXEMPT
+    # wizard_tool_registry.py — removed 2026-05-23: MIGRATE 1 to JobVacancyCrudRepository.get_by_id_strict_company
     "app/domains/pipeline/agents/pipeline_tool_registry.py",
     # diversity_tool_registry.py — removed 2026-05-23: no select() violations; was pre-emptive
     "app/domains/sourcing/agents/passive_pipeline_tool_registry.py",
