@@ -46,7 +46,12 @@
     "prepare": "husky",
     "lint:chips": "node scripts/check_chip_overrides.mjs",
     "lint:chips:warn": "node scripts/check_chip_overrides.mjs --no-fail",
-    "lint:chips:baseline": "node scripts/check_chip_overrides.mjs --baseline"
+    "lint:chips:baseline": "node scripts/check_chip_overrides.mjs --baseline",
+    "lint:i18n": "python3 scripts/check_i18n_keys.py",
+    "lint:i18n:blocking": "python3 scripts/check_i18n_keys.py --blocking",
+    "lint:i18n:json": "python3 scripts/check_i18n_keys.py --json",
+    "lint:candidate-axis": "python3 scripts/check_candidate_score_uses_canonical_badge.py && python3 scripts/check_editable_fields_not_lgpd_sensitive.py",
+    "lint:candidate-axis:blocking": "python3 scripts/check_candidate_score_uses_canonical_badge.py --blocking && python3 scripts/check_editable_fields_not_lgpd_sensitive.py --blocking"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

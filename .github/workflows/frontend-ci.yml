@@ -79,6 +79,26 @@ jobs:
           python3 scripts/check_company_id_in_routes.py
         continue-on-error: true
 
+      - name: i18n key sensor v2 scope-aware (BLOCKING desde 2026-05-23)
+        # Walks src/**/*.{ts,tsx} resolvendo `t('key')`, `t(`key.${var}`)` e
+        # `t('key.' + var)` contra messages/pt-BR.json + messages/en.json.
+        # Scope-aware: pareia cada chamada com seu próprio useTranslations()
+        # via variable binding (suporta t, tOnboarding, tCat, etc).
+        # Baseline atingiu 0 violations em 2026-05-23 após (a) fix de 16 keys
+        # do AlertPreferencesPanel (Sprint D), (b) refactor v2 do sensor que
+        # eliminou 154 falsos positivos do v1 single-namespace, (c) fix de 6
+        # voice keys do AgentCard.tsx. Qualquer regressão bloqueia merge.
+        # Ver CLAUDE.md § i18n contract canonical (2026-05-23).
+        run: npm run lint:i18n:blocking
+
+      - name: Candidate canonical axis sensors (WSI 0-10 + LGPD field policy) BLOCKING
+        # F6 ADR-001/002. WSI 0-10 (Task #512): bloqueia /100 em candidate-* surfaces.
+        # LGPD: bloqueia EditableField/updateField em campos LGPD-sensiveis
+        # (race/gender/marital/religion/health/etc). Baseline 0 violations em
+        # ambos sensors em 2026-05-23 (commits e6fefa878 e 77686ef05).
+        working-directory: plataforma-lia
+        run: npm run lint:candidate-axis:blocking
+
       - name: Unit & Component tests
         run: npx vitest run --reporter=verbose
 

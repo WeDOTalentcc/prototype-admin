@@ -12,6 +12,7 @@ import { CandidatePreviewModals } from "@/components/candidate-preview/Candidate
 import { useCandidatePreviewCore } from "@/components/candidate-preview/useCandidatePreviewCore"
 import { CandidateEditProvider } from "@/components/candidate-profile/CandidateEditContext"
 import { useCandidateFieldUpdate } from "@/hooks/candidates/use-candidate-field-update"
+import { isFeatureEnabled, FF_CANDIDATE_EDIT } from "@/lib/feature-flags"
 import { UserCheck, Activity, FileText, Brain } from "lucide-react"
 
 export type CandidatePageMode = "modal" | "page"
@@ -86,7 +87,8 @@ export function CandidatePage({
   const editHook = useCandidateFieldUpdate(candidateId)
   // Edit pattern (D7): enabled by default in 'page' mode; drawer ('modal' default) stays read-only.
   // Behind feature flag ff_candidate_edit (env or runtime). For now: gate via mode only.
-  const editableInline = mode === "page"
+  // Edit only enabled in mode=page AND feature flag NEXT_PUBLIC_FF_CANDIDATE_EDIT=true
+  const editableInline = mode === "page" && isFeatureEnabled(FF_CANDIDATE_EDIT)
 
   if (mode === "modal" && !isOpen) return null
   if (!candidate) return null

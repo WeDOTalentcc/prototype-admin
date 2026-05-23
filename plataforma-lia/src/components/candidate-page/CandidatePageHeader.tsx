@@ -85,18 +85,8 @@ export function CandidatePageHeader({
             />
             <div>
               <div className="flex items-center gap-2">
-                {editable ? (
-                  <EditableField
-                    value={_candidate.name as string}
-                    onSave={handleSave("name")}
-                    label="nome"
-                    placeholder="Nome do candidato"
-                    saving={isSaving?.("name") ?? false}
-                    className="text-base font-semibold"
-                  />
-                ) : (
-                  <h1 className="text-base font-semibold text-lia-text-primary">{_candidate.name as string}</h1>
-                )}
+                {/* TODO F6: name field not in backend ALLOWED_FIELDS — see ADR-004. Re-enable when backend allow-list expands. */}
+                <h1 className="text-base font-semibold text-lia-text-primary">{_candidate.name as string}</h1>
                 <Chip density="relaxed" variant="neutral" className="px-1.5 py-0">
                   {_candidate.candidateId || _candidate.id}
                 </Chip>
