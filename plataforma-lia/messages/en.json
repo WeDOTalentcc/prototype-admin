@@ -1729,7 +1729,9 @@
         "sourcingAgents": "Sourcing Agents",
         "customAgents": "Custom Agents",
         "digitalTwins": "Digital Twins",
-        "smartSearch": "Smart Search"
+        "smartSearch": "Smart Search",
+        "myAgents": "My Agents",
+        "talentSearch": "Talent Search"
       },
       "stats": {
         "activeAgents": "{count} active agent(s)",

@@ -122,10 +122,67 @@ export default function AgentStudioPage({
   const { agents: customAgents, mutate: mutateCustomAgents } = useCustomAgents()
   const { selectTemplate, reset: resetStudio } = useAgentStudioStore()
   const [selectedTemplate, setSelectedTemplate] = useState<SectorTemplate | null>(null)
-  const [activeTab, setActiveTab] = useState<"agents" | "custom" | "marketplace" | "twins" | "search">("agents")
+  // UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 T2: 5 tabs -> 3 tabs canonical.
+  // - "my-agents" consolida Captacao + Personalizados + Gemeos via sub-tabs.
+  // - "marketplace" e "search" (renomeado de "smart search") permanecem top-level.
+  // Default sub-section = "personalizados" (mais usado, per audit doc).
+  type MainTab = "my-agents" | "marketplace" | "search"
+  type MySubTab = "captacao" | "personalizados" | "gemeos"
+  const [activeTab, setActiveTab] = useState<MainTab>("my-agents")
+  const [mySubTab, setMySubTab] = useState<MySubTab>("personalizados")
 
   useEffect(() => {
     loadData()
+  }, [])
+
+  // UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 T2: backward compat para deep-links externos
+  // que usam ?tab=<old-id>. Preserva URLs antigas redirecionando para o novo
+  // mapeamento canonical. Roda uma vez no mount (ler URL atual) e em mudancas
+  // explicitas de query string (caso navegacao client-side).
+  useEffect(() => {
+    if (typeof window === "undefined") return
+    const url = new URL(window.location.href)
+    const oldTab = url.searchParams.get("tab")
+    if (!oldTab) return
+    const mapping: Record<string, { mainTab: MainTab; subTab?: MySubTab }> = {
+      // legacy top-level ids
+      "agents": { mainTab: "my-agents", subTab: "captacao" },
+      "captacao": { mainTab: "my-agents", subTab: "captacao" },
+      "custom": { mainTab: "my-agents", subTab: "personalizados" },
+      "personalizados": { mainTab: "my-agents", subTab: "personalizados" },
+      "twins": { mainTab: "my-agents", subTab: "gemeos" },
+      "gemeos": { mainTab: "my-agents", subTab: "gemeos" },
+      "marketplace": { mainTab: "marketplace" },
+      "search": { mainTab: "search" },
+      "busca": { mainTab: "search" },
+      // current canonical ids (no-op but accepted)
+      "my-agents": { mainTab: "my-agents" },
+    }
+    const target = mapping[oldTab]
+    if (!target) return
+    setActiveTab(target.mainTab)
+    if (target.subTab) setMySubTab(target.subTab)
+    const subFromUrl = url.searchParams.get("subTab")
+    if (target.mainTab === "my-agents" && subFromUrl) {
+      if (subFromUrl === "captacao" || subFromUrl === "personalizados" || subFromUrl === "gemeos") {
+        setMySubTab(subFromUrl)
+      }
+    }
+    // Only rewrite URL if it changed (avoid loops + preserve history entry).
+    const needsRewrite =
+      oldTab !== target.mainTab ||
+      (target.mainTab === "my-agents" && target.subTab && subFromUrl !== target.subTab)
+    if (needsRewrite) {
+      url.searchParams.set("tab", target.mainTab)
+      if (target.mainTab === "my-agents" && target.subTab) {
+        url.searchParams.set("subTab", target.subTab)
+      } else {
+        url.searchParams.delete("subTab")
+      }
+      window.history.replaceState(window.history.state, "", url.toString())
+    }
+    // Empty deps: only run on mount. Subsequent tab changes update state via
+    // the tab nav handlers below, not via URL parsing.
   }, [])
 
   const loadData = async () => {
@@ -212,7 +269,10 @@ export default function AgentStudioPage({
       setPreviewTemplate(null)
       mutateCustomAgents()
       resetStudio()
-      setActiveTab("custom")
+      // UX T2: novo agente custom criado a partir do template -> ir para
+      // Meus Agentes > Personalizados (era setActiveTab("custom") na taxonomia antiga).
+      setActiveTab("my-agents")
+      setMySubTab("personalizados")
     } catch (e) {
       const msg = e instanceof Error ? e.message : t("studio.toast.errorCreating")
       toast.error(msg, t("studio.toast.tryAgainShort"))
@@ -308,17 +368,38 @@ export default function AgentStudioPage({
           </div>
         </div>
 
+        {/* UX_AUDIT_ESTUDIO_AGENTES_2026-05-21 T2: 5 tabs -> 3 tabs.
+            "Meus Agentes" consolida Captacao + Personalizados + Gemeos via
+            sub-tabs internos. Componentes filhos PRESERVADOS — apenas reagrupados. */}
         <PageTabNavigation
           tabs={[
-            { id: "agents", label: t("studio.tabs.sourcingAgents"), icon: Bot, count: agents.length },
-            { id: "custom", label: t("studio.tabs.customAgents"), icon: Wand2 },
+            {
+              id: "my-agents",
+              label: t("studio.tabs.myAgents"),
+              icon: Bot,
+              count: agents.length + customAgents.length,
+            },
             { id: "marketplace", label: t("studio.tabs.marketplace"), icon: Store },
-            { id: "twins", label: t("studio.tabs.digitalTwins"), icon: Users },
-            { id: "search", label: t("studio.tabs.smartSearch"), icon: Search },
+            { id: "search", label: t("studio.tabs.talentSearch"), icon: Search },
           ]}
           activeTab={activeTab}
-          onTabChange={(id) => setActiveTab(id as typeof activeTab)}
+          onTabChange={(id) => setActiveTab(id as MainTab)}
         />
+
+        {activeTab === "my-agents" && (
+          <div className="mt-2">
+            <PageTabNavigation
+              tabs={[
+                { id: "captacao", label: t("studio.tabs.sourcingAgents"), icon: Bot, count: agents.length },
+                { id: "personalizados", label: t("studio.tabs.customAgents"), icon: Wand2, count: customAgents.length },
+                { id: "gemeos", label: t("studio.tabs.digitalTwins"), icon: Users },
+              ]}
+              activeTab={mySubTab}
+              onTabChange={(id) => setMySubTab(id as MySubTab)}
+              className="opacity-90"
+            />
+          </div>
+        )}
 
         {agents.length > 0 && (
           <div className="flex items-center gap-6 mt-2 mb-1">
@@ -353,7 +434,7 @@ export default function AgentStudioPage({
       </div>
 
       <div className="flex-1 overflow-auto px-4 py-4">
-        {activeTab === "agents" && (
+        {activeTab === "my-agents" && mySubTab === "captacao" && (
           <div className="space-y-8">
             {/* How It Works — show prominently when no agents */}
             {agents.length === 0 && !isLoading && (
@@ -545,7 +626,7 @@ export default function AgentStudioPage({
           </div>
         )}
 
-        {activeTab === "custom" && (
+        {activeTab === "my-agents" && mySubTab === "personalizados" && (
           <div className="space-y-6">
             {/* Pending Approvals (admin only — hidden if empty or not admin) */}
             <section>
@@ -653,7 +734,7 @@ export default function AgentStudioPage({
           <MarketplaceTab />
         )}
 
-        {activeTab === "twins" && (
+        {activeTab === "my-agents" && mySubTab === "gemeos" && (
           <div className="space-y-6">
             <TabSectionHeader
               title={t("studio.twins.cloneReasoning")}

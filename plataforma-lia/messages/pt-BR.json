@@ -1729,7 +1729,9 @@
         "sourcingAgents": "Agentes de Captação",
         "customAgents": "Agentes Personalizados",
         "digitalTwins": "Gêmeos Digitais",
-        "smartSearch": "Busca Inteligente"
+        "smartSearch": "Busca Inteligente",
+        "myAgents": "Meus Agentes",
+        "talentSearch": "Busca de Talentos"
       },
       "stats": {
         "activeAgents": "{count} agente(s) ativo(s)",
