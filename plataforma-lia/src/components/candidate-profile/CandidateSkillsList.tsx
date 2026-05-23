@@ -42,6 +42,7 @@ const CandidateSkillsList = memo(function CandidateSkillsList({
       {overflowCount > 0 && (
         <button
           type="button"
+          aria-label={t("skillsOverflowMore", { count: overflowCount })}
           onClick={onOverflowClick}
           className={cn("text-lia-text-secondary hover:text-lia-text-primary transition-colors",
             size ==="sm" ?"text-micro" :"text-xs"

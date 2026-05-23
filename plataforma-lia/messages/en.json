@@ -2847,7 +2847,8 @@
       "positionNotProvided": "Position not provided",
       "companyNotProvided": "Company not provided",
       "durationYears": "{years} years",
-      "techStack": "Stack"
+      "techStack": "Stack",
+      "skillsOverflowMore": "+{count} skills"
     },
     "scoreModal": {
       "title": "LIA Overall Score",

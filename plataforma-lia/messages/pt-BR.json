@@ -2847,7 +2847,8 @@
       "positionNotProvided": "Cargo não informado",
       "companyNotProvided": "Empresa não informada",
       "durationYears": "{years} anos",
-      "techStack": "Stack"
+      "techStack": "Stack",
+      "skillsOverflowMore": "+{count} habilidades"
     },
     "scoreModal": {
       "title": "Nota Geral LIA",

@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl"
 import { cn } from "@/lib/utils"
 import { getWsiScoreColor } from "@/lib/wsi/visual"
 
+/** Score format.  is @deprecated (legacy 0-100); prefer  or  (canonical 0-10 per Task #512). */
 type ScoreFormat = "percent" | "decimal" | "wsi"
 
 interface CandidateScoreBadgeProps {

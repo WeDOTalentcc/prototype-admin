@@ -130,7 +130,7 @@ export function ProfileExperienceSection({ experiences, formatDateShort }: Profi
             )
           })
         ) : (
-          <p className="text-sm text-lia-text-secondary italic">{t('notProvided')}</p>
+          <p className="text-sm text-lia-text-secondary italic" role="status" aria-live="polite">{t('notProvided')}</p>
         )}
       </CardContent>
     </Card>

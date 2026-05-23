@@ -76,6 +76,7 @@ const CandidateContactActions = memo(function CandidateContactActions({
             )}
             onClick={handleEmail}
             disabled={!email && !onSendEmail}
+            aria-label={t("contactEmail")}
           >
             <Mail
               className={cn(
@@ -101,6 +102,7 @@ const CandidateContactActions = memo(function CandidateContactActions({
             )}
             onClick={handleWhatsApp}
             disabled={!phone && !onSendWhatsApp}
+            aria-label={t("contactWhatsApp")}
           >
             <Phone
               className={cn(
@@ -126,6 +128,7 @@ const CandidateContactActions = memo(function CandidateContactActions({
                 "hover:bg-lia-bg-tertiary dark:hover:bg-lia-bg-inverse"
               )}
               onClick={handleLinkedIn}
+              aria-label={t("contactLinkedIn")}
             >
               <Linkedin
                 className={cn(
