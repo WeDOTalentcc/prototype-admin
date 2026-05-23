@@ -111,6 +111,7 @@ class WSIQuestionOutput(BaseModel):
 
 class GenerateQuestionsRequest(WeDoBaseModel):
     job_vacancy_id: str | None = None
+    candidate_id: str | None = None  # Onda 2.2 fix (2026-05-23)
     job_title: str | None = None
     requirements: list[str] | None = None
     skills: list[str] | None = None

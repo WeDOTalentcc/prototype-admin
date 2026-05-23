@@ -349,14 +349,14 @@ company_id: str = Depends(require_company_id)) -> GenerateQuestionsResponse:
     try:
         company_id = get_user_company_id(current_user)
         logger.info(f"Generating interview questions for job {request.job_vacancy_id}, "
-                   f"candidate {request.candidateId} - company: {company_id}")
+                   f"candidate {request.candidate_id} - company: {company_id}")
         
         # SECURITY: First validate tenant access to candidate
         # Candidate must be linked to at least one vacancy in the user's company
         candidate_access_check = await db.execute(
             select(VacancyCandidate).where(
                 and_(
-                    VacancyCandidate.candidate_id == request.candidateId,
+                    VacancyCandidate.candidate_id == request.candidate_id,
                     VacancyCandidate.company_id == company_id
                 )
             ).limit(1)
@@ -371,7 +371,7 @@ company_id: str = Depends(require_company_id)) -> GenerateQuestionsResponse:
         
         # Fetch candidate data (now validated for tenant access)
         candidate_result = await db.execute(
-            select(Candidate).where(Candidate.id == request.candidateId, Candidate.company_id == company_id)
+            select(Candidate).where(Candidate.id == request.candidate_id, Candidate.company_id == company_id)
         )
         candidate = candidate_result.scalar_one_or_none()
         
@@ -431,7 +431,7 @@ company_id: str = Depends(require_company_id)) -> GenerateQuestionsResponse:
                 select(VacancyCandidate).where(
                     and_(
                         VacancyCandidate.vacancy_id == request.job_vacancy_id,
-                        VacancyCandidate.candidate_id == request.candidateId,
+                        VacancyCandidate.candidate_id == request.candidate_id,
                         VacancyCandidate.company_id == company_id
                     )
                 )
@@ -500,7 +500,7 @@ company_id: str = Depends(require_company_id)) -> GenerateQuestionsResponse:
             opinion_result = await db.execute(
                 select(LiaOpinion).where(
                     and_(
-                        LiaOpinion.candidate_id == request.candidateId,
+                        LiaOpinion.candidate_id == request.candidate_id,
                         LiaOpinion.job_vacancy_id == request.job_vacancy_id,
                         LiaOpinion.company_id == company_id,
                         LiaOpinion.is_current
@@ -905,7 +905,7 @@ company_id: str = Depends(require_company_id)) -> WSIScore:
             await log_automated_decision(
                 db=db,
                 company_id=company_id,
-                candidate_id=str(request.candidateId) if request.candidateId else None,
+                candidate_id=str(request.candidate_id) if request.candidate_id else None,
                 job_id=str(request.job_vacancy_id) if request.job_vacancy_id else None,
                 decision_type="wsi_score",
                 ai_model_used="deterministic_weighted_sum",
