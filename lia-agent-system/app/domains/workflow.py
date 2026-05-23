@@ -665,17 +665,27 @@ class DomainWorkflow:
     async def _try_react_agent(self, state: WorkflowState) -> DomainResponse | None:
         """Tenta delegar a execução para o ReAct agent do domínio.
 
+        W1-001-B (2026-05-23): Migrado de ReactAgentRegistry legacy para
+        AgentRegistry canonical. Padrão alinhado com agent_chat_ws._get_agent
+        (Phase A wired). session_id/company_id/user_id agora vão via AgentInput
+        (per-call) ao invés do constructor — singleton-ish pattern canonical.
+
         Resolve o mapeamento entre domain_id (DomainRegistry) e agent_domain
-        (ReactAgentRegistry), pois os nomes diferem em vários domínios.
+        (AgentRegistry), pois os nomes diferem em vários domínios.
 
         Retorna DomainResponse se o agente foi acionado com sucesso,
         ou None se o domínio não tem agente registrado (fallback para execute_action).
         """
         try:
             from lia_agents_core.agent_interface import AgentInput
-            from lia_agents_core.react_agent_registry import AgentFactory, ReactAgentRegistry
 
-            registry = ReactAgentRegistry()
+            from app.api.v1.agent_chat_ws import _ensure_agents_loaded
+            from app.shared.agents.agent_registry import AgentRegistry
+
+            # Idempotent: garante que @register_agent decorators rodaram
+            _ensure_agents_loaded()
+            registry = AgentRegistry()
+
             domain_id = state.domain.domain_id
             action_id = state.intent_result.action_id if state.intent_result else ""
 
@@ -687,13 +697,12 @@ class DomainWorkflow:
                 )
                 return None
 
-            factory = AgentFactory(registry)
-            agent = factory.create_agent(
-                domain=agent_domain,
-                session_id=state.context.session_id or "",
-                company_id=state.context.tenant_id,
-                user_id=state.context.user_id or "",
-            )
+            agent = registry.get_instance(agent_domain)
+            if agent is None:
+                logger.debug(
+                    f"[DomainWorkflow] AgentRegistry returned None for '{agent_domain}'"
+                )
+                return None
 
             agent_input = AgentInput(
                 message=state.query,

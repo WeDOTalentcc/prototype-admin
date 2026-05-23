@@ -519,14 +519,11 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"⚠️  PolicyEngine seed failed (non-blocking): {e}")
 
-    # Initialize ReAct Agent Registry (7 domains: wizard, pipeline, sourcing, talent, jobs_management, kanban, policy)
-    try:
-        from lia_agents_core.react_agent_registry import register_react_agents
-        register_react_agents()
-        logger.info("✅ ReAct Agent Registry inicializado")
-    except Exception as e:
-        logger.error(f"❌ ReAct Agent Registry initialization failed: {e}")
-        logger.warning("   ReAct agents will not be available via main chat flow")
+    # W1-001-B (2026-05-23): ReAct agent registry agora é AgentRegistry canonical
+    # (singleton via @register_agent decorator). Registro lazy via
+    # _ensure_agents_loaded() no agent_chat_ws.py e workflow.py — sem boot call.
+    # Legacy register_react_agents() removido pra evitar double-register e
+    # ambiguidade de naming.
 
     # W3-030 (2026-05-23): wire AiConsumptionOutbox drainer worker.
     # Background loop drena `ai_consumption_outbox` table → AiConsumption

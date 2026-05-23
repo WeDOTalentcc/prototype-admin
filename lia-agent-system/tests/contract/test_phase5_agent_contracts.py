@@ -290,8 +290,11 @@ class TestCrossAgentContracts:
             assert hasattr(agent, "_process_langgraph"), f"{cls.__name__} missing _process_langgraph"
 
     def test_all_phase5_agents_registered_in_registry(self):
-        from lia_agents_core.react_agent_registry import register_react_agents
+        """W1-001-B (2026-05-23): Migrado para canonical AgentRegistry."""
+        from app.api.v1.agent_chat_ws import _ensure_agents_loaded
+        from app.shared.agents.agent_registry import AgentRegistry
 
-        registry = register_react_agents()
+        _ensure_agents_loaded()
+        registry = AgentRegistry()
         for domain in ["analytics", "communication", "ats_integration"]:
             assert registry.is_registered(domain), f"Domain '{domain}' not registered"

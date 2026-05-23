@@ -850,10 +850,14 @@ class TestNurtureSequenceToolRegistry:
 
     @pytest.mark.asyncio
     async def test_registry_registered_agents(self):
-        """Todos os 6 novos sub-agentes devem estar registrados no ReactAgentRegistry."""
-        from lia_agents_core.react_agent_registry import register_react_agents
-        registry = register_react_agents()
-        domains = registry.list_domains()
+        """W1-001-B (2026-05-23): Migrado para canonical AgentRegistry.
+        Todos os 6 novos sub-agentes devem estar registrados via @register_agent.
+        """
+        from app.api.v1.agent_chat_ws import _ensure_agents_loaded
+        from app.shared.agents.agent_registry import AgentRegistry
+
+        _ensure_agents_loaded()
+        registry = AgentRegistry()
         expected = [
             "sourcing_github",
             "sourcing_stackoverflow",
@@ -863,7 +867,9 @@ class TestNurtureSequenceToolRegistry:
             "sourcing_nurture_sequence",
         ]
         for domain in expected:
-            assert domain in domains, f"Domínio '{domain}' não registrado no ReactAgentRegistry"
+            assert registry.is_registered(domain), (
+                f"Domínio '{domain}' não registrado no AgentRegistry canonical"
+            )
 
 
 # ─── Integration: SourcingReActAgent stage routing ────────────────────────────
