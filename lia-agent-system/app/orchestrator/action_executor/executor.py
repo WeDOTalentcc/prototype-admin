@@ -9,6 +9,7 @@ Dead code (inline fallback blocks L931-L1660 in the original monolith)
 has been removed — handlers always succeed for known action_ids.
 """
 import logging
+import re
 import uuid
 from datetime import datetime
 from typing import Any
@@ -25,6 +26,14 @@ from app.orchestrator.action_executor.utils import (
 )
 
 logger = logging.getLogger(__name__)
+
+# Recovery Tri-2 Body-Changes (2026-05-23) — restaurar entity_id injection
+# do contexto da conversa. Removido pelo merge incident 02361f41c. Sem ele,
+# quando user fala "esse candidato" / "essa vaga" e o contexto tem
+# entity_id+entity_type, o handler NÃO RECEBE candidate_id/job_id nos params
+# e cai em erro silent. Quebra contexto persistente em conversas.
+_UUID_RE = re.compile(r"^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$", re.I)
+_JOB_ID_RE = re.compile(r"^[A-Z][A-Z0-9]{2,9}$", re.I)
 
 
 class ActionExecutorService:
@@ -59,6 +68,22 @@ class ActionExecutorService:
         entities = entities or {}
         candidates_data = candidates_data or []
         context = context or {}
+
+        # Recovery Tri-2 Body-Changes (2026-05-23): restaurar entity_id injection
+        # do contexto da conversa. Quando user fala "esse candidato" / "essa vaga",
+        # contexto carrega entity_id+entity_type — sem esse bloco o handler
+        # não recebe candidate_id/job_id em params (REGRESSED merge incident).
+        ctx_entity_id = context.get("entity_id") or context.get("context_entity_id")
+        ctx_entity_type = context.get("entity_type", "")
+        _is_uuid = bool(ctx_entity_id and _UUID_RE.match(str(ctx_entity_id)))
+        _is_job_ref = bool(ctx_entity_id and _JOB_ID_RE.match(str(ctx_entity_id)))
+        if ctx_entity_id and (_is_uuid or _is_job_ref):
+            if ctx_entity_type in ("job", "job_vacancy"):
+                if not entities.get("job_id"):
+                    entities["job_id"] = ctx_entity_id
+            elif ctx_entity_type in ("candidate", "candidato"):
+                if not entities.get("candidate_id"):
+                    entities["candidate_id"] = ctx_entity_id
         if not self.is_actionable(intent):
             return ActionResult(status="not_actionable")
 
