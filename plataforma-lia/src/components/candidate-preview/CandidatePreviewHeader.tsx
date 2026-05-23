@@ -1,6 +1,6 @@
 "use client"
 
-import { textStyles, badgeStyles } from '@/lib/design-tokens'
+import { textStyles, previewChipVariants } from '@/lib/design-tokens'
 import { Chip } from "@/components/ui/chip"
 import { Button } from"@/components/ui/button"
 import { CandidateAvatar } from"@/components/candidate-profile/CandidateAvatar"
@@ -63,19 +63,19 @@ export function CandidatePreviewHeader({
             <h3 className={`${textStyles.title} truncate`}>
               {c.name as string}
             </h3>
-            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex-shrink-0 font-mono font-medium bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-default">
+            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4 flex-shrink-0 bg-lia-bg-tertiary text-lia-text-secondary border border-lia-border-default">
               {generateShortId(c.name as string, (c.id as string | undefined) || (c.candidateId as string | undefined) || (c.pearch_id as string | undefined))}
             </Chip>
             {(c.seniority_level || c.seniorityLevel) && (
-              <Chip variant="neutral" muted className={badgeStyles.warning}>
+              <Chip variant="warning" muted className={previewChipVariants.warning}>
                 {(c.seniority_level as string | undefined) || (c.seniorityLevel as string | undefined)}
               </Chip>
             )}
-            {(c.years_of_experience !== undefined && c.years_of_experience !== null) || 
+            {(c.years_of_experience !== undefined && c.years_of_experience !== null) ||
              (c.yearsOfExperience !== undefined && c.yearsOfExperience !== null) ? (
-              <Chip variant="neutral" muted className={badgeStyles.default}>
-                {typeof (c.years_of_experience || c.yearsOfExperience) === 'number' 
-                  ? `${((c.years_of_experience as number | undefined) || (c.yearsOfExperience as number | undefined) || 0).toFixed(1)} anos` 
+              <Chip variant="neutral" muted className={previewChipVariants.neutral}>
+                {typeof (c.years_of_experience || c.yearsOfExperience) === 'number'
+                  ? `${((c.years_of_experience as number | undefined) || (c.yearsOfExperience as number | undefined) || 0).toFixed(1)} anos`
                   : `${c.years_of_experience || c.yearsOfExperience} anos`}
               </Chip>
             ) : null}

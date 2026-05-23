@@ -36,7 +36,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
           <h4 className="text-xs font-medium text-lia-text-primary flex items-center gap-1.5">
             <FileText className="w-3.5 h-3.5 text-lia-text-primary" />
             Arquivos e Documentos
-            <Chip density="relaxed" variant="neutral" muted className="px-1 py-0">{candidateFiles.length}</Chip>
+            <Chip variant="neutral" muted className="text-micro px-1.5 py-0 h-4">{candidateFiles.length}</Chip>
             {isLoadingFiles && (
               <div className="animate-spin motion-reduce:animate-none rounded-full h-3 w-3 border border-lia-border-medium border-t-lia-border-medium"></div>
             )}
@@ -66,7 +66,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
         <div className="flex gap-1 flex-wrap">
           <Chip
             variant="neutral"
-            className={`text-xs px-1.5 py-0 cursor-pointer hover:bg-lia-interactive-hover ${!selectedCategory ? 'bg-lia-bg-tertiary' : ''}`}
+            className={`text-micro px-1.5 py-0 h-4 cursor-pointer hover:bg-lia-interactive-hover ${!selectedCategory ? 'bg-lia-bg-tertiary' : ''}`}
             onClick={() => setSelectedCategory(null)}
           >
             📁 Todos ({candidateFiles.length})
@@ -75,7 +75,7 @@ export function CandidateFilesTab({ candidate }: CandidateFilesTabProps) {
             <Chip
               key={cat.category}
               variant="neutral"
-              className={`text-xs px-1.5 py-0 cursor-pointer hover:bg-lia-interactive-hover ${selectedCategory === cat.category ? 'bg-lia-bg-tertiary' : ''}`}
+              className={`text-micro px-1.5 py-0 h-4 cursor-pointer hover:bg-lia-interactive-hover ${selectedCategory === cat.category ? 'bg-lia-bg-tertiary' : ''}`}
               onClick={() => setSelectedCategory(selectedCategory === cat.category ? null : cat.category)}
             >
               {cat.icon} {cat.label} ({cat.count})

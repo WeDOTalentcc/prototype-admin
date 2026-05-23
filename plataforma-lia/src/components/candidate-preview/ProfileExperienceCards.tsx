@@ -27,25 +27,25 @@ function ProfileIndicatorBadges({ candidate }: { candidate: Record<string, unkno
   return (
     <div className="flex flex-wrap gap-1.5 mb-2">
       {isOpenToWork === true && (
-        <Chip variant="success" className="text-micro px-2 py-0.5 h-5 dark:bg-status-success/20 flex items-center gap-1">
+        <Chip variant="success" className="text-micro px-1.5 py-0 h-4 dark:bg-status-success/20 flex items-center gap-1">
           <Globe className="w-3 h-3 text-status-success" />
           Open to Work
         </Chip>
       )}
       {isTopUniversity === true && (
-        <Chip variant="neutral" className="text-micro px-2 py-0.5 h-5  border-wedo-purple/30 flex items-center gap-1">
+        <Chip variant="neutral" className="text-micro px-1.5 py-0 h-4 border-wedo-purple/30 flex items-center gap-1">
           🎓 Top University
         </Chip>
       )}
       {isDecisionMaker === true && (
-        <Chip variant="neutral" className="text-micro px-2 py-0.5 h-5 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle flex items-center gap-1">
+        <Chip variant="neutral" className="text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary border-lia-border-subtle flex items-center gap-1">
           👔 Decision Maker
         </Chip>
       )}
       {isBlacklisted === true && (
         <Tooltip>
           <TooltipTrigger asChild>
-            <Chip variant="danger" className="text-micro px-2 py-0.5 h-5 flex items-center gap-1 cursor-help">
+            <Chip variant="danger" className="text-micro px-1.5 py-0 h-4 flex items-center gap-1 cursor-help">
               ⚠️ LCNU
             </Chip>
           </TooltipTrigger>

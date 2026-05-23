@@ -2,7 +2,8 @@
 
 import { Chip } from "@/components/ui/chip"
 import { Tooltip, TooltipContent, TooltipTrigger } from"@/components/ui/tooltip"
-import { textStyles, cardStyles, badgeStyles } from '@/lib/design-tokens'
+import { textStyles, cardStyles, previewChipVariants } from '@/lib/design-tokens'
+import { cn } from '@/lib/utils'
 import { getWsiScoreColor } from '@/lib/wsi/visual'
 import {
   X, CheckCircle, AlertCircle, Clock, Brain, Target,
@@ -32,7 +33,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
     if (!rec) return null
     if (rec === 'approved') {
       return (
-        <Chip variant="neutral" muted className={`${badgeStyles.success} flex items-center gap-0.5`}>
+        <Chip variant="success" muted className={cn(previewChipVariants.success, 'gap-0.5')}>
           <CheckCircle className="w-2.5 h-2.5" />
           APROVADO
         </Chip>
@@ -40,7 +41,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
     }
     if (rec === 'pending_review') {
       return (
-        <Chip variant="neutral" muted className={`${badgeStyles.warning} flex items-center gap-0.5`}>
+        <Chip variant="warning" muted className={cn(previewChipVariants.warning, 'gap-0.5')}>
           <Clock className="w-2.5 h-2.5" />
           PENDENTE
         </Chip>
@@ -48,7 +49,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
     }
     if (rec === 'not_approved') {
       return (
-        <Chip variant="neutral" muted className={`${badgeStyles.error} flex items-center gap-0.5`}>
+        <Chip variant="danger" muted className={cn(previewChipVariants.error, 'gap-0.5')}>
           <X className="w-2.5 h-2.5" />
           NÃO APROVADO
         </Chip>
@@ -239,7 +240,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
                   <h5 className={`${textStyles.label} text-status-success mb-1`}>Skills Match</h5>
                   <div className="flex flex-wrap gap-1">
                     {(opinion.matched_skills as string[]).map((skill: string) => (
-                      <Chip variant="neutral" muted key={skill} className={badgeStyles.success}>
+                      <Chip variant="success" muted key={skill} className={previewChipVariants.success}>
                         {skill}
                       </Chip>
                     ))}
@@ -251,7 +252,7 @@ export function OpinionCard({ opinion, isExpanded, onToggle, type, copiedItemId,
                   <h5 className={`${textStyles.label} text-status-error mb-1`}>Skills Faltantes</h5>
                   <div className="flex flex-wrap gap-1">
                     {(opinion.missing_skills as string[]).map((skill: string) => (
-                      <Chip variant="neutral" muted key={skill} className={badgeStyles.error}>
+                      <Chip variant="danger" muted key={skill} className={previewChipVariants.error}>
                         {skill}
                       </Chip>
                     ))}

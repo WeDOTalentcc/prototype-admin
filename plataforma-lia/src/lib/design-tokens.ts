@@ -332,6 +332,35 @@ export const badgeStyles = {
 } as const
 
 /**
+ * v4.2.2: Chip canônico para o painel de Preview de Candidato/Vaga.
+ *
+ * Fonte da verdade: o chip "LGPD" em CandidatePreviewHeader (text-micro 11px,
+ * h-4 = 16px, px-1.5, py-0). Todo Chip de metadado dentro de
+ * `candidate-preview/*` (seniority, anos, archetype, proficiência de idioma,
+ * preferências, status de atividade, skills, etc.) DEVE compor a partir deste
+ * token. Antes desta canonicalização, alguns chips usavam `badgeStyles.X`
+ * (px-2 py-0.5) ou `text-xs` (13px), que destoavam visualmente do canônico.
+ *
+ * Uso:
+ *   <Chip variant="neutral" muted className={previewChipClasses}>...</Chip>
+ *   <Chip variant="neutral" muted className={cn(previewChipClasses, 'bg-X')}>...</Chip>
+ *
+ * Para variantes semânticas com cor + borda inclusas, ver `previewChipVariants`.
+ */
+export const previewChipClasses = 'text-micro px-1.5 py-0 h-4' as const
+
+export const previewChipVariants = {
+  neutral:
+    'text-micro px-1.5 py-0 h-4 bg-lia-bg-tertiary text-lia-text-secondary dark:bg-lia-bg-secondary dark:text-lia-text-secondary',
+  success:
+    'text-micro px-1.5 py-0 h-4 bg-status-success/10 text-status-success dark:bg-status-success/30 dark:text-status-success',
+  warning:
+    'text-micro px-1.5 py-0 h-4 bg-status-warning/10 text-status-warning dark:bg-status-warning/30 dark:text-status-warning',
+  error:
+    'text-micro px-1.5 py-0 h-4 bg-status-error/10 text-status-error dark:bg-status-error/30 dark:text-status-error',
+} as const
+
+/**
  * v4: Classes utilitárias para Tabs
  * Dois estilos: underline (tradicional) e pill (badges arredondadas)
  */

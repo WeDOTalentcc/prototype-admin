@@ -1,6 +1,6 @@
 "use client"
 
-import { textStyles, badgeStyles } from '@/lib/design-tokens'
+import { textStyles, previewChipVariants } from '@/lib/design-tokens'
 import { getWsiScoreColor } from '@/lib/wsi/visual'
 import { Card, CardContent, CardHeader, CardTitle } from"@/components/ui/card"
 import { Chip } from "@/components/ui/chip"
@@ -114,7 +114,7 @@ export function ProfileLiaOpinionCard({
             {opinion.archetype && (
               <>
                 <span className="lia-text-muted">•</span>
-                <Chip variant="neutral" muted className={badgeStyles.default}>{opinion.archetype}</Chip>
+                <Chip variant="neutral" muted className={previewChipVariants.neutral}>{opinion.archetype}</Chip>
               </>
             )}
           </div>
