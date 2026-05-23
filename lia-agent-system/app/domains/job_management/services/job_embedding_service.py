@@ -212,10 +212,7 @@ class JobEmbeddingService:
                 }
 
         except Exception as e:
-            try:
-                await db.rollback()
-            except Exception:
-                pass
+            # rollback handled automatically by `async with AsyncSessionLocal()`
             logger.error(f"Error creating/updating job embedding: {e}")
             return {
                 "success": False,
@@ -503,10 +500,7 @@ class JobEmbeddingService:
                 await session.commit()
                 
         except Exception as e:
-            try:
-                await db.rollback()
-            except Exception:
-                pass
+            # rollback handled automatically by `async with AsyncSessionLocal()`
             logger.error(f"Batch processing error: {e}")
             return {
                 "success": False,
@@ -767,10 +761,7 @@ class JobEmbeddingService:
                 return {"success": True, "message": "Source job not found in embeddings"}
                 
         except Exception as e:
-            try:
-                await db.rollback()
-            except Exception:
-                pass
+            # rollback handled automatically by `async with AsyncSessionLocal()`
             logger.error(f"Error recording Fast Track usage: {e}")
             return {"success": False, "error": str(e)}
     
@@ -845,10 +836,7 @@ class JobEmbeddingService:
                 return {"success": False, "error": "Job embedding not found"}
                 
         except Exception as e:
-            try:
-                await db.rollback()
-            except Exception:
-                pass
+            # rollback handled automatically by `async with AsyncSessionLocal()`
             logger.error(f"Error updating embedding outcome: {e}")
             return {"success": False, "error": str(e)}
     

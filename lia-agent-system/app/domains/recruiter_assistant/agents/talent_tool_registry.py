@@ -397,10 +397,7 @@ async def _wrap_analyze_skills(**kwargs: Any) -> dict[str, Any]:
                     )
                     await session.commit()
     except Exception as e:
-        try:
-            await db.rollback()
-        except Exception:
-            pass
+        # rollback handled automatically by `async with AsyncSessionLocal()`
         # pii-logs ok: nome de entidade/config (não PII per LGPD Art.5 V — pessoa natural)
         logger.warning(f"[talent_tools] analyze_skills DB error: {e}")
 

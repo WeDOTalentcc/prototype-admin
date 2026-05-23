@@ -4,6 +4,7 @@ Pydantic schemas for calendar/scheduling operations.
 from datetime import datetime
 
 from pydantic import BaseModel, EmailStr, Field
+from app.shared.types import WeDoBaseModel
 
 
 # Sprint F.3 #25 canonical-fix: AvailabilityRequest moved to schemas/calendar.py
@@ -52,4 +53,3 @@ from app.schemas.calendar import CalendarEventResponse  # noqa: F401  (re-export
 
 # Sprint F.3 #25 canonical-fix: MeetingSuggestion moved to schemas/calendar.py
 from app.schemas.calendar import MeetingSuggestion  # noqa: F401  (re-export for backward compat)
-from app.shared.types import WeDoBaseModel

@@ -4,6 +4,7 @@ Pydantic schemas for WSI-based Screening Questions endpoints.
 from typing import Any, Literal
 
 from pydantic import BaseModel, Field
+from app.shared.types import WeDoBaseModel
 
 
 # Sprint F.3 #25 canonical-fix: BigFiveProfile moved to schemas/screening.py
@@ -68,4 +69,3 @@ from app.schemas.screening import WSIBlockSummary  # noqa: F401  (re-export for 
 
 # Sprint F.3 #25 canonical-fix: WSIScreeningPipelineResponse moved to schemas/screening.py
 from app.schemas.screening import WSIScreeningPipelineResponse  # noqa: F401  (re-export for backward compat)
-from app.shared.types import WeDoBaseModel
