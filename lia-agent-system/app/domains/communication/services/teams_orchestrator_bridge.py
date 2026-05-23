@@ -74,6 +74,30 @@ class TeamsOrchestratorBridge:
         if not text:
             return {"message": "Não entendi sua mensagem. Pode repetir?", "success": False}
 
+        # ── W7.2 PromptInjectionGuard — defense-in-depth antes do orchestrator ──
+        # Recovery #7 (2026-05-23): bloco de segurança removido pelo merge
+        # incident 02361f41c restaurado. Sem ele, Teams aceitava prompt
+        # injection sem block (P0 security gap).
+        try:
+            from app.shared.robustness.security_patterns import (
+                check_input_security,
+                get_block_response,
+            )
+            _sec = check_input_security(text)
+            if _sec.is_blocked:
+                logger.warning(
+                    "[TeamsOrchestratorBridge] SecurityPatterns blocked: risk=%s categories=%s",
+                    _sec.risk_level, _sec.threat_categories,
+                )
+                return {
+                    "message": get_block_response(_sec, language="pt"),
+                    "success": False,
+                    "blocked_reason": "security_patterns",
+                }
+        except Exception as _sec_exc:
+            logger.debug("[TeamsOrchestratorBridge] security check skipped: %s", _sec_exc)
+        # ─────────────────────────────────────────────────────────────────────
+
         teams_user_id = activity.get("from", {}).get("id", "unknown")
         teams_user_name = activity.get("from", {}).get("name", "")
         conversation_id = activity.get("conversation", {}).get("id", "")
@@ -205,6 +229,195 @@ class TeamsOrchestratorBridge:
         except Exception as e:
             logger.error(f"[TeamsOrchestratorBridge] CV processing error: {e}", exc_info=True)
             return {"success": False, "message": f"Erro ao processar CV: {str(e)}"}
+
+    # -----------------------------------------------------------------------
+    # Recovery #7 (2026-05-23) — 3 métodos attachment restaurados.
+    #
+    # Perdidos pelo merge incident 02361f41c em 2026-05-01. Sem eles, Teams
+    # bot não conseguia processar imagens (Gemini Vision), documentos genéricos
+    # (.txt/.csv) nem áudio (STT). Tests integration
+    # ``tests/integration/test_teams_w9_3_multimedia.py`` +
+    # ``test_teams_w9_2_voice_stt.py`` quebrados em CI desde maio.
+    # -----------------------------------------------------------------------
+    async def process_image_attachment(
+        self,
+        activity: dict[str, Any],
+        attachment: dict[str, Any],
+        db: "AsyncSession | None" = None,
+    ) -> dict[str, Any]:
+        """W9.3: Process image attachment via Gemini Vision for recruitment context."""
+        import httpx
+
+        content_url = attachment.get("contentUrl", "")
+        content_type = (attachment.get("contentType") or "image/jpeg").lower()
+        filename = attachment.get("name", "image.jpg")
+
+        try:
+            from app.domains.communication.services.teams_simple import simple_teams_bot
+            token = await simple_teams_bot.get_access_token()
+
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(
+                    content_url,
+                    headers={"Authorization": f"Bearer {token}"},
+                    timeout=30.0,
+                )
+                image_bytes = resp.content
+
+            if not image_bytes:
+                return {"success": False, "message": "Imagem vazia ou inacessivel."}
+
+            try:
+                from google.genai import types as _gtypes
+                from app.domains.ai.services.llm import llm_service
+
+                prompt = (
+                    "Descreva esta imagem no contexto de recrutamento e RH. "
+                    "O que a imagem mostra? Como poderia ser usada num processo seletivo? "
+                    "Seja objetivo, em portugues, maximo 3 linhas."
+                )
+                contents = [
+                    _gtypes.Part.from_bytes(data=image_bytes, mime_type=content_type),
+                    prompt,
+                ]
+                response = await llm_service.generate_native_gemini(
+                    contents=contents,
+                    model="gemini-2.5-flash",
+                )
+                description = response.text if hasattr(response, "text") else str(response)
+                msg = f"Imagem recebida: {filename}\n\n{description}\n\nPara usar na plataforma, acesse o painel web."
+                return {"success": True, "message": msg}
+            except Exception as vision_err:
+                logger.warning("[TeamsOrchestratorBridge] Gemini Vision error: %s", vision_err)
+                img_size_kb = len(image_bytes) // 1024
+                msg = f"Imagem recebida: {filename} ({img_size_kb} KB). Para usar na plataforma, acesse o painel web."
+                return {"success": True, "message": msg}
+
+        except Exception as e:
+            logger.error("[TeamsOrchestratorBridge] process_image_attachment error: %s", e)
+            return {"success": False, "message": "Erro ao processar a imagem. Tente novamente."}
+
+    async def process_general_document(
+        self,
+        activity: dict[str, Any],
+        attachment: dict[str, Any],
+        db: "AsyncSession | None" = None,
+    ) -> dict[str, Any]:
+        """W9.3: Process generic documents (txt, csv) — extract text and route via orchestrator."""
+        import httpx
+
+        content_url = attachment.get("contentUrl", "")
+        filename = attachment.get("name", "document")
+        content_type = (attachment.get("contentType") or "").lower()
+
+        try:
+            from app.domains.communication.services.teams_simple import simple_teams_bot
+            token = await simple_teams_bot.get_access_token()
+
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(
+                    content_url,
+                    headers={"Authorization": f"Bearer {token}"},
+                    timeout=30.0,
+                )
+                raw_bytes = resp.content
+
+            if content_type in ("text/plain", "text/csv") or filename.endswith((".txt", ".csv")):
+                doc_text = raw_bytes.decode("utf-8", errors="ignore")
+                if doc_text.strip():
+                    excerpt = doc_text[:1000]
+                    fake_activity = {**activity, "text": f"[Documento: {filename}]\n\n{excerpt}"}
+                    return await self.process_message(fake_activity, db=db)
+
+            doc_size_kb = len(raw_bytes) // 1024
+            msg = (
+                f"Documento recebido: {filename} ({doc_size_kb} KB). "
+                "Para formatos .docx/.xlsx, use a plataforma web para importar dados."
+            )
+            return {"success": True, "message": msg}
+
+        except Exception as e:
+            logger.error("[TeamsOrchestratorBridge] process_general_document error: %s", e)
+            return {"success": False, "message": "Erro ao processar o documento."}
+
+    async def process_voice_attachment(
+        self,
+        activity: dict[str, Any],
+        attachment: dict[str, Any],
+        db: "AsyncSession | None" = None,
+    ) -> dict[str, Any]:
+        """W9.2: Process voice attachment via Gemini native STT for transcription."""
+        import httpx
+
+        content_url = attachment.get("contentUrl", "")
+        content_type = (attachment.get("contentType") or "audio/ogg").lower()
+        filename = attachment.get("name", "audio.ogg")
+
+        try:
+            from app.domains.communication.services.teams_simple import simple_teams_bot
+            token = await simple_teams_bot.get_access_token()
+
+            async with httpx.AsyncClient() as client:
+                resp = await client.get(
+                    content_url,
+                    headers={"Authorization": f"Bearer {token}"},
+                    timeout=30.0,
+                )
+                audio_bytes = resp.content
+
+            if not audio_bytes:
+                return {
+                    "success": False,
+                    "message": (
+                        f"Audio recebido: {filename}. "
+                        "Nao foi possivel baixar o conteudo do audio."
+                    ),
+                }
+
+            try:
+                from google.genai import types as _gtypes
+                from app.domains.ai.services.llm import llm_service
+
+                prompt = (
+                    "Transcreva este audio em portugues com precisao. "
+                    "Forneca apenas a transcricao, sem introducao ou explicacoes. "
+                    "Se for uma mensagem de voz de candidato ou recrutador em contexto de RH, "
+                    "mantenha o conteudo original fiel."
+                )
+                contents = [
+                    _gtypes.Part.from_bytes(data=audio_bytes, mime_type=content_type),
+                    prompt,
+                ]
+                response = await llm_service.generate_native_gemini(
+                    contents=contents,
+                    model="gemini-2.5-flash",
+                )
+                transcription = response.text.strip() if (hasattr(response, "text") and response.text) else ""
+
+                if transcription:
+                    fake_activity = {**activity, "text": f"[Audio: {filename}]\n\n{transcription}"}
+                    return await self.process_message(fake_activity, db=db)
+                else:
+                    return {
+                        "success": True,
+                        "message": f"Audio recebido: {filename}. Nao foi possivel transcrever o conteudo.",
+                    }
+
+            except Exception as stt_err:
+                logger.warning("[TeamsOrchestratorBridge] STT error for %s: %s", filename, stt_err)
+                size_kb = len(audio_bytes) // 1024
+                return {
+                    "success": True,
+                    "message": (
+                        f"Audio recebido: {filename} ({size_kb} KB). "
+                        "A transcricao automatica nao esta disponivel no momento. "
+                        "Envie a mensagem em texto para continuar."
+                    ),
+                }
+
+        except Exception as e:
+            logger.error("[TeamsOrchestratorBridge] process_voice_attachment error: %s", e)
+            return {"success": False, "message": "Erro ao processar o audio. Tente novamente."}
 
     async def _resolve_company_id(
         self,
