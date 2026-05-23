@@ -1,5 +1,4 @@
-"""
-WSI package — session management routes.
+"""WSI sessions API.
 
 Routes:
   GET  /session/{session_id}
@@ -32,14 +31,28 @@ router = APIRouter()
 
 @router.get("/session/{session_id}", response_model=None)
 async def get_session(session_id: str, db: AsyncSession = Depends(get_db), company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Get WSI session details with questions and responses."""
+    """Get WSI session details with questions and responses.
+
+    Onda 4.2c-P0-1 (2026-05-23): cross-tenant guard via pre-check JOIN
+    com job_vacancies. Tabela wsi_sessions sem RLS — defesa app-layer.
+    """
     try:
+        from sqlalchemy import text as _text
+
         _repo = WsiRepository(db)
         session = await _repo.get_session(session_id)
 
         if not session:
             raise HTTPException(status_code=404, detail="Session not found")
+
+        # Onda 4.2c-P0-1: tenant guard — session[2] = job_vacancy_id.
+        if session[2]:
+            tenant_check = await db.execute(
+                _text("SELECT 1 FROM job_vacancies WHERE id = :jv AND company_id = :cid"),
+                {"jv": session[2], "cid": company_id},
+            )
+            if not tenant_check.scalar():
+                raise HTTPException(status_code=404, detail="Session not found")
 
         questions = await _repo.get_questions_for_session(session_id)
 
@@ -71,11 +84,26 @@ async def get_session(session_id: str, db: AsyncSession = Depends(get_db), compa
 async def get_candidate_results(
     candidate_id: str,
     limit: int = 10,
-    db: AsyncSession = Depends(get_db), 
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """Get WSI results for a specific candidate."""
+    db: AsyncSession = Depends(get_db),
+    company_id: str = Depends(require_company_id),
+):
+    """Get WSI results for a specific candidate.
+
+    Onda 4.2c-P0-2 (2026-05-23): cross-tenant guard via pre-check do
+    candidate.company_id. Antes vazava overall_wsi/classification/
+    percentile de candidatos cross-tenant.
+    """
     try:
+        from sqlalchemy import text as _text
+
+        # Onda 4.2c-P0-2: tenant guard.
+        cand_check = await db.execute(
+            _text("SELECT 1 FROM candidates WHERE id = :cid AND company_id = :company_id"),
+            {"cid": candidate_id, "company_id": company_id},
+        )
+        if not cand_check.scalar():
+            raise HTTPException(status_code=404, detail="Candidate not found")
+
         _repo = WsiRepository(db)
         results = await _repo.get_results_for_candidate(candidate_id, limit)
 

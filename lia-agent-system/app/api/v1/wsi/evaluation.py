@@ -1,6 +1,5 @@
 
-"""
-WSI package — evaluation routes.
+"""WSI evaluation API.
 
 Routes:
   POST /jd-evaluate
@@ -284,17 +283,34 @@ async def evaluate_jd(request: JDEvaluateRequest, company_id: str = Depends(requ
 @router.post("/analyze-response", response_model=AnalyzeResponseOutput)
 async def analyze_response(
     request: AnalyzeResponseRequest,
-    db: AsyncSession = Depends(get_db), 
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """
-    Analyze a single candidate response using Claude AI.
+    db: AsyncSession = Depends(get_db),
+    company_id: str = Depends(require_company_id),
+):
+    """Analyze a single candidate response using Claude AI.
+
+    Onda 4.2c-P0-6 (2026-05-23): cross-tenant guard via pre-check do
+    session.job_vacancy_id pertencer ao company_id. Antes user empresa A
+    podia inserir response_analysis em session da empresa B.
 
     Evaluates:
     - Bloom's Taxonomy level demonstrated (cognitive level)
     - Dreyfus Model proficiency level
     - Big Five personality indicators
     """
+    from sqlalchemy import text as _text
+
+    # Onda 4.2c-P0-6: tenant pre-check via session → job_vacancy → company_id.
+    tenant_check = await db.execute(
+        _text(
+            "SELECT 1 FROM wsi_sessions s "
+            "INNER JOIN job_vacancies jv ON jv.id = s.job_vacancy_id "
+            "WHERE s.id = :sid AND jv.company_id = :company_id"
+        ),
+        {"sid": request.session_id, "company_id": company_id},
+    )
+    if not tenant_check.scalar():
+        raise HTTPException(status_code=404, detail="Session not found")
+
     client = await get_anthropic_client()
 
     question_text = ""
@@ -435,11 +451,14 @@ Return ONLY valid JSON:
 @router.post("/complete-screening", response_model=CompleteScreeningResponse)
 async def complete_screening(
     request: CompleteScreeningRequest,
-    db: AsyncSession = Depends(get_db), 
-company_id: str = Depends(require_company_id)):
-    # multi-tenancy: gated via Depends(require_company_id) + Postgres RLS runtime (Task #1143)
-    """
-    Complete WSI screening by analyzing all responses and generating final report.
+    db: AsyncSession = Depends(get_db),
+    company_id: str = Depends(require_company_id),
+):
+    """Complete WSI screening by analyzing all responses and generating final report.
+
+    Onda 4.2c-P0-7 (2026-05-23): cross-tenant guard via pre-check no
+    session_id. Antes user empresa A podia gravar overall_wsi + classification
+    fictícios em session/result de outra empresa.
 
     Returns comprehensive assessment including:
     - Overall score (0-5)
@@ -449,6 +468,20 @@ company_id: str = Depends(require_company_id)):
     - Archetype indicators
     - Summary and recommendations
     """
+    from sqlalchemy import text as _text
+
+    # Onda 4.2c-P0-7: tenant pre-check.
+    tenant_check = await db.execute(
+        _text(
+            "SELECT 1 FROM wsi_sessions s "
+            "INNER JOIN job_vacancies jv ON jv.id = s.job_vacancy_id "
+            "WHERE s.id = :sid AND jv.company_id = :company_id"
+        ),
+        {"sid": request.session_id, "company_id": company_id},
+    )
+    if not tenant_check.scalar():
+        raise HTTPException(status_code=404, detail="Session not found")
+
     response_analyses = []
 
     for resp in request.responses:

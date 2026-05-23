@@ -1,8 +1,6 @@
-"""
-
-# RAILS-DEPRECATED: This endpoint manages Rails-owned entities (candidates/jobs/applies).
 # Direct DB calls will be replaced by RailsAdapter after ats-api-rails handoff.
 # See: app/domains/integrations_hub/services/rails_adapter.py
+"""
 WSI package — F11 report and ranking routes.
 
 Routes:
@@ -398,9 +396,10 @@ async def get_f11_report(session_id: str, db: AsyncSession = Depends(get_db), co
                    j.title AS job_title, j.seniority_level
             FROM wsi_sessions s
             LEFT JOIN candidates c ON c.id = s.candidate_id
-            LEFT JOIN job_vacancies j ON j.id = s.job_vacancy_id
+            INNER JOIN job_vacancies j ON j.id = s.job_vacancy_id
             WHERE s.id = :sid
-        """), {"sid": session_id})
+              AND j.company_id = :company_id
+        """), {"sid": session_id, "company_id": company_id})
         session = sess_r.fetchone()
         if not session:
             raise HTTPException(status_code=404, detail="Sessão WSI não encontrada")
@@ -718,6 +717,8 @@ company_id: str = Depends(require_company_id)):
     Ordena por overall_wsi DESC e calcula rank, percentil e médias do pool.
     """
     try:
+        # Onda 4.2c-P0-4 (2026-05-23): tenant guard via INNER JOIN com job_vacancies.
+        # Antes vazava ranking completo (candidate_name + scores) cross-tenant.
         rows_r = await db.execute(text("""
             SELECT
                 r.id            AS result_id,
@@ -733,9 +734,11 @@ company_id: str = Depends(require_company_id)):
             FROM wsi_results r
             LEFT JOIN wsi_sessions s ON s.id = r.session_id
             LEFT JOIN candidates c   ON c.id::text = r.candidate_id
+            INNER JOIN job_vacancies jv ON jv.id = r.job_vacancy_id
             WHERE r.job_vacancy_id = :jv_id
+              AND jv.company_id = :company_id
             ORDER BY r.overall_wsi DESC, r.created_at DESC
-        """), {"jv_id": job_vacancy_id})
+        """), {"jv_id": job_vacancy_id, "company_id": company_id})
         rows = rows_r.fetchall()
 
         if not rows:
@@ -804,6 +807,14 @@ company_id: str = Depends(require_company_id)):
     Spec: WSI_METHODOLOGY_COMPLETE_v2.md §11.6.4 Tab 3.
     """
     try:
+        # Onda 4.2c-P0-5 (2026-05-23): tenant guard pre-check no job_vacancy.
+        tenant_check = await db.execute(
+            text("SELECT 1 FROM job_vacancies WHERE id = :jv_id AND company_id = :company_id"),
+            {"jv_id": job_vacancy_id, "company_id": company_id},
+        )
+        if not tenant_check.scalar():
+            raise HTTPException(status_code=404, detail="Job vacancy not found")
+
         cand_r = await db.execute(text("""
             SELECT id, overall_wsi FROM wsi_results
             WHERE candidate_id = :cid AND job_vacancy_id = :jv_id
