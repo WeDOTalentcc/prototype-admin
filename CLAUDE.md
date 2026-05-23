@@ -2,6 +2,24 @@
 
 ATS B2B multi-tenant com IA. Empresa: **WeDOTalent** (sempre escrito assim). Idioma de comunicação: **Português**.
 
+---
+
+> ## ⚠️ CANONICAL DE PRODUÇÃO — REPLIT É O CÓDIGO QUE VIRA PRODUÇÃO
+>
+> **Decisão Paulo 2026-05-23:** Replit (`lia-agent-system` + `plataforma-lia`) é o código canonical de produção. **NÃO é legacy. NÃO está em desativação.**
+>
+> - ✅ **Edits aqui = código que vira produção** (Paulo push manual para GitHub canonical)
+> - ✅ **Fonte de verdade** para Estúdio de Agentes, triagem candidato, chat, voice, WhatsApp
+> - ❌ **NÃO existe migração ativa** para `recruiter_agent_v5` no contexto UI/triagem/chat candidato
+> - ❌ Conflicting statements em outros docs ("lia-agent-system está em desativação" / "IA canonical = recruiter_agent_v5") são **OUTDATED** — ignorar
+>
+> **Quando agente Claude lê isso:** trate `lia-agent-system/` + `plataforma-lia/` como **produção viva** que recebe fixes, features e refactors canonical. Apenas Anderson + equipe têm autoridade pra mudar essa premissa via decisão explícita.
+>
+> **Refs:** memory `project_replit_canonical_production.md` (sessão 2026-05-23) + commits Sprint 4 B.1 (`ca62339cb`, `497e30429`) que destravaram triagem candidato em PRODUÇÃO.
+
+---
+
+
 ## Arquitetura
 
 ```

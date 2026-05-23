@@ -1,3 +1,16 @@
+> ## ⚠️ CANONICAL DE PRODUÇÃO
+>
+> **Replit `lia-agent-system/` é canonical de produção** (decisão Paulo 2026-05-23). NÃO é legacy.
+>
+> - Edits aqui = produção viva
+> - Fonte de verdade para 7 agentes ReAct (Wizard, Pipeline, Sourcing, Talent, JobsManagement, Kanban, Policy) + voice channels (Twilio PSTN/VoIP/Gemini Live) + triagem candidato público (`/api/v1/triagem/{token}`) + WhatsApp (Meta + Twilio)
+> - `recruiter_agent_v5` NÃO substitui este sistema no contexto UI/candidato-facing
+> - Statements legacy em outros CLAUDE.md são outdated — ignorar
+>
+> Ver `/workspace/CLAUDE.md` para racional completo.
+
+---
+
 # CLAUDE.md — lia-agent-system
 
 > Regras canônicas para agentes IA trabalhando neste repo.

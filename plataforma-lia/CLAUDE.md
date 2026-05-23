@@ -1,3 +1,15 @@
+> ## ⚠️ CANONICAL DE PRODUÇÃO
+>
+> **Replit `plataforma-lia/` é canonical de produção** (decisão Paulo 2026-05-23). NÃO é legacy.
+>
+> - Edits aqui = produção viva
+> - Fonte de verdade para todo o frontend Next.js — Estúdio de Agentes, triagem candidato chat público, AgentCard (4 canais: WhatsApp + Voice + VoIP), Wizard goal-first, marketplace, dashboards
+> - Consome `lia-agent-system` (FastAPI) + `ats_api` (Rails) via proxy Next em `src/app/api/backend-proxy/*`
+>
+> Ver `/workspace/CLAUDE.md` para racional completo.
+
+---
+
 # CLAUDE.md — Plataforma LIA · Design System Decisions
 
 > Última atualização: 2026-03-29
