@@ -339,13 +339,19 @@ class TestAdapterArchitecturalContract:
 
 
 # ----------------------------------------------------------------------------
-# check_status — Sprint 3.4 baseline (QUEUED until webhook wiring)
+# check_status — Sprint 3.4 follow-up: real implementation reading
+# VoiceSessionRedisRepository. Full mapping/edge-case coverage lives in
+# tests/contract/test_voice_adapter_check_status.py. This module keeps the
+# smoke test for "unknown id -> FAILED" so accidental regressions to the
+# placeholder (return QUEUED always) are caught here too.
 # ----------------------------------------------------------------------------
 
 class TestCheckStatus:
     @pytest.mark.asyncio
-    async def test_check_status_returns_queued_baseline(self):
-        """Sprint 3.4 follow-up will read from VoiceSessionRedisRepository;
-        baseline returns QUEUED until then."""
-        result = await VoiceChannelAdapter().check_status("any-id")
-        assert result == DeliveryStatus.QUEUED
+    async def test_check_status_unknown_session_returns_failed(self):
+        """Unknown session_id (no reverse-index entry) maps to FAILED, not the
+        old placeholder QUEUED. Regression guard against revert to baseline
+        placeholder. Full mapping coverage in test_voice_adapter_check_status.py.
+        """
+        result = await VoiceChannelAdapter().check_status("definitely-not-a-real-session")
+        assert result == DeliveryStatus.FAILED

@@ -34,8 +34,36 @@ from app.shared.channels.channel_adapter import (
     DeliveryResult,
     DeliveryStatus,
 )
+from app.domains.voice.repositories.voice_session_redis_repository import (
+    get_voice_session_repository,
+)
 
 logger = logging.getLogger(__name__)
+
+# Mapping canonical: VoiceScreeningSession.status / VoiceCoreSession.status
+# -> DeliveryStatus pro consumer do ChannelAdapter interface.
+#
+# Cobre estados atuais (pending/initiated/ready/analyzing/completed/
+# analysis_failed/failed/fallback) + estados forward-compat do canonical
+# voice core (consent_pending/ringing/in_progress/active/finalized) que
+# podem aparecer quando Sprint 3.5+ unifica core orchestrator.
+_VOICE_STATUS_TO_DELIVERY: dict[str, DeliveryStatus] = {
+    # current VoiceScreeningSession
+    "pending": DeliveryStatus.QUEUED,
+    "initiated": DeliveryStatus.SENT,
+    "ready": DeliveryStatus.DELIVERED,
+    "analyzing": DeliveryStatus.DELIVERED,
+    "completed": DeliveryStatus.READ,
+    "analysis_failed": DeliveryStatus.FAILED,
+    "failed": DeliveryStatus.FAILED,
+    "fallback": DeliveryStatus.FAILED,
+    # forward-compat canonical voice core
+    "consent_pending": DeliveryStatus.QUEUED,
+    "ringing": DeliveryStatus.SENT,
+    "in_progress": DeliveryStatus.DELIVERED,
+    "active": DeliveryStatus.DELIVERED,
+    "finalized": DeliveryStatus.READ,
+}
 
 
 class VoiceChannelAdapter(ChannelAdapter):
@@ -213,12 +241,60 @@ class VoiceChannelAdapter(ChannelAdapter):
             )
 
     async def check_status(self, message_id: str) -> DeliveryStatus:
-        """Look up session delivery status.
+        """Look up session delivery status via ``VoiceSessionRedisRepository``.
 
-        Sprint 3.4 baseline: returns ``QUEUED`` until webhook-driven status
-        propagation is wired. Sprint 3.4 follow-up ticket will read the session
-        from ``VoiceSessionRedisRepository`` and translate
-        ``session.status`` → ``DeliveryStatus`` (``initiated`` → SENT,
-        ``completed`` → DELIVERED, ``failed`` → FAILED, etc).
+        ``message_id`` is the session_id returned by :meth:`send`. Resolves
+        company_id via the reverse index (never trusts external input -
+        preserves multi-tenancy invariant), loads the session state, and maps
+        the internal ``status`` field to a canonical ``DeliveryStatus``.
+
+        Mapping (see ``_VOICE_STATUS_TO_DELIVERY`` for full table):
+            - pending/consent_pending -> QUEUED
+            - initiated/ringing       -> SENT
+            - ready/analyzing/in_progress/active -> DELIVERED
+            - completed/finalized     -> READ
+            - failed/analysis_failed/fallback -> FAILED
+
+        Graceful degradation:
+            - empty/None message_id -> FAILED (no Redis hit)
+            - session expired or not found -> FAILED
+            - unknown internal status -> QUEUED (defensive default,
+              avoids masking propagation bugs by hiding the session)
+            - any Redis exception -> FAILED + log warning
+
+        P1 backlog (was Sprint 3.4 placeholder retornando QUEUED sempre).
         """
-        return DeliveryStatus.QUEUED
+        if not message_id:
+            return DeliveryStatus.FAILED
+        try:
+            repo = get_voice_session_repository()
+            company_id = await repo.find_company_id_for_session(
+                session_id=message_id,
+            )
+            if not company_id:
+                # Session expired (TTL 4h) or unknown id - treat as terminal failure
+                # so caller stops polling.
+                return DeliveryStatus.FAILED
+
+            state = await repo.load_session_state(
+                company_id=company_id,
+                session_id=message_id,
+            )
+            if state is None:
+                # Race: reverse-index still up, primary state TTL'd out.
+                return DeliveryStatus.FAILED
+
+            internal = state.get("status")
+            if internal is None:
+                # Malformed state (missing status key). Defensive default - do
+                # not return FAILED (would mask serialization bug downstream).
+                return DeliveryStatus.QUEUED
+            return _VOICE_STATUS_TO_DELIVERY.get(internal, DeliveryStatus.QUEUED)
+        except Exception as exc:
+            logger.warning(
+                "[VOICE_ADAPTER] check_status failed for message_id=%s: %s",
+                message_id,
+                exc,
+                exc_info=True,
+            )
+            return DeliveryStatus.FAILED
