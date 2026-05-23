@@ -41,6 +41,15 @@ from app.shared.prompts.prompt_composer import PromptComposer
 
 @register_agent("jobs_management", aliases=['jobs_mgmt'])
 class JobsManagementReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
+    # W4-032 (2026-05-23): publish/unpublish e bulk job ops requerem HITL.
+    _HITL_ACTION_TYPES = frozenset({
+        "publish_vacancy",
+        "unpublish_vacancy",
+        "duplicate_vacancy",
+        "bulk_vacancy_status_change",
+        "delete_vacancy",
+    })
+
     DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
         agent_type="jobs_mgmt",
         domain_specific=JOBS_MGMT_DOMAIN_SPECIFIC,
@@ -180,6 +189,22 @@ class JobsManagementReActAgent(TenantAwareAgentMixin, LangGraphReActBase, Enhanc
                 confidence=1.0,
                 metadata={"source": "fairness_guard", "domain": self.domain_name},
             )
+
+        # W4-032 (2026-05-23): HITL gate antes de publish/bulk job ops
+        from app.shared.hitl.agent_gate import maybe_request_hitl_approval
+        _hitl_response = await maybe_request_hitl_approval(
+            agent_input=input,
+            domain=self.domain_name,
+            action_types=self._HITL_ACTION_TYPES,
+            agent_name="jobs_mgmt_react_agent",
+            description_template=(
+                "Confirmar **{action_type}** na vaga. "
+                "Ação afeta visibilidade pública / múltiplas vagas."
+            ),
+        )
+        if _hitl_response is not None:
+            return _hitl_response
+
         return await self._process_langgraph(input)
 
     async def get_status(self) -> dict:

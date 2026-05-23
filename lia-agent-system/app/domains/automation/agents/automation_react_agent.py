@@ -32,6 +32,16 @@ logger = logging.getLogger(__name__)
 
 @register_agent("automation")
 class AutomationReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAgentMixin):
+    # W4-032 (2026-05-23): automation rules disparam side-effects sem human-in-loop
+    # por design — gate HITL aplica APENAS em activate/deactivate/destructive ops.
+    _HITL_ACTION_TYPES = frozenset({
+        "activate_automation",
+        "deactivate_automation",
+        "delete_automation",
+        "bulk_trigger_automation",
+        "schedule_recurring_task",
+    })
+
     DOMAIN_INSTRUCTIONS = PromptComposer.for_domain(
         agent_type="automation",
         domain_specific=AUTOMATION_DOMAIN_SPECIFIC,
@@ -161,6 +171,21 @@ class AutomationReActAgent(TenantAwareAgentMixin, LangGraphReActBase, EnhancedAg
         return await super()._process_langgraph(input)
 
     async def process(self, input: AgentInput) -> AgentOutput:
+        # W4-032 (2026-05-23): HITL gate em activate/deactivate/delete de automation
+        from app.shared.hitl.agent_gate import maybe_request_hitl_approval
+        _hitl_response = await maybe_request_hitl_approval(
+            agent_input=input,
+            domain=self.domain_name,
+            action_types=self._HITL_ACTION_TYPES,
+            agent_name="automation_react_agent",
+            description_template=(
+                "Confirmar **{action_type}** na regra de automação. "
+                "Mudança afeta fluxos disparados automaticamente em produção."
+            ),
+        )
+        if _hitl_response is not None:
+            return _hitl_response
+
         return await self._process_langgraph(input)
 
     async def decompose_task(
