@@ -509,3 +509,10 @@ repos:
         entry: python3 scripts/check_voice_stt_pii_strip.py
         files: ^app/domains/voice/services/(voice_screening_orchestrator|gemini_live_audio_service)\.py$
         pass_filenames: false
+
+      - id: no-direct-llm-sdk-imports
+        name: "W3-027: factory consolidation guard (WARN-ONLY · BLOCKING após migration full)"
+        language: system
+        entry: bash -c "python3 scripts/check_no_direct_llm_sdk_imports.py 2>&1; exit 0"
+        files: ^app/.*\.py$
+        pass_filenames: false

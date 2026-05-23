@@ -31,6 +31,22 @@ except ImportError:  # pragma: no cover
     _sentry_sdk = None  # type: ignore[union-attr]
     _SENTRY_AVAILABLE = False
 
+# W3-025 (2026-05-23): Prometheus counter pra tool execution observability.
+# Phase A: counter por (tool_name, status). Phase B: cost USD mapping.
+try:
+    from prometheus_client import Counter as _PromCounter
+    _TOOL_EXEC_COUNTER = _PromCounter(
+        "lia_tool_executions_total",
+        "Tool execution count by name and status (W3-025)",
+        ["tool_name", "status"],
+    )
+    _TOOL_EXEC_AVAILABLE = True
+except (ImportError, ValueError) as _w3025_exc:  # pragma: no cover
+    # ImportError: prometheus_client missing
+    # ValueError: counter already registered (re-import via hot-reload)
+    _TOOL_EXEC_COUNTER = None
+    _TOOL_EXEC_AVAILABLE = False
+
 logger = logging.getLogger(__name__)
 
 
@@ -347,15 +363,25 @@ class ToolExecutor:
         success: bool,
         elapsed_ms: float,
     ) -> None:
-        """W1-004 Step 8 (canary metric hook) · emite metric por execute call.
+        """W1-004 Step 8 + W3-025 (2026-05-23) · canary metric + Prometheus counter.
 
-        Sobrescrever em subclass pra exportar pra Prometheus/StatsD/etc.
-        Default: log.debug (zero side-effect em prod sem exporter wired).
+        Sobrescrever em subclass pra exportar pra StatsD/etc.
+        Phase A: log.debug + Prometheus counter (W3-025).
+        Phase B: cost USD mapping per tool name.
         """
         self.logger.debug(
             "tool.metric name=%s success=%s elapsed_ms=%.1f",
             tool_name, success, elapsed_ms,
         )
+        # W3-025: Prometheus counter (fail-safe se SDK missing)
+        if _TOOL_EXEC_AVAILABLE and _TOOL_EXEC_COUNTER is not None:
+            try:
+                _TOOL_EXEC_COUNTER.labels(
+                    tool_name=tool_name,
+                    status="success" if success else "failure",
+                ).inc()
+            except Exception as exc:
+                self.logger.debug("counter inc failed (silent): %s", exc)
 
     def _emit_governance_signals(
         self,

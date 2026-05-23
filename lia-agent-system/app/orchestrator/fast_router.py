@@ -411,7 +411,20 @@ def _load_domain_patterns() -> dict[str, list[str]]:
     _yaml_path = _pathlib.Path(__file__).parent / "config" / "domain_routing.yaml"
 
     if _os.environ.get("LIA_DISABLE_YAML_ROUTING", "").lower() in ("1", "true", "yes"):  # R-044: verified-active — disables YAML domain routing, falls back to hardcoded DOMAIN_PATTERNS
-        logger.info("[LIA-I06] LIA_DISABLE_YAML_ROUTING set — using hardcoded DOMAIN_PATTERNS")
+        # W3-022 (2026-05-23): canary warning — fallback ativo sinaliza candidato
+        # pra deleção quando YAML domain_routing.yaml estiver estável em prod.
+        # Em prod, este path é EXCEPCIONAL (rollback emergencial); em dev/test
+        # é warn-only.
+        _env = _os.environ.get("APP_ENV", "development")
+        if _env in ("production", "prod", "staging"):
+            logger.warning(
+                "[W3-022 CANARY] LIA_DISABLE_YAML_ROUTING=1 em %s · "
+                "YAML routing bypassed, hardcoded fallback ativo. "
+                "Investigar OR fechar W3-022 cleanup.",
+                _env,
+            )
+        else:
+            logger.info("[LIA-I06] LIA_DISABLE_YAML_ROUTING set — using hardcoded DOMAIN_PATTERNS")
         return _HARDCODED_DOMAIN_PATTERNS
 
     try:
