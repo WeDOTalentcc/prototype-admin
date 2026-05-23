@@ -30,16 +30,22 @@ depends_on = None
 
 
 def upgrade() -> None:
-    op.add_column(
-        "custom_agents",
-        sa.Column(
-            "voice_enabled",
-            sa.Boolean(),
-            nullable=False,
-            server_default=sa.false(),
-        ),
+    # Idempotent: column may already exist if Sprint 3.7 W4-1 deploy did
+    # psycopg2 sync bypass while alembic was blocked on 174 jsonb->json
+    # coercion bug (fixed in patched 174). Use IF NOT EXISTS so re-running
+    # alembic upgrade head reconciles state cleanly.
+    op.execute(
+        """
+        ALTER TABLE custom_agents
+            ADD COLUMN IF NOT EXISTS voice_enabled BOOLEAN NOT NULL DEFAULT FALSE
+        """
     )
 
 
 def downgrade() -> None:
-    op.drop_column("custom_agents", "voice_enabled")
+    op.execute(
+        """
+        ALTER TABLE custom_agents
+            DROP COLUMN IF EXISTS voice_enabled
+        """
+    )

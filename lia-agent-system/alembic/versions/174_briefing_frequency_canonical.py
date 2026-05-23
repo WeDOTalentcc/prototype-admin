@@ -64,11 +64,11 @@ def upgrade() -> None:
         """
         UPDATE company_hiring_policies hp
         SET communication_rules = jsonb_set(
-                COALESCE(hp.communication_rules, '{}'::jsonb),
+                COALESCE(hp.communication_rules::jsonb, '{}'::jsonb),
                 '{briefing_frequency}',
                 to_jsonb(src.briefing_frequency),
                 true
-            ),
+            )::json,
             updated_at = NOW()
         FROM (
             SELECT DISTINCT ON (ac.company_id)
@@ -82,7 +82,7 @@ def upgrade() -> None:
              ORDER BY ac.company_id, ac.updated_at DESC NULLS LAST
         ) src
         WHERE hp.company_id = src.company_id
-          AND (hp.communication_rules->>'briefing_frequency') IS NULL;
+          AND (hp.communication_rules::jsonb->>'briefing_frequency') IS NULL;
         """
     )
 
@@ -98,8 +98,8 @@ def downgrade() -> None:
     op.execute(
         """
         UPDATE company_hiring_policies
-        SET communication_rules = communication_rules - 'briefing_frequency',
+        SET communication_rules = (communication_rules::jsonb - 'briefing_frequency')::json,
             updated_at = NOW()
-        WHERE communication_rules ? 'briefing_frequency';
+        WHERE communication_rules::jsonb ? 'briefing_frequency';
         """
     )

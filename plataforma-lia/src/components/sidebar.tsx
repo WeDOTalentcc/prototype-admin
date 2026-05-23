@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useCallback, useEffect, useMemo } from "react"
+import React, { useState, useCallback, useEffect, useMemo, useRef } from "react"
 import type { MenuItemType, JobFilterItemType, SidebarProps } from "@/lib/sidebar/sidebar.types"
 import { useSidebarState } from "@/lib/sidebar/useSidebarState"
 import { cn } from "@/lib/utils"
@@ -240,6 +240,7 @@ const MenuItem = React.memo(({
   const isLocked = item.moduleId && !hasModuleAccess(item.moduleId)
   const canAccess = item.isCore || (item.moduleId && hasModuleAccess(item.moduleId))
   const hasSubItems = item.subItems && item.subItems.length > 0
+  const chevronRef = useRef<HTMLSpanElement>(null)
 
   // Auto-expand if current page is a subitem or if this navigateOnClick item is active
   useEffect(() => {
@@ -251,10 +252,17 @@ const MenuItem = React.memo(({
     }
   }, [currentPage, hasSubItems, item.subItems, item.navigateOnClick, item.label])
 
-  const handleClick = useCallback(() => {
+  const handleClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
+    // Chevron is a visual zone inside the row: clicking it only toggles expand,
+    // never navigates. The label/icon area navigates (and keeps submenu open).
+    if (hasSubItems && chevronRef.current && chevronRef.current.contains(e.target as Node)) {
+      setIsExpanded(prev => !prev)
+      return
+    }
+
     if (hasSubItems && item.navigateOnClick) {
       if (canAccess) onNavigate(item.label)
-      setIsExpanded(prev => !prev)
+      setIsExpanded(true)
     } else if (hasSubItems) {
       setIsExpanded(prev => !prev)
     } else if (canAccess) {
@@ -308,7 +316,15 @@ const MenuItem = React.memo(({
                 </span>
               )}
               {hasSubItems && (
-                isExpanded ? <ChevronUp className="w-2.5 h-2.5" /> : <ChevronDown className="w-2.5 h-2.5" />
+                <span
+                  ref={chevronRef}
+                  role="button"
+                  aria-label={isExpanded ? t('labels.collapseSubmenu') : t('labels.expandSubmenu')}
+                  aria-expanded={isExpanded}
+                  className="inline-flex items-center justify-center p-1 -m-1 rounded hover:bg-lia-interactive-active cursor-pointer"
+                >
+                  {isExpanded ? <ChevronUp className="w-2.5 h-2.5" /> : <ChevronDown className="w-2.5 h-2.5" />}
+                </span>
               )}
             </div>
           </div>
