@@ -444,6 +444,9 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         channel: Literal["chat", "voice", "whatsapp"] = "chat",
         audio_chunk: bytes | None = None,
         voice_session_id: str | None = None,
+        sender_phone: str | None = None,
+        conversation_history: list[dict[str, Any]] | None = None,
+        db: Any = None,
     ) -> AgentOutput:
         """Execute custom agent against a single user message.
 
@@ -451,7 +454,9 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
         - channel="chat" (default): text-only conversation; existing behaviour preserved.
         - channel="voice": delegates to _invoke_voice, gated by feature flag
           voice_screening_v2_enabled (per-tenant). Audio in/out via VoiceCoreOrchestrator.
-        - channel="whatsapp": placeholder for future routing (logs warning + chat fallback).
+        - channel="whatsapp": T5a UX Transformação 5 — delegates to
+          _invoke_whatsapp (message-driven sync), gated by per-agent
+          ``whatsapp_enabled`` flag (checked at the REST endpoint layer).
 
         Keyword-only after context= to preserve backward compat with positional callers
         from Sprint <=3.4. process() callers route through here unchanged.
@@ -468,10 +473,15 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
                 context=context,
             )
         if channel == "whatsapp":
-            logger.warning(
-                "[CustomAgentRuntime:%s] channel='whatsapp' not implemented yet; "
-                "falling back to chat path.",
-                self._agent_name,
+            return await self._invoke_whatsapp(
+                user_message=message,
+                user_id=user_id,
+                company_id=company_id,
+                session_id=session_id,
+                sender_phone=sender_phone or (context or {}).get("candidate_phone"),
+                conversation_history=conversation_history,
+                context=context,
+                db=db,
             )
 
         effective_company_id = company_id or self._company_id
@@ -824,6 +834,169 @@ class CustomAgentRuntime(LangGraphReActBase, EnhancedAgentMixin):
                 message="Voice channel error.",
                 confidence=0.0,
                 metadata={"error": str(exc), "channel": "voice"},
+            )
+
+    async def _invoke_whatsapp(
+        self,
+        *,
+        user_message: str,
+        user_id: str,
+        company_id: str,
+        session_id: str,
+        sender_phone: str | None,
+        conversation_history: list[dict[str, Any]] | None,
+        context: Optional[dict[str, Any]],
+        db: Any = None,
+    ) -> AgentOutput:
+        """WhatsApp channel handler (T5a UX Transformação 5).
+
+        Diferentemente de ``_invoke_voice`` (async + bidirectional streaming
+        via VoiceCoreOrchestrator), WhatsApp é message-driven sync. Não há
+        orchestrator pesado — apenas:
+
+            1. WhatsAppAgentPlugin.on_message_received(...) — audit canonical.
+            2. WhatsAppAgentPlugin.generate_response(...) — LLM text-only.
+            3. WhatsAppChannelAdapter.send(...) — canonical send via factory.
+            4. WhatsAppAgentPlugin.on_message_sent(...) — billing + audit.
+
+        Routing
+        ───────
+        - Sem ``sender_phone`` → erro estruturado (sem destino, sem envio).
+        - Sem ``company_id`` → fail-closed (tenant guard).
+
+        Multi-tenancy: ``company_id`` SEMPRE vem do caller (REST endpoint
+        canonical via Depends(require_company_id) → JWT). NÃO é trusted
+        do payload; o caller é responsável por garantir a origem.
+
+        Compatibilidade com voice path: plugin import lazy + try/except em
+        todos side effects → audit/billing nunca bloqueiam delivery.
+        """
+        effective_company_id = company_id or self._company_id
+
+        if not effective_company_id:
+            return AgentOutput(
+                message="WhatsApp channel requires authenticated company_id.",
+                confidence=0.0,
+                metadata={"error": "whatsapp_missing_company_id", "channel": "whatsapp"},
+            )
+
+        if not sender_phone:
+            return AgentOutput(
+                message="WhatsApp channel requires sender_phone.",
+                confidence=0.0,
+                metadata={"error": "whatsapp_missing_sender_phone", "channel": "whatsapp"},
+            )
+
+        if not user_message or not user_message.strip():
+            return AgentOutput(
+                message="WhatsApp channel requires non-empty user_message.",
+                confidence=0.0,
+                metadata={"error": "whatsapp_empty_message", "channel": "whatsapp"},
+            )
+
+        try:
+            from app.domains.agent_studio.whatsapp_agent_plugin import (
+                WhatsAppAgentPlugin,
+            )
+
+            plugin = WhatsAppAgentPlugin(
+                agent_id=self._agent_id,
+                agent_config={
+                    "system_prompt": self._system_prompt_template,
+                    "allowed_tools": list(self._allowed_tools),
+                    "description": self._description,
+                    "persona": self._persona,
+                    "pricing_tier": self._pricing_tier,
+                },
+                company_id=effective_company_id,
+            )
+
+            # 1. Audit message received (best-effort).
+            await plugin.on_message_received(
+                user_message=user_message,
+                sender_phone=sender_phone,
+                session_id=session_id,
+                db=db,
+            )
+
+            # 2. Generate response via canonical LLM.
+            response_text = await plugin.generate_response(
+                conversation_history=conversation_history or [],
+                user_message=user_message,
+                sender_phone=sender_phone,
+            )
+
+            # 3. Send via canonical WhatsAppChannelAdapter.
+            from app.shared.channels.adapters.whatsapp_adapter import (
+                WhatsAppChannelAdapter,
+            )
+            from app.shared.channels.channel_adapter import ChannelMessage
+
+            adapter = WhatsAppChannelAdapter()
+            ctx = context or {}
+            candidate_name = (
+                ctx.get("candidate_name")
+                or ctx.get("recipient_name")
+                or "Candidato"
+            )
+            recipient_id = ctx.get("candidate_id") or sender_phone
+
+            send_msg = ChannelMessage(
+                recipient_id=str(recipient_id),
+                recipient_name=str(candidate_name),
+                recipient_contact=sender_phone,
+                body_text=response_text,
+                company_id=effective_company_id,
+                metadata={
+                    "agent_id": self._agent_id,
+                    "agent_name": self._agent_name,
+                    "plugin": plugin.plugin_name,
+                    "session_id": session_id,
+                },
+            )
+
+            delivery = await adapter.send(send_msg)
+            delivery_success = bool(delivery.success)
+            delivery_status = str(getattr(delivery.status, "value", delivery.status))
+
+            # 4. Audit completion + billing (best-effort).
+            await plugin.on_message_sent(
+                delivery_success=delivery_success,
+                response_text=response_text,
+                delivery_status=delivery_status,
+                db=db,
+            )
+
+            return AgentOutput(
+                message=response_text,
+                confidence=1.0 if delivery_success else 0.5,
+                metadata={
+                    "channel": "whatsapp",
+                    "status": "message_sent" if delivery_success else "send_failed",
+                    "company_id": effective_company_id,
+                    "agent_id": self._agent_id,
+                    "agent_name": self._agent_name,
+                    "plugin_name": plugin.plugin_name,
+                    "delivery_status": delivery_status,
+                    "delivery_message_id": delivery.message_id,
+                    "delivery_provider_id": delivery.provider_id,
+                    "delivery_error": delivery.error,
+                    "response_text": response_text,
+                    "response_len": len(response_text),
+                    "sender_phone": sender_phone,
+                    "session_id": session_id,
+                    "user_id": user_id,
+                },
+            )
+        except Exception as exc:
+            logger.error(
+                "[CustomAgentRuntime:%s] whatsapp invocation failed: %s",
+                self._agent_name, exc, exc_info=True,
+            )
+            return AgentOutput(
+                message="WhatsApp channel error.",
+                confidence=0.0,
+                metadata={"error": str(exc), "channel": "whatsapp"},
             )
 
 

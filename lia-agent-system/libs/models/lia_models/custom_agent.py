@@ -64,6 +64,9 @@ class CustomAgent(Base):
     # Sprint 3.7 W4-1: per-agent voice flag (default OFF; client controls via Settings UI)
     voice_enabled = Column(Boolean, nullable=False, default=False, server_default="false")
 
+    # T5a UX Transformação 5: per-agent WhatsApp flag (default OFF; client controls via Settings UI)
+    whatsapp_enabled = Column(Boolean, nullable=False, default=False, server_default="false")
+
     total_executions = Column(Integer, default=0)
     avg_confidence = Column(Float, default=0.0)
     last_executed_at = Column(DateTime, nullable=True)
@@ -117,6 +120,7 @@ class CustomAgent(Base):
             "context_level": self.context_level or "full",
             "excluded_tools": self.excluded_tools or [],
             "voice_enabled": bool(self.voice_enabled) if self.voice_enabled is not None else False,
+            "whatsapp_enabled": bool(self.whatsapp_enabled) if self.whatsapp_enabled is not None else False,
             "total_executions": self.total_executions,
             "avg_confidence": self.avg_confidence,
             "last_executed_at": self.last_executed_at.isoformat() if self.last_executed_at else None,
