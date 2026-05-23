@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field, fields
+import inspect
 from functools import wraps
 from typing import Any, Callable
 
@@ -145,15 +146,71 @@ def with_runtime_context(*field_names: str) -> Callable[[Callable], Callable]:
         )
 
     def decorator(fn: Callable) -> Callable:
+        # D.1 (Workstream D ticket 1, 2026-05-23): bind via inspect.signature so
+        # the wrapper accepts positional args + self for methods + mixed call
+        # styles. Pre-D.1 the wrapper only accepted **kwargs which forced voice
+        # services with positional args to fall back to inline RuntimeContext.
+        sig = inspect.signature(fn)
+
         @wraps(fn)
-        async def wrapper(**kwargs: Any) -> Any:
+        async def wrapper(*args: Any, **kwargs: Any) -> Any:
             ctx = RuntimeContext.from_contextvars()
+
+            try:
+                # Bind args+kwargs to signature so we can see which fields the
+                # caller already populated (positionally or by keyword) and
+                # only inject into the empty slots.
+                bound = sig.bind_partial(*args, **kwargs)
+            except TypeError:
+                # Fallback: signature binding failed (e.g. fn uses **kwargs
+                # only and inspect couldn't fully resolve). Behave like the
+                # legacy kwargs-only wrapper.
+                for fname in field_names:
+                    if fname not in kwargs or not kwargs.get(fname):
+                        value = getattr(ctx, fname, None)
+                        if value:
+                            kwargs[fname] = value
+                return await fn(*args, **kwargs)
+
+            # Detect a possible VAR_KEYWORD param (e.g. **kwargs); its name
+            # is whatever the function called it (commonly "kwargs"). We use
+            # this both to allow ContextVar injection through it AND to honor
+            # caller-supplied values stuffed into it.
+            var_keyword_name: str | None = None
+            for pname, p in sig.parameters.items():
+                if p.kind == inspect.Parameter.VAR_KEYWORD:
+                    var_keyword_name = pname
+                    break
+
+            def _caller_already_set(field_name: str) -> bool:
+                # Direct positional/keyword slot (e.g. company_id is a real param).
+                if field_name in bound.arguments and bound.arguments.get(field_name):
+                    return True
+                # Hidden inside **kwargs (e.g. handler signature is
+                # ``async def h(**kwargs)`` and caller passed company_id=...).
+                if var_keyword_name and var_keyword_name in bound.arguments:
+                    var_dict = bound.arguments.get(var_keyword_name) or {}
+                    if isinstance(var_dict, dict) and var_dict.get(field_name):
+                        return True
+                # Caller-supplied via raw kwargs to wrapper (in case bind
+                # missed it for some signature corner case).
+                if field_name in kwargs and kwargs.get(field_name):
+                    return True
+                return False
+
             for fname in field_names:
-                if fname not in kwargs or not kwargs.get(fname):
-                    value = getattr(ctx, fname, None)
-                    if value:
-                        kwargs[fname] = value
-            return await fn(**kwargs)
+                # Caller-wins.
+                if _caller_already_set(fname):
+                    continue
+                # ContextVar fallback: inject if the field is a known param OR
+                # if the function accepts **kwargs (VAR_KEYWORD absorbs any name).
+                if fname not in sig.parameters and var_keyword_name is None:
+                    continue
+                value = getattr(ctx, fname, None)
+                if value:
+                    kwargs[fname] = value
+
+            return await fn(*args, **kwargs)
 
         # Mark for sensor introspection
         wrapper._runtime_context_fields = field_names  # type: ignore[attr-defined]
