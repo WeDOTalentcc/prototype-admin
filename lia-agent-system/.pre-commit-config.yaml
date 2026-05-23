@@ -474,3 +474,10 @@ repos:
         entry: python3 scripts/check_idempotency_key_in_rails_clients.py
         files: ^(app/domains/(ats_integration|job_creation)/.*\.py|app/shared/rails_client\.py)$
         pass_filenames: false
+
+      - id: rails-client-canonical-home
+        name: "W2-010 Phase A: canonical Rails client em app/shared/integration/ + OTel observability (BLOCKING)"
+        language: system
+        entry: python3 scripts/check_rails_client_canonical_home.py
+        files: ^app/shared/(integration/.*\.py|rails_client\.py)$
+        pass_filenames: false

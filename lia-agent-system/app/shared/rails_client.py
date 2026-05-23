@@ -1,55 +1,43 @@
-"""Thin convenience wrappers around WeDOTalentATSClient for cross-domain use.
+"""Thin convenience wrappers around RailsClient for cross-domain use.
 
-Usage:
-    from app.shared.rails_client import rails_get, rails_patch
-    data = await rails_get("/v1/companies/123/candidate-portal/lgpd-requests")
-    result = await rails_patch("/v1/companies/123/candidate-portal/lgpd-requests/42/respond")
+⚠️ DEPRECATION SHIM (W2-010 Phase A, 2026-05-22):
+Canonical home agora é `app/shared/integration/rails_client.py`.
+Esse arquivo permanece como shim de retrocompat (13 callers in-tree usam
+lazy imports inside-function — migram transparentemente via re-export).
+
+Migração de imports (preferida, novos callers):
+    # ANTES (deprecated)
+    from app.shared.rails_client import rails_get, rails_patch, rails_post
+
+    # DEPOIS (canonical)
+    from app.shared.integration.rails_client import rails_get, rails_patch, rails_post
+
+Pre-audit: REPLIT_LIA_REMEDIATION_BACKLOG_2026-05-22.md (W2-010).
+
+Phase B (futura) deletará este arquivo após 1 sprint estável com zero callers
+do path legacy.
 """
 from __future__ import annotations
 
-import logging
+import warnings
 
-from app.domains.ats_integration.services.ats_clients.wedotalent_rails import (
-    WeDOTalentATSClient,
+warnings.warn(
+    "`app.shared.rails_client` está depreciado desde W2-010 (2026-05-22). "
+    "Use `app.shared.integration.rails_client` (canonical home com OTel "
+    "observability). Esse shim permanece pra retrocompat dos 13 callers in-tree.",
+    DeprecationWarning,
+    stacklevel=2,
 )
 
-logger = logging.getLogger(__name__)
+# Re-export do canonical (preserva API: rails_get, rails_patch, rails_post)
+from app.shared.integration.rails_client import (  # noqa: E402,F401
+    rails_get,
+    rails_patch,
+    rails_post,
+)
 
-_client: WeDOTalentATSClient | None = None
-
-
-def _get_client() -> WeDOTalentATSClient:
-    global _client
-    if _client is None:
-        _client = WeDOTalentATSClient()
-    return _client
-
-
-async def rails_get(path: str, params: dict | None = None) -> dict:
-    """GET request to Rails API. Returns response data dict (empty dict on error)."""
-    try:
-        resp = await _get_client().get(path, params=params)
-        return resp.data if resp and resp.data else {}
-    except Exception as exc:
-        logger.warning("[rails_client] GET %s failed: %s", path, exc)
-        return {}
-
-
-async def rails_patch(path: str, data: dict | None = None) -> dict:
-    """PATCH request to Rails API. Returns response data dict (empty dict on error)."""
-    try:
-        resp = await _get_client().patch(path, json_body=data or {})
-        return resp.data if resp and resp.data else {}
-    except Exception as exc:
-        logger.warning("[rails_client] PATCH %s failed: %s", path, exc)
-        return {}
-
-
-async def rails_post(path: str, data: dict | None = None) -> dict:
-    """POST request to Rails API."""
-    try:
-        resp = await _get_client().post(path, json_body=data or {})
-        return resp.data if resp and resp.data else {}
-    except Exception as exc:
-        logger.warning("[rails_client] POST %s failed: %s", path, exc)
-        return {}
+__all__ = [
+    "rails_get",
+    "rails_patch",
+    "rails_post",
+]
