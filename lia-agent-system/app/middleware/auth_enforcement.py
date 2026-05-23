@@ -230,6 +230,26 @@ PUBLIC_REGEX_PATHS: tuple[_re.Pattern[str], ...] = (
         r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
         r"(/[A-Za-z0-9_\-/]+)?$"
     ),
+    # Twilio Voice webhooks (Paulo 2026-05-23) — P0 phone test unblock.
+    # Twilio chama esses endpoints externamente SEM JWT. Autenticação canonical:
+    # X-Twilio-Signature header (HMAC-SHA1 com auth_token) validado em cada handler
+    # via twilio_voice_service.verify_webhook_signature. Endpoints admin
+    # (/initiate, /end-call, /sessions, /voip-token) PRESERVAM JWT — NÃO matchados.
+    # Pattern espelha Sprint 4 B.1 (triagem candidato).
+    #
+    # Endpoints PUBLIC (Twilio externo OR monitoring):
+    #   POST   /api/v1/twilio-voice/greeting          (Twilio TwiML callback)
+    #   POST   /api/v1/twilio-voice/consent-response  (Twilio Gather speech)
+    #   POST   /api/v1/twilio-voice/status            (Twilio status callback)
+    #   WS     /api/v1/twilio-voice/audio-stream      (Twilio Media Stream)
+    #   POST   /api/v1/twilio-voice/voip-connect      (Twilio VoIP TwiML)
+    #   GET    /api/v1/twilio-voice/health            (monitoring externo)
+    _re.compile(r"^/api/v1/twilio-voice/greeting/?$"),
+    _re.compile(r"^/api/v1/twilio-voice/consent-response/?$"),
+    _re.compile(r"^/api/v1/twilio-voice/status/?$"),
+    _re.compile(r"^/api/v1/twilio-voice/audio-stream/?$"),
+    _re.compile(r"^/api/v1/twilio-voice/voip-connect/?$"),
+    _re.compile(r"^/api/v1/twilio-voice/health/?$"),
 )
 
 
