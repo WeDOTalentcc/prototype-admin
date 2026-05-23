@@ -117,6 +117,66 @@ class TrainingDataService:
         
         return quality_feedback
     
+    async def _anonymize_feedback_batch(
+        self,
+        feedback_entries: list[InteractionFeedback],
+        company_id: str,
+    ) -> list[dict[str, Any]]:
+        """T-21b LGPD anonymization (ADR-LGPD-002).
+
+        Converts ORM InteractionFeedback rows into dict samples and routes
+        through the canonical ``TrainingDataAnonymizer`` (Art. 12 §1) before
+        any cross-border export. Single source of truth for PII stripping
+        lives in ``app/domains/analytics/services/training_data_anonymizer.py``.
+
+        Pipeline per row:
+          1. ORM -> dict serialization (only attrs needed for export)
+          2. PII strip layers 0-4 in free-text fields via canonical anonymizer
+          3. SHA-256 hash of candidate_id (irreversible)
+          4. Drop direct PII fields (email/phone/cpf/name)
+          5. Batch sanity check (raises AnonymizationError on residual PII)
+
+        Args:
+            feedback_entries: ORM rows from ``_get_quality_feedback``.
+            company_id: Tenant UUID (audit log + telemetry only — does NOT
+                grant cross-tenant access; rows were already filtered by
+                ``_get_quality_feedback`` using JWT-scoped company_id).
+
+        Returns:
+            list of clean dict samples with ``_anonymization_version``
+            metadata, ready for OpenAI/Anthropic/DPO packers.
+        """
+        from app.domains.analytics.services.training_data_anonymizer import (
+            TrainingDataAnonymizer,
+        )
+
+        # ORM -> dict (canonical projection used by all 3 export packers)
+        samples: list[dict[str, Any]] = []
+        for fb in feedback_entries:
+            samples.append({
+                "user_message": getattr(fb, "user_message", None),
+                "lia_response": getattr(fb, "lia_response", None),
+                "correction": getattr(fb, "correction", None),
+                "feedback_text": getattr(fb, "feedback_text", None),
+                "candidate_id": getattr(fb, "candidate_id", None),
+                "intent": getattr(fb, "intent", None),
+                "stage": getattr(fb, "stage", None),
+                "rating": getattr(fb, "rating", None),
+            })
+
+        if not samples:
+            return []
+
+        anonymizer = TrainingDataAnonymizer()
+        clean = await anonymizer.process_batch(
+            samples, company_id=company_id
+        )
+        self.logger.info(
+            f"[T-21b] Anonymized {len(clean)} feedback samples for "
+            f"company_id={company_id} (canonical TrainingDataAnonymizer)"
+        )
+        return clean
+    
     async def export_openai_format(
         self,
         company_id: str,
@@ -150,7 +210,6 @@ class TrainingDataService:
         )
         
         # T-21b WIRE canonical: anonimização ANTES de empacotar (ADR-LGPD-002)
-        # ORCHESTRATOR-GHOST-EXEMPT: BUG-C4-A — _anonymize_feedback_batch method MISSING from this class. C.4 sensor flagged 2026-05-23. Tracking ticket pending — production code raises AttributeError if executed in this branch.
         anonymized = await self._anonymize_feedback_batch(
             feedback_entries, company_id=company_id
         )
