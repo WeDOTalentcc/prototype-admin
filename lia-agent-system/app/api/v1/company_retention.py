@@ -74,7 +74,7 @@ company_id: str = Depends(require_company_id)):
     if not hasattr(current_user, "role") or current_user.role not in ("admin", "owner"):
         raise HTTPException(status_code=403, detail="Apenas administradores podem alterar esta política.")
 
-    company_id = current_user.company_id
+    # P1.1 (Onda 4.2a 2026-05-23): removido overwrite. company_id JA vem do JWT (Depends require_company_id) — fonte autoritativa unica.
 
     repo = CompanyRetentionRepository(db)
     policy = await repo.upsert(
@@ -109,12 +109,12 @@ company_id: str = Depends(require_company_id)):
     # multi-tenancy: function already calls _require_company_id or equivalent (sensor false positive)
     """Retorna a política de retenção atual da empresa."""
     repo = CompanyRetentionRepository(db)
-    policy = await repo.get_by_company_id(current_user.company_id)
+    policy = await repo.get_by_company_id(company_id)
 
     if policy is None:
         # Retornar defaults (política não configurada = off)
         return RetentionPolicyResponse(
-            company_id=current_user.company_id,
+            company_id=company_id,
             retention_months=24,
             auto_anonymize=False,
             activated_at=None,
