@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import { ErrorBoundarySection } from "@/components/ui/error-boundary-section"
-import CandidateProfilePage from "./CandidatoDetailClient"
+import CandidateRoutePage from "./CandidateRoutePage"
 
 export const metadata: Metadata = {
   title: "Candidato | LIA — WeDo Talent",
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function CandidatoDetailRoute() {
   return (
     <ErrorBoundarySection>
-      <CandidateProfilePage />
+      <CandidateRoutePage />
     </ErrorBoundarySection>
   )
 }
