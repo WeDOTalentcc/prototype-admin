@@ -34,6 +34,8 @@ from app.domains.job_management.repositories.job_vacancy_lifecycle_repository im
 from app.domains.communication.services.communication_service import CommunicationService, get_communication_service
 from app.shared.security.require_company_id import require_company_id
 from app.domains.sourcing.services.sourcing_pipeline_service import sourcing_pipeline_service
+from app.domains.job_management.services.job_status_webhook_service import job_status_webhook_service
+from app.services.notification_service import NotificationChannel, NotificationType
 from app.shared.types import WeDoBaseModel
 
 router = APIRouter()

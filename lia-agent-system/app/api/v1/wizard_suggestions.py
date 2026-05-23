@@ -123,11 +123,11 @@ company_id: str = Depends(require_company_id)) -> FieldSuggestionsResponse:
             recruiter_id=str(current_user.id) if current_user.id else None,
         )
         
-        best_suggestion = await wizard_priority_service.get_suggestion(db, field, context)
+        best_suggestion = await wizard_data_priority_service.get_suggestion(db, field, context)
         
         all_suggestions = []
         if include_all_sources:
-            all_suggestions_raw = await wizard_priority_service.get_all_suggestions(db, field, context)
+            all_suggestions_raw = await wizard_data_priority_service.get_all_suggestions(db, field, context)
             all_suggestions = [
                 SuggestionResponse(
                     value=s.value,
@@ -192,11 +192,11 @@ company_id: str = Depends(require_company_id)) -> AllFieldSuggestionsResponse:
             "responsibilities", "benefits"
         ]
         
-        suggestions_dict = await wizard_priority_service.get_field_suggestions(
+        suggestions_dict = await wizard_data_priority_service.get_field_suggestions(
             db, context, all_fields
         )
         
-        coverage = await wizard_priority_service.get_data_coverage(
+        coverage = await wizard_data_priority_service.get_data_coverage(
             db, context.company_id
         )
         
@@ -255,7 +255,7 @@ company_id: str = Depends(require_company_id)) -> list[SimilarJobResponse]:
             seniority=seniority,
         )
         
-        similar = await wizard_priority_service.get_similar_jobs(db, context, limit)
+        similar = await wizard_data_priority_service.get_similar_jobs(db, context, limit)
         
         return [
             SimilarJobResponse(**job)
@@ -281,7 +281,7 @@ company_id: str = Depends(require_company_id)) -> dict[str, Any]:
     company_id = get_user_company_id(current_user)
     
     try:
-        coverage = await wizard_priority_service.get_data_coverage(
+        coverage = await wizard_data_priority_service.get_data_coverage(
             db, 
             parse_company_id(company_id)
         )

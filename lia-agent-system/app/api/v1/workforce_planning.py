@@ -18,6 +18,7 @@ from app.models.client_account import ClientAccount
 from app.shared.tenant_guard import get_verified_company_id
 from app.shared.security.require_company_id import require_company_id
 from app.shared.types import WeDoBaseModel
+from app.api.v1.big_five import get_client  # canonical client lookup helper (vide ADR-Reuse)
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/workforce-planning", tags=["workforce-planning"])
