@@ -92,3 +92,12 @@ pytest-asyncio==0.24.0
 
 APScheduler==3.10.4
 starlette>=0.42.0
+
+# W4-031 (2026-05-23): pin observability deps que já eram importadas
+# transitivamente mas NÃO declaradas. Risco: import-time crash em
+# fresh venv. prometheus_client em 8+ files (jobs/, domains/wizard).
+# opentelemetry-sdk em app/shared/observability/tracing.py.
+# deepeval NÃO pinado: instalado só em test env quando explicitly needed.
+prometheus_client>=0.24.0,<1.0
+opentelemetry-sdk>=1.41.0,<2.0
+opentelemetry-api>=1.41.0,<2.0

@@ -515,6 +515,19 @@ async def lifespan(app: FastAPI):
         logger.error(f"❌ ReAct Agent Registry initialization failed: {e}")
         logger.warning("   ReAct agents will not be available via main chat flow")
 
+    # W3-030 (2026-05-23): wire AiConsumptionOutbox drainer worker.
+    # Background loop drena `ai_consumption_outbox` table → AiConsumption
+    # via TokenTrackingService. Sem worker, callbacks de usage_tracking
+    # gravam no outbox mas NUNCA são entregues (silent data loss).
+    try:
+        from app.shared.observability.ai_consumption_outbox_worker import (
+            get_outbox_worker,
+        )
+        await get_outbox_worker().start()
+        logger.info("✅ AiConsumptionOutbox drainer worker started")
+    except Exception as e:
+        logger.error(f"❌ AiConsumptionOutbox worker start failed (non-blocking): {e}")
+
     # Initialize RabbitMQ Consumer (Phase 4 — WS async response forwarding)
     try:
         from app.shared.messaging.rabbitmq_consumer import rabbitmq_consumer
@@ -577,6 +590,15 @@ async def lifespan(app: FastAPI):
     try:
         from app.shared.messaging.rabbitmq_producer import rabbitmq_producer
         await rabbitmq_producer.close()
+    except Exception:
+        pass
+    # W3-030 (2026-05-23): graceful shutdown do outbox drainer worker.
+    # `stop()` drena último lote pendente antes de cancelar a task.
+    try:
+        from app.shared.observability.ai_consumption_outbox_worker import (
+            get_outbox_worker,
+        )
+        await get_outbox_worker().stop()
     except Exception:
         pass
     logger.info("🛑 Shutting down LIA Agent System...")

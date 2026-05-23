@@ -481,3 +481,10 @@ repos:
         entry: python3 scripts/check_rails_client_canonical_home.py
         files: ^app/shared/(integration/.*\.py|rails_client\.py)$
         pass_filenames: false
+
+      - id: outbox-worker-wired
+        name: "W3-030: AiConsumptionOutbox drainer worker wirado em lifespan (BLOCKING, anti silent data loss)"
+        language: system
+        entry: python3 scripts/check_outbox_worker_wired.py
+        files: ^app/(main\.py|shared/observability/ai_consumption_outbox_worker\.py)$
+        pass_filenames: false
