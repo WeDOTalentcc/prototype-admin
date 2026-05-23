@@ -67,9 +67,7 @@ TOOL_REGISTRY_BACKLOG = frozenset({
     "app/domains/job_management/agents/wizard_tool_registry.py",
     "app/domains/pipeline/agents/pipeline_tool_registry.py",
     "app/domains/sourcing/agents/diversity_tool_registry.py",
-    "app/domains/sourcing/agents/nurture_sequence_tool_registry.py",
     "app/domains/sourcing/agents/passive_pipeline_tool_registry.py",
-    "app/domains/sourcing/agents/referral_tool_registry.py",
     "app/domains/sourcing/agents/sourcing_tool_registry.py",
     "app/domains/talent_pool/agents/talent_pool_tool_registry.py",
 })

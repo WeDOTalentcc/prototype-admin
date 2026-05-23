@@ -10,6 +10,8 @@ Expõe tools para NurtureSequenceAgent:
 
 HITL: cada step requer aprovação quando communication_matrix.requires_approval=true.
 LGPD: sequências são expiradas pelo lgpd_cleanup após TTL.
+
+ADR-001: SQL inline migrado para NurtureSequenceRepository + CommunicationMatrixRepository.
 """
 import logging
 import uuid
@@ -36,6 +38,7 @@ async def _wrap_nurture_create_sequence(**kwargs: Any) -> dict[str, Any]:
     """
     Cria sequência de nurture multi-touch para um candidato.
     FairnessGuard: verifica contexto da sequência antes de criar.
+    ADR-001: persiste via NurtureSequenceRepository.
     """
     logger.info("[nurture_tools] nurture_create_sequence called: %s", list(kwargs.keys()))
     candidate_id = kwargs.get("candidate_id", "")
@@ -114,40 +117,22 @@ async def _wrap_nurture_create_sequence(**kwargs: Any) -> dict[str, Any]:
 
     lgpd_expiry = now + timedelta(days=180)
 
-    # Persistir sequência na tabela candidate_nurture_sequences
-    import json as _json
+    # ADR-001: persistir via NurtureSequenceRepository
     try:
-        from sqlalchemy import text
         from app.core.database import AsyncSessionLocal
-        async with AsyncSessionLocal() as session:
-            await session.execute(
-                text("""
-                    INSERT INTO candidate_nurture_sequences (
-                        sequence_id, candidate_id, vacancy_id, company_id,
-                        status, total_steps, current_step,
-                        steps_approved, steps_executed,
-                        steps_data, created_at, updated_at, lgpd_expiry
-                    ) VALUES (
-                        :seq_id, :cand_id, :vac_id, :co_id,
-                        'created', :total_steps, 0,
-                        0, 0,
-                        :steps_data, :created_at, :created_at, :lgpd_expiry
-                    )
-                    ON CONFLICT (sequence_id) DO NOTHING
-                """),
-                {
-                    "seq_id": sequence_id,
-                    "cand_id": candidate_id,
-                    "vac_id": vacancy_id or None,
-                    "co_id": company_id or None,
-                    "total_steps": len(enriched_steps),
-                    "steps_data": _json.dumps(enriched_steps),
-                    "created_at": now,
-                    "lgpd_expiry": lgpd_expiry,
-                },
+        from app.domains.sourcing.repositories.nurture_sequence_repository import (
+            NurtureSequenceRepository,
+        )
+        async with AsyncSessionLocal() as db:
+            repo = NurtureSequenceRepository(db)
+            await repo.create(
+                candidate_id=candidate_id,
+                company_id=company_id,
+                steps=enriched_steps,
+                vacancy_id=vacancy_id or None,
+                sequence_id=sequence_id,
             )
-            await session.commit()
-        logger.info("[nurture_tools] Sequência %s persistida no DB", sequence_id)
+        logger.info("[nurture_tools] Sequência %s persistida no DB via repo", sequence_id)
     except Exception as db_exc:
         # Graceful degradation: tabela pode não existir ainda
         logger.warning(
@@ -183,8 +168,7 @@ _NURTURE_TOOL_DEFINITIONS.append(
     ToolDefinition(
         side_effects=["write"],
         touches_pii=True,
-        pii_output_fields=["candidate_email",
-        "candidate_phone"],
+        pii_output_fields=["candidate_email", "candidate_phone"],
         name="nurture_create_sequence",
         description=(
             "Cria uma sequência de nurture multi-touch (até 5 touchpoints) para um candidato. "
@@ -228,13 +212,14 @@ _NURTURE_TOOL_DEFINITIONS.append(
 
 @tool_handler("nurture_sequence")
 async def _wrap_nurture_get_sequence_status(**kwargs: Any) -> dict[str, Any]:
-    """Obtém status atual de uma sequência de nurture (via cache/event store)."""
+    """
+    Obtém status atual de uma sequência de nurture.
+    ADR-001: consulta via NurtureSequenceRepository.
+    """
     logger.info("[nurture_tools] nurture_get_sequence_status called: %s", list(kwargs.keys()))
-    from sqlalchemy import text
-    from app.core.database import AsyncSessionLocal
-
     sequence_id = kwargs.get("sequence_id", "")
     candidate_id = kwargs.get("candidate_id", "")
+    company_id = kwargs.get("company_id", "")
 
     if not sequence_id and not candidate_id:
         return {
@@ -243,87 +228,95 @@ async def _wrap_nurture_get_sequence_status(**kwargs: Any) -> dict[str, Any]:
             "message": "Forneça 'sequence_id' ou 'candidate_id'.",
         }
 
-    # Consultar candidate_nurture_sequences via DB se disponível
-    async with AsyncSessionLocal() as session:
-        try:
-            if sequence_id:
-                result = await session.execute(
-                    text("""
-                        SELECT sequence_id, candidate_id, vacancy_id, company_id,
-                               status, total_steps, current_step,
-                               created_at, updated_at, lgpd_expiry,
-                               steps_executed, steps_approved
-                        FROM candidate_nurture_sequences
-                        WHERE sequence_id = :sid
-                    """),
-                    {"sid": sequence_id},
-                )
+    # ADR-001: consultar via NurtureSequenceRepository
+    try:
+        from app.core.database import AsyncSessionLocal
+        from app.domains.sourcing.repositories.nurture_sequence_repository import (
+            NurtureSequenceRepository,
+        )
+        async with AsyncSessionLocal() as db:
+            repo = NurtureSequenceRepository(db)
+            if sequence_id and company_id:
+                row = await repo.get_by_id(sequence_id, company_id)
+            elif candidate_id and company_id:
+                row = await repo.get_active_by_candidate(candidate_id, company_id)
             else:
-                result = await session.execute(
-                    text("""
-                        SELECT sequence_id, candidate_id, vacancy_id, company_id,
-                               status, total_steps, current_step,
-                               created_at, updated_at, lgpd_expiry,
-                               steps_executed, steps_approved
-                        FROM candidate_nurture_sequences
-                        WHERE candidate_id = :cid
-                        ORDER BY created_at DESC
-                        LIMIT 1
-                    """),
-                    {"cid": candidate_id},
-                )
-            row = result.mappings().first()
-
-            if not row:
                 return {
                     "success": False,
-                    "data": {"sequence_id": sequence_id, "candidate_id": candidate_id},
-                    "message": f"Sequência não encontrada para {'sequence_id=' + sequence_id if sequence_id else 'candidate_id=' + candidate_id}.",
+                    "data": {},
+                    "message": "Forneça também 'company_id' para busca segura.",
                 }
 
-            # Check LGPD expiry
-            lgpd_expiry = row["lgpd_expiry"]
-            lgpd_expired = lgpd_expiry and lgpd_expiry < datetime.utcnow()
-            status = row["status"]
-            if lgpd_expired and status not in ("expired", "completed"):
-                status = "lgpd_expired"
-
+        if not row:
             return {
-                "success": True,
-                "data": {
-                    "sequence_id": str(row["sequence_id"]),
-                    "candidate_id": str(row["candidate_id"]),
-                    "vacancy_id": str(row["vacancy_id"] or ""),
-                    "company_id": str(row["company_id"] or ""),
-                    "status": status,
-                    "total_steps": row["total_steps"] or 0,
-                    "current_step": row["current_step"] or 0,
-                    "steps_executed": row["steps_executed"] or 0,
-                    "steps_approved": row["steps_approved"] or 0,
-                    "created_at": row["created_at"].isoformat() if row["created_at"] else None,
-                    "updated_at": row["updated_at"].isoformat() if row["updated_at"] else None,
-                    "lgpd_expiry": lgpd_expiry.isoformat() if lgpd_expiry else None,
-                    "lgpd_expired": bool(lgpd_expired),
-                },
-                "message": f"Sequência {row['sequence_id']}: status={status}, step {row['current_step'] or 0}/{row['total_steps'] or 0}.",
+                "success": False,
+                "data": {"sequence_id": sequence_id, "candidate_id": candidate_id},
+                "message": (
+                    f"Sequência não encontrada para "
+                    f"{'sequence_id=' + sequence_id if sequence_id else 'candidate_id=' + candidate_id}."
+                ),
             }
 
-        except Exception as db_exc:
-            logger.warning("[nurture_tools] DB query failed (tabela pode não existir): %s", db_exc)
-            # P1 audit 2026-05-20: graceful degradation legitima (feature em
-            # rollout). Adicionada flag fallback_used pra distinguir de mentira
-            # semantica (sensor check_no_silent_llm_fallback).
-            return {
-                "success": True,
-                "fallback_used": True,
-                "data": {
-                    "sequence_id": sequence_id,
-                    "candidate_id": candidate_id,
-                    "status": "unknown",
-                    "note": "Tabela candidate_nurture_sequences não encontrada. Use nurture_create_sequence para criar uma sequência persistida.",
-                },
-                "message": f"Status da sequência {sequence_id or candidate_id}: tabela de sequências não disponível.",
-            }
+        # Check LGPD expiry
+        lgpd_expiry = row.get("lgpd_expiry")
+        lgpd_expired = (
+            lgpd_expiry < datetime.utcnow()
+            if lgpd_expiry and hasattr(lgpd_expiry, "replace")
+            else False
+        )
+        status = row.get("status", "unknown")
+        if lgpd_expired and status not in ("expired", "completed"):
+            status = "lgpd_expired"
+
+        return {
+            "success": True,
+            "data": {
+                "sequence_id": str(row.get("sequence_id", "")),
+                "candidate_id": str(row.get("candidate_id", "")),
+                "vacancy_id": str(row.get("vacancy_id") or ""),
+                "company_id": str(row.get("company_id") or ""),
+                "status": status,
+                "total_steps": row.get("total_steps") or 0,
+                "current_step": row.get("current_step") or 0,
+                "steps_executed": row.get("steps_executed") or 0,
+                "steps_approved": row.get("steps_approved") or 0,
+                "created_at": row["created_at"].isoformat() if row.get("created_at") else None,
+                "updated_at": row["updated_at"].isoformat() if row.get("updated_at") else None,
+                "lgpd_expiry": (
+                    lgpd_expiry.isoformat()
+                    if lgpd_expiry and hasattr(lgpd_expiry, "isoformat")
+                    else None
+                ),
+                "lgpd_expired": bool(lgpd_expired),
+            },
+            "message": (
+                f"Sequência {row.get('sequence_id')}: status={status}, "
+                f"step {row.get('current_step') or 0}/{row.get('total_steps') or 0}."
+            ),
+        }
+
+    except Exception as db_exc:
+        logger.warning("[nurture_tools] DB query failed (tabela pode não existir): %s", db_exc)
+        # P1 audit 2026-05-20: graceful degradation legitima (feature em
+        # rollout). Adicionada flag fallback_used pra distinguir de mentira
+        # semantica (sensor check_no_silent_llm_fallback).
+        return {
+            "success": True,
+            "fallback_used": True,
+            "data": {
+                "sequence_id": sequence_id,
+                "candidate_id": candidate_id,
+                "status": "unknown",
+                "note": (
+                    "Tabela candidate_nurture_sequences não encontrada. "
+                    "Use nurture_create_sequence para criar uma sequência persistida."
+                ),
+            },
+            "message": (
+                f"Status da sequência {sequence_id or candidate_id}: "
+                "tabela de sequências não disponível."
+            ),
+        }
 
 _NURTURE_TOOL_DEFINITIONS.append(
     ToolDefinition(
@@ -350,14 +343,12 @@ _NURTURE_TOOL_DEFINITIONS.append(
 async def _wrap_nurture_approve_step(**kwargs: Any) -> dict[str, Any]:
     """
     Registra aprovação HITL de um step da sequência antes do envio.
-
-    Persiste o registro de aprovação na tabela nurture_step_approvals com status
-    'approved'. O nurture_execute_step verifica esta tabela antes de executar —
-    não confia apenas no booleano hitl_approved do caller.
+    ADR-001: persiste via NurtureSequenceRepository.upsert_step_approval.
     """
     logger.info("[nurture_tools] nurture_approve_step called: %s", list(kwargs.keys()))
     sequence_id = kwargs.get("sequence_id", "")
     step_number = kwargs.get("step_number", 1)
+    company_id = kwargs.get("company_id", "")
     approved_by = kwargs.get("approved_by", "")
     notes = kwargs.get("notes", "")
 
@@ -367,40 +358,25 @@ async def _wrap_nurture_approve_step(**kwargs: Any) -> dict[str, Any]:
     approval_id = str(uuid.uuid4())
     now = datetime.utcnow()
 
-    # Persistir aprovação na tabela nurture_step_approvals (fonte autoritativa)
+    # ADR-001: persistir via NurtureSequenceRepository
     db_persisted = False
     try:
-        from sqlalchemy import text
         from app.core.database import AsyncSessionLocal
-        async with AsyncSessionLocal() as session:
-            await session.execute(
-                text("""
-                    INSERT INTO nurture_step_approvals (
-                        approval_id, sequence_id, step_number,
-                        approved_by, approved_at, notes, status
-                    ) VALUES (
-                        :appr_id, :seq_id, :step_num,
-                        :approver, :approved_at, :notes, 'approved'
-                    )
-                    ON CONFLICT (sequence_id, step_number) DO UPDATE
-                        SET approval_id = EXCLUDED.approval_id,
-                            approved_by = EXCLUDED.approved_by,
-                            approved_at = EXCLUDED.approved_at,
-                            notes = EXCLUDED.notes,
-                            status = 'approved'
-                """),
-                {
-                    "appr_id": approval_id,
-                    "seq_id": sequence_id,
-                    "step_num": step_number,
-                    "approver": approved_by or "recruiter",
-                    "approved_at": now,
-                    "notes": notes or "",
-                },
+        from app.domains.sourcing.repositories.nurture_sequence_repository import (
+            NurtureSequenceRepository,
+        )
+        async with AsyncSessionLocal() as db:
+            repo = NurtureSequenceRepository(db)
+            await repo.upsert_step_approval(
+                sequence_id=sequence_id,
+                step_number=step_number,
+                company_id=company_id or "unknown",
+                approved_by=approved_by or "recruiter",
+                notes=notes or "",
+                approval_id=approval_id,
             )
-            await session.commit()
         db_persisted = True
-        logger.info("[nurture_tools] Aprovação %s persistida no DB", approval_id)
+        logger.info("[nurture_tools] Aprovação %s persistida no DB via repo", approval_id)
     except Exception as db_exc:
         # Graceful degradation: tabela pode não existir ainda
         logger.warning(
@@ -474,66 +450,55 @@ _NURTURE_TOOL_DEFINITIONS.append(
 async def _check_communication_matrix_approval(channel: str, company_id: str) -> bool:
     """
     Verifica se o canal/empresa requer aprovação via communication_matrix.
-    Retorna True se requires_approval estiver ativo, False caso contrário.
+    ADR-001: delega a CommunicationMatrixRepository.
     Fail-safe: se não conseguir carregar, assume requires_approval=True.
     """
     try:
-        from sqlalchemy import text
         from app.core.database import AsyncSessionLocal
-        async with AsyncSessionLocal() as session:
-            result = await session.execute(
-                text("""
-                    SELECT requires_approval
-                    FROM communication_matrix
-                    WHERE channel = :channel
-                      AND (company_id = :cid OR company_id IS NULL)
-                    ORDER BY CASE WHEN company_id = :cid THEN 0 ELSE 1 END
-                    LIMIT 1
-                """),
-                {"channel": channel, "cid": company_id or ""},
-            )
-            row = result.mappings().first()
-            if row is not None:
-                return bool(row["requires_approval"])
+        from app.domains.sourcing.repositories.communication_matrix_repository import (
+            CommunicationMatrixRepository,
+        )
+        async with AsyncSessionLocal() as db:
+            repo = CommunicationMatrixRepository(db)
+            policy = await repo.get_channel_policy(company_id or "", channel)
+        if policy is not None:
+            return bool(policy.get("requires_approval", True))
     except Exception as e:
-        logger.warning("[nurture_tools] communication_matrix query failed — assumindo requires_approval=True: %s", e)
+        logger.warning(
+            "[nurture_tools] communication_matrix query failed — assumindo requires_approval=True: %s",
+            e,
+        )
     # Default: sempre requer aprovação (fail-safe)
     return True
 
 
-async def _check_nurture_step_approved_in_db(sequence_id: str, step_number: int) -> tuple[bool, str]:
+async def _check_nurture_step_approved_in_db(
+    sequence_id: str, step_number: int, company_id: str = ""
+) -> tuple[bool, str]:
     """
     Verifica se um step foi aprovado via nurture_approve_step (DB autoritativo).
-
-    Retorna (approved: bool, reason: str).
-    Se a tabela não existir, assume aprovação necessária (fail-closed).
-    Se a tabela existir mas não houver registro, nega a execução.
+    ADR-001: delega a NurtureSequenceRepository.get_step_approval.
     """
     try:
-        from sqlalchemy import text
         from app.core.database import AsyncSessionLocal
-        async with AsyncSessionLocal() as session:
-            result = await session.execute(
-                text("""
-                    SELECT status, approved_by, approved_at
-                    FROM nurture_step_approvals
-                    WHERE sequence_id = :seq_id AND step_number = :step_num
-                    ORDER BY approved_at DESC
-                    LIMIT 1
-                """),
-                {"seq_id": sequence_id, "step_num": step_number},
-            )
-            row = result.mappings().first()
-            if row and row["status"] == "approved":
-                return True, f"Aprovado por {row['approved_by']} em {row['approved_at']}"
-            return False, "Nenhum registro de aprovação encontrado para este step."
+        from app.domains.sourcing.repositories.nurture_sequence_repository import (
+            NurtureSequenceRepository,
+        )
+        async with AsyncSessionLocal() as db:
+            repo = NurtureSequenceRepository(db)
+            row = await repo.get_step_approval(sequence_id, step_number, company_id or "unknown")
+        if row and row.get("status") == "approved":
+            return True, f"Aprovado por {row.get('approved_by')} em {row.get('approved_at')}"
+        return False, "Nenhum registro de aprovação encontrado para este step."
     except Exception as db_exc:
         err_msg = str(db_exc).lower()
         if "does not exist" in err_msg or "no such table" in err_msg:
             # Tabela ainda não criada — graceful: confiar no parâmetro do caller
             logger.warning("[nurture_tools] Tabela nurture_step_approvals não existe — HITL degradado")
             return None, "tabela_ausente"
-        logger.warning("[nurture_tools] Erro ao verificar aprovação: %s — negando por segurança", db_exc)
+        logger.warning(
+            "[nurture_tools] Erro ao verificar aprovação: %s — negando por segurança", db_exc
+        )
         return False, f"Erro de verificação: {db_exc}"
 
 
@@ -542,7 +507,7 @@ async def _wrap_nurture_execute_step(**kwargs: Any) -> dict[str, Any]:
     """
     Executa um step aprovado da sequência de nurture.
 
-    HITL server-side: verifica aprovação na tabela nurture_step_approvals.
+    HITL server-side: verifica aprovação via NurtureSequenceRepository.get_step_approval.
     Não confia no booleano hitl_approved do caller como controle primário.
     hitl_approved=True é aceito apenas se a tabela não existir (graceful degradation).
     """
@@ -561,7 +526,9 @@ async def _wrap_nurture_execute_step(**kwargs: Any) -> dict[str, Any]:
 
     if matrix_requires_approval:
         # Verificação server-side: consultar DB para aprovação real
-        db_approved, db_reason = await _check_nurture_step_approved_in_db(sequence_id, step_number)
+        db_approved, db_reason = await _check_nurture_step_approved_in_db(
+            sequence_id, step_number, company_id
+        )
 
         if db_approved is None:
             # Tabela não existe: degradar para confiar no booleano do caller
@@ -576,7 +543,8 @@ async def _wrap_nurture_execute_step(**kwargs: Any) -> dict[str, Any]:
                 }
             logger.warning(
                 "[nurture_tools] Executando step %d seq %s sem verificação DB (tabela ausente)",
-                step_number, sequence_id
+                step_number,
+                sequence_id,
             )
         elif not db_approved:
             return {
@@ -636,8 +604,7 @@ _NURTURE_TOOL_DEFINITIONS.append(
     ToolDefinition(
         side_effects=["send"],
         touches_pii=True,
-        pii_output_fields=["candidate_email",
-        "candidate_phone"],
+        pii_output_fields=["candidate_email", "candidate_phone"],
         name="nurture_execute_step",
         description=(
             "Executa um step previamente aprovado da sequência de nurture. "

@@ -6,8 +6,11 @@ Expõe tools para ReferralAgent:
 - referral_prepare_request: prepara mensagem de solicitação de indicação
 - referral_send_request: envia solicitação via CommunicationMatrix (HITL obrigatório)
 - referral_track_responses: rastreia respostas de indicações
+- referral_approve_request: registra aprovação HITL antes do envio
 
 HITL OBRIGATÓRIO: referral_send_request requer aprovação humana antes do envio.
+
+ADR-001: SQL inline migrado para ReferralRepository + CommunicationMatrixRepository.
 """
 import logging
 import uuid
@@ -28,11 +31,9 @@ async def _wrap_referral_identify_connectors(**kwargs: Any) -> dict[str, Any]:
     """
     Identifica colaboradores internos com perfil relevante para indicar candidatos.
     FairnessGuard: verifica query antes de executar busca.
+    ADR-001: delega a ReferralRepository.get_hired_connectors.
     """
     logger.info("[referral_tools] referral_identify_connectors called: %s", list(kwargs.keys()))
-    from sqlalchemy import text
-    from app.core.database import AsyncSessionLocal
-
     company_id = kwargs.get("company_id", "")
     role = kwargs.get("role", "")
     skills = kwargs.get("skills", [])
@@ -53,40 +54,21 @@ async def _wrap_referral_identify_connectors(**kwargs: Any) -> dict[str, Any]:
     except Exception as _fg_exc:
         logger.debug("[referral_tools] FairnessGuard check skipped: %s", _fg_exc)
 
-    conditions = [
-        "c.status = 'hired'",
-        "c.company_id = :company_id",
-    ]
-    params: dict[str, Any] = {"company_id": company_id, "lim": limit}
-
-    if role:
-        conditions.append("c.current_title ILIKE :role_pattern")
-        params["role_pattern"] = f"%{role}%"
-
-    if skills and isinstance(skills, list) and len(skills) > 0:
-        conditions.append("c.technical_skills && :skills_arr")
-        params["skills_arr"] = skills
-
-    where_clause = " AND ".join(conditions)
-
-    async with AsyncSessionLocal() as session:
-        try:
-            result = await session.execute(
-                text(f"""
-                    SELECT c.id, c.name, c.email, c.current_title,
-                           c.technical_skills, c.years_of_experience,
-                           c.location_city, c.location_country
-                    FROM candidates c
-                    WHERE {where_clause}
-                    ORDER BY c.years_of_experience DESC NULLS LAST
-                    LIMIT :lim
-                """),
-                params,
+    # ADR-001: delega a ReferralRepository
+    try:
+        from app.core.database import AsyncSessionLocal
+        from app.domains.sourcing.repositories.referral_repository import ReferralRepository
+        async with AsyncSessionLocal() as db:
+            repo = ReferralRepository(db)
+            rows = await repo.get_hired_connectors(
+                company_id=company_id,
+                role_filter=role or None,
+                skills=skills if skills and isinstance(skills, list) else None,
+                limit=limit,
             )
-            rows = result.mappings().all()
-        except Exception as db_exc:
-            logger.warning("[referral_tools] DB query failed: %s — retornando vazio", db_exc)
-            rows = []
+    except Exception as db_exc:
+        logger.warning("[referral_tools] DB query failed: %s — retornando vazio", db_exc)
+        rows = []
 
     connectors = []
     for row in rows:
@@ -95,12 +77,16 @@ async def _wrap_referral_identify_connectors(**kwargs: Any) -> dict[str, Any]:
             "name": row["name"],
             "email": row["email"],
             "current_title": row["current_title"],
-            "technical_skills": row["technical_skills"] or [],
-            "years_of_experience": row["years_of_experience"],
-            "location": f"{row['location_city'] or ''}, {row['location_country'] or ''}".strip(", "),
+            "technical_skills": row.get("technical_skills") or [],
+            "years_of_experience": row.get("years_of_experience"),
+            "location": (
+                f"{row.get('location_city') or ''}, {row.get('location_country') or ''}"
+                .strip(", ")
+            ),
             "relevance_reason": (
                 f"Trabalha como {row['current_title']} — pode indicar candidatos para '{role}'."
-                if role else "Colaborador ativo da empresa."
+                if role
+                else "Colaborador ativo da empresa."
             ),
         })
 
@@ -203,7 +189,7 @@ async def _wrap_referral_prepare_request(**kwargs: Any) -> dict[str, Any]:
         },
         "message": (
             f"Mensagem de indicação preparada para {connector_name} via {channel}. "
-            f"AGUARDANDO APROVAÇÃO HITL antes do envio."
+            "AGUARDANDO APROVAÇÃO HITL antes do envio."
         ),
     }
 _REFERRAL_TOOL_DEFINITIONS.append(
@@ -242,28 +228,24 @@ _REFERRAL_TOOL_DEFINITIONS.append(
 async def _check_referral_matrix_approval(channel: str, company_id: str) -> bool:
     """
     Verifica se o canal/empresa requer aprovação via communication_matrix para referrals.
+    ADR-001: delega a CommunicationMatrixRepository.
     Fail-safe: se não conseguir carregar, assume requires_approval=True.
     """
     try:
-        from sqlalchemy import text
         from app.core.database import AsyncSessionLocal
-        async with AsyncSessionLocal() as session:
-            result = await session.execute(
-                text("""
-                    SELECT requires_approval
-                    FROM communication_matrix
-                    WHERE channel = :channel
-                      AND (company_id = :cid OR company_id IS NULL)
-                    ORDER BY CASE WHEN company_id = :cid THEN 0 ELSE 1 END
-                    LIMIT 1
-                """),
-                {"channel": channel, "cid": company_id or ""},
-            )
-            row = result.mappings().first()
-            if row is not None:
-                return bool(row["requires_approval"])
+        from app.domains.sourcing.repositories.communication_matrix_repository import (
+            CommunicationMatrixRepository,
+        )
+        async with AsyncSessionLocal() as db:
+            repo = CommunicationMatrixRepository(db)
+            policy = await repo.get_channel_policy(company_id or "", channel)
+        if policy is not None:
+            return bool(policy.get("requires_approval", True))
     except Exception as e:
-        logger.warning("[referral_tools] communication_matrix query failed — assumindo requires_approval=True: %s", e)
+        logger.warning(
+            "[referral_tools] communication_matrix query failed — assumindo requires_approval=True: %s",
+            e,
+        )
     return True
 
 
@@ -275,70 +257,48 @@ async def _persist_referral_approval(
     company_id: str,
 ) -> tuple[str, bool]:
     """
-    Persiste aprovação de referral na tabela referral_hitl_approvals.
+    Persiste aprovação de referral via ReferralRepository.upsert_hitl_approval.
+    ADR-001: sem SQL inline.
     Retorna (approval_id, db_persisted).
     """
     import uuid as _uuid
-    from datetime import datetime as _dt
     approval_id = str(_uuid.uuid4())
     try:
-        from sqlalchemy import text
         from app.core.database import AsyncSessionLocal
-        async with AsyncSessionLocal() as session:
-            await session.execute(
-                text("""
-                    INSERT INTO referral_hitl_approvals (
-                        approval_id, request_key, approved_by,
-                        channel, vacancy_id, company_id, approved_at, status
-                    ) VALUES (
-                        :appr_id, :req_key, :approver,
-                        :channel, :vac_id, :co_id, :now, 'approved'
-                    )
-                    ON CONFLICT (request_key) DO UPDATE
-                        SET approval_id = EXCLUDED.approval_id,
-                            approved_by = EXCLUDED.approved_by,
-                            approved_at = EXCLUDED.approved_at,
-                            status = 'approved'
-                """),
-                {
-                    "appr_id": approval_id,
-                    "req_key": request_key,
-                    "approver": approved_by or "recruiter",
-                    "channel": channel,
-                    "vac_id": vacancy_id or None,
-                    "co_id": company_id or None,
-                    "now": _dt.utcnow(),
-                },
+        from app.domains.sourcing.repositories.referral_repository import ReferralRepository
+        async with AsyncSessionLocal() as db:
+            repo = ReferralRepository(db)
+            result = await repo.upsert_hitl_approval(
+                request_key=request_key,
+                company_id=company_id or "unknown",
+                approved_by=approved_by or "recruiter",
+                channel=channel,
+                vacancy_id=vacancy_id or None,
+                approval_id=approval_id,
             )
-            await session.commit()
-        return approval_id, True
+        return result.get("approval_id", approval_id), True
     except Exception as db_exc:
         logger.warning("[referral_tools] Não foi possível persistir aprovação referral: %s", db_exc)
         return approval_id, False
 
 
-async def _verify_referral_approval_in_db(request_key: str) -> tuple[bool | None, str]:
+async def _verify_referral_approval_in_db(
+    request_key: str, company_id: str = ""
+) -> tuple[bool, str]:
     """
-    Verifica aprovação de referral no DB.
+    Verifica aprovação de referral via ReferralRepository.get_hitl_approval.
+    ADR-001: sem SQL inline.
     Retorna (True=aprovado, None=tabela ausente, False=não aprovado), motivo.
     """
     try:
-        from sqlalchemy import text
         from app.core.database import AsyncSessionLocal
-        async with AsyncSessionLocal() as session:
-            result = await session.execute(
-                text("""
-                    SELECT status, approved_by, approved_at
-                    FROM referral_hitl_approvals
-                    WHERE request_key = :req_key
-                    LIMIT 1
-                """),
-                {"req_key": request_key},
-            )
-            row = result.mappings().first()
-            if row and row["status"] == "approved":
-                return True, f"Aprovado por {row['approved_by']}"
-            return False, "Nenhum registro de aprovação encontrado."
+        from app.domains.sourcing.repositories.referral_repository import ReferralRepository
+        async with AsyncSessionLocal() as db:
+            repo = ReferralRepository(db)
+            row = await repo.get_hitl_approval(request_key, company_id or "unknown")
+        if row and row.get("status") == "approved":
+            return True, f"Aprovado por {row.get('approved_by')}"
+        return False, "Nenhum registro de aprovação encontrado."
     except Exception as db_exc:
         err = str(db_exc).lower()
         if "does not exist" in err or "no such table" in err:
@@ -352,9 +312,10 @@ async def _wrap_referral_send_request(**kwargs: Any) -> dict[str, Any]:
     Envia solicitação de indicação via CommunicationMatrix.
 
     HITL server-side: quando communication_matrix.requires_approval=True,
-    verifica aprovação na tabela referral_hitl_approvals (DB autoritativo).
+    verifica aprovação via ReferralRepository.get_hitl_approval (DB autoritativo).
     O parâmetro hitl_approved é aceito apenas como fallback quando a tabela
     não existe (graceful degradation).
+    ADR-001: sem SQL inline — delega a ReferralRepository + CommunicationMatrixRepository.
     """
     logger.info("[referral_tools] referral_send_request called: %s", list(kwargs.keys()))
     hitl_approved_flag = kwargs.get("hitl_approved", False)  # Sinal do caller — não autoritativo
@@ -369,7 +330,7 @@ async def _wrap_referral_send_request(**kwargs: Any) -> dict[str, Any]:
     if matrix_requires_approval:
         # Chave de deduplicação para este pedido de referral
         request_key = f"{connector_email}:{vacancy_id}:{channel}"
-        db_approved, db_reason = await _verify_referral_approval_in_db(request_key)
+        db_approved, db_reason = await _verify_referral_approval_in_db(request_key, company_id)
 
         if db_approved is None:
             # Tabela ausente: degradar para o boolean do caller
@@ -392,10 +353,8 @@ async def _wrap_referral_send_request(**kwargs: Any) -> dict[str, Any]:
                 ),
             }
 
-    connector_email = kwargs.get("connector_email", "")
     connector_name = kwargs.get("connector_name", "")
     message = kwargs.get("message", "")
-    vacancy_id = kwargs.get("vacancy_id", "")
 
     if not connector_email or not message:
         return {
@@ -475,12 +434,13 @@ _REFERRAL_TOOL_DEFINITIONS.append(
     )
 )
 
+
 @tool_handler("referral")
 async def _wrap_referral_approve_request(**kwargs: Any) -> dict[str, Any]:
     """
     Registra aprovação HITL para um pedido de referral antes do envio.
+    ADR-001: persiste via ReferralRepository.upsert_hitl_approval.
 
-    Persiste o registro na tabela referral_hitl_approvals com status 'approved'.
     O referral_send_request verificará este registro no DB — não confia apenas
     no booleano hitl_approved do caller.
     """
