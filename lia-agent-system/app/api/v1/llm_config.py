@@ -321,6 +321,21 @@ company_id: str = Depends(require_company_id)):
                 messages=[{"role": "user", "content": test_prompt}]
             )
             result = response.choices[0].message.content
+
+        elif request.provider == "deepseek":
+            # W2-011 (2026-05-23): DeepSeek API é OpenAI-compatible — reusa SDK
+            # com base_url=https://api.deepseek.com/v1
+            from openai import AsyncOpenAI
+            client = AsyncOpenAI(
+                api_key=request.api_key,
+                base_url="https://api.deepseek.com/v1",
+            )
+            model = request.model or "deepseek-chat"
+            response = await client.chat.completions.create(
+                model=model, max_tokens=10,
+                messages=[{"role": "user", "content": test_prompt}]
+            )
+            result = response.choices[0].message.content
         else:
             raise HTTPException(400, f"Unknown provider: {request.provider}")
 
@@ -370,6 +385,15 @@ async def list_available_providers(company_id: str = Depends(require_company_id)
                 "models": ["gpt-4o", "gpt-4o-mini", "gpt-4-turbo"],
                 "capabilities": ["chat", "embedding", "screening"],
                 "default_model": "gpt-4o",
+            },
+            {
+                "id": "deepseek",
+                "name": "DeepSeek",
+                "models": ["deepseek-chat", "deepseek-reasoner"],
+                "capabilities": ["chat", "screening"],
+                "default_model": "deepseek-chat",
+                "opt_in_only": True,
+                "data_residency": "China (no region pinning)",
             },
         ],
         "routing_types": ["chat", "embedding", "screening", "voice"],

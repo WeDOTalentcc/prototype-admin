@@ -10,6 +10,7 @@ from .embedding_gemini import GeminiEmbeddingProvider
 from .embedding_openai import OpenAIEmbeddingProvider
 from .embedding_provider import EmbeddingProviderABC, EmbeddingResult
 from .llm_claude import ClaudeLLMProvider
+from .llm_deepseek import DeepSeekLLMProvider
 from .llm_factory import LLMProviderFactory, get_voice_provider_for_tenant
 from .llm_gemini import GeminiLLMProvider
 from .llm_openai import OpenAILLMProvider
@@ -32,6 +33,7 @@ from .voice_provider import (
 LLMProviderFactory.register(ClaudeLLMProvider)
 LLMProviderFactory.register(GeminiLLMProvider)
 LLMProviderFactory.register(OpenAILLMProvider)
+LLMProviderFactory.register(DeepSeekLLMProvider)
 
 EmbeddingProviderFactory.register(GeminiEmbeddingProvider)
 EmbeddingProviderFactory.register(OpenAIEmbeddingProvider)

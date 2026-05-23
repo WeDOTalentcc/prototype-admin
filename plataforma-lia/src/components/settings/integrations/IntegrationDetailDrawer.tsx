@@ -29,7 +29,7 @@ import {
 import type { Integration } from"./integration-data"
 import { ApiKeyConfigForm } from"./ApiKeyConfigForm"
 
-const AI_PROVIDER_IDS = ["gemini","claude","openai"]
+const AI_PROVIDER_IDS = ["gemini","claude","openai","deepseek"]
 
 interface ProviderConfigData {
   api_key?: string

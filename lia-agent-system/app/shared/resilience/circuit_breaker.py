@@ -353,6 +353,16 @@ OPENAI_CIRCUIT = CircuitBreaker(
     )
 )
 
+DEEPSEEK_CIRCUIT = CircuitBreaker(
+    "deepseek",
+    CircuitBreakerConfig(
+        failure_threshold=5,
+        recovery_timeout=30.0,
+        success_threshold=2,
+        timeout=60.0,
+    )
+)
+
 GEMINI_CIRCUIT = CircuitBreaker(
     "gemini",
     CircuitBreakerConfig(
@@ -536,6 +546,8 @@ RAILS_CIRCUIT = CircuitBreaker(
 ALL_CIRCUITS: dict[str, CircuitBreaker] = {
     "anthropic": ANTHROPIC_CIRCUIT,
     "openai": OPENAI_CIRCUIT,
+        "deepseek": DEEPSEEK_CIRCUIT,
+        "deepseek": DEEPSEEK_CIRCUIT,
     "gemini": GEMINI_CIRCUIT,
     "pearch": PEARCH_CIRCUIT,
     "apify": APIFY_CIRCUIT,

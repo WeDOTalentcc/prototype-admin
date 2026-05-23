@@ -461,6 +461,13 @@ repos:
         files: ^(alembic/versions/181_idempotency_keys\.py|app/middleware/idempotency\.py|app/main\.py)$
         pass_filenames: false
 
+      - id: deepseek-provider-wired
+        name: "W2-011: DeepSeek provider opt-in canonical wired (provider class + factory + circuit + llm_config + migration 182 + frontend) (BLOCKING)"
+        language: system
+        entry: python3 scripts/check_deepseek_provider_wired.py
+        files: ^(app/shared/providers/llm_deepseek\.py|app/shared/providers/__init__\.py|app/shared/resilience/circuit_breaker\.py|app/api/v1/llm_config\.py|alembic/versions/182_deepseek_catalog\.py)$
+        pass_filenames: false
+
       - id: governance-executor-wired
         name: "W1-004: ToolExecutor wirou Step 2 (company_id) + Step 7 (audit) + Step 8 (metrics) (BLOCKING)"
         language: system
